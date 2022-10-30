@@ -149,27 +149,6 @@ public:
         this->rectangle() = rectangle;
     }
 
-    /** Create a keyboard target event.
-     *
-     * @param type The type of the keyboard target event.
-     * @param widget Pointer to the widget used as base for the target search.
-     * @param group The keyboard focus group to search in.
-     * @param direction The direction to walk through the focus-chain.
-     */
-    gui_event(
-        gui_event_type type,
-        hi::widget const *widget,
-        keyboard_focus_group group = keyboard_focus_group::normal,
-        keyboard_focus_direction direction = keyboard_focus_direction::here) noexcept :
-        gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
-    {
-        hi_assert(variant() == gui_event_variant::keyboard_target);
-        auto& target = this->keyboard_target();
-        target.widget = widget;
-        target.group = group;
-        target.direction = direction;
-    }
-
     /** Create a GUI event.
      *
      * @param type The type of the key event.
@@ -202,6 +181,22 @@ public:
     {
         auto r = gui_event{gui_event_type::mouse_enter};
         r.mouse().position = position;
+        return r;
+    }
+
+    [[nodiscard]] static gui_event window_set_keyboard_target(widget const *widget, keyboard_focus_group group = keyboard_focus_group::normal, keyboard_focus_direction direction = keyboard_focus_direction::here) noexcept
+    {
+        auto r = gui_event{gui_event_type::window_set_keyboard_target};
+        r.keyboard_target().widget = widget;
+        r.keyboard_target().group = group;
+        r.keyboard_target().direction = direction;
+        return r;
+    }
+
+    [[nodiscard]] static gui_event window_remove_keyboard_target(widget const *widget) noexcept
+    {
+        auto r = gui_event{gui_event_type::window_remove_keyboard_target};
+        r.keyboard_target().widget = widget;
         return r;
     }
 

@@ -3,8 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "window_traffic_lights_widget.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../text/font_book.hpp"
 #include <cmath>
 #include <typeinfo>

@@ -227,15 +227,9 @@ bool window_widget::handle_event(gui_event const& event) noexcept
 
     switch (event.type()) {
     case gui_toolbar_open:
-        process_event({window_keyboard_target, this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward});
+        process_event(
+            gui_event::window_set_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
         return true;
-
-    case gui_sysmenu_open:
-        if (*mode >= widget_mode::partial) {
-            window.open_system_menu();
-            return true;
-        }
-        break;
     }
     return super::handle_event(event);
 }

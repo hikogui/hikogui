@@ -3,8 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "widget.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../GUI/gui_system.hpp"
 #include "../ranges.hpp"
 #include <ranges>
 
@@ -34,7 +32,7 @@ widget::~widget()
 {
     // The window must remove references such as mouse and keyboard targets to
     // this widget when it is removed.
-    window.widget_is_destructing(this);
+    process_event(gui_event::window_remove_keyboard_target(this));
 }
 
 [[nodiscard]] color widget::background_color() const noexcept
@@ -124,11 +122,13 @@ bool widget::handle_event(gui_event const& event) noexcept
         return true;
 
     case gui_widget_next:
-        process_event({window_keyboard_target, this, keyboard_focus_group::normal, keyboard_focus_direction::forward});
+        process_event(
+            gui_event::window_set_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::forward));
         return true;
 
     case gui_widget_prev:
-        process_event({window_keyboard_target, this, keyboard_focus_group::normal, keyboard_focus_direction::backward});
+        process_event(
+            gui_event::window_set_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::backward));
         return true;
 
     case gui_activate_next:
@@ -138,7 +138,8 @@ bool widget::handle_event(gui_event const& event) noexcept
     case gui_event_type::gui_toolbar_next:
         if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
             not is_last(keyboard_focus_group::toolbar)) {
-            process_event({window_keyboard_target, this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward});
+            process_event(
+                gui_event::window_set_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
             return true;
         }
         break;
@@ -146,7 +147,8 @@ bool widget::handle_event(gui_event const& event) noexcept
     case gui_event_type::gui_toolbar_prev:
         if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
             not is_first(keyboard_focus_group::toolbar)) {
-            process_event({window_keyboard_target, this, keyboard_focus_group::toolbar, keyboard_focus_direction::backward});
+            process_event(
+                gui_event::window_set_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
             return true;
         }
         break;

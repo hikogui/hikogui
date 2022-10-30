@@ -152,8 +152,6 @@ public:
      */
     virtual void set_cursor(mouse_cursor cursor) = 0;
 
-    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
-
     /** Ask the operating system to close this window.
      */
     virtual void close_window() = 0;
@@ -317,7 +315,7 @@ private:
      * This removes internal references to widgets.
      * Particularly the mouse and keyboard targets.
      */
-    void widget_is_destructing(hi::widget const *sender) noexcept
+    void remove_keyboard_and_mouse_target(hi::widget const *sender) noexcept
     {
         if (_mouse_target_widget == sender) {
             _mouse_target_widget = nullptr;

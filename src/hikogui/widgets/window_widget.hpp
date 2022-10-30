@@ -52,10 +52,6 @@ public:
      */
     [[nodiscard]] toolbar_widget& toolbar() noexcept;
 
-    /** Defining on which edges the resize handle has priority over widget at a higher layer.
-     */
-    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
-
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
     widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
@@ -64,6 +60,7 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     bool process_event(gui_event const& event) const noexcept override;
+    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept override;
     /// @endprivatesection
 private:
     aarectangle _content_rectangle;

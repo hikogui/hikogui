@@ -71,14 +71,14 @@ bool menu_button_widget::handle_event(gui_event const& event) noexcept
     switch (event.type()) {
     case gui_menu_next:
         if (*mode >= widget_mode::partial and not is_last(keyboard_focus_group::menu)) {
-            process_event({window_keyboard_target, nullptr, keyboard_focus_group::menu, keyboard_focus_direction::forward});
+            process_event(gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::menu, keyboard_focus_direction::forward));
             return true;
         }
         break;
 
     case gui_menu_prev:
         if (*mode >= widget_mode::partial and not is_first(keyboard_focus_group::menu)) {
-            process_event({window_keyboard_target, nullptr, keyboard_focus_group::menu, keyboard_focus_direction::backward});
+            process_event(gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::menu, keyboard_focus_direction::backward));
             return true;
         }
         break;
@@ -86,8 +86,8 @@ bool menu_button_widget::handle_event(gui_event const& event) noexcept
     case gui_activate:
         if (*mode >= widget_mode::partial) {
             activate();
-            process_event({window_keyboard_target, nullptr, keyboard_focus_group::normal, keyboard_focus_direction::forward});
-            process_event({window_keyboard_target, nullptr, keyboard_focus_group::normal, keyboard_focus_direction::backward});
+            process_event(gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::normal, keyboard_focus_direction::forward));
+            process_event(gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::normal, keyboard_focus_direction::backward));
             return true;
         }
         break;

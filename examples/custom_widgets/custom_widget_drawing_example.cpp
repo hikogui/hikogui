@@ -115,7 +115,7 @@ public:
                 // Could not get an image, retry.
                 _image_was_modified = true;
                 hi_log_info("drawing_widget::set_constraints() could not get backing image.");
-                process_event({gui_event_type::window_reconstrain});
+                process_event({hi::gui_event_type::window_reconstrain});
             }
         }
 

@@ -67,7 +67,8 @@ enum class gui_event_variant {
     case gui_event_type::keyboard_exit:
         return gui_event_variant::keyboard;
 
-    case gui_event_type::window_keyboard_target:
+    case gui_event_type::window_set_keyboard_target:
+    case gui_event_type::window_remove_keyboard_target:
         return gui_event_variant::keyboard_target;
 
     case gui_event_type::window_set_clipboard:

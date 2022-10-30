@@ -247,10 +247,10 @@ void selection_widget::start_selecting() noexcept
     _selecting = true;
     _overlay_widget->mode = widget_mode::enabled;
     if (auto selected_menu_button = get_selected_menu_button()) {
-        process_event({gui_event_type::window_keyboard_target, selected_menu_button, keyboard_focus_group::menu});
+        process_event(gui_event::window_set_keyboard_target(selected_menu_button, keyboard_focus_group::menu));
 
     } else if (auto first_menu_button = get_first_menu_button()) {
-        process_event({gui_event_type::window_keyboard_target, first_menu_button, keyboard_focus_group::menu});
+        process_event(gui_event::window_set_keyboard_target(first_menu_button, keyboard_focus_group::menu));
     }
 
     request_redraw();

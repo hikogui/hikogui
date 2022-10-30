@@ -433,7 +433,7 @@ void gui_window_win32::set_window_size(extent2 new_extent)
                 hi_log_debug("get_text_from_clipboard '{}'", r);
                 return {std::move(r)};
             }
-            return {};
+            break;
 
         default:;
         }
