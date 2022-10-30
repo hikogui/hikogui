@@ -82,7 +82,8 @@ public:
         hi_assert_not_null(delegate);
         delegate->add_tab(*this, static_cast<std::size_t>(key), size(_children));
         _children.push_back(std::move(tmp));
-        hi_request_reconstrain("tab_widget::make_widget({})", key);
+        hi_log_info("tab_widget::make_widget({})", key);
+        process_event({gui_event_type::window_reconstrain});
         return ref;
     }
 

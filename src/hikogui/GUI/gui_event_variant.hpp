@@ -30,7 +30,11 @@ enum class gui_event_variant {
 
     /** The gui_event has grapheme data.
      */
-    grapheme
+    grapheme,
+
+    /** The gui_event has rectangle data.
+     */
+    rectangle,
 };
 
 /** Convert a gui event type, to an gui event variant.
@@ -58,6 +62,9 @@ enum class gui_event_variant {
     case gui_event_type::keyboard_grapheme:
     case gui_event_type::keyboard_partial_grapheme:
         return gui_event_variant::grapheme;
+
+    case gui_event_type::window_redraw:
+        return gui_event_variant::rectangle;
 
     default:
         return gui_event_variant::other;

@@ -33,12 +33,14 @@ selection_widget::selection_widget(gui_window& window, widget *parent, std::shar
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
     _off_label_cbt = this->off_label.subscribe([&](auto...) {
-        hi_request_reconstrain("selection_widget::_off_label_cbt()");
+        hi_log_info("selection_widget::_off_label_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
 
     _delegate_cbt = this->delegate->subscribe([&] {
         _notification_from_delegate = true;
-        hi_request_reconstrain("selection_widget::_delegate_cbt()");
+        hi_log_info("selection_widget::_delegate_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
 
     this->delegate->init(*this);
@@ -165,14 +167,14 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         } else {
             stop_selecting();
         }
-        request_relayout();
+        process_event({gui_event_type::window_relayout});
         return true;
 
     case gui_event_type::gui_cancel:
         if (*mode >= widget_mode::partial and _has_options and _selecting) {
             stop_selecting();
         }
-        request_relayout();
+        process_event({gui_event_type::window_relayout});
         return true;
 
     default:;

@@ -79,7 +79,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
     // When a widget requests it or a window-wide event like language change
     // has happened all the widgets will be set_constraints().
-    auto need_reconstrain = _reconstrain.exchange(nullptr, std::memory_order_relaxed);
+    auto need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
 
 #if 0
     // For performance checks force reconstrain.
@@ -103,7 +103,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     //
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
-    if (_resize.exchange(nullptr, std::memory_order::relaxed)) {
+    if (_resize.exchange(false, std::memory_order::relaxed)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         hilet current_size = rectangle.size();
         hilet new_size = widget->constraints().preferred;
@@ -133,7 +133,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     surface->update(rectangle.size());
 
     // Make sure the widget's layout is updated before draw, but after window resize.
-    auto need_relayout = _relayout.exchange(nullptr, std::memory_order_relaxed);
+    auto need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
 
 #if 0
     // For performance checks force relayout.
@@ -280,6 +280,19 @@ bool gui_window::process_event(gui_event const& event) noexcept
     auto events = std::vector<gui_event>{event};
 
     switch (event.type()) {
+    case gui_event_type::window_redraw:
+        _redraw_rectangle.fetch_or(event.rectangle());
+        return true;
+    case gui_event_type::window_relayout:
+        _relayout.store(true, std::memory_order_relaxed);
+        return true;
+    case gui_event_type::window_reconstrain:
+        _reconstrain.store(true, std::memory_order_relaxed);
+        return true;
+    case gui_event_type::window_resize:
+        _resize.store(true, std::memory_order_relaxed);
+        return true;
+
     case gui_event_type::mouse_exit_window: // Mouse left window.
         update_mouse_target({});
         break;

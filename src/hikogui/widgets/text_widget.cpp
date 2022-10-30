@@ -17,11 +17,13 @@ text_widget::text_widget(gui_window& window, widget *parent, std::shared_ptr<del
 
     hi_assert_not_null(this->delegate);
     _delegate_cbt = this->delegate->subscribe([&] {
-        hi_request_reconstrain("text_widget::_delegate_cbt()");
+        hi_log_info("text_widget::_delegate_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
 
     _text_style_cbt = text_style.subscribe([&](auto...) {
-        hi_request_reconstrain("text_widget::_text_style_cbt()");
+        hi_log_info("text_widget::_text_style_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
 
     _cursor_state_cbt = _cursor_state.subscribe([&](auto...) {
@@ -776,7 +778,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
             default:;
             }
 
-            request_relayout();
+            process_event({gui_event_type::window_relayout});
             request_scroll();
             return true;
         }

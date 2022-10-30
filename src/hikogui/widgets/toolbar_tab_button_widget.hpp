@@ -91,10 +91,9 @@ public:
         widget *parent,
         Value&& value,
         OnValue&& on_value,
-        Attributes&&...attributes) noexcept requires requires
-    {
-        make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
-    } :
+        Attributes&&...attributes) noexcept
+        requires requires { make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)); }
+        :
         toolbar_tab_button_widget(
             window,
             parent,
@@ -103,11 +102,22 @@ public:
     {
     }
 
+    void request_redraw() const noexcept
+    {
+        // A toolbar tab button draws a focus line across the whole toolbar
+        // which is beyond it's own clipping rectangle. The parent is the toolbar
+        // so it will include everything that needs to be redrawn.
+        if (parent != nullptr) {
+            parent->request_redraw();
+        } else {
+            super::request_redraw();
+        }
+    }
+
     /// @privatesection
-    widget_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
+    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
-    void _request_redraw(aarectangle dirty_rectangle) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     // @endprivatesection
 private:

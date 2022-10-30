@@ -124,6 +124,18 @@ public:
         this->grapheme() = grapheme;
     }
 
+    /** Create a rectangle event.
+    * 
+    * @param type The type of the rectangle event.
+    * @param rectangle The rectangle for this event.
+     */
+    gui_event(gui_event_type type, aarectangle rectangle) noexcept :
+        gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
+    {
+        hi_assert(variant() == gui_event_variant::rectangle);
+        this->rectangle() = rectangle;
+    }
+
     /** Create a GUI event.
      *
      * @param type The type of the key event.
@@ -185,6 +197,9 @@ public:
                 break;
             case gui_event_variant::keyboard:
                 _key = {};
+                break;
+            case gui_event_variant::rectangle:
+                _rectangle = {};
                 break;
             default:;
             }
@@ -249,6 +264,18 @@ public:
     {
         hi_assert(variant() == gui_event_variant::grapheme);
         return _grapheme;
+    }
+
+    [[nodiscard]] aarectangle& rectangle() noexcept
+    {
+        hi_assert(variant() == gui_event_variant::rectangle);
+        return _rectangle;
+    }
+
+    [[nodiscard]] aarectangle const& rectangle() const noexcept
+    {
+        hi_assert(variant() == gui_event_variant::rectangle);
+        return _rectangle;
     }
 
     [[nodiscard]] constexpr bool operator==(gui_event_type event_type) const noexcept
@@ -318,6 +345,7 @@ private:
         mouse_event_data _mouse;
         keyboard_virtual_key _key;
         hi::grapheme _grapheme;
+        aarectangle _rectangle;
     };
 };
 

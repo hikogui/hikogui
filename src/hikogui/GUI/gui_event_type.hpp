@@ -40,6 +40,16 @@ enum class gui_event_type {
     mouse_exit,
     mouse_exit_window,
 
+    // window-events
+    window_redraw, ///< Request that part of the window gets redrawn on the next frame.
+    window_relayout, ///< Request that widgets get laid out on the next frame.
+    window_reconstrain, ///< Request that widget get constraint on the next frame.
+    window_resize, ///< Request that the window resizes to desired constraints on the next frame.
+    window_minimize, ///< Request the window to minimize.
+    window_maximize, ///< Request the window to maximize.
+    window_restore_size, ///< Request the window to be restored to the original size before the minimize and maximize commands.
+    window_close, ///< Request the window to be closed.
+
     // commands
     text_cursor_left_char,
     text_cursor_right_char,
@@ -81,6 +91,8 @@ enum class gui_event_type {
     text_insert_line_up,
     text_insert_line_down,
     text_mode_insert,
+
+    // GUI navigation.
     gui_widget_next,
     gui_widget_prev,
     gui_menu_next,
@@ -110,6 +122,14 @@ constexpr auto gui_event_type_metadata = enum_metadata{
     gui_event_type::mouse_enter, "mouse_enter",
     gui_event_type::mouse_exit, "mouse_exit",
     gui_event_type::mouse_exit_window, "mouse_exit_window",
+    gui_event_type::window_redraw, "window_redraw",
+    gui_event_type::window_relayout, "window_relayout",
+    gui_event_type::window_reconstrain, "window_reconstrain",
+    gui_event_type::window_resize, "window_resize",
+    gui_event_type::window_minimize, "window_minimize",
+    gui_event_type::window_maximize, "window_maximize",
+    gui_event_type::window_restore_size, "window_restore_size",
+    gui_event_type::window_close, "window_close",
     gui_event_type::text_cursor_left_char, "text_cursor_left_char",
     gui_event_type::text_cursor_right_char, "text_cursor_right_char",
     gui_event_type::text_cursor_down_char, "text_cursor_down_char",

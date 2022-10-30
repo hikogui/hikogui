@@ -248,7 +248,7 @@ void window_widget::set_text_on_clipboard(std::string_view text) const noexcept
     window.set_text_on_clipboard(text);
 }
 
-bool window_widget::process_event(gui_event const& event) noexcept
+bool window_widget::process_event(gui_event const& event) const noexcept
 {
     return window.process_event(event);
 }
@@ -271,26 +271,6 @@ void window_widget::update_keyboard_target(
     keyboard_focus_direction direction) noexcept
 {
     window.update_keyboard_target(widget, group, direction);
-}
-
-void window_widget::_request_redraw(aarectangle dirty_rectangle) const noexcept
-{
-    window.request_redraw(dirty_rectangle);
-}
-
-void window_widget::_request_relayout() const noexcept
-{
-    window.request_relayout(this);
-}
-
-void window_widget::_request_reconstrain() const noexcept
-{
-    window.request_reconstrain(this);
-}
-
-void window_widget::_request_resize() const noexcept
-{
-    window.request_resize(this);
 }
 
 } // namespace hi::inline v1

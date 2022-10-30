@@ -290,9 +290,9 @@ protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
-    std::atomic<void const *> _relayout = nullptr;
-    std::atomic<void const *> _reconstrain = nullptr;
-    std::atomic<void const *> _resize = nullptr;
+    std::atomic<bool> _relayout = false;
+    std::atomic<bool> _reconstrain = false;
+    std::atomic<bool> _resize = false;
 
     /** Current size state of the window.
      */

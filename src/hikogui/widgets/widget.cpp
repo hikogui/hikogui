@@ -21,7 +21,8 @@ widget::widget(gui_window& _window, widget *parent) noexcept :
     }
 
     _mode_cbt = mode.subscribe([&](auto...) {
-        hi_request_reconstrain("widget::_mode_cbt()");
+        hi_log_info("widget::_mode_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
 
     _constraints.minimum = extent2::nan();
