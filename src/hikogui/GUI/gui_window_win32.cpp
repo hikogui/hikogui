@@ -513,7 +513,7 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept
         narrow_cast<float>(new_rectangle.bottom - new_rectangle.top)};
 
     if (rectangle.size() != new_screen_rectangle.size()) {
-        request_relayout(this);
+        this->process_event({gui_event_type::window_relayout});
     }
 
     rectangle = new_screen_rectangle;
@@ -648,7 +648,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
             {
                 hi_axiom(loop::main().on_thread());
-                request_redraw(update_rectangle);
+                this->process_event({gui_event_type::window_redraw, update_rectangle});
             }
 
             EndPaint(win32Window, &ps);
@@ -657,7 +657,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_NCPAINT:
         hi_axiom(loop::main().on_thread());
-        request_redraw();
+        this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
         break;
 
     case WM_SIZE:
@@ -752,7 +752,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // After a manual move of the window, it is clear that the window is in normal mode.
         _restore_rectangle = rectangle;
         _size_state = gui_window_size::normal;
-        request_redraw();
+        this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
         break;
 
     case WM_ACTIVATE:
@@ -768,7 +768,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         default:
             hi_log_error("Unknown WM_ACTIVE value.");
         }
-        request_reconstrain(this);
+        this->process_event({gui_event_type::window_reconstrain});
         break;
 
     case WM_GETMINMAXINFO:
@@ -959,7 +959,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
                 new_rectangle->right - new_rectangle->left,
                 new_rectangle->bottom - new_rectangle->top,
                 SWP_NOZORDER | SWP_NOACTIVATE);
-            request_reconstrain(this);
+            this->process_event({gui_event_type::window_reconstrain});
 
             hi_log_info("DPI has changed to {}", dpi);
         }

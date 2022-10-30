@@ -121,36 +121,6 @@ public:
      */
     hi::keyboard_bindings const& keyboard_bindings() const noexcept;
 
-    /** Request a rectangle on the window to be redrawn
-     */
-    void request_redraw(aarectangle redraw_rectangle) noexcept
-    {
-        _redraw_rectangle |= redraw_rectangle;
-    }
-
-    /** Request a rectangle on the window to be redrawn
-     */
-    void request_redraw() noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        request_redraw(aarectangle{rectangle.size()});
-    }
-
-    void request_relayout(void const *w) noexcept
-    {
-        _relayout.store(w, std::memory_order::relaxed);
-    }
-
-    void request_reconstrain(void const *w) noexcept
-    {
-        _reconstrain.store(w, std::memory_order::relaxed);
-    }
-
-    void request_resize(void const *w) noexcept
-    {
-        _resize.store(w, std::memory_order::relaxed);
-    }
-
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */

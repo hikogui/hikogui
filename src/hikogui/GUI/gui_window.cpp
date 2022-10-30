@@ -50,12 +50,12 @@ void gui_window::init()
     // For changes in setting on the OS we should reconstrain/layout/redraw the window
     // For example when the language or theme changes.
     _setting_change_token = os_settings::subscribe([this] {
-        this->request_reconstrain(this);
+        this->process_event({gui_event_type::window_reconstrain});
     });
 
     // Subscribe on theme changes.
     _selected_theme_token = gui.selected_theme.subscribe([this](auto...) {
-        this->request_reconstrain(this);
+        this->process_event({gui_event_type::window_reconstrain});
     });
 
     // Delegate has been called, layout of widgets has been calculated for the
@@ -174,7 +174,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         draw_context.active = active;
 
         if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
-            request_redraw();
+            this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
         }
         draw_context.saturation = _animated_active.current_value();
 
@@ -291,6 +291,18 @@ bool gui_window::process_event(gui_event const& event) noexcept
         return true;
     case gui_event_type::window_resize:
         _resize.store(true, std::memory_order_relaxed);
+        return true;
+    case gui_event_type::window_minimize:
+        set_size_state(gui_window_size::minimized);
+        return true;
+    case gui_event_type::window_maximize:
+        set_size_state(gui_window_size::maximized);
+        return true;
+    case gui_event_type::window_normalize:
+        set_size_state(gui_window_size::normal);
+        return true;
+    case gui_event_type::window_close:
+        close_window();
         return true;
 
     case gui_event_type::mouse_exit_window: // Mouse left window.
