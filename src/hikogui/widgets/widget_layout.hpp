@@ -91,13 +91,13 @@ public:
      *
      * @note the sub-pixel-size is represented in the widget's coordinate system.
      */
-    extent2 sub_pixel_size = {};
+    extent2 sub_pixel_size = {1.0f, 1.0f};
 
     /** The default writing direction.
      *
      * @note Must be either `L` or `R`.
      */
-    unicode_bidi_class writing_direction = {};
+    unicode_bidi_class writing_direction = unicode_bidi_class::L;
 
     /** The layout created for displaying at this time point.
      */

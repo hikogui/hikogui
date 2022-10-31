@@ -159,8 +159,8 @@
         {
             "name": "vc17-x64-windows-static-dbg-examples",
             "displayName": "Library + Examples",
-            "inherits": "vc17-x64-windows-static-dbg-all",
-            "targets": [ "examples" ]
+            "configurePreset": "vc17-x64-windows-static-dbg",
+            "targets": [ "hikogui", "hikogui_tests", "examples" ]
         },
         {
             "name": "vc17-x64-windows-static-rel-all",
@@ -171,8 +171,8 @@
         {
             "name": "vc17-x64-windows-static-rel-examples",
             "displayName": "Library + Examples",
-            "inherits": "vc17-x64-windows-static-rel-all",
-            "targets": [ "examples" ]
+            "configurePreset": "vc17-x64-windows-static-rel",
+            "targets": [ "hikogui", "hikogui_tests", "examples" ]
         }
     ]
 }
