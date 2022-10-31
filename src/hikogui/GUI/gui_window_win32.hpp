@@ -19,7 +19,7 @@ public:
 
     HWND win32Window = nullptr;
 
-    gui_window_win32(gui_system &gui, label const &title) noexcept;
+    gui_window_win32(gui_system& gui, label const& title) noexcept;
 
     ~gui_window_win32();
 
@@ -35,8 +35,8 @@ public:
     [[nodiscard]] unicode_bidi_class writing_direction() const noexcept override;
     void open_system_menu() override;
     void set_window_size(extent2 extent) override;
-    [[nodiscard]] std::string get_text_from_clipboard() const noexcept override;
-    void set_text_on_clipboard(std::string_view str) noexcept override;
+    [[nodiscard]] std::optional<std::string> get_text_from_clipboard() const noexcept override;
+    void put_text_on_clipboard(std::string_view str) const noexcept override;
 
 private:
     static constexpr UINT_PTR move_and_resize_timer_id = 2;

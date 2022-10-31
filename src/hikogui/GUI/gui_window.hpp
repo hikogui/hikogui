@@ -121,36 +121,6 @@ public:
      */
     hi::keyboard_bindings const& keyboard_bindings() const noexcept;
 
-    /** Request a rectangle on the window to be redrawn
-     */
-    void request_redraw(aarectangle redraw_rectangle) noexcept
-    {
-        _redraw_rectangle |= redraw_rectangle;
-    }
-
-    /** Request a rectangle on the window to be redrawn
-     */
-    void request_redraw() noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        request_redraw(aarectangle{rectangle.size()});
-    }
-
-    void request_relayout(void const *w) noexcept
-    {
-        _relayout.store(w, std::memory_order::relaxed);
-    }
-
-    void request_reconstrain(void const *w) noexcept
-    {
-        _reconstrain.store(w, std::memory_order::relaxed);
-    }
-
-    void request_resize(void const *w) noexcept
-    {
-        _resize.store(w, std::memory_order::relaxed);
-    }
-
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
@@ -181,8 +151,6 @@ public:
     /** Set the mouse cursor icon.
      */
     virtual void set_cursor(mouse_cursor cursor) = 0;
-
-    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
 
     /** Ask the operating system to close this window.
      */
@@ -228,14 +196,6 @@ public:
      */
     virtual void set_window_size(extent2 extent) = 0;
 
-    /** Retrieve a text string from the operating system's clip-board.
-     */
-    [[nodiscard]] virtual std::string get_text_from_clipboard() const noexcept = 0;
-
-    /** Place a text string on the operating system's clip-board.
-     */
-    virtual void set_text_on_clipboard(std::string_view str) noexcept = 0;
-
     void update_mouse_target(hi::widget const *new_target_widget, point2 position = {}) noexcept;
 
     /** Change the keyboard focus to the given widget.
@@ -266,6 +226,22 @@ public:
      */
     void update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
 
+    /** Get text from the clipboard.
+     *
+     * @note This is part of the window as some operating systems need to know from which window the text was posted.
+     * @return The text from the clipboard.
+     * @retval empty When the clipboard is locked by another application, on error, if the data on the clipboard can not
+     *               be converted to text or if the clipboard is empty.
+     */
+    [[nodiscard]] virtual std::optional<std::string> get_text_from_clipboard() const noexcept = 0;
+
+    /** Put text on the clipboard.
+     *
+     * @note This is part of the window as some operating systems need to know from which window the text was posted.
+     * @param text The text to place on the clipboard.
+     */
+    virtual void put_text_on_clipboard(std::string_view text) const noexcept = 0;
+
     [[nodiscard]] translate2 window_to_screen() const noexcept
     {
         return translate2{rectangle.left(), rectangle.bottom()};
@@ -290,9 +266,9 @@ protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
-    std::atomic<void const *> _relayout = nullptr;
-    std::atomic<void const *> _reconstrain = nullptr;
-    std::atomic<void const *> _resize = nullptr;
+    std::atomic<bool> _relayout = false;
+    std::atomic<bool> _reconstrain = false;
+    std::atomic<bool> _resize = false;
 
     /** Current size state of the window.
      */
@@ -339,7 +315,7 @@ private:
      * This removes internal references to widgets.
      * Particularly the mouse and keyboard targets.
      */
-    void widget_is_destructing(hi::widget const *sender) noexcept
+    void remove_keyboard_and_mouse_target(hi::widget const *sender) noexcept
     {
         if (_mouse_target_widget == sender) {
             _mouse_target_widget = nullptr;

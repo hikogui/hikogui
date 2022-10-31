@@ -10,14 +10,13 @@
 #include "system_menu_widget.hpp"
 #endif
 #include "../GUI/gui_window.hpp"
-#include "../GUI/gui_system.hpp"
 #include "../scoped_buffer.hpp"
 
 namespace hi::inline v1 {
 
 void window_widget::constructor_implementation() noexcept
 {
-    _toolbar = std::make_unique<toolbar_widget>(window, this);
+    _toolbar = std::make_unique<toolbar_widget>(this);
 
     if (operating_system::current == operating_system::windows) {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
@@ -31,7 +30,7 @@ void window_widget::constructor_implementation() noexcept
         hi_no_default();
     }
 
-    _content = std::make_unique<grid_widget>(window, this);
+    _content = std::make_unique<grid_widget>(this);
 }
 
 [[nodiscard]] generator<widget *> window_widget::children() const noexcept
@@ -223,74 +222,21 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
 
 bool window_widget::handle_event(gui_event const& event) noexcept
 {
-    switch (event.type()) {
-    case gui_event_type::gui_toolbar_open:
-        update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
-        return true;
+    using enum gui_event_type;
 
-    case gui_event_type::gui_sysmenu_open:
-        if (*mode >= widget_mode::partial) {
-            window.open_system_menu();
-            return true;
-        }
-        break;
+    switch (event.type()) {
+    case gui_toolbar_open:
+        process_event(
+            gui_event::window_set_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
+        return true;
     }
     return super::handle_event(event);
 }
 
-[[nodiscard]] std::string window_widget::get_text_from_clipboard() const noexcept
+bool window_widget::process_event(gui_event const& event) const noexcept
 {
-    return window.get_text_from_clipboard();
-}
-
-void window_widget::set_text_on_clipboard(std::string_view text) const noexcept
-{
-    window.set_text_on_clipboard(text);
-}
-
-bool window_widget::process_event(gui_event const& event) noexcept
-{
-    return window.process_event(event);
-}
-
-void window_widget::update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
-{
-    window.update_keyboard_target(widget, group);
-}
-
-void window_widget::update_keyboard_target(
-    keyboard_focus_group group,
-    keyboard_focus_direction direction) noexcept
-{
-    window.update_keyboard_target(group, direction);
-}
-
-void window_widget::update_keyboard_target(
-    widget const *widget,
-    keyboard_focus_group group,
-    keyboard_focus_direction direction) noexcept
-{
-    window.update_keyboard_target(widget, group, direction);
-}
-
-void window_widget::_request_redraw(aarectangle dirty_rectangle) const noexcept
-{
-    window.request_redraw(dirty_rectangle);
-}
-
-void window_widget::_request_relayout() const noexcept
-{
-    window.request_relayout(this);
-}
-
-void window_widget::_request_reconstrain() const noexcept
-{
-    window.request_reconstrain(this);
-}
-
-void window_widget::_request_resize() const noexcept
-{
-    window.request_resize(this);
+    hi_assert_not_null(_window);
+    return _window->process_event(event);
 }
 
 } // namespace hi::inline v1

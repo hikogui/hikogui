@@ -9,11 +9,12 @@
 
 namespace hi::inline v1 {
 
-icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
+icon_widget::icon_widget(widget *parent) noexcept : super(parent)
 {
     _icon_cbt = icon.subscribe([this](auto...) {
         _icon_has_modified = true;
-        hi_request_reconstrain("icon_widget::_icon_cbt()");
+        hi_log_info("icon_widget::_icon_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
 }
 
@@ -34,7 +35,8 @@ widget_constraints const& icon_widget::set_constraints(set_constraints_context c
             if (not(_pixmap_backing = paged_image{context.surface, *pixmap})) {
                 // Could not get an image, retry.
                 _icon_has_modified = true;
-                hi_request_reconstrain("icon_widget::set_constraints() no backing image.");
+                hi_log_info("icon_widget::set_constraints() no backing image.");
+                process_event({gui_event_type::window_reconstrain});
             }
 
         } else if (hilet g1 = get_if<glyph_ids>(&icon.read())) {

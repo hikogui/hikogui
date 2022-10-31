@@ -50,7 +50,6 @@ public:
 
     /** Construct a toolbar tab button widget.
      *
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
      * @param delegate The delegate to use to manage the state of the tab button widget.
      * @param attributes Different attributes used to configure the label's on the toolbar tab button:
@@ -59,11 +58,10 @@ public:
      *                   the first label is shown in on-state and the second for off-state.
      */
     toolbar_tab_button_widget(
-        gui_window& window,
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
-        super(window, parent, std::move(delegate))
+        super(parent, std::move(delegate))
     {
         alignment = alignment::top_center();
         set_attributes<0>(hi_forward(attributes)...);
@@ -71,7 +69,6 @@ public:
 
     /** Construct a toolbar tab button widget with a default button delegate.
      *
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this toolbar tab button widget.
      * @param value The value or `observer` value which represents the state
      *              of the toolbar tab button.
@@ -87,27 +84,35 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
     toolbar_tab_button_widget(
-        gui_window& window,
         widget *parent,
         Value&& value,
         OnValue&& on_value,
-        Attributes&&...attributes) noexcept requires requires
-    {
-        make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
-    } :
+        Attributes&&...attributes) noexcept
+        requires requires { make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)); }
+        :
         toolbar_tab_button_widget(
-            window,
             parent,
             make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(attributes)...)
     {
     }
 
+    void request_redraw() const noexcept
+    {
+        // A toolbar tab button draws a focus line across the whole toolbar
+        // which is beyond it's own clipping rectangle. The parent is the toolbar
+        // so it will include everything that needs to be redrawn.
+        if (parent != nullptr) {
+            parent->request_redraw();
+        } else {
+            super::request_redraw();
+        }
+    }
+
     /// @privatesection
-    widget_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
+    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
-    void _request_redraw(aarectangle dirty_rectangle) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     // @endprivatesection
 private:

@@ -13,8 +13,8 @@ tab_widget::~tab_widget()
     delegate->deinit(*this);
 }
 
-tab_widget::tab_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), delegate(std::move(delegate))
+tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    super(parent), delegate(std::move(delegate))
 {
     hi_axiom(loop::main().on_thread());
     hi_assert_not_null(parent);
@@ -24,7 +24,8 @@ tab_widget::tab_widget(gui_window& window, widget *parent, std::shared_ptr<deleg
 
     hi_assert_not_null(this->delegate);
     _delegate_cbt = this->delegate->subscribe([&] {
-        hi_request_reconstrain("tab_widget::_delegate_cbt()");
+        hi_log_info("tab_widget::_delegate_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
 
     // Compare and assign would trigger the signaling NaN that widget sets.
@@ -44,7 +45,8 @@ widget_constraints const& tab_widget::set_constraints(set_constraints_context co
 
     if (_previous_selected_child != &selected_child_) {
         _previous_selected_child = &selected_child_;
-        hi_request_resize("tab_widget::set_constraints() selected tab changed");
+        hi_log_info("tab_widget::set_constraints() selected tab changed");
+        process_event({gui_event_type::window_resize});
     }
 
     for (hilet& child : _children) {

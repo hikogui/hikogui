@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-grid_widget::grid_widget(gui_window& window, widget *parent) noexcept : widget(window, parent)
+grid_widget::grid_widget(widget *parent) noexcept : widget(parent)
 {
     hi_axiom(loop::main().on_thread());
 
@@ -46,7 +46,8 @@ widget& grid_widget::add_widget(
 
     auto& ref = *widget;
     _cells.emplace_back(column_first, row_first, column_last, row_last, std::move(widget));
-    hi_request_reconstrain("grid_widget::add_widget({}, {}, {}, {})", column_first, row_first, column_last, row_last);
+    hi_log_info("grid_widget::add_widget({}, {}, {}, {})", column_first, row_first, column_last, row_last);
+    process_event({gui_event_type::window_reconstrain});
     return ref;
 }
 

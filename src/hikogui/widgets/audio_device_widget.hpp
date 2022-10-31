@@ -39,7 +39,7 @@ public:
 
     virtual ~audio_device_widget();
 
-    audio_device_widget(gui_window& window, widget *parent, hi::audio_system& audio_system) noexcept;
+    audio_device_widget(widget *parent, hi::audio_system& audio_system) noexcept;
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;

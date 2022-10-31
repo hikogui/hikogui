@@ -44,24 +44,22 @@ public:
 
     /** Construct a tab widget with a delegate.
      *
-     * @param window The window that this widget is shown on.
      * @param parent The owner of this widget.
      * @param delegate The delegate that will control this widget.
      */
-    tab_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Construct a tab widget with an observer value.
      *
-     * @param window The window that this widget is shown on.
      * @param parent The owner of this widget.
      * @param value The value or observer value to monitor for which child widget
      *              to display.
      */
-    tab_widget(gui_window& window, widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept requires
+    tab_widget(widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept requires
         requires
     {
         make_default_tab_delegate(hi_forward(value));
-    } : tab_widget(window, parent, make_default_tab_delegate(hi_forward(value))) {}
+    } : tab_widget(parent, make_default_tab_delegate(hi_forward(value))) {}
 
     /** Make and add a child widget.
      *
@@ -76,13 +74,14 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        auto tmp = std::make_unique<WidgetType>(window, this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<WidgetType>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
 
         hi_assert_not_null(delegate);
         delegate->add_tab(*this, static_cast<std::size_t>(key), size(_children));
         _children.push_back(std::move(tmp));
-        hi_request_reconstrain("tab_widget::make_widget({})", key);
+        hi_log_info("tab_widget::make_widget({})", key);
+        process_event({gui_event_type::window_reconstrain});
         return ref;
     }
 

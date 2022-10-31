@@ -10,18 +10,20 @@
 
 namespace hi::inline v1 {
 
-text_widget::text_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), delegate(std::move(delegate))
+text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    super(parent), delegate(std::move(delegate))
 {
     mode = widget_mode::select;
 
     hi_assert_not_null(this->delegate);
     _delegate_cbt = this->delegate->subscribe([&] {
-        hi_request_reconstrain("text_widget::_delegate_cbt()");
+        hi_log_info("text_widget::_delegate_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
 
     _text_style_cbt = text_style.subscribe([&](auto...) {
-        hi_request_reconstrain("text_widget::_text_style_cbt()");
+        hi_log_info("text_widget::_text_style_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
 
     _cursor_state_cbt = _cursor_state.subscribe([&](auto...) {
@@ -79,7 +81,7 @@ widget_constraints const& text_widget::set_constraints(set_constraints_context c
 void text_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment); 
+        auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
 
         _shaped_text.layout(context.rectangle(), context.baseline, context.sub_pixel_size, context.writing_direction, alignment_);
 
@@ -399,12 +401,12 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     case text_edit_paste:
         if (*mode >= partial) {
             reset_state("BDX");
-            replace_selection(to_gstring(get_text_from_clipboard(), U' '));
+            replace_selection(to_gstring(event.clipboard_data(), U' '));
             return true;
 
         } else if (*mode >= enabled) {
             reset_state("BDX");
-            replace_selection(to_gstring(get_text_from_clipboard()));
+            replace_selection(to_gstring(event.clipboard_data()));
             return true;
         }
         break;
@@ -413,7 +415,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         if (*mode >= select) {
             reset_state("BDX");
             if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
-                set_text_on_clipboard(to_string(selected_text_));
+                process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, to_string(selected_text_)));
             }
             return true;
         }
@@ -422,7 +424,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     case text_edit_cut:
         if (*mode >= select) {
             reset_state("BDX");
-            set_text_on_clipboard(to_string(selected_text()));
+            process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, to_string(selected_text())));
             if (*mode >= partial) {
                 replace_selection(gstring{});
             }
@@ -776,7 +778,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
             default:;
             }
 
-            request_relayout();
+            process_event({gui_event_type::window_relayout});
             request_scroll();
             return true;
         }

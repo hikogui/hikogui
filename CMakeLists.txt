@@ -52,6 +52,9 @@ project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
+
+# disable adding CTest build targets like "NightlyStart" (before ctest include)
+set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
 include(CTest)
 
 #-------------------------------------------------------------------
@@ -71,7 +74,7 @@ if(BUILD_TESTING)
     add_executable(hikogui_tests)
     # PRE_TEST delays test discovery until just prior to test execution
     gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
-   
+
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     set_target_properties(gtest      PROPERTIES FOLDER extern)
     set_target_properties(gtest_main PROPERTIES FOLDER extern)
@@ -438,13 +441,13 @@ install(FILES
 if (BUILD_TESTING)
     target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
     target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    
-    
+
+
     add_custom_target(hikogui_tests_resources
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/data ${CMAKE_CURRENT_BINARY_DIR}
     )
     add_dependencies(hikogui_tests hikogui_tests_resources)
-    
+
     #-------------------------------------------------------------------
     # Installation Rules: hikogui_tests                      (executable)
     #-------------------------------------------------------------------

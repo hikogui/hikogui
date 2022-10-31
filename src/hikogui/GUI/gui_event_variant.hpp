@@ -28,9 +28,21 @@ enum class gui_event_variant {
      */
     keyboard,
 
+    /** The gui_event has keyboard target data.
+     */
+    keyboard_target,
+
     /** The gui_event has grapheme data.
      */
-    grapheme
+    grapheme,
+
+    /** The gui_event has rectangle data.
+     */
+    rectangle,
+
+    /** The gui_event has clipboard data.
+     */
+    clipboard_data,
 };
 
 /** Convert a gui event type, to an gui event variant.
@@ -55,13 +67,24 @@ enum class gui_event_variant {
     case gui_event_type::keyboard_exit:
         return gui_event_variant::keyboard;
 
+    case gui_event_type::window_set_keyboard_target:
+    case gui_event_type::window_remove_keyboard_target:
+        return gui_event_variant::keyboard_target;
+
+    case gui_event_type::window_set_clipboard:
+    case gui_event_type::text_edit_paste:
+        return gui_event_variant::clipboard_data;
+
     case gui_event_type::keyboard_grapheme:
     case gui_event_type::keyboard_partial_grapheme:
         return gui_event_variant::grapheme;
+
+    case gui_event_type::window_redraw:
+        return gui_event_variant::rectangle;
 
     default:
         return gui_event_variant::other;
     }
 }
 
-}} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -37,10 +37,9 @@ public:
 
     /** Constructs an empty row/column widget.
      *
-     * @param window The window.
      * @param parent The parent widget.
      */
-    toolbar_widget(gui_window& window, widget *parent) noexcept;
+    toolbar_widget(widget *parent) noexcept;
 
     /** Add a widget directly to this toolbar-widget.
      *
@@ -60,7 +59,7 @@ public:
     template<typename Widget, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
     Widget& make_widget(Args&&...args)
     {
-        auto widget = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto widget = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         return static_cast<Widget&>(add_widget(Alignment, std::move(widget)));
     }
 
