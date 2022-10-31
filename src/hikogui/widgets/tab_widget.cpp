@@ -13,8 +13,8 @@ tab_widget::~tab_widget()
     delegate->deinit(*this);
 }
 
-tab_widget::tab_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), delegate(std::move(delegate))
+tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    super(parent), delegate(std::move(delegate))
 {
     hi_axiom(loop::main().on_thread());
     hi_assert_not_null(parent);

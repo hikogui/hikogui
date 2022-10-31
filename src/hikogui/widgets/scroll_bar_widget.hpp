@@ -41,12 +41,11 @@ public:
     observer<float> content;
 
     scroll_bar_widget(
-        gui_window& window,
         widget *parent,
         forward_of<observer<float>> auto&& content,
         forward_of<observer<float>> auto&& aperture,
         forward_of<observer<float>> auto&& offset) noexcept :
-        widget(window, parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
+        widget(parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
     {
         // clang-format off
         _content_cbt = this->content.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });

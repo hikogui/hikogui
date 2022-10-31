@@ -81,33 +81,30 @@ public:
 
     virtual ~text_field_widget();
 
-    text_field_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    text_field_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     text_field_widget(
-        gui_window& window,
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
         text_field_widget_attribute auto&&...attributes) noexcept :
-        text_field_widget(window, parent, std::move(delegate))
+        text_field_widget(parent, std::move(delegate))
     {
         set_attributes(hi_forward(attributes)...);
     }
 
     /** Construct a text field widget.
      *
-     * @param window The window the widget is displayed on.
      * @param parent The owner of this widget.
      * @param value The value or `observer` value which represents the state of the text-field.
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
     text_field_widget(
-        gui_window& window,
         widget *parent,
         different_from<std::shared_ptr<delegate_type>> auto&& value,
         text_field_widget_attribute auto&&...attributes) noexcept requires requires
     {
         make_default_text_field_delegate(hi_forward(value));
-    } : text_field_widget(window, parent, make_default_text_field_delegate(hi_forward(value)), hi_forward(attributes)...) {}
+    } : text_field_widget(parent, make_default_text_field_delegate(hi_forward(value)), hi_forward(attributes)...) {}
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;

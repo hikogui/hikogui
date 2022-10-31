@@ -45,10 +45,9 @@ public:
 
     /** Constructs an empty grid widget.
      *
-     * @param window The window.
      * @param parent The parent widget.
      */
-    grid_widget(gui_window& window, widget *parent) noexcept;
+    grid_widget(widget *parent) noexcept;
 
     /** Add a widget directly to this grid-widget.
      *
@@ -64,7 +63,7 @@ public:
     Widget&
     make_widget(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last, Args&&...args)
     {
-        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         return static_cast<Widget&>(add_widget(column_first, row_first, column_last, row_last, std::move(tmp)));
     }
 
@@ -79,7 +78,7 @@ public:
     template<typename Widget, typename... Args>
     Widget& make_widget(std::size_t column, std::size_t row, Args&&...args)
     {
-        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         return static_cast<Widget&>(add_widget(column, row, column + 1, row + 1, std::move(tmp)));
     }
 

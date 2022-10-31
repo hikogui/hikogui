@@ -21,18 +21,17 @@ public:
     using delegate_type = typename super::delegate_type;
 
     momentary_button_widget(
-        gui_window& window,
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
-        super(window, parent, std::move(delegate))
+        super(parent, std::move(delegate))
     {
         alignment = alignment::middle_center();
         set_attributes<0>(hi_forward(attributes)...);
     }
 
-    momentary_button_widget(gui_window& window, widget *parent, button_widget_attribute auto&&...attributes) noexcept :
-        momentary_button_widget(window, parent, std::make_shared<delegate_type>(), hi_forward(attributes)...)
+    momentary_button_widget(widget *parent, button_widget_attribute auto&&...attributes) noexcept :
+        momentary_button_widget(parent, std::make_shared<delegate_type>(), hi_forward(attributes)...)
     {
     }
 

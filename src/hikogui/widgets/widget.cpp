@@ -8,8 +8,8 @@
 
 namespace hi::inline v1 {
 
-widget::widget(gui_window& _window, widget *parent) noexcept :
-    window(_window), parent(parent), logical_layer(0), semantic_layer(0)
+widget::widget(widget *parent) noexcept :
+    parent(parent), logical_layer(0), semantic_layer(0)
 {
     hi_axiom(loop::main().on_thread());
 

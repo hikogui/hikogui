@@ -46,7 +46,6 @@ public:
 
     /** Construct a checkbox widget.
      *
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this checkbox widget.
      * @param delegate The delegate to use to manage the state of the checkbox button.
      * @param attributes Different attributes used to configure the label's on the checkbox button:
@@ -55,11 +54,10 @@ public:
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     checkbox_widget(
-        gui_window& window,
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
-        super(window, parent, std::move(delegate))
+        super(parent, std::move(delegate))
     {
         alignment = alignment::top_left();
         set_attributes<0>(hi_forward(attributes)...);
@@ -68,7 +66,6 @@ public:
     /** Construct a checkbox widget with a default button delegate.
      *
      * @see default_button_delegate
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this checkbox widget.
      * @param value The value or `observer` value which represents the state of the checkbox.
      * @param attributes Different attributes used to configure the label's on the checkbox button:
@@ -77,18 +74,16 @@ public:
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     checkbox_widget(
-        gui_window& window,
         widget *parent,
         different_from<std::shared_ptr<delegate_type>> auto&& value,
         button_widget_attribute auto&&...attributes) noexcept requires requires
     {
         make_default_toggle_button_delegate(hi_forward(value));
-    } : checkbox_widget(window, parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...) {}
+    } : checkbox_widget(parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...) {}
 
     /** Construct a checkbox widget with a default button delegate.
      *
      * @see default_button_delegate
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this checkbox widget.
      * @param value The value or `observer` value which represents the state of the checkbox.
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
@@ -101,13 +96,12 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    checkbox_widget(gui_window& window, widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    checkbox_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires
     {
         make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value));
     } :
         checkbox_widget(
-            window,
             parent,
             make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(attributes)...)
@@ -117,7 +111,6 @@ public:
     /** Construct a checkbox widget with a default button delegate.
      *
      * @see default_button_delegate
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this checkbox widget.
      * @param value The value or `observer` value which represents the state of the checkbox.
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
@@ -133,7 +126,6 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         button_widget_attribute... Attributes>
     checkbox_widget(
-        gui_window& window,
         widget *parent,
         Value&& value,
         OnValue&& on_value,
@@ -143,7 +135,6 @@ public:
         make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value));
     } :
         checkbox_widget(
-            window,
             parent,
             make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
             hi_forward(attributes)...)

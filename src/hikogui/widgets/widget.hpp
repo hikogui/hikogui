@@ -44,14 +44,10 @@ class font_book;
  */
 class widget {
 public:
-    /** Convenient reference to the Window.
-     */
-    gui_window& window;
-
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
-    widget *const parent;
+    widget *parent;
 
     /** A name of widget, should be unique between siblings.
      */
@@ -97,13 +93,19 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    widget(gui_window& window, widget *parent) noexcept;
+    widget(widget *parent) noexcept;
 
     virtual ~widget();
     widget(const widget&) = delete;
     widget& operator=(const widget&) = delete;
     widget(widget&&) = delete;
     widget& operator=(widget&&) = delete;
+
+    [[nodiscard]] virtual gui_window& window() const noexcept
+    {
+        hi_assert_not_null(parent);
+        return parent->window();
+    }
 
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when

@@ -30,7 +30,7 @@ public:
     observer<float> offset_x;
     observer<float> offset_y;
 
-    scroll_aperture_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
+    scroll_aperture_widget(widget *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
@@ -54,7 +54,7 @@ public:
         hi_axiom(loop::main().on_thread());
         hi_axiom(_content == nullptr);
 
-        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         _content = std::move(tmp);
         return ref;
