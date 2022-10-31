@@ -211,6 +211,8 @@ private:
      */
     void fix_cursor_position() noexcept;
 
+    /** This function replaces the current selection with replacement text.
+     */
     void replace_selection(gstring const& replacement) noexcept;
 
     /** Add a character to the text.

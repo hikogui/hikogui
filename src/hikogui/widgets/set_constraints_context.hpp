@@ -18,13 +18,18 @@ public:
     hi::theme const *theme = nullptr;
     gfx_surface *surface = nullptr;
 
-    set_constraints_context() = delete;
+    constexpr set_constraints_context() = default;
     constexpr set_constraints_context(set_constraints_context const&) noexcept = default;
     constexpr set_constraints_context(set_constraints_context&&) noexcept = default;
     constexpr set_constraints_context& operator=(set_constraints_context const&) noexcept = default;
     constexpr set_constraints_context& operator=(set_constraints_context&&) noexcept = default;
 
-    constexpr set_constraints_context(hi::font_book& font_book, hi::theme const& theme, gfx_surface &surface) noexcept :
+    constexpr set_constraints_context(hi::font_book *font_book, hi::theme const *theme, gfx_surface *surface = nullptr) noexcept :
+        font_book(font_book), theme(theme), surface(surface)
+    {
+    }
+
+    constexpr set_constraints_context(hi::font_book& font_book, hi::theme const& theme, gfx_surface& surface) noexcept :
         font_book(&font_book), theme(&theme), surface(&surface)
     {
     }

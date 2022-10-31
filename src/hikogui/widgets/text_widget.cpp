@@ -18,7 +18,27 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
     hi_assert_not_null(this->delegate);
     _delegate_cbt = this->delegate->subscribe([&] {
         hi_log_info("text_widget::_delegate_cbt()");
-        process_event({gui_event_type::window_reconstrain});
+        // On every text edit, immediately/synchronously update the shaped text.
+        // This is needed for handling multiple edit commands before the next frame update.
+        if (_layout.font_book != nullptr and _layout.theme != nullptr) {
+            hilet c_context = set_constraints_context{_layout.font_book, _layout.theme};
+
+            auto new_layout = _layout;
+            hilet old_constraints = _constraints;
+
+            // Constrain and layout according to the old layout.
+            hilet new_constraints = set_constraints(c_context);
+            inplace_max(new_layout.size, new_constraints.minimum);
+            set_layout(new_layout);
+
+            if (new_constraints != old_constraints) {
+                // The constraints have changed, properly constrain and layout on the next frame.
+                process_event({gui_event_type::window_reconstrain});
+            }
+        } else {
+            // The layout is incomplete, properly constrain and layout on the next frame.
+            process_event({gui_event_type::window_reconstrain});
+        }
     });
 
     _text_style_cbt = text_style.subscribe([&](auto...) {
@@ -41,14 +61,20 @@ text_widget::~text_widget()
     delegate->deinit(*this);
 }
 
-widget_constraints const& text_widget::set_constraints(set_constraints_context const &context) noexcept
+widget_constraints const& text_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
+    // Read the latest text from the delegate.
     hi_assert_not_null(delegate);
     _cached_text = delegate->read(*this);
+
+    // Make sure that the current selection fits the new text.
     _selection.resize(_cached_text.size());
+
+    // Create a new text_shaper with the new text.
     _shaped_text = text_shaper{*context.font_book, _cached_text, context.theme->text_style(*text_style), context.theme->scale};
+
     hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     hilet shaped_text_size = shaped_text_rectangle.size();
 
