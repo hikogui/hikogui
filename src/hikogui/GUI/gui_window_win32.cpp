@@ -797,14 +797,14 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             return 1;
 
         } else if (auto g = grapheme{c}; g.valid()) {
-            process_event(gui_event{gui_event_type::keyboard_grapheme, g});
+            process_event(gui_event::keyboard_grapheme(g));
         }
         break;
 
     case WM_DEADCHAR:
         if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
             if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event{gui_event_type::keyboard_partial_grapheme, g});
+                process_event(gui_event::keyboard_partial_grapheme(g));
             }
         }
         break;
@@ -812,7 +812,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_CHAR:
         if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
             if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event{gui_event_type::keyboard_grapheme, g});
+                process_event(gui_event::keyboard_grapheme(g));
             }
         }
         break;

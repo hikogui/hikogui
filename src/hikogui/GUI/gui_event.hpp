@@ -125,18 +125,6 @@ public:
     {
     }
 
-    /** Create an grapheme GUI event.
-     *
-     * @param type The type of the grapheme event.
-     * @param grapheme The grapheme for this event.
-     */
-    gui_event(gui_event_type type, hi::grapheme grapheme) noexcept :
-        gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
-    {
-        hi_assert(variant() == gui_event_variant::grapheme);
-        this->grapheme() = grapheme;
-    }
-
     /** Create a rectangle event.
      *
      * @param type The type of the rectangle event.
@@ -184,7 +172,24 @@ public:
         return r;
     }
 
-    [[nodiscard]] static gui_event window_set_keyboard_target(widget const *widget, keyboard_focus_group group = keyboard_focus_group::normal, keyboard_focus_direction direction = keyboard_focus_direction::here) noexcept
+    [[nodiscard]] static gui_event keyboard_grapheme(hi::grapheme grapheme) noexcept
+    {
+        auto r = gui_event{gui_event_type::keyboard_grapheme};
+        r.grapheme() = grapheme;
+        return r;
+    }
+
+    [[nodiscard]] static gui_event keyboard_partial_grapheme(hi::grapheme grapheme) noexcept
+    {
+        auto r = gui_event{gui_event_type::keyboard_partial_grapheme};
+        r.grapheme() = grapheme;
+        return r;
+    }
+
+    [[nodiscard]] static gui_event window_set_keyboard_target(
+        widget const *widget,
+        keyboard_focus_group group = keyboard_focus_group::normal,
+        keyboard_focus_direction direction = keyboard_focus_direction::here) noexcept
     {
         auto r = gui_event{gui_event_type::window_set_keyboard_target};
         r.keyboard_target().widget = widget;
