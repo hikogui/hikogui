@@ -38,7 +38,7 @@ public:
     [[nodiscard]] gui_window& window() const noexcept override
     {
         hi_assert_not_null(_window);
-        return _window;
+        return *_window;
     }
 
     /** The background color of the window.
