@@ -110,7 +110,6 @@ public:
         make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value));
     } :
         toggle_widget(
-            window,
             parent,
             make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(attributes)...)

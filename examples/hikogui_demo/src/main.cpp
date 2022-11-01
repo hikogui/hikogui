@@ -80,14 +80,13 @@ hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferen
     co_await std::suspend_always{};
 }
 
-hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferences) noexcept
+hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferences, hi::theme_book &theme_book) noexcept
 {
     using namespace hi;
 
     hi::observer<std::vector<std::pair<std::string, hi::label>>> theme_list;
 
     {
-        auto& theme_book = *grid.window().gui.theme_book;
         auto proxy = theme_list.copy();
         for (hilet& name : theme_book.theme_names()) {
             proxy->emplace_back(name, tr{name});
@@ -159,7 +158,7 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, 
 
     auto audio_tab = init_audio_tab(audio_tab_grid, preferences, audio_system);
     auto license_tab = init_license_tab(license_tab_grid, preferences);
-    auto theme_tab = init_theme_tab(theme_tab_grid, preferences);
+    auto theme_tab = init_theme_tab(theme_tab_grid, preferences, *gui.theme_book);
 
     co_await window->closing;
 }

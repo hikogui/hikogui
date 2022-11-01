@@ -164,7 +164,6 @@ public:
         make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value));
     } :
         selection_widget(
-            window,
             parent,
             make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value)),
             hi_forward(attributes)...)
