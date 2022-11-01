@@ -101,12 +101,6 @@ public:
     widget(widget&&) = delete;
     widget& operator=(widget&&) = delete;
 
-    [[nodiscard]] virtual gui_window& window() const noexcept
-    {
-        hi_assert_not_null(parent);
-        return parent->window();
-    }
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -305,7 +299,6 @@ protected:
 
     [[nodiscard]] virtual generator<widget *> children() const noexcept
     {
-        co_return;
         co_return;
     }
 

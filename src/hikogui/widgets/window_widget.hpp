@@ -35,12 +35,6 @@ public:
         constructor_implementation();
     }
 
-    [[nodiscard]] gui_window& window() const noexcept override
-    {
-        hi_assert_not_null(_window);
-        return *_window;
-    }
-
     /** The background color of the window.
      * This function is used during rendering to use the optimized
      * GPU clear function.

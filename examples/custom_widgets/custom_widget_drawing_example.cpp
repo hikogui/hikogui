@@ -111,7 +111,7 @@ public:
         _layout = {};
 
         if (_image_was_modified.exchange(false)) {
-            if (not(_image_backing = hi::paged_image{window().surface.get(), _image})) {
+            if (not(_image_backing = hi::paged_image{context.surface, _image})) {
                 // Could not get an image, retry.
                 _image_was_modified = true;
                 ++hi::global_counter<"drawing_widget:no-backing-image:constrain">;
