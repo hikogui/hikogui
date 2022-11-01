@@ -100,7 +100,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (*mode >= widget_mode::partial and layout().contains(position) and _slider_rectangle.contains(position)) {
-            return {this, position};
+            return {this, position, hitbox_type::scroll_bar};
         } else {
             return {};
         }

@@ -67,7 +67,6 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     bool process_event(gui_event const& event) const noexcept override;
-    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept override;
     /// @endprivatesection
 private:
     gui_window *_window;
@@ -82,11 +81,6 @@ private:
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;
 #endif
-
-    bool _left_resize_border_has_priority = true;
-    bool _right_resize_border_has_priority = true;
-    bool _bottom_resize_border_has_priority = true;
-    bool _top_resize_border_has_priority = true;
 
     void constructor_implementation() noexcept;
 };

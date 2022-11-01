@@ -40,16 +40,13 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  * @tparam Axis the axis that the content may be scrolled. Allowed values are
  *              `axis::horizontal`, `axis::vertical` or `axis::both`.
- * @tparam ControlsWindow If set to true, when the content changes size the
- *                        window gets a signal to resize to its preferred size.
  */
-template<axis Axis = axis::both, bool ControlsWindow = false>
+template<axis Axis = axis::both>
 class scroll_widget final : public widget {
 public:
     using super = widget;
 
     static constexpr hi::axis axis = Axis;
-    static constexpr bool controls_window = ControlsWindow;
 
     ~scroll_widget() {}
 
@@ -171,14 +168,6 @@ public:
             hilet horizontal_scroll_bar_y = 0.0f;
             _horizontal_scroll_bar_rectangle =
                 aarectangle{point2{horizontal_scroll_bar_x, horizontal_scroll_bar_y}, horizontal_scroll_bar_size};
-
-            if constexpr (controls_window) {
-                if (context.left_to_right()) {
-                    set_resize_border_priority(true, not vertical_visible, not horizontal_visible, true);
-                } else {
-                    set_resize_border_priority(not vertical_visible, true, not horizontal_visible, true);
-                }
-            }
         }
 
         _aperture->set_layout(context.transform(_aperture_rectangle));
@@ -234,21 +223,17 @@ private:
  *
  * @ingroup widgets
  * @see scroll_widget
- * @tparam ControlsWindow If set to true, when the content changes size the
  * window gets a signal to resize to its preferred size.
  */
-template<bool ControlsWindow = false>
-using vertical_scroll_widget = scroll_widget<axis::vertical, ControlsWindow>;
+using vertical_scroll_widget = scroll_widget<axis::vertical>;
 
 /** Horizontal scroll widget.
  * A scroll widget that only scrolls horizontally.
  *
  * @ingroup widgets
  * @see scroll_widget
- * @tparam ControlsWindow If set to true, when the content changes size the
  * window gets a signal to resize to its preferred size.
  */
-template<bool ControlsWindow = false>
-using horizontal_scroll_widget = scroll_widget<axis::horizontal, ControlsWindow>;
+using horizontal_scroll_widget = scroll_widget<axis::horizontal>;
 
 }} // namespace hi::v1
