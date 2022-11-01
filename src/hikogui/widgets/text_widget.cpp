@@ -50,6 +50,8 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
         request_redraw();
     });
 
+    // If the text_widget is used as a label the blink_cursor() co-routine
+    // is only waiting on `model` and `focus`, so this is cheap.
     _blink_cursor = blink_cursor();
 
     this->delegate->init(*this);
