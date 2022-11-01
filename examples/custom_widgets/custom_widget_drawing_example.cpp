@@ -114,7 +114,7 @@ public:
             if (not(_image_backing = hi::paged_image{context.surface, _image})) {
                 // Could not get an image, retry.
                 _image_was_modified = true;
-                hi_log_info("drawing_widget::set_constraints() could not get backing image.");
+                ++hi::global_counter<"drawing_widget:no-backing-image:constrain">;
                 process_event({hi::gui_event_type::window_reconstrain});
             }
         }

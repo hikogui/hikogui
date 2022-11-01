@@ -19,7 +19,7 @@ widget::widget(widget *parent) noexcept :
     }
 
     _mode_cbt = mode.subscribe([&](auto...) {
-        hi_log_info("widget::_mode_cbt()");
+        ++global_counter<"widget:mode:constrain">;
         process_event({gui_event_type::window_reconstrain});
     });
 
@@ -103,21 +103,25 @@ bool widget::handle_event(gui_event const& event) noexcept
     case keyboard_enter:
         focus = true;
         scroll_to_show();
+        ++global_counter<"widget:keyboard_enter:redraw">;
         request_redraw();
         return true;
 
     case keyboard_exit:
         focus = false;
+        ++global_counter<"widget:keyboard_exit:redraw">;
         request_redraw();
         return true;
 
     case mouse_enter:
         hover = true;
+        ++global_counter<"widget:mouse_enter:redraw">;
         request_redraw();
         return true;
 
     case mouse_exit:
         hover = false;
+        ++global_counter<"widget:mouse_exit:redraw">;
         request_redraw();
         return true;
 
