@@ -126,7 +126,7 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
 
     // By default the toolbar is used for dragging the window.
     if (*mode >= widget_mode::partial) {
-        auto r = layout().contains(position) ? hitbox{this, position, hitbox::Type::MoveArea} : hitbox{};
+        auto r = layout().contains(position) ? hitbox{this, position, hitbox_type::move_area} : hitbox{};
 
         for (hilet& child : _left_children) {
             hi_assert_not_null(child);

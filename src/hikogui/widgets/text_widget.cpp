@@ -855,10 +855,10 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 
     if (layout().contains(position)) {
         if (*mode >= widget_mode::partial) {
-            return hitbox{this, position, hitbox::Type::TextEdit};
+            return hitbox{this, position, hitbox_type::text_edit};
 
         } else if (*mode >= widget_mode::select) {
-            return hitbox{this, position, hitbox::Type::Default};
+            return hitbox{this, position, hitbox_type::_default};
 
         } else {
             return hitbox{};

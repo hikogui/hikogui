@@ -256,7 +256,7 @@ hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
 
     if (*mode >= widget_mode::partial and layout().contains(position) and
         (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
-        return hitbox{this, position, hitbox::Type::Button};
+        return hitbox{this, position, hitbox_type::button};
     } else {
         return {};
     }

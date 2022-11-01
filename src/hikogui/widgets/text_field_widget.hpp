@@ -121,7 +121,7 @@ private:
 
     /** The scroll widget embeds the text widget.
      */
-    std::unique_ptr<scroll_widget<axis::none, false>> _scroll_widget;
+    std::unique_ptr<scroll_widget<axis::none>> _scroll_widget;
 
     /** The text widget inside the scroll widget.
      */
