@@ -13,58 +13,59 @@
 namespace hi::inline v1 {
 class widget;
 
+enum class hitbox_type : uint8_t {
+    outside,
+    _default,
+    button,
+    scroll_bar,
+    text_edit,
+    move_area,
+    bottom_resize_border,
+    top_resize_border,
+    left_resize_border,
+    right_resize_border,
+    bottom_left_resize_corner,
+    bottom_right_resize_corner,
+    top_left_resize_corner,
+    top_right_resize_corner,
+    application_icon
+};
+
 class hitbox {
 public:
-    enum class Type : uint8_t {
-        Outside,
-        Default,
-        Button,
-        TextEdit,
-        MoveArea,
-        BottomResizeBorder,
-        TopResizeBorder,
-        LeftResizeBorder,
-        RightResizeBorder,
-        BottomLeftResizeCorner,
-        BottomRightResizeCorner,
-        TopLeftResizeCorner,
-        TopRightResizeCorner,
-        ApplicationIcon
-    };
-
-    Type type;
+    hitbox_type type;
     widget const *widget;
 
-    constexpr hitbox(hitbox const &) noexcept = default;
-    constexpr hitbox(hitbox &&) noexcept = default;
-    constexpr hitbox &operator=(hitbox const &) noexcept = default;
-    constexpr hitbox &operator=(hitbox &&) noexcept = default;
+    constexpr hitbox(hitbox const&) noexcept = default;
+    constexpr hitbox(hitbox&&) noexcept = default;
+    constexpr hitbox& operator=(hitbox const&) noexcept = default;
+    constexpr hitbox& operator=(hitbox&&) noexcept = default;
 
-    constexpr hitbox() noexcept : widget(nullptr), _elevation(-std::numeric_limits<float>::max()), type(Type::Outside) {}
+    constexpr hitbox() noexcept : widget(nullptr), _elevation(-std::numeric_limits<float>::max()), type(hitbox_type::outside) {}
 
     constexpr hitbox(
         hi::widget const *widget,
         float elevation = -std::numeric_limits<float>::max(),
-        Type type = Type::Default) noexcept :
+        hitbox_type type = hitbox_type::_default) noexcept :
         widget(widget), _elevation(elevation), type(type)
     {
     }
 
-    constexpr hitbox(hi::widget const *widget, point3 position, Type type = Type::Default) noexcept :
+    constexpr hitbox(hi::widget const *widget, point3 position, hitbox_type type = hitbox_type::_default) noexcept :
         widget(widget), _elevation(-position.z()), type(type)
     {
     }
 
-    [[nodiscard]] constexpr friend std::strong_ordering operator<=>(hitbox const &lhs, hitbox const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::strong_ordering operator<=>(hitbox const& lhs, hitbox const& rhs) noexcept
     {
         if ((lhs.widget == nullptr) == (rhs.widget == nullptr)) {
             // Either both are widgets, or both are not widgets.
-            hilet elevation_cmp = lhs._elevation <=> rhs._elevation;
-            if (elevation_cmp == 0) {
-                return static_cast<int>(lhs.type) <=> static_cast<int>(rhs.type);
-            } else if (elevation_cmp < 0) {
+            hilet elevation_ordering = lhs._elevation <=> rhs._elevation;
+            if (elevation_ordering == std::partial_ordering::equivalent) {
+                return to_underlying(lhs.type) <=> to_underlying(rhs.type);
+            } else if (elevation_ordering == std::partial_ordering::less) {
                 return std::strong_ordering::less;
-            } else if (elevation_cmp > 0) {
+            } else if (elevation_ordering == std::partial_ordering::greater) {
                 return std::strong_ordering::greater;
             } else {
                 hi_no_default();

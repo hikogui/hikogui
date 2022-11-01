@@ -28,7 +28,7 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
 
     _overlay_widget = std::make_unique<overlay_widget>(this);
     _overlay_widget->mode = widget_mode::invisible;
-    _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
+    _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
     _off_label_cbt = this->off_label.subscribe([&](auto...) {
@@ -192,7 +192,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         auto r = _overlay_widget->hitbox_test_from_parent(position);
 
         if (layout().contains(position)) {
-            r = std::max(r, hitbox{this, position, _has_options ? hitbox::Type::Button : hitbox::Type::Default});
+            r = std::max(r, hitbox{this, position, _has_options ? hitbox_type::button : hitbox_type::_default});
         }
 
         return r;

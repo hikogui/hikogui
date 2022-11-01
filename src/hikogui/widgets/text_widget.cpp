@@ -55,6 +55,8 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
         request_redraw();
     });
 
+    // If the text_widget is used as a label the blink_cursor() co-routine
+    // is only waiting on `model` and `focus`, so this is cheap.
     _blink_cursor = blink_cursor();
 
     this->delegate->init(*this);
@@ -861,10 +863,10 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 
     if (layout().contains(position)) {
         if (*mode >= widget_mode::partial) {
-            return hitbox{this, position, hitbox::Type::TextEdit};
+            return hitbox{this, position, hitbox_type::text_edit};
 
         } else if (*mode >= widget_mode::select) {
-            return hitbox{this, position, hitbox::Type::Default};
+            return hitbox{this, position, hitbox_type::_default};
 
         } else {
             return hitbox{};

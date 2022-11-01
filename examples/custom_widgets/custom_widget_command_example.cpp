@@ -90,7 +90,7 @@ public:
             // The `this` argument allows the gui_window to forward mouse events to handle_event(mouse) of this widget.
             // The `position` argument is used to handle widgets that are visually overlapping, widgets with higher elevation
             // get priority. When this widget is enabled it should show a button-cursor, otherwise just the normal arrow.
-            return {this, position, *mode >= hi::widget_mode::partial ? hi::hitbox::Type::Button : hi::hitbox::Type::Default};
+            return {this, position, *mode >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
 
         } else {
             return {};
