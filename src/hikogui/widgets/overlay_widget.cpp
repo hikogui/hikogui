@@ -25,7 +25,7 @@ overlay_widget::~overlay_widget()
 void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
 {
     _content = std::move(new_widget);
-    hi_log_info("overlay_widget::set_widget()");
+    ++global_counter<"overlay_widget:set_widget:constrain">;
     process_event({gui_event_type::window_reconstrain});
 }
 

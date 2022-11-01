@@ -50,11 +50,13 @@ void gui_window::init()
     // For changes in setting on the OS we should reconstrain/layout/redraw the window
     // For example when the language or theme changes.
     _setting_change_token = os_settings::subscribe([this] {
+        ++global_counter<"gui_window:os_setting:constrain">;
         this->process_event({gui_event_type::window_reconstrain});
     });
 
     // Subscribe on theme changes.
     _selected_theme_token = gui.selected_theme.subscribe([this](auto...) {
+        ++global_counter<"gui_window:selected_theme:constrain">;
         this->process_event({gui_event_type::window_reconstrain});
     });
 

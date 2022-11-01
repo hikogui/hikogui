@@ -38,14 +38,30 @@ public:
         // The aperture-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
 
-        // clang-format off
-        _content_width_cbt = content_width.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });
-        _content_height_cbt = content_height.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });
-        _aperture_width_cbt = aperture_width.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });
-        _aperture_height_cbt = aperture_height.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });
-        _offset_x_cbt = offset_x.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });
-        _offset_y_cbt = offset_y.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });
-        // clang-format on
+        _content_width_cbt = content_width.subscribe([&](auto...) {
+            ++global_counter<"scroll_aperture_widget:content_width:relayout">;
+            process_event({gui_event_type::window_relayout});
+        });
+        _content_height_cbt = content_height.subscribe([&](auto...) {
+            ++global_counter<"scroll_aperture_widget:content_height:relayout">;
+            process_event({gui_event_type::window_relayout});
+        });
+        _aperture_width_cbt = aperture_width.subscribe([&](auto...) {
+            ++global_counter<"scroll_aperture_widget:aperture_width:relayout">;
+            process_event({gui_event_type::window_relayout});
+        });
+        _aperture_height_cbt = aperture_height.subscribe([&](auto...) {
+            ++global_counter<"scroll_aperture_widget:aperture_height:relayout">;
+            process_event({gui_event_type::window_relayout});
+        });
+        _offset_x_cbt = offset_x.subscribe([&](auto...) {
+            ++global_counter<"scroll_aperture_widget:offset_x:relayout">;
+            process_event({gui_event_type::window_relayout});
+        });
+        _offset_y_cbt = offset_y.subscribe([&](auto...) {
+            ++global_counter<"scroll_aperture_widget:offset_y:relayout">;
+            process_event({gui_event_type::window_relayout});
+        });
     }
 
     template<typename Widget, typename... Args>
@@ -164,6 +180,7 @@ public:
 
             offset_x = std::clamp(new_offset_x, 0.0f, max_offset_x);
             offset_y = std::clamp(new_offset_y, 0.0f, max_offset_y);
+            ++global_counter<"scroll_aperture_widget:mouse_wheel:relayout">;
             process_event({gui_event_type::window_relayout});
             return true;
         } else {
