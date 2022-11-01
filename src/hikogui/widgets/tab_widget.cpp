@@ -24,7 +24,7 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
 
     hi_assert_not_null(this->delegate);
     _delegate_cbt = this->delegate->subscribe([&] {
-        hi_log_info("tab_widget::_delegate_cbt()");
+        ++global_counter<"tab_widget:delegate:constrain">;
         process_event({gui_event_type::window_reconstrain});
     });
 

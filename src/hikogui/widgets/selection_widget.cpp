@@ -32,13 +32,13 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
     _off_label_cbt = this->off_label.subscribe([&](auto...) {
-        hi_log_info("selection_widget::_off_label_cbt()");
+        ++global_counter<"selection_widget:off_label:constrain">;
         process_event({gui_event_type::window_reconstrain});
     });
 
     _delegate_cbt = this->delegate->subscribe([&] {
         _notification_from_delegate = true;
-        hi_log_info("selection_widget::_delegate_cbt()");
+        ++global_counter<"selection_widget:delegate:constrain">;
         process_event({gui_event_type::window_reconstrain});
     });
 
@@ -166,6 +166,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         } else {
             stop_selecting();
         }
+        ++global_counter<"selection_widget:gui_activate:relayout">;
         process_event({gui_event_type::window_relayout});
         return true;
 
@@ -173,6 +174,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         if (*mode >= widget_mode::partial and _has_options and _selecting) {
             stop_selecting();
         }
+        ++global_counter<"selection_widget:gui_cancel:relayout">;
         process_event({gui_event_type::window_relayout});
         return true;
 

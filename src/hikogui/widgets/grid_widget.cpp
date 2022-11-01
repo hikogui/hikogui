@@ -47,6 +47,7 @@ widget& grid_widget::add_widget(
     auto& ref = *widget;
     _cells.emplace_back(column_first, row_first, column_last, row_last, std::move(widget));
     hi_log_info("grid_widget::add_widget({}, {}, {}, {})", column_first, row_first, column_last, row_last);
+    ++global_counter<"grid_widget:add_widget:constrain">;
     process_event({gui_event_type::window_reconstrain});
     return ref;
 }

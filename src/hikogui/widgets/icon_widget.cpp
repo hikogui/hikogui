@@ -13,7 +13,7 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
 {
     _icon_cbt = icon.subscribe([this](auto...) {
         _icon_has_modified = true;
-        hi_log_info("icon_widget::_icon_cbt()");
+        ++global_counter<"icon_widget:icon:constrain">;
         process_event({gui_event_type::window_reconstrain});
     });
 }
@@ -35,7 +35,7 @@ widget_constraints const& icon_widget::set_constraints(set_constraints_context c
             if (not(_pixmap_backing = paged_image{context.surface, *pixmap})) {
                 // Could not get an image, retry.
                 _icon_has_modified = true;
-                hi_log_info("icon_widget::set_constraints() no backing image.");
+                ++global_counter<"icon_widget:no-backing-image:constrain">;
                 process_event({gui_event_type::window_reconstrain});
             }
 
