@@ -77,7 +77,7 @@ void abstract_button_widget::set_layout_button(widget_layout const& context) noe
     hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial and layout().contains(position)) {
-        return {this, position, hitbox::Type::Button};
+        return {this, position, hitbox_type::button};
     } else {
         return {};
     }

@@ -48,7 +48,7 @@ hitbox system_menu_widget::hitbox_test(point3 position) const noexcept
     if (*mode >= widget_mode::partial and layout().contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return {this, position, hitbox::Type::ApplicationIcon};
+        return {this, position, hitbox_type::application_icon};
     } else {
         return {};
     }

@@ -154,7 +154,7 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, 
 
     auto& tabs = window->content().make_widget<tab_widget>("A1", preferences.tab_index);
     auto& audio_tab_grid = tabs.make_widget<grid_widget>(0);
-    auto& license_tab_grid = tabs.make_widget<scroll_widget<axis::both, true>>(1).make_widget<grid_widget>();
+    auto& license_tab_grid = tabs.make_widget<scroll_widget<axis::both>>(1).make_widget<grid_widget>();
     auto& theme_tab_grid = tabs.make_widget<grid_widget>(2);
 
     auto audio_tab = init_audio_tab(audio_tab_grid, preferences, audio_system);

@@ -199,7 +199,7 @@ private:
 
     aarectangle _overlay_rectangle;
     std::unique_ptr<overlay_widget> _overlay_widget;
-    vertical_scroll_widget<> *_scroll_widget = nullptr;
+    vertical_scroll_widget *_scroll_widget = nullptr;
     column_widget *_column_widget = nullptr;
 
     decltype(off_label)::callback_token _off_label_cbt;

@@ -267,15 +267,6 @@ public:
      */
     [[nodiscard]] bool is_last(keyboard_focus_group group) const noexcept;
 
-    /** Defining on which edges the resize handle has priority over widget at a higher layer.
-     */
-    virtual void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
-    {
-        if (parent != nullptr) {
-            parent->set_resize_border_priority(left, right, bottom, top);
-        }
-    }
-
     /** Scroll to show the given rectangle on the window.
      * This will call parents, until all parents have scrolled
      * the rectangle to be shown on the window.

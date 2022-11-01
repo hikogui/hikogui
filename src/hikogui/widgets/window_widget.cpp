@@ -125,9 +125,12 @@ void window_widget::draw(draw_context const& context) noexcept
 
 hitbox window_widget::hitbox_test(point3 position) const noexcept
 {
+    constexpr float BORDER_WIDTH = 10.0f;
+
     hi_axiom(loop::main().on_thread());
 
-    constexpr float BORDER_WIDTH = 10.0f;
+    auto r = _toolbar->hitbox_test_from_parent(position);
+    r = _content->hitbox_test_from_parent(position, r);
 
     hilet can_resize_w = _constraints.minimum.width() != _constraints.maximum.width();
     hilet can_resize_h = _constraints.minimum.height() != _constraints.maximum.height();
@@ -137,55 +140,54 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     hilet is_on_b_edge = position.y() <= BORDER_WIDTH;
     hilet is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
 
-    hilet is_on_lb_corner = is_on_l_edge and is_on_b_edge;
-    hilet is_on_rb_corner = is_on_r_edge and is_on_b_edge;
-    hilet is_on_lt_corner = is_on_r_edge and is_on_t_edge;
-    hilet is_on_rt_corner = is_on_l_edge and is_on_t_edge;
-    hilet is_on_corner = is_on_lb_corner or is_on_rb_corner or is_on_lt_corner or is_on_rt_corner;
-
-    hilet is_on_l_resizer = can_resize_w and is_on_l_edge;
-    hilet is_on_r_resizer = can_resize_w and is_on_r_edge;
-    hilet is_on_b_resizer = can_resize_h and is_on_b_edge;
-    hilet is_on_t_resizer = can_resize_h and is_on_t_edge;
-
-    hilet is_on_lb_resizer = is_on_l_resizer and is_on_b_resizer;
-    hilet is_on_rb_resizer = is_on_r_resizer and is_on_b_resizer;
-    hilet is_on_lt_resizer = is_on_l_resizer and is_on_t_resizer;
-    hilet is_on_rt_resizer = is_on_r_resizer and is_on_t_resizer;
-
-    auto r = hitbox{this, position};
-    if (is_on_lb_resizer) {
-        r.type = hitbox::Type::BottomLeftResizeCorner;
-    } else if (is_on_rb_resizer) {
-        r.type = hitbox::Type::BottomRightResizeCorner;
-    } else if (is_on_lt_resizer) {
-        r.type = hitbox::Type::TopLeftResizeCorner;
-    } else if (is_on_rt_resizer) {
-        r.type = hitbox::Type::TopRightResizeCorner;
-    } else if (is_on_l_resizer) {
-        r.type = hitbox::Type::LeftResizeBorder;
-    } else if (is_on_r_resizer) {
-        r.type = hitbox::Type::RightResizeBorder;
-    } else if (is_on_b_resizer) {
-        r.type = hitbox::Type::BottomResizeBorder;
-    } else if (is_on_t_resizer) {
-        r.type = hitbox::Type::TopResizeBorder;
+    // Corner resize has always priority.
+    if (is_on_l_edge and is_on_b_edge) {
+        if (can_resize_w and can_resize_h) {
+            return {this, position, hitbox_type::bottom_left_resize_corner};
+        } else if (can_resize_w) {
+            return {this, position, hitbox_type::left_resize_border};
+        } else if (can_resize_h) {
+            return {this, position, hitbox_type::bottom_resize_border};
+        }
+    } else if (is_on_r_edge and is_on_b_edge) {
+        if (can_resize_w and can_resize_h) {
+            return {this, position, hitbox_type::bottom_right_resize_corner};
+        } else if (can_resize_w) {
+            return {this, position, hitbox_type::right_resize_border};
+        } else if (can_resize_h) {
+            return {this, position, hitbox_type::bottom_resize_border};
+        }
+    } else if (is_on_l_edge and is_on_t_edge) {
+        if (can_resize_w and can_resize_h) {
+            return {this, position, hitbox_type::top_left_resize_corner};
+        } else if (can_resize_w) {
+            return {this, position, hitbox_type::left_resize_border};
+        } else if (can_resize_h) {
+            return {this, position, hitbox_type::top_resize_border};
+        }
+    } else if (is_on_r_edge and is_on_t_edge) {
+        if (can_resize_w and can_resize_h) {
+            return {this, position, hitbox_type::top_right_resize_corner};
+        } else if (can_resize_w) {
+            return {this, position, hitbox_type::right_resize_border};
+        } else if (can_resize_h) {
+            return {this, position, hitbox_type::top_resize_border};
+        }
     }
 
-    if (is_on_corner and r.type != hitbox::Type::Default) {
-        // Resizers on corners always have priority.
-        return r;
+    // Border resize only has priority if there is no scroll-bar in the way.
+    if (r.type != hitbox_type::scroll_bar) {
+        if (is_on_l_edge and can_resize_w) {
+            return {this, position, hitbox_type::left_resize_border};
+        } else if (is_on_r_edge and can_resize_w) {
+            return {this, position, hitbox_type::right_resize_border};
+        } else if (is_on_b_edge and can_resize_h) {
+            return {this, position, hitbox_type::bottom_resize_border};
+        } else if (is_on_t_edge and can_resize_h) {
+            return {this, position, hitbox_type::top_resize_border};
+        }
     }
 
-    if ((is_on_l_resizer and _left_resize_border_has_priority) or (is_on_r_resizer and _right_resize_border_has_priority) or
-        (is_on_b_resizer and _bottom_resize_border_has_priority) or (is_on_t_resizer and _top_resize_border_has_priority)) {
-        // Resizers on edges only have priority if there is not a scroll bar on that edge.
-        return r;
-    }
-
-    // Otherwise children have priority.
-    r = _toolbar->hitbox_test_from_parent(position, r);
-    r = _content->hitbox_test_from_parent(position, r);
     return r;
 }
 
@@ -193,17 +195,6 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
     return layout().theme->color(semantic_color::fill, semantic_layer);
-}
-
-/** Defining on which edges the resize handle has priority over widget at a higher layer.
- */
-void window_widget::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
-{
-    hi_axiom(loop::main().on_thread());
-    _left_resize_border_has_priority = left;
-    _right_resize_border_has_priority = right;
-    _bottom_resize_border_has_priority = bottom;
-    _top_resize_border_has_priority = top;
 }
 
 [[nodiscard]] grid_widget& window_widget::content() noexcept
