@@ -19,16 +19,30 @@ enum class axis : unsigned char {
 
     horizontal = x,
     vertical = y,
+
+    width = x,
+    height = y,
+    depth = z,
 };
 
-[[nodiscard]] constexpr axis operator&(axis const &lhs, axis const &rhs) noexcept
+[[nodiscard]] constexpr axis operator&(axis const& lhs, axis const& rhs) noexcept
 {
     return static_cast<axis>(static_cast<unsigned char>(lhs) & static_cast<unsigned char>(rhs));
 }
 
-[[nodiscard]] constexpr axis operator|(axis const &lhs, axis const &rhs) noexcept
+[[nodiscard]] constexpr axis operator|(axis const& lhs, axis const& rhs) noexcept
 {
     return static_cast<axis>(static_cast<unsigned char>(lhs) | static_cast<unsigned char>(rhs));
+}
+
+[[nodiscard]] constexpr axis& operator&=(axis& lhs, axis const& rhs) noexcept
+{
+    return lhs = lhs & rhs;
+}
+
+[[nodiscard]] constexpr axis& operator|=(axis& lhs, axis const& rhs) noexcept
+{
+    return lhs = lhs | rhs;
 }
 
 [[nodiscard]] constexpr bool to_bool(axis const& rhs) noexcept

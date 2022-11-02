@@ -9,12 +9,13 @@
 #pragma once
 
 #include "widget.hpp"
-#include "grid_layout.hpp"
 #include "../alignment.hpp"
 #include <memory>
 #include <ranges>
 
 namespace hi { inline namespace v1 {
+class system_menu_widget;
+class window_traffic_lights_widget;
 
 /** A toolbar widget is located at the top of a window and lays out its children
  * horizontally.
@@ -81,9 +82,10 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
+    std::unique_ptr<window_traffic_lights_widget> _controls;
+    std::unique_ptr<system_menu_widget> _system_menu;
     std::vector<std::unique_ptr<widget>> _left_children;
     std::vector<std::unique_ptr<widget>> _right_children;
-    grid_layout _grid_layout;
     margins _inner_margins;
 
     void update_constraints_for_child(

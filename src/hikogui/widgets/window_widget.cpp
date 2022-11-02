@@ -11,25 +11,14 @@
 #endif
 #include "../GUI/gui_window.hpp"
 #include "../scoped_buffer.hpp"
+#include <memory>
 
 namespace hi::inline v1 {
 
-void window_widget::constructor_implementation() noexcept
+window_widget::window_widget(gui_window *window) noexcept : super(nullptr), _window(window)
 {
+    hi_assert_not_null(_window);
     _toolbar = std::make_unique<toolbar_widget>(this);
-
-    if (operating_system::current == operating_system::windows) {
-#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-        _system_menu = &_toolbar->make_widget<system_menu_widget>();
-        this->_system_menu->icon = this->title.get<"icon">();
-#endif
-        _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
-    } else if (operating_system::current == operating_system::macos) {
-        _toolbar->make_widget<window_traffic_lights_widget>();
-    } else {
-        hi_no_default();
-    }
-
     _content = std::make_unique<grid_widget>(this);
 }
 
@@ -42,38 +31,41 @@ void window_widget::constructor_implementation() noexcept
 widget_constraints const& window_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
-    _toolbar_constraints = _toolbar->set_constraints(context);
-    _content_constraints = _content->set_constraints(context);
+    _toolbar->set_constraints(context);
+    _content->set_constraints(context);
 
-    auto minimum_width = std::max(
-        _toolbar_constraints.margins.left() + _toolbar_constraints.minimum.width() + _toolbar_constraints.margins.right(),
-        _content_constraints.margins.left() + _content_constraints.minimum.width() + _content_constraints.margins.right());
-    auto preferred_width = std::max(
-        _toolbar_constraints.margins.left() + _toolbar_constraints.preferred.width() + _toolbar_constraints.margins.right(),
-        _content_constraints.margins.left() + _content_constraints.preferred.width() + _content_constraints.margins.right());
-    auto maximum_width = std::max(
-        _toolbar_constraints.margins.left() + _toolbar_constraints.maximum.width() + _toolbar_constraints.margins.right(),
-        _content_constraints.margins.left() + _content_constraints.maximum.width() + _content_constraints.margins.right());
+    hi_axiom(_toolbar->constraints().margins.left() == 0.0f);
+    hi_axiom(_toolbar->constraints().margins.right() == 0.0f);
+    hi_axiom(_toolbar->constraints().margins.top() == 0.0f);
+    hi_axiom(_toolbar->constraints().minimum.height() == _toolbar->constraints().preferred.height());
+    hi_axiom(_toolbar->constraints().minimum.height() == _toolbar->constraints().maximum.height());
+
+    hilet content_margin_width = _content->constraints().margins.left() + _content->constraints().margins.right();
+    hilet between_margin = std::max(_toolbar->constraints().margins.bottom(), _content->constraints().margins.top());
+
+    auto minimum_width =
+        std::max(_toolbar->constraints().minimum.width(), content_margin_width + _content->constraints().minimum.width());
+    auto preferred_width =
+        std::max(_toolbar->constraints().preferred.width(), content_margin_width + _content->constraints().preferred.width());
+    auto maximum_width =
+        std::max(_toolbar->constraints().maximum.width(), content_margin_width + _content->constraints().maximum.width());
 
     // clang-format off
     auto minimum_height =
-        _toolbar_constraints.margins.top() +
-        _toolbar_constraints.preferred.height() +
-        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
-        _content_constraints.minimum.height() +
-        _content_constraints.margins.bottom();
+        _toolbar->constraints().minimum.height() +
+        between_margin +
+        _content->constraints().minimum.height() +
+        _content->constraints().margins.bottom();
     auto preferred_height =
-        _toolbar_constraints.margins.top() +
-        _toolbar_constraints.preferred.height() +
-        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
-        _content_constraints.preferred.height() +
-        _content_constraints.margins.bottom();
+        _toolbar->constraints().minimum.height() +
+        between_margin +
+        _content->constraints().preferred.height() +
+        _content->constraints().margins.bottom();
     auto maximum_height =
-        _toolbar_constraints.margins.top() +
-        _toolbar_constraints.preferred.height() +
-        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
-        _content_constraints.maximum.height() +
-        _content_constraints.margins.bottom();
+        _toolbar->constraints().minimum.height() +
+        between_margin +
+        _content->constraints().maximum.height() +
+        _content->constraints().margins.bottom();
     // clang-format on
 
     // The operating system also has a minimum and maximum size, these sizes
@@ -96,23 +88,19 @@ widget_constraints const& window_widget::set_constraints(set_constraints_context
 void window_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet toolbar_height = _toolbar->constraints().preferred.height();
+        hilet toolbar_height = _toolbar->constraints().minimum.height();
         hilet between_margin = std::max(_toolbar->constraints().margins.bottom(), _content->constraints().margins.top());
 
-        _toolbar_rectangle = aarectangle{
-            point2{
-                _toolbar->constraints().margins.left(),
-                context.height() - toolbar_height - _toolbar->constraints().margins.top()},
-            point2{
-                context.width() - _toolbar->constraints().margins.right(),
-                context.height() - _toolbar->constraints().margins.top()}};
+        // The toolbar covers the top of the window, hugging all edges without margins.
+        _toolbar_rectangle =
+            aarectangle{point2{0.0f, context.height() - toolbar_height}, point2{context.width(), context.height()}};
 
         _content_rectangle = aarectangle{
             point2{_content->constraints().margins.left(), _content->constraints().margins.bottom()},
             point2{context.width() - _content->constraints().margins.right(), _toolbar_rectangle.bottom() - between_margin}};
     }
-    _toolbar->set_layout(context.transform(_toolbar_rectangle, _toolbar_constraints.baseline));
-    _content->set_layout(context.transform(_content_rectangle, _content_constraints.baseline));
+    _toolbar->set_layout(context.transform(_toolbar_rectangle, _toolbar->constraints().baseline));
+    _content->set_layout(context.transform(_content_rectangle, _content->constraints().baseline));
 }
 
 void window_widget::draw(draw_context const& context) noexcept
@@ -132,9 +120,6 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     auto r = _toolbar->hitbox_test_from_parent(position);
     r = _content->hitbox_test_from_parent(position, r);
 
-    hilet can_resize_w = _constraints.minimum.width() != _constraints.maximum.width();
-    hilet can_resize_h = _constraints.minimum.height() != _constraints.maximum.height();
-
     hilet is_on_l_edge = position.x() <= BORDER_WIDTH;
     hilet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
     hilet is_on_b_edge = position.y() <= BORDER_WIDTH;
@@ -142,48 +127,56 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
 
     // Corner resize has always priority.
     if (is_on_l_edge and is_on_b_edge) {
-        if (can_resize_w and can_resize_h) {
+        switch (resize_axis()) {
+        case axis::both:
             return {this, position, hitbox_type::bottom_left_resize_corner};
-        } else if (can_resize_w) {
+        case axis::width:
             return {this, position, hitbox_type::left_resize_border};
-        } else if (can_resize_h) {
+        case axis::height:
             return {this, position, hitbox_type::bottom_resize_border};
+        default:;
         }
     } else if (is_on_r_edge and is_on_b_edge) {
-        if (can_resize_w and can_resize_h) {
+        switch (resize_axis()) {
+        case axis::both:
             return {this, position, hitbox_type::bottom_right_resize_corner};
-        } else if (can_resize_w) {
+        case axis::width:
             return {this, position, hitbox_type::right_resize_border};
-        } else if (can_resize_h) {
+        case axis::height:
             return {this, position, hitbox_type::bottom_resize_border};
+        default:;
         }
     } else if (is_on_l_edge and is_on_t_edge) {
-        if (can_resize_w and can_resize_h) {
+        switch (resize_axis()) {
+        case axis::both:
             return {this, position, hitbox_type::top_left_resize_corner};
-        } else if (can_resize_w) {
+        case axis::width:
             return {this, position, hitbox_type::left_resize_border};
-        } else if (can_resize_h) {
+        case axis::height:
             return {this, position, hitbox_type::top_resize_border};
+        default:;
         }
     } else if (is_on_r_edge and is_on_t_edge) {
-        if (can_resize_w and can_resize_h) {
+        switch (resize_axis()) {
+        case axis::both:
             return {this, position, hitbox_type::top_right_resize_corner};
-        } else if (can_resize_w) {
+        case axis::width:
             return {this, position, hitbox_type::right_resize_border};
-        } else if (can_resize_h) {
+        case axis::height:
             return {this, position, hitbox_type::top_resize_border};
+        default:;
         }
     }
 
     // Border resize only has priority if there is no scroll-bar in the way.
     if (r.type != hitbox_type::scroll_bar) {
-        if (is_on_l_edge and can_resize_w) {
+        if (is_on_l_edge and to_bool(resize_axis() & axis::width)) {
             return {this, position, hitbox_type::left_resize_border};
-        } else if (is_on_r_edge and can_resize_w) {
+        } else if (is_on_r_edge and to_bool(resize_axis() & axis::width)) {
             return {this, position, hitbox_type::right_resize_border};
-        } else if (is_on_b_edge and can_resize_h) {
+        } else if (is_on_b_edge and to_bool(resize_axis() & axis::height)) {
             return {this, position, hitbox_type::bottom_resize_border};
-        } else if (is_on_t_edge and can_resize_h) {
+        } else if (is_on_t_edge and to_bool(resize_axis() & axis::height)) {
             return {this, position, hitbox_type::top_resize_border};
         }
     }

@@ -9,12 +9,15 @@
 #pragma once
 
 #include "widget.hpp"
+#include "../geometry/axis.hpp"
 #include "../label.hpp"
 
 namespace hi { inline namespace v1 {
 class toolbar_widget;
-class system_menu_widget;
 class grid_widget;
+
+template<typename Context>
+concept window_widget_attribute = forward_of<Context, observer<hi::label>>;
 
 /** The top-level window widget.
  * This widget is the top-level widget that is owned by the `gui_window`.
@@ -28,11 +31,9 @@ public:
 
     observer<label> title;
 
-    window_widget(gui_window *window, forward_of<observer<label>> auto&& title) noexcept :
-        super(nullptr), _window(window), title(hi_forward(title))
+    window_widget(gui_window *window, window_widget_attribute auto&&...attributes) noexcept : window_widget(window)
     {
-        hi_assert_not_null(_window);
-        constructor_implementation();
+        set_attributes(hi_forward(attributes)...);
     }
 
     /** The background color of the window.
@@ -53,6 +54,18 @@ public:
      */
     [[nodiscard]] toolbar_widget& toolbar() noexcept;
 
+    [[nodiscard]] axis resize_axis() const noexcept
+    {
+        auto r = axis::none;
+        if (_constraints.minimum.width() != _constraints.maximum.width()) {
+            r |= axis::width;
+        }
+        if (_constraints.minimum.height() != _constraints.maximum.height()) {
+            r |= axis::height;
+        }
+        return r;
+    }
+
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
     widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
@@ -64,19 +77,26 @@ public:
     /// @endprivatesection
 private:
     gui_window *_window;
-    
+
     aarectangle _content_rectangle;
-    widget_constraints _content_constraints;
     std::unique_ptr<grid_widget> _content;
 
     aarectangle _toolbar_rectangle;
-    widget_constraints _toolbar_constraints;
     std::unique_ptr<toolbar_widget> _toolbar;
-#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-    system_menu_widget *_system_menu = nullptr;
-#endif
 
-    void constructor_implementation() noexcept;
+    window_widget(gui_window *window) noexcept;
+
+    void set_attributes() noexcept {}
+    void set_attributes(window_widget_attribute auto&& first, window_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+            title = hi_forward(first);
+        } else {
+            hi_static_no_default();
+        }
+
+        set_attributes(hi_forward(rest)...);
+    }
 };
 
 }} // namespace hi::v1
