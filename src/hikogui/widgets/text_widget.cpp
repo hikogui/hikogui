@@ -82,6 +82,8 @@ widget_constraints const& text_widget::set_constraints(set_constraints_context c
     // Create a new text_shaper with the new text.
     _shaped_text = text_shaper{*context.font_book, _cached_text, context.theme->text_style(*text_style), context.theme->scale};
 
+    hilet constraints_ = _shaped_text.get_constraints(alignment->vertical());
+
     hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     hilet shaped_text_size = shaped_text_rectangle.size();
 

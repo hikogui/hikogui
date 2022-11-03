@@ -12,6 +12,7 @@
 #include "text_style.hpp"
 #include "glyph_ids.hpp"
 #include "font.hpp"
+#include "../geometry/constraint2D.hpp"
 #include "../unicode/unicode_description.hpp"
 #include "../unicode/unicode_break_opportunity.hpp"
 #include "../unicode/grapheme.hpp"
@@ -46,10 +47,10 @@ public:
     using line_const_iterator = line_vector::const_iterator;
 
     constexpr text_shaper() noexcept = default;
-    constexpr text_shaper(text_shaper const &) noexcept = default;
-    constexpr text_shaper(text_shaper &&) noexcept = default;
-    constexpr text_shaper &operator=(text_shaper const &) noexcept = default;
-    constexpr text_shaper &operator=(text_shaper &&) noexcept = default;
+    constexpr text_shaper(text_shaper const&) noexcept = default;
+    constexpr text_shaper(text_shaper&&) noexcept = default;
+    constexpr text_shaper& operator=(text_shaper const&) noexcept = default;
+    constexpr text_shaper& operator=(text_shaper&&) noexcept = default;
 
     /** Construct a text_shaper with a text and alignment.
      *
@@ -79,16 +80,16 @@ public:
      * @param script The script of the text.
      */
     [[nodiscard]] text_shaper(
-        hi::font_book &font_book,
-        gstring const &text,
-        text_style const &style,
+        hi::font_book& font_book,
+        gstring const& text,
+        text_style const& style,
         float dpi_scale,
         unicode_script script = unicode_script::Common) noexcept;
 
     [[nodiscard]] text_shaper(
-        hi::font_book &font_book,
+        hi::font_book& font_book,
         std::string_view text,
-        text_style const &style,
+        text_style const& style,
         float dpi_scale,
         unicode_script script = unicode_script::Common) noexcept;
 
@@ -132,7 +133,7 @@ public:
         return _text.cend();
     }
 
-    auto const &lines() const noexcept
+    auto const& lines() const noexcept
     {
         return _lines;
     }
@@ -161,6 +162,33 @@ public:
         vertical_alignment alignment,
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
+
+    /** Get constraints.
+     *
+     * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
+     * and fold the lines using the unicode line breaking algorithm to several line widths.
+     *
+     * The following sizes will be returned:
+     *  - Maximum width:
+     *    + if larger than A4 priority=0,
+     *    + larger than A4 two-column priority=10,
+     *    + larger than A4 three-column priority=20,
+     *    + otherwise priority=100.
+     *  - No intermediate sizes.
+     *  - A4 width, priority=10.
+     *  - No intermediate sizes.
+     *  - A4 two-column width, priority=10.
+     *  - No intermediate sizes.
+     *  - A4 three-column width, priority=10.
+     *  - All smaller sizes, if maximum size is smaller than A4 two-column, priority=5 (decreasing every step).
+     * 
+     * @param alignment The vertical alignment of text.
+     * @param line_spacing The scaling of the spacing between lines.
+     * @param paragraph_spacing The scaling of the spacing between paragraphs.
+     * @return The constraints (a list of sizes) which can hold the text.
+     */
+    [[nodiscard]] constraint2D
+    get_constraints(vertical_alignment alignment, float line_spacing = 1.0f, float paragraph_spacing = 1.5f) noexcept;
 
     /** Layout the lines of the text.
      *
@@ -392,8 +420,8 @@ public:
 
     [[nodiscard]] text_cursor move_left_char(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_right_char(text_cursor cursor, bool overwrite_mode) const noexcept;
-    [[nodiscard]] text_cursor move_down_char(text_cursor cursor, float &x) const noexcept;
-    [[nodiscard]] text_cursor move_up_char(text_cursor cursor, float &x) const noexcept;
+    [[nodiscard]] text_cursor move_down_char(text_cursor cursor, float& x) const noexcept;
+    [[nodiscard]] text_cursor move_up_char(text_cursor cursor, float& x) const noexcept;
     [[nodiscard]] text_cursor move_left_word(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_right_word(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_begin_line(text_cursor cursor) const noexcept;
@@ -492,7 +520,13 @@ private:
     void resolve_script() noexcept;
 
     [[nodiscard]] std::pair<text_cursor, text_cursor>
-    get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) const noexcept;
+    get_selection_from_break(text_cursor cursor, unicode_break_vector const& break_opportunities) const noexcept;
+
+    [[nodiscard]] std::pair<font_metrics, unicode_general_category>
+    get_line_metrics(text_shaper::char_const_iterator first, text_shaper::char_const_iterator last) const noexcept;
+
+    [[nodiscard]] float
+    get_text_height(std::vector<size_t> const& lines, float line_spacing, float paragraph_spacing) const noexcept;
 };
 
 } // namespace hi::inline v1
