@@ -15,6 +15,7 @@
 #include "../thread.hpp"
 #include "../os_settings.hpp"
 #include "../loop.hpp"
+#include "../defer.hpp"
 #include "../unicode/unicode_normalization.hpp"
 #include <new>
 
@@ -391,21 +392,19 @@ void gui_window_win32::set_window_size(extent2 new_extent)
         SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
 }
 
-[[nodiscard]] std::string gui_window_win32::get_text_from_clipboard() const noexcept
+[[nodiscard]] std::optional<std::string> gui_window_win32::get_text_from_clipboard() const noexcept
 {
-    hi_axiom(loop::main().on_thread());
-
-    auto r = std::string{};
-
-    hilet handle = reinterpret_cast<HWND>(win32Window);
-
-    if (!OpenClipboard(handle)) {
-        hi_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
-        return r;
+    if (not OpenClipboard(win32Window)) {
+        // Another application could have the clipboard locked.
+        hi_log_info("Could not open win32 clipboard '{}'", get_last_error_message());
+        return {};
     }
 
-    UINT format = 0;
+    hilet defer_CloseClipboard = defer([] {
+        CloseClipboard();
+    });
 
+    UINT format = 0;
     while ((format = EnumClipboardFormats(format)) != 0) {
         switch (format) {
         case CF_TEXT:
@@ -415,25 +414,26 @@ void gui_window_win32::set_window_size(extent2 new_extent)
                 hilet cb_data = GetClipboardData(CF_UNICODETEXT);
                 if (cb_data == nullptr) {
                     hi_log_error("Could not get clipboard data: '{}'", get_last_error_message());
-                    goto done;
+                    return {};
                 }
 
                 hilet wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
                 if (wstr_c == nullptr) {
                     hi_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
-                    goto done;
+                    return {};
                 }
 
-                hilet wstr = std::wstring_view(wstr_c);
-                r = hi::to_string(wstr);
-                hi_log_debug("getTextFromClipboad '{}'", r);
+                hilet defer_GlobalUnlock = defer([cb_data] {
+                    if (not GlobalUnlock(cb_data) and GetLastError() != ERROR_SUCCESS) {
+                        hi_log_error("Could not unlock clipboard data: '{}'", get_last_error_message());
+                    }
+                });
 
-                if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
-                    hi_log_error("Could not unlock clipboard data: '{}'", get_last_error_message());
-                    goto done;
-                }
+                auto r = hi::to_string(std::wstring_view(wstr_c));
+                hi_log_debug("get_text_from_clipboard '{}'", r);
+                return {std::move(r)};
             }
-            goto done;
+            break;
 
         default:;
         }
@@ -443,60 +443,64 @@ void gui_window_win32::set_window_size(extent2 new_extent)
         hi_log_error("Could not enumerator clipboard formats: '{}'", get_last_error_message());
     }
 
-done:
-    CloseClipboard();
-
-    return r;
+    return {};
 }
 
-void gui_window_win32::set_text_on_clipboard(std::string_view str) noexcept
+void gui_window_win32::put_text_on_clipboard(std::string_view text) const noexcept
 {
-    if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
-        hi_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
+    if (not OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
+        // Another application could have the clipboard locked.
+        hi_log_info("Could not open win32 clipboard '{}'", get_last_error_message());
         return;
     }
 
-    if (!EmptyClipboard()) {
+    hilet defer_CloseClipboard = defer([] {
+        CloseClipboard();
+    });
+
+    if (not EmptyClipboard()) {
         hi_log_error("Could not empty win32 clipboard '{}'", get_last_error_message());
-        goto done;
+        return;
     }
+
+    auto wtext = hi::to_wstring(
+        unicode_NFC(to_u32string(text), unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_newline_to_CRLF));
+
+    auto wtext_handle = GlobalAlloc(GMEM_MOVEABLE, (wtext.size() + 1) * sizeof(wchar_t));
+    if (wtext_handle == nullptr) {
+        hi_log_error("Could not allocate clipboard data '{}'", get_last_error_message());
+        return;
+    }
+
+    hilet defer_GlobalFree([&wtext_handle] {
+        if (wtext_handle != nullptr) {
+            GlobalFree(wtext_handle);
+        }
+    });
 
     {
-        auto str32 = to_u32string(str);
-        auto wstr = hi::to_wstring(
-            unicode_NFC(str32, unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_newline_to_CRLF));
-
-        auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
-        if (wstr_handle == nullptr) {
-            hi_log_error("Could not allocate clipboard data '{}'", get_last_error_message());
-            goto done;
+        auto wtext_c = reinterpret_cast<wchar_t *>(GlobalLock(wtext_handle));
+        if (wtext_c == nullptr) {
+            hi_log_error("Could not lock string data '{}'", get_last_error_message());
+            return;
         }
 
-        auto wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(wstr_handle));
-        if (wstr_c == nullptr) {
-            hi_log_error("Could not lock clipboard data '{}'", get_last_error_message());
-            GlobalFree(wstr_handle);
-            goto done;
-        }
+        hilet defer_GlobalUnlock = defer([wtext_handle] {
+            if (not GlobalUnlock(wtext_handle) and GetLastError() != ERROR_SUCCESS) {
+                hi_log_error("Could not unlock string data '{}'", get_last_error_message());
+            }
+        });
 
-        std::memcpy(wstr_c, wstr.c_str(), (ssize(wstr) + 1) * sizeof(wchar_t));
-
-        if (!GlobalUnlock(wstr_handle) && GetLastError() != ERROR_SUCCESS) {
-            hi_log_error("Could not unlock clipboard data '{}'", get_last_error_message());
-            GlobalFree(wstr_handle);
-            goto done;
-        }
-
-        auto handle = SetClipboardData(CF_UNICODETEXT, wstr_handle);
-        if (handle == nullptr) {
-            hi_log_error("Could not set clipboard data '{}'", get_last_error_message());
-            GlobalFree(wstr_handle);
-            goto done;
-        }
+        std::memcpy(wtext_c, wtext.c_str(), (wtext.size() + 1) * sizeof(wchar_t));
     }
 
-done:
-    CloseClipboard();
+    if (SetClipboardData(CF_UNICODETEXT, wtext_handle) == nullptr) {
+        hi_log_error("Could not set clipboard data '{}'", get_last_error_message());
+        return;
+    } else {
+        // Data was transferred to clipboard.
+        wtext_handle = nullptr;
+    }
 }
 
 void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept
@@ -513,7 +517,8 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept
         narrow_cast<float>(new_rectangle.bottom - new_rectangle.top)};
 
     if (rectangle.size() != new_screen_rectangle.size()) {
-        request_relayout(this);
+        ++global_counter<"gui_window_win32:os-resize:relayout">;
+        this->process_event({gui_event_type::window_relayout});
     }
 
     rectangle = new_screen_rectangle;
@@ -648,7 +653,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
             {
                 hi_axiom(loop::main().on_thread());
-                request_redraw(update_rectangle);
+                this->process_event({gui_event_type::window_redraw, update_rectangle});
             }
 
             EndPaint(win32Window, &ps);
@@ -657,7 +662,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_NCPAINT:
         hi_axiom(loop::main().on_thread());
-        request_redraw();
+        this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
         break;
 
     case WM_SIZE:
@@ -752,7 +757,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // After a manual move of the window, it is clear that the window is in normal mode.
         _restore_rectangle = rectangle;
         _size_state = gui_window_size::normal;
-        request_redraw();
+        this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
         break;
 
     case WM_ACTIVATE:
@@ -768,7 +773,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         default:
             hi_log_error("Unknown WM_ACTIVE value.");
         }
-        request_reconstrain(this);
+        ++global_counter<"gui_window_win32:WM_ACTIVATE:constrain">;
+        this->process_event({gui_event_type::window_reconstrain});
         break;
 
     case WM_GETMINMAXINFO:
@@ -793,14 +799,14 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             return 1;
 
         } else if (auto g = grapheme{c}; g.valid()) {
-            process_event(gui_event{gui_event_type::keyboard_grapheme, g});
+            process_event(gui_event::keyboard_grapheme(g));
         }
         break;
 
     case WM_DEADCHAR:
         if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
             if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event{gui_event_type::keyboard_partial_grapheme, g});
+                process_event(gui_event::keyboard_partial_grapheme(g));
             }
         }
         break;
@@ -808,7 +814,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_CHAR:
         if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
             if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event{gui_event_type::keyboard_grapheme, g});
+                process_event(gui_event::keyboard_grapheme(g));
             }
         }
         break;
@@ -890,46 +896,49 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             hilet hitbox_type = widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
 
             switch (hitbox_type) {
-            case hitbox::Type::BottomResizeBorder:
+            case hitbox_type::bottom_resize_border:
                 set_cursor(mouse_cursor::None);
                 return HTBOTTOM;
-            case hitbox::Type::TopResizeBorder:
+            case hitbox_type::top_resize_border:
                 set_cursor(mouse_cursor::None);
                 return HTTOP;
-            case hitbox::Type::LeftResizeBorder:
+            case hitbox_type::left_resize_border:
                 set_cursor(mouse_cursor::None);
                 return HTLEFT;
-            case hitbox::Type::RightResizeBorder:
+            case hitbox_type::right_resize_border:
                 set_cursor(mouse_cursor::None);
                 return HTRIGHT;
-            case hitbox::Type::BottomLeftResizeCorner:
+            case hitbox_type::bottom_left_resize_corner:
                 set_cursor(mouse_cursor::None);
                 return HTBOTTOMLEFT;
-            case hitbox::Type::BottomRightResizeCorner:
+            case hitbox_type::bottom_right_resize_corner:
                 set_cursor(mouse_cursor::None);
                 return HTBOTTOMRIGHT;
-            case hitbox::Type::TopLeftResizeCorner:
+            case hitbox_type::top_left_resize_corner:
                 set_cursor(mouse_cursor::None);
                 return HTTOPLEFT;
-            case hitbox::Type::TopRightResizeCorner:
+            case hitbox_type::top_right_resize_corner:
                 set_cursor(mouse_cursor::None);
                 return HTTOPRIGHT;
-            case hitbox::Type::ApplicationIcon:
+            case hitbox_type::application_icon:
                 set_cursor(mouse_cursor::None);
                 return HTSYSMENU;
-            case hitbox::Type::MoveArea:
+            case hitbox_type::move_area:
                 set_cursor(mouse_cursor::None);
                 return HTCAPTION;
-            case hitbox::Type::TextEdit:
+            case hitbox_type::text_edit:
                 set_cursor(mouse_cursor::TextEdit);
                 return HTCLIENT;
-            case hitbox::Type::Button:
+            case hitbox_type::button:
                 set_cursor(mouse_cursor::Button);
                 return HTCLIENT;
-            case hitbox::Type::Default:
+            case hitbox_type::scroll_bar:
                 set_cursor(mouse_cursor::Default);
                 return HTCLIENT;
-            case hitbox::Type::Outside:
+            case hitbox_type::_default:
+                set_cursor(mouse_cursor::Default);
+                return HTCLIENT;
+            case hitbox_type::outside:
                 set_cursor(mouse_cursor::None);
                 return HTCLIENT;
             default:
@@ -959,7 +968,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
                 new_rectangle->right - new_rectangle->left,
                 new_rectangle->bottom - new_rectangle->top,
                 SWP_NOZORDER | SWP_NOACTIVATE);
-            request_reconstrain(this);
+            ++global_counter<"gui_window_win32:WM_DPICHANGED:constrain">;
+            this->process_event({gui_event_type::window_reconstrain});
 
             hi_log_info("DPI has changed to {}", dpi);
         }

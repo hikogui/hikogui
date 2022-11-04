@@ -41,18 +41,24 @@ public:
     observer<float> content;
 
     scroll_bar_widget(
-        gui_window& window,
         widget *parent,
         forward_of<observer<float>> auto&& content,
         forward_of<observer<float>> auto&& aperture,
         forward_of<observer<float>> auto&& offset) noexcept :
-        widget(window, parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
+        widget(parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
     {
-        // clang-format off
-        _content_cbt = this->content.subscribe([&](auto...){ request_relayout(); });
-        _aperture_cbt = this->aperture.subscribe([&](auto...){ request_relayout(); });
-        _offset_cbt = this->offset.subscribe([&](auto...){ request_relayout(); });
-        // clang-format on
+        _content_cbt = this->content.subscribe([&](auto...) {
+            ++global_counter<"scroll_bar_widget:content:relayout">;
+            process_event({gui_event_type::window_relayout});
+        });
+        _aperture_cbt = this->aperture.subscribe([&](auto...) {
+            ++global_counter<"scroll_bar_widget:aperture:relayout">;
+            process_event({gui_event_type::window_relayout});
+        });
+        _offset_cbt = this->offset.subscribe([&](auto...) {
+            ++global_counter<"scroll_bar_widget:offset:relayout">;
+            process_event({gui_event_type::window_relayout});
+        });
     }
 
     ~scroll_bar_widget() {}
@@ -101,7 +107,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (*mode >= widget_mode::partial and layout().contains(position) and _slider_rectangle.contains(position)) {
-            return {this, position};
+            return {this, position, hitbox_type::scroll_bar};
         } else {
             return {};
         }

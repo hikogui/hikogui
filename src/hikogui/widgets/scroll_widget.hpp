@@ -11,7 +11,6 @@
 #include "widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
-#include "../GUI/gui_window.hpp"
 #include "../geometry/axis.hpp"
 
 namespace hi { inline namespace v1 {
@@ -41,25 +40,21 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  * @tparam Axis the axis that the content may be scrolled. Allowed values are
  *              `axis::horizontal`, `axis::vertical` or `axis::both`.
- * @tparam ControlsWindow If set to true, when the content changes size the
- *                        window gets a signal to resize to its preferred size.
  */
-template<axis Axis = axis::both, bool ControlsWindow = false>
+template<axis Axis = axis::both>
 class scroll_widget final : public widget {
 public:
     using super = widget;
 
     static constexpr hi::axis axis = Axis;
-    static constexpr bool controls_window = ControlsWindow;
 
     ~scroll_widget() {}
 
     /** Constructs an empty scroll widget.
      *
-     * @param window The window.
      * @param parent The parent widget.
      */
-    scroll_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
+    scroll_widget(widget *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
@@ -67,11 +62,11 @@ public:
         // The scroll-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
 
-        _aperture = std::make_unique<scroll_aperture_widget>(window, this);
+        _aperture = std::make_unique<scroll_aperture_widget>(this);
         _horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_widget>(
-            window, this, _aperture->content_width, _aperture->aperture_width, _aperture->offset_x);
+            this, _aperture->content_width, _aperture->aperture_width, _aperture->offset_x);
         _vertical_scroll_bar = std::make_unique<vertical_scroll_bar_widget>(
-            window, this, _aperture->content_height, _aperture->aperture_height, _aperture->offset_y);
+            this, _aperture->content_height, _aperture->aperture_height, _aperture->offset_y);
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -173,14 +168,6 @@ public:
             hilet horizontal_scroll_bar_y = 0.0f;
             _horizontal_scroll_bar_rectangle =
                 aarectangle{point2{horizontal_scroll_bar_x, horizontal_scroll_bar_y}, horizontal_scroll_bar_size};
-
-            if constexpr (controls_window) {
-                if (context.left_to_right()) {
-                    window.set_resize_border_priority(true, not vertical_visible, not horizontal_visible, true);
-                } else {
-                    window.set_resize_border_priority(not vertical_visible, true, not horizontal_visible, true);
-                }
-            }
         }
 
         _aperture->set_layout(context.transform(_aperture_rectangle));
@@ -236,21 +223,17 @@ private:
  *
  * @ingroup widgets
  * @see scroll_widget
- * @tparam ControlsWindow If set to true, when the content changes size the
  * window gets a signal to resize to its preferred size.
  */
-template<bool ControlsWindow = false>
-using vertical_scroll_widget = scroll_widget<axis::vertical, ControlsWindow>;
+using vertical_scroll_widget = scroll_widget<axis::vertical>;
 
 /** Horizontal scroll widget.
  * A scroll widget that only scrolls horizontally.
  *
  * @ingroup widgets
  * @see scroll_widget
- * @tparam ControlsWindow If set to true, when the content changes size the
  * window gets a signal to resize to its preferred size.
  */
-template<bool ControlsWindow = false>
-using horizontal_scroll_widget = scroll_widget<axis::horizontal, ControlsWindow>;
+using horizontal_scroll_widget = scroll_widget<axis::horizontal>;
 
 }} // namespace hi::v1

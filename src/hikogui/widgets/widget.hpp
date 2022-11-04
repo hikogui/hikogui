@@ -44,14 +44,10 @@ class font_book;
  */
 class widget {
 public:
-    /** Convenient reference to the Window.
-     */
-    gui_window& window;
-
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
-    widget *const parent;
+    widget *parent;
 
     /** A name of widget, should be unique between siblings.
      */
@@ -97,7 +93,7 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    widget(gui_window& window, widget *parent) noexcept;
+    widget(widget *parent) noexcept;
 
     virtual ~widget();
     widget(const widget&) = delete;
@@ -203,23 +199,7 @@ public:
      */
     virtual void draw(draw_context const& context) noexcept = 0;
 
-    [[nodiscard]] virtual std::string get_text_from_clipboard() const noexcept
-    {
-        if (parent != nullptr) {
-            return parent->get_text_from_clipboard();
-        } else {
-            return {};
-        }
-    }
-
-    virtual void set_text_on_clipboard(std::string_view text) const noexcept
-    {
-        if (parent != nullptr) {
-            parent->set_text_on_clipboard(text);
-        }
-    }
-
-    virtual bool process_event(gui_event const& event) noexcept
+    virtual bool process_event(gui_event const& event) const noexcept
     {
         if (parent != nullptr) {
             return parent->process_event(event);
@@ -228,107 +208,11 @@ public:
         }
     }
 
-    virtual void update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
-    {
-        if (parent != nullptr) {
-            parent->update_keyboard_target(widget, group);
-        }
-    }
-
-    virtual void
-    update_keyboard_target(widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept
-    {
-        if (parent != nullptr) {
-            parent->update_keyboard_target(widget, group, direction);
-        }
-    }
-
-    virtual void
-    update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept
-    {
-        if (parent != nullptr) {
-            parent->update_keyboard_target(group, direction);
-        }
-    }
-
     /** Request the widget to be redrawn on the next frame.
      */
     void request_redraw() const noexcept
     {
-        _request_redraw(layout().clipping_rectangle_on_window());
-    }
-
-    /** Request the window to be relayout on the next frame.
-     */
-    void request_relayout() const noexcept
-    {
-        _request_relayout();
-    }
-
-    /** Request the window to be reconstrain on the next frame.
-     */
-    template<fixed_string SourceFile, int SourceLine, fixed_string Fmt, typename... Args>
-    void request_reconstrain(Args&&...args) const noexcept
-    {
-        constexpr auto FmtPlus = fixed_string{"request_reconstrain:"} + Fmt;
-
-        log_global.add<global_state_type::log_info, SourceFile, SourceLine, FmtPlus>(std::forward<Args>(args)...);
-        _request_reconstrain();
-    }
-
-#define hi_request_reconstrain(fmt, ...) \
-    hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
-    this->request_reconstrain<__FILE__, __LINE__, fmt>(__VA_ARGS__)
-
-    /** Request the window to be resize based on the preferred size of the widgets.
-     */
-    template<fixed_string SourceFile, int SourceLine, fixed_string Fmt, typename... Args>
-    void request_resize(Args&&...args) const noexcept
-    {
-        constexpr auto FmtPlus = fixed_string{"request_resize:"} + Fmt;
-
-        log_global.add<global_state_type::log_info, SourceFile, SourceLine, FmtPlus>(std::forward<Args>(args)...);
-        _request_resize();
-    }
-
-#define hi_request_resize(fmt, ...) \
-    hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
-    this->request_resize<__FILE__, __LINE__, fmt>(__VA_ARGS__)
-
-    /** Request-redraw implementation.
-     */
-    virtual void _request_redraw(aarectangle dirty_rectangle) const noexcept
-    {
-        if (parent != nullptr) {
-            parent->_request_redraw(dirty_rectangle);
-        }
-    }
-
-    /** Request-relayout implementation.
-     */
-    virtual void _request_relayout() const noexcept
-    {
-        if (parent != nullptr) {
-            parent->_request_relayout();
-        }
-    }
-
-    /** Request-reconstrain implementation.
-     */
-    virtual void _request_reconstrain() const noexcept
-    {
-        if (parent != nullptr) {
-            parent->_request_reconstrain();
-        }
-    }
-
-    /** Request-resize implementation.
-     */
-    virtual void _request_resize() const noexcept
-    {
-        if (parent != nullptr) {
-            parent->_request_resize();
-        }
+        process_event({gui_event_type::window_redraw, layout().clipping_rectangle_on_window()});
     }
 
     /** Handle command.

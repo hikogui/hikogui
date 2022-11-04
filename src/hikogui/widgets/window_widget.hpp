@@ -28,9 +28,10 @@ public:
 
     observer<label> title;
 
-    window_widget(gui_window& window, forward_of<observer<label>> auto&& title) noexcept :
-        super(window, nullptr), title(hi_forward(title))
+    window_widget(gui_window *window, forward_of<observer<label>> auto&& title) noexcept :
+        super(nullptr), _window(window), title(hi_forward(title))
     {
+        hi_assert_not_null(_window);
         constructor_implementation();
     }
 
@@ -52,10 +53,6 @@ public:
      */
     [[nodiscard]] toolbar_widget& toolbar() noexcept;
 
-    /** Defining on which edges the resize handle has priority over widget at a higher layer.
-     */
-    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
-
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
     widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
@@ -63,19 +60,11 @@ public:
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
-    [[nodiscard]] std::string get_text_from_clipboard() const noexcept override;
-    void set_text_on_clipboard(std::string_view text) const noexcept override;
-    bool process_event(gui_event const& event) noexcept override;
-    void update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept override;
-    void update_keyboard_target(widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept
-        override;
-    void update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept override;
-    void _request_redraw(aarectangle dirty_rectangle) const noexcept override;
-    void _request_relayout() const noexcept override;
-    void _request_reconstrain() const noexcept override;
-    void _request_resize() const noexcept override;
+    bool process_event(gui_event const& event) const noexcept override;
     /// @endprivatesection
 private:
+    gui_window *_window;
+    
     aarectangle _content_rectangle;
     widget_constraints _content_constraints;
     std::unique_ptr<grid_widget> _content;
@@ -86,11 +75,6 @@ private:
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;
 #endif
-
-    bool _left_resize_border_has_priority = true;
-    bool _right_resize_border_has_priority = true;
-    bool _bottom_resize_border_has_priority = true;
-    bool _top_resize_border_has_priority = true;
 
     void constructor_implementation() noexcept;
 };

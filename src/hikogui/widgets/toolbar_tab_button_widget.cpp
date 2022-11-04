@@ -35,19 +35,6 @@ void toolbar_tab_button_widget::draw(draw_context const& context) noexcept
     }
 }
 
-void toolbar_tab_button_widget::_request_redraw(aarectangle) const noexcept
-{
-    // A toolbar tab button draws a focus line across the whole toolbar
-    // which is beyond it's own clipping rectangle. The parent is the toolbar
-    // so it will include everything that needs to be redrawn.
-
-    // Therefor we ignore the given dirty rectangle and let the parent set
-    // the dirty rectangle for us.
-    if (parent != nullptr) {
-        parent->request_redraw();
-    }
-}
-
 [[nodiscard]] bool toolbar_tab_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
     return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);

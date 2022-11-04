@@ -16,7 +16,7 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    command_widget(hi::gui_window& window, hi::widget *parent) noexcept : hi::widget(window, parent)
+    command_widget(hi::widget *parent) noexcept : hi::widget(parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
         _value_cbt = value.subscribe([&](auto...) {
@@ -90,7 +90,7 @@ public:
             // The `this` argument allows the gui_window to forward mouse events to handle_event(mouse) of this widget.
             // The `position` argument is used to handle widgets that are visually overlapping, widgets with higher elevation
             // get priority. When this widget is enabled it should show a button-cursor, otherwise just the normal arrow.
-            return {this, position, *mode >= hi::widget_mode::partial ? hi::hitbox::Type::Button : hi::hitbox::Type::Default};
+            return {this, position, *mode >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
 
         } else {
             return {};

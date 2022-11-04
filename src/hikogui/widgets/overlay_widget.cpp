@@ -7,8 +7,8 @@
 
 namespace hi::inline v1 {
 
-overlay_widget::overlay_widget(gui_window &window, widget *parent) noexcept :
-    super(window, parent)
+overlay_widget::overlay_widget(widget *parent) noexcept :
+    super(parent)
 {
     if (parent) {
         // The overlay-widget will reset the semantic_layer as it is the bottom
@@ -25,7 +25,8 @@ overlay_widget::~overlay_widget()
 void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
 {
     _content = std::move(new_widget);
-    hi_request_reconstrain("overlay_widget::set_widget()");
+    ++global_counter<"overlay_widget:set_widget:constrain">;
+    process_event({gui_event_type::window_reconstrain});
 }
 
 widget_constraints const& overlay_widget::set_constraints(set_constraints_context const& context) noexcept

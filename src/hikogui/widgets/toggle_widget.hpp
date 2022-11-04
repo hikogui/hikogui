@@ -56,7 +56,6 @@ public:
 
     /** Construct a toggle widget.
      *
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this toggle widget.
      * @param delegate The delegate to use to manage the state of the toggle button.
      * @param attributes Different attributes used to configure the label's on the toggle button:
@@ -65,11 +64,10 @@ public:
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     toggle_widget(
-        gui_window& window,
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
-        super(window, parent, std::move(delegate))
+        super(parent, std::move(delegate))
     {
         alignment = alignment::top_left();
         set_attributes<0>(hi_forward(attributes)...);
@@ -78,7 +76,6 @@ public:
     /** Construct a toggle widget with a default button delegate.
      *
      * @see default_button_delegate
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this toggle widget.
      * @param value The value or `observer` value which represents the state of the toggle.
      * @param attributes Different attributes used to configure the label's on the toggle button:
@@ -87,15 +84,14 @@ public:
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     template<different_from<std::shared_ptr<delegate_type>> Value, button_widget_attribute... Attributes>
-    toggle_widget(gui_window& window, widget *parent, Value&& value, Attributes&&...attributes) noexcept requires requires
+    toggle_widget(widget *parent, Value&& value, Attributes&&...attributes) noexcept requires requires
     {
         make_default_toggle_button_delegate(hi_forward(value));
-    } : toggle_widget(window, parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...) {}
+    } : toggle_widget(parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...) {}
 
     /** Construct a toggle widget with a default button delegate.
      *
      * @see default_button_delegate
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this toggle widget.
      * @param value The value or `observer` value which represents the state of the toggle.
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
@@ -108,13 +104,12 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    toggle_widget(gui_window& window, widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    toggle_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires
     {
         make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value));
     } :
         toggle_widget(
-            window,
             parent,
             make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(attributes)...)
@@ -124,7 +119,6 @@ public:
     /** Construct a toggle widget with a default button delegate.
      *
      * @see default_button_delegate
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this toggle widget.
      * @param value The value or `observer` value which represents the state of the toggle.
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
@@ -140,7 +134,6 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         button_widget_attribute... Attributes>
     toggle_widget(
-        gui_window& window,
         widget *parent,
         Value&& value,
         OnValue&& on_value,
@@ -150,7 +143,6 @@ public:
         make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value));
     } :
         toggle_widget(
-            window,
             parent,
             make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
             hi_forward(attributes)...)

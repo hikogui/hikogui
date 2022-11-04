@@ -62,7 +62,7 @@ public:
 
     ~abstract_button_widget();
 
-    abstract_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    abstract_button_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Get the current state of the button.
      * @return The state of the button: on / off / other.

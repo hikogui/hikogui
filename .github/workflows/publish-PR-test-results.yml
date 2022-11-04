@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: 🔽 Download Artifacts
-        uses: actions/github-script@v3.1.0 # https://github.com/actions/github-script
+        uses: actions/github-script@v6 # https://github.com/actions/github-script
         with:
           script: |
-            var artifacts = await github.actions.listWorkflowRunArtifacts({
+            var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: ${{ github.event.workflow_run.id }},
@@ -31,7 +31,7 @@ jobs:
             var testArtifact = artifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "test_results"
             })[0];
-            var download = await github.actions.downloadArtifact({
+            var download = await github.rest.actions.downloadArtifact({
               owner: context.repo.owner,
               repo: context.repo.repo,
               artifact_id: testArtifact.id,
@@ -46,7 +46,7 @@ jobs:
           unzip -d tests test_results.zip
 
       - name: 👌 Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1 # https://github.com/EnricoMi/publish-unit-test-result-action
+        uses: EnricoMi/publish-unit-test-result-action@v2 # https://github.com/EnricoMi/publish-unit-test-result-action
         with:
           commit: ${{ github.event.workflow_run.head_sha }}
-          files: tests/**/test_results*.xml
+          junit_files: tests/**/test_results*.xml

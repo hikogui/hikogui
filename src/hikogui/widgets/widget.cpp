@@ -3,15 +3,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "widget.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../GUI/gui_system.hpp"
 #include "../ranges.hpp"
 #include <ranges>
 
 namespace hi::inline v1 {
 
-widget::widget(gui_window& _window, widget *parent) noexcept :
-    window(_window), parent(parent), logical_layer(0), semantic_layer(0)
+widget::widget(widget *parent) noexcept :
+    parent(parent), logical_layer(0), semantic_layer(0)
 {
     hi_axiom(loop::main().on_thread());
 
@@ -21,7 +19,8 @@ widget::widget(gui_window& _window, widget *parent) noexcept :
     }
 
     _mode_cbt = mode.subscribe([&](auto...) {
-        hi_request_reconstrain("widget::_mode_cbt()");
+        ++global_counter<"widget:mode:constrain">;
+        process_event({gui_event_type::window_reconstrain});
     });
 
     _constraints.minimum = extent2::nan();
@@ -33,7 +32,7 @@ widget::~widget()
 {
     // The window must remove references such as mouse and keyboard targets to
     // this widget when it is removed.
-    window.widget_is_destructing(this);
+    process_event(gui_event::window_remove_keyboard_target(this));
 }
 
 [[nodiscard]] color widget::background_color() const noexcept
@@ -104,30 +103,36 @@ bool widget::handle_event(gui_event const& event) noexcept
     case keyboard_enter:
         focus = true;
         scroll_to_show();
+        ++global_counter<"widget:keyboard_enter:redraw">;
         request_redraw();
         return true;
 
     case keyboard_exit:
         focus = false;
+        ++global_counter<"widget:keyboard_exit:redraw">;
         request_redraw();
         return true;
 
     case mouse_enter:
         hover = true;
+        ++global_counter<"widget:mouse_enter:redraw">;
         request_redraw();
         return true;
 
     case mouse_exit:
         hover = false;
+        ++global_counter<"widget:mouse_exit:redraw">;
         request_redraw();
         return true;
 
     case gui_widget_next:
-        update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::forward);
+        process_event(
+            gui_event::window_set_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::forward));
         return true;
 
     case gui_widget_prev:
-        update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::backward);
+        process_event(
+            gui_event::window_set_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::backward));
         return true;
 
     case gui_activate_next:
@@ -137,7 +142,8 @@ bool widget::handle_event(gui_event const& event) noexcept
     case gui_event_type::gui_toolbar_next:
         if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
             not is_last(keyboard_focus_group::toolbar)) {
-            update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+            process_event(
+                gui_event::window_set_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
             return true;
         }
         break;
@@ -145,7 +151,8 @@ bool widget::handle_event(gui_event const& event) noexcept
     case gui_event_type::gui_toolbar_prev:
         if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
             not is_first(keyboard_focus_group::toolbar)) {
-            update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+            process_event(
+                gui_event::window_set_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
             return true;
         }
         break;

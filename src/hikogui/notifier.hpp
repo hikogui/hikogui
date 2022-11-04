@@ -8,10 +8,12 @@
 #include "generator.hpp"
 #include "loop.hpp"
 #include "callback_flags.hpp"
+#include "unfair_mutex.hpp"
 #include <vector>
 #include <tuple>
 #include <functional>
 #include <coroutine>
+#include <mutex>
 
 namespace hi::inline v1 {
 
@@ -123,6 +125,8 @@ public:
     subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
         auto token = std::make_shared<function_type>(hi_forward(callback));
+
+        hilet lock = std::scoped_lock(_mutex);
         _callbacks.emplace_back(token, flags);
         return token;
     }
@@ -134,6 +138,8 @@ public:
      */
     void operator()(Args const&...args) const noexcept
     {
+        hilet lock = std::scoped_lock(_mutex);
+
         for (auto& callback : _callbacks) {
             if (is_synchronous(callback.flags)) {
                 if (auto func = callback.lock()) {
@@ -197,12 +203,16 @@ private:
         }
     };
 
+    mutable unfair_mutex _mutex;
+
     /** A list of callbacks and it's associated token.
      */
     mutable std::vector<callback_type> _callbacks;
 
     void clean_up() const noexcept
     {
+        hi_axiom(_mutex.is_locked());
+
         // Cleanup all callbacks that have expired, or when they may only be triggered once.
         std::erase_if(_callbacks, [](hilet& item) {
             return item.expired();

@@ -3,15 +3,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "window_traffic_lights_widget.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../text/font_book.hpp"
 #include <cmath>
 #include <typeinfo>
 
 namespace hi::inline v1 {
 
-window_traffic_lights_widget::window_traffic_lights_widget(gui_window& window, widget *parent) noexcept : super(window, parent) {}
+window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexcept : super(parent) {}
 
 widget_constraints const& window_traffic_lights_widget::set_constraints(set_constraints_context const &context) noexcept
 {
@@ -226,19 +224,19 @@ bool window_traffic_lights_widget::handle_event(gui_event const& event) noexcept
             request_redraw();
 
             if (closeRectangle.contains(event.mouse().position)) {
-                window.close_window();
+                return process_event({gui_event_type::window_close});
 
             } else if (minimizeRectangle.contains(event.mouse().position)) {
-                window.set_size_state(gui_window_size::minimized);
+                return process_event({gui_event_type::window_minimize});
 
             } else if (maximizeRectangle.contains(event.mouse().position)) {
                 switch (layout().window_size_state) {
                 case gui_window_size::normal:
-                    window.set_size_state(gui_window_size::maximized);
-                    break;
+                    return process_event({gui_event_type::window_maximize});
+
                 case gui_window_size::maximized:
-                    window.set_size_state(gui_window_size::normal);
-                    break;
+                    return process_event({gui_event_type::window_normalize});
+
                 default:
                     hi_no_default();
                 }
@@ -258,7 +256,7 @@ hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
 
     if (*mode >= widget_mode::partial and layout().contains(position) and
         (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
-        return hitbox{this, position, hitbox::Type::Button};
+        return hitbox{this, position, hitbox_type::button};
     } else {
         return {};
     }

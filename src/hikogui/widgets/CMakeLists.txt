@@ -64,3 +64,9 @@ target_sources(hikogui PRIVATE
     window_widget.hpp
 )
 
+if(BUILD_TESTING)
+    target_sources(hikogui_tests PRIVATE
+        text_widget_tests.cpp
+    )
+endif()
+

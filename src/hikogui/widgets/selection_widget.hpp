@@ -80,15 +80,13 @@ public:
 
     /** Construct a selection widget with a delegate.
      *
-     * @param window The window the selection widget will be displayed on.
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      */
-    selection_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    selection_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Construct a selection widget with a delegate.
      *
-     * @param window The window the selection widget will be displayed on.
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      * @param first_attribute First of @a attributes.
@@ -97,12 +95,11 @@ public:
      *                   it is used as the label to show in the off-state.
      */
     selection_widget(
-        gui_window& window,
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
         selection_widget_attribute auto&& first_attribute,
         selection_widget_attribute auto&&...attributes) noexcept :
-        selection_widget(window, parent, std::move(delegate))
+        selection_widget(parent, std::move(delegate))
     {
         set_attributes(hi_forward(first_attribute), hi_forward(attributes)...);
     }
@@ -110,7 +107,6 @@ public:
     /** Construct a selection widget which will monitor an option list and a
      * value.
      *
-     * @param window The window the selection widget will be displayed on.
      * @param parent The owner of the selection widget.
      * @param value The value or observer value to monitor.
      * @param option_list An vector or an observer vector of pairs of keys and
@@ -125,7 +121,6 @@ public:
         forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
         selection_widget_attribute... Attributes>
     selection_widget(
-        gui_window& window,
         widget *parent,
         Value&& value,
         OptionList&& option_list,
@@ -134,7 +129,6 @@ public:
         make_default_selection_delegate(hi_forward(value), hi_forward(option_list));
     } :
         selection_widget(
-            window,
             parent,
             make_default_selection_delegate(hi_forward(value), hi_forward(option_list)),
             hi_forward(attributes)...)
@@ -144,7 +138,6 @@ public:
     /** Construct a selection widget which will monitor an option list and a
      * value.
      *
-     * @param window The window the selection widget will be displayed on.
      * @param parent The owner of the selection widget.
      * @param value The value or observer value to monitor.
      * @param option_list An vector or an observer vector of pairs of keys and
@@ -162,7 +155,6 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         selection_widget_attribute... Attributes>
     selection_widget(
-        gui_window& window,
         widget *parent,
         Value&& value,
         OptionList&& option_list,
@@ -172,7 +164,6 @@ public:
         make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value));
     } :
         selection_widget(
-            window,
             parent,
             make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value)),
             hi_forward(attributes)...)
@@ -207,7 +198,7 @@ private:
 
     aarectangle _overlay_rectangle;
     std::unique_ptr<overlay_widget> _overlay_widget;
-    vertical_scroll_widget<> *_scroll_widget = nullptr;
+    vertical_scroll_widget *_scroll_widget = nullptr;
     column_widget *_column_widget = nullptr;
 
     decltype(off_label)::callback_token _off_label_cbt;

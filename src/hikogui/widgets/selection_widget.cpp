@@ -4,7 +4,6 @@
 
 #include "selection_widget.hpp"
 #include "../text/font_book.hpp"
-#include "../GUI/gui_system.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../loop.hpp"
 
@@ -16,29 +15,31 @@ selection_widget::~selection_widget()
     delegate->deinit(*this);
 }
 
-selection_widget::selection_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), delegate(std::move(delegate))
+selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    super(parent), delegate(std::move(delegate))
 {
     hi_assert_not_null(this->delegate);
 
     alignment = alignment::middle_left();
 
-    _current_label_widget = std::make_unique<label_widget>(window, this, alignment, text_style);
+    _current_label_widget = std::make_unique<label_widget>(this, alignment, text_style);
     _current_label_widget->mode = widget_mode::invisible;
-    _off_label_widget = std::make_unique<label_widget>(window, this, off_label, alignment, semantic_text_style::placeholder);
+    _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, semantic_text_style::placeholder);
 
-    _overlay_widget = std::make_unique<overlay_widget>(window, this);
+    _overlay_widget = std::make_unique<overlay_widget>(this);
     _overlay_widget->mode = widget_mode::invisible;
-    _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
+    _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
     _off_label_cbt = this->off_label.subscribe([&](auto...) {
-        hi_request_reconstrain("selection_widget::_off_label_cbt()");
+        ++global_counter<"selection_widget:off_label:constrain">;
+        process_event({gui_event_type::window_reconstrain});
     });
 
     _delegate_cbt = this->delegate->subscribe([&] {
         _notification_from_delegate = true;
-        hi_request_reconstrain("selection_widget::_delegate_cbt()");
+        ++global_counter<"selection_widget:delegate:constrain">;
+        process_event({gui_event_type::window_reconstrain});
     });
 
     this->delegate->init(*this);
@@ -165,14 +166,16 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         } else {
             stop_selecting();
         }
-        request_relayout();
+        ++global_counter<"selection_widget:gui_activate:relayout">;
+        process_event({gui_event_type::window_relayout});
         return true;
 
     case gui_event_type::gui_cancel:
         if (*mode >= widget_mode::partial and _has_options and _selecting) {
             stop_selecting();
         }
-        request_relayout();
+        ++global_counter<"selection_widget:gui_cancel:relayout">;
+        process_event({gui_event_type::window_relayout});
         return true;
 
     default:;
@@ -189,7 +192,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         auto r = _overlay_widget->hitbox_test_from_parent(position);
 
         if (layout().contains(position)) {
-            r = std::max(r, hitbox{this, position, _has_options ? hitbox::Type::Button : hitbox::Type::Default});
+            r = std::max(r, hitbox{this, position, _has_options ? hitbox_type::button : hitbox_type::_default});
         }
 
         return r;
@@ -245,10 +248,10 @@ void selection_widget::start_selecting() noexcept
     _selecting = true;
     _overlay_widget->mode = widget_mode::enabled;
     if (auto selected_menu_button = get_selected_menu_button()) {
-        this->update_keyboard_target(selected_menu_button, keyboard_focus_group::menu);
+        process_event(gui_event::window_set_keyboard_target(selected_menu_button, keyboard_focus_group::menu));
 
     } else if (auto first_menu_button = get_first_menu_button()) {
-        this->update_keyboard_target(first_menu_button, keyboard_focus_group::menu);
+        process_event(gui_event::window_set_keyboard_target(first_menu_button, keyboard_focus_group::menu));
     }
 
     request_redraw();

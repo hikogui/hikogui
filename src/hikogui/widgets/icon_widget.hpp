@@ -45,8 +45,8 @@ public:
      */
     observer<alignment> alignment = hi::alignment::middle_center();
 
-    icon_widget(gui_window& window, widget *parent, icon_widget_attribute auto&&...attributes) noexcept :
-        icon_widget(window, parent)
+    icon_widget(widget *parent, icon_widget_attribute auto&&...attributes) noexcept :
+        icon_widget(parent)
     {
         set_attributes(hi_forward(attributes)...);
     }
@@ -83,7 +83,7 @@ private:
     extent2 _icon_size;
     aarectangle _icon_rectangle;
 
-    icon_widget(gui_window& window, widget *parent) noexcept;
+    icon_widget(widget *parent) noexcept;
 };
 
 }} // namespace hi::v1

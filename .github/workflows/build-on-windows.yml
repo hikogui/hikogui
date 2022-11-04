@@ -165,16 +165,11 @@ jobs:
           name: test-results
           path: test_results_*.xml
 
-      - name: 🔽 Install 'OpenCppCoverage' and 'codecov.io Report Uploader'
-        if: endsWith(matrix.config.NAME, '-debug') && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: 📑 Generate CodeCoverage Report
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
           OpenCppCoverageSetup-x64-0.9.9.0.exe /VERYSILENT /DIR=.\bin\coverage
-          curl -L https://uploader.codecov.io/latest/windows/codecov.exe --output bin\coverage\codecov.exe
-
-      - name: 📑 Generate CodeCoverage Report
-        if: endsWith(matrix.config.NAME, '-debug') && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
           .\bin\coverage\OpenCppCoverage.exe --sources=src ^
           --excluded_sources=src\*_tests.cpp ^
           --excluded_sources=src\*\*_tests.cpp ^
@@ -185,8 +180,8 @@ jobs:
           -- ".\\build-dbg\\hikogui_tests.exe"
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
-        if: endsWith(matrix.config.NAME, '-debug') && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: codecov/codecov-action@v2 # https://github.com/codecov/codecov-action
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: codecov/codecov-action@v3 # https://github.com/codecov/codecov-action
         with:
           files: ./hikogui_coverage.xml
 
