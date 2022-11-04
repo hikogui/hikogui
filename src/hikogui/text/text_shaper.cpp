@@ -416,6 +416,93 @@ text_shaper::get_line_metrics(text_shaper::char_const_iterator first, text_shape
     }
 }
 
+struct get_widths_result {
+    std::vector<size_t> lines;
+    float width;
+    uint8_t priority
+};
+
+[[nodiscard]] constexpr std::vector<get_widths_result>
+text_shaper::get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths) noexcept
+{
+    struct entry_type {
+        size_t min_height;
+        size_t max_height;
+        float min_width;
+        float max_width;
+    };
+
+    auto stack = std::vector<entry_type>{};
+    auto r = std::vector<get_widths_result>{};
+
+    hilet a4_one_column = 172.0f * 2.83465f * _dpi_scale;
+    hilet a4_two_column = 88.0f * 2.83465f * _dpi_scale;
+    hilet paper_column = 46.0f * 2.83465f * _dpi_scale;
+
+    // Max-width first.
+    auto[max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
+    auto height = max_lines.size();
+    r.emplace_back(std::move(max_lines), max_width, max_width > a4_one_column ? 10 : 0);
+
+    if (max_width > a4_one_column) {
+        auto[width, lines] = detail::unicode_LB_width(opportunities, widths, a4_one_column);
+        if (std::exchange(height, lines.size()) > lines.size()) {
+            r.emplace_back(std::move(lines), width, 20);
+        }
+    }
+
+    if (max_width > a4_two_column) {
+        auto[width, lines] = detail::unicode_LB_width(opportunities, widths, a4_two_column);
+        if (std::exchange(height, lines.size()) > lines.size()) {
+            r.emplace_back(std::move(lines), width, 20);
+        }
+    }
+
+    if (max_width > paper_column) {
+        auto[width, lines] = detail::unicode_LB_width(opportunities, widths, paper_column);
+        if (std::exchange(height, lines.size()) > lines.size()) {
+            r.emplace_back(std::move(lines), width, 20);
+        }
+    }
+
+    if (max_width < a4_two_column) {
+        auto[min_width, min_lines] = detail::unicode_LB_minimum_width(opportunities, widths);
+
+        stack.emplace_back(min_lines.size(), height, min_width, max_width);
+        r.emplace_back(std::move(min_lines), min_width, 0);
+
+        do {
+            hilet entry = stack.back();
+            stack.pop_back();
+
+            if (entry.max_lines.size() > entry.min_lines.size() + 1 and entry.max_width >= entry.min_width + 2.0f) {
+                // There lines between the current two sizes; split in two.
+                hilet half_width = (entry.min_width + entry.max_width) * 0.5f;
+
+                auto[split_width, split_lines] = detail::unicode_LB_width(opportunities, widths, half_width);
+                hilet split_height = split_lines.size();
+
+                if (split_height == entry.min_height) {
+                    // We didn't find a proper split, need to try the upper half. Use `half_width` to split right down the middle.
+                    stack.emplace_back(split_height, entry.max_height, half_width, entry.max_width);
+
+                } else if (split_height == entry.max_height) {
+                    // We didn't find a proper split, need to try the lower half. Use `half_width` to split right down the middle.
+                    stack.emplace_back(entry.min_height, split_height, entry.min_width, half_width);
+
+                } else {
+                    // Split through the middle, use the split_width for faster searching.
+                    r.emplace_back(std::move(split_lines), split_width, 5);
+                    stack.emplace_back(entry.min_height, split_height, entry.min_width, split_width);
+                    stack.emplace_back(split_height, entry.max_height, split_width, entry.max_width);
+                }
+            }
+        } while (not stack.empty());
+    }
+
+    return r;
+}
+
 [[nodiscard]] constraint2D
 text_shaper::get_constraints(vertical_alignment alignment, float line_spacing, float paragraph_spacing) noexcept
 {
