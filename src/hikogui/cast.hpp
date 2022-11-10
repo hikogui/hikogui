@@ -305,16 +305,16 @@ template<typename T>
 }
 
 template<typename T>
-[[nodiscard]] constexpr T to_ptr(std::intptr_t value) noexcept
+[[nodiscard]] inline T to_ptr(std::intptr_t value) noexcept
     requires std::is_pointer_v<T>
 {
-    return std::bit_cast<T>(value);
+    return reinterpret_cast<T>(value);
 }
 
 template<typename T>
-[[nodiscard]] constexpr std::intptr_t to_int(T *ptr) noexcept
+[[nodiscard]] inline std::intptr_t to_int(T *ptr) noexcept
 {
-    return std::bit_cast<std::intptr_t>(ptr);
+    return reinterpret_cast<std::intptr_t>(ptr);
 }
 
 } // namespace hi::inline v1
