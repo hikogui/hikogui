@@ -13,7 +13,7 @@ it easy for GUI element to observe and modify data external to the GUI.
 
 You can find a lot more information,
 [documentation](https://hikogui.org/docs/hikogui/main/index.html),
-[example code](https://github.com/hikogui/hikogui_hello_world/blob/main/src/main.cpp),
+[example code](https://github.com/hikogui/hikogui-hello-world/blob/main/src/main.cpp),
 news and blog posts on the main web site: <https://hikogui.org/>
 
 Features
