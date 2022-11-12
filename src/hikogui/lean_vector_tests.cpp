@@ -1635,3 +1635,9 @@ TEST(lean_vector, swap)
         ASSERT_EQ(std::distance(c2.begin(), c2.end()), 0);
     }
 }
+
+TEST(lean_vector, swap_noexcept)
+{
+    typedef lean_vector<lean_vector_detail::MoveOnly> C;
+    static_assert(noexcept(swap(std::declval<C&>(), std::declval<C&>())));
+}
