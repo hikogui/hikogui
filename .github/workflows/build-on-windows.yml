@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: 🤘 Checkout Code
-        uses: actions/checkout@v2 # https://github.com/actions/checkout
+        uses: actions/checkout@v3 # https://github.com/actions/checkout
 
       - name: ℹ Show Tool Versions
         run: |
@@ -159,7 +159,7 @@ jobs:
       # This enables the "Unit Test Result" display to show all individual test runs of the matrix.
       # The tests are published after all matrix runs finished (from job: "publish-test-results").
       - name: 🔼 Upload Test Results
-        uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
+        uses: actions/upload-artifact@v3 # https://github.com/actions/upload-artifact
         if: always()
         with:
           name: test-results
@@ -196,7 +196,7 @@ jobs:
     #
     #  # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
     #  - name: 📦 🚀 Upload Artifact
-    #    uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
+    #    uses: actions/upload-artifact@v3 # https://github.com/actions/upload-artifact
     #    with:
     #      name: ${{env.ARTIFACT_NAME}}
     #      path: build/${{env.ARTIFACT_NAME}}.zip
@@ -215,12 +215,12 @@ jobs:
 
     steps:
       - name: 🔽 Download Artifacts
-        uses: actions/download-artifact@v2 # https://github.com/actions/download-artifact
+        uses: actions/download-artifact@v3 # https://github.com/actions/download-artifact
         with:
           path: artifacts
 
       - name: 👌 Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1 # https://github.com/EnricoMi/publish-unit-test-result-action
+        uses: EnricoMi/publish-unit-test-result-action@v2 # https://github.com/EnricoMi/publish-unit-test-result-action
         if: always()
         with:
           files: artifacts/**/test_results*.xml

@@ -87,6 +87,7 @@ target_sources(hikogui PRIVATE
     interval.hpp
     jsonpath.hpp
     label.hpp
+    lean_vector.hpp
     locked_memory_allocator.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>
     log.cpp
@@ -200,6 +201,7 @@ if(BUILD_TESTING)
         int_carry_tests.cpp
         int_overflow_tests.cpp
         jsonpath_tests.cpp
+        lean_vector_tests.cpp
         math_tests.cpp
         group_ptr_tests.cpp
         notifier_tests.cpp
