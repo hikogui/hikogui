@@ -8,6 +8,7 @@
 #pragma once
 
 #include "cast.hpp"
+#include "memory.hpp"
 #include <bit>
 #include <new>
 #include <cstddef>
@@ -36,10 +37,6 @@ public:
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
     using allocator_type = std::allocator<value_type>;
-
-    /** The maximum number of items that can fit without allocation.
-     */
-    static constexpr size_t short_capacity = (sizeof(pointer) * 3 - 1) / sizeof(value_type);
 
     /** The allocator_type used to allocate items.
      */
@@ -71,15 +68,15 @@ public:
     lean_vector(lean_vector const& other)
     {
         hilet other_size = other.size();
-        hilet is_short = _reserve<false>(other_size);
-        std::uninitialized_copy_n(other.begin(), other_size, begin());
-        _set_size(other_size, is_short);
+        hilet update = _reserve<false>(other_size);
+        std::uninitialized_copy_n(other.begin(), other_size, update.ptr);
+        _reserve_update(update, other_size);
     }
 
     /** Move-construct a vector.
      *
      * This will steal the allocation from the other vector, or move
-     * the items if the number of items is less than or equal to `short_capacity`.
+     * the items if the number of items is less than or equal to `short_capacity()`.
      *
      * @param other The vector to move.
      */
@@ -112,9 +109,9 @@ public:
         hilet other_size = other.size();
 
         clear();
-        hilet is_short = _reserve<false>(other_size);
-        std::uninitialized_copy_n(other.begin(), other_size, begin());
-        _set_size(other_size, is_short);
+        hilet update = _reserve<false>(other_size);
+        std::uninitialized_copy_n(other.begin(), other_size, update.ptr);
+        _reserve_update(update, other_size);
 
         return *this;
     }
@@ -127,7 +124,7 @@ public:
      *
      * @param other The vector to move.
      */
-    lean_vector& operator=(lean_vector&& other)
+    lean_vector& operator=(lean_vector&& other) noexcept
     {
         hi_return_on_self_assignment(other);
 
@@ -155,7 +152,7 @@ public:
         return *this;
     }
 
-    void swap(lean_vector &other) noexcept
+    void swap(lean_vector& other) noexcept
     {
         hilet this_is_short = this->_is_short();
         hilet other_is_short = other._is_short();
@@ -180,36 +177,79 @@ public:
 
     explicit lean_vector(size_type count)
     {
-        if (count <= short_capacity) {
+        if (count <= short_capacity()) {
             std::uninitialized_value_construct_n(_short_data(), count);
             _set_short_size(count);
 
         } else {
-            hilet is_short = _reserve<false>(count);
-            hi_axiom(is_short == false);
-            std::uninitialized_value_construct_n(_begin_data(is_short), count);
-            _set_size(count, is_short);
+            hilet update = _reserve<false>(count);
+            std::uninitialized_value_construct_n(update.ptr, count);
+            _reserve_update(update, count);
         }
     }
 
     lean_vector(size_type count, value_type const& value)
     {
-        if (count <= short_capacity) {
+        if (count <= short_capacity()) {
             std::uninitialized_fill_n(_short_data(), count, value);
             _set_short_size(count);
 
         } else {
-            hilet is_short = _reserve<false>(count);
-            hi_axiom(is_short == false);
-            std::uninitialized_fill_n(_begin_data(is_short), count, value);
-            _set_size(count, is_short);
+            hilet update = _reserve<false>(count);
+            std::uninitialized_fill_n(update.ptr, count, value);
+            _reserve_update(update, count);
         }
     }
 
-    template<std::input_iterator It, std::input_iterator ItEnd>
-    lean_vector(It first, ItEnd last)
+    /** Construct a vector with the data pointed by iterators
+     *
+     * @param first An iterator pointing to the first item to copy.
+     * @param last An iterator pointing beyond the last item to copy.
+     */
+    lean_vector(std::input_iterator auto first, std::input_iterator auto last)
     {
         insert(_short_data(), first, last);
+    }
+
+    /** Construct a vector with the given initializer list.
+     *
+     * @param list The list of values to copy into the vector.
+     */
+    lean_vector(std::initializer_list<value_type> list)
+    {
+        insert(_short_data(), list.begin(), list.end());
+    }
+
+    /** Replace the data in the vector.
+     *
+     * @param count The number of times to copy @a value into the vector.
+     * @param value The value to copy into the vector.
+     */
+    void assign(size_type count, value_type const& value)
+    {
+        clear();
+        insert(begin(), count, value);
+    }
+
+    /** Replace the data in the vector.
+     *
+     * @param first A iterator pointing to the first value to copy.
+     * @param last A iterator pointing beyond the last value to copy.
+     */
+    void assign(std::input_iterator auto first, std::input_iterator auto last)
+    {
+        clear();
+        insert(begin(), first, last);
+    }
+
+    /** Replace the data in the vector.
+     *
+     * @param list A list of data to copy into the vector.
+     */
+    void assign(std::initializer_list<value_type> list)
+    {
+        clear();
+        insert(begin(), list.begin(), list.end());
     }
 
     /** Get a pointer to the first item.
@@ -218,7 +258,19 @@ public:
      */
     [[nodiscard]] pointer data() noexcept
     {
-        return _begin_data(_is_short());
+        if (_is_short()) {
+            if (_short_size() == 0) {
+                return nullptr;
+            } else {
+                return _short_data();
+            }
+        } else {
+            if (_ptr == _end) {
+                return nullptr;
+            } else {
+                return _long_data();
+            }
+        }
     }
 
     /** Get a const-pointer to the first item.
@@ -264,6 +316,19 @@ public:
         return std::allocator_traits<allocator_type>::max_size(a);
     }
 
+    /** The maximum number of items that can fit without allocation.
+     */
+    [[nodiscard]] constexpr size_t short_capacity() const noexcept
+    {
+        if constexpr (std::endian::native == std::endian::little) {
+            // The first alignment can not be used.
+            return (sizeof(pointer) * 3 - alignof(value_type)) / sizeof(value_type);
+        } else {
+            // The last byte can not be used to store values.
+            return (sizeof(pointer) * 3 - 1) / sizeof(value_type);
+        }
+    }
+
     /** Get the current capacity of the vector.
      *
      * @return The number of items that fit in the current allocation.
@@ -271,7 +336,7 @@ public:
     [[nodiscard]] size_t capacity() const noexcept
     {
         if (_is_short()) {
-            return short_capacity;
+            return short_capacity();
         } else {
             return _long_capacity();
         }
@@ -376,7 +441,7 @@ public:
      */
     [[nodiscard]] iterator begin() noexcept
     {
-        return data();
+        return _begin_data(_is_short());
     }
 
     /** Get an const-iterator to the first item in the vector.
@@ -445,7 +510,8 @@ public:
      */
     void reserve(size_type new_capacity)
     {
-        [[maybe_unused]] hilet is_short = _reserve<false>(new_capacity);
+        hilet update = _reserve<false>(new_capacity);
+        _reserve_update(update);
     }
 
     /** Shrink the allocation to fit the current number of items.
@@ -466,7 +532,7 @@ public:
         hilet old_size = size();
         hilet old_capacity = capacity();
 
-        if (old_size <= short_capacity) {
+        if (old_size <= short_capacity()) {
             _set_short_size(old_size);
         } else {
             auto a = get_allocator();
@@ -495,14 +561,14 @@ public:
     {
         hilet index = pos - begin();
         hilet new_size = size() + 1;
-        hilet is_short = _reserve<true>(new_size);
-        pos = begin() + index;
 
-        std::construct_at(_end_data(is_short), std::forward<Args>(args)...);
-        _set_size(new_size, is_short);
+        hilet update = _reserve<true>(new_size);
+        std::construct_at(update.end, std::forward<Args>(args)...);
+        _reserve_update(update, new_size);
 
-        std::rotate(pos, end() - 1, end());
-        return pos;
+        hilet new_pos = begin() + index;
+        std::rotate(new_pos, end() - 1, end());
+        return new_pos;
     }
 
     /** Insert a new item.
@@ -518,14 +584,14 @@ public:
     {
         hilet index = pos - begin();
         hilet new_size = size() + 1;
-        hilet is_short = _reserve<true>(new_size);
-        pos = begin() + index;
 
-        std::uninitialized_copy_n(std::addressof(value), 1, _end_data(is_short));
-        _set_size(new_size, is_short);
+        hilet update = _reserve<true>(new_size);
+        std::uninitialized_copy_n(std::addressof(value), 1, update.end);
+        _reserve_update(update, new_size);
 
-        std::rotate(pos, end() - 1, end());
-        return pos;
+        hilet new_pos = begin() + index;
+        std::rotate(new_pos, end() - 1, end());
+        return new_pos;
     }
 
     /** Insert a new item.
@@ -541,14 +607,38 @@ public:
     {
         hilet index = pos - begin();
         hilet new_size = size() + 1;
-        hilet is_short = _reserve<true>(new_size);
-        pos = begin() + index;
 
-        std::uninitialized_move_n(std::addressof(value), 1, _end_data(is_short));
-        _set_size(new_size, is_short);
+        hilet update = _reserve<true>(new_size);
+        std::uninitialized_move_n(std::addressof(value), 1, update.end);
+        _reserve_update(update, new_size);
 
-        std::rotate(pos, end() - 1, end());
-        return pos;
+        hilet new_pos = begin() + index;
+        std::rotate(new_pos, end() - 1, end());
+        return new_pos;
+    }
+
+    /** Insert a new item.
+     *
+     * If the item is not placed at the end, the item will be moved to the
+     * correct position after it is moved to the end.
+     *
+     * @param pos The position where the item will be inserted.
+     * @param count The number of value to add.
+     * @param value The value to move into the vector.
+     * @return An iterator pointing to the newly inserted item.
+     */
+    iterator insert(const_iterator pos, size_type count, value_type const& value)
+    {
+        hilet index = pos - begin();
+        hilet new_size = size() + count;
+
+        hilet update = _reserve<true>(new_size);
+        std::uninitialized_fill_n(update.end, count, value);
+        _reserve_update(update, new_size);
+
+        hilet new_pos = begin() + index;
+        std::rotate(new_pos, end() - count, end());
+        return new_pos;
     }
 
     /** Insert new items.
@@ -561,20 +651,19 @@ public:
      * @param last An iterator to one beyond the last item to copy.
      * @return An iterator pointing to the newly inserted item.
      */
-    template<std::input_iterator It, std::input_iterator ItEnd>
-    iterator insert(const_iterator pos, It first, ItEnd last)
+    iterator insert(const_iterator pos, std::input_iterator auto first, std::input_iterator auto last)
     {
         if constexpr (requires { std::distance(first, last); }) {
-            auto n = std::distance(first, last);
+            hilet n = std::distance(first, last);
 
             hilet index = pos - begin();
             hilet new_size = size() + n;
-            hilet is_short = _reserve<true>(new_size);
-            auto new_pos = begin() + index;
 
-            std::uninitialized_move_n(first, n, _end_data(is_short));
-            _set_size(new_size, is_short);
+            hilet update = _reserve<true>(new_size);
+            std::uninitialized_move_n(first, n, update.end);
+            _reserve_update(update, new_size);
 
+            hilet new_pos = begin() + index;
             std::rotate(new_pos, end() - n, end());
             return new_pos;
 
@@ -583,6 +672,20 @@ public:
                 pos = insert(pos, *it) + 1;
             }
         }
+    }
+
+    /** Insert new items.
+     *
+     * If the items are not placed at the end, the items will be moved to the
+     * correct position after they have been copied to the end.
+     *
+     * @param pos The position where the items will be inserted.
+     * @param list A initializer list of items to copy into the vector.
+     * @return An iterator pointing to the newly inserted item.
+     */
+    iterator insert(const_iterator pos, std::initializer_list<value_type> list)
+    {
+        return insert(pos, list.begin(), list.end());
     }
 
     /** Erase an item at position.
@@ -600,8 +703,8 @@ public:
     iterator erase(const_iterator pos)
     {
         hi_axiom(pos >= begin() and pos <= end());
-        auto new_pos = begin() + std::distance(cbegin(), pos);
-        std::rotate(new_pos, new_pos + 1, end());
+        hilet new_pos = begin() + std::distance(cbegin(), pos);
+        std::move(new_pos + 1, end(), new_pos);
 
         hilet is_short = _is_short();
         _set_size(size() - 1, is_short);
@@ -622,11 +725,13 @@ public:
      */
     iterator erase(const_iterator first, const_iterator last)
     {
-        hilet n = std::distance(first, last);
-        std::rotate(first, last, end());
+        hilet first_ = begin() + std::distance(cbegin(), first);
+        hilet last_ = begin() + std::distance(cbegin(), last);
+        hilet n = std::distance(first_, last_);
+        std::move(last_, end(), first_);
         std::destroy(end() - n, end());
-        _set_size(size() - n);
-        return first;
+        _set_size(size() - n, _is_short());
+        return first_;
     }
 
     /** In-place construct an item at the end of the vector.
@@ -640,9 +745,11 @@ public:
     reference emplace_back(Args&&...args)
     {
         hilet new_size = size() + 1;
-        hilet is_short = _reserve<true>(new_size);
-        auto obj = std::construct_at(_end_data(is_short), std::forward<Args>(args)...);
-        _set_size(new_size, is_short);
+
+        hilet update = _reserve<true>(new_size);
+        hilet obj = std::construct_at(update.end, std::forward<Args>(args)...);
+        _reserve_update(update, new_size);
+
         return *obj;
     }
 
@@ -653,9 +760,10 @@ public:
     void push_back(value_type const& value)
     {
         hilet new_size = size() + 1;
-        hilet is_short = _reserve<true>(new_size);
-        std::uninitialized_copy_n(std::addressof(value), 1, _end_data(is_short));
-        _set_size(new_size, is_short);
+
+        hilet update = _reserve<true>(new_size);
+        std::uninitialized_copy_n(std::addressof(value), 1, update.end);
+        _reserve_update(update, new_size);
     }
 
     /** Move an item to the end of the vector.
@@ -665,9 +773,10 @@ public:
     void push_back(value_type&& value)
     {
         hilet new_size = size() + 1;
-        hilet is_short = _reserve<true>(new_size);
-        std::uninitialized_move_n(std::addressof(value), 1, _end_data(is_short));
-        _set_size(new_size, is_short);
+
+        hilet update = _reserve<true>(new_size);
+        std::uninitialized_move_n(std::addressof(value), 1, update.end);
+        _reserve_update(update, new_size);
     }
 
     /** Remove the last item from the vector.
@@ -699,10 +808,10 @@ public:
     {
         if (hilet old_size = size(); new_size > old_size) {
             hilet n = new_size - old_size;
-            hilet is_short = _reserve<true>(new_size);
 
-            std::uninitialized_value_construct_n(_end_data(is_short), n);
-            _set_size(new_size, is_short);
+            hilet update = _reserve<true>(new_size);
+            std::uninitialized_value_construct_n(update.end, n);
+            _reserve_update(update, new_size);
 
         } else {
             hilet is_short = _is_short();
@@ -727,10 +836,10 @@ public:
     {
         if (hilet old_size = size(); new_size > old_size) {
             hilet n = new_size - old_size;
-            hilet is_short = _reserve<true>(new_size);
 
-            std::uninitialized_fill_n(_end_data(is_short), n, value);
-            _set_size(new_size, is_short);
+            hilet update = _reserve<true>(new_size);
+            std::uninitialized_fill_n(update.end, n, value);
+            _reserve_update(update, new_size);
 
         } else {
             hilet is_short = _is_short();
@@ -772,7 +881,7 @@ public:
     {
         auto it = std::remove(c.begin(), c.end(), value);
         auto r = std::distance(it, c.end());
-        c.erase(it, end());
+        c.erase(it, c.end());
         return r;
     }
 
@@ -787,8 +896,13 @@ public:
     {
         auto it = std::remove(c.begin(), c.end(), pred);
         auto r = std::distance(it, c.end());
-        c.erase(it, end());
+        c.erase(it, c.end());
         return r;
+    }
+
+    friend void swap(lean_vector& lhs, lean_vector& rhs) noexcept
+    {
+        lhs.swap(rhs);
     }
 
 private:
@@ -815,12 +929,13 @@ private:
 
     [[nodiscard]] pointer _short_data() const noexcept
     {
-        void *this_ = const_cast<lean_vector *>(this);
+        static_assert(alignof(T) <= alignof(T *));
+
+        void *p = const_cast<lean_vector *>(this);
         if constexpr (std::endian::native == std::endian::little) {
-            return std::launder(reinterpret_cast<pointer>(this_) + 1);
-        } else {
-            return std::launder(reinterpret_cast<pointer>(this_));
+            p = ceil(advance_bytes(p, 1), alignof(value_type));
         }
+        return std::launder(reinterpret_cast<pointer>(p));
     }
 
     [[nodiscard]] pointer _long_data() const noexcept
@@ -873,7 +988,7 @@ private:
     void _set_size(size_t new_size, bool is_short) noexcept
     {
         if (is_short) {
-            hi_axiom(new_size <= short_capacity);
+            hi_axiom(new_size <= short_capacity());
             _set_short_size(new_size);
         } else {
             _end = _ptr + new_size;
@@ -898,45 +1013,73 @@ private:
         }
     }
 
+    struct _reserve_type {
+        pointer ptr;
+        pointer end;
+        pointer cap;
+        bool resized;
+        bool is_short;
+    };
+
     /** Reserve.
      *
      * @return Current reservation is short.
      */
     template<bool ForInsert>
-    [[nodiscard]] bool _reserve(size_type new_capacity)
+    [[nodiscard]] _reserve_type _reserve(size_type new_capacity) const
     {
-        hilet old_is_short = _is_short();
-        hilet old_capacity = old_is_short ? short_capacity : _long_capacity();
-        if (new_capacity <= old_capacity) {
-            [[likely]] return old_is_short;
+        hilet is_short = _is_short();
+        hilet capacity = is_short ? short_capacity() : _long_capacity();
+        if (new_capacity <= capacity) {
+            [[likely]] return {_begin_data(is_short), _end_data(is_short), nullptr, false, is_short};
         }
 
         if constexpr (ForInsert) {
-            auto next_capacity = old_capacity + old_capacity / 2;
+            auto next_capacity = capacity + capacity / 2;
             if (new_capacity > next_capacity) {
                 next_capacity = new_capacity + new_capacity / 2;
             }
             new_capacity = next_capacity;
         }
 
-        hilet old_size = old_is_short ? _short_size() : _long_size();
-        hilet old_ptr = old_is_short ? _short_data() : _ptr;
-
         auto a = get_allocator();
         hilet new_ptr = std::allocator_traits<allocator_type>::allocate(a, new_capacity);
 
-        std::uninitialized_move_n(old_ptr, old_size, new_ptr);
+        hilet size_ = is_short ? _short_size() : _long_size();
+        return {new_ptr, new_ptr + size_, new_ptr + new_capacity, true, false};
+    }
+
+    void _reserve_update(_reserve_type update)
+    {
+        if (not update.resized) {
+            return;
+        }
+
+        hilet is_short = _is_short();
+        hilet old_size = is_short ? _short_size() : _long_size();
+        hilet old_ptr = is_short ? _short_data() : _long_data();
+
+        std::uninitialized_move_n(old_ptr, old_size, update.ptr);
         std::destroy_n(old_ptr, old_size);
 
-        _ptr = new_ptr;
-        _end = new_ptr + old_size;
-        _cap = new_ptr + new_capacity;
-
-        if (not old_is_short) {
-            std::allocator_traits<allocator_type>::deallocate(a, old_ptr, old_capacity);
+        if (not is_short) {
+            auto a = get_allocator();
+            std::allocator_traits<allocator_type>::deallocate(a, _long_data(), _long_capacity());
         }
-        return false;
+
+        _ptr = update.ptr;
+        _end = update.end;
+        _cap = update.cap;
+    }
+
+    void _reserve_update(_reserve_type update, size_type new_size)
+    {
+        _reserve_update(update);
+        _set_size(new_size, update.is_short);
     }
 };
+
+template<std::input_iterator It, std::input_iterator ItEnd>
+lean_vector(It first, ItEnd last) -> lean_vector<typename std::iterator_traits<It>::value_type>;
 
 }} // namespace hi::v1
