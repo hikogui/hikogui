@@ -35,7 +35,8 @@ template<typename T>
  */
 template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
 [[nodiscard]] constexpr Out up_cast(In *rhs) noexcept
-    requires std::is_pointer_v<Out> and (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
+    requires std::is_pointer_v<Out> and
+    (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
     return static_cast<Out>(rhs);
 }
@@ -53,7 +54,8 @@ template<typename Out>
  */
 template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
 [[nodiscard]] constexpr Out up_cast(In& rhs) noexcept
-    requires std::is_reference_v<Out> and (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
+    requires std::is_reference_v<Out> and
+    (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
     return static_cast<Out>(rhs);
 }
@@ -67,7 +69,8 @@ template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
  */
 template<typename Out, base_of<std::remove_pointer_t<Out>> In>
 [[nodiscard]] constexpr Out down_cast(In *rhs) noexcept
-    requires std::is_pointer_v<Out> and (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
+    requires std::is_pointer_v<Out> and
+    (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
     hi_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
     return static_cast<Out>(rhs);
@@ -92,8 +95,8 @@ template<typename Out>
  */
 template<typename Out, base_of<std::remove_reference_t<Out>> In>
 [[nodiscard]] constexpr Out down_cast(In& rhs) noexcept
-    requires std::is_reference_v<Out> and (
-    std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
+    requires std::is_reference_v<Out> and
+    (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
     hi_axiom(dynamic_cast<std::add_pointer_t<std::remove_reference_t<Out>>>(std::addressof(rhs)) != nullptr);
     return static_cast<Out>(rhs);
@@ -102,7 +105,8 @@ template<typename Out, base_of<std::remove_reference_t<Out>> In>
 /** Cast a number to a type that will be able to represent all values without loss of precision.
  */
 template<arithmetic Out, arithmetic In>
-[[nodiscard]] constexpr Out wide_cast(In rhs) noexcept requires(type_in_range_v<Out, In>)
+[[nodiscard]] constexpr Out wide_cast(In rhs) noexcept
+    requires(type_in_range_v<Out, In>)
 {
     return static_cast<Out>(rhs);
 }
@@ -177,7 +181,7 @@ template<std::integral Out, arithmetic In>
  * Both the input and output types are interpreted as unsigned values, even if
  * they are signed values. For example `char` may be either signed or unsigned,
  * but you have to treat those as unsigned values.
- * 
+ *
  * @note @a rhs value after casting, must fit in the output type.
  * @param rhs The value of the character.
  * @return The casted value.
@@ -294,9 +298,23 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
 }
 
 template<typename T>
-[[nodiscard]] constexpr bool to_bool(T&& rhs) noexcept requires(requires(T&& x) { static_cast<bool>(std::forward<T>(x)); })
+[[nodiscard]] constexpr bool to_bool(T&& rhs) noexcept
+    requires(requires(T&& x) { static_cast<bool>(std::forward<T>(x)); })
 {
     return static_cast<bool>(std::forward<T>(rhs));
+}
+
+template<typename T>
+[[nodiscard]] inline T to_ptr(std::intptr_t value) noexcept
+    requires std::is_pointer_v<T>
+{
+    return reinterpret_cast<T>(value);
+}
+
+template<typename T>
+[[nodiscard]] inline std::intptr_t to_int(T *ptr) noexcept
+{
+    return reinterpret_cast<std::intptr_t>(ptr);
 }
 
 } // namespace hi::inline v1
