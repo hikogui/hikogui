@@ -568,7 +568,7 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
     auto it = end_of_line;
     while (true) {
         hilet num_characters = std::distance(first, it + 1);
-        hilet line_width = unicode_line_break_width(first_width, first_width + num_characters);
+        hilet line_width = unicode_LB_width(first_width, first_width + num_characters);
 
         if (line_width <= maximum_line_width) {
             if (*it == mandatory) {

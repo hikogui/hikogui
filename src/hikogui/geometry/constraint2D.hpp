@@ -4,8 +4,9 @@
 
 #pragma once
 
+#include "../lean_vector.hpp"
+#include "../cast.hpp"
 #include <cstdint>
-#include <vector>
 
 namespace hi { inline namespace v1 {
 
@@ -26,18 +27,6 @@ public:
          */
         uint16_t height = 0;
 
-        uint8_t decimal_line_padding_left = 0;
-        uint8_t decimal_line_padding_right = 0;
-        uint8_t base_line_padding_bottom = 0;
-        uint8_t base_line_padding_top = 0;
-
-        uint8_t margin_left = 0;
-        uint8_t margin_right = 0;
-        uint8_t margin_bottom = 0;
-        uint8_t margin_top = 0;
-
-        uint16_t reserved = 0;
-
         /** Priority used to select this extent.
          *
          * Higher value is higher priority.
@@ -46,77 +35,14 @@ public:
 
         /** This extent is used as the maximum size of the widget.
          */
-        uint8_t maximum : 1 = 0;
+        uint8_t is_maximum : 1 = 0;
 
-        /** Mode for the decimal-line.
-         *
-         * Here are the modes:
-         *  - 0: No decimal-line
-         *  - 1: Decimal-line is on left.
-         *  - 2: Decimal-line is on right.
-         *  - 3: Decimal-line is in center
-         */
-        uint8_t decimal_line_mode : 2 = 0;
-
-        /** Mode for the base-line.
-         *
-         * Here are the modes:
-         *  - 0: No base-line
-         *  - 1: Base-line is at bottom.
-         *  - 2: Base-line is at (top - x-height)
-         *  - 3: Base-line is at (middle - 0.5 * x-height)
-         *
-         * In these calculations use the layout height for the widget,
-         * then apply the base-line padding.
-         *
-         * For example (mode 2: top):
-         * ```
-         * base_line = std::clamp(layout_height - x_height, base_line_padding_bottom, layout_height - base_line_padding_top);
-         * ```
-         *
-         */
-        uint8_t base_line_mode : 2 = 0;
-
-        constexpr void set_base_line(vertical_alignment alignment) noexcept
+        extent_type(float width, float height, uint8_t priority, bool is_maximum) noexcept :
+            width(saturate_cast<uint16_t>(std::ceil(width))),
+            height(saturate_cast<uint16_t>(std::ceil(height))),
+            priority(priority),
+            is_maximum(is_maximum)
         {
-            switch (alignment) {
-            case vertical_alignment::bottom:
-                base_line_mode = 1;
-                break;
-            case vertical_alignment::top:
-                base_line_mode = 2;
-                break;
-            case vertical_alignment::middle:
-                base_line_mode = 3;
-                break;
-            }
-        }
-
-        [[nodiscard]] constexpr bool holds_invariant() const noexcept
-        {
-            if (base_line_mode == 0) {
-                if (base_line_padding_bottom != 0 or base_line_padding_top != 0) {
-                    return false;
-                }
-            } else {
-                if (base_line_padding_bottom + base_line_padding_top > height) {
-                    return false;
-                }
-            }
-
-            if (decimal_line_mode == 0) {
-                if (decimal_line_padding_left != 0 or decimal_line_padding_right != 0) {
-                    return false;
-                }
-            } else {
-                if (decimal_line_padding_left + decimal_line_padding_right > width) {
-                    return false;
-                }
-            }
-
-            if (reserved != 0) {
-                return false;
-            }
         }
     };
 
@@ -143,13 +69,64 @@ public:
         return _sizes.back();
     }
 
-    constexpr void emplace_back(auto&&...args) noexcept
+    constexpr extent_type& emplace_back(float width, float height, uint8_t priority = uint8_t{0}, bool is_maximum = false) noexcept
     {
-        return _sizes.emplace_back(hi_forward(args)...);
+        return _sizes.emplace_back(width, height, priority, is_maximum);
+    }
+
+    constexpr void set_baseline(vertical_alignment alignment, float padding_bottom = 0.0f, float padding_top = 0.0f) noexcept
+    {
+        _base_line_padding_bottom = saturate_cast<uint8_t>(std::ceil(padding_bottom));
+        _base_line_padding_top = saturate_cast<uint8_t>(std::ceil(padding_top));
+        switch (alignment) {
+        case vertical_alignment::none: _base_line_mode = 0; break;
+        case vertical_alignment::bottom: _base_line_mode = 1; break;
+        case vertical_alignment::top: _base_line_mode = 2; break;
+        case vertical_alignment::middle: _base_line_mode = 3; break;
+        }
     }
 
 private:
-    std::vector<extent_type> _sizes;
+    std::vector<extent_type> _sizes = {};
+
+    uint8_t _decimal_line_padding_left = 0;
+    uint8_t _decimal_line_padding_right = 0;
+    uint8_t _base_line_padding_bottom = 0;
+    uint8_t _base_line_padding_top = 0;
+
+    uint8_t _margin_left = 0;
+    uint8_t _margin_right = 0;
+    uint8_t _margin_bottom = 0;
+    uint8_t _margin_top = 0;
+
+    /** Mode for the decimal-line.
+     *
+     * Here are the modes:
+     *  - 0: No decimal-line
+     *  - 1: Decimal-line is on left.
+     *  - 2: Decimal-line is on right.
+     *  - 3: Decimal-line is in center
+     */
+    uint8_t _decimal_line_mode : 2 = 0;
+
+    /** Mode for the base-line.
+     *
+     * Here are the modes:
+     *  - 0: No base-line
+     *  - 1: Base-line is at bottom.
+     *  - 2: Base-line is at (top - x-height)
+     *  - 3: Base-line is at (middle - 0.5 * x-height)
+     *
+     * In these calculations use the layout height for the widget,
+     * then apply the base-line padding.
+     *
+     * For example (mode 2: top):
+     * ```
+     * base_line = std::clamp(layout_height - x_height, base_line_padding_bottom, layout_height - base_line_padding_top);
+     * ```
+     *
+     */
+    uint8_t _base_line_mode : 2 = 0;
 };
 
 }} // namespace hi::v1

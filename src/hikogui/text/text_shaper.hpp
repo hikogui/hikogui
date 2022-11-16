@@ -181,7 +181,7 @@ public:
      *  - No intermediate sizes.
      *  - A4 three-column width, priority=10.
      *  - All smaller sizes, if maximum size is smaller than A4 two-column, priority=5 (decreasing every step).
-     * 
+     *
      * @param alignment The vertical alignment of text.
      * @param line_spacing The scaling of the spacing between lines.
      * @param paragraph_spacing The scaling of the spacing between paragraphs.
@@ -525,6 +525,14 @@ private:
     [[nodiscard]] std::pair<font_metrics, unicode_general_category>
     get_line_metrics(text_shaper::char_const_iterator first, text_shaper::char_const_iterator last) const noexcept;
 
+    /** Get the height of the text.
+     *
+     * This is the vertical distance from the x-height of the top most line, and the base-line of the bottom most line.
+     *
+     * @param lines A list of number-of-graphemes per line.
+     * @param line_spacing The multiplier to use compared to the natural line-spacing for lines within a paragraph.
+     * @param paragraph_spacing The multipler to use compared to the natural line-spacing between paragraphs.
+     */
     [[nodiscard]] float
     get_text_height(std::vector<size_t> const& lines, float line_spacing, float paragraph_spacing) const noexcept;
 };

@@ -15,53 +15,61 @@ namespace hi::inline v1 {
 /** Vertical alignment.
  */
 enum class vertical_alignment : uint8_t {
+    /** No alignment.
+     */
+    none = 0,
+
     /** Align to the top.
      */
-    top = 0,
+    top = 1,
 
     /** Align to the vertical-middle.
      */
-    middle = 1,
+    middle = 2,
 
     /** Align to the bottom.
      */
-    bottom = 2
+    bottom = 3
 };
 
 enum class horizontal_alignment : uint8_t {
+    /** No alignment.
+     */
+    none = 0,
+
     /** Align the text naturally based on the writing direction of each paragraph.
      *
      * This will act as flush_left if the paragraph is in left-to-right direction,
      * and as flush_right if the paragraph is in right-to-left direction.
      */
-    flush = 0,
+    flush = 1,
 
     /** Align the text to the left side
      *
      * The text will be flush-left independent of the writing direction.
      */
-    left = 1,
+    left = 2,
 
     /** Align the text in the center.
      *
      * Since the text is centered, the writing direction is unimportant.
      */
-    center = 2,
+    center = 3,
 
     /** Stretch the text to be flush to both sides.
      *
      * Since the text is flush on both sides, the writing direction is unimportant.
      */
-    justified = 3,
+    justified = 4,
 
     /** Align the text to the right side
      *
      * The text will be flush-left independent of the writing direction.
      */
-    right = 4,
+    right = 5,
 };
 
-[[nodiscard]] constexpr horizontal_alignment mirror(horizontal_alignment const &rhs) noexcept
+[[nodiscard]] constexpr horizontal_alignment mirror(horizontal_alignment const& rhs) noexcept
 {
     if (rhs == horizontal_alignment::left) {
         return horizontal_alignment::right;
@@ -75,10 +83,10 @@ enum class horizontal_alignment : uint8_t {
 class alignment {
 public:
     constexpr alignment() noexcept : _value(0) {}
-    constexpr alignment(alignment const &) noexcept = default;
-    constexpr alignment(alignment &&) noexcept = default;
-    constexpr alignment &operator=(alignment const &) noexcept = default;
-    constexpr alignment &operator=(alignment &&) noexcept = default;
+    constexpr alignment(alignment const&) noexcept = default;
+    constexpr alignment(alignment&&) noexcept = default;
+    constexpr alignment& operator=(alignment const&) noexcept = default;
+    constexpr alignment& operator=(alignment&&) noexcept = default;
 
     constexpr explicit alignment(uint8_t value) noexcept : _value(value) {}
 
@@ -171,29 +179,29 @@ public:
         return static_cast<vertical_alignment>(_value >> 4);
     }
 
-    [[nodiscard]] constexpr friend bool operator==(alignment const &lhs, alignment const &rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(alignment const& lhs, alignment const& rhs) noexcept = default;
 
-    [[nodiscard]] constexpr friend bool operator==(alignment const &lhs, horizontal_alignment const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(alignment const& lhs, horizontal_alignment const& rhs) noexcept
     {
         return lhs.text() == rhs;
     }
 
-    [[nodiscard]] constexpr friend bool operator==(horizontal_alignment const &lhs, alignment const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(horizontal_alignment const& lhs, alignment const& rhs) noexcept
     {
         return lhs == rhs.text();
     }
 
-    [[nodiscard]] constexpr friend bool operator==(alignment const &lhs, vertical_alignment const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(alignment const& lhs, vertical_alignment const& rhs) noexcept
     {
         return lhs.vertical() == rhs;
     }
 
-    [[nodiscard]] constexpr friend bool operator==(vertical_alignment const &lhs, alignment const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(vertical_alignment const& lhs, alignment const& rhs) noexcept
     {
         return lhs == rhs.vertical();
     }
 
-    [[nodiscard]] constexpr friend alignment mirror(alignment const &rhs) noexcept
+    [[nodiscard]] constexpr friend alignment mirror(alignment const& rhs) noexcept
     {
         return alignment{mirror(rhs.text()), rhs.vertical()};
     }

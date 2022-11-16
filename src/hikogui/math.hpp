@@ -88,20 +88,24 @@ auto stddev(Iterator first, Iterator last, T mean)
 template<typename T>
 constexpr void inplace_max(T& a, T const& b) noexcept
 {
-    a = std::max(a, b);
+    using std::max;
+    a = max(a, b);
 }
 
 template<typename T>
 constexpr void inplace_min(T& a, T const& b) noexcept
 {
-    a = std::min(a, b);
+    using std::min;
+    a = min(a, b);
 }
 
 template<typename T>
 constexpr void inplace_clamp(T& a, T const& lo, T const& hi) noexcept
 {
     hi_axiom(lo <= hi);
-    a = std::clamp(a, lo, hi);
+
+    using std::clamp;
+    a = clamp(a, lo, hi);
 }
 
 template<typename T>

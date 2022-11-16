@@ -9,6 +9,7 @@
 #include "../unicode/unicode_word_break.hpp"
 #include "../unicode/unicode_sentence_break.hpp"
 #include "../log.hpp"
+#include "../generator.hpp"
 #include <numeric>
 #include <ranges>
 #include <algorithm>
@@ -385,45 +386,47 @@ text_shaper::get_line_metrics(text_shaper::char_const_iterator first, text_shape
     return {metrics, last_category};
 }
 
-[[nodiscard]] float text_shaper::get_text_height(std::vector<size_t> const &lines, float line_spacing, float paragraph_spacing) const noexcept
+[[nodiscard]] float
+text_shaper::get_text_height(std::vector<size_t> const& lines, float line_spacing, float paragraph_spacing) const noexcept
 {
-    auto total_height = 0.0f;
-    auto first = _text.begin();
-    auto previous = font_metrics{};
-
-    for (auto i = 0_uz; i != lines.size(); ++i) {
-        hilet num_chars = lines[i];
-        hilet is_first_line = i == 0;
-        hilet is_last_line = i == lines.size() - 1;
-
-        hilet last = first + num_chars;
-        hilet [current, category] = get_line_metrics(first, last);
-
-        if (is_first_line) {
-            previous = current;
-        }
-
-        hilet height = previous.descender + std::max(previous.line_gap, current.line_gap) + current.ascender;
-        if (is_last_line) {
-            total_height += height;
-        } else {
-            hilet spacing = category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
-            total_height += spacing * height;
-        }
-
-        previous = current;
-        first = last;
+    if (lines.empty()) {
+        return 0.0f;
     }
+
+    auto line_it = lines.cbegin();
+    auto first = _text.begin();
+    auto last = first + *line_it;
+
+    // Add the x-height of the first line.
+    auto [previous_metrics, previous_category] = get_line_metrics(first, last);
+    auto total_height = previous_metrics.x_height;
+
+    while (line_it != lines.cend()) {
+        first = std::exchange(last, last + *line_it);
+
+        // Advance to the base-line of the next line.
+        auto [current_metrics, current_category] = get_line_metrics(first, last);
+        hilet line_height =
+            previous_metrics.descender + std::max(previous_metrics.line_gap, current_metrics.line_gap) + current_metrics.ascender;
+
+        hilet spacing = previous_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
+        total_height += spacing * line_height;
+
+        previous_metrics = std::move(current_metrics);
+        previous_category = std::move(current_category);
+    }
+
+    return total_height;
 }
 
 struct get_widths_result {
     std::vector<size_t> lines;
     float width;
-    uint8_t priority
+    uint8_t priority;
 };
 
-[[nodiscard]] constexpr std::vector<get_widths_result>
-text_shaper::get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths) noexcept
+[[nodiscard]] static generator<get_widths_result>
+get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths, float dpi_scale) noexcept
 {
     struct entry_type {
         size_t min_height;
@@ -433,53 +436,52 @@ text_shaper::get_widths(unicode_break_vector const& opportunities, std::vector<f
     };
 
     auto stack = std::vector<entry_type>{};
-    auto r = std::vector<get_widths_result>{};
 
-    hilet a4_one_column = 172.0f * 2.83465f * _dpi_scale;
-    hilet a4_two_column = 88.0f * 2.83465f * _dpi_scale;
-    hilet paper_column = 46.0f * 2.83465f * _dpi_scale;
+    hilet a4_one_column = 172.0f * 2.83465f * dpi_scale;
+    hilet a4_two_column = 88.0f * 2.83465f * dpi_scale;
+    hilet paper_column = 46.0f * 2.83465f * dpi_scale;
 
     // Max-width first.
-    auto[max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
+    auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
     auto height = max_lines.size();
-    r.emplace_back(std::move(max_lines), max_width, max_width > a4_one_column ? 10 : 0);
+    co_yield {std::move(max_lines), max_width, max_width > a4_one_column ? uint8_t{10} : uint8_t{0}};
 
     if (max_width > a4_one_column) {
-        auto[width, lines] = detail::unicode_LB_width(opportunities, widths, a4_one_column);
+        auto [width, lines] = detail::unicode_LB_width(opportunities, widths, a4_one_column);
         if (std::exchange(height, lines.size()) > lines.size()) {
-            r.emplace_back(std::move(lines), width, 20);
+            co_yield {std::move(lines), width, uint8_t{20}};
         }
     }
 
     if (max_width > a4_two_column) {
-        auto[width, lines] = detail::unicode_LB_width(opportunities, widths, a4_two_column);
+        auto [width, lines] = detail::unicode_LB_width(opportunities, widths, a4_two_column);
         if (std::exchange(height, lines.size()) > lines.size()) {
-            r.emplace_back(std::move(lines), width, 20);
+            co_yield {std::move(lines), width, uint8_t{20}};
         }
     }
 
     if (max_width > paper_column) {
-        auto[width, lines] = detail::unicode_LB_width(opportunities, widths, paper_column);
+        auto [width, lines] = detail::unicode_LB_width(opportunities, widths, paper_column);
         if (std::exchange(height, lines.size()) > lines.size()) {
-            r.emplace_back(std::move(lines), width, 20);
+            co_yield {std::move(lines), width, uint8_t{20}};
         }
     }
 
     if (max_width < a4_two_column) {
-        auto[min_width, min_lines] = detail::unicode_LB_minimum_width(opportunities, widths);
+        auto [min_width, min_lines] = detail::unicode_LB_minimum_width(opportunities, widths);
 
         stack.emplace_back(min_lines.size(), height, min_width, max_width);
-        r.emplace_back(std::move(min_lines), min_width, 0);
+        co_yield {std::move(min_lines), min_width, uint8_t{0}};
 
         do {
             hilet entry = stack.back();
             stack.pop_back();
 
-            if (entry.max_lines.size() > entry.min_lines.size() + 1 and entry.max_width >= entry.min_width + 2.0f) {
+            if (entry.max_height > entry.max_height + 1 and entry.max_width >= entry.min_width + 2.0f) {
                 // There lines between the current two sizes; split in two.
                 hilet half_width = (entry.min_width + entry.max_width) * 0.5f;
 
-                auto[split_width, split_lines] = detail::unicode_LB_width(opportunities, widths, half_width);
+                auto [split_width, split_lines] = detail::unicode_LB_width(opportunities, widths, half_width);
                 hilet split_height = split_lines.size();
 
                 if (split_height == entry.min_height) {
@@ -492,15 +494,13 @@ text_shaper::get_widths(unicode_break_vector const& opportunities, std::vector<f
 
                 } else {
                     // Split through the middle, use the split_width for faster searching.
-                    r.emplace_back(std::move(split_lines), split_width, 5);
+                    co_yield {std::move(split_lines), split_width, uint8_t{5}};
                     stack.emplace_back(entry.min_height, split_height, entry.min_width, split_width);
                     stack.emplace_back(split_height, entry.max_height, split_width, entry.max_width);
                 }
             }
         } while (not stack.empty());
     }
-
-    return r;
 }
 
 [[nodiscard]] constraint2D
@@ -508,35 +508,14 @@ text_shaper::get_constraints(vertical_alignment alignment, float line_spacing, f
 {
     auto r = constraint2D{};
 
-    // Get all the widths and the line information for them.
-    // XXX Put `unicode_line_break_text_widths()` algorithm in text_shaper and eliminate certain sizes here.
-    //auto width_combinations = unicode_line_break_text_widths(_line_break_opportunities, _line_break_widths);
+    for (auto& [lines, width, priority] : get_widths(_line_break_opportunities, _line_break_widths, _dpi_scale)) {
+        hilet height = get_text_height(lines, line_spacing, paragraph_spacing);
 
-    for (auto& [width, priority, lines] : width_combinations) {
-        auto height = get_text_height(lines, line_spacing, paragraph_spacing);
-
-        r.emplace_back(std::ceil(width), std::ceil(height));
-        r.back().set_base_line(alignment);
-        r.back().priority = priority;
+        r.emplace_back(width, height, priority);
     }
+    r.set_baseline(alignment);
 
     return r;
-
-    // A4 paper 21 cm wide, 0.75" margins.
-    // A4 text width between margins = 17.19 cm = 487 pt = (487pt * dpi_scale) px.
-    hilet A4_rectangle = aarectangle{point2{0.0f, 0.0f}, point2{487.0f * _dpi_scale, std::numeric_limits<float>::max()}};
-    constexpr auto base_line = 0.0f;
-    constexpr auto sub_pixel_size = extent2{1.0f, 1.0f};
-
-    // Get the natural size of the text.
-    hilet A4_lines =
-        make_lines(A4_rectangle, base_line, sub_pixel_size, alignment, unicode_bidi_class::L, line_spacing, paragraph_spacing);
-    hi_assert(not A4_lines.empty());
-
-    auto max_width = 0.0f;
-    for (hilet& line : A4_lines) {
-        inplace_max(max_width, std::ceil(line.width));
-    }
 }
 
 [[nodiscard]] void text_shaper::layout(
