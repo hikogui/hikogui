@@ -27,21 +27,9 @@ public:
          */
         uint16_t height = 0;
 
-        /** Priority used to select this extent.
-         *
-         * Higher value is higher priority.
-         */
-        uint8_t priority = 0;
-
-        /** This extent is used as the maximum size of the widget.
-         */
-        uint8_t is_maximum : 1 = 0;
-
-        extent_type(float width, float height, uint8_t priority, bool is_maximum) noexcept :
+        extent_type(float width, float height) noexcept :
             width(saturate_cast<uint16_t>(std::ceil(width))),
-            height(saturate_cast<uint16_t>(std::ceil(height))),
-            priority(priority),
-            is_maximum(is_maximum)
+            height(saturate_cast<uint16_t>(std::ceil(height)))
         {
         }
     };
@@ -57,21 +45,21 @@ public:
         return _sizes.empty();
     }
 
-    [[nodiscard]] constexpr extent_type const& back() const noexcept
+    [[nodiscard]] extent_type const& back() const noexcept
     {
         hi_axiom(not _sizes.empty());
         return _sizes.back();
     }
 
-    [[nodiscard]] constexpr extent_type& back() noexcept
+    [[nodiscard]] extent_type& back() noexcept
     {
         hi_axiom(not _sizes.empty());
         return _sizes.back();
     }
 
-    constexpr extent_type& emplace_back(float width, float height, uint8_t priority = uint8_t{0}, bool is_maximum = false) noexcept
+    extent_type& emplace_back(float width, float height) noexcept
     {
-        return _sizes.emplace_back(width, height, priority, is_maximum);
+        return _sizes.emplace_back(width, height);
     }
 
     constexpr void set_baseline(vertical_alignment alignment, float padding_bottom = 0.0f, float padding_top = 0.0f) noexcept
@@ -87,7 +75,7 @@ public:
     }
 
 private:
-    std::vector<extent_type> _sizes = {};
+    lean_vector<extent_type> _sizes = {};
 
     uint8_t _decimal_line_padding_left = 0;
     uint8_t _decimal_line_padding_right = 0;

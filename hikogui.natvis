@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="hi::v1::lean_vector&lt;*&gt;">
+        <Expand>
+            <Item Condition="_ptr == nullptr" Name="[size]" ExcludeView="simple">0</Item>
+            <Item Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 0" Name="[size]" ExcludeView="simple">_end - _ptr</Item>
+            <Item Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 1" Name="[size]" ExcludeView="simple">(reinterpret_cast&lt;unsigned long long&gt;(_ptr) &gt;&gt; 1) &amp; 0x7f</Item>
+
+            <Item Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 0" Name="[capacity]" ExcludeView="simple">_cap - _ptr</Item>
+            <Item Condition="_ptr == nullptr || (reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 1)" Name="[capacity]" ExcludeView="simple">(23 - value_alignment) / sizeof(value_type)</Item>
+            <ArrayItems Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 0">
+                <Size>_end - _ptr</Size>
+                <ValuePointer>_ptr</ValuePointer>
+            </ArrayItems>
+            <ArrayItems Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 1">
+                <Size>(reinterpret_cast&lt;unsigned long long&gt;(_ptr) &gt;&gt; 1) &amp; 0x7f</Size>
+                <ValuePointer>reinterpret_cast&lt;pointer&gt;(reinterpret_cast&lt;unsigned long long&gt;(&amp;_ptr) + value_alignment)</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
     <Type Name="hi::v1::datum">
         <DisplayString Condition="_tag == 0">undefined</DisplayString>
         <DisplayString Condition="_tag == 1">{_value._double}</DisplayString>

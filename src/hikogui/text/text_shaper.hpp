@@ -183,12 +183,9 @@ public:
      *  - All smaller sizes, if maximum size is smaller than A4 two-column, priority=5 (decreasing every step).
      *
      * @param alignment The vertical alignment of text.
-     * @param line_spacing The scaling of the spacing between lines.
-     * @param paragraph_spacing The scaling of the spacing between paragraphs.
      * @return The constraints (a list of sizes) which can hold the text.
      */
-    [[nodiscard]] constraint2D
-    get_constraints(vertical_alignment alignment, float line_spacing = 1.0f, float paragraph_spacing = 1.5f) noexcept;
+    [[nodiscard]] constraint2D get_constraints(vertical_alignment alignment) noexcept;
 
     /** Layout the lines of the text.
      *
@@ -530,11 +527,8 @@ private:
      * This is the vertical distance from the x-height of the top most line, and the base-line of the bottom most line.
      *
      * @param lines A list of number-of-graphemes per line.
-     * @param line_spacing The multiplier to use compared to the natural line-spacing for lines within a paragraph.
-     * @param paragraph_spacing The multipler to use compared to the natural line-spacing between paragraphs.
      */
-    [[nodiscard]] float
-    get_text_height(std::vector<size_t> const& lines, float line_spacing, float paragraph_spacing) const noexcept;
+    [[nodiscard]] float get_text_height(std::vector<size_t> const& lines) const noexcept;
 };
 
 } // namespace hi::inline v1

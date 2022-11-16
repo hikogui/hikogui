@@ -79,8 +79,10 @@ widget_constraints const& text_widget::set_constraints(set_constraints_context c
     // Make sure that the current selection fits the new text.
     _selection.resize(_cached_text.size());
 
+    hilet actual_text_style = context.theme->text_style(*text_style);
+
     // Create a new text_shaper with the new text.
-    _shaped_text = text_shaper{*context.font_book, _cached_text, context.theme->text_style(*text_style), context.theme->scale};
+    _shaped_text = text_shaper{*context.font_book, _cached_text, actual_text_style, context.theme->scale};
 
     hilet constraints_ = _shaped_text.get_constraints(alignment->vertical());
 

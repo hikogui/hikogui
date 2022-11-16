@@ -38,6 +38,8 @@ public:
     using difference_type = std::ptrdiff_t;
     using allocator_type = std::allocator<value_type>;
 
+    constexpr static size_t value_alignment = alignof(value_type);
+
     /** The allocator_type used to allocate items.
      */
     constexpr allocator_type get_allocator() const noexcept
@@ -929,7 +931,7 @@ private:
 
     [[nodiscard]] pointer _short_data() const noexcept
     {
-        static_assert(alignof(T) <= alignof(T *));
+        static_assert(alignof(value_type) <= alignof(pointer));
 
         void *p = const_cast<lean_vector *>(this);
         if constexpr (std::endian::native == std::endian::little) {

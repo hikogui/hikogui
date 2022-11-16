@@ -386,30 +386,30 @@ text_shaper::get_line_metrics(text_shaper::char_const_iterator first, text_shape
     return {metrics, last_category};
 }
 
-[[nodiscard]] float
-text_shaper::get_text_height(std::vector<size_t> const& lines, float line_spacing, float paragraph_spacing) const noexcept
+[[nodiscard]] float text_shaper::get_text_height(std::vector<size_t> const& lines) const noexcept
 {
     if (lines.empty()) {
         return 0.0f;
     }
 
     auto line_it = lines.cbegin();
-    auto first = _text.begin();
-    auto last = first + *line_it;
+    auto char_it_first = _text.begin();
+    auto char_it_last = char_it_first + *line_it++;
 
     // Add the x-height of the first line.
-    auto [previous_metrics, previous_category] = get_line_metrics(first, last);
+    auto [previous_metrics, previous_category] = get_line_metrics(char_it_first, char_it_last);
     auto total_height = previous_metrics.x_height;
 
-    while (line_it != lines.cend()) {
-        first = std::exchange(last, last + *line_it);
+    for (; line_it != lines.cend(); ++line_it) {
+        char_it_first = std::exchange(char_it_last, char_it_last + *line_it);
 
         // Advance to the base-line of the next line.
-        auto [current_metrics, current_category] = get_line_metrics(first, last);
+        auto [current_metrics, current_category] = get_line_metrics(char_it_first, char_it_last);
         hilet line_height =
             previous_metrics.descender + std::max(previous_metrics.line_gap, current_metrics.line_gap) + current_metrics.ascender;
 
-        hilet spacing = previous_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
+        hilet spacing = previous_category == unicode_general_category::Zp ? previous_metrics.paragraph_spacing :
+                                                                            previous_metrics.line_spacing;
         total_height += spacing * line_height;
 
         previous_metrics = std::move(current_metrics);
@@ -419,13 +419,7 @@ text_shaper::get_text_height(std::vector<size_t> const& lines, float line_spacin
     return total_height;
 }
 
-struct get_widths_result {
-    std::vector<size_t> lines;
-    float width;
-    uint8_t priority;
-};
-
-[[nodiscard]] static generator<get_widths_result>
+[[nodiscard]] static generator<std::pair<std::vector<size_t>, float>>
 get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths, float dpi_scale) noexcept
 {
     struct entry_type {
@@ -439,39 +433,36 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
 
     hilet a4_one_column = 172.0f * 2.83465f * dpi_scale;
     hilet a4_two_column = 88.0f * 2.83465f * dpi_scale;
-    hilet paper_column = 46.0f * 2.83465f * dpi_scale;
 
     // Max-width first.
     auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
     auto height = max_lines.size();
-    co_yield {std::move(max_lines), max_width, max_width > a4_one_column ? uint8_t{10} : uint8_t{0}};
+    co_yield {std::move(max_lines), max_width};
 
-    if (max_width > a4_one_column) {
-        auto [width, lines] = detail::unicode_LB_width(opportunities, widths, a4_one_column);
-        if (std::exchange(height, lines.size()) > lines.size()) {
-            co_yield {std::move(lines), width, uint8_t{20}};
+    if (max_width >= a4_two_column) {
+        // If this is wide text, then only try a few sizes.
+        if (max_width > a4_one_column) {
+            auto [width, lines] = detail::unicode_LB_width(opportunities, widths, a4_one_column);
+            if (std::exchange(height, lines.size()) > lines.size()) {
+                co_yield {std::move(lines), width};
+            }
         }
-    }
 
-    if (max_width > a4_two_column) {
         auto [width, lines] = detail::unicode_LB_width(opportunities, widths, a4_two_column);
         if (std::exchange(height, lines.size()) > lines.size()) {
-            co_yield {std::move(lines), width, uint8_t{20}};
+            co_yield {std::move(lines), width};
         }
-    }
 
-    if (max_width > paper_column) {
-        auto [width, lines] = detail::unicode_LB_width(opportunities, widths, paper_column);
-        if (std::exchange(height, lines.size()) > lines.size()) {
-            co_yield {std::move(lines), width, uint8_t{20}};
-        }
-    }
-
-    if (max_width < a4_two_column) {
+    } else {
+        // With small text we try every size that changes the number of lines.
         auto [min_width, min_lines] = detail::unicode_LB_minimum_width(opportunities, widths);
+        if (min_lines.size() >= height) {
+            // There are no multiple sizes.
+            co_return;
+        }
 
         stack.emplace_back(min_lines.size(), height, min_width, max_width);
-        co_yield {std::move(min_lines), min_width, uint8_t{0}};
+        co_yield {std::move(min_lines), min_width};
 
         do {
             hilet entry = stack.back();
@@ -494,7 +485,7 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
 
                 } else {
                     // Split through the middle, use the split_width for faster searching.
-                    co_yield {std::move(split_lines), split_width, uint8_t{5}};
+                    co_yield {std::move(split_lines), split_width};
                     stack.emplace_back(entry.min_height, split_height, entry.min_width, split_width);
                     stack.emplace_back(split_height, entry.max_height, split_width, entry.max_width);
                 }
@@ -503,15 +494,14 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     }
 }
 
-[[nodiscard]] constraint2D
-text_shaper::get_constraints(vertical_alignment alignment, float line_spacing, float paragraph_spacing) noexcept
+[[nodiscard]] constraint2D text_shaper::get_constraints(vertical_alignment alignment) noexcept
 {
     auto r = constraint2D{};
 
-    for (auto& [lines, width, priority] : get_widths(_line_break_opportunities, _line_break_widths, _dpi_scale)) {
-        hilet height = get_text_height(lines, line_spacing, paragraph_spacing);
+    for (auto& [lines, width] : get_widths(_line_break_opportunities, _line_break_widths, _dpi_scale)) {
+        hilet height = get_text_height(lines);
 
-        r.emplace_back(width, height, priority);
+        r.emplace_back(width, height);
     }
     r.set_baseline(alignment);
 
