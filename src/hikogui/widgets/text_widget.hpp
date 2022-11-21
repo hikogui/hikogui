@@ -14,11 +14,11 @@
 #include "../text/semantic_text_style.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
-#include "../observer.hpp"
-#include "../alignment.hpp"
+#include "../geometry/alignment.hpp"
 #include "../i18n/translate.hpp"
 #include "../undo_stack.hpp"
 #include "../scoped_task.hpp"
+#include "../observer.hpp"
 #include <memory>
 #include <string>
 #include <array>

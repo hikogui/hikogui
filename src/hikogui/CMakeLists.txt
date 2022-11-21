@@ -23,7 +23,6 @@ add_subdirectory(widgets)
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
 target_sources(hikogui PRIVATE
-    alignment.hpp
     algorithm.hpp
     arguments.hpp
     animator.hpp

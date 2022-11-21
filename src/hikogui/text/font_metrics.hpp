@@ -53,6 +53,14 @@ struct font_metrics {
      */
     float paragraph_spacing = 1.5f;
 
+    ~font_metrics() = default;
+    constexpr font_metrics() noexcept = default;
+    constexpr font_metrics(font_metrics const&) noexcept = default;
+    constexpr font_metrics(font_metrics&&) noexcept = default;
+    constexpr font_metrics& operator=(font_metrics const&) noexcept = default;
+    constexpr font_metrics& operator=(font_metrics&&) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(font_metrics const&, font_metrics const&) noexcept = default;
+
     /** Scale the metrics by a scalar value.
      */
     [[nodiscard]] constexpr friend font_metrics operator*(float const& lhs, font_metrics const& rhs) noexcept

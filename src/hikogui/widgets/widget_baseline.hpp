@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../alignment.hpp"
+#include "../geometry/alignment.hpp"
 
 namespace hi { inline namespace v1 {
 

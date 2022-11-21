@@ -494,16 +494,16 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     }
 }
 
-[[nodiscard]] constraint2D text_shaper::get_constraints(vertical_alignment alignment) noexcept
+[[nodiscard]] box_constraints text_shaper::get_constraints(vertical_alignment alignment) noexcept
 {
-    auto r = constraint2D{};
+    auto r = box_constraints{};
 
     for (auto& [lines, width] : get_widths(_line_break_opportunities, _line_break_widths, _dpi_scale)) {
         hilet height = get_text_height(lines);
 
-        r.emplace_back(width, height);
+        //r.emplace_back(width, height);
     }
-    r.set_baseline(alignment);
+    //r.set_baseline(alignment);
 
     return r;
 }

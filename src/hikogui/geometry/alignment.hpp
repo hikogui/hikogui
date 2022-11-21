@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "assert.hpp"
-#include "cast.hpp"
+#include "../assert.hpp"
+#include "../cast.hpp"
 
 namespace hi::inline v1 {
 

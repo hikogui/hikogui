@@ -12,12 +12,12 @@
 #include "text_style.hpp"
 #include "glyph_ids.hpp"
 #include "font.hpp"
-#include "../geometry/constraint2D.hpp"
+#include "../geometry/box_constraints.hpp"
+#include "../geometry/alignment.hpp"
 #include "../unicode/unicode_description.hpp"
 #include "../unicode/unicode_break_opportunity.hpp"
 #include "../unicode/grapheme.hpp"
 #include "../unicode/gstring.hpp"
-#include "../alignment.hpp"
 #include <vector>
 #include <tuple>
 
@@ -185,7 +185,7 @@ public:
      * @param alignment The vertical alignment of text.
      * @return The constraints (a list of sizes) which can hold the text.
      */
-    [[nodiscard]] constraint2D get_constraints(vertical_alignment alignment) noexcept;
+    [[nodiscard]] box_constraints get_constraints(vertical_alignment alignment) noexcept;
 
     /** Layout the lines of the text.
      *

@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "../GFX/paged_image.hpp"
-#include "../alignment.hpp"
+#include "../geometry/alignment.hpp"
 #include "../label.hpp"
 #include <memory>
 #include <string>

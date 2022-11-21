@@ -11,7 +11,7 @@
 #include "widget.hpp"
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
-#include "../alignment.hpp"
+#include "../geometry/alignment.hpp"
 #include "../label.hpp"
 #include <memory>
 #include <string>

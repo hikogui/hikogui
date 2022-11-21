@@ -86,17 +86,19 @@ auto stddev(Iterator first, Iterator last, T mean)
 }
 
 template<typename T>
-constexpr void inplace_max(T& a, T const& b) noexcept
+constexpr bool inplace_max(T& a, T const& b) noexcept
 {
     using std::max;
     a = max(a, b);
+    return a == b;
 }
 
 template<typename T>
-constexpr void inplace_min(T& a, T const& b) noexcept
+constexpr bool inplace_min(T& a, T const& b) noexcept
 {
     using std::min;
     a = min(a, b);
+    return a == b;
 }
 
 template<typename T>

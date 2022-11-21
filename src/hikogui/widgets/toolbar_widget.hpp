@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "grid_layout.hpp"
-#include "../alignment.hpp"
+#include "../geometry/alignment.hpp"
 #include <memory>
 #include <ranges>
 
