@@ -108,7 +108,7 @@ public:
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
-    widget_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
+    box_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
@@ -138,13 +138,13 @@ private:
     /** The rectangle where the text is displayed.
      */
     aarectangle _text_rectangle;
-    widget_constraints _text_constraints;
+    box_constraints _text_constraints;
 
     /** An error string to show to the user.
      */
     observer<label> _error_label;
     aarectangle _error_label_rectangle;
-    widget_constraints _error_label_constraints;
+    box_constraints _error_label_constraints;
     std::unique_ptr<label_widget> _error_label_widget;
 
     typename decltype(continues)::callback_token _continues_cbt;

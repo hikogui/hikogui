@@ -37,7 +37,7 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
     this->delegate->init(*this);
 }
 
-widget_constraints const& tab_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& tab_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 

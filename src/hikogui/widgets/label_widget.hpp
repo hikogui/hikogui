@@ -90,7 +90,7 @@ public:
         co_yield _text_widget.get();
     }
 
-    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept;
@@ -103,10 +103,10 @@ private:
     decltype(text_style)::callback_token _text_style_cbt;
 
     aarectangle _icon_rectangle;
-    widget_constraints _icon_constraints;
+    box_constraints _icon_constraints;
     std::unique_ptr<icon_widget> _icon_widget;
     aarectangle _text_rectangle;
-    widget_constraints _text_constraints;
+    box_constraints _text_constraints;
     std::unique_ptr<text_widget> _text_widget;
 
     void set_attributes() noexcept {}

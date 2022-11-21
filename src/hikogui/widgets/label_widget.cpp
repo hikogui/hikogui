@@ -48,7 +48,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
         callback_flags::main);
 }
 
-widget_constraints const& label_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& label_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 

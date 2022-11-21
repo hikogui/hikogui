@@ -21,7 +21,7 @@
 #include "../chrono.hpp"
 #include "../generator.hpp"
 #include "set_constraints_context.hpp"
-#include "widget_constraints.hpp"
+#include "../geometry/box_constraints.hpp"
 #include "widget_layout.hpp"
 #include "widget_mode.hpp"
 #include <memory>
@@ -156,9 +156,9 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual widget_constraints const& set_constraints(set_constraints_context const& context) noexcept = 0;
+    virtual box_constraints const& set_constraints(set_constraints_context const& context) noexcept = 0;
 
-    widget_constraints const& constraints() const noexcept
+    box_constraints const& constraints() const noexcept
     {
         return _constraints;
     }
@@ -292,7 +292,7 @@ public:
     virtual [[nodiscard]] color label_color() const noexcept;
 
 protected:
-    widget_constraints _constraints;
+    box_constraints _constraints;
     widget_layout _layout;
 
     decltype(mode)::callback_token _mode_cbt;

@@ -92,7 +92,7 @@ public:
         co_yield _horizontal_scroll_bar.get();
     }
 
-    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override
+    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
     {
         _layout = {};
         hilet aperture_constraints = _aperture->set_constraints(context);

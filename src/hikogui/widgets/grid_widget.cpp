@@ -52,7 +52,7 @@ widget& grid_widget::add_widget(
     return ref;
 }
 
-widget_constraints const& grid_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& grid_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
     _rows.clear();

@@ -55,7 +55,7 @@ public:
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
-    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
@@ -66,11 +66,11 @@ private:
     gui_window *_window;
     
     aarectangle _content_rectangle;
-    widget_constraints _content_constraints;
+    box_constraints _content_constraints;
     std::unique_ptr<grid_widget> _content;
 
     aarectangle _toolbar_rectangle;
-    widget_constraints _toolbar_constraints;
+    box_constraints _toolbar_constraints;
     std::unique_ptr<toolbar_widget> _toolbar;
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;

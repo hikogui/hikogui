@@ -8,7 +8,7 @@
 
 namespace hi::inline v1 {
 
-widget_constraints const& checkbox_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& checkbox_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
     _button_size = {context.theme->size, context.theme->size};

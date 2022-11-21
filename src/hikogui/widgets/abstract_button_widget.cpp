@@ -39,7 +39,7 @@ void abstract_button_widget::activate() noexcept
     this->pressed();
 }
 
-widget_constraints abstract_button_widget::set_constraints_button(set_constraints_context const &context) const noexcept
+box_constraints abstract_button_widget::set_constraints_button(set_constraints_context const &context) const noexcept
 {
     return max(_on_label_widget->set_constraints(context), _off_label_widget->set_constraints(context), _other_label_widget->set_constraints(context));
 }

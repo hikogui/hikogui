@@ -19,7 +19,7 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
     }
 }
 
-widget_constraints const& toolbar_widget::set_constraints(set_constraints_context const &context) noexcept
+box_constraints const& toolbar_widget::set_constraints(set_constraints_context const &context) noexcept
 {
     _layout = {};
     _grid_layout.clear();

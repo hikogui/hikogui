@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "box_constraints.hpp"
+#include "../geometry/box_constraints.hpp"
 #include "spreadsheet_address.hpp"
 #include "../cast.hpp"
 #include <cstdint>

@@ -52,7 +52,7 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
     co_yield _off_label_widget.get();
 }
 
-widget_constraints const& selection_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& selection_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 

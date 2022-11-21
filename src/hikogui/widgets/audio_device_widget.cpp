@@ -39,7 +39,7 @@ audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio
     co_yield _grid_widget.get();
 }
 
-widget_constraints const& audio_device_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& audio_device_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
     _constraints = _grid_widget->set_constraints(context);
