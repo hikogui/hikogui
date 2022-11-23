@@ -58,9 +58,9 @@ void abstract_button_widget::set_layout_button(widget_layout const& context) noe
     _off_label_widget->mode = state_ == button_state::off ? widget_mode::display : widget_mode::invisible;
     _other_label_widget->mode = state_ == button_state::other ? widget_mode::display : widget_mode::invisible;
 
-    _on_label_widget->set_layout(context.transform(_label_rectangle));
-    _off_label_widget->set_layout(context.transform(_label_rectangle));
-    _other_label_widget->set_layout(context.transform(_label_rectangle));
+    _on_label_widget->set_layout(context.transform(_label_shape));
+    _off_label_widget->set_layout(context.transform(_label_shape));
+    _other_label_widget->set_layout(context.transform(_label_shape));
 }
 
 [[nodiscard]] color abstract_button_widget::background_color() const noexcept

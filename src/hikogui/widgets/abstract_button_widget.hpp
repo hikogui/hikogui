@@ -89,7 +89,8 @@ public:
     bool handle_event(gui_event const& event) noexcept override;
     /// @endprivatesection
 protected:
-    aarectangle _label_rectangle;
+    box_constraints _label_constraints;
+    box_shape _label_shape;
     std::unique_ptr<label_widget> _on_label_widget;
     std::unique_ptr<label_widget> _off_label_widget;
     std::unique_ptr<label_widget> _other_label_widget;

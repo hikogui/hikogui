@@ -58,7 +58,7 @@ box_constraints const& icon_widget::set_constraints(set_constraints_context cons
                 context.theme->scale;
         }
     }
-    return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, context.theme->margin};
+    return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, *alignment, context.theme->margin};
 }
 
 void icon_widget::set_layout(widget_layout const &context) noexcept

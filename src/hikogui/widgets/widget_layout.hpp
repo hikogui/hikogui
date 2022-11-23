@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "../layout/box_shape.hpp"
 #include "../geometry/matrix.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
@@ -18,7 +19,7 @@
 #include "../GUI/theme.hpp"
 #include "../GFX/subpixel_orientation.hpp"
 #include "../chrono.hpp"
-#include "widget_baseline.hpp"
+#include "../math.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -105,7 +106,11 @@ public:
 
     /** The base-line in widget local y-coordinate.
      */
-    float baseline = 0.0f;
+    float base_line = 0.0f;
+
+    /** The decimal-line in widget local x-coordinate.
+     */
+    float decimal_line = 0.0f;
 
     constexpr widget_layout(widget_layout const&) noexcept = default;
     constexpr widget_layout(widget_layout&&) noexcept = default;
@@ -211,22 +216,22 @@ public:
         sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
         writing_direction(writing_direction),
         display_time_point(display_time_point),
-        baseline()
+        base_line(),
+        decimal_line()
     {
     }
 
     /** Create a new widget_layout for the child widget.
      *
-     * @param child_rectangle The location and size of the child widget, relative to the current widget.
+     * @param shape The location and size of the child widget, relative to the current widget.
      * @param elevation The elevation of the child widget, relative to the current widget.
      * @param new_clipping_rectangle The new clipping rectangle of the child widget, relative to the current widget.
-     * @param new_baseline The baseline to use by the child widget.
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout
-    transform(aarectangle const &child_rectangle, float elevation, aarectangle new_clipping_rectangle, widget_baseline new_baseline = widget_baseline{}) const noexcept
+    transform(box_shape const& shape, float elevation, aarectangle new_clipping_rectangle) const noexcept
     {
-        auto to_parent3 = translate3{child_rectangle, elevation};
+        auto to_parent3 = translate3{shape.rectangle, elevation};
         auto from_parent3 = ~to_parent3;
 
         widget_layout r = *this;
@@ -234,37 +239,33 @@ public:
         r.from_parent = from_parent3;
         r.to_window = to_parent3 * this->to_window;
         r.from_window = from_parent3 * this->from_window;
-        r.size = child_rectangle.size();
+        r.size = shape.rectangle.size();
         r.clipping_rectangle = bounding_rectangle(from_parent3 * intersect(this->clipping_rectangle, new_clipping_rectangle));
-        if (new_baseline.empty()) {
-            r.baseline = this->baseline - child_rectangle.bottom();
+        if (isnan(shape.base_line)) {
+            // Use the baseline of the current layout and translate it.
+            r.base_line = this->base_line - shape.rectangle.bottom();
         } else {
-            r.baseline = new_baseline.absolute(child_rectangle.height());
+            r.base_line = shape.base_line - shape.rectangle.bottom();
+        }
+        if (isnan(shape.decimal_line)) {
+            // Use the baseline of the current layout and translate it.
+            r.decimal_line = this->decimal_line - shape.rectangle.left();
+        } else {
+            r.decimal_line = shape.decimal_line - shape.rectangle.left();
         }
         return r;
     }
 
     /** Create a new widget_layout for the child widget.
      *
-     * @param child_rectangle The location and size of the child widget, relative to the current widget.
-     * @param elevation The relative elevation of the child widget compared to the current widget.
-     * @param new_baseline The relative baseline of the child widgets on the same row.
+     * @param shape The location and size of the child widget, relative to the current widget.
+     * @param elevation The elevation of the child widget, relative to the current widget.
      * @return A new widget_layout for use by the child widget.
      */
-    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f, widget_baseline new_baseline = widget_baseline{}) const noexcept
+    [[nodiscard]] constexpr widget_layout
+    transform(box_shape const& shape, float elevation = 1.0f) const noexcept
     {
-        return transform(child_rectangle, elevation, child_rectangle + redraw_overhang, new_baseline);
-    }
-
-    /** Create a new widget_layout for the child widget.
-     *
-     * @param child_rectangle The location and size of the child widget, relative to the current widget.
-     * @param new_baseline The relative baseline of the child widgets on the same row.
-     * @return A new widget_layout for use by the child widget.
-     */
-    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, widget_baseline new_baseline) const noexcept
-    {
-        return transform(child_rectangle, 1.0f, child_rectangle + redraw_overhang, new_baseline);
+        return transform(shape, elevation, shape.rectangle + redraw_overhang);
     }
 
     /** Override e context with the new clipping rectangle.
@@ -280,4 +281,4 @@ public:
     }
 };
 
-}} // namespace hi::inline v1
+}} // namespace hi::v1

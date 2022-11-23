@@ -102,9 +102,9 @@ box_constraints const& label_widget::set_constraints(set_constraints_context con
     if ((*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) and
         *alignment != vertical_alignment::middle) {
         // When the icon and text are above one another, the label needs to define its own base-line.
-        return _constraints = {size, size, size, context.theme->margin};
+        return _constraints = {size, size, size, *alignment, context.theme->margin};
     } else {
-        return _constraints = {size, size, size, context.theme->margin, _text_constraints.baseline};
+        return _constraints = {size, size, size, *alignment, context.theme->margin};
     }
 }
 
@@ -113,26 +113,28 @@ void label_widget::set_layout(widget_layout const& context) noexcept
     if (compare_store(_layout, context)) {
         hilet alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
 
-        _text_rectangle = aarectangle{};
-        if (alignment_ == horizontal_alignment::left) {
-            hilet text_width = context.width() - _icon_size - _inner_margin;
-            _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, context.height()};
+        hilet text_rectangle = [&] {
+            if (alignment_ == horizontal_alignment::left) {
+                hilet text_width = context.width() - _icon_size - _inner_margin;
+                return aarectangle{_icon_size + _inner_margin, 0.0f, text_width, context.height()};
 
-        } else if (alignment_ == horizontal_alignment::right) {
-            hilet text_width = context.width() - _icon_size - _inner_margin;
-            _text_rectangle = {0.0f, 0.0f, text_width, context.height()};
+            } else if (alignment_ == horizontal_alignment::right) {
+                hilet text_width = context.width() - _icon_size - _inner_margin;
+                return aarectangle{0.0f, 0.0f, text_width, context.height()};
 
-        } else if (alignment_ == vertical_alignment::top) {
-            hilet text_height = context.height() - _icon_size - _inner_margin;
-            _text_rectangle = {0.0f, 0.0f, context.width(), text_height};
+            } else if (alignment_ == vertical_alignment::top) {
+                hilet text_height = context.height() - _icon_size - _inner_margin;
+                return aarectangle{0.0f, 0.0f, context.width(), text_height};
 
-        } else if (alignment_ == vertical_alignment::bottom) {
-            hilet text_height = context.height() - _icon_size - _inner_margin;
-            _text_rectangle = {0.0f, _icon_size + _inner_margin, context.width(), text_height};
+            } else if (alignment_ == vertical_alignment::bottom) {
+                hilet text_height = context.height() - _icon_size - _inner_margin;
+                return aarectangle{0.0f, _icon_size + _inner_margin, context.width(), text_height};
 
-        } else {
-            _text_rectangle = context.rectangle();
-        }
+            } else {
+                return context.rectangle();
+            }
+        }();
+        _text_shape = box_shape{_text_constraints, text_rectangle, context.theme->x_height};
 
         hilet icon_pos = [&] {
             if (alignment_ == hi::alignment::top_left()) {
@@ -157,19 +159,12 @@ void label_widget::set_layout(widget_layout const& context) noexcept
                 hi_no_default();
             }
         }();
-        _icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
+        hilet icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
+        _icon_shape = box_shape{_icon_constraints, icon_rectangle, context.theme->x_height};
     }
 
-    // Elevate the child widget by 0.0f since the label widget does not draw itself.
-    if ((*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) and
-        *alignment != vertical_alignment::middle) {
-        // When the icon and text are above one another, the label needs to define its own base-line.
-        _icon_widget->set_layout(context.transform(_icon_rectangle, 0.0f, _icon_constraints.baseline));
-        _text_widget->set_layout(context.transform(_text_rectangle, 0.0f, _text_constraints.baseline));
-    } else {
-        _icon_widget->set_layout(context.transform(_icon_rectangle, 0.0f));
-        _text_widget->set_layout(context.transform(_text_rectangle, 0.0f));
-    }
+    _icon_widget->set_layout(context.transform(_icon_shape, 0.0f));
+    _text_widget->set_layout(context.transform(_text_shape, 0.0f));
 }
 
 void label_widget::draw(draw_context const& context) noexcept

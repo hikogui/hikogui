@@ -20,8 +20,9 @@ box_constraints const& toolbar_button_widget::set_constraints(set_constraints_co
 void toolbar_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _label_rectangle =
+        hilet label_rectangle =
             aarectangle{context.theme->margin, 0.0f, context.width() - context.theme->margin * 2.0f, context.height()};
+        _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->x_height};
     }
     set_layout_button(context);
 }

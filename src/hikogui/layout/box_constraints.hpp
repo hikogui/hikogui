@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "extent.hpp"
-#include "alignment.hpp"
-#include "margins.hpp"
+#include "../geometry/extent.hpp"
+#include "../geometry/alignment.hpp"
+#include "../geometry/margins.hpp"
 #include "../assert.hpp"
 #include <cstdint>
 #include <limits>
@@ -40,7 +40,7 @@ struct box_constraints {
         extent2 minimum,
         extent2 preferred,
         extent2 maximum,
-        hi::alignment alignment,
+        hi::alignment alignment = hi::alignment{},
         hi::margins margins = hi::margins{},
         hi::margins padding = hi::margins{}) noexcept :
         minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), padding(padding), alignment(alignment)
@@ -79,11 +79,29 @@ struct box_constraints {
         return r;
     }
 
-    template<std::convertible_to<extent2>... Args>
-    [[nodiscard]] friend constexpr box_constraints max(box_constraints const& first, Args const&...args) noexcept
-        requires(sizeof...(Args) >= 2)
+    /** Makes a constraint that encompasses both given constraints.
+    * 
+    * @note The alignment is selected from the left-hand-side.
+    * @param lhs The left hand side box constraints.
+    * @param rhs The right hand side box constraints.
+    * @return A box constraints that encompasses both given constraints.
+     */
+    [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, box_constraints const& rhs) noexcept {
+        auto r = lhs;
+        inplace_max(r.minimum, rhs.minimum);
+        inplace_max(r.preferred, rhs.preferred);
+        inplace_max(r.maximum, rhs.maximum);
+        inplace_max(r.margins, rhs.margins);
+        inplace_max(r.padding, rhs.padding);
+        hi_axiom(r.holds_invariant());
+        return r;
+    }
+
+    template<std::convertible_to<box_constraints>... Args>
+    [[nodiscard]] friend constexpr box_constraints
+    max(box_constraints const& first, box_constraints const& second, box_constraints const& third, Args const&...args) noexcept
     {
-        return max(first, max(args...));
+        return max(first, max(second, third, args...));
     }
 };
 

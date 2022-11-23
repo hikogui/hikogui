@@ -14,9 +14,10 @@ box_constraints const& checkbox_widget::set_constraints(set_constraints_context 
     _button_size = {context.theme->size, context.theme->size};
     hilet extra_size = extent2{context.theme->margin + _button_size.width(), 0.0f};
 
-    _constraints = max(set_constraints_button(context) + extra_size, _button_size);
+    _label_constraints = set_constraints_button(context);
+    _constraints = max(_label_constraints + extra_size, _button_size);
     _constraints.margins = context.theme->margin;
-    _constraints.baseline = widget_baseline{0.5f, alignment->vertical(), context.theme->cap_height, context.theme->size}; 
+    _constraints.alignment = *alignment; 
     return _constraints;
 }
 
@@ -34,10 +35,12 @@ void checkbox_widget::set_layout(widget_layout const& context) noexcept
         hilet label_width = context.width() - (_button_rectangle.width() + context.theme->margin);
         if (alignment_ == horizontal_alignment::left) {
             hilet label_left = _button_rectangle.right() + context.theme->margin;
-            _label_rectangle = aarectangle{label_left, 0.0f, label_width, context.height()};
+            hilet label_rectangle = aarectangle{label_left, 0.0f, label_width, context.height()};
+            _label_shape = box_shape(_label_constraints, label_rectangle, context.theme->x_height);
 
         } else if (alignment_ == horizontal_alignment::right) {
-            _label_rectangle = aarectangle{0.0f, 0.0f, label_width, context.height()};
+            hilet label_rectangle = aarectangle{0.0f, 0.0f, label_width, context.height()};
+            _label_shape = box_shape(_label_constraints, label_rectangle, context.theme->x_height);
         } else {
             hi_not_implemented();
         }

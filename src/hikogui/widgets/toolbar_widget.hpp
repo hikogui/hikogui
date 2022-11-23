@@ -9,7 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "grid_layout.hpp"
+#include "../layout/row_column_layout.hpp"
 #include "../geometry/alignment.hpp"
 #include <memory>
 #include <ranges>
@@ -66,11 +66,8 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        for (hilet& child : _left_children) {
-            co_yield child.get();
-        }
-        for (hilet& child : std::ranges::reverse_view(_right_children)) {
-            co_yield child.get();
+        for (hilet& child : _children) {
+            co_yield child.value.get();
         }
     }
 
@@ -81,19 +78,8 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    std::vector<std::unique_ptr<widget>> _left_children;
-    std::vector<std::unique_ptr<widget>> _right_children;
-    grid_layout _grid_layout;
-    margins _inner_margins;
-
-    void update_constraints_for_child(
-        set_constraints_context const &context,
-        widget& child,
-        ssize_t index,
-        float& shared_height,
-        float& shared_top_margin,
-        float& shared_bottom_margin,
-        widget_baseline& shared_baseline) noexcept;
+    row_layout<std::unique_ptr<widget>> _children;
+    size_t middle_child_index = 0;
 
     void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept;
 

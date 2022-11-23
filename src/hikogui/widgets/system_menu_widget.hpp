@@ -51,8 +51,9 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
-    aarectangle _icon_rectangle;
     std::unique_ptr<icon_widget> _icon_widget;
+    box_constraints _icon_constraints;
+    box_shape _icon_shape;
 
     aarectangle _system_menu_rectangle;
 };

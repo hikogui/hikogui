@@ -65,13 +65,14 @@ public:
 private:
     gui_window *_window;
     
-    aarectangle _content_rectangle;
-    box_constraints _content_constraints;
     std::unique_ptr<grid_widget> _content;
+    box_constraints _content_constraints;
+    box_shape _content_shape;
 
-    aarectangle _toolbar_rectangle;
-    box_constraints _toolbar_constraints;
     std::unique_ptr<toolbar_widget> _toolbar;
+    box_constraints _toolbar_constraints;
+    box_shape _toolbar_shape;
+
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;
 #endif

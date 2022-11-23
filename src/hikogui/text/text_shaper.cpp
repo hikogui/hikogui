@@ -521,7 +521,7 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     _lines = make_lines(
         rectangle, base_line, sub_pixel_size, alignment.vertical(), writing_direction, line_spacing, paragraph_spacing);
     hi_assert(not _lines.empty());
-    position_glyphs(rectangle, sub_pixel_size, alignment.text(), writing_direction);
+    position_glyphs(rectangle, sub_pixel_size, alignment.horizontal(), writing_direction);
 }
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::get_it(size_t index) const noexcept

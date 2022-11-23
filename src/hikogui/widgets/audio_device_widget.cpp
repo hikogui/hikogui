@@ -42,21 +42,18 @@ audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio
 box_constraints const& audio_device_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
-    _constraints = _grid_widget->set_constraints(context);
-    // The device_selection_widget will have a very strong baseline,
-    // the parent widget will likely conform and the calculation during layout
-    // will yield the same absolute baseline.
-    _constraints.baseline = _device_selection_widget->constraints().baseline;
-    return _constraints;
+    _grid_constraints = _grid_widget->set_constraints(context);
+    return _constraints = _grid_constraints;
 }
 
 void audio_device_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _grid_rectangle = context.rectangle();
+        hilet grid_rectangle = context.rectangle();
+        _grid_shape = {_grid_constraints, grid_rectangle, context.theme->x_height};
     }
 
-    _grid_widget->set_layout(context.transform(_grid_rectangle));
+    _grid_widget->set_layout(context.transform(_grid_shape));
 }
 
 void audio_device_widget::draw(draw_context const& context) noexcept

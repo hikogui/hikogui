@@ -97,19 +97,19 @@ public:
         _layout = {};
 
         hi_assert_not_null(_content);
-        hilet content_constraints = _content->set_constraints(context);
+        _content_constraints = _content->set_constraints(context);
 
         hilet minimum_size = extent2{
-            content_constraints.margins.left() + content_constraints.minimum.width() + content_constraints.margins.right(),
-            content_constraints.margins.top() + content_constraints.minimum.height() + content_constraints.margins.bottom()};
+            _content_constraints.margins.left() + _content_constraints.minimum.width() + _content_constraints.margins.right(),
+            _content_constraints.margins.top() + _content_constraints.minimum.height() + _content_constraints.margins.bottom()};
         hilet preferred_size = extent2{
-            content_constraints.margins.left() + content_constraints.preferred.width() + content_constraints.margins.right(),
-            content_constraints.margins.top() + content_constraints.preferred.height() + content_constraints.margins.bottom()};
+            _content_constraints.margins.left() + _content_constraints.preferred.width() + _content_constraints.margins.right(),
+            _content_constraints.margins.top() + _content_constraints.preferred.height() + _content_constraints.margins.bottom()};
         hilet maximum_size = extent2{
-            content_constraints.margins.left() + content_constraints.maximum.width() + content_constraints.margins.right(),
-            content_constraints.margins.top() + content_constraints.maximum.height() + content_constraints.margins.bottom()};
+            _content_constraints.margins.left() + _content_constraints.maximum.width() + _content_constraints.margins.right(),
+            _content_constraints.margins.top() + _content_constraints.maximum.height() + _content_constraints.margins.bottom()};
 
-        return _constraints = {minimum_size, preferred_size, maximum_size, margins{}};
+        return _constraints = {minimum_size, preferred_size, maximum_size};
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -137,11 +137,12 @@ public:
 
         // The position of the content rectangle relative to the scroll view.
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
-        _content_rectangle = {-*offset_x + margins.left(), -*offset_y + margins.bottom(), *content_width, *content_height};
+        hilet content_rectangle = aarectangle{-*offset_x + margins.left(), -*offset_y + margins.bottom(), *content_width, *content_height};
+        _content_shape = {_content_constraints, content_rectangle, context.theme->x_height};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
-        _content->set_layout(context.transform(_content_rectangle, 1.0f, context.rectangle()));
+        _content->set_layout(context.transform(_content_shape, 1.0f, context.rectangle()));
     }
 
     void draw(draw_context const& context) noexcept
@@ -230,7 +231,8 @@ public:
     }
     /// @endprivatesection
 private:
-    aarectangle _content_rectangle;
+    box_constraints _content_constraints;
+    box_shape _content_shape;
     std::unique_ptr<widget> _content;
     decltype(content_width)::callback_token _content_width_cbt;
     decltype(content_height)::callback_token _content_height_cbt;

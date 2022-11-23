@@ -86,6 +86,8 @@ public:
     /// @endprivatesection
 private:
     std::unique_ptr<widget> _content;
+    box_constraints _content_constraints;
+    box_shape _content_shape;
 
     void draw_background(draw_context const& context) noexcept;
 };

@@ -90,14 +90,14 @@ public:
 
     constexpr explicit alignment(uint8_t value) noexcept : _value(value) {}
 
-    constexpr alignment(horizontal_alignment t, vertical_alignment v) noexcept :
+    constexpr alignment(horizontal_alignment t, vertical_alignment v = vertical_alignment::none) noexcept :
         _value((to_underlying(v) << 4) | to_underlying(t))
     {
         hi_axiom(to_underlying(v) <= 0xf);
         hi_axiom(to_underlying(t) <= 0xf);
     }
 
-    constexpr alignment(vertical_alignment v, horizontal_alignment t) noexcept :
+    constexpr alignment(vertical_alignment v, horizontal_alignment t = horizontal_alignment::none) noexcept :
         _value((to_underlying(v) << 4) | to_underlying(t))
     {
         hi_axiom(to_underlying(v) <= 0xf);
@@ -169,7 +169,7 @@ public:
         return {horizontal_alignment::right, vertical_alignment::bottom};
     }
 
-    [[nodiscard]] constexpr horizontal_alignment text() const noexcept
+    [[nodiscard]] constexpr horizontal_alignment horizontal() const noexcept
     {
         return static_cast<horizontal_alignment>(_value & 0xf);
     }
@@ -183,12 +183,12 @@ public:
 
     [[nodiscard]] constexpr friend bool operator==(alignment const& lhs, horizontal_alignment const& rhs) noexcept
     {
-        return lhs.text() == rhs;
+        return lhs.horizontal() == rhs;
     }
 
     [[nodiscard]] constexpr friend bool operator==(horizontal_alignment const& lhs, alignment const& rhs) noexcept
     {
-        return lhs == rhs.text();
+        return lhs == rhs.horizontal();
     }
 
     [[nodiscard]] constexpr friend bool operator==(alignment const& lhs, vertical_alignment const& rhs) noexcept
@@ -203,7 +203,7 @@ public:
 
     [[nodiscard]] constexpr friend alignment mirror(alignment const& rhs) noexcept
     {
-        return alignment{mirror(rhs.text()), rhs.vertical()};
+        return alignment{mirror(rhs.horizontal()), rhs.vertical()};
     }
 
 private:

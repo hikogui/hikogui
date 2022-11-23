@@ -55,8 +55,8 @@ private:
     /** The grid widget contains all the child widgets.
      */
     std::unique_ptr<grid_widget> _grid_widget;
-
-    aarectangle _grid_rectangle;
+    box_constraints _grid_constraints;
+    box_shape _grid_shape;
 
     /** The widget used to select the audio device.
      */

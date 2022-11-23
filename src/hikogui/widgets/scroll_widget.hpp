@@ -95,35 +95,35 @@ public:
     box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
     {
         _layout = {};
-        hilet aperture_constraints = _aperture->set_constraints(context);
-        hilet horizontal_constraints = _horizontal_scroll_bar->set_constraints(context);
-        hilet vertical_constraints = _vertical_scroll_bar->set_constraints(context);
+        _aperture_constraints = _aperture->set_constraints(context);
+        _horizontal_scroll_bar_constraints = _horizontal_scroll_bar->set_constraints(context);
+        _vertical_scroll_bar_constraints = _vertical_scroll_bar->set_constraints(context);
 
-        _constraints = aperture_constraints;
+        _constraints = _aperture_constraints;
 
         // When there are scrollbars the widget minimum size becomes basically zero.
         // However we should at least have enough room to fit in the scroll-bars length-wise.
         if constexpr (to_bool(axis & axis::horizontal)) {
-            _constraints.minimum.width() = horizontal_constraints.minimum.width();
-            inplace_max(_constraints.preferred.width(), horizontal_constraints.minimum.width());
-            inplace_max(_constraints.maximum.width(), horizontal_constraints.minimum.width());
+            _constraints.minimum.width() = _horizontal_scroll_bar_constraints.minimum.width();
+            inplace_max(_constraints.preferred.width(), _horizontal_scroll_bar_constraints.minimum.width());
+            inplace_max(_constraints.maximum.width(), _horizontal_scroll_bar_constraints.minimum.width());
         }
         if constexpr (to_bool(axis & axis::vertical)) {
-            _constraints.minimum.height() = vertical_constraints.minimum.height();
-            inplace_max(_constraints.preferred.height(), vertical_constraints.minimum.height());
-            inplace_max(_constraints.maximum.height(), vertical_constraints.minimum.height());
+            _constraints.minimum.height() = _vertical_scroll_bar_constraints.minimum.height();
+            inplace_max(_constraints.preferred.height(), _vertical_scroll_bar_constraints.minimum.height());
+            inplace_max(_constraints.maximum.height(), _vertical_scroll_bar_constraints.minimum.height());
         }
 
         // Make room for the thickness of the scroll-bars.
         if constexpr (to_bool(axis & axis::horizontal)) {
-            _constraints.minimum.height() += horizontal_constraints.preferred.height();
-            _constraints.preferred.height() += horizontal_constraints.preferred.height();
-            _constraints.maximum.height() += horizontal_constraints.preferred.height();
+            _constraints.minimum.height() += _horizontal_scroll_bar_constraints.preferred.height();
+            _constraints.preferred.height() += _horizontal_scroll_bar_constraints.preferred.height();
+            _constraints.maximum.height() += _horizontal_scroll_bar_constraints.preferred.height();
         }
         if constexpr (to_bool(axis & axis::vertical)) {
-            _constraints.minimum.width() += vertical_constraints.preferred.width();
-            _constraints.preferred.width() += vertical_constraints.preferred.width();
-            _constraints.maximum.width() += vertical_constraints.preferred.width();
+            _constraints.minimum.width() += _vertical_scroll_bar_constraints.preferred.width();
+            _constraints.preferred.width() += _vertical_scroll_bar_constraints.preferred.width();
+            _constraints.maximum.width() += _vertical_scroll_bar_constraints.preferred.width();
         }
         return _constraints;
     }
@@ -138,8 +138,8 @@ public:
             _horizontal_scroll_bar->mode = horizontal_visible ? widget_mode::enabled : widget_mode::invisible;
             _vertical_scroll_bar->mode = vertical_visible ? widget_mode::enabled : widget_mode::invisible;
 
-            hilet vertical_scroll_bar_width = _vertical_scroll_bar->constraints().preferred.width();
-            hilet horizontal_scroll_bar_height = _horizontal_scroll_bar->constraints().preferred.height();
+            hilet vertical_scroll_bar_width = _vertical_scroll_bar_constraints.preferred.width();
+            hilet horizontal_scroll_bar_height = _horizontal_scroll_bar_constraints.preferred.height();
 
             // The aperture size grows to fill the size of the layout.
             hilet aperture_size = extent2{
@@ -150,7 +150,8 @@ public:
             hilet aperture_y = horizontal_visible ? horizontal_scroll_bar_height : 0.0f;
 
             hilet aperture_offset = point2{aperture_x, aperture_y};
-            _aperture_rectangle = aarectangle{aperture_offset, aperture_size};
+            hilet aperture_rectangle = aarectangle{aperture_offset, aperture_size};
+            _aperture_shape = box_shape{_aperture_constraints, aperture_rectangle, context.theme->x_height};
 
             // The length of the scroll-bar is the full length of the widget, or just the length of the aperture depending
             // if the counter-part scroll-bar is visible.
@@ -161,21 +162,25 @@ public:
 
             hilet vertical_scroll_bar_x = context.left_to_right() ? context.width() - vertical_scroll_bar_size.width() : 0.0f;
             hilet vertical_scroll_bar_y = context.height() - vertical_scroll_bar_size.height();
-            _vertical_scroll_bar_rectangle =
+            hilet vertical_scroll_bar_rectangle =
                 aarectangle{point2{vertical_scroll_bar_x, vertical_scroll_bar_y}, vertical_scroll_bar_size};
+            _vertical_scroll_bar_shape =
+                box_shape{_vertical_scroll_bar_constraints, vertical_scroll_bar_rectangle, context.theme->x_height};
 
             hilet horizontal_scroll_bar_x = context.left_to_right() ? 0.0f : vertical_visible ? vertical_scroll_bar_width : 0.0f;
             hilet horizontal_scroll_bar_y = 0.0f;
-            _horizontal_scroll_bar_rectangle =
+            hilet horizontal_scroll_bar_rectangle =
                 aarectangle{point2{horizontal_scroll_bar_x, horizontal_scroll_bar_y}, horizontal_scroll_bar_size};
+            _horizontal_scroll_bar_shape =
+                box_shape{_horizontal_scroll_bar_constraints, horizontal_scroll_bar_rectangle, context.theme->x_height};
         }
 
-        _aperture->set_layout(context.transform(_aperture_rectangle));
+        _aperture->set_layout(context.transform(_aperture_shape));
         if (*_vertical_scroll_bar->mode > widget_mode::invisible) {
-            _vertical_scroll_bar->set_layout(context.transform(_vertical_scroll_bar_rectangle));
+            _vertical_scroll_bar->set_layout(context.transform(_vertical_scroll_bar_shape));
         }
         if (*_horizontal_scroll_bar->mode > widget_mode::invisible) {
-            _horizontal_scroll_bar->set_layout(context.transform(_horizontal_scroll_bar_rectangle));
+            _horizontal_scroll_bar->set_layout(context.transform(_horizontal_scroll_bar_shape));
         }
     }
 
@@ -208,14 +213,17 @@ public:
     }
     // @endprivatesection
 private:
-    aarectangle _aperture_rectangle;
     std::unique_ptr<scroll_aperture_widget> _aperture;
+    box_constraints _aperture_constraints;
+    box_shape _aperture_shape;
 
-    aarectangle _horizontal_scroll_bar_rectangle;
     std::unique_ptr<horizontal_scroll_bar_widget> _horizontal_scroll_bar;
+    box_constraints _horizontal_scroll_bar_constraints;
+    box_shape _horizontal_scroll_bar_shape;
 
-    aarectangle _vertical_scroll_bar_rectangle;
     std::unique_ptr<vertical_scroll_bar_widget> _vertical_scroll_bar;
+    box_constraints _vertical_scroll_bar_constraints;
+    box_shape _vertical_scroll_bar_shape;
 };
 
 /** Vertical scroll widget.

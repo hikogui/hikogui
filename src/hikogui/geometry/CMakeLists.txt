@@ -7,10 +7,8 @@ target_sources(hikogui PRIVATE
     axis.hpp
     axis_aligned_rectangle.cpp
     axis_aligned_rectangle.hpp
-    box_constraints.hpp
     circle.hpp
     extent.hpp
-    grid_layout.hpp
     identity.hpp
     line_segment.hpp
     line_end_cap.hpp
@@ -23,7 +21,6 @@ target_sources(hikogui PRIVATE
     rectangle.hpp
     rotate.hpp
     scale.hpp
-    spreadsheet_address.hpp
     transform.hpp
     translate.hpp
     vector.hpp

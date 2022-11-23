@@ -54,14 +54,14 @@ constexpr long long pow10_table[20]{
     1'000'000'000'000'000'000LL,
 };
 
-constexpr long long pow10ll(int x) noexcept
+[[nodiscard]] constexpr long long pow10ll(int x) noexcept
 {
     hi_axiom(x >= 0 && x <= 18);
     return pow10_table[x];
 }
 
 template<typename Iterator>
-auto mean(Iterator first, Iterator last)
+[[nodiscard]] auto mean(Iterator first, Iterator last)
 {
     hilet init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
 
@@ -72,7 +72,7 @@ auto mean(Iterator first, Iterator last)
 }
 
 template<typename Iterator, typename T>
-auto stddev(Iterator first, Iterator last, T mean)
+[[nodiscard]] auto stddev(Iterator first, Iterator last, T mean)
 {
     hilet init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
 
@@ -140,7 +140,7 @@ template<std::floating_point T>
  * @return The greatest multiple of alignment less than or equal to value.
  */
 template<std::unsigned_integral T>
-constexpr T floor(T value, T alignment) noexcept
+[[nodiscard]] constexpr T floor(T value, T alignment) noexcept
 {
     return (value / alignment) * alignment;
 }
@@ -151,9 +151,15 @@ constexpr T floor(T value, T alignment) noexcept
  * @return The smallest multiple of alignment greater than or equal to value.
  */
 template<std::unsigned_integral T>
-constexpr T ceil(T value, T alignment) noexcept
+[[nodiscard]] constexpr T ceil(T value, T alignment) noexcept
 {
     return floor(value + (alignment - 1), alignment);
+}
+
+template<std::floating_point T>
+[[nodiscard]] constexpr bool isnan(T value) noexcept
+{
+    return not (value == value);
 }
 
 } // namespace hi::inline v1

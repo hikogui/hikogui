@@ -102,10 +102,10 @@ private:
     decltype(label)::callback_token _label_cbt;
     decltype(text_style)::callback_token _text_style_cbt;
 
-    aarectangle _icon_rectangle;
+    box_shape _icon_shape;
     box_constraints _icon_constraints;
     std::unique_ptr<icon_widget> _icon_widget;
-    aarectangle _text_rectangle;
+    box_shape _text_shape;
     box_constraints _text_constraints;
     std::unique_ptr<text_widget> _text_widget;
 

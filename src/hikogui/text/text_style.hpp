@@ -72,6 +72,7 @@ struct text_sub_style {
     }
 
     [[nodiscard]] float cap_height(font_book const& font_book) const noexcept;
+    [[nodiscard]] float x_height(font_book const& font_book) const noexcept;
 
     [[nodiscard]] bool matches(text_phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
     {

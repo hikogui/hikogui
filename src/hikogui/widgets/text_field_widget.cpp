@@ -21,8 +21,7 @@ text_field_widget::text_field_widget(widget *parent, std::shared_ptr<delegate_ty
     _text_widget = &_scroll_widget->make_widget<text_widget>(_text, alignment, text_style);
     _text_widget->mode = widget_mode::partial;
 
-    _error_label_widget =
-        std::make_unique<label_widget>(this, _error_label, alignment::top_left(), semantic_text_style::error);
+    _error_label_widget = std::make_unique<label_widget>(this, _error_label, alignment::top_left(), semantic_text_style::error);
 
     _continues_cbt = continues.subscribe([&](auto...) {
         ++global_counter<"text_field_widget:continues:constrain">;
@@ -92,12 +91,7 @@ box_constraints const& text_field_widget::set_constraints(set_constraints_contex
         inplace_max(margins.bottom(), _error_label_constraints.margins.bottom());
     }
 
-    return _constraints = {
-               size,
-               size,
-               size,
-               context.theme->margin,
-               widget_baseline{0.5f, vertical_alignment::top, context.theme->cap_height, box_size.height()}};
+    return _constraints = {size, size, size, *alignment, context.theme->margin};
 }
 
 void text_field_widget::set_layout(widget_layout const& context) noexcept
@@ -117,7 +111,7 @@ void text_field_widget::set_layout(widget_layout const& context) noexcept
     }
 
     if (*_error_label_widget->mode > widget_mode::invisible) {
-        _error_label_widget->set_layout(context.transform(_error_label_rectangle, _error_label_constraints.baseline));
+        _error_label_widget->set_layout(context.transform(_error_label_rectangle, _error_label_constraints.base_line));
     }
     _scroll_widget->set_layout(context.transform(_text_rectangle));
 }

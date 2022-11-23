@@ -21,7 +21,7 @@
 #include "../chrono.hpp"
 #include "../generator.hpp"
 #include "set_constraints_context.hpp"
-#include "../geometry/box_constraints.hpp"
+#include "../layout/box_constraints.hpp"
 #include "widget_layout.hpp"
 #include "widget_mode.hpp"
 #include <memory>

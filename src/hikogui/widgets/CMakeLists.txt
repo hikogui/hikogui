@@ -10,8 +10,6 @@ target_sources(hikogui PRIVATE
     button_delegate.hpp
     checkbox_widget.cpp
     checkbox_widget.hpp
-    grid_layout.hpp
-    grid_layout.cpp
     grid_widget.cpp
     grid_widget.hpp
     icon_widget.cpp
@@ -54,7 +52,6 @@ target_sources(hikogui PRIVATE
     toolbar_widget.hpp
     widget.cpp
     widget.hpp
-    widget_baseline.hpp
     widget_layout.hpp
     widget_mode.hpp
     window_traffic_lights_widget.cpp

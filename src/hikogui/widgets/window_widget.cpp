@@ -96,23 +96,22 @@ box_constraints const& window_widget::set_constraints(set_constraints_context co
 void window_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet toolbar_height = _toolbar->constraints().preferred.height();
-        hilet between_margin = std::max(_toolbar->constraints().margins.bottom(), _content->constraints().margins.top());
+        hilet toolbar_height = _toolbar_constraints.preferred.height();
+        hilet between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
 
-        _toolbar_rectangle = aarectangle{
+        hilet toolbar_rectangle = aarectangle{
+            point2{_toolbar_constraints.margins.left(), context.height() - toolbar_height - _toolbar_constraints.margins.top()},
             point2{
-                _toolbar->constraints().margins.left(),
-                context.height() - toolbar_height - _toolbar->constraints().margins.top()},
-            point2{
-                context.width() - _toolbar->constraints().margins.right(),
-                context.height() - _toolbar->constraints().margins.top()}};
+                context.width() - _toolbar_constraints.margins.right(), context.height() - _toolbar_constraints.margins.top()}};
+        _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, context.theme->x_height};
 
-        _content_rectangle = aarectangle{
-            point2{_content->constraints().margins.left(), _content->constraints().margins.bottom()},
-            point2{context.width() - _content->constraints().margins.right(), _toolbar_rectangle.bottom() - between_margin}};
+        hilet content_rectangle = aarectangle{
+            point2{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
+            point2{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
+        _content_shape = box_shape{_content_constraints, content_rectangle, context.theme->x_height};
     }
-    _toolbar->set_layout(context.transform(_toolbar_rectangle, _toolbar_constraints.baseline));
-    _content->set_layout(context.transform(_content_rectangle, _content_constraints.baseline));
+    _toolbar->set_layout(context.transform(_toolbar_shape));
+    _content->set_layout(context.transform(_content_shape));
 }
 
 void window_widget::draw(draw_context const& context) noexcept

@@ -12,7 +12,7 @@
 #include "text_style.hpp"
 #include "glyph_ids.hpp"
 #include "font.hpp"
-#include "../geometry/box_constraints.hpp"
+#include "../layout/box_constraints.hpp"
 #include "../geometry/alignment.hpp"
 #include "../unicode/unicode_description.hpp"
 #include "../unicode/unicode_break_opportunity.hpp"

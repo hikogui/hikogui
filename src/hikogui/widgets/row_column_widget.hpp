@@ -9,10 +9,11 @@
 #pragma once
 
 #include "widget.hpp"
-#include "grid_layout.hpp"
 #include "../GUI/theme.hpp"
 #include "../geometry/axis.hpp"
+#include "../layout/row_column_layout.hpp"
 #include <memory>
+#include <type_traits>
 
 namespace hi { inline namespace v1 {
 
@@ -76,6 +77,7 @@ public:
         auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         _children.push_back(std::move(tmp));
+
         ++global_counter<"row_column_widget:make_widget:constrain">;
         process_event({gui_event_type::window_reconstrain});
         return ref;
@@ -95,7 +97,7 @@ public:
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
         for (hilet& child : _children) {
-            co_yield child.get();
+            co_yield child.value.get();
         }
     }
 
@@ -103,73 +105,29 @@ public:
     {
         _layout = {};
 
-        ssize_t index = 0;
-
-        auto minimum_thickness = 0.0f;
-        auto preferred_thickness = 0.0f;
-        auto maximum_thickness = 0.0f;
-        float margin_before_thickness = 0.0f;
-        float margin_after_thickness = 0.0f;
-        widget_baseline baseline = {};
-
-        _grid_layout.clear();
-        for (hilet& child : _children) {
-            update_constraints_for_child(
-                context,
-                *child,
-                index++,
-                minimum_thickness,
-                preferred_thickness,
-                maximum_thickness,
-                margin_before_thickness,
-                margin_after_thickness,
-                baseline);
+        for (auto& child : _children) {
+            child.set_constraints(child.value->set_constraints(context));
         }
-        _grid_layout.commit_constraints();
 
-        hi_assert(index == ssize(_children));
-
-        if constexpr (axis == axis::row) {
-            return _constraints = {
-                       {_grid_layout.minimum(), minimum_thickness},
-                       {_grid_layout.preferred(), preferred_thickness},
-                       {_grid_layout.maximum(), maximum_thickness},
-                       {_grid_layout.margin_before(),
-                        margin_before_thickness,
-                        _grid_layout.margin_after(),
-                        margin_after_thickness},
-                       baseline};
-        } else {
-            return _constraints = {
-                       {minimum_thickness, _grid_layout.minimum()},
-                       {preferred_thickness, _grid_layout.preferred()},
-                       {maximum_thickness, _grid_layout.maximum()},
-                       {margin_before_thickness,
-                        _grid_layout.margin_before(),
-                        margin_after_thickness,
-                        _grid_layout.margin_after()}};
-        }
+        return _constraints = _children.get_constraints(context.left_to_right());
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _grid_layout.layout(axis == axis::row ? context.width() : context.height());
-        }
+            _children.set_layout(context.size);
 
-        ssize_t index = 0;
-        for (hilet& child : _children) {
-            update_layout_for_child(*child, index++, context);
+            for (hilet& child : _children) {
+                child.value->set_layout(context.transform(child.shape, 0.0f));
+            }
         }
-
-        hi_assert(index == ssize(_children));
     }
 
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             for (hilet& child : _children) {
-                child->draw(context);
+                child.value->draw(context);
             }
         }
     }
@@ -181,7 +139,7 @@ public:
         if (*mode >= widget_mode::partial) {
             auto r = hitbox{};
             for (hilet& child : _children) {
-                r = child->hitbox_test_from_parent(position, r);
+                r = child.value->hitbox_test_from_parent(position, r);
             }
             return r;
         } else {
@@ -190,76 +148,7 @@ public:
     }
     /// @endprivatesection
 private:
-    std::vector<std::unique_ptr<widget>> _children;
-    grid_layout _grid_layout;
-
-    void update_constraints_for_child(
-        set_constraints_context const& context,
-        widget& child,
-        ssize_t index,
-        float& minimum_thickness,
-        float& preferred_thickness,
-        float& maximum_thickness,
-        float& margin_before_thickness,
-        float& margin_after_thickness,
-        widget_baseline& baseline) noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-
-        hilet& child_constraints = child.set_constraints(context);
-        if (axis == axis::row) {
-            _grid_layout.add_constraint(
-                index,
-                child_constraints.minimum.width(),
-                child_constraints.preferred.width(),
-                child_constraints.maximum.width(),
-                child_constraints.margins.left(),
-                child_constraints.margins.right());
-
-            inplace_max(minimum_thickness, child_constraints.minimum.height());
-            inplace_max(preferred_thickness, child_constraints.preferred.height());
-            inplace_max(maximum_thickness, child_constraints.maximum.height());
-            inplace_max(margin_before_thickness, child_constraints.margins.top());
-            inplace_max(margin_after_thickness, child_constraints.margins.bottom());
-            inplace_max(baseline, child_constraints.baseline);
-
-        } else {
-            _grid_layout.add_constraint(
-                index,
-                child_constraints.minimum.height(),
-                child_constraints.preferred.height(),
-                child_constraints.maximum.height(),
-                child_constraints.margins.top(),
-                child_constraints.margins.bottom(),
-                child_constraints.baseline);
-
-            inplace_max(minimum_thickness, child_constraints.minimum.width());
-            inplace_max(preferred_thickness, child_constraints.preferred.width());
-            inplace_max(maximum_thickness, child_constraints.maximum.width());
-            inplace_max(margin_before_thickness, child_constraints.margins.left());
-            inplace_max(margin_after_thickness, child_constraints.margins.right());
-        }
-    }
-
-    void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-
-        hilet[child_position, child_length] = _grid_layout.get_position_and_size(index);
-
-        if (axis == axis::row) {
-            auto x0 = context.left_to_right() ? child_position : layout().width() - child_position - child_length;
-
-            hilet child_rectangle = aarectangle{x0, 0.0f, child_length, layout().height()};
-            // The baseline for a row widget is inherited from the context received from the parent.
-            child.set_layout(context.transform(child_rectangle, 0.0f));
-
-        } else {
-            hilet child_rectangle =
-                aarectangle{0.0f, layout().height() - child_position - child_length, layout().width(), child_length};
-            child.set_layout(context.transform(child_rectangle, 0.0f, _grid_layout.get_baseline(index)));
-        }
-    }
+    row_column_layout<Axis, std::unique_ptr<widget>> _children;
 };
 
 /** Lays out children in a row.
