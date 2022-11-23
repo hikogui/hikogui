@@ -70,11 +70,11 @@ box_constraints const& text_field_widget::set_constraints(set_constraints_contex
     auto margins = hi::margins{context.theme->margin};
 
     hilet scroll_width = 100.0f;
-    _text_constraints = _scroll_widget->set_constraints(context);
+    _scroll_constraints = _scroll_widget->set_constraints(context);
 
     hilet box_size = extent2{
-        _text_constraints.margins.left() + scroll_width + _text_constraints.margins.right(),
-        _text_constraints.margins.top() + _text_constraints.preferred.height() + _text_constraints.margins.bottom()};
+        _scroll_constraints.margins.left() + scroll_width + _scroll_constraints.margins.right(),
+        _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
     auto size = box_size;
     if (_error_label->empty()) {
@@ -99,21 +99,23 @@ void text_field_widget::set_layout(widget_layout const& context) noexcept
     if (compare_store(_layout, context)) {
         hilet box_size = extent2{
             context.width(),
-            _text_constraints.margins.top() + _text_constraints.preferred.height() + _text_constraints.margins.bottom()};
+            _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
         _box_rectangle = aarectangle{point2{0.0f, context.height() - box_size.height()}, box_size};
-        _text_rectangle = _box_rectangle - context.theme->border_width;
+        hilet scroll_rectangle = _box_rectangle - context.theme->border_width;
+        _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, context.theme->x_height};
 
         if (*_error_label_widget->mode > widget_mode::invisible) {
-            _error_label_rectangle =
+            hilet error_label_rectangle =
                 aarectangle{0.0f, 0.0f, context.rectangle().width(), _error_label_constraints.preferred.height()};
+            _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, context.theme->x_height};
         }
     }
 
     if (*_error_label_widget->mode > widget_mode::invisible) {
-        _error_label_widget->set_layout(context.transform(_error_label_rectangle, _error_label_constraints.base_line));
+        _error_label_widget->set_layout(context.transform(_error_label_shape));
     }
-    _scroll_widget->set_layout(context.transform(_text_rectangle));
+    _scroll_widget->set_layout(context.transform(_scroll_shape));
 }
 
 void text_field_widget::draw(draw_context const& context) noexcept

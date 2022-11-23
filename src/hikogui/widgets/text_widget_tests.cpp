@@ -30,7 +30,7 @@ protected:
         font_book = std::make_unique<hi::font_book>(make_vector(get_paths(path_location::font_dirs)));
         theme_book = std::make_unique<hi::theme_book>(*font_book, make_vector(get_paths(path_location::theme_dirs)));
         theme = theme_book->find("default", theme_mode::light);
-        c_context = set_constraints_context{font_book.get(), &theme};
+        c_context = set_constraints_context{font_book.get(), &theme, unicode_bidi_class::L};
 
         widget = std::make_unique<hi::text_widget>(nullptr, text);
         widget->mode = hi::widget_mode::enabled;

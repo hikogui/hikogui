@@ -31,14 +31,14 @@ public:
         _layout = {};
 
         // We need to recursively set the constraints of any child widget here as well
-        auto const label_constraints = _label_widget->set_constraints(context);
+        _label_constraints = _label_widget->set_constraints(context);
 
         // We add the ability to resize the widget beyond the size of the label.
-        _constraints.minimum = label_constraints.minimum;
-        _constraints.preferred = label_constraints.preferred + context.theme->margin;
-        _constraints.maximum = label_constraints.maximum + hi::extent2{100.0f, 50.0f};
+        _constraints.minimum = _label_constraints.minimum;
+        _constraints.preferred = _label_constraints.preferred + context.theme->margin;
+        _constraints.maximum = _label_constraints.maximum + hi::extent2{100.0f, 50.0f};
         _constraints.margins = context.theme->margin;
-        _constraints.baseline = label_constraints.baseline;
+        _constraints.alignment = _label_constraints.alignment;
         return _constraints;
     }
 
@@ -53,12 +53,13 @@ public:
         if (compare_store(_layout, context)) {
             // The layout of the child widget are also calculated here, which only needs to be done
             // when the layout of the current widget changes.
-            _label_rectangle = align(context.rectangle(), _label_widget->constraints().preferred, hi::alignment::middle_center());
+            auto const label_rectangle = align(context.rectangle(), _label_widget->constraints().preferred, hi::alignment::middle_center());
+            _label_shape = hi::box_shape{_label_constraints, label_rectangle, context.theme->x_height};
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.
         // This is because child widgets may need to re-layout for other reasons.
-        _label_widget->set_layout(context.transform(_label_rectangle));
+        _label_widget->set_layout(context.transform(_label_shape));
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.
@@ -108,7 +109,8 @@ protected:
 private:
     // Child widgets are owned by their parent.
     std::unique_ptr<hi::label_widget> _label_widget;
-    hi::aarectangle _label_rectangle;
+    hi::box_constraints _label_constraints;
+    hi::box_shape _label_shape;
 };
 
 int hi_main(int argc, char *argv[])

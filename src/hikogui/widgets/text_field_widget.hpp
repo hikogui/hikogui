@@ -122,6 +122,8 @@ private:
     /** The scroll widget embeds the text widget.
      */
     std::unique_ptr<scroll_widget<axis::none>> _scroll_widget;
+    box_constraints _scroll_constraints;
+    box_shape _scroll_shape;
 
     /** The text widget inside the scroll widget.
      */
@@ -135,17 +137,12 @@ private:
      */
     aarectangle _box_rectangle;
 
-    /** The rectangle where the text is displayed.
-     */
-    aarectangle _text_rectangle;
-    box_constraints _text_constraints;
-
     /** An error string to show to the user.
      */
     observer<label> _error_label;
-    aarectangle _error_label_rectangle;
-    box_constraints _error_label_constraints;
     std::unique_ptr<label_widget> _error_label_widget;
+    box_constraints _error_label_constraints;
+    box_shape _error_label_shape;
 
     typename decltype(continues)::callback_token _continues_cbt;
     typename decltype(text_style)::callback_token _text_style_cbt;

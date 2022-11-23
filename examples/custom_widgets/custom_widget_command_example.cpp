@@ -32,7 +32,7 @@ public:
         _layout = {};
 
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
-        return _constraints = {{100.0f, 20.0f}, {200.0f, 20.0f}, {300.0f, 50.0f}, context.theme->margin};
+        return _constraints = {{100.0f, 20.0f}, {200.0f, 20.0f}, {300.0f, 50.0f}, hi::alignment{}, context.theme->margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when

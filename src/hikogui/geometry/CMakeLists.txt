@@ -32,7 +32,6 @@ if(BUILD_TESTING)
         matrix_tests.cpp
         point_tests.cpp
         scale_tests.cpp
-        spreadsheet_address_tests.cpp
         transform_tests.cpp
         translate_tests.cpp
         vector_tests.cpp
