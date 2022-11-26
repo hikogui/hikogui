@@ -70,13 +70,13 @@ public:
      * @param col2 The 3rd `f32x4 column.
      * @param col3 The 4th `f32x4 column.
      */
-    constexpr matrix(vector3 col0, vector3 col1, vector3 col2, vector3 col3 = vector3{0.0f, 0.0f, 0.0f, 1.0f}) noexcept
+    constexpr matrix(vector3 col0, vector3 col1, vector3 col2, vector3 col3 = vector3{}) noexcept
         requires(D == 3)
         :
         _col0(static_cast<f32x4>(col0)),
         _col1(static_cast<f32x4>(col1)),
         _col2(static_cast<f32x4>(col2)),
-        _col3(static_cast<f32x4>(col3))
+        _col3(static_cast<f32x4>(col3).xyz1())
     {
     }
 
