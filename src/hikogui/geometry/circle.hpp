@@ -11,7 +11,7 @@
 #include "axis_aligned_rectangle.hpp"
 #include "quad.hpp"
 
-namespace hi
+namespace hi {
 inline namespace v1 {
 
 /** A type defining a 2D circle.
