@@ -2,18 +2,25 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file geometry/extent.hpp Defined the geo::extent, extent2 and extent3 types.
+ * @ingroup geometry
+ */
+
 #pragma once
 
 #include "vector.hpp"
 #include "../rapid/numeric_array.hpp"
 #include <compare>
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 namespace geo {
+
 template<int D>
 class scale;
 
 /** A high-level geometric extent
+ * @ingroup geometry
  *
  * A extent, for both 2D or 3D is internally represented
  * as a 4D homogeneous extent. Which can be efficiently implemented
@@ -464,10 +471,17 @@ private:
 
 } // namespace geo
 
+/** A 2D extent.
+ * @ingroup geometry
+ */
 using extent2 = geo::extent<2>;
+
+/** A 3D extent.
+ * @ingroup geometry
+ */
 using extent3 = geo::extent<3>;
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 template<typename CharT>
 struct std::formatter<hi::geo::extent<2>, CharT> {
