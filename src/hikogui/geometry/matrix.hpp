@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file geometry/matrix.hpp Defines geo::matrix, matrix2 and matrix3.
+ * @ingroup geometry
+ */
+
 #pragma once
 
 #include "vector.hpp"
@@ -16,9 +20,16 @@
 #include "../color/color.hpp"
 #include <array>
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 namespace geo {
 
+/** A 2D or 3D homogenius matrix for transforming homogenious vectors and points.
+ *
+ * This matrix is in column major order. It is implemented as 4 columns made
+ * from a `f32x4` numeric-array.
+ * 
+ */
 template<int D>
 class matrix {
 public:
@@ -29,6 +40,8 @@ public:
     constexpr matrix& operator=(matrix const&) noexcept = default;
     constexpr matrix& operator=(matrix&&) noexcept = default;
 
+    /** Constructs an identity matrix.
+     */
     constexpr matrix() noexcept
     {
         hilet a = f32x4::broadcast(1.0f);
@@ -38,21 +51,50 @@ public:
         _col3 = a._000w();
     };
 
+    /** Construct a matrix from four columns.
+     *
+     * @param col0 The 1st `f32x4 column.
+     * @param col1 The 2nd `f32x4 column.
+     * @param col2 The 3rd `f32x4 column.
+     * @param col3 The 4th `f32x4 column.
+     */
     constexpr matrix(f32x4 col0, f32x4 col1, f32x4 col2, f32x4 col3 = f32x4{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
         _col0(col0), _col1(col1), _col2(col2), _col3(col3)
     {
     }
 
-    constexpr matrix(vector3 col0, vector3 col1, vector3 col2) noexcept
+    /** Construct a matrix from four vectors.
+     *
+     * @param col0 The 1st `f32x4 column.
+     * @param col1 The 2nd `f32x4 column.
+     * @param col2 The 3rd `f32x4 column.
+     * @param col3 The 4th `f32x4 column.
+     */
+    constexpr matrix(vector3 col0, vector3 col1, vector3 col2, vector3 col3 = vector3{}) noexcept
         requires(D == 3)
         :
         _col0(static_cast<f32x4>(col0)),
         _col1(static_cast<f32x4>(col1)),
         _col2(static_cast<f32x4>(col2)),
-        _col3{0.0f, 0.0f, 0.0f, 1.0f}
+        _col3(static_cast<f32x4>(col3).xyz1())
     {
     }
 
+    /** Construct a 3x3 matrix from scalar values.
+     *
+     * The function parameters are in row-major order for pretty formatting in source code.
+     * The matrix itself remains in column-major order.
+     *
+     * @param c0r0 Value for column 0, row 0
+     * @param c1r0 Value for column 1, row 0
+     * @param c2r0 Value for column 2, row 0
+     * @param c0r1 Value for column 0, row 1
+     * @param c1r1 Value for column 1, row 1
+     * @param c2r1 Value for column 2, row 1
+     * @param c0r2 Value for column 0, row 2
+     * @param c1r2 Value for column 1, row 2
+     * @param c2r2 Value for column 2, row 2
+     */
     constexpr matrix(
         float c0r0,
         float c1r0,
@@ -69,6 +111,28 @@ public:
     {
     }
 
+    /** Construct a 4x4 matrix from scalar values.
+     *
+     * The function parameters are in row-major order for pretty formatting in source code.
+     * The matrix itself remains in column-major order.
+     *
+     * @param c0r0 Value for column 0, row 0
+     * @param c1r0 Value for column 1, row 0
+     * @param c2r0 Value for column 2, row 0
+     * @param c3r0 Value for column 3, row 0
+     * @param c0r1 Value for column 0, row 1
+     * @param c1r1 Value for column 1, row 1
+     * @param c2r1 Value for column 2, row 1
+     * @param c3r1 Value for column 3, row 1
+     * @param c0r2 Value for column 0, row 2
+     * @param c1r2 Value for column 1, row 2
+     * @param c2r2 Value for column 2, row 2
+     * @param c3r2 Value for column 3, row 2
+     * @param c0r3 Value for column 0, row 3
+     * @param c1r3 Value for column 1, row 3
+     * @param c2r3 Value for column 2, row 3
+     * @param c3r3 Value for column 3, row 3
+     */
     constexpr matrix(
         float c0r0,
         float c1r0,
@@ -92,6 +156,8 @@ public:
     {
     }
 
+    /** Copy-construct a matrix from a smaller matrix.
+     */
     template<int E>
         requires(E < D)
     [[nodiscard]] constexpr matrix(matrix<E> const& other) noexcept :
@@ -99,6 +165,8 @@ public:
     {
     }
 
+    /** Copy-assign a matrix from a smaller matrix.
+     */
     template<int E>
         requires(E < D)
     constexpr matrix& operator=(matrix<E> const& rhs) noexcept
@@ -130,6 +198,11 @@ public:
     [[nodiscard]] constexpr static matrix
     uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept;
 
+    /** Get a column.
+     *
+     * @tparam I The index of the column.
+     * @return A const reference to the selected column as a `f32x4`.
+     */
     template<int I>
     [[nodiscard]] friend constexpr f32x4 const& get(matrix const& rhs) noexcept
     {
@@ -146,6 +219,11 @@ public:
         }
     }
 
+    /** Get a column.
+     *
+     * @tparam I The index of the column.
+     * @return A reference to the selected column as a `f32x4`.
+     */
     template<int I>
     [[nodiscard]] friend constexpr f32x4& get(matrix& rhs) noexcept
     {
@@ -167,9 +245,14 @@ public:
         return true;
     }
 
-    [[nodiscard]] constexpr auto operator*(f32x4 const& rhs) const noexcept
+    /** Transform a `f32x4` numeric array by the matrix.
+     *
+     * @param rhs The `f32x4` numeric array to transform.
+     * @return The transformed numeric array.
+     */
+    [[nodiscard]] constexpr f32x4 operator*(f32x4 const& rhs) const noexcept
     {
-        return f32x4{_col0 * rhs.xxxx() + _col1 * rhs.yyyy() + _col2 * rhs.zzzz() + _col3 * rhs.wwww()};
+        return {_col0 * rhs.xxxx() + _col1 * rhs.yyyy() + _col2 * rhs.zzzz() + _col3 * rhs.wwww()};
     }
 
     /** Transform a float by the scaling factor of the matrix.
@@ -196,6 +279,13 @@ public:
         return {*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
+    /** Transform a vector by the matrix.
+     *
+     * Vectors will not be translated.
+     *
+     * @param rhs The vector to be transformed.
+     * @return The transformed vector.
+     */
     template<int E>
     [[nodiscard]] constexpr auto operator*(vector<E> const& rhs) const noexcept
     {
@@ -205,6 +295,13 @@ public:
             _col2 * static_cast<f32x4>(rhs).zzzz()};
     }
 
+    /** Transform a extent by the matrix.
+     *
+     * Extents will not be translated.
+     *
+     * @param rhs The extent to be transformed.
+     * @return The transformed extent.
+     */
     template<int E>
     [[nodiscard]] constexpr auto operator*(extent<E> const& rhs) const noexcept
     {
@@ -214,6 +311,11 @@ public:
             _col2 * static_cast<f32x4>(rhs).zzzz()};
     }
 
+    /** Transform a point by the matrix.
+     *
+     * @param rhs The point to be transformed.
+     * @return The transformed point.
+     */
     template<int E>
     [[nodiscard]] constexpr auto operator*(point<E> const& rhs) const noexcept
     {
@@ -223,35 +325,68 @@ public:
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
     }
 
+    /** Transform an axis-aligned rectangle by the matrix.
+     *
+     * After transformation it can not be guaranteed that an axis-aligned rectangle
+     * remained aligned to axis, therefor a normal rectangle is returned
+     *
+     * @note It is undefined behavior to perspective transform a rectangle
+     * @param rhs The axis-aligned rectangle to be transformed.
+     * @return The transformed rectangle
+     */
     [[nodiscard]] constexpr rectangle operator*(aarectangle const& rhs) const noexcept
     {
         return *this * rectangle{rhs};
     }
 
-    // XXX rectangle -> quad, perspective operation.
+    /** Transform a rectangle by the matrix.
+     *
+     * @note It is undefined behavior to perspective transform a rectangle
+     * @param rhs The rectangle to be transformed.
+     * @return The transformed rectangle
+     */
     [[nodiscard]] constexpr rectangle operator*(rectangle const& rhs) const noexcept
     {
         return rectangle{*this * rhs.origin, *this * rhs.right, *this * rhs.up};
     }
 
+    /** Transform a quad by the matrix.
+     *
+     * @param rhs The quad to be transformed.
+     * @return The transformed quad
+     */
     [[nodiscard]] constexpr quad operator*(quad const& rhs) const noexcept
     {
         return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
     }
 
+    /** Transform a circle by the matrix.
+     *
+     * @param rhs The circle to be transformed.
+     * @return The transformed circle
+     */
     [[nodiscard]] constexpr circle operator*(circle const& rhs) const noexcept
     {
         return circle{*this * midpoint(rhs), *this * rhs.radius()};
     }
 
+    /** Transform a line-segment by the matrix.
+     *
+     * @param rhs The line-segment to be transformed.
+     * @return The transformed line-segment
+     */
     [[nodiscard]] constexpr line_segment operator*(line_segment const& rhs) const noexcept
     {
         return line_segment{*this * rhs.origin(), *this * rhs.direction()};
     }
 
     /** Transform a color by a color matrix.
+     *
      * The alpha value is not included in the transformation and copied from the input.
-     * The color will be correctly transformed if the color matrix includes translation.
+     *
+     * @note It is undefined behavior if the matrix contains a translation.
+     * @param rhs The color to be transformed.
+     * @return The transformed color.
      */
     [[nodiscard]] constexpr auto operator*(color const& rhs) const noexcept
     {
@@ -279,29 +414,6 @@ public:
         return {std::get<0>(tmp), std::get<1>(tmp), std::get<2>(tmp), std::get<3>(tmp)};
     }
 
-    template<char Axis>
-    [[nodiscard]] static constexpr f32x4 reflect_column() noexcept
-    {
-        if constexpr (Axis == 'x') {
-            return f32x4{1.0f, 0.0f, 0.0f, 0.0f};
-        } else if constexpr (Axis == 'X') {
-            return f32x4{-1.0f, 0.0f, 0.0f, 0.0f};
-        } else if constexpr (Axis == 'y') {
-            return f32x4{0.0f, 1.0f, 0.0f, 0.0f};
-        } else if constexpr (Axis == 'Y') {
-            return f32x4{0.0f, -1.0f, 0.0f, 0.0f};
-        } else if constexpr (Axis == 'z') {
-            return f32x4{0.0f, 0.0f, 1.0f, 0.0f};
-        } else if constexpr (Axis == 'Z') {
-            return f32x4{0.0f, 0.0f, -1.0f, 0.0f};
-        } else if constexpr (Axis == 'w') {
-            return f32x4{0.0f, 0.0f, 0.0f, 1.0f};
-        } else if constexpr (Axis == 'W') {
-            return f32x4{0.0f, 0.0f, 0.0f, -1.0f};
-        } else {
-            hi_static_no_default();
-        }
-    }
 
     /** Reflect axis of a matrix.
      *
@@ -333,6 +445,8 @@ public:
      * @tparam DstY Which of the original axis to use for the new matrix's y-axis.
      * @tparam DstZ Which of the original axis to use for the new matrix's z-axis.
      * @tparam DstW Which of the original axis to use for the new matrix's w-axis.
+     * @param The matrix to reflect
+     * @return The reflected matrix.
      */
     template<char DstX, char DstY, char DstZ, char DstW = 'w'>
     [[nodiscard]] friend constexpr matrix reflect(matrix const& rhs) noexcept
@@ -341,6 +455,11 @@ public:
         return matrix{reflect_column<DstX>(), reflect_column<DstY>(), reflect_column<DstZ>(), reflect_column<DstW>()} * rhs;
     }
 
+    /** Compare two matrices potentially of different dimensions.
+     *
+     * @param rhs The right-hand-side matrix.
+     * @retval true When the two matrices compare equal.
+     */
     template<int E>
     [[nodiscard]] constexpr bool operator==(matrix<E> const& rhs) const noexcept
     {
@@ -463,11 +582,41 @@ private:
     f32x4 _col1;
     f32x4 _col2;
     f32x4 _col3;
+
+    template<char Axis>
+    [[nodiscard]] static constexpr f32x4 reflect_column() noexcept
+    {
+        if constexpr (Axis == 'x') {
+            return f32x4{1.0f, 0.0f, 0.0f, 0.0f};
+        } else if constexpr (Axis == 'X') {
+            return f32x4{-1.0f, 0.0f, 0.0f, 0.0f};
+        } else if constexpr (Axis == 'y') {
+            return f32x4{0.0f, 1.0f, 0.0f, 0.0f};
+        } else if constexpr (Axis == 'Y') {
+            return f32x4{0.0f, -1.0f, 0.0f, 0.0f};
+        } else if constexpr (Axis == 'z') {
+            return f32x4{0.0f, 0.0f, 1.0f, 0.0f};
+        } else if constexpr (Axis == 'Z') {
+            return f32x4{0.0f, 0.0f, -1.0f, 0.0f};
+        } else if constexpr (Axis == 'w') {
+            return f32x4{0.0f, 0.0f, 0.0f, 1.0f};
+        } else if constexpr (Axis == 'W') {
+            return f32x4{0.0f, 0.0f, 0.0f, -1.0f};
+        } else {
+            hi_static_no_default();
+        }
+    }
 };
 
 } // namespace geo
 
+/** A 2D homogenious transformation matrix.
+ */
 using matrix2 = geo::matrix<2>;
+
+/** A 3D homogenious transformation matrix.
+ */
 using matrix3 = geo::matrix<3>;
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
+

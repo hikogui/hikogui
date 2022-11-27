@@ -2,12 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file geometry/line_segment.hpp Defines line_segment.
+ * @ingroup geometry
+ */
+
 #pragma once
 
 #include "point.hpp"
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
+/** Line segment.
+ * @ingroup geometry
+ */
 class line_segment {
 public:
     constexpr line_segment(line_segment const &) noexcept = default;
@@ -57,5 +65,5 @@ private:
 };
 
 
-}
+}}
 

@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file geometry/identity.hpp Defines identity type.
+ * @ingroup geometry
+ */
+
 #pragma once
 
 #include "matrix.hpp"
@@ -9,6 +13,10 @@
 namespace hi { inline namespace v1 {
 namespace geo {
 
+/** Identity transform.
+ * @ingroup geometry
+ *
+ */
 class identity {
 public:
     constexpr identity(identity const&) noexcept = default;
@@ -70,7 +78,14 @@ public:
 
 } // namespace geo
 
+/** 2D identity transform.
+ * @ingroup geometry
+ */
 using identity2 = geo::identity;
+
+/** 2D identity transform.
+ * @ingroup geometry
+ */
 using identity3 = geo::identity;
 
 }} // namespace hi::v1

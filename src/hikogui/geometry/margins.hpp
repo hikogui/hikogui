@@ -2,12 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** geometry/margins.hpp
+ * @ingroup geometry
+ */
+
 #pragma once
 
 #include "../rapid/numeric_array.hpp"
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
+/** The left, bottom, right and top margins.
+ * @ingroup geometry
+ */
 class margins {
 public:
     constexpr margins(margins const &) noexcept = default;
@@ -87,4 +95,5 @@ private:
     f32x4 _v;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
+
