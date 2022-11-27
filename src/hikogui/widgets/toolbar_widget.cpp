@@ -34,7 +34,7 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
 {
     // Clip directly around the toolbar, so that tab buttons looks proper.
     if (compare_store(_layout, context)) {
-        _children.set_layout(context.size);
+        _children.set_layout(context.size, context.theme->x_height);
     }
 
     hilet overhang = context.redraw_overhang;
