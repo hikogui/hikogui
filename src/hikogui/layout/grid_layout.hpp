@@ -256,6 +256,10 @@ public:
         /** Size of the cell after layout.
          */
         int size = 0;
+
+        /** The position within this cell where alignment starts.
+         */
+        std::optional<int> alignment_offset = 0;
     };
     using constraint_vector = std::vector<constraint_type>;
     using iterator = constraint_vector::iterator;
@@ -364,6 +368,8 @@ public:
             // The result may expand slightly too much, we don't care.
             back().size = back().size + size - current_size;
         }
+
+        layout_alignment(alignment_offset);
     }
 
     [[nodiscard]] constexpr size_t size() const noexcept
