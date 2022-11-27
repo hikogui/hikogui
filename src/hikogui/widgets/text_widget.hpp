@@ -125,7 +125,7 @@ private:
 
     gstring _cached_text;
     text_shaper _shaped_text;
-    float _base_line;
+    float _baseline;
 
     delegate_type::callback_token _delegate_cbt;
 

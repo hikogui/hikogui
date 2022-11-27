@@ -120,9 +120,9 @@ public:
         return _grid.get_constraints(left_to_right);
     }
 
-    void set_layout(extent2 size, float alignment_offset) noexcept
+    void set_layout(int width, int height, int alignment_offset) noexcept
     {
-        return _grid.set_layout(size, alignment_offset);
+        return _grid.set_layout(width, height, alignment_offset);
     }
 
 private:

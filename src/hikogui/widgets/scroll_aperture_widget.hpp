@@ -100,14 +100,20 @@ public:
         _content_constraints = _content->set_constraints(context);
 
         hilet minimum_size = extent2{
-            _content_constraints.margins.left() + _content_constraints.minimum.width() + _content_constraints.margins.right(),
-            _content_constraints.margins.top() + _content_constraints.minimum.height() + _content_constraints.margins.bottom()};
+            _content_constraints.margins().left() + _content_constraints.minimum().width() +
+                _content_constraints.margins().right(),
+            _content_constraints.margins().top() + _content_constraints.minimum().height() +
+                _content_constraints.margins().bottom()};
         hilet preferred_size = extent2{
-            _content_constraints.margins.left() + _content_constraints.preferred.width() + _content_constraints.margins.right(),
-            _content_constraints.margins.top() + _content_constraints.preferred.height() + _content_constraints.margins.bottom()};
+            _content_constraints.margins().left() + _content_constraints.preferred().width() +
+                _content_constraints.margins().right(),
+            _content_constraints.margins().top() + _content_constraints.preferred().height() +
+                _content_constraints.margins().bottom()};
         hilet maximum_size = extent2{
-            _content_constraints.margins.left() + _content_constraints.maximum.width() + _content_constraints.margins.right(),
-            _content_constraints.margins.top() + _content_constraints.maximum.height() + _content_constraints.margins.bottom()};
+            _content_constraints.margins().left() + _content_constraints.maximum().width() +
+                _content_constraints.margins().right(),
+            _content_constraints.margins().top() + _content_constraints.maximum().height() +
+                _content_constraints.margins().bottom()};
 
         return _constraints = {minimum_size, preferred_size, maximum_size};
     }
@@ -115,10 +121,10 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         hilet content_constraints = _content->constraints();
-        hilet margins = content_constraints.margins;
+        hilet margins = content_constraints.margins();
 
         if (compare_store(_layout, context)) {
-            hilet preferred_size = content_constraints.preferred;
+            hilet preferred_size = content_constraints.preferred();
 
             aperture_width = context.width() - margins.left() - margins.right();
             aperture_height = context.height() - margins.bottom() - margins.top();
@@ -138,7 +144,7 @@ public:
         // The position of the content rectangle relative to the scroll view.
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
         hilet content_rectangle = aarectangle{-*offset_x + margins.left(), -*offset_y + margins.bottom(), *content_width, *content_height};
-        _content_shape = {_content_constraints, content_rectangle, context.theme->x_height};
+        _content_shape = {_content_constraints, content_rectangle, context.theme->baseline_adjustment};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.

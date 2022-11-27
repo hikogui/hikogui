@@ -184,34 +184,42 @@ namespace hi::inline v1 {
     return std::max(gather_keyboard_repeat_delay(), gather_keyboard_repeat_interval());
 }
 
-[[nodiscard]] extent2 os_settings::gather_minimum_window_size()
+[[nodiscard]] int os_settings::gather_minimum_window_width()
 {
     hilet width = GetSystemMetrics(SM_CXMINTRACK);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXMINTRACK");
     }
+    return width;
+}
 
+[[nodiscard]] int os_settings::gather_minimum_window_height()
+{
     hilet height = GetSystemMetrics(SM_CYMINTRACK);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYMINTRACK");
     }
 
-    return extent2{narrow_cast<float>(width), narrow_cast<float>(height)};
+    return height;
 }
 
-[[nodiscard]] extent2 os_settings::gather_maximum_window_size()
+[[nodiscard]] int os_settings::gather_maximum_window_width()
 {
     hilet width = GetSystemMetrics(SM_CXMAXTRACK);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXMAXTRACK");
     }
+    return width;
+}
 
+[[nodiscard]] int os_settings::gather_maximum_window_height()
+{
     hilet height = GetSystemMetrics(SM_CYMAXTRACK);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYMAXTRACK");
     }
 
-    return extent2{narrow_cast<float>(width), narrow_cast<float>(height)};
+    return height;
 }
 
 [[nodiscard]] uintptr_t os_settings::gather_primary_monitor_id()

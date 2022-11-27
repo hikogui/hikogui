@@ -55,7 +55,7 @@ box_constraints const& grid_widget::set_constraints(set_constraints_context cons
 void grid_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _cells.set_layout(context.size, context.theme->x_height);
+        _cells.set_layout(context.width(), context.height(), context.theme->baseline_adjustment);
     }
 
     for (hilet& cell : _cells) {

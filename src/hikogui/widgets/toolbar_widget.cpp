@@ -34,14 +34,14 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
 {
     // Clip directly around the toolbar, so that tab buttons looks proper.
     if (compare_store(_layout, context)) {
-        _children.set_layout(context.size, context.theme->x_height);
+        _children.set_layout(context.width(), context.height(), context.theme->baseline_adjustment);
     }
 
     hilet overhang = context.redraw_overhang;
 
     for (hilet& child : _children) {
         hilet child_clipping_rectangle = aarectangle{
-            child.shape.rectangle.left() - overhang, 0.0f, child.shape.rectangle.width() + overhang * 2.0f, context.height()};
+            narrow_cast<float>(child.shape.left) - overhang, 0.0f, narrow_cast<float>(child.shape.width()) + overhang * 2.0f, narrow_cast<float>(context.height())};
 
         child.value->set_layout(context.transform(child.shape, 1.0f, child_clipping_rectangle));
     }

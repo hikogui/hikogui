@@ -24,11 +24,11 @@ void system_menu_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         hilet icon_height = context.height() < context.theme->large_size * 1.2f ? context.height() : context.theme->large_size;
-        hilet icon_rectangle = aarectangle{0.0f, context.height() - icon_height, context.width(), icon_height};
-        _icon_shape = box_shape{_icon_constraints, icon_rectangle, context.theme->x_height};
+        hilet icon_rectangle = aarectangle{0.0f, narrow_cast<float>(context.height()) - icon_height, narrow_cast<float>(context.width()), icon_height};
+        _icon_shape = box_shape{_icon_constraints, icon_rectangle, context.theme->baseline_adjustment};
         // Leave space for window resize handles on the left and top.
         _system_menu_rectangle = aarectangle{
-            context.theme->margin, 0.0f, context.width() - context.theme->margin, context.height() - context.theme->margin};
+            context.theme->margin, 0.0f, narrow_cast<float>(context.width()) - context.theme->margin, narrow_cast<float>(context.height()) - context.theme->margin};
     }
 
     _icon_widget->set_layout(context.transform(_icon_shape));

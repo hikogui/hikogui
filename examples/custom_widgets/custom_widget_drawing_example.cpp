@@ -139,7 +139,7 @@ public:
         // calculations when the size of the widget was changed.
         if (compare_store(_layout, context)) {
             // Make a size scaled to the layout.
-            auto const max_size = _layout.size * 0.9f;
+            auto const max_size = _layout.size() * 0.9f;
             auto const max_rectangle = hi::aarectangle{hi::point2{max_size.width() * -0.5f, max_size.height() * -0.5f}, max_size};
 
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
@@ -253,9 +253,9 @@ public:
         using namespace std::chrono_literals;
 
         auto const clipping_rectangle =
-            *clip ? hi::aarectangle{0.0f, 0.0f, _layout.width(), _layout.height() * 0.5f} : _layout.rectangle();
+            *clip ? hi::aarectangle{0.0f, 0.0f, hi::narrow_cast<float>(_layout.width()), hi::narrow_cast<float>(_layout.height()) * 0.5f} : _layout.rectangle();
 
-        auto const translation = hi::translate3(std::floor(_layout.width() * 0.5f), std::floor(_layout.height()) * 0.5f, 0.0f);
+        auto const translation = hi::translate3(std::floor(_layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(_layout.height())) * 0.5f, 0.0f);
         auto const transform = translation * rotation(context);
 
         auto const circle = hi::circle{hi::point3{0.0f, 0.0f, 0.0f}, 50.0f};

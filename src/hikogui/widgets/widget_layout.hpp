@@ -40,6 +40,11 @@ namespace hi { inline namespace v1 {
  */
 class widget_layout {
 public:
+    /** Shape of the widget.
+     * Since a widget_layout is always in local coordinates, the `left` and `bottom` values are zero.
+     */
+    box_shape shape;
+
     /** The amount of pixels that the redraw request will overhang the widget.
      *
      * Widgets are allowed to draw inside their margins, in most cases this will just be a border.
@@ -61,10 +66,6 @@ public:
     /** This matrix transforms window coordinates to local coordinates.
      */
     matrix3 from_window = {};
-
-    /** Size of the widget.
-     */
-    extent2 size = {};
 
     /** Size of the window.
      */
@@ -104,14 +105,6 @@ public:
      */
     utc_nanoseconds display_time_point = {};
 
-    /** The base-line in widget local y-coordinate.
-     */
-    float base_line = 0.0f;
-
-    /** The decimal-line in widget local x-coordinate.
-     */
-    float decimal_line = 0.0f;
-
     constexpr widget_layout(widget_layout const&) noexcept = default;
     constexpr widget_layout(widget_layout&&) noexcept = default;
     constexpr widget_layout& operator=(widget_layout const&) noexcept = default;
@@ -142,7 +135,7 @@ public:
 
     [[nodiscard]] constexpr aarectangle rectangle() const noexcept
     {
-        return aarectangle{size};
+        return shape.rectangle();
     }
 
     /** Get the rectangle in window coordinate system.
@@ -169,14 +162,19 @@ public:
         return bounding_rectangle(to_window * intersect(clipping_rectangle, narrow_clipping_rectangle));
     }
 
-    [[nodiscard]] constexpr float width() const noexcept
+    [[nodiscard]] constexpr int width() const noexcept
     {
-        return size.width();
+        return shape.width();
     }
 
-    [[nodiscard]] constexpr float height() const noexcept
+    [[nodiscard]] constexpr int height() const noexcept
     {
-        return size.height();
+        return shape.height();
+    }
+
+    [[nodiscard]] constexpr extent2 size() const noexcept
+    {
+        return shape.size();
     }
 
     /** Check if the writing direction is left-to-right.
@@ -207,7 +205,7 @@ public:
         from_parent(),
         to_window(),
         from_window(),
-        size(window_size),
+        shape(window_size),
         window_size(window_size),
         window_size_state(window_size_state),
         font_book(&font_book),
@@ -215,9 +213,7 @@ public:
         clipping_rectangle(window_size),
         sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
         writing_direction(writing_direction),
-        display_time_point(display_time_point),
-        base_line(),
-        decimal_line()
+        display_time_point(display_time_point)
     {
     }
 
@@ -229,30 +225,38 @@ public:
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout
-    transform(box_shape const& shape, float elevation, aarectangle new_clipping_rectangle) const noexcept
+    transform(box_shape const& child_shape, float elevation, aarectangle new_clipping_rectangle) const noexcept
     {
-        auto to_parent3 = translate3{shape.rectangle, elevation};
+        auto to_parent3 = translate3{narrow_cast<float>(shape.left), narrow_cast<float>(shape.bottom), elevation};
         auto from_parent3 = ~to_parent3;
 
         widget_layout r = *this;
+        hi_axiom(r.shape.left == 0);
+        hi_axiom(r.shape.bottom == 0);
+        r.shape.right = child_shape.width();
+        r.shape.top = child_shape.height();
+
+        if (child_shape.baseline) {
+            r.shape.baseline = *child_shape.baseline - child_shape.bottom;
+
+        } else if (r.shape.baseline) {
+            // Use the baseline of the current layout and translate it.
+            *r.shape.baseline -= child_shape.bottom;
+        }
+
+        if (child_shape.decimal_line) {
+            r.shape.decimal_line = *child_shape.decimal_line - child_shape.left;
+
+        } else if (r.shape.decimal_line) {
+            // Use the baseline of the current layout and translate it.
+            *r.shape.decimal_line -= child_shape.left;
+        }
+
         r.to_parent = to_parent3;
         r.from_parent = from_parent3;
         r.to_window = to_parent3 * this->to_window;
         r.from_window = from_parent3 * this->from_window;
-        r.size = shape.rectangle.size();
         r.clipping_rectangle = bounding_rectangle(from_parent3 * intersect(this->clipping_rectangle, new_clipping_rectangle));
-        if (isnan(shape.base_line)) {
-            // Use the baseline of the current layout and translate it.
-            r.base_line = this->base_line - shape.rectangle.bottom();
-        } else {
-            r.base_line = shape.base_line - shape.rectangle.bottom();
-        }
-        if (isnan(shape.decimal_line)) {
-            // Use the baseline of the current layout and translate it.
-            r.decimal_line = this->decimal_line - shape.rectangle.left();
-        } else {
-            r.decimal_line = shape.decimal_line - shape.rectangle.left();
-        }
         return r;
     }
 
@@ -262,10 +266,9 @@ public:
      * @param elevation The elevation of the child widget, relative to the current widget.
      * @return A new widget_layout for use by the child widget.
      */
-    [[nodiscard]] constexpr widget_layout
-    transform(box_shape const& shape, float elevation = 1.0f) const noexcept
+    [[nodiscard]] constexpr widget_layout transform(box_shape const& child_shape, float elevation = 1.0f) const noexcept
     {
-        return transform(shape, elevation, shape.rectangle + redraw_overhang);
+        return transform(child_shape, elevation, child_shape.rectangle() + redraw_overhang);
     }
 
     /** Override e context with the new clipping rectangle.

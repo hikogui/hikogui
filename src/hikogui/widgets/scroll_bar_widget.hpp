@@ -88,9 +88,9 @@ public:
         // Calculate the position of the slider.
         hilet slider_offset = *offset * travel_vs_hidden_content_ratio();
         if constexpr (axis == axis::vertical) {
-            _slider_rectangle = aarectangle{0.0f, slider_offset, context.width(), slider_length()};
+            _slider_rectangle = aarectangle{0.0f, slider_offset, narrow_cast<float>(context.width()), slider_length()};
         } else {
-            _slider_rectangle = aarectangle{slider_offset, 0.0f, slider_length(), context.height()};
+            _slider_rectangle = aarectangle{slider_offset, 0.0f, slider_length(), narrow_cast<float>(context.height())};
         }
     }
 
@@ -183,7 +183,7 @@ private:
     [[nodiscard]] float rail_length() const noexcept
     {
         hi_axiom(loop::main().on_thread());
-        return axis == axis::vertical ? layout().height() : layout().width();
+        return narrow_cast<float>(axis == axis::vertical ? layout().height() : layout().width());
     }
 
     [[nodiscard]] float slider_length() const noexcept

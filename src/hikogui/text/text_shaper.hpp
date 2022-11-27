@@ -200,7 +200,7 @@ public:
      *
      * @post The lines have been laid out.
      * @param rectangle The rectangle to position the glyphs in.
-     * @param base_line The position of the recommended base-line.
+     * @param baseline The position of the recommended base-line.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
      * @param writing_direction The default writing direction.
      * @param alignment The alignment of the text (default: flush, middle).
@@ -209,7 +209,7 @@ public:
      */
     [[nodiscard]] void layout(
         aarectangle rectangle,
-        float base_line,
+        float baseline,
         extent2 sub_pixel_size,
         unicode_bidi_class writing_direction,
         hi::alignment alignment = hi::alignment{horizontal_alignment::flush, vertical_alignment::middle},
@@ -482,7 +482,7 @@ private:
     /** Create lines from the characters in the text shaper.
      *
      * @param rectangle The rectangle to position the glyphs in.
-     * @param base_line The position of the recommended base-line.
+     * @param baseline The position of the recommended base-line.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
      * @param vertical_alignment The vertical alignment of text.
      * @param writing_direction The default writing direction.
@@ -491,7 +491,7 @@ private:
      */
     [[nodiscard]] line_vector make_lines(
         aarectangle rectangle,
-        float base_line,
+        float baseline,
         extent2 sub_pixel_size,
         hi::vertical_alignment vertical_alignment,
         unicode_bidi_class writing_direction,

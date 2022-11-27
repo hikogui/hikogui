@@ -31,11 +31,11 @@ box_constraints const& window_traffic_lights_widget::set_constraints(set_constra
 void window_traffic_lights_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        auto extent = context.size;
+        auto extent = context.size();
         if (extent.height() > context.theme->large_size * 1.2f) {
             extent = extent2{extent.width(), context.theme->large_size};
         }
-        auto y = context.height() - extent.height();
+        auto y = narrow_cast<float>(context.height()) - extent.height();
 
         if (context.theme->operating_system == operating_system::windows) {
             closeRectangle =

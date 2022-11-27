@@ -43,8 +43,10 @@ public:
         if (compare_store(_layout, context)) {
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
             // In this case we make two rectangles which are used in the `draw()` function.
-            _left_rectangle = hi::aarectangle{hi::extent2{context.width() / 2, context.height()}};
-            _right_rectangle = hi::aarectangle{hi::point2{context.width() / 2, 0.0}, _left_rectangle.size()};
+            _left_rectangle = hi::aarectangle{
+                hi::extent2{hi::narrow_cast<float>(context.width()) / 2, hi::narrow_cast<float>(context.height())}};
+            _right_rectangle =
+                hi::aarectangle{hi::point2{hi::narrow_cast<float>(context.width()) / 2, 0.0}, _left_rectangle.size()};
         }
     }
 

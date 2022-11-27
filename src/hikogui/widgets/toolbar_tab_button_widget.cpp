@@ -23,7 +23,7 @@ void toolbar_tab_button_widget::set_layout(widget_layout const& context) noexcep
             0.0f,
             context.width() - context.theme->margin * 2.0f,
             context.height() - context.theme->margin};
-        _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->x_height};
+        _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
     }
     set_layout_button(context);
 }
@@ -46,7 +46,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
     hilet offset = layout().theme->margin + layout().theme->border_width;
-    hilet outline_rectangle = aarectangle{0.0f, -offset, layout().width(), layout().height() + offset};
+    hilet outline_rectangle = aarectangle{0.0f, -offset, narrow_cast<float>(layout().width()), narrow_cast<float>(layout().height()) + offset};
 
     // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
     hilet button_z = *focus ? translate_z(0.6f) : translate_z(0.0f);

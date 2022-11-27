@@ -64,9 +64,9 @@ public:
      */
     float label_icon_size = 15.0f;
 
-    /** The height of small letter x of the default text-style.
+    /** The amount the base-line needs to be moved downwards when a label is aligned to top.
      */
-    float x_height = 8.6f;
+    int baseline_adjustment = 9;
 
     std::string name;
     theme_mode mode = theme_mode::light;

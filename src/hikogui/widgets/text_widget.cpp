@@ -27,7 +27,8 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
 
             // Constrain and layout according to the old layout.
             hilet new_constraints = set_constraints(c_context);
-            inplace_max(new_layout.size, new_constraints.minimum);
+            inplace_max(new_layout.shape.right, new_constraints.minimum_width);
+            inplace_max(new_layout.shape.top, new_constraints.minimum_height);
             set_layout(new_layout);
 
             if (new_constraints != old_constraints) {
@@ -113,7 +114,9 @@ void text_widget::set_layout(widget_layout const& context) noexcept
     if (compare_store(_layout, context)) {
         auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
 
-        _shaped_text.layout(context.rectangle(), context.base_line, context.sub_pixel_size, context.writing_direction, alignment_);
+        hi_axiom(context.shape.baseline);
+
+        _shaped_text.layout(context.rectangle(), narrow_cast<float>(*context.shape.baseline), context.sub_pixel_size, context.writing_direction, alignment_);
     }
 }
 

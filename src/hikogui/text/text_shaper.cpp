@@ -35,7 +35,7 @@ static void layout_lines_vertical_spacing(text_shaper::line_vector& lines, float
 static void layout_lines_vertical_alignment(
     text_shaper::line_vector& lines,
     vertical_alignment alignment,
-    float base_line,
+    float baseline,
     float min_y,
     float max_y,
     float sub_pixel_height) noexcept
@@ -62,7 +62,7 @@ static void layout_lines_vertical_alignment(
     }();
 
     // Add the base-line to the adjustment.
-    adjustment += base_line;
+    adjustment += baseline;
 
     // Clamp the adjustment between min_y and max_y.
     // The text may not fit, prioritize to show the top lines.
@@ -237,7 +237,7 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
 
 [[nodiscard]] text_shaper::line_vector text_shaper::make_lines(
     aarectangle rectangle,
-    float base_line,
+    float baseline,
     extent2 sub_pixel_size,
     hi::vertical_alignment vertical_alignment,
     unicode_bidi_class writing_direction,
@@ -271,7 +271,7 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
 
     layout_lines_vertical_spacing(r, line_spacing, paragraph_spacing);
     layout_lines_vertical_alignment(
-        r, vertical_alignment, base_line, rectangle.bottom(), rectangle.top(), sub_pixel_size.height());
+        r, vertical_alignment, baseline, rectangle.bottom(), rectangle.top(), sub_pixel_size.height());
 
     return r;
 }
@@ -353,11 +353,11 @@ void text_shaper::resolve_script() noexcept
 {
     hilet rectangle = aarectangle{
         point2{0.0f, std::numeric_limits<float>::lowest()}, point2{maximum_line_width, std::numeric_limits<float>::max()}};
-    constexpr auto base_line = 0.0f;
+    constexpr auto baseline = 0.0f;
     constexpr auto sub_pixel_size = extent2{1.0f, 1.0f};
 
     hilet lines = make_lines(
-        rectangle, base_line, sub_pixel_size, vertical_alignment, unicode_bidi_class::L, line_spacing, paragraph_spacing);
+        rectangle, baseline, sub_pixel_size, vertical_alignment, unicode_bidi_class::L, line_spacing, paragraph_spacing);
     hi_assert(not lines.empty());
 
     auto max_width = 0.0f;
@@ -510,7 +510,7 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
 
 [[nodiscard]] void text_shaper::layout(
     aarectangle rectangle,
-    float base_line,
+    float baseline,
     extent2 sub_pixel_size,
     unicode_bidi_class writing_direction,
     hi::alignment alignment,
@@ -519,7 +519,7 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
 {
     _rectangle = rectangle;
     _lines = make_lines(
-        rectangle, base_line, sub_pixel_size, alignment.vertical(), writing_direction, line_spacing, paragraph_spacing);
+        rectangle, baseline, sub_pixel_size, alignment.vertical(), writing_direction, line_spacing, paragraph_spacing);
     hi_assert(not _lines.empty());
     position_glyphs(rectangle, sub_pixel_size, alignment.horizontal(), writing_direction);
 }

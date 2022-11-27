@@ -67,7 +67,7 @@ void icon_widget::set_layout(widget_layout const &context) noexcept
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
         } else {
-            hilet icon_scale = scale2::uniform(_icon_size, context.size);
+            hilet icon_scale = scale2::uniform(_icon_size, context.size());
             hilet new_icon_size = icon_scale * _icon_size;
             _icon_rectangle = align(context.rectangle(), new_icon_size, *alignment);
         }

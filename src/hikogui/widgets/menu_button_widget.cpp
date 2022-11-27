@@ -20,7 +20,7 @@ box_constraints const& menu_button_widget::set_constraints(set_constraints_conte
     hilet extra_size =
         extent2{context.theme->margin * 4.0f + _check_size.width() + _short_cut_size.width(), context.theme->margin * 2.0f};
     _constraints = set_constraints_button(context) + extra_size;
-    _constraints.margins = 0.0f;
+    _constraints.set_margins(0);
     return _constraints;
 }
 
@@ -34,16 +34,16 @@ void menu_button_widget::set_layout(widget_layout const& context) noexcept
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
             hilet label_rectangle = aarectangle{
                 point2{_check_rectangle.right() + context.theme->margin, 0.0f},
-                point2{_short_cut_rectangle.left() - context.theme->margin, context.height()}};
-            _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->x_height};
+                point2{_short_cut_rectangle.left() - context.theme->margin, narrow_cast<float>(context.height())}};
+            _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
 
         } else {
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_left());
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_right());
             hilet label_rectangle = aarectangle{
                 point2{_short_cut_rectangle.right() + context.theme->margin, 0.0f},
-                point2{_check_rectangle.left() - context.theme->margin, context.height()}};
-            _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->x_height};
+                point2{_check_rectangle.left() - context.theme->margin, narrow_cast<float>(context.height())}};
+            _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
         }
 
         _check_glyph = context.font_book->find_glyph(elusive_icon::Ok);

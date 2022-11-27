@@ -72,13 +72,13 @@ box_constraints const& selection_widget::set_constraints(set_constraints_context
         _constraints = max(_constraints, child->constraints());
     }
 
-    _constraints.minimum.width() =
-        std::max(_constraints.minimum.width(), _overlay_constraints.minimum.width() + extra_size.width());
-    _constraints.preferred.width() =
-        std::max(_constraints.preferred.width(), _overlay_constraints.preferred.width() + extra_size.width());
-    _constraints.maximum.width() =
-        std::max(_constraints.maximum.width(), _overlay_constraints.maximum.width() + extra_size.width());
-    _constraints.margins = context.theme->margin;
+    _constraints.minimum_width =
+        std::max(_constraints.minimum_width, _overlay_constraints.minimum_width + narrow_cast<int>(extra_size.width()));
+    _constraints.preferred_width =
+        std::max(_constraints.preferred_width, _overlay_constraints.preferred_width + narrow_cast<int>(extra_size.width()));
+    _constraints.maximum_width =
+        std::max(_constraints.maximum_width, _overlay_constraints.maximum_width + narrow_cast<int>(extra_size.width()));
+    _constraints.set_margins(narrow_cast<int>(context.theme->margin));
     hi_axiom(_constraints.holds_invariant());
     return _constraints;
 }
@@ -87,28 +87,28 @@ void selection_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         if (context.left_to_right()) {
-            _left_box_rectangle = aarectangle{0.0f, 0.0f, context.theme->size, context.height()};
+            _left_box_rectangle = aarectangle{0.0f, 0.0f, context.theme->size, narrow_cast<float>(context.height())};
 
             // The unknown_label is located to the right of the selection box icon.
             hilet option_rectangle = aarectangle{
                 _left_box_rectangle.right() + context.theme->margin,
                 0.0f,
-                context.width() - _left_box_rectangle.width() - context.theme->margin * 2.0f,
-                context.height()};
-            _off_label_shape = box_shape{_off_label_constraints, option_rectangle, context.theme->x_height};
-            _current_label_shape = box_shape{_off_label_constraints, option_rectangle, context.theme->x_height};
+                narrow_cast<float>(context.width()) - _left_box_rectangle.width() - context.theme->margin * 2.0f,
+                narrow_cast<float>(context.height())};
+            _off_label_shape = box_shape{_off_label_constraints, option_rectangle, context.theme->baseline_adjustment};
+            _current_label_shape = box_shape{_off_label_constraints, option_rectangle, context.theme->baseline_adjustment};
 
         } else {
-            _left_box_rectangle = aarectangle{context.width() - context.theme->size, 0.0f, context.theme->size, context.height()};
+            _left_box_rectangle = aarectangle{narrow_cast<float>(context.width()) - context.theme->size, 0.0f, context.theme->size, narrow_cast<float>(context.height())};
 
             // The unknown_label is located to the left of the selection box icon.
             hilet option_rectangle = aarectangle{
                 context.theme->margin,
                 0.0f,
-                context.width() - _left_box_rectangle.width() - context.theme->margin * 2.0f,
-                context.height()};
-            _off_label_shape = box_shape{_off_label_constraints, option_rectangle, context.theme->x_height};
-            _current_label_shape = box_shape{_off_label_constraints, option_rectangle, context.theme->x_height};
+                narrow_cast<float>(context.width()) - _left_box_rectangle.width() - context.theme->margin * 2.0f,
+                narrow_cast<float>(context.height())};
+            _off_label_shape = box_shape{_off_label_constraints, option_rectangle, context.theme->baseline_adjustment};
+            _current_label_shape = box_shape{_off_label_constraints, option_rectangle, context.theme->baseline_adjustment};
         }
 
         _chevrons_glyph = context.font_book->find_glyph(elusive_icon::ChevronUp);
@@ -122,14 +122,14 @@ void selection_widget::set_layout(widget_layout const& context) noexcept
     // The height of the overlay should be the maximum height, which will show all the options.
     hilet overlay_width = std::clamp(
         context.width() - context.theme->size,
-        _overlay_widget->constraints().minimum.width(),
-        _overlay_widget->constraints().maximum.width());
-    hilet overlay_height = _overlay_widget->constraints().preferred.height();
-    hilet overlay_x = context.left_to_right() ? context.theme->size : context.width() - context.theme->size - overlay_width;
+        narrow_cast<float>(_overlay_widget->constraints().minimum_width),
+        narrow_cast<float>(_overlay_widget->constraints().maximum_width));
+    hilet overlay_height = narrow_cast<float>(_overlay_widget->constraints().preferred_height);
+    hilet overlay_x = context.left_to_right() ? context.theme->size : narrow_cast<float>(context.width()) - context.theme->size - overlay_width;
     hilet overlay_y = std::round(context.height() * 0.5f - overlay_height * 0.5f);
     hilet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
     hilet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
-    _overlay_shape = box_shape{_overlay_constraints, overlay_rectangle, context.theme->x_height};
+    _overlay_shape = box_shape{_overlay_constraints, overlay_rectangle, context.theme->baseline_adjustment};
     _overlay_widget->set_layout(context.transform(_overlay_shape, 20.0f));
 
     _off_label_widget->set_layout(context.transform(_off_label_shape));

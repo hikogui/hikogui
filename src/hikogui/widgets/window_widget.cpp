@@ -45,70 +45,74 @@ box_constraints const& window_widget::set_constraints(set_constraints_context co
     _toolbar_constraints = _toolbar->set_constraints(context);
     _content_constraints = _content->set_constraints(context);
 
-    auto minimum_width = std::max(
-        _toolbar_constraints.margins.left() + _toolbar_constraints.minimum.width() + _toolbar_constraints.margins.right(),
-        _content_constraints.margins.left() + _content_constraints.minimum.width() + _content_constraints.margins.right());
-    auto preferred_width = std::max(
-        _toolbar_constraints.margins.left() + _toolbar_constraints.preferred.width() + _toolbar_constraints.margins.right(),
-        _content_constraints.margins.left() + _content_constraints.preferred.width() + _content_constraints.margins.right());
-    auto maximum_width = std::max(
-        _toolbar_constraints.margins.left() + _toolbar_constraints.maximum.width() + _toolbar_constraints.margins.right(),
-        _content_constraints.margins.left() + _content_constraints.maximum.width() + _content_constraints.margins.right());
+    _constraints = {};
+    _constraints.minimum_width = std::max(
+        _toolbar_constraints.margin_left + _toolbar_constraints.minimum_width + _toolbar_constraints.margin_right,
+        _content_constraints.margin_left + _content_constraints.minimum_width + _content_constraints.margin_right);
+    _constraints.preferred_width = std::max(
+        _toolbar_constraints.margin_left + _toolbar_constraints.preferred_width + _toolbar_constraints.margin_right,
+        _content_constraints.margin_left + _content_constraints.preferred_width + _content_constraints.margin_right);
+    _constraints.maximum_width = std::max(
+        _toolbar_constraints.margin_left + _toolbar_constraints.maximum_width + _toolbar_constraints.margin_right,
+        _content_constraints.margin_left + _content_constraints.maximum_width + _content_constraints.margin_right);
 
     // clang-format off
-    auto minimum_height =
-        _toolbar_constraints.margins.top() +
-        _toolbar_constraints.preferred.height() +
-        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
-        _content_constraints.minimum.height() +
-        _content_constraints.margins.bottom();
-    auto preferred_height =
-        _toolbar_constraints.margins.top() +
-        _toolbar_constraints.preferred.height() +
-        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
-        _content_constraints.preferred.height() +
-        _content_constraints.margins.bottom();
-    auto maximum_height =
-        _toolbar_constraints.margins.top() +
-        _toolbar_constraints.preferred.height() +
-        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
-        _content_constraints.maximum.height() +
-        _content_constraints.margins.bottom();
+    _constraints.minimum_height =
+        _toolbar_constraints.margin_top +
+        _toolbar_constraints.preferred_height +
+        std::max(_toolbar_constraints.margin_bottom, _content_constraints.margin_top) +
+        _content_constraints.minimum_height +
+        _content_constraints.margin_bottom;
+    _constraints.preferred_height =
+        _toolbar_constraints.margin_top +
+        _toolbar_constraints.preferred_height +
+        std::max(_toolbar_constraints.margin_bottom, _content_constraints.margin_top) +
+        _content_constraints.preferred_height +
+        _content_constraints.margin_bottom;
+    _constraints.maximum_height =
+        _toolbar_constraints.margin_top +
+        _toolbar_constraints.preferred_height +
+        std::max(_toolbar_constraints.margin_bottom, _content_constraints.margin_top) +
+        _content_constraints.maximum_height +
+        _content_constraints.margin_bottom;
     // clang-format on
 
     // The operating system also has a minimum and maximum size, these sizes
     // are more important than the calculated sizes.
-    hilet minimum_window_size = os_settings::minimum_window_size();
-    hilet maximum_window_size = os_settings::maximum_window_size();
+    inplace_max(_constraints.minimum_width, os_settings::minimum_window_width());
+    inplace_max(_constraints.minimum_height, os_settings::minimum_window_height());
 
-    inplace_max(minimum_width, minimum_window_size.width());
-    inplace_max(minimum_height, minimum_window_size.height());
+    inplace_clamp(_constraints.maximum_width, _constraints.minimum_width, os_settings::maximum_window_width());
+    inplace_clamp(_constraints.maximum_height, _constraints.minimum_height, os_settings::maximum_window_height());
 
-    inplace_clamp(maximum_width, minimum_width, maximum_window_size.width());
-    inplace_clamp(maximum_height, minimum_height, maximum_window_size.height());
+    inplace_clamp(_constraints.preferred_width, _constraints.minimum_width, _constraints.maximum_width);
+    inplace_clamp(_constraints.preferred_height, _constraints.minimum_height, _constraints.maximum_height);
 
-    inplace_clamp(preferred_width, minimum_width, maximum_width);
-    inplace_clamp(preferred_height, minimum_height, maximum_height);
-
-    return _constraints = {{minimum_width, minimum_height}, {preferred_width, preferred_height}, {maximum_width, maximum_height}};
+    return _constraints;
 }
 
 void window_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet toolbar_height = _toolbar_constraints.preferred.height();
-        hilet between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
+        hilet toolbar_height = narrow_cast<float>(_toolbar_constraints.preferred_height);
+        hilet between_margin =
+            std::max(narrow_cast<float>(_toolbar_constraints.margin_bottom), narrow_cast<float>(_content_constraints.margin_top));
 
         hilet toolbar_rectangle = aarectangle{
-            point2{_toolbar_constraints.margins.left(), context.height() - toolbar_height - _toolbar_constraints.margins.top()},
             point2{
-                context.width() - _toolbar_constraints.margins.right(), context.height() - _toolbar_constraints.margins.top()}};
-        _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, context.theme->x_height};
+                narrow_cast<float>(_toolbar_constraints.margin_left),
+                narrow_cast<float>(context.height()) - toolbar_height - narrow_cast<float>(_toolbar_constraints.margin_top)},
+            point2{
+                narrow_cast<float>(context.width()) - narrow_cast<float>(_toolbar_constraints.margin_right),
+                narrow_cast<float>(context.height()) - narrow_cast<float>(_toolbar_constraints.margin_top)}};
+        _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, context.theme->baseline_adjustment};
 
         hilet content_rectangle = aarectangle{
-            point2{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
-            point2{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
-        _content_shape = box_shape{_content_constraints, content_rectangle, context.theme->x_height};
+            point2{narrow_cast<float>(_content_constraints.margin_left), narrow_cast<float>(_content_constraints.margin_bottom)},
+            point2{
+                narrow_cast<float>(context.width()) - narrow_cast<float>(_content_constraints.margin_right),
+                toolbar_rectangle.bottom() - between_margin}};
+        _content_shape = box_shape{_content_constraints, content_rectangle, context.theme->baseline_adjustment};
     }
     _toolbar->set_layout(context.transform(_toolbar_shape));
     _content->set_layout(context.transform(_content_shape));
@@ -131,8 +135,8 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     auto r = _toolbar->hitbox_test_from_parent(position);
     r = _content->hitbox_test_from_parent(position, r);
 
-    hilet can_resize_w = _constraints.minimum.width() != _constraints.maximum.width();
-    hilet can_resize_h = _constraints.minimum.height() != _constraints.maximum.height();
+    hilet can_resize_w = _constraints.minimum_width != _constraints.maximum_width;
+    hilet can_resize_h = _constraints.minimum_height != _constraints.maximum_height;
 
     hilet is_on_l_edge = position.x() <= BORDER_WIDTH;
     hilet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);

@@ -7,76 +7,127 @@
 #include "box_constraints.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include <limits>
+#include <optional>
 
 namespace hi { inline namespace v1 {
 
 struct box_shape {
-    aarectangle rectangle = {};
-    float base_line = std::numeric_limits<float>::quiet_NaN();
-    float decimal_line = std::numeric_limits<float>::quiet_NaN();
+    int left = 0;
+    int right = 0;
+    int bottom = 0;
+    int top = 0;
+    std::optional<int> baseline = {};
+    std::optional<int> decimal_line = {};
 
     constexpr box_shape() noexcept = default;
     constexpr box_shape(box_shape const&) noexcept = default;
     constexpr box_shape(box_shape&&) noexcept = default;
     constexpr box_shape& operator=(box_shape const&) noexcept = default;
     constexpr box_shape& operator=(box_shape&&) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(box_shape const &, box_shape const &) noexcept = default;
 
-    constexpr box_shape(box_constraints const& constraints, aarectangle const& rectangle, float x_height) noexcept :
-        rectangle(rectangle),
-        base_line(make_base_line(
-            constraints.alignment.vertical(),
-            get<0>(rectangle).y(),
-            get<3>(rectangle).y(),
-            constraints.padding.bottom(),
-            constraints.padding.top(),
-            x_height)),
-        decimal_line(make_decimal_line(
-            constraints.alignment.horizontal(),
-            get<0>(rectangle).x(),
-            get<3>(rectangle).x(),
-            constraints.padding.left(),
-            constraints.padding.right()))
+    constexpr box_shape(extent2 size) noexcept :
+        left(0),
+        bottom(0),
+        right(narrow_cast<int>(size.width())),
+        top(narrow_cast<int>(size.height())),
+        baseline(),
+        decimal_line()
     {
-        hi_axiom(rectangle.size() >= constraints.minimum);
     }
 
-    [[nodiscard]] constexpr static float make_base_line(
-        vertical_alignment alignment,
-        float y_min,
-        float y_max,
-        float padding_top,
-        float padding_bottom,
-        float x_height) noexcept
+    constexpr box_shape(box_constraints const& constraints, aarectangle const& rectangle, int baseline_adjustment) noexcept :
+        left(narrow_cast<int>(rectangle.left())),
+        right(narrow_cast<int>(rectangle.right())),
+        baseline(make_baseline(
+            constraints.alignment.vertical(),
+            narrow_cast<int>(rectangle.bottom()),
+            narrow_cast<int>(rectangle.top()),
+            constraints.padding_bottom,
+            constraints.padding_top,
+            baseline_adjustment)),
+        decimal_line(make_decimal_line(
+            constraints.alignment.horizontal(),
+            narrow_cast<int>(rectangle.left()),
+            narrow_cast<int>(rectangle.right()),
+            constraints.padding_left,
+            constraints.padding_right))
     {
-        hilet bottom_base_line = y_min + padding_bottom;
-        hilet top_base_line = y_max - padding_top - x_height;
-        hilet middle_base_line = (y_min + y_max) / 2.0f - x_height / 2.0f;
-        hi_axiom(bottom_base_line <= top_base_line);
+        hi_axiom(right - left >= constraints.minimum_width);
+        hi_axiom(top - bottom >= constraints.minimum_height);
+    }
+
+    [[nodiscard]] constexpr int width() const noexcept
+    {
+        hi_axiom(right >= left);
+        return right - left;
+    }
+
+    [[nodiscard]] constexpr int height() const noexcept
+    {
+        hi_axiom(top >= bottom);
+        return top - bottom;
+    }
+
+    [[nodiscard]] constexpr extent2 size() const noexcept
+    {
+        return {narrow_cast<float>(width()), narrow_cast<float>(height())};
+    }
+
+    [[nodiscard]] constexpr aarectangle rectangle() const noexcept
+    {
+        return {
+            point2{narrow_cast<float>(left), narrow_cast<float>(bottom)},
+            point2{narrow_cast<float>(right), narrow_cast<float>(top)}};
+    }
+
+private:
+    [[nodiscard]] constexpr static std::optional<int> make_baseline(
+        vertical_alignment alignment,
+        int bottom,
+        int top,
+        int padding_top,
+        int padding_bottom,
+        int alignment_offset) noexcept
+    {
+        hi_axiom(top >= bottom);
+        hi_axiom(padding_top >= 0);
+        hi_axiom(padding_bottom >= 0);
+        hi_axiom(alignment_offset >= 0);
+
+        hilet bottom_baseline = bottom + padding_bottom;
+        hilet top_baseline = top - padding_top - alignment_offset;
+        hilet middle_baseline = (bottom + top) / 2 - alignment_offset / 2;
+        hi_axiom(bottom_baseline <= top_baseline);
 
         switch (alignment) {
         case vertical_alignment::none:
-            return std::numeric_limits<float>::quiet_NaN();
+            return {};
         case vertical_alignment::top:
-            return top_base_line;
+            return top_baseline;
         case vertical_alignment::bottom:
-            return bottom_base_line;
+            return bottom_baseline;
         case vertical_alignment::middle:
-            return std::clamp(middle_base_line, bottom_base_line, top_base_line);
+            return std::clamp(middle_baseline, bottom_baseline, top_baseline);
         };
         hi_no_default();
     }
 
-    [[nodiscard]] constexpr static float
-    make_decimal_line(horizontal_alignment alignment, float x_min, float x_max, float padding_left, float padding_right) noexcept
+    [[nodiscard]] constexpr static std::optional<int>
+    make_decimal_line(horizontal_alignment alignment, int left, int right, int padding_left, int padding_right) noexcept
     {
-        hilet left_decimal_line = x_min + padding_left;
-        hilet right_decimal_line = x_max - padding_right;
-        hilet center_decimal_line = (x_min + x_max) / 2.0f;
+        hi_axiom(right >= left);
+        hi_axiom(padding_left >= 0);
+        hi_axiom(padding_right >= 0);
+
+        hilet left_decimal_line = left + padding_left;
+        hilet right_decimal_line = right - padding_right;
+        hilet center_decimal_line = (left + right) / 2;
         hi_axiom(left_decimal_line <= right_decimal_line);
 
         switch (alignment) {
         case horizontal_alignment::none:
-            return std::numeric_limits<float>::quiet_NaN();
+            return {};
         case horizontal_alignment::left:
             return left_decimal_line;
         case horizontal_alignment::right:

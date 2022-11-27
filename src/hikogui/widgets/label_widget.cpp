@@ -56,8 +56,8 @@ box_constraints const& label_widget::set_constraints(set_constraints_context con
     _text_constraints = _text_widget->set_constraints(context);
     _icon_constraints = _icon_widget->set_constraints(context);
 
-    hilet label_size = _text_constraints.preferred;
-    hilet icon_size = _icon_constraints.preferred;
+    hilet label_size = _text_constraints.preferred();
+    hilet icon_size = _icon_constraints.preferred();
 
     hilet has_text = label_size.width() > 0.0f;
     hilet has_icon = icon_size.width() > 0.0f;
@@ -115,26 +115,26 @@ void label_widget::set_layout(widget_layout const& context) noexcept
 
         hilet text_rectangle = [&] {
             if (alignment_ == horizontal_alignment::left) {
-                hilet text_width = context.width() - _icon_size - _inner_margin;
-                return aarectangle{_icon_size + _inner_margin, 0.0f, text_width, context.height()};
+                hilet text_width = narrow_cast<float>(context.width()) - _icon_size - _inner_margin;
+                return aarectangle{_icon_size + _inner_margin, 0.0f, text_width, narrow_cast<float>(context.height())};
 
             } else if (alignment_ == horizontal_alignment::right) {
-                hilet text_width = context.width() - _icon_size - _inner_margin;
-                return aarectangle{0.0f, 0.0f, text_width, context.height()};
+                hilet text_width = narrow_cast<float>(context.width()) - _icon_size - _inner_margin;
+                return aarectangle{0.0f, 0.0f, text_width, narrow_cast<float>(context.height())};
 
             } else if (alignment_ == vertical_alignment::top) {
-                hilet text_height = context.height() - _icon_size - _inner_margin;
-                return aarectangle{0.0f, 0.0f, context.width(), text_height};
+                hilet text_height = narrow_cast<float>(context.height()) - _icon_size - _inner_margin;
+                return aarectangle{0.0f, 0.0f, narrow_cast<float>(context.width()), text_height};
 
             } else if (alignment_ == vertical_alignment::bottom) {
                 hilet text_height = context.height() - _icon_size - _inner_margin;
-                return aarectangle{0.0f, _icon_size + _inner_margin, context.width(), text_height};
+                return aarectangle{0.0f, _icon_size + _inner_margin, narrow_cast<float>(context.width()), text_height};
 
             } else {
                 return context.rectangle();
             }
         }();
-        _text_shape = box_shape{_text_constraints, text_rectangle, context.theme->x_height};
+        _text_shape = box_shape{_text_constraints, text_rectangle, context.theme->baseline_adjustment};
 
         hilet icon_pos = [&] {
             if (alignment_ == hi::alignment::top_left()) {
@@ -160,7 +160,7 @@ void label_widget::set_layout(widget_layout const& context) noexcept
             }
         }();
         hilet icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
-        _icon_shape = box_shape{_icon_constraints, icon_rectangle, context.theme->x_height};
+        _icon_shape = box_shape{_icon_constraints, icon_rectangle, context.theme->baseline_adjustment};
     }
 
     _icon_widget->set_layout(context.transform(_icon_shape, 0.0f));

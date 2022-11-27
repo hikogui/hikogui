@@ -22,10 +22,6 @@ widget::widget(widget *parent) noexcept :
         ++global_counter<"widget:mode:constrain">;
         process_event({gui_event_type::window_reconstrain});
     });
-
-    _constraints.minimum = extent2::nan();
-    _constraints.preferred = extent2::nan();
-    _constraints.maximum = extent2::nan();
 }
 
 widget::~widget()

@@ -44,7 +44,7 @@ void overlay_widget::set_layout(widget_layout const& context) noexcept
     _layout.clipping_rectangle = context.rectangle() + context.theme->border_width;
 
     hilet content_rectangle = context.rectangle();
-    _content_shape = box_shape{_content_constraints, content_rectangle, context.theme->x_height};
+    _content_shape = box_shape{_content_constraints, content_rectangle, context.theme->baseline_adjustment};
 
     // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
     _content->set_layout(_layout.transform(_content_shape, 1.0f, context.rectangle()));
