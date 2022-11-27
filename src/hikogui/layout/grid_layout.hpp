@@ -440,6 +440,11 @@ public:
 
 } // namespace detail
 
+/** Grid layout algorithm.
+ *
+ *
+ *
+ */
 template<typename T>
 class grid_layout {
 public:
