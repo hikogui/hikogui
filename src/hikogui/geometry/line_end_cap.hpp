@@ -2,11 +2,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file geometry/line_end_cap.hpp Defined line_end_cap.
+ * @ingroup geometry
+ */
+
 #pragma once
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
 /** The way two lines should be joined.
+ * @ingroup geometry
  */
 enum class line_end_cap {
     /** The end cap of the line is flat.
@@ -18,4 +24,5 @@ enum class line_end_cap {
     round
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
+
