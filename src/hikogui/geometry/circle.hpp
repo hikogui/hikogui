@@ -2,14 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file geometry/circle.hpp Defined the circle type.
+ */
+
 #pragma once
 
 #include "point.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "quad.hpp"
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
+/** A type defining a 2D circle.
+ */
 class circle {
 public:
     constexpr circle(circle const &other) noexcept = default;
@@ -106,5 +112,5 @@ private:
 };
 
 
-}
+}}
 

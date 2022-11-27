@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file geometry/axis_aligned_rectangle.hpp
+ * @ingroup geometry
+ */
+
 #pragma once
 
 #include "../rapid/numeric_array.hpp"
@@ -13,9 +17,11 @@
 #include <concepts>
 #include <mutex>
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
 /** Class which represents an axis-aligned rectangle.
+ * @ingroup geometry
  */
 class axis_aligned_rectangle {
 private:
@@ -476,7 +482,7 @@ public:
 
 using aarectangle = axis_aligned_rectangle;
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 template<>
 class std::atomic<hi::axis_aligned_rectangle> {
