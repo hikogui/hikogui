@@ -318,15 +318,15 @@ public:
         _constraints(num + 1), num(num)
     {
         for (hilet& cell : cells) {
-            init_simple_cell(cell, mirrored);
+            construct_simple_cell(cell, mirrored);
         }
-        init_fixup();
+        construct_fixup();
 
         for (hilet& cell : cells) {
-            init_span_cell(cell, mirrored);
+            construct_span_cell(cell, mirrored);
         }
-        init_fixup();
-        init_stats();
+        construct_fixup();
+        construct_stats();
     }
 
     /** Layout each cell along an axis.
@@ -347,6 +347,7 @@ public:
      * widgets will never get a smaller size than its minimum.
      *
      * @param size The size of the grid along its axis.
+     * @param alignment_offset Offset of the alignment when at before_padding position.
      */
     constexpr void layout(int size, int alignment_offset) noexcept
     {
@@ -372,80 +373,128 @@ public:
         layout_alignment(alignment_offset);
     }
 
+    /** Number of cell on this axis.
+     */
     [[nodiscard]] constexpr size_t size() const noexcept
     {
         hi_axiom(not _constraints.empty());
         return _constraints.size() - 1;
     }
 
+    /** Check if this axis is empty.
+     */
     [[nodiscard]] constexpr bool empty() const noexcept
     {
         return size() != 0;
     }
 
+    /** Iterator to the first cell on this axis.
+     */
     [[nodiscard]] constexpr iterator begin() noexcept
     {
         return _constraints.begin();
     }
 
+    /** Iterator to the first cell on this axis.
+     */
     [[nodiscard]] constexpr const_iterator begin() const noexcept
     {
         return _constraints.begin();
     }
 
+    /** Iterator to the first cell on this axis.
+     */
     [[nodiscard]] constexpr const_iterator cbegin() const noexcept
     {
         return _constraints.cbegin();
     }
 
+    /** Iterator to beyond the last cell on this axis.
+     */
     [[nodiscard]] constexpr iterator end() noexcept
     {
         hi_axiom(not _constraints.empty());
         return _constraints.end() - 1;
     }
 
+    /** Iterator to beyond the last cell on this axis.
+     */
     [[nodiscard]] constexpr const_iterator end() const noexcept
     {
         hi_axiom(not _constraints.empty());
         return _constraints.end() - 1;
     }
 
+    /** Iterator to beyond the last cell on this axis.
+     */
     [[nodiscard]] constexpr const_iterator cend() const noexcept
     {
         hi_axiom(not _constraints.empty());
         return _constraints.cend() - 1;
     }
 
+    /** Get element.
+     *
+     * @note It is undefined behavior to index beyond the number of cell on this axis.
+     * @param index The index of the cell.
+     * @return A reference to the cell.
+     */
     [[nodiscard]] constexpr reference operator[](size_t index) noexcept
     {
         hi_axiom(index < size());
         return _constraints[index];
     }
 
+    /** Get element.
+     *
+     * @note It is undefined behavior to index beyond the number of cell on this axis.
+     * @param index The index of the cell.
+     * @return A reference to the cell.
+     */
     [[nodiscard]] constexpr const_reference operator[](size_t index) const noexcept
     {
         hi_axiom(index < size());
         return _constraints[index];
     }
 
+    /** Get the first element.
+     *
+     * @note It is undefined behavior to call this function on an empty axis.
+     * @return A reference to the first cell.
+     */
     [[nodiscard]] constexpr reference front() noexcept
     {
         hi_axiom(not empty());
         return _constraints.front();
     }
 
+    /** Get the first element.
+     *
+     * @note It is undefined behavior to call this function on an empty axis.
+     * @return A reference to the first cell.
+     */
     [[nodiscard]] constexpr const_reference front() const noexcept
     {
         hi_axiom(not empty());
         return _constraints.front();
     }
 
+    /** Get the last element.
+     *
+     * @note It is undefined behavior to call this function on an empty axis.
+     * @return A reference to the last cell.
+     */
     [[nodiscard]] constexpr reference back() noexcept
     {
         hi_axiom(not empty());
         return *(end() - 1);
     }
 
+    /** Get the last element.
+     *
+     * @note It is undefined behavior to call this function on an empty axis.
+     * @return A reference to the last cell.
+     */
     [[nodiscard]] constexpr const_reference back() const noexcept
     {
         hi_axiom(not empty());
@@ -539,6 +588,10 @@ private:
      */
     constraint_vector _constraints = {};
 
+    /** Layout initialize
+     *
+     * Start of with the preferred size for each cell.
+     */
     constexpr void layout_initial() noexcept
     {
         for (auto& constraint : _constraints) {
@@ -546,6 +599,22 @@ private:
         }
     }
 
+    /** Shrink cells.
+     *
+     * This function is called in two different ways:
+     *  - First without @a extra and @a count to get the number of pixels of the cells and the number
+     *    of cells that shrink furter. These values are used to calculate @a extra and @a count
+     *    of the next iteration.
+     *  - Continued with @a extra and @a count filled in.
+     *
+     * @note Must be called after `layout_initialize()`.
+     * @note It is undefined behavior to pass zero in @a count.
+     * @param first The iterator to the first cell to shrink.
+     * @param last The iterator to beyond the last cell to shrink.
+     * @param extra The total number of pixels to shrink spread over the cells
+     * @param count The number of cels between first/last that can be shrunk, from previous iteration.
+     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can shrink more. 
+     */
     [[nodiscard]] constexpr std::pair<int, size_t>
     layout_shrink(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
     {
@@ -574,6 +643,22 @@ private:
         return {new_size, new_count};
     }
 
+    /** Expand cells.
+     *
+     * This function is called in two different ways:
+     *  - First without @a extra and @a count to get the number of pixels of the cells and the number
+     *    of cells that expand furter. These values are used to calculate @a extra and @a count
+     *    of the next iteration.
+     *  - Continued with @a extra and @a count filled in.
+     *
+     * @note Must be called after `layout_initialize()`.
+     * @note It is undefined behavior to pass zero in @a count.
+     * @param first The iterator to the first cell to expand.
+     * @param last The iterator to beyond the last cell to expand.
+     * @param extra The total number of pixels to expand spread over the cells
+     * @param count The number of cels between first/last that can be expanded, from previous iteration.
+     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can expand more. 
+     */
     [[nodiscard]] constexpr std::pair<int, size_t>
     layout_expand(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
     {
@@ -602,6 +687,10 @@ private:
         return {std::ceil(new_size), new_count};
     }
 
+    /** Calculate size and margins for each cell.
+     *
+     * @note Must be called after `layout_expand()` and `layout_shrink()`.
+     */
     [[nodiscard]] constexpr int layout_size() const noexcept
     {
         auto r = 0;
@@ -617,7 +706,15 @@ private:
         return r;
     }
 
-    constexpr void init_simple_cell(cell_type const& cell, bool mirrorred) noexcept
+    /** Construct from a simple cell.
+     *
+     * Calculate all the margins. And the minimum, preferred and maximum size
+     * for a cell that has a span of one in the direction of the axis.
+     *
+     * @param cell The cell to construct.
+     * @param mirrored Switch direction of axis, used for right-to-left text direction.
+     */
+    constexpr void construct_simple_cell(cell_type const& cell, bool mirrorred) noexcept
     {
         inplace_max(_constraints[cell.first<axis>()].margin_before, cell.margin_before<axis>(mirrorred));
         inplace_max(_constraints[cell.last<axis>()].margin_before, cell.margin_after<axis>(mirrorred));
@@ -632,7 +729,14 @@ private:
         }
     }
 
-    constexpr void init_span_cell(cell_type const& cell, bool mirrorred) noexcept
+    /** Construct from a span-cell.
+     *
+     * Spread the size of a multi-span.
+     *
+     * @param cell The cell to construct.
+     * @param mirrored Switch direction of axis, used for right-to-left text direction.
+     */
+    constexpr void construct_span_cell(cell_type const& cell, bool mirrorred) noexcept
     {
         if (cell.span<axis>() > 1) {
             hilet[span_minimum, span_preferred, span_maximum] = span_constraints(cell);
@@ -660,7 +764,11 @@ private:
         }
     }
 
-    constexpr void init_fixup() noexcept
+    /** Construct fixup.
+     *
+     * Fixup minimum, preferred, maimum. And calculate the padding.
+     */
+    constexpr void construct_fixup() noexcept
     {
         for (auto& row : _constraints) {
             inplace_max(row.preferred, row.minimum);
@@ -674,7 +782,9 @@ private:
         }
     }
 
-    constexpr void init_stats() noexcept
+    /** Calculate the margin and padding before and after.
+     */
+    constexpr void construct_stats() noexcept
     {
         std::tie(minimum, preferred, maximum) = span_constraints(0, num);
         margin_before = _constraints.front().margin_before;
