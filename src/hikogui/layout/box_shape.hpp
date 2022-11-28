@@ -24,29 +24,26 @@ struct box_shape {
     constexpr box_shape(box_shape&&) noexcept = default;
     constexpr box_shape& operator=(box_shape const&) noexcept = default;
     constexpr box_shape& operator=(box_shape&&) noexcept = default;
-    [[nodiscard]] constexpr friend bool operator==(box_shape const &, box_shape const &) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(box_shape const&, box_shape const&) noexcept = default;
 
     constexpr box_shape(extent2 size) noexcept :
-        left(0),
-        bottom(0),
-        right(narrow_cast<int>(size.width())),
-        top(narrow_cast<int>(size.height())),
-        baseline(),
-        centerline()
+        left(0), bottom(0), right(narrow_cast<int>(size.width())), top(narrow_cast<int>(size.height())), baseline(), centerline()
     {
     }
 
     constexpr box_shape(box_constraints const& constraints, aarectangle const& rectangle, int baseline_adjustment) noexcept :
         left(narrow_cast<int>(rectangle.left())),
         right(narrow_cast<int>(rectangle.right())),
-        baseline(make_baseline(
+        bottom(narrow_cast<int>(rectangle.bottom())),
+        top(narrow_cast<int>(rectangle.top())),
+        baseline(make_guideline(
             constraints.alignment.vertical(),
             narrow_cast<int>(rectangle.bottom()),
             narrow_cast<int>(rectangle.top()),
             constraints.padding_bottom,
             constraints.padding_top,
             baseline_adjustment)),
-        centerline(make_centerline(
+        centerline(make_guideline(
             constraints.alignment.horizontal(),
             narrow_cast<int>(rectangle.left()),
             narrow_cast<int>(rectangle.right()),
@@ -79,66 +76,6 @@ struct box_shape {
         return {
             point2{narrow_cast<float>(left), narrow_cast<float>(bottom)},
             point2{narrow_cast<float>(right), narrow_cast<float>(top)}};
-    }
-
-private:
-    [[nodiscard]] constexpr static std::optional<int> make_baseline(
-        vertical_alignment alignment,
-        int bottom,
-        int top,
-        int padding_top,
-        int padding_bottom,
-        int guideline) noexcept
-    {
-        hi_axiom(top >= bottom);
-        hi_axiom(padding_top >= 0);
-        hi_axiom(padding_bottom >= 0);
-        hi_axiom(guideline >= 0);
-
-        hilet bottom_baseline = bottom + padding_bottom;
-        hilet top_baseline = top - padding_top - guideline;
-        hilet middle_baseline = (bottom + top) / 2 - guideline / 2;
-        hi_axiom(bottom_baseline <= top_baseline);
-
-        switch (alignment) {
-        case vertical_alignment::none:
-            return {};
-        case vertical_alignment::top:
-            return top_baseline;
-        case vertical_alignment::bottom:
-            return bottom_baseline;
-        case vertical_alignment::middle:
-            return std::clamp(middle_baseline, bottom_baseline, top_baseline);
-        };
-        hi_no_default();
-    }
-
-    [[nodiscard]] constexpr static std::optional<int>
-    make_centerline(horizontal_alignment alignment, int left, int right, int padding_left, int padding_right) noexcept
-    {
-        hi_axiom(right >= left);
-        hi_axiom(padding_left >= 0);
-        hi_axiom(padding_right >= 0);
-
-        hilet left_centerline = left + padding_left;
-        hilet right_centerline = right - padding_right;
-        hilet center_centerline = (left + right) / 2;
-        hi_axiom(left_centerline <= right_centerline);
-
-        switch (alignment) {
-        case horizontal_alignment::none:
-            return {};
-        case horizontal_alignment::left:
-            return left_centerline;
-        case horizontal_alignment::right:
-            return right_centerline;
-        case horizontal_alignment::center:
-        case horizontal_alignment::justified:
-            return std::clamp(center_centerline, left_centerline, right_centerline);
-        default:
-            // At this point `horizontal_alignment::flush` should be resolved to left or right.
-            hi_no_default();
-        };
     }
 };
 

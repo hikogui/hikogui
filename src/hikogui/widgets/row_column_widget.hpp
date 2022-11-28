@@ -154,11 +154,11 @@ private:
 /** Lays out children in a row.
  * @ingroup widgets
  */
-using row_widget = row_column_widget<axis::row>;
+using row_widget = row_column_widget<axis::x>;
 
 /** Lays out children in a column.
  * @ingroup widgets
  */
-using column_widget = row_column_widget<axis::column>;
+using column_widget = row_column_widget<axis::y>;
 
 }} // namespace hi::v1

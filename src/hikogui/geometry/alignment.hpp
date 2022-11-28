@@ -15,36 +15,6 @@
 #include <optional>
 
 namespace hi::inline v1 {
-namespace detail {
-
-template<arithmetic T>
-constexpr std::pair<T, T> make_guideline_adjust_padding(T min, T max, T padding_min, T padding_max, T guideline_space) noexcept
-{
-    hilet space = max - min;
-
-    if (padding_min + padding_max + guideline_space <= space) {
-        return {padding_min, padding_max};
-    }
-
-    // First make sure the guideline fits in the space.
-    inplace_min(guideline_space, space);
-
-    // The space left over for padding.
-    hilet padding_space = space - guideline_space;
-
-    // Calculate how much the padding overflows the space, round-upward.
-    hilet half_overflow = (padding_min + padding_max - padding_space + T{1}) / T{2};
-
-    if (padding_min < half_overflow) {
-        return {T{0}, padding_space};
-    } else if (padding_max < half_overflow) {
-        return {T{0}, padding_space};
-    } else {
-        return {padding_min - half_overflow, padding_max - half_overflow};
-    }
-}
-
-} // namespace detail
 
 /** Vertical alignment.
  * @ingroup geometry
@@ -84,6 +54,7 @@ enum class vertical_alignment : uint8_t {
  * @param padding_top Distance from @a top that can not be used.
  * @param guideline_width The thickness of the guideline
  * @return The y-coordinate of the bottom of the guideline.
+ * @retval nullopt No alignment, or guideline does not fit in the space.
  */
 template<arithmetic T>
 [[nodiscard]] constexpr std::optional<T>
@@ -92,23 +63,31 @@ make_guideline(vertical_alignment alignment, T bottom, T top, T padding_bottom, 
     hi_axiom(bottom <= top);
     hi_axiom(guideline_width >= T{});
 
-    std::tie(padding_bottom, padding_top) =
-        detail::make_guideline_adjust_padding(bottom, top, padding_bottom, padding_top, guideline_width);
-
     hilet guideline_bottom = bottom + padding_bottom;
     hilet guideline_top = top - padding_top - guideline_width;
     hilet guideline_middle = (bottom + top - guideline_width) / T{2};
-    hi_axiom(guideline_bottom <= guideline_top);
 
     switch (alignment) {
     case vertical_alignment::none:
         return {};
     case vertical_alignment::top:
-        return guideline_top;
+        if (guideline_bottom <= top) {
+            return guideline_top;
+        } else {
+            return {};
+        }
     case vertical_alignment::bottom:
-        return guideline_bottom;
+        if (guideline_top >= bottom) {
+            return guideline_top;
+        } else {
+            return {};
+        }
     case vertical_alignment::middle:
-        return std::clamp(guideline_middle, guideline_bottom, guideline_top);
+        if (guideline_bottom <= guideline_top) {
+            return std::clamp(guideline_middle, guideline_bottom, guideline_top);
+        } else {
+            return {};
+        }
     }
     hi_no_default();
 }
@@ -171,6 +150,7 @@ enum class horizontal_alignment : uint8_t {
  * @param padding_right Distance from @a right that can not be used.
  * @param guideline_width The thickness of the guideline
  * @return The x-coordinate of the left of the guideline.
+ * @retval nullopt No alignment, or guideline does not fit in the space.
  */
 template<arithmetic T>
 [[nodiscard]] constexpr std::optional<T>
@@ -179,23 +159,31 @@ make_guideline(horizontal_alignment alignment, T left, T right, T padding_left, 
     hi_axiom(left <= right);
     hi_axiom(guideline_width >= T{0});
 
-    std::tie(padding_left, padding_right) =
-        detail::make_guideline_adjust_padding(left, right, padding_left, padding_right, guideline_width);
-
     hilet guideline_left = left + padding_left;
     hilet guideline_right = right - padding_right - guideline_width;
     hilet guideline_center = (left + right - guideline_width) / T{2};
-    hi_axiom(guideline_left <= guideline_right);
 
     switch (alignment) {
     case horizontal_alignment::none:
         return {};
     case horizontal_alignment::left:
-        return guideline_left;
+        if (guideline_left <= right) {
+            return guideline_left;
+        } else {
+            return {};
+        }
     case horizontal_alignment::right:
-        return guideline_right;
+        if (guideline_right >= left) {
+            return guideline_right;
+        } else {
+            return {};
+        }
     case horizontal_alignment::center:
-        return std::clamp(guideline_center, guideline_left, guideline_right);
+        if (guideline_left <= guideline_right) {
+            return std::clamp(guideline_center, guideline_left, guideline_right);
+        } else {
+            return {};
+        }
     }
     hi_no_default();
 }

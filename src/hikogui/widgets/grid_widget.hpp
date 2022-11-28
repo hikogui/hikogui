@@ -51,19 +51,21 @@ public:
     /** Add a widget directly to this grid-widget.
      *
      * @tparam Widget The type of the widget to be constructed.
-     * @param column_first The first (left-most) column to place the widget in.
-     * @param row_first The first (top-most) row to place the widget in.
-     * @param column_last One beyond the last column to place the widget in.
-     * @param row_last One beyond the last row to place the widget in.
+     * @param first_column The first (left-most) column to place the widget in.
+     * @param first_row The first (top-most) row to place the widget in.
+     * @param last_column One beyond the last column to place the widget in.
+     * @param last_row One beyond the last row to place the widget in.
      * @param args The arguments passed to the constructor of the widget.
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
     Widget&
-    make_widget(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last, Args&&...args)
+    make_widget(std::size_t first_column, std::size_t first_row, std::size_t last_column, std::size_t last_row, Args&&...args)
     {
+        hi_axiom(first_column < last_column);
+        hi_axiom(first_row < last_row);
         auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
-        return static_cast<Widget&>(add_widget(column_first, row_first, column_last, row_last, std::move(tmp)));
+        return static_cast<Widget&>(add_widget(first_column, first_row, last_column, last_row, std::move(tmp)));
     }
 
     /** Add a widget directly to this grid-widget.
@@ -114,10 +116,10 @@ private:
     /* Add a widget to the grid.
      */
     widget& add_widget(
-        std::size_t column_first,
-        std::size_t row_first,
-        std::size_t column_last,
-        std::size_t row_last,
+        std::size_t first_column,
+        std::size_t first_row,
+        std::size_t last_column,
+        std::size_t last_row,
         std::unique_ptr<widget> child_widget) noexcept;
 };
 

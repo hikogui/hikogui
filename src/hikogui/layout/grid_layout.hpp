@@ -25,8 +25,8 @@ struct grid_layout_cell {
     using value_type = T;
 
     size_t first_column = 0;
-    size_t last_column = 0;
     size_t first_row = 0;
+    size_t last_column = 0;
     size_t last_row = 0;
     value_type value = {};
     box_shape shape = {};
@@ -39,12 +39,14 @@ struct grid_layout_cell {
 
     constexpr grid_layout_cell(
         size_t first_column,
-        size_t last_column,
         size_t first_row,
+        size_t last_column,
         size_t last_row,
         std::convertible_to<value_type> auto&& value) noexcept :
-        first_column(first_column), last_column(last_column), first_row(first_row), last_row(last_row), value(hi_forward(value))
+        first_column(first_column), first_row(first_row), last_column(last_column), last_row(last_row), value(hi_forward(value))
     {
+        hi_assert(first_column < last_column);
+        hi_assert(first_row < last_row);
     }
 
     constexpr void set_constraints(box_constraints const& constraints) noexcept
@@ -79,7 +81,8 @@ struct grid_layout_cell {
     template<hi::axis Axis>
     [[nodiscard]] constexpr size_t span() const noexcept
     {
-        return first<Axis>() - last<Axis>();
+        hi_axiom(first<Axis>() < last<Axis>());
+        return last<Axis>() - first<Axis>();
     }
 
     template<hi::axis Axis>
@@ -220,7 +223,7 @@ public:
     constexpr static hi::axis axis = Axis;
 
     using value_type = T;
-    using alignment_type = std::conditional_t<axis == axis::row, horizontal_alignment, vertical_alignment>;
+    using alignment_type = std::conditional_t<axis == axis::y, vertical_alignment, horizontal_alignment>;
     using cell_type = grid_layout_cell<value_type>;
     using cell_vector = std::vector<cell_type>;
 
@@ -278,10 +281,6 @@ public:
     using reference = constraint_vector::reference;
     using const_reference = constraint_vector::const_reference;
 
-    /** The number of cells along this axis.
-     */
-    size_t num = 0;
-
     /** The minimum width/height, excluding outer margins, of the combined cells.
      */
     int minimum = 0;
@@ -325,8 +324,7 @@ public:
      * @param num The number of cells in the direction of the current axis
      * @param mirrored true If the axis needs to be mirrored.
      */
-    constexpr grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool forward) noexcept :
-        _constraints(num + 1), num(num)
+    constexpr grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool forward) noexcept : _constraints(num + 1)
     {
         for (hilet& cell : cells) {
             construct_simple_cell(cell, forward);
@@ -421,7 +419,7 @@ public:
      */
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return size() != 0;
+        return size() == 0;
     }
 
     /** Iterator to the first cell on this axis.
@@ -883,11 +881,11 @@ private:
      */
     constexpr void construct_stats() noexcept
     {
-        std::tie(minimum, preferred, maximum) = span_constraints(0, num);
+        std::tie(minimum, preferred, maximum) = span_constraints(0, size());
         margin_before = _constraints.front().margin_before;
         margin_after = _constraints.back().margin_before;
-        padding_before = _constraints.front().padding_before;
-        padding_after = _constraints[_constraints.size() - 2].padding_after;
+        padding_before = empty() ? 0 : front().padding_before;
+        padding_after = empty() ? 0 : back().padding_after;
     }
 };
 
@@ -944,7 +942,7 @@ public:
 
     [[nodiscard]] constexpr iterator end() noexcept
     {
-        return _cells.begin();
+        return _cells.end();
     }
 
     [[nodiscard]] constexpr const_iterator begin() const noexcept
@@ -954,7 +952,7 @@ public:
 
     [[nodiscard]] constexpr const_iterator end() const noexcept
     {
-        return _cells.begin();
+        return _cells.end();
     }
 
     [[nodiscard]] constexpr const_iterator cbegin() const noexcept
@@ -964,18 +962,18 @@ public:
 
     [[nodiscard]] constexpr const_iterator cend() const noexcept
     {
-        return _cells.cbegin();
+        return _cells.cend();
     }
 
     /** Check if the cell on the grid is already in use.
      *
      * @param first_column The first column of the cell-span.
-     * @param last_column One beyond the last column of the cell-span.
      * @param first_row The first row of the cell-span.
+     * @param last_column One beyond the last column of the cell-span.
      * @param last_row One beyond the last row of the cell-span.
      * @retval true If the given cell-span overlaps with an already existing cell.
      */
-    [[nodiscard]] constexpr bool cell_in_use(size_t first_column, size_t last_column, size_t first_row, size_t last_row) noexcept
+    [[nodiscard]] constexpr bool cell_in_use(size_t first_column, size_t first_row, size_t last_column, size_t last_row) noexcept
     {
         // At least one cell must be in the range.
         hi_axiom(first_column < last_column);
@@ -1010,13 +1008,13 @@ public:
      */
     template<forward_of<value_type> Value>
     constexpr reference
-    add_cell(size_t first_column, size_t last_column, size_t first_row, size_t last_row, Value&& value) noexcept
+    add_cell(size_t first_column, size_t first_row, size_t last_column, size_t last_row, Value&& value) noexcept
     {
         // At least one cell must be in the range.
-        hi_axiom(first_column < last_column);
-        hi_axiom(first_row < last_row);
-        hi_axiom(not cell_in_use(first_column, last_column, first_row, last_row));
-        auto& r = _cells.emplace_back(first_column, last_column, first_row, last_row, std::forward<Value>(value));
+        hi_assert(first_column < last_column);
+        hi_assert(first_row < last_row);
+        hi_assert(not cell_in_use(first_column, first_row, last_column, last_row));
+        auto& r = _cells.emplace_back(first_column, first_row, last_column, last_row, std::forward<Value>(value));
         update_after_insert_or_delete();
         return r;
     }
@@ -1031,7 +1029,7 @@ public:
     template<forward_of<value_type> Value>
     constexpr reference add_cell(size_t column, size_t row, Value&& value) noexcept
     {
-        return add_cell(column, column + 1, row, row + 1, std::forward<Value>(value));
+        return add_cell(column, row, column + 1, row + 1, std::forward<Value>(value));
     }
 
     constexpr void clear() noexcept
@@ -1090,9 +1088,8 @@ public:
             cell.shape.bottom = _row_constraints.span_pos(cell.first_row, cell.last_row, false);
             cell.shape.right = cell.shape.left + _column_constraints.span_size(cell.first_column, cell.last_column);
             cell.shape.top = cell.shape.bottom + _row_constraints.span_size(cell.first_row, cell.last_row);
-            cell.shape.baseline = cell.span<axis::row>() == 1 ? _row_constraints[cell.first_row].guideline : std::nullopt;
-            cell.shape.centerline =
-                cell.span<axis::column>() == 1 ? _column_constraints[cell.first_column].guideline : std::nullopt;
+            cell.shape.baseline = cell.span<axis::y>() == 1 ? _row_constraints[cell.first_row].guideline : std::nullopt;
+            cell.shape.centerline = cell.span<axis::x>() == 1 ? _column_constraints[cell.first_column].guideline : std::nullopt;
         }
     }
 
@@ -1100,8 +1097,8 @@ private:
     cell_vector _cells = {};
     size_t _num_rows = 0;
     size_t _num_columns = 0;
-    mutable detail::grid_layout_axis_constraints<axis::row, value_type> _row_constraints = {};
-    mutable detail::grid_layout_axis_constraints<axis::column, value_type> _column_constraints = {};
+    mutable detail::grid_layout_axis_constraints<axis::y, value_type> _row_constraints = {};
+    mutable detail::grid_layout_axis_constraints<axis::x, value_type> _column_constraints = {};
 
     /** Sort the cells ordered by row then column.
      *

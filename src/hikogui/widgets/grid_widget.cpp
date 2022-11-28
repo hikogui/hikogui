@@ -21,20 +21,23 @@ grid_widget::grid_widget(widget *parent) noexcept : widget(parent)
 grid_widget::~grid_widget() {}
 
 widget& grid_widget::add_widget(
-    std::size_t column_first,
-    std::size_t row_first,
-    std::size_t column_last,
-    std::size_t row_last,
+    std::size_t first_column,
+    std::size_t first_row,
+    std::size_t last_column,
+    std::size_t last_row,
     std::unique_ptr<widget> widget) noexcept
 {
     hi_axiom(loop::main().on_thread());
-    if (_cells.cell_in_use(column_first, row_first, column_last, row_last)) {
-        hi_log_fatal("cell ({},{}) of grid_widget is already in use", column_first, row_first);
+    hi_axiom(first_column < last_column);
+    hi_axiom(first_row < last_row);
+
+    if (_cells.cell_in_use(first_column, first_row, last_column, last_row)) {
+        hi_log_fatal("cell ({},{}) of grid_widget is already in use", first_column, first_row);
     }
 
     auto& ref = *widget;
-    _cells.add_cell(column_first, row_first, column_last, row_last, std::move(widget));
-    hi_log_info("grid_widget::add_widget({}, {}, {}, {})", column_first, row_first, column_last, row_last);
+    _cells.add_cell(first_column, first_row, last_column, last_row, std::move(widget));
+    hi_log_info("grid_widget::add_widget({}, {}, {}, {})", first_column, first_row, last_column, last_row);
 
     ++global_counter<"grid_widget:add_widget:constrain">;
     process_event({gui_event_type::window_reconstrain});

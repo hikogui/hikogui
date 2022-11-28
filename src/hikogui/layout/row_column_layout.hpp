@@ -12,7 +12,7 @@ namespace hi { inline namespace v1 {
 template<axis Axis, typename T>
 class row_column_layout {
 public:
-    static_assert(Axis == axis::row or Axis == axis::column);
+    static_assert(Axis == axis::x or Axis == axis::y);
 
     using value_type = T;
     using grid_type = grid_layout<T>;
@@ -85,7 +85,7 @@ public:
         hilet index = std::distance(cbegin(), pos);
 
         for (auto it = begin() + index; it != end(); ++it) {
-            if constexpr (Axis == axis::row) {
+            if constexpr (Axis == axis::x) {
                 ++(it->first_column);
                 ++(it->last_column);
             } else {
@@ -93,7 +93,8 @@ public:
                 ++(it->last_row);
             }
         }
-        if constexpr (Axis == axis::row) {
+
+        if constexpr (Axis == axis::x) {
             return _grid.add_cell(index, 0, hi_forward(value));
         } else {
             return _grid.add_cell(0, index, hi_forward(value));
@@ -130,9 +131,9 @@ private:
 };
 
 template<typename T>
-using row_layout = row_column_layout<axis::row, T>;
+using row_layout = row_column_layout<axis::x, T>;
 
 template<typename T>
-using column_layout = row_column_layout<axis::column, T>;
+using column_layout = row_column_layout<axis::y, T>;
 
 }} // namespace hi::v1
