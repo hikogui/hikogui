@@ -244,12 +244,12 @@ public:
             *r.shape.baseline -= child_shape.bottom;
         }
 
-        if (child_shape.decimal_line) {
-            r.shape.decimal_line = *child_shape.decimal_line - child_shape.left;
+        if (child_shape.centerline) {
+            r.shape.centerline = *child_shape.centerline - child_shape.left;
 
-        } else if (r.shape.decimal_line) {
+        } else if (r.shape.centerline) {
             // Use the baseline of the current layout and translate it.
-            *r.shape.decimal_line -= child_shape.left;
+            *r.shape.centerline -= child_shape.left;
         }
 
         r.to_parent = to_parent3;

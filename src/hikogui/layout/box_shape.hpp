@@ -17,7 +17,7 @@ struct box_shape {
     int bottom = 0;
     int top = 0;
     std::optional<int> baseline = {};
-    std::optional<int> decimal_line = {};
+    std::optional<int> centerline = {};
 
     constexpr box_shape() noexcept = default;
     constexpr box_shape(box_shape const&) noexcept = default;
@@ -32,7 +32,7 @@ struct box_shape {
         right(narrow_cast<int>(size.width())),
         top(narrow_cast<int>(size.height())),
         baseline(),
-        decimal_line()
+        centerline()
     {
     }
 
@@ -46,7 +46,7 @@ struct box_shape {
             constraints.padding_bottom,
             constraints.padding_top,
             baseline_adjustment)),
-        decimal_line(make_decimal_line(
+        centerline(make_centerline(
             constraints.alignment.horizontal(),
             narrow_cast<int>(rectangle.left()),
             narrow_cast<int>(rectangle.right()),
@@ -88,16 +88,16 @@ private:
         int top,
         int padding_top,
         int padding_bottom,
-        int alignment_offset) noexcept
+        int guideline) noexcept
     {
         hi_axiom(top >= bottom);
         hi_axiom(padding_top >= 0);
         hi_axiom(padding_bottom >= 0);
-        hi_axiom(alignment_offset >= 0);
+        hi_axiom(guideline >= 0);
 
         hilet bottom_baseline = bottom + padding_bottom;
-        hilet top_baseline = top - padding_top - alignment_offset;
-        hilet middle_baseline = (bottom + top) / 2 - alignment_offset / 2;
+        hilet top_baseline = top - padding_top - guideline;
+        hilet middle_baseline = (bottom + top) / 2 - guideline / 2;
         hi_axiom(bottom_baseline <= top_baseline);
 
         switch (alignment) {
@@ -114,27 +114,27 @@ private:
     }
 
     [[nodiscard]] constexpr static std::optional<int>
-    make_decimal_line(horizontal_alignment alignment, int left, int right, int padding_left, int padding_right) noexcept
+    make_centerline(horizontal_alignment alignment, int left, int right, int padding_left, int padding_right) noexcept
     {
         hi_axiom(right >= left);
         hi_axiom(padding_left >= 0);
         hi_axiom(padding_right >= 0);
 
-        hilet left_decimal_line = left + padding_left;
-        hilet right_decimal_line = right - padding_right;
-        hilet center_decimal_line = (left + right) / 2;
-        hi_axiom(left_decimal_line <= right_decimal_line);
+        hilet left_centerline = left + padding_left;
+        hilet right_centerline = right - padding_right;
+        hilet center_centerline = (left + right) / 2;
+        hi_axiom(left_centerline <= right_centerline);
 
         switch (alignment) {
         case horizontal_alignment::none:
             return {};
         case horizontal_alignment::left:
-            return left_decimal_line;
+            return left_centerline;
         case horizontal_alignment::right:
-            return right_decimal_line;
+            return right_centerline;
         case horizontal_alignment::center:
         case horizontal_alignment::justified:
-            return std::clamp(center_decimal_line, left_decimal_line, right_decimal_line);
+            return std::clamp(center_centerline, left_centerline, right_centerline);
         default:
             // At this point `horizontal_alignment::flush` should be resolved to left or right.
             hi_no_default();

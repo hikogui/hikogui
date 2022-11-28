@@ -131,16 +131,16 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int margin_before(bool mirrored) const noexcept
+    [[nodiscard]] constexpr int margin_before(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
-            if (mirrored) {
-                return _constraints.margin_right;
-            } else {
+            if (forward) {
                 return _constraints.margin_left;
+            } else {
+                return _constraints.margin_right;
             }
         } else if constexpr (Axis == axis::y) {
-            if (mirrored) {
+            if (forward) {
                 return _constraints.margin_bottom;
             } else {
                 return _constraints.margin_top;
@@ -151,16 +151,16 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int margin_after(bool mirrored) const noexcept
+    [[nodiscard]] constexpr int margin_after(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
-            if (mirrored) {
-                return _constraints.margin_left;
-            } else {
+            if (forward) {
                 return _constraints.margin_right;
+            } else {
+                return _constraints.margin_left;
             }
         } else if constexpr (Axis == axis::y) {
-            if (mirrored) {
+            if (forward) {
                 return _constraints.margin_top;
             } else {
                 return _constraints.margin_bottom;
@@ -171,16 +171,16 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int padding_before(bool mirrored) const noexcept
+    [[nodiscard]] constexpr int padding_before(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
-            if (mirrored) {
-                return _constraints.padding_right;
-            } else {
+            if (forward) {
                 return _constraints.padding_left;
+            } else {
+                return _constraints.padding_right;
             }
         } else if constexpr (Axis == axis::y) {
-            if (mirrored) {
+            if (forward) {
                 return _constraints.padding_bottom;
             } else {
                 return _constraints.padding_top;
@@ -191,16 +191,16 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int padding_after(bool mirrored) const noexcept
+    [[nodiscard]] constexpr int padding_after(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
-            if (mirrored) {
-                return _constraints.padding_left;
-            } else {
+            if (forward) {
                 return _constraints.padding_right;
+            } else {
+                return _constraints.padding_left;
             }
         } else if constexpr (Axis == axis::y) {
-            if (mirrored) {
+            if (forward) {
                 return _constraints.padding_top;
             } else {
                 return _constraints.padding_bottom;
@@ -253,17 +253,28 @@ public:
          */
         alignment_type alignment = alignment_type::none;
 
-        /** Size of the cell after layout.
+        /** The position of the cell.
+         *
+         * @note This field is valid after layout.
+         */
+        int pos = 0;
+
+        /** Size of the cell.
+         *
+         * @note This field is valid after layout.
          */
         int size = 0;
 
-        /** The position within this cell where alignment starts.
+        /** The before-position within this cell where to align to.
+         *
+         * @note This field is valid after layout.
          */
-        std::optional<int> alignment_offset = 0;
+        std::optional<int> guideline = 0;
     };
     using constraint_vector = std::vector<constraint_type>;
     using iterator = constraint_vector::iterator;
     using const_iterator = constraint_vector::const_iterator;
+    using reverse_iterator = constraint_vector::reverse_iterator;
     using reference = constraint_vector::reference;
     using const_reference = constraint_vector::const_reference;
 
@@ -314,16 +325,16 @@ public:
      * @param num The number of cells in the direction of the current axis
      * @param mirrored true If the axis needs to be mirrored.
      */
-    constexpr grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool mirrored) noexcept :
+    constexpr grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool forward) noexcept :
         _constraints(num + 1), num(num)
     {
         for (hilet& cell : cells) {
-            construct_simple_cell(cell, mirrored);
+            construct_simple_cell(cell, forward);
         }
         construct_fixup();
 
         for (hilet& cell : cells) {
-            construct_span_cell(cell, mirrored);
+            construct_span_cell(cell);
         }
         construct_fixup();
         construct_stats();
@@ -347,9 +358,10 @@ public:
      * widgets will never get a smaller size than its minimum.
      *
      * @param size The size of the grid along its axis.
-     * @param alignment_offset Offset of the alignment when at before_padding position.
+     * @param guideline_width The width of the guideline.
+     * @param forward The cells are laid out in forward direction.
      */
-    constexpr void layout(int size, int alignment_offset) noexcept
+    constexpr void layout(int size, int guideline_width, bool forward) noexcept
     {
         layout_initial();
 
@@ -370,7 +382,31 @@ public:
             back().size = back().size + size - current_size;
         }
 
-        layout_alignment(alignment_offset);
+        if (forward) {
+            auto pos = 0;
+            for (auto it = begin(); it != end(); ++it) {
+                if (it != begin()) {
+                    pos += it->margin_before;
+                }
+                it->pos = pos;
+                it->guideline =
+                    make_guideline(it->alignment, pos, pos + it->size, it->padding_before, it->padding_after, guideline_width);
+
+                pos += it->size;
+            }
+        } else {
+            auto pos = 0;
+            for (auto it = rbegin(); it != rend(); ++it) {
+                if (it != rbegin()) {
+                    pos += it->margin_before;
+                }
+                it->pos = pos;
+                it->guideline =
+                    make_guideline(it->alignment, pos, pos + it->size, it->padding_before, it->padding_after, guideline_width);
+
+                pos += it->size;
+            }
+        }
     }
 
     /** Number of cell on this axis.
@@ -431,6 +467,20 @@ public:
     {
         hi_axiom(not _constraints.empty());
         return _constraints.cend() - 1;
+    }
+
+    /** Iterator to the first cell on this axis.
+     */
+    [[nodiscard]] constexpr reverse_iterator rbegin() noexcept
+    {
+        return _constraints.rbegin() + 1;
+    }
+
+    /** Iterator to the first cell on this axis.
+     */
+    [[nodiscard]] constexpr reverse_iterator rend() noexcept
+    {
+        return _constraints.rend();
     }
 
     /** Get element.
@@ -501,8 +551,42 @@ public:
         return *(end() - 1);
     }
 
+    /** Get the current layout position of a span.
+     *
+     * @note valid after layout.
+     * @param first The iterator to the first cell.
+     * @param last The iterator beyond the last cell.
+     * @param forward The direction of the layout.
+     * @return The current size of the span, including internal margins.
+     */
+    [[nodiscard]] constexpr int span_pos(const_iterator first, const_iterator last, bool forward) const noexcept
+    {
+        hi_axiom(first != last);
+        if (forward) {
+            return first->pos;
+        } else {
+            return (last - 1)->pos;
+        }
+    }
+
+    /** Get the current layout position of a span.
+     *
+     * @note valid after layout.
+     * @param first The index to the first cell.
+     * @param last The index beyond the last cell.
+     * @param forward The direction of the layout.
+     * @return The current size of the span, including internal margins.
+     */
+    [[nodiscard]] constexpr int span_pos(size_t first, size_t last, bool forward) const noexcept
+    {
+        hi_axiom(first < last);
+        hi_axiom(last <= size());
+        return span_pos(cbegin() + first, cbegin() + last, forward);
+    }
+
     /** Get the current layout size of a span.
      *
+     * @note valid after layout.
      * @param first The iterator to the first cell.
      * @param last The iterator beyond the last cell.
      * @return The current size of the span, including internal margins.
@@ -518,6 +602,20 @@ public:
             }
         }
         return r;
+    }
+
+    /** Get the current layout size of a span.
+     *
+     * @note valid after layout.
+     * @param first The index to the first cell.
+     * @param last The index beyond the last cell.
+     * @return The current size of the span, including internal margins.
+     */
+    [[nodiscard]] constexpr int span_size(size_t first, size_t last) const noexcept
+    {
+        hi_axiom(first <= last);
+        hi_axiom(last <= size());
+        return span_size(cbegin() + first, cbegin() + last);
     }
 
     /** Get the minimum, preferred, maximum size of the span.
@@ -613,7 +711,7 @@ private:
      * @param last The iterator to beyond the last cell to shrink.
      * @param extra The total number of pixels to shrink spread over the cells
      * @param count The number of cels between first/last that can be shrunk, from previous iteration.
-     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can shrink more. 
+     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can shrink more.
      */
     [[nodiscard]] constexpr std::pair<int, size_t>
     layout_shrink(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
@@ -621,11 +719,11 @@ private:
         hilet first_ = begin() + std::distance(cbegin(), first);
         hilet last_ = begin() + std::distance(cbegin(), last);
 
-        hi_axiom(extra >= 0.0f);
+        hi_axiom(extra >= 0);
 
         hilet extra_per = narrow_cast<int>((extra + count - 1) / count);
 
-        auto new_size = 0.0f;
+        auto new_size = 0;
         auto new_count = 0_uz;
         for (auto it = first_; it != last_; ++it) {
             it->size = it->size - std::max(extra_per, it->size - it->minimum);
@@ -657,7 +755,7 @@ private:
      * @param last The iterator to beyond the last cell to expand.
      * @param extra The total number of pixels to expand spread over the cells
      * @param count The number of cels between first/last that can be expanded, from previous iteration.
-     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can expand more. 
+     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can expand more.
      */
     [[nodiscard]] constexpr std::pair<int, size_t>
     layout_expand(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
@@ -665,11 +763,11 @@ private:
         hilet first_ = begin() + std::distance(cbegin(), first);
         hilet last_ = begin() + std::distance(cbegin(), last);
 
-        hi_axiom(extra >= 0.0f);
+        hi_axiom(extra >= 0);
 
         hilet extra_per = narrow_cast<int>((extra + count - 1) / count);
 
-        auto new_size = 0.0f;
+        auto new_size = 0;
         auto new_count = 0_uz;
         for (auto it = first_; it != last_; ++it) {
             it->size = it->size + std::min(extra_per, it->maximum - it->size);
@@ -684,7 +782,7 @@ private:
             }
         }
 
-        return {std::ceil(new_size), new_count};
+        return {new_size, new_count};
     }
 
     /** Calculate size and margins for each cell.
@@ -712,14 +810,14 @@ private:
      * for a cell that has a span of one in the direction of the axis.
      *
      * @param cell The cell to construct.
-     * @param mirrored Switch direction of axis, used for right-to-left text direction.
+     * @param forward Cells are ordered in forward direction (used for right-to-left languages).
      */
-    constexpr void construct_simple_cell(cell_type const& cell, bool mirrorred) noexcept
+    constexpr void construct_simple_cell(cell_type const& cell, bool forward) noexcept
     {
-        inplace_max(_constraints[cell.first<axis>()].margin_before, cell.margin_before<axis>(mirrorred));
-        inplace_max(_constraints[cell.last<axis>()].margin_before, cell.margin_after<axis>(mirrorred));
-        inplace_max(_constraints[cell.first<axis>()].padding_before, cell.padding_before<axis>(mirrorred));
-        inplace_max(_constraints[cell.last<axis>() - 1].padding_after, cell.padding_after<axis>(mirrorred));
+        inplace_max(_constraints[cell.first<axis>()].margin_before, cell.margin_before<axis>(forward));
+        inplace_max(_constraints[cell.last<axis>()].margin_before, cell.margin_after<axis>(forward));
+        inplace_max(_constraints[cell.first<axis>()].padding_before, cell.padding_before<axis>(forward));
+        inplace_max(_constraints[cell.last<axis>() - 1].padding_after, cell.padding_after<axis>(forward));
 
         if (cell.span<axis>() == 1) {
             inplace_max(_constraints[cell.first<axis>()].alignment, cell.alignment<axis>());
@@ -734,9 +832,8 @@ private:
      * Spread the size of a multi-span.
      *
      * @param cell The cell to construct.
-     * @param mirrored Switch direction of axis, used for right-to-left text direction.
      */
-    constexpr void construct_span_cell(cell_type const& cell, bool mirrorred) noexcept
+    constexpr void construct_span_cell(cell_type const& cell) noexcept
     {
         if (cell.span<axis>() > 1) {
             hilet[span_minimum, span_preferred, span_maximum] = span_constraints(cell);
@@ -945,8 +1042,9 @@ public:
 
     [[nodiscard]] constexpr box_constraints get_constraints(bool left_to_right) const noexcept
     {
+        // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
         _row_constraints = {_cells, num_rows(), false};
-        _column_constraints = {_cells, num_columns(), not left_to_right};
+        _column_constraints = {_cells, num_columns(), left_to_right};
 
         auto r = box_constraints{};
         r.minimum_width = _column_constraints.minimum;
@@ -980,10 +1078,22 @@ public:
         return r;
     }
 
-    constexpr void set_layout(int width, int height, int alignment_offset) noexcept
+    constexpr void set_layout(int width, int height, int guideline_width, bool left_to_right) noexcept
     {
-        _row_constraints.layout(width, alignment_offset);
-        _column_constraints.layout(height, 0);
+        // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
+        _row_constraints.layout(width, guideline_width, false);
+        _column_constraints.layout(height, 0, left_to_right);
+
+        // Assign the shape for each cell.
+        for (auto& cell : _cells) {
+            cell.shape.left = _column_constraints.span_pos(cell.first_column, cell.last_column, left_to_right);
+            cell.shape.bottom = _row_constraints.span_pos(cell.first_row, cell.last_row, false);
+            cell.shape.right = cell.shape.left + _column_constraints.span_size(cell.first_column, cell.last_column);
+            cell.shape.top = cell.shape.bottom + _row_constraints.span_size(cell.first_row, cell.last_row);
+            cell.shape.baseline = cell.span<axis::row>() == 1 ? _row_constraints[cell.first_row].guideline : std::nullopt;
+            cell.shape.centerline =
+                cell.span<axis::column>() == 1 ? _column_constraints[cell.first_column].guideline : std::nullopt;
+        }
     }
 
 private:

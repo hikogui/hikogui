@@ -2,17 +2,52 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file alignment.hpp
+/** @file alignment.hpp types and utilities for alignment.
+ * @ingroup geometry
  */
 
 #pragma once
 
 #include "../assert.hpp"
 #include "../cast.hpp"
+#include "../concepts.hpp"
+#include "../math.hpp"
+#include <optional>
 
 namespace hi::inline v1 {
+namespace detail {
+
+template<arithmetic T>
+constexpr std::pair<T, T> make_guideline_adjust_padding(T min, T max, T padding_min, T padding_max, T guideline_space) noexcept
+{
+    hilet space = max - min;
+
+    if (padding_min + padding_max + guideline_space <= space) {
+        return {padding_min, padding_max};
+    }
+
+    // First make sure the guideline fits in the space.
+    inplace_min(guideline_space, space);
+
+    // The space left over for padding.
+    hilet padding_space = space - guideline_space;
+
+    // Calculate how much the padding overflows the space, round-upward.
+    hilet half_overflow = (padding_min + padding_max - padding_space + T{1}) / T{2};
+
+    if (padding_min < half_overflow) {
+        return {T{0}, padding_space};
+    } else if (padding_max < half_overflow) {
+        return {T{0}, padding_space};
+    } else {
+        return {padding_min - half_overflow, padding_max - half_overflow};
+    }
+}
+
+} // namespace detail
 
 /** Vertical alignment.
+ * @ingroup geometry
  */
 enum class vertical_alignment : uint8_t {
     /** No alignment.
@@ -32,6 +67,55 @@ enum class vertical_alignment : uint8_t {
     bottom = 3
 };
 
+/** Create a guideline between two points.
+ * @ingroup geometry
+ *
+ * The vertical guideline is mostly used to create a baseline; in this
+ * case the guideline_width is set to the cap-height of a font.
+ *
+ *  - aligned-top: The top of the guideline will be flush with the top-padding.
+ *  - aligned-bottom: The bottom of the guideline will be flush with the bottom-padding.
+ *  - aligned-middle: The middle of the guideline will be in the middle between bottom and top; clamped by the padding.
+ *  - aligned-none: nullopt.
+ *
+ * @param bottom The y-coordinate of the bottom.
+ * @param top The y-coordinate of the top.
+ * @param padding_bottom Distance from @a bottom that can not be used.
+ * @param padding_top Distance from @a top that can not be used.
+ * @param guideline_width The thickness of the guideline
+ * @return The y-coordinate of the bottom of the guideline.
+ */
+template<arithmetic T>
+[[nodiscard]] constexpr std::optional<T>
+make_guideline(vertical_alignment alignment, T bottom, T top, T padding_bottom, T padding_top, T guideline_width)
+{
+    hi_axiom(bottom <= top);
+    hi_axiom(guideline_width >= T{});
+
+    std::tie(padding_bottom, padding_top) =
+        detail::make_guideline_adjust_padding(bottom, top, padding_bottom, padding_top, guideline_width);
+
+    hilet guideline_bottom = bottom + padding_bottom;
+    hilet guideline_top = top - padding_top - guideline_width;
+    hilet guideline_middle = (bottom + top - guideline_width) / T{2};
+    hi_axiom(guideline_bottom <= guideline_top);
+
+    switch (alignment) {
+    case vertical_alignment::none:
+        return {};
+    case vertical_alignment::top:
+        return guideline_top;
+    case vertical_alignment::bottom:
+        return guideline_bottom;
+    case vertical_alignment::middle:
+        return std::clamp(guideline_middle, guideline_bottom, guideline_top);
+    }
+    hi_no_default();
+}
+
+/** Horizontal alignment.
+ * @ingroup geometry
+ */
 enum class horizontal_alignment : uint8_t {
     /** No alignment.
      */
@@ -69,6 +153,55 @@ enum class horizontal_alignment : uint8_t {
     right = 5,
 };
 
+/** Create a guideline between two points.
+ * @ingroup geometry
+ *
+ * The horizontal guideline is may used to create alignment for text or numerics. The guideline_width
+ * should probably be set to zero.
+ *
+ *  - aligned-left: The left of the guideline will be flush with the left-padding.
+ *  - aligned-right: The right of the guideline will be flush with the right-padding.
+ *  - aligned-center: The center of the guideline will be in the center between left and right; clamped by the padding.
+ *  - aligned-none: nullopt.
+ *
+ * @note The padding is a soft-constraint and may be ignored if needed.
+ * @param left The x-coordinate of the left.
+ * @param right The x-coordinate of the right.
+ * @param padding_left Distance from @a left that can not be used.
+ * @param padding_right Distance from @a right that can not be used.
+ * @param guideline_width The thickness of the guideline
+ * @return The x-coordinate of the left of the guideline.
+ */
+template<arithmetic T>
+[[nodiscard]] constexpr std::optional<T>
+make_guideline(horizontal_alignment alignment, T left, T right, T padding_left, T padding_right, T guideline_width = T{0})
+{
+    hi_axiom(left <= right);
+    hi_axiom(guideline_width >= T{0});
+
+    std::tie(padding_left, padding_right) =
+        detail::make_guideline_adjust_padding(left, right, padding_left, padding_right, guideline_width);
+
+    hilet guideline_left = left + padding_left;
+    hilet guideline_right = right - padding_right - guideline_width;
+    hilet guideline_center = (left + right - guideline_width) / T{2};
+    hi_axiom(guideline_left <= guideline_right);
+
+    switch (alignment) {
+    case horizontal_alignment::none:
+        return {};
+    case horizontal_alignment::left:
+        return guideline_left;
+    case horizontal_alignment::right:
+        return guideline_right;
+    case horizontal_alignment::center:
+        return std::clamp(guideline_center, guideline_left, guideline_right);
+    }
+    hi_no_default();
+}
+
+/** Mirror the horizontal alignment.
+ */
 [[nodiscard]] constexpr horizontal_alignment mirror(horizontal_alignment const& rhs) noexcept
 {
     if (rhs == horizontal_alignment::left) {
@@ -80,6 +213,9 @@ enum class horizontal_alignment : uint8_t {
     }
 }
 
+/** Horizontal/Vertical alignment combination.
+ * @ingroup geometry
+ */
 class alignment {
 public:
     constexpr alignment() noexcept : _value(0) {}
