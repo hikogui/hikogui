@@ -36,25 +36,99 @@
 namespace hi::inline v1 {
 
 #if defined(HI_HAS_INT128)
+
+/** Signed 128 bit integer.
+ */
 using int128_t = __int128_t;
+
+/** Unsigned 128 bit integer.
+ */
 using uint128_t = unsigned __int128_t;
+
 #else
+
+/** Signed 128 bit integer.
+ */
 using int128_t = bigint<uintreg_t, 128 / (sizeof(uintreg_t) * CHAR_BIT), true>;
+
+/** Unsigned 128 bit integer.
+ */
 using uint128_t = bigint<uintreg_t, 128 / (sizeof(uintreg_t) * CHAR_BIT), false>;
+
 #endif
 
 #if HI_PROCESSOR == HI_CPU_X86
+
+/** Signed integer the size of the standard CPU register.
+ */
+using intreg_t = int32_t;
+
+/** Signed integer the size of the standard CPU register.
+ */
+using uintreg_t = uint32_t;
+
+/** Signed integer twice the size of a standard CPU register.
+ */
 using longreg_t = int64_t;
+
+/** Unsigned integer twice the size of a standard CPU register.
+ */
 using ulongreg_t = uint64_t;
+
 #elif HI_PROCESSOR == HI_CPU_X64
+
+/** Signed integer the size of the standard CPU register.
+ */
+using intreg_t = int64_t;
+
+/** Signed integer the size of the standard CPU register.
+ */
+using uintreg_t = uint64_t;
+
+/** Signed integer twice the size of a standard CPU register.
+ */
 using longreg_t = int128_t;
+
+/** Unsigned integer twice the size of a standard CPU register.
+ */
 using ulongreg_t = uint128_t;
+
 #elif HI_PROCESS = HI_CPU_ARM
+
+/** Signed integer the size of the standard CPU register.
+ */
+using intreg_t = int32_t;
+
+/** Signed integer the size of the standard CPU register.
+ */
+using uintreg_t = uint32_t;
+
+/** Signed integer twice the size of a standard CPU register.
+ */
 using longreg_t = int64_t;
+
+/** Unsigned integer twice the size of a standard CPU register.
+ */
 using ulongreg_t = uint64_t;
+
 #elif HI_PROCESS = HI_CPU_ARM64
+
+/** Signed integer the size of the standard CPU register.
+ */
+using intreg_t = int64_t;
+
+/** Signed integer the size of the standard CPU register.
+ */
+using uintreg_t = uint64_t;
+
+/** Signed integer twice the size of a standard CPU register.
+ */
 using longreg_t = int128_t;
+
+/** Unsigned integer twice the size of a standard CPU register.
+ */
 using ulongreg_t = uint128_t;
+
 #else
 #error "register_int missing implementation"
 #endif

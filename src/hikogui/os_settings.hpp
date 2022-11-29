@@ -31,7 +31,7 @@ public:
      */
     [[nodiscard]] static std::vector<language_tag> language_tags() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         hilet lock = std::scoped_lock(_mutex);
         return _language_tags;
     }
@@ -43,7 +43,7 @@ public:
      */
     [[nodiscard]] static std::vector<language *> languages() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         hilet lock = std::scoped_lock(_mutex);
         return _languages;
     }
@@ -56,7 +56,7 @@ public:
     */
     [[nodiscard]] static unicode_bidi_class writing_direction() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _writing_direction.load(std::memory_order::relaxed);
     }
 
@@ -64,7 +64,7 @@ public:
      */
     [[nodiscard]] static hi::theme_mode theme_mode() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _theme_mode.load(std::memory_order::relaxed);
     }
 
@@ -72,7 +72,7 @@ public:
      */
     [[nodiscard]] static hi::subpixel_orientation subpixel_orientation() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _subpixel_orientation.load(std::memory_order::relaxed);
     }
 
@@ -88,7 +88,7 @@ public:
      */
     [[nodiscard]] static bool uniform_HDR() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _uniform_HDR;
     }
 
@@ -96,7 +96,7 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds double_click_interval() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _double_click_interval.load(std::memory_order::relaxed);
     }
 
@@ -104,7 +104,7 @@ public:
      */
     [[nodiscard]] static float double_click_distance() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _double_click_distance.load(std::memory_order::relaxed);
     }
 
@@ -114,7 +114,7 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds keyboard_repeat_delay() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _keyboard_repeat_delay.load(std::memory_order::relaxed);
     }
 
@@ -124,7 +124,7 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds keyboard_repeat_interval() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _keyboard_repeat_interval.load(std::memory_order::relaxed);
     }
 
@@ -134,7 +134,7 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds cursor_blink_delay() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _cursor_blink_delay.load(std::memory_order::relaxed);
     }
 
@@ -145,31 +145,47 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds cursor_blink_interval() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _cursor_blink_interval.load(std::memory_order::relaxed);
     }
 
+    /** The minimum width a window is allowed to be.
+     *
+     * @return The minimum window width.
+     */
     [[nodiscard]] static int minimum_window_width() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _minimum_window_width.load(std::memory_order::relaxed);
     }
 
+    /** The minimum height a window is allowed to be.
+     *
+     * @return The minimum window height.
+     */
     [[nodiscard]] static int minimum_window_height() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _minimum_window_height.load(std::memory_order::relaxed);
     }
 
+    /** The maximum width a window is allowed to be.
+     *
+     * @return The maximum window width.
+     */
     [[nodiscard]] static int maximum_window_width() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _maximum_window_width.load(std::memory_order::relaxed);
     }
 
+    /** The maximum height a window is allowed to be.
+     *
+     * @return The maximum window height.
+     */
     [[nodiscard]] static int maximum_window_height() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         return _maximum_window_height.load(std::memory_order::relaxed);
     }
 
@@ -179,7 +195,7 @@ public:
      */
     [[nodiscard]] static aarectangle primary_monitor_rectangle() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         hilet lock = std::scoped_lock(_mutex);
         return _primary_monitor_rectangle;
     }
@@ -198,7 +214,7 @@ public:
      */
     [[nodiscard]] static aarectangle desktop_rectangle() noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         hilet lock = std::scoped_lock(_mutex);
         return _desktop_rectangle;
     }
@@ -209,9 +225,18 @@ public:
 
     [[nodiscard]] static callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        start_subsystem();
+        hi_axiom(_started);
         hilet lock = std::scoped_lock(_mutex);
         return _notifier.subscribe(hi_forward(callback), flags);
+    }
+
+    /** Get the global os_settings instance.
+     *
+     * @return True on success.
+     */
+    static bool start_subsystem() noexcept
+    {
+        return hi::start_subsystem(_started, false, subsystem_init, subsystem_deinit);
     }
 
 private:
@@ -245,14 +270,6 @@ private:
     static inline aarectangle _primary_monitor_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
     static inline aarectangle _desktop_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
 
-    /** Get the global os_settings instance.
-     *
-     * @return The global os_settings instance or nullptr during shutdown.
-     */
-    static bool start_subsystem() noexcept
-    {
-        return hi::start_subsystem(_started, false, subsystem_init, subsystem_deinit);
-    }
 
     [[nodiscard]] static bool subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;
