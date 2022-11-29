@@ -14,7 +14,8 @@ box_constraints const &toggle_widget::set_constraints(set_constraints_context co
     // Make room for button and margin.
     _button_size = {context.theme->size * 2.0f, context.theme->size};
     hilet extra_size = extent2{context.theme->margin + _button_size.width(), 0.0f};
-    _constraints = max(set_constraints_button(context) + extra_size, _button_size);
+    _label_constraints = set_constraints_button(context);
+    _constraints = max(_label_constraints + extra_size, _button_size);
     _constraints.set_margins(narrow_cast<int>(context.theme->margin));
     _constraints.alignment = *alignment;
     return _constraints;

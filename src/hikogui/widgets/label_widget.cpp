@@ -99,13 +99,18 @@ box_constraints const& label_widget::set_constraints(set_constraints_context con
         }
     }();
 
-    if ((*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) and
-        *alignment != vertical_alignment::middle) {
-        // When the icon and text are above one another, the label needs to define its own base-line.
-        return _constraints = {size, size, size, *alignment, context.theme->margin};
-    } else {
-        return _constraints = {size, size, size, *alignment, context.theme->margin};
-    }
+    hilet resolved_aligment = [&]() -> hi::alignment {
+        if (has_text) {
+            return _text_constraints.alignment;
+        } else if (*alignment == horizontal_alignment::flush or *alignment == horizontal_alignment::justified) {
+            hilet h = context.left_to_right() ? horizontal_alignment::left : horizontal_alignment::right;
+            return {h, alignment->vertical()};
+        } else {
+            return *alignment;
+        }
+    }();
+
+    return _constraints = {size, size, size, resolved_aligment, context.theme->margin};
 }
 
 void label_widget::set_layout(widget_layout const& context) noexcept

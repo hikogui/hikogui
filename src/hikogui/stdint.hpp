@@ -35,6 +35,50 @@
 
 namespace hi::inline v1 {
 
+#if HI_PROCESSOR == HI_CPU_X86
+
+/** Signed integer the size of the standard CPU register.
+ */
+using intreg_t = int32_t;
+
+/** Signed integer the size of the standard CPU register.
+ */
+using uintreg_t = uint32_t;
+
+#elif HI_PROCESSOR == HI_CPU_X64
+
+/** Signed integer the size of the standard CPU register.
+ */
+using intreg_t = int64_t;
+
+/** Signed integer the size of the standard CPU register.
+ */
+using uintreg_t = uint64_t;
+
+#elif HI_PROCESS = HI_CPU_ARM
+
+/** Signed integer the size of the standard CPU register.
+ */
+using intreg_t = int32_t;
+
+/** Signed integer the size of the standard CPU register.
+ */
+using uintreg_t = uint32_t;
+
+#elif HI_PROCESS = HI_CPU_ARM64
+
+/** Signed integer the size of the standard CPU register.
+ */
+using intreg_t = int64_t;
+
+/** Signed integer the size of the standard CPU register.
+ */
+using uintreg_t = uint64_t;
+
+#else
+#error "intreg_t uintreg_t missing implementation"
+#endif
+
 #if defined(HI_HAS_INT128)
 
 /** Signed 128 bit integer.
@@ -59,14 +103,6 @@ using uint128_t = bigint<uintreg_t, 128 / (sizeof(uintreg_t) * CHAR_BIT), false>
 
 #if HI_PROCESSOR == HI_CPU_X86
 
-/** Signed integer the size of the standard CPU register.
- */
-using intreg_t = int32_t;
-
-/** Signed integer the size of the standard CPU register.
- */
-using uintreg_t = uint32_t;
-
 /** Signed integer twice the size of a standard CPU register.
  */
 using longreg_t = int64_t;
@@ -76,14 +112,6 @@ using longreg_t = int64_t;
 using ulongreg_t = uint64_t;
 
 #elif HI_PROCESSOR == HI_CPU_X64
-
-/** Signed integer the size of the standard CPU register.
- */
-using intreg_t = int64_t;
-
-/** Signed integer the size of the standard CPU register.
- */
-using uintreg_t = uint64_t;
 
 /** Signed integer twice the size of a standard CPU register.
  */
@@ -95,14 +123,6 @@ using ulongreg_t = uint128_t;
 
 #elif HI_PROCESS = HI_CPU_ARM
 
-/** Signed integer the size of the standard CPU register.
- */
-using intreg_t = int32_t;
-
-/** Signed integer the size of the standard CPU register.
- */
-using uintreg_t = uint32_t;
-
 /** Signed integer twice the size of a standard CPU register.
  */
 using longreg_t = int64_t;
@@ -113,14 +133,6 @@ using ulongreg_t = uint64_t;
 
 #elif HI_PROCESS = HI_CPU_ARM64
 
-/** Signed integer the size of the standard CPU register.
- */
-using intreg_t = int64_t;
-
-/** Signed integer the size of the standard CPU register.
- */
-using uintreg_t = uint64_t;
-
 /** Signed integer twice the size of a standard CPU register.
  */
 using longreg_t = int128_t;
@@ -130,7 +142,7 @@ using longreg_t = int128_t;
 using ulongreg_t = uint128_t;
 
 #else
-#error "register_int missing implementation"
+#error "longreg_t ulongreg_t missing implementation"
 #endif
 
 } // namespace hi::inline v1

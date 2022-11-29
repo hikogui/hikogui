@@ -133,6 +133,7 @@ struct box_constraints {
         minimum_height += narrow_cast<int>(rhs.height());
         preferred_height += narrow_cast<int>(rhs.height());
         maximum_height += narrow_cast<int>(rhs.height());
+
         hi_axiom(holds_invariant());
         return *this;
     }
@@ -141,13 +142,23 @@ struct box_constraints {
     {
         auto r = *this;
         r += rhs;
+
+        hi_axiom(r.holds_invariant());
         return r;
     }
 
     [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
-        return minimum_width <= preferred_width and preferred_width <= maximum_width and minimum_height <= preferred_height and
-            preferred_height <= maximum_height;
+        if (alignment == horizontal_alignment::flush or alignment == horizontal_alignment::justified) {
+            return false;
+        }
+        if (minimum_width > preferred_width or preferred_width > maximum_width) {
+            return false;
+        }
+        if (minimum_height > preferred_height or preferred_height > maximum_height) {
+            return false;
+        }
+        return true;
     }
 
     [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, extent2 const& rhs) noexcept
@@ -159,6 +170,7 @@ struct box_constraints {
         inplace_max(r.minimum_height, narrow_cast<int>(rhs.height()));
         inplace_max(r.preferred_height, narrow_cast<int>(rhs.height()));
         inplace_max(r.maximum_height, narrow_cast<int>(rhs.height()));
+
         hi_axiom(r.holds_invariant());
         return r;
     }

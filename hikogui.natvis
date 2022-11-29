@@ -84,21 +84,30 @@
         </Expand>
     </Type>
     <Type Name="hi::v1::alignment">
-        <DisplayString Condition="_value == 0x00">top-flush</DisplayString>
-        <DisplayString Condition="_value == 0x01">top-left</DisplayString>
-        <DisplayString Condition="_value == 0x02">top-center</DisplayString>
-        <DisplayString Condition="_value == 0x03">top-justified</DisplayString>
-        <DisplayString Condition="_value == 0x04">top-right</DisplayString>
-        <DisplayString Condition="_value == 0x10">middle-flush</DisplayString>
-        <DisplayString Condition="_value == 0x11">middle-left</DisplayString>
-        <DisplayString Condition="_value == 0x12">middle-center</DisplayString>
-        <DisplayString Condition="_value == 0x13">middle-justified</DisplayString>
-        <DisplayString Condition="_value == 0x14">middle-right</DisplayString>
-        <DisplayString Condition="_value == 0x20">bottom-flush</DisplayString>
-        <DisplayString Condition="_value == 0x21">bottom-left</DisplayString>
-        <DisplayString Condition="_value == 0x22">bottom-center</DisplayString>
-        <DisplayString Condition="_value == 0x23">bottom-justified</DisplayString>
-        <DisplayString Condition="_value == 0x24">bottom-right</DisplayString>
+        <DisplayString Condition="_value == 0x00">none-none</DisplayString>
+        <DisplayString Condition="_value == 0x01">none-flush</DisplayString>
+        <DisplayString Condition="_value == 0x02">none-left</DisplayString>
+        <DisplayString Condition="_value == 0x03">none-center</DisplayString>
+        <DisplayString Condition="_value == 0x04">none-justified</DisplayString>
+        <DisplayString Condition="_value == 0x05">none-right</DisplayString>
+        <DisplayString Condition="_value == 0x10">top-none</DisplayString>
+        <DisplayString Condition="_value == 0x11">top-flush</DisplayString>
+        <DisplayString Condition="_value == 0x12">top-left</DisplayString>
+        <DisplayString Condition="_value == 0x13">top-center</DisplayString>
+        <DisplayString Condition="_value == 0x14">top-justified</DisplayString>
+        <DisplayString Condition="_value == 0x15">top-right</DisplayString>
+        <DisplayString Condition="_value == 0x20">middle-none</DisplayString>
+        <DisplayString Condition="_value == 0x21">middle-flush</DisplayString>
+        <DisplayString Condition="_value == 0x22">middle-left</DisplayString>
+        <DisplayString Condition="_value == 0x23">middle-center</DisplayString>
+        <DisplayString Condition="_value == 0x24">middle-justified</DisplayString>
+        <DisplayString Condition="_value == 0x35">middle-right</DisplayString>
+        <DisplayString Condition="_value == 0x30">bottom-none</DisplayString>
+        <DisplayString Condition="_value == 0x31">bottom-flush</DisplayString>
+        <DisplayString Condition="_value == 0x32">bottom-left</DisplayString>
+        <DisplayString Condition="_value == 0x33">bottom-center</DisplayString>
+        <DisplayString Condition="_value == 0x34">bottom-justified</DisplayString>
+        <DisplayString Condition="_value == 0x35">bottom-right</DisplayString>
     </Type>
     <Type Name="hi::v1::numeric_array&lt;*,2&gt;">
         <DisplayString>{v[0],g}, {v[1],g}</DisplayString>

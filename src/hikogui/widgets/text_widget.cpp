@@ -90,9 +90,10 @@ box_constraints const& text_widget::set_constraints(set_constraints_context cons
     hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     hilet shaped_text_size = shaped_text_rectangle.size();
 
+    hilet resolved_alignment = _shaped_text.resolve_text_alignment(*alignment);
     if (*mode == widget_mode::partial) {
         // In line-edit mode the text should not wrap.
-        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, *alignment, context.theme->margin};
+        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, resolved_alignment, context.theme->margin};
 
     } else {
         // Allow the text to be 550.0f pixels wide.
@@ -104,7 +105,7 @@ box_constraints const& text_widget::set_constraints(set_constraints_context cons
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{shaped_text_size.width(), height},
-                   *alignment,
+                   resolved_alignment,
                    context.theme->margin};
     }
 }
@@ -116,7 +117,12 @@ void text_widget::set_layout(widget_layout const& context) noexcept
 
         hi_axiom(context.shape.baseline);
 
-        _shaped_text.layout(context.rectangle(), narrow_cast<float>(*context.shape.baseline), context.sub_pixel_size, context.writing_direction, alignment_);
+        _shaped_text.layout(
+            context.rectangle(),
+            narrow_cast<float>(*context.shape.baseline),
+            context.sub_pixel_size,
+            context.writing_direction,
+            alignment_);
     }
 }
 

@@ -138,6 +138,26 @@ public:
         return _lines;
     }
 
+    unicode_bidi_class text_direction() const noexcept
+    {
+        hi_axiom(not empty());
+        return _lines.front().paragraph_direction;
+    }
+
+    horizontal_alignment resolve_text_alignment(horizontal_alignment rhs) const noexcept
+    {
+        if (rhs == horizontal_alignment::flush or rhs == horizontal_alignment::justified) {
+            return text_direction() == unicode_bidi_class::L ? horizontal_alignment::left : horizontal_alignment::right;
+        } else {
+            return rhs;
+        }
+    }
+
+    alignment resolve_text_alignment(alignment rhs) const noexcept
+    {
+        return {resolve_text_alignment(rhs.horizontal()), rhs.vertical()};
+    }
+
     /** Get bounding rectangle.
      *
      * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
