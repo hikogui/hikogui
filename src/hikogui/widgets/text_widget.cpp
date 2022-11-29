@@ -27,8 +27,8 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
 
             // Constrain and layout according to the old layout.
             hilet new_constraints = set_constraints(c_context);
-            inplace_max(new_layout.shape.right, new_constraints.minimum_width);
-            inplace_max(new_layout.shape.top, new_constraints.minimum_height);
+            inplace_max(new_layout.shape.width, new_constraints.minimum_width);
+            inplace_max(new_layout.shape.height, new_constraints.minimum_height);
             set_layout(new_layout);
 
             if (new_constraints != old_constraints) {

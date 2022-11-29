@@ -178,6 +178,16 @@ public:
         return extent2{v.zwzw() - v};
     }
 
+    [[nodiscard]] constexpr float x() const noexcept
+    {
+        return v.x();
+    }
+
+    [[nodiscard]] constexpr float y() const noexcept
+    {
+        return v.y();
+    }
+
     [[nodiscard]] constexpr float width() const noexcept
     {
         return (v.zwzw() - v).x();

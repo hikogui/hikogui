@@ -140,7 +140,7 @@ public:
 
     unicode_bidi_class text_direction() const noexcept
     {
-        hi_axiom(not empty());
+        hi_axiom(not _lines.empty());
         return _lines.front().paragraph_direction;
     }
 

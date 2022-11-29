@@ -41,7 +41,7 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
 
     for (hilet& child : _children) {
         hilet child_clipping_rectangle = aarectangle{
-            narrow_cast<float>(child.shape.left) - overhang, 0.0f, narrow_cast<float>(child.shape.width()) + overhang * 2.0f, narrow_cast<float>(context.height())};
+            narrow_cast<float>(child.shape.x) - overhang, 0.0f, narrow_cast<float>(child.shape.width) + overhang * 2.0f, narrow_cast<float>(context.height())};
 
         child.value->set_layout(context.transform(child.shape, 1.0f, child_clipping_rectangle));
     }

@@ -1079,15 +1079,15 @@ public:
     constexpr void set_layout(int width, int height, int guideline_width, bool left_to_right) noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
-        _row_constraints.layout(width, guideline_width, false);
-        _column_constraints.layout(height, 0, left_to_right);
+        _row_constraints.layout(height, guideline_width, false);
+        _column_constraints.layout(width, 0, left_to_right);
 
         // Assign the shape for each cell.
         for (auto& cell : _cells) {
-            cell.shape.left = _column_constraints.span_pos(cell.first_column, cell.last_column, left_to_right);
-            cell.shape.bottom = _row_constraints.span_pos(cell.first_row, cell.last_row, false);
-            cell.shape.right = cell.shape.left + _column_constraints.span_size(cell.first_column, cell.last_column);
-            cell.shape.top = cell.shape.bottom + _row_constraints.span_size(cell.first_row, cell.last_row);
+            cell.shape.x = _column_constraints.span_pos(cell.first_column, cell.last_column, left_to_right);
+            cell.shape.y = _row_constraints.span_pos(cell.first_row, cell.last_row, false);
+            cell.shape.width = _column_constraints.span_size(cell.first_column, cell.last_column);
+            cell.shape.height = _row_constraints.span_size(cell.first_row, cell.last_row);
             cell.shape.baseline = cell.span<axis::y>() == 1 ? _row_constraints[cell.first_row].guideline : std::nullopt;
             cell.shape.centerline = cell.span<axis::x>() == 1 ? _column_constraints[cell.first_column].guideline : std::nullopt;
         }

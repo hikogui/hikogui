@@ -235,6 +235,12 @@
     <Type Name="hi::v1::sfloat_rgba32x4">
         <DisplayString>({_v[0],g}, {_v[1],g}, {_v[2],g}, {_v[3],g}), ({_v[4],g}, {_v[5],g}, {_v[6],g}, {_v[7],g}), ({_v[8],g}, {_v[9],g}, {_v[10],g}, {_v[11],g}), ({_v[12],g}, {_v[13],g}, {_v[14],g}, {_v[15],g})</DisplayString>
     </Type>
+    <Type Name="hi::v1::box_shape">
+        <DisplayString Condition="baseline._Has_value &amp;&amp; centerline._Has_value">{{&lt;{x,g}, {y,g}&gt; [{width,g}, {height,g}] b={baseline,g} c={centerline,g}}}</DisplayString>
+        <DisplayString Condition="baseline._Has_value">{{&lt;{x,g}, {y,g}&gt; [{width,g}, {height,g}] b={baseline,g}}}</DisplayString>
+        <DisplayString Condition="centerline._Has_value">{{&lt;{x,g}, {y,g}&gt; [{width,g}, {height,g}] c={centerline,g}}}</DisplayString>
+        <DisplayString>{{&lt;{x,g}, {y,g}&gt; [{width,g}, {height,g}]}}</DisplayString>
+    </Type>
     <Type Name="hi::v1::observer&lt;*&gt;">
         <DisplayString>{_value} #{_observed._ptr->_enable_group_ptr_owners.size()}</DisplayString>
         <Expand>

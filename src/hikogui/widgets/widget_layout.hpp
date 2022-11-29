@@ -164,12 +164,12 @@ public:
 
     [[nodiscard]] constexpr int width() const noexcept
     {
-        return shape.width();
+        return shape.width;
     }
 
     [[nodiscard]] constexpr int height() const noexcept
     {
-        return shape.height();
+        return shape.height;
     }
 
     [[nodiscard]] constexpr extent2 size() const noexcept
@@ -227,29 +227,29 @@ public:
     [[nodiscard]] constexpr widget_layout
     transform(box_shape const& child_shape, float elevation, aarectangle new_clipping_rectangle) const noexcept
     {
-        auto to_parent3 = translate3{narrow_cast<float>(shape.left), narrow_cast<float>(shape.bottom), elevation};
+        auto to_parent3 = translate3{narrow_cast<float>(child_shape.x), narrow_cast<float>(child_shape.y), elevation};
         auto from_parent3 = ~to_parent3;
 
         widget_layout r = *this;
-        hi_axiom(r.shape.left == 0);
-        hi_axiom(r.shape.bottom == 0);
-        r.shape.right = child_shape.width();
-        r.shape.top = child_shape.height();
+        hi_axiom(r.shape.x == 0);
+        hi_axiom(r.shape.y == 0);
+        r.shape.width = child_shape.width;
+        r.shape.height = child_shape.height;
 
         if (child_shape.baseline) {
-            r.shape.baseline = *child_shape.baseline - child_shape.bottom;
+            r.shape.baseline = *child_shape.baseline - child_shape.y;
 
         } else if (r.shape.baseline) {
             // Use the baseline of the current layout and translate it.
-            *r.shape.baseline -= child_shape.bottom;
+            *r.shape.baseline -= child_shape.y;
         }
 
         if (child_shape.centerline) {
-            r.shape.centerline = *child_shape.centerline - child_shape.left;
+            r.shape.centerline = *child_shape.centerline - child_shape.x;
 
         } else if (r.shape.centerline) {
             // Use the baseline of the current layout and translate it.
-            *r.shape.centerline -= child_shape.left;
+            *r.shape.centerline -= child_shape.x;
         }
 
         r.to_parent = to_parent3;
