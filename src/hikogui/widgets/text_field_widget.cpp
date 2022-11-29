@@ -75,7 +75,7 @@ box_constraints const& text_field_widget::set_constraints(set_constraints_contex
     hilet box_size = extent2{
         narrow_cast<float>(_scroll_constraints.margin_left) + scroll_width + narrow_cast<float>(_scroll_constraints.margin_right),
         narrow_cast<float>(_scroll_constraints.margin_top) + narrow_cast<float>(_scroll_constraints.preferred_height) +
-            narrow_cast<float>(_scroll_constraints.margin_bottom)};
+                narrow_cast<float>(_scroll_constraints.margin_bottom)};
 
     auto size = box_size;
     if (_error_label->empty()) {
@@ -93,19 +93,22 @@ box_constraints const& text_field_widget::set_constraints(set_constraints_contex
         inplace_max(margins.bottom(), narrow_cast<float>(_error_label_constraints.margin_bottom));
     }
 
-    return _constraints = {size, size, size, *alignment, context.theme->margin};
+    // The alignment of a text-field is not based on the text-widget due to the intermediate scroll widget.
+    hilet resolved_alignment = resolve_mirror(*alignment, context.left_to_right());
+
+    return _constraints = {size, size, size, resolved_alignment, context.theme->margin};
 }
 
 void text_field_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet box_size = extent2{
+        hilet scroll_size = extent2{
             narrow_cast<float>(context.width()),
             narrow_cast<float>(_scroll_constraints.margin_top) + narrow_cast<float>(_scroll_constraints.preferred_height) +
                 narrow_cast<float>(_scroll_constraints.margin_bottom)};
 
-        _box_rectangle = aarectangle{point2{0.0f, narrow_cast<float>(context.height()) - box_size.height()}, box_size};
-        hilet scroll_rectangle = _box_rectangle - context.theme->border_width;
+        hilet scroll_rectangle =
+            aarectangle{point2{0.0f, narrow_cast<float>(context.height()) - scroll_size.height()}, scroll_size};
         _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, context.theme->baseline_adjustment};
 
         if (*_error_label_widget->mode > widget_mode::invisible) {
@@ -221,10 +224,12 @@ void text_field_widget::commit(bool force) noexcept
 
 void text_field_widget::draw_background_box(draw_context const& context) const noexcept
 {
-    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, layout().theme->rounding_radius, layout().theme->rounding_radius};
-    context.draw_box(layout(), _box_rectangle, background_color(), corner_radii);
+    hilet scroll_rectangle = _scroll_shape.rectangle();
 
-    hilet line = line_segment(get<0>(_box_rectangle), get<1>(_box_rectangle));
+    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, layout().theme->rounding_radius, layout().theme->rounding_radius};
+    context.draw_box(layout(), scroll_rectangle, background_color(), corner_radii);
+
+    hilet line = line_segment(get<0>(scroll_rectangle), get<1>(scroll_rectangle));
     context.draw_line(layout(), translate3{0.0f, 0.5f, 0.1f} * line, layout().theme->border_width, focus_color());
 }
 

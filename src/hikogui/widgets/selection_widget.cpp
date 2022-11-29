@@ -66,6 +66,8 @@ box_constraints const& selection_widget::set_constraints(set_constraints_context
     _current_label_constraints = _current_label_widget->set_constraints(context);
     _constraints = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
 
+    // Make it so that the scroll widget can scroll vertically.
+    _scroll_widget->minimum_height = narrow_cast<int>(context.theme->size);
     _overlay_constraints = _overlay_widget->set_constraints(context);
     for (hilet& child : _menu_button_widgets) {
         // extra_size is already implied in the menu button widgets.

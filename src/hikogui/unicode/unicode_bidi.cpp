@@ -262,17 +262,19 @@ LRI:
             }
             break;
 
-        case FSI: { // X5c. Isolates
-            auto sub_context = context;
-            sub_context.direction_mode = unicode_bidi_context::mode_type::auto_LTR;
-            hilet sub_paragraph_bidi_class = unicode_bidi_P2(it + 1, last, sub_context, true);
-            hilet sub_paragraph_embedding_level = unicode_bidi_P3(sub_paragraph_bidi_class);
-            if (sub_paragraph_embedding_level == 0) {
-                goto LRI;
-            } else {
-                goto RLI;
+        case FSI:
+            { // X5c. Isolates
+                auto sub_context = context;
+                sub_context.direction_mode = unicode_bidi_context::mode_type::auto_LTR;
+                hilet sub_paragraph_bidi_class = unicode_bidi_P2(it + 1, last, sub_context, true);
+                hilet sub_paragraph_embedding_level = unicode_bidi_P3(sub_paragraph_bidi_class);
+                if (sub_paragraph_embedding_level == 0) {
+                    goto LRI;
+                } else {
+                    goto RLI;
+                }
             }
-        } break;
+            break;
 
         case PDI: // X6a. Terminating Isolates
             if (overflow_isolate_count > 0) {
@@ -346,8 +348,12 @@ static void unicode_bidi_W1(unicode_bidi_isolated_run_sequence& sequence) noexce
             case LRI:
             case RLI:
             case FSI:
-            case PDI: char_info.direction = ON; break;
-            default: char_info.direction = previous_bidi_class; break;
+            case PDI:
+                char_info.direction = ON;
+                break;
+            default:
+                char_info.direction = previous_bidi_class;
+                break;
             }
         }
 
@@ -364,7 +370,9 @@ static void unicode_bidi_W2(unicode_bidi_isolated_run_sequence& sequence) noexce
         switch (char_info.direction) {
         case R:
         case L:
-        case AL: last_strong_direction = char_info.direction; break;
+        case AL:
+            last_strong_direction = char_info.direction;
+            break;
         case EN:
             if (last_strong_direction == AL) {
                 char_info.direction = AN;
@@ -435,7 +443,9 @@ static void unicode_bidi_W5(unicode_bidi_isolated_run_sequence& sequence) noexce
             }
             break;
 
-        default: starts_with_EN = false; ET_start = end(sequence);
+        default:
+            starts_with_EN = false;
+            ET_start = end(sequence);
         }
     }
 }
@@ -459,7 +469,9 @@ static void unicode_bidi_W7(unicode_bidi_isolated_run_sequence& sequence) noexce
     for (auto& char_info : sequence) {
         switch (char_info.direction) {
         case R:
-        case L: last_strong_direction = char_info.direction; break;
+        case L:
+            last_strong_direction = char_info.direction;
+            break;
         case EN:
             if (last_strong_direction == L) {
                 char_info.direction = L;
@@ -535,11 +547,14 @@ stop_processing:
     using enum unicode_bidi_class;
 
     switch (direction) {
-    case L: return L;
+    case L:
+        return L;
     case R:
     case EN:
-    case AN: return R;
-    default: return ON;
+    case AN:
+        return R;
+    default:
+        return ON;
     }
 }
 
@@ -938,7 +953,9 @@ static void unicode_bidi_L3(unicode_bidi_char_info_iterator first, unicode_bidi_
             break;
         case LRI:
         case RLI:
-        case FSI: ++isolate_level; break;
+        case FSI:
+            ++isolate_level;
+            break;
         case PDI:
             if (isolate_level > 0) {
                 --isolate_level;
@@ -968,20 +985,9 @@ static void unicode_bidi_P1_line(
     unicode_bidi_L2(first, last, lowest_odd, highest);
     unicode_bidi_L3(first, last);
     // L4 is delayed after the original array has been shuffled.
-
-    if (context.move_lf_and_ps_to_end_of_line) {
-        hilet it = std::find_if(first, last, [](hilet& item) {
-            return item.description->general_category() == unicode_general_category::Zl or
-                item.description->general_category() == unicode_general_category::Zp;
-        });
-        if (it != last) {
-            it->direction = unicode_bidi_class::L;
-            std::rotate(it, it + 1, last);
-        }
-    }
 }
 
-[[nodiscard]] static std::pair<unicode_bidi_char_info_iterator, unicode_bidi_class> unicode_bidi_P1_paragraph(
+[[nodiscard]] std::pair<int8_t, unicode_bidi_class> unicode_bidi_P2_P3(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
     unicode_bidi_context const& context) noexcept
@@ -989,6 +995,15 @@ static void unicode_bidi_P1_line(
     hilet default_paragraph_direction = unicode_bidi_P2(first, last, context, false);
     hilet paragraph_embedding_level = unicode_bidi_P3(default_paragraph_direction);
     hilet paragraph_direction = paragraph_embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
+    return {paragraph_embedding_level, paragraph_direction};
+}
+
+[[nodiscard]] static std::pair<unicode_bidi_char_info_iterator, unicode_bidi_class> unicode_bidi_P1_paragraph(
+    unicode_bidi_char_info_iterator first,
+    unicode_bidi_char_info_iterator last,
+    unicode_bidi_context const& context) noexcept
+{
+    hilet[paragraph_embedding_level, paragraph_direction] = unicode_bidi_P2_P3(first, last, context);
 
     unicode_bidi_X1(first, last, paragraph_embedding_level, context);
     last = unicode_bidi_X9(first, last);
@@ -1009,6 +1024,7 @@ static void unicode_bidi_P1_line(
 
     return {last, paragraph_direction};
 }
+
 
 [[nodiscard]] std::pair<unicode_bidi_char_info_iterator, std::vector<unicode_bidi_class>> unicode_bidi_P1(
     unicode_bidi_char_info_iterator first,

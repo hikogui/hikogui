@@ -83,21 +83,28 @@ box_constraints const& text_widget::set_constraints(set_constraints_context cons
     hilet actual_text_style = context.theme->text_style(*text_style);
 
     // Create a new text_shaper with the new text.
-    _shaped_text = text_shaper{*context.font_book, _cached_text, actual_text_style, context.theme->scale};
+    auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
 
-    hilet constraints_ = _shaped_text.get_constraints(alignment->vertical());
+    _shaped_text = text_shaper{
+        *context.font_book, _cached_text, actual_text_style, context.theme->scale, alignment_, context.writing_direction};
 
-    hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
+    hilet constraints_ = _shaped_text.get_constraints();
+
+    hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity());
     hilet shaped_text_size = shaped_text_rectangle.size();
 
-    hilet resolved_alignment = _shaped_text.resolve_text_alignment(*alignment);
     if (*mode == widget_mode::partial) {
         // In line-edit mode the text should not wrap.
-        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, resolved_alignment, context.theme->margin};
+        return _constraints = {
+                   shaped_text_size,
+                   shaped_text_size,
+                   shaped_text_size,
+                   _shaped_text.resolved_alignment(),
+                   context.theme->margin};
 
     } else {
         // Allow the text to be 550.0f pixels wide.
-        hilet preferred_shaped_text_rectangle = _shaped_text.bounding_rectangle(550.0f, alignment->vertical());
+        hilet preferred_shaped_text_rectangle = _shaped_text.bounding_rectangle(550.0f);
         hilet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
 
         hilet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
@@ -105,7 +112,7 @@ box_constraints const& text_widget::set_constraints(set_constraints_context cons
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{shaped_text_size.width(), height},
-                   resolved_alignment,
+                   _shaped_text.resolved_alignment(),
                    context.theme->margin};
     }
 }
@@ -113,16 +120,12 @@ box_constraints const& text_widget::set_constraints(set_constraints_context cons
 void text_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
-
         hi_axiom(context.shape.baseline);
 
         _shaped_text.layout(
             context.rectangle(),
             narrow_cast<float>(*context.shape.baseline),
-            context.sub_pixel_size,
-            context.writing_direction,
-            alignment_);
+            context.sub_pixel_size);
     }
 }
 

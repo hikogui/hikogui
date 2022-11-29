@@ -87,7 +87,7 @@ static void layout_lines_vertical_alignment(
  * @param writing_direction The initial writing direction.
  */
 static void
-bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, unicode_bidi_class writing_direction) noexcept
+bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, unicode_bidi_context bidi_context) noexcept
 {
     hi_assert(not lines.empty());
 
@@ -104,17 +104,6 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
             // No explicit paragraph-separator or line-separator, at a virtual one.
             char_its.push_back(text.end());
         }
-    }
-
-    // Reorder the character indices based on the unicode bidi algorithm.
-    auto context = unicode_bidi_context{};
-
-    if (writing_direction == unicode_bidi_class::L) {
-        context.direction_mode = unicode_bidi_context::mode_type::auto_LTR;
-    } else if (writing_direction == unicode_bidi_class::R) {
-        context.direction_mode = unicode_bidi_context::mode_type::auto_RTL;
-    } else {
-        hi_no_default();
     }
 
     hilet[char_its_last, paragraph_directions] = unicode_bidi(
@@ -136,7 +125,7 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
                 it->direction = direction;
             }
         },
-        context);
+        bidi_context);
 
     // The unicode bidi algorithm may have deleted a few characters.
     char_its.erase(char_its_last, char_its.cend());
@@ -188,8 +177,10 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
     gstring const& text,
     text_style const& style,
     float dpi_scale,
+    hi::alignment alignment,
+    unicode_bidi_class text_direction,
     unicode_script script) noexcept :
-    _font_book(&font_book), _dpi_scale(dpi_scale), _script(script)
+    _font_book(&font_book), _bidi_context(text_direction), _dpi_scale(dpi_scale), _alignment(alignment), _script(script)
 {
     hilet& font = font_book.find_font(style->family_id, style->variant);
     _initial_line_metrics = (style->size * dpi_scale) * font.metrics;
@@ -201,6 +192,14 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
         auto& tmp = _text.emplace_back(clean_c, style, dpi_scale);
         tmp.initialize_glyph(font_book, font);
     }
+
+    _text_direction = unicode_bidi_direction(
+        _text.begin(),
+        _text.end(),
+        [](text_shaper::char_const_reference it) {
+            return std::make_pair(it.grapheme[0], it.description);
+        },
+        _bidi_context);
 
     _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
         hi_axiom(c.description != nullptr);
@@ -230,8 +229,10 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
     std::string_view text,
     text_style const& style,
     float dpi_scale,
+    hi::alignment alignment,
+    unicode_bidi_class text_direction,
     unicode_script script) noexcept :
-    text_shaper(font_book, to_gstring(text), style, dpi_scale, script)
+    text_shaper(font_book, to_gstring(text), style, dpi_scale, alignment, text_direction, script)
 {
 }
 
@@ -239,8 +240,6 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
     aarectangle rectangle,
     float baseline,
     extent2 sub_pixel_size,
-    hi::vertical_alignment vertical_alignment,
-    unicode_bidi_class writing_direction,
     float line_spacing,
     float paragraph_spacing) noexcept
 {
@@ -266,29 +265,25 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
 
     if (r.empty() or is_Zp_or_Zl(r.back().last_category)) {
         r.emplace_back(line_nr++, _text.begin(), _text.end(), _text.end(), 0.0f, _initial_line_metrics);
-        r.back().paragraph_direction = writing_direction;
+        r.back().paragraph_direction = _text_direction;
     }
 
     layout_lines_vertical_spacing(r, line_spacing, paragraph_spacing);
     layout_lines_vertical_alignment(
-        r, vertical_alignment, baseline, rectangle.bottom(), rectangle.top(), sub_pixel_size.height());
+        r, _alignment.vertical(), baseline, rectangle.bottom(), rectangle.top(), sub_pixel_size.height());
 
     return r;
 }
 
-void text_shaper::position_glyphs(
-    aarectangle rectangle,
-    extent2 sub_pixel_size,
-    hi::horizontal_alignment horizontal_alignment,
-    unicode_bidi_class writing_direction) noexcept
+void text_shaper::position_glyphs(aarectangle rectangle, extent2 sub_pixel_size) noexcept
 {
     hi_assert(not _lines.empty());
 
     // The bidi algorithm will reorder the characters on each line, and mirror the brackets in the text when needed.
-    bidi_algorithm(_lines, _text, writing_direction);
+    bidi_algorithm(_lines, _text, _bidi_context);
     for (auto& line : _lines) {
         // Position the glyphs on each line. Possibly morph glyphs to handle ligatures and calculate the bounding rectangles.
-        line.layout(horizontal_alignment, rectangle.left(), rectangle.right(), sub_pixel_size.width());
+        line.layout(_alignment.horizontal(), rectangle.left(), rectangle.right(), sub_pixel_size.width());
     }
 }
 
@@ -345,19 +340,15 @@ void text_shaper::resolve_script() noexcept
     }
 }
 
-[[nodiscard]] aarectangle text_shaper::bounding_rectangle(
-    float maximum_line_width,
-    hi::vertical_alignment vertical_alignment,
-    float line_spacing,
-    float paragraph_spacing) noexcept
+[[nodiscard]] aarectangle
+text_shaper::bounding_rectangle(float maximum_line_width, float line_spacing, float paragraph_spacing) noexcept
 {
     hilet rectangle = aarectangle{
         point2{0.0f, std::numeric_limits<float>::lowest()}, point2{maximum_line_width, std::numeric_limits<float>::max()}};
     constexpr auto baseline = 0.0f;
     constexpr auto sub_pixel_size = extent2{1.0f, 1.0f};
 
-    hilet lines = make_lines(
-        rectangle, baseline, sub_pixel_size, vertical_alignment, unicode_bidi_class::L, line_spacing, paragraph_spacing);
+    hilet lines = make_lines(rectangle, baseline, sub_pixel_size, line_spacing, paragraph_spacing);
     hi_assert(not lines.empty());
 
     auto max_width = 0.0f;
@@ -494,16 +485,16 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     }
 }
 
-[[nodiscard]] box_constraints text_shaper::get_constraints(vertical_alignment alignment) noexcept
+[[nodiscard]] box_constraints text_shaper::get_constraints() noexcept
 {
     auto r = box_constraints{};
 
     for (auto& [lines, width] : get_widths(_line_break_opportunities, _line_break_widths, _dpi_scale)) {
         hilet height = get_text_height(lines);
 
-        //r.emplace_back(width, height);
+        // r.emplace_back(width, height);
     }
-    //r.set_baseline(alignment);
+    // r.set_baseline(alignment);
 
     return r;
 }
@@ -512,16 +503,13 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     aarectangle rectangle,
     float baseline,
     extent2 sub_pixel_size,
-    unicode_bidi_class writing_direction,
-    hi::alignment alignment,
     float line_spacing,
     float paragraph_spacing) noexcept
 {
     _rectangle = rectangle;
-    _lines = make_lines(
-        rectangle, baseline, sub_pixel_size, alignment.vertical(), writing_direction, line_spacing, paragraph_spacing);
+    _lines = make_lines(rectangle, baseline, sub_pixel_size, line_spacing, paragraph_spacing);
     hi_assert(not _lines.empty());
-    position_glyphs(rectangle, sub_pixel_size, alignment.horizontal(), writing_direction);
+    position_glyphs(rectangle, sub_pixel_size);
 }
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::get_it(size_t index) const noexcept

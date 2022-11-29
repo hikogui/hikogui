@@ -201,6 +201,31 @@ make_guideline(horizontal_alignment alignment, T left, T right, T padding_left, 
     }
 }
 
+/** Mirror the horizontal alignment.
+ */
+[[nodiscard]] constexpr horizontal_alignment mirror(horizontal_alignment const& rhs, bool left_to_right) noexcept
+{
+    if (left_to_right) {
+        return rhs;
+    } else {
+        return mirror(rhs);
+    }
+}
+
+[[nodiscard]] constexpr horizontal_alignment resolve(horizontal_alignment const& rhs, bool left_to_right) noexcept
+{
+    if (rhs == horizontal_alignment::flush or rhs == horizontal_alignment::justified) {
+        return left_to_right ? horizontal_alignment::left : horizontal_alignment::right;
+    } else {
+        return rhs;
+    }
+}
+
+[[nodiscard]] constexpr horizontal_alignment resolve_mirror(horizontal_alignment const& rhs, bool left_to_right) noexcept
+{
+    return resolve(mirror(rhs, left_to_right), left_to_right);
+}
+
 /** Horizontal/Vertical alignment combination.
  * @ingroup geometry
  */
@@ -328,6 +353,21 @@ public:
     [[nodiscard]] constexpr friend alignment mirror(alignment const& rhs) noexcept
     {
         return alignment{mirror(rhs.horizontal()), rhs.vertical()};
+    }
+
+    [[nodiscard]] constexpr friend alignment mirror(alignment const& rhs, bool left_to_right) noexcept
+    {
+        return alignment{mirror(rhs.horizontal(), left_to_right), rhs.vertical()};
+    }
+
+    [[nodiscard]] constexpr friend alignment resolve(alignment const& rhs, bool left_to_right) noexcept
+    {
+        return alignment{resolve(rhs.horizontal(), left_to_right), rhs.vertical()};
+    }
+
+    [[nodiscard]] constexpr friend alignment resolve_mirror(alignment const& rhs, bool left_to_right) noexcept
+    {
+        return alignment{resolve_mirror(rhs.horizontal(), left_to_right), rhs.vertical()};
     }
 
 private:

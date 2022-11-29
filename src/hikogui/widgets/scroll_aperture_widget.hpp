@@ -23,6 +23,9 @@ class scroll_aperture_widget : public widget {
 public:
     using super = widget;
 
+    observer<int> minimum_width = box_constraints::max_int();
+    observer<int> minimum_height = box_constraints::max_int();
+
     observer<float> content_width;
     observer<float> content_height;
     observer<float> aperture_width;
@@ -30,7 +33,11 @@ public:
     observer<float> offset_x;
     observer<float> offset_y;
 
-    scroll_aperture_widget(widget *parent) noexcept : super(parent)
+    scroll_aperture_widget(
+        widget *parent,
+        forward_of<observer<int>> auto&& minimum_width,
+        forward_of<observer<int>> auto&& minimum_height) noexcept :
+        super(parent), minimum_width(hi_forward(minimum_width)), minimum_height(hi_forward(minimum_height))
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
@@ -61,6 +68,14 @@ public:
         _offset_y_cbt = offset_y.subscribe([&](auto...) {
             ++global_counter<"scroll_aperture_widget:offset_y:relayout">;
             process_event({gui_event_type::window_relayout});
+        });
+        _minimum_width_cbt = minimum_width.subscribe([&](auto...) {
+            ++global_counter<"scroll_aperture_widget:minimum_width:reconstrain">;
+            process_event({gui_event_type::window_reconstrain});
+        });
+        _minimum_height_cbt = minimum_height.subscribe([&](auto...) {
+            ++global_counter<"scroll_aperture_widget:minimum_height:reconstrain">;
+            process_event({gui_event_type::window_reconstrain});
         });
     }
 
@@ -100,10 +115,14 @@ public:
         _content_constraints = _content->set_constraints(context);
 
         hilet minimum_size = extent2{
-            _content_constraints.margins().left() + _content_constraints.minimum().width() +
-                _content_constraints.margins().right(),
-            _content_constraints.margins().top() + _content_constraints.minimum().height() +
-                _content_constraints.margins().bottom()};
+            std::min(
+                _content_constraints.margins().left() + _content_constraints.minimum().width() +
+                    _content_constraints.margins().right(),
+                narrow_cast<float>(*minimum_width)),
+            std::min(
+                _content_constraints.margins().top() + _content_constraints.minimum().height() +
+                    _content_constraints.margins().bottom(),
+                narrow_cast<float>(*minimum_height))};
         hilet preferred_size = extent2{
             _content_constraints.margins().left() + _content_constraints.preferred().width() +
                 _content_constraints.margins().right(),
@@ -143,7 +162,8 @@ public:
 
         // The position of the content rectangle relative to the scroll view.
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
-        hilet content_rectangle = aarectangle{-*offset_x + margins.left(), -*offset_y + margins.bottom(), *content_width, *content_height};
+        hilet content_rectangle =
+            aarectangle{-*offset_x + margins.left(), -*offset_y + margins.bottom(), *content_width, *content_height};
         _content_shape = {_content_constraints, content_rectangle, context.theme->baseline_adjustment};
 
         // The content needs to be at a higher elevation, so that hitbox check
@@ -246,6 +266,8 @@ private:
     decltype(aperture_height)::callback_token _aperture_height_cbt;
     decltype(offset_x)::callback_token _offset_x_cbt;
     decltype(offset_y)::callback_token _offset_y_cbt;
+    decltype(minimum_width)::callback_token _minimum_width_cbt;
+    decltype(minimum_height)::callback_token _minimum_height_cbt;
 };
 
 }} // namespace hi::v1

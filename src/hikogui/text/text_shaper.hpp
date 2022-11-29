@@ -16,6 +16,7 @@
 #include "../geometry/alignment.hpp"
 #include "../unicode/unicode_description.hpp"
 #include "../unicode/unicode_break_opportunity.hpp"
+#include "../unicode/unicode_bidi.hpp"
 #include "../unicode/grapheme.hpp"
 #include "../unicode/gstring.hpp"
 #include <vector>
@@ -42,6 +43,8 @@ public:
     using char_vector = std::vector<text_shaper_char>;
     using char_iterator = char_vector::iterator;
     using char_const_iterator = char_vector::const_iterator;
+    using char_reference = char_vector::reference;
+    using char_const_reference = char_vector::const_reference;
     using line_vector = std::vector<text_shaper_line>;
     using line_iterator = line_vector::iterator;
     using line_const_iterator = line_vector::const_iterator;
@@ -84,6 +87,8 @@ public:
         gstring const& text,
         text_style const& style,
         float dpi_scale,
+        hi::alignment alignment,
+        unicode_bidi_class text_direction,
         unicode_script script = unicode_script::Common) noexcept;
 
     [[nodiscard]] text_shaper(
@@ -91,6 +96,8 @@ public:
         std::string_view text,
         text_style const& style,
         float dpi_scale,
+        hi::alignment alignment,
+        unicode_bidi_class text_direction,
         unicode_script script = unicode_script::Common) noexcept;
 
     [[nodiscard]] bool empty() const noexcept
@@ -138,26 +145,6 @@ public:
         return _lines;
     }
 
-    unicode_bidi_class text_direction() const noexcept
-    {
-        hi_axiom(not _lines.empty());
-        return _lines.front().paragraph_direction;
-    }
-
-    horizontal_alignment resolve_text_alignment(horizontal_alignment rhs) const noexcept
-    {
-        if (rhs == horizontal_alignment::flush or rhs == horizontal_alignment::justified) {
-            return text_direction() == unicode_bidi_class::L ? horizontal_alignment::left : horizontal_alignment::right;
-        } else {
-            return rhs;
-        }
-    }
-
-    alignment resolve_text_alignment(alignment rhs) const noexcept
-    {
-        return {resolve_text_alignment(rhs.horizontal()), rhs.vertical()};
-    }
-
     /** Get bounding rectangle.
      *
      * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
@@ -171,17 +158,13 @@ public:
      *
      * @param maximum_line_width The maximum line width allowed, this may be infinite to determine
      *        the natural text size without folding.
-     * @param alignment The vertical alignment of text.
      * @param line_spacing The scaling of the spacing between lines.
      * @param paragraph_spacing The scaling of the spacing between paragraphs.
      * @return The rectangle surrounding the text, cap-height. The rectangle excludes ascenders & descenders, as if
      *         each line is x-height. y = 0 of the rectangle is at the base-line of the text.
      */
-    [[nodiscard]] aarectangle bounding_rectangle(
-        float maximum_line_width,
-        vertical_alignment alignment,
-        float line_spacing = 1.0f,
-        float paragraph_spacing = 1.5f) noexcept;
+    [[nodiscard]] aarectangle
+    bounding_rectangle(float maximum_line_width, float line_spacing = 1.0f, float paragraph_spacing = 1.5f) noexcept;
 
     /** Get constraints.
      *
@@ -205,7 +188,7 @@ public:
      * @param alignment The vertical alignment of text.
      * @return The constraints (a list of sizes) which can hold the text.
      */
-    [[nodiscard]] box_constraints get_constraints(vertical_alignment alignment) noexcept;
+    [[nodiscard]] box_constraints get_constraints() noexcept;
 
     /** Layout the lines of the text.
      *
@@ -231,8 +214,6 @@ public:
         aarectangle rectangle,
         float baseline,
         extent2 sub_pixel_size,
-        unicode_bidi_class writing_direction,
-        hi::alignment alignment = hi::alignment{horizontal_alignment::flush, vertical_alignment::middle},
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
 
@@ -241,6 +222,23 @@ public:
     [[nodiscard]] aarectangle rectangle() const noexcept
     {
         return _rectangle;
+    }
+
+    /** Get the text-direction as a whole.
+     */
+    [[nodiscard]] unicode_bidi_class text_direction() const noexcept
+    {
+        return _text_direction;
+    }
+
+    /** Get the resolved alignment of the text.
+     *
+     * This is the alignment when taking into account the direction of the text
+     * and the direction of the selected language.
+     */
+    [[nodiscard]] alignment resolved_alignment() const noexcept
+    {
+        return resolve(_alignment, _text_direction == unicode_bidi_class::L);
     }
 
     /** Get the character at index in logical order.
@@ -465,6 +463,8 @@ private:
      */
     char_vector _text;
 
+    hi::alignment _alignment;
+
     /** A list of word break opportunities.
      */
     unicode_break_vector _line_break_opportunities;
@@ -480,6 +480,14 @@ private:
     /** A list of sentence break opportunities.
      */
     unicode_break_vector _sentence_break_opportunities;
+
+    /** The unicode bidi algorithm context.
+     */
+    unicode_bidi_context _bidi_context;
+
+    /** Direction of the text as a whole.
+     */
+    unicode_bidi_class _text_direction;
 
     /** The default script of the text.
      */
@@ -504,8 +512,6 @@ private:
      * @param rectangle The rectangle to position the glyphs in.
      * @param baseline The position of the recommended base-line.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
-     * @param vertical_alignment The vertical alignment of text.
-     * @param writing_direction The default writing direction.
      * @param line_spacing The scaling of the spacing between lines.
      * @param paragraph_spacing The scaling of the spacing between paragraphs.
      */
@@ -513,8 +519,6 @@ private:
         aarectangle rectangle,
         float baseline,
         extent2 sub_pixel_size,
-        hi::vertical_alignment vertical_alignment,
-        unicode_bidi_class writing_direction,
         float line_spacing,
         float paragraph_spacing) noexcept;
 
@@ -522,15 +526,9 @@ private:
      *
      * @param rectangle The rectangle to position the glyphs in.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
-     * @param horizontal_alignment The horizontal alignment of the text (default: flush).
-     * @param writing_direction The default writing direction.
      * @post Glyphs in _text are positioned inside the given rectangle.
      */
-    void position_glyphs(
-        aarectangle rectangle,
-        extent2 sub_pixel_size,
-        hi::horizontal_alignment horizontal_alignment,
-        unicode_bidi_class writing_direction) noexcept;
+    void position_glyphs(aarectangle rectangle, extent2 sub_pixel_size) noexcept;
 
     /** Resolve the script of each character in text.
      */

@@ -39,7 +39,7 @@ struct box_constraints {
     int padding_bottom = 0;
     int padding_top = 0;
 
-    hi::alignment alignment = hi::alignment::middle_flush();
+    hi::alignment alignment = hi::alignment{};
 
     constexpr box_constraints() noexcept = default;
     constexpr box_constraints(box_constraints const&) noexcept = default;
@@ -98,7 +98,7 @@ struct box_constraints {
             narrow_cast<float>(margin_top)};
     }
 
-    constexpr box_constraints &set_margins(int rhs) noexcept
+    constexpr box_constraints& set_margins(int rhs) noexcept
     {
         margin_left = rhs;
         margin_bottom = rhs;
@@ -107,7 +107,7 @@ struct box_constraints {
         return *this;
     }
 
-    constexpr box_constraints &set_margins(hi::margins const &rhs) noexcept
+    constexpr box_constraints& set_margins(hi::margins const& rhs) noexcept
     {
         margin_left = narrow_cast<int>(rhs.left());
         margin_bottom = narrow_cast<int>(rhs.bottom());
@@ -210,6 +210,15 @@ struct box_constraints {
     max(box_constraints const& first, box_constraints const& second, box_constraints const& third, Args const&...args) noexcept
     {
         return max(first, max(second, third, args...));
+    }
+
+    /** Get the maximum integer that should be used in constraints.
+     *
+     * @return 16777216; The largest integer that can be represented perfectly.
+     */
+    [[nodiscard]] constexpr static int max_int() noexcept
+    {
+        return 16777216;
     }
 };
 

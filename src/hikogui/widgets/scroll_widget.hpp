@@ -12,6 +12,7 @@
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
 #include "../geometry/axis.hpp"
+#include "../layout/grid_layout.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -45,8 +46,13 @@ template<axis Axis = axis::both>
 class scroll_widget final : public widget {
 public:
     using super = widget;
+    using horizontal_scroll_bar_type = scroll_bar_widget<axis::horizontal>;
+    using vertical_scroll_bar_type = scroll_bar_widget<axis::vertical>;
 
     static constexpr hi::axis axis = Axis;
+
+    observer<int> minimum_width = box_constraints::max_int();
+    observer<int> minimum_height = box_constraints::max_int();
 
     ~scroll_widget() {}
 
@@ -62,11 +68,31 @@ public:
         // The scroll-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
 
-        _aperture = std::make_unique<scroll_aperture_widget>(this);
-        _horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_widget>(
-            this, _aperture->content_width, _aperture->aperture_width, _aperture->offset_x);
-        _vertical_scroll_bar = std::make_unique<vertical_scroll_bar_widget>(
-            this, _aperture->content_height, _aperture->aperture_height, _aperture->offset_y);
+        auto unique_aperture = std::make_unique<scroll_aperture_widget>(this, minimum_width, minimum_height);
+        auto unique_horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_type>(
+            this, unique_aperture->content_width, unique_aperture->aperture_width, unique_aperture->offset_x);
+        auto unique_vertical_scroll_bar = std::make_unique<vertical_scroll_bar_type>(
+            this, unique_aperture->content_height, unique_aperture->aperture_height, unique_aperture->offset_y);
+
+        if (to_bool(axis == axis::horizontal)) {
+            minimum_width = 0;
+        } else {
+            unique_horizontal_scroll_bar->mode = widget_mode::collapse;
+        }
+
+        if (to_bool(axis == axis::vertical)) {
+            minimum_height = 0;
+        } else {
+            unique_vertical_scroll_bar->mode = widget_mode::collapse;
+        }
+
+        _aperture = unique_aperture.get();
+        _horizontal_scroll_bar = unique_horizontal_scroll_bar.get();
+        _vertical_scroll_bar = unique_vertical_scroll_bar.get();
+
+        _grid.add_cell(0, 0, std::move(unique_aperture));
+        _grid.add_cell(1, 0, std::move(unique_vertical_scroll_bar));
+        _grid.add_cell(0, 1, std::move(unique_horizontal_scroll_bar));
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -87,103 +113,29 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        co_yield _aperture.get();
-        co_yield _vertical_scroll_bar.get();
-        co_yield _horizontal_scroll_bar.get();
+        co_yield _aperture;
+        co_yield _vertical_scroll_bar;
+        co_yield _horizontal_scroll_bar;
     }
 
     box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
     {
         _layout = {};
-        _aperture_constraints = _aperture->set_constraints(context);
-        _horizontal_scroll_bar_constraints = _horizontal_scroll_bar->set_constraints(context);
-        _vertical_scroll_bar_constraints = _vertical_scroll_bar->set_constraints(context);
 
-        _constraints = _aperture_constraints;
-
-        // When there are scrollbars the widget minimum size becomes basically zero.
-        // However we should at least have enough room to fit in the scroll-bars length-wise.
-        if constexpr (to_bool(axis & axis::horizontal)) {
-            _constraints.minimum_width = _horizontal_scroll_bar_constraints.minimum_width;
-            inplace_max(_constraints.preferred_width, _horizontal_scroll_bar_constraints.minimum_width);
-            inplace_max(_constraints.maximum_width, _horizontal_scroll_bar_constraints.minimum_width);
-        }
-        if constexpr (to_bool(axis & axis::vertical)) {
-            _constraints.minimum_height = _vertical_scroll_bar_constraints.minimum_height;
-            inplace_max(_constraints.preferred_height, _vertical_scroll_bar_constraints.minimum_height);
-            inplace_max(_constraints.maximum_height, _vertical_scroll_bar_constraints.minimum_height);
+        for (auto& cell : _grid) {
+            cell.set_constraints(cell.value->set_constraints(context));
         }
 
-        // Make room for the thickness of the scroll-bars.
-        if constexpr (to_bool(axis & axis::horizontal)) {
-            _constraints.minimum_height += _horizontal_scroll_bar_constraints.preferred_height;
-            _constraints.preferred_height += _horizontal_scroll_bar_constraints.preferred_height;
-            _constraints.maximum_height += _horizontal_scroll_bar_constraints.preferred_height;
-        }
-        if constexpr (to_bool(axis & axis::vertical)) {
-            _constraints.minimum_width += _vertical_scroll_bar_constraints.preferred_width;
-            _constraints.preferred_width += _vertical_scroll_bar_constraints.preferred_width;
-            _constraints.maximum_width += _vertical_scroll_bar_constraints.preferred_width;
-        }
-        return _constraints;
+        return _constraints = _grid.get_constraints(context.left_to_right());
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hilet horizontal_visible = _aperture->x_axis_scrolls() and to_bool(axis & axis::horizontal);
-            hilet vertical_visible = _aperture->y_axis_scrolls() and to_bool(axis & axis::vertical);
-            hilet both_visible = horizontal_visible and vertical_visible;
-
-            _horizontal_scroll_bar->mode = horizontal_visible ? widget_mode::enabled : widget_mode::invisible;
-            _vertical_scroll_bar->mode = vertical_visible ? widget_mode::enabled : widget_mode::invisible;
-
-            hilet vertical_scroll_bar_width = narrow_cast<float>(_vertical_scroll_bar_constraints.preferred_width);
-            hilet horizontal_scroll_bar_height = narrow_cast<float>(_horizontal_scroll_bar_constraints.preferred_height);
-
-            // The aperture size grows to fill the size of the layout.
-            hilet aperture_size = extent2{
-                vertical_visible ? narrow_cast<float>(context.width()) - vertical_scroll_bar_width :
-                                   narrow_cast<float>(context.width()),
-                horizontal_visible ? narrow_cast<float>(context.height()) - horizontal_scroll_bar_height :
-                                     narrow_cast<float>(context.height())};
-
-            hilet aperture_x = context.left_to_right() ? 0.0f : vertical_visible ? vertical_scroll_bar_width : 0.0f;
-            hilet aperture_y = horizontal_visible ? horizontal_scroll_bar_height : 0.0f;
-
-            hilet aperture_offset = point2{aperture_x, aperture_y};
-            hilet aperture_rectangle = aarectangle{aperture_offset, aperture_size};
-            _aperture_shape = box_shape{_aperture_constraints, aperture_rectangle, context.theme->baseline_adjustment};
-
-            // The length of the scroll-bar is the full length of the widget, or just the length of the aperture depending
-            // if the counter-part scroll-bar is visible.
-            hilet horizontal_scroll_bar_size =
-                extent2{both_visible ? aperture_size.width() : narrow_cast<float>(context.width()), horizontal_scroll_bar_height};
-            hilet vertical_scroll_bar_size =
-                extent2{vertical_scroll_bar_width, both_visible ? aperture_size.height() : narrow_cast<float>(context.height())};
-
-            hilet vertical_scroll_bar_x =
-                context.left_to_right() ? narrow_cast<float>(context.width()) - vertical_scroll_bar_size.width() : 0.0f;
-            hilet vertical_scroll_bar_y = narrow_cast<float>(context.height()) - vertical_scroll_bar_size.height();
-            hilet vertical_scroll_bar_rectangle =
-                aarectangle{point2{vertical_scroll_bar_x, vertical_scroll_bar_y}, vertical_scroll_bar_size};
-            _vertical_scroll_bar_shape =
-                box_shape{_vertical_scroll_bar_constraints, vertical_scroll_bar_rectangle, context.theme->baseline_adjustment};
-
-            hilet horizontal_scroll_bar_x = context.left_to_right() ? 0.0f : vertical_visible ? vertical_scroll_bar_width : 0.0f;
-            hilet horizontal_scroll_bar_y = 0.0f;
-            hilet horizontal_scroll_bar_rectangle =
-                aarectangle{point2{horizontal_scroll_bar_x, horizontal_scroll_bar_y}, horizontal_scroll_bar_size};
-            _horizontal_scroll_bar_shape = box_shape{
-                _horizontal_scroll_bar_constraints, horizontal_scroll_bar_rectangle, context.theme->baseline_adjustment};
+            _grid.set_layout(context.width(), context.height(), context.left_to_right(), context.theme->baseline_adjustment);
         }
-
-        _aperture->set_layout(context.transform(_aperture_shape));
-        if (*_vertical_scroll_bar->mode > widget_mode::invisible) {
-            _vertical_scroll_bar->set_layout(context.transform(_vertical_scroll_bar_shape));
-        }
-        if (*_horizontal_scroll_bar->mode > widget_mode::invisible) {
-            _horizontal_scroll_bar->set_layout(context.transform(_horizontal_scroll_bar_shape));
+        for (hilet& cell : _grid) {
+            cell.value->set_layout(context.transform(cell.shape, 0.0f));
         }
     }
 
@@ -216,17 +168,11 @@ public:
     }
     // @endprivatesection
 private:
-    std::unique_ptr<scroll_aperture_widget> _aperture;
-    box_constraints _aperture_constraints;
-    box_shape _aperture_shape;
+    grid_layout<std::unique_ptr<widget>> _grid;
 
-    std::unique_ptr<horizontal_scroll_bar_widget> _horizontal_scroll_bar;
-    box_constraints _horizontal_scroll_bar_constraints;
-    box_shape _horizontal_scroll_bar_shape;
-
-    std::unique_ptr<vertical_scroll_bar_widget> _vertical_scroll_bar;
-    box_constraints _vertical_scroll_bar_constraints;
-    box_shape _vertical_scroll_bar_shape;
+    scroll_aperture_widget *_aperture;
+    horizontal_scroll_bar_type *_horizontal_scroll_bar;
+    vertical_scroll_bar_type *_vertical_scroll_bar;
 };
 
 /** Vertical scroll widget.

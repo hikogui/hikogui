@@ -67,6 +67,10 @@ public:
     {
         _layout = {};
 
+        if (*mode <= widget_mode::collapse) {
+            return _constraints = {};
+        }
+
         // The minimum size is twice the length of the slider, which is twice the context.theme->size()
         if constexpr (axis == axis::vertical) {
             return _constraints = {
@@ -84,6 +88,11 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         _layout = context;
+
+        if (*mode <= widget_mode::collapse) {
+            _slider_rectangle = {};
+            return;
+        }
 
         // Calculate the position of the slider.
         hilet slider_offset = *offset * travel_vs_hidden_content_ratio();
@@ -250,8 +259,5 @@ private:
         context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_radii);
     }
 };
-
-using horizontal_scroll_bar_widget = scroll_bar_widget<axis::horizontal>;
-using vertical_scroll_bar_widget = scroll_bar_widget<axis::vertical>;
 
 }} // namespace hi::v1

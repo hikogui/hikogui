@@ -133,10 +133,6 @@ private:
      */
     observer<gstring> _text;
 
-    /** The rectangle where the box is displayed, in which the text is displayed.
-     */
-    aarectangle _box_rectangle;
-
     /** An error string to show to the user.
      */
     observer<label> _error_label;
