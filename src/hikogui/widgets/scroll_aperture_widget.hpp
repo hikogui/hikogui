@@ -26,12 +26,12 @@ public:
     observer<int> minimum_width = box_constraints::max_int();
     observer<int> minimum_height = box_constraints::max_int();
 
-    observer<float> content_width;
-    observer<float> content_height;
-    observer<float> aperture_width;
-    observer<float> aperture_height;
-    observer<float> offset_x;
-    observer<float> offset_y;
+    observer<int> content_width;
+    observer<int> content_height;
+    observer<int> aperture_width;
+    observer<int> aperture_height;
+    observer<int> offset_x;
+    observer<int> offset_y;
 
     scroll_aperture_widget(
         widget *parent,
@@ -139,31 +139,33 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        hilet margins = _content_constraints.margins();
-
         if (compare_store(_layout, context)) {
-            hilet preferred_size = _content_constraints.preferred();
-
-            aperture_width = context.width() - margins.left() - margins.right();
-            aperture_height = context.height() - margins.bottom() - margins.top();
+            aperture_width = context.width() - _content_constraints.margin_left - _content_constraints.margin_right;
+            aperture_height = context.height() - _content_constraints.margin_bottom - _content_constraints.margin_top;
 
             // Start scrolling with the preferred size as minimum, so
             // that widgets in the content don't get unnecessarily squeezed.
-            content_width = *aperture_width < preferred_size.width() ? preferred_size.width() : *aperture_width;
-            content_height = *aperture_height < preferred_size.height() ? preferred_size.height() : *aperture_height;
+            content_width =
+                *aperture_width < _content_constraints.preferred_width ? _content_constraints.preferred_width : *aperture_width;
+            content_height = *aperture_height < _content_constraints.preferred_height ? _content_constraints.preferred_height :
+                                                                                        *aperture_height;
         }
 
         // Make sure the offsets are limited to the scrollable area.
-        hilet offset_x_max = std::max(*content_width - *aperture_width, 0.0f);
-        hilet offset_y_max = std::max(*content_height - *aperture_height, 0.0f);
-        offset_x = std::clamp(std::round(*offset_x), 0.0f, offset_x_max);
-        offset_y = std::clamp(std::round(*offset_y), 0.0f, offset_y_max);
+        hilet offset_x_max = std::max(*content_width - *aperture_width, 0);
+        hilet offset_y_max = std::max(*content_height - *aperture_height, 0);
+        offset_x = std::clamp(*offset_x, 0, offset_x_max);
+        offset_y = std::clamp(*offset_y, 0, offset_y_max);
 
         // The position of the content rectangle relative to the scroll view.
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
-        hilet content_rectangle =
-            aarectangle{-*offset_x + margins.left(), -*offset_y + margins.bottom(), *content_width, *content_height};
-        _content_shape = {_content_constraints, content_rectangle, context.theme->baseline_adjustment};
+        _content_shape = box_shape{
+            _content_constraints,
+            -*offset_x + _content_constraints.margin_left,
+            -*offset_y + _content_constraints.margin_bottom,
+            *content_width,
+            *content_height,
+            context.theme->baseline_adjustment};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
@@ -199,13 +201,13 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (event == gui_event_type::mouse_wheel) {
-            hilet new_offset_x = *offset_x + event.mouse().wheel_delta.x() * _layout.theme->scale;
-            hilet new_offset_y = *offset_y + event.mouse().wheel_delta.y() * _layout.theme->scale;
-            hilet max_offset_x = std::max(0.0f, *content_width - *aperture_width);
-            hilet max_offset_y = std::max(0.0f, *content_height - *aperture_height);
+            hilet new_offset_x = *offset_x + narrow_cast<int>(event.mouse().wheel_delta.x() * _layout.theme->scale);
+            hilet new_offset_y = *offset_y + narrow_cast<int>(event.mouse().wheel_delta.y() * _layout.theme->scale);
+            hilet max_offset_x = std::max(0, *content_width - *aperture_width);
+            hilet max_offset_y = std::max(0, *content_height - *aperture_height);
 
-            offset_x = std::clamp(new_offset_x, 0.0f, max_offset_x);
-            offset_y = std::clamp(new_offset_y, 0.0f, max_offset_y);
+            offset_x = std::clamp(new_offset_x, 0, max_offset_x);
+            offset_y = std::clamp(new_offset_y, 0, max_offset_y);
             ++global_counter<"scroll_aperture_widget:mouse_wheel:relayout">;
             process_event({gui_event_type::window_relayout});
             return true;
@@ -218,8 +220,8 @@ public:
     {
         if (_layout) {
             auto safe_rectangle = intersect(_layout.rectangle(), _layout.clipping_rectangle);
-            float delta_x = 0.0f;
-            float delta_y = 0.0f;
+            int delta_x = 0;
+            int delta_y = 0;
 
             if (safe_rectangle.width() > _layout.theme->margin * 2.0f and
                 safe_rectangle.height() > _layout.theme->margin * 2.0f) {
@@ -229,15 +231,15 @@ public:
                 safe_rectangle = safe_rectangle - _layout.theme->margin;
 
                 if (to_show.right() > safe_rectangle.right()) {
-                    delta_x = to_show.right() - safe_rectangle.right();
+                    delta_x = narrow_cast<int>(to_show.right() - safe_rectangle.right());
                 } else if (to_show.left() < safe_rectangle.left()) {
-                    delta_x = to_show.left() - safe_rectangle.left();
+                    delta_x = narrow_cast<int>(to_show.left() - safe_rectangle.left());
                 }
 
                 if (to_show.top() > safe_rectangle.top()) {
-                    delta_y = to_show.top() - safe_rectangle.top();
+                    delta_y = narrow_cast<int>(to_show.top() - safe_rectangle.top());
                 } else if (to_show.bottom() < safe_rectangle.bottom()) {
-                    delta_y = to_show.bottom() - safe_rectangle.bottom();
+                    delta_y = narrow_cast<int>(to_show.bottom() - safe_rectangle.bottom());
                 }
 
                 // Scroll the widget
@@ -247,7 +249,8 @@ public:
 
             // There may be recursive scroll view, and they all need to move until the rectangle is visible.
             if (parent) {
-                parent->scroll_to_show(bounding_rectangle(_layout.to_parent * translate2(delta_x, delta_y) * to_show));
+                parent->scroll_to_show(bounding_rectangle(
+                    _layout.to_parent * translate2(narrow_cast<float>(delta_x), narrow_cast<float>(delta_y)) * to_show));
             }
 
         } else {

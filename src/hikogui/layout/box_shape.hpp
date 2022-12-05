@@ -32,7 +32,43 @@ struct box_shape {
     {
     }
 
-    constexpr box_shape(override_t, box_constraints const& constraints, aarectangle const& rectangle, int baseline_adjustment) noexcept :
+    constexpr box_shape(
+        override_t,
+        box_constraints const& constraints,
+        int x,
+        int y,
+        int width,
+        int height,
+        int baseline_adjustment) noexcept :
+        x(x),
+        y(y),
+        width(width),
+        height(height),
+        baseline(make_guideline(
+            constraints.alignment.vertical(),
+            y,
+            y + height,
+            constraints.padding_bottom,
+            constraints.padding_top,
+            baseline_adjustment)),
+        centerline(
+            make_guideline(constraints.alignment.horizontal(), x, x + width, constraints.padding_left, constraints.padding_right))
+    {
+    }
+
+    constexpr box_shape(box_constraints const& constraints, int x, int y, int width, int height, int baseline_adjustment) noexcept
+        :
+        box_shape(override_t{}, constraints, x, y, width, height, baseline_adjustment)
+    {
+        hi_axiom(width >= constraints.minimum_width);
+        hi_axiom(height >= constraints.minimum_height);
+    }
+
+    [[deprecated]] constexpr box_shape(
+        override_t,
+        box_constraints const& constraints,
+        aarectangle const& rectangle,
+        int baseline_adjustment) noexcept :
         x(narrow_cast<int>(rectangle.x())),
         y(narrow_cast<int>(rectangle.y())),
         width(narrow_cast<int>(rectangle.width())),
@@ -53,7 +89,10 @@ struct box_shape {
     {
     }
 
-    constexpr box_shape(box_constraints const& constraints, aarectangle const& rectangle, int baseline_adjustment) noexcept :
+    [[deprecated]] constexpr box_shape(
+        box_constraints const& constraints,
+        aarectangle const& rectangle,
+        int baseline_adjustment) noexcept :
         box_shape(override_t{}, constraints, rectangle, baseline_adjustment)
     {
         hi_axiom(width >= constraints.minimum_width);
