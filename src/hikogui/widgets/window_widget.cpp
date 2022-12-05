@@ -52,7 +52,7 @@ box_constraints const& window_widget::set_constraints(set_constraints_context co
     _constraints.preferred_width = std::max(
         _toolbar_constraints.margin_left + _toolbar_constraints.preferred_width + _toolbar_constraints.margin_right,
         _content_constraints.margin_left + _content_constraints.preferred_width + _content_constraints.margin_right);
-    _constraints.maximum_width = std::max(
+    _constraints.maximum_width = std::min(
         _toolbar_constraints.margin_left + _toolbar_constraints.maximum_width + _toolbar_constraints.margin_right,
         _content_constraints.margin_left + _content_constraints.maximum_width + _content_constraints.margin_right);
 

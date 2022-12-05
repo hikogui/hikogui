@@ -74,13 +74,13 @@ public:
         auto unique_vertical_scroll_bar = std::make_unique<vertical_scroll_bar_type>(
             this, unique_aperture->content_height, unique_aperture->aperture_height, unique_aperture->offset_y);
 
-        if (to_bool(axis == axis::horizontal)) {
+        if (to_bool(axis & axis::horizontal)) {
             minimum_width = 0;
         } else {
             unique_horizontal_scroll_bar->mode = widget_mode::collapse;
         }
 
-        if (to_bool(axis == axis::vertical)) {
+        if (to_bool(axis & axis::vertical)) {
             minimum_height = 0;
         } else {
             unique_vertical_scroll_bar->mode = widget_mode::collapse;
@@ -132,10 +132,27 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _grid.set_layout(context.width(), context.height(), context.left_to_right(), context.theme->baseline_adjustment);
+            _grid.set_layout(context.width(), context.height(), context.theme->baseline_adjustment);
         }
+
         for (hilet& cell : _grid) {
-            cell.value->set_layout(context.transform(cell.shape, 0.0f));
+            auto shape = cell.shape;
+
+            if (cell.value.get() == _aperture) {
+                // This is the content. Move the content slightly when the scroll-bars aren't visible.
+                // The grid cells are always ordered in row-major.
+                // This the vertical scroll bar is _grid[1] and the horizontal scroll bar is _grid[2].
+                if (not _vertical_scroll_bar->visible()) {
+                    shape.x = 0;
+                    shape.width = _layout.width();
+                }
+                if (not _horizontal_scroll_bar->visible()) {
+                    shape.y = 0;
+                    shape.height = _layout.height();
+                }
+            }
+
+            cell.value->set_layout(context.transform(shape, 0.0f));
         }
     }
 

@@ -156,13 +156,13 @@ public:
         hilet norm_b = b * inv_lengths.zzzz();
         hilet norm_r = r * inv_lengths.wwww();
 
-        hilet width = rhs.xxxx();
-        hilet height = rhs.yyyy();
+        hilet extra_width = rhs.xxxx();
+        hilet extra_height = rhs.yyyy();
 
-        hilet top_extra = vector3{norm_t * width};
-        hilet left_extra = vector3{norm_l * height};
-        hilet bottom_extra = vector3{norm_b * width};
-        hilet right_extra = vector3{norm_r * height};
+        hilet top_extra = vector3{norm_t * extra_width};
+        hilet left_extra = vector3{norm_l * extra_height};
+        hilet bottom_extra = vector3{norm_b * extra_width};
+        hilet right_extra = vector3{norm_r * extra_height};
 
         hilet lengths = rcp(inv_lengths);
 

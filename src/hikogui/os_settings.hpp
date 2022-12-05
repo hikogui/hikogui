@@ -31,7 +31,7 @@ public:
      */
     [[nodiscard]] static std::vector<language_tag> language_tags() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
         return _language_tags;
     }
@@ -43,7 +43,7 @@ public:
      */
     [[nodiscard]] static std::vector<language *> languages() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
         return _languages;
     }
@@ -56,7 +56,7 @@ public:
     */
     [[nodiscard]] static unicode_bidi_class writing_direction() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _writing_direction.load(std::memory_order::relaxed);
     }
 
@@ -64,7 +64,7 @@ public:
      */
     [[nodiscard]] static hi::theme_mode theme_mode() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _theme_mode.load(std::memory_order::relaxed);
     }
 
@@ -72,7 +72,7 @@ public:
      */
     [[nodiscard]] static hi::subpixel_orientation subpixel_orientation() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _subpixel_orientation.load(std::memory_order::relaxed);
     }
 
@@ -88,15 +88,15 @@ public:
      */
     [[nodiscard]] static bool uniform_HDR() noexcept
     {
-        hi_axiom(_started);
-        return _uniform_HDR;
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _uniform_HDR.load(std::memory_order::relaxed);
     }
 
     /** Get the mouse double click interval.
      */
     [[nodiscard]] static std::chrono::milliseconds double_click_interval() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _double_click_interval.load(std::memory_order::relaxed);
     }
 
@@ -104,7 +104,7 @@ public:
      */
     [[nodiscard]] static float double_click_distance() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _double_click_distance.load(std::memory_order::relaxed);
     }
 
@@ -114,7 +114,7 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds keyboard_repeat_delay() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _keyboard_repeat_delay.load(std::memory_order::relaxed);
     }
 
@@ -124,7 +124,7 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds keyboard_repeat_interval() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _keyboard_repeat_interval.load(std::memory_order::relaxed);
     }
 
@@ -134,7 +134,7 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds cursor_blink_delay() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _cursor_blink_delay.load(std::memory_order::relaxed);
     }
 
@@ -145,7 +145,7 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds cursor_blink_interval() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _cursor_blink_interval.load(std::memory_order::relaxed);
     }
 
@@ -155,7 +155,7 @@ public:
      */
     [[nodiscard]] static int minimum_window_width() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _minimum_window_width.load(std::memory_order::relaxed);
     }
 
@@ -165,7 +165,7 @@ public:
      */
     [[nodiscard]] static int minimum_window_height() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _minimum_window_height.load(std::memory_order::relaxed);
     }
 
@@ -175,7 +175,7 @@ public:
      */
     [[nodiscard]] static int maximum_window_width() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _maximum_window_width.load(std::memory_order::relaxed);
     }
 
@@ -185,7 +185,7 @@ public:
      */
     [[nodiscard]] static int maximum_window_height() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _maximum_window_height.load(std::memory_order::relaxed);
     }
 
@@ -195,7 +195,7 @@ public:
      */
     [[nodiscard]] static aarectangle primary_monitor_rectangle() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
         return _primary_monitor_rectangle;
     }
@@ -204,7 +204,7 @@ public:
      */
     [[nodiscard]] static uintptr_t primary_monitor_id() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _primary_monitor_id.load(std::memory_order::relaxed);
     }
 
@@ -214,7 +214,7 @@ public:
      */
     [[nodiscard]] static aarectangle desktop_rectangle() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
         return _desktop_rectangle;
     }
@@ -225,7 +225,6 @@ public:
 
     [[nodiscard]] static callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        hi_axiom(_started);
         hilet lock = std::scoped_lock(_mutex);
         return _notifier.subscribe(hi_forward(callback), flags);
     }
@@ -244,6 +243,7 @@ private:
     static constexpr std::chrono::duration gather_minimum_interval = std::chrono::seconds(1);
 
     static inline std::atomic<bool> _started = false;
+    static inline std::atomic<bool> _populated = false;
     static inline unfair_mutex _mutex;
     static inline loop::timer_callback_token _gather_cbt;
     static inline utc_nanoseconds _gather_last_time;

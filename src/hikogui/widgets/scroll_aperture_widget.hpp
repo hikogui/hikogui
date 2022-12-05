@@ -139,11 +139,10 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        hilet content_constraints = _content->constraints();
-        hilet margins = content_constraints.margins();
+        hilet margins = _content_constraints.margins();
 
         if (compare_store(_layout, context)) {
-            hilet preferred_size = content_constraints.preferred();
+            hilet preferred_size = _content_constraints.preferred();
 
             aperture_width = context.width() - margins.left() - margins.right();
             aperture_height = context.height() - margins.bottom() - margins.top();

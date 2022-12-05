@@ -49,9 +49,11 @@ public:
      */
     widget *parent;
 
-    /** A name of widget, should be unique between siblings.
+    /** The numeric identifier of a widget.
+     *
+     * @note This is a uint32_t equal to the operating system's accessibility identifier.
      */
-    std::string id;
+    uint32_t id;
 
     /** The widget mode.
      * The current visibility and interactivity of a widget.

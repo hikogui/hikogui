@@ -79,7 +79,7 @@ public:
     /// @endprivatesection
 private:
     row_layout<std::unique_ptr<widget>> _children;
-    size_t middle_child_index = 0;
+    size_t spacer_index = 0;
 
     void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept;
 

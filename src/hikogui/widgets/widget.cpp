@@ -4,12 +4,13 @@
 
 #include "widget.hpp"
 #include "../ranges.hpp"
+#include "../counters.hpp"
 #include <ranges>
 
 namespace hi::inline v1 {
 
 widget::widget(widget *parent) noexcept :
-    parent(parent), logical_layer(0), semantic_layer(0)
+    parent(parent), id(narrow_cast<uint32_t>(++global_counter<"widget::id">)), logical_layer(0), semantic_layer(0)
 {
     hi_axiom(loop::main().on_thread());
 

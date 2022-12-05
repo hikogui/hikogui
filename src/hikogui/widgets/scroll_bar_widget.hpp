@@ -103,9 +103,14 @@ public:
         }
     }
 
+    [[nodiscard]] bool visible() const noexcept
+    {
+        return *aperture < *content;
+    }
+
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (*mode > widget_mode::invisible and overlaps(context, layout()) and visible()) {
             draw_rails(context);
             draw_slider(context);
         }
@@ -115,7 +120,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout().contains(position) and _slider_rectangle.contains(position)) {
+        if (*mode >= widget_mode::partial and layout().contains(position) and visible() and _slider_rectangle.contains(position)) {
             return {this, position, hitbox_type::scroll_bar};
         } else {
             return {};

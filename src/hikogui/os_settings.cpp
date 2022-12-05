@@ -205,6 +205,7 @@ void os_settings::gather() noexcept
         hi_log_error("Failed to get OS desktop rectangle: {}", e.what());
     }
 
+    _populated.store(true, std::memory_order::release);
     if (setting_has_changed) {
         _notifier();
     }

@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_widget.hpp"
+#include "spacer_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"
 #include "../scoped_buffer.hpp"
 #include "../geometry/translate.hpp"
@@ -13,10 +14,10 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
 {
     hi_axiom(loop::main().on_thread());
 
-    if (parent) {
-        // The toolbar is a top level widget, which draws its background as the next level.
-        semantic_layer = 0;
-    }
+    // The toolbar is a top level widget, which draws its background as the next level.
+    semantic_layer = 0;
+
+    _children.push_back(std::make_unique<spacer_widget>(this));
 }
 
 box_constraints const& toolbar_widget::set_constraints(set_constraints_context const& context) noexcept
@@ -27,21 +28,34 @@ box_constraints const& toolbar_widget::set_constraints(set_constraints_context c
         child.set_constraints(child.value->set_constraints(context));
     }
 
-    return _constraints = _children.get_constraints(context.left_to_right());
+    auto r = _children.get_constraints(context.left_to_right());
+    r.minimum_height += r.margin_top;
+    r.preferred_height += r.margin_top;
+    r.maximum_height += r.margin_top;
+    r.padding_top += r.margin_top;
+    r.margin_top = 0;
+
+    return _constraints = r;
 }
 
 void toolbar_widget::set_layout(widget_layout const& context) noexcept
 {
     // Clip directly around the toolbar, so that tab buttons looks proper.
     if (compare_store(_layout, context)) {
-        _children.set_layout(context.width(), context.height(), context.theme->baseline_adjustment, context.left_to_right());
+        _children.set_layout(
+            context.width(),
+            context.height() - _constraints.padding_top,
+            context.theme->baseline_adjustment);
     }
 
     hilet overhang = context.redraw_overhang;
 
     for (hilet& child : _children) {
         hilet child_clipping_rectangle = aarectangle{
-            narrow_cast<float>(child.shape.x) - overhang, 0.0f, narrow_cast<float>(child.shape.width) + overhang * 2.0f, narrow_cast<float>(context.height())};
+            narrow_cast<float>(child.shape.x) - overhang,
+            0.0f,
+            narrow_cast<float>(child.shape.width) + overhang * 2.0f,
+            narrow_cast<float>(context.height()) + overhang * 2.0f};
 
         child.value->set_layout(context.transform(child.shape, 1.0f, child_clipping_rectangle));
     }
@@ -106,11 +120,11 @@ widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
     switch (alignment) {
         using enum horizontal_alignment;
     case left:
-        _children.push_back(std::move(widget));
-        ++middle_child_index;
+        _children.insert(_children.cbegin() + spacer_index, std::move(widget));
+        ++spacer_index;
         break;
     case right:
-        _children.insert(_children.cbegin() + middle_child_index, std::move(widget));
+        _children.insert(_children.cbegin() + spacer_index + 1, std::move(widget));
         break;
     default:
         hi_no_default();

@@ -228,31 +228,35 @@ public:
     using cell_vector = std::vector<cell_type>;
 
     struct constraint_type {
-        /** The minimum width/height of the cells perpendicular to the axis.
+        /** The minimum width/height of the cells.
          */
         int minimum = 0;
 
-        /** The preferred width/height of the cells perpendicular to the axis.
+        /** The preferred width/height of the cells.
          */
         int preferred = 0;
 
-        /** The maximum width/height of the cells perpendicular to the axis.
+        /** The maximum width/height of the cells.
          */
         int maximum = std::numeric_limits<int>::max();
 
-        /** The left/top margin of the cells perpendicular to the axis.
+        /** The left/top margin of the cells.
          */
         int margin_before = 0;
 
-        /** The left/top padding of the cells perpendicular to the axis.
+        /** The right/bottom margin of the cells.
+         */
+        int margin_after = 0;
+
+        /** The left/top padding of the cells.
          */
         int padding_before = 0;
 
-        /** The right/bottom padding of the cells perpendicular to the axis.
+        /** The right/bottom padding of the cells.
          */
         int padding_after = 0;
 
-        /** The alignment of the cells perpendicular to the axis.
+        /** The alignment of the cells.
          */
         alignment_type alignment = alignment_type::none;
 
@@ -260,13 +264,13 @@ public:
          *
          * @note This field is valid after layout.
          */
-        int pos = 0;
+        int position = 0;
 
         /** Size of the cell.
          *
          * @note This field is valid after layout.
          */
-        int size = 0;
+        int extent = 0;
 
         /** The before-position within this cell where to align to.
          *
@@ -280,34 +284,6 @@ public:
     using reverse_iterator = constraint_vector::reverse_iterator;
     using reference = constraint_vector::reference;
     using const_reference = constraint_vector::const_reference;
-
-    /** The minimum width/height, excluding outer margins, of the combined cells.
-     */
-    int minimum = 0;
-
-    /** The preferred width/height, excluding outer margins, of the combined cells.
-     */
-    int preferred = 0;
-
-    /** The maximum width/height, excluding outer margins, of the combined cells.
-     */
-    int maximum = 0;
-
-    /** The margin at the left/top.
-     */
-    int margin_before = 0;
-
-    /** The margin at the right/bottom.
-     */
-    int margin_after = 0;
-
-    /** The left/top padding of the combined cells.
-     */
-    int padding_before = 0;
-
-    /** The right/bottom padding of the combined cells.
-     */
-    int padding_after = 0;
 
     constexpr ~grid_layout_axis_constraints() = default;
     constexpr grid_layout_axis_constraints() noexcept = default;
@@ -324,10 +300,11 @@ public:
      * @param num The number of cells in the direction of the current axis
      * @param mirrored true If the axis needs to be mirrored.
      */
-    constexpr grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool forward) noexcept : _constraints(num + 1)
+    constexpr grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool forward) noexcept :
+        _constraints(num), _forward(forward)
     {
         for (hilet& cell : cells) {
-            construct_simple_cell(cell, forward);
+            construct_simple_cell(cell);
         }
         construct_fixup();
 
@@ -335,7 +312,62 @@ public:
             construct_span_cell(cell);
         }
         construct_fixup();
-        construct_stats();
+    }
+
+    [[nodiscard]] constexpr int margin_before() const noexcept
+    {
+        return empty() ? 0 : _forward ? front().margin_before : back().margin_before;
+    }
+
+    [[nodiscard]] constexpr int margin_after() const noexcept
+    {
+        return empty() ? 0 : _forward ? back().margin_after : front().margin_after;
+    }
+
+    [[nodiscard]] constexpr int padding_before() const noexcept
+    {
+        return empty() ? 0 : _forward ? front().padding_before : back().padding_before;
+    }
+
+    [[nodiscard]] constexpr int padding_after() const noexcept
+    {
+        return empty() ? 0 : _forward ? back().padding_after : front().padding_after;
+    }
+
+    [[nodiscard]] constexpr std::tuple<int, int, int> constraints() const noexcept
+    {
+        return constraints(begin(), end());
+    }
+
+    /** Get the minimum, preferred, maximum size of the span.
+     *
+     * The returned minimum, preferred and maximum include the internal margin within the span.
+     *
+     * @param cell The reference to the cell in the grid.
+     * @return The minimum, preferred and maximum size.
+     */
+    [[nodiscard]] constexpr std::tuple<int, int, int> constraints(cell_type const& cell) const noexcept
+    {
+        return constraints(cell.first<axis>(), cell.last<axis>());
+    }
+
+    [[nodiscard]] constexpr int position(cell_type const& cell) const noexcept
+    {
+        return position(cell.first<axis>(), cell.last<axis>());
+    }
+
+    [[nodiscard]] constexpr int extent(cell_type const& cell) const noexcept
+    {
+        return extent(cell.first<axis>(), cell.last<axis>());
+    }
+
+    [[nodiscard]] constexpr std::optional<int> guideline(cell_type const& cell) const noexcept
+    {
+        if (cell.span<axis>() == 1) {
+            return guideline(cell.first<axis>());
+        } else {
+            return std::nullopt;
+        }
     }
 
     /** Layout each cell along an axis.
@@ -357,53 +389,38 @@ public:
      *
      * @param size The size of the grid along its axis.
      * @param guideline_width The width of the guideline.
-     * @param forward The cells are laid out in forward direction.
      */
-    constexpr void layout(int size, int guideline_width, bool forward) noexcept
+    constexpr void layout(int extent, int guideline_width) noexcept
     {
-        layout_initial();
+        // Start with the extent of each constraint equal to the preferred extent.
+        for (auto& constraint : _constraints) {
+            constraint.extent = constraint.preferred;
+        }
 
-        auto [current_size, count] = layout_shrink(begin(), end());
-        while (current_size > size and count != 0) {
+        // If the total extent is too large, shrink the constraints that allow to be shrunk.
+        auto [total_extent, count] = layout_shrink(begin(), end());
+        while (total_extent > extent and count != 0) {
             // The result may shrink slightly too much, which will be fixed by expanding in the next loop.
-            std::tie(current_size, count) = layout_shrink(begin(), end(), current_size - size, count);
+            std::tie(total_extent, count) = layout_shrink(begin(), end(), total_extent - extent, count);
         }
 
-        std::tie(current_size, count) = layout_expand(begin(), end());
-        while (current_size < size and count != 0) {
+        // If the total extent is too small, expand the constraints that allow to be grown.
+        std::tie(total_extent, count) = layout_expand(begin(), end());
+        while (total_extent < extent and count != 0) {
             // The result may expand slightly too much, we don't care.
-            std::tie(current_size, count) = layout_expand(begin(), end(), size - current_size, count);
+            std::tie(total_extent, count) = layout_expand(begin(), end(), extent - total_extent, count);
         }
 
-        if (current_size < size and not empty()) {
+        // If the total extent is still too small, expand the first constrain above the maximum size.
+        if (total_extent < extent and not empty()) {
             // The result may expand slightly too much, we don't care.
-            back().size = back().size + size - current_size;
+            front().extent += extent - total_extent;
         }
 
-        if (forward) {
-            auto pos = 0;
-            for (auto it = begin(); it != end(); ++it) {
-                if (it != begin()) {
-                    pos += it->margin_before;
-                }
-                it->pos = pos;
-                it->guideline =
-                    make_guideline(it->alignment, pos, pos + it->size, it->padding_before, it->padding_after, guideline_width);
-
-                pos += it->size;
-            }
+        if (_forward) {
+            layout_position(begin(), end(), guideline_width);
         } else {
-            auto pos = 0;
-            for (auto it = rbegin(); it != rend(); ++it) {
-                if (it != rbegin()) {
-                    pos += it->margin_before;
-                }
-                it->pos = pos;
-                it->guideline =
-                    make_guideline(it->alignment, pos, pos + it->size, it->padding_before, it->padding_after, guideline_width);
-
-                pos += it->size;
-            }
+            layout_position(rbegin(), rend(), guideline_width);
         }
     }
 
@@ -411,15 +428,14 @@ public:
      */
     [[nodiscard]] constexpr size_t size() const noexcept
     {
-        hi_axiom(not _constraints.empty());
-        return _constraints.size() - 1;
+        return _constraints.size();
     }
 
     /** Check if this axis is empty.
      */
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return size() == 0;
+        return _constraints.empty();
     }
 
     /** Iterator to the first cell on this axis.
@@ -447,31 +463,28 @@ public:
      */
     [[nodiscard]] constexpr iterator end() noexcept
     {
-        hi_axiom(not _constraints.empty());
-        return _constraints.end() - 1;
+        return _constraints.end();
     }
 
     /** Iterator to beyond the last cell on this axis.
      */
     [[nodiscard]] constexpr const_iterator end() const noexcept
     {
-        hi_axiom(not _constraints.empty());
-        return _constraints.end() - 1;
+        return _constraints.end();
     }
 
     /** Iterator to beyond the last cell on this axis.
      */
     [[nodiscard]] constexpr const_iterator cend() const noexcept
     {
-        hi_axiom(not _constraints.empty());
-        return _constraints.cend() - 1;
+        return _constraints.cend();
     }
 
     /** Iterator to the first cell on this axis.
      */
     [[nodiscard]] constexpr reverse_iterator rbegin() noexcept
     {
-        return _constraints.rbegin() + 1;
+        return _constraints.rbegin();
     }
 
     /** Iterator to the first cell on this axis.
@@ -535,7 +548,7 @@ public:
     [[nodiscard]] constexpr reference back() noexcept
     {
         hi_axiom(not empty());
-        return *(end() - 1);
+        return _constraints.back();
     }
 
     /** Get the last element.
@@ -546,74 +559,205 @@ public:
     [[nodiscard]] constexpr const_reference back() const noexcept
     {
         hi_axiom(not empty());
-        return *(end() - 1);
+        return _constraints.back();
     }
 
-    /** Get the current layout position of a span.
+private:
+    /** The constraints.
      *
-     * @note valid after layout.
-     * @param first The iterator to the first cell.
-     * @param last The iterator beyond the last cell.
-     * @param forward The direction of the layout.
-     * @return The current size of the span, including internal margins.
+     * There is one merged-constraint per cell along the axis;
+     * plus one extra constraint with only `margin_before` being valid.
+     *
+     * Using one extra constraint reduces the amount of if-statements.
+     *
      */
-    [[nodiscard]] constexpr int span_pos(const_iterator first, const_iterator last, bool forward) const noexcept
-    {
-        hi_axiom(first != last);
-        if (forward) {
-            return first->pos;
-        } else {
-            return (last - 1)->pos;
-        }
-    }
+    constraint_vector _constraints = {};
 
-    /** Get the current layout position of a span.
-     *
-     * @note valid after layout.
-     * @param first The index to the first cell.
-     * @param last The index beyond the last cell.
-     * @param forward The direction of the layout.
-     * @return The current size of the span, including internal margins.
+    /** The constraints are defined in left-to-right, bottom-to-top order.
      */
-    [[nodiscard]] constexpr int span_pos(size_t first, size_t last, bool forward) const noexcept
-    {
-        hi_axiom(first < last);
-        hi_axiom(last <= size());
-        return span_pos(cbegin() + first, cbegin() + last, forward);
-    }
+    bool _forward = true;
 
-    /** Get the current layout size of a span.
+    /** Shrink cells.
      *
-     * @note valid after layout.
-     * @param first The iterator to the first cell.
-     * @param last The iterator beyond the last cell.
-     * @return The current size of the span, including internal margins.
+     * This function is called in two different ways:
+     *  - First without @a extra and @a count to get the number of pixels of the cells and the number
+     *    of cells that shrink further. These values are used to calculate @a extra and @a count
+     *    of the next iteration.
+     *  - Continued with @a extra and @a count filled in.
+     *
+     * @note Must be called after `layout_initialize()`.
+     * @note It is undefined behavior to pass zero in @a count.
+     * @param first The iterator to the first cell to shrink.
+     * @param last The iterator to beyond the last cell to shrink.
+     * @param extra The total number of pixels to shrink spread over the cells
+     * @param count The number of cells between first/last that can be shrunk, from previous iteration.
+     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can shrink more.
      */
-    [[nodiscard]] constexpr int span_size(const_iterator first, const_iterator last) const noexcept
+    [[nodiscard]] constexpr std::pair<int, size_t>
+    layout_shrink(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
     {
-        auto r = 0;
-        if (first != last) {
-            r = first->size;
-            for (auto it = first + 1; it != last; ++it) {
-                r += it->margin_before;
-                r += it->size;
+        hilet first_ = begin() + std::distance(cbegin(), first);
+        hilet last_ = begin() + std::distance(cbegin(), last);
+
+        hi_axiom(extra >= 0);
+
+        hilet extra_per = narrow_cast<int>((extra + count - 1) / count);
+
+        auto new_extent = 0;
+        auto new_count = 0_uz;
+        for (auto it = first_; it != last_; ++it) {
+            it->extent = it->extent - std::max(extra_per, it->extent - it->minimum);
+
+            if (it != first_) {
+                new_extent += it->margin_before;
+            }
+            new_extent += it->extent;
+
+            if (it->extent > it->minimum) {
+                ++new_count;
             }
         }
-        return r;
+
+        return {new_extent, new_count};
     }
 
-    /** Get the current layout size of a span.
+    /** Expand cells.
      *
-     * @note valid after layout.
-     * @param first The index to the first cell.
-     * @param last The index beyond the last cell.
-     * @return The current size of the span, including internal margins.
+     * This function is called in two different ways:
+     *  - First without @a extra and @a count to get the number of pixels of the cells and the number
+     *    of cells that expand further. These values are used to calculate @a extra and @a count
+     *    of the next iteration.
+     *  - Continued with @a extra and @a count filled in.
+     *
+     * @note Must be called after `layout_initialize()`.
+     * @note It is undefined behavior to pass zero in @a count.
+     * @param first The iterator to the first cell to expand.
+     * @param last The iterator to beyond the last cell to expand.
+     * @param extra The total number of pixels to expand spread over the cells
+     * @param count The number of cells between first/last that can be expanded, from previous iteration.
+     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can expand more.
      */
-    [[nodiscard]] constexpr int span_size(size_t first, size_t last) const noexcept
+    [[nodiscard]] constexpr std::pair<int, size_t>
+    layout_expand(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
     {
-        hi_axiom(first <= last);
-        hi_axiom(last <= size());
-        return span_size(cbegin() + first, cbegin() + last);
+        hilet first_ = begin() + std::distance(cbegin(), first);
+        hilet last_ = begin() + std::distance(cbegin(), last);
+
+        hi_axiom(extra >= 0);
+
+        hilet extra_per = narrow_cast<int>((extra + count - 1) / count);
+
+        auto new_extent = 0;
+        auto new_count = 0_uz;
+        for (auto it = first_; it != last_; ++it) {
+            it->extent = it->extent + std::min(extra_per, it->maximum - it->extent);
+
+            if (it != first_) {
+                new_extent += it->margin_before;
+            }
+            new_extent += it->extent;
+
+            if (it->extent < it->maximum) {
+                ++new_count;
+            }
+        }
+
+        return {new_extent, new_count};
+    }
+
+    constexpr void layout_position(auto first, auto last, int guideline_width) noexcept
+    {
+        auto position = 0;
+        for (auto it = first; it != last; ++it) {
+            it->position = position;
+            it->guideline = make_guideline(
+                it->alignment, position, position + it->extent, it->padding_before, it->padding_after, guideline_width);
+
+            position += it->extent;
+            position += it->margin_after;
+        }
+    }
+
+    /** Construct from a simple cell.
+     *
+     * Calculate all the margins. And the minimum, preferred and maximum size
+     * for a cell that has a span of one in the direction of the axis.
+     *
+     * @param cell The cell to construct.
+     */
+    constexpr void construct_simple_cell(cell_type const& cell) noexcept
+    {
+        inplace_max(_constraints[cell.first<axis>()].margin_before, cell.margin_before<axis>(_forward));
+        inplace_max(_constraints[cell.last<axis>() - 1].margin_after, cell.margin_after<axis>(_forward));
+        inplace_max(_constraints[cell.first<axis>()].padding_before, cell.padding_before<axis>(_forward));
+        inplace_max(_constraints[cell.last<axis>() - 1].padding_after, cell.padding_after<axis>(_forward));
+
+        if (cell.span<axis>() == 1) {
+            inplace_max(_constraints[cell.first<axis>()].alignment, cell.alignment<axis>());
+            inplace_max(_constraints[cell.first<axis>()].minimum, cell.minimum<axis>());
+            inplace_max(_constraints[cell.first<axis>()].preferred, cell.preferred<axis>());
+            inplace_min(_constraints[cell.first<axis>()].maximum, cell.maximum<axis>());
+        }
+    }
+
+    /** Construct from a span-cell.
+     *
+     * Spread the size of a multi-span.
+     *
+     * @param cell The cell to construct.
+     */
+    constexpr void construct_span_cell(cell_type const& cell) noexcept
+    {
+        if (cell.span<axis>() > 1) {
+            hilet[span_minimum, span_preferred, span_maximum] = constraints(cell);
+            if (hilet extra = cell.minimum<axis>() - span_minimum; extra > 0) {
+                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
+                for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
+                    _constraints[i].minimum += extra_per_cell;
+                }
+            }
+
+            if (hilet extra = cell.preferred<axis>() - span_preferred; extra > 0) {
+                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
+                for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
+                    _constraints[i].preferred += extra_per_cell;
+                }
+            }
+
+            if (hilet extra = cell.maximum<axis>() - span_preferred; extra < 0) {
+                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
+                for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
+                    // The maximum could become too low here, fixup() will fix this.
+                    _constraints[i].maximum += extra_per_cell;
+                }
+            }
+        }
+    }
+
+    /** Construct fix-up.
+     *
+     * Fix-up minimum, preferred, maximum. And calculate the padding.
+     */
+    constexpr void construct_fixup() noexcept
+    {
+        for (auto it = begin(); it != end(); ++it) {
+            // Fix the margins so that between two constraints they are equal.
+            if (it + 1 != end()) {
+                it->margin_after = (it + 1)->margin_before = std::max(it->margin_after, (it + 1)->margin_before);
+            }
+
+            // Fix the constraints so that minimum <= preferred <= maximum.
+            inplace_max(it->preferred, it->minimum);
+            inplace_max(it->maximum, it->preferred);
+
+            // Fix the padding, so that it doesn't overlap.
+            if (it->padding_before + it->padding_after > it->minimum) {
+                hilet padding_diff = it->padding_after - it->padding_before;
+                hilet middle = std::clamp(it->minimum / 2 + padding_diff, 0, it->minimum);
+                it->padding_after = middle;
+                it->padding_before = it->minimum - middle;
+            }
+        }
     }
 
     /** Get the minimum, preferred, maximum size of the span.
@@ -624,8 +768,7 @@ public:
      * @param last The iterator beyond the last cell.
      * @return The minimum, preferred and maximum size.
      */
-    [[nodiscard]] constexpr std::tuple<int, int, int> const
-    span_constraints(const_iterator first, const_iterator last) const noexcept
+    [[nodiscard]] constexpr std::tuple<int, int, int> constraints(const_iterator first, const_iterator last) const noexcept
     {
         auto r_minimum = 0;
         auto r_preferred = 0;
@@ -654,238 +797,86 @@ public:
      * @param last The index beyond the last cell.
      * @return The minimum, preferred and maximum size.
      */
-    [[nodiscard]] constexpr std::tuple<int, int, int> const span_constraints(size_t first, size_t last) const noexcept
+    [[nodiscard]] constexpr std::tuple<int, int, int> constraints(size_t first, size_t last) const noexcept
     {
         hi_axiom(first <= last);
         hi_axiom(last <= size());
-        return span_constraints(begin() + first, begin() + last);
+        return constraints(begin() + first, begin() + last);
     }
 
-    /** Get the minimum, preferred, maximum size of the span.
+    /** Get the current layout position of a span.
      *
-     * The returned minimum, preferred and maximum include the internal margin within the span.
-     *
-     * @param cell The reference to the cell in the grid.
-     * @return The minimum, preferred and maximum size.
+     * @note valid after layout.
+     * @param first The iterator to the first cell.
+     * @param last The iterator beyond the last cell.
+     * @return The current size of the span, including internal margins.
      */
-    [[nodiscard]] constexpr std::tuple<int, int, int> const span_constraints(cell_type const& cell) const noexcept
+    [[nodiscard]] constexpr int position(const_iterator first, const_iterator last) const noexcept
     {
-        return span_constraints(cell.first<axis>(), cell.last<axis>());
-    }
-
-private:
-    /** The constraints.
-     *
-     * There is one merged-constraint per cell along the axis;
-     * plus one extra constraint with only `margin_before` being valid.
-     *
-     * Using one extra constraint reduces the amount of if-statements.
-     *
-     */
-    constraint_vector _constraints = {};
-
-    /** Layout initialize
-     *
-     * Start of with the preferred size for each cell.
-     */
-    constexpr void layout_initial() noexcept
-    {
-        for (auto& constraint : _constraints) {
-            constraint.size = constraint.preferred;
+        hi_axiom(first != last);
+        if (_forward) {
+            return first->position;
+        } else {
+            return (last - 1)->position;
         }
     }
 
-    /** Shrink cells.
+    /** Get the current layout position of a span.
      *
-     * This function is called in two different ways:
-     *  - First without @a extra and @a count to get the number of pixels of the cells and the number
-     *    of cells that shrink furter. These values are used to calculate @a extra and @a count
-     *    of the next iteration.
-     *  - Continued with @a extra and @a count filled in.
-     *
-     * @note Must be called after `layout_initialize()`.
-     * @note It is undefined behavior to pass zero in @a count.
-     * @param first The iterator to the first cell to shrink.
-     * @param last The iterator to beyond the last cell to shrink.
-     * @param extra The total number of pixels to shrink spread over the cells
-     * @param count The number of cels between first/last that can be shrunk, from previous iteration.
-     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can shrink more.
+     * @note valid after layout.
+     * @param first The index to the first cell.
+     * @param last The index beyond the last cell.
+     * @return The current size of the span, including internal margins.
      */
-    [[nodiscard]] constexpr std::pair<int, size_t>
-    layout_shrink(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
+    [[nodiscard]] constexpr int position(size_t first, size_t last) const noexcept
     {
-        hilet first_ = begin() + std::distance(cbegin(), first);
-        hilet last_ = begin() + std::distance(cbegin(), last);
-
-        hi_axiom(extra >= 0);
-
-        hilet extra_per = narrow_cast<int>((extra + count - 1) / count);
-
-        auto new_size = 0;
-        auto new_count = 0_uz;
-        for (auto it = first_; it != last_; ++it) {
-            it->size = it->size - std::max(extra_per, it->size - it->minimum);
-
-            if (it != first_) {
-                new_size += it->margin_before;
-            }
-            new_size += it->size;
-
-            if (it->size > it->minimum) {
-                ++new_count;
-            }
-        }
-
-        return {new_size, new_count};
+        hi_axiom(first < last);
+        hi_axiom(last <= size());
+        return position(cbegin() + first, cbegin() + last);
     }
 
-    /** Expand cells.
+    /** Get the current layout size of a span.
      *
-     * This function is called in two different ways:
-     *  - First without @a extra and @a count to get the number of pixels of the cells and the number
-     *    of cells that expand furter. These values are used to calculate @a extra and @a count
-     *    of the next iteration.
-     *  - Continued with @a extra and @a count filled in.
-     *
-     * @note Must be called after `layout_initialize()`.
-     * @note It is undefined behavior to pass zero in @a count.
-     * @param first The iterator to the first cell to expand.
-     * @param last The iterator to beyond the last cell to expand.
-     * @param extra The total number of pixels to expand spread over the cells
-     * @param count The number of cels between first/last that can be expanded, from previous iteration.
-     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can expand more.
+     * @note valid after layout.
+     * @param first The iterator to the first cell.
+     * @param last The iterator beyond the last cell.
+     * @return The current size of the span, including internal margins.
      */
-    [[nodiscard]] constexpr std::pair<int, size_t>
-    layout_expand(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
-    {
-        hilet first_ = begin() + std::distance(cbegin(), first);
-        hilet last_ = begin() + std::distance(cbegin(), last);
-
-        hi_axiom(extra >= 0);
-
-        hilet extra_per = narrow_cast<int>((extra + count - 1) / count);
-
-        auto new_size = 0;
-        auto new_count = 0_uz;
-        for (auto it = first_; it != last_; ++it) {
-            it->size = it->size + std::min(extra_per, it->maximum - it->size);
-
-            if (it != first_) {
-                new_size += it->margin_before;
-            }
-            new_size += it->size;
-
-            if (it->size < it->maximum) {
-                ++new_count;
-            }
-        }
-
-        return {new_size, new_count};
-    }
-
-    /** Calculate size and margins for each cell.
-     *
-     * @note Must be called after `layout_expand()` and `layout_shrink()`.
-     */
-    [[nodiscard]] constexpr int layout_size() const noexcept
+    [[nodiscard]] constexpr int extent(const_iterator first, const_iterator last) const noexcept
     {
         auto r = 0;
-        auto it = _constraints.begin();
-        r += it++->size;
-
-        hilet last = _constraints.end() - 1;
-        while (it != last) {
-            r += it->margin_before;
-            r += it->size;
+        if (first != last) {
+            r = first->extent;
+            for (auto it = first + 1; it != last; ++it) {
+                r += it->margin_before;
+                r += it->extent;
+            }
         }
-
         return r;
     }
 
-    /** Construct from a simple cell.
+    /** Get the current layout size of a span.
      *
-     * Calculate all the margins. And the minimum, preferred and maximum size
-     * for a cell that has a span of one in the direction of the axis.
-     *
-     * @param cell The cell to construct.
-     * @param forward Cells are ordered in forward direction (used for right-to-left languages).
+     * @note valid after layout.
+     * @param first The index to the first cell.
+     * @param last The index beyond the last cell.
+     * @return The current size of the span, including internal margins.
      */
-    constexpr void construct_simple_cell(cell_type const& cell, bool forward) noexcept
+    [[nodiscard]] constexpr int extent(size_t first, size_t last) const noexcept
     {
-        inplace_max(_constraints[cell.first<axis>()].margin_before, cell.margin_before<axis>(forward));
-        inplace_max(_constraints[cell.last<axis>()].margin_before, cell.margin_after<axis>(forward));
-        inplace_max(_constraints[cell.first<axis>()].padding_before, cell.padding_before<axis>(forward));
-        inplace_max(_constraints[cell.last<axis>() - 1].padding_after, cell.padding_after<axis>(forward));
-
-        if (cell.span<axis>() == 1) {
-            inplace_max(_constraints[cell.first<axis>()].alignment, cell.alignment<axis>());
-            inplace_max(_constraints[cell.first<axis>()].minimum, cell.minimum<axis>());
-            inplace_max(_constraints[cell.first<axis>()].preferred, cell.preferred<axis>());
-            inplace_min(_constraints[cell.first<axis>()].maximum, cell.maximum<axis>());
-        }
+        hi_axiom(first <= last);
+        hi_axiom(last <= size());
+        return extent(cbegin() + first, cbegin() + last);
     }
 
-    /** Construct from a span-cell.
-     *
-     * Spread the size of a multi-span.
-     *
-     * @param cell The cell to construct.
-     */
-    constexpr void construct_span_cell(cell_type const& cell) noexcept
+    [[nodiscard]] constexpr std::optional<int> guideline(const_iterator it) const noexcept
     {
-        if (cell.span<axis>() > 1) {
-            hilet[span_minimum, span_preferred, span_maximum] = span_constraints(cell);
-            if (hilet extra = cell.minimum<axis>() - span_minimum; extra > 0) {
-                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
-                for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
-                    _constraints[i].minimum += extra_per_cell;
-                }
-            }
-
-            if (hilet extra = cell.preferred<axis>() - span_preferred; extra > 0) {
-                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
-                for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
-                    _constraints[i].preferred += extra_per_cell;
-                }
-            }
-
-            if (hilet extra = cell.maximum<axis>() - span_preferred; extra < 0) {
-                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
-                for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
-                    // The maximum could become too low here, fixup() will fix this.
-                    _constraints[i].maximum += extra_per_cell;
-                }
-            }
-        }
+        return it->guideline;
     }
 
-    /** Construct fixup.
-     *
-     * Fixup minimum, preferred, maimum. And calculate the padding.
-     */
-    constexpr void construct_fixup() noexcept
+    [[nodiscard]] constexpr std::optional<int> guideline(size_t i) const noexcept
     {
-        for (auto& row : _constraints) {
-            inplace_max(row.preferred, row.minimum);
-            inplace_max(row.maximum, row.preferred);
-            if (row.padding_before + row.padding_after > row.minimum) {
-                hilet padding_diff = row.padding_after - row.padding_before;
-                hilet middle = std::clamp(row.minimum / 2 + padding_diff, 0, row.minimum);
-                row.padding_after = middle;
-                row.padding_before = row.minimum - middle;
-            }
-        }
-    }
-
-    /** Calculate the margin and padding before and after.
-     */
-    constexpr void construct_stats() noexcept
-    {
-        std::tie(minimum, preferred, maximum) = span_constraints(0, size());
-        margin_before = _constraints.front().margin_before;
-        margin_after = _constraints.back().margin_before;
-        padding_before = empty() ? 0 : front().padding_before;
-        padding_after = empty() ? 0 : back().padding_after;
+        return guideline(cbegin() + i);
     }
 };
 
@@ -906,6 +897,7 @@ public:
     using iterator = cell_vector::iterator;
     using const_iterator = cell_vector::const_iterator;
     using reference = cell_vector::reference;
+    using const_reference = cell_vector::const_reference;
 
     ~grid_layout() = default;
     constexpr grid_layout() noexcept = default;
@@ -963,6 +955,16 @@ public:
     [[nodiscard]] constexpr const_iterator cend() const noexcept
     {
         return _cells.cend();
+    }
+
+    [[nodiscard]] constexpr const_reference operator[](size_t i) const noexcept
+    {
+        return _cells[i];
+    }
+
+    [[nodiscard]] constexpr reference operator[](size_t i) noexcept
+    {
+        return _cells[i];
     }
 
     /** Check if the cell on the grid is already in use.
@@ -1045,21 +1047,17 @@ public:
         _column_constraints = {_cells, num_columns(), left_to_right};
 
         auto r = box_constraints{};
-        r.minimum_width = _column_constraints.minimum;
-        r.preferred_width = _column_constraints.preferred;
-        r.maximum_width = _column_constraints.maximum;
-        r.margin_left = left_to_right ? _column_constraints.margin_before : _column_constraints.margin_after;
-        r.margin_right = left_to_right ? _column_constraints.margin_after : _column_constraints.margin_before;
-        r.padding_left = left_to_right ? _column_constraints.padding_before : _column_constraints.padding_after;
-        r.padding_right = left_to_right ? _column_constraints.padding_after : _column_constraints.padding_before;
+        std::tie(r.minimum_width, r.preferred_width, r.maximum_width) = _column_constraints.constraints();
+        r.margin_left = _column_constraints.margin_before();
+        r.margin_right = _column_constraints.margin_after();
+        r.padding_left = _column_constraints.padding_before();
+        r.padding_right = _column_constraints.padding_after();
 
-        r.minimum_height = _row_constraints.minimum;
-        r.preferred_height = _row_constraints.preferred;
-        r.maximum_height = _row_constraints.maximum;
-        r.margin_bottom = _row_constraints.margin_after;
-        r.margin_top = _row_constraints.margin_before;
-        r.padding_bottom = _row_constraints.padding_after;
-        r.padding_top = _row_constraints.padding_before;
+        std::tie(r.minimum_height, r.preferred_height, r.maximum_height) = _row_constraints.constraints();
+        r.margin_bottom = _row_constraints.margin_after();
+        r.margin_top = _row_constraints.margin_before();
+        r.padding_bottom = _row_constraints.padding_after();
+        r.padding_top = _row_constraints.padding_before();
 
         r.alignment = [&] {
             if (num_rows() == 1 and num_columns() == 1) {
@@ -1076,20 +1074,20 @@ public:
         return r;
     }
 
-    constexpr void set_layout(int width, int height, int guideline_width, bool left_to_right) noexcept
+    constexpr void set_layout(int width, int height, int guideline_width) noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
-        _row_constraints.layout(height, guideline_width, false);
-        _column_constraints.layout(width, 0, left_to_right);
+        _row_constraints.layout(height, guideline_width);
+        _column_constraints.layout(width, 0);
 
         // Assign the shape for each cell.
         for (auto& cell : _cells) {
-            cell.shape.x = _column_constraints.span_pos(cell.first_column, cell.last_column, left_to_right);
-            cell.shape.y = _row_constraints.span_pos(cell.first_row, cell.last_row, false);
-            cell.shape.width = _column_constraints.span_size(cell.first_column, cell.last_column);
-            cell.shape.height = _row_constraints.span_size(cell.first_row, cell.last_row);
-            cell.shape.baseline = cell.span<axis::y>() == 1 ? _row_constraints[cell.first_row].guideline : std::nullopt;
-            cell.shape.centerline = cell.span<axis::x>() == 1 ? _column_constraints[cell.first_column].guideline : std::nullopt;
+            cell.shape.x = _column_constraints.position(cell);
+            cell.shape.y = _row_constraints.position(cell);
+            cell.shape.width = _column_constraints.extent(cell);
+            cell.shape.height = _row_constraints.extent(cell);
+            cell.shape.baseline = _row_constraints.guideline(cell);
+            cell.shape.centerline = _column_constraints.guideline(cell);
         }
     }
 
