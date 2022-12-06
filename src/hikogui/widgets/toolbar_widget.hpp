@@ -59,7 +59,7 @@ public:
     template<typename Widget, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
     Widget& make_widget(Args&&...args)
     {
-        auto widget = std::make_unique<Widget>(this, std::forward<Args>(args)...);
+        auto widget = std::make_shared<Widget>(this, std::forward<Args>(args)...);
         return static_cast<Widget&>(add_widget(Alignment, std::move(widget)));
     }
 
@@ -78,14 +78,14 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    row_layout<std::unique_ptr<widget>> _children;
+    row_layout<std::shared_ptr<widget>> _children;
     size_t spacer_index = 0;
 
     void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept;
 
     /** Add a widget directly to this widget.
      */
-    widget& add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept;
+    widget& add_widget(horizontal_alignment alignment, std::shared_ptr<widget> widget) noexcept;
 
     /** Check if a child tab-button has focus.
      *

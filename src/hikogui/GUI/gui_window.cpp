@@ -38,7 +38,7 @@ void gui_window::init()
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
 
-    widget = std::make_unique<window_widget>(this, title);
+    widget = std::make_shared<window_widget>(this, title);
 
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
@@ -200,21 +200,23 @@ void gui_window::update_mouse_target(hi::widget const *new_target_widget, point2
 {
     hi_axiom(loop::main().on_thread());
 
-    if (new_target_widget != _mouse_target_widget) {
-        if (_mouse_target_widget) {
-            send_events_to_widget(_mouse_target_widget, std::vector{gui_event{gui_event_type::mouse_exit}});
+    if (auto mouse_target_widget = _mouse_target_widget.lock()) {
+        if (new_target_widget == mouse_target_widget.get()) {
+            // Focus does not change.
+            return;
         }
-        _mouse_target_widget = new_target_widget;
-        if (new_target_widget) {
-            send_events_to_widget(_mouse_target_widget, std::vector{gui_event::make_mouse_enter(position)});
-        }
-    }
-}
 
-hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
-{
-    hi_assert_not_null(gui.keyboard_bindings);
-    return *gui.keyboard_bindings;
+        // The mouse target needs to be updated, send exit to previous target.
+        send_events_to_widget(mouse_target_widget.get(), std::vector{gui_event{gui_event_type::mouse_exit}});
+    }
+
+    if (new_target_widget != nullptr) {
+        _mouse_target_widget = new_target_widget->weak_from_this();
+        hi_assert(not _mouse_target_widget.expired(), "All widgets must be allocated with shared_ptr.");
+        send_events_to_widget(new_target_widget, std::vector{gui_event::make_mouse_enter(position)});
+    } else {
+        _mouse_target_widget.reset();
+    }
 }
 
 void gui_window::update_keyboard_target(hi::widget const *new_target_widget, keyboard_focus_group group) noexcept
@@ -223,8 +225,7 @@ void gui_window::update_keyboard_target(hi::widget const *new_target_widget, key
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
-    auto new_target_parent_chain =
-        new_target_widget != nullptr ? new_target_widget->parent_chain() : std::vector<hi::widget const *>{};
+    auto new_target_parent_chain = new_target_widget ? new_target_widget->parent_chain() : std::vector<hi::widget const *>{};
 
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
@@ -233,24 +234,25 @@ void gui_window::update_keyboard_target(hi::widget const *new_target_widget, key
         new_target_widget = nullptr;
     }
 
-    // Check if the keyboard focus changed.
-    if (new_target_widget == _keyboard_target_widget) {
-        return;
-    }
+    if (auto keyboard_target_widget = _keyboard_target_widget.lock()) {
+        if (new_target_widget == keyboard_target_widget.get()) {
+            // Focus does not change.
+            return;
+        }
 
-    // When there is a new target, tell the current widget that the keyboard focus was exited.
-    if (new_target_widget != nullptr and _keyboard_target_widget != nullptr) {
-        send_events_to_widget(_keyboard_target_widget, std::vector{gui_event{gui_event_type::keyboard_exit}});
-        _keyboard_target_widget = nullptr;
+        send_events_to_widget(keyboard_target_widget.get(), std::vector{gui_event{gui_event_type::keyboard_exit}});
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
     widget->handle_event_recursive(gui_event_type::gui_cancel, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
-    if (new_target_widget) {
-        _keyboard_target_widget = new_target_widget;
+    if (new_target_widget != nullptr) {
+        _keyboard_target_widget = new_target_widget->weak_from_this();
+        hi_assert(not _keyboard_target_widget.expired(), "All widgets must be allocated with shared_ptr.");
         send_events_to_widget(new_target_widget, std::vector{gui_event{gui_event_type::keyboard_enter}});
+    } else {
+        _keyboard_target_widget.reset();
     }
 }
 
@@ -271,7 +273,15 @@ void gui_window::update_keyboard_target(
 
 void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept
 {
-    update_keyboard_target(_keyboard_target_widget, group, direction);
+    if (hilet keyboard_target_widget = _keyboard_target_widget.lock()) {
+        update_keyboard_target(keyboard_target_widget.get(), group, direction);
+    }
+}
+
+hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
+{
+    hi_assert_not_null(gui.keyboard_bindings);
+    return *gui.keyboard_bindings;
 }
 
 bool gui_window::process_event(gui_event const& event) noexcept
@@ -332,10 +342,6 @@ bool gui_window::process_event(gui_event const& event) noexcept
         }
         return true;
 
-    case window_remove_keyboard_target:
-        remove_keyboard_and_mouse_target(event.keyboard_target().widget);
-        return true;
-
     case window_set_clipboard:
         put_text_on_clipboard(event.clipboard_data());
         return true;
@@ -373,8 +379,14 @@ bool gui_window::process_event(gui_event const& event) noexcept
         }
     }
 
-    hilet target_widget = event.variant() == gui_event_variant::mouse ? _mouse_target_widget : _keyboard_target_widget;
-    hilet handled = send_events_to_widget(target_widget, events);
+    hilet handled = [&] {
+        hilet target_widget = event.variant() == gui_event_variant::mouse ? _mouse_target_widget : _keyboard_target_widget;
+        if (hilet target_widget_ = target_widget.lock()) {
+            return send_events_to_widget(target_widget_.get(), events);
+        } else {
+            return false;
+        }
+    }();
 
     // Intercept the keyboard generated escape.
     // A keyboard generated escape should always remove keyboard focus.

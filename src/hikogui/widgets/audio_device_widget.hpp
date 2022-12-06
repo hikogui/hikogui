@@ -54,7 +54,7 @@ private:
 
     /** The grid widget contains all the child widgets.
      */
-    std::unique_ptr<grid_widget> _grid_widget;
+    std::shared_ptr<grid_widget> _grid_widget;
     box_constraints _grid_constraints;
     box_shape _grid_shape;
 

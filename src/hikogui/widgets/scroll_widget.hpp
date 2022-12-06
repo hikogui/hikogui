@@ -68,31 +68,31 @@ public:
         // The scroll-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
 
-        auto unique_aperture = std::make_unique<scroll_aperture_widget>(this, minimum_width, minimum_height);
-        auto unique_horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_type>(
-            this, unique_aperture->content_width, unique_aperture->aperture_width, unique_aperture->offset_x);
-        auto unique_vertical_scroll_bar = std::make_unique<vertical_scroll_bar_type>(
-            this, unique_aperture->content_height, unique_aperture->aperture_height, unique_aperture->offset_y);
+        auto aperture = std::make_shared<scroll_aperture_widget>(this, minimum_width, minimum_height);
+        auto horizontal_scroll_bar = std::make_shared<horizontal_scroll_bar_type>(
+            this, aperture->content_width, aperture->aperture_width, aperture->offset_x);
+        auto vertical_scroll_bar = std::make_shared<vertical_scroll_bar_type>(
+            this, aperture->content_height, aperture->aperture_height, aperture->offset_y);
 
         if (to_bool(axis & axis::horizontal)) {
             minimum_width = 0;
         } else {
-            unique_horizontal_scroll_bar->mode = widget_mode::collapse;
+            horizontal_scroll_bar->mode = widget_mode::collapse;
         }
 
         if (to_bool(axis & axis::vertical)) {
             minimum_height = 0;
         } else {
-            unique_vertical_scroll_bar->mode = widget_mode::collapse;
+            vertical_scroll_bar->mode = widget_mode::collapse;
         }
 
-        _aperture = unique_aperture.get();
-        _horizontal_scroll_bar = unique_horizontal_scroll_bar.get();
-        _vertical_scroll_bar = unique_vertical_scroll_bar.get();
+        _aperture = aperture.get();
+        _horizontal_scroll_bar = horizontal_scroll_bar.get();
+        _vertical_scroll_bar = vertical_scroll_bar.get();
 
-        _grid.add_cell(0, 0, std::move(unique_aperture));
-        _grid.add_cell(1, 0, std::move(unique_vertical_scroll_bar));
-        _grid.add_cell(0, 1, std::move(unique_horizontal_scroll_bar));
+        _grid.add_cell(0, 0, std::move(aperture));
+        _grid.add_cell(1, 0, std::move(vertical_scroll_bar));
+        _grid.add_cell(0, 1, std::move(horizontal_scroll_bar));
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -185,7 +185,7 @@ public:
     }
     // @endprivatesection
 private:
-    grid_layout<std::unique_ptr<widget>> _grid;
+    grid_layout<std::shared_ptr<widget>> _grid;
 
     scroll_aperture_widget *_aperture;
     horizontal_scroll_bar_type *_horizontal_scroll_bar;

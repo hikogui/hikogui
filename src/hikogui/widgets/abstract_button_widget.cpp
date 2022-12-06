@@ -15,9 +15,9 @@ abstract_button_widget::abstract_button_widget(
 {
     hi_assert_not_null(this->delegate);
 
-    _on_label_widget = std::make_unique<label_widget>(this, on_label, alignment, text_style);
-    _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, text_style);
-    _other_label_widget = std::make_unique<label_widget>(this, other_label, alignment, text_style);
+    _on_label_widget = std::make_shared<label_widget>(this, on_label, alignment, text_style);
+    _off_label_widget = std::make_shared<label_widget>(this, off_label, alignment, text_style);
+    _other_label_widget = std::make_shared<label_widget>(this, other_label, alignment, text_style);
     _delegate_cbt = this->delegate->subscribe([&] {
         ++global_counter<"abstract_button_widget:delegate:relayout">;
         process_event({gui_event_type::window_relayout});

@@ -22,6 +22,7 @@
 #include "../geometry/transform.hpp"
 #include "../chrono.hpp"
 #include <chrono>
+#include <memory>
 
 namespace hi { inline namespace v1 {
 
@@ -195,13 +196,6 @@ public:
         r.keyboard_target().widget = widget;
         r.keyboard_target().group = group;
         r.keyboard_target().direction = direction;
-        return r;
-    }
-
-    [[nodiscard]] static gui_event window_remove_keyboard_target(widget const *widget) noexcept
-    {
-        auto r = gui_event{gui_event_type::window_remove_keyboard_target};
-        r.keyboard_target().widget = widget;
         return r;
     }
 

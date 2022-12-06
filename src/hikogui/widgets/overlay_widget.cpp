@@ -22,7 +22,7 @@ overlay_widget::~overlay_widget()
 {
 }
 
-void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
+void overlay_widget::set_widget(std::shared_ptr<widget> new_widget) noexcept
 {
     _content = std::move(new_widget);
     ++global_counter<"overlay_widget:set_widget:constrain">;

@@ -74,7 +74,7 @@ public:
     template<typename Widget, typename... Args>
     Widget& make_widget(Args&&...args)
     {
-        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_shared<Widget>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         _children.push_back(std::move(tmp));
 
@@ -148,7 +148,7 @@ public:
     }
     /// @endprivatesection
 private:
-    row_column_layout<Axis, std::unique_ptr<widget>> _children;
+    row_column_layout<Axis, std::shared_ptr<widget>> _children;
 };
 
 /** Lays out children in a row.

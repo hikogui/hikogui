@@ -121,7 +121,7 @@ private:
 
     /** The scroll widget embeds the text widget.
      */
-    std::unique_ptr<scroll_widget<axis::none>> _scroll_widget;
+    std::shared_ptr<scroll_widget<axis::none>> _scroll_widget;
     box_constraints _scroll_constraints;
     box_shape _scroll_shape;
 
@@ -136,7 +136,7 @@ private:
     /** An error string to show to the user.
      */
     observer<label> _error_label;
-    std::unique_ptr<label_widget> _error_label_widget;
+    std::shared_ptr<label_widget> _error_label_widget;
     box_constraints _error_label_constraints;
     box_shape _error_label_shape;
 

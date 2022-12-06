@@ -16,7 +16,7 @@ namespace hi::inline v1 {
 
 void window_widget::constructor_implementation() noexcept
 {
-    _toolbar = std::make_unique<toolbar_widget>(this);
+    _toolbar = std::make_shared<toolbar_widget>(this);
 
     if (operating_system::current == operating_system::windows) {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
@@ -30,7 +30,7 @@ void window_widget::constructor_implementation() noexcept
         hi_no_default();
     }
 
-    _content = std::make_unique<grid_widget>(this);
+    _content = std::make_shared<grid_widget>(this);
 }
 
 [[nodiscard]] generator<widget *> window_widget::children() const noexcept

@@ -65,11 +65,11 @@ public:
 private:
     gui_window *_window;
     
-    std::unique_ptr<grid_widget> _content;
+    std::shared_ptr<grid_widget> _content;
     box_constraints _content_constraints;
     box_shape _content_shape;
 
-    std::unique_ptr<toolbar_widget> _toolbar;
+    std::shared_ptr<toolbar_widget> _toolbar;
     box_constraints _toolbar_constraints;
     box_shape _toolbar_shape;
 

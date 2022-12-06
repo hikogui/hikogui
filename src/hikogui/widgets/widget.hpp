@@ -42,7 +42,7 @@ class font_book;
  *
  * @ingroup widgets
  */
-class widget {
+class widget : public std::enable_shared_from_this<widget> {
 public:
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
@@ -238,13 +238,14 @@ public:
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
      * that returns true from `accepts_keyboard_focus()`.
      *
-     * @param current_keyboard_widget The widget that currently has focus; or empty to get the first widget
-     *                              that accepts focus.
+     * @param current_keyboard_widget The widget that currently has focus; or nullptr to get the first widget
+     *                                that accepts focus.
      * @param group The group to which the widget must belong.
      * @param direction The direction in which to walk the widget tree.
      * @return A pointer to the next widget.
-     * @retval currentKeyboardWidget when currentKeyboardWidget was found but no next widget was found.
-     * @retval empty when currentKeyboardWidget is not found in this Widget.
+     * @retval current_keyboard_widget When current_keyboard_widget was found but no next widget that accepts
+                                       keyboard focus was found.
+     * @retval nullptr When current_keyboard_widget is not found in this widget.
      */
     [[nodiscard]] virtual widget const *find_next_widget(
         widget const *current_keyboard_widget,

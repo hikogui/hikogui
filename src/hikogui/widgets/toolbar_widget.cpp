@@ -17,7 +17,7 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
     // The toolbar is a top level widget, which draws its background as the next level.
     semantic_layer = 0;
 
-    _children.push_back(std::make_unique<spacer_widget>(this));
+    _children.push_back(std::make_shared<spacer_widget>(this));
 }
 
 box_constraints const& toolbar_widget::set_constraints(set_constraints_context const& context) noexcept
@@ -114,7 +114,7 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
     }
 }
 
-widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
+widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::shared_ptr<widget> widget) noexcept
 {
     auto& ref = *widget;
     switch (alignment) {

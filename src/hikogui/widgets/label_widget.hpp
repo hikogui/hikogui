@@ -77,8 +77,7 @@ public:
      * @param attributes Different attributes used to configure the label widget:
      *                   a `label`, `alignment` or `text_style`
      */
-    label_widget(widget *parent, label_widget_attribute auto&&...attributes) noexcept :
-        label_widget(parent)
+    label_widget(widget *parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
     {
         set_attributes(hi_forward(attributes)...);
     }
@@ -86,8 +85,12 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        co_yield _icon_widget.get();
-        co_yield _text_widget.get();
+        if (_icon_widget) {
+            co_yield _icon_widget.get();
+        }
+        if (_text_widget) {
+            co_yield _text_widget.get();
+        }
     }
 
     box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
@@ -104,10 +107,10 @@ private:
 
     box_shape _icon_shape;
     box_constraints _icon_constraints;
-    std::unique_ptr<icon_widget> _icon_widget;
+    std::shared_ptr<icon_widget> _icon_widget;
     box_shape _text_shape;
     box_constraints _text_constraints;
-    std::unique_ptr<text_widget> _text_widget;
+    std::shared_ptr<text_widget> _text_widget;
 
     void set_attributes() noexcept {}
     void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept

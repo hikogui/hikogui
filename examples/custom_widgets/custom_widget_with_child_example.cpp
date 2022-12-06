@@ -19,7 +19,7 @@ public:
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
         _label_widget =
-            std::make_unique<hi::label_widget>(this, std::forward<Label>(label), hi::alignment::middle_center());
+            std::make_shared<hi::label_widget>(this, std::forward<Label>(label), hi::alignment::middle_center());
     }
 
     // The set_constraints() function is called when the window is first initialized,

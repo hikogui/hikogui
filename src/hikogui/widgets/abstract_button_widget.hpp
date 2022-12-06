@@ -91,9 +91,9 @@ public:
 protected:
     box_constraints _label_constraints;
     box_shape _label_shape;
-    std::unique_ptr<label_widget> _on_label_widget;
-    std::unique_ptr<label_widget> _off_label_widget;
-    std::unique_ptr<label_widget> _other_label_widget;
+    std::shared_ptr<label_widget> _on_label_widget;
+    std::shared_ptr<label_widget> _off_label_widget;
+    std::shared_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
     notifier<>::callback_token _delegate_cbt;

@@ -8,7 +8,7 @@ namespace hi::inline v1 {
 
 system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
 {
-    _icon_widget = std::make_unique<icon_widget>(this, icon);
+    _icon_widget = std::make_shared<icon_widget>(this, icon);
 }
 
 box_constraints const& system_menu_widget::set_constraints(set_constraints_context const& context) noexcept

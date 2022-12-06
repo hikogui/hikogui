@@ -25,12 +25,7 @@ widget::widget(widget *parent) noexcept :
     });
 }
 
-widget::~widget()
-{
-    // The window must remove references such as mouse and keyboard targets to
-    // this widget when it is removed.
-    process_event(gui_event::window_remove_keyboard_target(this));
-}
+widget::~widget() {}
 
 [[nodiscard]] color widget::background_color() const noexcept
 {
@@ -167,10 +162,8 @@ bool widget::handle_event_recursive(gui_event const& event, std::vector<widget c
     auto handled = false;
 
     for (auto *child : children()) {
-        if (child) {
-            hi_assert(child->parent == this);
-            handled |= child->handle_event_recursive(event, reject_list);
-        }
+        hi_assert_not_null(child);
+        handled |= child->handle_event_recursive(event, reject_list);
     }
 
     if (!std::ranges::any_of(reject_list, [this](hilet& x) {
@@ -191,47 +184,46 @@ widget const *widget::find_next_widget(
 
     auto found = false;
 
-    if (!current_keyboard_widget && accepts_keyboard_focus(group)) {
+    if (current_keyboard_widget == nullptr and accepts_keyboard_focus(group)) {
         // If there was no current_keyboard_widget, then return this if it accepts focus.
         return this;
 
     } else if (current_keyboard_widget == this) {
-        // If current_keyboard_widget is this, then we need to find the first child widget that accepts focus.
         found = true;
     }
 
-    auto children_copy = make_vector(children());
+    auto children_ = make_vector(children());
 
     if (direction == keyboard_focus_direction::backward) {
-        std::reverse(begin(children_copy), end(children_copy));
+        std::reverse(begin(children_), end(children_));
     }
 
-    for (auto *child : children_copy) {
-        if (child) {
-            if (found) {
-                // Find the first focus accepting widget.
-                if (auto tmp = child->find_next_widget({}, group, direction)) {
-                    return tmp;
-                }
+    for (auto *child : children_) {
+        if (found) {
+            // Find the first focus accepting widget.
+            if (auto tmp = child->find_next_widget({}, group, direction)) {
+                return tmp;
+            }
 
-            } else {
-                auto tmp = child->find_next_widget(current_keyboard_widget, group, direction);
-                if (tmp == current_keyboard_widget) {
-                    // The current widget was found, but no next widget available in the child.
-                    found = true;
+        } else {
+            auto tmp = child->find_next_widget(current_keyboard_widget, group, direction);
+            if (tmp == current_keyboard_widget) {
+                // The current widget was found, but no next widget available in the child.
+                // Try the first widget that does accept keyboard focus.
+                found = true;
 
-                } else if (tmp) {
-                    return tmp;
-                }
+            } else if (tmp != nullptr) {
+                // Return the next widget that was found in the child-widget.
+                return tmp;
             }
         }
     }
 
     if (found) {
         // Either:
-        // 1. current_keyboard_widget was {} and this widget, nor its child widgets accept focus.
-        // 2. current_keyboard_wigget was this and non of the child widgets accept focus.
-        // 3. current_keyboard_widget is a child, and non of the following widgets accept focus.
+        // 1. current_keyboard_widget was nullptr; this widget, nor its child widgets accept focus.
+        // 2. current_keyboard_wigget was this; none of the child widgets accept focus.
+        // 3. current_keyboard_widget is a child; none of the following widgets accept focus.
         return current_keyboard_widget;
     }
 
@@ -243,7 +235,8 @@ widget const *widget::find_next_widget(
     hi_axiom(loop::main().on_thread());
 
     for (auto *child : children()) {
-        if (child and child->accepts_keyboard_focus(group)) {
+        hi_assert_not_null(child);
+        if (child->accepts_keyboard_focus(group)) {
             return child;
         }
     }
@@ -254,12 +247,14 @@ widget const *widget::find_next_widget(
 {
     hi_axiom(loop::main().on_thread());
 
-    widget *found = nullptr;
-    for (auto *child : children()) {
-        if (child and child->accepts_keyboard_focus(group)) {
+    widget const *found = nullptr;
+    for (widget const *child : children()) {
+        hi_assert_not_null(child);
+        if (child->accepts_keyboard_focus(group)) {
             found = child;
         }
     }
+
     return found;
 }
 

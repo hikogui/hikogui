@@ -184,11 +184,11 @@ private:
     notifier<>::callback_token _delegate_cbt;
     std::atomic<bool> _notification_from_delegate = true;
 
-    std::unique_ptr<label_widget> _current_label_widget;
+    std::shared_ptr<label_widget> _current_label_widget;
     box_constraints _current_label_constraints;
     box_shape _current_label_shape;
 
-    std::unique_ptr<label_widget> _off_label_widget;
+    std::shared_ptr<label_widget> _off_label_widget;
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
@@ -200,7 +200,7 @@ private:
     bool _selecting = false;
     bool _has_options = false;
 
-    std::unique_ptr<overlay_widget> _overlay_widget;
+    std::shared_ptr<overlay_widget> _overlay_widget;
     box_constraints _overlay_constraints;
     box_shape _overlay_shape;
 
