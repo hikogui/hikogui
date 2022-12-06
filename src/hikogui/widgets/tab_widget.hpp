@@ -55,11 +55,11 @@ public:
      * @param value The value or observer value to monitor for which child widget
      *              to display.
      */
-    tab_widget(widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept requires
-        requires
+    tab_widget(widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept
+        requires requires { make_default_tab_delegate(hi_forward(value)); }
+        : tab_widget(parent, make_default_tab_delegate(hi_forward(value)))
     {
-        make_default_tab_delegate(hi_forward(value));
-    } : tab_widget(parent, make_default_tab_delegate(hi_forward(value))) {}
+    }
 
     /** Make and add a child widget.
      *
@@ -74,7 +74,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        auto tmp = std::make_unique<WidgetType>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_shared<WidgetType>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
 
         hi_assert_not_null(delegate);
@@ -93,7 +93,7 @@ public:
         }
     }
 
-    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
@@ -104,7 +104,7 @@ public:
     /// @endprivatsectopn
 private:
     widget const *_previous_selected_child = nullptr;
-    std::vector<std::unique_ptr<widget>> _children;
+    std::vector<std::shared_ptr<widget>> _children;
     notifier<>::callback_token _delegate_cbt;
 
     using const_iterator = decltype(_children)::const_iterator;

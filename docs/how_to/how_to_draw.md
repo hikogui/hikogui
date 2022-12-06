@@ -150,7 +150,7 @@ image to the GPU. It is also possible to make a `hi::paged_image` with just
 a width and a height and then upload the image at a later time.
 
 ```cpp
-hi::widget_constraints const &set_constraints(set_constraints_context const &context) noexcept override
+hi::box_constraints const &set_constraints(set_constraints_context const &context) noexcept override
 {
     _layout = {};
     if (_image_was_modified.exchange(false)) {

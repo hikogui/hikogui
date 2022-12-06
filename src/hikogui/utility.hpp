@@ -214,6 +214,8 @@ template<typename T, typename U>
     return lhs.exchange(rhs, std::memory_order::relaxed) != rhs;
 }
 
+struct override_t {};
+
 }} // namespace hi::v1
 
 hi_warning_pop();

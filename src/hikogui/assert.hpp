@@ -15,7 +15,7 @@
 /** @file assert.hpp Utilities to assert and bound check.
  */
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Check if an unsigned index is less than the bound.
  *
@@ -82,12 +82,12 @@ concept bound_check_range_helper = requires(Context&& range) {
  * Independent of built type this macro will always check and abort on fail.
  *
  * @param expression The expression to test.
+ * @param ... A string-literal explaining the reason why this assert exists.
  */
-#define hi_assert(expression) \
+#define hi_assert(expression, ...) \
     do { \
         if (not(expression)) { \
-            hi_set_terminate_message("assert: " hi_stringify(expression)); \
-            hi_debug_abort(); \
+            hi_debug_abort("assert: " __VA_ARGS__ " (" hi_stringify(expression) ")"); \
         } \
     } while (false)
 
@@ -105,8 +105,7 @@ concept bound_check_range_helper = requires(Context&& range) {
 #define hi_assert_bounds(x, ...) \
     do { \
         if (not ::hi::bound_check(x, __VA_ARGS__)) { \
-            hi_set_terminate_message("assert bounds: " hi_stringify(x) " between " hi_stringify(__VA_ARGS__)); \
-            hi_debug_abort(); \
+            hi_debug_abort("assert bounds: " hi_stringify(x) " between " hi_stringify(__VA_ARGS__)); \
         } \
     } while (false)
 
@@ -114,12 +113,12 @@ concept bound_check_range_helper = requires(Context&& range) {
  * If the expression is not a nullptr then return from the function.
  *
  * @param x The expression to test
+ * @param ... A string-literal as the reason why the not-null check exists.
  */
-#define hi_assert_not_null(x) \
+#define hi_assert_not_null(x, ...) \
     do { \
         if (x == nullptr) { \
-            hi_set_terminate_message("assert not-null: " hi_stringify(x)); \
-            hi_debug_abort(); \
+            hi_debug_abort("assert not-null: " __VA_ARGS__ " (" hi_stringify(x) ")"); \
         } \
     } while (false)
 
@@ -129,20 +128,24 @@ concept bound_check_range_helper = requires(Context&& range) {
  * in release mode.
  *
  * @param expression The expression that is true.
+ * @param ... A string-literal as the reason why the axiom exists.
  */
-#define hi_axiom(expression) hi_assert(expression)
+#define hi_axiom(expression, ...) hi_assert(expression __VA_OPT__(, ) __VA_ARGS__)
 
 /** Assert if an expression is not nullptr.
  * If the expression is not a nullptr then return from the function.
  *
  * @param x The expression to test
+ * @param ... A string-literal as the reason why the not-null check exists.
  */
-#define hi_axiom_not_null(expression) hi_assert_not_null(expression)
+#define hi_axiom_not_null(expression, ...) hi_assert_not_null(expression __VA_OPT__(, ) __VA_ARGS__)
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,
+ *
+ * @param ... A string-literal as the reason why the no-default exists.
  */
-#define hi_no_default() [[unlikely]] hi_debug_abort()
+#define hi_no_default(...) [[unlikely]] hi_debug_abort("Reached no-default:" __VA_ARGS__)
 
 #else
 /** Specify an axiom; an expression that is true.
@@ -150,40 +153,50 @@ concept bound_check_range_helper = requires(Context&& range) {
  * in release mode.
  *
  * @param expression The expression that is true.
+ * @param ... A string-literal as the reason why the axiom exists.
  */
-#define hi_axiom(expression) hi_assume(expression)
+#define hi_axiom(expression, ...) hi_assume(expression)
 
 /** Assert if an expression is not nullptr.
  * If the expression is not a nullptr then return from the function.
  *
  * @param x The expression to test
+ * @param ... A string-literal as the reason why the not-null check exists.
  */
-#define hi_axiom_not_null(expression) hi_assume(expression != nullptr)
+#define hi_axiom_not_null(expression, ...) hi_assume(expression != nullptr)
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,
+ *
+ * @param ... A string-literal as the reason why the no-default exists.
  */
-#define hi_no_default() hi_unreachable()
+#define hi_no_default(...) hi_unreachable()
 #endif
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable constexpr else statements.
+ *
+ * @param ... A string-literal as the reason why the no-default exists.
  */
-#define hi_static_no_default() \
+#define hi_static_no_default(...) \
     []<bool Flag = false>() \
     { \
-        static_assert(Flag); \
+        static_assert(Flag, "No default: " __VA_ARGS__); \
     } \
     ()
 
 /** This part of the code has not been implemented yet.
  * This aborts the program.
+ *
+ * @param ... A string-literal as the reason why this it not implemented.
  */
-#define hi_not_implemented() [[unlikely]] hi_debug_abort();
+#define hi_not_implemented(...) [[unlikely]] hi_debug_abort("Not implemented: " __VA_ARGS__);
 
 /** This part of the code has not been implemented yet.
  * This function should be used in unreachable constexpr else statements.
+ *
+ * @param ... A string-literal as the reason why this it not implemented.
  */
-#define hi_static_not_implemented() hi_static_no_default()
+#define hi_static_not_implemented(...) hi_static_no_default("Not implemented: " __VA_ARGS__)
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

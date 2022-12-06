@@ -31,7 +31,7 @@ public:
      */
     [[nodiscard]] static std::vector<language_tag> language_tags() noexcept
     {
-        start_subsystem();
+        hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
         return _language_tags;
     }
@@ -43,7 +43,7 @@ public:
      */
     [[nodiscard]] static std::vector<language *> languages() noexcept
     {
-        start_subsystem();
+        hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
         return _languages;
     }
@@ -56,24 +56,24 @@ public:
     */
     [[nodiscard]] static unicode_bidi_class writing_direction() noexcept
     {
-        start_subsystem();
-        return _writing_direction.load(std::memory_order_relaxed);
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _writing_direction.load(std::memory_order::relaxed);
     }
 
     /** Get the configured light/dark theme mode
      */
     [[nodiscard]] static hi::theme_mode theme_mode() noexcept
     {
-        start_subsystem();
-        return _theme_mode.load(std::memory_order_relaxed);
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _theme_mode.load(std::memory_order::relaxed);
     }
 
     /** Get the configured light/dark theme mode
      */
     [[nodiscard]] static hi::subpixel_orientation subpixel_orientation() noexcept
     {
-        start_subsystem();
-        return _subpixel_orientation.load(std::memory_order_relaxed);
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _subpixel_orientation.load(std::memory_order::relaxed);
     }
 
     /** Whether SDR and HDR application can coexists on the same display.
@@ -88,24 +88,24 @@ public:
      */
     [[nodiscard]] static bool uniform_HDR() noexcept
     {
-        start_subsystem();
-        return _uniform_HDR;
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _uniform_HDR.load(std::memory_order::relaxed);
     }
 
     /** Get the mouse double click interval.
      */
     [[nodiscard]] static std::chrono::milliseconds double_click_interval() noexcept
     {
-        start_subsystem();
-        return _double_click_interval.load(std::memory_order_relaxed);
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _double_click_interval.load(std::memory_order::relaxed);
     }
 
     /** Get the distance from the previous mouse position to detect double click.
      */
     [[nodiscard]] static float double_click_distance() noexcept
     {
-        start_subsystem();
-        return _double_click_distance.load(std::memory_order_relaxed);
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _double_click_distance.load(std::memory_order::relaxed);
     }
 
     /** Get the delay before the keyboard starts repeating.
@@ -114,8 +114,8 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds keyboard_repeat_delay() noexcept
     {
-        start_subsystem();
-        return _keyboard_repeat_delay.load(std::memory_order_relaxed);
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _keyboard_repeat_delay.load(std::memory_order::relaxed);
     }
 
     /** Get the keyboard repeat interval
@@ -124,8 +124,8 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds keyboard_repeat_interval() noexcept
     {
-        start_subsystem();
-        return _keyboard_repeat_interval.load(std::memory_order_relaxed);
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _keyboard_repeat_interval.load(std::memory_order::relaxed);
     }
 
     /** Get the cursor blink delay.
@@ -134,8 +134,8 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds cursor_blink_delay() noexcept
     {
-        start_subsystem();
-        return _cursor_blink_delay.load(std::memory_order_relaxed);
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _cursor_blink_delay.load(std::memory_order::relaxed);
     }
 
     /** Get the cursor blink interval.
@@ -145,26 +145,48 @@ public:
      */
     [[nodiscard]] static std::chrono::milliseconds cursor_blink_interval() noexcept
     {
-        start_subsystem();
-        return _cursor_blink_interval.load(std::memory_order_relaxed);
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _cursor_blink_interval.load(std::memory_order::relaxed);
     }
 
-    /** Get the minimum window size supported by the operating system.
+    /** The minimum width a window is allowed to be.
+     *
+     * @return The minimum window width.
      */
-    [[nodiscard]] static extent2 minimum_window_size() noexcept
+    [[nodiscard]] static int minimum_window_width() noexcept
     {
-        start_subsystem();
-        hilet lock = std::scoped_lock(_mutex);
-        return _minimum_window_size;
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _minimum_window_width.load(std::memory_order::relaxed);
     }
 
-    /** Get the maximum window size supported by the operating system.
+    /** The minimum height a window is allowed to be.
+     *
+     * @return The minimum window height.
      */
-    [[nodiscard]] static extent2 maximum_window_size() noexcept
+    [[nodiscard]] static int minimum_window_height() noexcept
     {
-        start_subsystem();
-        hilet lock = std::scoped_lock(_mutex);
-        return _maximum_window_size;
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _minimum_window_height.load(std::memory_order::relaxed);
+    }
+
+    /** The maximum width a window is allowed to be.
+     *
+     * @return The maximum window width.
+     */
+    [[nodiscard]] static int maximum_window_width() noexcept
+    {
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _maximum_window_width.load(std::memory_order::relaxed);
+    }
+
+    /** The maximum height a window is allowed to be.
+     *
+     * @return The maximum window height.
+     */
+    [[nodiscard]] static int maximum_window_height() noexcept
+    {
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _maximum_window_height.load(std::memory_order::relaxed);
     }
 
     /** Get the rectangle of the primary monitor.
@@ -173,7 +195,7 @@ public:
      */
     [[nodiscard]] static aarectangle primary_monitor_rectangle() noexcept
     {
-        start_subsystem();
+        hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
         return _primary_monitor_rectangle;
     }
@@ -182,7 +204,7 @@ public:
      */
     [[nodiscard]] static uintptr_t primary_monitor_id() noexcept
     {
-        hi_axiom(_started);
+        hi_axiom(_populated.load(std::memory_order::acquire));
         return _primary_monitor_id.load(std::memory_order::relaxed);
     }
 
@@ -192,7 +214,7 @@ public:
      */
     [[nodiscard]] static aarectangle desktop_rectangle() noexcept
     {
-        start_subsystem();
+        hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
         return _desktop_rectangle;
     }
@@ -203,9 +225,17 @@ public:
 
     [[nodiscard]] static callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        start_subsystem();
         hilet lock = std::scoped_lock(_mutex);
         return _notifier.subscribe(hi_forward(callback), flags);
+    }
+
+    /** Get the global os_settings instance.
+     *
+     * @return True on success.
+     */
+    static bool start_subsystem() noexcept
+    {
+        return hi::start_subsystem(_started, false, subsystem_init, subsystem_deinit);
     }
 
 private:
@@ -213,6 +243,7 @@ private:
     static constexpr std::chrono::duration gather_minimum_interval = std::chrono::seconds(1);
 
     static inline std::atomic<bool> _started = false;
+    static inline std::atomic<bool> _populated = false;
     static inline unfair_mutex _mutex;
     static inline loop::timer_callback_token _gather_cbt;
     static inline utc_nanoseconds _gather_last_time;
@@ -231,20 +262,14 @@ private:
     static inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_interval = std::chrono::milliseconds(33);
     static inline std::atomic<std::chrono::milliseconds> _cursor_blink_interval = std::chrono::milliseconds(1000);
     static inline std::atomic<std::chrono::milliseconds> _cursor_blink_delay = std::chrono::milliseconds(1000);
-    static inline extent2 _minimum_window_size = extent2{40.0f, 25.0f};
-    static inline extent2 _maximum_window_size = extent2{1920.0f, 1080.0f};
+    static inline std::atomic<int> _minimum_window_width = 40;
+    static inline std::atomic<int> _minimum_window_height = 25;
+    static inline std::atomic<int> _maximum_window_width = 1920;
+    static inline std::atomic<int> _maximum_window_height = 1080;
     static inline std::atomic<uintptr_t> _primary_monitor_id = 0;
     static inline aarectangle _primary_monitor_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
     static inline aarectangle _desktop_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
 
-    /** Get the global os_settings instance.
-     *
-     * @return The global os_settings instance or nullptr during shutdown.
-     */
-    static bool start_subsystem() noexcept
-    {
-        return hi::start_subsystem(_started, false, subsystem_init, subsystem_deinit);
-    }
 
     [[nodiscard]] static bool subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;
@@ -259,8 +284,10 @@ private:
     [[nodiscard]] static std::chrono::milliseconds gather_keyboard_repeat_interval();
     [[nodiscard]] static std::chrono::milliseconds gather_cursor_blink_interval();
     [[nodiscard]] static std::chrono::milliseconds gather_cursor_blink_delay();
-    [[nodiscard]] static extent2 gather_minimum_window_size();
-    [[nodiscard]] static extent2 gather_maximum_window_size();
+    [[nodiscard]] static int gather_minimum_window_width();
+    [[nodiscard]] static int gather_minimum_window_height();
+    [[nodiscard]] static int gather_maximum_window_width();
+    [[nodiscard]] static int gather_maximum_window_height();
     [[nodiscard]] static uintptr_t gather_primary_monitor_id();
     [[nodiscard]] static aarectangle gather_primary_monitor_rectangle();
     [[nodiscard]] static aarectangle gather_desktop_rectangle();

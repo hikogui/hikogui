@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="hi::v1::lean_vector&lt;*&gt;">
+        <Expand>
+            <Item Condition="_ptr == nullptr" Name="[size]" ExcludeView="simple">0</Item>
+            <Item Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 0" Name="[size]" ExcludeView="simple">_end - _ptr</Item>
+            <Item Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 1" Name="[size]" ExcludeView="simple">(reinterpret_cast&lt;unsigned long long&gt;(_ptr) &gt;&gt; 1) &amp; 0x7f</Item>
+
+            <Item Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 0" Name="[capacity]" ExcludeView="simple">_cap - _ptr</Item>
+            <Item Condition="_ptr == nullptr || (reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 1)" Name="[capacity]" ExcludeView="simple">(23 - value_alignment) / sizeof(value_type)</Item>
+            <ArrayItems Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 0">
+                <Size>_end - _ptr</Size>
+                <ValuePointer>_ptr</ValuePointer>
+            </ArrayItems>
+            <ArrayItems Condition="reinterpret_cast&lt;unsigned long long&gt;(_ptr) &amp; 1 == 1">
+                <Size>(reinterpret_cast&lt;unsigned long long&gt;(_ptr) &gt;&gt; 1) &amp; 0x7f</Size>
+                <ValuePointer>reinterpret_cast&lt;pointer&gt;(reinterpret_cast&lt;unsigned long long&gt;(&amp;_ptr) + value_alignment)</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
     <Type Name="hi::v1::datum">
         <DisplayString Condition="_tag == 0">undefined</DisplayString>
         <DisplayString Condition="_tag == 1">{_value._double}</DisplayString>
@@ -66,21 +84,30 @@
         </Expand>
     </Type>
     <Type Name="hi::v1::alignment">
-        <DisplayString Condition="_value == 0x00">top-flush</DisplayString>
-        <DisplayString Condition="_value == 0x01">top-left</DisplayString>
-        <DisplayString Condition="_value == 0x02">top-center</DisplayString>
-        <DisplayString Condition="_value == 0x03">top-justified</DisplayString>
-        <DisplayString Condition="_value == 0x04">top-right</DisplayString>
-        <DisplayString Condition="_value == 0x10">middle-flush</DisplayString>
-        <DisplayString Condition="_value == 0x11">middle-left</DisplayString>
-        <DisplayString Condition="_value == 0x12">middle-center</DisplayString>
-        <DisplayString Condition="_value == 0x13">middle-justified</DisplayString>
-        <DisplayString Condition="_value == 0x14">middle-right</DisplayString>
-        <DisplayString Condition="_value == 0x20">bottom-flush</DisplayString>
-        <DisplayString Condition="_value == 0x21">bottom-left</DisplayString>
-        <DisplayString Condition="_value == 0x22">bottom-center</DisplayString>
-        <DisplayString Condition="_value == 0x23">bottom-justified</DisplayString>
-        <DisplayString Condition="_value == 0x24">bottom-right</DisplayString>
+        <DisplayString Condition="_value == 0x00">none-none</DisplayString>
+        <DisplayString Condition="_value == 0x01">none-flush</DisplayString>
+        <DisplayString Condition="_value == 0x02">none-left</DisplayString>
+        <DisplayString Condition="_value == 0x03">none-center</DisplayString>
+        <DisplayString Condition="_value == 0x04">none-justified</DisplayString>
+        <DisplayString Condition="_value == 0x05">none-right</DisplayString>
+        <DisplayString Condition="_value == 0x10">top-none</DisplayString>
+        <DisplayString Condition="_value == 0x11">top-flush</DisplayString>
+        <DisplayString Condition="_value == 0x12">top-left</DisplayString>
+        <DisplayString Condition="_value == 0x13">top-center</DisplayString>
+        <DisplayString Condition="_value == 0x14">top-justified</DisplayString>
+        <DisplayString Condition="_value == 0x15">top-right</DisplayString>
+        <DisplayString Condition="_value == 0x20">middle-none</DisplayString>
+        <DisplayString Condition="_value == 0x21">middle-flush</DisplayString>
+        <DisplayString Condition="_value == 0x22">middle-left</DisplayString>
+        <DisplayString Condition="_value == 0x23">middle-center</DisplayString>
+        <DisplayString Condition="_value == 0x24">middle-justified</DisplayString>
+        <DisplayString Condition="_value == 0x35">middle-right</DisplayString>
+        <DisplayString Condition="_value == 0x30">bottom-none</DisplayString>
+        <DisplayString Condition="_value == 0x31">bottom-flush</DisplayString>
+        <DisplayString Condition="_value == 0x32">bottom-left</DisplayString>
+        <DisplayString Condition="_value == 0x33">bottom-center</DisplayString>
+        <DisplayString Condition="_value == 0x34">bottom-justified</DisplayString>
+        <DisplayString Condition="_value == 0x35">bottom-right</DisplayString>
     </Type>
     <Type Name="hi::v1::numeric_array&lt;*,2&gt;">
         <DisplayString>{v[0],g}, {v[1],g}</DisplayString>
@@ -208,10 +235,16 @@
     <Type Name="hi::v1::sfloat_rgba32x4">
         <DisplayString>({_v[0],g}, {_v[1],g}, {_v[2],g}, {_v[3],g}), ({_v[4],g}, {_v[5],g}, {_v[6],g}, {_v[7],g}), ({_v[8],g}, {_v[9],g}, {_v[10],g}, {_v[11],g}), ({_v[12],g}, {_v[13],g}, {_v[14],g}, {_v[15],g})</DisplayString>
     </Type>
+    <Type Name="hi::v1::box_shape">
+        <DisplayString Condition="baseline._Has_value &amp;&amp; centerline._Has_value">{{&lt;{x,g}, {y,g}&gt; [{width,g}, {height,g}] b={baseline,g} c={centerline,g}}}</DisplayString>
+        <DisplayString Condition="baseline._Has_value">{{&lt;{x,g}, {y,g}&gt; [{width,g}, {height,g}] b={baseline,g}}}</DisplayString>
+        <DisplayString Condition="centerline._Has_value">{{&lt;{x,g}, {y,g}&gt; [{width,g}, {height,g}] c={centerline,g}}}</DisplayString>
+        <DisplayString>{{&lt;{x,g}, {y,g}&gt; [{width,g}, {height,g}]}}</DisplayString>
+    </Type>
     <Type Name="hi::v1::observer&lt;*&gt;">
         <DisplayString>{_value} #{_observed._ptr->_enable_group_ptr_owners.size()}</DisplayString>
         <Expand>
-            <Item Name="[value]">_value</Item>
+            <Item Name="[value]">_debug_value</Item>
             <Item Name="[observer count]">_observed._ptr->_enable_group_ptr_owners.size()</Item>
         </Expand>
     </Type>

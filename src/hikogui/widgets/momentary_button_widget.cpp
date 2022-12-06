@@ -6,22 +6,24 @@
 
 namespace hi::inline v1 {
 
-widget_constraints const& momentary_button_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& momentary_button_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     hilet extra_size = extent2{context.theme->margin * 2.0f, context.theme->margin * 2.0f};
-    _constraints = set_constraints_button(context) + extra_size;
-    _constraints.margins = context.theme->margin;
+    _label_constraints = set_constraints_button(context);
+    _constraints = _label_constraints + extra_size;
+    _constraints.set_margins(narrow_cast<int>(context.theme->margin));
     return _constraints;
 }
 
 void momentary_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _label_rectangle =
-            aarectangle{context.theme->margin, 0.0f, context.width() - context.theme->margin * 2.0f, context.height()};
+        hilet label_rectangle =
+            aarectangle{context.theme->margin, 0.0f, narrow_cast<float>(context.width()) - context.theme->margin * 2.0f, narrow_cast<float>(context.height())};
+        _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
     }
     set_layout_button(context);
 }

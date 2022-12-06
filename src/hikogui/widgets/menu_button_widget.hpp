@@ -47,7 +47,7 @@ public:
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::middle_left();
+        alignment = alignment::middle_flush();
         set_attributes<0>(hi_forward(attributes)...);
     }
 
@@ -80,7 +80,7 @@ public:
     }
 
     /// @privatesection
-    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;

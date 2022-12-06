@@ -51,7 +51,6 @@ enum class gui_event_type {
     window_close, ///< Request the window to be closed.
     window_open_sysmenu, ///< Open the operating system provided menu for the window.
     window_set_keyboard_target, ///< Change the keyboard target widget for this window.
-    window_remove_keyboard_target, ///< Remove a widget as keyboard target.
     window_set_clipboard, ///< Place data on the clipboard.
 
     // commands
@@ -135,7 +134,6 @@ constexpr auto gui_event_type_metadata = enum_metadata{
     gui_event_type::window_open_sysmenu, "window_open_sysmenu",
     gui_event_type::window_close, "window_close",
     gui_event_type::window_set_keyboard_target, "window_set_keyboard_target",
-    gui_event_type::window_remove_keyboard_target, "window_remove_keyboard_target",
     gui_event_type::window_set_clipboard, "window_set_clipboard",
     gui_event_type::text_cursor_left_char, "text_cursor_left_char",
     gui_event_type::text_cursor_right_char, "text_cursor_right_char",

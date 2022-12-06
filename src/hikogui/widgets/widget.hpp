@@ -21,7 +21,7 @@
 #include "../chrono.hpp"
 #include "../generator.hpp"
 #include "set_constraints_context.hpp"
-#include "widget_constraints.hpp"
+#include "../layout/box_constraints.hpp"
 #include "widget_layout.hpp"
 #include "widget_mode.hpp"
 #include <memory>
@@ -42,16 +42,18 @@ class font_book;
  *
  * @ingroup widgets
  */
-class widget {
+class widget : public std::enable_shared_from_this<widget> {
 public:
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
-    widget *parent;
+    widget *parent = nullptr;
 
-    /** A name of widget, should be unique between siblings.
+    /** The numeric identifier of a widget.
+     *
+     * @note This is a uint32_t equal to the operating system's accessibility identifier.
      */
-    std::string id;
+    uint32_t id = 0;
 
     /** The widget mode.
      * The current visibility and interactivity of a widget.
@@ -80,7 +82,7 @@ public:
      * In most cases it would mean that a container widget that does not
      * draw itself will not increase the semantic_layer number.
      */
-    int semantic_layer;
+    int semantic_layer = 0;
 
     /** The logical layer of the widget.
      * The logical layer can be used to determine how far away
@@ -89,7 +91,23 @@ public:
      * Logical layers start at 0 for the window-widget.
      * Each child widget increases the logical layer by 1.
      */
-    int logical_layer;
+    int logical_layer = 0;
+
+    /** The minimum width this widget is allowed to be.
+     */
+    observer<int> minimum_width = 0;
+
+    /** The minimum height this widget is allowed to be.
+     */
+    observer<int> minimum_height = 0;
+
+    /** The maximum width this widget is allowed to be.
+     */
+    observer<int> maximum_width = box_constraints::max_int();
+
+    /** The maximum height this widget is allowed to be.
+     */
+    observer<int> maximum_height = box_constraints::max_int();
 
     /*! Constructor for creating sub views.
      */
@@ -156,9 +174,9 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual widget_constraints const& set_constraints(set_constraints_context const& context) noexcept = 0;
+    virtual box_constraints const& set_constraints(set_constraints_context const& context) noexcept = 0;
 
-    widget_constraints const& constraints() const noexcept
+    box_constraints const& constraints() const noexcept
     {
         return _constraints;
     }
@@ -236,13 +254,14 @@ public:
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
      * that returns true from `accepts_keyboard_focus()`.
      *
-     * @param current_keyboard_widget The widget that currently has focus; or empty to get the first widget
-     *                              that accepts focus.
+     * @param current_keyboard_widget The widget that currently has focus; or nullptr to get the first widget
+     *                                that accepts focus.
      * @param group The group to which the widget must belong.
      * @param direction The direction in which to walk the widget tree.
      * @return A pointer to the next widget.
-     * @retval currentKeyboardWidget when currentKeyboardWidget was found but no next widget was found.
-     * @retval empty when currentKeyboardWidget is not found in this Widget.
+     * @retval current_keyboard_widget When current_keyboard_widget was found but no next widget that accepts
+                                       keyboard focus was found.
+     * @retval nullptr When current_keyboard_widget is not found in this widget.
      */
     [[nodiscard]] virtual widget const *find_next_widget(
         widget const *current_keyboard_widget,
@@ -292,7 +311,7 @@ public:
     virtual [[nodiscard]] color label_color() const noexcept;
 
 protected:
-    widget_constraints _constraints;
+    box_constraints _constraints;
     widget_layout _layout;
 
     decltype(mode)::callback_token _mode_cbt;

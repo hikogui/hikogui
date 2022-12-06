@@ -26,13 +26,13 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::widget_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
+    hi::box_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
     {
         // Reset _layout so that the set_layout() calculations will be triggered.
         _layout = {};
 
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
-        return _constraints = {{100.0f, 20.0f}, {200.0f, 20.0f}, {300.0f, 50.0f}, context.theme->margin};
+        return _constraints = {{100.0f, 20.0f}, {200.0f, 20.0f}, {300.0f, 50.0f}, hi::alignment{}, context.theme->margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when

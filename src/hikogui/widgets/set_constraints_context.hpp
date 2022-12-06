@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file widgets/widget_constraints.hpp Defines widget_constraints.
+/** @file widgets/box_constraints.hpp Defines box_constraints.
  * @ingroup widget_utilities
  */
 
@@ -17,6 +17,7 @@ public:
     hi::font_book *font_book = nullptr;
     hi::theme const *theme = nullptr;
     gfx_surface *surface = nullptr;
+    unicode_bidi_class writing_direction = unicode_bidi_class::L;
 
     constexpr set_constraints_context() = default;
     constexpr set_constraints_context(set_constraints_context const&) noexcept = default;
@@ -24,14 +25,27 @@ public:
     constexpr set_constraints_context& operator=(set_constraints_context const&) noexcept = default;
     constexpr set_constraints_context& operator=(set_constraints_context&&) noexcept = default;
 
-    constexpr set_constraints_context(hi::font_book *font_book, hi::theme const *theme, gfx_surface *surface = nullptr) noexcept :
-        font_book(font_book), theme(theme), surface(surface)
+    constexpr set_constraints_context(
+        hi::font_book *font_book,
+        hi::theme const *theme,
+        unicode_bidi_class writing_direction,
+        gfx_surface *surface = nullptr) noexcept :
+        font_book(font_book), theme(theme), surface(surface), writing_direction(writing_direction)
     {
     }
 
-    constexpr set_constraints_context(hi::font_book& font_book, hi::theme const& theme, gfx_surface& surface) noexcept :
-        font_book(&font_book), theme(&theme), surface(&surface)
+    constexpr set_constraints_context(
+        hi::font_book& font_book,
+        hi::theme const& theme,
+        unicode_bidi_class writing_direction,
+        gfx_surface& surface) noexcept :
+        font_book(&font_book), theme(&theme), surface(&surface), writing_direction(writing_direction)
     {
+    }
+
+    [[nodiscard]] constexpr bool left_to_right() const noexcept
+    {
+        return writing_direction == unicode_bidi_class::L;
     }
 };
 

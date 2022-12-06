@@ -9,11 +9,9 @@ namespace hi::inline v1 {
 
 [[nodiscard]] bool os_settings::subsystem_init() noexcept
 {
-    _gather_cbt = loop::timer().repeat_function(
-        gather_interval,
-        [] {
-            os_settings::gather();
-        });
+    _gather_cbt = loop::timer().repeat_function(gather_interval, [] {
+        os_settings::gather();
+    });
 
     return true;
 }
@@ -77,7 +75,7 @@ void os_settings::gather() noexcept
         hi_log_error("Failed to get OS sub-pixel orientation: {}", e.what());
     }
 
-        try {
+    try {
         if (compare_store(_uniform_HDR, gather_uniform_HDR())) {
             setting_has_changed = true;
             hi_log_info("OS uniform-HDR has changed: {}", _uniform_HDR.load());
@@ -145,21 +143,39 @@ void os_settings::gather() noexcept
     }
 
     try {
-        if (compare_store(_minimum_window_size, gather_minimum_window_size())) {
+        if (compare_store(_minimum_window_width, gather_minimum_window_width())) {
             setting_has_changed = true;
-            hi_log_info("OS minimum window size has changed: {}", _minimum_window_size);
+            hi_log_info("OS minimum window width has changed: {}", _minimum_window_width.load());
         }
     } catch (std::exception const& e) {
-        hi_log_error("Failed to get OS minimum window size: {}", e.what());
+        hi_log_error("Failed to get OS minimum window width: {}", e.what());
     }
 
     try {
-        if (compare_store(_maximum_window_size, gather_maximum_window_size())) {
+        if (compare_store(_minimum_window_height, gather_minimum_window_height())) {
             setting_has_changed = true;
-            hi_log_info("OS maximum window size has changed: {}", _maximum_window_size);
+            hi_log_info("OS minimum window height has changed: {}", _minimum_window_height.load());
         }
     } catch (std::exception const& e) {
-        hi_log_error("Failed to get OS maximum window size: {}", e.what());
+        hi_log_error("Failed to get OS minimum window height: {}", e.what());
+    }
+
+    try {
+        if (compare_store(_maximum_window_width, gather_maximum_window_width())) {
+            setting_has_changed = true;
+            hi_log_info("OS maximum window width has changed: {}", _maximum_window_width.load());
+        }
+    } catch (std::exception const& e) {
+        hi_log_error("Failed to get OS maximum window width: {}", e.what());
+    }
+
+    try {
+        if (compare_store(_maximum_window_height, gather_maximum_window_height())) {
+            setting_has_changed = true;
+            hi_log_info("OS maximum window height has changed: {}", _maximum_window_height.load());
+        }
+    } catch (std::exception const& e) {
+        hi_log_error("Failed to get OS maximum window height: {}", e.what());
     }
 
     try {
@@ -189,6 +205,7 @@ void os_settings::gather() noexcept
         hi_log_error("Failed to get OS desktop rectangle: {}", e.what());
     }
 
+    _populated.store(true, std::memory_order::release);
     if (setting_has_changed) {
         _notifier();
     }

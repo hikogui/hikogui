@@ -15,9 +15,9 @@ abstract_button_widget::abstract_button_widget(
 {
     hi_assert_not_null(this->delegate);
 
-    _on_label_widget = std::make_unique<label_widget>(this, on_label, alignment, text_style);
-    _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, text_style);
-    _other_label_widget = std::make_unique<label_widget>(this, other_label, alignment, text_style);
+    _on_label_widget = std::make_shared<label_widget>(this, on_label, alignment, text_style);
+    _off_label_widget = std::make_shared<label_widget>(this, off_label, alignment, text_style);
+    _other_label_widget = std::make_shared<label_widget>(this, other_label, alignment, text_style);
     _delegate_cbt = this->delegate->subscribe([&] {
         ++global_counter<"abstract_button_widget:delegate:relayout">;
         process_event({gui_event_type::window_relayout});
@@ -39,7 +39,7 @@ void abstract_button_widget::activate() noexcept
     this->pressed();
 }
 
-widget_constraints abstract_button_widget::set_constraints_button(set_constraints_context const &context) const noexcept
+box_constraints abstract_button_widget::set_constraints_button(set_constraints_context const &context) const noexcept
 {
     return max(_on_label_widget->set_constraints(context), _off_label_widget->set_constraints(context), _other_label_widget->set_constraints(context));
 }
@@ -58,9 +58,9 @@ void abstract_button_widget::set_layout_button(widget_layout const& context) noe
     _off_label_widget->mode = state_ == button_state::off ? widget_mode::display : widget_mode::invisible;
     _other_label_widget->mode = state_ == button_state::other ? widget_mode::display : widget_mode::invisible;
 
-    _on_label_widget->set_layout(context.transform(_label_rectangle));
-    _off_label_widget->set_layout(context.transform(_label_rectangle));
-    _other_label_widget->set_layout(context.transform(_label_rectangle));
+    _on_label_widget->set_layout(context.transform(_label_shape));
+    _off_label_widget->set_layout(context.transform(_label_shape));
+    _other_label_widget->set_layout(context.transform(_label_shape));
 }
 
 [[nodiscard]] color abstract_button_widget::background_color() const noexcept

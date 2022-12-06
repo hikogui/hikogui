@@ -8,13 +8,13 @@ namespace hi::inline v1 {
 
 system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
 {
-    _icon_widget = std::make_unique<icon_widget>(this, icon);
+    _icon_widget = std::make_shared<icon_widget>(this, icon);
 }
 
-widget_constraints const& system_menu_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& system_menu_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
-    _icon_widget->set_constraints(context);
+    _icon_constraints = _icon_widget->set_constraints(context);
 
     hilet size = extent2{context.theme->large_size, context.theme->large_size};
     return _constraints = {size, size, size};
@@ -24,14 +24,14 @@ void system_menu_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         hilet icon_height = context.height() < context.theme->large_size * 1.2f ? context.height() : context.theme->large_size;
-        _icon_rectangle = aarectangle{0.0f, context.height() - icon_height, context.width(), icon_height};
-
+        hilet icon_rectangle = aarectangle{0.0f, narrow_cast<float>(context.height()) - icon_height, narrow_cast<float>(context.width()), icon_height};
+        _icon_shape = box_shape{_icon_constraints, icon_rectangle, context.theme->baseline_adjustment};
         // Leave space for window resize handles on the left and top.
         _system_menu_rectangle = aarectangle{
-            context.theme->margin, 0.0f, context.width() - context.theme->margin, context.height() - context.theme->margin};
+            context.theme->margin, 0.0f, narrow_cast<float>(context.width()) - context.theme->margin, narrow_cast<float>(context.height()) - context.theme->margin};
     }
 
-    _icon_widget->set_layout(context.transform(_icon_rectangle));
+    _icon_widget->set_layout(context.transform(_icon_shape));
 }
 
 void system_menu_widget::draw(draw_context const &context) noexcept

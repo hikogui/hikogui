@@ -11,7 +11,8 @@
 #include "widget.hpp"
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
-#include "../alignment.hpp"
+#include "../geometry/alignment.hpp"
+#include "../layout/grid_layout.hpp"
 #include "../label.hpp"
 #include <memory>
 #include <string>
@@ -61,10 +62,9 @@ public:
      *    the icon in the bottom-right.
      *  - `alignment::top_center`: Larger icon above the text, both center aligned.
      *  - `alignment::bottom_center`: Larger icon below the text, both center aligned.
-     *  - `alignment::middle_center`: text drawn across a large icon. Should only be
      *    used with a `pixmap` icon.
      */
-    observer<alignment> alignment = hi::alignment::top_right();
+    observer<alignment> alignment = hi::alignment::top_flush();
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
@@ -77,8 +77,7 @@ public:
      * @param attributes Different attributes used to configure the label widget:
      *                   a `label`, `alignment` or `text_style`
      */
-    label_widget(widget *parent, label_widget_attribute auto&&...attributes) noexcept :
-        label_widget(parent)
+    label_widget(widget *parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
     {
         set_attributes(hi_forward(attributes)...);
     }
@@ -90,7 +89,7 @@ public:
         co_yield _text_widget.get();
     }
 
-    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept;
@@ -101,13 +100,11 @@ private:
 
     decltype(label)::callback_token _label_cbt;
     decltype(text_style)::callback_token _text_style_cbt;
+    decltype(alignment)::callback_token _alignment_cbt;
 
-    aarectangle _icon_rectangle;
-    widget_constraints _icon_constraints;
-    std::unique_ptr<icon_widget> _icon_widget;
-    aarectangle _text_rectangle;
-    widget_constraints _text_constraints;
-    std::unique_ptr<text_widget> _text_widget;
+    std::shared_ptr<icon_widget> _icon_widget;
+    std::shared_ptr<text_widget> _text_widget;
+    grid_layout<widget *> _grid;
 
     void set_attributes() noexcept {}
     void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept

@@ -9,15 +9,19 @@
 #include "../text/font_book.hpp"
 #include "../file/path_location.hpp"
 #include "../file/URL.hpp"
-#include "../locked_memory_allocator.hpp"
 #include "../trace.hpp"
 #include "../log.hpp"
+#include "../os_settings.hpp"
 #include <memory>
 
 namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
+    if (not os_settings::start_subsystem()) {
+        hi_log_fatal("Could not start the os_settings subsystem.");
+    }
+
     auto font_directories = make_vector(get_paths(path_location::font_dirs));
     auto font_book = std::make_unique<hi::font_book>(std::move(font_directories));
     font_book->register_elusive_icon_font(URL{"resource:fonts/elusiveicons-webfont.ttf"});

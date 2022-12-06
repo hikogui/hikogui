@@ -43,9 +43,27 @@ struct font_metrics {
      */
     float digit_advance = 0.0f;
 
+    /** The multiplier for the space between lines of the same paragraph.
+     * @note This is not an actual font property, but comes from the text-style.
+     */
+    float line_spacing = 1.0f;
+
+    /** The multiplier for the space between two paragraphs.
+     * @note This is not an actual font property, but comes from the text-style.
+     */
+    float paragraph_spacing = 1.5f;
+
+    ~font_metrics() = default;
+    constexpr font_metrics() noexcept = default;
+    constexpr font_metrics(font_metrics const&) noexcept = default;
+    constexpr font_metrics(font_metrics&&) noexcept = default;
+    constexpr font_metrics& operator=(font_metrics const&) noexcept = default;
+    constexpr font_metrics& operator=(font_metrics&&) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(font_metrics const&, font_metrics const&) noexcept = default;
+
     /** Scale the metrics by a scalar value.
      */
-    [[nodiscard]] constexpr friend font_metrics operator*(float const &lhs, font_metrics const &rhs) noexcept
+    [[nodiscard]] constexpr friend font_metrics operator*(float const& lhs, font_metrics const& rhs) noexcept
     {
         font_metrics r;
         r.ascender = lhs * rhs.ascender;
@@ -57,7 +75,7 @@ struct font_metrics {
         return r;
     }
 
-    [[nodiscard]] constexpr friend font_metrics max(font_metrics const &a, font_metrics const &b) noexcept
+    [[nodiscard]] constexpr friend font_metrics max(font_metrics const& a, font_metrics const& b) noexcept
     {
         font_metrics r;
         r.ascender = std::max(a.ascender, b.ascender);

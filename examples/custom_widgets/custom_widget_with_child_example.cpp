@@ -19,26 +19,29 @@ public:
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
         _label_widget =
-            std::make_unique<hi::label_widget>(this, std::forward<Label>(label), hi::alignment::middle_center());
+            std::make_shared<hi::label_widget>(this, std::forward<Label>(label), hi::alignment::middle_center());
     }
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::widget_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
+    hi::box_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
         _layout = {};
 
         // We need to recursively set the constraints of any child widget here as well
-        auto const label_constraints = _label_widget->set_constraints(context);
+        _label_constraints = _label_widget->set_constraints(context);
 
         // We add the ability to resize the widget beyond the size of the label.
-        _constraints.minimum = label_constraints.minimum;
-        _constraints.preferred = label_constraints.preferred + context.theme->margin;
-        _constraints.maximum = label_constraints.maximum + hi::extent2{100.0f, 50.0f};
-        _constraints.margins = context.theme->margin;
-        _constraints.baseline = label_constraints.baseline;
+        _constraints.minimum_width = _label_constraints.minimum_width;
+        _constraints.preferred_width = _label_constraints.preferred_width + hi::narrow_cast<int>(context.theme->margin);
+        _constraints.maximum_width = _label_constraints.maximum_width + 100;
+        _constraints.minimum_height = _label_constraints.minimum_height;
+        _constraints.preferred_height = _label_constraints.preferred_height + hi::narrow_cast<int>(context.theme->margin);
+        _constraints.maximum_height = _label_constraints.maximum_height + 50;
+        _constraints.set_margins(hi::narrow_cast<int>(context.theme->margin));
+        _constraints.alignment = _label_constraints.alignment;
         return _constraints;
     }
 
@@ -53,12 +56,13 @@ public:
         if (compare_store(_layout, context)) {
             // The layout of the child widget are also calculated here, which only needs to be done
             // when the layout of the current widget changes.
-            _label_rectangle = align(context.rectangle(), _label_widget->constraints().preferred, hi::alignment::middle_center());
+            auto const label_rectangle = align(context.rectangle(), _label_widget->constraints().preferred(), hi::alignment::middle_center());
+            _label_shape = hi::box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.
         // This is because child widgets may need to re-layout for other reasons.
-        _label_widget->set_layout(context.transform(_label_rectangle));
+        _label_widget->set_layout(context.transform(_label_shape));
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.
@@ -107,8 +111,9 @@ protected:
 
 private:
     // Child widgets are owned by their parent.
-    std::unique_ptr<hi::label_widget> _label_widget;
-    hi::aarectangle _label_rectangle;
+    std::shared_ptr<hi::label_widget> _label_widget;
+    hi::box_constraints _label_constraints;
+    hi::box_shape _label_shape;
 };
 
 int hi_main(int argc, char *argv[])

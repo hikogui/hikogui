@@ -11,7 +11,7 @@ namespace hi::inline v1 {
 
 window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexcept : super(parent) {}
 
-widget_constraints const& window_traffic_lights_widget::set_constraints(set_constraints_context const &context) noexcept
+box_constraints const& window_traffic_lights_widget::set_constraints(set_constraints_context const &context) noexcept
 {
     _layout = {};
 
@@ -31,11 +31,11 @@ widget_constraints const& window_traffic_lights_widget::set_constraints(set_cons
 void window_traffic_lights_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        auto extent = context.size;
+        auto extent = context.size();
         if (extent.height() > context.theme->large_size * 1.2f) {
             extent = extent2{extent.width(), context.theme->large_size};
         }
-        auto y = context.height() - extent.height();
+        auto y = narrow_cast<float>(context.height()) - extent.height();
 
         if (context.theme->operating_system == operating_system::windows) {
             closeRectangle =

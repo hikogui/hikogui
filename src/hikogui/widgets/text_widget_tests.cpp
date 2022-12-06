@@ -21,7 +21,7 @@ protected:
     set_constraints_context c_context;
 
     observer<std::string> text;
-    std::unique_ptr<hi::text_widget> widget;
+    std::shared_ptr<hi::text_widget> widget;
 
     void SetUp() override
     {
@@ -30,14 +30,16 @@ protected:
         font_book = std::make_unique<hi::font_book>(make_vector(get_paths(path_location::font_dirs)));
         theme_book = std::make_unique<hi::theme_book>(*font_book, make_vector(get_paths(path_location::theme_dirs)));
         theme = theme_book->find("default", theme_mode::light);
-        c_context = set_constraints_context{font_book.get(), &theme};
+        c_context = set_constraints_context{font_book.get(), &theme, unicode_bidi_class::L};
 
-        widget = std::make_unique<hi::text_widget>(nullptr, text);
+        widget = std::make_shared<hi::text_widget>(nullptr, text);
         widget->mode = hi::widget_mode::enabled;
 
         auto constraints = widget->set_constraints(c_context);
         auto l_context = widget_layout{};
-        l_context.size = constraints.preferred;
+        l_context.shape.width = constraints.preferred_width;
+        l_context.shape.height = constraints.preferred_height;
+        l_context.shape.baseline = constraints.preferred_height / 2;
         l_context.font_book = font_book.get();
         l_context.theme = &theme;
         widget->set_layout(l_context);

@@ -91,7 +91,7 @@ public:
 
     /** The widget covering the complete window.
      */
-    std::unique_ptr<window_widget> widget;
+    std::shared_ptr<window_widget> widget;
 
     /** Notifier used when the window is closing.
      * It is expected that after notifying these callbacks the instance of this class is destroyed.
@@ -304,26 +304,12 @@ private:
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.
      */
-    hi::widget const *_mouse_target_widget = nullptr;
+    std::weak_ptr<hi::widget const> _mouse_target_widget;
 
     /** Target of the keyboard
      * widget where keyboard events are sent to.
      */
-    hi::widget const *_keyboard_target_widget = nullptr;
-
-    /** Called when a widget is being destructed.
-     * This removes internal references to widgets.
-     * Particularly the mouse and keyboard targets.
-     */
-    void remove_keyboard_and_mouse_target(hi::widget const *sender) noexcept
-    {
-        if (_mouse_target_widget == sender) {
-            _mouse_target_widget = nullptr;
-        }
-        if (_keyboard_target_widget == sender) {
-            _keyboard_target_widget = nullptr;
-        }
-    }
+    std::weak_ptr<hi::widget const> _keyboard_target_widget;
 
     /** Send event to a target widget.
      *
