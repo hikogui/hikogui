@@ -47,13 +47,13 @@ public:
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
-    widget *parent;
+    widget *parent = nullptr;
 
     /** The numeric identifier of a widget.
      *
      * @note This is a uint32_t equal to the operating system's accessibility identifier.
      */
-    uint32_t id;
+    uint32_t id = 0;
 
     /** The widget mode.
      * The current visibility and interactivity of a widget.
@@ -82,7 +82,7 @@ public:
      * In most cases it would mean that a container widget that does not
      * draw itself will not increase the semantic_layer number.
      */
-    int semantic_layer;
+    int semantic_layer = 0;
 
     /** The logical layer of the widget.
      * The logical layer can be used to determine how far away
@@ -91,7 +91,23 @@ public:
      * Logical layers start at 0 for the window-widget.
      * Each child widget increases the logical layer by 1.
      */
-    int logical_layer;
+    int logical_layer = 0;
+
+    /** The minimum width this widget is allowed to be.
+     */
+    observer<int> minimum_width = 0;
+
+    /** The minimum height this widget is allowed to be.
+     */
+    observer<int> minimum_height = 0;
+
+    /** The maximum width this widget is allowed to be.
+     */
+    observer<int> maximum_width = box_constraints::max_int();
+
+    /** The maximum height this widget is allowed to be.
+     */
+    observer<int> maximum_height = box_constraints::max_int();
 
     /*! Constructor for creating sub views.
      */

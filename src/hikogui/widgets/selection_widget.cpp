@@ -20,8 +20,6 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
 {
     hi_assert_not_null(this->delegate);
 
-    alignment = alignment::middle_left();
-
     _current_label_widget = std::make_shared<label_widget>(this, alignment, text_style);
     _current_label_widget->mode = widget_mode::invisible;
     _off_label_widget = std::make_shared<label_widget>(this, off_label, alignment, semantic_text_style::placeholder);

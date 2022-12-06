@@ -48,7 +48,7 @@ struct box_constraints {
     constexpr box_constraints& operator=(box_constraints&&) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(box_constraints const&, box_constraints const&) noexcept = default;
 
-    constexpr box_constraints(
+    [[deprecated]] constexpr box_constraints(
         extent2 minimum,
         extent2 preferred,
         extent2 maximum,
@@ -74,28 +74,19 @@ struct box_constraints {
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr extent2 minimum() const noexcept
+    [[deprecated]] [[nodiscard]] constexpr extent2 minimum() const noexcept
     {
         return extent2{narrow_cast<float>(minimum_width), narrow_cast<float>(minimum_height)};
     }
 
-    [[nodiscard]] constexpr extent2 preferred() const noexcept
+    [[deprecated]] [[nodiscard]] constexpr extent2 preferred() const noexcept
     {
         return extent2{narrow_cast<float>(preferred_width), narrow_cast<float>(preferred_height)};
     }
 
-    [[nodiscard]] constexpr extent2 maximum() const noexcept
+    [[deprecated]] [[nodiscard]] constexpr extent2 maximum() const noexcept
     {
         return extent2{narrow_cast<float>(maximum_width), narrow_cast<float>(maximum_height)};
-    }
-
-    [[nodiscard]] constexpr hi::margins margins() const noexcept
-    {
-        return hi::margins{
-            narrow_cast<float>(margin_left),
-            narrow_cast<float>(margin_bottom),
-            narrow_cast<float>(margin_right),
-            narrow_cast<float>(margin_top)};
     }
 
     constexpr box_constraints& set_margins(int rhs) noexcept
@@ -107,7 +98,60 @@ struct box_constraints {
         return *this;
     }
 
-    constexpr box_constraints& set_margins(hi::margins const& rhs) noexcept
+    [[nodiscard]] constexpr box_constraints internalize_margins() const noexcept
+    {
+        auto r = *this;
+        r.padding_left += r.margin_left;
+        r.padding_right += r.margin_right;
+        r.padding_top += r.margin_top;
+        r.padding_bottom += r.margin_bottom;
+
+        r.minimum_width += r.margin_left + r.margin_right;
+        r.preferred_width += r.margin_left + r.margin_right;
+        r.maximum_width += r.margin_left + r.margin_right;
+
+        r.minimum_height += r.margin_bottom + r.margin_top;
+        r.preferred_height += r.margin_bottom + r.margin_top;
+        r.maximum_height += r.margin_bottom + r.margin_top;
+
+        r.margin_left = 0;
+        r.margin_right = 0;
+        r.margin_bottom = 0;
+        r.margin_top = 0;
+        hi_axiom(r.holds_invariant());
+        return r;
+    }
+
+    [[nodiscard]] constexpr box_constraints constrain(int min_width, int min_height, int max_width, int max_height) const noexcept
+    {
+        hi_assert(min_width <= max_width);
+        hi_assert(min_height <= max_height);
+
+        auto r = *this;
+
+        inplace_max(r.minimum_width, min_width);
+        inplace_max(r.minimum_height, min_height);
+        inplace_min(r.maximum_width, max_width);
+        inplace_min(r.maximum_height, max_height);
+
+        inplace_max(r.preferred_width, r.minimum_width);
+        inplace_max(r.preferred_height, r.minimum_height);
+        inplace_max(r.maximum_width, r.preferred_width);
+        inplace_max(r.maximum_height, r.preferred_height);
+        hi_axiom(r.holds_invariant());
+        return r;
+    }
+
+    [[deprecated]] [[nodiscard]] constexpr hi::margins margins() const noexcept
+    {
+        return hi::margins{
+            narrow_cast<float>(margin_left),
+            narrow_cast<float>(margin_bottom),
+            narrow_cast<float>(margin_right),
+            narrow_cast<float>(margin_top)};
+    }
+
+    [[deprecated]] constexpr box_constraints& set_margins(hi::margins const& rhs) noexcept
     {
         margin_left = narrow_cast<int>(rhs.left());
         margin_bottom = narrow_cast<int>(rhs.bottom());
@@ -116,7 +160,7 @@ struct box_constraints {
         return *this;
     }
 
-    [[nodiscard]] constexpr hi::margins padding() const noexcept
+    [[deprecated]] [[nodiscard]] constexpr hi::margins padding() const noexcept
     {
         return hi::margins{
             narrow_cast<float>(padding_left),
@@ -125,7 +169,7 @@ struct box_constraints {
             narrow_cast<float>(padding_top)};
     }
 
-    constexpr box_constraints& operator+=(extent2 const& rhs) noexcept
+    [[deprecated]] constexpr box_constraints& operator+=(extent2 const& rhs) noexcept
     {
         minimum_width += narrow_cast<int>(rhs.width());
         preferred_width += narrow_cast<int>(rhs.width());
@@ -138,7 +182,7 @@ struct box_constraints {
         return *this;
     }
 
-    [[nodiscard]] constexpr box_constraints operator+(extent2 const& rhs) noexcept
+    [[deprecated]] [[nodiscard]] constexpr box_constraints operator+(extent2 const& rhs) noexcept
     {
         auto r = *this;
         r += rhs;
@@ -161,7 +205,7 @@ struct box_constraints {
         return true;
     }
 
-    [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, extent2 const& rhs) noexcept
+    [[deprecated]] [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, extent2 const& rhs) noexcept
     {
         auto r = lhs;
         inplace_max(r.minimum_width, narrow_cast<int>(rhs.width()));

@@ -111,7 +111,7 @@ protected:
 
 private:
     // Child widgets are owned by their parent.
-    std::unique_ptr<hi::label_widget> _label_widget;
+    std::shared_ptr<hi::label_widget> _label_widget;
     hi::box_constraints _label_constraints;
     hi::box_shape _label_shape;
 };

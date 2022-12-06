@@ -244,7 +244,7 @@
     <Type Name="hi::v1::observer&lt;*&gt;">
         <DisplayString>{_value} #{_observed._ptr->_enable_group_ptr_owners.size()}</DisplayString>
         <Expand>
-            <Item Name="[value]">_value</Item>
+            <Item Name="[value]">_debug_value</Item>
             <Item Name="[observer count]">_observed._ptr->_enable_group_ptr_owners.size()</Item>
         </Expand>
     </Type>

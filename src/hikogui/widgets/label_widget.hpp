@@ -12,6 +12,7 @@
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
 #include "../geometry/alignment.hpp"
+#include "../layout/grid_layout.hpp"
 #include "../label.hpp"
 #include <memory>
 #include <string>
@@ -61,10 +62,9 @@ public:
      *    the icon in the bottom-right.
      *  - `alignment::top_center`: Larger icon above the text, both center aligned.
      *  - `alignment::bottom_center`: Larger icon below the text, both center aligned.
-     *  - `alignment::middle_center`: text drawn across a large icon. Should only be
      *    used with a `pixmap` icon.
      */
-    observer<alignment> alignment = hi::alignment::top_right();
+    observer<alignment> alignment = hi::alignment::top_flush();
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
@@ -85,12 +85,8 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        if (_icon_widget) {
-            co_yield _icon_widget.get();
-        }
-        if (_text_widget) {
-            co_yield _text_widget.get();
-        }
+        co_yield _icon_widget.get();
+        co_yield _text_widget.get();
     }
 
     box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
@@ -104,13 +100,11 @@ private:
 
     decltype(label)::callback_token _label_cbt;
     decltype(text_style)::callback_token _text_style_cbt;
+    decltype(alignment)::callback_token _alignment_cbt;
 
-    box_shape _icon_shape;
-    box_constraints _icon_constraints;
     std::shared_ptr<icon_widget> _icon_widget;
-    box_shape _text_shape;
-    box_constraints _text_constraints;
     std::shared_ptr<text_widget> _text_widget;
+    grid_layout<widget *> _grid;
 
     void set_attributes() noexcept {}
     void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept

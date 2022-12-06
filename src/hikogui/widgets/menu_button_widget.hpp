@@ -47,7 +47,7 @@ public:
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::middle_left();
+        alignment = alignment::middle_flush();
         set_attributes<0>(hi_forward(attributes)...);
     }
 

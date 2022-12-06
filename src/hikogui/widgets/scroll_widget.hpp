@@ -51,9 +51,6 @@ public:
 
     static constexpr hi::axis axis = Axis;
 
-    observer<int> minimum_width = box_constraints::max_int();
-    observer<int> minimum_height = box_constraints::max_int();
-
     ~scroll_widget() {}
 
     /** Constructs an empty scroll widget.
@@ -68,7 +65,7 @@ public:
         // The scroll-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
 
-        auto aperture = std::make_shared<scroll_aperture_widget>(this, minimum_width, minimum_height);
+        auto aperture = std::make_shared<scroll_aperture_widget>(this);
         auto horizontal_scroll_bar = std::make_shared<horizontal_scroll_bar_type>(
             this, aperture->content_width, aperture->aperture_width, aperture->offset_x);
         auto vertical_scroll_bar = std::make_shared<vertical_scroll_bar_type>(
@@ -125,8 +122,8 @@ public:
         for (auto& cell : _grid) {
             cell.set_constraints(cell.value->set_constraints(context));
         }
-
-        return _constraints = _grid.get_constraints(context.left_to_right());
+        auto grid_constraints = _grid.get_constraints(context.left_to_right());
+        return _constraints = grid_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -159,9 +156,9 @@ public:
     void draw(draw_context const& context) noexcept
     {
         if (*mode > widget_mode::invisible) {
-            _vertical_scroll_bar->draw(context);
-            _horizontal_scroll_bar->draw(context);
-            _aperture->draw(context);
+            for (hilet& cell : _grid) {
+                cell.value->draw(context);
+            }
         }
     }
 

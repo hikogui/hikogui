@@ -70,7 +70,7 @@ public:
      *  - `alignment::middle_center`: text drawn across a large icon. Should only be
      *    used with a `pixmap` icon.
      */
-    observer<alignment> alignment = hi::alignment::top_right();
+    observer<alignment> alignment = hi::alignment::middle_flush();
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */

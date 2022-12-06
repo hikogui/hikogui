@@ -11,11 +11,19 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
     mode = widget_mode::select;
 
     _icon_widget = std::make_shared<icon_widget>(this, label.get<"icon">());
-    _icon_widget->alignment = alignment;
     _text_widget = std::make_shared<text_widget>(this, label.get<"text">());
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
     _text_widget->mode = mode;
+
+    _alignment_cbt = alignment.subscribe([this](auto...) {
+        if (alignment == horizontal_alignment::center or alignment == horizontal_alignment::justified) {
+            _icon_widget->alignment = hi::alignment::middle_center();
+        } else {
+            _icon_widget->alignment = *alignment;
+        }
+    });
+    (*_alignment_cbt)(*alignment);
 
     _text_style_cbt = text_style.subscribe(
         [this](auto...) {
@@ -44,139 +52,82 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
             default:
                 _icon_widget->color = color::foreground();
             }
-        },
-        callback_flags::main);
+        });
 }
 
 box_constraints const& label_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
-    // Translate the text of the label during reconstrain as this is triggered when the system language changes.
-    _text_constraints = _text_widget->set_constraints(context);
-    _icon_constraints = _icon_widget->set_constraints(context);
+    // Resolve as if in left-to-right mode, the grid will flip itself.
+    hilet resolved_alignment = resolve(*alignment, true);
 
-    hilet label_size = _text_constraints.preferred();
-    hilet icon_size = _icon_constraints.preferred();
-
-    hilet has_text = label_size.width() > 0.0f;
-    hilet has_icon = icon_size.width() > 0.0f;
-
-    _inner_margin = (has_text and has_icon) ? context.theme->margin : 0.0f;
-
-    _icon_size = [&] {
-        if (has_icon) {
-            // Override the natural icon size.
-            if (*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) {
-                return context.theme->large_icon_size;
-            } else {
-                return std::ceil(context.theme->text_style(*text_style)->size * context.theme->scale);
-            }
+    _grid.clear();
+    if (to_bool(label->icon) and to_bool(label->text)) {
+        // Both of the icon and text are set, so configure the grid to hold both.
+        if (resolved_alignment == horizontal_alignment::left) {
+            // icon text
+            _grid.add_cell(0, 0, _icon_widget.get());
+            _grid.add_cell(1, 0, _text_widget.get(), true);
+        } else if (resolved_alignment == horizontal_alignment::right) {
+            // text icon
+            _grid.add_cell(0, 0, _text_widget.get(), true);
+            _grid.add_cell(1, 0, _icon_widget.get());
+        } else if (resolved_alignment == vertical_alignment::top) {
+            // icon
+            // text
+            _grid.add_cell(0, 0, _icon_widget.get());
+            _grid.add_cell(0, 1, _text_widget.get(), true);
+        } else if (resolved_alignment == vertical_alignment::bottom) {
+            // text
+            // icon
+            _grid.add_cell(0, 0, _text_widget.get(), true);
+            _grid.add_cell(0, 1, _icon_widget.get());
         } else {
-            return 0.0f;
+            hi_no_default("alignment is not allowed to be middle-center.");
         }
-    }();
+    } else if (to_bool(label->icon)) {
+        // Only the icon-widget is used.
+        _grid.add_cell(0, 0, _icon_widget.get());
+    } else if (to_bool(label->text)) {
+        // Only the text-widget is used.
+        _grid.add_cell(0, 0, _text_widget.get());
+    }
 
-    hilet size = [&] {
-        if (has_icon) {
-            if (*alignment != horizontal_alignment::center and *alignment != horizontal_alignment::justified) {
-                // If the icon is on the left or right, add the icon to the width.
-                // Since the label is inline, we do not adjust the height of the label widget on the icon size.
-                return extent2{label_size.width() + _inner_margin + _icon_size, label_size.height()};
+    hilet icon_size =
+        (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
+        narrow_cast<int>(context.theme->large_icon_size) :
+        narrow_cast<int>(std::ceil(context.theme->text_style(*text_style)->size * context.theme->scale));
 
-            } else if (*alignment != vertical_alignment::middle) {
-                // If the icon is above or below the text, add the icon height and the
-                // minimum width is the maximum of the icon and text width.
-                return extent2{std::max(label_size.width(), _icon_size), label_size.height() + _inner_margin + _icon_size};
+    _icon_widget->minimum_width = icon_size;
+    _icon_widget->maximum_width = icon_size;
+    _icon_widget->minimum_height = icon_size;
+    _icon_widget->maximum_height = icon_size;
 
-            } else {
-                // The text is written across the icon. Take the maximum width and height
-                // of both the icon and text.
-                return extent2{std::max(label_size.width(), _icon_size), std::max(label_size.height(), _icon_size)};
-            }
-        } else {
-            return label_size;
-        }
-    }();
+    for (auto& cell : _grid) {
+        cell.set_constraints(cell.value->set_constraints(context));
+    }
 
-    hilet resolved_aligment = [&]() -> hi::alignment {
-        if (has_text) {
-            return _text_constraints.alignment;
-        } else if (*alignment == horizontal_alignment::flush or *alignment == horizontal_alignment::justified) {
-            hilet h = context.left_to_right() ? horizontal_alignment::left : horizontal_alignment::right;
-            return {h, alignment->vertical()};
-        } else {
-            return *alignment;
-        }
-    }();
-
-    return _constraints = {size, size, size, resolved_aligment, context.theme->margin};
+    return _constraints = _grid.get_constraints(context.left_to_right());
 }
 
 void label_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
-
-        hilet text_rectangle = [&] {
-            if (alignment_ == horizontal_alignment::left) {
-                hilet text_width = narrow_cast<float>(context.width()) - _icon_size - _inner_margin;
-                return aarectangle{_icon_size + _inner_margin, 0.0f, text_width, narrow_cast<float>(context.height())};
-
-            } else if (alignment_ == horizontal_alignment::right) {
-                hilet text_width = narrow_cast<float>(context.width()) - _icon_size - _inner_margin;
-                return aarectangle{0.0f, 0.0f, text_width, narrow_cast<float>(context.height())};
-
-            } else if (alignment_ == vertical_alignment::top) {
-                hilet text_height = narrow_cast<float>(context.height()) - _icon_size - _inner_margin;
-                return aarectangle{0.0f, 0.0f, narrow_cast<float>(context.width()), text_height};
-
-            } else if (alignment_ == vertical_alignment::bottom) {
-                hilet text_height = context.height() - _icon_size - _inner_margin;
-                return aarectangle{0.0f, _icon_size + _inner_margin, narrow_cast<float>(context.width()), text_height};
-
-            } else {
-                return context.rectangle();
-            }
-        }();
-        _text_shape = box_shape{_text_constraints, text_rectangle, context.theme->baseline_adjustment};
-
-        hilet icon_pos = [&] {
-            if (alignment_ == hi::alignment::top_left()) {
-                return point2{0.0f, context.height() - _icon_size};
-            } else if (alignment_ == hi::alignment::top_right()) {
-                return point2{context.width() - _icon_size, context.height() - _icon_size};
-            } else if (alignment_ == vertical_alignment::top) {
-                return point2{(context.width() - _icon_size) / 2.0f, context.height() - _icon_size};
-            } else if (alignment_ == hi::alignment::bottom_left()) {
-                return point2{0.0f, 0.0f};
-            } else if (alignment_ == hi::alignment::bottom_right()) {
-                return point2{context.width() - _icon_size, 0.0f};
-            } else if (alignment_ == vertical_alignment::bottom) {
-                return point2{(context.width() - _icon_size) / 2.0f, 0.0f};
-            } else if (alignment_ == hi::alignment::middle_left()) {
-                return point2{0.0f, (context.height() - _icon_size) / 2.0f};
-            } else if (alignment_ == hi::alignment::middle_right()) {
-                return point2{context.width() - _icon_size, (context.height() - _icon_size) / 2.0f};
-            } else if (alignment_ == vertical_alignment::middle) {
-                return point2{(context.width() - _icon_size) / 2.0f, (context.height() - _icon_size) / 2.0f};
-            } else {
-                hi_no_default();
-            }
-        }();
-        hilet icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
-        _icon_shape = box_shape{_icon_constraints, icon_rectangle, context.theme->baseline_adjustment};
+        _grid.set_layout(context.width(), context.height(), context.theme->baseline_adjustment);
     }
 
-    _icon_widget->set_layout(context.transform(_icon_shape, 0.0f));
-    _text_widget->set_layout(context.transform(_text_shape, 0.0f));
+    for (hilet& cell : _grid) {
+        cell.value->set_layout(context.transform(cell.shape, 0.0f));
+    }
 }
 
 void label_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-        _icon_widget->draw(context);
-        _text_widget->draw(context);
+        for (hilet& cell : _grid) {
+            cell.value->draw(context);
+        }
     }
 }
 

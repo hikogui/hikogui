@@ -58,27 +58,36 @@ box_constraints const& icon_widget::set_constraints(set_constraints_context cons
                 context.theme->scale;
         }
     }
-    return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, *alignment, context.theme->margin};
+
+    hilet resolved_alignment = resolve(*alignment, context.left_to_right());
+    hilet icon_constraints =
+        box_constraints{extent2{0.0f, 0.0f}, _icon_size, _icon_size, resolved_alignment, context.theme->margin};
+    return _constraints = icon_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
 }
 
-void icon_widget::set_layout(widget_layout const &context) noexcept
+void icon_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
         } else {
-            hilet icon_scale = scale2::uniform(_icon_size, context.size());
+            hilet width = std::clamp(context.shape.width, *minimum_width, *maximum_width);
+            hilet height = std::clamp(context.shape.height, *minimum_height, *maximum_height);
+
+            hilet icon_scale = scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
             hilet new_icon_size = icon_scale * _icon_size;
-            _icon_rectangle = align(context.rectangle(), new_icon_size, *alignment);
+            hilet resolved_alignment = resolve(*alignment, context.left_to_right());
+            _icon_rectangle = align(context.rectangle(), new_icon_size, resolved_alignment);
         }
     }
 }
 
-void icon_widget::draw(draw_context const &context) noexcept
+void icon_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         switch (_icon_type) {
-        case icon_type::no: break;
+        case icon_type::no:
+            break;
 
         case icon_type::pixmap:
             if (not context.draw_image(layout(), _icon_rectangle, _pixmap_backing)) {
@@ -86,11 +95,14 @@ void icon_widget::draw(draw_context const &context) noexcept
             }
             break;
 
-        case icon_type::glyph: {
+        case icon_type::glyph:
+            {
                 context.draw_glyph(layout(), _icon_rectangle, layout().theme->color(*color), _glyph);
-        } break;
+            }
+            break;
 
-        default: hi_no_default();
+        default:
+            hi_no_default();
         }
     }
 }

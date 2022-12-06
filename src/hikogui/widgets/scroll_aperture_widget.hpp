@@ -23,9 +23,6 @@ class scroll_aperture_widget : public widget {
 public:
     using super = widget;
 
-    observer<int> minimum_width = box_constraints::max_int();
-    observer<int> minimum_height = box_constraints::max_int();
-
     observer<int> content_width;
     observer<int> content_height;
     observer<int> aperture_width;
@@ -33,11 +30,7 @@ public:
     observer<int> offset_x;
     observer<int> offset_y;
 
-    scroll_aperture_widget(
-        widget *parent,
-        forward_of<observer<int>> auto&& minimum_width,
-        forward_of<observer<int>> auto&& minimum_height) noexcept :
-        super(parent), minimum_width(hi_forward(minimum_width)), minimum_height(hi_forward(minimum_height))
+    scroll_aperture_widget(widget *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
@@ -114,27 +107,14 @@ public:
         hi_assert_not_null(_content);
         _content_constraints = _content->set_constraints(context);
 
-        hilet minimum_size = extent2{
-            std::min(
-                _content_constraints.margins().left() + _content_constraints.minimum().width() +
-                    _content_constraints.margins().right(),
-                narrow_cast<float>(*minimum_width)),
-            std::min(
-                _content_constraints.margins().top() + _content_constraints.minimum().height() +
-                    _content_constraints.margins().bottom(),
-                narrow_cast<float>(*minimum_height))};
-        hilet preferred_size = extent2{
-            _content_constraints.margins().left() + _content_constraints.preferred().width() +
-                _content_constraints.margins().right(),
-            _content_constraints.margins().top() + _content_constraints.preferred().height() +
-                _content_constraints.margins().bottom()};
-        hilet maximum_size = extent2{
-            _content_constraints.margins().left() + _content_constraints.maximum().width() +
-                _content_constraints.margins().right(),
-            _content_constraints.margins().top() + _content_constraints.maximum().height() +
-                _content_constraints.margins().bottom()};
+        auto aperture_constraints = _content_constraints;
 
-        return _constraints = {minimum_size, preferred_size, maximum_size};
+        // The aperture can scroll so its minimum width and height are zero. 
+        aperture_constraints.minimum_width = 0;
+        aperture_constraints.minimum_height = 0;
+
+        return _constraints = aperture_constraints.internalize_margins().constrain(
+                   *minimum_width, *minimum_height, *maximum_width, *maximum_height);
     }
 
     void set_layout(widget_layout const& context) noexcept override

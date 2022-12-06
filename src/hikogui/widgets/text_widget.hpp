@@ -67,7 +67,7 @@ public:
 
     /** The horizontal alignment of the text inside the space of the widget.
      */
-    observer<alignment> alignment = hi::alignment::middle_center();
+    observer<alignment> alignment = hi::alignment::top_flush();
 
     /** The style of the text.
      */

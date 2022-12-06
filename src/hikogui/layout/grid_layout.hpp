@@ -28,6 +28,7 @@ struct grid_layout_cell {
     size_t first_row = 0;
     size_t last_column = 0;
     size_t last_row = 0;
+    bool beyond_maximum = false;
     value_type value = {};
     box_shape shape = {};
 
@@ -42,8 +43,14 @@ struct grid_layout_cell {
         size_t first_row,
         size_t last_column,
         size_t last_row,
+        bool beyond_maximum,
         std::convertible_to<value_type> auto&& value) noexcept :
-        first_column(first_column), first_row(first_row), last_column(last_column), last_row(last_row), value(hi_forward(value))
+        first_column(first_column),
+        first_row(first_row),
+        last_column(last_column),
+        last_row(last_row),
+        beyond_maximum(beyond_maximum),
+        value(hi_forward(value))
     {
         hi_assert(first_column < last_column);
         hi_assert(first_row < last_row);
@@ -260,6 +267,10 @@ public:
          */
         alignment_type alignment = alignment_type::none;
 
+        /** Allow this cell to be resized beyond the maximum constraint.
+         */
+        bool beyond_maximum = false;
+
         /** The position of the cell.
          *
          * @note This field is valid after layout.
@@ -387,10 +398,10 @@ public:
      * In an emergency widgets will get a size larger than its maximum. However
      * widgets will never get a smaller size than its minimum.
      *
-     * @param size The size of the grid along its axis.
+     * @param new_extent The size of the grid along its axis.
      * @param guideline_width The width of the guideline.
      */
-    constexpr void layout(int extent, int guideline_width) noexcept
+    constexpr void layout(int new_extent, int guideline_width) noexcept
     {
         // Start with the extent of each constraint equal to the preferred extent.
         for (auto& constraint : _constraints) {
@@ -399,22 +410,40 @@ public:
 
         // If the total extent is too large, shrink the constraints that allow to be shrunk.
         auto [total_extent, count] = layout_shrink(begin(), end());
-        while (total_extent > extent and count != 0) {
+        while (total_extent > new_extent and count != 0) {
             // The result may shrink slightly too much, which will be fixed by expanding in the next loop.
-            std::tie(total_extent, count) = layout_shrink(begin(), end(), total_extent - extent, count);
+            std::tie(total_extent, count) = layout_shrink(begin(), end(), total_extent - new_extent, count);
         }
 
         // If the total extent is too small, expand the constraints that allow to be grown.
         std::tie(total_extent, count) = layout_expand(begin(), end());
-        while (total_extent < extent and count != 0) {
+        while (total_extent < new_extent and count != 0) {
             // The result may expand slightly too much, we don't care.
-            std::tie(total_extent, count) = layout_expand(begin(), end(), extent - total_extent, count);
+            std::tie(total_extent, count) = layout_expand(begin(), end(), new_extent - total_extent, count);
+        }
+
+        // If the total extent is still too small, expand into the cells that are marked beyond_maximum.
+        if (total_extent < new_extent) {
+            // The result may expand slightly too much, we don't care.
+            hilet count = std::count_if(begin(), end(), [](hilet& item) {
+                return item.beyond_maximum;
+            });
+            if (count) {
+                hilet todo = new_extent - total_extent;
+                hilet per_extent = (todo + count - 1) / count;
+                for (auto& constraint : _constraints) {
+                    if (constraint.beyond_maximum) {
+                        constraint.extent += per_extent;
+                    }
+                }
+            }
+            total_extent = extent(cbegin(), cend());
         }
 
         // If the total extent is still too small, expand the first constrain above the maximum size.
-        if (total_extent < extent and not empty()) {
+        if (total_extent < new_extent and not empty()) {
             // The result may expand slightly too much, we don't care.
-            front().extent += extent - total_extent;
+            front().extent += new_extent - total_extent;
         }
 
         if (_forward) {
@@ -691,6 +720,10 @@ private:
         inplace_max(_constraints[cell.last<axis>() - 1].margin_after, cell.margin_after<axis>(_forward));
         inplace_max(_constraints[cell.first<axis>()].padding_before, cell.padding_before<axis>(_forward));
         inplace_max(_constraints[cell.last<axis>() - 1].padding_after, cell.padding_after<axis>(_forward));
+
+        for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
+            _constraints[i].beyond_maximum |= cell.beyond_maximum;
+        }
 
         if (cell.span<axis>() == 1) {
             inplace_max(_constraints[cell.first<axis>()].alignment, cell.alignment<axis>());
@@ -1006,17 +1039,23 @@ public:
      * @param first_row The first row of the cell-span.
      * @param last_row One beyond the last row of the cell-span.
      * @param value The value to be copied or moved into the cell.
+     * @param beyond_maximum Allow this cell to resize beyond the maximum constraint.
      * @return A reference to the created cell.
      */
     template<forward_of<value_type> Value>
-    constexpr reference
-    add_cell(size_t first_column, size_t first_row, size_t last_column, size_t last_row, Value&& value) noexcept
+    constexpr reference add_cell(
+        size_t first_column,
+        size_t first_row,
+        size_t last_column,
+        size_t last_row,
+        Value&& value,
+        bool beyond_maximum = false) noexcept
     {
         // At least one cell must be in the range.
         hi_assert(first_column < last_column);
         hi_assert(first_row < last_row);
         hi_assert(not cell_in_use(first_column, first_row, last_column, last_row));
-        auto& r = _cells.emplace_back(first_column, first_row, last_column, last_row, std::forward<Value>(value));
+        auto& r = _cells.emplace_back(first_column, first_row, last_column, last_row, beyond_maximum, std::forward<Value>(value));
         update_after_insert_or_delete();
         return r;
     }
@@ -1026,12 +1065,13 @@ public:
      * @param column The column of the cell.
      * @param row The row of the cell.
      * @param value The value to be copied or moved into the cell.
+     * @param beyond_maximum Allow this cell to resize beyond the maximum constraint.
      * @return A reference to the created cell.
      */
     template<forward_of<value_type> Value>
-    constexpr reference add_cell(size_t column, size_t row, Value&& value) noexcept
+    constexpr reference add_cell(size_t column, size_t row, Value&& value, bool beyond_maximum = false) noexcept
     {
-        return add_cell(column, row, column + 1, row + 1, std::forward<Value>(value));
+        return add_cell(column, row, column + 1, row + 1, std::forward<Value>(value), beyond_maximum);
     }
 
     constexpr void clear() noexcept
@@ -1074,6 +1114,12 @@ public:
         return r;
     }
 
+    /** Layout the cells based on the width and height.
+     *
+     * @param width The width of the grid.
+     * @param height The height of the grid.
+     * @param guideline_width The width of the base-line.
+     */
     constexpr void set_layout(int width, int height, int guideline_width) noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
