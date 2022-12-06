@@ -39,6 +39,7 @@ protected:
         auto l_context = widget_layout{};
         l_context.shape.width = constraints.preferred_width;
         l_context.shape.height = constraints.preferred_height;
+        l_context.shape.baseline = constraints.preferred_height / 2;
         l_context.font_book = font_book.get();
         l_context.theme = &theme;
         widget->set_layout(l_context);
