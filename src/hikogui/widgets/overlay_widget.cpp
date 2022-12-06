@@ -22,17 +22,18 @@ overlay_widget::~overlay_widget()
 {
 }
 
-void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
+void overlay_widget::set_widget(std::shared_ptr<widget> new_widget) noexcept
 {
     _content = std::move(new_widget);
     ++global_counter<"overlay_widget:set_widget:constrain">;
     process_event({gui_event_type::window_reconstrain});
 }
 
-widget_constraints const& overlay_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& overlay_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
-    return _constraints = _content->set_constraints(context);
+    _content_constraints = _content->set_constraints(context);
+    return _constraints = _content_constraints;
 }
 
 void overlay_widget::set_layout(widget_layout const& context) noexcept
@@ -42,8 +43,11 @@ void overlay_widget::set_layout(widget_layout const& context) noexcept
     // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
     _layout.clipping_rectangle = context.rectangle() + context.theme->border_width;
 
+    hilet content_rectangle = context.rectangle();
+    _content_shape = box_shape{_content_constraints, content_rectangle, context.theme->baseline_adjustment};
+
     // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
-    _content->set_layout(_layout.transform(context.rectangle(), 1.0f, context.rectangle()));
+    _content->set_layout(_layout.transform(_content_shape, 1.0f, context.rectangle()));
 }
 
 void overlay_widget::draw(draw_context const &context) noexcept

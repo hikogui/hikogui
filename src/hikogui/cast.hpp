@@ -7,6 +7,7 @@
 #include "utility.hpp"
 #include "concepts.hpp"
 #include "assert.hpp"
+#include "compare.hpp"
 #include <type_traits>
 #include <concepts>
 #include <climits>
@@ -138,16 +139,28 @@ template<arithmetic Out, arithmetic In>
 
 } // namespace detail
 
-/** Cast an unsigned number and saturate on overflow.
+/** Cast a numeric value to an integer saturating on overflow.
+ *
+ * @tparam Out the signed- or unsigned-integer type to cast to.
+ * @param rhs The value to convert.
+ * @return The converted value, which is saturated if @rhs is over- or underflowing.
  */
-template<std::unsigned_integral Out, std::unsigned_integral In>
+template<std::integral Out, arithmetic In>
 [[nodiscard]] constexpr Out saturate_cast(In rhs) noexcept
 {
-    auto r = std::numeric_limits<Out>::max();
-    if (rhs < r) {
-        r = static_cast<Out>(rhs);
+    if constexpr (std::is_floating_point_v<In>) {
+        if (std::isnan(rhs)) {
+            return Out{0};
+        }
     }
-    return r;
+
+    if (three_way_compare(rhs, std::numeric_limits<Out>::lowest()) != std::strong_ordering::greater) {
+        return std::numeric_limits<Out>::lowest();
+    } else if (three_way_compare(rhs, std::numeric_limits<Out>::max()) != std::strong_ordering::less) {
+        return std::numeric_limits<Out>::max();
+    } else {
+        return static_cast<Out>(rhs);
+    }
 }
 
 /** Cast numeric values without loss of precision.

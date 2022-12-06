@@ -12,11 +12,13 @@
 #include "text_style.hpp"
 #include "glyph_ids.hpp"
 #include "font.hpp"
+#include "../layout/box_constraints.hpp"
+#include "../geometry/alignment.hpp"
 #include "../unicode/unicode_description.hpp"
 #include "../unicode/unicode_break_opportunity.hpp"
+#include "../unicode/unicode_bidi.hpp"
 #include "../unicode/grapheme.hpp"
 #include "../unicode/gstring.hpp"
-#include "../alignment.hpp"
 #include <vector>
 #include <tuple>
 
@@ -41,15 +43,17 @@ public:
     using char_vector = std::vector<text_shaper_char>;
     using char_iterator = char_vector::iterator;
     using char_const_iterator = char_vector::const_iterator;
+    using char_reference = char_vector::reference;
+    using char_const_reference = char_vector::const_reference;
     using line_vector = std::vector<text_shaper_line>;
     using line_iterator = line_vector::iterator;
     using line_const_iterator = line_vector::const_iterator;
 
     constexpr text_shaper() noexcept = default;
-    constexpr text_shaper(text_shaper const &) noexcept = default;
-    constexpr text_shaper(text_shaper &&) noexcept = default;
-    constexpr text_shaper &operator=(text_shaper const &) noexcept = default;
-    constexpr text_shaper &operator=(text_shaper &&) noexcept = default;
+    constexpr text_shaper(text_shaper const&) noexcept = default;
+    constexpr text_shaper(text_shaper&&) noexcept = default;
+    constexpr text_shaper& operator=(text_shaper const&) noexcept = default;
+    constexpr text_shaper& operator=(text_shaper&&) noexcept = default;
 
     /** Construct a text_shaper with a text and alignment.
      *
@@ -79,17 +83,21 @@ public:
      * @param script The script of the text.
      */
     [[nodiscard]] text_shaper(
-        hi::font_book &font_book,
-        gstring const &text,
-        text_style const &style,
+        hi::font_book& font_book,
+        gstring const& text,
+        text_style const& style,
         float dpi_scale,
+        hi::alignment alignment,
+        unicode_bidi_class text_direction,
         unicode_script script = unicode_script::Common) noexcept;
 
     [[nodiscard]] text_shaper(
-        hi::font_book &font_book,
+        hi::font_book& font_book,
         std::string_view text,
-        text_style const &style,
+        text_style const& style,
         float dpi_scale,
+        hi::alignment alignment,
+        unicode_bidi_class text_direction,
         unicode_script script = unicode_script::Common) noexcept;
 
     [[nodiscard]] bool empty() const noexcept
@@ -132,7 +140,7 @@ public:
         return _text.cend();
     }
 
-    auto const &lines() const noexcept
+    auto const& lines() const noexcept
     {
         return _lines;
     }
@@ -150,17 +158,37 @@ public:
      *
      * @param maximum_line_width The maximum line width allowed, this may be infinite to determine
      *        the natural text size without folding.
-     * @param alignment The vertical alignment of text.
      * @param line_spacing The scaling of the spacing between lines.
      * @param paragraph_spacing The scaling of the spacing between paragraphs.
      * @return The rectangle surrounding the text, cap-height. The rectangle excludes ascenders & descenders, as if
      *         each line is x-height. y = 0 of the rectangle is at the base-line of the text.
      */
-    [[nodiscard]] aarectangle bounding_rectangle(
-        float maximum_line_width,
-        vertical_alignment alignment,
-        float line_spacing = 1.0f,
-        float paragraph_spacing = 1.5f) noexcept;
+    [[nodiscard]] aarectangle
+    bounding_rectangle(float maximum_line_width, float line_spacing = 1.0f, float paragraph_spacing = 1.5f) noexcept;
+
+    /** Get constraints.
+     *
+     * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
+     * and fold the lines using the unicode line breaking algorithm to several line widths.
+     *
+     * The following sizes will be returned:
+     *  - Maximum width:
+     *    + if larger than A4 priority=0,
+     *    + larger than A4 two-column priority=10,
+     *    + larger than A4 three-column priority=20,
+     *    + otherwise priority=100.
+     *  - No intermediate sizes.
+     *  - A4 width, priority=10.
+     *  - No intermediate sizes.
+     *  - A4 two-column width, priority=10.
+     *  - No intermediate sizes.
+     *  - A4 three-column width, priority=10.
+     *  - All smaller sizes, if maximum size is smaller than A4 two-column, priority=5 (decreasing every step).
+     *
+     * @param alignment The vertical alignment of text.
+     * @return The constraints (a list of sizes) which can hold the text.
+     */
+    [[nodiscard]] box_constraints get_constraints() noexcept;
 
     /** Layout the lines of the text.
      *
@@ -175,7 +203,7 @@ public:
      *
      * @post The lines have been laid out.
      * @param rectangle The rectangle to position the glyphs in.
-     * @param base_line The position of the recommended base-line.
+     * @param baseline The position of the recommended base-line.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
      * @param writing_direction The default writing direction.
      * @param alignment The alignment of the text (default: flush, middle).
@@ -184,10 +212,8 @@ public:
      */
     [[nodiscard]] void layout(
         aarectangle rectangle,
-        float base_line,
+        float baseline,
         extent2 sub_pixel_size,
-        unicode_bidi_class writing_direction,
-        hi::alignment alignment = hi::alignment{horizontal_alignment::flush, vertical_alignment::middle},
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
 
@@ -196,6 +222,23 @@ public:
     [[nodiscard]] aarectangle rectangle() const noexcept
     {
         return _rectangle;
+    }
+
+    /** Get the text-direction as a whole.
+     */
+    [[nodiscard]] unicode_bidi_class text_direction() const noexcept
+    {
+        return _text_direction;
+    }
+
+    /** Get the resolved alignment of the text.
+     *
+     * This is the alignment when taking into account the direction of the text
+     * and the direction of the selected language.
+     */
+    [[nodiscard]] alignment resolved_alignment() const noexcept
+    {
+        return resolve(_alignment, _text_direction == unicode_bidi_class::L);
     }
 
     /** Get the character at index in logical order.
@@ -392,8 +435,8 @@ public:
 
     [[nodiscard]] text_cursor move_left_char(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_right_char(text_cursor cursor, bool overwrite_mode) const noexcept;
-    [[nodiscard]] text_cursor move_down_char(text_cursor cursor, float &x) const noexcept;
-    [[nodiscard]] text_cursor move_up_char(text_cursor cursor, float &x) const noexcept;
+    [[nodiscard]] text_cursor move_down_char(text_cursor cursor, float& x) const noexcept;
+    [[nodiscard]] text_cursor move_up_char(text_cursor cursor, float& x) const noexcept;
     [[nodiscard]] text_cursor move_left_word(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_right_word(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_begin_line(text_cursor cursor) const noexcept;
@@ -420,6 +463,8 @@ private:
      */
     char_vector _text;
 
+    hi::alignment _alignment;
+
     /** A list of word break opportunities.
      */
     unicode_break_vector _line_break_opportunities;
@@ -435,6 +480,14 @@ private:
     /** A list of sentence break opportunities.
      */
     unicode_break_vector _sentence_break_opportunities;
+
+    /** The unicode bidi algorithm context.
+     */
+    unicode_bidi_context _bidi_context;
+
+    /** Direction of the text as a whole.
+     */
+    unicode_bidi_class _text_direction;
 
     /** The default script of the text.
      */
@@ -457,19 +510,15 @@ private:
     /** Create lines from the characters in the text shaper.
      *
      * @param rectangle The rectangle to position the glyphs in.
-     * @param base_line The position of the recommended base-line.
+     * @param baseline The position of the recommended base-line.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
-     * @param vertical_alignment The vertical alignment of text.
-     * @param writing_direction The default writing direction.
      * @param line_spacing The scaling of the spacing between lines.
      * @param paragraph_spacing The scaling of the spacing between paragraphs.
      */
     [[nodiscard]] line_vector make_lines(
         aarectangle rectangle,
-        float base_line,
+        float baseline,
         extent2 sub_pixel_size,
-        hi::vertical_alignment vertical_alignment,
-        unicode_bidi_class writing_direction,
         float line_spacing,
         float paragraph_spacing) noexcept;
 
@@ -477,22 +526,27 @@ private:
      *
      * @param rectangle The rectangle to position the glyphs in.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
-     * @param horizontal_alignment The horizontal alignment of the text (default: flush).
-     * @param writing_direction The default writing direction.
      * @post Glyphs in _text are positioned inside the given rectangle.
      */
-    void position_glyphs(
-        aarectangle rectangle,
-        extent2 sub_pixel_size,
-        hi::horizontal_alignment horizontal_alignment,
-        unicode_bidi_class writing_direction) noexcept;
+    void position_glyphs(aarectangle rectangle, extent2 sub_pixel_size) noexcept;
 
     /** Resolve the script of each character in text.
      */
     void resolve_script() noexcept;
 
     [[nodiscard]] std::pair<text_cursor, text_cursor>
-    get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) const noexcept;
+    get_selection_from_break(text_cursor cursor, unicode_break_vector const& break_opportunities) const noexcept;
+
+    [[nodiscard]] std::pair<font_metrics, unicode_general_category>
+    get_line_metrics(text_shaper::char_const_iterator first, text_shaper::char_const_iterator last) const noexcept;
+
+    /** Get the height of the text.
+     *
+     * This is the vertical distance from the x-height of the top most line, and the base-line of the bottom most line.
+     *
+     * @param lines A list of number-of-graphemes per line.
+     */
+    [[nodiscard]] float get_text_height(std::vector<size_t> const& lines) const noexcept;
 };
 
 } // namespace hi::inline v1

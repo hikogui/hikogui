@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "../GFX/paged_image.hpp"
-#include "../alignment.hpp"
+#include "../geometry/alignment.hpp"
 #include "../label.hpp"
 #include <memory>
 #include <string>
@@ -67,7 +67,7 @@ public:
     }
 
     /// @privatesection
-    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     /// @endprivatesection

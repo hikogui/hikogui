@@ -2,6 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file Utilities for throwing exceptions and terminating the application.
+ */
+
 #include "utility.hpp"
 #include <exception>
 #include <stdexcept>
@@ -22,20 +25,20 @@ inline std::atomic<char const *> terminate_message = nullptr;
  * The std::terminate() handler will display the __FILE__, __LINE__
  * number and the message to the console or a popup dialogue.
  *
- * @param msg The message to display.
+ * @param ... The message to display.
  */
-#define hi_set_terminate_message(msg) \
-    ::hi::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" msg, std::memory_order::relaxed)
+#define hi_set_terminate_message(...) \
+    ::hi::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__, std::memory_order::relaxed)
 
 /** The old terminate handler.
  *
- * This is the handlr returned by `std::set_terminate()`.
+ * This is the handler returned by `std::set_terminate()`.
  */
 inline std::terminate_handler old_terminate_handler;
 
 /** The HikoGUI terminate handler.
  *
- * This handler will print an error message on the console or popup a dialogue box..
+ * This handler will print an error message on the console or pop-up a dialogue box.
  *
  * @note Use `hi_set_terminate_message()` to set a message.
  */

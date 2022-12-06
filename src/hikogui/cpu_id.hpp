@@ -5,6 +5,7 @@
 #pragma once
 
 #include "architecture.hpp"
+#include "cast.hpp"
 #include <array>
 
 #if HI_COMPILER == HI_CC_MSVC
@@ -15,610 +16,471 @@
 #error "Unsuported compiler for x64 cpu_id"
 #endif
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
+
+class cpu_id {
+public:
+    constexpr static uint32_t processor_type_OEM = 0;
+    constexpr static uint32_t processor_type_Intel_overdrive = 1;
+    constexpr static uint32_t processor_type_dual_processor = 2;
+
+    std::string vendor_id = {};
+    std::string brand_name = {};
+
+    uint32_t stepping_id:4 = 0;
+    uint32_t model_id:8 = 0;
+    uint32_t family_id:9 = 0;
+    uint32_t processor_type:2 = 0;
+
+    uint64_t features = 0;
+
+
+    size_t cache_flush_size = 0;
+
+    /** Local processor id.
+     */
+    uint8_t APIC_id = 0;
+
+    cpu_id(cpu_id const &) noexcept = default;
+    cpu_id(cpu_id &&) noexcept = default;
+    cpu_id &operator=(cpu_id const &) noexcept = default;
+    cpu_id &operator=(cpu_id &&) noexcept = default;
+
+    cpu_id() noexcept
+    {
+        hilet leaf0 = get_leaf(0);
+        hilet max_leaf = leaf0.a;
+
+        // vendor_id are 12 characters from ebx, edx, ecx in that order.
+        vendor_id.resize(12);
+        std::memcpy(vendor_id.data() + 0, leaf0.b, 4);
+        std::memcpy(vendor_id.data() + 4, leaf0.d, 4);
+        std::memcpy(vendor_id.data() + 8, leaf0.c, 4);
+
+        size_t brand_index = 0;
+        if (max_leaf >= 1) {
+            hilet leaf1 = get_leaf(1);
+
+            stepping_id = leaf1.a & 0xf;
+            model_id = (leaf1.a >> 4) & 0xf;
+            family_id = (leaf1.a >> 8) & 0xf;
+            processor_type = (leaf1.a >> 12) & 0x3;
+
+            if (family_id == 0x6 or family_id == 0xf) {
+                // Extended model is concatenated.
+                model_id |= ((leaf1.a >> 16) & 0xf) << 4;
+            }
+            if (family_id == 0xf) {
+                // Extended family is simply added.
+                family_id += (leaf1.a >> 20) & 0xff;
+            }
+
+            brand_index = leaf1.b & 0xff;
+            cache_flush_size = ((leaf1.b >> 8) & 0xff) * 8;
+            APIC_id = (leaf1.b >> 24) & 0xff;
+
+            
+            
+        }
+    }
+
+
+    [[nodiscard]] bool has_aesni() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_aesni);
+    }
+
+    [[nodiscard]] bool has_avx() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_avx);
+    }
+
+    [[nodiscard]] bool has_cmpxchg16b() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_cmpxchg16b);
+    }
+
+    [[nodiscard]] bool has_clfsh() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_clfsh);
+    }
+
+    [[nodiscard]] bool has_cmov() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_cmov);
+    }
+
+    [[nodiscard]] bool has_cx8() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_cx8);
+    }
+
+    [[nodiscard]] bool has_fma() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_fma);
+    }
+
+    [[nodiscard]] bool has_f16c() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_f16c);
+    }
+
+    [[nodiscard]] bool has_fxsr() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_fxsr);
+    }
+
+    [[nodiscard]] bool has_sse() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_sse);
+    }
+
+    [[nodiscard]] bool has_sse2() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_sse2);
+    }
+
+    [[nodiscard]] bool has_sse3() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_sse3);
+    }
+
+    [[nodiscard]] bool has_ssse3() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_ssse3);
+    }
+
+    [[nodiscard]] bool has_sse4_1() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_sse4_1);
+    }
+
+    [[nodiscard]] bool has_sse4_2() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_sse4_2);
+    }
+
+    [[nodiscard]] bool has_movbe() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_movbe);
+    }
+
+    [[nodiscard]] bool has_mmx() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_mmx);
+    }
+
+    [[nodiscard]] bool has_msr() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_msr);
+    }
+
+    [[nodiscard]] bool has_osxsave() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_osxsave);
+    }
+
+    [[nodiscard]] bool has_pclmulqdq() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_pclmulqdq);
+    }
+
+    [[nodiscard]] bool has_popcnt() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_popcnt);
+    }
+
+    [[nodiscard]] bool has_rdrand() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_rdrand);
+    }
+
+    [[nodiscard]] bool has_sep() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_sep);
+    }
+
+    [[nodiscard]] bool has_tsc() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_tsc);
+    }
+
+    [[nodiscard]] bool has_xsave() const noexcept
+    {
+        return to_bool(instruction_set & instruction_set_xsave);
+    }
+
+    [[nodiscard]] bool has_acpi() const noexcept
+    {
+        return to_bool(features & features_acpi);
+    }
+
+    [[nodiscard]] bool has_apic() const noexcept
+    {
+        return to_bool(features & features_apic);
+    }
+
+    [[nodiscard]] bool has_cnxt_id() const noexcept
+    {
+        return to_bool(features & features_cnxt_id);
+    }
+
+    [[nodiscard]] bool has_dca() const noexcept
+    {
+        return to_bool(features & features_dca);
+    }
+
+    [[nodiscard]] bool has_de() const noexcept
+    {
+        return to_bool(features & features_de);
+    }
+
+    [[nodiscard]] bool has_ds() const noexcept
+    {
+        return to_bool(features & features_ds);
+    }
+
+    [[nodiscard]] bool has_ds_cpl() const noexcept
+    {
+        return to_bool(features & features_ds_cpl);
+    }
+
+    [[nodiscard]] bool has_dtes64() const noexcept
+    {
+        return to_bool(features & features_dtes64);
+    }
+
+    [[nodiscard]] bool has_eist() const noexcept
+    {
+        return to_bool(features & features_eist);
+    }
+
+    [[nodiscard]] bool has_fpu() const noexcept
+    {
+        return to_bool(features & features_fpu);
+    }
+
+    [[nodiscard]] bool has_htt() const noexcept
+    {
+        return to_bool(features & features_htt);
+    }
+
+    [[nodiscard]] bool has_mca() const noexcept
+    {
+        return to_bool(features & features_mca);
+    }
+
+    [[nodiscard]] bool has_mce() const noexcept
+    {
+        return to_bool(features & features_mce);
+    }
+
+    [[nodiscard]] bool has_monitor() const noexcept
+    {
+        return to_bool(features & features_monitor);
+    }
+
+    [[nodiscard]] bool has_mttr() const noexcept
+    {
+        return to_bool(features & features_mttr);
+    }
+
+    [[nodiscard]] bool has_pae() const noexcept
+    {
+        return to_bool(features & features_pae);
+    }
+
+    [[nodiscard]] bool has_pat() const noexcept
+    {
+        return to_bool(features & features_pat);
+    }
+
+    [[nodiscard]] bool has_pbe() const noexcept
+    {
+        return to_bool(features & features_pbe);
+    }
+
+    [[nodiscard]] bool has_pcid() const noexcept
+    {
+        return to_bool(features & features_pcid);
+    }
+
+    [[nodiscard]] bool has_pdcm() const noexcept
+    {
+        return to_bool(features & features_pdcm);
+    }
+
+    [[nodiscard]] bool has_pge() const noexcept
+    {
+        return to_bool(features & features_pge);
+    }
+
+    [[nodiscard]] bool has_pse() const noexcept
+    {
+        return to_bool(features & features_pse);
+    }
+
+    [[nodiscard]] bool has_pse_36() const noexcept
+    {
+        return to_bool(features & features_pse_36);
+    }
+
+    [[nodiscard]] bool has_psn() const noexcept
+    {
+        return to_bool(features & features_psm);
+    }
+
+    [[nodiscard]] bool has_sdbg() const noexcept
+    {
+        return to_bool(features & features_sdbg);
+    }
+
+    [[nodiscard]] bool has_smx() const noexcept
+    {
+        return to_bool(features & features_smx);
+    }
+
+    [[nodiscard]] bool has_ss() const noexcept
+    {
+        return to_bool(features & features_ss);
+    }
+
+    [[nodiscard]] bool has_tm() const noexcept
+    {
+        return to_bool(features & features_tm);
+    }
+
+    [[nodiscard]] bool has_tm2() const noexcept
+    {
+        return to_bool(features & features_tm2);
+    }
+
+    [[nodiscard]] bool has_tsc_deadline() const noexcept
+    {
+        return to_bool(features & features_tsc_deadline);
+    }
+
+    [[nodiscard]] bool has_vme() const noexcept
+    {
+        return to_bool(features & features_vme);
+    }
+
+    [[nodiscard]] bool has_vmx() const noexcept
+    {
+        return to_bool(features & features_vmx);
+    }
+
+    [[nodiscard]] bool has_x2apic() const noexcept
+    {
+        return to_bool(features & features_x2apic);
+    }
+
+    [[nodiscard]] bool has_xtpr() const noexcept
+    {
+        return to_bool(features & features_xtpr);
+    }
+
+private:
+    // clang-format off
+    constexpr static uint64_t instruction_set_aesni        = 0x0000'0000'0000'0001;
+    constexpr static uint64_t instruction_set_avx          = 0x0000'0000'0000'0002;
+    constexpr static uint64_t instruction_set_cmpxchg16b   = 0x0000'0000'0000'0004;
+    constexpr static uint64_t instruction_set_clfsh        = 0x0000'0000'0000'0008;
+    constexpr static uint64_t instruction_set_cmov         = 0x0000'0000'0000'0010;
+    constexpr static uint64_t instruction_set_cx8          = 0x0000'0000'0000'0020;
+    constexpr static uint64_t instruction_set_fma          = 0x0000'0000'0000'0040;
+    constexpr static uint64_t instruction_set_f16c         = 0x0000'0000'0000'0080;
+    constexpr static uint64_t instruction_set_fxsr         = 0x0000'0000'0000'0100;
+    constexpr static uint64_t instruction_set_sse          = 0x0000'0000'0000'0200;
+    constexpr static uint64_t instruction_set_sse2         = 0x0000'0000'0000'0300;
+    constexpr static uint64_t instruction_set_sse3         = 0x0000'0000'0000'0800;
+    constexpr static uint64_t instruction_set_ssse3        = 0x0000'0000'0000'1000;
+    constexpr static uint64_t instruction_set_sse4_1       = 0x0000'0000'0000'2000;
+    constexpr static uint64_t instruction_set_sse4_2       = 0x0000'0000'0000'4000;
+    constexpr static uint64_t instruction_set_movbe        = 0x0000'0000'0000'8000;
+    constexpr static uint64_t instruction_set_mmx          = 0x0000'0000'0001'0000;
+    constexpr static uint64_t instruction_set_msr          = 0x0000'0000'0002'0000;
+    constexpr static uint64_t instruction_set_osxsave      = 0x0000'0000'0004'0000;
+    constexpr static uint64_t instruction_set_pclmulqdq    = 0x0000'0000'0008'0000;
+    constexpr static uint64_t instruction_set_popcnt       = 0x0000'0000'0010'0000;
+    constexpr static uint64_t instruction_set_rdrand       = 0x0000'0000'0020'0000;
+    constexpr static uint64_t instruction_set_sep          = 0x0000'0000'0040'0000;
+    constexpr static uint64_t instruction_set_tsc          = 0x0000'0000'0080'0000;
+    constexpr static uint64_t instruction_set_xsave        = 0x0000'0000'0100'0000;
+
+    constexpr static uint64_t features_acpi                = 0x0000'0000'0000'0001;
+    constexpr static uint64_t features_apic                = 0x0000'0000'0000'0002;
+    constexpr static uint64_t features_cnxt_id             = 0x0000'0000'0000'0004;
+    constexpr static uint64_t features_dca                 = 0x0000'0000'0000'0008;
+    constexpr static uint64_t features_de                  = 0x0000'0000'0000'0010;
+    constexpr static uint64_t features_ds                  = 0x0000'0000'0000'0020;
+    constexpr static uint64_t features_ds_cpl              = 0x0000'0000'0000'0040;
+    constexpr static uint64_t features_dtes64              = 0x0000'0000'0000'0080;
+    constexpr static uint64_t features_eist                = 0x0000'0000'0000'0100;
+    constexpr static uint64_t features_fpu                 = 0x0000'0000'0000'0200;
+    constexpr static uint64_t features_htt                 = 0x0000'0000'0000'0400;
+    constexpr static uint64_t features_mca                 = 0x0000'0000'0000'0800;
+    constexpr static uint64_t features_mce                 = 0x0000'0000'0000'1000;
+    constexpr static uint64_t features_monitor             = 0x0000'0000'0000'2000;
+    constexpr static uint64_t features_mttr                = 0x0000'0000'0000'4000;
+    constexpr static uint64_t features_pae                 = 0x0000'0000'0000'8000;
+    constexpr static uint64_t features_pat                 = 0x0000'0000'0001'0000;
+    constexpr static uint64_t features_pbe                 = 0x0000'0000'0002'0000;
+    constexpr static uint64_t features_pcid                = 0x0000'0000'0004'0000;
+    constexpr static uint64_t features_pdcm                = 0x0000'0000'0008'0000;
+    constexpr static uint64_t features_pge                 = 0x0000'0000'0010'0000;
+    constexpr static uint64_t features_pse                 = 0x0000'0000'0020'0000;
+    constexpr static uint64_t features_pse_36              = 0x0000'0000'0040'0000;
+    constexpr static uint64_t features_psn                 = 0x0000'0000'0080'0000;
+    constexpr static uint64_t features_sdbg                = 0x0000'0000'0100'0000;
+    constexpr static uint64_t features_smx                 = 0x0000'0000'0200'0000;
+    constexpr static uint64_t features_ss                  = 0x0000'0000'0400'0000;
+    constexpr static uint64_t features_tm                  = 0x0000'0000'0800'0000;
+    constexpr static uint64_t features_tm2                 = 0x0000'0000'1000'0000;
+    constexpr static uint64_t features_tsc_deadline        = 0x0000'0000'2000'0000;
+    constexpr static uint64_t features_vme                 = 0x0000'0000'4000'0000;
+    constexpr static uint64_t features_vmx                 = 0x0000'0000'8000'0000;
+    constexpr static uint64_t features_x2apic              = 0x0000'0001'0000'0000;
+    constexpr static uint64_t features_xtpr                = 0x0000'0002'0000'0000;
+    // clang-format off
+
+    uint32_t instruction_set = 0;
+    uint64_t features = 0;
+
+    struct leaf_type {
+        uint32_t a; // EAX
+        uint32_t b; // EBX
+        uint32_t c; // ECX
+        uint32_t d; // EDX
+    };
 
 #if HI_COMPILER == HI_CC_MSVC
-std::array<uint32_t, 4> cpu_id_x64_result cpu_id_x64(uint32_t cpu_id_leaf)
-{
-    std::array<int, 4> info;
-    __cpuid(info.data(), static_cast<int>(cpu_id_leaf));
 
-    std::array<uint32_t, 4> r;
-    r[0] = static_cast<uint32_t> info[0];
-    r[1] = static_cast<uint32_t> info[1];
-    r[2] = static_cast<uint32_t> info[2];
-    r[3] = static_cast<uint32_t> info[3];
-    return r;
-}
+    [[nodiscard]] static leaf_type get_leaf(uint32_t leaf_id, uint32_t index = 0) noexcept
+    {
+        query_result_type r;
+        int tmp[4];
+
+        __cpuindex(tmp, char_cast<int>(cpu_id_leaf), char_cast<int>(index));
+
+        std::memcpy(&r, tmp, sizeof(result_type));
+        return r;
+    }
 
 #elif HI_COMPILER == HI_CC_GCC || HI_COMPILER == HI_CC_CLANG
-std::array<uint32_t, 4> cpu_id_x64_result cpu_id_x64(uint32_t cpu_id_leaf)
-{
-    std::array<uint32_t, 4> r;
-    __cpuid(cpu_id_leaf, r[0], r[1], r[2], r[3]);
-    return r;
-}
+
+    [[nodiscard]] static leaf_type get_leaf(uint32_t leaf_id, uint32_t index = 0) noexcept
+    {
+        query_result_type r;
+        __cpuid_count(leaf_id, index, r.a, r.b, r.c, r.d);
+        return r;
+    }
 
 #else
 #error "Unsuported compiler for x64 cpu_id"
 #endif
+};
 
-inline std::array<uint32_t, 4> cpu_id_leaf1 = cpu_id_x64(1);
-inline std::array<uint32_t, 4> cpu_id_leaf7 = cpu_id_x64(7);
+}}
 
-template<int Bit>
-bool cpu_id_leaf1_ecx()
-{
-    constexpr uint32_t mask = 1 << Bit;
-    return (cpu_id_leaf1[2] & mask) != 0;
-}
-
-template<int Bit>
-bool cpu_id_leaf1_edx()
-{
-    constexpr uint32_t mask = 1 << Bit;
-    return (cpu_id_leaf1[3] & mask) != 0;
-}
-
-template<int Bit>
-bool cpu_id_leaf7_ebx()
-{
-    constexpr uint32_t mask = 1 << Bit;
-    return (cpu_id_leaf7[1] & mask) != 0;
-}
-
-template<int Bit>
-bool cpu_id_leaf7_ecx()
-{
-    constexpr uint32_t mask = 1 << Bit;
-    return (cpu_id_leaf7[2] & mask) != 0;
-}
-
-template<int Bit>
-bool cpu_id_leaf7_edx()
-{
-    constexpr uint32_t mask = 1 << Bit;
-    return (cpu_id_leaf7[3] & mask) != 0;
-}
-
-// LEAF1.0: EDX
-bool cpu_has_fpu()
-{
-    return cpu_id_leaf1_edx<0>();
-}
-bool cpu_has_vme()
-{
-    return cpu_id_leaf1_edx<1>();
-}
-bool cpu_has_de()
-{
-    return cpu_id_leaf1_edx<2>();
-}
-bool cpu_has_pse()
-{
-    return cpu_id_leaf1_edx<3>();
-}
-bool cpu_has_tsc()
-{
-    return cpu_id_leaf1_edx<4>();
-}
-bool cpu_has_msr()
-{
-    return cpu_id_leaf1_edx<5>();
-}
-bool cpu_has_pae()
-{
-    return cpu_id_leaf1_edx<6>();
-}
-bool cpu_has_mce()
-{
-    return cpu_id_leaf1_edx<7>();
-}
-bool cpu_has_cx8()
-{
-    return cpu_id_leaf1_edx<8>();
-}
-bool cpu_has_apic()
-{
-    return cpu_id_leaf1_edx<9>();
-}
-// reserved
-bool cpu_has_sep()
-{
-    return cpu_id_leaf1_edx<11>();
-}
-bool cpu_has_mtrr()
-{
-    return cpu_id_leaf1_edx<12>();
-}
-bool cpu_has_pge()
-{
-    return cpu_id_leaf1_edx<13>();
-}
-bool cpu_has_mca()
-{
-    return cpu_id_leaf1_edx<14>();
-}
-bool cpu_has_cmov()
-{
-    return cpu_id_leaf1_edx<15>();
-}
-bool cpu_has_pat()
-{
-    return cpu_id_leaf1_edx<16>();
-}
-bool cpu_has_pse_36()
-{
-    return cpu_id_leaf1_edx<17>();
-}
-bool cpu_has_psn()
-{
-    return cpu_id_leaf1_edx<18>();
-}
-bool cpu_has_clfsh()
-{
-    return cpu_id_leaf1_edx<19>();
-}
-// reserved
-bool cpu_has_ds()
-{
-    return cpu_id_leaf1_edx<21>();
-}
-bool cpu_has_acpi()
-{
-    return cpu_id_leaf1_edx<22>();
-}
-bool cpu_has_mmx()
-{
-    return cpu_id_leaf1_edx<23>();
-}
-bool cpu_has_fxsr()
-{
-    return cpu_id_leaf1_edx<24>();
-}
-bool cpu_has_sse()
-{
-    return cpu_id_leaf1_edx<25>();
-}
-bool cpu_has_sse2()
-{
-    return cpu_id_leaf1_edx<26>();
-}
-bool cpu_has_ss()
-{
-    return cpu_id_leaf1_edx<27>();
-}
-bool cpu_has_htt()
-{
-    return cpu_id_leaf1_edx<28>();
-}
-bool cpu_has_tm()
-{
-    return cpu_id_leaf1_edx<29>();
-}
-bool cpu_has_ia64()
-{
-    return cpu_id_leaf1_edx<30>();
-}
-bool cpu_has_pbe()
-{
-    return cpu_id_leaf1_edx<31>();
-}
-
-// LEAF1.0: ECX
-bool cpu_has_sse3()
-{
-    return cpu_id_leaf1_ecx<0>();
-}
-bool cpu_has_pclmulqdq()
-{
-    return cpu_id_leaf1_ecx<1>();
-}
-bool cpu_has_dtes64()
-{
-    return cpu_id_leaf1_ecx<2>();
-}
-bool cpu_has_monitor()
-{
-    return cpu_id_leaf1_ecx<3>();
-}
-bool cpu_has_ds_cpl()
-{
-    return cpu_id_leaf1_ecx<4>();
-}
-bool cpu_has_vmx()
-{
-    return cpu_id_leaf1_ecx<5>();
-}
-bool cpu_has_smx()
-{
-    return cpu_id_leaf1_ecx<6>();
-}
-bool cpu_has_est()
-{
-    return cpu_id_leaf1_ecx<7>();
-}
-bool cpu_has_tm2()
-{
-    return cpu_id_leaf1_ecx<8>();
-}
-bool cpu_has_ssse3()
-{
-    return cpu_id_leaf1_ecx<9>();
-}
-bool cpu_has_cnxt_id()
-{
-    return cpu_id_leaf1_ecx<10>();
-}
-bool cpu_has_sdbg()
-{
-    return cpu_id_leaf1_ecx<11>();
-}
-bool cpu_has_fma()
-{
-    return cpu_id_leaf1_ecx<12>();
-}
-bool cpu_has_cx16()
-{
-    return cpu_id_leaf1_ecx<13>();
-}
-bool cpu_has_xtpr()
-{
-    return cpu_id_leaf1_ecx<14>();
-}
-bool cpu_has_pdcm()
-{
-    return cpu_id_leaf1_ecx<15>();
-}
-// reserved
-bool cpu_has_pcid()
-{
-    return cpu_id_leaf1_ecx<17>();
-}
-bool cpu_has_dca()
-{
-    return cpu_id_leaf1_ecx<18>();
-}
-bool cpu_has_sse4_1()
-{
-    return cpu_id_leaf1_ecx<19>();
-}
-bool cpu_has_sse4_2()
-{
-    return cpu_id_leaf1_ecx<20>();
-}
-bool cpu_has_x2apic()
-{
-    return cpu_id_leaf1_ecx<21>();
-}
-bool cpu_has_movbe()
-{
-    return cpu_id_leaf1_ecx<22>();
-}
-bool cpu_has_popcnt()
-{
-    return cpu_id_leaf1_ecx<23>();
-}
-bool cpu_has_tsc_deadline()
-{
-    return cpu_id_leaf1_ecx<24>();
-}
-bool cpu_has_aes()
-{
-    return cpu_id_leaf1_ecx<25>();
-}
-bool cpu_has_xsave()
-{
-    return cpu_id_leaf1_ecx<26>();
-}
-bool cpu_has_osxsave()
-{
-    return cpu_id_leaf1_ecx<27>();
-}
-bool cpu_has_avx()
-{
-    return cpu_id_leaf1_ecx<28>();
-}
-bool cpu_has_f16c()
-{
-    return cpu_id_leaf1_ecx<29>();
-}
-bool cpu_has_rdrnd()
-{
-    return cpu_id_leaf1_ecx<30>();
-}
-bool cpu_has_hypervisor()
-{
-    return cpu_id_leaf1_ecx<31>();
-}
-
-// LEAF1.0: EBX
-
-// LEAF1.0: EAX
-bool cpu_stepping()
-{
-    return cpu_id_leaf1[0] & 0xf;
-}
-bool cpu_model_id()
-{
-    uint32_t family_id = (cpu_id_leaf1[0] >> 8) & 0xf;
-    uint32_t model_id = (cpu_id_leaf1[0] >> 4) & 0xf;
-    if (family_id == 6 || family_id == 15) {
-        uint32_t extended_model_id = (cpu_id_leaf1[0] >> 16) & 0xf;
-        return (extended_model_id << 4) | model_id;
-    } else {
-        return model_id;
-    }
-}
-bool cpu_family_id()
-{
-    uint32_t family_id = (cpu_id_leaf1[0] >> 8) & 0xf;
-    if (family_id == 15) {
-        uint32_t extended_family_id = (cpu_id_leaf1[0] >> 20) & 0xff;
-        return family_id + extended_family_id;
-    } else {
-        return extended_family_id;
-    }
-}
-
-// LEAF7.0: EBX
-bool cpu_has_fsgsbase()
-{
-    return cpu_id_leaf7_ebx<0>();
-}
-bool cpu_has_tsc_adjust()
-{
-    return cpu_id_leaf7_ebx<1>();
-}
-bool cpu_has_sgx()
-{
-    return cpu_id_leaf7_ebx<2>();
-}
-bool cpu_has_bmi1()
-{
-    return cpu_id_leaf7_ebx<3>();
-}
-bool cpu_has_hle()
-{
-    return cpu_id_leaf7_ebx<4>();
-}
-bool cpu_has_avx2()
-{
-    return cpu_id_leaf7_ebx<5>();
-}
-// reserved
-bool cpu_has_smep()
-{
-    return cpu_id_leaf7_ebx<7>();
-}
-bool cpu_has_bmi2()
-{
-    return cpu_id_leaf7_ebx<8>();
-}
-bool cpu_has_erms()
-{
-    return cpu_id_leaf7_ebx<9>();
-}
-bool cpu_has_invpcid()
-{
-    return cpu_id_leaf7_ebx<10>();
-}
-bool cpu_has_rtm()
-{
-    return cpu_id_leaf7_ebx<11>();
-}
-bool cpu_has_pqm()
-{
-    return cpu_id_leaf7_ebx<12>();
-}
-bool cpu_has_deprecated_fpu_cs_ds()
-{
-    return cpu_id_leaf7_ebx<13>();
-}
-bool cpu_has_mpx()
-{
-    return cpu_id_leaf7_ebx<14>();
-}
-bool cpu_has_pqe()
-{
-    return cpu_id_leaf7_ebx<15>();
-}
-bool cpu_has_avx512_f()
-{
-    return cpu_id_leaf7_ebx<16>();
-}
-bool cpu_has_avx512_dq()
-{
-    return cpu_id_leaf7_ebx<17>();
-}
-bool cpu_has_rdseed()
-{
-    return cpu_id_leaf7_ebx<18>();
-}
-bool cpu_has_adx()
-{
-    return cpu_id_leaf7_ebx<19>();
-}
-bool cpu_has_smap()
-{
-    return cpu_id_leaf7_ebx<20>();
-}
-bool cpu_has_avx512_ifma()
-{
-    return cpu_id_leaf7_ebx<21>();
-}
-bool cpu_has_pcommit()
-{
-    return cpu_id_leaf7_ebx<22>();
-}
-bool cpu_has_clflushopt()
-{
-    return cpu_id_leaf7_ebx<23>();
-}
-bool cpu_has_clwb()
-{
-    return cpu_id_leaf7_ebx<24>();
-}
-bool cpu_has_intelpt()
-{
-    return cpu_id_leaf7_ebx<25>();
-}
-bool cpu_has_avx512_pf()
-{
-    return cpu_id_leaf7_ebx<26>();
-}
-bool cpu_has_avx512_er()
-{
-    return cpu_id_leaf7_ebx<27>();
-}
-bool cpu_has_avx512_cd()
-{
-    return cpu_id_leaf7_ebx<28>();
-}
-bool cpu_has_sha()
-{
-    return cpu_id_leaf7_ebx<29>();
-}
-bool cpu_has_avx512_bw()
-{
-    return cpu_id_leaf7_ebx<30>();
-}
-bool cpu_has_avx512_vl()
-{
-    return cpu_id_leaf7_ebx<31>();
-}
-
-// LEAF7.0: ECX
-bool cpu_has_prefetchwt1()
-{
-    return cpu_id_leaf7_ecx<0>();
-}
-bool cpu_has_avx512_vbmi()
-{
-    return cpu_id_leaf7_ecx<1>();
-}
-bool cpu_has_umip()
-{
-    return cpu_id_leaf7_ecx<2>();
-}
-bool cpu_has_pku()
-{
-    return cpu_id_leaf7_ecx<3>();
-}
-bool cpu_has_ospke()
-{
-    return cpu_id_leaf7_ecx<4>();
-}
-bool cpu_has_waitpkg()
-{
-    return cpu_id_leaf7_ecx<5>();
-}
-bool cpu_has_avx512_vmbi2()
-{
-    return cpu_id_leaf7_ecx<6>();
-}
-bool cpu_has_shstk()
-{
-    return cpu_id_leaf7_ecx<7>();
-}
-bool cpu_has_gfni()
-{
-    return cpu_id_leaf7_ecx<8>();
-}
-bool cpu_has_vaes()
-{
-    return cpu_id_leaf7_ecx<9>();
-}
-bool cpu_has_vpclmulqdq()
-{
-    return cpu_id_leaf7_ecx<10>();
-}
-bool cpu_has_avx512_vnni()
-{
-    return cpu_id_leaf7_ecx<11>();
-}
-bool cpu_has_avx512_bitalg()
-{
-    return cpu_id_leaf7_ecx<12>();
-}
-// reserved
-bool cpu_has_avx512_vpopcntdq()
-{
-    return cpu_id_leaf7_ecx<14>();
-}
-// reserved
-bool cpu_has_5level_paging()
-{
-    return cpu_id_leaf7_ecx<16>();
-}
-int cpu_has_mawau() {}
-bool cpu_has_rdpid()
-{
-    return cpu_id_leaf7_ecx<22>();
-}
-// reserved
-// reserved
-bool cpu_has_cldemote()
-{
-    return cpu_id_leaf7_ecx<25>();
-}
-// reserved
-bool cpu_has_movdir()
-{
-    return cpu_id_leaf7_ecx<27>();
-}
-bool cpu_has_movdir64b()
-{
-    return cpu_id_leaf7_ecx<28>();
-}
-// reserved
-bool cpu_has_sgx_lc()
-{
-    return cpu_id_leaf7_ecx<30>();
-}
-// reserved
-
-// LEAF7.0: EDX
-// reserved
-// reserved
-bool cpu_has_avx512_4vnniw()
-{
-    return cpu_id_leaf7_edx<2>();
-}
-bool cpu_has_avx512_4fmaps()
-{
-    return cpu_id_leaf7_edx<3>();
-}
-bool cpu_has_fsrm()
-{
-    return cpu_id_leaf7_edx<4>();
-}
-bool cpu_has_pconfig()
-{
-    return cpu_id_leaf7_edx<18>();
-}
-// reserved
-bool cpu_has_ibt()
-{
-    return cpu_id_leaf7_edx<20>();
-}
-// reserved 5
-bool cpu_has_spec_ctrl()
-{
-    return cpu_id_leaf7_edx<26>();
-}
-bool cpu_has_stibp()
-{
-    return cpu_id_leaf7_edx<27>();
-}
-// reserved
-bool cpu_has_capabilities()
-{
-    return cpu_id_leaf7_edx<29>();
-}
-// reserved
-bool cpu_has_ssbd()
-{
-    return cpu_id_leaf7_edx<31>();
-}
-} // namespace hi::inline v1

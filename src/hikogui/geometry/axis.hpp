@@ -23,9 +23,6 @@ enum class axis : unsigned char {
     both = x | y,
     all = x | y | z,
 
-    row = x,
-    column = y,
-
     horizontal = x,
     vertical = y,
 };

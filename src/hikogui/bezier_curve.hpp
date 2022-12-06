@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "rapid/sdf_r8.hpp"
 #include "pixel_map.hpp"
-#include "alignment.hpp"
 #include "math.hpp"
 #include "bezier.hpp"
 #include "utility.hpp"
+#include "rapid/sdf_r8.hpp"
+#include "geometry/alignment.hpp"
 #include "geometry/vector.hpp"
 #include "geometry/point.hpp"
 #include "geometry/transform.hpp"

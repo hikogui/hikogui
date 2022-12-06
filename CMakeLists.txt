@@ -287,6 +287,9 @@ elseif (MSVC)
 
         # Just my code enables the VS debugger to step over system, framework, library, and other non-user calls.
         target_compile_options(hikogui PUBLIC -JMC)
+
+        # The debugger can't watch variables that are part of NRVO (named return value optimization) even in debugging.
+        target_compile_options(hikogui PUBLIC -Zc:nrvo-)
     endif()
 
     if(HI_ENABLE_ASAN)

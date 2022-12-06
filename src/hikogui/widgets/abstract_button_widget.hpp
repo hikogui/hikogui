@@ -89,10 +89,11 @@ public:
     bool handle_event(gui_event const& event) noexcept override;
     /// @endprivatesection
 protected:
-    aarectangle _label_rectangle;
-    std::unique_ptr<label_widget> _on_label_widget;
-    std::unique_ptr<label_widget> _off_label_widget;
-    std::unique_ptr<label_widget> _other_label_widget;
+    box_constraints _label_constraints;
+    box_shape _label_shape;
+    std::shared_ptr<label_widget> _on_label_widget;
+    std::shared_ptr<label_widget> _off_label_widget;
+    std::shared_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
     notifier<>::callback_token _delegate_cbt;
@@ -134,7 +135,7 @@ protected:
         }
     }
 
-    widget_constraints set_constraints_button(set_constraints_context const &context) const noexcept;
+    box_constraints set_constraints_button(set_constraints_context const &context) const noexcept;
     void set_layout_button(widget_layout const& context) noexcept;
     void draw_button(draw_context const& context) noexcept;
 };

@@ -10,6 +10,7 @@ add_subdirectory(color)
 add_subdirectory(file)
 add_subdirectory(formula)
 add_subdirectory(geometry)
+add_subdirectory(layout)
 add_subdirectory(GFX)
 add_subdirectory(GUI)
 add_subdirectory(i18n)
@@ -23,7 +24,6 @@ add_subdirectory(widgets)
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
 target_sources(hikogui PRIVATE
-    alignment.hpp
     algorithm.hpp
     arguments.hpp
     animator.hpp

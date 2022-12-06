@@ -8,7 +8,7 @@
 
 namespace hi::inline v1 {
 
-widget_constraints const& menu_button_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& menu_button_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
@@ -17,9 +17,11 @@ widget_constraints const& menu_button_widget::set_constraints(set_constraints_co
     _short_cut_size = {context.theme->size, context.theme->size};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    hilet extra_size = extent2{context.theme->margin * 4.0f + _check_size.width() + _short_cut_size.width(), context.theme->margin * 2.0f};
-    _constraints = set_constraints_button(context) + extra_size;
-    _constraints.margins = 0.0f;
+    hilet extra_size =
+        extent2{context.theme->margin * 4.0f + _check_size.width() + _short_cut_size.width(), context.theme->margin * 2.0f};
+    _label_constraints = set_constraints_button(context);
+    _constraints = _label_constraints + extra_size;
+    _constraints.set_margins(0);
     return _constraints;
 }
 
@@ -31,16 +33,18 @@ void menu_button_widget::set_layout(widget_layout const& context) noexcept
         if (context.left_to_right()) {
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left());
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
-            _label_rectangle = aarectangle{
+            hilet label_rectangle = aarectangle{
                 point2{_check_rectangle.right() + context.theme->margin, 0.0f},
-                point2{_short_cut_rectangle.left() - context.theme->margin, context.height()}};
+                point2{_short_cut_rectangle.left() - context.theme->margin, narrow_cast<float>(context.height())}};
+            _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
 
         } else {
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_left());
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_right());
-            _label_rectangle = aarectangle{
+            hilet label_rectangle = aarectangle{
                 point2{_short_cut_rectangle.right() + context.theme->margin, 0.0f},
-                point2{_check_rectangle.left() - context.theme->margin, context.height()}};
+                point2{_check_rectangle.left() - context.theme->margin, narrow_cast<float>(context.height())}};
+            _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
         }
 
         _check_glyph = context.font_book->find_glyph(elusive_icon::Ok);
@@ -71,14 +75,16 @@ bool menu_button_widget::handle_event(gui_event const& event) noexcept
     switch (event.type()) {
     case gui_menu_next:
         if (*mode >= widget_mode::partial and not is_last(keyboard_focus_group::menu)) {
-            process_event(gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::menu, keyboard_focus_direction::forward));
+            process_event(
+                gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::menu, keyboard_focus_direction::forward));
             return true;
         }
         break;
 
     case gui_menu_prev:
         if (*mode >= widget_mode::partial and not is_first(keyboard_focus_group::menu)) {
-            process_event(gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::menu, keyboard_focus_direction::backward));
+            process_event(
+                gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::menu, keyboard_focus_direction::backward));
             return true;
         }
         break;
@@ -86,8 +92,10 @@ bool menu_button_widget::handle_event(gui_event const& event) noexcept
     case gui_activate:
         if (*mode >= widget_mode::partial) {
             activate();
-            process_event(gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::normal, keyboard_focus_direction::forward));
-            process_event(gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::normal, keyboard_focus_direction::backward));
+            process_event(
+                gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::normal, keyboard_focus_direction::forward));
+            process_event(
+                gui_event::window_set_keyboard_target(nullptr, keyboard_focus_group::normal, keyboard_focus_direction::backward));
             return true;
         }
         break;

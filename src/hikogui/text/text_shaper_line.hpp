@@ -8,7 +8,7 @@
 #include "font_metrics.hpp"
 #include "../unicode/unicode_bidi_class.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../alignment.hpp"
+#include "../geometry/alignment.hpp"
 #include <vector>
 
 namespace hi::inline v1 {

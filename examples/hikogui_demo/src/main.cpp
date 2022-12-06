@@ -123,7 +123,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
         std::pair{3, label{tr("four")}},
         std::pair{4, label{tr("five")}},
         std::pair{5, label{tr("six")}},
-        std::pair{6, label{tr("seven")}}};
+        std::pair{6, label{"\xd7\xa9\xd7\x91\xd7\xa2\xd7\x94 "}}};
     grid.make_widget<label_widget>("A6", tr("This is a selection box at the bottom:"));
     auto& selection3 = grid.make_widget<selection_widget>("B6", preferences.radio_value, option_list);
 

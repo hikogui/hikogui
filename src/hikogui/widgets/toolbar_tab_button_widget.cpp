@@ -6,23 +6,25 @@
 
 namespace hi::inline v1 {
 
-widget_constraints const& toolbar_tab_button_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& toolbar_tab_button_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     hilet extra_size = extent2{context.theme->margin * 2.0f, context.theme->margin};
-    return _constraints = set_constraints_button(context) + extra_size;
+    _label_constraints = set_constraints_button(context);
+    return _constraints = _label_constraints + extra_size;
 }
 
 void toolbar_tab_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _label_rectangle = aarectangle{
+        hilet label_rectangle = aarectangle{
             context.theme->margin,
             0.0f,
             context.width() - context.theme->margin * 2.0f,
             context.height() - context.theme->margin};
+        _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
     }
     set_layout_button(context);
 }
@@ -45,7 +47,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
     hilet offset = layout().theme->margin + layout().theme->border_width;
-    hilet outline_rectangle = aarectangle{0.0f, -offset, layout().width(), layout().height() + offset};
+    hilet outline_rectangle = aarectangle{0.0f, -offset, narrow_cast<float>(layout().width()), narrow_cast<float>(layout().height()) + offset};
 
     // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
     hilet button_z = *focus ? translate_z(0.6f) : translate_z(0.0f);

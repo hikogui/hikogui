@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include "../rapid/numeric_array.hpp"
-#include "../alignment.hpp"
-#include "../concepts.hpp"
-#include "../unfair_mutex.hpp"
+#include "alignment.hpp"
 #include "extent.hpp"
 #include "point.hpp"
+#include "../rapid/numeric_array.hpp"
+#include "../concepts.hpp"
+#include "../unfair_mutex.hpp"
 #include <concepts>
 #include <mutex>
 
@@ -176,6 +176,16 @@ public:
     [[nodiscard]] constexpr extent2 size() const noexcept
     {
         return extent2{v.zwzw() - v};
+    }
+
+    [[nodiscard]] constexpr float x() const noexcept
+    {
+        return v.x();
+    }
+
+    [[nodiscard]] constexpr float y() const noexcept
+    {
+        return v.y();
     }
 
     [[nodiscard]] constexpr float width() const noexcept

@@ -3,6 +3,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(hikogui PRIVATE
+    alignment.hpp
     axis.hpp
     axis_aligned_rectangle.cpp
     axis_aligned_rectangle.hpp
@@ -20,7 +21,6 @@ target_sources(hikogui PRIVATE
     rectangle.hpp
     rotate.hpp
     scale.hpp
-    spreadsheet_address.hpp
     transform.hpp
     translate.hpp
     vector.hpp
@@ -32,7 +32,6 @@ if(BUILD_TESTING)
         matrix_tests.cpp
         point_tests.cpp
         scale_tests.cpp
-        spreadsheet_address_tests.cpp
         transform_tests.cpp
         translate_tests.cpp
         vector_tests.cpp

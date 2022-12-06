@@ -38,27 +38,32 @@ void gui_window::init()
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
 
-    widget = std::make_unique<window_widget>(this, title);
+    widget = std::make_shared<window_widget>(this, title);
 
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
-    hilet new_size = widget->set_constraints(set_constraints_context{*gui.font_book, theme, *surface}).preferred;
+    hilet new_size =
+        widget->set_constraints(set_constraints_context{*gui.font_book, theme, writing_direction(), *surface}).preferred();
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
 
     // For changes in setting on the OS we should reconstrain/layout/redraw the window
     // For example when the language or theme changes.
-    _setting_change_token = os_settings::subscribe([this] {
-        ++global_counter<"gui_window:os_setting:constrain">;
-        this->process_event({gui_event_type::window_reconstrain});
-    });
+    _setting_change_token = os_settings::subscribe(
+        [this] {
+            ++global_counter<"gui_window:os_setting:constrain">;
+            this->process_event({gui_event_type::window_reconstrain});
+        },
+        callback_flags::main);
 
     // Subscribe on theme changes.
-    _selected_theme_token = gui.selected_theme.subscribe([this](auto...) {
-        ++global_counter<"gui_window:selected_theme:constrain">;
-        this->process_event({gui_event_type::window_reconstrain});
-    });
+    _selected_theme_token = gui.selected_theme.subscribe(
+        [this](auto...) {
+            ++global_counter<"gui_window:selected_theme:constrain">;
+            this->process_event({gui_event_type::window_reconstrain});
+        },
+        callback_flags::main);
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
@@ -93,7 +98,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
-        widget->set_constraints(set_constraints_context{*gui.font_book, theme, *surface});
+        widget->set_constraints(set_constraints_context{*gui.font_book, theme, writing_direction(), *surface});
     }
 
     // Check if the window size matches the preferred size of the window_widget.
@@ -108,7 +113,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (_resize.exchange(false, std::memory_order::relaxed)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         hilet current_size = rectangle.size();
-        hilet new_size = widget->constraints().preferred;
+        hilet new_size = widget->constraints().preferred();
         if (new_size != current_size) {
             hi_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
             set_window_size(new_size);
@@ -117,14 +122,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
     } else {
         // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize.
         hilet current_size = rectangle.size();
-        hilet new_size = clamp(current_size, widget->constraints().minimum, widget->constraints().maximum);
+        hilet new_size = clamp(current_size, widget->constraints().minimum(), widget->constraints().maximum());
         if (new_size != current_size and size_state() != gui_window_size::minimized) {
             hi_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
             set_window_size(new_size);
         }
     }
 
-    if (rectangle.size() < widget->constraints().minimum or rectangle.size() > widget->constraints().maximum) {
+    if (rectangle.size() < widget->constraints().minimum() or rectangle.size() > widget->constraints().maximum()) {
         // Even after the resize above it is possible to have an incorrect window size.
         // For example when minimizing the window.
         // Stop processing rendering for this window here.
@@ -148,7 +153,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         // Guarantee that the layout size is always at least the minimum size.
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
-        hilet widget_layout_size = max(widget->constraints().minimum, widget_size);
+        hilet widget_layout_size = max(widget->constraints().minimum(), widget_size);
         widget->set_layout(widget_layout{
             widget_layout_size,
             _size_state,
@@ -195,21 +200,23 @@ void gui_window::update_mouse_target(hi::widget const *new_target_widget, point2
 {
     hi_axiom(loop::main().on_thread());
 
-    if (new_target_widget != _mouse_target_widget) {
-        if (_mouse_target_widget) {
-            send_events_to_widget(_mouse_target_widget, std::vector{gui_event{gui_event_type::mouse_exit}});
+    if (auto mouse_target_widget = _mouse_target_widget.lock()) {
+        if (new_target_widget == mouse_target_widget.get()) {
+            // Focus does not change.
+            return;
         }
-        _mouse_target_widget = new_target_widget;
-        if (new_target_widget) {
-            send_events_to_widget(_mouse_target_widget, std::vector{gui_event::make_mouse_enter(position)});
-        }
-    }
-}
 
-hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
-{
-    hi_assert_not_null(gui.keyboard_bindings);
-    return *gui.keyboard_bindings;
+        // The mouse target needs to be updated, send exit to previous target.
+        send_events_to_widget(mouse_target_widget.get(), std::vector{gui_event{gui_event_type::mouse_exit}});
+    }
+
+    if (new_target_widget != nullptr) {
+        _mouse_target_widget = new_target_widget->weak_from_this();
+        hi_assert(not _mouse_target_widget.expired(), "All widgets must be allocated with shared_ptr.");
+        send_events_to_widget(new_target_widget, std::vector{gui_event::make_mouse_enter(position)});
+    } else {
+        _mouse_target_widget.reset();
+    }
 }
 
 void gui_window::update_keyboard_target(hi::widget const *new_target_widget, keyboard_focus_group group) noexcept
@@ -218,8 +225,7 @@ void gui_window::update_keyboard_target(hi::widget const *new_target_widget, key
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
-    auto new_target_parent_chain =
-        new_target_widget != nullptr ? new_target_widget->parent_chain() : std::vector<hi::widget const *>{};
+    auto new_target_parent_chain = new_target_widget ? new_target_widget->parent_chain() : std::vector<hi::widget const *>{};
 
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
@@ -228,24 +234,25 @@ void gui_window::update_keyboard_target(hi::widget const *new_target_widget, key
         new_target_widget = nullptr;
     }
 
-    // Check if the keyboard focus changed.
-    if (new_target_widget == _keyboard_target_widget) {
-        return;
-    }
+    if (auto keyboard_target_widget = _keyboard_target_widget.lock()) {
+        if (new_target_widget == keyboard_target_widget.get()) {
+            // Focus does not change.
+            return;
+        }
 
-    // When there is a new target, tell the current widget that the keyboard focus was exited.
-    if (new_target_widget != nullptr and _keyboard_target_widget != nullptr) {
-        send_events_to_widget(_keyboard_target_widget, std::vector{gui_event{gui_event_type::keyboard_exit}});
-        _keyboard_target_widget = nullptr;
+        send_events_to_widget(keyboard_target_widget.get(), std::vector{gui_event{gui_event_type::keyboard_exit}});
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
     widget->handle_event_recursive(gui_event_type::gui_cancel, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
-    if (new_target_widget) {
-        _keyboard_target_widget = new_target_widget;
+    if (new_target_widget != nullptr) {
+        _keyboard_target_widget = new_target_widget->weak_from_this();
+        hi_assert(not _keyboard_target_widget.expired(), "All widgets must be allocated with shared_ptr.");
         send_events_to_widget(new_target_widget, std::vector{gui_event{gui_event_type::keyboard_enter}});
+    } else {
+        _keyboard_target_widget.reset();
     }
 }
 
@@ -266,7 +273,15 @@ void gui_window::update_keyboard_target(
 
 void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept
 {
-    update_keyboard_target(_keyboard_target_widget, group, direction);
+    if (hilet keyboard_target_widget = _keyboard_target_widget.lock()) {
+        update_keyboard_target(keyboard_target_widget.get(), group, direction);
+    }
+}
+
+hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
+{
+    hi_assert_not_null(gui.keyboard_bindings);
+    return *gui.keyboard_bindings;
 }
 
 bool gui_window::process_event(gui_event const& event) noexcept
@@ -327,10 +342,6 @@ bool gui_window::process_event(gui_event const& event) noexcept
         }
         return true;
 
-    case window_remove_keyboard_target:
-        remove_keyboard_and_mouse_target(event.keyboard_target().widget);
-        return true;
-
     case window_set_clipboard:
         put_text_on_clipboard(event.clipboard_data());
         return true;
@@ -368,8 +379,14 @@ bool gui_window::process_event(gui_event const& event) noexcept
         }
     }
 
-    hilet target_widget = event.variant() == gui_event_variant::mouse ? _mouse_target_widget : _keyboard_target_widget;
-    hilet handled = send_events_to_widget(target_widget, events);
+    hilet handled = [&] {
+        hilet target_widget = event.variant() == gui_event_variant::mouse ? _mouse_target_widget : _keyboard_target_widget;
+        if (hilet target_widget_ = target_widget.lock()) {
+            return send_events_to_widget(target_widget_.get(), events);
+        } else {
+            return false;
+        }
+    }();
 
     // Intercept the keyboard generated escape.
     // A keyboard generated escape should always remove keyboard focus.

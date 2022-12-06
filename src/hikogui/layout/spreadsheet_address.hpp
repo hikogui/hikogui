@@ -2,7 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file
+/** @file geometry/spreadsheet_address.hpp Utilities for parsing spreadsheet addresses.
+ * @ingroup geometry
+ *
  * The functions in this file are for handling spreadsheet addresses.
  *
  * Spreadsheet addresses are of the form:
@@ -30,7 +32,7 @@
 
 namespace hi::inline v1 {
 
-inline std::tuple<bool, std::size_t, bool, std::size_t> _parse_spreadsheet_address(std::string_view &address)
+inline std::tuple<bool, std::size_t, bool, std::size_t> _parse_spreadsheet_address(std::string_view& address)
 {
     bool column_nr_is_relative = true;
     std::size_t column_nr = 0;
@@ -63,6 +65,7 @@ inline std::tuple<bool, std::size_t, bool, std::size_t> _parse_spreadsheet_addre
 }
 
 /** Parse a spreadsheet address.
+ * @ingroup geometry
  *
  * @param address The address to parse.
  * @param start_column_nr A relative column in the address is added to the start-column.
@@ -84,6 +87,14 @@ parse_spreadsheet_address(std::string_view address, std::size_t start_column_nr 
     return {column_nr, row_nr};
 }
 
+/** Parse a spreadsheet range.
+ * @ingroup geometry
+ *
+ * @param address A spreadsheet address in the form "A1" or "A1:B3"
+ * @param start_column_nr The start column for relative column addressing.
+ * @param start_row_nr The start row for relative row addressing.
+ * @return first_column, first_row, last_column, last_row. last_column and last_row point one beyond the last.
+ */
 inline std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>
 parse_spreadsheet_range(std::string_view address, std::size_t start_column_nr = 0, std::size_t start_row_nr = 0)
 {

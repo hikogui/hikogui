@@ -42,7 +42,7 @@ You can see that the constraints are based on the constraints of the label combi
 taken from the theme. The label widget itself is based on `context.theme->size` and the width of the text.
 
 ```cpp
-hi::widget_constraints const &set_constraints(set_constraints_context const &context) noexcept override
+hi::box_constraints const &set_constraints(set_constraints_context const &context) noexcept override
 {
     _layout = {};
 

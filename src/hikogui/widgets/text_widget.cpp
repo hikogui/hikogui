@@ -20,14 +20,15 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
         // On every text edit, immediately/synchronously update the shaped text.
         // This is needed for handling multiple edit commands before the next frame update.
         if (_layout.font_book != nullptr and _layout.theme != nullptr) {
-            hilet c_context = set_constraints_context{_layout.font_book, _layout.theme};
+            hilet c_context = set_constraints_context{_layout.font_book, _layout.theme, unicode_bidi_class::L};
 
             auto new_layout = _layout;
             hilet old_constraints = _constraints;
 
             // Constrain and layout according to the old layout.
             hilet new_constraints = set_constraints(c_context);
-            inplace_max(new_layout.size, new_constraints.minimum);
+            inplace_max(new_layout.shape.width, new_constraints.minimum_width);
+            inplace_max(new_layout.shape.height, new_constraints.minimum_height);
             set_layout(new_layout);
 
             if (new_constraints != old_constraints) {
@@ -68,7 +69,7 @@ text_widget::~text_widget()
     delegate->deinit(*this);
 }
 
-widget_constraints const& text_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& text_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
@@ -79,26 +80,31 @@ widget_constraints const& text_widget::set_constraints(set_constraints_context c
     // Make sure that the current selection fits the new text.
     _selection.resize(_cached_text.size());
 
+    hilet actual_text_style = context.theme->text_style(*text_style);
+
     // Create a new text_shaper with the new text.
-    _shaped_text = text_shaper{*context.font_book, _cached_text, context.theme->text_style(*text_style), context.theme->scale};
+    auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
 
-    hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
+    _shaped_text = text_shaper{
+        *context.font_book, _cached_text, actual_text_style, context.theme->scale, alignment_, context.writing_direction};
+
+    hilet constraints_ = _shaped_text.get_constraints();
+
+    hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity());
     hilet shaped_text_size = shaped_text_rectangle.size();
-
-    // clang-format off
-    hilet baseline =
-        *alignment == vertical_alignment::top ? widget_baseline{0.1f, 1.0f, context.theme->cap_height * -1.0f} :
-        *alignment == vertical_alignment::middle ? widget_baseline{0.1f, 0.5f, context.theme->cap_height * -0.5f} :
-        widget_baseline{0.1f, 0.0f, 0.0f};
-    // clang-format on
 
     if (*mode == widget_mode::partial) {
         // In line-edit mode the text should not wrap.
-        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, context.theme->margin, baseline};
+        return _constraints = {
+                   shaped_text_size,
+                   shaped_text_size,
+                   shaped_text_size,
+                   _shaped_text.resolved_alignment(),
+                   context.theme->margin};
 
     } else {
         // Allow the text to be 550.0f pixels wide.
-        hilet preferred_shaped_text_rectangle = _shaped_text.bounding_rectangle(550.0f, alignment->vertical());
+        hilet preferred_shaped_text_rectangle = _shaped_text.bounding_rectangle(550.0f);
         hilet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
 
         hilet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
@@ -106,17 +112,20 @@ widget_constraints const& text_widget::set_constraints(set_constraints_context c
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{shaped_text_size.width(), height},
-                   context.theme->margin,
-                   baseline};
+                   _shaped_text.resolved_alignment(),
+                   context.theme->margin};
     }
 }
 
 void text_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
+        hi_axiom(context.shape.baseline);
 
-        _shaped_text.layout(context.rectangle(), context.baseline, context.sub_pixel_size, context.writing_direction, alignment_);
+        _shaped_text.layout(
+            context.rectangle(),
+            narrow_cast<float>(*context.shape.baseline),
+            context.sub_pixel_size);
     }
 }
 

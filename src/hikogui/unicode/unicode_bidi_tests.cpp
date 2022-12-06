@@ -154,7 +154,6 @@ TEST(unicode_bidi, bidi_test)
                 paragraph_direction == unicode_bidi_class::R ? hi::unicode_bidi_context::mode_type::RTL :
                 hi::unicode_bidi_context::mode_type::auto_LTR;
             // clang-format on
-            test_parameters.move_lf_and_ps_to_end_of_line = false;
 
             auto input = test.get_input();
             auto first = begin(input);
@@ -290,7 +289,6 @@ TEST(unicode_bidi, bidi_character_test)
             test.paragraph_direction == unicode_bidi_class::R ? hi::unicode_bidi_context::mode_type::RTL :
             hi::unicode_bidi_context::mode_type::auto_LTR;
         // clang-format on
-        test_parameters.move_lf_and_ps_to_end_of_line = false;
 
         auto input = test.get_input();
         auto first = begin(input);

@@ -6,6 +6,7 @@
 
 #include "unicode_bidi_class.hpp"
 #include "unicode_description.hpp"
+#include "../assert.hpp"
 
 namespace hi::inline v1 {
 
@@ -15,7 +16,22 @@ struct unicode_bidi_context {
     mode_type direction_mode = mode_type::auto_LTR;
     bool enable_mirrored_brackets = true;
     bool enable_line_separator = true;
-    bool move_lf_and_ps_to_end_of_line = false;
+
+    constexpr unicode_bidi_context() noexcept = default;
+    constexpr unicode_bidi_context(unicode_bidi_context const&) noexcept = default;
+    constexpr unicode_bidi_context(unicode_bidi_context&&) noexcept = default;
+    constexpr unicode_bidi_context& operator=(unicode_bidi_context const&) noexcept = default;
+    constexpr unicode_bidi_context& operator=(unicode_bidi_context&&) noexcept = default;
+
+    constexpr unicode_bidi_context(unicode_bidi_class text_direction) noexcept {
+        if (text_direction == unicode_bidi_class::L) {
+            direction_mode = mode_type::auto_LTR;
+        } else if (text_direction == unicode_bidi_class::R) {
+            direction_mode = mode_type::auto_RTL;
+        } else {
+            hi_no_default();
+        }
+    }
 };
 
 namespace detail {
@@ -49,7 +65,8 @@ struct unicode_bidi_char_info {
      */
     unicode_bidi_class bidi_class;
 
-    [[nodiscard]] unicode_bidi_char_info(std::size_t index, char32_t code_point, unicode_description const *description) noexcept :
+    [[nodiscard]] unicode_bidi_char_info(std::size_t index, char32_t code_point, unicode_description const *description) noexcept
+        :
         index(index),
         description(description),
         code_point(code_point),
@@ -83,7 +100,7 @@ struct unicode_bidi_paragraph {
     characters_type characters;
 
     template<typename... Args>
-    void emplace_character(Args &&...args) noexcept
+    void emplace_character(Args&&...args) noexcept
     {
         characters.emplace_back(std::forward<Args>(args)...);
     }
@@ -106,10 +123,15 @@ static void unicode_bidi_L4(
     }
 }
 
+[[nodiscard]] std::pair<int8_t, unicode_bidi_class> unicode_bidi_P2_P3(
+    unicode_bidi_char_info_iterator first,
+    unicode_bidi_char_info_iterator last,
+    unicode_bidi_context const& context = {}) noexcept;
+
 [[nodiscard]] std::pair<unicode_bidi_char_info_iterator, std::vector<unicode_bidi_class>> unicode_bidi_P1(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
-    unicode_bidi_context const &context = {}) noexcept;
+    unicode_bidi_context const& context = {}) noexcept;
 
 } // namespace detail
 
@@ -143,7 +165,7 @@ std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
     GetDescription get_description,
     SetCodePoint set_code_point,
     SetTextDirection set_text_direction,
-    unicode_bidi_context const &context = {})
+    unicode_bidi_context const& context = {})
 {
     auto proxy = detail::unicode_bidi_char_info_vector{};
     proxy.reserve(std::distance(first, last));
@@ -155,7 +177,7 @@ std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
     }
 
     auto [proxy_last, paragraph_directions] = detail::unicode_bidi_P1(begin(proxy), end(proxy), context);
-    last = shuffle_by_index(first, last, begin(proxy), proxy_last, [](hilet &item) {
+    last = shuffle_by_index(first, last, begin(proxy), proxy_last, [](hilet& item) {
         return item.index;
     });
 
@@ -168,23 +190,50 @@ std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
     return {last, std::move(paragraph_directions)};
 }
 
-/** Removes control characters which will not survive the bidi-algorithm.
-* 
-* All RLE, LRE, RLO, LRO, PDF, and BN characters are removed.
-* 
-* @post Control characters between the first and last iterators are moved to the end.
-* @param first The first character.
-* @param last One beyond the last character.
-* @param description_func A function returning a `unicode_description const&` of the character.
-* @return The iterator one beyond the last character that is valid.
-*/
-template<typename It, typename EndIt, typename DescriptionFunc>
-It unicode_bidi_control_filter(It first, EndIt last, DescriptionFunc const &description_func)
+/** Get the unicode bidi direction for the first paragraph and context.
+ *
+ * @param first The first iterator
+ * @param last The last iterator
+ * @param get_description A function to get the unicode description of an item.
+ * @param context The context/configuration to use for the bidi-algorithm.
+ * @return Iterator pointing one beyond the last element, the writing direction for each paragraph.
+ */
+template<typename It, typename GetDescription>
+[[nodiscard]] unicode_bidi_class
+unicode_bidi_direction(It first, It last, GetDescription get_description, unicode_bidi_context const& context = {})
 {
-    return std::remove_if(first, last, [&](hilet &item) {
+    auto proxy = detail::unicode_bidi_char_info_vector{};
+    proxy.reserve(std::distance(first, last));
+
+    std::size_t index = 0;
+    for (auto it = first; it != last; ++it) {
+        hilet[code_point, description_ptr] = get_description(*it);
+        proxy.emplace_back(index++, code_point, description_ptr);
+        if (proxy.back().direction == unicode_bidi_class::B) {
+            // Break early when end-of-paragraph symbol is found.
+            break;
+        }
+    }
+
+    return detail::unicode_bidi_P2_P3(begin(proxy), end(proxy), context).second;
+}
+
+/** Removes control characters which will not survive the bidi-algorithm.
+ *
+ * All RLE, LRE, RLO, LRO, PDF, and BN characters are removed.
+ *
+ * @post Control characters between the first and last iterators are moved to the end.
+ * @param first The first character.
+ * @param last One beyond the last character.
+ * @param description_func A function returning a `unicode_description const&` of the character.
+ * @return The iterator one beyond the last character that is valid.
+ */
+template<typename It, typename EndIt, typename DescriptionFunc>
+It unicode_bidi_control_filter(It first, EndIt last, DescriptionFunc const& description_func)
+{
+    return std::remove_if(first, last, [&](hilet& item) {
         return is_control(description_func(item).bidi_class());
     });
 }
-
 
 } // namespace hi::inline v1
