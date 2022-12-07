@@ -17,6 +17,7 @@ target_sources(hikogui PRIVATE
 if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         ascii_tests.cpp
+        char_converter_tests.cpp
         cp_1252_tests.cpp
         iso_8859_1_tests.cpp
         utf_8_tests.cpp
