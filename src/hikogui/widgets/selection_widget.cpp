@@ -333,7 +333,9 @@ void selection_widget::draw_outline(draw_context const& context) noexcept
 
 void selection_widget::draw_left_box(draw_context const& context) noexcept
 {
-    hilet corner_radii = hi::corner_radii{layout().theme->rounding_radius, 0.0f, layout().theme->rounding_radius, 0.0f};
+    hilet corner_radii = context.left_to_right() ?
+        hi::corner_radii{layout().theme->rounding_radius, 0.0f, layout().theme->rounding_radius, 0.0f} :
+        hi::corner_radii{0.0f, layout().theme->rounding_radius, 0.0f, layout().theme->rounding_radius};
     context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_radii);
 }
 
