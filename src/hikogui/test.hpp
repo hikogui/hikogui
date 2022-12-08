@@ -11,4 +11,4 @@
     ASSERT_TRUE(__VA_ARGS__)
     
 #define STATIC_ASSERT_FALSE(...) static_assert(not (__VA_ARGS__), "unit test failed"); \
-    ASSERT_TRUE(__VA_ARGS__)
+    ASSERT_FALSE(__VA_ARGS__)
