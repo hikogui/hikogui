@@ -12,8 +12,7 @@
 #include "../rapid/numeric_array.hpp"
 #include <compare>
 
-namespace hi {
-inline namespace v1 {
+namespace hi { inline namespace v1 {
 namespace geo {
 
 template<int D>
@@ -26,54 +25,59 @@ class scale;
  * as a 4D homogeneous extent. Which can be efficiently implemented
  * as a __m128 SSE register.
  */
-template<int D>
+template<typename T, int D>
 class extent {
 public:
+    using value_type = T;
+    using array_type = numeric_array<value_type, 4>;
+
     static_assert(D == 2 || D == 3, "Only 2D or 3D extents are supported");
 
-    constexpr extent(extent const &) noexcept = default;
-    constexpr extent(extent &&) noexcept = default;
-    constexpr extent &operator=(extent const &) noexcept = default;
-    constexpr extent &operator=(extent &&) noexcept = default;
+    constexpr extent(extent const&) noexcept = default;
+    constexpr extent(extent&&) noexcept = default;
+    constexpr extent& operator=(extent const&) noexcept = default;
+    constexpr extent& operator=(extent&&) noexcept = default;
 
     /** Construct a extent from a lower dimension extent.
      */
     template<int E>
-    requires(E < D) [[nodiscard]] constexpr extent(extent<E> const &other) noexcept : _v(static_cast<f32x4>(other))
+        requires(E < D)
+    [[nodiscard]] constexpr extent(extent<value_type, E> const& other) noexcept : _v(static_cast<array_type>(other))
     {
         hi_axiom(holds_invariant());
     }
 
-    /** Convert a extent to its f32x4-nummeric_array.
+    /** Convert a extent to its array_type-nummeric_array.
      */
-    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
+    [[nodiscard]] constexpr explicit operator array_type() const noexcept
     {
         return _v;
     }
 
-    [[nodiscard]] constexpr explicit extent(f32x4 const &other) noexcept : _v(other) {}
+    [[nodiscard]] constexpr explicit extent(array_type const& other) noexcept : _v(other) {}
 
     [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
         if constexpr (D == 2) {
-            return _v.x() != 0.0f or _v.y() != 0.0f;
+            return _v.x() != value_type{0} or _v.y() != value_type{0};
         } else if constexpr (D == 3) {
-            return _v.x() != 0.0f or _v.y() != 0.0f or _v.z() != 0.0f;
+            return _v.x() != value_type{0} or _v.y() != value_type{0} or _v.z() != value_type{0};
         } else {
             hi_no_default();
         }
     }
 
     template<int E>
-    [[nodiscard]] constexpr explicit operator vector<E>() const noexcept requires(E >= D)
+    [[nodiscard]] constexpr explicit operator vector<value_type, E>() const noexcept
+        requires(E >= D)
     {
         hi_axiom(holds_invariant());
-        return vector<E>{static_cast<f32x4>(*this)};
+        return vector<value_type, E>{static_cast<array_type>(*this)};
     }
 
     /** Construct a empty extent / zero length.
      */
-    [[nodiscard]] constexpr extent() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f)
+    [[nodiscard]] constexpr extent() noexcept : _v(value_type{0}, value_type{0}, value_type{0}, value_type{0})
     {
         hi_axiom(holds_invariant());
     }
@@ -82,7 +86,9 @@ public:
      * @param width The width element.
      * @param height The height element.
      */
-    [[nodiscard]] constexpr extent(float width, float height) noexcept requires(D == 2) : _v(width, height, 0.0f, 0.0f)
+    [[nodiscard]] constexpr extent(value_type width, value_type height) noexcept
+        requires(D == 2)
+        : _v(width, height, value_type{0}, value_type{0})
     {
         hi_axiom(holds_invariant());
     }
@@ -92,49 +98,56 @@ public:
      * @param height The height element.
      * @param depth The depth element.
      */
-    [[nodiscard]] constexpr extent(float width, float height, float depth = 0.0f) noexcept requires(D == 3) :
-        _v(width, height, depth, 0.0f)
+    [[nodiscard]] constexpr extent(value_type width, value_type height, value_type depth = value_type{0}) noexcept
+        requires(D == 3)
+        : _v(width, height, depth, value_type{0})
     {
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] static constexpr extent infinity() noexcept requires(D == 2)
+    [[nodiscard]] static constexpr extent infinity() noexcept
+        requires(D == 2)
     {
-        return extent{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
+        return extent{std::numeric_limits<value_type>::infinity(), std::numeric_limits<value_type>::infinity()};
     }
 
-    [[nodiscard]] static constexpr extent infinity() noexcept requires(D == 3)
+    [[nodiscard]] static constexpr extent infinity() noexcept
+        requires(D == 3)
     {
         return extent{
-            std::numeric_limits<float>::infinity(),
-            std::numeric_limits<float>::infinity(),
-            std::numeric_limits<float>::infinity()};
+            std::numeric_limits<value_type>::infinity(),
+            std::numeric_limits<value_type>::infinity(),
+            std::numeric_limits<value_type>::infinity()};
     }
 
-    [[nodiscard]] static constexpr extent large() noexcept requires(D == 2)
+    [[nodiscard]] static constexpr extent large() noexcept
+        requires (D == 2)
     {
-        return extent{32767.0f, 32767.0f};
+        return extent{value_type{16777216}, value_type{16777216}};
     }
 
-    [[nodiscard]] static constexpr extent large() noexcept requires(D == 3)
+    [[nodiscard]] static constexpr extent large() noexcept
+        requires (D == 3)
     {
-        return extent{32767.0f, 32767.0f, 32767.0f};
+        return extent{value_type{16777216}, value_type{16777216}, value_type{16777216}};
     }
 
-    [[nodiscard]] static constexpr extent nan() noexcept requires(D == 2)
+    [[nodiscard]] static constexpr extent nan() noexcept
+        requires std::is_same_v<value_type, float> and (D == 2)
     {
         auto r = extent{};
-        r._v.x() = std::numeric_limits<float>::signaling_NaN();
-        r._v.y() = std::numeric_limits<float>::signaling_NaN();
+        r._v.x() = std::numeric_limits<value_type>::signaling_NaN();
+        r._v.y() = std::numeric_limits<value_type>::signaling_NaN();
         return r;
     }
 
-    [[nodiscard]] static constexpr extent nan() noexcept requires(D == 3)
+    [[nodiscard]] static constexpr extent nan() noexcept
+        requires std::is_same_v<value_type, float> and (D == 3)
     {
         auto r = extent{};
-        r._v.x() = std::numeric_limits<float>::signaling_NaN();
-        r._v.y() = std::numeric_limits<float>::signaling_NaN();
-        r._v.z() = std::numeric_limits<float>::signaling_NaN();
+        r._v.x() = std::numeric_limits<value_type>::signaling_NaN();
+        r._v.y() = std::numeric_limits<value_type>::signaling_NaN();
+        r._v.z() = std::numeric_limits<value_type>::signaling_NaN();
         return r;
     }
 
@@ -144,7 +157,7 @@ public:
      *
      * @return a reference to the x element.
      */
-    [[nodiscard]] constexpr float &width() noexcept
+    [[nodiscard]] constexpr value_type& width() noexcept
     {
         return _v.x();
     }
@@ -155,7 +168,7 @@ public:
      *
      * @return a reference to the y element.
      */
-    [[nodiscard]] constexpr float &height() noexcept
+    [[nodiscard]] constexpr value_type& height() noexcept
     {
         return _v.y();
     }
@@ -166,7 +179,8 @@ public:
      *
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr float &depth() noexcept requires(D == 3)
+    [[nodiscard]] constexpr value_type& depth() noexcept
+        requires(D == 3)
     {
         return _v.z();
     }
@@ -177,7 +191,7 @@ public:
      *
      * @return a reference to the x element.
      */
-    [[nodiscard]] constexpr float const &width() const noexcept
+    [[nodiscard]] constexpr value_type const& width() const noexcept
     {
         return _v.x();
     }
@@ -188,7 +202,7 @@ public:
      *
      * @return a reference to the y element.
      */
-    [[nodiscard]] constexpr float const &height() const noexcept
+    [[nodiscard]] constexpr value_type const& height() const noexcept
     {
         return _v.y();
     }
@@ -199,22 +213,23 @@ public:
      *
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr float const &depth() const noexcept requires(D == 3)
+    [[nodiscard]] constexpr value_type const& depth() const noexcept
+        requires(D == 3)
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr vector<D> right() const noexcept
+    [[nodiscard]] constexpr vector<value_type, D> right() const noexcept
     {
-        return vector<D>{_v.x000()};
+        return vector<value_type, D>{_v.x000()};
     }
 
-    [[nodiscard]] constexpr vector<D> up() const noexcept
+    [[nodiscard]] constexpr vector<value_type, D> up() const noexcept
     {
-        return vector<D>{_v._0y00()};
+        return vector<value_type, D>{_v._0y00()};
     }
 
-    constexpr extent &operator+=(extent const &rhs) noexcept
+    constexpr extent& operator+=(extent const& rhs) noexcept
     {
         return *this = *this + rhs;
     }
@@ -224,7 +239,7 @@ public:
      * @param rhs The second extent.
      * @return A new extent.
      */
-    [[nodiscard]] constexpr friend extent operator+(extent const &lhs, extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent operator+(extent const& lhs, extent const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return extent{lhs._v + rhs._v};
@@ -235,41 +250,41 @@ public:
      * @param rhs The second extent.
      * @return A new extent.
      */
-    [[nodiscard]] constexpr friend extent operator-(extent const &lhs, extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent operator-(extent const& lhs, extent const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return extent{lhs._v - rhs._v};
     }
 
-    constexpr friend scale<D> operator/(extent const &lhs, extent const &rhs) noexcept;
+    constexpr friend scale<D> operator/(extent const& lhs, extent const& rhs) noexcept;
 
     /** Scale the extent by a scaler.
      * @param lhs The extent to scale.
      * @param rhs The scaling factor.
      * @return The scaled extent.
      */
-    [[nodiscard]] constexpr friend extent operator*(extent const &lhs, float const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent operator*(extent const& lhs, value_type const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant());
         return extent{lhs._v * rhs};
     }
 
     template<int E>
-    [[nodiscard]] constexpr friend auto operator+(extent const &lhs, vector<E> const &rhs) noexcept
+    [[nodiscard]] constexpr friend auto operator+(extent const& lhs, vector<value_type, E> const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant());
         hi_axiom(rhs.holds_invariant());
 
-        return extent<std::max(D, E)>{static_cast<f32x4>(lhs) + static_cast<f32x4>(rhs)};
+        return extent<value_type, std::max(D, E)>{static_cast<array_type>(lhs) + static_cast<array_type>(rhs)};
     }
 
     template<int E>
-    [[nodiscard]] constexpr friend auto operator+(vector<E> const &lhs, extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend auto operator+(vector<value_type, E> const& lhs, extent const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant());
         hi_axiom(rhs.holds_invariant());
 
-        return vector<std::max(D, E)>{static_cast<f32x4>(lhs) + static_cast<f32x4>(rhs)};
+        return vector<value_type, std::max(D, E)>{static_cast<array_type>(lhs) + static_cast<array_type>(rhs)};
     }
 
     /** Add a scaler to the extent.
@@ -277,7 +292,7 @@ public:
      * @param rhs The scaling factor.
      * @return The scaled extent.
      */
-    [[nodiscard]] constexpr friend extent operator+(extent const &lhs, float const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent operator+(extent const& lhs, value_type const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant());
 
@@ -294,7 +309,7 @@ public:
      * @param rhs The scaling factor.
      * @return The scaled extent.
      */
-    [[nodiscard]] constexpr friend extent operator*(float const &lhs, extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent operator*(value_type const& lhs, extent const& rhs) noexcept
     {
         hi_axiom(rhs.holds_invariant());
         return extent{lhs * rhs._v};
@@ -305,13 +320,13 @@ public:
      * @param rhs The second extent.
      * @return True if both extents are completely equal to each other.
      */
-    [[nodiscard]] constexpr friend bool operator==(extent const &lhs, extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(extent const& lhs, extent const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return lhs._v == rhs._v;
     }
 
-    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(extent const &lhs, extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(extent const& lhs, extent const& rhs) noexcept
         requires(D == 3)
     {
         constexpr std::size_t mask = 0b111;
@@ -338,7 +353,7 @@ public:
         return std::partial_ordering::unordered;
     }
 
-    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(extent const &lhs, extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(extent const& lhs, extent const& rhs) noexcept
         requires(D == 2)
     {
         constexpr std::size_t mask = 0b11;
@@ -369,7 +384,7 @@ public:
      * @param rhs The extent.
      * @return The length of the extent.
      */
-    [[nodiscard]] hi_force_inline constexpr friend float squared_hypot(extent const& rhs) noexcept
+    [[nodiscard]] hi_force_inline constexpr friend value_type squared_hypot(extent const& rhs) noexcept
     {
         hi_axiom(rhs.holds_invariant());
         return squared_hypot<element_mask>(rhs._v);
@@ -379,7 +394,7 @@ public:
      * @param rhs The extent.
      * @return The length of the extent.
      */
-    [[nodiscard]] constexpr friend float hypot(extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend value_type hypot(extent const& rhs) noexcept
     {
         hi_axiom(rhs.holds_invariant());
         return hypot<element_mask>(rhs._v);
@@ -389,7 +404,7 @@ public:
      * @param rhs The extent.
      * @return One over the length of the extent.
      */
-    [[nodiscard]] constexpr friend float rcp_hypot(extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend value_type rcp_hypot(extent const& rhs) noexcept
     {
         hi_axiom(rhs.holds_invariant());
         return rcp_hypot<element_mask>(rhs._v);
@@ -399,43 +414,46 @@ public:
      * @param rhs The extent.
      * @return A extent with the same direction as the given extent, but its length is 1.0.
      */
-    [[nodiscard]] constexpr friend extent normalize(extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent normalize(extent const& rhs) noexcept
     {
         hi_axiom(rhs.holds_invariant());
         return extent{normalize<element_mask>(rhs._v)};
     }
 
-    [[nodiscard]] constexpr friend extent ceil(extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent ceil(extent const& rhs) noexcept
+        requires std::is_same_v<value_type, float>
     {
         hi_axiom(rhs.holds_invariant());
-        return extent{ceil(f32x4{rhs})};
+        return extent{ceil(array_type{rhs})};
     }
 
-    [[nodiscard]] constexpr friend extent floor(extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent floor(extent const& rhs) noexcept
+        requires std::is_same_v<value_type, float>
     {
         hi_axiom(rhs.holds_invariant());
-        return extent{floor(static_cast<f32x4>(rhs))};
+        return extent{floor(static_cast<array_type>(rhs))};
     }
 
-    [[nodiscard]] constexpr friend extent round(extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent round(extent const& rhs) noexcept
+        requires std::is_same_v<value_type, float>
     {
         hi_axiom(rhs.holds_invariant());
-        return extent{round(static_cast<f32x4>(rhs))};
+        return extent{round(static_cast<array_type>(rhs))};
     }
 
-    [[nodiscard]] constexpr friend extent min(extent const &lhs, extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent min(extent const& lhs, extent const& rhs) noexcept
     {
-        return extent{min(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+        return extent{min(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
 
-    [[nodiscard]] constexpr friend extent max(extent const &lhs, extent const &rhs) noexcept
+    [[nodiscard]] constexpr friend extent max(extent const& lhs, extent const& rhs) noexcept
     {
-        return extent{max(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+        return extent{max(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
 
-    [[nodiscard]] constexpr friend extent clamp(extent const &value, extent const &min, extent const &max) noexcept
+    [[nodiscard]] constexpr friend extent clamp(extent const& value, extent const& min, extent const& max) noexcept
     {
-        return extent{clamp(static_cast<f32x4>(value), static_cast<f32x4>(min), static_cast<f32x4>(max))};
+        return extent{clamp(static_cast<array_type>(value), static_cast<array_type>(min), static_cast<array_type>(max))};
     }
 
     /** Check if the extent is valid.
@@ -444,10 +462,11 @@ public:
      */
     [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
-        return _v.x() >= 0.0f && _v.y() >= 0.0f && _v.z() >= 0.0f && _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
+        return _v.x() >= value_type{0} && _v.y() >= value_type{0} && _v.z() >= value_type{0} && _v.w() == value_type{0} &&
+            (D == 3 || _v.z() == value_type{0});
     }
 
-    [[nodiscard]] friend std::string to_string(extent const &rhs) noexcept
+    [[nodiscard]] friend std::string to_string(extent const& rhs) noexcept
     {
         if constexpr (D == 2) {
             return std::format("[{}, {}]", rhs._v.x(), rhs._v.y());
@@ -458,13 +477,13 @@ public:
         }
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, extent const &rhs) noexcept
+    friend std::ostream& operator<<(std::ostream& lhs, extent const& rhs) noexcept
     {
         return lhs << to_string(rhs);
     }
 
 private:
-    f32x4 _v;
+    array_type _v;
 
     static constexpr std::size_t element_mask = (1_uz << D) - 1;
 };
@@ -474,36 +493,72 @@ private:
 /** A 2D extent.
  * @ingroup geometry
  */
-using extent2 = geo::extent<2>;
+using extent2 = geo::extent<float, 2>;
 
 /** A 3D extent.
  * @ingroup geometry
  */
-using extent3 = geo::extent<3>;
+using extent3 = geo::extent<float, 3>;
 
-}} // namespace hi::inline v1
+/** A 2D extent.
+ * @ingroup geometry
+ */
+using extent2i = geo::extent<int, 2>;
+
+/** A 3D extent.
+ * @ingroup geometry
+ */
+using extent3i = geo::extent<int, 3>;
+
+}} // namespace hi::v1
 
 template<typename CharT>
-struct std::formatter<hi::geo::extent<2>, CharT> {
-    auto parse(auto &pc)
+struct std::formatter<hi::geo::extent<float, 2>, CharT> {
+    auto parse(auto& pc)
     {
         return pc.end();
     }
 
-    auto format(hi::geo::extent<2> const &t, auto &fc)
+    auto format(hi::geo::extent<float, 2> const& t, auto& fc)
     {
         return std::vformat_to(fc.out(), "[{}, {}]", std::make_format_args(t.width(), t.height()));
     }
 };
 
 template<typename CharT>
-struct std::formatter<hi::geo::extent<3>, CharT> : formatter<float, CharT> {
-    auto parse(auto &pc)
+struct std::formatter<hi::geo::extent<float, 3>, CharT> {
+    auto parse(auto& pc)
     {
         return pc.end();
     }
 
-    auto format(hi::geo::extent<3> const &t, auto &fc)
+    auto format(hi::geo::extent<float, 3> const& t, auto& fc)
+    {
+        return std::vformat_to(fc.out(), "[{}, {}, {}]", std::make_format_args(t.width(), t.height(), t.depth()));
+    }
+};
+
+template<typename CharT>
+struct std::formatter<hi::geo::extent<int, 2>, CharT> {
+    auto parse(auto& pc)
+    {
+        return pc.end();
+    }
+
+    auto format(hi::geo::extent<int, 2> const& t, auto& fc)
+    {
+        return std::vformat_to(fc.out(), "[{}, {}]", std::make_format_args(t.width(), t.height()));
+    }
+};
+
+template<typename CharT>
+struct std::formatter<hi::geo::extent<int, 3>, CharT> {
+    auto parse(auto& pc)
+    {
+        return pc.end();
+    }
+
+    auto format(hi::geo::extent<int, 3> const& t, auto& fc)
     {
         return std::vformat_to(fc.out(), "[{}, {}, {}]", std::make_format_args(t.width(), t.height(), t.depth()));
     }

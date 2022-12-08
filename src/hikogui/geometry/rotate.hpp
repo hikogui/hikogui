@@ -20,7 +20,7 @@ public:
     rotate &operator=(rotate const &) noexcept = default;
     rotate &operator=(rotate &&) noexcept = default;
 
-    [[nodiscard]] rotate(float angle, vector<3> axis) noexcept requires(D == 3) : _v()
+    [[nodiscard]] rotate(float angle, vector<float, 3> axis) noexcept requires(D == 3) : _v()
     {
         hi_axiom(axis.holds_invariant());
         hi_axiom(std::abs(hypot(axis) - 1.0f) < 0.0001f);
@@ -76,12 +76,13 @@ public:
         return matrix<D>{col0, col1, col2, one};
     }
 
-    std::pair<float, vector<3>> angle_and_axis() const noexcept requires(D == 3)
+    std::pair<float, vector<float, 3>> angle_and_axis() const noexcept
+        requires(D == 3)
     {
         hilet rcp_length = rcp_hypot<0b0111>(_v);
         hilet length = 1.0f / rcp_length;
 
-        return {2.0f * std::atan2(length), vector<3>{_v.xyz0() * rcp_length}};
+        return {2.0f * std::atan2(length), vector<float, 3>{_v.xyz0() * rcp_length}};
     }
 
 private :

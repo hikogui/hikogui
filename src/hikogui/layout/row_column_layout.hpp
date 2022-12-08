@@ -121,9 +121,9 @@ public:
         return _grid.get_constraints(left_to_right);
     }
 
-    void set_layout(int width, int height, int guideline) noexcept
+    void set_layout(box_shape const &shape, int guideline) noexcept
     {
-        return _grid.set_layout(width, height, guideline);
+        return _grid.set_layout(shape, guideline);
     }
 
 private:

@@ -287,10 +287,10 @@ public:
      * @return The transformed vector.
      */
     template<int E>
-    [[nodiscard]] constexpr auto operator*(vector<E> const& rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(vector<float, E> const& rhs) const noexcept
     {
         hi_axiom(rhs.holds_invariant());
-        return vector<std::max(D, E)>{
+        return vector<float, std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
     }
@@ -303,10 +303,10 @@ public:
      * @return The transformed extent.
      */
     template<int E>
-    [[nodiscard]] constexpr auto operator*(extent<E> const& rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(extent<float, E> const& rhs) const noexcept
     {
         hi_axiom(rhs.holds_invariant());
-        return extent<std::max(D, E)>{
+        return extent<float, std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
     }
@@ -317,10 +317,10 @@ public:
      * @return The transformed point.
      */
     template<int E>
-    [[nodiscard]] constexpr auto operator*(point<E> const& rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(point<float, E> const& rhs) const noexcept
     {
         hi_axiom(rhs.holds_invariant());
-        return point<std::max(D, E)>{
+        return point<float, std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
     }

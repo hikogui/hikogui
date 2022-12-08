@@ -9,6 +9,7 @@ example application.
 Specific installation manuals for each platform and IDE:
  - [Visual Studio (Preview)](docs/build_with_visual_studio.md)
  - [Visual Studio (Preview) + vcpkg](docs/build_with_visual_studio_and_vcpkg.md)
+ - [gcc on Linux](docs/build_with_gcc_on_linux.md)
 
 Bugs impacting HikoGUI
 ----------------------

@@ -398,10 +398,12 @@ public:
      * In an emergency widgets will get a size larger than its maximum. However
      * widgets will never get a smaller size than its minimum.
      *
+     * @param new_position The start of the grid along its axis.
      * @param new_extent The size of the grid along its axis.
+     * @param external_guideline The position of the guideline external from the grid.
      * @param guideline_width The width of the guideline.
      */
-    constexpr void layout(int new_extent, int guideline_width) noexcept
+    constexpr void layout(int new_position, int new_extent, std::optional<int> external_guideline, int guideline_width) noexcept
     {
         // Start with the extent of each constraint equal to the preferred extent.
         for (auto& constraint : _constraints) {
@@ -447,9 +449,15 @@ public:
         }
 
         if (_forward) {
-            layout_position(begin(), end(), guideline_width);
+            layout_position(begin(), end(), new_position, guideline_width);
         } else {
-            layout_position(rbegin(), rend(), guideline_width);
+            layout_position(rbegin(), rend(), new_position, guideline_width);
+        }
+
+        if (external_guideline and size() == 1) {
+            // When there is only 1 cell on this axis, the external guideline is used.
+            // XXX If there are more cell, then the external alignment should be taken into account.
+            front().guideline = *external_guideline;
         }
     }
 
@@ -694,9 +702,9 @@ private:
         return {new_extent, new_count};
     }
 
-    constexpr void layout_position(auto first, auto last, int guideline_width) noexcept
+    constexpr void layout_position(auto first, auto last, int start_position, int guideline_width) noexcept
     {
-        auto position = 0;
+        auto position = start_position;
         for (auto it = first; it != last; ++it) {
             it->position = position;
             it->guideline = make_guideline(
@@ -1116,15 +1124,14 @@ public:
 
     /** Layout the cells based on the width and height.
      *
-     * @param width The width of the grid.
-     * @param height The height of the grid.
-     * @param guideline_width The width of the base-line.
+     * @param shape The shape of the box to place the grid in.
+     * @param baseline_adjustment How much the baseline needs to be adjusted when aligned to the top.
      */
-    constexpr void set_layout(int width, int height, int guideline_width) noexcept
+    constexpr void set_layout(box_shape const& shape, int baseline_adjustment) noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
-        _row_constraints.layout(height, guideline_width);
-        _column_constraints.layout(width, 0);
+        _column_constraints.layout(shape.x, shape.width, shape.centerline, 0);
+        _row_constraints.layout(shape.y, shape.height, shape.baseline, baseline_adjustment);
 
         // Assign the shape for each cell.
         for (auto& cell : _cells) {
@@ -1132,8 +1139,8 @@ public:
             cell.shape.y = _row_constraints.position(cell);
             cell.shape.width = _column_constraints.extent(cell);
             cell.shape.height = _row_constraints.extent(cell);
-            cell.shape.baseline = _row_constraints.guideline(cell);
             cell.shape.centerline = _column_constraints.guideline(cell);
+            cell.shape.baseline = _row_constraints.guideline(cell);
         }
     }
 

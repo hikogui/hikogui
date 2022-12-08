@@ -159,8 +159,8 @@ void gui_window::render(utc_nanoseconds display_time_point)
             _size_state,
             *gui.font_book,
             theme,
-            this->subpixel_orientation(),
-            this->writing_direction(),
+            subpixel_orientation(),
+            writing_direction(),
             display_time_point});
 
         // After layout do a complete redraw.
@@ -177,6 +177,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         _redraw_rectangle = aarectangle{};
         draw_context.display_time_point = display_time_point;
         draw_context.subpixel_orientation = subpixel_orientation();
+        draw_context.writing_direction = writing_direction();
         draw_context.background_color = widget->background_color();
         draw_context.active = active;
 

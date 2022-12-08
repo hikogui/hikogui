@@ -66,6 +66,42 @@ class default_text_delegate;
  * @ingroup widget_delegates
  */
 template<>
+class default_text_delegate<char const *> : public text_delegate {
+public:
+    using value_type = char const *;
+
+    observer<value_type> value;
+
+    /** Construct a delegate.
+     *
+     * @param value A value or observer-value used as a representation of the state.
+     */
+    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
+    {
+        _value_cbt = this->value.subscribe([&](auto...) {
+            this->_notifier();
+        });
+    }
+
+    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    {
+        return to_gstring(std::string{*value});
+    }
+
+    void write(text_widget& sender, gstring const& text) noexcept override
+    {
+        hi_no_default();
+    }
+
+private:
+    typename decltype(value)::callback_token _value_cbt;
+};
+
+/** A default text delegate specialization for `std::string`.
+ *
+ * @ingroup widget_delegates
+ */
+template<>
 class default_text_delegate<std::string> : public text_delegate {
 public:
     using value_type = std::string;

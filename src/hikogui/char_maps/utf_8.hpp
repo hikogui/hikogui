@@ -52,8 +52,7 @@ struct char_map<"utf-8"> {
             return read_fallback(it, last);
 
         } else {
-            auto length = narrow_cast<uint8_t>(std::countl_one(char_cast<uint8_t>(cu)));
-            auto todo = length - 2;
+            hilet length = narrow_cast<uint8_t>(std::countl_one(char_cast<uint8_t>(cu)));
             hi_axiom(length >= 2);
 
             // First part of the code-point.
@@ -69,7 +68,11 @@ struct char_map<"utf-8"> {
                 it -= 2;
                 return read_fallback(it, last);
 
-            } else if (todo >= std::distance(it, last)) [[unlikely]] {
+            }
+            
+            // After we read the first two code-units how many more to do.
+            auto todo = length - 2;
+            if (todo > std::distance(it, last)) [[unlikely]] {
                 // If there is a start and a continuation code-unit in a row we consider this to be UTF-8 encoded.
                 // So at this point any errors are replaced with 0xfffd.
                 it = last;
