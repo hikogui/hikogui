@@ -79,6 +79,8 @@ box_constraints const& selection_widget::set_constraints(set_constraints_context
     _constraints.maximum_width =
         std::max(_constraints.maximum_width, _overlay_constraints.maximum_width + narrow_cast<int>(extra_size.width()));
     _constraints.set_margins(narrow_cast<int>(context.theme->margin));
+    _constraints.set_padding(context.theme->margin);
+    _constraints.alignment = resolve(*alignment, context.left_to_right());
     hi_axiom(_constraints.holds_invariant());
     return _constraints;
 }

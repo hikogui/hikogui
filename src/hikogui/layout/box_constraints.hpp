@@ -98,6 +98,15 @@ struct box_constraints {
         return *this;
     }
 
+    constexpr box_constraints& set_padding(int rhs) noexcept
+    {
+        padding_left = rhs;
+        padding_bottom = rhs;
+        padding_right = rhs;
+        padding_top = rhs;
+        return *this;
+    }
+
     [[nodiscard]] constexpr box_constraints internalize_margins() const noexcept
     {
         auto r = *this;

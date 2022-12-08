@@ -114,7 +114,7 @@ box_constraints const& label_widget::set_constraints(set_constraints_context con
 void label_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _grid.set_layout(context.width(), context.height(), context.theme->baseline_adjustment);
+        _grid.set_layout(context.shape, context.theme->baseline_adjustment);
     }
 
     for (hilet& cell : _grid) {
