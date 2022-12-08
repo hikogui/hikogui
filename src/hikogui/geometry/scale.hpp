@@ -28,12 +28,13 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr explicit operator extent<2>() const noexcept requires(D == 2)
+    [[nodiscard]] constexpr explicit operator extent<float, 2>() const noexcept requires(D == 2)
     {
         return extent<2>{_v.xy00()};
     }
 
-    [[nodiscard]] constexpr explicit operator extent<3>() const noexcept requires(D == 3)
+    [[nodiscard]] constexpr explicit operator extent<float, 3>() const noexcept
+        requires(D == 3)
     {
         return extent<3>{_v.xyz0()};
     }
@@ -44,7 +45,8 @@ public:
     }
 
     template<int E>
-    requires(E <= D) [[nodiscard]] constexpr explicit scale(vector<E> const &v) noexcept : _v(static_cast<f32x4>(v).xyz1())
+        requires(E <= D)
+    [[nodiscard]] constexpr explicit scale(vector<float, E> const& v) noexcept : _v(static_cast<f32x4>(v).xyz1())
     {
         hi_axiom(holds_invariant());
     }
@@ -73,7 +75,8 @@ public:
      * @return a scale to transform the src_extent to the dst_extent.
      */
     template<int E, int F>
-    requires(E <= D && F <= D) [[nodiscard]] static constexpr scale uniform(extent<E> src_extent, extent<F> dst_extent) noexcept
+        requires(E <= D && F <= D)
+    [[nodiscard]] static constexpr scale uniform(extent<float, E> src_extent, extent<float, F> dst_extent) noexcept
     {
         hi_axiom(
             dst_extent.width() != 0.0f && src_extent.width() != 0.0f && dst_extent.height() != 0.0f &&
@@ -96,24 +99,24 @@ public:
     }
 
     template<int E>
-    [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr vector<float, E> operator*(vector<float, E> const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return vector<E>{_v * static_cast<f32x4>(rhs)};
+        return vector<float, E>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
-    [[nodiscard]] constexpr extent<E> operator*(extent<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr extent<float, E> operator*(extent<float, E> const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return extent<E>{_v * static_cast<f32x4>(rhs)};
+        return extent<float, E>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
-    [[nodiscard]] constexpr point<E> operator*(point<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr point<float, E> operator*(point<float, E> const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return point<E>{_v * static_cast<f32x4>(rhs)};
+        return point<float, E>{_v * static_cast<f32x4>(rhs)};
     }
 
     /** Scale a rectangle around it's center.
@@ -188,14 +191,14 @@ private:
     f32x4 _v;
 };
 
-[[nodiscard]] constexpr scale<2> operator/(extent<2> const &lhs, extent<2> const &rhs) noexcept
+[[nodiscard]] constexpr scale<2> operator/(extent<float, 2> const& lhs, extent<float, 2> const& rhs) noexcept
 {
     hi_axiom(rhs._v.x() != 0.0f);
     hi_axiom(rhs._v.y() != 0.0f);
     return scale<2>{lhs._v.xy11() / rhs._v.xy11()};
 }
 
-[[nodiscard]] constexpr scale<3> operator/(extent<3> const &lhs, extent<3> const &rhs) noexcept
+[[nodiscard]] constexpr scale<3> operator/(extent<float, 3> const& lhs, extent<float, 3> const& rhs) noexcept
 {
     hi_axiom(rhs._v.x() != 0.0f);
     hi_axiom(rhs._v.y() != 0.0f);
