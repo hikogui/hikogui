@@ -1,5 +1,5 @@
 // Copyright Take Vos 2021-2022.
-// Distributed under the Boost Software License, Version 1.0.
+// Distributed under the Boost Software License, Version value_type{1}.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
@@ -11,79 +11,97 @@
 namespace hi::inline v1 {
 namespace geo {
 
-template<int D>
+template<typename T, int D>
 class translate {
 public:
     static_assert(D == 2 || D == 3, "Only 2D or 3D translation-matrices are supported");
 
-    constexpr translate(translate const &) noexcept = default;
-    constexpr translate(translate &&) noexcept = default;
-    constexpr translate &operator=(translate const &) noexcept = default;
-    constexpr translate &operator=(translate &&) noexcept = default;
+    using value_type = T;
+    using array_type = numeric_array<value_type, 4>;
 
-    [[nodiscard]] constexpr operator matrix<2>() const noexcept requires(D == 2)
+    constexpr translate(translate const&) noexcept = default;
+    constexpr translate(translate&&) noexcept = default;
+    constexpr translate& operator=(translate const&) noexcept = default;
+    constexpr translate& operator=(translate&&) noexcept = default;
+
+    [[nodiscard]] constexpr operator matrix<2>() const noexcept
+        requires std::is_same_v<value_type, float> and (D == 2)
     {
         hi_axiom(holds_invariant());
-        hilet ones = f32x4::broadcast(1.0);
+        hilet ones = array_type::broadcast(value_type{1});
         return matrix<2>{ones.x000(), ones._0y00(), ones._00z0(), ones._000w() + _v};
     }
 
     [[nodiscard]] constexpr operator matrix<3>() const noexcept
+        requires std::is_same_v<value_type, float>
     {
         hi_axiom(holds_invariant());
-        hilet ones = f32x4::broadcast(1.0);
+        hilet ones = array_type::broadcast(value_type{1});
         return matrix<3>{ones.x000(), ones._0y00(), ones._00z0(), ones._000w() + _v};
     }
 
     [[nodiscard]] constexpr translate() noexcept : _v() {}
 
-    [[nodiscard]] constexpr translate(identity const &) noexcept : translate() {}
+    [[nodiscard]] constexpr translate(identity const&) noexcept : translate() {}
 
-    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
+    [[nodiscard]] constexpr explicit operator array_type() const noexcept
     {
         hi_axiom(holds_invariant());
         return _v;
     }
 
-    [[nodiscard]] constexpr explicit translate(f32x4 const &other) noexcept : _v(other)
+    [[nodiscard]] constexpr explicit translate(array_type const& other) noexcept : _v(other)
     {
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr explicit translate(aarectangle const &other) noexcept : _v(static_cast<f32x4>(get<0>(other)).xy00())
+    [[nodiscard]] constexpr explicit translate(axis_aligned_rectangle<value_type> const& other) noexcept :
+        _v(static_cast<array_type>(get<0>(other)).xy00())
     {
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr explicit translate(aarectangle const &other, float z) noexcept requires(D == 3) :
-        _v(static_cast<f32x4>(get<0>(other)).xy00())
+    [[nodiscard]] constexpr explicit translate(axis_aligned_rectangle<value_type> const& other, value_type z) noexcept
+        requires(D == 3)
+        : _v(static_cast<array_type>(get<0>(other)).xy00())
     {
         _v.z() = z;
         hi_axiom(holds_invariant());
     }
 
     template<int E>
-    requires(E < D) [[nodiscard]] constexpr translate(translate<E> const &other) noexcept : _v(static_cast<f32x4>(other))
+        requires(E < D)
+    [[nodiscard]] constexpr translate(translate<value_type, E> const& other) noexcept : _v(static_cast<array_type>(other))
     {
         hi_axiom(holds_invariant());
     }
 
     template<int E>
-    requires(E <= D) [[nodiscard]] constexpr explicit translate(vector<E> const &other) noexcept : _v(static_cast<f32x4>(other))
+        requires(E <= D)
+    [[nodiscard]] constexpr explicit translate(vector<value_type, E> const& other) noexcept : _v(static_cast<array_type>(other))
     {
         hi_axiom(holds_invariant());
     }
 
     template<int E>
-    requires(E <= D) [[nodiscard]] constexpr explicit translate(point<E> const &other) noexcept :
-        _v(static_cast<f32x4>(other).xyz0())
+        requires(E <= D)
+    [[nodiscard]] constexpr explicit translate(point<value_type, E> const& other) noexcept :
+        _v(static_cast<array_type>(other).xyz0())
     {
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr translate(float x, float y) noexcept requires(D == 2) : _v(x, y, 0.0, 0.0) {}
+    [[nodiscard]] constexpr translate(value_type x, value_type y) noexcept
+        requires(D == 2)
+        : _v(x, y, value_type{0}, value_type{0})
+    {
+    }
 
-    [[nodiscard]] constexpr translate(float x, float y, float z = 0.0) noexcept requires(D == 3) : _v(x, y, z, 0.0) {}
+    [[nodiscard]] constexpr translate(value_type x, value_type y, value_type z = value_type{0}) noexcept
+        requires(D == 3)
+        : _v(x, y, z, value_type{0})
+    {
+    }
 
     /** Align a rectangle within another rectangle.
      * @param src_rectangle The rectangle to translate into the dst_rectangle
@@ -91,10 +109,12 @@ public:
      * @param alignment How the source rectangle should be aligned inside the destination rectangle.
      * @return Translation to move the src_rectangle into the dst_rectangle.
      */
-    [[nodiscard]] constexpr static translate
-    align(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
+    [[nodiscard]] constexpr static translate align(
+        axis_aligned_rectangle<value_type> src_rectangle,
+        axis_aligned_rectangle<value_type> dst_rectangle,
+        alignment alignment) noexcept
     {
-        auto x = 0.0f;
+        auto x = value_type{0};
         if (alignment == horizontal_alignment::left) {
             x = dst_rectangle.left();
 
@@ -108,7 +128,7 @@ public:
             hi_no_default();
         }
 
-        auto y = 0.0f;
+        auto y = value_type{0};
         if (alignment == vertical_alignment::bottom) {
             y = dst_rectangle.bottom();
 
@@ -126,7 +146,7 @@ public:
     }
 
     template<int E>
-    [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr vector<value_type, E> operator*(vector<value_type, E> const& rhs) const noexcept
     {
         // Vectors are not translated.
         hi_axiom(holds_invariant() && rhs.holds_invariant());
@@ -134,73 +154,82 @@ public:
     }
 
     template<int E>
-    [[nodiscard]] constexpr point<std::max(D, E)> operator*(point<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr point<value_type, std::max(D, E)> operator*(point<value_type, E> const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return point<std::max(D, E)>{_v + static_cast<f32x4>(rhs)};
+        return point<value_type, std::max(D, E)>{_v + static_cast<array_type>(rhs)};
     }
 
-    [[nodiscard]] constexpr aarectangle operator*(aarectangle const &rhs) const noexcept requires(D == 2)
+    [[nodiscard]] constexpr axis_aligned_rectangle<value_type>
+    operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept
+        requires(D == 2)
     {
-        return aarectangle{*this * get<0>(rhs), *this * get<3>(rhs)};
+        return axis_aligned_rectangle<value_type>{*this * get<0>(rhs), *this * get<3>(rhs)};
     }
 
-    [[nodiscard]] constexpr rectangle operator*(aarectangle const &rhs) const noexcept requires(D == 3)
+    [[nodiscard]] constexpr rectangle operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept
+        requires std::is_same_v<value_type, float> and (D == 3)
     {
         return *this * rectangle{rhs};
     }
 
-    [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(rectangle const& rhs) const noexcept
+        requires std::is_same_v<value_type, float>
     {
         return rectangle{*this * rhs.origin, rhs.right, rhs.up};
     }
 
-    [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
+    [[nodiscard]] constexpr quad operator*(quad const& rhs) const noexcept
+        requires std::is_same_v<value_type, float>
     {
         return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
     }
 
-    [[nodiscard]] constexpr circle operator*(circle const &rhs) const noexcept
+    [[nodiscard]] constexpr circle operator*(circle const& rhs) const noexcept
+        requires std::is_same_v<value_type, float>
     {
-        return circle{f32x4{rhs} + _v};
+        return circle{array_type{rhs} + _v};
     }
 
-    [[nodiscard]] constexpr line_segment operator*(line_segment const &rhs) const noexcept
+    [[nodiscard]] constexpr line_segment operator*(line_segment const& rhs) const noexcept
+        requires std::is_same_v<value_type, float>
     {
         return line_segment{*this * rhs.origin(), rhs.direction()};
     }
 
-    [[nodiscard]] constexpr translate operator*(identity const &) const noexcept
+    [[nodiscard]] constexpr translate operator*(identity const&) const noexcept
     {
         hi_axiom(holds_invariant());
         return *this;
     }
 
     template<int E>
-    [[nodiscard]] constexpr auto operator*(matrix<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(matrix<E> const& rhs) const noexcept
+        requires std::is_same_v<value_type, float>
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
         return matrix<std::max(D, E)>{get<0>(rhs), get<1>(rhs), get<2>(rhs), get<3>(rhs) + _v};
     }
 
     template<int E>
-    [[nodiscard]] constexpr auto operator*(rotate<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(rotate<E> const& rhs) const noexcept
+        requires std::is_same_v<value_type, float>
     {
         return *this * matrix<E>(rhs);
     }
 
     template<int E>
-    [[nodiscard]] constexpr auto operator*(translate<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(translate<value_type, E> const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return translate<std::max(D, E)>{_v + static_cast<f32x4>(rhs)};
+        return translate<value_type, std::max(D, E)>{_v + static_cast<array_type>(rhs)};
     }
 
     template<int E>
-    [[nodiscard]] constexpr bool operator==(translate<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr bool operator==(translate<value_type, E> const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return _v == static_cast<f32x4>(rhs);
+        return _v == static_cast<array_type>(rhs);
     }
 
     [[nodiscard]] constexpr translate operator~() const noexcept
@@ -210,26 +239,34 @@ public:
 
     [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
-        return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
+        return _v.w() == value_type{0} && (D == 3 || _v.z() == value_type{0});
     }
 
-    [[nodiscard]] friend constexpr translate round(translate const &rhs) noexcept
+    [[nodiscard]] friend constexpr translate round(translate const& rhs) noexcept
+        requires std::is_same_v<value_type, float>
     {
         return translate{round(rhs._v)};
     }
 
 private:
-    f32x4 _v;
+    array_type _v;
 };
 
 } // namespace geo
 
-using translate2 = geo::translate<2>;
-using translate3 = geo::translate<3>;
+using translate2 = geo::translate<float, 2>;
+using translate3 = geo::translate<float, 3>;
+using translate2i = geo::translate<int, 2>;
+using translate3i = geo::translate<int, 3>;
 
 constexpr translate3 translate_z(float z) noexcept
 {
-    return translate3{0.0f, 0.0f, z};
+    return translate3{float{0}, float{0}, z};
+}
+
+constexpr translate3i translate_z(int z) noexcept
+{
+    return translate3i{int{0}, int{0}, z};
 }
 
 } // namespace hi::inline v1

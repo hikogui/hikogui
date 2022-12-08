@@ -20,8 +20,8 @@ template<int D>
     return rhs;
 }
 
-template<int D>
-[[nodiscard]] constexpr translate<D> operator*(identity const &lhs, translate<D> const &rhs) noexcept
+template<typename T, int D>
+[[nodiscard]] constexpr translate<T, D> operator*(identity const &lhs, translate<T, D> const &rhs) noexcept
 {
     return rhs;
 }
@@ -39,7 +39,7 @@ template<int D>
 }
 
 template<int D, int E>
-[[nodiscard]] constexpr auto operator*(translate<D> const &lhs, scale<E> const &rhs) noexcept
+[[nodiscard]] constexpr auto operator*(translate<float, D> const &lhs, scale<E> const &rhs) noexcept
 {
     hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return matrix<std::max(D, E)>{
@@ -50,7 +50,7 @@ template<int D, int E>
 }
 
 template<int D, int E>
-[[nodiscard]] constexpr auto operator*(scale<D> const &lhs, translate<E> const &rhs) noexcept
+[[nodiscard]] constexpr auto operator*(scale<D> const &lhs, translate<float, E> const &rhs) noexcept
 {
     hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return matrix<std::max(D, E)>{
@@ -68,8 +68,8 @@ struct transform : public std::false_type {
 template<> struct transform<matrix<2>> : public std::true_type {};
 template<> struct transform<matrix<3>> : public std::true_type {};
 template<> struct transform<identity> : public std::true_type {};
-template<> struct transform<translate<2>> : public std::true_type {};
-template<> struct transform<translate<3>> : public std::true_type {};
+template<> struct transform<translate<float, 2>> : public std::true_type {};
+template<> struct transform<translate<float, 3>> : public std::true_type {};
 template<> struct transform<rotate<2>> : public std::true_type {};
 template<> struct transform<rotate<3>> : public std::true_type {};
 template<> struct transform<scale<2>> : public std::true_type {};
