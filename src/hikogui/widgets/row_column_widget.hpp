@@ -109,7 +109,7 @@ public:
             child.get_constraints(child.value->get_constraints(context));
         }
 
-        return _constraints = _children.get_constraints(context.left_to_right());
+        return _children.get_constraints(context.left_to_right());
     }
 
     void set_layout(widget_layout const& context) noexcept override

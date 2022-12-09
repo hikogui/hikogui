@@ -62,27 +62,28 @@ box_constraints const& selection_widget::get_constraints(get_constraints_context
 
     _off_label_constraints = _off_label_widget->get_constraints(context);
     _current_label_constraints = _current_label_widget->get_constraints(context);
-    _constraints = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
+
+    auto constraints = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
 
     // Make it so that the scroll widget can scroll vertically.
     _scroll_widget->minimum_height = narrow_cast<int>(context.theme->size);
     _overlay_constraints = _overlay_widget->get_constraints(context);
     for (hilet& child : _menu_button_widgets) {
         // extra_size is already implied in the menu button widgets.
-        _constraints = max(_constraints, child->constraints());
+        constraints = max(constraints, child->constraints());
     }
 
-    _constraints.minimum_width =
+    constraints.minimum_width =
         std::max(_constraints.minimum_width, _overlay_constraints.minimum_width + narrow_cast<int>(extra_size.width()));
-    _constraints.preferred_width =
+    constraints.preferred_width =
         std::max(_constraints.preferred_width, _overlay_constraints.preferred_width + narrow_cast<int>(extra_size.width()));
-    _constraints.maximum_width =
+    constraints.maximum_width =
         std::max(_constraints.maximum_width, _overlay_constraints.maximum_width + narrow_cast<int>(extra_size.width()));
-    _constraints.set_margins(narrow_cast<int>(context.theme->margin));
-    _constraints.set_padding(context.theme->margin);
-    _constraints.alignment = resolve(*alignment, context.left_to_right());
-    hi_axiom(_constraints.holds_invariant());
-    return _constraints;
+    constraints.set_margins(narrow_cast<int>(context.theme->margin));
+    constraints.set_padding(context.theme->margin);
+    constraints.alignment = resolve(*alignment, context.left_to_right());
+    hi_axiom(constraints.holds_invariant());
+    return constraints;
 }
 
 void selection_widget::set_layout(widget_layout const& context) noexcept
@@ -124,9 +125,9 @@ void selection_widget::set_layout(widget_layout const& context) noexcept
     // The height of the overlay should be the maximum height, which will show all the options.
     hilet overlay_width = std::clamp(
         context.width() - context.theme->size,
-        narrow_cast<float>(_overlay_widget->constraints().minimum_width),
-        narrow_cast<float>(_overlay_widget->constraints().maximum_width));
-    hilet overlay_height = narrow_cast<float>(_overlay_widget->constraints().preferred_height);
+        narrow_cast<float>(_overlay_constraints.minimum_width),
+        narrow_cast<float>(_overlay_constraints.maximum_width));
+    hilet overlay_height = narrow_cast<float>(_overlay_constraints.preferred_height);
     hilet overlay_x = context.left_to_right() ? context.theme->size : narrow_cast<float>(context.width()) - context.theme->size - overlay_width;
     hilet overlay_y = std::round(context.height() * 0.5f - overlay_height * 0.5f);
     hilet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};

@@ -52,7 +52,7 @@ box_constraints const& grid_widget::get_constraints(get_constraints_context cons
         cell.get_constraints(cell.value->get_constraints(context));
     }
 
-    return _constraints = _cells.get_constraints(context.left_to_right());
+    return _cells.get_constraints(context.left_to_right());
 }
 
 void grid_widget::set_layout(widget_layout const& context) noexcept

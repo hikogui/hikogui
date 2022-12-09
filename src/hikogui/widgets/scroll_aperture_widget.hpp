@@ -113,7 +113,7 @@ public:
         aperture_constraints.minimum_width = 0;
         aperture_constraints.minimum_height = 0;
 
-        return _constraints = aperture_constraints.internalize_margins().constrain(
+        return aperture_constraints.internalize_margins().constrain(
                    *minimum_width, *minimum_height, *maximum_width, *maximum_height);
     }
 

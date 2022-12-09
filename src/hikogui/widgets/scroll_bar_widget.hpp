@@ -68,20 +68,20 @@ public:
         _layout = {};
 
         if (*mode <= widget_mode::collapse) {
-            return _constraints = {};
+            return {};
         }
 
         // The minimum size is twice the length of the slider, which is twice the context.theme->size()
         if constexpr (axis == axis::vertical) {
-            return _constraints = {
-                       {context.theme->icon_size, context.theme->size * 4.0f},
-                       {context.theme->icon_size, context.theme->size * 4.0f},
-                       {context.theme->icon_size, 32767.0f}};
+            return {
+               {context.theme->icon_size, context.theme->size * 4.0f},
+               {context.theme->icon_size, context.theme->size * 4.0f},
+               {context.theme->icon_size, 32767.0f}};
         } else {
-            return _constraints = {
-                       {context.theme->size * 4.0f, context.theme->icon_size},
-                       {context.theme->size * 4.0f, context.theme->icon_size},
-                       {32767.0f, context.theme->icon_size}};
+            return {
+               {context.theme->size * 4.0f, context.theme->icon_size},
+               {context.theme->size * 4.0f, context.theme->icon_size},
+               {32767.0f, context.theme->icon_size}};
         }
     }
 

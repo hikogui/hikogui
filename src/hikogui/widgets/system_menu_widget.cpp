@@ -17,7 +17,7 @@ box_constraints const& system_menu_widget::get_constraints(get_constraints_conte
     _icon_constraints = _icon_widget->get_constraints(context);
 
     hilet size = extent2{context.theme->large_size, context.theme->large_size};
-    return _constraints = {size, size, size};
+    return {size, size, size};
 }
 
 void system_menu_widget::set_layout(widget_layout const& context) noexcept

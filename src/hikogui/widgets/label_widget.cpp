@@ -108,7 +108,7 @@ box_constraints const& label_widget::get_constraints(get_constraints_context con
         cell.get_constraints(cell.value->get_constraints(context));
     }
 
-    return _constraints = _grid.get_constraints(context.left_to_right());
+    return _grid.get_constraints(context.left_to_right());
 }
 
 void label_widget::set_layout(widget_layout const& context) noexcept

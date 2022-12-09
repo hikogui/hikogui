@@ -88,7 +88,7 @@ box_constraints const& window_widget::get_constraints(get_constraints_context co
     inplace_clamp(constraints.preferred_width, constraints.minimum_width, constraints.maximum_width);
     inplace_clamp(constraints.preferred_height, constraints.minimum_height, constraints.maximum_height);
 
-    return _constraints = constraints;
+    return constraints;
 }
 
 void window_widget::set_layout(widget_layout const& context) noexcept

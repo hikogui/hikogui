@@ -123,7 +123,7 @@ public:
             cell.get_constraints(cell.value->get_constraints(context));
         }
         auto grid_constraints = _grid.get_constraints(context.left_to_right());
-        return _constraints = grid_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
+        return grid_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
     }
 
     void set_layout(widget_layout const& context) noexcept override

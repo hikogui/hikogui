@@ -13,9 +13,10 @@ box_constraints const& momentary_button_widget::get_constraints(get_constraints_
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     hilet extra_size = extent2{context.theme->margin * 2.0f, context.theme->margin * 2.0f};
     _label_constraints = get_constraints_button(context);
-    _constraints = _label_constraints + extra_size;
-    _constraints.set_margins(narrow_cast<int>(context.theme->margin));
-    return _constraints;
+
+    auto constraints = _label_constraints + extra_size;
+    constraints.set_margins(narrow_cast<int>(context.theme->margin));
+    return constraints;
 }
 
 void momentary_button_widget::set_layout(widget_layout const& context) noexcept

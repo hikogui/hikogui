@@ -20,7 +20,7 @@ box_constraints const &toggle_widget::get_constraints(get_constraints_context co
     constraints.set_margins(narrow_cast<int>(context.theme->margin));
     constraints.alignment = *alignment;
 
-    return _constraints = constraints;
+    return constraints;
 }
 
 void toggle_widget::set_layout(widget_layout const& context) noexcept

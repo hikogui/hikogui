@@ -54,7 +54,7 @@ box_constraints const& tab_widget::get_constraints(get_constraints_context const
         child->mode = child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible;
     }
 
-    return _constraints = selected_child_.get_constraints(context);
+    return selected_child_.get_constraints(context);
 }
 
 void tab_widget::set_layout(widget_layout const& context) noexcept

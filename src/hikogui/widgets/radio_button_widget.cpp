@@ -14,10 +14,11 @@ box_constraints const& radio_button_widget::get_constraints(get_constraints_cont
     _button_size = {context.theme->size, context.theme->size};
     hilet extra_size = extent2{context.theme->margin + _button_size.width(), 0.0f};
     _label_constraints = get_constraints_button(context);
-    _constraints = max(_label_constraints + extra_size, _button_size);
-    _constraints.set_margins(narrow_cast<int>(context.theme->margin));
-    _constraints.alignment = *alignment;
-    return _constraints;
+
+    auto constraints = max(_label_constraints + extra_size, _button_size);
+    constraints.set_margins(narrow_cast<int>(context.theme->margin));
+    constraints.alignment = *alignment;
+    return constraints;
 }
 
 void radio_button_widget::set_layout(widget_layout const& context) noexcept

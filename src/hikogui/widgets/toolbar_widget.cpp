@@ -35,7 +35,7 @@ box_constraints const& toolbar_widget::get_constraints(get_constraints_context c
     r.padding_top += r.margin_top;
     r.margin_top = 0;
 
-    return _constraints = r;
+    return r;
 }
 
 void toolbar_widget::set_layout(widget_layout const& context) noexcept

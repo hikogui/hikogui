@@ -96,7 +96,7 @@ box_constraints const& text_field_widget::get_constraints(get_constraints_contex
     // The alignment of a text-field is not based on the text-widget due to the intermediate scroll widget.
     hilet resolved_alignment = resolve_mirror(*alignment, context.left_to_right());
 
-    return _constraints = {size, size, size, resolved_alignment, context.theme->margin};
+    return {size, size, size, resolved_alignment, context.theme->margin};
 }
 
 void text_field_widget::set_layout(widget_layout const& context) noexcept

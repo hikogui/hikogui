@@ -17,11 +17,11 @@ box_constraints const& window_traffic_lights_widget::get_constraints(get_constra
 
     if (context.theme->operating_system == operating_system::windows) {
         hilet size = extent2{context.theme->large_size * 3.0f, context.theme->large_size};
-        return _constraints = {size, size, size};
+        return {size, size, size};
 
     } else if (context.theme->operating_system == operating_system::macos) {
         hilet size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
-        return _constraints = {size, size, size};
+        return {size, size, size};
 
     } else {
         hi_no_default();

@@ -16,7 +16,7 @@ box_constraints const& toolbar_button_widget::get_constraints(get_constraints_co
 
     auto constraints = _label_constraints + extra_size;
     constraints.set_margins(0);
-    return _constraints = constraints;
+    return constraints;
 }
 
 void toolbar_button_widget::set_layout(widget_layout const& context) noexcept

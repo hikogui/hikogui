@@ -33,7 +33,7 @@ box_constraints const& overlay_widget::get_constraints(get_constraints_context c
 {
     _layout = {};
     _content_constraints = _content->get_constraints(context);
-    return _constraints = _content_constraints;
+    return _content_constraints;
 }
 
 void overlay_widget::set_layout(widget_layout const& context) noexcept

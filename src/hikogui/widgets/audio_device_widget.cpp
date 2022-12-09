@@ -43,7 +43,7 @@ box_constraints const& audio_device_widget::get_constraints(get_constraints_cont
 {
     _layout = {};
     _grid_constraints = _grid_widget->get_constraints(context);
-    return _constraints = _grid_constraints;
+    return _grid_constraints;
 }
 
 void audio_device_widget::set_layout(widget_layout const& context) noexcept

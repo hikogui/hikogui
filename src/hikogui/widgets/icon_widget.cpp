@@ -62,7 +62,7 @@ box_constraints const& icon_widget::get_constraints(get_constraints_context cons
     hilet resolved_alignment = resolve(*alignment, context.left_to_right());
     hilet icon_constraints =
         box_constraints{extent2{0.0f, 0.0f}, _icon_size, _icon_size, resolved_alignment, context.theme->margin};
-    return _constraints = icon_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
+    return icon_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
 }
 
 void icon_widget::set_layout(widget_layout const& context) noexcept
