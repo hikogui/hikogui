@@ -52,7 +52,7 @@ text_field_widget::~text_field_widget()
     co_yield _scroll_widget.get();
 }
 
-box_constraints const& text_field_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& text_field_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     hi_assert_not_null(delegate);
 
@@ -70,7 +70,7 @@ box_constraints const& text_field_widget::set_constraints(set_constraints_contex
     auto margins = hi::margins{context.theme->margin};
 
     hilet scroll_width = 100.0f;
-    _scroll_constraints = _scroll_widget->set_constraints(context);
+    _scroll_constraints = _scroll_widget->get_constraints(context);
 
     hilet box_size = extent2{
         narrow_cast<float>(_scroll_constraints.margin_left) + scroll_width + narrow_cast<float>(_scroll_constraints.margin_right),
@@ -84,7 +84,7 @@ box_constraints const& text_field_widget::set_constraints(set_constraints_contex
 
     } else {
         _error_label_widget->mode = widget_mode::display;
-        _error_label_constraints = _error_label_widget->set_constraints(context);
+        _error_label_constraints = _error_label_widget->get_constraints(context);
         inplace_max(size.width(), narrow_cast<float>(_error_label_constraints.preferred_width));
         size.height() += narrow_cast<float>(_error_label_constraints.margin_top) +
             narrow_cast<float>(_error_label_constraints.preferred_height);

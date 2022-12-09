@@ -44,12 +44,12 @@ widget& grid_widget::add_widget(
     return ref;
 }
 
-box_constraints const& grid_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& grid_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
 
     for (auto& cell : _cells) {
-        cell.set_constraints(cell.value->set_constraints(context));
+        cell.get_constraints(cell.value->get_constraints(context));
     }
 
     return _constraints = _cells.get_constraints(context.left_to_right());

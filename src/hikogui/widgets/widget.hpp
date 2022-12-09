@@ -20,7 +20,7 @@
 #include "../observer.hpp"
 #include "../chrono.hpp"
 #include "../generator.hpp"
-#include "set_constraints_context.hpp"
+#include "get_constraints_context.hpp"
 #include "../layout/box_constraints.hpp"
 #include "widget_layout.hpp"
 #include "widget_mode.hpp"
@@ -36,7 +36,7 @@ class font_book;
 /** An interactive graphical object as part of the user-interface.
  *
  * Rendering is done in three distinct phases:
- *  1. Updating Constraints: `widget::set_constraints()`
+ *  1. Updating Constraints: `widget::get_constraints()`
  *  2. Updating Layout: `widget::set_layout()`
  *  3. Drawing: `widget::draw()`
  *
@@ -165,7 +165,7 @@ public:
 
     /** Update the constraints of the widget.
      *
-     * Typically the implementation of this function starts with recursively calling set_constraints()
+     * Typically the implementation of this function starts with recursively calling get_constraints()
      * on its children.
      *
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
@@ -174,7 +174,7 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual box_constraints const& set_constraints(set_constraints_context const& context) noexcept = 0;
+    virtual box_constraints const& get_constraints(get_constraints_context const& context) noexcept = 0;
 
     /** Update the internal layout of the widget.
      * This function is called when the size of this widget must change, or if any of the

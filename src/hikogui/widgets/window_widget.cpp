@@ -39,11 +39,11 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-box_constraints const& window_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& window_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
-    _toolbar_constraints = _toolbar->set_constraints(context);
-    _content_constraints = _content->set_constraints(context);
+    _toolbar_constraints = _toolbar->get_constraints(context);
+    _content_constraints = _content->get_constraints(context);
 
     auto _constraints = box_constraints{};
     constraints.minimum_width = std::max(

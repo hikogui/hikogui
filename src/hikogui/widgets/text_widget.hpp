@@ -106,7 +106,7 @@ public:
     } : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...) {}
 
     /// @privatesection
-    box_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
+    box_constraints const& get_constraints(get_constraints_context const &context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;

@@ -8,13 +8,13 @@
 
 namespace hi::inline v1 {
 
-box_constraints const& checkbox_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& checkbox_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
     _button_size = {context.theme->size, context.theme->size};
     hilet extra_size = extent2{context.theme->margin + _button_size.width(), 0.0f};
 
-    _label_constraints = set_constraints_button(context);
+    _label_constraints = get_constraints_button(context);
     _constraints = max(_label_constraints + extra_size, _button_size);
     _constraints.set_margins(narrow_cast<int>(context.theme->margin));
     _constraints.alignment = *alignment; 

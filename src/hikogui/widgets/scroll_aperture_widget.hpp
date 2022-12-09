@@ -100,12 +100,12 @@ public:
         co_yield _content.get();
     }
 
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
+    box_constraints const& get_constraints(get_constraints_context const& context) noexcept override
     {
         _layout = {};
 
         hi_assert_not_null(_content);
-        _content_constraints = _content->set_constraints(context);
+        _content_constraints = _content->get_constraints(context);
 
         auto aperture_constraints = _content_constraints;
 

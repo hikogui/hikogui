@@ -101,12 +101,12 @@ public:
         }
     }
 
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
+    box_constraints const& get_constraints(get_constraints_context const& context) noexcept override
     {
         _layout = {};
 
         for (auto& child : _children) {
-            child.set_constraints(child.value->set_constraints(context));
+            child.get_constraints(child.value->get_constraints(context));
         }
 
         return _constraints = _children.get_constraints(context.left_to_right());

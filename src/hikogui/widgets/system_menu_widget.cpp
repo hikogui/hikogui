@@ -11,10 +11,10 @@ system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
     _icon_widget = std::make_shared<icon_widget>(this, icon);
 }
 
-box_constraints const& system_menu_widget::set_constraints(set_constraints_context const& context) noexcept
+box_constraints const& system_menu_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
-    _icon_constraints = _icon_widget->set_constraints(context);
+    _icon_constraints = _icon_widget->get_constraints(context);
 
     hilet size = extent2{context.theme->large_size, context.theme->large_size};
     return _constraints = {size, size, size};
