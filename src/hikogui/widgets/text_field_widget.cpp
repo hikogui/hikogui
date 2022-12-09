@@ -52,7 +52,7 @@ text_field_widget::~text_field_widget()
     co_yield _scroll_widget.get();
 }
 
-box_constraints const& text_field_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints text_field_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     hi_assert_not_null(delegate);
 

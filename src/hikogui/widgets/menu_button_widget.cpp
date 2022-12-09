@@ -8,7 +8,7 @@
 
 namespace hi::inline v1 {
 
-box_constraints const& menu_button_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints menu_button_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
 

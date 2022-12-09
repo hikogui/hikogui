@@ -29,7 +29,7 @@ void overlay_widget::set_widget(std::shared_ptr<widget> new_widget) noexcept
     process_event({gui_event_type::window_reconstrain});
 }
 
-box_constraints const& overlay_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints overlay_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
     _content_constraints = _content->get_constraints(context);

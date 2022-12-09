@@ -39,7 +39,7 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-box_constraints const& window_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints window_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
     _toolbar_constraints = _toolbar->get_constraints(context);

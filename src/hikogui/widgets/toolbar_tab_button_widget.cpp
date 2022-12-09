@@ -6,7 +6,7 @@
 
 namespace hi::inline v1 {
 
-box_constraints const& toolbar_tab_button_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints toolbar_tab_button_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
 

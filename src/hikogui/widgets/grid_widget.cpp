@@ -44,7 +44,7 @@ widget& grid_widget::add_widget(
     return ref;
 }
 
-box_constraints const& grid_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints grid_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
 

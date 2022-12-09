@@ -69,7 +69,7 @@ text_widget::~text_widget()
     delegate->deinit(*this);
 }
 
-box_constraints const& text_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints text_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
 

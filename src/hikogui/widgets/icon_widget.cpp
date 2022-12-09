@@ -18,7 +18,7 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
     });
 }
 
-box_constraints const& icon_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints icon_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
 

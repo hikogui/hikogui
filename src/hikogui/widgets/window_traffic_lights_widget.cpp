@@ -11,7 +11,7 @@ namespace hi::inline v1 {
 
 window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexcept : super(parent) {}
 
-box_constraints const& window_traffic_lights_widget::get_constraints(get_constraints_context const &context) noexcept
+[[nodiscard]] box_constraints window_traffic_lights_widget::get_constraints(get_constraints_context const &context) noexcept
 {
     _layout = {};
 

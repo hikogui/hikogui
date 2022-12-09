@@ -55,7 +55,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
         });
 }
 
-box_constraints const& label_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints label_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
 

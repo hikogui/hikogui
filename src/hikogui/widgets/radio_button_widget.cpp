@@ -6,7 +6,7 @@
 
 namespace hi::inline v1 {
 
-box_constraints const& radio_button_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints radio_button_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
 

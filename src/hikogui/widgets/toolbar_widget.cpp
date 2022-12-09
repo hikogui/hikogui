@@ -20,7 +20,7 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
     _children.push_back(std::make_shared<spacer_widget>(this));
 }
 
-box_constraints const& toolbar_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints toolbar_widget::get_constraints(get_constraints_context const& context) noexcept
 {
     _layout = {};
 
