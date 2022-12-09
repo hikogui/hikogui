@@ -100,7 +100,7 @@ public:
         co_yield _content.get();
     }
 
-    box_constraints const& get_constraints(get_constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints get_constraints(get_constraints_context const& context) noexcept override
     {
         _layout = {};
 

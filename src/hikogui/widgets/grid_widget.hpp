@@ -105,7 +105,7 @@ public:
         }
     }
 
-    box_constraints const& get_constraints(get_constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints get_constraints(get_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
