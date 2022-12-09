@@ -13,9 +13,10 @@ box_constraints const& toolbar_button_widget::set_constraints(set_constraints_co
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     hilet extra_size = extent2{context.theme->margin * 2.0f, context.theme->margin * 2.0f};
     _label_constraints = set_constraints_button(context);
-    _constraints = _label_constraints + extra_size;
-    _constraints.set_margins(0);
-    return _constraints;
+
+    auto constraints = _label_constraints + extra_size;
+    constraints.set_margins(0);
+    return _constraints = constraints;
 }
 
 void toolbar_button_widget::set_layout(widget_layout const& context) noexcept

@@ -45,31 +45,31 @@ box_constraints const& window_widget::set_constraints(set_constraints_context co
     _toolbar_constraints = _toolbar->set_constraints(context);
     _content_constraints = _content->set_constraints(context);
 
-    _constraints = {};
-    _constraints.minimum_width = std::max(
+    auto _constraints = box_constraints{};
+    constraints.minimum_width = std::max(
         _toolbar_constraints.margin_left + _toolbar_constraints.minimum_width + _toolbar_constraints.margin_right,
         _content_constraints.margin_left + _content_constraints.minimum_width + _content_constraints.margin_right);
-    _constraints.preferred_width = std::max(
+    constraints.preferred_width = std::max(
         _toolbar_constraints.margin_left + _toolbar_constraints.preferred_width + _toolbar_constraints.margin_right,
         _content_constraints.margin_left + _content_constraints.preferred_width + _content_constraints.margin_right);
-    _constraints.maximum_width = std::min(
+    constraints.maximum_width = std::min(
         _toolbar_constraints.margin_left + _toolbar_constraints.maximum_width + _toolbar_constraints.margin_right,
         _content_constraints.margin_left + _content_constraints.maximum_width + _content_constraints.margin_right);
 
     // clang-format off
-    _constraints.minimum_height =
+    constraints.minimum_height =
         _toolbar_constraints.margin_top +
         _toolbar_constraints.preferred_height +
         std::max(_toolbar_constraints.margin_bottom, _content_constraints.margin_top) +
         _content_constraints.minimum_height +
         _content_constraints.margin_bottom;
-    _constraints.preferred_height =
+    constraints.preferred_height =
         _toolbar_constraints.margin_top +
         _toolbar_constraints.preferred_height +
         std::max(_toolbar_constraints.margin_bottom, _content_constraints.margin_top) +
         _content_constraints.preferred_height +
         _content_constraints.margin_bottom;
-    _constraints.maximum_height =
+    constraints.maximum_height =
         _toolbar_constraints.margin_top +
         _toolbar_constraints.preferred_height +
         std::max(_toolbar_constraints.margin_bottom, _content_constraints.margin_top) +
@@ -79,16 +79,16 @@ box_constraints const& window_widget::set_constraints(set_constraints_context co
 
     // The operating system also has a minimum and maximum size, these sizes
     // are more important than the calculated sizes.
-    inplace_max(_constraints.minimum_width, os_settings::minimum_window_width());
-    inplace_max(_constraints.minimum_height, os_settings::minimum_window_height());
+    inplace_max(constraints.minimum_width, os_settings::minimum_window_width());
+    inplace_max(constraints.minimum_height, os_settings::minimum_window_height());
 
-    inplace_clamp(_constraints.maximum_width, _constraints.minimum_width, os_settings::maximum_window_width());
-    inplace_clamp(_constraints.maximum_height, _constraints.minimum_height, os_settings::maximum_window_height());
+    inplace_clamp(constraints.maximum_width, constraints.minimum_width, os_settings::maximum_window_width());
+    inplace_clamp(constraints.maximum_height, constraints.minimum_height, os_settings::maximum_window_height());
 
-    inplace_clamp(_constraints.preferred_width, _constraints.minimum_width, _constraints.maximum_width);
-    inplace_clamp(_constraints.preferred_height, _constraints.minimum_height, _constraints.maximum_height);
+    inplace_clamp(constraints.preferred_width, constraints.minimum_width, constraints.maximum_width);
+    inplace_clamp(constraints.preferred_height, constraints.minimum_height, constraints.maximum_height);
 
-    return _constraints;
+    return _constraints = constraints;
 }
 
 void window_widget::set_layout(widget_layout const& context) noexcept

@@ -176,11 +176,6 @@ public:
      */
     virtual box_constraints const& set_constraints(set_constraints_context const& context) noexcept = 0;
 
-    box_constraints const& constraints() const noexcept
-    {
-        return _constraints;
-    }
-
     /** Update the internal layout of the widget.
      * This function is called when the size of this widget must change, or if any of the
      * widget request a re-layout.
@@ -311,7 +306,6 @@ public:
     virtual [[nodiscard]] color label_color() const noexcept;
 
 protected:
-    box_constraints _constraints;
     widget_layout _layout;
 
     decltype(mode)::callback_token _mode_cbt;
