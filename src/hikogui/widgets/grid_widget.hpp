@@ -100,7 +100,7 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        for (hilet& cell : _cells) {
+        for (hilet& cell : _grid) {
             co_yield cell.value.get();
         }
     }
@@ -111,7 +111,7 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
-    grid_layout<std::shared_ptr<widget>> _cells;
+    grid_layout<std::shared_ptr<widget>> _grid;
 
     /* Add a widget to the grid.
      */

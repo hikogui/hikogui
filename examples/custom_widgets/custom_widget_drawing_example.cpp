@@ -102,7 +102,7 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::box_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
+    [[nodiscard]] hi::box_constraints get_constraints(hi::get_constraints_context const& context) noexcept override
     {
         this->_glyph = context.font_book->find_glyph(hi::elusive_icon::Briefcase);
 
@@ -126,7 +126,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return _constraints = {{100, 100}, {150, 150}, {400, 400}, hi::alignment{}, context.theme->margin};
+        return {{100, 100}, {150, 150}, {400, 400}, hi::alignment{}, context.theme->margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when

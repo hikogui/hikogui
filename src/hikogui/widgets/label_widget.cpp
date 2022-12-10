@@ -105,7 +105,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
     _icon_widget->maximum_height = icon_size;
 
     for (auto& cell : _grid) {
-        cell.get_constraints(cell.value->get_constraints(context));
+        cell.set_constraints(cell.value->get_constraints(context));
     }
 
     return _grid.get_constraints(context.left_to_right());

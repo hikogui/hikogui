@@ -239,7 +239,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 
     } else if (state == gui_window_size::maximized) {
         hilet workspace = workspace_rectangle();
-        hilet max_size = widget->constraints().maximum();
+        hilet max_size = _widget_constraints.maximum();
 
         // Try to resize the window while keeping the toolbar in the same location.
         hilet width = narrow_cast<int>(std::min(max_size.width(), workspace.width()));
@@ -252,7 +252,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 
     } else if (state == gui_window_size::fullscreen) {
         hilet fullscreen = fullscreen_rectangle();
-        hilet max_size = widget->constraints().maximum();
+        hilet max_size = _widget_constraints.maximum();
         if (fullscreen.width() > max_size.width() or fullscreen.height() > max_size.height()) {
             // Do not go full screen if the widget is unable to go that large.
             return;
@@ -781,14 +781,13 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         {
             hi_axiom(loop::main().on_thread());
             hi_assert_not_null(widget);
-            hilet constraints = widget->constraints();
             hilet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
-            minmaxinfo->ptMaxSize.x = constraints.maximum_width;
-            minmaxinfo->ptMaxSize.y = constraints.maximum_height;
-            minmaxinfo->ptMinTrackSize.x = constraints.minimum_width;
-            minmaxinfo->ptMinTrackSize.y = constraints.minimum_height;
-            minmaxinfo->ptMaxTrackSize.x = constraints.maximum_width;
-            minmaxinfo->ptMaxTrackSize.y = constraints.maximum_height;
+            minmaxinfo->ptMaxSize.x = _widget_constraints.maximum_width;
+            minmaxinfo->ptMaxSize.y = _widget_constraints.maximum_height;
+            minmaxinfo->ptMinTrackSize.x = _widget_constraints.minimum_width;
+            minmaxinfo->ptMinTrackSize.y = _widget_constraints.minimum_height;
+            minmaxinfo->ptMaxTrackSize.x = _widget_constraints.maximum_width;
+            minmaxinfo->ptMaxTrackSize.y = _widget_constraints.maximum_height;
         }
         break;
 

@@ -7,7 +7,7 @@
 namespace hi::inline v1 {
 
 
-box_constraints const &toggle_widget::get_constraints(get_constraints_context const &context) noexcept
+[[nodiscard]]box_constraints toggle_widget::get_constraints(get_constraints_context const &context) noexcept
 {
     _layout = {};
 

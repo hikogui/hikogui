@@ -63,27 +63,27 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
     _off_label_constraints = _off_label_widget->get_constraints(context);
     _current_label_constraints = _current_label_widget->get_constraints(context);
 
-    auto constraints = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
+    auto r = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
 
     // Make it so that the scroll widget can scroll vertically.
     _scroll_widget->minimum_height = narrow_cast<int>(context.theme->size);
     _overlay_constraints = _overlay_widget->get_constraints(context);
-    for (hilet& child : _menu_button_widgets) {
-        // extra_size is already implied in the menu button widgets.
-        constraints = max(constraints, child->constraints());
-    }
+    //for (hilet& child : _menu_button_widgets) {
+    //    // extra_size is already implied in the menu button widgets.
+    //    constraints = max(constraints, child->constraints());
+    //}
 
-    constraints.minimum_width =
-        std::max(_constraints.minimum_width, _overlay_constraints.minimum_width + narrow_cast<int>(extra_size.width()));
-    constraints.preferred_width =
-        std::max(_constraints.preferred_width, _overlay_constraints.preferred_width + narrow_cast<int>(extra_size.width()));
-    constraints.maximum_width =
-        std::max(_constraints.maximum_width, _overlay_constraints.maximum_width + narrow_cast<int>(extra_size.width()));
-    constraints.set_margins(narrow_cast<int>(context.theme->margin));
-    constraints.set_padding(context.theme->margin);
-    constraints.alignment = resolve(*alignment, context.left_to_right());
-    hi_axiom(constraints.holds_invariant());
-    return constraints;
+    r.minimum_width =
+        std::max(r.minimum_width, _overlay_constraints.minimum_width + narrow_cast<int>(extra_size.width()));
+    r.preferred_width =
+        std::max(r.preferred_width, _overlay_constraints.preferred_width + narrow_cast<int>(extra_size.width()));
+    r.maximum_width =
+        std::max(r.maximum_width, _overlay_constraints.maximum_width + narrow_cast<int>(extra_size.width()));
+    r.set_margins(narrow_cast<int>(context.theme->margin));
+    r.set_padding(context.theme->margin);
+    r.alignment = resolve(*alignment, context.left_to_right());
+    hi_axiom(r.holds_invariant());
+    return r;
 }
 
 void selection_widget::set_layout(widget_layout const& context) noexcept

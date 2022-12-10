@@ -73,6 +73,9 @@ private:
     box_constraints _toolbar_constraints;
     box_shape _toolbar_shape;
 
+    mutable bool _can_resize_width;
+    mutable bool _can_resize_height;
+
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;
 #endif

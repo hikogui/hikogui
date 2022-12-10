@@ -265,6 +265,8 @@ public:
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
+    box_constraints _widget_constraints = {};
+
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
     std::atomic<bool> _relayout = false;
     std::atomic<bool> _reconstrain = false;

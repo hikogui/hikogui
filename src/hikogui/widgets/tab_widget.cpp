@@ -28,13 +28,6 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
         process_event({gui_event_type::window_reconstrain});
     });
 
-    // Compare and assign would trigger the signaling NaN that widget sets.
-    _constraints.minimum_width = 0;
-    _constraints.preferred_width = 0;
-    _constraints.maximum_width = 32767;
-    _constraints.minimum_height = 0;
-    _constraints.preferred_height = 0;
-    _constraints.maximum_height = 32767;
     this->delegate->init(*this);
 }
 

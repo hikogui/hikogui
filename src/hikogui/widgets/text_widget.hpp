@@ -123,9 +123,10 @@ private:
 
     enum class cursor_state_type { off, on, busy, none };
 
-    gstring _cached_text;
+    gstring _text_cache;
     text_shaper _shaped_text;
-    float _baseline;
+
+    mutable box_constraints _constraints_cache;
 
     delegate_type::callback_token _delegate_cbt;
 

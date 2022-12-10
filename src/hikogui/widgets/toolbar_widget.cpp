@@ -25,10 +25,12 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
     _layout = {};
 
     for (auto& child : _children) {
-        child.get_constraints(child.value->get_constraints(context));
+        child.set_constraints(child.value->get_constraints(context));
     }
 
     auto r = _children.get_constraints(context.left_to_right());
+    _child_height_adjustment = -r.margin_top;
+
     r.minimum_height += r.margin_top;
     r.preferred_height += r.margin_top;
     r.maximum_height += r.margin_top;
@@ -43,7 +45,7 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
     // Clip directly around the toolbar, so that tab buttons looks proper.
     if (compare_store(_layout, context)) {
         auto shape = context.shape;
-        shape.height -= _constraints.padding_top;
+        shape.height += _child_height_adjustment;
         _children.set_layout(shape, context.theme->baseline_adjustment);
     }
 
@@ -119,11 +121,11 @@ widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::shared_p
     switch (alignment) {
         using enum horizontal_alignment;
     case left:
-        _children.insert(_children.cbegin() + spacer_index, std::move(widget));
-        ++spacer_index;
+        _children.insert(_children.cbegin() + _spacer_index, std::move(widget));
+        ++_spacer_index;
         break;
     case right:
-        _children.insert(_children.cbegin() + spacer_index + 1, std::move(widget));
+        _children.insert(_children.cbegin() + _spacer_index + 1, std::move(widget));
         break;
     default:
         hi_no_default();

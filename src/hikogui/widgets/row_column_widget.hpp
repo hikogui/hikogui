@@ -106,7 +106,7 @@ public:
         _layout = {};
 
         for (auto& child : _children) {
-            child.get_constraints(child.value->get_constraints(context));
+            child.set_constraints(child.value->get_constraints(context));
         }
 
         return _children.get_constraints(context.left_to_right());

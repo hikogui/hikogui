@@ -120,7 +120,7 @@ public:
         _layout = {};
 
         for (auto& cell : _grid) {
-            cell.get_constraints(cell.value->get_constraints(context));
+            cell.set_constraints(cell.value->get_constraints(context));
         }
         auto grid_constraints = _grid.get_constraints(context.left_to_right());
         return grid_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);

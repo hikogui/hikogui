@@ -45,31 +45,31 @@ void window_widget::constructor_implementation() noexcept
     _toolbar_constraints = _toolbar->get_constraints(context);
     _content_constraints = _content->get_constraints(context);
 
-    auto _constraints = box_constraints{};
-    constraints.minimum_width = std::max(
+    auto r = box_constraints{};
+    r.minimum_width = std::max(
         _toolbar_constraints.margin_left + _toolbar_constraints.minimum_width + _toolbar_constraints.margin_right,
         _content_constraints.margin_left + _content_constraints.minimum_width + _content_constraints.margin_right);
-    constraints.preferred_width = std::max(
+    r.preferred_width = std::max(
         _toolbar_constraints.margin_left + _toolbar_constraints.preferred_width + _toolbar_constraints.margin_right,
         _content_constraints.margin_left + _content_constraints.preferred_width + _content_constraints.margin_right);
-    constraints.maximum_width = std::min(
+    r.maximum_width = std::min(
         _toolbar_constraints.margin_left + _toolbar_constraints.maximum_width + _toolbar_constraints.margin_right,
         _content_constraints.margin_left + _content_constraints.maximum_width + _content_constraints.margin_right);
 
     // clang-format off
-    constraints.minimum_height =
+    r.minimum_height =
         _toolbar_constraints.margin_top +
         _toolbar_constraints.preferred_height +
         std::max(_toolbar_constraints.margin_bottom, _content_constraints.margin_top) +
         _content_constraints.minimum_height +
         _content_constraints.margin_bottom;
-    constraints.preferred_height =
+    r.preferred_height =
         _toolbar_constraints.margin_top +
         _toolbar_constraints.preferred_height +
         std::max(_toolbar_constraints.margin_bottom, _content_constraints.margin_top) +
         _content_constraints.preferred_height +
         _content_constraints.margin_bottom;
-    constraints.maximum_height =
+    r.maximum_height =
         _toolbar_constraints.margin_top +
         _toolbar_constraints.preferred_height +
         std::max(_toolbar_constraints.margin_bottom, _content_constraints.margin_top) +
@@ -79,16 +79,19 @@ void window_widget::constructor_implementation() noexcept
 
     // The operating system also has a minimum and maximum size, these sizes
     // are more important than the calculated sizes.
-    inplace_max(constraints.minimum_width, os_settings::minimum_window_width());
-    inplace_max(constraints.minimum_height, os_settings::minimum_window_height());
+    inplace_max(r.minimum_width, os_settings::minimum_window_width());
+    inplace_max(r.minimum_height, os_settings::minimum_window_height());
 
-    inplace_clamp(constraints.maximum_width, constraints.minimum_width, os_settings::maximum_window_width());
-    inplace_clamp(constraints.maximum_height, constraints.minimum_height, os_settings::maximum_window_height());
+    inplace_clamp(r.maximum_width, r.minimum_width, os_settings::maximum_window_width());
+    inplace_clamp(r.maximum_height, r.minimum_height, os_settings::maximum_window_height());
 
-    inplace_clamp(constraints.preferred_width, constraints.minimum_width, constraints.maximum_width);
-    inplace_clamp(constraints.preferred_height, constraints.minimum_height, constraints.maximum_height);
+    inplace_clamp(r.preferred_width, r.minimum_width, r.maximum_width);
+    inplace_clamp(r.preferred_height, r.minimum_height, r.maximum_height);
 
-    return constraints;
+    _can_resize_width = r.minimum_width != r.maximum_width;
+    _can_resize_height = r.minimum_height != r.maximum_height;
+
+    return r;
 }
 
 void window_widget::set_layout(widget_layout const& context) noexcept
@@ -135,9 +138,6 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     auto r = _toolbar->hitbox_test_from_parent(position);
     r = _content->hitbox_test_from_parent(position, r);
 
-    hilet can_resize_w = _constraints.minimum_width != _constraints.maximum_width;
-    hilet can_resize_h = _constraints.minimum_height != _constraints.maximum_height;
-
     hilet is_on_l_edge = position.x() <= BORDER_WIDTH;
     hilet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
     hilet is_on_b_edge = position.y() <= BORDER_WIDTH;
@@ -145,48 +145,48 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
 
     // Corner resize has always priority.
     if (is_on_l_edge and is_on_b_edge) {
-        if (can_resize_w and can_resize_h) {
+        if (_can_resize_width and _can_resize_height) {
             return {this, position, hitbox_type::bottom_left_resize_corner};
-        } else if (can_resize_w) {
+        } else if (_can_resize_width) {
             return {this, position, hitbox_type::left_resize_border};
-        } else if (can_resize_h) {
+        } else if (_can_resize_height) {
             return {this, position, hitbox_type::bottom_resize_border};
         }
     } else if (is_on_r_edge and is_on_b_edge) {
-        if (can_resize_w and can_resize_h) {
+        if (_can_resize_width and _can_resize_height) {
             return {this, position, hitbox_type::bottom_right_resize_corner};
-        } else if (can_resize_w) {
+        } else if (_can_resize_width) {
             return {this, position, hitbox_type::right_resize_border};
-        } else if (can_resize_h) {
+        } else if (_can_resize_height) {
             return {this, position, hitbox_type::bottom_resize_border};
         }
     } else if (is_on_l_edge and is_on_t_edge) {
-        if (can_resize_w and can_resize_h) {
+        if (_can_resize_width and _can_resize_height) {
             return {this, position, hitbox_type::top_left_resize_corner};
-        } else if (can_resize_w) {
+        } else if (_can_resize_width) {
             return {this, position, hitbox_type::left_resize_border};
-        } else if (can_resize_h) {
+        } else if (_can_resize_height) {
             return {this, position, hitbox_type::top_resize_border};
         }
     } else if (is_on_r_edge and is_on_t_edge) {
-        if (can_resize_w and can_resize_h) {
+        if (_can_resize_width and _can_resize_height) {
             return {this, position, hitbox_type::top_right_resize_corner};
-        } else if (can_resize_w) {
+        } else if (_can_resize_width) {
             return {this, position, hitbox_type::right_resize_border};
-        } else if (can_resize_h) {
+        } else if (_can_resize_height) {
             return {this, position, hitbox_type::top_resize_border};
         }
     }
 
     // Border resize only has priority if there is no scroll-bar in the way.
     if (r.type != hitbox_type::scroll_bar) {
-        if (is_on_l_edge and can_resize_w) {
+        if (is_on_l_edge and _can_resize_width) {
             return {this, position, hitbox_type::left_resize_border};
-        } else if (is_on_r_edge and can_resize_w) {
+        } else if (is_on_r_edge and _can_resize_width) {
             return {this, position, hitbox_type::right_resize_border};
-        } else if (is_on_b_edge and can_resize_h) {
+        } else if (is_on_b_edge and _can_resize_height) {
             return {this, position, hitbox_type::bottom_resize_border};
-        } else if (is_on_t_edge and can_resize_h) {
+        } else if (is_on_t_edge and _can_resize_height) {
             return {this, position, hitbox_type::top_resize_border};
         }
     }

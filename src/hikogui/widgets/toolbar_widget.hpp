@@ -78,8 +78,9 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    row_layout<std::shared_ptr<widget>> _children;
-    size_t spacer_index = 0;
+    mutable row_layout<std::shared_ptr<widget>> _children;
+    mutable int _child_height_adjustment = 0;
+    size_t _spacer_index = 0;
 
     void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept;
 
