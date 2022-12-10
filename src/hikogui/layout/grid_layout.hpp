@@ -1088,7 +1088,7 @@ public:
         update_after_insert_or_delete();
     }
 
-    [[nodiscard]] constexpr box_constraints get_constraints(bool left_to_right) const noexcept
+    [[nodiscard]] constexpr box_constraints constraints(bool left_to_right) const noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
         _row_constraints = {_cells, num_rows(), false};

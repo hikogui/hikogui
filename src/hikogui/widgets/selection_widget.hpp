@@ -172,7 +172,7 @@ public:
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;

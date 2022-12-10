@@ -70,12 +70,6 @@ public:
      */
     hi::subpixel_orientation subpixel_orientation;
 
-    /** The default writing direction.
-     *
-     * @note Must be either `L` or `R`.
-     */
-    unicode_bidi_class writing_direction = unicode_bidi_class::L;
-
     /** Window is active.
      */
     bool active;
@@ -106,11 +100,6 @@ public:
     operator bool() const noexcept
     {
         return frame_buffer_index != std::numeric_limits<size_t>::max();
-    }
-
-    [[nodiscard]] constexpr bool left_to_right() const noexcept
-    {
-        return writing_direction == unicode_bidi_class::L;
     }
 
     /** Draw a box with rounded corners.

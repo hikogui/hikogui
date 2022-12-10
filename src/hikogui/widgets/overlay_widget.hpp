@@ -76,7 +76,7 @@ public:
         co_yield _content.get();
     }
 
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
@@ -86,6 +86,7 @@ public:
     /// @endprivatesection
 private:
     std::shared_ptr<widget> _content;
+    //cache<box_constraints> _content_constraints;
     box_constraints _content_constraints;
     box_shape _content_shape;
 

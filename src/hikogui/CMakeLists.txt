@@ -40,6 +40,7 @@ target_sources(hikogui PRIVATE
     bits.hpp
     bound_integer.hpp
     byte_string.hpp
+    cache.hpp
     callback_flags.hpp
     cast.hpp
     check.hpp

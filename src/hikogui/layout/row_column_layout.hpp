@@ -116,9 +116,9 @@ public:
         return _grid.clear();
     }
 
-    [[nodiscard]] box_constraints get_constraints(bool left_to_right) const noexcept
+    [[nodiscard]] box_constraints constraints(bool left_to_right) const noexcept
     {
-        return _grid.get_constraints(left_to_right);
+        return _grid.constraints(left_to_right);
     }
 
     void set_layout(box_shape const &shape, int guideline) noexcept

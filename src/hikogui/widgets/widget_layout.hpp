@@ -73,10 +73,6 @@ public:
 
     gui_window_size window_size_state = gui_window_size::normal;
 
-    hi::font_book *font_book = nullptr;
-
-    hi::theme const *theme = nullptr;
-
     /** The clipping rectangle.
      *
      * This is the rectangle that all drawing must be clipped to.
@@ -95,12 +91,6 @@ public:
      */
     extent2 sub_pixel_size = {1.0f, 1.0f};
 
-    /** The default writing direction.
-     *
-     * @note Must be either `L` or `R`.
-     */
-    unicode_bidi_class writing_direction = unicode_bidi_class::L;
-
     /** The layout created for displaying at this time point.
      */
     utc_nanoseconds display_time_point = {};
@@ -115,7 +105,7 @@ public:
     [[nodiscard]] constexpr bool empty() const noexcept
     {
         // Theme must always be set if layout is valid.
-        return theme == nullptr;
+        return display_time_point == utc_nanoseconds{};
     }
 
     [[nodiscard]] constexpr explicit operator bool() const noexcept
@@ -177,29 +167,12 @@ public:
         return shape.size();
     }
 
-    /** Check if the writing direction is left-to-right.
-     */
-    [[nodiscard]] constexpr bool left_to_right() const noexcept
-    {
-        return writing_direction == unicode_bidi_class::L;
-    }
-
-    /** Check if the writing direction is right_to_left.
-     */
-    [[nodiscard]] constexpr bool right_to_left() const noexcept
-    {
-        return not left_to_right();
-    }
-
     /** Construct a widget_layout from inside the window.
      */
     constexpr widget_layout(
         extent2 window_size,
         gui_window_size window_size_state,
-        hi::font_book& font_book,
-        hi::theme const& theme,
         hi::subpixel_orientation subpixel_orientation,
-        unicode_bidi_class writing_direction,
         utc_nanoseconds display_time_point) noexcept :
         to_parent(),
         from_parent(),
@@ -208,11 +181,8 @@ public:
         shape(window_size),
         window_size(window_size),
         window_size_state(window_size_state),
-        font_book(&font_book),
-        theme(&theme),
         clipping_rectangle(window_size),
         sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
-        writing_direction(writing_direction),
         display_time_point(display_time_point)
     {
     }

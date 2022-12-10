@@ -26,13 +26,13 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::box_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
+    [[nodiscard]] hi::box_constraints constraints() noexcept override
     {
         // Reset _layout so that the set_layout() calculations will be triggered.
         _layout = {};
 
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
-        return _constraints = {{100.0f, 20.0f}, {200.0f, 20.0f}, {300.0f, 50.0f}, hi::alignment{}, context.theme->margin};
+        return {{100.0f, 20.0f}, {200.0f, 20.0f}, {300.0f, 50.0f}, hi::alignment{}, theme().margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -49,7 +49,7 @@ public:
     // In this case the background color is 'teal' when the value of the widget is true.
     [[nodiscard]] hi::color background_color() const noexcept override
     {
-        return *value ? layout().theme->color(hi::semantic_color::green) : widget::background_color();
+        return *value ? theme().color(hi::semantic_color::green) : widget::background_color();
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.
@@ -68,9 +68,9 @@ public:
                 _layout.rectangle(),
                 background_color(),
                 focus_color(),
-                layout().theme->border_width,
+                theme().border_width,
                 hi::border_side::inside,
-                layout().theme->rounding_radius);
+                theme().rounding_radius);
         }
     }
 

@@ -11,24 +11,24 @@ system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
     _icon_widget = std::make_shared<icon_widget>(this, icon);
 }
 
-box_constraints const& system_menu_widget::set_constraints(set_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints system_menu_widget::constraints() noexcept
 {
     _layout = {};
-    _icon_constraints = _icon_widget->set_constraints(context);
+    _icon_constraints = _icon_widget->constraints();
 
-    hilet size = extent2{context.theme->large_size, context.theme->large_size};
-    return _constraints = {size, size, size};
+    hilet size = extent2{theme().large_size, theme().large_size};
+    return {size, size, size};
 }
 
 void system_menu_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet icon_height = context.height() < context.theme->large_size * 1.2f ? context.height() : context.theme->large_size;
+        hilet icon_height = context.height() < theme().large_size * 1.2f ? context.height() : theme().large_size;
         hilet icon_rectangle = aarectangle{0.0f, narrow_cast<float>(context.height()) - icon_height, narrow_cast<float>(context.width()), icon_height};
-        _icon_shape = box_shape{_icon_constraints, icon_rectangle, context.theme->baseline_adjustment};
+        _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme().baseline_adjustment};
         // Leave space for window resize handles on the left and top.
         _system_menu_rectangle = aarectangle{
-            context.theme->margin, 0.0f, narrow_cast<float>(context.width()) - context.theme->margin, narrow_cast<float>(context.height()) - context.theme->margin};
+            theme().margin, 0.0f, narrow_cast<float>(context.width()) - theme().margin, narrow_cast<float>(context.height()) - theme().margin};
     }
 
     _icon_widget->set_layout(context.transform(_icon_shape));

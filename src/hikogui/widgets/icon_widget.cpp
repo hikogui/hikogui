@@ -18,7 +18,7 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
     });
 }
 
-box_constraints const& icon_widget::set_constraints(set_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints icon_widget::constraints() noexcept
 {
     _layout = {};
 
@@ -32,7 +32,7 @@ box_constraints const& icon_widget::set_constraints(set_constraints_context cons
             _icon_type = icon_type::pixmap;
             _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
-            if (not(_pixmap_backing = paged_image{context.surface, *pixmap})) {
+            if (not(_pixmap_backing = paged_image{surface(), *pixmap})) {
                 // Could not get an image, retry.
                 _icon_has_modified = true;
                 ++global_counter<"icon_widget:no-backing-image:constrain">;
@@ -42,27 +42,27 @@ box_constraints const& icon_widget::set_constraints(set_constraints_context cons
         } else if (hilet g1 = get_if<glyph_ids>(&icon.read())) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * context.theme->text_style(semantic_text_style::label)->size *
-                context.theme->scale;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size *
+                theme().scale;
 
         } else if (hilet g2 = get_if<elusive_icon>(&icon.read())) {
-            _glyph = context.font_book->find_glyph(*g2);
+            _glyph = find_glyph(*g2);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * context.theme->text_style(semantic_text_style::label)->size *
-                context.theme->scale;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size *
+                theme().scale;
 
         } else if (hilet g3 = get_if<hikogui_icon>(&icon.read())) {
-            _glyph = context.font_book->find_glyph(*g3);
+            _glyph = find_glyph(*g3);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * context.theme->text_style(semantic_text_style::label)->size *
-                context.theme->scale;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size *
+                theme().scale;
         }
     }
 
-    hilet resolved_alignment = resolve(*alignment, context.left_to_right());
+    hilet resolved_alignment = resolve(*alignment, os_settings::left_to_right());
     hilet icon_constraints =
-        box_constraints{extent2{0.0f, 0.0f}, _icon_size, _icon_size, resolved_alignment, context.theme->margin};
-    return _constraints = icon_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
+        box_constraints{extent2{0.0f, 0.0f}, _icon_size, _icon_size, resolved_alignment, theme().margin};
+    return icon_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
 }
 
 void icon_widget::set_layout(widget_layout const& context) noexcept
@@ -76,7 +76,7 @@ void icon_widget::set_layout(widget_layout const& context) noexcept
 
             hilet icon_scale = scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
             hilet new_icon_size = icon_scale * _icon_size;
-            hilet resolved_alignment = resolve(*alignment, context.left_to_right());
+            hilet resolved_alignment = resolve(*alignment, os_settings::left_to_right());
             _icon_rectangle = align(context.rectangle(), new_icon_size, resolved_alignment);
         }
     }
@@ -97,7 +97,7 @@ void icon_widget::draw(draw_context const& context) noexcept
 
         case icon_type::glyph:
             {
-                context.draw_glyph(layout(), _icon_rectangle, layout().theme->color(*color), _glyph);
+                context.draw_glyph(layout(), _icon_rectangle, theme().color(*color), _glyph);
             }
             break;
 

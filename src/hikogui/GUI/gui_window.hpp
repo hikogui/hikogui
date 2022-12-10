@@ -173,12 +173,6 @@ public:
 
     virtual hi::subpixel_orientation subpixel_orientation() const noexcept = 0;
 
-    /** The writing direction of this window.
-     *
-     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
-     */
-    virtual unicode_bidi_class writing_direction() const noexcept = 0;
-
     /** Get the size-state of the window.
      */
     gui_window_size size_state() const noexcept
@@ -264,6 +258,8 @@ public:
 
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
+
+    box_constraints _widget_constraints = {};
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
     std::atomic<bool> _relayout = false;

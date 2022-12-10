@@ -27,7 +27,7 @@ public:
         co_return;
     }
 
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints constraints() noexcept override
     {
         _layout = {};
 
@@ -35,7 +35,7 @@ public:
         r.maximum_width = box_constraints::max_int();
         r.maximum_height = box_constraints::max_int();
 
-        return _constraints = r;
+        return r;
     }
 
     void set_layout(widget_layout const& context) noexcept override

@@ -55,7 +55,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
         });
 }
 
-box_constraints const& label_widget::set_constraints(set_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints label_widget::constraints() noexcept
 {
     _layout = {};
 
@@ -96,8 +96,8 @@ box_constraints const& label_widget::set_constraints(set_constraints_context con
 
     hilet icon_size =
         (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
-        narrow_cast<int>(context.theme->large_icon_size) :
-        narrow_cast<int>(std::ceil(context.theme->text_style(*text_style)->size * context.theme->scale));
+        narrow_cast<int>(theme().large_icon_size) :
+        narrow_cast<int>(std::ceil(theme().text_style(*text_style)->size * theme().scale));
 
     _icon_widget->minimum_width = icon_size;
     _icon_widget->maximum_width = icon_size;
@@ -105,16 +105,16 @@ box_constraints const& label_widget::set_constraints(set_constraints_context con
     _icon_widget->maximum_height = icon_size;
 
     for (auto& cell : _grid) {
-        cell.set_constraints(cell.value->set_constraints(context));
+        cell.set_constraints(cell.value->constraints());
     }
 
-    return _constraints = _grid.get_constraints(context.left_to_right());
+    return _grid.constraints(os_settings::left_to_right());
 }
 
 void label_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _grid.set_layout(context.shape, context.theme->baseline_adjustment);
+        _grid.set_layout(context.shape, theme().baseline_adjustment);
     }
 
     for (hilet& cell : _grid) {

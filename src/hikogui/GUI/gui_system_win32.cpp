@@ -22,14 +22,16 @@ namespace hi::inline v1 {
         hi_log_fatal("Could not start the os_settings subsystem.");
     }
 
-    auto font_directories = make_vector(get_paths(path_location::font_dirs));
-    auto font_book = std::make_unique<hi::font_book>(std::move(font_directories));
-    font_book->register_elusive_icon_font(URL{"resource:fonts/elusiveicons-webfont.ttf"});
-    font_book->register_hikogui_icon_font(URL{"resource:fonts/hikogui_icons.ttf"});
-    font_book->post_process();
+    auto &font_book = font_book::global();
+    for (auto path: get_paths(path_location::font_dirs)) {
+        font_book.register_font_directory(path);
+    }
+    font_book.register_elusive_icon_font(URL{"resource:fonts/elusiveicons-webfont.ttf"});
+    font_book.register_hikogui_icon_font(URL{"resource:fonts/hikogui_icons.ttf"});
+    font_book.post_process();
 
     auto theme_directories = make_vector(get_paths(path_location::theme_dirs));
-    auto theme_book = std::make_unique<hi::theme_book>(*font_book, std::move(theme_directories));
+    auto theme_book = std::make_unique<hi::theme_book>(font_book, std::move(theme_directories));
 
     auto gfx_system = std::make_unique<hi::gfx_system_vulkan>();
 
@@ -42,7 +44,6 @@ namespace hi::inline v1 {
 
     auto r = std::make_unique<gui_system_win32>(
         std::move(gfx_system),
-        std::move(font_book),
         std::move(theme_book),
         std::move(keyboard_bindings),
         std::move(delegate));
@@ -52,13 +53,11 @@ namespace hi::inline v1 {
 
 gui_system_win32::gui_system_win32(
     std::unique_ptr<gfx_system> gfx,
-    std::unique_ptr<hi::font_book> font_book,
     std::unique_ptr<hi::theme_book> theme_book,
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) :
     gui_system(
         std::move(gfx),
-        std::move(font_book),
         std::move(theme_book),
         std::move(keyboard_bindings),
         std::move(delegate))

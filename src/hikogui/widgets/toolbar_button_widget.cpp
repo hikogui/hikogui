@@ -6,27 +6,28 @@
 
 namespace hi::inline v1 {
 
-box_constraints const& toolbar_button_widget::set_constraints(set_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints toolbar_button_widget::constraints() noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    hilet extra_size = extent2{context.theme->margin * 2.0f, context.theme->margin * 2.0f};
-    _label_constraints = set_constraints_button(context);
-    _constraints = _label_constraints + extra_size;
-    _constraints.set_margins(0);
-    return _constraints;
+    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
+    _label_constraints = constraints_button();
+
+    auto constraints = _label_constraints + extra_size;
+    constraints.set_margins(0);
+    return constraints;
 }
 
 void toolbar_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         hilet label_rectangle = aarectangle{
-            context.theme->margin,
+            theme().margin,
             0.0f,
-            narrow_cast<float>(context.width()) - context.theme->margin * 2.0f,
+            narrow_cast<float>(context.width()) - theme().margin * 2.0f,
             narrow_cast<float>(context.height())};
-        _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
+        _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
     }
     set_layout_button(context);
 }
@@ -48,7 +49,7 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const& context) noe
 {
     hilet border_color = *focus ? focus_color() : color::transparent();
     context.draw_box(
-        layout(), layout().rectangle(), background_color(), border_color, layout().theme->border_width, border_side::inside);
+        layout(), layout().rectangle(), background_color(), border_color, theme().border_width, border_side::inside);
 }
 
 } // namespace hi::inline v1

@@ -28,17 +28,10 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
         process_event({gui_event_type::window_reconstrain});
     });
 
-    // Compare and assign would trigger the signaling NaN that widget sets.
-    _constraints.minimum_width = 0;
-    _constraints.preferred_width = 0;
-    _constraints.maximum_width = 32767;
-    _constraints.minimum_height = 0;
-    _constraints.preferred_height = 0;
-    _constraints.maximum_height = 32767;
     this->delegate->init(*this);
 }
 
-box_constraints const& tab_widget::set_constraints(set_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints tab_widget::constraints() noexcept
 {
     _layout = {};
 
@@ -46,7 +39,7 @@ box_constraints const& tab_widget::set_constraints(set_constraints_context const
 
     if (_previous_selected_child != &selected_child_) {
         _previous_selected_child = &selected_child_;
-        hi_log_info("tab_widget::set_constraints() selected tab changed");
+        hi_log_info("tab_widget::constraints() selected tab changed");
         process_event({gui_event_type::window_resize});
     }
 
@@ -54,7 +47,7 @@ box_constraints const& tab_widget::set_constraints(set_constraints_context const
         child->mode = child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible;
     }
 
-    return _constraints = selected_child_.set_constraints(context);
+    return selected_child_.constraints();
 }
 
 void tab_widget::set_layout(widget_layout const& context) noexcept

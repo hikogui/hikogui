@@ -6,25 +6,25 @@
 
 namespace hi::inline v1 {
 
-box_constraints const& toolbar_tab_button_widget::set_constraints(set_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints toolbar_tab_button_widget::constraints() noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    hilet extra_size = extent2{context.theme->margin * 2.0f, context.theme->margin};
-    _label_constraints = set_constraints_button(context);
-    return _constraints = _label_constraints + extra_size;
+    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin};
+    _label_constraints = constraints_button();
+    return _label_constraints + extra_size;
 }
 
 void toolbar_tab_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         hilet label_rectangle = aarectangle{
-            context.theme->margin,
+            theme().margin,
             0.0f,
-            context.width() - context.theme->margin * 2.0f,
-            context.height() - context.theme->margin};
-        _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
+            context.width() - theme().margin * 2.0f,
+            context.height() - theme().margin};
+        _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
     }
     set_layout_button(context);
 }
@@ -46,7 +46,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
 {
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
-    hilet offset = layout().theme->margin + layout().theme->border_width;
+    hilet offset = theme().margin + theme().border_width;
     hilet outline_rectangle = aarectangle{0.0f, -offset, narrow_cast<float>(layout().width()), narrow_cast<float>(layout().height()) + offset};
 
     // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
@@ -54,17 +54,17 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
 
     // clang-format off
     auto button_color = (*hover or state() == button_state::on) ?
-        layout().theme->color(semantic_color::fill, semantic_layer - 1) :
-        layout().theme->color(semantic_color::fill, semantic_layer);
+        theme().color(semantic_color::fill, semantic_layer - 1) :
+        theme().color(semantic_color::fill, semantic_layer);
     // clang-format on
 
-    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, layout().theme->rounding_radius, layout().theme->rounding_radius};
+    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box(
         layout(),
         button_z * outline_rectangle,
         button_color,
         *focus ? focus_color() : button_color,
-        layout().theme->border_width,
+        theme().border_width,
         border_side::inside,
         corner_radii);
 }

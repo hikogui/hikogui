@@ -49,15 +49,33 @@ public:
     }
 
     /** Get the configured writing direction.
-    * 
-    * The writing-direction is extracted from the first language/script configured on the system.
-    * 
-    * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
-    */
+     *
+     * The writing-direction is extracted from the first language/script configured on the system.
+     *
+     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
+     */
     [[nodiscard]] static unicode_bidi_class writing_direction() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         return _writing_direction.load(std::memory_order::relaxed);
+    }
+
+    /** Check if the configured writing direction is left-to-right.
+     *
+     * @retval true If the writing direction is left-to-right.
+     */
+    [[nodiscard]] static bool left_to_right() noexcept
+    {
+        return writing_direction() == unicode_bidi_class::L;
+    }
+
+    /** Check if the configured writing direction is right-to-left.
+     *
+     * @retval true If the writing direction is right-to-left.
+     */
+    [[nodiscard]] static bool right_to_left() noexcept
+    {
+        return not left_to_right();
     }
 
     /** Get the configured light/dark theme mode
@@ -223,7 +241,8 @@ public:
      */
     static void gather() noexcept;
 
-    [[nodiscard]] static callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    [[nodiscard]] static callback_token
+    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
         hilet lock = std::scoped_lock(_mutex);
         return _notifier.subscribe(hi_forward(callback), flags);
@@ -269,7 +288,6 @@ private:
     static inline std::atomic<uintptr_t> _primary_monitor_id = 0;
     static inline aarectangle _primary_monitor_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
     static inline aarectangle _desktop_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
-
 
     [[nodiscard]] static bool subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;

@@ -188,7 +188,7 @@ public:
      * @param alignment The vertical alignment of text.
      * @return The constraints (a list of sizes) which can hold the text.
      */
-    [[nodiscard]] box_constraints get_constraints() noexcept;
+    [[nodiscard]] box_constraints constraints() noexcept;
 
     /** Layout the lines of the text.
      *

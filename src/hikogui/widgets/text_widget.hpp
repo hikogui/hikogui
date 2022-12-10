@@ -106,7 +106,7 @@ public:
     } : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...) {}
 
     /// @privatesection
-    box_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
+    [[nodiscard]] box_constraints constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
@@ -123,9 +123,10 @@ private:
 
     enum class cursor_state_type { off, on, busy, none };
 
-    gstring _cached_text;
+    gstring _text_cache;
     text_shaper _shaped_text;
-    float _baseline;
+
+    mutable box_constraints _constraints_cache;
 
     delegate_type::callback_token _delegate_cbt;
 

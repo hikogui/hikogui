@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "widget.hpp"
+#include "../GUI/gui_window.hpp"
 #include "../ranges.hpp"
 #include "../counters.hpp"
 #include <ranges>
@@ -31,12 +32,12 @@ widget::~widget() {}
 {
     if (*mode >= widget_mode::partial) {
         if (*hover) {
-            return layout().theme->color(semantic_color::fill, semantic_layer + 1);
+            return theme().color(semantic_color::fill, semantic_layer + 1);
         } else {
-            return layout().theme->color(semantic_color::fill, semantic_layer);
+            return theme().color(semantic_color::fill, semantic_layer);
         }
     } else {
-        return layout().theme->color(semantic_color::fill, semantic_layer - 1);
+        return theme().color(semantic_color::fill, semantic_layer - 1);
     }
 }
 
@@ -44,12 +45,12 @@ widget::~widget() {}
 {
     if (*mode >= widget_mode::partial) {
         if (*hover) {
-            return layout().theme->color(semantic_color::border, semantic_layer + 1);
+            return theme().color(semantic_color::border, semantic_layer + 1);
         } else {
-            return layout().theme->color(semantic_color::border, semantic_layer);
+            return theme().color(semantic_color::border, semantic_layer);
         }
     } else {
-        return layout().theme->color(semantic_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 
@@ -57,32 +58,32 @@ widget::~widget() {}
 {
     if (*mode >= widget_mode::partial) {
         if (*focus) {
-            return layout().theme->color(semantic_color::accent);
+            return theme().color(semantic_color::accent);
         } else if (*hover) {
-            return layout().theme->color(semantic_color::border, semantic_layer + 1);
+            return theme().color(semantic_color::border, semantic_layer + 1);
         } else {
-            return layout().theme->color(semantic_color::border, semantic_layer);
+            return theme().color(semantic_color::border, semantic_layer);
         }
     } else {
-        return layout().theme->color(semantic_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 
 [[nodiscard]] color widget::accent_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return layout().theme->color(semantic_color::accent);
+        return theme().color(semantic_color::accent);
     } else {
-        return layout().theme->color(semantic_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 
 [[nodiscard]] color widget::label_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return layout().theme->text_style(semantic_text_style::label)->color;
+        return theme().text_style(semantic_text_style::label)->color;
     } else {
-        return layout().theme->color(semantic_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 
@@ -304,7 +305,7 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 
     // Move the request_rectangle to window coordinates.
     hilet requested_window_rectangle = translate2{layout().clipping_rectangle_on_window()} * requested_rectangle;
-    hilet window_bounds = aarectangle{layout().window_size} - layout().theme->margin;
+    hilet window_bounds = aarectangle{layout().window_size} - theme().margin;
     hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(layout().from_window * response_window_rectangle);
 }
