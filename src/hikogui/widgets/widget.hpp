@@ -175,7 +175,11 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual [[nodiscard]] box_constraints constraints() noexcept = 0;
+    virtual [[nodiscard]] box_constraints constraints() noexcept 
+    {
+        _layout = {};
+        return {*minimum_width, *minimum_height, *minimum_width, *minimum_height, *maximum_width, *maximum_height};
+    }
 
     /** Update the internal layout of the widget.
      * This function is called when the size of this widget must change, or if any of the
@@ -188,7 +192,10 @@ public:
      *       matrices.
      * @param layout The layout for this child.
      */
-    virtual void set_layout(widget_layout const& context) noexcept = 0;
+    virtual void set_layout(widget_layout const& context) noexcept
+    {
+        _layout = context;
+    }
 
     /** Get the current layout for this widget.
      */
@@ -211,7 +218,7 @@ public:
      *
      * @param context The context to where the widget will draw.
      */
-    virtual void draw(draw_context const& context) noexcept = 0;
+    virtual void draw(draw_context const& context) noexcept {}
 
     virtual bool process_event(gui_event const& event) const noexcept
     {
@@ -305,19 +312,30 @@ public:
         }
     }
 
-    [[nodiscard]] hi::theme const &theme() const noexcept;
+    [[nodiscard]] virtual hi::theme const &theme() const noexcept
+    {
+        hi_assert_not_null(parent);
+        return parent->theme();
+    }
 
-    [[nodiscard]] gfx_surface const *surface() const noexcept;
+    [[nodiscard]] virtual gfx_surface const *surface() const noexcept
+    {
+        if (parent) {
+            return parent->surface();
+        } else {
+            return nullptr;
+        }
+    }
 
-    virtual [[nodiscard]] color background_color() const noexcept;
+    [[nodiscard]] virtual color background_color() const noexcept;
 
-    virtual [[nodiscard]] color foreground_color() const noexcept;
+    [[nodiscard]] virtual color foreground_color() const noexcept;
 
-    virtual [[nodiscard]] color focus_color() const noexcept;
+    [[nodiscard]] virtual color focus_color() const noexcept;
 
-    virtual [[nodiscard]] color accent_color() const noexcept;
+    [[nodiscard]] virtual color accent_color() const noexcept;
 
-    virtual [[nodiscard]] color label_color() const noexcept;
+    [[nodiscard]] virtual color label_color() const noexcept;
 
 protected:
     widget_layout _layout;

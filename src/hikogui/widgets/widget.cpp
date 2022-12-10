@@ -28,20 +28,6 @@ widget::widget(widget *parent) noexcept :
 
 widget::~widget() {}
 
-[[nodiscard]] hi::theme const& widget::theme() const noexcept
-{
-    hilet window_ = window();
-    hi_assert_not_null(window_);
-    return window_->theme;
-}
-
-[[nodiscard]] gfx_surface const *widget::surface() const noexcept
-{
-    hilet window_ = window();
-    hi_assert_not_null(window_);
-    return window_->surface.get();
-}
-
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {

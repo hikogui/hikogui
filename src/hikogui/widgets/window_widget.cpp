@@ -33,6 +33,23 @@ void window_widget::constructor_implementation() noexcept
     _content = std::make_shared<grid_widget>(this);
 }
 
+[[nodiscard]] gui_window *window_widget::window() const noexcept
+{
+    return _window;
+}
+
+[[nodiscard]] hi::theme const& window_widget::theme() const noexcept
+{
+    hi_assert_not_null(_window);
+    return _window->theme;
+}
+
+[[nodiscard]] gfx_surface const *window_widget::surface() const noexcept
+{
+    hi_assert_not_null(_window);
+    return _window->surface.get();
+}
+
 [[nodiscard]] generator<widget *> window_widget::children() const noexcept
 {
     co_yield _toolbar.get();

@@ -48,6 +48,22 @@ struct box_constraints {
     constexpr box_constraints& operator=(box_constraints&&) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(box_constraints const&, box_constraints const&) noexcept = default;
 
+    constexpr box_constraints(
+        int minimum_width,
+        int minimum_height,
+        int preferred_width,
+        int preferred_height,
+        int maximum_width,
+        int maximum_height) noexcept :
+        minimum_width(minimum_width),
+        minimum_height(minimum_height),
+        preferred_width(preferred_width),
+        preferred_height(preferred_height),
+        maximum_width(maximum_width),
+        maximum_height(maximum_height)
+    {
+    }
+
     [[deprecated]] constexpr box_constraints(
         extent2 minimum,
         extent2 preferred,

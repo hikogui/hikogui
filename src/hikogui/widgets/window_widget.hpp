@@ -61,10 +61,9 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     bool process_event(gui_event const& event) const noexcept override;
-    [[nodiscard]] gui_window *window() const noexcept override
-    {
-        return _window;
-    }
+    [[nodiscard]] gui_window *window() const noexcept override;
+    [[nodiscard]] hi::theme const& theme() const noexcept override;
+    [[nodiscard]] gfx_surface const *surface() const noexcept override;
     /// @endprivatesection
 private:
     gui_window *_window;
