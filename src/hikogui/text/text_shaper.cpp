@@ -485,7 +485,7 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     }
 }
 
-[[nodiscard]] box_constraints text_shaper::get_constraints() noexcept
+[[nodiscard]] box_constraints text_shaper::constraints() noexcept
 {
     auto r = box_constraints{};
 

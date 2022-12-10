@@ -63,7 +63,7 @@ public:
 
     ~scroll_bar_widget() {}
 
-    [[nodiscard]] box_constraints get_constraints(get_constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints constraints(constraints_context const& context) noexcept override
     {
         _layout = {};
 

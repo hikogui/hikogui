@@ -10,6 +10,7 @@ target_sources(hikogui PRIVATE
     button_delegate.hpp
     checkbox_widget.cpp
     checkbox_widget.hpp
+    constraints_context.hpp
     grid_widget.cpp
     grid_widget.hpp
     icon_widget.cpp
@@ -30,7 +31,6 @@ target_sources(hikogui PRIVATE
     selection_delegate.hpp
     selection_widget.cpp
     selection_widget.hpp
-    set_constraints_context.hpp
     spacer_widget.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>

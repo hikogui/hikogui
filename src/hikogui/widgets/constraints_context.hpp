@@ -12,20 +12,20 @@
 
 namespace hi { inline namespace v1 {
 
-class get_constraints_context {
+class constraints_context {
 public:
     hi::font_book *font_book = nullptr;
     hi::theme const *theme = nullptr;
     gfx_surface *surface = nullptr;
     unicode_bidi_class writing_direction = unicode_bidi_class::L;
 
-    constexpr get_constraints_context() = default;
-    constexpr get_constraints_context(get_constraints_context const&) noexcept = default;
-    constexpr get_constraints_context(get_constraints_context&&) noexcept = default;
-    constexpr get_constraints_context& operator=(get_constraints_context const&) noexcept = default;
-    constexpr get_constraints_context& operator=(get_constraints_context&&) noexcept = default;
+    constexpr constraints_context() = default;
+    constexpr constraints_context(constraints_context const&) noexcept = default;
+    constexpr constraints_context(constraints_context&&) noexcept = default;
+    constexpr constraints_context& operator=(constraints_context const&) noexcept = default;
+    constexpr constraints_context& operator=(constraints_context&&) noexcept = default;
 
-    constexpr get_constraints_context(
+    constexpr constraints_context(
         hi::font_book *font_book,
         hi::theme const *theme,
         unicode_bidi_class writing_direction,
@@ -34,7 +34,7 @@ public:
     {
     }
 
-    constexpr get_constraints_context(
+    constexpr constraints_context(
         hi::font_book& font_book,
         hi::theme const& theme,
         unicode_bidi_class writing_direction,

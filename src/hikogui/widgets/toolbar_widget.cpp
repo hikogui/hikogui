@@ -20,15 +20,15 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
     _children.push_back(std::make_shared<spacer_widget>(this));
 }
 
-[[nodiscard]] box_constraints toolbar_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints toolbar_widget::constraints(constraints_context const& context) noexcept
 {
     _layout = {};
 
     for (auto& child : _children) {
-        child.set_constraints(child.value->get_constraints(context));
+        child.set_constraints(child.value->constraints(context));
     }
 
-    auto r = _children.get_constraints(context.left_to_right());
+    auto r = _children.constraints(context.left_to_right());
     _child_height_adjustment = -r.margin_top;
 
     r.minimum_height += r.margin_top;

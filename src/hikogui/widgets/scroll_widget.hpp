@@ -115,14 +115,14 @@ public:
         co_yield _horizontal_scroll_bar;
     }
 
-    [[nodiscard]] box_constraints get_constraints(get_constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints constraints(constraints_context const& context) noexcept override
     {
         _layout = {};
 
         for (auto& cell : _grid) {
-            cell.set_constraints(cell.value->get_constraints(context));
+            cell.set_constraints(cell.value->constraints(context));
         }
-        auto grid_constraints = _grid.get_constraints(context.left_to_right());
+        auto grid_constraints = _grid.constraints(context.left_to_right());
         return grid_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
     }
 

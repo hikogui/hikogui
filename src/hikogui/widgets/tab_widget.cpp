@@ -31,7 +31,7 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
     this->delegate->init(*this);
 }
 
-[[nodiscard]] box_constraints tab_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints tab_widget::constraints(constraints_context const& context) noexcept
 {
     _layout = {};
 
@@ -39,7 +39,7 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
 
     if (_previous_selected_child != &selected_child_) {
         _previous_selected_child = &selected_child_;
-        hi_log_info("tab_widget::get_constraints() selected tab changed");
+        hi_log_info("tab_widget::constraints() selected tab changed");
         process_event({gui_event_type::window_resize});
     }
 
@@ -47,7 +47,7 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
         child->mode = child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible;
     }
 
-    return selected_child_.get_constraints(context);
+    return selected_child_.constraints(context);
 }
 
 void tab_widget::set_layout(widget_layout const& context) noexcept

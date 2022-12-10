@@ -76,7 +76,7 @@ public:
         co_yield _content.get();
     }
 
-    [[nodiscard]] box_constraints get_constraints(get_constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints constraints(constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;

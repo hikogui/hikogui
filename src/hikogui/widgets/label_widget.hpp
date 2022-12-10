@@ -89,7 +89,7 @@ public:
         co_yield _text_widget.get();
     }
 
-    [[nodiscard]] box_constraints get_constraints(get_constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints constraints(constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept;

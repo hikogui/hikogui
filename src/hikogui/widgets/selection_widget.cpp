@@ -50,7 +50,7 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
     co_yield _off_label_widget.get();
 }
 
-[[nodiscard]] box_constraints selection_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints selection_widget::constraints(constraints_context const& context) noexcept
 {
     _layout = {};
 
@@ -60,14 +60,14 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
 
     hilet extra_size = extent2{context.theme->size + context.theme->margin * 2.0f, context.theme->margin * 2.0f};
 
-    _off_label_constraints = _off_label_widget->get_constraints(context);
-    _current_label_constraints = _current_label_widget->get_constraints(context);
+    _off_label_constraints = _off_label_widget->constraints(context);
+    _current_label_constraints = _current_label_widget->constraints(context);
 
     auto r = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
 
     // Make it so that the scroll widget can scroll vertically.
     _scroll_widget->minimum_height = narrow_cast<int>(context.theme->size);
-    _overlay_constraints = _overlay_widget->get_constraints(context);
+    _overlay_constraints = _overlay_widget->constraints(context);
     //for (hilet& child : _menu_button_widgets) {
     //    // extra_size is already implied in the menu button widgets.
     //    constraints = max(constraints, child->constraints());

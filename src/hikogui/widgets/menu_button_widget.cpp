@@ -8,7 +8,7 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] box_constraints menu_button_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints menu_button_widget::constraints(constraints_context const& context) noexcept
 {
     _layout = {};
 
@@ -19,7 +19,7 @@ namespace hi::inline v1 {
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     hilet extra_size =
         extent2{context.theme->margin * 4.0f + _check_size.width() + _short_cut_size.width(), context.theme->margin * 2.0f};
-    _label_constraints = get_constraints_button(context);
+    _label_constraints = constraints_button(context);
 
     auto constraints = _label_constraints + extra_size;
     constraints.set_margins(0);

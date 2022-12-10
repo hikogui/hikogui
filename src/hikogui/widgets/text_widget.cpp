@@ -20,13 +20,13 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
         // On every text edit, immediately/synchronously update the shaped text.
         // This is needed for handling multiple edit commands before the next frame update.
         if (_layout.font_book != nullptr and _layout.theme != nullptr) {
-            hilet c_context = get_constraints_context{_layout.font_book, _layout.theme, unicode_bidi_class::L};
+            hilet c_context = constraints_context{_layout.font_book, _layout.theme, unicode_bidi_class::L};
 
             auto new_layout = _layout;
             hilet old_constraints = _constraints_cache;
 
             // Constrain and layout according to the old layout.
-            hilet new_constraints = get_constraints(c_context);
+            hilet new_constraints = constraints(c_context);
             inplace_max(new_layout.shape.width, new_constraints.minimum_width);
             inplace_max(new_layout.shape.height, new_constraints.minimum_height);
             set_layout(new_layout);
@@ -69,7 +69,7 @@ text_widget::~text_widget()
     delegate->deinit(*this);
 }
 
-[[nodiscard]] box_constraints text_widget::get_constraints(get_constraints_context const& context) noexcept
+[[nodiscard]] box_constraints text_widget::constraints(constraints_context const& context) noexcept
 {
     _layout = {};
 

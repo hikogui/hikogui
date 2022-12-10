@@ -18,7 +18,7 @@ protected:
     std::unique_ptr<hi::theme_book> theme_book;
     hi::theme theme;
 
-    get_constraints_context c_context;
+    constraints_context c_context;
 
     observer<std::string> text;
     std::shared_ptr<hi::text_widget> widget;
@@ -30,12 +30,12 @@ protected:
         font_book = std::make_unique<hi::font_book>(make_vector(get_paths(path_location::font_dirs)));
         theme_book = std::make_unique<hi::theme_book>(*font_book, make_vector(get_paths(path_location::theme_dirs)));
         theme = theme_book->find("default", theme_mode::light);
-        c_context = get_constraints_context{font_book.get(), &theme, unicode_bidi_class::L};
+        c_context = constraints_context{font_book.get(), &theme, unicode_bidi_class::L};
 
         widget = std::make_shared<hi::text_widget>(nullptr, text);
         widget->mode = hi::widget_mode::enabled;
 
-        auto constraints = widget->get_constraints(c_context);
+        auto constraints = widget->constraints(c_context);
         auto l_context = widget_layout{};
         l_context.shape.width = constraints.preferred_width;
         l_context.shape.height = constraints.preferred_height;
