@@ -6,16 +6,16 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] box_constraints momentary_button_widget::constraints(constraints_context const& context) noexcept
+[[nodiscard]] box_constraints momentary_button_widget::constraints() noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    hilet extra_size = extent2{context.theme->margin * 2.0f, context.theme->margin * 2.0f};
-    _label_constraints = constraints_button(context);
+    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
+    _label_constraints = constraints_button();
 
     auto constraints = _label_constraints + extra_size;
-    constraints.set_margins(narrow_cast<int>(context.theme->margin));
+    constraints.set_margins(narrow_cast<int>(theme().margin));
     return constraints;
 }
 
@@ -23,8 +23,8 @@ void momentary_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         hilet label_rectangle =
-            aarectangle{context.theme->margin, 0.0f, narrow_cast<float>(context.width()) - context.theme->margin * 2.0f, narrow_cast<float>(context.height())};
-        _label_shape = box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
+            aarectangle{theme().margin, 0.0f, narrow_cast<float>(context.width()) - theme().margin * 2.0f, narrow_cast<float>(context.height())};
+        _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
     }
     set_layout_button(context);
 }
@@ -45,9 +45,9 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
         layout().rectangle(),
         background_color(),
         focus_color(),
-        layout().theme->border_width,
+        theme().border_width,
         border_side::inside,
-        corner_radii{layout().theme->rounding_radius});
+        corner_radii{theme().rounding_radius});
 }
 
 } // namespace hi::inline v1

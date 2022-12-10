@@ -20,15 +20,15 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
     _children.push_back(std::make_shared<spacer_widget>(this));
 }
 
-[[nodiscard]] box_constraints toolbar_widget::constraints(constraints_context const& context) noexcept
+[[nodiscard]] box_constraints toolbar_widget::constraints() noexcept
 {
     _layout = {};
 
     for (auto& child : _children) {
-        child.set_constraints(child.value->constraints(context));
+        child.set_constraints(child.value->constraints());
     }
 
-    auto r = _children.constraints(context.left_to_right());
+    auto r = _children.constraints(os_settings::left_to_right());
     _child_height_adjustment = -r.margin_top;
 
     r.minimum_height += r.margin_top;
@@ -46,7 +46,7 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
     if (compare_store(_layout, context)) {
         auto shape = context.shape;
         shape.height += _child_height_adjustment;
-        _children.set_layout(shape, context.theme->baseline_adjustment);
+        _children.set_layout(shape, theme().baseline_adjustment);
     }
 
     hilet overhang = context.redraw_overhang;
@@ -79,12 +79,12 @@ void toolbar_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible) {
         if (overlaps(context, layout())) {
-            context.draw_box(layout(), layout().rectangle(), layout().theme->color(semantic_color::fill, semantic_layer + 1));
+            context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, semantic_layer + 1));
 
             if (tab_button_has_focus()) {
                 // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
                 // line depending if that specific button is in focus or not.
-                hilet focus_rectangle = aarectangle{0.0, 0.0, layout().rectangle().width(), layout().theme->border_width};
+                hilet focus_rectangle = aarectangle{0.0, 0.0, layout().rectangle().width(), theme().border_width};
                 context.draw_box(layout(), translate3{0.0f, 0.0f, 1.5f} * focus_rectangle, focus_color());
             }
         }
@@ -137,9 +137,9 @@ widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::shared_p
 [[nodiscard]] color toolbar_widget::focus_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return layout().theme->color(semantic_color::accent);
+        return theme().color(semantic_color::accent);
     } else {
-        return layout().theme->color(semantic_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 

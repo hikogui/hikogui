@@ -63,7 +63,7 @@ public:
 
     ~scroll_bar_widget() {}
 
-    [[nodiscard]] box_constraints constraints(constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints constraints() noexcept override
     {
         _layout = {};
 
@@ -71,17 +71,17 @@ public:
             return {};
         }
 
-        // The minimum size is twice the length of the slider, which is twice the context.theme->size()
+        // The minimum size is twice the length of the slider, which is twice the theme().size()
         if constexpr (axis == axis::vertical) {
             return {
-               {context.theme->icon_size, context.theme->size * 4.0f},
-               {context.theme->icon_size, context.theme->size * 4.0f},
-               {context.theme->icon_size, 32767.0f}};
+               {theme().icon_size, theme().size * 4.0f},
+               {theme().icon_size, theme().size * 4.0f},
+               {theme().icon_size, 32767.0f}};
         } else {
             return {
-               {context.theme->size * 4.0f, context.theme->icon_size},
-               {context.theme->size * 4.0f, context.theme->icon_size},
-               {32767.0f, context.theme->icon_size}};
+               {theme().size * 4.0f, theme().icon_size},
+               {theme().size * 4.0f, theme().icon_size},
+               {32767.0f, theme().icon_size}};
         }
     }
 
@@ -173,15 +173,15 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return _layout.theme->color(semantic_color::fill, semantic_layer);
+        return theme().color(semantic_color::fill, semantic_layer);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
         if (*hover) {
-            return _layout.theme->color(semantic_color::fill, semantic_layer + 2);
+            return theme().color(semantic_color::fill, semantic_layer + 2);
         } else {
-            return _layout.theme->color(semantic_color::fill, semantic_layer + 1);
+            return theme().color(semantic_color::fill, semantic_layer + 1);
         }
     }
 
@@ -222,7 +222,7 @@ private:
             }
         }();
 
-        return std::clamp(preferred_length, narrow_cast<int>(_layout.theme->size) * 2, rail_length());
+        return std::clamp(preferred_length, narrow_cast<int>(theme().size) * 2, rail_length());
     }
 
     /** The amount of travel that the slider can make.

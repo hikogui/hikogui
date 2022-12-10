@@ -31,7 +31,7 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
     this->delegate->init(*this);
 }
 
-[[nodiscard]] box_constraints tab_widget::constraints(constraints_context const& context) noexcept
+[[nodiscard]] box_constraints tab_widget::constraints() noexcept
 {
     _layout = {};
 
@@ -47,7 +47,7 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
         child->mode = child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible;
     }
 
-    return selected_child_.constraints(context);
+    return selected_child_.constraints();
 }
 
 void tab_widget::set_layout(widget_layout const& context) noexcept

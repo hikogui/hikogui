@@ -8,22 +8,23 @@
 
 #pragma once
 
+#include "widget_layout.hpp"
+#include "widget_mode.hpp"
 #include "../GFX/draw_context.hpp"
 #include "../GUI/theme.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
 #include "../GUI/gui_event.hpp"
+#include "../layout/box_constraints.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
 #include "../observer.hpp"
 #include "../chrono.hpp"
 #include "../generator.hpp"
-#include "constraints_context.hpp"
-#include "../layout/box_constraints.hpp"
-#include "widget_layout.hpp"
-#include "widget_mode.hpp"
+#include "../cache.hpp"
+#include "../os_settings.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -31,7 +32,7 @@
 
 namespace hi { inline namespace v1 {
 class gui_window;
-class font_book;
+class gfx_surface;
 
 /** An interactive graphical object as part of the user-interface.
  *
@@ -174,7 +175,7 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual [[nodiscard]] box_constraints constraints(constraints_context const& context) noexcept = 0;
+    virtual [[nodiscard]] box_constraints constraints() noexcept = 0;
 
     /** Update the internal layout of the widget.
      * This function is called when the size of this widget must change, or if any of the
@@ -294,6 +295,19 @@ public:
      * The chain includes the given widget.
      */
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
+
+    [[nodiscard]] virtual gui_window *window() const noexcept
+    {
+        if (parent) {
+            return parent->window();
+        } else {
+            return nullptr;
+        }
+    }
+
+    [[nodiscard]] hi::theme const &theme() const noexcept;
+
+    [[nodiscard]] gfx_surface const *surface() const noexcept;
 
     virtual [[nodiscard]] color background_color() const noexcept;
 

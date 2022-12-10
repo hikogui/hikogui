@@ -21,7 +21,6 @@
 namespace hi::inline v1 {
 class gfx_system;
 class vertical_sync;
-class font_book;
 class theme_book;
 class keyboard_bindings;
 
@@ -32,7 +31,6 @@ public:
     static inline os_handle instance;
 
     std::unique_ptr<gfx_system> gfx;
-    std::unique_ptr<hi::font_book> font_book;
     std::unique_ptr<hi::theme_book> theme_book;
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings;
 
@@ -107,7 +105,6 @@ public:
 protected:
     gui_system(
         std::unique_ptr<gfx_system> gfx,
-        std::unique_ptr<hi::font_book> font_book,
         std::unique_ptr<hi::theme_book> theme_book,
         std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;

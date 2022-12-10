@@ -39,10 +39,10 @@ audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio
     co_yield _grid_widget.get();
 }
 
-[[nodiscard]] box_constraints audio_device_widget::constraints(constraints_context const& context) noexcept
+[[nodiscard]] box_constraints audio_device_widget::constraints() noexcept
 {
     _layout = {};
-    _grid_constraints = _grid_widget->constraints(context);
+    _grid_constraints = _grid_widget->constraints();
     return _grid_constraints;
 }
 
@@ -50,7 +50,7 @@ void audio_device_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         hilet grid_rectangle = context.rectangle();
-        _grid_shape = {_grid_constraints, grid_rectangle, context.theme->baseline_adjustment};
+        _grid_shape = {_grid_constraints, grid_rectangle, theme().baseline_adjustment};
     }
 
     _grid_widget->set_layout(context.transform(_grid_shape));

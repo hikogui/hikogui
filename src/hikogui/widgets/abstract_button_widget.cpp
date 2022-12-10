@@ -39,9 +39,9 @@ void abstract_button_widget::activate() noexcept
     this->pressed();
 }
 
-box_constraints abstract_button_widget::constraints_button(constraints_context const &context) const noexcept
+box_constraints abstract_button_widget::constraints_button() const noexcept
 {
-    return max(_on_label_widget->constraints(context), _off_label_widget->constraints(context), _other_label_widget->constraints(context));
+    return max(_on_label_widget->constraints(), _off_label_widget->constraints(), _other_label_widget->constraints());
 }
 
 void abstract_button_widget::draw_button(draw_context const& context) noexcept
@@ -67,7 +67,7 @@ void abstract_button_widget::set_layout_button(widget_layout const& context) noe
 {
     hi_axiom(loop::main().on_thread());
     if (_pressed) {
-        return _layout.theme->color(semantic_color::fill, semantic_layer + 2);
+        return theme().color(semantic_color::fill, semantic_layer + 2);
     } else {
         return super::background_color();
     }

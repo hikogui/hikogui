@@ -43,8 +43,8 @@ void gui_window::init()
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
-    _widconstraints = widget->constraints(constraints_context{*gui.font_book, theme, writing_direction(), *surface});
-    hilet new_size = _widconstraints.preferred();
+    _widget_constraints = widget->constraints();
+    hilet new_size = _widget_constraints.preferred();
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -99,8 +99,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
-        _widconstraints =
-            widget->constraints(constraints_context{*gui.font_book, theme, writing_direction(), *surface});
+        _widget_constraints = widget->constraints();
     }
 
     // Check if the window size matches the preferred size of the window_widget.
@@ -115,7 +114,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (_resize.exchange(false, std::memory_order::relaxed)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         hilet current_size = rectangle.size();
-        hilet new_size = _widconstraints.preferred();
+        hilet new_size = _widget_constraints.preferred();
         if (new_size != current_size) {
             hi_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
             set_window_size(new_size);
@@ -124,14 +123,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
     } else {
         // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize.
         hilet current_size = rectangle.size();
-        hilet new_size = clamp(current_size, _widconstraints.minimum(), _widconstraints.maximum());
+        hilet new_size = clamp(current_size, _widget_constraints.minimum(), _widget_constraints.maximum());
         if (new_size != current_size and size_state() != gui_window_size::minimized) {
             hi_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
             set_window_size(new_size);
         }
     }
 
-    if (rectangle.size() < _widconstraints.minimum() or rectangle.size() > _widconstraints.maximum()) {
+    if (rectangle.size() < _widget_constraints.minimum() or rectangle.size() > _widget_constraints.maximum()) {
         // Even after the resize above it is possible to have an incorrect window size.
         // For example when minimizing the window.
         // Stop processing rendering for this window here.
@@ -155,14 +154,11 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         // Guarantee that the layout size is always at least the minimum size.
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
-        hilet widget_layout_size = max(_widconstraints.minimum(), widget_size);
+        hilet widget_layout_size = max(_widget_constraints.minimum(), widget_size);
         widget->set_layout(widget_layout{
             widget_layout_size,
             _size_state,
-            *gui.font_book,
-            theme,
             subpixel_orientation(),
-            writing_direction(),
             display_time_point});
 
         // After layout do a complete redraw.
@@ -179,7 +175,6 @@ void gui_window::render(utc_nanoseconds display_time_point)
         _redraw_rectangle = aarectangle{};
         draw_context.display_time_point = display_time_point;
         draw_context.subpixel_orientation = subpixel_orientation();
-        draw_context.writing_direction = writing_direction();
         draw_context.background_color = widget->background_color();
         draw_context.active = active;
 

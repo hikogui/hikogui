@@ -19,14 +19,12 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
     _delegate_cbt = this->delegate->subscribe([&] {
         // On every text edit, immediately/synchronously update the shaped text.
         // This is needed for handling multiple edit commands before the next frame update.
-        if (_layout.font_book != nullptr and _layout.theme != nullptr) {
-            hilet c_context = constraints_context{_layout.font_book, _layout.theme, unicode_bidi_class::L};
-
+        if (_layout) {
             auto new_layout = _layout;
             hilet old_constraints = _constraints_cache;
 
             // Constrain and layout according to the old layout.
-            hilet new_constraints = constraints(c_context);
+            hilet new_constraints = constraints();
             inplace_max(new_layout.shape.width, new_constraints.minimum_width);
             inplace_max(new_layout.shape.height, new_constraints.minimum_height);
             set_layout(new_layout);
@@ -69,7 +67,7 @@ text_widget::~text_widget()
     delegate->deinit(*this);
 }
 
-[[nodiscard]] box_constraints text_widget::constraints(constraints_context const& context) noexcept
+[[nodiscard]] box_constraints text_widget::constraints() noexcept
 {
     _layout = {};
 
@@ -80,13 +78,13 @@ text_widget::~text_widget()
     // Make sure that the current selection fits the new text.
     _selection.resize(_text_cache.size());
 
-    hilet actual_text_style = context.theme->text_style(*text_style);
+    hilet actual_text_style = theme().text_style(*text_style);
 
     // Create a new text_shaper with the new text.
-    auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
+    auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
     _shaped_text = text_shaper{
-        *context.font_book, _text_cache, actual_text_style, context.theme->scale, alignment_, context.writing_direction};
+        font_book::global(), _text_cache, actual_text_style, theme().scale, alignment_, os_settings::writing_direction()};
 
     hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity());
     hilet shaped_text_size = shaped_text_rectangle.size();
@@ -98,7 +96,7 @@ text_widget::~text_widget()
            shaped_text_size,
            shaped_text_size,
            _shaped_text.resolved_alignment(),
-           context.theme->margin};
+           theme().margin};
 
     } else {
         // Allow the text to be 550.0f pixels wide.
@@ -111,7 +109,7 @@ text_widget::~text_widget()
            extent2{preferred_shaped_text_size.width(), height},
            extent2{shaped_text_size.width(), height},
            _shaped_text.resolved_alignment(),
-           context.theme->margin};
+           theme().margin};
     }
 }
 
@@ -210,15 +208,15 @@ void text_widget::draw(draw_context const& context) noexcept
     if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         context.draw_text(layout(), _shaped_text);
 
-        context.draw_text_selection(layout(), _shaped_text, _selection, layout().theme->color(semantic_color::text_select));
+        context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(semantic_color::text_select));
 
         if (*_cursor_state == cursor_state_type::on or *_cursor_state == cursor_state_type::busy) {
             context.draw_text_cursors(
                 layout(),
                 _shaped_text,
                 _selection.cursor(),
-                layout().theme->color(semantic_color::primary_cursor),
-                layout().theme->color(semantic_color::secondary_cursor),
+                theme().color(semantic_color::primary_cursor),
+                theme().color(semantic_color::secondary_cursor),
                 _overwrite_mode,
                 to_bool(_has_dead_character));
         }

@@ -44,21 +44,21 @@ widget& grid_widget::add_widget(
     return ref;
 }
 
-[[nodiscard]] box_constraints grid_widget::constraints(constraints_context const& context) noexcept
+[[nodiscard]] box_constraints grid_widget::constraints() noexcept
 {
     _layout = {};
 
     for (auto& cell : _grid) {
-        cell.set_constraints(cell.value->constraints(context));
+        cell.set_constraints(cell.value->constraints());
     }
 
-    return _grid.constraints(context.left_to_right());
+    return _grid.constraints(os_settings::left_to_right());
 }
 
 void grid_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _grid.set_layout(context.shape, context.theme->baseline_adjustment);
+        _grid.set_layout(context.shape, theme().baseline_adjustment);
     }
 
     for (hilet& cell : _grid) {

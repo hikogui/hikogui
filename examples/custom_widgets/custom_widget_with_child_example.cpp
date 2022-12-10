@@ -24,24 +24,24 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    [[nodiscard]] hi::box_constraints constraints(hi::constraints_context const& context) noexcept override
+    [[nodiscard]] hi::box_constraints constraints() noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
         _layout = {};
 
         // We need to recursively set the constraints of any child widget here as well
-        _label_constraints = _label_widget->constraints(context);
+        _label_constraints = _label_widget->constraints();
 
         // We add the ability to resize the widget beyond the size of the label.
         auto r = hi::box_constraints{};
         r.minimum_width = _label_constraints.minimum_width;
-        r.preferred_width = _label_constraints.preferred_width + hi::narrow_cast<int>(context.theme->margin);
+        r.preferred_width = _label_constraints.preferred_width + hi::narrow_cast<int>(theme().margin);
         r.maximum_width = _label_constraints.maximum_width + 100;
         r.minimum_height = _label_constraints.minimum_height;
-        r.preferred_height = _label_constraints.preferred_height + hi::narrow_cast<int>(context.theme->margin);
+        r.preferred_height = _label_constraints.preferred_height + hi::narrow_cast<int>(theme().margin);
         r.maximum_height = _label_constraints.maximum_height + 50;
-        r.set_margins(hi::narrow_cast<int>(context.theme->margin));
+        r.set_margins(hi::narrow_cast<int>(theme().margin));
         r.alignment = _label_constraints.alignment;
         return r;
     }
@@ -59,7 +59,7 @@ public:
             // when the layout of the current widget changes.
             auto const label_rectangle =
                 align(context.rectangle(), _label_constraints.preferred(), hi::alignment::middle_center());
-            _label_shape = hi::box_shape{_label_constraints, label_rectangle, context.theme->baseline_adjustment};
+            _label_shape = hi::box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.
@@ -85,9 +85,9 @@ public:
                     _layout.rectangle(),
                     background_color(),
                     foreground_color(),
-                    layout().theme->border_width,
+                    theme().border_width,
                     hi::border_side::outside,
-                    layout().theme->rounding_radius);
+                    theme().rounding_radius);
             }
 
             // Child widget only need to be drawn when the parent is visible, but the child may have

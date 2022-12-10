@@ -239,7 +239,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 
     } else if (state == gui_window_size::maximized) {
         hilet workspace = workspace_rectangle();
-        hilet max_size = _widconstraints.maximum();
+        hilet max_size = _widget_constraints.maximum();
 
         // Try to resize the window while keeping the toolbar in the same location.
         hilet width = narrow_cast<int>(std::min(max_size.width(), workspace.width()));
@@ -252,7 +252,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 
     } else if (state == gui_window_size::fullscreen) {
         hilet fullscreen = fullscreen_rectangle();
-        hilet max_size = _widconstraints.maximum();
+        hilet max_size = _widget_constraints.maximum();
         if (fullscreen.width() > max_size.width() or fullscreen.height() > max_size.height()) {
             // Do not go full screen if the widget is unable to go that large.
             return;
@@ -341,11 +341,6 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     }
 }
 
-[[nodiscard]] unicode_bidi_class gui_window_win32::writing_direction() const noexcept
-{
-    return os_settings::writing_direction();
-}
-
 void gui_window_win32::open_system_menu()
 {
     hi_axiom(loop::main().on_thread());
@@ -375,11 +370,9 @@ void gui_window_win32::set_window_size(extent2 new_extent)
         hi_log_error("Could not get the window's rectangle on the screen.");
     }
 
-    hilet left_to_right = writing_direction() == unicode_bidi_class::L;
-
     hilet new_width = narrow_cast<int>(std::ceil(new_extent.width()));
     hilet new_height = narrow_cast<int>(std::ceil(new_extent.height()));
-    hilet new_x = left_to_right ? original_rect.left : original_rect.right - new_width;
+    hilet new_x = os_settings::left_to_right() ? original_rect.left : original_rect.right - new_width;
     hilet new_y = original_rect.top;
 
     SetWindowPos(
@@ -782,12 +775,12 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             hi_axiom(loop::main().on_thread());
             hi_assert_not_null(widget);
             hilet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
-            minmaxinfo->ptMaxSize.x = _widconstraints.maximum_width;
-            minmaxinfo->ptMaxSize.y = _widconstraints.maximum_height;
-            minmaxinfo->ptMinTrackSize.x = _widconstraints.minimum_width;
-            minmaxinfo->ptMinTrackSize.y = _widconstraints.minimum_height;
-            minmaxinfo->ptMaxTrackSize.x = _widconstraints.maximum_width;
-            minmaxinfo->ptMaxTrackSize.y = _widconstraints.maximum_height;
+            minmaxinfo->ptMaxSize.x = _widget_constraints.maximum_width;
+            minmaxinfo->ptMaxSize.y = _widget_constraints.maximum_height;
+            minmaxinfo->ptMinTrackSize.x = _widget_constraints.minimum_width;
+            minmaxinfo->ptMinTrackSize.y = _widget_constraints.minimum_height;
+            minmaxinfo->ptMaxTrackSize.x = _widget_constraints.maximum_width;
+            minmaxinfo->ptMaxTrackSize.y = _widget_constraints.maximum_height;
         }
         break;
 

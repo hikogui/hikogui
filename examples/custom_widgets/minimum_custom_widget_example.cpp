@@ -16,7 +16,7 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    [[nodiscard]] hi::box_constraints constraints(hi::constraints_context const& context) noexcept override
+    [[nodiscard]] hi::box_constraints constraints() noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
@@ -29,7 +29,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return {{100, 50}, {200, 100}, {300, 100}, hi::alignment{}, context.theme->margin};
+        return {{100, 50}, {200, 100}, {300, 100}, hi::alignment{}, theme().margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -60,8 +60,8 @@ public:
         if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
-            context.draw_box(_layout, _left_rectangle, layout().theme->color(hi::semantic_color::indigo));
-            context.draw_box(_layout, _right_rectangle, layout().theme->color(hi::semantic_color::blue));
+            context.draw_box(_layout, _left_rectangle, theme().color(hi::semantic_color::indigo));
+            context.draw_box(_layout, _right_rectangle, theme().color(hi::semantic_color::blue));
         }
     }
 

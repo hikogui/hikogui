@@ -30,7 +30,14 @@ namespace hi::inline v1 {
  */
 class font_book {
 public:
-    font_book(std::vector<std::filesystem::path> const &font_directories);
+    static font_book &global() noexcept;
+
+    ~font_book();
+    font_book(font_book const&) = delete;
+    font_book(font_book&&) = delete;
+    font_book& operator=(font_book const&) = delete;
+    font_book& operator=(font_book&&) = delete;
+    font_book();
 
     /** Register a font.
      * Duplicate registrations will be ignored.
@@ -43,7 +50,13 @@ public:
      * @param path Location of font.
      * @param post_process Calculate font fallback
      */
-    font &register_font(std::filesystem::path const &path, bool post_process = true);
+    font& register_font(std::filesystem::path const& path, bool post_process = true);
+
+    /** Register all fonts found in a directory.
+     *
+     * @see register_font()
+     */
+    void register_font_directory(std::filesystem::path const& path, bool post_process = true);
 
     void register_elusive_icon_font(std::filesystem::path const& path)
     {
@@ -78,7 +91,7 @@ public:
      * @param variant The variant of the font to select.
      * @return a valid font id.
      */
-    [[nodiscard]] font const &find_font(font_family_id family_id, font_variant variant) const noexcept;
+    [[nodiscard]] font const& find_font(font_family_id family_id, font_variant variant) const noexcept;
 
     /** Find a font closest to the variant.
      * This function will always return a valid font_id.
@@ -88,7 +101,7 @@ public:
      * @param italic If the font to select should be italic or not.
      * @return a valid font id.
      */
-    [[nodiscard]] font const &find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept;
+    [[nodiscard]] font const& find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept;
 
     /** Find a font closest to the variant.
      * This function will always return a valid font_id.
@@ -98,7 +111,7 @@ public:
      * @param italic If the font to select should be italic or not.
      * @return a font id, possibly from a fallback font.
      */
-    [[nodiscard]] font const &find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept;
+    [[nodiscard]] font const& find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept;
 
     /** Find a glyph using the given code-point.
      * This function will find a glyph matching the grapheme in the selected font, or
@@ -108,7 +121,7 @@ public:
      * @param grapheme The Unicode grapheme to find in the font.
      * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] glyph_ids find_glyph(font const &font, grapheme grapheme) const noexcept;
+    [[nodiscard]] glyph_ids find_glyph(font const& font, grapheme grapheme) const noexcept;
 
     [[nodiscard]] glyph_ids find_glyph(elusive_icon rhs) const noexcept
     {
@@ -123,6 +136,8 @@ public:
     }
 
 private:
+    inline static std::unique_ptr<font_book> _global = nullptr;
+
     font const *_elusive_icon_font = nullptr;
     font const *_hikogui_icon_font = nullptr;
 
@@ -173,5 +188,28 @@ private:
 
     void create_family_name_fallback_chain() noexcept;
 };
+
+/** Find a glyph using the given code-point.
+ * This function will find a glyph matching the grapheme in the selected font, or
+ * find the glyph in the fallback font.
+ *
+ * @param font The font to use to find the grapheme in.
+ * @param grapheme The Unicode grapheme to find in the font.
+ * @return A list of glyphs which matched the grapheme.
+ */
+[[nodiscard]] inline glyph_ids find_glyph(font const& font, grapheme grapheme) noexcept
+{
+    return font_book::global().find_glyph(font, grapheme);
+}
+
+[[nodiscard]] inline glyph_ids find_glyph(elusive_icon rhs) noexcept
+{
+    return font_book::global().find_glyph(rhs);
+}
+
+[[nodiscard]] inline glyph_ids find_glyph(hikogui_icon rhs) noexcept
+{
+    return font_book::global().find_glyph(rhs);
+}
 
 } // namespace hi::inline v1

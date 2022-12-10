@@ -16,6 +16,11 @@ overlay_widget::overlay_widget(widget *parent) noexcept :
         // any other widget drawn.
         semantic_layer = 0;
     }
+
+    //_content_constraints = [&] {
+    //    hi_assert_not_null(_content);
+    //    return _content->constraints();
+    //};
 }
 
 overlay_widget::~overlay_widget()
@@ -29,10 +34,10 @@ void overlay_widget::set_widget(std::shared_ptr<widget> new_widget) noexcept
     process_event({gui_event_type::window_reconstrain});
 }
 
-[[nodiscard]] box_constraints overlay_widget::constraints(constraints_context const& context) noexcept
+[[nodiscard]] box_constraints overlay_widget::constraints() noexcept
 {
     _layout = {};
-    _content_constraints = _content->constraints(context);
+    _content_constraints = _content->constraints();
     return _content_constraints;
 }
 
@@ -41,10 +46,10 @@ void overlay_widget::set_layout(widget_layout const& context) noexcept
     _layout = context;
 
     // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
-    _layout.clipping_rectangle = context.rectangle() + context.theme->border_width;
+    _layout.clipping_rectangle = context.rectangle() + theme().border_width;
 
     hilet content_rectangle = context.rectangle();
-    _content_shape = box_shape{_content_constraints, content_rectangle, context.theme->baseline_adjustment};
+    _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment};
 
     // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
     _content->set_layout(_layout.transform(_content_shape, 1.0f, context.rectangle()));
@@ -62,12 +67,12 @@ void overlay_widget::draw(draw_context const &context) noexcept
 
 [[nodiscard]] color overlay_widget::background_color() const noexcept
 {
-    return _layout.theme->color(semantic_color::fill, semantic_layer + 1);
+    return theme().color(semantic_color::fill, semantic_layer + 1);
 }
 
 [[nodiscard]] color overlay_widget::foreground_color() const noexcept
 {
-    return _layout.theme->color(semantic_color::border, semantic_layer + 1);
+    return theme().color(semantic_color::border, semantic_layer + 1);
 }
 
 void overlay_widget::scroll_to_show(hi::aarectangle rectangle) noexcept
@@ -83,7 +88,7 @@ void overlay_widget::draw_background(draw_context const &context) noexcept
         layout().rectangle(),
         background_color(),
         foreground_color(),
-        layout().theme->border_width,
+        theme().border_width,
         border_side::outside);
 }
 

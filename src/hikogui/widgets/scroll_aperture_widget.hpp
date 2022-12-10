@@ -100,12 +100,12 @@ public:
         co_yield _content.get();
     }
 
-    [[nodiscard]] box_constraints constraints(constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints constraints() noexcept override
     {
         _layout = {};
 
         hi_assert_not_null(_content);
-        _content_constraints = _content->constraints(context);
+        _content_constraints = _content->constraints();
 
         auto aperture_constraints = _content_constraints;
 
@@ -145,7 +145,7 @@ public:
             -*offset_y + _content_constraints.margin_bottom,
             *content_width,
             *content_height,
-            context.theme->baseline_adjustment};
+            theme().baseline_adjustment};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
@@ -181,8 +181,8 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (event == gui_event_type::mouse_wheel) {
-            hilet new_offset_x = *offset_x + narrow_cast<int>(event.mouse().wheel_delta.x() * _layout.theme->scale);
-            hilet new_offset_y = *offset_y + narrow_cast<int>(event.mouse().wheel_delta.y() * _layout.theme->scale);
+            hilet new_offset_x = *offset_x + narrow_cast<int>(event.mouse().wheel_delta.x() * theme().scale);
+            hilet new_offset_y = *offset_y + narrow_cast<int>(event.mouse().wheel_delta.y() * theme().scale);
             hilet max_offset_x = std::max(0, *content_width - *aperture_width);
             hilet max_offset_y = std::max(0, *content_height - *aperture_height);
 
@@ -203,12 +203,12 @@ public:
             int delta_x = 0;
             int delta_y = 0;
 
-            if (safe_rectangle.width() > _layout.theme->margin * 2.0f and
-                safe_rectangle.height() > _layout.theme->margin * 2.0f) {
+            if (safe_rectangle.width() > theme().margin * 2.0f and
+                safe_rectangle.height() > theme().margin * 2.0f) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do
                 // with the margins that are needed here.
-                safe_rectangle = safe_rectangle - _layout.theme->margin;
+                safe_rectangle = safe_rectangle - theme().margin;
 
                 if (to_show.right() > safe_rectangle.right()) {
                     delta_x = narrow_cast<int>(to_show.right() - safe_rectangle.right());

@@ -39,11 +39,11 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-[[nodiscard]] box_constraints window_widget::constraints(constraints_context const& context) noexcept
+[[nodiscard]] box_constraints window_widget::constraints() noexcept
 {
     _layout = {};
-    _toolbar_constraints = _toolbar->constraints(context);
-    _content_constraints = _content->constraints(context);
+    _toolbar_constraints = _toolbar->constraints();
+    _content_constraints = _content->constraints();
 
     auto r = box_constraints{};
     r.minimum_width = std::max(
@@ -108,14 +108,14 @@ void window_widget::set_layout(widget_layout const& context) noexcept
             point2{
                 narrow_cast<float>(context.width()) - narrow_cast<float>(_toolbar_constraints.margin_right),
                 narrow_cast<float>(context.height()) - narrow_cast<float>(_toolbar_constraints.margin_top)}};
-        _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, context.theme->baseline_adjustment};
+        _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme().baseline_adjustment};
 
         hilet content_rectangle = aarectangle{
             point2{narrow_cast<float>(_content_constraints.margin_left), narrow_cast<float>(_content_constraints.margin_bottom)},
             point2{
                 narrow_cast<float>(context.width()) - narrow_cast<float>(_content_constraints.margin_right),
                 toolbar_rectangle.bottom() - between_margin}};
-        _content_shape = box_shape{_content_constraints, content_rectangle, context.theme->baseline_adjustment};
+        _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment};
     }
     _toolbar->set_layout(context.transform(_toolbar_shape));
     _content->set_layout(context.transform(_content_shape));
@@ -197,7 +197,7 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
 [[nodiscard]] color window_widget::background_color() noexcept
 {
     hi_axiom(loop::main().on_thread());
-    return layout().theme->color(semantic_color::fill, semantic_layer);
+    return theme().color(semantic_color::fill, semantic_layer);
 }
 
 [[nodiscard]] grid_widget& window_widget::content() noexcept

@@ -18,8 +18,6 @@ protected:
     std::unique_ptr<hi::theme_book> theme_book;
     hi::theme theme;
 
-    constraints_context c_context;
-
     observer<std::string> text;
     std::shared_ptr<hi::text_widget> widget;
 
@@ -27,21 +25,22 @@ protected:
     {
         // Cursor movement (including editing) requires the text to be shaped.
         // text shaping requires fonts and text styles.
-        font_book = std::make_unique<hi::font_book>(make_vector(get_paths(path_location::font_dirs)));
-        theme_book = std::make_unique<hi::theme_book>(*font_book, make_vector(get_paths(path_location::theme_dirs)));
+        auto &font_book = font_book::global();
+        for (auto const &path : get_paths(path_location::font_dirs)) {
+            font_book.register_font_directory(path);
+        }
+        theme_book = std::make_unique<hi::theme_book>(font_book, make_vector(get_paths(path_location::theme_dirs)));
         theme = theme_book->find("default", theme_mode::light);
-        c_context = constraints_context{font_book.get(), &theme, unicode_bidi_class::L};
 
         widget = std::make_shared<hi::text_widget>(nullptr, text);
         widget->mode = hi::widget_mode::enabled;
 
-        auto constraints = widget->constraints(c_context);
+        auto constraints = widget->constraints();
         auto l_context = widget_layout{};
         l_context.shape.width = constraints.preferred_width;
         l_context.shape.height = constraints.preferred_height;
         l_context.shape.baseline = constraints.preferred_height / 2;
-        l_context.font_book = font_book.get();
-        l_context.theme = &theme;
+        // XXX moc a window_widget so it can access theme.
         widget->set_layout(l_context);
     }
 };

@@ -101,21 +101,21 @@ public:
         }
     }
 
-    [[nodiscard]] box_constraints constraints(constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints constraints() noexcept override
     {
         _layout = {};
 
         for (auto& child : _children) {
-            child.set_constraints(child.value->constraints(context));
+            child.set_constraints(child.value->constraints());
         }
 
-        return _children.constraints(context.left_to_right());
+        return _children.constraints(os_settings::left_to_right());
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _children.set_layout(context.shape, context.theme->baseline_adjustment);
+            _children.set_layout(context.shape, theme().baseline_adjustment);
 
             for (hilet& child : _children) {
                 child.value->set_layout(context.transform(child.shape, 0.0f));

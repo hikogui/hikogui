@@ -16,12 +16,10 @@ namespace hi::inline v1 {
 
 gui_system::gui_system(
     std::unique_ptr<gfx_system> gfx,
-    std::unique_ptr<hi::font_book> font_book,
     std::unique_ptr<hi::theme_book> theme_book,
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) noexcept :
     gfx(std::move(gfx)),
-    font_book(std::move(font_book)),
     theme_book(std::move(theme_book)),
     keyboard_bindings(std::move(keyboard_bindings)),
     thread_id(current_thread_id()),

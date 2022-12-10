@@ -13,23 +13,21 @@
 
 namespace hi::inline v1 {
 
-font_book::font_book(std::vector<std::filesystem::path> const& font_directories)
+font_book &font_book::global() noexcept
+{
+    if (not _global) {
+        _global = std::make_unique<font_book>();
+    }
+    return *_global;
+}
+
+font_book::~font_book()
+{
+}
+
+font_book::font_book()
 {
     create_family_name_fallback_chain();
-
-    for (hilet& font_directory : font_directories) {
-        hilet font_directory_glob = font_directory / "**" / "*.ttf";
-        for (hilet& font_path : glob(font_directory_glob)) {
-            auto t = trace<"font_scan">{};
-
-            try {
-                register_font(font_path, false);
-
-            } catch (std::exception const& e) {
-                hi_log_error("Failed parsing font at {}: \"{}\"", font_path.string(), e.what());
-            }
-        }
-    }
 }
 
 void font_book::create_family_name_fallback_chain() noexcept
@@ -85,7 +83,7 @@ void font_book::create_family_name_fallback_chain() noexcept
     _family_name_fallback_chain["andale mono"] = "monospace";
 }
 
-font& font_book::register_font(std::filesystem::path const &path, bool post_process)
+font& font_book::register_font(std::filesystem::path const& path, bool post_process)
 {
     auto font = std::make_unique<true_type_font>(path);
     auto font_ptr = font.get();
@@ -103,6 +101,25 @@ font& font_book::register_font(std::filesystem::path const &path, bool post_proc
     }
 
     return *font_ptr;
+}
+
+void font_book::register_font_directory(std::filesystem::path const& path, bool post_process)
+{
+    hilet font_directory_glob = path / "**" / "*.ttf";
+    for (hilet& font_path : glob(font_directory_glob)) {
+        hilet t = trace<"font_scan">{};
+
+        try {
+            register_font(font_path, false);
+
+        } catch (std::exception const& e) {
+            hi_log_error("Failed parsing font at {}: \"{}\"", font_path.string(), e.what());
+        }
+    }
+
+    if (post_process) {
+        this->post_process();
+    }
 }
 
 [[nodiscard]] std::vector<hi::font *> font_book::make_fallback_chain(font_weight weight, bool italic) noexcept

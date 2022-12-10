@@ -92,7 +92,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints constraints(constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     /// @endprivatesection
