@@ -83,13 +83,13 @@ public:
     }
 
     [[nodiscard]] color background_color() const noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept final;
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept final;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     void activate() noexcept;
     bool handle_event(gui_event const& event) noexcept override;
     /// @endprivatesection
 protected:
-    box_constraints _label_constraints;
+    cache<box_constraints> _label_constraints;
     box_shape _label_shape;
     std::shared_ptr<label_widget> _on_label_widget;
     std::shared_ptr<label_widget> _off_label_widget;
@@ -135,7 +135,6 @@ protected:
         }
     }
 
-    box_constraints constraints_button() const noexcept;
     void set_layout_button(widget_layout const& context) noexcept;
     void draw_button(draw_context const& context) noexcept;
 };

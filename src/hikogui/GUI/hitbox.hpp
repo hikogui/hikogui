@@ -51,11 +51,6 @@ public:
     {
     }
 
-    constexpr hitbox(hi::widget const *widget, point3 position, hitbox_type type = hitbox_type::_default) noexcept :
-        widget(widget), _elevation(-position.z()), type(type)
-    {
-    }
-
     [[nodiscard]] constexpr friend std::strong_ordering operator<=>(hitbox const& lhs, hitbox const& rhs) noexcept
     {
         if ((lhs.widget == nullptr) == (rhs.widget == nullptr)) {

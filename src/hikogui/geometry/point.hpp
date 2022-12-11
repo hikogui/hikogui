@@ -27,15 +27,16 @@ public:
 
     static_assert(D == 2 || D == 3, "Only 2D or 3D points are supported");
 
-    constexpr point(point const &) noexcept = default;
-    constexpr point(point &&) noexcept = default;
-    constexpr point &operator=(point const &) noexcept = default;
-    constexpr point &operator=(point &&) noexcept = default;
+    constexpr point(point const&) noexcept = default;
+    constexpr point(point&&) noexcept = default;
+    constexpr point& operator=(point const&) noexcept = default;
+    constexpr point& operator=(point&&) noexcept = default;
 
     /** Construct a point from a lower dimension point.
      */
     template<int E>
-    requires(E < D) [[nodiscard]] constexpr point(point<value_type, E> const &other) noexcept : _v(static_cast<array_type>(other))
+        requires(E < D)
+    [[nodiscard]] constexpr point(point<value_type, E> const& other) noexcept : _v(static_cast<array_type>(other))
     {
         hi_axiom(holds_invariant());
     }
@@ -49,7 +50,6 @@ public:
         _v.z() = z;
         hi_axiom(holds_invariant());
     }
-
 
     /** Construct a point from a higher dimension point.
      * This will clear the values in the higher dimensions.
@@ -74,7 +74,7 @@ public:
 
     /** Construct a point from a array_type-numeric_array.
      */
-    [[nodiscard]] constexpr explicit point(array_type const &other) noexcept : _v(other)
+    [[nodiscard]] constexpr explicit point(array_type const& other) noexcept : _v(other)
     {
         hi_axiom(holds_invariant());
     }
@@ -107,7 +107,7 @@ public:
     /** Access the x element from the point.
      * @return a reference to the x element.
      */
-    [[nodiscard]] constexpr value_type &x() noexcept
+    [[nodiscard]] constexpr value_type& x() noexcept
     {
         return _v.x();
     }
@@ -115,7 +115,7 @@ public:
     /** Access the y element from the point.
      * @return a reference to the y element.
      */
-    [[nodiscard]] constexpr value_type &y() noexcept
+    [[nodiscard]] constexpr value_type& y() noexcept
     {
         return _v.y();
     }
@@ -123,7 +123,8 @@ public:
     /** Access the z element from the point.
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr value_type &z() noexcept requires(D == 3)
+    [[nodiscard]] constexpr value_type& z() noexcept
+        requires(D == 3)
     {
         return _v.z();
     }
@@ -131,7 +132,7 @@ public:
     /** Access the x element from the point.
      * @return a reference to the x element.
      */
-    [[nodiscard]] constexpr value_type const &x() const noexcept
+    [[nodiscard]] constexpr value_type const& x() const noexcept
     {
         return _v.x();
     }
@@ -139,7 +140,7 @@ public:
     /** Access the y element from the point.
      * @return a reference to the y element.
      */
-    [[nodiscard]] constexpr value_type const &y() const noexcept
+    [[nodiscard]] constexpr value_type const& y() const noexcept
     {
         return _v.y();
     }
@@ -147,13 +148,15 @@ public:
     /** Access the z element from the point.
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr value_type const &z() const noexcept requires(D == 3)
+    [[nodiscard]] constexpr value_type const& z() const noexcept
+        requires(D == 3)
     {
         return _v.z();
     }
 
     template<int E>
-    requires(E <= D) constexpr point &operator+=(vector<value_type, E> const &rhs) noexcept
+        requires(E <= D)
+    constexpr point& operator+=(vector<value_type, E> const& rhs) noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v + static_cast<array_type>(rhs);
@@ -161,7 +164,8 @@ public:
     }
 
     template<int E>
-    requires(E <= D) constexpr point &operator-=(vector<value_type, E> const &rhs) noexcept
+        requires(E <= D)
+    constexpr point& operator-=(vector<value_type, E> const& rhs) noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v - static_cast<array_type>(rhs);
@@ -174,7 +178,7 @@ public:
      * @return The moved point.
      */
     template<int E>
-    [[nodiscard]] constexpr friend auto operator+(point const &lhs, vector<value_type, E> const &rhs) noexcept
+    [[nodiscard]] constexpr friend auto operator+(point const& lhs, vector<value_type, E> const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<value_type, std::max(D, E)>{lhs._v + static_cast<array_type>(rhs)};
@@ -186,7 +190,7 @@ public:
      * @return The moved point.
      */
     template<int E>
-    [[nodiscard]] constexpr friend auto operator+(vector<value_type, E> const &rhs, point const &lhs) noexcept
+    [[nodiscard]] constexpr friend auto operator+(vector<value_type, E> const& rhs, point const& lhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<value_type, std::max(D, E)>{lhs._v + static_cast<array_type>(rhs)};
@@ -198,7 +202,7 @@ public:
      * @return The moved point.
      */
     template<int E>
-    [[nodiscard]] constexpr friend auto operator-(point const &lhs, vector<value_type, E> const &rhs) noexcept
+    [[nodiscard]] constexpr friend auto operator-(point const& lhs, vector<value_type, E> const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<value_type, std::max(D, E)>{lhs._v - static_cast<array_type>(rhs)};
@@ -209,7 +213,7 @@ public:
      * @param rhs The second point.
      * @return The vector from the second to first point.
      */
-    [[nodiscard]] constexpr friend vector<value_type, D> operator-(point const &lhs, point const &rhs) noexcept
+    [[nodiscard]] constexpr friend vector<value_type, D> operator-(point const& lhs, point const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector<value_type, D>{lhs._v - rhs._v};
@@ -220,20 +224,20 @@ public:
      * @param rhs The second point.
      * @return True if both point are completely equal to each other.
      */
-    [[nodiscard]] constexpr friend bool operator==(point const &lhs, point const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(point const& lhs, point const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return lhs._v == rhs._v;
     }
 
     template<int E>
-    [[nodiscard]] friend constexpr auto midpoint(point const &lhs, point<value_type, E> const &rhs) noexcept
+    [[nodiscard]] friend constexpr auto midpoint(point const& lhs, point<value_type, E> const& rhs) noexcept
     {
         return point<value_type, std::max(D, E)>{midpoint(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
 
     template<int E>
-    [[nodiscard]] friend constexpr auto reflect(point const &lhs, point<value_type, E> const &rhs) noexcept
+    [[nodiscard]] friend constexpr auto reflect(point const& lhs, point<value_type, E> const& rhs) noexcept
     {
         return point<value_type, std::max(D, E)>{reflect_point(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
@@ -244,7 +248,7 @@ public:
      * @return A point that is the most left of both points, and most bottom of both points.
      */
     template<int E>
-    [[nodiscard]] friend constexpr auto min(point const &lhs, point<value_type, E> const &rhs) noexcept
+    [[nodiscard]] friend constexpr auto min(point const& lhs, point<value_type, E> const& rhs) noexcept
     {
         return point<value_type, std::max(D, E)>{min(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
@@ -255,14 +259,15 @@ public:
      * @return A point that is the most right of both points, and most top of both points.
      */
     template<int E>
-    [[nodiscard]] friend constexpr auto max(point const &lhs, point<value_type, E> const &rhs) noexcept
+    [[nodiscard]] friend constexpr auto max(point const& lhs, point<value_type, E> const& rhs) noexcept
     {
         return point<value_type, std::max(D, E)>{max(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
 
     /** Round the coordinates of a point toward nearest integer.
      */
-    [[nodiscard]] friend constexpr point round(point const &rhs) noexcept requires std::is_same_v<value_type,float>
+    [[nodiscard]] friend constexpr point round(point const& rhs) noexcept
+        requires std::is_same_v<value_type, float>
     {
         return point{round(static_cast<array_type>(rhs))};
     }
@@ -285,23 +290,43 @@ public:
 
     /** Round the coordinates of a point toward the top-right with the given granularity.
      */
-    [[nodiscard]] friend constexpr point ceil(point const& lhs, extent2 rhs) noexcept
+    [[nodiscard]] friend constexpr point ceil(point const& lhs, extent<value_type, D> rhs) noexcept
         requires std::is_same_v<value_type, float>
     {
         hilet rhs_ = array_type{rhs}.xy11();
         return point{ceil(array_type{lhs} / rhs_) * rhs_};
     }
 
+    /** Round the coordinates of a point toward the top-right with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point ceil(point const& lhs, extent<value_type, D> rhs) noexcept
+        requires std::is_same_v<value_type, int>
+    {
+        hilet rhs_ = array_type{rhs}.xy11();
+        hilet lhs_ = array_type{lhs};
+        return point{(lhs_ + (rhs_ - 1)) / rhs_ * rhs_};
+    }
+
     /** Round the coordinates of a point toward the left-bottom with the given granularity.
      */
-    [[nodiscard]] friend constexpr point floor(point const& lhs, extent2 rhs) noexcept
+    [[nodiscard]] friend constexpr point floor(point const& lhs, extent<value_type, D> rhs) noexcept
         requires std::is_same_v<value_type, float>
     {
         hilet rhs_ = array_type{rhs}.xy11();
         return point{floor(array_type{lhs} / rhs_) * rhs_};
     }
 
-    [[nodiscard]] friend constexpr value_type distance(point const &lhs, point const &rhs) noexcept
+    /** Round the coordinates of a point toward the top-right with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point floor(point const& lhs, extent<value_type, D> rhs) noexcept
+        requires std::is_same_v<value_type, int>
+    {
+        hilet rhs_ = array_type{rhs}.xy11();
+        hilet lhs_ = array_type{lhs};
+        return point{lhs_ / rhs_ * rhs_};
+    }
+
+    [[nodiscard]] friend constexpr value_type distance(point const& lhs, point const& rhs) noexcept
     {
         return hypot(rhs - lhs);
     }
@@ -314,7 +339,7 @@ public:
         return _v.w() != value_type{0} && (D == 3 || _v.z() == value_type{0});
     }
 
-    [[nodiscard]] friend std::string to_string(point const &rhs) noexcept
+    [[nodiscard]] friend std::string to_string(point const& rhs) noexcept
     {
         if constexpr (D == 2) {
             return std::format("<{}, {}>", rhs._v.x(), rhs._v.y());
@@ -325,7 +350,7 @@ public:
         }
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, point const &rhs) noexcept
+    friend std::ostream& operator<<(std::ostream& lhs, point const& rhs) noexcept
     {
         return lhs << to_string(rhs);
     }
@@ -345,7 +370,7 @@ using point3i = geo::point<int, 3>;
 
 template<typename CharT>
 struct std::formatter<hi::geo::point<float, 2>, CharT> {
-    auto parse(auto &pc)
+    auto parse(auto& pc)
     {
         return pc.end();
     }
@@ -358,7 +383,7 @@ struct std::formatter<hi::geo::point<float, 2>, CharT> {
 
 template<typename CharT>
 struct std::formatter<hi::geo::point<float, 3>, CharT> {
-    auto parse(auto &pc)
+    auto parse(auto& pc)
     {
         return pc.end();
     }

@@ -6,21 +6,18 @@
 
 namespace hi::inline v1 {
 
-
-[[nodiscard]]box_constraints toggle_widget::constraints() noexcept
+[[nodiscard]] box_constraints toggle_widget::constraints() noexcept
 {
     _layout = {};
 
     // Make room for button and margin.
-    _button_size = {theme().size * 2.0f, theme().size};
-    hilet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
-    _label_constraints = constraints_button();
+    _button_size = {theme().size * 2, theme().size};
+    hilet extra_size = extent2i{theme().margin + _button_size.width(), 0};
 
-    auto constraints = max(_label_constraints + extra_size, _button_size);
-    constraints.set_margins(narrow_cast<int>(theme().margin));
-    constraints.alignment = *alignment;
-
-    return constraints;
+    auto r = max(_label_constraints.reload() + extra_size, _button_size);
+    r.margins = theme().margin;
+    r.alignment = *alignment;
+    return r;
 }
 
 void toggle_widget::set_layout(widget_layout const& context) noexcept
@@ -29,7 +26,7 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
         if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
-            _button_rectangle = round(align(context.rectangle(), _button_size, alignment_));
+            _button_rectangle = align(context.rectangle(), _button_size, alignment_);
         } else {
             hi_not_implemented();
         }
@@ -37,11 +34,11 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
         hilet label_width = context.width() - (_button_rectangle.width() + theme().margin);
         if (alignment_ == horizontal_alignment::left) {
             hilet label_left = _button_rectangle.right() + theme().margin;
-            hilet label_rectangle = aarectangle{label_left, 0.0f, label_width, narrow_cast<float>(context.height())};
+            hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
             _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
 
         } else if (alignment_ == horizontal_alignment::right) {
-            hilet label_rectangle = aarectangle{0.0f, 0.0f, label_width, narrow_cast<float>(context.height())};
+            hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
             _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
 
         } else {
@@ -49,9 +46,9 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
         }
 
         hilet button_square =
-            aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
+            aarectanglei{get<0>(_button_rectangle), extent2i{_button_rectangle.height(), _button_rectangle.height()}};
 
-        _pip_rectangle = align(button_square, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center());
+        _pip_rectangle = align(button_square, extent2i{theme().icon_size, theme().icon_size}, alignment::middle_center());
 
         hilet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
         _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
@@ -59,7 +56,7 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
     set_layout_button(context);
 }
 
-void toggle_widget::draw(draw_context const &context) noexcept
+void toggle_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         draw_toggle_button(context);
@@ -68,27 +65,27 @@ void toggle_widget::draw(draw_context const &context) noexcept
     }
 }
 
-void toggle_widget::draw_toggle_button(draw_context const &context) noexcept
+void toggle_widget::draw_toggle_button(draw_context const& context) noexcept
 {
     context.draw_box(
         layout(),
-        _button_rectangle,
+        narrow_cast<aarectangle>(_button_rectangle),
         background_color(),
         focus_color(),
         theme().border_width,
         border_side::inside,
-        corner_radii{_button_rectangle.height() * 0.5f});
+        corner_radii(_button_rectangle.height() / 2));
 }
 
-void toggle_widget::draw_toggle_pip(draw_context const &context) noexcept
+void toggle_widget::draw_toggle_pip(draw_context const& context) noexcept
 {
     _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
     if (_animated_value.is_animating()) {
         request_redraw();
     }
 
-    hilet positioned_pip_circle =
-        translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * (circle{_pip_rectangle} * 1.02f);
+    hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} *
+        (circle{narrow_cast<aarectangle>(_pip_rectangle)} * 1.02f);
 
     hilet forground_color_ = state() == button_state::on ? accent_color() : foreground_color();
     context.draw_circle(layout(), positioned_pip_circle, forground_color_);

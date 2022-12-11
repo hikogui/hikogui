@@ -112,7 +112,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
-    hitbox hitbox_test(point3 position) const noexcept override;
+    hitbox hitbox_test(point2i position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
@@ -122,7 +122,7 @@ private:
     /** The scroll widget embeds the text widget.
      */
     std::shared_ptr<scroll_widget<axis::none>> _scroll_widget;
-    box_constraints _scroll_constraints;
+    cache<box_constraints> _scroll_constraints;
     box_shape _scroll_shape;
 
     /** The text widget inside the scroll widget.
@@ -137,7 +137,7 @@ private:
      */
     observer<label> _error_label;
     std::shared_ptr<label_widget> _error_label_widget;
-    box_constraints _error_label_constraints;
+    cache<box_constraints> _error_label_constraints;
     box_shape _error_label_shape;
 
     typename decltype(continues)::callback_token _continues_cbt;

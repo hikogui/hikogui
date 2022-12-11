@@ -157,10 +157,10 @@ public:
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    extent2 _button_size;
-    aarectangle _button_rectangle;
+    extent2i _button_size;
+    aarectanglei _button_rectangle;
     animator<float> _animated_value = _animation_duration;
-    aarectangle _pip_rectangle;
+    aarectanglei _pip_rectangle;
     float _pip_move_range;
 
     void draw_toggle_button(draw_context const& context) noexcept;

@@ -81,13 +81,12 @@ public:
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
     [[nodiscard]] color foreground_color() const noexcept override;
-    void scroll_to_show(hi::aarectangle rectangle) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
+    void scroll_to_show(hi::aarectanglei rectangle) noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
     /// @endprivatesection
 private:
     std::shared_ptr<widget> _content;
-    //cache<box_constraints> _content_constraints;
-    box_constraints _content_constraints;
+    cache<box_constraints> _content_constraints;
     box_shape _content_shape;
 
     void draw_background(draw_context const& context) noexcept;

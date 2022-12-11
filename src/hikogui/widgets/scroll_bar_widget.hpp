@@ -74,14 +74,14 @@ public:
         // The minimum size is twice the length of the slider, which is twice the theme().size()
         if constexpr (axis == axis::vertical) {
             return {
-               {theme().icon_size, theme().size * 4.0f},
-               {theme().icon_size, theme().size * 4.0f},
-               {theme().icon_size, 32767.0f}};
+                extent2i{theme().icon_size, theme().size * 4},
+                extent2i{theme().icon_size, theme().size * 4},
+                extent2i{theme().icon_size, box_constraints::max_int()}};
         } else {
             return {
-               {theme().size * 4.0f, theme().icon_size},
-               {theme().size * 4.0f, theme().icon_size},
-               {32767.0f, theme().icon_size}};
+                extent2i{theme().size * 4, theme().icon_size},
+                extent2i{theme().size * 4, theme().icon_size},
+                extent2i{box_constraints::max_int(), theme().icon_size}};
         }
     }
 
@@ -97,17 +97,9 @@ public:
         // Calculate the position of the slider.
         hilet slider_offset = narrow_cast<int>(std::round(*offset * travel_vs_hidden_content_ratio()));
         if constexpr (axis == axis::vertical) {
-            _slider_rectangle = aarectangle{
-                0.0f,
-                narrow_cast<float>(slider_offset),
-                narrow_cast<float>(context.width()),
-                narrow_cast<float>(slider_length())};
+            _slider_rectangle = aarectanglei{0, slider_offset, context.width(), slider_length()};
         } else {
-            _slider_rectangle = aarectangle{
-                narrow_cast<float>(slider_offset),
-                0.0f,
-                narrow_cast<float>(slider_length()),
-                narrow_cast<float>(context.height())};
+            _slider_rectangle = aarectanglei{slider_offset, 0, slider_length(), context.height()};
         }
     }
 
@@ -124,13 +116,13 @@ public:
         }
     }
 
-    hitbox hitbox_test(point3 position) const noexcept override
+    hitbox hitbox_test(point2i position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
         if (*mode >= widget_mode::partial and layout().contains(position) and visible() and
             _slider_rectangle.contains(position)) {
-            return {this, position, hitbox_type::scroll_bar};
+            return {this, _layout.elevation, hitbox_type::scroll_bar};
         } else {
             return {};
         }
@@ -186,7 +178,7 @@ public:
     }
 
 private:
-    aarectangle _slider_rectangle;
+    aarectanglei _slider_rectangle;
 
     int _offset_before_drag;
 
@@ -274,10 +266,11 @@ private:
 
     void draw_slider(draw_context const& context) noexcept
     {
-        hilet corner_radii = axis == axis::vertical ? hi::corner_radii{_slider_rectangle.width() * 0.5f} :
-                                                      hi::corner_radii{_slider_rectangle.height() * 0.5f};
+        hilet corner_radii = axis == axis::vertical ? hi::corner_radii(_slider_rectangle.width() / 2) :
+                                                      hi::corner_radii(_slider_rectangle.height() / 2);
 
-        context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_radii);
+        context.draw_box(
+            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_slider_rectangle), foreground_color(), corner_radii);
     }
 };
 

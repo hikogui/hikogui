@@ -10,6 +10,7 @@
 
 #include "vector.hpp"
 #include "../rapid/numeric_array.hpp"
+#include "../cast.hpp"
 #include <compare>
 
 namespace hi { inline namespace v1 {
@@ -509,6 +510,21 @@ using extent2i = geo::extent<int, 2>;
  * @ingroup geometry
  */
 using extent3i = geo::extent<int, 3>;
+
+template<>
+[[nodiscard]] constexpr extent2i narrow_cast(extent2 const &rhs) noexcept
+{
+    return {
+        narrow_cast<int>(rhs.width()),
+        narrow_cast<int>(rhs.height())
+    };
+}
+
+template<>
+[[nodiscard]] constexpr extent2 narrow_cast(extent2i const& rhs) noexcept
+{
+    return {narrow_cast<float>(rhs.width()), narrow_cast<float>(rhs.height())};
+}
 
 }} // namespace hi::v1
 

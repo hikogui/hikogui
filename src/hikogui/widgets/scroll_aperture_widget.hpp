@@ -62,14 +62,15 @@ public:
             ++global_counter<"scroll_aperture_widget:offset_y:relayout">;
             process_event({gui_event_type::window_relayout});
         });
-        _minimum_width_cbt = minimum_width.subscribe([&](auto...) {
-            ++global_counter<"scroll_aperture_widget:minimum_width:reconstrain">;
+        _minimum_cbt = minimum.subscribe([&](auto...) {
+            ++global_counter<"scroll_aperture_widget:minimum:reconstrain">;
             process_event({gui_event_type::window_reconstrain});
         });
-        _minimum_height_cbt = minimum_height.subscribe([&](auto...) {
-            ++global_counter<"scroll_aperture_widget:minimum_height:reconstrain">;
-            process_event({gui_event_type::window_reconstrain});
-        });
+
+        _content_constraints = [&] {
+            hi_assert_not_null(_content);
+            return _content->constraints();
+        };
     }
 
     template<typename Widget, typename... Args>
@@ -104,31 +105,26 @@ public:
     {
         _layout = {};
 
-        hi_assert_not_null(_content);
-        _content_constraints = _content->constraints();
+        // The aperture can scroll so its minimum width and height are zero.
+        auto aperture_constraints = _content_constraints.reload();
+        aperture_constraints.minimum = extent2i{0, 0};
 
-        auto aperture_constraints = _content_constraints;
-
-        // The aperture can scroll so its minimum width and height are zero. 
-        aperture_constraints.minimum_width = 0;
-        aperture_constraints.minimum_height = 0;
-
-        return aperture_constraints.internalize_margins().constrain(
-                   *minimum_width, *minimum_height, *maximum_width, *maximum_height);
+        return aperture_constraints.internalize_margins().constrain(*minimum, *maximum);
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            aperture_width = context.width() - _content_constraints.margin_left - _content_constraints.margin_right;
-            aperture_height = context.height() - _content_constraints.margin_bottom - _content_constraints.margin_top;
+            aperture_width = context.width() - _content_constraints->margins.left() - _content_constraints->margins.right();
+            aperture_height = context.height() - _content_constraints->margins.bottom() - _content_constraints->margins.top();
 
             // Start scrolling with the preferred size as minimum, so
             // that widgets in the content don't get unnecessarily squeezed.
-            content_width =
-                *aperture_width < _content_constraints.preferred_width ? _content_constraints.preferred_width : *aperture_width;
-            content_height = *aperture_height < _content_constraints.preferred_height ? _content_constraints.preferred_height :
-                                                                                        *aperture_height;
+            content_width = *aperture_width < _content_constraints->preferred.width() ? _content_constraints->preferred.width() :
+                                                                                        *aperture_width;
+            content_height = *aperture_height < _content_constraints->preferred.height() ?
+                _content_constraints->preferred.height() :
+                *aperture_height;
         }
 
         // Make sure the offsets are limited to the scrollable area.
@@ -141,10 +137,11 @@ public:
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
         _content_shape = box_shape{
             _content_constraints,
-            -*offset_x + _content_constraints.margin_left,
-            -*offset_y + _content_constraints.margin_bottom,
-            *content_width,
-            *content_height,
+            aarectanglei{
+                -*offset_x + _content_constraints->margins.left(),
+                -*offset_y + _content_constraints->margins.bottom(),
+                *content_width,
+                *content_height},
             theme().baseline_adjustment};
 
         // The content needs to be at a higher elevation, so that hitbox check
@@ -159,7 +156,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
@@ -167,7 +164,7 @@ public:
             auto r = _content->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{this, position});
+                r = std::max(r, hitbox{this, _layout.elevation});
             }
             return r;
 
@@ -196,30 +193,29 @@ public:
         }
     }
 
-    void scroll_to_show(hi::aarectangle to_show) noexcept override
+    void scroll_to_show(hi::aarectanglei to_show) noexcept override
     {
         if (_layout) {
             auto safe_rectangle = intersect(_layout.rectangle(), _layout.clipping_rectangle);
             int delta_x = 0;
             int delta_y = 0;
 
-            if (safe_rectangle.width() > theme().margin * 2.0f and
-                safe_rectangle.height() > theme().margin * 2.0f) {
+            if (safe_rectangle.width() > theme().margin * 2 and safe_rectangle.height() > theme().margin * 2) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do
                 // with the margins that are needed here.
                 safe_rectangle = safe_rectangle - theme().margin;
 
                 if (to_show.right() > safe_rectangle.right()) {
-                    delta_x = narrow_cast<int>(to_show.right() - safe_rectangle.right());
+                    delta_x = to_show.right() - safe_rectangle.right();
                 } else if (to_show.left() < safe_rectangle.left()) {
-                    delta_x = narrow_cast<int>(to_show.left() - safe_rectangle.left());
+                    delta_x = to_show.left() - safe_rectangle.left();
                 }
 
                 if (to_show.top() > safe_rectangle.top()) {
-                    delta_y = narrow_cast<int>(to_show.top() - safe_rectangle.top());
+                    delta_y = to_show.top() - safe_rectangle.top();
                 } else if (to_show.bottom() < safe_rectangle.bottom()) {
-                    delta_y = narrow_cast<int>(to_show.bottom() - safe_rectangle.bottom());
+                    delta_y = to_show.bottom() - safe_rectangle.bottom();
                 }
 
                 // Scroll the widget
@@ -229,8 +225,7 @@ public:
 
             // There may be recursive scroll view, and they all need to move until the rectangle is visible.
             if (parent) {
-                parent->scroll_to_show(bounding_rectangle(
-                    _layout.to_parent * translate2(narrow_cast<float>(delta_x), narrow_cast<float>(delta_y)) * to_show));
+                parent->scroll_to_show(_layout.to_parent * translate2i(delta_x, delta_y) * to_show);
             }
 
         } else {
@@ -239,7 +234,7 @@ public:
     }
     /// @endprivatesection
 private:
-    box_constraints _content_constraints;
+    cache<box_constraints> _content_constraints;
     box_shape _content_shape;
     std::shared_ptr<widget> _content;
     decltype(content_width)::callback_token _content_width_cbt;
@@ -248,8 +243,7 @@ private:
     decltype(aperture_height)::callback_token _aperture_height_cbt;
     decltype(offset_x)::callback_token _offset_x_cbt;
     decltype(offset_y)::callback_token _offset_y_cbt;
-    decltype(minimum_width)::callback_token _minimum_width_cbt;
-    decltype(minimum_height)::callback_token _minimum_height_cbt;
+    decltype(minimum)::callback_token _minimum_cbt;
 };
 
 }} // namespace hi::v1

@@ -77,6 +77,15 @@ public:
     }
 
     template<int E>
+        requires(E < D)
+    [[nodiscard]] constexpr translate(translate<value_type, E> const& other, value_type z) noexcept :
+        _v(static_cast<array_type>(other))
+    {
+        _v.z() = z;
+        hi_axiom(holds_invariant());
+    }
+
+    template<int E>
         requires(E <= D)
     [[nodiscard]] constexpr explicit translate(vector<value_type, E> const& other) noexcept : _v(static_cast<array_type>(other))
     {
@@ -101,6 +110,21 @@ public:
         requires(D == 3)
         : _v(x, y, z, value_type{0})
     {
+    }
+
+    [[nodiscard]] constexpr value_type x() const noexcept
+    {
+        return _v.x();
+    }
+
+    [[nodiscard]] constexpr value_type y() const noexcept requires(D >= 2)
+    {
+        return _v.y();
+    }
+
+    [[nodiscard]] constexpr value_type z() const noexcept requires(D >= 3)
+    {
+        return _v.z();
     }
 
     /** Align a rectangle within another rectangle.
@@ -267,6 +291,12 @@ constexpr translate3 translate_z(float z) noexcept
 constexpr translate3i translate_z(int z) noexcept
 {
     return translate3i{int{0}, int{0}, z};
+}
+
+template<>
+[[nodiscard]] constexpr translate2 narrow_cast(translate2i const &rhs) noexcept
+{
+    return {narrow_cast<float>(rhs.x()), narrow_cast<float>(rhs.y())};
 }
 
 } // namespace hi::inline v1

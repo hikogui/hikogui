@@ -113,9 +113,9 @@ void gfx_surface_vulkan::init()
     tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(*this);
 }
 
-[[nodiscard]] extent2 gfx_surface_vulkan::size() const noexcept
+[[nodiscard]] extent2i gfx_surface_vulkan::size() const noexcept
 {
-    return extent2{narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)};
+    return {narrow_cast<int>(swapchainImageExtent.width), narrow_cast<int>(swapchainImageExtent.height)};
 }
 
 void gfx_surface_vulkan::wait_idle()
@@ -244,7 +244,7 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
     return gfx_surface_loss::none;
 }
 
-gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2 new_size) noexcept
+gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2i new_size) noexcept
 {
     try {
         hilet[clamped_count, clamped_size] = get_image_count_and_size(defaultNumberOfSwapchainImages, new_size);
@@ -300,7 +300,7 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2 new_size) n
     }
 }
 
-void gfx_surface_vulkan::build(extent2 new_size) noexcept
+void gfx_surface_vulkan::build(extent2i new_size) noexcept
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     hi_assert(loss == gfx_surface_loss::none);
@@ -391,7 +391,7 @@ void gfx_surface_vulkan::teardown() noexcept
     loss = gfx_surface_loss::none;
 }
 
-void gfx_surface_vulkan::update(extent2 new_size) noexcept
+void gfx_surface_vulkan::update(extent2i new_size) noexcept
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -405,7 +405,7 @@ void gfx_surface_vulkan::update(extent2 new_size) noexcept
     build(new_size);
 }
 
-draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
+draw_context gfx_surface_vulkan::render_start(aarectanglei redraw_rectangle)
 {
     // Extent the redraw_rectangle to the render-area-granularity to improve performance on tile based GPUs.
     redraw_rectangle = ceil(redraw_rectangle, _render_area_granularity);
@@ -440,10 +440,10 @@ draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
 
     // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
     // We need to do this so that old redraws are also executed in the current swapchain image.
-    r.scissor_rectangle = ceil(
-        std::accumulate(swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectangle{}, [](hilet& sum, hilet& item) {
+    r.scissor_rectangle = std::accumulate(
+        swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectanglei{}, [](hilet& sum, hilet& item) {
             return sum | item.redraw_rectangle;
-        }));
+        });
 
     // Wait until previous rendering has finished, before the next rendering.
     vulkan_device().waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
@@ -465,19 +465,14 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     // The swapchain creates images in undefined layout, so we need to change the layout once.
     if (not current_image.layout_is_present) {
         vulkan_device().transition_layout(
-            current_image.image,
-            swapchainImageFormat.format,
-            vk::ImageLayout::eUndefined,
-            vk::ImageLayout::ePresentSrcKHR);
+            current_image.image, swapchainImageFormat.format, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR);
 
         current_image.layout_is_present = true;
     }
 
     // Clamp the scissor rectangle to the size of the window.
-    hilet clamped_scissor_rectangle = ceil(intersect(
-        context.scissor_rectangle,
-        aarectangle{
-            0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)}));
+    hilet clamped_scissor_rectangle =
+        intersect(context.scissor_rectangle, aarectanglei{0, 0, narrow_cast<int>(swapchainImageExtent.width), narrow_cast<int>(swapchainImageExtent.height)});
 
     hilet render_area = vk::Rect2D{
         vk::Offset2D(
@@ -510,7 +505,10 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     teardown();
 }
 
-void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image, draw_context const& context, vk::Rect2D render_area)
+void gfx_surface_vulkan::fill_command_buffer(
+    swapchain_image_info& current_image,
+    draw_context const& context,
+    vk::Rect2D render_area)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -520,7 +518,7 @@ void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
     hilet background_color_f32x4 = static_cast<f32x4>(context.background_color);
-    //hilet background_color_f32x4 = f32x4{1.0f, 0.0f, 0.0f, 1.0f};
+    // hilet background_color_f32x4 = f32x4{1.0f, 0.0f, 0.0f, 1.0f};
     hilet background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
 
     hilet colorClearValue = vk::ClearColorValue{background_color_array};
@@ -579,7 +577,7 @@ void gfx_surface_vulkan::submit_command_buffer(vk::Semaphore delegate_semaphore)
     _graphics_queue->queue.submit(submitInfo, vk::Fence());
 }
 
-std::tuple<std::size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(std::size_t new_count, extent2 new_size)
+std::tuple<std::size_t, extent2i> gfx_surface_vulkan::get_image_count_and_size(std::size_t new_count, extent2i new_size)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -592,19 +590,17 @@ std::tuple<std::size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(st
         "gfx_surface min_count={}, max_count={}, requested_count={}, count={}", min_count, max_count, new_count, clamped_count);
 
     // minImageExtent and maxImageExtent are always valid. currentImageExtent may be 0xffffffff.
-    hilet min_size = extent2{
-        narrow_cast<float>(surfaceCapabilities.minImageExtent.width),
-        narrow_cast<float>(surfaceCapabilities.minImageExtent.height)};
-    hilet max_size = extent2{
-        narrow_cast<float>(surfaceCapabilities.maxImageExtent.width),
-        narrow_cast<float>(surfaceCapabilities.maxImageExtent.height)};
+    hilet min_size = extent2i{
+        narrow_cast<int>(surfaceCapabilities.minImageExtent.width), narrow_cast<int>(surfaceCapabilities.minImageExtent.height)};
+    hilet max_size = extent2i{
+        narrow_cast<int>(surfaceCapabilities.maxImageExtent.width), narrow_cast<int>(surfaceCapabilities.maxImageExtent.height)};
     hilet clamped_size = clamp(new_size, min_size, max_size);
 
     hi_log_info("gfx_surface min_size={}, max_size={}, requested_size={}, size={}", min_size, max_size, new_size, clamped_size);
     return {clamped_count, clamped_size};
 }
 
-gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, extent2 new_size)
+gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, extent2i new_size)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -768,7 +764,7 @@ void gfx_surface_vulkan::build_frame_buffers()
         });
 
         swapchain_image_infos.emplace_back(
-            std::move(image), std::move(image_view), std::move(frame_buffer), aarectangle{}, false);
+            std::move(image), std::move(image_view), std::move(frame_buffer), aarectanglei{}, false);
     }
 
     hi_assert(swapchain_image_infos.size() == swapchain_images.size());
@@ -971,7 +967,7 @@ void gfx_surface_vulkan::build_render_passes()
 
     renderPass = vulkan_device().createRenderPass(render_pass_create_info);
     hilet granularity = vulkan_device().getRenderAreaGranularity(renderPass);
-    _render_area_granularity = extent2{narrow_cast<float>(granularity.width), narrow_cast<float>(granularity.height)};
+    _render_area_granularity = extent2i{narrow_cast<int>(granularity.width), narrow_cast<int>(granularity.height)};
 }
 
 void gfx_surface_vulkan::teardown_render_passes()

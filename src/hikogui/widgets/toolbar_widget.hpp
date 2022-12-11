@@ -74,7 +74,7 @@ public:
     [[nodiscard]] box_constraints constraints() noexcept;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
-    hitbox hitbox_test(point3 position) const noexcept override;
+    hitbox hitbox_test(point2i position) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:

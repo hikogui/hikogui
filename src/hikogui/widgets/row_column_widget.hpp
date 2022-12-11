@@ -132,7 +132,7 @@ public:
         }
     }
 
-    hitbox hitbox_test(point3 position) const noexcept override
+    hitbox hitbox_test(point2i position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 

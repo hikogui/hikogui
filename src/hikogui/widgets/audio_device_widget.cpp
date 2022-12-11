@@ -63,7 +63,7 @@ void audio_device_widget::draw(draw_context const& context) noexcept
     }
 }
 
-hitbox audio_device_widget::hitbox_test(point3 position) const noexcept
+hitbox audio_device_widget::hitbox_test(point2i position) const noexcept
 {
     if (*mode >= widget_mode::partial) {
         auto r = hitbox{};

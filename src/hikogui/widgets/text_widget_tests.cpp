@@ -63,7 +63,6 @@ protected:
         layout.shape.baseline = constraints.preferred_height / 2;
         // display_time_point is used to check for valid widget_layout. 
         layout.display_time_point = std::chrono::utc_clock::now();
-        // XXX moc a window_widget so it can access theme.
         widget->set_layout(layout);
     }
 };

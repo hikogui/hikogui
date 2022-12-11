@@ -97,7 +97,7 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void gui_window_win32::create_window(extent2 new_size)
+void gui_window_win32::create_window(extent2i new_size)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
     hi_assert(loop::main().on_thread());
@@ -121,8 +121,8 @@ void gui_window_win32::create_window(extent2 new_size)
         // Size and position
         500,
         500,
-        narrow_cast<int>(new_size.width()),
-        narrow_cast<int>(new_size.height()),
+        new_size.width(),
+        new_size.height(),
 
         NULL, // Parent window
         NULL, // Menu
@@ -239,20 +239,20 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 
     } else if (state == gui_window_size::maximized) {
         hilet workspace = workspace_rectangle();
-        hilet max_size = _widget_constraints.maximum();
+        hilet max_size = _widget_constraints.maximum;
 
         // Try to resize the window while keeping the toolbar in the same location.
-        hilet width = narrow_cast<int>(std::min(max_size.width(), workspace.width()));
-        hilet height = narrow_cast<int>(std::min(max_size.height(), workspace.height()));
-        hilet left = narrow_cast<int>(std::clamp(rectangle.left(), workspace.left(), workspace.right() - width));
-        hilet top = narrow_cast<int>(std::clamp(rectangle.top(), workspace.bottom() + height, workspace.top()));
+        hilet width = std::min(max_size.width(), workspace.width());
+        hilet height = std::min(max_size.height(), workspace.height());
+        hilet left = std::clamp(rectangle.left(), workspace.left(), workspace.right() - width);
+        hilet top = std::clamp(rectangle.top(), workspace.bottom() + height, workspace.top());
         hilet inv_top = narrow_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
         SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::maximized;
 
     } else if (state == gui_window_size::fullscreen) {
         hilet fullscreen = fullscreen_rectangle();
-        hilet max_size = _widget_constraints.maximum();
+        hilet max_size = _widget_constraints.maximum;
         if (fullscreen.width() > max_size.width() or fullscreen.height() > max_size.height()) {
             // Do not go full screen if the widget is unable to go that large.
             return;
@@ -268,54 +268,54 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     }
 }
 
-[[nodiscard]] aarectangle gui_window_win32::workspace_rectangle() const noexcept
+[[nodiscard]] aarectanglei gui_window_win32::workspace_rectangle() const noexcept
 {
     hilet monitor = MonitorFromWindow(reinterpret_cast<HWND>(win32Window), MONITOR_DEFAULTTOPRIMARY);
     if (monitor == NULL) {
         hi_log_error("Could not get monitor for the window.");
-        return {0.0f, 0.0f, 1920.0f, 1080.0f};
+        return {0, 0, 1920, 1080};
     }
 
     MONITORINFO info;
     info.cbSize = sizeof(MONITORINFO);
     if (not GetMonitorInfo(monitor, &info)) {
         hi_log_error("Could not get monitor info for the window.");
-        return {0.0f, 0.0f, 1920.0f, 1080.0f};
+        return {0, 0, 1920, 1080};
     }
 
-    hilet left = narrow_cast<float>(info.rcWork.left);
-    hilet top = narrow_cast<float>(info.rcWork.top);
-    hilet right = narrow_cast<float>(info.rcWork.right);
-    hilet bottom = narrow_cast<float>(info.rcWork.bottom);
+    hilet left = narrow_cast<int>(info.rcWork.left);
+    hilet top = narrow_cast<int>(info.rcWork.top);
+    hilet right = narrow_cast<int>(info.rcWork.right);
+    hilet bottom = narrow_cast<int>(info.rcWork.bottom);
     hilet width = right - left;
     hilet height = bottom - top;
     hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
-    return aarectangle{left, inv_bottom, width, height};
+    return aarectanglei{left, inv_bottom, width, height};
 }
 
-[[nodiscard]] aarectangle gui_window_win32::fullscreen_rectangle() const noexcept
+[[nodiscard]] aarectanglei gui_window_win32::fullscreen_rectangle() const noexcept
 {
     hilet monitor = MonitorFromWindow(reinterpret_cast<HWND>(win32Window), MONITOR_DEFAULTTOPRIMARY);
     if (monitor == NULL) {
         hi_log_error("Could not get monitor for the window.");
-        return {0.0f, 0.0f, 1920.0f, 1080.0f};
+        return {0, 0, 1920, 1080};
     }
 
     MONITORINFO info;
     info.cbSize = sizeof(MONITORINFO);
     if (not GetMonitorInfo(monitor, &info)) {
         hi_log_error("Could not get monitor info for the window.");
-        return {0.0f, 0.0f, 1920.0f, 1080.0f};
+        return {0, 0, 1920, 1080};
     }
 
-    hilet left = narrow_cast<float>(info.rcMonitor.left);
-    hilet top = narrow_cast<float>(info.rcMonitor.top);
-    hilet right = narrow_cast<float>(info.rcMonitor.right);
-    hilet bottom = narrow_cast<float>(info.rcMonitor.bottom);
+    hilet left = narrow_cast<int>(info.rcMonitor.left);
+    hilet top = narrow_cast<int>(info.rcMonitor.top);
+    hilet right = narrow_cast<int>(info.rcMonitor.right);
+    hilet bottom = narrow_cast<int>(info.rcMonitor.bottom);
     hilet width = right - left;
     hilet height = bottom - top;
     hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
-    return aarectangle{left, inv_bottom, width, height};
+    return aarectanglei{left, inv_bottom, width, height};
 }
 
 [[nodiscard]] hi::subpixel_orientation gui_window_win32::subpixel_orientation() const noexcept
@@ -361,7 +361,7 @@ void gui_window_win32::open_system_menu()
     }
 }
 
-void gui_window_win32::set_window_size(extent2 new_extent)
+void gui_window_win32::set_window_size(extent2i new_extent)
 {
     hi_axiom(loop::main().on_thread());
 
@@ -503,11 +503,11 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept
     // Convert bottom to y-axis up coordinate system.
     hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - new_rectangle.bottom;
 
-    hilet new_screen_rectangle = aarectangle{
-        narrow_cast<float>(new_rectangle.left),
-        narrow_cast<float>(inv_bottom),
-        narrow_cast<float>(new_rectangle.right - new_rectangle.left),
-        narrow_cast<float>(new_rectangle.bottom - new_rectangle.top)};
+    hilet new_screen_rectangle = aarectanglei{
+        narrow_cast<int>(new_rectangle.left),
+        narrow_cast<int>(inv_bottom),
+        narrow_cast<int>(new_rectangle.right - new_rectangle.left),
+        narrow_cast<int>(new_rectangle.bottom - new_rectangle.top)};
 
     if (rectangle.size() != new_screen_rectangle.size()) {
         ++global_counter<"gui_window_win32:os-resize:relayout">;
@@ -638,11 +638,11 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             PAINTSTRUCT ps;
             BeginPaint(win32Window, &ps);
 
-            hilet update_rectangle = aarectangle{
-                narrow_cast<float>(ps.rcPaint.left),
-                narrow_cast<float>(height - ps.rcPaint.bottom),
-                narrow_cast<float>(ps.rcPaint.right - ps.rcPaint.left),
-                narrow_cast<float>(ps.rcPaint.bottom - ps.rcPaint.top)};
+            hilet update_rectangle = aarectanglei{
+                narrow_cast<int>(ps.rcPaint.left),
+                narrow_cast<int>(height - ps.rcPaint.bottom),
+                narrow_cast<int>(ps.rcPaint.right - ps.rcPaint.left),
+                narrow_cast<int>(ps.rcPaint.bottom - ps.rcPaint.top)};
 
             {
                 hi_axiom(loop::main().on_thread());
@@ -655,7 +655,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_NCPAINT:
         hi_axiom(loop::main().on_thread());
-        this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
+        this->process_event({gui_event_type::window_redraw, aarectanglei{rectangle.size()}});
         break;
 
     case WM_SIZE:
@@ -750,7 +750,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // After a manual move of the window, it is clear that the window is in normal mode.
         _restore_rectangle = rectangle;
         _size_state = gui_window_size::normal;
-        this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
+        this->process_event({gui_event_type::window_redraw, aarectanglei{rectangle.size()}});
         break;
 
     case WM_ACTIVATE:
@@ -775,12 +775,12 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             hi_axiom(loop::main().on_thread());
             hi_assert_not_null(widget);
             hilet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
-            minmaxinfo->ptMaxSize.x = _widget_constraints.maximum_width;
-            minmaxinfo->ptMaxSize.y = _widget_constraints.maximum_height;
-            minmaxinfo->ptMinTrackSize.x = _widget_constraints.minimum_width;
-            minmaxinfo->ptMinTrackSize.y = _widget_constraints.minimum_height;
-            minmaxinfo->ptMaxTrackSize.x = _widget_constraints.maximum_width;
-            minmaxinfo->ptMaxTrackSize.y = _widget_constraints.maximum_height;
+            minmaxinfo->ptMaxSize.x = _widget_constraints.maximum.width();
+            minmaxinfo->ptMaxSize.y = _widget_constraints.maximum.height();
+            minmaxinfo->ptMinTrackSize.x = _widget_constraints.minimum.width();
+            minmaxinfo->ptMinTrackSize.y = _widget_constraints.minimum.height();
+            minmaxinfo->ptMaxTrackSize.x = _widget_constraints.maximum.width();
+            minmaxinfo->ptMaxTrackSize.y = _widget_constraints.maximum.height();
         }
         break;
 
@@ -878,13 +878,13 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         {
             hi_axiom(loop::main().on_thread());
 
-            hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
-            hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
+            hilet x = narrow_cast<int>(GET_X_LPARAM(lParam));
+            hilet y = narrow_cast<int>(GET_Y_LPARAM(lParam));
 
             // Convert to y-axis up coordinate system.
             hilet inv_y = os_settings::primary_monitor_rectangle().height() - y;
 
-            hilet hitbox_type = widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
+            hilet hitbox_type = widget->hitbox_test(screen_to_window() * point2i{x, inv_y}).type;
 
             switch (hitbox_type) {
             case hitbox_type::bottom_resize_border:
@@ -997,20 +997,20 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     r.keyboard_modifiers = get_keyboard_modifiers();
     r.keyboard_state = get_keyboard_state();
 
-    hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
-    hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
+    hilet x = narrow_cast<int>(GET_X_LPARAM(lParam));
+    hilet y = narrow_cast<int>(GET_Y_LPARAM(lParam));
 
     // Convert to y-axis up coordinate system, y is in window-local.
     hilet inv_y = rectangle.height() - y;
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
-    r.mouse().position = point2{x, inv_y};
+    r.mouse().position = point2i{x, inv_y};
     r.mouse().wheel_delta = {};
     if (uMsg == WM_MOUSEWHEEL) {
-        r.mouse().wheel_delta.y() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
+        r.mouse().wheel_delta.y() = GET_WHEEL_DELTA_WPARAM(wParam) * 10 / WHEEL_DELTA;
     } else if (uMsg == WM_MOUSEHWHEEL) {
-        r.mouse().wheel_delta.x() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
+        r.mouse().wheel_delta.x() = GET_WHEEL_DELTA_WPARAM(wParam) * 10 / WHEEL_DELTA;
     }
 
     // Track which buttons are down, in case the application wants to track multiple buttons being pressed down.

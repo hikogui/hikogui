@@ -11,11 +11,10 @@ namespace hi::inline v1 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
-    _label_constraints = constraints_button();
+    hilet extra_size = extent2i{theme().margin * 2, theme().margin * 2};
 
-    auto constraints = _label_constraints + extra_size;
-    constraints.set_margins(narrow_cast<int>(theme().margin));
+    auto constraints = _label_constraints.reload() + extra_size;
+    constraints.margins = theme().margin;
     return constraints;
 }
 
@@ -23,7 +22,7 @@ void momentary_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         hilet label_rectangle =
-            aarectangle{theme().margin, 0.0f, narrow_cast<float>(context.width()) - theme().margin * 2.0f, narrow_cast<float>(context.height())};
+            aarectanglei{theme().margin, 0, context.width() - theme().margin * 2, context.height()};
         _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
     }
     set_layout_button(context);
@@ -42,12 +41,12 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
     // Move the border of the button in the middle of a pixel.
     context.draw_box(
         layout(),
-        layout().rectangle(),
+        narrow_cast<aarectangle>(layout().rectangle()),
         background_color(),
         focus_color(),
         theme().border_width,
         border_side::inside,
-        corner_radii{theme().rounding_radius});
+        corner_radii(theme().rounding_radius));
 }
 
 } // namespace hi::inline v1

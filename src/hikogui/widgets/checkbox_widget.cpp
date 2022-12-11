@@ -12,12 +12,11 @@ namespace hi::inline v1 {
 {
     _layout = {};
     _button_size = {theme().size, theme().size};
-    hilet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
+    hilet extra_size = extent2i{theme().margin + _button_size.width(), 0};
 
-    _label_constraints = constraints_button();
-    auto constraints = max(_label_constraints + extra_size, _button_size);
-    constraints.set_margins(narrow_cast<int>(theme().margin));
-    constraints.alignment = *alignment; 
+    auto constraints = max(_label_constraints.reload() + extra_size, _button_size);
+    constraints.margins = theme().margin;
+    constraints.alignment = *alignment;
     return constraints;
 }
 
@@ -27,7 +26,7 @@ void checkbox_widget::set_layout(widget_layout const& context) noexcept
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
         if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
-            _button_rectangle = round(align(context.rectangle(), _button_size, alignment_));
+            _button_rectangle = align(context.rectangle(), _button_size, alignment_);
         } else {
             hi_not_implemented();
         }
@@ -35,23 +34,23 @@ void checkbox_widget::set_layout(widget_layout const& context) noexcept
         hilet label_width = context.width() - (_button_rectangle.width() + theme().margin);
         if (alignment_ == horizontal_alignment::left) {
             hilet label_left = _button_rectangle.right() + theme().margin;
-            hilet label_rectangle = aarectangle{label_left, 0.0f, label_width, narrow_cast<float>(context.height())};
+            hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
             _label_shape = box_shape(_label_constraints, label_rectangle, theme().baseline_adjustment);
 
         } else if (alignment_ == horizontal_alignment::right) {
-            hilet label_rectangle = aarectangle{0.0f, 0.0f, label_width, narrow_cast<float>(context.height())};
+            hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
             _label_shape = box_shape(_label_constraints, label_rectangle, theme().baseline_adjustment);
         } else {
             hi_not_implemented();
         }
 
         _check_glyph = find_glyph(elusive_icon::Ok);
-        hilet check_glyph_bb = _check_glyph.get_bounding_box();
-        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center());
+        hilet check_glyph_bb = narrow_cast<aarectanglei>(_check_glyph.get_bounding_box() * theme().icon_size);
+        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
 
         _minus_glyph = find_glyph(elusive_icon::Minus);
-        hilet minus_glyph_bb = _minus_glyph.get_bounding_box();
-        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center());
+        hilet minus_glyph_bb = narrow_cast<aarectanglei>(_minus_glyph.get_bounding_box() * theme().icon_size);
+        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
     }
     set_layout_button(context);
 }
@@ -68,7 +67,12 @@ void checkbox_widget::draw(draw_context const& context) noexcept
 void checkbox_widget::draw_check_box(draw_context const& context) noexcept
 {
     context.draw_box(
-        layout(), _button_rectangle, background_color(), focus_color(), theme().border_width, border_side::inside);
+        layout(),
+        narrow_cast<aarectangle>(_button_rectangle),
+        background_color(),
+        focus_color(),
+        theme().border_width,
+        border_side::inside);
 }
 
 void checkbox_widget::draw_check_mark(draw_context const& context) noexcept
@@ -77,13 +81,15 @@ void checkbox_widget::draw_check_mark(draw_context const& context) noexcept
 
     // Checkmark or tristate.
     if (state_ == hi::button_state::on) {
-        context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, accent_color(), _check_glyph);
+        context.draw_glyph(
+            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), accent_color(), _check_glyph);
 
     } else if (state_ == hi::button_state::off) {
         ;
 
     } else {
-        context.draw_glyph(layout(), translate_z(0.1f) * _minus_glyph_rectangle, accent_color(), _minus_glyph);
+        context.draw_glyph(
+            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle), accent_color(), _minus_glyph);
     }
 }
 

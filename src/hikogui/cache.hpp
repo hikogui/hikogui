@@ -39,14 +39,14 @@ public:
             hi_axiom(_loader);
             _value = _loader();
         }
-        return _value;
+        return *_value;
     }
 
     [[nodiscard]] constexpr value_type const& reload() const noexcept
     {
         hi_axiom(_loader);
         _value = _loader();
-        return _value;
+        return *_value;
     }
 
     constexpr operator value_type const &() const noexcept
@@ -122,7 +122,7 @@ public:
     }
 
 private:
-    std::optional<value_type> _value;
+    mutable std::optional<value_type> _value;
     std::function<value_type()> _loader;
 };
 

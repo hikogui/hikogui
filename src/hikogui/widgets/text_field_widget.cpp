@@ -39,6 +39,16 @@ text_field_widget::text_field_widget(widget *parent, std::shared_ptr<delegate_ty
         ++global_counter<"text_field_widget:error_label:constrain">;
         process_event({gui_event_type::window_reconstrain});
     });
+
+    _error_label_constraints = [&] {
+        hi_assert_not_null(_error_label_widget);
+        return _error_label_widget->constraints();
+    };
+
+    _scroll_constraints = [&] {
+        hi_assert_not_null(_scroll_widget);
+        return _scroll_widget->constraints();
+    };
 }
 
 text_field_widget::~text_field_widget()
@@ -67,53 +77,49 @@ text_field_widget::~text_field_widget()
 
     _layout = {};
 
-    auto margins = hi::margins{theme().margin};
+    auto margins = hi::marginsi{theme().margin};
 
-    hilet scroll_width = 100.0f;
-    _scroll_constraints = _scroll_widget->constraints();
+    hilet scroll_width = 100;
+    _scroll_constraints.reset();
 
-    hilet box_size = extent2{
-        narrow_cast<float>(_scroll_constraints.margin_left) + scroll_width + narrow_cast<float>(_scroll_constraints.margin_right),
-        narrow_cast<float>(_scroll_constraints.margin_top) + narrow_cast<float>(_scroll_constraints.preferred_height) +
-                narrow_cast<float>(_scroll_constraints.margin_bottom)};
+    hilet box_size = extent2i{
+        _scroll_constraints->margins.left() + scroll_width + _scroll_constraints->margins.right(),
+        _scroll_constraints->margins.top() + _scroll_constraints->preferred.height() + _scroll_constraints->margins.bottom()};
 
     auto size = box_size;
     if (_error_label->empty()) {
         _error_label_widget->mode = widget_mode::invisible;
-        _error_label_constraints = {};
+        _error_label_constraints.reset();
 
     } else {
         _error_label_widget->mode = widget_mode::display;
-        _error_label_constraints = _error_label_widget->constraints();
-        inplace_max(size.width(), narrow_cast<float>(_error_label_constraints.preferred_width));
-        size.height() += narrow_cast<float>(_error_label_constraints.margin_top) +
-            narrow_cast<float>(_error_label_constraints.preferred_height);
-        inplace_max(margins.left(), narrow_cast<float>(_error_label_constraints.margin_left));
-        inplace_max(margins.right(), narrow_cast<float>(_error_label_constraints.margin_right));
-        inplace_max(margins.bottom(), narrow_cast<float>(_error_label_constraints.margin_bottom));
+        _error_label_constraints.reset();
+        inplace_max(size.width(), _error_label_constraints->preferred.width());
+        size.height() += _error_label_constraints->margins.top() + _error_label_constraints->preferred.height();
+        inplace_max(margins.left(), _error_label_constraints->margins.left());
+        inplace_max(margins.right(), _error_label_constraints->margins.right());
+        inplace_max(margins.bottom(), _error_label_constraints->margins.bottom());
     }
 
     // The alignment of a text-field is not based on the text-widget due to the intermediate scroll widget.
     hilet resolved_alignment = resolve_mirror(*alignment, os_settings::left_to_right());
 
-    return {size, size, size, resolved_alignment, theme().margin};
+    return {size, size, size, resolved_alignment, margins};
 }
 
 void text_field_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet scroll_size = extent2{
-            narrow_cast<float>(context.width()),
-            narrow_cast<float>(_scroll_constraints.margin_top) + narrow_cast<float>(_scroll_constraints.preferred_height) +
-                narrow_cast<float>(_scroll_constraints.margin_bottom)};
+        hilet scroll_size = extent2i{
+            context.width(),
+            _scroll_constraints->margins.top() + _scroll_constraints->preferred.height() + _scroll_constraints->margins.bottom()};
 
-        hilet scroll_rectangle =
-            aarectangle{point2{0.0f, narrow_cast<float>(context.height()) - scroll_size.height()}, scroll_size};
+        hilet scroll_rectangle = aarectanglei{point2i{0, context.height() - scroll_size.height()}, scroll_size};
         _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme().baseline_adjustment};
 
         if (*_error_label_widget->mode > widget_mode::invisible) {
             hilet error_label_rectangle =
-                aarectangle{0.0f, 0.0f, context.rectangle().width(), narrow_cast<float>(_error_label_constraints.preferred_height)};
+                aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints->preferred.height()};
             _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme().baseline_adjustment};
         }
     }
@@ -157,7 +163,7 @@ bool text_field_widget::handle_event(gui_event const& event) noexcept
     return super::handle_event(event);
 }
 
-hitbox text_field_widget::hitbox_test(point3 position) const noexcept
+hitbox text_field_widget::hitbox_test(point2i position) const noexcept
 {
     if (*mode >= widget_mode::partial) {
         auto r = hitbox{};
@@ -224,12 +230,12 @@ void text_field_widget::commit(bool force) noexcept
 
 void text_field_widget::draw_background_box(draw_context const& context) const noexcept
 {
-    hilet scroll_rectangle = _scroll_shape.rectangle();
+    hilet outline = narrow_cast<aarectangle>(_scroll_shape.rectangle);
 
-    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
-    context.draw_box(layout(), scroll_rectangle, background_color(), corner_radii);
+    hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius);
+    context.draw_box(layout(), outline, background_color(), corner_radii);
 
-    hilet line = line_segment(get<0>(scroll_rectangle), get<1>(scroll_rectangle));
+    hilet line = line_segment(get<0>(outline), get<1>(outline));
     context.draw_line(layout(), translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width, focus_color());
 }
 

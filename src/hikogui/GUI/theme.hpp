@@ -34,35 +34,35 @@ public:
 
     /** Distance between widgets and between widgets and the border of the container.
      */
-    float margin = 4.5f;
+    int margin = 5;
 
     /** The line-width of a border.
      */
-    float border_width = 1.0f;
+    int border_width = 1;
 
     /** The rounding radius of boxes with rounded corners.
      */
-    float rounding_radius = 4.0f;
+    int rounding_radius = 4;
 
     /** The size of small square widgets.
      */
-    float size = 11.0f;
+    int size = 11;
 
     /** The size of large widgets. Such as the minimum scroll bar size.
      */
-    float large_size = 18.5f;
+    int large_size = 19;
 
     /** Size of icons inside a widget.
      */
-    float icon_size = 7.5f;
+    int icon_size = 8;
 
     /** Size of icons representing the length of am average word of a label's text.
      */
-    float large_icon_size = 22.5f;
+    int large_icon_size = 23;
 
     /** Size of icons being inline with a label's text.
      */
-    float label_icon_size = 15.0f;
+    int label_icon_size = 15;
 
     /** The amount the base-line needs to be moved downwards when a label is aligned to top.
      */
@@ -103,6 +103,8 @@ private:
     std::array<hi::text_style, semantic_text_style_metadata.size()> _text_styles;
 
     [[nodiscard]] float parse_float(datum const& data, char const *object_name);
+    [[nodiscard]] long long parse_long_long(datum const& data, char const *object_name);
+    [[nodiscard]] int parse_int(datum const& data, char const *object_name);
     [[nodiscard]] bool parse_bool(datum const& data, char const *object_name);
     [[nodiscard]] std::string parse_string(datum const& data, char const *object_name);
     [[nodiscard]] hi::color parse_color_value(datum const& data);

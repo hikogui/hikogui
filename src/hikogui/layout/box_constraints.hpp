@@ -23,21 +23,11 @@ namespace hi { inline namespace v1 {
  *
  */
 struct box_constraints {
-    int minimum_width = 0;
-    int preferred_width = 0;
-    int maximum_width = 0;
-    int margin_left = 0;
-    int margin_right = 0;
-    int padding_left = 0;
-    int padding_right = 0;
-
-    int minimum_height = 0;
-    int preferred_height = 0;
-    int maximum_height = 0;
-    int margin_bottom = 0;
-    int margin_top = 0;
-    int padding_bottom = 0;
-    int padding_top = 0;
+    extent2i minimum = {};
+    extent2i preferred = {};
+    extent2i maximum = {};
+    marginsi margins = {};
+    marginsi padding = {};
 
     hi::alignment alignment = hi::alignment{};
 
@@ -49,19 +39,15 @@ struct box_constraints {
     [[nodiscard]] constexpr friend bool operator==(box_constraints const&, box_constraints const&) noexcept = default;
 
     constexpr box_constraints(
-        int minimum_width,
-        int minimum_height,
-        int preferred_width,
-        int preferred_height,
-        int maximum_width,
-        int maximum_height) noexcept :
-        minimum_width(minimum_width),
-        minimum_height(minimum_height),
-        preferred_width(preferred_width),
-        preferred_height(preferred_height),
-        maximum_width(maximum_width),
-        maximum_height(maximum_height)
+        extent2i minimum,
+        extent2i preferred,
+        extent2i maximum,
+        hi::alignment alignment = hi::alignment{},
+        hi::marginsi margins = hi::marginsi{},
+        hi::marginsi padding = hi::marginsi{}) noexcept :
+        minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), padding(padding), alignment(alignment)
     {
+        hi_axiom(holds_invariant());
     }
 
     [[deprecated]] constexpr box_constraints(
@@ -71,149 +57,79 @@ struct box_constraints {
         hi::alignment alignment = hi::alignment{},
         hi::margins margins = hi::margins{},
         hi::margins padding = hi::margins{}) noexcept :
-        minimum_width(narrow_cast<int>(minimum.width())),
-        preferred_width(narrow_cast<int>(preferred.width())),
-        maximum_width(narrow_cast<int>(maximum.width())),
-        margin_left(narrow_cast<int>(margins.left())),
-        margin_right(narrow_cast<int>(margins.right())),
-        padding_left(narrow_cast<int>(padding.left())),
-        padding_right(narrow_cast<int>(padding.right())),
-        minimum_height(narrow_cast<int>(minimum.height())),
-        preferred_height(narrow_cast<int>(preferred.height())),
-        maximum_height(narrow_cast<int>(maximum.height())),
-        margin_bottom(narrow_cast<int>(margins.bottom())),
-        margin_top(narrow_cast<int>(margins.top())),
-        padding_bottom(narrow_cast<int>(padding.bottom())),
-        padding_top(narrow_cast<int>(padding.top())),
-        alignment(alignment)
+        box_constraints(
+            narrow_cast<extent2i>(minimum),
+            narrow_cast<extent2i>(preferred),
+            narrow_cast<extent2i>(maximum),
+            alignment,
+            narrow_cast<marginsi>(margins),
+            narrow_cast<marginsi>(padding))
     {
         hi_axiom(holds_invariant());
-    }
-
-    [[deprecated]] [[nodiscard]] constexpr extent2 minimum() const noexcept
-    {
-        return extent2{narrow_cast<float>(minimum_width), narrow_cast<float>(minimum_height)};
-    }
-
-    [[deprecated]] [[nodiscard]] constexpr extent2 preferred() const noexcept
-    {
-        return extent2{narrow_cast<float>(preferred_width), narrow_cast<float>(preferred_height)};
-    }
-
-    [[deprecated]] [[nodiscard]] constexpr extent2 maximum() const noexcept
-    {
-        return extent2{narrow_cast<float>(maximum_width), narrow_cast<float>(maximum_height)};
-    }
-
-    constexpr box_constraints& set_margins(int rhs) noexcept
-    {
-        margin_left = rhs;
-        margin_bottom = rhs;
-        margin_right = rhs;
-        margin_top = rhs;
-        return *this;
-    }
-
-    constexpr box_constraints& set_padding(int rhs) noexcept
-    {
-        padding_left = rhs;
-        padding_bottom = rhs;
-        padding_right = rhs;
-        padding_top = rhs;
-        return *this;
     }
 
     [[nodiscard]] constexpr box_constraints internalize_margins() const noexcept
     {
         auto r = *this;
-        r.padding_left += r.margin_left;
-        r.padding_right += r.margin_right;
-        r.padding_top += r.margin_top;
-        r.padding_bottom += r.margin_bottom;
+        r.padding += r.margins;
 
-        r.minimum_width += r.margin_left + r.margin_right;
-        r.preferred_width += r.margin_left + r.margin_right;
-        r.maximum_width += r.margin_left + r.margin_right;
+        r.minimum.width() += r.margins.left() + r.margins.right();
+        r.preferred.width() += r.margins.left() + r.margins.right();
+        r.maximum.width() += r.margins.left() + r.margins.right();
 
-        r.minimum_height += r.margin_bottom + r.margin_top;
-        r.preferred_height += r.margin_bottom + r.margin_top;
-        r.maximum_height += r.margin_bottom + r.margin_top;
+        r.minimum.height() += r.margins.bottom() + r.margins.top();
+        r.preferred.height() += r.margins.bottom() + r.margins.top();
+        r.maximum.height() += r.margins.bottom() + r.margins.top();
 
-        r.margin_left = 0;
-        r.margin_right = 0;
-        r.margin_bottom = 0;
-        r.margin_top = 0;
+        r.margins = 0;
         hi_axiom(r.holds_invariant());
         return r;
     }
 
-    [[nodiscard]] constexpr box_constraints constrain(int min_width, int min_height, int max_width, int max_height) const noexcept
+    [[nodiscard]] constexpr box_constraints constrain(extent2i new_minimum, extent2i new_maximum) const noexcept
     {
-        hi_assert(min_width <= max_width);
-        hi_assert(min_height <= max_height);
+        hi_assert(new_minimum <= new_maximum);
 
         auto r = *this;
 
-        inplace_max(r.minimum_width, min_width);
-        inplace_max(r.minimum_height, min_height);
-        inplace_min(r.maximum_width, max_width);
-        inplace_min(r.maximum_height, max_height);
+        inplace_max(r.minimum, new_minimum);
+        inplace_min(r.maximum, new_maximum);
 
-        inplace_max(r.preferred_width, r.minimum_width);
-        inplace_max(r.preferred_height, r.minimum_height);
-        inplace_max(r.maximum_width, r.preferred_width);
-        inplace_max(r.maximum_height, r.preferred_height);
+        inplace_max(r.preferred, r.minimum);
+        inplace_max(r.maximum, r.preferred);
         hi_axiom(r.holds_invariant());
         return r;
     }
 
-    [[deprecated]] [[nodiscard]] constexpr hi::margins margins() const noexcept
+    constexpr box_constraints& operator+=(extent2i const& rhs) noexcept
     {
-        return hi::margins{
-            narrow_cast<float>(margin_left),
-            narrow_cast<float>(margin_bottom),
-            narrow_cast<float>(margin_right),
-            narrow_cast<float>(margin_top)};
-    }
-
-    [[deprecated]] constexpr box_constraints& set_margins(hi::margins const& rhs) noexcept
-    {
-        margin_left = narrow_cast<int>(rhs.left());
-        margin_bottom = narrow_cast<int>(rhs.bottom());
-        margin_right = narrow_cast<int>(rhs.right());
-        margin_top = narrow_cast<int>(rhs.top());
-        return *this;
-    }
-
-    [[deprecated]] [[nodiscard]] constexpr hi::margins padding() const noexcept
-    {
-        return hi::margins{
-            narrow_cast<float>(padding_left),
-            narrow_cast<float>(padding_bottom),
-            narrow_cast<float>(padding_right),
-            narrow_cast<float>(padding_top)};
-    }
-
-    [[deprecated]] constexpr box_constraints& operator+=(extent2 const& rhs) noexcept
-    {
-        minimum_width += narrow_cast<int>(rhs.width());
-        preferred_width += narrow_cast<int>(rhs.width());
-        maximum_width += narrow_cast<int>(rhs.width());
-        minimum_height += narrow_cast<int>(rhs.height());
-        preferred_height += narrow_cast<int>(rhs.height());
-        maximum_height += narrow_cast<int>(rhs.height());
+        minimum.width() += rhs.width();
+        preferred.width() += rhs.width();
+        maximum.width() += rhs.width();
+        minimum.height() += rhs.height();
+        preferred.height() += rhs.height();
+        maximum.height() += rhs.height();
 
         hi_axiom(holds_invariant());
         return *this;
     }
 
-    [[deprecated]] [[nodiscard]] constexpr box_constraints operator+(extent2 const& rhs) noexcept
+    [[nodiscard]] constexpr box_constraints operator+(extent2i const& rhs) const noexcept
     {
         auto r = *this;
         r += rhs;
-
-        hi_axiom(r.holds_invariant());
         return r;
+    }
+
+    [[deprecated]] constexpr box_constraints& operator+=(extent2 const& rhs) noexcept
+    {
+        *this += narrow_cast<extent2i>(rhs);
+        return *this;
+    }
+
+    [[deprecated]] [[nodiscard]] constexpr box_constraints operator+(extent2 const& rhs) noexcept
+    {
+        return *this + narrow_cast<extent2i>(rhs);
     }
 
     [[nodiscard]] constexpr bool holds_invariant() const noexcept
@@ -221,27 +137,26 @@ struct box_constraints {
         if (alignment == horizontal_alignment::flush or alignment == horizontal_alignment::justified) {
             return false;
         }
-        if (minimum_width > preferred_width or preferred_width > maximum_width) {
-            return false;
-        }
-        if (minimum_height > preferred_height or preferred_height > maximum_height) {
+        if (minimum > preferred or preferred > maximum) {
             return false;
         }
         return true;
     }
 
-    [[deprecated]] [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, extent2 const& rhs) noexcept
+    [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, extent2i const& rhs) noexcept
     {
         auto r = lhs;
-        inplace_max(r.minimum_width, narrow_cast<int>(rhs.width()));
-        inplace_max(r.preferred_width, narrow_cast<int>(rhs.width()));
-        inplace_max(r.maximum_width, narrow_cast<int>(rhs.width()));
-        inplace_max(r.minimum_height, narrow_cast<int>(rhs.height()));
-        inplace_max(r.preferred_height, narrow_cast<int>(rhs.height()));
-        inplace_max(r.maximum_height, narrow_cast<int>(rhs.height()));
+        inplace_max(r.minimum, rhs);
+        inplace_max(r.preferred, rhs);
+        inplace_max(r.maximum, rhs);
 
         hi_axiom(r.holds_invariant());
         return r;
+    }
+
+    [[deprecated]] [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, extent2 const& rhs) noexcept
+    {
+        return max(lhs, narrow_cast<extent2i>(rhs));
     }
 
     /** Makes a constraint that encompasses both given constraints.
@@ -254,21 +169,11 @@ struct box_constraints {
     [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, box_constraints const& rhs) noexcept
     {
         auto r = lhs;
-        inplace_max(r.minimum_width, rhs.minimum_width);
-        inplace_max(r.preferred_width, rhs.preferred_width);
-        inplace_max(r.maximum_width, rhs.maximum_width);
-        inplace_max(r.margin_left, rhs.margin_left);
-        inplace_max(r.margin_right, rhs.margin_right);
-        inplace_max(r.padding_left, rhs.padding_left);
-        inplace_max(r.padding_right, rhs.padding_right);
-
-        inplace_max(r.minimum_height, rhs.minimum_height);
-        inplace_max(r.preferred_height, rhs.preferred_height);
-        inplace_max(r.maximum_height, rhs.maximum_height);
-        inplace_max(r.margin_bottom, rhs.margin_bottom);
-        inplace_max(r.margin_top, rhs.margin_top);
-        inplace_max(r.padding_bottom, rhs.padding_bottom);
-        inplace_max(r.padding_top, rhs.padding_top);
+        inplace_max(r.minimum, rhs.minimum);
+        inplace_max(r.preferred, rhs.preferred);
+        inplace_max(r.maximum, rhs.maximum);
+        inplace_max(r.margins, rhs.margins);
+        inplace_max(r.padding, rhs.padding);
 
         hi_axiom(r.holds_invariant());
         return r;

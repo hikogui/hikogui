@@ -34,7 +34,7 @@ draw_context::draw_context(
     _alpha_vertices->clear();
 }
 
-void draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad box, float alpha) const noexcept
+void draw_context::_override_alpha(aarectanglei const& clipping_rectangle, quad box, float alpha) const noexcept
 {
     if (_alpha_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
@@ -42,11 +42,11 @@ void draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad b
         return;
     }
 
-    pipeline_alpha::device_shared::place_vertices(*_alpha_vertices, clipping_rectangle, box, alpha);
+    pipeline_alpha::device_shared::place_vertices(*_alpha_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, alpha);
 }
 
 void draw_context::_draw_box(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     quad box,
     quad_color const& fill_color,
     quad_color const& border_color,
@@ -60,11 +60,11 @@ void draw_context::_draw_box(
     }
 
     pipeline_box::device_shared::place_vertices(
-        *_box_vertices, clipping_rectangle, box, fill_color, border_color, border_width, corner_radius);
+        *_box_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, fill_color, border_color, border_width, corner_radius);
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image& image) const noexcept
+draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image& image) const noexcept
 {
     hi_assert_not_null(_image_vertices);
 
@@ -73,12 +73,12 @@ draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box
     }
 
     hilet pipeline = down_cast<gfx_device_vulkan&>(device).image_pipeline.get();
-    pipeline->place_vertices(*_image_vertices, clipping_rectangle, box, image);
+    pipeline->place_vertices(*_image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
     return true;
 }
 
 void draw_context::_draw_glyph(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     quad const& box,
     quad_color const& color,
     glyph_ids const& glyph) const noexcept
@@ -92,7 +92,8 @@ void draw_context::_draw_glyph(
         return;
     }
 
-    hilet atlas_was_updated = pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, box, glyph, color);
+    hilet atlas_was_updated =
+        pipeline->place_vertices(*_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, glyph, color);
 
     if (atlas_was_updated) {
         pipeline->prepare_atlas_for_rendering();
@@ -100,7 +101,7 @@ void draw_context::_draw_glyph(
 }
 
 void draw_context::_draw_text(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     std::optional<quad_color> text_color) const noexcept
@@ -123,7 +124,7 @@ void draw_context::_draw_text(
             break;
         }
 
-        atlas_was_updated |= pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, c.glyph, color);
+        atlas_was_updated |= pipeline->place_vertices(*_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, c.glyph, color);
     }
 
     if (atlas_was_updated) {
@@ -132,7 +133,7 @@ void draw_context::_draw_text(
 }
 
 void draw_context::_draw_text_selection(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_selection const& selection,
@@ -151,7 +152,7 @@ void draw_context::_draw_text_selection(
 }
 
 void draw_context::_draw_text_insertion_cursor_empty(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     hi::color color) const noexcept
@@ -169,7 +170,7 @@ void draw_context::_draw_text_insertion_cursor_empty(
 }
 
 void draw_context::_draw_text_insertion_cursor(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_cursor cursor,
@@ -219,7 +220,7 @@ void draw_context::_draw_text_insertion_cursor(
 }
 
 void draw_context::_draw_text_overwrite_cursor(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper::char_const_iterator it,
     hi::color color) const noexcept
@@ -229,7 +230,7 @@ void draw_context::_draw_text_overwrite_cursor(
 }
 
 void draw_context::_draw_text_cursors(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_cursor primary_cursor,

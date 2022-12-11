@@ -75,7 +75,7 @@ void grid_widget::draw(draw_context const& context) noexcept
     }
 }
 
-hitbox grid_widget::hitbox_test(point3 position) const noexcept
+hitbox grid_widget::hitbox_test(point2i position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 

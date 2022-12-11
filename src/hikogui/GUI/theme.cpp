@@ -36,16 +36,16 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     r.scale = delta_scale * scale;
 
     // Scale each size, and round so that everything will stay aligned on pixel boundaries.
-    r.margin = std::round(delta_scale * margin);
-    r.border_width = std::round(delta_scale * border_width);
-    r.rounding_radius = std::round(delta_scale * rounding_radius);
-    r.size = std::round(delta_scale * size);
-    r.large_size = std::round(delta_scale * large_size);
-    r.icon_size = std::round(delta_scale * icon_size);
-    r.large_icon_size = std::round(delta_scale * large_icon_size);
-    r.label_icon_size = std::round(delta_scale * label_icon_size);
+    r.margin = round_cast<int>(delta_scale * margin);
+    r.border_width = round_cast<int>(delta_scale * border_width);
+    r.rounding_radius = round_cast<int>(delta_scale * rounding_radius);
+    r.size = round_cast<int>(delta_scale * size);
+    r.large_size = round_cast<int>(delta_scale * large_size);
+    r.icon_size = round_cast<int>(delta_scale * icon_size);
+    r.large_icon_size = round_cast<int>(delta_scale * large_icon_size);
+    r.label_icon_size = round_cast<int>(delta_scale * label_icon_size);
     // Cap height is not rounded, since the text-shaper will align the text to sub-pixel boundaries.
-    r.baseline_adjustment = narrow_cast<int>(std::ceil(delta_scale * baseline_adjustment));
+    r.baseline_adjustment = ceil_cast<int>(delta_scale * baseline_adjustment);
 
     return r;
 }
@@ -107,6 +107,29 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     } else {
         throw parse_error(std::format("'{}' attribute must be a number, got {}.", object_name, object.type_name()));
     }
+}
+
+[[nodiscard]] long long theme::parse_long_long(datum const& data, char const *object_name)
+{
+    if (!data.contains(object_name)) {
+        throw parse_error(std::format("Missing '{}'", object_name));
+    }
+
+    hilet object = data[object_name];
+    if (auto f = get_if<long long>(object)) {
+        return static_cast<long long>(*f);
+    } else {
+        throw parse_error(std::format("'{}' attribute must be a number, got {}.", object_name, object.type_name()));
+    }
+}
+
+[[nodiscard]] int theme::parse_int(datum const& data, char const *object_name)
+{
+    hilet value = parse_long_long(data, object_name);
+    if (value > std::numeric_limits<int>::max() or value < std::numeric_limits<int>::min()) {
+        throw parse_error(std::format("'{}' attribute is out of range, got {}.", object_name, value));
+    }
+    return narrow_cast<int>(value);
 }
 
 [[nodiscard]] bool theme::parse_bool(datum const& data, char const *object_name)
@@ -338,14 +361,14 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
         parse_text_style(font_book, data, "placeholder-label-style");
     std::get<to_underlying(semantic_text_style::link)>(_text_styles) = parse_text_style(font_book, data, "link-label-style");
 
-    margin = parse_float(data, "margin");
-    border_width = parse_float(data, "border-width");
-    rounding_radius = parse_float(data, "rounding-radius");
-    size = parse_float(data, "size");
-    large_size = parse_float(data, "large-size");
-    icon_size = parse_float(data, "icon-size");
-    large_icon_size = parse_float(data, "large-icon-size");
-    label_icon_size = parse_float(data, "label-icon-size");
+    margin = parse_int(data, "margin");
+    border_width = parse_int(data, "border-width");
+    rounding_radius = parse_int(data, "rounding-radius");
+    size = parse_int(data, "size");
+    large_size = parse_int(data, "large-size");
+    icon_size = parse_int(data, "icon-size");
+    large_icon_size = parse_int(data, "large-icon-size");
+    label_icon_size = parse_int(data, "label-icon-size");
 
     baseline_adjustment = narrow_cast<int>(std::ceil(std::get<to_underlying(semantic_text_style::label)>(_text_styles)->cap_height(font_book)));
 }

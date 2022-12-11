@@ -8,9 +8,7 @@
 
 namespace hi::inline v1 {
 
-abstract_button_widget::abstract_button_widget(
-    widget *parent,
-    std::shared_ptr<delegate_type> delegate) noexcept :
+abstract_button_widget::abstract_button_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(parent), delegate(std::move(delegate))
 {
     hi_assert_not_null(this->delegate);
@@ -23,6 +21,10 @@ abstract_button_widget::abstract_button_widget(
         process_event({gui_event_type::window_relayout});
     });
     this->delegate->init(*this);
+
+    _label_constraints = [&] {
+        return max(_on_label_widget->constraints(), _off_label_widget->constraints(), _other_label_widget->constraints());
+    };
 }
 
 abstract_button_widget::~abstract_button_widget()
@@ -37,11 +39,6 @@ void abstract_button_widget::activate() noexcept
     delegate->activate(*this);
 
     this->pressed();
-}
-
-box_constraints abstract_button_widget::constraints_button() const noexcept
-{
-    return max(_on_label_widget->constraints(), _off_label_widget->constraints(), _other_label_widget->constraints());
 }
 
 void abstract_button_widget::draw_button(draw_context const& context) noexcept
@@ -73,12 +70,12 @@ void abstract_button_widget::set_layout_button(widget_layout const& context) noe
     }
 }
 
-[[nodiscard]] hitbox abstract_button_widget::hitbox_test(point3 position) const noexcept
+[[nodiscard]] hitbox abstract_button_widget::hitbox_test(point2i position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial and layout().contains(position)) {
-        return {this, position, hitbox_type::button};
+        return {this, _layout.elevation, hitbox_type::button};
     } else {
         return {};
     }

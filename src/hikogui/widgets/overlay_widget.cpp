@@ -17,10 +17,10 @@ overlay_widget::overlay_widget(widget *parent) noexcept :
         semantic_layer = 0;
     }
 
-    //_content_constraints = [&] {
-    //    hi_assert_not_null(_content);
-    //    return _content->constraints();
-    //};
+    _content_constraints = [&] {
+        hi_assert_not_null(_content);
+        return _content->constraints();
+    };
 }
 
 overlay_widget::~overlay_widget()
@@ -37,8 +37,7 @@ void overlay_widget::set_widget(std::shared_ptr<widget> new_widget) noexcept
 [[nodiscard]] box_constraints overlay_widget::constraints() noexcept
 {
     _layout = {};
-    _content_constraints = _content->constraints();
-    return _content_constraints;
+    return _content_constraints.reload();
 }
 
 void overlay_widget::set_layout(widget_layout const& context) noexcept
@@ -75,7 +74,7 @@ void overlay_widget::draw(draw_context const &context) noexcept
     return theme().color(semantic_color::border, semantic_layer + 1);
 }
 
-void overlay_widget::scroll_to_show(hi::aarectangle rectangle) noexcept
+void overlay_widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
 {
     // An overlay is in an absolute position on the window,
     // so do not forward the scroll_to_show message to its parent.
@@ -85,14 +84,14 @@ void overlay_widget::draw_background(draw_context const &context) noexcept
 {
     context.draw_box(
         layout(),
-        layout().rectangle(),
+        narrow_cast<aarectangle>(layout().rectangle()),
         background_color(),
         foreground_color(),
         theme().border_width,
         border_side::outside);
 }
 
-[[nodiscard]] hitbox overlay_widget::hitbox_test(point3 position) const noexcept
+[[nodiscard]] hitbox overlay_widget::hitbox_test(point2i position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 

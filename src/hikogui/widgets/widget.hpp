@@ -94,21 +94,13 @@ public:
      */
     int logical_layer = 0;
 
-    /** The minimum width this widget is allowed to be.
+    /** The minimum size this widget is allowed to be.
      */
-    observer<int> minimum_width = 0;
+    observer<extent2i> minimum = extent2i{0, 0};
 
-    /** The minimum height this widget is allowed to be.
+    /** The maximum size this widget is allowed to be.
      */
-    observer<int> minimum_height = 0;
-
-    /** The maximum width this widget is allowed to be.
-     */
-    observer<int> maximum_width = box_constraints::max_int();
-
-    /** The maximum height this widget is allowed to be.
-     */
-    observer<int> maximum_height = box_constraints::max_int();
+    observer<extent2i> maximum = extent2i{box_constraints::max_int(), box_constraints::max_int()};
 
     /*! Constructor for creating sub views.
      */
@@ -127,7 +119,7 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test(point2i position) const noexcept
     {
         return {};
     }
@@ -138,7 +130,7 @@ public:
      *
      * @param position The coordinate of the mouse local to the parent widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position) const noexcept
     {
         return hitbox_test(_layout.from_parent * position);
     }
@@ -150,7 +142,7 @@ public:
      * @param position The coordinate of the mouse local to the parent widget.
      * @param sibling_hitbox The hitbox of a sibling to combine with the hitbox of this widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position, hitbox sibling_hitbox) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position, hitbox sibling_hitbox) const noexcept
     {
         return std::max(sibling_hitbox, hitbox_test(_layout.from_parent * position));
     }
@@ -175,10 +167,10 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual [[nodiscard]] box_constraints constraints() noexcept 
+    virtual [[nodiscard]] box_constraints constraints() noexcept
     {
         _layout = {};
-        return {*minimum_width, *minimum_height, *minimum_width, *minimum_height, *maximum_width, *maximum_height};
+        return {*minimum, *minimum, *maximum};
     }
 
     /** Update the internal layout of the widget.
@@ -289,7 +281,7 @@ public:
      *
      * @param rectangle The rectangle in window coordinates.
      */
-    virtual void scroll_to_show(hi::aarectangle rectangle) noexcept;
+    virtual void scroll_to_show(hi::aarectanglei rectangle) noexcept;
 
     /** Scroll to show the important part of the widget.
      */
@@ -312,7 +304,7 @@ public:
         }
     }
 
-    [[nodiscard]] virtual hi::theme const &theme() const noexcept
+    [[nodiscard]] virtual hi::theme const& theme() const noexcept
     {
         hi_assert_not_null(parent);
         return parent->theme();
@@ -356,6 +348,6 @@ protected:
      * @param requested_rectangle A rectangle in the local coordinate system.
      * @return A rectangle that fits the window's constraints in the local coordinate system.
      */
-    [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
+    [[nodiscard]] aarectanglei make_overlay_rectangle(aarectanglei requested_rectangle) const noexcept;
 };
 }} // namespace hi::v1
