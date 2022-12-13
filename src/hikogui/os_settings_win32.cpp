@@ -229,7 +229,7 @@ namespace hi::inline v1 {
     return std::bit_cast<uintptr_t>(monitor);
 }
 
-[[nodiscard]] aarectangle os_settings::gather_primary_monitor_rectangle()
+[[nodiscard]] aarectanglei os_settings::gather_primary_monitor_rectangle()
 {
     hilet width = GetSystemMetrics(SM_CXSCREEN);
     if (width == 0) {
@@ -242,10 +242,10 @@ namespace hi::inline v1 {
     }
 
     // The origin of the primary monitor is also the origin of the desktop.
-    return aarectangle{extent2{narrow_cast<float>(width), narrow_cast<float>(height)}};
+    return aarectanglei{extent2i{width, height}};
 }
 
-[[nodiscard]] aarectangle os_settings::gather_desktop_rectangle()
+[[nodiscard]] aarectanglei os_settings::gather_desktop_rectangle()
 {
     hilet primary_monitor_height = GetSystemMetrics(SM_CYSCREEN);
     if (primary_monitor_height == 0) {
@@ -269,8 +269,7 @@ namespace hi::inline v1 {
 
     // Calculate the bottom as compared to a y-axis up coordinate system.
     hilet inv_bottom = primary_monitor_height - bottom; // 0, 600
-    return aarectangle{
-        narrow_cast<float>(left), narrow_cast<float>(inv_bottom), narrow_cast<float>(width), narrow_cast<float>(height)};
+    return aarectanglei{left, inv_bottom, width, height};
 }
 
 } // namespace hi::inline v1

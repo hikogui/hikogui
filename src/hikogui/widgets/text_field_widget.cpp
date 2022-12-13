@@ -39,16 +39,6 @@ text_field_widget::text_field_widget(widget *parent, std::shared_ptr<delegate_ty
         ++global_counter<"text_field_widget:error_label:constrain">;
         process_event({gui_event_type::window_reconstrain});
     });
-
-    _error_label_constraints = [&] {
-        hi_assert_not_null(_error_label_widget);
-        return _error_label_widget->constraints();
-    };
-
-    _scroll_constraints = [&] {
-        hi_assert_not_null(_scroll_widget);
-        return _scroll_widget->constraints();
-    };
 }
 
 text_field_widget::~text_field_widget()
@@ -62,9 +52,11 @@ text_field_widget::~text_field_widget()
     co_yield _scroll_widget.get();
 }
 
-[[nodiscard]] box_constraints text_field_widget::constraints() noexcept
+[[nodiscard]] box_constraints text_field_widget::update_constraints() noexcept
 {
     hi_assert_not_null(delegate);
+    hi_assert_not_null(_error_label_widget);
+    hi_assert_not_null(_scroll_widget);
 
     if (*_text_widget->focus) {
         // Update the optional error value from the string conversion when the text-widget has keyboard focus.
@@ -76,29 +68,27 @@ text_field_widget::~text_field_widget()
     }
 
     _layout = {};
-
-    auto margins = hi::marginsi{theme().margin};
+    _scroll_constraints =_scroll_widget->update_constraints();
 
     hilet scroll_width = 100;
-    _scroll_constraints.reset();
-
     hilet box_size = extent2i{
-        _scroll_constraints->margins.left() + scroll_width + _scroll_constraints->margins.right(),
-        _scroll_constraints->margins.top() + _scroll_constraints->preferred.height() + _scroll_constraints->margins.bottom()};
+        _scroll_constraints.margins.left() + scroll_width + _scroll_constraints.margins.right(),
+        _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
     auto size = box_size;
+    auto margins = hi::marginsi{theme().margin};
     if (_error_label->empty()) {
         _error_label_widget->mode = widget_mode::invisible;
-        _error_label_constraints.reset();
+        _error_label_constraints = _error_label_widget->update_constraints();
 
     } else {
         _error_label_widget->mode = widget_mode::display;
-        _error_label_constraints.reset();
-        inplace_max(size.width(), _error_label_constraints->preferred.width());
-        size.height() += _error_label_constraints->margins.top() + _error_label_constraints->preferred.height();
-        inplace_max(margins.left(), _error_label_constraints->margins.left());
-        inplace_max(margins.right(), _error_label_constraints->margins.right());
-        inplace_max(margins.bottom(), _error_label_constraints->margins.bottom());
+        _error_label_constraints = _error_label_widget->update_constraints();
+        inplace_max(size.width(), _error_label_constraints.preferred.width());
+        size.height() += _error_label_constraints.margins.top() + _error_label_constraints.preferred.height();
+        inplace_max(margins.left(), _error_label_constraints.margins.left());
+        inplace_max(margins.right(), _error_label_constraints.margins.right());
+        inplace_max(margins.bottom(), _error_label_constraints.margins.bottom());
     }
 
     // The alignment of a text-field is not based on the text-widget due to the intermediate scroll widget.
@@ -112,14 +102,14 @@ void text_field_widget::set_layout(widget_layout const& context) noexcept
     if (compare_store(_layout, context)) {
         hilet scroll_size = extent2i{
             context.width(),
-            _scroll_constraints->margins.top() + _scroll_constraints->preferred.height() + _scroll_constraints->margins.bottom()};
+            _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
         hilet scroll_rectangle = aarectanglei{point2i{0, context.height() - scroll_size.height()}, scroll_size};
         _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme().baseline_adjustment};
 
         if (*_error_label_widget->mode > widget_mode::invisible) {
             hilet error_label_rectangle =
-                aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints->preferred.height()};
+                aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
             _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme().baseline_adjustment};
         }
     }

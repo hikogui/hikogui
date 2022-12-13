@@ -115,14 +115,14 @@ using margins = geo::margins<float>;
 using marginsi = geo::margins<int>;
 
 template<>
-marginsi narrow_cast(margins const& rhs) noexcept
+[[nodiscard]] constexpr marginsi narrow_cast(margins const& rhs) noexcept
 {
     return {
         narrow_cast<int>(rhs.left()), narrow_cast<int>(rhs.bottom()), narrow_cast<int>(rhs.right()), narrow_cast<int>(rhs.top())};
 }
 
 template<>
-margins narrow_cast(marginsi const& rhs) noexcept
+[[nodiscard]] constexpr margins narrow_cast(marginsi const& rhs) noexcept
 {
     return {
         narrow_cast<float>(rhs.left()),

@@ -11,7 +11,7 @@ namespace hi::inline v1 {
 
 window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexcept : super(parent) {}
 
-[[nodiscard]] box_constraints window_traffic_lights_widget::constraints() noexcept
+[[nodiscard]] box_constraints window_traffic_lights_widget::update_constraints() noexcept
 {
     _layout = {};
 
@@ -93,18 +93,18 @@ void window_traffic_lights_widget::drawMacOS(draw_context const& drawContext) no
     hilet close_circle_color = (not context.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedClose                                               ? color(1.0f, 0.242f, 0.212f) :
                                                                      color(1.0f, 0.1f, 0.082f);
-    context.draw_box(layout(), narrow_cast<aarectangle>(closeRectangle), close_circle_color, corner_radii{RADIUS});
+    context.draw_box(layout(), closeRectangle, close_circle_color, corner_radii{RADIUS});
 
     hilet minimize_circle_color = (not context.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMinimize                                               ? color(1.0f, 0.847f, 0.093f) :
                                                                         color(0.784f, 0.521f, 0.021f);
-    context.draw_box(layout(), narrow_cast<aarectangle>(minimizeRectangle), minimize_circle_color, corner_radii{RADIUS});
+    context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_radii{RADIUS});
 
     hilet maximize_circle_color = (not context.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMaximize                                               ? color(0.223f, 0.863f, 0.1f) :
                                                                         color(0.082f, 0.533f, 0.024f);
 
-    context.draw_box(layout(), narrow_cast<aarectangle>(maximizeRectangle), maximize_circle_color, corner_radii{RADIUS});
+    context.draw_box(layout(), maximizeRectangle, maximize_circle_color, corner_radii{RADIUS});
 
     if (*hover) {
         context.draw_glyph(
@@ -139,33 +139,33 @@ void window_traffic_lights_widget::drawWindows(draw_context const& drawContext) 
     auto context = drawContext;
 
     if (pressedClose) {
-        context.draw_box(layout(), narrow_cast<aarectangle>(closeRectangle), color{1.0f, 0.0f, 0.0f});
+        context.draw_box(layout(), closeRectangle, color{1.0f, 0.0f, 0.0f});
     } else if (hoverClose) {
-        context.draw_box(layout(), narrow_cast<aarectangle>(closeRectangle), color{0.5f, 0.0f, 0.0f});
+        context.draw_box(layout(), closeRectangle, color{0.5f, 0.0f, 0.0f});
     } else {
-        context.draw_box(layout(), narrow_cast<aarectangle>(closeRectangle), theme().color(semantic_color::fill, semantic_layer));
+        context.draw_box(layout(), closeRectangle, theme().color(semantic_color::fill, semantic_layer));
     }
 
     if (pressedMinimize) {
         context.draw_box(
-            layout(), narrow_cast<aarectangle>(minimizeRectangle), theme().color(semantic_color::fill, semantic_layer + 2));
+            layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer + 2));
     } else if (hoverMinimize) {
         context.draw_box(
-            layout(), narrow_cast<aarectangle>(minimizeRectangle), theme().color(semantic_color::fill, semantic_layer + 1));
+            layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer + 1));
     } else {
         context.draw_box(
-            layout(), narrow_cast<aarectangle>(minimizeRectangle), theme().color(semantic_color::fill, semantic_layer));
+            layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer));
     }
 
     if (pressedMaximize) {
         context.draw_box(
-            layout(), narrow_cast<aarectangle>(maximizeRectangle), theme().color(semantic_color::fill, semantic_layer + 2));
+            layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer + 2));
     } else if (hoverMaximize) {
         context.draw_box(
-            layout(), narrow_cast<aarectangle>(maximizeRectangle), theme().color(semantic_color::fill, semantic_layer + 1));
+            layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer + 1));
     } else {
         context.draw_box(
-            layout(), narrow_cast<aarectangle>(maximizeRectangle), theme().color(semantic_color::fill, semantic_layer));
+            layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer));
     }
 
     hilet glyph_color = context.active ? label_color() : foreground_color();

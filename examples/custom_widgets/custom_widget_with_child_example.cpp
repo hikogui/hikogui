@@ -24,24 +24,24 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    [[nodiscard]] hi::box_constraints constraints() noexcept override
+    [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
         _layout = {};
 
         // We need to recursively set the constraints of any child widget here as well
-        _label_constraints = _label_widget->constraints();
+        _label_constraints = _label_widget->update_constraints();
 
         // We add the ability to resize the widget beyond the size of the label.
         auto r = hi::box_constraints{};
-        r.minimum_width = _label_constraints.minimum_width;
-        r.preferred_width = _label_constraints.preferred_width + hi::narrow_cast<int>(theme().margin);
-        r.maximum_width = _label_constraints.maximum_width + 100;
-        r.minimum_height = _label_constraints.minimum_height;
-        r.preferred_height = _label_constraints.preferred_height + hi::narrow_cast<int>(theme().margin);
-        r.maximum_height = _label_constraints.maximum_height + 50;
-        r.set_margins(hi::narrow_cast<int>(theme().margin));
+        r.minimum.width() = _label_constraints.minimum.width();
+        r.preferred.width() = _label_constraints.preferred.width() + hi::narrow_cast<int>(theme().margin);
+        r.maximum.width() = _label_constraints.maximum.width() + 100;
+        r.minimum.height() = _label_constraints.minimum.height();
+        r.preferred.height() = _label_constraints.preferred.height() + hi::narrow_cast<int>(theme().margin);
+        r.maximum.height() = _label_constraints.maximum.height() + 50;
+        r.margins = theme().margin;
         r.alignment = _label_constraints.alignment;
         return r;
     }
@@ -58,7 +58,7 @@ public:
             // The layout of the child widget are also calculated here, which only needs to be done
             // when the layout of the current widget changes.
             auto const label_rectangle =
-                align(context.rectangle(), _label_constraints.preferred(), hi::alignment::middle_center());
+                align(context.rectangle(), _label_constraints.preferred, hi::alignment::middle_center());
             _label_shape = hi::box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
         }
 

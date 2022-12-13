@@ -18,7 +18,7 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
     });
 }
 
-[[nodiscard]] box_constraints icon_widget::constraints() noexcept
+[[nodiscard]] box_constraints icon_widget::update_constraints() noexcept
 {
     _layout = {};
 
@@ -72,7 +72,7 @@ void icon_widget::set_layout(widget_layout const& context) noexcept
             hilet height = std::clamp(context.shape.height(), minimum->height(), maximum->height());
 
             hilet icon_scale = scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
-            hilet new_icon_size = narrow_cast<aarectanglei>(icon_scale * _icon_size);
+            hilet new_icon_size = narrow_cast<extent2i>(icon_scale * _icon_size);
             hilet resolved_alignment = resolve(*alignment, os_settings::left_to_right());
             _icon_rectangle = align(context.rectangle(), new_icon_size, resolved_alignment);
         }
@@ -87,7 +87,7 @@ void icon_widget::draw(draw_context const& context) noexcept
             break;
 
         case icon_type::pixmap:
-            if (not context.draw_image(layout(), narrow_cast<aarectangle>(_icon_rectangle), _pixmap_backing)) {
+            if (not context.draw_image(layout(), _icon_rectangle, _pixmap_backing)) {
                 // Continue redrawing until the image is loaded.
                 request_redraw();
             }
@@ -95,7 +95,7 @@ void icon_widget::draw(draw_context const& context) noexcept
 
         case icon_type::glyph:
             {
-                context.draw_glyph(layout(), narrow_cast<aarectangle>(_icon_rectangle), theme().color(*color), _glyph);
+                context.draw_glyph(layout(), _icon_rectangle, theme().color(*color), _glyph);
             }
             break;
 

@@ -31,7 +31,7 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    [[nodiscard]] hi::box_constraints constraints() noexcept override
+    [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.

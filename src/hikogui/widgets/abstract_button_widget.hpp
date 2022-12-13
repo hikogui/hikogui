@@ -75,6 +75,8 @@ public:
     }
 
     /// @privatesection
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
+    void set_layout(widget_layout const &context) noexcept override;
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
         co_yield _on_label_widget.get();
@@ -89,11 +91,17 @@ public:
     bool handle_event(gui_event const& event) noexcept override;
     /// @endprivatesection
 protected:
-    cache<box_constraints> _label_constraints;
-    box_shape _label_shape;
     std::shared_ptr<label_widget> _on_label_widget;
+    box_constraints _on_label_constraints;
+    box_shape _on_label_shape;
+
     std::shared_ptr<label_widget> _off_label_widget;
+    box_constraints _off_label_constraints;
+    box_shape _off_label_shape;
+
     std::shared_ptr<label_widget> _other_label_widget;
+    box_constraints _other_label_constraints;
+    box_shape _other_label_shape;
 
     bool _pressed = false;
     notifier<>::callback_token _delegate_cbt;
@@ -135,7 +143,6 @@ protected:
         }
     }
 
-    void set_layout_button(widget_layout const& context) noexcept;
     void draw_button(draw_context const& context) noexcept;
 };
 

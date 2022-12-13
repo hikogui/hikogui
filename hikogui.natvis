@@ -138,14 +138,14 @@
             <Item Name="[7]">v[7],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::point&lt;2&gt;">
+    <Type Name="hi::v1::geo::point&lt;*,2&gt;">
         <DisplayString>&lt;{_v.v[0],g}, {_v.v[1],g}&gt;</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
             <Item Name="[y]">_v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::point&lt;3&gt;">
+    <Type Name="hi::v1::geo::point&lt;*,3&gt;">
         <DisplayString>&lt;{_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g}&gt;</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
@@ -153,14 +153,14 @@
             <Item Name="[z]">_v.v[2],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::vector&lt;2&gt;">
+    <Type Name="hi::v1::geo::vector&lt;*,2&gt;">
         <DisplayString>({_v.v[0],g}, {_v.v[1],g})</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
             <Item Name="[y]">_v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::vector&lt;3&gt;">
+    <Type Name="hi::v1::geo::vector&lt;*,3&gt;">
         <DisplayString>({_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g})</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
@@ -168,14 +168,14 @@
             <Item Name="[z]">_v.v[2],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::extent&lt;2&gt;">
+    <Type Name="hi::v1::geo::extent&lt;*,2&gt;">
         <DisplayString>[{_v.v[0],g}, {_v.v[1],g}]</DisplayString>
         <Expand>
             <Item Name="[width]">_v.v[0],g</Item>
             <Item Name="[height]">_v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::extent&lt;3&gt;">
+    <Type Name="hi::v1::geo::extent&lt;*,3&gt;">
         <DisplayString>[{_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g}]</DisplayString>
         <Expand>
             <Item Name="[width]">_v.v[0],g</Item>
@@ -221,7 +221,7 @@
             <Item Name="[3]">p3</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::axis_aligned_rectangle">
+    <Type Name="hi::v1::geo::axis_aligned_rectangle&lt;*&gt;">
         <DisplayString>{{ &lt;{v.v[0],g}, {v.v[1],g}&gt;, [{v.v[2] - v.v[0],g}, {v.v[3] - v.v[1],g}] }}</DisplayString>
         <Expand>
             <Item Name="[left]">v.v[0],g</Item>

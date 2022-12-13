@@ -307,8 +307,8 @@ private:
     [[nodiscard]] static int gather_maximum_window_width();
     [[nodiscard]] static int gather_maximum_window_height();
     [[nodiscard]] static uintptr_t gather_primary_monitor_id();
-    [[nodiscard]] static aarectangle gather_primary_monitor_rectangle();
-    [[nodiscard]] static aarectangle gather_desktop_rectangle();
+    [[nodiscard]] static aarectanglei gather_primary_monitor_rectangle();
+    [[nodiscard]] static aarectanglei gather_desktop_rectangle();
 };
 
 } // namespace hi::inline v1

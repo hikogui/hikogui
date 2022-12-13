@@ -6,14 +6,14 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] box_constraints momentary_button_widget::constraints() noexcept
+[[nodiscard]] box_constraints momentary_button_widget::update_constraints() noexcept
 {
-    _layout = {};
+    _label_constraints = super::update_constraints();
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     hilet extra_size = extent2i{theme().margin * 2, theme().margin * 2};
 
-    auto constraints = _label_constraints.reload() + extra_size;
+    auto constraints = _label_constraints + extra_size;
     constraints.margins = theme().margin;
     return constraints;
 }
@@ -23,9 +23,9 @@ void momentary_button_widget::set_layout(widget_layout const& context) noexcept
     if (compare_store(_layout, context)) {
         hilet label_rectangle =
             aarectanglei{theme().margin, 0, context.width() - theme().margin * 2, context.height()};
-        _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+        _on_label_shape = _off_label_shape = _other_label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
     }
-    set_layout_button(context);
+    super::set_layout(context);
 }
 
 void momentary_button_widget::draw(draw_context const &context) noexcept
@@ -41,7 +41,7 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
     // Move the border of the button in the middle of a pixel.
     context.draw_box(
         layout(),
-        narrow_cast<aarectangle>(layout().rectangle()),
+        layout().rectangle(),
         background_color(),
         focus_color(),
         theme().border_width,

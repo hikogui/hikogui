@@ -31,15 +31,6 @@ void window_widget::constructor_implementation() noexcept
     }
 
     _content = std::make_shared<grid_widget>(this);
-
-    _content_constraints = [&] {
-        hi_assert_not_null(_content);
-        return _content->constraints();
-    };
-    _toolbar_constraints = [&] {
-        hi_assert_not_null(_toolbar);
-        return _toolbar->constraints();
-    };
 }
 
 [[nodiscard]] gui_window *window_widget::window() const noexcept
@@ -65,42 +56,45 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-[[nodiscard]] box_constraints window_widget::constraints() noexcept
+[[nodiscard]] box_constraints window_widget::update_constraints() noexcept
 {
+    hi_assert_not_null(_content);
+    hi_assert_not_null(_toolbar);
+
     _layout = {};
-    _toolbar_constraints.reset();
-    _content_constraints.reset();
+    _content_constraints =_content->update_constraints();
+    _toolbar_constraints =  _toolbar->update_constraints();
 
     auto r = box_constraints{};
     r.minimum.width() = std::max(
-        _toolbar_constraints->margins.left() + _toolbar_constraints->minimum.width() + _toolbar_constraints->margins.right(),
-        _content_constraints->margins.left() + _content_constraints->minimum.width() + _content_constraints->margins.right());
+        _toolbar_constraints.margins.left() + _toolbar_constraints.minimum.width() + _toolbar_constraints.margins.right(),
+        _content_constraints.margins.left() + _content_constraints.minimum.width() + _content_constraints.margins.right());
     r.preferred.width() = std::max(
-        _toolbar_constraints->margins.left() + _toolbar_constraints->preferred.width() + _toolbar_constraints->margins.right(),
-        _content_constraints->margins.left() + _content_constraints->preferred.width() + _content_constraints->margins.right());
+        _toolbar_constraints.margins.left() + _toolbar_constraints.preferred.width() + _toolbar_constraints.margins.right(),
+        _content_constraints.margins.left() + _content_constraints.preferred.width() + _content_constraints.margins.right());
     r.maximum.width() = std::min(
-        _toolbar_constraints->margins.left() + _toolbar_constraints->maximum.width() + _toolbar_constraints->margins.right(),
-        _content_constraints->margins.left() + _content_constraints->maximum.width() + _content_constraints->margins.right());
+        _toolbar_constraints.margins.left() + _toolbar_constraints.maximum.width() + _toolbar_constraints.margins.right(),
+        _content_constraints.margins.left() + _content_constraints.maximum.width() + _content_constraints.margins.right());
 
     // clang-format off
     r.minimum.height() =
-        _toolbar_constraints->margins.top() +
-        _toolbar_constraints->preferred.height() +
-        std::max(_toolbar_constraints->margins.bottom(), _content_constraints->margins.top()) +
-        _content_constraints->minimum.height() +
-        _content_constraints->margins.bottom();
+        _toolbar_constraints.margins.top() +
+        _toolbar_constraints.preferred.height() +
+        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
+        _content_constraints.minimum.height() +
+        _content_constraints.margins.bottom();
     r.preferred.height() =
-        _toolbar_constraints->margins.top() +
-        _toolbar_constraints->preferred.height() +
-        std::max(_toolbar_constraints->margins.bottom(), _content_constraints->margins.top()) +
-        _content_constraints->preferred.height() +
-        _content_constraints->margins.bottom();
+        _toolbar_constraints.margins.top() +
+        _toolbar_constraints.preferred.height() +
+        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
+        _content_constraints.preferred.height() +
+        _content_constraints.margins.bottom();
     r.maximum.height() =
-        _toolbar_constraints->margins.top() +
-        _toolbar_constraints->preferred.height() +
-        std::max(_toolbar_constraints->margins.bottom(), _content_constraints->margins.top()) +
-        _content_constraints->maximum.height() +
-        _content_constraints->margins.bottom();
+        _toolbar_constraints.margins.top() +
+        _toolbar_constraints.preferred.height() +
+        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
+        _content_constraints.maximum.height() +
+        _content_constraints.margins.bottom();
     // clang-format on
 
     // The operating system also has a minimum and maximum size, these sizes
@@ -123,21 +117,21 @@ void window_widget::constructor_implementation() noexcept
 void window_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet toolbar_height = _toolbar_constraints->preferred.height();
-        hilet between_margin = std::max(_toolbar_constraints->margins.bottom(), _content_constraints->margins.top());
+        hilet toolbar_height = _toolbar_constraints.preferred.height();
+        hilet between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
 
         hilet toolbar_rectangle = aarectanglei{
             point2i{
-                _toolbar_constraints->margins.left(),
-                context.height() - toolbar_height - _toolbar_constraints->margins.top()},
+                _toolbar_constraints.margins.left(),
+                context.height() - toolbar_height - _toolbar_constraints.margins.top()},
             point2i{
-                context.width() - _toolbar_constraints->margins.right(),
-                context.height() - _toolbar_constraints->margins.top()}};
+                context.width() - _toolbar_constraints.margins.right(),
+                context.height() - _toolbar_constraints.margins.top()}};
         _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme().baseline_adjustment};
 
         hilet content_rectangle = aarectanglei{
-            point2i{_content_constraints->margins.left(), _content_constraints->margins.bottom()},
-            point2i{context.width() - _content_constraints->margins.right(), toolbar_rectangle.bottom() - between_margin}};
+            point2i{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
+            point2i{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
         _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment};
     }
     _toolbar->set_layout(context.transform(_toolbar_shape));

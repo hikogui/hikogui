@@ -220,14 +220,14 @@ public:
      */
     [[nodiscard]] constexpr value_type middle() const noexcept
     {
-        return (bottom() + top()) * 0.5f;
+        return (bottom() + top()) / value_type{2};
     }
 
     /** The center on the x-axis between left and right.
      */
     [[nodiscard]] constexpr value_type center() const noexcept
     {
-        return (left() + right()) * 0.5f;
+        return (left() + right()) / value_type{2};
     }
 
     /** Get the center of the rectangle.
@@ -286,7 +286,7 @@ public:
             x = haystack.right() - needle.width();
 
         } else if (alignment == horizontal_alignment::center) {
-            x = haystack.center() - needle.width() * 0.5f;
+            x = haystack.center() - needle.width() / value_type{2};
 
         } else {
             hi_no_default();
@@ -300,7 +300,7 @@ public:
             y = haystack.top() - needle.height();
 
         } else if (alignment == vertical_alignment::middle) {
-            y = haystack.middle() - needle.height() * 0.5f;
+            y = haystack.middle() - needle.height() / value_type{2};
 
         } else {
             hi_no_default();

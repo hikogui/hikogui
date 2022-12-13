@@ -104,8 +104,10 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     hilet object = data[object_name];
     if (auto f = get_if<double>(object)) {
         return static_cast<float>(*f);
+    } else if (auto f = get_if<long long>(object)) {
+        return static_cast<float>(*f);
     } else {
-        throw parse_error(std::format("'{}' attribute must be a number, got {}.", object_name, object.type_name()));
+        throw parse_error(std::format("'{}' attribute must be a floating point number, got {}.", object_name, object.type_name()));
     }
 }
 
@@ -119,7 +121,7 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     if (auto f = get_if<long long>(object)) {
         return static_cast<long long>(*f);
     } else {
-        throw parse_error(std::format("'{}' attribute must be a number, got {}.", object_name, object.type_name()));
+        throw parse_error(std::format("'{}' attribute must be a integer, got {}.", object_name, object.type_name()));
     }
 }
 
@@ -370,7 +372,8 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     large_icon_size = parse_int(data, "large-icon-size");
     label_icon_size = parse_int(data, "label-icon-size");
 
-    baseline_adjustment = narrow_cast<int>(std::ceil(std::get<to_underlying(semantic_text_style::label)>(_text_styles)->cap_height(font_book)));
+    baseline_adjustment =
+        narrow_cast<int>(std::ceil(std::get<to_underlying(semantic_text_style::label)>(_text_styles)->cap_height(font_book)));
 }
 
 } // namespace hi::inline v1

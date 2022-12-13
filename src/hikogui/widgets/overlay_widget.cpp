@@ -16,11 +16,6 @@ overlay_widget::overlay_widget(widget *parent) noexcept :
         // any other widget drawn.
         semantic_layer = 0;
     }
-
-    _content_constraints = [&] {
-        hi_assert_not_null(_content);
-        return _content->constraints();
-    };
 }
 
 overlay_widget::~overlay_widget()
@@ -34,10 +29,11 @@ void overlay_widget::set_widget(std::shared_ptr<widget> new_widget) noexcept
     process_event({gui_event_type::window_reconstrain});
 }
 
-[[nodiscard]] box_constraints overlay_widget::constraints() noexcept
+[[nodiscard]] box_constraints overlay_widget::update_constraints() noexcept
 {
     _layout = {};
-    return _content_constraints.reload();
+    _content_constraints = _content->update_constraints();
+    return _content_constraints;
 }
 
 void overlay_widget::set_layout(widget_layout const& context) noexcept
@@ -84,7 +80,7 @@ void overlay_widget::draw_background(draw_context const &context) noexcept
 {
     context.draw_box(
         layout(),
-        narrow_cast<aarectangle>(layout().rectangle()),
+        layout().rectangle(),
         background_color(),
         foreground_color(),
         theme().border_width,

@@ -20,12 +20,12 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
     _children.push_back(std::make_shared<spacer_widget>(this));
 }
 
-[[nodiscard]] box_constraints toolbar_widget::constraints() noexcept
+[[nodiscard]] box_constraints toolbar_widget::update_constraints() noexcept
 {
     _layout = {};
 
     for (auto& child : _children) {
-        child.set_constraints(child.value->constraints());
+        child.set_constraints(child.value->update_constraints());
     }
 
     auto r = _children.constraints(os_settings::left_to_right());
@@ -78,7 +78,7 @@ void toolbar_widget::draw(draw_context const& context) noexcept
         if (overlaps(context, layout())) {
             context.draw_box(
                 layout(),
-                narrow_cast<aarectangle>(layout().rectangle()),
+                layout().rectangle(),
                 theme().color(semantic_color::fill, semantic_layer + 1));
 
             if (tab_button_has_focus()) {

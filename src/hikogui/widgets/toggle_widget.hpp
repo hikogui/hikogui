@@ -150,12 +150,14 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints constraints() noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
+
+    box_constraints _label_constraints;
 
     extent2i _button_size;
     aarectanglei _button_rectangle;

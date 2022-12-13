@@ -9,17 +9,14 @@ namespace hi::inline v1 {
 system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
 {
     _icon_widget = std::make_shared<icon_widget>(this, icon);
-
-    _icon_constraints = [&] {
-        hi_assert_not_null(_icon_widget);
-        return _icon_widget->constraints();
-    };
 }
 
-[[nodiscard]] box_constraints system_menu_widget::constraints() noexcept
+[[nodiscard]] box_constraints system_menu_widget::update_constraints() noexcept
 {
+    hi_assert_not_null(_icon_widget);
+
     _layout = {};
-    _icon_constraints.reset();
+    _icon_constraints = _icon_widget->update_constraints();
 
     hilet size = extent2i{theme().large_size, theme().large_size};
     return {size, size, size};

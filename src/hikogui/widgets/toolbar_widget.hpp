@@ -71,7 +71,7 @@ public:
         }
     }
 
-    [[nodiscard]] box_constraints constraints() noexcept;
+    [[nodiscard]] box_constraints update_constraints() noexcept;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     hitbox hitbox_test(point2i position) const noexcept override;

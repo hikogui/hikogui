@@ -145,6 +145,29 @@ public:
     /** Draw a box with rounded corners.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The four points of the box to draw.
+     * @param fill_color The fill color of the inside of the box.
+     * @param border_color The line color of the border of the box.
+     * @param border_width The line width of the border.
+     * @param border_side The side of the edge where the border is drawn.
+     * @param corner_radius The corner radii of each corner of the box.
+     */
+    void draw_box(
+        widget_layout const& layout,
+        aarectanglei const& box,
+        quad_color const& fill_color,
+        quad_color const& border_color,
+        float border_width,
+        hi::border_side border_side,
+        hi::corner_radii const& corner_radius = {}) const noexcept
+    {
+        return draw_box(
+            layout, narrow_cast<aarectangle>(box), fill_color, border_color, border_width, border_side, corner_radius);
+    }
+
+    /** Draw a box with rounded corners.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param clipping_rectangle The rectangle into which to draw the box.
      * @param box The four points of the box to draw.
      * @param fill_color The fill color of the inside of the box.
@@ -183,6 +206,39 @@ public:
             border_width,
             corner_radius_);
     }
+
+    /** Draw a box with rounded corners.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle The rectangle into which to draw the box.
+     * @param box The four points of the box to draw.
+     * @param fill_color The fill color of the inside of the box.
+     * @param border_color The line color of the border of the box.
+     * @param border_width The line width of the border.
+     * @param border_side The side of the edge where the border is drawn.
+     * @param corner_radius The corner radii of each corner of the box.
+     */
+    void draw_box(
+        widget_layout const& layout,
+        aarectanglei const& clipping_rectangle,
+        aarectanglei const& box,
+        quad_color const& fill_color,
+        quad_color const& border_color,
+        float border_width,
+        hi::border_side border_side,
+        hi::corner_radii const& corner_radius = {}) const noexcept
+    {
+        return draw_box(
+            layout,
+            clipping_rectangle,
+            narrow_cast<aarectangle>(box),
+            fill_color,
+            border_color,
+            border_width,
+            border_side,
+            corner_radius);
+    }
+
     /** Draw a box with rounded corners without a border.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
@@ -197,12 +253,23 @@ public:
         hi::corner_radii const& corner_radius = {}) const noexcept
     {
         return _draw_box(
-            layout.clipping_rectangle_on_window(),
-            layout.to_window3() * box,
-            fill_color,
-            fill_color,
-            0.0f,
-            corner_radius);
+            layout.clipping_rectangle_on_window(), layout.to_window3() * box, fill_color, fill_color, 0.0f, corner_radius);
+    }
+
+    /** Draw a box with rounded corners without a border.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The four points of the box to draw.
+     * @param fill_color The fill color of the inside of the box.
+     * @param corner_radius The corner radii of each corner of the box.
+     */
+    void draw_box(
+        widget_layout const& layout,
+        aarectanglei const& box,
+        quad_color const& fill_color,
+        hi::corner_radii const& corner_radius = {}) const noexcept
+    {
+        return draw_box(layout, narrow_cast<aarectangle>(box), fill_color, corner_radius);
     }
 
     /** Draw a box with rounded corners without a border.
@@ -227,6 +294,24 @@ public:
             fill_color,
             0.0f,
             corner_radius);
+    }
+
+    /** Draw a box with rounded corners without a border.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle A more narrow clipping rectangle than supplied by layout.
+     * @param box The four points of the box to draw.
+     * @param fill_color The fill color of the inside of the box.
+     * @param corner_radius The corner radii of each corner of the box.
+     */
+    void draw_box(
+        widget_layout const& layout,
+        aarectanglei const& clipping_rectangle,
+        aarectanglei const& box,
+        quad_color const& fill_color,
+        hi::corner_radii const& corner_radius = {}) const noexcept
+    {
+        return draw_box(layout, clipping_rectangle, narrow_cast<aarectangle>(box), fill_color, corner_radius);
     }
 
     [[nodiscard]] constexpr static rectangle
@@ -389,6 +474,19 @@ public:
         return _draw_image(layout.clipping_rectangle_on_window(), layout.to_window3() * box, image);
     }
 
+        /** Draw an image
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The four points of the box to draw.
+     * @param image The image to show.
+     * @return True when the image was drawn, false if the image is not ready yet.
+     *         Widgets may want to request a redraw if the image is not ready.
+     */
+    [[nodiscard]] bool draw_image(widget_layout const& layout, aarectanglei const& box, paged_image& image) const noexcept
+    {
+        return draw_image(layout, narrow_cast<aarectangle>(box), image);
+    }
+
     /** Draw an image
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
@@ -405,6 +503,22 @@ public:
         return _draw_image(layout.clipping_rectangle_on_window(clipping_rectangle), layout.to_window3() * box, image);
     }
 
+    /** Draw an image
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle A more narrow clipping rectangle than supplied by layout.
+     * @param box The four points of the box to draw.
+     * @param image The image to show.
+     * @return True when the image was drawn, false if the image is not ready yet.
+     *         Widgets may want to request a redraw if the image is not ready.
+     */
+    [[nodiscard]] bool
+    draw_image(widget_layout const& layout, aarectanglei const& clipping_rectangle, aarectanglei const& box, paged_image& image)
+        const noexcept
+    {
+        return draw_image(layout, clipping_rectangle, narrow_cast<aarectangle>(box), image);
+    }
+
     /** Draw a glyph.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
@@ -415,6 +529,18 @@ public:
     void draw_glyph(widget_layout const& layout, quad const& box, quad_color const& color, glyph_ids const& glyph) const noexcept
     {
         return _draw_glyph(layout.clipping_rectangle_on_window(), layout.to_window3() * box, color, glyph);
+    }
+
+    /** Draw a glyph.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The size and position of the glyph.
+     * @param color The color that the glyph should be drawn in.
+     * @param glyph The glyphs to draw.
+     */
+    void draw_glyph(widget_layout const& layout, aarectanglei const& box, quad_color const& color, glyph_ids const& glyph) const noexcept
+    {
+        return draw_glyph(layout, narrow_cast<aarectangle>(box), color, glyph);
     }
 
     /** Draw a glyph.
@@ -433,6 +559,24 @@ public:
         glyph_ids const& glyph) const noexcept
     {
         return _draw_glyph(layout.clipping_rectangle_on_window(clipping_rectangle), layout.to_window3() * box, color, glyph);
+    }
+
+    /** Draw a glyph.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle A more narrow clipping rectangle than supplied by layout.
+     * @param box The size and position of the glyph.
+     * @param color The color that the glyph should be drawn in.
+     * @param glyph The glyphs to draw.
+     */
+    void draw_glyph(
+        widget_layout const& layout,
+        aarectanglei clipping_rectangle,
+        aarectanglei const& box,
+        quad_color const& color,
+        glyph_ids const& glyph) const noexcept
+    {
+        return draw_glyph(layout, clipping_rectangle, narrow_cast<aarectangle>(box), color, glyph);
     }
 
     /** Draw shaped text.
@@ -611,6 +755,19 @@ public:
     void make_hole(widget_layout const& layout, quad const& box) const noexcept
     {
         return _override_alpha(layout.clipping_rectangle_on_window(), layout.to_window3() * box, 0.0f);
+    }
+
+    /** Make a hole in the user interface.
+     *
+     * This function makes a hole in the user-interface so that fragments written in the
+     * swap-chain before the GUI is drawn will be visible.
+     *
+     * @param layout The layout of the widget.
+     * @param box The box in local coordinates of the widget.
+     */
+    void make_hole(widget_layout const& layout, aarectanglei const& box) const noexcept
+    {
+        return make_hole(layout, narrow_cast<aarectangle>(box));
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const& context, widget_layout const& layout) noexcept

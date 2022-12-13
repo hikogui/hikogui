@@ -66,11 +66,6 @@ public:
             ++global_counter<"scroll_aperture_widget:minimum:reconstrain">;
             process_event({gui_event_type::window_reconstrain});
         });
-
-        _content_constraints = [&] {
-            hi_assert_not_null(_content);
-            return _content->constraints();
-        };
     }
 
     template<typename Widget, typename... Args>
@@ -101,12 +96,13 @@ public:
         co_yield _content.get();
     }
 
-    [[nodiscard]] box_constraints constraints() noexcept override
+    [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
+        _content_constraints = _content->update_constraints();
 
         // The aperture can scroll so its minimum width and height are zero.
-        auto aperture_constraints = _content_constraints.reload();
+        auto aperture_constraints = _content_constraints;
         aperture_constraints.minimum = extent2i{0, 0};
 
         return aperture_constraints.internalize_margins().constrain(*minimum, *maximum);
@@ -115,15 +111,15 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            aperture_width = context.width() - _content_constraints->margins.left() - _content_constraints->margins.right();
-            aperture_height = context.height() - _content_constraints->margins.bottom() - _content_constraints->margins.top();
+            aperture_width = context.width() - _content_constraints.margins.left() - _content_constraints.margins.right();
+            aperture_height = context.height() - _content_constraints.margins.bottom() - _content_constraints.margins.top();
 
             // Start scrolling with the preferred size as minimum, so
             // that widgets in the content don't get unnecessarily squeezed.
-            content_width = *aperture_width < _content_constraints->preferred.width() ? _content_constraints->preferred.width() :
+            content_width = *aperture_width < _content_constraints.preferred.width() ? _content_constraints.preferred.width() :
                                                                                         *aperture_width;
-            content_height = *aperture_height < _content_constraints->preferred.height() ?
-                _content_constraints->preferred.height() :
+            content_height = *aperture_height < _content_constraints.preferred.height() ?
+                _content_constraints.preferred.height() :
                 *aperture_height;
         }
 
@@ -138,8 +134,8 @@ public:
         _content_shape = box_shape{
             _content_constraints,
             aarectanglei{
-                -*offset_x + _content_constraints->margins.left(),
-                -*offset_y + _content_constraints->margins.bottom(),
+                -*offset_x + _content_constraints.margins.left(),
+                -*offset_y + _content_constraints.margins.bottom(),
                 *content_width,
                 *content_height},
             theme().baseline_adjustment};
@@ -234,7 +230,7 @@ public:
     }
     /// @endprivatesection
 private:
-    cache<box_constraints> _content_constraints;
+    box_constraints _content_constraints;
     box_shape _content_shape;
     std::shared_ptr<widget> _content;
     decltype(content_width)::callback_token _content_width_cbt;

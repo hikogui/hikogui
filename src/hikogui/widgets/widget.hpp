@@ -37,7 +37,7 @@ class gfx_surface;
 /** An interactive graphical object as part of the user-interface.
  *
  * Rendering is done in three distinct phases:
- *  1. Updating Constraints: `widget::constraints()`
+ *  1. Updating Constraints: `widget::update_constraints()`
  *  2. Updating Layout: `widget::set_layout()`
  *  3. Drawing: `widget::draw()`
  *
@@ -158,7 +158,7 @@ public:
 
     /** Update the constraints of the widget.
      *
-     * Typically the implementation of this function starts with recursively calling constraints()
+     * Typically the implementation of this function starts with recursively calling update_constraints()
      * on its children.
      *
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
@@ -167,7 +167,7 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual [[nodiscard]] box_constraints constraints() noexcept
+    virtual [[nodiscard]] box_constraints update_constraints() noexcept
     {
         _layout = {};
         return {*minimum, *minimum, *maximum};

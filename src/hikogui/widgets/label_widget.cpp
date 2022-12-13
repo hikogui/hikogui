@@ -55,7 +55,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
         });
 }
 
-[[nodiscard]] box_constraints label_widget::constraints() noexcept
+[[nodiscard]] box_constraints label_widget::update_constraints() noexcept
 {
     _layout = {};
 
@@ -103,7 +103,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
     _icon_widget->maximum = extent2i{icon_size, icon_size};
 
     for (auto& cell : _grid) {
-        cell.set_constraints(cell.value->constraints());
+        cell.set_constraints(cell.value->update_constraints());
     }
 
     return _grid.constraints(os_settings::left_to_right());

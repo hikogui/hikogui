@@ -80,13 +80,15 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints constraints() noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     /// @endprivatesection
 private:
+    box_constraints _label_constraints;
+
     glyph_ids _check_glyph;
     extent2i _check_size;
     aarectanglei _check_rectangle;

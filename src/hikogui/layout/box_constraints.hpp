@@ -50,24 +50,6 @@ struct box_constraints {
         hi_axiom(holds_invariant());
     }
 
-    [[deprecated]] constexpr box_constraints(
-        extent2 minimum,
-        extent2 preferred,
-        extent2 maximum,
-        hi::alignment alignment = hi::alignment{},
-        hi::margins margins = hi::margins{},
-        hi::margins padding = hi::margins{}) noexcept :
-        box_constraints(
-            narrow_cast<extent2i>(minimum),
-            narrow_cast<extent2i>(preferred),
-            narrow_cast<extent2i>(maximum),
-            alignment,
-            narrow_cast<marginsi>(margins),
-            narrow_cast<marginsi>(padding))
-    {
-        hi_axiom(holds_invariant());
-    }
-
     [[nodiscard]] constexpr box_constraints internalize_margins() const noexcept
     {
         auto r = *this;
@@ -127,11 +109,6 @@ struct box_constraints {
         return *this;
     }
 
-    [[deprecated]] [[nodiscard]] constexpr box_constraints operator+(extent2 const& rhs) noexcept
-    {
-        return *this + narrow_cast<extent2i>(rhs);
-    }
-
     [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         if (alignment == horizontal_alignment::flush or alignment == horizontal_alignment::justified) {
@@ -152,11 +129,6 @@ struct box_constraints {
 
         hi_axiom(r.holds_invariant());
         return r;
-    }
-
-    [[deprecated]] [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, extent2 const& rhs) noexcept
-    {
-        return max(lhs, narrow_cast<extent2i>(rhs));
     }
 
     /** Makes a constraint that encompasses both given constraints.

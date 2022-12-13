@@ -6,15 +6,15 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] box_constraints toggle_widget::constraints() noexcept
+[[nodiscard]] box_constraints toggle_widget::update_constraints() noexcept
 {
-    _layout = {};
+    _label_constraints = super::update_constraints();
 
     // Make room for button and margin.
     _button_size = {theme().size * 2, theme().size};
     hilet extra_size = extent2i{theme().margin + _button_size.width(), 0};
 
-    auto r = max(_label_constraints.reload() + extra_size, _button_size);
+    auto r = max(_label_constraints + extra_size, _button_size);
     r.margins = theme().margin;
     r.alignment = *alignment;
     return r;
@@ -35,11 +35,13 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
         if (alignment_ == horizontal_alignment::left) {
             hilet label_left = _button_rectangle.right() + theme().margin;
             hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
-            _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+            _on_label_shape = _off_label_shape = _other_label_shape =
+                box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
 
         } else if (alignment_ == horizontal_alignment::right) {
             hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
-            _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+            _on_label_shape = _off_label_shape = _other_label_shape =
+                box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
 
         } else {
             hi_not_implemented();
@@ -53,7 +55,7 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
         hilet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
         _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
     }
-    set_layout_button(context);
+    super::set_layout(context);
 }
 
 void toggle_widget::draw(draw_context const& context) noexcept
@@ -69,7 +71,7 @@ void toggle_widget::draw_toggle_button(draw_context const& context) noexcept
 {
     context.draw_box(
         layout(),
-        narrow_cast<aarectangle>(_button_rectangle),
+        _button_rectangle,
         background_color(),
         focus_color(),
         theme().border_width,

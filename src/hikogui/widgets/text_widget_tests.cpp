@@ -56,11 +56,10 @@ protected:
         widget = std::make_shared<hi::text_widget>(window_widget.get(), text);
         widget->mode = hi::widget_mode::enabled;
 
-        auto constraints = widget->constraints();
+        auto constraints = widget->update_constraints();
         auto layout = widget_layout{};
-        layout.shape.width = constraints.preferred_width;
-        layout.shape.height = constraints.preferred_height;
-        layout.shape.baseline = constraints.preferred_height / 2;
+        layout.shape.rectangle = aarectanglei{constraints.preferred};
+        layout.shape.baseline = constraints.preferred.height() / 2;
         // display_time_point is used to check for valid widget_layout. 
         layout.display_time_point = std::chrono::utc_clock::now();
         widget->set_layout(layout);

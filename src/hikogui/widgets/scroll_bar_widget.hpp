@@ -63,7 +63,7 @@ public:
 
     ~scroll_bar_widget() {}
 
-    [[nodiscard]] box_constraints constraints() noexcept override
+    [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
 
@@ -266,8 +266,8 @@ private:
 
     void draw_slider(draw_context const& context) noexcept
     {
-        hilet corner_radii = axis == axis::vertical ? hi::corner_radii(_slider_rectangle.width() / 2) :
-                                                      hi::corner_radii(_slider_rectangle.height() / 2);
+        hilet corner_radii = axis == axis::vertical ? hi::corner_radii{narrow_cast<float>(_slider_rectangle.width() / 2)} :
+                                                      hi::corner_radii{narrow_cast<float>(_slider_rectangle.height() / 2)};
 
         context.draw_box(
             layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_slider_rectangle), foreground_color(), corner_radii);

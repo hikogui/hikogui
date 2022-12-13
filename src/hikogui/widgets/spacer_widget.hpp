@@ -27,7 +27,7 @@ public:
         co_return;
     }
 
-    [[nodiscard]] box_constraints constraints() noexcept override
+    [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
 

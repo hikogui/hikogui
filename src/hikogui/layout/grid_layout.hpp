@@ -345,7 +345,7 @@ public:
         return empty() ? 0 : _forward ? back().padding_after : front().padding_after;
     }
 
-    [[nodiscard]] constexpr std::tuple<int, int, int> constraints() const noexcept
+    [[nodiscard]] constexpr std::tuple<int, int, int> update_constraints() const noexcept
     {
         return constraints(begin(), end());
     }
@@ -432,7 +432,7 @@ public:
             });
             if (count) {
                 hilet todo = new_extent - total_extent;
-                hilet per_extent = (todo + count - 1) / count;
+                hilet per_extent = narrow_cast<int>((todo + count - 1) / count);
                 for (auto& constraint : _constraints) {
                     if (constraint.beyond_maximum) {
                         constraint.extent += per_extent;
@@ -1095,13 +1095,13 @@ public:
         _column_constraints = {_cells, num_columns(), left_to_right};
 
         auto r = box_constraints{};
-        std::tie(r.minimum.width(), r.preferred.width(), r.maximum.width()) = _column_constraints.constraints();
+        std::tie(r.minimum.width(), r.preferred.width(), r.maximum.width()) = _column_constraints.update_constraints();
         r.margins.left() = _column_constraints.margin_before();
         r.margins.right() = _column_constraints.margin_after();
         r.padding.left() = _column_constraints.padding_before();
         r.padding.right() = _column_constraints.padding_after();
 
-        std::tie(r.minimum.height(), r.preferred.height(), r.maximum.height()) = _row_constraints.constraints();
+        std::tie(r.minimum.height(), r.preferred.height(), r.maximum.height()) = _row_constraints.update_constraints();
         r.margins.bottom() = _row_constraints.margin_after();
         r.margins.top() = _row_constraints.margin_before();
         r.padding.bottom() = _row_constraints.padding_after();

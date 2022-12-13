@@ -7,6 +7,7 @@
 #include "../rapid/numeric_array.hpp"
 #include "vector.hpp"
 #include "extent.hpp"
+#include "../cast.hpp"
 #include <format>
 
 namespace hi::inline v1 {
@@ -316,7 +317,7 @@ public:
         return point{floor(array_type{lhs} / rhs_) * rhs_};
     }
 
-    /** Round the coordinates of a point toward the top-right with the given granularity.
+    /** Round the coordinates of a point toward the left-bottom with the given granularity.
      */
     [[nodiscard]] friend constexpr point floor(point const& lhs, extent<value_type, D> rhs) noexcept
         requires std::is_same_v<value_type, int>
@@ -365,6 +366,12 @@ using point2 = geo::point<float, 2>;
 using point3 = geo::point<float, 3>;
 using point2i = geo::point<int, 2>;
 using point3i = geo::point<int, 3>;
+
+template<>
+[[nodiscard]] constexpr point2 narrow_cast(point2i const& rhs) noexcept
+{
+    return {narrow_cast<float>(rhs.x()), narrow_cast<float>(rhs.y())};
+}
 
 } // namespace hi::inline v1
 

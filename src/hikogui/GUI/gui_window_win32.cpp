@@ -1085,8 +1085,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_XBUTTONDOWN:
         {
             hilet within_double_click_time = r.time_point - multi_click_time_point < os_settings::double_click_interval();
-            hilet within_double_click_distance =
-                hypot(r.mouse().position - multi_click_position) < os_settings::double_click_distance();
+            hilet double_click_distance = std::sqrt(narrow_cast<float>(squared_hypot(r.mouse().position - multi_click_position)));
+            hilet within_double_click_distance = double_click_distance < os_settings::double_click_distance();
 
             multi_click_count = within_double_click_time and within_double_click_distance ? multi_click_count + 1 : 1;
             multi_click_time_point = r.time_point;

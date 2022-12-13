@@ -371,7 +371,7 @@ public:
             return std::partial_ordering::less;
         }
 
-        hilet greater = lt(lhs._v, rhs._v) & mask;
+        hilet greater = gt(lhs._v, rhs._v) & mask;
         if ((greater | equal) == mask) {
             // If one or more elements is greater (but none are less) then the ordering is greater.
             return std::partial_ordering::greater;

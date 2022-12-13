@@ -101,12 +101,12 @@ public:
         }
     }
 
-    [[nodiscard]] box_constraints constraints() noexcept override
+    [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
 
         for (auto& child : _children) {
-            child.set_constraints(child.value->constraints());
+            child.set_constraints(child.value->update_constraints());
         }
 
         return _children.constraints(os_settings::left_to_right());

@@ -24,7 +24,7 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
             hilet old_constraints = _constraints_cache;
 
             // Constrain and layout according to the old layout.
-            hilet new_constraints = constraints();
+            hilet new_constraints = update_constraints();
             new_layout.shape.rectangle = aarectanglei{
                 new_layout.shape.x(),
                 new_layout.shape.y(),
@@ -70,7 +70,7 @@ text_widget::~text_widget()
     delegate->deinit(*this);
 }
 
-[[nodiscard]] box_constraints text_widget::constraints() noexcept
+[[nodiscard]] box_constraints text_widget::update_constraints() noexcept
 {
     _layout = {};
 
@@ -846,7 +846,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
             // Normally mouse positions are kept in the local coordinate system, but scrolling
             // causes this coordinate system to shift, so translate it to the window coordinate system here.
             _last_drag_mouse_event = event;
-            _last_drag_mouse_event.mouse().position = point2{_layout.to_window * event.mouse().position};
+            _last_drag_mouse_event.mouse().position = _layout.to_window * event.mouse().position;
             ++global_counter<"text_widget:mouse_drag:redraw">;
             request_redraw();
             return true;

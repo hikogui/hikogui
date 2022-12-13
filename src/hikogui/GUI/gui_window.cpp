@@ -43,7 +43,7 @@ void gui_window::init()
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
-    _widget_constraints = widget->constraints();
+    _widget_constraints = widget->update_constraints();
     hilet new_size = _widget_constraints.preferred;
 
     // Reset the keyboard target to not focus anything.
@@ -99,7 +99,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
-        _widget_constraints = widget->constraints();
+        _widget_constraints = widget->update_constraints();
     }
 
     // Check if the window size matches the preferred size of the window_widget.

@@ -55,7 +55,7 @@ public:
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
-    [[nodiscard]] box_constraints constraints() noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
@@ -69,11 +69,11 @@ private:
     gui_window *_window;
 
     std::shared_ptr<grid_widget> _content;
-    cache<box_constraints> _content_constraints;
+    box_constraints _content_constraints;
     box_shape _content_shape;
 
     std::shared_ptr<toolbar_widget> _toolbar;
-    cache<box_constraints> _toolbar_constraints;
+    box_constraints _toolbar_constraints;
     box_shape _toolbar_shape;
 
     mutable bool _can_resize_width;

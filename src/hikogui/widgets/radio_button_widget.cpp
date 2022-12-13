@@ -6,15 +6,15 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] box_constraints radio_button_widget::constraints() noexcept
+[[nodiscard]] box_constraints radio_button_widget::update_constraints() noexcept
 {
-    _layout = {};
+    _label_constraints = super::update_constraints();
 
     // Make room for button and margin.
     _button_size = {theme().size, theme().size};
     hilet extra_size = extent2i{theme().margin + _button_size.width(), 0};
 
-    auto constraints = max(_label_constraints.reload() + extra_size, _button_size);
+    auto constraints = max(_label_constraints + extra_size, _button_size);
     constraints.margins = theme().margin;
     constraints.alignment = *alignment;
     return constraints;
@@ -35,11 +35,13 @@ void radio_button_widget::set_layout(widget_layout const& context) noexcept
         if (alignment_ == horizontal_alignment::left) {
             hilet label_left = _button_rectangle.right() + theme().margin;
             hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
-            _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+            _on_label_shape = _off_label_shape = _other_label_shape =
+                box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
 
         } else if (alignment_ == horizontal_alignment::right) {
             hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
-            _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+            _on_label_shape = _off_label_shape = _other_label_shape =
+                box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
 
         } else {
             hi_not_implemented();
@@ -47,10 +49,10 @@ void radio_button_widget::set_layout(widget_layout const& context) noexcept
 
         _pip_rectangle = align(_button_rectangle, extent2i{theme().icon_size, theme().icon_size}, alignment::middle_center());
     }
-    set_layout_button(context);
+    super::set_layout(context);
 }
 
-void radio_button_widget::draw(draw_context const &context) noexcept
+void radio_button_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         draw_radio_button(context);
@@ -59,7 +61,7 @@ void radio_button_widget::draw(draw_context const &context) noexcept
     }
 }
 
-void radio_button_widget::draw_radio_button(draw_context const &context) noexcept
+void radio_button_widget::draw_radio_button(draw_context const& context) noexcept
 {
     context.draw_circle(
         layout(),
@@ -70,7 +72,7 @@ void radio_button_widget::draw_radio_button(draw_context const &context) noexcep
         border_side::inside);
 }
 
-void radio_button_widget::draw_radio_pip(draw_context const &context) noexcept
+void radio_button_widget::draw_radio_pip(draw_context const& context) noexcept
 {
     _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
     if (_animated_value.is_animating()) {
