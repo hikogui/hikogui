@@ -12,6 +12,7 @@
 #include "../GUI/gui_event.hpp"
 #include "../geometry/axis.hpp"
 #include "../observer.hpp"
+#include "../numbers.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -76,12 +77,12 @@ public:
             return {
                 extent2i{theme().icon_size, theme().size * 4},
                 extent2i{theme().icon_size, theme().size * 4},
-                extent2i{theme().icon_size, box_constraints::max_int()}};
+                extent2i{theme().icon_size, large_number_v<int>}};
         } else {
             return {
                 extent2i{theme().size * 4, theme().icon_size},
                 extent2i{theme().size * 4, theme().icon_size},
-                extent2i{box_constraints::max_int(), theme().icon_size}};
+                extent2i{large_number_v<int>, theme().icon_size}};
         }
     }
 

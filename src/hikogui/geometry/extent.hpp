@@ -11,6 +11,7 @@
 #include "vector.hpp"
 #include "../rapid/numeric_array.hpp"
 #include "../cast.hpp"
+#include "../numbers.hpp"
 #include <compare>
 
 namespace hi { inline namespace v1 {
@@ -38,6 +39,11 @@ public:
     constexpr extent(extent&&) noexcept = default;
     constexpr extent& operator=(extent const&) noexcept = default;
     constexpr extent& operator=(extent&&) noexcept = default;
+
+    [[nodiscard]] constexpr static extent large() noexcept
+    {
+        return {large_number_v<value_type>, large_number_v<value_type>};
+    }
 
     /** Construct a extent from a lower dimension extent.
      */
@@ -122,13 +128,13 @@ public:
     }
 
     [[nodiscard]] static constexpr extent large() noexcept
-        requires (D == 2)
+        requires(D == 2)
     {
         return extent{value_type{16777216}, value_type{16777216}};
     }
 
     [[nodiscard]] static constexpr extent large() noexcept
-        requires (D == 3)
+        requires(D == 3)
     {
         return extent{value_type{16777216}, value_type{16777216}, value_type{16777216}};
     }
@@ -512,12 +518,9 @@ using extent2i = geo::extent<int, 2>;
 using extent3i = geo::extent<int, 3>;
 
 template<>
-[[nodiscard]] constexpr extent2i narrow_cast(extent2 const &rhs) noexcept
+[[nodiscard]] constexpr extent2i narrow_cast(extent2 const& rhs) noexcept
 {
-    return {
-        narrow_cast<int>(rhs.width()),
-        narrow_cast<int>(rhs.height())
-    };
+    return {narrow_cast<int>(rhs.width()), narrow_cast<int>(rhs.height())};
 }
 
 template<>

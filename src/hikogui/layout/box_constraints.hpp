@@ -157,15 +157,6 @@ struct box_constraints {
     {
         return max(first, max(second, third, args...));
     }
-
-    /** Get the maximum integer that should be used in constraints.
-     *
-     * @return 16777216; The largest integer that can be represented perfectly.
-     */
-    [[nodiscard]] constexpr static int max_int() noexcept
-    {
-        return 16777216;
-    }
 };
 
 }} // namespace hi::v1

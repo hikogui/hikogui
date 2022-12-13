@@ -96,11 +96,11 @@ public:
 
     /** The minimum size this widget is allowed to be.
      */
-    observer<extent2i> minimum = extent2i{0, 0};
+    observer<extent2i> minimum = extent2i{};
 
     /** The maximum size this widget is allowed to be.
      */
-    observer<extent2i> maximum = extent2i{box_constraints::max_int(), box_constraints::max_int()};
+    observer<extent2i> maximum = extent2i::large();
 
     /*! Constructor for creating sub views.
      */

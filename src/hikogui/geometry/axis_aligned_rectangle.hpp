@@ -15,6 +15,7 @@
 #include "../concepts.hpp"
 #include "../unfair_mutex.hpp"
 #include "../cast.hpp"
+#include "../numbers.hpp"
 #include <concepts>
 #include <mutex>
 
@@ -34,6 +35,15 @@ public:
     constexpr axis_aligned_rectangle& operator=(axis_aligned_rectangle const& rhs) noexcept = default;
     constexpr axis_aligned_rectangle(axis_aligned_rectangle&& rhs) noexcept = default;
     constexpr axis_aligned_rectangle& operator=(axis_aligned_rectangle&& rhs) noexcept = default;
+
+    /** Create a large axis aligned rectangle.
+     */
+    [[nodiscard]] constexpr static axis_aligned_rectangle large() noexcept
+    {
+        return {
+            point<value_type, 2>{-large_number_v<value_type>, -large_number_v<value_type>},
+            point<value_type, 2>{large_number_v<value_type>, large_number_v<value_type>}};
+    }
 
     constexpr explicit axis_aligned_rectangle(array_type const& other) noexcept : v(other)
     {
@@ -517,13 +527,13 @@ using aarectanglei = geo::axis_aligned_rectangle<int>;
 [[nodiscard]] aarectanglei fit(aarectanglei const& bounds, aarectanglei const& rectangle) noexcept;
 
 template<>
-[[nodiscard]] constexpr aarectanglei narrow_cast(aarectangle const &rhs) noexcept
+[[nodiscard]] constexpr aarectanglei narrow_cast(aarectangle const& rhs) noexcept
 {
     return {narrow_cast<int>(rhs.x()), narrow_cast<int>(rhs.y()), narrow_cast<int>(rhs.width()), narrow_cast<int>(rhs.height())};
 }
 
 template<>
-[[nodiscard]] constexpr aarectangle narrow_cast(aarectanglei const &rhs) noexcept
+[[nodiscard]] constexpr aarectangle narrow_cast(aarectanglei const& rhs) noexcept
 {
     return {
         narrow_cast<float>(rhs.x()),

@@ -32,7 +32,7 @@ public:
         _layout = {};
 
         auto r = box_constraints{};
-        r.maximum = extent2i{box_constraints::max_int(), box_constraints::max_int()};
+        r.maximum = extent2i::large();
         return r;
     }
 
