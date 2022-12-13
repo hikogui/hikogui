@@ -89,7 +89,7 @@ struct draw_attributes {
             }
             hi_axiom(_num_colors <= 2);
 
-        } else if constexpr (std::is_same_v<T, line_cap_end>) {
+        } else if constexpr (std::is_same_v<T, line_end_cap>) {
             if (_num_line_caps++ == 0) {
                 begin_line_cap = attribute;
                 end_line_cap = attribute;
@@ -152,20 +152,6 @@ private:
 template<typename Context>
 concept draw_quad_shape = std::same_as<Context, quad> or std::same_as<Context, rectangle> or std::same_as<Context, aarectangle> or
     std::same_as<Context, aarectanglei>;
-
-namespace detail {
-
-template<draw_quad_shape Shape>
-[[nodiscard]] inline quad draw_context_make_quad(Shape const& shape) noexcept
-{
-    if constexpr (std::is_same_v<Shape, aarectanglei>) {
-        return narrow_cast<aarectangle>(shape);
-    } else {
-        return shape;
-    }
-}
-
-} // namespace detail
 
 /** Draw context for drawing using the HikoGUI shaders.
  */
@@ -252,46 +238,7 @@ public:
     template<draw_quad_shape Shape, draw_attribute... Attributes>
     void draw_box(widget_layout const& layout, Shape const& shape, Attributes const&...attributes) const noexcept
     {
-        return draw_box(layout, detail::draw_context_make_quad{shape}, draw_attributes{attributes...});
-    }
-
-    [[nodiscard]] constexpr static rectangle
-    make_rectangle(line_segment const& line, float width, line_end_cap c1, line_end_cap c2) noexcept
-    {
-        auto right = line.direction();
-
-        hilet radius = width * 0.5f;
-        hilet n = normal(right, 0.0f);
-        hilet up = n * width;
-        hilet t = normalize(right);
-
-        auto origin = line.origin() - n * radius;
-
-        // Extend the line by the radius for rounded end-caps.
-        hilet radius_offset = t * radius;
-        if (c1 == line_end_cap::round) {
-            origin -= radius_offset;
-            right += radius_offset;
-        }
-        if (c2 == line_end_cap::round) {
-            right += radius_offset;
-        }
-
-        return rectangle{origin, right, up};
-    }
-
-    [[nodiscard]] constexpr static corner_radii make_corner_radii(float width, line_end_cap c1, line_end_cap c2) noexcept
-    {
-        auto r = f32x4::broadcast(width * 0.5f);
-
-        if (c1 == line_end_cap::flat) {
-            r = zero<0b0101>(r);
-        }
-        if (c2 == line_end_cap::flat) {
-            r = zero<0b1010>(r);
-        }
-
-        return corner_radii{r};
+        return draw_box(layout, make_quad(shape), draw_attributes{attributes...});
     }
 
     void draw_line(widget_layout const& layout, line_segment const& line, draw_attributes const& attributes) const noexcept
@@ -311,20 +258,6 @@ public:
     void draw_line(widget_layout const& layout, line_segment const& line, Attributes const&...attributes) const noexcept
     {
         return draw_line(layout, line, draw_attributes{attributes...});
-    }
-
-    [[nodiscard]] constexpr static rectangle make_rectangle(hi::circle const& circle) noexcept
-    {
-        hilet circle_ = f32x4{circle};
-        hilet origin = point3{circle_.xyz1() - circle_.ww00()};
-        hilet right = vector3{circle_.w000() * 2.0f};
-        hilet up = vector3{circle_._0w00() * 2.0f};
-        return rectangle{origin, right, up};
-    }
-
-    [[nodiscard]] constexpr static corner_radii make_corner_radii(hi::circle const& circle) noexcept
-    {
-        return corner_radii{f32x4{circle}.wwww()};
     }
 
     void draw_circle(widget_layout const& layout, hi::circle const& circle, draw_attributes const& attributes) const noexcept
@@ -375,7 +308,7 @@ public:
     draw_image(widget_layout const& layout, draw_quad_shape auto const& box, paged_image& image, Attributes const&...attributes)
         const noexcept
     {
-        return draw_image(layout, detail::draw_context_make_quad(box), image, draw_attributes{attributes...});
+        return draw_image(layout, make_quad(box), image, draw_attributes{attributes...});
     }
 
     /** Draw a glyph.
@@ -405,7 +338,7 @@ public:
     void draw_glyph(widget_layout const& layout, Shape const& box, glyph_ids const& glyph, Attributes const&...attributes)
         const noexcept
     {
-        return draw_glyph(layout, detail::draw_context_make_quad(box), draw_attributes{attributes...});
+        return draw_glyph(layout, make_quad(box), draw_attributes{attributes...});
     }
 
     /** Draw shaped text.
@@ -532,7 +465,7 @@ public:
      * @param layout The layout of the widget.
      * @param box The box in local coordinates of the widget.
      */
-    void make_hole(widget_layout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
+    void draw_hole(widget_layout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
     {
         return _override_alpha(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, attributes);
@@ -547,9 +480,9 @@ public:
      * @param box The box in local coordinates of the widget.
      */
     template<draw_quad_shape Shape, draw_attribute... Attributes>
-    void make_hole(widget_layout const& layout, Shape const& box, Attributes const&...attributes) const noexcept
+    void draw_hole(widget_layout const& layout, Shape const& box, Attributes const&...attributes) const noexcept
     {
-        return make_hole(layout, detail::draw_context_make_quad(box), draw_attributes{attributes...});
+        return make_hole(layout, make_quad(box), draw_attributes{attributes...});
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const& context, widget_layout const& layout) noexcept
@@ -562,6 +495,69 @@ private:
     vector_span<pipeline_image::vertex> *_image_vertices;
     vector_span<pipeline_SDF::vertex> *_sdf_vertices;
     vector_span<pipeline_alpha::vertex> *_alpha_vertices;
+
+    template<draw_quad_shape Shape>
+    [[nodiscard]] quad make_quad(Shape const& shape) noexcept
+    {
+        if constexpr (std::is_same_v<Shape, aarectanglei>) {
+            return narrow_cast<aarectangle>(shape);
+        } else {
+            return shape;
+        }
+    }
+
+    [[nodiscard]] constexpr static rectangle
+    make_rectangle(line_segment const& line, float width, line_end_cap c1, line_end_cap c2) noexcept
+    {
+        auto right = line.direction();
+
+        hilet radius = width * 0.5f;
+        hilet n = normal(right, 0.0f);
+        hilet up = n * width;
+        hilet t = normalize(right);
+
+        auto origin = line.origin() - n * radius;
+
+        // Extend the line by the radius for rounded end-caps.
+        hilet radius_offset = t * radius;
+        if (c1 == line_end_cap::round) {
+            origin -= radius_offset;
+            right += radius_offset;
+        }
+        if (c2 == line_end_cap::round) {
+            right += radius_offset;
+        }
+
+        return rectangle{origin, right, up};
+    }
+
+    [[nodiscard]] constexpr static rectangle make_rectangle(hi::circle const& circle) noexcept
+    {
+        hilet circle_ = f32x4{circle};
+        hilet origin = point3{circle_.xyz1() - circle_.ww00()};
+        hilet right = vector3{circle_.w000() * 2.0f};
+        hilet up = vector3{circle_._0w00() * 2.0f};
+        return rectangle{origin, right, up};
+    }
+
+    [[nodiscard]] constexpr static corner_radii make_corner_radii(float width, line_end_cap c1, line_end_cap c2) noexcept
+    {
+        auto r = f32x4::broadcast(width * 0.5f);
+
+        if (c1 == line_end_cap::flat) {
+            r = zero<0b0101>(r);
+        }
+        if (c2 == line_end_cap::flat) {
+            r = zero<0b1010>(r);
+        }
+
+        return corner_radii{r};
+    }
+
+    [[nodiscard]] constexpr static corner_radii make_corner_radii(hi::circle const& circle) noexcept
+    {
+        return corner_radii{f32x4{circle}.wwww()};
+    }
 
     void _override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
 
