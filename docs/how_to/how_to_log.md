@@ -80,7 +80,7 @@ log entries that have been taken on the same-CPU.
 ```text
 Date       Time              CPU Thread     Level Message         Source-filename       Line
 ---------- ------------------ -- -----      ----- --------------- --------------------- ----
-2021-09-28 12:55:15.424435377  7:15112      error This is a test. (gui_window_win32.cpp:536)
+2021-09-28 12:55:15.424435377  7:15112      error This is a test. (gui_window_win32_impl.cpp:536)
 ```
 
 Wait-free counting

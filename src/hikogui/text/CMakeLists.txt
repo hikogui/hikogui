@@ -5,12 +5,12 @@
 
 target_sources(hikogui PRIVATE
     agrapheme.hpp
-    agstring.cpp
+    agstring_impl.cpp
     agstring.hpp
     elusive_icon.hpp
-    font.cpp
+    font_impl.cpp
     font.hpp
-    font_book.cpp
+    font_book_impl.cpp
     font_book.hpp
     font_family_id.hpp
     font_grapheme_id.hpp
@@ -18,7 +18,7 @@ target_sources(hikogui PRIVATE
     font_variant.hpp
     font_weight.hpp
     glyph_id.hpp
-    glyph_ids.cpp
+    glyph_ids_impl.cpp
     glyph_ids.hpp
     glyph_metrics.hpp
     line_metrics.hpp
@@ -26,16 +26,16 @@ target_sources(hikogui PRIVATE
     text_cursor.hpp
     text_decoration.hpp
     text_selection.hpp
-    text_shaper.cpp
+    text_shaper_impl.cpp
     text_shaper.hpp
-    text_shaper_char.cpp
+    text_shaper_char_impl.cpp
     text_shaper_char.hpp
-    text_shaper_line.cpp
+    text_shaper_line_impl.cpp
     text_shaper_line.hpp
-    text_style.cpp
+    text_style_impl.cpp
     text_style.hpp
-    true_type_font_coverage.cpp
-    true_type_font.cpp
+    true_type_font_coverage_impl.cpp
+    true_type_font_impl.cpp
     true_type_font.hpp
     hikogui_icon.hpp
 )

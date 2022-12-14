@@ -3,7 +3,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(hikogui PRIVATE
-    skeleton.cpp
+    skeleton_impl.cpp
     skeleton.hpp
     skeleton_block_node.hpp
     skeleton_break_node.hpp
@@ -14,7 +14,7 @@ target_sources(hikogui PRIVATE
     skeleton_function_node.hpp
     skeleton_if_node.hpp
     skeleton_node.hpp
-    skeleton_parse_context.cpp
+    skeleton_parse_context_impl.cpp
     skeleton_parse_context.hpp
     skeleton_placeholder_node.hpp
     skeleton_return_node.hpp

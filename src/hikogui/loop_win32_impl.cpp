@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file loop_win32.cpp
+/** @file loop_win32_impl.cpp
  *
  * This is the win32 implementation of the main loop.
  *

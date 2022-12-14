@@ -45,7 +45,7 @@ namespace hi { inline namespace v1 {
  * observes `value`. When the value is 1 the toggle is 'on', when the value is 2
  * the toggle is 'off'.
  *
- * @snippet widgets/toggle_example.cpp Create a toggle
+ * @snippet widgets/toggle_example_impl.cpp Create a toggle
  *
  * @ingroup widgets
  */

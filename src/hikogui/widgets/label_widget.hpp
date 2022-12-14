@@ -37,7 +37,7 @@ concept label_widget_attribute =
  * @image html label_widget.png
  *
  * Here is an example on how to create a label:
- * @snippet widgets/checkbox_example.cpp Create a label
+ * @snippet widgets/checkbox_example_impl.cpp Create a label
  */
 class label_widget final : public widget {
 public:
