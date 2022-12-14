@@ -26,13 +26,13 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    [[nodiscard]] hi::box_constraints constraints() noexcept override
+    [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
         // Reset _layout so that the set_layout() calculations will be triggered.
         _layout = {};
 
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
-        return {{100.0f, 20.0f}, {200.0f, 20.0f}, {300.0f, 50.0f}, hi::alignment{}, theme().margin};
+        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, theme().margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -82,7 +82,7 @@ public:
     }
 
     // Override this function when your widget needs to be controllable by mouse interaction.
-    [[nodiscard]] hi::hitbox hitbox_test(hi::point3 position) const noexcept override
+    [[nodiscard]] hi::hitbox hitbox_test(hi::point2i position) const noexcept override
     {
         // Check if the (mouse) position is within the visual-area of the widget.
         // The hit_rectangle is the _layout.rectangle() intersected with the _layout.clipping_rectangle.
@@ -90,7 +90,8 @@ public:
             // The `this` argument allows the gui_window to forward mouse events to handle_event(mouse) of this widget.
             // The `position` argument is used to handle widgets that are visually overlapping, widgets with higher elevation
             // get priority. When this widget is enabled it should show a button-cursor, otherwise just the normal arrow.
-            return {this, position, *mode >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
+            return {
+                this, _layout.elevation, *mode >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
 
         } else {
             return {};

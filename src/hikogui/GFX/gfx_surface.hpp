@@ -46,7 +46,7 @@ public:
 
     /** Get the size of the surface.
      */
-    [[nodiscard]] virtual extent2 size() const noexcept = 0;
+    [[nodiscard]] virtual extent2i size() const noexcept = 0;
 
     /** Update the surface.
      * This function will check if the graphic pipeline and swapchain
@@ -54,9 +54,9 @@ public:
      *
      * @param new_size The size of the window.
      */
-    virtual void update(extent2 new_size) noexcept = 0;
+    virtual void update(extent2i new_size) noexcept = 0;
 
-    [[nodiscard]] virtual draw_context render_start(aarectangle redraw_rectangle) = 0;
+    [[nodiscard]] virtual draw_context render_start(aarectanglei redraw_rectangle) = 0;
     virtual void render_finish(draw_context const &context) = 0;
 
     /** Add a delegate to handle extra rendering.

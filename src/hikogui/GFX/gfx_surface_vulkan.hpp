@@ -33,7 +33,7 @@ struct swapchain_image_info {
     vk::Image image;
     vk::ImageView image_view;
     vk::Framebuffer frame_buffer;
-    aarectangle redraw_rectangle;
+    aarectanglei redraw_rectangle;
     bool layout_is_present = false;
 };
 
@@ -91,11 +91,11 @@ public:
     void set_device(gfx_device *device) noexcept override;
 
     gfx_device_vulkan& vulkan_device() const noexcept;
-    [[nodiscard]] extent2 size() const noexcept override;
+    [[nodiscard]] extent2i size() const noexcept override;
 
-    void update(extent2 new_size) noexcept override;
+    void update(extent2i new_size) noexcept override;
 
-    [[nodiscard]] draw_context render_start(aarectangle redraw_rectangle) override;
+    [[nodiscard]] draw_context render_start(aarectanglei redraw_rectangle) override;
     void render_finish(draw_context const& context) override;
 
     void add_delegate(gfx_surface_delegate *delegate) noexcept override;
@@ -103,7 +103,7 @@ public:
 
 protected:
     void teardown() noexcept override;
-    void build(extent2 new_size) noexcept;
+    void build(extent2i new_size) noexcept;
 
 private:
     struct delegate_type {
@@ -115,10 +115,10 @@ private:
 
     gfx_queue_vulkan const *_graphics_queue;
     gfx_queue_vulkan const *_present_queue;
-    extent2 _render_area_granularity;
+    extent2i _render_area_granularity;
 
     gfx_surface_loss build_for_new_device() noexcept;
-    gfx_surface_loss build_for_new_swapchain(extent2 new_size) noexcept;
+    gfx_surface_loss build_for_new_swapchain(extent2i new_size) noexcept;
 
     void teardown_for_swapchain_lost() noexcept;
     void teardown_for_device_lost() noexcept;
@@ -139,12 +139,12 @@ private:
      */
     void submit_command_buffer(vk::Semaphore delegate_semaphore);
 
-    bool read_surface_extent(extent2 minimum_size, extent2 maximum_size);
+    bool read_surface_extent(extent2i minimum_size, extent2i maximum_size);
     bool check_surface_extent();
 
     void build_semaphores();
     void teardown_semaphores();
-    gfx_surface_loss build_swapchain(std::size_t new_count, extent2 new_size);
+    gfx_surface_loss build_swapchain(std::size_t new_count, extent2i new_size);
     void teardown_swapchain();
     void build_command_buffers();
     void teardown_command_buffers();
@@ -165,7 +165,7 @@ private:
      * @param new_size Request the image size in the swapchain.
      * @return A valid swapchain image count, swapchain image size.
      */
-    std::tuple<std::size_t, extent2> get_image_count_and_size(std::size_t new_count, extent2 new_size);
+    std::tuple<std::size_t, extent2i> get_image_count_and_size(std::size_t new_count, extent2i new_size);
 };
 
 } // namespace hi::inline v1

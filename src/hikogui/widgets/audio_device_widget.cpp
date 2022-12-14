@@ -39,10 +39,10 @@ audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio
     co_yield _grid_widget.get();
 }
 
-[[nodiscard]] box_constraints audio_device_widget::constraints() noexcept
+[[nodiscard]] box_constraints audio_device_widget::update_constraints() noexcept
 {
     _layout = {};
-    _grid_constraints = _grid_widget->constraints();
+    _grid_constraints = _grid_widget->update_constraints();
     return _grid_constraints;
 }
 
@@ -63,7 +63,7 @@ void audio_device_widget::draw(draw_context const& context) noexcept
     }
 }
 
-hitbox audio_device_widget::hitbox_test(point3 position) const noexcept
+hitbox audio_device_widget::hitbox_test(point2i position) const noexcept
 {
     if (*mode >= widget_mode::partial) {
         auto r = hitbox{};

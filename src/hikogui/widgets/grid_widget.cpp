@@ -44,12 +44,12 @@ widget& grid_widget::add_widget(
     return ref;
 }
 
-[[nodiscard]] box_constraints grid_widget::constraints() noexcept
+[[nodiscard]] box_constraints grid_widget::update_constraints() noexcept
 {
     _layout = {};
 
     for (auto& cell : _grid) {
-        cell.set_constraints(cell.value->constraints());
+        cell.set_constraints(cell.value->update_constraints());
     }
 
     return _grid.constraints(os_settings::left_to_right());
@@ -75,7 +75,7 @@ void grid_widget::draw(draw_context const& context) noexcept
     }
 }
 
-hitbox grid_widget::hitbox_test(point3 position) const noexcept
+hitbox grid_widget::hitbox_test(point2i position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 

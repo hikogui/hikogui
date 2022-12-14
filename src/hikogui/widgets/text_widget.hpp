@@ -106,11 +106,11 @@ public:
     } : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...) {}
 
     /// @privatesection
-    [[nodiscard]] box_constraints constraints() noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
-    hitbox hitbox_test(point3 position) const noexcept override;
+    hitbox hitbox_test(point2i position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     /// @endprivatesection
 private:

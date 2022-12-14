@@ -271,12 +271,12 @@ widget const *widget::find_next_widget(
     return parent->find_last_widget(group) == this;
 }
 
-void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
+void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
 {
     hi_axiom(loop::main().on_thread());
 
     if (parent) {
-        parent->scroll_to_show(bounding_rectangle(_layout.to_parent * rectangle));
+        parent->scroll_to_show(_layout.to_parent * rectangle);
     }
 }
 
@@ -299,15 +299,15 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
     return chain;
 }
 
-[[nodiscard]] aarectangle widget::make_overlay_rectangle(aarectangle requested_rectangle) const noexcept
+[[nodiscard]] aarectanglei widget::make_overlay_rectangle(aarectanglei requested_rectangle) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 
     // Move the request_rectangle to window coordinates.
-    hilet requested_window_rectangle = translate2{layout().clipping_rectangle_on_window()} * requested_rectangle;
-    hilet window_bounds = aarectangle{layout().window_size} - theme().margin;
+    hilet requested_window_rectangle = translate2i{layout().clipping_rectangle_on_window()} * requested_rectangle;
+    hilet window_bounds = aarectanglei{layout().window_size} - theme().margin;
     hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
-    return bounding_rectangle(layout().from_window * response_window_rectangle);
+    return layout().from_window * response_window_rectangle;
 }
 
 } // namespace hi::inline v1

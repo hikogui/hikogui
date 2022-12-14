@@ -166,30 +166,6 @@ public:
     [[nodiscard]] aarectangle
     bounding_rectangle(float maximum_line_width, float line_spacing = 1.0f, float paragraph_spacing = 1.5f) noexcept;
 
-    /** Get constraints.
-     *
-     * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
-     * and fold the lines using the unicode line breaking algorithm to several line widths.
-     *
-     * The following sizes will be returned:
-     *  - Maximum width:
-     *    + if larger than A4 priority=0,
-     *    + larger than A4 two-column priority=10,
-     *    + larger than A4 three-column priority=20,
-     *    + otherwise priority=100.
-     *  - No intermediate sizes.
-     *  - A4 width, priority=10.
-     *  - No intermediate sizes.
-     *  - A4 two-column width, priority=10.
-     *  - No intermediate sizes.
-     *  - A4 three-column width, priority=10.
-     *  - All smaller sizes, if maximum size is smaller than A4 two-column, priority=5 (decreasing every step).
-     *
-     * @param alignment The vertical alignment of text.
-     * @return The constraints (a list of sizes) which can hold the text.
-     */
-    [[nodiscard]] box_constraints constraints() noexcept;
-
     /** Layout the lines of the text.
      *
      * It will estimate the width and height based on the glyphs before glyph-morphing and kerning

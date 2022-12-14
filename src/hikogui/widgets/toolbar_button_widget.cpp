@@ -6,30 +6,26 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] box_constraints toolbar_button_widget::constraints() noexcept
+[[nodiscard]] box_constraints toolbar_button_widget::update_constraints() noexcept
 {
-    _layout = {};
+    _label_constraints = super::update_constraints();
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
-    _label_constraints = constraints_button();
+    hilet extra_size = extent2i{theme().margin * 2, theme().margin * 2};
 
     auto constraints = _label_constraints + extra_size;
-    constraints.set_margins(0);
+    constraints.margins = 0;
     return constraints;
 }
 
 void toolbar_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet label_rectangle = aarectangle{
-            theme().margin,
-            0.0f,
-            narrow_cast<float>(context.width()) - theme().margin * 2.0f,
-            narrow_cast<float>(context.height())};
-        _label_shape = box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+        hilet label_rectangle = aarectanglei{theme().margin, 0, context.width() - theme().margin * 2, context.height()};
+        _on_label_shape = _off_label_shape = _other_label_shape =
+            box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
     }
-    set_layout_button(context);
+    super::set_layout(context);
 }
 
 void toolbar_button_widget::draw(draw_context const& context) noexcept
@@ -49,7 +45,12 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const& context) noe
 {
     hilet border_color = *focus ? focus_color() : color::transparent();
     context.draw_box(
-        layout(), layout().rectangle(), background_color(), border_color, theme().border_width, border_side::inside);
+        layout(),
+        layout().rectangle(),
+        background_color(),
+        border_color,
+        theme().border_width,
+        border_side::inside);
 }
 
 } // namespace hi::inline v1

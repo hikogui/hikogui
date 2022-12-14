@@ -31,7 +31,7 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    [[nodiscard]] hi::box_constraints constraints() noexcept override
+    [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
@@ -86,7 +86,7 @@ public:
             // The 3D drawing will be done directly on the swap-chain before the GUI is drawn.
             // By making a hole in the GUI we can show the 3D drawing underneath it, otherwise
             // the solid-background color of the GUI would show instead.
-            context.make_hole(_layout, _layout.rectangle());
+            context.draw_hole(_layout, _layout.rectangle());
         }
     }
 

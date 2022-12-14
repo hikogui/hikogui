@@ -34,7 +34,8 @@ draw_context::draw_context(
     _alpha_vertices->clear();
 }
 
-void draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad box, float alpha) const noexcept
+void draw_context::_override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes)
+    const noexcept
 {
     if (_alpha_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
@@ -42,17 +43,25 @@ void draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad b
         return;
     }
 
-    pipeline_alpha::device_shared::place_vertices(*_alpha_vertices, clipping_rectangle, box, alpha);
+    pipeline_alpha::device_shared::place_vertices(
+        *_alpha_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, attributes.fill_color.p0.a());
 }
 
-void draw_context::_draw_box(
-    aarectangle const& clipping_rectangle,
-    quad box,
-    quad_color const& fill_color,
-    quad_color const& border_color,
-    float border_width,
-    hi::corner_radii corner_radius) const noexcept
+void draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
 {
+    // clang-format off
+    hilet border_radius = attributes.line_width * 0.5f;
+    hilet box_ =
+        attributes.border_side == hi::border_side::inside ? box - border_radius :
+        attributes.border_side == hi::border_side::outside ? box + border_radius :
+        box;
+
+    hilet corner_radius =
+        attributes.border_side == hi::border_side::inside ? attributes.corner_radius - border_radius :
+        attributes.border_side == hi::border_side::outside ? attributes.corner_radius + border_radius :
+        attributes.corner_radius;
+    // clang-format on
+
     if (_box_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
         ++global_counter<"draw_box::overflow">;
@@ -60,11 +69,17 @@ void draw_context::_draw_box(
     }
 
     pipeline_box::device_shared::place_vertices(
-        *_box_vertices, clipping_rectangle, box, fill_color, border_color, border_width, corner_radius);
+        *_box_vertices,
+        narrow_cast<aarectangle>(clipping_rectangle),
+        box_,
+        attributes.fill_color,
+        attributes.line_color,
+        attributes.line_width,
+        corner_radius);
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image& image) const noexcept
+draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image& image) const noexcept
 {
     hi_assert_not_null(_image_vertices);
 
@@ -73,26 +88,29 @@ draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box
     }
 
     hilet pipeline = down_cast<gfx_device_vulkan&>(device).image_pipeline.get();
-    pipeline->place_vertices(*_image_vertices, clipping_rectangle, box, image);
+    pipeline->place_vertices(*_image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
     return true;
 }
 
 void draw_context::_draw_glyph(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     quad const& box,
-    quad_color const& color,
-    glyph_ids const& glyph) const noexcept
+    glyph_ids const& glyph,
+    draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
     hilet pipeline = down_cast<gfx_device_vulkan&>(device).SDF_pipeline.get();
 
     if (_sdf_vertices->full()) {
-        _draw_box(clipping_rectangle, box, hi::color{1.0f, 0.0f, 1.0f}, hi::color{}, 0.0f, {});
+        auto box_attributes = attributes;
+        box_attributes.fill_color = hi::color{1.0f, 0.0f, 1.0f}; // Magenta.
+        _draw_box(clipping_rectangle, box, box_attributes);
         ++global_counter<"draw_glyph::overflow">;
         return;
     }
 
-    hilet atlas_was_updated = pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, box, glyph, color);
+    hilet atlas_was_updated =
+        pipeline->place_vertices(*_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, glyph, attributes.fill_color);
 
     if (atlas_was_updated) {
         pipeline->prepare_atlas_for_rendering();
@@ -100,10 +118,10 @@ void draw_context::_draw_glyph(
 }
 
 void draw_context::_draw_text(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
-    std::optional<quad_color> text_color) const noexcept
+    draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
     hilet pipeline = down_cast<gfx_device_vulkan&>(device).SDF_pipeline.get();
@@ -111,19 +129,22 @@ void draw_context::_draw_text(
     auto atlas_was_updated = false;
     for (hilet& c : text) {
         hilet box = translate2{c.position} * c.metrics.bounding_rectangle;
-        hilet color = text_color ? *text_color : quad_color{c.style->color};
+        hilet color = attributes.num_colors > 0 ? attributes.fill_color : quad_color{c.style->color};
 
         hi_assert_not_null(c.description);
         if (not is_visible(c.description->general_category())) {
             continue;
 
         } else if (_sdf_vertices->full()) {
-            _draw_box(clipping_rectangle, box, hi::color{1.0f, 0.0f, 1.0f}, hi::color{}, 0.0f, {});
+            auto box_attributes = attributes;
+            box_attributes.fill_color = hi::color{1.0f, 0.0f, 1.0f}; // Magenta.
+            _draw_box(clipping_rectangle, box, box_attributes);
             ++global_counter<"draw_glyph::overflow">;
             break;
         }
 
-        atlas_was_updated |= pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, c.glyph, color);
+        atlas_was_updated |= pipeline->place_vertices(
+            *_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, c.glyph, color);
     }
 
     if (atlas_was_updated) {
@@ -132,11 +153,11 @@ void draw_context::_draw_text(
 }
 
 void draw_context::_draw_text_selection(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_selection const& selection,
-    hi::color color) const noexcept
+    draw_attributes const& attributes) const noexcept
 {
     hilet[first, last] = selection.selection_indices();
     hilet first_ = text.begin() + first;
@@ -146,15 +167,15 @@ void draw_context::_draw_text_selection(
     hi_axiom(first_ <= last_);
 
     for (auto it = first_; it != last_; ++it) {
-        _draw_box(clipping_rectangle, transform * it->rectangle, color, hi::color{}, 0.0f, {});
+        _draw_box(clipping_rectangle, transform * it->rectangle, attributes);
     }
 }
 
 void draw_context::_draw_text_insertion_cursor_empty(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
-    hi::color color) const noexcept
+    draw_attributes const& attributes) const noexcept
 {
     hilet maximum_left = std::round(text.rectangle().left() - 0.5f);
     hilet maximum_right = std::round(text.rectangle().right() - 0.5f);
@@ -165,16 +186,16 @@ void draw_context::_draw_text_insertion_cursor_empty(
     hilet left = only_line.paragraph_direction == unicode_bidi_class::L ? maximum_left : maximum_right;
 
     hilet shape_I = aarectangle{point2{left, bottom}, point2{left + 1.0f, top}};
-    _draw_box(clipping_rectangle, transform * shape_I, color, hi::color{}, 0.0f, {});
+    _draw_box(clipping_rectangle, transform * shape_I, attributes);
 }
 
 void draw_context::_draw_text_insertion_cursor(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_cursor cursor,
-    hi::color color,
-    bool show_flag) const noexcept
+    bool show_flag,
+    draw_attributes const& attributes) const noexcept
 {
     hilet maximum_left = std::round(text.rectangle().left() - 0.5f);
     hilet maximum_right = std::round(text.rectangle().right() - 0.5f);
@@ -207,40 +228,41 @@ void draw_context::_draw_text_insertion_cursor(
 
     // Draw the vertical line cursor.
     hilet shape_I = aarectangle{point2{left, bottom}, point2{left + 1.0f, top}};
-    _draw_box(clipping_rectangle, transform * shape_I, color, hi::color{}, 0.0f, {});
+    _draw_box(clipping_rectangle, transform * shape_I, attributes);
 
     if (show_flag) {
         // Draw the LTR/RTL flag at the top of the line cursor.
         hilet shape_flag = ltr ? aarectangle{point2{left + 1.0f, top - 1.0f}, point2{left + 3.0f, top}} :
                                  aarectangle{point2{left - 2.0f, top - 1.0f}, point2{left, top}};
 
-        _draw_box(clipping_rectangle, transform * shape_flag, color, hi::color{}, 0.0f, {});
+        _draw_box(clipping_rectangle, transform * shape_flag, attributes);
     }
 }
 
 void draw_context::_draw_text_overwrite_cursor(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper::char_const_iterator it,
-    hi::color color) const noexcept
+    draw_attributes const& attributes) const noexcept
 {
     hilet box = ceil(it->rectangle) + 0.5f;
-    _draw_box(clipping_rectangle, transform * box, hi::color{}, color, 1.0f, {});
+    _draw_box(clipping_rectangle, transform * box, attributes);
 }
 
 void draw_context::_draw_text_cursors(
-    aarectangle const& clipping_rectangle,
+    aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_cursor primary_cursor,
-    hi::color primary_color,
-    hi::color secondary_color,
     bool overwrite_mode,
-    bool dead_character_mode) const noexcept
+    bool dead_character_mode,
+    draw_attributes const& attributes) const noexcept
 {
+    hi_axiom(attributes.line_width == 0.0f);
+
     if (text.empty()) {
         // When text is empty, draw a cursor directly.
-        return _draw_text_insertion_cursor_empty(clipping_rectangle, transform, text, primary_color);
+        return _draw_text_insertion_cursor_empty(clipping_rectangle, transform, text, attributes);
     }
 
     auto draw_flags = false;
@@ -249,11 +271,20 @@ void draw_context::_draw_text_cursors(
 
     if (dead_character_mode) {
         hi_assert(primary_cursor.before());
-        return _draw_text_overwrite_cursor(clipping_rectangle, transform, text.begin() + primary_cursor.index(), secondary_color);
+        auto cursor_attributes = attributes;
+        cursor_attributes.fill_color = attributes.line_color;
+        cursor_attributes.line_color = {};
+        return _draw_text_overwrite_cursor(
+            clipping_rectangle, transform, text.begin() + primary_cursor.index(), cursor_attributes);
     }
 
     if (overwrite_mode and primary_cursor.before()) {
-        return _draw_text_overwrite_cursor(clipping_rectangle, transform, text.begin() + primary_cursor.index(), primary_color);
+        auto cursor_attributes = attributes;
+        cursor_attributes.fill_color = {};
+        cursor_attributes.line_color = attributes.fill_color;
+        cursor_attributes.line_width = 1.0f;
+        return _draw_text_overwrite_cursor(
+            clipping_rectangle, transform, text.begin() + primary_cursor.index(), cursor_attributes);
     }
 
     // calculate the position of the primary cursor.
@@ -283,10 +314,13 @@ void draw_context::_draw_text_cursors(
         }
 
         draw_flags = true;
-        _draw_text_insertion_cursor(clipping_rectangle, transform, text, secondary_cursor, secondary_color, draw_flags);
+        auto cursor_attributes = attributes;
+        cursor_attributes.fill_color = attributes.line_color;
+        cursor_attributes.line_color = {};
+        _draw_text_insertion_cursor(clipping_rectangle, transform, text, secondary_cursor, draw_flags, cursor_attributes);
     } while (false);
 
-    _draw_text_insertion_cursor(clipping_rectangle, transform, text, primary_cursor, primary_color, draw_flags);
+    _draw_text_insertion_cursor(clipping_rectangle, transform, text, primary_cursor, draw_flags, attributes);
 }
 
 } // namespace hi::inline v1

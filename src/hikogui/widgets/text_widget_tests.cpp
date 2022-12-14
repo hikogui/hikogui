@@ -43,11 +43,11 @@ protected:
 
         // Cursor movement (including editing) requires the text to be shaped.
         // text shaping requires fonts and text styles.
-        auto &font_book = font_book::global();
+        auto &fb = font_book::global();
         for (auto const &path : get_paths(path_location::font_dirs)) {
-            font_book.register_font_directory(path);
+            fb.register_font_directory(path);
         }
-        theme_book = std::make_unique<hi::theme_book>(font_book, make_vector(get_paths(path_location::theme_dirs)));
+        theme_book = std::make_unique<hi::theme_book>(fb, make_vector(get_paths(path_location::theme_dirs)));
         theme = theme_book->find("default", theme_mode::light);
 
         window_widget = std::make_shared<window_widget_moc>();
@@ -56,14 +56,12 @@ protected:
         widget = std::make_shared<hi::text_widget>(window_widget.get(), text);
         widget->mode = hi::widget_mode::enabled;
 
-        auto constraints = widget->constraints();
+        auto constraints = widget->update_constraints();
         auto layout = widget_layout{};
-        layout.shape.width = constraints.preferred_width;
-        layout.shape.height = constraints.preferred_height;
-        layout.shape.baseline = constraints.preferred_height / 2;
+        layout.shape.rectangle = aarectanglei{constraints.preferred};
+        layout.shape.baseline = constraints.preferred.height() / 2;
         // display_time_point is used to check for valid widget_layout. 
         layout.display_time_point = std::chrono::utc_clock::now();
-        // XXX moc a window_widget so it can access theme.
         widget->set_layout(layout);
     }
 };

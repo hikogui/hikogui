@@ -55,7 +55,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
         });
 }
 
-[[nodiscard]] box_constraints label_widget::constraints() noexcept
+[[nodiscard]] box_constraints label_widget::update_constraints() noexcept
 {
     _layout = {};
 
@@ -99,13 +99,11 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
         narrow_cast<int>(theme().large_icon_size) :
         narrow_cast<int>(std::ceil(theme().text_style(*text_style)->size * theme().scale));
 
-    _icon_widget->minimum_width = icon_size;
-    _icon_widget->maximum_width = icon_size;
-    _icon_widget->minimum_height = icon_size;
-    _icon_widget->maximum_height = icon_size;
+    _icon_widget->minimum = extent2i{icon_size, icon_size};
+    _icon_widget->maximum = extent2i{icon_size, icon_size};
 
     for (auto& cell : _grid) {
-        cell.set_constraints(cell.value->constraints());
+        cell.set_constraints(cell.value->update_constraints());
     }
 
     return _grid.constraints(os_settings::left_to_right());
@@ -131,7 +129,7 @@ void label_widget::draw(draw_context const& context) noexcept
     }
 }
 
-[[nodiscard]] hitbox label_widget::hitbox_test(point3 position) const noexcept
+[[nodiscard]] hitbox label_widget::hitbox_test(point2i position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 

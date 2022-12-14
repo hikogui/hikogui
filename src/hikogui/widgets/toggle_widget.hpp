@@ -150,18 +150,20 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints constraints() noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    extent2 _button_size;
-    aarectangle _button_rectangle;
+    box_constraints _label_constraints;
+
+    extent2i _button_size;
+    aarectanglei _button_rectangle;
     animator<float> _animated_value = _animation_duration;
-    aarectangle _pip_rectangle;
-    float _pip_move_range;
+    aarectanglei _pip_rectangle;
+    int _pip_move_range;
 
     void draw_toggle_button(draw_context const& context) noexcept;
     void draw_toggle_pip(draw_context const& context) noexcept;

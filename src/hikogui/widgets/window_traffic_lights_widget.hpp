@@ -30,32 +30,32 @@ public:
     window_traffic_lights_widget(widget *parent) noexcept;
 
     /// @privatesection
-    [[nodiscard]] box_constraints constraints() noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
     /// @endprivatesection
 private:
-    static constexpr float GLYPH_SIZE = 5.0f;
-    static constexpr float RADIUS = 5.5f;
-    static constexpr float DIAMETER = RADIUS * 2.0f;
-    static constexpr float MARGIN = 10.0f;
-    static constexpr float SPACING = 8.0f;
+    static constexpr int GLYPH_SIZE = 5;
+    static constexpr int RADIUS = 5;
+    static constexpr int DIAMETER = RADIUS * 2;
+    static constexpr int MARGIN = 10;
+    static constexpr int SPACING = 8;
 
-    aarectangle closeRectangle;
-    aarectangle minimizeRectangle;
-    aarectangle maximizeRectangle;
+    aarectanglei closeRectangle;
+    aarectanglei minimizeRectangle;
+    aarectanglei maximizeRectangle;
 
     glyph_ids closeWindowGlyph;
     glyph_ids minimizeWindowGlyph;
     glyph_ids maximizeWindowGlyph;
     glyph_ids restoreWindowGlyph;
 
-    aarectangle closeWindowGlyphRectangle;
-    aarectangle minimizeWindowGlyphRectangle;
-    aarectangle maximizeWindowGlyphRectangle;
-    aarectangle restoreWindowGlyphRectangle;
+    aarectanglei closeWindowGlyphRectangle;
+    aarectanglei minimizeWindowGlyphRectangle;
+    aarectanglei maximizeWindowGlyphRectangle;
+    aarectanglei restoreWindowGlyphRectangle;
 
     bool hoverClose = false;
     bool hoverMinimize = false;

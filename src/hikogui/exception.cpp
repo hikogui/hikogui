@@ -3,12 +3,15 @@
 #include "exception.hpp"
 #include "console.hpp"
 #include "dialog.hpp"
+#include "log.hpp"
 
 namespace hi {
 inline namespace v1 {
 
 [[noreturn]] void terminate_handler() noexcept
 {
+    log_global.flush();
+
     auto title = std::string{};
     auto message = std::string{};
 
