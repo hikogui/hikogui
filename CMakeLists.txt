@@ -3,7 +3,10 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.25)
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "3c375311-a3c9-4396-a187-3227ef642046")
+#set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "9629ab6c-6c0e-423f-bb9d-cc5ac4a22041")
 
 #-------------------------------------------------------------------
 # Configure early CMAKE paths
@@ -380,10 +383,12 @@ add_dependencies(hikogui hikogui_resources)
 #-------------------------------------------------------------------
 # Installation Rules: hikogui                               (library)
 #-------------------------------------------------------------------
-
 include(GNUInstallDirs)
 
 install(TARGETS hikogui RESOURCE)
+
+export(TARGETS hikogui FILE hikoguiModules.cmake CXX_MODULES_DIRECTORY ${CMAKE_INSTALL_INCLUDEDIR})
+
 
 # Copy all header files for the library.
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
@@ -405,6 +410,8 @@ if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
+        CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        FILE_SET m_hikogui DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 else()
     # Install the library and headers.
@@ -412,6 +419,9 @@ else()
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib
+        CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        FILE_SET m_hikogui DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILE_SET m_hikogui_widgets DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 endif()
 

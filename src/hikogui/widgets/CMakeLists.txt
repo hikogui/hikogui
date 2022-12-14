@@ -22,8 +22,6 @@ target_sources(hikogui PRIVATE
     momentary_button_widget.hpp
     overlay_widget_impl.cpp
     overlay_widget.hpp
-    radio_button_widget_impl.cpp
-    radio_button_widget.hpp
     row_column_widget.hpp
     scroll_bar_widget.hpp
     scroll_widget.hpp

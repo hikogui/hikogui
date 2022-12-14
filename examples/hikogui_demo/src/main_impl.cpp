@@ -13,7 +13,6 @@
 #include "hikogui/widgets/selection_widget.hpp"
 #include "hikogui/widgets/toggle_widget.hpp"
 #include "hikogui/widgets/checkbox_widget.hpp"
-#include "hikogui/widgets/radio_button_widget.hpp"
 #include "hikogui/widgets/text_field_widget.hpp"
 #include "hikogui/widgets/tab_widget.hpp"
 #include "hikogui/widgets/toolbar_tab_button_widget.hpp"
@@ -27,6 +26,9 @@
 #include "hikogui/when_any.hpp"
 #include "hikogui/task.hpp"
 #include "hikogui/loop.hpp"
+
+import hikogui;
+
 #include <memory>
 
 class my_preferences : public hi::preferences {

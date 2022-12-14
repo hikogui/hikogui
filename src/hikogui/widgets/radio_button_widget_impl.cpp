@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "radio_button_widget.hpp"
+import hikogui.widgets.radio_button_widget;
 
 namespace hi::inline v1 {
 

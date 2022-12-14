@@ -2,15 +2,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+module;
+
 /** @file widgets/radio_button_widget.hpp Defines radio_button_widget.
  * @ingroup widgets
  */
 
-#pragma once
-
 #include "abstract_button_widget.hpp"
 
-namespace hi { inline namespace v1 {
+export module hikogui.widgets.radio_button_widget;
+
+export namespace hi { inline namespace v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive options.

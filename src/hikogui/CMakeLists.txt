@@ -23,6 +23,12 @@ add_subdirectory(widgets)
 
 configure_file(metadata_impl.cpp.in metadata_impl.cpp @ONLY)
 
+target_sources(hikogui PUBLIC FILE_SET m_hikogui TYPE CXX_MODULES FILES
+    hikogui.cpp
+    widgets/widgets.cpp
+    widgets/radio_button_widget.cpp
+)
+
 target_sources(hikogui PRIVATE
     algorithm.hpp
     arguments.hpp

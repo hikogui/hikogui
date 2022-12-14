@@ -3,9 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/radio_button_widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
+
+import hikogui;
 
 using namespace hi;
 
