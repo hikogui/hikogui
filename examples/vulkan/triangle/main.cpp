@@ -86,7 +86,7 @@ public:
             // The 3D drawing will be done directly on the swap-chain before the GUI is drawn.
             // By making a hole in the GUI we can show the 3D drawing underneath it, otherwise
             // the solid-background color of the GUI would show instead.
-            context.make_hole(_layout, _layout.rectangle());
+            context.draw_hole(_layout, _layout.rectangle());
         }
     }
 

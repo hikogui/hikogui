@@ -49,7 +49,7 @@ void menu_button_widget::set_layout(widget_layout const& context) noexcept
         }
 
         _check_glyph = find_glyph(elusive_icon::Ok);
-        hilet check_glyph_bb = narrow_cast<aarectanglei>(_check_glyph.get_bounding_box() * theme().icon_size);
+        hilet check_glyph_bb = narrow_cast<aarectanglei>(_check_glyph.get_bounding_box() * narrow_cast<float>(theme().icon_size));
         _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
     }
 
@@ -127,7 +127,7 @@ void menu_button_widget::draw_check_mark(draw_context const& context) noexcept
     // Checkmark or tristate.
     if (state_ == hi::button_state::on) {
         context.draw_glyph(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), accent_color(), _check_glyph);
+            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), _check_glyph, accent_color());
     }
 }
 

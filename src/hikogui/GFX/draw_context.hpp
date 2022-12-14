@@ -49,11 +49,14 @@ enum class border_side {
 };
 
 template<typename Context>
-concept draw_attribute =
-    std::same_as<Context, quad_color> or std::same_as<Context, border_side> or std::same_as<Context, corner_radii> or
+concept draw_attribute = std::same_as<Context, quad_color> or std::same_as<Context, color> or
+    std::same_as<Context, border_side> or std::same_as<Context, line_end_cap> or std::same_as<Context, corner_radii> or
     std::same_as<Context, aarectanglei> or std::same_as<Context, float> or std::same_as<Context, int>;
 
 struct draw_attributes {
+    unsigned char num_colors = 0;
+    unsigned char num_line_caps = 0;
+
     quad_color fill_color = {};
     quad_color line_color = {};
     float line_width = 0.0f;
@@ -81,24 +84,31 @@ struct draw_attributes {
     constexpr void add(T const& attribute) noexcept
     {
         if constexpr (std::is_same_v<T, quad_color>) {
-            if (_num_colors++ == 0) {
+            if (num_colors++ == 0) {
                 fill_color = attribute;
-                line_color = attribute;
             } else {
                 line_color = attribute;
             }
-            hi_axiom(_num_colors <= 2);
+            hi_axiom(num_colors <= 2);
+
+        } else if constexpr (std::is_same_v<T, color>) {
+            if (num_colors++ == 0) {
+                fill_color = quad_color{attribute};
+            } else {
+                line_color = quad_color{attribute};
+            }
+            hi_axiom(num_colors <= 2);
 
         } else if constexpr (std::is_same_v<T, line_end_cap>) {
-            if (_num_line_caps++ == 0) {
+            if (num_line_caps++ == 0) {
                 begin_line_cap = attribute;
                 end_line_cap = attribute;
             } else {
                 end_line_cap = attribute;
             }
-            hi_axiom(_num_line_caps <= 2);
+            hi_axiom(num_line_caps <= 2);
 
-        } else if constexpr (std::is_same_v<T, border_side>) {
+        } else if constexpr (std::is_same_v<T, hi::border_side>) {
             border_side = attribute;
 #ifndef NDEBUG
             hi_assert(not _has_border_side);
@@ -120,7 +130,7 @@ struct draw_attributes {
 #endif
 
         } else if constexpr (std::is_same_v<T, float> or std::is_same_v<T, int>) {
-            line_width = attribute;
+            line_width = narrow_cast<float>(attribute);
 #ifndef NDEBUG
             hi_assert(not _has_line_width);
             _has_line_width = true;
@@ -138,9 +148,6 @@ struct draw_attributes {
     }
 
 private:
-    unsigned char _num_colors = 0;
-    unsigned char _num_line_caps = 0;
-
 #ifndef NDEBUG
     bool _has_border_side = false;
     bool _has_corner_radii = false;
@@ -219,20 +226,8 @@ public:
      */
     void draw_box(widget_layout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
     {
-        // clang-format off
-        hilet border_radius = attributes.line_width * 0.5f;
-        hilet box_ =
-            attributes.border_side == hi::border_side::inside ? box - border_radius :
-            attributes.border_side == hi::border_side::outside ? box + border_radius :
-            box;
-        hilet corner_radius_ =
-            attributes.border_side == hi::border_side::inside ? attributes.corner_radius - border_radius :
-            attributes.border_side == hi::border_side::outside ? attributes.corner_radius + border_radius :
-            attributes.corner_radius;
-        // clang-format on
-
         return _draw_box(
-            layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box_, attributes);
+            layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, attributes);
     }
 
     template<draw_quad_shape Shape, draw_attribute... Attributes>
@@ -244,7 +239,7 @@ public:
     void draw_line(widget_layout const& layout, line_segment const& line, draw_attributes const& attributes) const noexcept
     {
         hilet box =
-            make_rectangle(layout.to_window3() * line, attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
+            make_rectangle(line, attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
 
         auto box_attributes = attributes;
         box_attributes.line_width = 0.0f;
@@ -262,17 +257,9 @@ public:
 
     void draw_circle(widget_layout const& layout, hi::circle const& circle, draw_attributes const& attributes) const noexcept
     {
-        // clang-format off
-        hilet circle_ =
-            attributes.border_side == hi::border_side::inside ? circle - attributes.line_width * 0.5f :
-            attributes.border_side == hi::border_side::outside ? circle + attributes.line_width * 0.5f :
-            circle;
-        // clang-format on
-
-        hilet box = layout.to_window3() * make_rectangle(circle_);
         auto box_attributes = attributes;
-        box_attributes.corner_radius = make_corner_radii(circle_);
-        return draw_box(layout, box, box_attributes);
+        box_attributes.corner_radius = make_corner_radii(circle);
+        return draw_box(layout, make_rectangle(circle), box_attributes);
     }
 
     template<draw_attribute... Attributes>
@@ -338,7 +325,7 @@ public:
     void draw_glyph(widget_layout const& layout, Shape const& box, glyph_ids const& glyph, Attributes const&...attributes)
         const noexcept
     {
-        return draw_glyph(layout, make_quad(box), draw_attributes{attributes...});
+        return draw_glyph(layout, make_quad(box), glyph, draw_attributes{attributes...});
     }
 
     /** Draw shaped text.
@@ -373,6 +360,19 @@ public:
         return draw_text(layout, transform, text, draw_attributes{attributes...});
     }
 
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param transform How to transform the shaped text relative to layout.
+     * @param color Text-color overriding the colors from the text_shaper.
+     * @param text The shaped text to draw.
+     */
+    template<draw_attribute... Attributes>
+    void draw_text(widget_layout const& layout, text_shaper const& text, Attributes const&...attributes) const noexcept
+    {
+        return draw_text(layout, geo::identity{}, text, draw_attributes{attributes...});
+    }
+
     /** Draw text-selection of shaped text.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
@@ -404,7 +404,7 @@ public:
         text_selection const& selection,
         Attributes const&...attributes) const noexcept
     {
-        return _draw_text_selection(layout, text, selection, draw_attributes{attributes...});
+        return draw_text_selection(layout, text, selection, draw_attributes{attributes...});
     }
 
     /** Draw text cursors of shaped text.
@@ -482,7 +482,7 @@ public:
     template<draw_quad_shape Shape, draw_attribute... Attributes>
     void draw_hole(widget_layout const& layout, Shape const& box, Attributes const&...attributes) const noexcept
     {
-        return make_hole(layout, make_quad(box), draw_attributes{attributes...});
+        return draw_hole(layout, make_quad(box), draw_attributes{attributes...});
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const& context, widget_layout const& layout) noexcept
@@ -497,7 +497,7 @@ private:
     vector_span<pipeline_alpha::vertex> *_alpha_vertices;
 
     template<draw_quad_shape Shape>
-    [[nodiscard]] quad make_quad(Shape const& shape) noexcept
+    [[nodiscard]] constexpr static quad make_quad(Shape const& shape) noexcept
     {
         if constexpr (std::is_same_v<Shape, aarectanglei>) {
             return narrow_cast<aarectangle>(shape);

@@ -85,14 +85,14 @@ void checkbox_widget::draw_check_mark(draw_context const& context) noexcept
     // Checkmark or tristate.
     if (state_ == hi::button_state::on) {
         context.draw_glyph(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), accent_color(), _check_glyph);
+            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), _check_glyph, accent_color());
 
     } else if (state_ == hi::button_state::off) {
         ;
 
     } else {
         context.draw_glyph(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle), accent_color(), _minus_glyph);
+            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle), _minus_glyph, accent_color());
     }
 }
 

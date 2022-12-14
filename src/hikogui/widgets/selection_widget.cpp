@@ -108,7 +108,8 @@ void selection_widget::set_layout(widget_layout const& context) noexcept
         }
 
         _chevrons_glyph = find_glyph(elusive_icon::ChevronUp);
-        hilet chevrons_glyph_bbox = narrow_cast<aarectanglei>(_chevrons_glyph.get_bounding_box() * theme().icon_size);
+        hilet chevrons_glyph_bbox =
+            narrow_cast<aarectanglei>(_chevrons_glyph.get_bounding_box() * narrow_cast<float>(theme().icon_size));
         _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox, alignment::middle_center());
     }
 
@@ -116,13 +117,10 @@ void selection_widget::set_layout(widget_layout const& context) noexcept
     // from the point of view of the selection widget.
     // The overlay should start on the same left edge as the selection box and the same width.
     // The height of the overlay should be the maximum height, which will show all the options.
-    hilet overlay_width = std::clamp(
-        context.width() - theme().size,
-        _overlay_constraints.minimum.width(),
-        _overlay_constraints.maximum.width());
+    hilet overlay_width =
+        std::clamp(context.width() - theme().size, _overlay_constraints.minimum.width(), _overlay_constraints.maximum.width());
     hilet overlay_height = _overlay_constraints.preferred.height();
-    hilet overlay_x =
-        os_settings::left_to_right() ? theme().size : context.width() - theme().size - overlay_width;
+    hilet overlay_x = os_settings::left_to_right() ? theme().size : context.width() - theme().size - overlay_width;
     hilet overlay_y = (context.height() - overlay_height) / 2;
     hilet overlay_rectangle_request = aarectanglei{overlay_x, overlay_y, overlay_width, overlay_height};
     hilet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
@@ -325,20 +323,21 @@ void selection_widget::draw_outline(draw_context const& context) noexcept
         focus_color(),
         theme().border_width,
         border_side::inside,
-        corner_radii(theme().rounding_radius));
+        corner_radii(narrow_cast<float>(theme().rounding_radius)));
 }
 
 void selection_widget::draw_left_box(draw_context const& context) noexcept
 {
     hilet corner_radii = os_settings::left_to_right() ?
-        hi::corner_radii(theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f) :
-        hi::corner_radii(0.0f, theme().rounding_radius, 0.0f, theme().rounding_radius);
+        hi::corner_radii(narrow_cast<float>(theme().rounding_radius), 0.0f, narrow_cast<float>(theme().rounding_radius), 0.0f) :
+        hi::corner_radii(0.0f, narrow_cast<float>(theme().rounding_radius), 0.0f, narrow_cast<float>(theme().rounding_radius));
     context.draw_box(layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_left_box_rectangle), focus_color(), corner_radii);
 }
 
 void selection_widget::draw_chevrons(draw_context const& context) noexcept
 {
-    context.draw_glyph(layout(), translate_z(0.2f) * narrow_cast<aarectangle>(_chevrons_rectangle), label_color(), _chevrons_glyph);
+    context.draw_glyph(
+        layout(), translate_z(0.2f) * narrow_cast<aarectangle>(_chevrons_rectangle), _chevrons_glyph, label_color());
 }
 
 } // namespace hi::inline v1

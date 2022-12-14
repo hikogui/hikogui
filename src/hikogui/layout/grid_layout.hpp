@@ -427,7 +427,7 @@ public:
         // If the total extent is still too small, expand into the cells that are marked beyond_maximum.
         if (total_extent < new_extent) {
             // The result may expand slightly too much, we don't care.
-            hilet count = std::count_if(begin(), end(), [](hilet& item) {
+            count = std::count_if(begin(), end(), [](hilet& item) {
                 return item.beyond_maximum;
             });
             if (count) {

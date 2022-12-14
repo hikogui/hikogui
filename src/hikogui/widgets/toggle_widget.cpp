@@ -76,7 +76,7 @@ void toggle_widget::draw_toggle_button(draw_context const& context) noexcept
         focus_color(),
         theme().border_width,
         border_side::inside,
-        corner_radii(_button_rectangle.height() / 2));
+        corner_radii(narrow_cast<float>(_button_rectangle.height() / 2)));
 }
 
 void toggle_widget::draw_toggle_pip(draw_context const& context) noexcept
@@ -86,7 +86,7 @@ void toggle_widget::draw_toggle_pip(draw_context const& context) noexcept
         request_redraw();
     }
 
-    hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} *
+    hilet positioned_pip_circle = translate3{narrow_cast<float>(_pip_move_range) * _animated_value.current_value(), 0.0f, 0.1f} *
         (circle{narrow_cast<aarectangle>(_pip_rectangle)} * 1.02f);
 
     hilet forground_color_ = state() == button_state::on ? accent_color() : foreground_color();

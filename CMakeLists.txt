@@ -148,6 +148,7 @@ if (WIN32)
     target_compile_definitions(hikogui PUBLIC -D_CRT_SECURE_NO_WARNINGS)
     target_compile_definitions(hikogui PUBLIC -DNOMINMAX)
     target_compile_definitions(hikogui PUBLIC -DWIN32_LEAN_AND_MEAN)
+    target_compile_definitions(hikogui PUBLIC -DWIN32_NO_STATUS)
 
     # Minimum Windows 10.
     target_compile_definitions(hikogui PUBLIC -DWINVER=0x0a00)

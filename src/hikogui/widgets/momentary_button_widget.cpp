@@ -46,7 +46,7 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
         focus_color(),
         theme().border_width,
         border_side::inside,
-        corner_radii(theme().rounding_radius));
+        corner_radii(narrow_cast<float>(theme().rounding_radius)));
 }
 
 } // namespace hi::inline v1

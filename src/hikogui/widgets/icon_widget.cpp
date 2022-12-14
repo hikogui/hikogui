@@ -95,7 +95,7 @@ void icon_widget::draw(draw_context const& context) noexcept
 
         case icon_type::glyph:
             {
-                context.draw_glyph(layout(), _icon_rectangle, theme().color(*color), _glyph);
+                context.draw_glyph(layout(), _icon_rectangle, _glyph, theme().color(*color));
             }
             break;
 

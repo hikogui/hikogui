@@ -89,7 +89,8 @@ text_widget::~text_widget()
     _shaped_text = text_shaper{
         font_book::global(), _text_cache, actual_text_style, theme().scale, alignment_, os_settings::writing_direction()};
 
-    hilet shaped_text_rectangle = narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));
+    hilet shaped_text_rectangle =
+        narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));
     hilet shaped_text_size = shaped_text_rectangle.size();
 
     if (*mode == widget_mode::partial) {
@@ -212,10 +213,10 @@ void text_widget::draw(draw_context const& context) noexcept
                 layout(),
                 _shaped_text,
                 _selection.cursor(),
-                theme().color(semantic_color::primary_cursor),
-                theme().color(semantic_color::secondary_cursor),
                 _overwrite_mode,
-                to_bool(_has_dead_character));
+                to_bool(_has_dead_character),
+                theme().color(semantic_color::primary_cursor),
+                theme().color(semantic_color::secondary_cursor));
         }
     }
 }

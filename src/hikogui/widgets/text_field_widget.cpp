@@ -222,7 +222,7 @@ void text_field_widget::draw_background_box(draw_context const& context) const n
 {
     hilet outline = narrow_cast<aarectangle>(_scroll_shape.rectangle);
 
-    hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius);
+    hilet corner_radii = hi::corner_radii(0.0f, 0.0f, narrow_cast<float>(theme().rounding_radius), narrow_cast<float>(theme().rounding_radius));
     context.draw_box(layout(), outline, background_color(), corner_radii);
 
     hilet line = line_segment(get<0>(outline), get<1>(outline));

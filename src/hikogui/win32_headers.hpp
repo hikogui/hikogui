@@ -15,12 +15,14 @@
 
 #pragma once
 
+#ifndef WIN32_NO_STATUS
+#error "-DWIN32_NO_STATUS must be defined as a compile option"
+#endif
+
 #include <Windows.h>
-#pragma warning(push)
-// Suppress C4005 Redefinition of status macros, Microsoft disables this themselves for their internal linter.
-#pragma warning(disable:4005)
+#undef WIN32_NO_STATUS
 #include <ntstatus.h>
-#pragma warning(pop)
+#define WIN32_NO_STATUS
 #include <debugapi.h>
 #include <shellapi.h>
 #include <intrin.h>

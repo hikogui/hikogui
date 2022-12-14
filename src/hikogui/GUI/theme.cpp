@@ -104,8 +104,8 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     hilet object = data[object_name];
     if (auto f = get_if<double>(object)) {
         return static_cast<float>(*f);
-    } else if (auto f = get_if<long long>(object)) {
-        return static_cast<float>(*f);
+    } else if (auto ll = get_if<long long>(object)) {
+        return static_cast<float>(*ll);
     } else {
         throw parse_error(std::format("'{}' attribute must be a floating point number, got {}.", object_name, object.type_name()));
     }

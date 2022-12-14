@@ -35,7 +35,7 @@ void window_traffic_lights_widget::set_layout(widget_layout const& context) noex
         if (extent.height() > narrow_cast<int>(theme().large_size * 1.2f)) {
             extent = extent2i{extent.width(), theme().large_size};
         }
-        auto y = narrow_cast<float>(context.height()) - extent.height();
+        auto y = context.height() - extent.height();
 
         if (theme().operating_system == operating_system::windows) {
             closeRectangle = aarectanglei{point2i(extent.width() * 2 / 3, y), extent2i{extent.width() * 1 / 3, extent.height()}};
@@ -110,26 +110,26 @@ void window_traffic_lights_widget::drawMacOS(draw_context const& drawContext) no
         context.draw_glyph(
             layout(),
             translate_z(0.1f) * narrow_cast<aarectangle>(closeWindowGlyphRectangle),
-            color{0.319f, 0.0f, 0.0f},
-            closeWindowGlyph);
+            closeWindowGlyph,
+            color{0.319f, 0.0f, 0.0f});
         context.draw_glyph(
             layout(),
             translate_z(0.1f) * narrow_cast<aarectangle>(minimizeWindowGlyphRectangle),
-            color{0.212f, 0.1f, 0.0f},
-            minimizeWindowGlyph);
+            minimizeWindowGlyph,
+            color{0.212f, 0.1f, 0.0f});
 
         if (layout().window_size_state == gui_window_size::maximized) {
             context.draw_glyph(
                 layout(),
                 translate_z(0.1f) * narrow_cast<aarectangle>(restoreWindowGlyphRectangle),
-                color{0.0f, 0.133f, 0.0f},
-                restoreWindowGlyph);
+                restoreWindowGlyph,
+                color{0.0f, 0.133f, 0.0f});
         } else {
             context.draw_glyph(
                 layout(),
                 translate_z(0.1f) * narrow_cast<aarectangle>(maximizeWindowGlyphRectangle),
-                color{0.0f, 0.133f, 0.0f},
-                maximizeWindowGlyph);
+                maximizeWindowGlyph,
+                color{0.0f, 0.133f, 0.0f});
         }
     }
 }
@@ -171,18 +171,18 @@ void window_traffic_lights_widget::drawWindows(draw_context const& drawContext) 
     hilet glyph_color = context.active ? label_color() : foreground_color();
 
     context.draw_glyph(
-        layout(), translate_z(0.1f) * narrow_cast<aarectangle>(closeWindowGlyphRectangle), glyph_color, closeWindowGlyph);
+        layout(), translate_z(0.1f) * narrow_cast<aarectangle>(closeWindowGlyphRectangle), closeWindowGlyph, glyph_color);
     context.draw_glyph(
-        layout(), translate_z(0.1f) * narrow_cast<aarectangle>(minimizeWindowGlyphRectangle), glyph_color, minimizeWindowGlyph);
+        layout(), translate_z(0.1f) * narrow_cast<aarectangle>(minimizeWindowGlyphRectangle), minimizeWindowGlyph, glyph_color);
     if (layout().window_size_state == gui_window_size::maximized) {
         context.draw_glyph(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(restoreWindowGlyphRectangle), glyph_color, restoreWindowGlyph);
+            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(restoreWindowGlyphRectangle), restoreWindowGlyph, glyph_color);
     } else {
         context.draw_glyph(
             layout(),
             translate_z(0.1f) * narrow_cast<aarectangle>(maximizeWindowGlyphRectangle),
-            glyph_color,
-            maximizeWindowGlyph);
+            maximizeWindowGlyph,
+            glyph_color);
     }
 }
 

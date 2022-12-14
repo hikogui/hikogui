@@ -163,7 +163,7 @@ private:
     aarectanglei _button_rectangle;
     animator<float> _animated_value = _animation_duration;
     aarectanglei _pip_rectangle;
-    float _pip_move_range;
+    int _pip_move_range;
 
     void draw_toggle_button(draw_context const& context) noexcept;
     void draw_toggle_pip(draw_context const& context) noexcept;

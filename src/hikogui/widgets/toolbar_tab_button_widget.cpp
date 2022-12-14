@@ -55,7 +55,8 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
         theme().color(semantic_color::fill, semantic_layer);
     // clang-format on
 
-    hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius);
+    hilet corner_radii =
+        hi::corner_radii(0.0f, 0.0f, narrow_cast<float>(theme().rounding_radius), narrow_cast<float>(theme().rounding_radius));
 
     context.draw_box(
         layout(),
