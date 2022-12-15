@@ -18,7 +18,7 @@
     "large-size": 19,
 
     // Size of icons inside a widget.
-    "icon-size": 8,
+    "icon-size": 7,
 
     // Size of icons representing the length of am average word of a label's text.
     "large-icon-size": 23,

@@ -47,7 +47,12 @@ void radio_button_widget::set_layout(widget_layout const& context) noexcept
             hi_not_implemented();
         }
 
-        _pip_rectangle = align(_button_rectangle, extent2i{theme().icon_size(), theme().icon_size()}, alignment::middle_center());
+        _button_circle = circle{narrow_cast<aarectangle>(_button_rectangle)};
+
+        _pip_circle = align(
+            narrow_cast<aarectangle>(_button_rectangle),
+            circle{theme().size() * 0.5f - 3.0f},
+            alignment::middle_center());
     }
     super::set_layout(context);
 }
@@ -65,7 +70,7 @@ void radio_button_widget::draw_radio_button(draw_context const& context) noexcep
 {
     context.draw_circle(
         layout(),
-        circle{narrow_cast<aarectangle>(_button_rectangle)} * 1.02f,
+        _button_circle * 1.02f,
         background_color(),
         focus_color(),
         theme().border_width(),
@@ -82,7 +87,7 @@ void radio_button_widget::draw_radio_pip(draw_context const& context) noexcept
     // draw pip
     auto float_value = _animated_value.current_value();
     if (float_value > 0.0) {
-        context.draw_circle(layout(), circle{narrow_cast<aarectangle>(_pip_rectangle)} * 1.02f * float_value, accent_color());
+        context.draw_circle(layout(), _pip_circle * 1.02f * float_value, accent_color());
     }
 }
 

@@ -11,17 +11,16 @@
 #include "axis_aligned_rectangle.hpp"
 #include "quad.hpp"
 
-namespace hi {
-inline namespace v1 {
+namespace hi { inline namespace v1 {
 
 /** A type defining a 2D circle.
  */
 class circle {
 public:
-    constexpr circle(circle const &other) noexcept = default;
-    constexpr circle(circle &&other) noexcept = default;
-    constexpr circle &operator=(circle const &other) noexcept = default;
-    constexpr circle &operator=(circle &&other) noexcept = default;
+    constexpr circle(circle const& other) noexcept = default;
+    constexpr circle(circle&& other) noexcept = default;
+    constexpr circle& operator=(circle const& other) noexcept = default;
+    constexpr circle& operator=(circle&& other) noexcept = default;
 
     constexpr circle() noexcept : _v()
     {
@@ -38,8 +37,13 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr circle(point3 point, float radius) noexcept :
-        _v(f32x4{point})
+    [[nodiscard]] constexpr circle(point3 point, float radius) noexcept : _v(f32x4{point})
+    {
+        _v.w() = radius;
+        hi_axiom(holds_invariant());
+    }
+
+    [[nodiscard]] constexpr circle(float radius) noexcept : _v()
     {
         _v.w() = radius;
         hi_axiom(holds_invariant());
@@ -59,7 +63,7 @@ public:
         return _v.w() == 0.0f;
     }
 
-    [[nodiscard]] explicit operator bool () const noexcept
+    [[nodiscard]] explicit operator bool() const noexcept
     {
         return not empty();
     }
@@ -69,36 +73,82 @@ public:
         return _v.w();
     }
 
+    [[nodiscard]] constexpr float diameter() const noexcept
+    {
+        return radius() * 2.0f;
+    }
+
     [[nodiscard]] constexpr point3 center() const noexcept
     {
         return point3{_v.xyz1()};
     }
 
-    [[nodiscard]] constexpr friend circle operator+(circle const &lhs, float rhs) noexcept
+    [[nodiscard]] constexpr friend circle operator+(circle const& lhs, float rhs) noexcept
     {
         return circle{lhs._v + insert<3>(f32x4{}, rhs)};
     }
 
-    [[nodiscard]] constexpr friend circle operator-(circle const &lhs, float rhs) noexcept
+    [[nodiscard]] constexpr friend circle operator-(circle const& lhs, float rhs) noexcept
     {
         return circle{lhs._v - insert<3>(f32x4{}, rhs)};
     }
 
-    [[nodiscard]] constexpr friend circle operator*(circle const &lhs, float rhs) noexcept
+    [[nodiscard]] constexpr friend circle operator*(circle const& lhs, float rhs) noexcept
     {
         return circle{lhs._v * insert<3>(f32x4::broadcast(1.0f), rhs)};
     }
 
-    [[nodiscard]] constexpr friend point3 midpoint(circle const &rhs) noexcept
+    [[nodiscard]] constexpr friend point3 midpoint(circle const& rhs) noexcept
     {
         return point3{rhs.center()};
     }
 
-    [[nodiscard]] constexpr friend aarectangle bounding_rectangle(circle const &rhs) noexcept
+    [[nodiscard]] constexpr friend aarectangle bounding_rectangle(circle const& rhs) noexcept
     {
         hilet p = rhs._v.xyxy();
         hilet r = neg<0b0011>(rhs._v.wwww());
         return aarectangle{p + r};
+    }
+
+    /** Align a rectangle within another rectangle.
+     * @param haystack The outside rectangle
+     * @param needle The circle to align into the rectangle.
+     * @param alignment How the inside circle should be aligned.
+     * @return The needle circle repositioned and aligned inside the haystack.
+     */
+    [[nodiscard]] friend constexpr circle align(aarectangle haystack, circle needle, alignment alignment) noexcept
+    {
+        hilet x = [&] {
+            if (alignment == horizontal_alignment::left) {
+                return haystack.left() + needle.radius();
+
+            } else if (alignment == horizontal_alignment::right) {
+                return haystack.right() - needle.radius();
+
+            } else if (alignment == horizontal_alignment::center) {
+                return haystack.center();
+
+            } else {
+                hi_no_default();
+            }
+        }();
+
+        hilet y = [&] {
+            if (alignment == vertical_alignment::bottom) {
+                return haystack.bottom() + needle.radius();
+
+            } else if (alignment == vertical_alignment::top) {
+                return haystack.top() - needle.radius();
+
+            } else if (alignment == vertical_alignment::middle) {
+                return haystack.middle();
+
+            } else {
+                hi_no_default();
+            }
+        }();
+
+        return circle{point2{x, y}, needle.radius()};
     }
 
 private:
@@ -111,6 +161,4 @@ private:
     }
 };
 
-
-}}
-
+}} // namespace hi::v1
