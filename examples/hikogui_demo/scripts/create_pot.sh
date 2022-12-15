@@ -8,7 +8,7 @@ else
     exit 2
 fi
 
-find src -name \*.hpp -or -name \*.cpp >/tmp/source_files_$$.txt
+find src -name \*.hpp -or -name \*_impl.cpp >/tmp/source_files_$$.txt
 
 xgettext \
     --files-from=/tmp/source_files_$$.txt \

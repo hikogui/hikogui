@@ -26,7 +26,7 @@ namespace hi { inline namespace v1 {
  * `value` controlled by a set of toolbar tab buttons. Each tab is configured
  * with a different value: 0, 1 and 2.
  *
- * @snippet widgets/tab_example.cpp Create three tabs
+ * @snippet widgets/tab_example_impl.cpp Create three tabs
  *
  * @ingroup widgets
  * @note A `tab_button` is not directly controlled by a

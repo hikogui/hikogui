@@ -37,7 +37,7 @@ namespace hi { inline namespace v1 {
  * which observes `value`. When the value is 1 the checkbox is 'on',
  * when the value is 2 the checkbox is 'off'.
  *
- * @snippet widgets/checkbox_example.cpp Create a checkbox
+ * @snippet widgets/checkbox_example_impl.cpp Create a checkbox
  */
 class checkbox_widget final : public abstract_button_widget {
 public:

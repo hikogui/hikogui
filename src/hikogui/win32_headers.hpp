@@ -5,7 +5,7 @@
 /** @file win32_headers.hpp
  *
  * Rules for working with win32 headers.
- *  - Include "win32_headers.hpp" as FIRST file by .cpp files that need it.
+ *  - Include "win32_headers.hpp" as FIRST file by _impl.cpp files that need it.
  *  - .hpp files are not allowed to include "win32_headers.hpp".
  *  - win32 headers MAY NOT be included in any files.
  *

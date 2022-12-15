@@ -27,7 +27,7 @@
 #include <exception>
 #include <filesystem>
 
-// This example is a copy of https://github.com/SaschaWillems/Vulkan/blob/master/examples/triangle/triangle.cpp
+// This example is a copy of https://github.com/SaschaWillems/Vulkan/blob/master/examples/triangle/triangle_impl.cpp
 // It is modified so:
 //  - It does not use any other utility files.
 //  - It is reordered so that the swap-chain can be replaced on window resize.

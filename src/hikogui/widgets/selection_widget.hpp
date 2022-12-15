@@ -37,7 +37,7 @@ concept selection_widget_attribute = label_widget_attribute<Context>;
  * the `option_list`. At application startup, value is zero and none
  * of the options is selected:
  *
- * @snippet widgets/selection_example.cpp Create selection
+ * @snippet widgets/selection_example_impl.cpp Create selection
  *
  * @ingroup widgets
  */

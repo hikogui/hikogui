@@ -33,7 +33,7 @@ namespace hi { inline namespace v1 {
  * different `on_value`: 1, 2 and 3. Initially the value is 0, and therefor none
  * of the radio buttons is selected when the application is started.
  *
- * @snippet widgets/radio_button_example.cpp Create three radio buttons
+ * @snippet widgets/radio_button_example_impl.cpp Create three radio buttons
  *
  * @note Unlike some other GUI toolkits a radio button is a singular widget.
  *       Multiple radio buttons may share a delegate or an observer which

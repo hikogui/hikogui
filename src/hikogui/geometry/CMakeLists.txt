@@ -5,7 +5,7 @@
 target_sources(hikogui PRIVATE
     alignment.hpp
     axis.hpp
-    axis_aligned_rectangle.cpp
+    axis_aligned_rectangle_impl.cpp
     axis_aligned_rectangle.hpp
     circle.hpp
     extent.hpp
