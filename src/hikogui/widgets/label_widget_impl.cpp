@@ -96,7 +96,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
 
     hilet icon_size =
         (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
-        narrow_cast<int>(theme().large_icon_size) :
+        theme().large_icon_size() :
         narrow_cast<int>(std::ceil(theme().text_style(*text_style)->size * theme().scale));
 
     _icon_widget->minimum = extent2i{icon_size, icon_size};
@@ -112,7 +112,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
 void label_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _grid.set_layout(context.shape, theme().baseline_adjustment);
+        _grid.set_layout(context.shape, theme().baseline_adjustment());
     }
 
     for (hilet& cell : _grid) {

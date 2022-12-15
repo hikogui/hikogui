@@ -76,7 +76,7 @@ text_field_widget::~text_field_widget()
         _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
     auto size = box_size;
-    auto margins = hi::marginsi{theme().margin};
+    auto margins = theme().margin();
     if (_error_label->empty()) {
         _error_label_widget->mode = widget_mode::invisible;
         _error_label_constraints = _error_label_widget->update_constraints();
@@ -105,12 +105,12 @@ void text_field_widget::set_layout(widget_layout const& context) noexcept
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
         hilet scroll_rectangle = aarectanglei{point2i{0, context.height() - scroll_size.height()}, scroll_size};
-        _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme().baseline_adjustment};
+        _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme().baseline_adjustment()};
 
         if (*_error_label_widget->mode > widget_mode::invisible) {
             hilet error_label_rectangle =
                 aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
-            _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme().baseline_adjustment};
+            _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme().baseline_adjustment()};
         }
     }
 
@@ -222,11 +222,11 @@ void text_field_widget::draw_background_box(draw_context const& context) const n
 {
     hilet outline = narrow_cast<aarectangle>(_scroll_shape.rectangle);
 
-    hilet corner_radii = hi::corner_radii(0.0f, 0.0f, narrow_cast<float>(theme().rounding_radius), narrow_cast<float>(theme().rounding_radius));
+    hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
     context.draw_box(layout(), outline, background_color(), corner_radii);
 
     hilet line = line_segment(get<0>(outline), get<1>(outline));
-    context.draw_line(layout(), translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width, focus_color());
+    context.draw_line(layout(), translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width(), focus_color());
 }
 
 } // namespace hi::inline v1

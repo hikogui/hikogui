@@ -46,7 +46,7 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
     if (compare_store(_layout, context)) {
         auto shape = context.shape;
         shape.rectangle = aarectanglei{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
-        _children.set_layout(shape, theme().baseline_adjustment);
+        _children.set_layout(shape, theme().baseline_adjustment());
     }
 
     hilet overhang = context.redraw_overhang;
@@ -84,7 +84,7 @@ void toolbar_widget::draw(draw_context const& context) noexcept
             if (tab_button_has_focus()) {
                 // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
                 // line depending if that specific button is in focus or not.
-                hilet focus_rectangle = aarectanglei{0, 0, layout().rectangle().width(), theme().border_width};
+                hilet focus_rectangle = aarectanglei{0, 0, layout().rectangle().width(), theme().border_width()};
                 context.draw_box(
                     layout(), translate3{0.0f, 0.0f, 1.5f} * narrow_cast<aarectangle>(focus_rectangle), focus_color());
             }

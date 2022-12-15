@@ -36,12 +36,12 @@ public:
         // We add the ability to resize the widget beyond the size of the label.
         auto r = hi::box_constraints{};
         r.minimum.width() = _label_constraints.minimum.width();
-        r.preferred.width() = _label_constraints.preferred.width() + hi::narrow_cast<int>(theme().margin);
+        r.preferred.width() = _label_constraints.preferred.width() + theme().margin<int>();
         r.maximum.width() = _label_constraints.maximum.width() + 100;
         r.minimum.height() = _label_constraints.minimum.height();
-        r.preferred.height() = _label_constraints.preferred.height() + hi::narrow_cast<int>(theme().margin);
+        r.preferred.height() = _label_constraints.preferred.height() + theme().margin<int>();
         r.maximum.height() = _label_constraints.maximum.height() + 50;
-        r.margins = theme().margin;
+        r.margins = theme().margin();
         r.alignment = _label_constraints.alignment;
         return r;
     }
@@ -59,7 +59,7 @@ public:
             // when the layout of the current widget changes.
             auto const label_rectangle =
                 align(context.rectangle(), _label_constraints.preferred, hi::alignment::middle_center());
-            _label_shape = hi::box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+            _label_shape = hi::box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.
@@ -85,9 +85,9 @@ public:
                     _layout.rectangle(),
                     background_color(),
                     foreground_color(),
-                    theme().border_width,
+                    theme().border_width(),
                     hi::border_side::outside,
-                    theme().rounding_radius);
+                    theme().rounding_radius());
             }
 
             // Child widget only need to be drawn when the parent is visible, but the child may have

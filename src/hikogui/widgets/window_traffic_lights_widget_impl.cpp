@@ -16,7 +16,7 @@ window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexc
     _layout = {};
 
     if (theme().operating_system == operating_system::windows) {
-        hilet size = extent2i{theme().large_size * 3, theme().large_size};
+        hilet size = extent2i{theme().large_size() * 3, theme().large_size()};
         return {size, size, size};
 
     } else if (theme().operating_system == operating_system::macos) {
@@ -32,8 +32,8 @@ void window_traffic_lights_widget::set_layout(widget_layout const& context) noex
 {
     if (compare_store(_layout, context)) {
         auto extent = context.size();
-        if (extent.height() > narrow_cast<int>(theme().large_size * 1.2f)) {
-            extent = extent2i{extent.width(), theme().large_size};
+        if (extent.height() > narrow_cast<int>(theme().large_size() * 1.2f)) {
+            extent = extent2i{extent.width(), theme().large_size()};
         }
         auto y = context.height() - extent.height();
 
@@ -72,7 +72,7 @@ void window_traffic_lights_widget::set_layout(widget_layout const& context) noex
             hi_no_default();
         }
 
-        hilet glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
+        hilet glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size();
 
         hilet closeWindowGlyphBB = narrow_cast<aarectanglei>(closeWindowGlyph.get_bounding_box() * glyph_size);
         hilet minimizeWindowGlyphBB = narrow_cast<aarectanglei>(minimizeWindowGlyph.get_bounding_box() * glyph_size);

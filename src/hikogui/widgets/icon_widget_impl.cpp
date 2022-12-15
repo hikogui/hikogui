@@ -58,7 +58,11 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
 
     hilet resolved_alignment = resolve(*alignment, os_settings::left_to_right());
     hilet icon_constraints = box_constraints{
-        extent2i{0, 0}, narrow_cast<extent2i>(_icon_size), narrow_cast<extent2i>(_icon_size), resolved_alignment, theme().margin};
+        extent2i{0, 0},
+        narrow_cast<extent2i>(_icon_size),
+        narrow_cast<extent2i>(_icon_size),
+        resolved_alignment,
+        theme().margin<int>()};
     return icon_constraints.constrain(*minimum, *maximum);
 }
 

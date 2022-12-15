@@ -11,17 +11,17 @@ namespace hi::inline v1 {
     _label_constraints = super::update_constraints();
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    hilet extra_size = extent2i{theme().margin * 2, theme().margin};
+    hilet extra_size = extent2i{theme().margin<int>() * 2, theme().margin<int>()};
     return _label_constraints + extra_size;
 }
 
 void toolbar_tab_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet label_rectangle =
-            aarectanglei{theme().margin, 0, context.width() - theme().margin * 2, context.height() - theme().margin};
+        hilet label_rectangle = aarectanglei{
+            theme().margin<int>(), 0, context.width() - theme().margin<int>() * 2, context.height() - theme().margin<int>()};
         _on_label_shape = _off_label_shape = _other_label_shape =
-            box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+            box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
     }
     super::set_layout(context);
 }
@@ -43,7 +43,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
 {
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
-    hilet offset = theme().margin + theme().border_width;
+    hilet offset = theme().margin<int>() + theme().border_width();
     hilet outline_rectangle = aarectanglei{0, -offset, layout().width(), layout().height() + offset};
 
     // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
@@ -55,15 +55,15 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
         theme().color(semantic_color::fill, semantic_layer);
     // clang-format on
 
-    hilet corner_radii =
-        hi::corner_radii(0.0f, 0.0f, narrow_cast<float>(theme().rounding_radius), narrow_cast<float>(theme().rounding_radius));
+    hilet corner_radii = hi::corner_radii(
+        0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
 
     context.draw_box(
         layout(),
         button_z * narrow_cast<aarectangle>(outline_rectangle),
         button_color,
         *focus ? focus_color() : button_color,
-        theme().border_width,
+        theme().border_width(),
         border_side::inside,
         corner_radii);
 }

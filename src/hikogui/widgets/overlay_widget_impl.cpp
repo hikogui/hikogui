@@ -7,8 +7,7 @@
 
 namespace hi::inline v1 {
 
-overlay_widget::overlay_widget(widget *parent) noexcept :
-    super(parent)
+overlay_widget::overlay_widget(widget *parent) noexcept : super(parent)
 {
     if (parent) {
         // The overlay-widget will reset the semantic_layer as it is the bottom
@@ -18,9 +17,7 @@ overlay_widget::overlay_widget(widget *parent) noexcept :
     }
 }
 
-overlay_widget::~overlay_widget()
-{
-}
+overlay_widget::~overlay_widget() {}
 
 void overlay_widget::set_widget(std::shared_ptr<widget> new_widget) noexcept
 {
@@ -41,16 +38,16 @@ void overlay_widget::set_layout(widget_layout const& context) noexcept
     _layout = context;
 
     // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
-    _layout.clipping_rectangle = context.rectangle() + theme().border_width;
+    _layout.clipping_rectangle = context.rectangle() + theme().border_width();
 
     hilet content_rectangle = context.rectangle();
-    _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment};
+    _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment()};
 
     // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
     _content->set_layout(_layout.transform(_content_shape, 1.0f, context.rectangle()));
 }
 
-void overlay_widget::draw(draw_context const &context) noexcept
+void overlay_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible) {
         if (overlaps(context, layout())) {
@@ -76,15 +73,10 @@ void overlay_widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
     // so do not forward the scroll_to_show message to its parent.
 }
 
-void overlay_widget::draw_background(draw_context const &context) noexcept
+void overlay_widget::draw_background(draw_context const& context) noexcept
 {
     context.draw_box(
-        layout(),
-        layout().rectangle(),
-        background_color(),
-        foreground_color(),
-        theme().border_width,
-        border_side::outside);
+        layout(), layout().rectangle(), background_color(), foreground_color(), theme().border_width(), border_side::outside);
 }
 
 [[nodiscard]] hitbox overlay_widget::hitbox_test(point2i position) const noexcept

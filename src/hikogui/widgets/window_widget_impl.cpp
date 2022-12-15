@@ -127,12 +127,12 @@ void window_widget::set_layout(widget_layout const& context) noexcept
             point2i{
                 context.width() - _toolbar_constraints.margins.right(),
                 context.height() - _toolbar_constraints.margins.top()}};
-        _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme().baseline_adjustment};
+        _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme().baseline_adjustment()};
 
         hilet content_rectangle = aarectanglei{
             point2i{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
             point2i{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
-        _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment};
+        _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment()};
     }
     _toolbar->set_layout(context.transform(_toolbar_shape));
     _content->set_layout(context.transform(_content_shape));

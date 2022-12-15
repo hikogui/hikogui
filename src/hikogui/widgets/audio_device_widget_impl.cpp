@@ -50,7 +50,7 @@ void audio_device_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
         hilet grid_rectangle = context.rectangle();
-        _grid_shape = {_grid_constraints, grid_rectangle, theme().baseline_adjustment};
+        _grid_shape = {_grid_constraints, grid_rectangle, theme().baseline_adjustment()};
     }
 
     _grid_widget->set_layout(context.transform(_grid_shape));
