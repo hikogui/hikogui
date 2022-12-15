@@ -115,7 +115,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _children.set_layout(context.shape, theme().baseline_adjustment);
+            _children.set_layout(context.shape, theme().baseline_adjustment());
 
             for (hilet& child : _children) {
                 child.value->set_layout(context.transform(child.shape, 0.0f));

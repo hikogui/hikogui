@@ -58,7 +58,7 @@ widget& grid_widget::add_widget(
 void grid_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        _grid.set_layout(context.shape, theme().baseline_adjustment);
+        _grid.set_layout(context.shape, theme().baseline_adjustment());
     }
 
     for (hilet& cell : _grid) {

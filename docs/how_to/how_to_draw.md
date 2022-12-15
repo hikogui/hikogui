@@ -160,7 +160,7 @@ hi::box_constraints const &set_constraints(set_constraints_context const &contex
             request_reconstrain(context);
         }
     }
-    return _constraints = {{100, 100}, {150, 150}, {400, 400}, theme().margin};
+    return _constraints = {{100, 100}, {150, 150}, {400, 400}, theme().margin()};
 }
 ```
 

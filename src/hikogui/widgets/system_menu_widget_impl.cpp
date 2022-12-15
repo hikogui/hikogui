@@ -18,19 +18,20 @@ system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
     _layout = {};
     _icon_constraints = _icon_widget->update_constraints();
 
-    hilet size = extent2i{theme().large_size, theme().large_size};
+    hilet size = extent2i{theme().large_size(), theme().large_size()};
     return {size, size, size};
 }
 
 void system_menu_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet icon_height = context.height() < round_cast<int>(theme().large_size * 1.2f) ? context.height() : theme().large_size;
+        hilet icon_height =
+            context.height() < round_cast<int>(theme().large_size() * 1.2f) ? context.height() : theme().large_size();
         hilet icon_rectangle = aarectanglei{0, context.height() - icon_height, context.width(), icon_height};
-        _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme().baseline_adjustment};
+        _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme().baseline_adjustment()};
         // Leave space for window resize handles on the left and top.
-        _system_menu_rectangle =
-            aarectanglei{theme().margin, 0, context.width() - theme().margin, context.height() - theme().margin};
+        _system_menu_rectangle = aarectanglei{
+            theme().margin<int>(), 0, context.width() - theme().margin<int>(), context.height() - theme().margin<int>()};
     }
 
     _icon_widget->set_layout(context.transform(_icon_shape));

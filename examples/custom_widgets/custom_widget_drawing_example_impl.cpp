@@ -126,7 +126,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return {{100, 100}, {150, 150}, {400, 400}, hi::alignment{}, theme().margin};
+        return {{100, 100}, {150, 150}, {400, 400}, hi::alignment{}, theme().margin()};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -258,7 +258,8 @@ public:
         auto const translation = hi::translate3(std::floor(_layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(_layout.height())) * 0.5f, 0.0f);
         auto const transform = translation * rotation(context);
 
-        auto const circle = hi::circle{hi::point3{0.0f, 0.0f, 0.0f}, 50.0f};
+        auto const circle_radius = hypot(shape_quad().bottom()) * 0.5f;
+        auto const circle = hi::circle{hi::point3{0.0f, 0.0f, 0.0f}, circle_radius};
 
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.

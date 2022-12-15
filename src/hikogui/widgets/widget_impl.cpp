@@ -305,7 +305,7 @@ void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
 
     // Move the request_rectangle to window coordinates.
     hilet requested_window_rectangle = translate2i{layout().clipping_rectangle_on_window()} * requested_rectangle;
-    hilet window_bounds = aarectanglei{layout().window_size} - theme().margin;
+    hilet window_bounds = aarectanglei{layout().window_size} - theme().margin<int>();
     hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return layout().from_window * response_window_rectangle;
 }

@@ -32,7 +32,7 @@ public:
         _layout = {};
 
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
-        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, theme().margin};
+        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, theme().margin()};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -68,9 +68,9 @@ public:
                 _layout.rectangle(),
                 background_color(),
                 focus_color(),
-                theme().border_width,
+                theme().border_width(),
                 hi::border_side::inside,
-                theme().rounding_radius);
+                theme().rounding_radius());
         }
     }
 

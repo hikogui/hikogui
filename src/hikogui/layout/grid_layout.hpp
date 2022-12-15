@@ -749,24 +749,26 @@ private:
      */
     constexpr void construct_span_cell(cell_type const& cell) noexcept
     {
+        auto num_cells = narrow_cast<int>(cell.span<axis>());
+
         if (cell.span<axis>() > 1) {
             hilet[span_minimum, span_preferred, span_maximum] = constraints(cell);
             if (hilet extra = cell.minimum<axis>() - span_minimum; extra > 0) {
-                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
+                hilet extra_per_cell = (extra + num_cells - 1) / num_cells;
                 for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
                     _constraints[i].minimum += extra_per_cell;
                 }
             }
 
             if (hilet extra = cell.preferred<axis>() - span_preferred; extra > 0) {
-                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
+                hilet extra_per_cell = (extra + num_cells - 1) / num_cells;
                 for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
                     _constraints[i].preferred += extra_per_cell;
                 }
             }
 
             if (hilet extra = cell.maximum<axis>() - span_preferred; extra < 0) {
-                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
+                hilet extra_per_cell = (extra + num_cells) / num_cells;
                 for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
                     // The maximum could become too low here, fixup() will fix this.
                     _constraints[i].maximum += extra_per_cell;

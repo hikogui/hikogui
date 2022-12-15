@@ -75,14 +75,14 @@ public:
         // The minimum size is twice the length of the slider, which is twice the theme().size()
         if constexpr (axis == axis::vertical) {
             return {
-                extent2i{theme().icon_size, theme().size * 4},
-                extent2i{theme().icon_size, theme().size * 4},
-                extent2i{theme().icon_size, large_number_v<int>}};
+                extent2i{theme().icon_size(), theme().size() * 4},
+                extent2i{theme().icon_size(), theme().size() * 4},
+                extent2i{theme().icon_size(), large_number_v<int>}};
         } else {
             return {
-                extent2i{theme().size * 4, theme().icon_size},
-                extent2i{theme().size * 4, theme().icon_size},
-                extent2i{large_number_v<int>, theme().icon_size}};
+                extent2i{theme().size() * 4, theme().icon_size()},
+                extent2i{theme().size() * 4, theme().icon_size()},
+                extent2i{large_number_v<int>, theme().icon_size()}};
         }
     }
 
@@ -215,7 +215,7 @@ private:
             }
         }();
 
-        return std::clamp(preferred_length, narrow_cast<int>(theme().size) * 2, rail_length());
+        return std::clamp(preferred_length, narrow_cast<int>(theme().size()) * 2, rail_length());
     }
 
     /** The amount of travel that the slider can make.

@@ -96,7 +96,7 @@ text_widget::~text_widget()
     if (*mode == widget_mode::partial) {
         // In line-edit mode the text should not wrap.
         return _constraints_cache = {
-                   shaped_text_size, shaped_text_size, shaped_text_size, _shaped_text.resolved_alignment(), theme().margin};
+                   shaped_text_size, shaped_text_size, shaped_text_size, _shaped_text.resolved_alignment(), theme().margin()};
 
     } else {
         // Allow the text to be 550.0f pixels wide.
@@ -109,7 +109,7 @@ text_widget::~text_widget()
                    extent2i{preferred_shaped_text_size.width(), height},
                    extent2i{shaped_text_size.width(), height},
                    _shaped_text.resolved_alignment(),
-                   theme().margin};
+                   theme().margin()};
     }
 }
 

@@ -103,8 +103,10 @@ private:
 
     extent2i _button_size;
     aarectanglei _button_rectangle;
+    circle _button_circle;
+
     animator<float> _animated_value = _animation_duration;
-    aarectanglei _pip_rectangle;
+    circle _pip_circle;
 
     void draw_radio_button(draw_context const& context) noexcept;
     void draw_radio_pip(draw_context const& context) noexcept;

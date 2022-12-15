@@ -238,12 +238,10 @@ public:
 
     void draw_line(widget_layout const& layout, line_segment const& line, draw_attributes const& attributes) const noexcept
     {
-        hilet box =
-            make_rectangle(line, attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
+        hilet box = make_rectangle(line, attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
 
         auto box_attributes = attributes;
         box_attributes.line_width = 0.0f;
-        box_attributes.fill_color = attributes.line_color;
         box_attributes.corner_radius =
             make_corner_radii(attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
         return draw_box(layout, box, box_attributes);

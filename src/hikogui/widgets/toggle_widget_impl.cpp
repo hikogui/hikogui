@@ -11,11 +11,11 @@ namespace hi::inline v1 {
     _label_constraints = super::update_constraints();
 
     // Make room for button and margin.
-    _button_size = {theme().size * 2, theme().size};
-    hilet extra_size = extent2i{theme().margin + _button_size.width(), 0};
+    _button_size = {theme().size() * 2, theme().size()};
+    hilet extra_size = extent2i{theme().margin<int>() + _button_size.width(), 0};
 
     auto r = max(_label_constraints + extra_size, _button_size);
-    r.margins = theme().margin;
+    r.margins = theme().margin();
     r.alignment = *alignment;
     return r;
 }
@@ -31,29 +31,30 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
             hi_not_implemented();
         }
 
-        hilet label_width = context.width() - (_button_rectangle.width() + theme().margin);
+        hilet label_width = context.width() - (_button_rectangle.width() + theme().margin<int>());
         if (alignment_ == horizontal_alignment::left) {
-            hilet label_left = _button_rectangle.right() + theme().margin;
+            hilet label_left = _button_rectangle.right() + theme().margin<int>();
             hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
             _on_label_shape = _off_label_shape = _other_label_shape =
-                box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+                box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
 
         } else if (alignment_ == horizontal_alignment::right) {
             hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
             _on_label_shape = _off_label_shape = _other_label_shape =
-                box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment};
+                box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
 
         } else {
             hi_not_implemented();
         }
 
-        hilet button_square =
-            aarectanglei{get<0>(_button_rectangle), extent2i{_button_rectangle.height(), _button_rectangle.height()}};
+        hilet button_square = aarectangle{
+            narrow_cast<point2>(get<0>(_button_rectangle)),
+            extent2{narrow_cast<float>(_button_rectangle.height()), narrow_cast<float>(_button_rectangle.height())}};
 
-        _pip_rectangle = align(button_square, extent2i{theme().icon_size, theme().icon_size}, alignment::middle_center());
+        _pip_circle = align(button_square, circle{theme().size() * 0.5f - 3.0f}, alignment::middle_center());
 
-        hilet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
-        _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
+        hilet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_circle.diameter();
+        _pip_move_range = _button_rectangle.width() - _pip_circle.diameter() - pip_to_button_margin_x2;
     }
     super::set_layout(context);
 }
@@ -74,9 +75,9 @@ void toggle_widget::draw_toggle_button(draw_context const& context) noexcept
         _button_rectangle,
         background_color(),
         focus_color(),
-        theme().border_width,
+        theme().border_width(),
         border_side::inside,
-        corner_radii(narrow_cast<float>(_button_rectangle.height() / 2)));
+        corner_radii{_button_rectangle.height() * 0.5f});
 }
 
 void toggle_widget::draw_toggle_pip(draw_context const& context) noexcept
@@ -86,11 +87,10 @@ void toggle_widget::draw_toggle_pip(draw_context const& context) noexcept
         request_redraw();
     }
 
-    hilet positioned_pip_circle = translate3{narrow_cast<float>(_pip_move_range) * _animated_value.current_value(), 0.0f, 0.1f} *
-        (circle{narrow_cast<aarectangle>(_pip_rectangle)} * 1.02f);
+    hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
 
     hilet forground_color_ = state() == button_state::on ? accent_color() : foreground_color();
-    context.draw_circle(layout(), positioned_pip_circle, forground_color_);
+    context.draw_circle(layout(), positioned_pip_circle * 1.02f, forground_color_);
 }
 
 } // namespace hi::inline v1

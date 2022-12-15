@@ -138,7 +138,7 @@ public:
                 -*offset_y + _content_constraints.margins.bottom(),
                 *content_width,
                 *content_height},
-            theme().baseline_adjustment};
+            theme().baseline_adjustment()};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
@@ -196,11 +196,11 @@ public:
             int delta_x = 0;
             int delta_y = 0;
 
-            if (safe_rectangle.width() > theme().margin * 2 and safe_rectangle.height() > theme().margin * 2) {
+            if (safe_rectangle.width() > theme().margin<int>() * 2 and safe_rectangle.height() > theme().margin<int>() * 2) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do
                 // with the margins that are needed here.
-                safe_rectangle = safe_rectangle - theme().margin;
+                safe_rectangle = safe_rectangle - theme().margin<int>();
 
                 if (to_show.right() > safe_rectangle.right()) {
                     delta_x = to_show.right() - safe_rectangle.right();

@@ -36,16 +36,16 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     r.scale = delta_scale * scale;
 
     // Scale each size, and round so that everything will stay aligned on pixel boundaries.
-    r.margin = round_cast<int>(delta_scale * margin);
-    r.border_width = round_cast<int>(delta_scale * border_width);
-    r.rounding_radius = round_cast<int>(delta_scale * rounding_radius);
-    r.size = round_cast<int>(delta_scale * size);
-    r.large_size = round_cast<int>(delta_scale * large_size);
-    r.icon_size = round_cast<int>(delta_scale * icon_size);
-    r.large_icon_size = round_cast<int>(delta_scale * large_icon_size);
-    r.label_icon_size = round_cast<int>(delta_scale * label_icon_size);
+    r._margin = round_cast<int>(delta_scale * _margin);
+    r._border_width = round_cast<int>(delta_scale * _border_width);
+    r._rounding_radius = round_cast<int>(delta_scale * _rounding_radius);
+    r._size = round_cast<int>(delta_scale * _size);
+    r._large_size = round_cast<int>(delta_scale * _large_size);
+    r._icon_size = round_cast<int>(delta_scale * _icon_size);
+    r._large_icon_size = round_cast<int>(delta_scale * _large_icon_size);
+    r._label_icon_size = round_cast<int>(delta_scale * _label_icon_size);
     // Cap height is not rounded, since the text-shaper will align the text to sub-pixel boundaries.
-    r.baseline_adjustment = ceil_cast<int>(delta_scale * baseline_adjustment);
+    r._baseline_adjustment = ceil_cast<int>(delta_scale * _baseline_adjustment);
 
     return r;
 }
@@ -363,16 +363,16 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
         parse_text_style(font_book, data, "placeholder-label-style");
     std::get<to_underlying(semantic_text_style::link)>(_text_styles) = parse_text_style(font_book, data, "link-label-style");
 
-    margin = parse_int(data, "margin");
-    border_width = parse_int(data, "border-width");
-    rounding_radius = parse_int(data, "rounding-radius");
-    size = parse_int(data, "size");
-    large_size = parse_int(data, "large-size");
-    icon_size = parse_int(data, "icon-size");
-    large_icon_size = parse_int(data, "large-icon-size");
-    label_icon_size = parse_int(data, "label-icon-size");
+    _margin = parse_int(data, "margin");
+    _border_width = parse_int(data, "border-width");
+    _rounding_radius = parse_int(data, "rounding-radius");
+    _size = parse_int(data, "size");
+    _large_size = parse_int(data, "large-size");
+    _icon_size = parse_int(data, "icon-size");
+    _large_icon_size = parse_int(data, "large-icon-size");
+    _label_icon_size = parse_int(data, "label-icon-size");
 
-    baseline_adjustment =
+    _baseline_adjustment =
         narrow_cast<int>(std::ceil(std::get<to_underlying(semantic_text_style::label)>(_text_styles)->cap_height(font_book)));
 }
 
