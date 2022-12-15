@@ -148,6 +148,7 @@ if (WIN32)
     target_compile_definitions(hikogui PUBLIC -D_CRT_SECURE_NO_WARNINGS)
     target_compile_definitions(hikogui PUBLIC -DNOMINMAX)
     target_compile_definitions(hikogui PUBLIC -DWIN32_LEAN_AND_MEAN)
+    target_compile_definitions(hikogui PUBLIC -DWIN32_NO_STATUS)
 
     # Minimum Windows 10.
     target_compile_definitions(hikogui PUBLIC -DWINVER=0x0a00)
@@ -271,9 +272,9 @@ elseif (MSVC)
     # C4648: standard attribute 'no_unique_address' is ignored
     target_compile_options(hikogui PUBLIC -wd4648)
 
-    # C4744: 'x' has different type in 'foo.cpp' and 'bar.cpp':
+    # C4744: 'x' has different type in 'foo_impl.cpp' and 'bar_impl.cpp':
     #        'struct (8 bytes)' and '__declspec(align(8)) struct (8 bytes)' [foobar.vcxproj]
-    # Bug in linker where atomic variables defined in a header file and used in two .cpp files be
+    # Bug in linker where atomic variables defined in a header file and used in two _impl.cpp files be
     # interpreted as different types. Microsoft knows about the bug for many years.
     target_link_options(hikogui PUBLIC "/ignore:4744")
 
@@ -485,7 +486,7 @@ show_build_target_properties(hikogui_tests)
 find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
-    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp *.cpp *.mm)
+    set(DOXYGEN_EXCLUDE_PATTERNS *_tests_impl.cpp *_impl.cpp *.mm)
     set(DOXYGEN_GENERATE_HTML YES)
     set(DOXYGEN_GENERATE_LATEX NO)
     set(DOXYGEN_QUIET YES)

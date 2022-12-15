@@ -17,139 +17,139 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/application_controller.cpp:57
+#: src/application_controller_impl.cpp:57
 msgid "hikogui_demo"
 msgstr "hikogui_demo"
 
-#: src/audio_preferences_controller.cpp:17
+#: src/audio_preferences_controller_impl.cpp:17
 msgid "Audio device sample rate:"
 msgstr "Geluids apperaat sample snelheid:"
 
-#: src/audio_preferences_controller.cpp:20
+#: src/audio_preferences_controller_impl.cpp:20
 msgid "Word clock sample rate:"
 msgstr "Word clock sample snelheid:"
 
-#: src/audio_preferences_controller.cpp:23
+#: src/audio_preferences_controller_impl.cpp:23
 msgid "This is a toggle:"
 msgstr "Dit is een tokkel:"
 
-#: src/audio_preferences_controller.cpp:25
-#: src/audio_preferences_controller.cpp:30
+#: src/audio_preferences_controller_impl.cpp:25
+#: src/audio_preferences_controller_impl.cpp:30
 msgid "on"
 msgstr "aan"
 
-#: src/audio_preferences_controller.cpp:26
+#: src/audio_preferences_controller_impl.cpp:26
 msgid "off"
 msgstr "uit"
 
-#: src/audio_preferences_controller.cpp:28
+#: src/audio_preferences_controller_impl.cpp:28
 msgid "This is disabled toggle:"
 msgstr "Dit is een uitgeschakelde tokkel:"
 
-#: src/audio_preferences_controller.cpp:33
+#: src/audio_preferences_controller_impl.cpp:33
 msgid "Audio device:"
 msgstr "Geluids apperaat:"
 
-#: src/audio_preferences_controller.cpp:37
+#: src/audio_preferences_controller_impl.cpp:37
 msgid "No device selected."
 msgstr "Geen apperaat geselecteerd."
 
-#: src/audio_preferences_controller.cpp:39
+#: src/audio_preferences_controller_impl.cpp:39
 msgid "This is disabled selection widget:"
 msgstr "Dit is een uitgeschakelde selectie widget:"
 
-#: src/audio_preferences_controller.cpp:43
-#: src/license_preferences_controller.cpp:35
+#: src/audio_preferences_controller_impl.cpp:43
+#: src/license_preferences_controller_impl.cpp:35
 msgid "first"
 msgstr "eerste"
 
-#: src/audio_preferences_controller.cpp:44
+#: src/audio_preferences_controller_impl.cpp:44
 msgid "The second value has a really long label"
 msgstr "De tweede waarde heeft een hele lange label"
 
-#: src/audio_preferences_controller.cpp:45
-#: src/license_preferences_controller.cpp:37
+#: src/audio_preferences_controller_impl.cpp:45
+#: src/license_preferences_controller_impl.cpp:37
 msgid "third"
 msgstr "derde"
 
-#: src/audio_preferences_controller.cpp:47
-#: src/license_preferences_controller.cpp:39
+#: src/audio_preferences_controller_impl.cpp:47
+#: src/license_preferences_controller_impl.cpp:39
 msgid "Default"
 msgstr "Standard"
 
-#: src/audio_preferences_controller.cpp:50
+#: src/audio_preferences_controller_impl.cpp:50
 msgid "These are radio buttons:"
 msgstr "Dit zijn radio knoppen:"
 
-#: src/audio_preferences_controller.cpp:51
+#: src/audio_preferences_controller_impl.cpp:51
 msgid "Radio 1."
 msgstr "Radio 1."
 
-#: src/audio_preferences_controller.cpp:54
+#: src/audio_preferences_controller_impl.cpp:54
 msgid "Radio 2, with another large label."
 msgstr "Radio 2, met een andere lange label."
 
-#: src/audio_preferences_controller.cpp:57
+#: src/audio_preferences_controller_impl.cpp:57
 msgid "Radio 3"
 msgstr "Radio 3"
 
-#: src/license_preferences_controller.cpp:19
+#: src/license_preferences_controller_impl.cpp:19
 msgid "These is a checkbox:"
 msgstr "Dit is a selectievakje:"
 
-#: src/license_preferences_controller.cpp:21
+#: src/license_preferences_controller_impl.cpp:21
 msgid "true"
 msgstr "waar"
 
-#: src/license_preferences_controller.cpp:22
+#: src/license_preferences_controller_impl.cpp:22
 msgid "false"
 msgstr "onwaar"
 
-#: src/license_preferences_controller.cpp:23
+#: src/license_preferences_controller_impl.cpp:23
 msgid "other"
 msgstr "anders"
 
-#: src/license_preferences_controller.cpp:26
+#: src/license_preferences_controller_impl.cpp:26
 msgid "These is a disabled checkbox:"
 msgstr "Dit is een uitgeschakelde selectievakje:"
 
-#: src/license_preferences_controller.cpp:28
+#: src/license_preferences_controller_impl.cpp:28
 msgid "Checkbox, with a pretty large label."
 msgstr "Selectievakje, met een behoorlijk lange label."
 
-#: src/license_preferences_controller.cpp:32
+#: src/license_preferences_controller_impl.cpp:32
 msgid "This is a selection box at the bottom:"
 msgstr "Dit is een selectie box aan de onderkand:"
 
-#: src/license_preferences_controller.cpp:36
+#: src/license_preferences_controller_impl.cpp:36
 msgid "second"
 msgstr "tweede"
 
-#: src/main_window_controller.cpp:20
+#: src/main_window_controller_impl.cpp:20
 msgid "Preferences"
 msgstr "Voorkeuren"
 
-#: src/main_window_controller.cpp:26
+#: src/main_window_controller_impl.cpp:26
 msgid "HikoGUI Demo - Preferences"
 msgstr "HikoGUI Demo - Voorkeuren"
 
-#: src/main_window_controller.cpp:34
+#: src/main_window_controller_impl.cpp:34
 msgid "Hello 世界"
 msgstr "Hallo 世界"
 
-#: src/main_window_controller.cpp:36
+#: src/main_window_controller_impl.cpp:36
 msgid "Hello world"
 msgstr "Hallo weereld"
 
-#: src/main_window_controller.cpp:38
+#: src/main_window_controller_impl.cpp:38
 msgid "Hello earthlings"
 msgstr "Hallo aardlingen"
 
-#: src/preferences_controller.cpp:19
+#: src/preferences_controller_impl.cpp:19
 msgid "Audio"
 msgstr "Geluid"
 
-#: src/preferences_controller.cpp:22
+#: src/preferences_controller_impl.cpp:22
 msgid "License"
 msgstr "Licentie"
 

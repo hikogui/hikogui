@@ -108,9 +108,9 @@ struct grid_layout_cell {
     [[nodiscard]] constexpr int minimum() const noexcept
     {
         if constexpr (Axis == axis::x) {
-            return _constraints.minimum_width;
+            return _constraints.minimum.width();
         } else if constexpr (Axis == axis::y) {
-            return _constraints.minimum_height;
+            return _constraints.minimum.height();
         } else {
             hi_static_no_default();
         }
@@ -120,9 +120,9 @@ struct grid_layout_cell {
     [[nodiscard]] constexpr int preferred() const noexcept
     {
         if constexpr (Axis == axis::x) {
-            return _constraints.preferred_width;
+            return _constraints.preferred.width();
         } else if constexpr (Axis == axis::y) {
-            return _constraints.preferred_height;
+            return _constraints.preferred.height();
         } else {
             hi_static_no_default();
         }
@@ -132,9 +132,9 @@ struct grid_layout_cell {
     [[nodiscard]] constexpr int maximum() const noexcept
     {
         if constexpr (Axis == axis::x) {
-            return _constraints.maximum_width;
+            return _constraints.maximum.width();
         } else if constexpr (Axis == axis::y) {
-            return _constraints.maximum_height;
+            return _constraints.maximum.height();
         } else {
             hi_static_no_default();
         }
@@ -145,15 +145,15 @@ struct grid_layout_cell {
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
-                return _constraints.margin_left;
+                return _constraints.margins.left();
             } else {
-                return _constraints.margin_right;
+                return _constraints.margins.right();
             }
         } else if constexpr (Axis == axis::y) {
             if (forward) {
-                return _constraints.margin_bottom;
+                return _constraints.margins.bottom();
             } else {
-                return _constraints.margin_top;
+                return _constraints.margins.top();
             }
         } else {
             hi_static_no_default();
@@ -165,15 +165,15 @@ struct grid_layout_cell {
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
-                return _constraints.margin_right;
+                return _constraints.margins.right();
             } else {
-                return _constraints.margin_left;
+                return _constraints.margins.left();
             }
         } else if constexpr (Axis == axis::y) {
             if (forward) {
-                return _constraints.margin_top;
+                return _constraints.margins.top();
             } else {
-                return _constraints.margin_bottom;
+                return _constraints.margins.bottom();
             }
         } else {
             hi_static_no_default();
@@ -185,15 +185,15 @@ struct grid_layout_cell {
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
-                return _constraints.padding_left;
+                return _constraints.padding.left();
             } else {
-                return _constraints.padding_right;
+                return _constraints.padding.right();
             }
         } else if constexpr (Axis == axis::y) {
             if (forward) {
-                return _constraints.padding_bottom;
+                return _constraints.padding.bottom();
             } else {
-                return _constraints.padding_top;
+                return _constraints.padding.top();
             }
         } else {
             hi_static_no_default();
@@ -205,15 +205,15 @@ struct grid_layout_cell {
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
-                return _constraints.padding_right;
+                return _constraints.padding.right();
             } else {
-                return _constraints.padding_left;
+                return _constraints.padding.left();
             }
         } else if constexpr (Axis == axis::y) {
             if (forward) {
-                return _constraints.padding_top;
+                return _constraints.padding.top();
             } else {
-                return _constraints.padding_bottom;
+                return _constraints.padding.bottom();
             }
         } else {
             hi_static_no_default();
@@ -345,7 +345,7 @@ public:
         return empty() ? 0 : _forward ? back().padding_after : front().padding_after;
     }
 
-    [[nodiscard]] constexpr std::tuple<int, int, int> constraints() const noexcept
+    [[nodiscard]] constexpr std::tuple<int, int, int> update_constraints() const noexcept
     {
         return constraints(begin(), end());
     }
@@ -427,12 +427,12 @@ public:
         // If the total extent is still too small, expand into the cells that are marked beyond_maximum.
         if (total_extent < new_extent) {
             // The result may expand slightly too much, we don't care.
-            hilet count = std::count_if(begin(), end(), [](hilet& item) {
+            count = std::count_if(begin(), end(), [](hilet& item) {
                 return item.beyond_maximum;
             });
             if (count) {
                 hilet todo = new_extent - total_extent;
-                hilet per_extent = (todo + count - 1) / count;
+                hilet per_extent = narrow_cast<int>((todo + count - 1) / count);
                 for (auto& constraint : _constraints) {
                     if (constraint.beyond_maximum) {
                         constraint.extent += per_extent;
@@ -749,24 +749,26 @@ private:
      */
     constexpr void construct_span_cell(cell_type const& cell) noexcept
     {
+        auto num_cells = narrow_cast<int>(cell.span<axis>());
+
         if (cell.span<axis>() > 1) {
             hilet[span_minimum, span_preferred, span_maximum] = constraints(cell);
             if (hilet extra = cell.minimum<axis>() - span_minimum; extra > 0) {
-                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
+                hilet extra_per_cell = (extra + num_cells - 1) / num_cells;
                 for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
                     _constraints[i].minimum += extra_per_cell;
                 }
             }
 
             if (hilet extra = cell.preferred<axis>() - span_preferred; extra > 0) {
-                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
+                hilet extra_per_cell = (extra + num_cells - 1) / num_cells;
                 for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
                     _constraints[i].preferred += extra_per_cell;
                 }
             }
 
             if (hilet extra = cell.maximum<axis>() - span_preferred; extra < 0) {
-                hilet extra_per_cell = narrow_cast<int>((extra + cell.span<axis>() - 1) / cell.span<axis>());
+                hilet extra_per_cell = (extra + num_cells) / num_cells;
                 for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
                     // The maximum could become too low here, fixup() will fix this.
                     _constraints[i].maximum += extra_per_cell;
@@ -1095,17 +1097,17 @@ public:
         _column_constraints = {_cells, num_columns(), left_to_right};
 
         auto r = box_constraints{};
-        std::tie(r.minimum_width, r.preferred_width, r.maximum_width) = _column_constraints.constraints();
-        r.margin_left = _column_constraints.margin_before();
-        r.margin_right = _column_constraints.margin_after();
-        r.padding_left = _column_constraints.padding_before();
-        r.padding_right = _column_constraints.padding_after();
+        std::tie(r.minimum.width(), r.preferred.width(), r.maximum.width()) = _column_constraints.update_constraints();
+        r.margins.left() = _column_constraints.margin_before();
+        r.margins.right() = _column_constraints.margin_after();
+        r.padding.left() = _column_constraints.padding_before();
+        r.padding.right() = _column_constraints.padding_after();
 
-        std::tie(r.minimum_height, r.preferred_height, r.maximum_height) = _row_constraints.constraints();
-        r.margin_bottom = _row_constraints.margin_after();
-        r.margin_top = _row_constraints.margin_before();
-        r.padding_bottom = _row_constraints.padding_after();
-        r.padding_top = _row_constraints.padding_before();
+        std::tie(r.minimum.height(), r.preferred.height(), r.maximum.height()) = _row_constraints.update_constraints();
+        r.margins.bottom() = _row_constraints.margin_after();
+        r.margins.top() = _row_constraints.margin_before();
+        r.padding.bottom() = _row_constraints.padding_after();
+        r.padding.top() = _row_constraints.padding_before();
 
         r.alignment = [&] {
             if (num_rows() == 1 and num_columns() == 1) {
@@ -1130,15 +1132,16 @@ public:
     constexpr void set_layout(box_shape const& shape, int baseline_adjustment) noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
-        _column_constraints.layout(shape.x, shape.width, shape.centerline, 0);
-        _row_constraints.layout(shape.y, shape.height, shape.baseline, baseline_adjustment);
+        _column_constraints.layout(shape.x(), shape.width(), shape.centerline, 0);
+        _row_constraints.layout(shape.y(), shape.height(), shape.baseline, baseline_adjustment);
 
         // Assign the shape for each cell.
         for (auto& cell : _cells) {
-            cell.shape.x = _column_constraints.position(cell);
-            cell.shape.y = _row_constraints.position(cell);
-            cell.shape.width = _column_constraints.extent(cell);
-            cell.shape.height = _row_constraints.extent(cell);
+            cell.shape.rectangle = {
+                _column_constraints.position(cell),
+                _row_constraints.position(cell),
+                _column_constraints.extent(cell),
+                _row_constraints.extent(cell)};
             cell.shape.centerline = _column_constraints.guideline(cell);
             cell.shape.baseline = _row_constraints.guideline(cell);
         }
@@ -1180,4 +1183,5 @@ private:
         }
     }
 };
+
 }} // namespace hi::v1

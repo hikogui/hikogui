@@ -10,7 +10,7 @@ add_executable(vulkan_triangle WIN32 MACOSX_BUNDLE)
 add_dependencies(examples vulkan_triangle)
 
 target_link_libraries(vulkan_triangle PRIVATE hikogui)
-target_sources(vulkan_triangle PRIVATE main.cpp triangle.cpp triangle.hpp)
+target_sources(vulkan_triangle PRIVATE main_impl.cpp triangle_impl.cpp triangle.hpp)
 
 add_custom_target(vulkan_triangle_shaders)
 add_shader_target(vulkan_triangle_shaders

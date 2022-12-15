@@ -7,7 +7,7 @@
 #-------------------------------------------------------------------
 
 add_executable(json_to_bon8 WIN32 MACOSX_BUNDLE)
-target_sources(json_to_bon8 PRIVATE json_to_bon8.cpp)
+target_sources(json_to_bon8 PRIVATE json_to_bon8_impl.cpp)
 target_link_libraries(json_to_bon8 PRIVATE hikogui)
 target_include_directories(json_to_bon8 PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 

@@ -26,7 +26,7 @@ namespace hi { inline namespace v1 {
  * `value` controlled by a set of toolbar tab buttons. Each tab is configured
  * with a different value: 0, 1 and 2.
  *
- * @snippet widgets/tab_example.cpp Create three tabs
+ * @snippet widgets/tab_example_impl.cpp Create three tabs
  *
  * @ingroup widgets
  * @note A `tab_button` is not directly controlled by a
@@ -93,10 +93,10 @@ public:
         }
     }
 
-    [[nodiscard]] box_constraints constraints() noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
     [[nodiscard]] widget const *find_next_widget(
         widget const *current_widget,
         keyboard_focus_group group,
