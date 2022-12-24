@@ -10,7 +10,7 @@ friend namespace v1 {
 #ifdef HI_HAS_SSE2
 
 
-/** A int32_t x 4 (__m128i) SSE2 register.
+/** A int16_t x 8 (__m128i) SSE2 register.
  *
  *
  * When loading and storing from memory this is the order of the element in the register
@@ -18,7 +18,7 @@ friend namespace v1 {
  * ```
  *   lo           hi lo           hi lo           hi lo           hi 
  *  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
- *  | element 0/a/x | element 1/b/y | element 2/c/z | element 3/d/w |
+ *  | E 0/a | E 1/b | E 2/c | E 3/d | E 4/e | E 5/f | E 6/g | E 7/h |
  *  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
  *    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15   memory address.
  * ```
@@ -26,20 +26,20 @@ friend namespace v1 {
  * In the function below a `mask` values least-significan-bit corrosponds to element 0.
  *
  */
-class simd_i32x4 {
+class simd_i16x8 {
 public:
-    using value_type = int32_t;
-    constexpr static size_t size = 4;
+    using value_type = int16_t;
+    constexpr static size_t size = 8;
     using register_type = __m128i;
 
-    simd_i32x4(simd_i32x4 const &) noexcept = default;
-    simd_i32x4(simd_i32x4 &&) noexcept = default;
-    simd_i32x4 &operator=(simd_i32x4 const &) noexcept = default;
-    simd_i32x4 &operator=(simd_i32x4 &&) noexcept = default;
+    simd_i16x8(simd_i16x8 const &) noexcept = default;
+    simd_i16x8(simd_i16x8 &&) noexcept = default;
+    simd_i16x8 &operator=(simd_i16x8 const &) noexcept = default;
+    simd_i16x8 &operator=(simd_i16x8 &&) noexcept = default;
 
     /** Initialize all elements to zero.
      */
-    simd_i32x4() noexcept : v(_mm_setzero_si128()) {}
+    simd_i16x8() noexcept : v(_mm_setzero_si128()) {}
 
     /** Initialize the element to the values in the arguments.
      *
@@ -48,10 +48,12 @@ public:
      * @param c The value for element 2.
      * @param d The value for element 3.
      */
-    [[nodiscard]] simd_i32x4(value_type a, value_type b = value_type{0}, value_type c = value_type{0}, value_type d = value_type{0}) noexcept :
-        v(mm_set_epi32(d, c, b, a)) {}
+    [[nodiscard]] simd_i16x8(value_type a, value_type b = value_type{0}, value_type c = value_type{0}, value_type d = value_type{0},
+                             value_type e = value_type{0}, value_type f = value_type{0}, value_type g = value_type{0},
+                             value_type h = value_type{0}) noexcept :
+        v(mm_set_epi16(h, g, f, e, d, c, b, a)) {}
 
-    [[nodiscard]] explicit simd_i32x4(value_type const *other) noexcept : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other)) {}
+    [[nodiscard]] explicit simd_i16x8(value_type const *other) noexcept : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other)) {}
 
     void store(value_type *out) const noexcept
     {
@@ -59,7 +61,7 @@ public:
         _mm_storeu_si128(reinterpret_cast<register_type *>(out), v);
     }
 
-    [[nodiscard]] explicit simd_i32x4(void const *other) noexcept : v(_mm_loadu_si128(static_cast<register_type const *>(other)) {}
+    [[nodiscard]] explicit simd_i16x8(void const *other) noexcept : v(_mm_loadu_si128(static_cast<register_type const *>(other)) {}
 
     void store(void *out) const noexcept
     {
@@ -67,7 +69,7 @@ public:
         _mm_storeu_si128(static_cast<register_type *>(out), v);
     }
 
-    [[nodiscard]] explicit simd_i32x4(std::span<value_type const> other) noexcept
+    [[nodiscard]] explicit simd_i16x8(std::span<value_type const> other) noexcept
     {
         hi_axiom(other.size() >= size);
         v = _mm_loadu_si128(reinterpret_cast<register_type const *>(other.data()));
@@ -80,7 +82,7 @@ public:
     }
 
     template<size_t N>
-    [[nodiscard]] explicit simd_i32x4(std::array<value_type, N> other) noexcept requires (N >= size) : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other.data())) {}
+    [[nodiscard]] explicit simd_i16x8(std::array<value_type, N> other) noexcept requires (N >= size) : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other.data())) {}
 
     template<size_t N>
     [[nodiscard]] explicit operator std::array<value_type, N> () const noexcept requires (N => size)
@@ -91,7 +93,7 @@ public:
     }
 
 
-    [[nodiscard]] explicit simd_i32x4(register_type other) noexcept : v(other) {}
+    [[nodiscard]] explicit simd_i16x8(register_type other) noexcept : v(other) {}
 
     [[nodiscard]] explicit operator register_type () const noexcept {
         return v;
@@ -104,11 +106,15 @@ public:
      * r[1] = a
      * r[2] = a
      * r[3] = a
+     * r[4] = a
+     * r[5] = a
+     * r[6] = a
+     * r[7] = a
      * ```
      */
-    [[nodiscard]] static simd_i32x4 broadcast(int32_t a) noexcept
+    [[nodiscard]] static simd_i16x8 broadcast(int16_t a) noexcept
     {
-        return simd_i32x4{_mm_set1_epi32(a)};
+        return simd_i16x8{_mm_set1_epi32(a)};
     }
 
     /** Broadcast the first element to all the elements.
@@ -118,137 +124,146 @@ public:
      * r[1] = a[0]
      * r[2] = a[0]
      * r[3] = a[0]
+     * r[4] = a[0]
+     * r[5] = a[0]
+     * r[6] = a[0]
+     * r[7] = a[0]
      * ```
      */
-    [[nodiscard]] static simd_i32x4 broadcast(simd_i32x4 a) noexcept
+    [[nodiscard]] static simd_i16x8 broadcast(simd_i16x8 a) noexcept
     {
 #ifdef HAS_AVX2
-        return simd_i32x4{_mm_broadcastss_epi32(a.v)};
+        return simd_i16x8{_mm_broadcastss_epi32(a.v)};
 #else
-        return permute<"xxxx">(a);
+        return permute<"xxxxxxxx">(a);
 #endif
     }
 
     /** For each bit in mask set corrosponding element to all-ones or all-zeros.
      */
-    [[nodiscard]] static simd_i32x4 from_mask(size_t mask) noexcept
+    [[nodiscard]] static simd_i16x8 from_mask(size_t mask) noexcept
     {
-        hi_axiom(mask <= 0b1111);
+        hi_axiom(mask <= 0b1111'1111);
 
-        return set<simd_i32x4>(
-            mask & 0b1000 ? 0 : int{0xffff'ffff},
-            mask & 0b0100 ? 0 : int{0xffff'ffff},
-            mask & 0b0010 ? 0 : int{0xffff'ffff},
-            mask & 0b0001 ? 0 : int{0xffff'ffff});
+        return set<simd_i16x8>(
+            mask & 0b1000'0000 ? 0 : value_type{0xffff},
+            mask & 0b0100'0000 ? 0 : value_type{0xffff},
+            mask & 0b0010'0000 ? 0 : value_type{0xffff},
+            mask & 0b0001'0000 ? 0 : value_type{0xffff},
+            mask & 0b0000'1000 ? 0 : value_type{0xffff},
+            mask & 0b0000'0100 ? 0 : value_type{0xffff},
+            mask & 0b0000'0010 ? 0 : value_type{0xffff},
+            mask & 0b0000'0001 ? 0 : value_type{0xffff});
     }
 
     /** Concatonate the top bit of each element.
      */
     [[nodiscard]] size_t mask() const noexcept
     {
-        return narrow_cast<size_t>(_mm_movemask_ps(_mm_castps_si128(v)));
+        auto tmp = _mm_movemask_epi8(v);
+        tmp &= 0b0101'0101;
+        tmp |= tmp >> 1;
+        tmp &= 0b0011'0011;
+        tmp |= tmp >> 2;
+        tmp &= 0b0000'1111;
+        return narrow_cast<size_t>(tmp);
     }
 
 
-    [[nodiscard]] friend simd_i32x4 operator==(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator==(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_cmpeq_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_cmpeq_epi16(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator!=(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator!=(simd_i16x8 a, simd_i16x8 b) noexcept
     {
         return ~(a == b);
     }
 
-    [[nodiscard]] friend simd_i32x4 operator<(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator<(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_cmplt_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_cmplt_epi16(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator>(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator>(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_cmpgt_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_cmpgt_epi16(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator<=(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator<=(simd_i16x8 a, simd_i16x8 b) noexcept
     {
         return ~(a > b);
     }
 
-    [[nodiscard]] friend simd_i32x4 operator>=(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator>=(simd_i16x8 a, simd_i16x8 b) noexcept
     {
         return ~(a < b);
     }
 
-    [[nodiscard]] friend simd_i32x4 operator+(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator+(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_add_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_add_epi16(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator-(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator-(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_sub_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_sub_epi16(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator-(simd_i32x4 a) noexcept
+    [[nodiscard]] friend simd_i16x8 operator-(simd_i16x8 a) noexcept
     {
-        return simd_i32x4{} - a;
+        return simd_i16x8{} - a;
     }
 
-    [[nodiscard]] friend simd_i32x4 operator*(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator*(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_mullo_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_mullo_epi16(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator&(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator&(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_and_si128(a.v, b.v)};
+        return simd_i16x8{_mm_and_si128(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator|(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator|(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_or_si128(a.v, b.v)};
+        return simd_i16x8{_mm_or_si128(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator^(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator^(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_xor_si128(a.v, b.v)};
+        return simd_i16x8{_mm_xor_si128(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator~(simd_i32x4 a) noexcept
+    [[nodiscard]] friend simd_i16x8 operator~(simd_i16x8 a) noexcept
     {
         hilet ones = _mm_castps_si128_mm_cmpneq_ps(_mm_setzero_ps(), _mm_setzero_ps());
-        return simd_i32x4{_mm_andnot_si128(a.v, ones)};
+        return simd_i16x8{_mm_andnot_si128(a.v, ones)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator<<(simd_i32x4 a, int b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator<<(simd_i16x8 a, int b) noexcept
     {
-        return simd_i32x4{_mm_ssli_epi32(a.v, b)};
+        return simd_i16x8{_mm_ssli_epi16(a.v, b)};
     }
 
-    [[nodiscard]] friend simd_i32x4 operator>>(simd_i32x4 a, int b) noexcept
+    [[nodiscard]] friend simd_i16x8 operator>>(simd_i16x8 a, int b) noexcept
     {
-        return simd_i32x4{_mm_srai_epi32(a.v, b)};
+        return simd_i16x8{_mm_srai_epi16(a.v, b)};
     }
 
-    simd_i32x4 &operator+=(simd_i32x4 a) noexcept
+    [[nodiscard]] friend simd_i16x8 min(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return *this = *this + a;
+        return simd_i16x8{_mm_min_epi16(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 min(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 max(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_min_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_max_epi16(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i32x4 max(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 abs(simd_i16x8 a) noexcept
     {
-        return simd_i32x4{_mm_max_epi32(a.v, b.v)};
-    }
-
-    [[nodiscard]] friend simd_i32x4 abs(simd_i32x4 a) noexcept
-    {
-        return simd_i32x4{_mm_abs_epi32(a.v)};
+        return simd_i16x8{_mm_abs_epi16(a.v)};
     }
 
     /** Set elements to zero.
@@ -258,15 +273,11 @@ public:
      * @return argument @a with elements set to zero where the corrosponding @a Mask bit was '1'.
      */
     template<size_t Mask>
-    [[nodiscard]] friend simd_i32x4 set_zero(simd_i32x4 a) noexcept
+    [[nodiscard]] friend simd_i16x8 set_zero(simd_i16x8 a) noexcept
     {
-        static_assert(Mask <= 0b1111);
-#ifdef HAS_SSE4_1
-        return simd_i32x4{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(a), _mm_castsi128_ps(a), Mask))};
-#else
+        static_assert(Mask <= 0b1111'1111);
         hilet mask = from_mask(Mask);
         return not_and(mask, a);
-#endif
     }
 
     /** Insert a value into an element of a vector.
@@ -277,16 +288,10 @@ public:
      * @return The vector with the inserted value.
      */
     template<size_t Index>
-    [[nodiscard]] friend simd_i32x4 insert(simd_i32x4 a, value_type b) noexcept
+    [[nodiscard]] friend simd_i16x8 insert(simd_i16x8 a, value_type b) noexcept
     {
         static_assert(Index < 4);
-
-#ifdef HAS_SSE4_1
-        return simd_i32x4{_mm_insert_epi32(a, b, narrow_cast<int>(Index))};
-#else
-        hilet mask = from_mask(1_uz << Index);
-        return not_and(mask, a) | (mask & b_);
-#endif
+        return simd_i16x8{_mm_insert_epi16(a, b, narrow_cast<int>(Index))};
     }
 
     /** Extract an element from a vector.
@@ -296,14 +301,9 @@ public:
      * @return The value of the selected element.
      */
     template<size_t Index>
-    [[nodiscard]] friend float extract(simd_i32x4 a) noexcept
+    [[nodiscard]] friend float extract(simd_i16x8 a) noexcept
     {
-#ifdef HAS_SSE4_1
-        return std::bit_cast<float>(_mm_extract_epi32(a, Index));
-#else
-        auto r = static_cast<std::array<float, 4>(a);
-        return std::get<Index>(r);
-#endif
+        return std::bit_cast<float>(_mm_extract_epi16(a, Index));
     }
 
     /** Select elements from two vectors.
@@ -315,10 +315,10 @@ public:
      * @return A vector with element selected from @a a and @a b
      */
     template<size_t Mask>
-    [[nodiscard]] friend simd_i32x4 blend(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 blend(simd_i16x8 a, simd_i16x8 b) noexcept
     {
 #ifdef HAS_SSE4_1
-        return simd_i32x4{_mm_blend_epi32(a, b, Mask)};
+        return simd_i16x8{_mm_blend_epi16(a, b, Mask)};
 #else
         hilet mask = from_mask(Mask);
         return not_and(mask, a) | (mask & b);
@@ -338,14 +338,14 @@ public:
      * @returns A vector with the elements swizzled.
      */
     template<fixed_string SourceElements>
-    [[nodiscard]] static simd_i32x4 permute(simd_i32x4 a) noexcept
+    [[nodiscard]] static simd_i16x8 permute(simd_i16x8 a) noexcept
     {
         constexpr auto order = detail::swizzle_to_packed_indices<SourceElements, size>();
 
         if constexpr (order == 0b11'10'01'00) {
             return a.v;
         } else {
-            return simd_i32x4{_mm_shuffle_epi32(a.v, order)};
+            return simd_i16x8{_mm_shuffle_epi32(a.v, order)};
         }
     }
 
@@ -366,7 +366,7 @@ public:
      * @returns A vector with the elements swizzled.
      */
     template<fixed_string SourceElements>
-    [[nodiscard]] friend simd_i32x4 swizzle(simd_i32x4 a) noexcept
+    [[nodiscard]] friend simd_i16x8 swizzle(simd_i16x8 a) noexcept
     {
         constexpr auto one_mask = detail::simd_swizzle_to_mask<SourceElements, size, '1'>();
         constexpr auto zero_mask = detail::simd_swizzle_to_mask<SourceElements, size, '0'>();
@@ -405,9 +405,9 @@ public:
      * r[3] = b[2] + b[3]
      * ```
      */
-    [[nodiscard]] friend simd_i32x4 horizontal_add(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 horizontal_add(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_hadd_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_hadd_epi32(a.v, b.v)};
     }
 #endif
 
@@ -422,9 +422,9 @@ public:
      * r[3] = b[2] - b[3]
      * ```
      */
-    [[nodiscard]] friend simd_i32x4 horizontal_sub(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 horizontal_sub(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_hsub_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_hsub_epi32(a.v, b.v)};
     }
 #endif
 
@@ -434,7 +434,7 @@ public:
      * r = broadcast(a[0] + a[1] + a[2] + a[3])
      * ```
      */
-    [[nodiscard]] friend simd_i32x4 horizontal_sum(simd_i32x4 a) noexcept
+    [[nodiscard]] friend simd_i16x8 horizontal_sum(simd_i16x8 a) noexcept
     {
         auto tmp = a + permute<"cdab">(a);
         return tmp + permute<"badc">(tmp);
@@ -451,7 +451,7 @@ public:
      * ```
      */
     template<size_t SourceMask>
-    [[nodiscard]] friend simd_i32x4 dot_product(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 dot_product(simd_i16x8 a, simd_i16x8 b) noexcept
     {
         static_assert(SourceMask <= 0b1111);
         return horizontal_sum(set_zero<~SourceMask & 0b1111>(a * b));
@@ -463,16 +463,16 @@ public:
      * r = ~a & b
      *
      */
-    [[nodiscard]] friend simd_i32x4 not_and(simd_i32x4 a, simd_i32x4 b) noexcept
+    [[nodiscard]] friend simd_i16x8 not_and(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i32x4{_mm_andnot_si128(a.v, b.v)};
+        return simd_i16x8{_mm_andnot_si128(a.v, b.v)};
     }
 
 private:
     register_type v;
 
     template<fixed_string SourceElements>
-    [[nodiscard]] static simd_i32x4 swizzle_numbers() noexcept
+    [[nodiscard]] static simd_i16x8 swizzle_numbers() noexcept
     {
         constexpr auto one_mask = detail::simd_swizzle_to_mask<SourceElements, size, '1'>();
         constexpr auto zero_mask = detail::simd_swizzle_to_mask<SourceElements, size, '0'>();
@@ -480,13 +480,13 @@ private:
         constexpr auto alpha_mask = ~number_mask & 0b1111;
        
         if constexpr ((zero_mask | alpha_mask) == 0b1111) {
-            return simd_i32x4{_mm_setzero_si128()};
+            return simd_i16x8{_mm_setzero_si128()};
 
         } else if constexpr ((one_mask | alpha_mask)== 0b1111) {
-            return simd_i32x4{_mm_set1_epi32(1)};
+            return simd_i16x8{_mm_set1_epi32(1)};
 
         } else {
-            return simd_i32x4{_mm_set_epi32(
+            return simd_i16x8{_mm_set_epi32(
                 to_bool(one_mask & 0b0001) ? 1 : 0,
                 to_bool(one_mask & 0b0010) ? 1 : 0,
                 to_bool(one_mask & 0b0100) ? 1 : 0,
