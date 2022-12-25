@@ -132,6 +132,7 @@ target_sources(hikogui PRIVATE
     ranges.hpp
     rcu.hpp
     recursive_iterator.hpp
+    reflection.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
     utility.hpp
@@ -213,6 +214,7 @@ if(BUILD_TESTING)
         polynomial_tests.cpp
         ranges_tests.cpp
         rcu_tests.cpp
+        reflection_tests.cpp
         safe_int_tests.cpp
         shared_state_tests.cpp
         sip_hash_tests.cpp

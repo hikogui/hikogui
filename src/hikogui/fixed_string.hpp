@@ -5,10 +5,13 @@
 #pragma once
 
 #include "utility.hpp"
+#include "cast.hpp"
+#include "assert.hpp"
 #include <string>
 #include <string_view>
 #include <format>
 #include <array>
+#include <ranges>
 
 namespace hi::inline v1 {
 
@@ -46,6 +49,19 @@ struct fixed_string {
     {
         for (auto i = 0_uz; i != (O - 1); ++i) {
             _str[i] = str[i];
+        }
+    }
+
+    /** Create a fixed string from function returning a string-like.
+     */
+    template<std::invocable F>
+    constexpr fixed_string(F const &f) noexcept
+    {
+        auto str = f();
+
+        hi_assert(str.size() == N);
+        for (auto i = 0_uz; i != str.size(); ++i) {
+            _str[i] = char_cast<char>(str[i]);
         }
     }
 
@@ -177,6 +193,11 @@ struct fixed_string {
 
 template<std::size_t N>
 fixed_string(char const (&str)[N]) -> fixed_string<N - 1>;
+
+template<std::invocable F>
+fixed_string(F const &f) -> fixed_string<std::ranges::size(F{}())>;
+
+#define hi_to_fixed_string(x) ::hi::fixed_string{[]{ return x; }}
 
 } // namespace hi::inline v1
 
