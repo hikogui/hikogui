@@ -1,16 +1,45 @@
-
+// Copyright Take Vos 2022, 2023.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-namespace hi {
-inline namespace v1 {
+#include "../architecture.hpp"
+#include "../fixed_string.hpp"
 
-#ifdef HAS_SSE
+#ifdef HI_HAS_SSE
+#include <xmmintrin.h>
+#endif
+#ifdef HI_HAS_SSE2
+#include <emmintrin.h>
+#endif
+#ifdef HI_HAS_SSE3
+#include <pmmintrin.h>
+#endif
+#ifdef HI_HAS_SSSE3
+#include <tmmintrin.h>
+#endif
+#ifdef HI_HAS_SSE4_1
+#include <smmintrin.h>
+#endif
+#ifdef HI_HAS_SSE4_2
+#include <nmmintrin.h>
+#endif
+#ifdef HI_HAS_AVX
+#include <immintrin.h>
+#endif
+#ifdef HI_HAS_AVX512F
+#include <immintrin.h>
+#endif
+
+namespace hi { inline namespace v1 {
+
+#ifdef HI_HAS_SSE
 enum class simd_rounding_mode : int {
-    nearest = _MM_FROUND_TO_NEAREST_INT |_MM_FROUND_NO_EXC,
-    negative_infinite = _MM_FROUND_TO_NEG_INF |_MM_FROUND_NO_EXC,
-    positive_infinite = _MM_FROUND_TO_POS_INF |_MM_FROUND_NO_EXC,
-    truncate = _MM_FROUND_TO_ZERO |_MM_FROUND_NO_EXC,
+    nearest = _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC,
+    negative_infinite = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC,
+    positive_infinite = _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC,
+    truncate = _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC,
 
     /** Use the current rounding mode.
      */
@@ -18,9 +47,7 @@ enum class simd_rounding_mode : int {
 };
 #endif
 
-
 namespace detail {
-
 
 /** Convert a string of element-names to packed element-indices.
  *
@@ -39,7 +66,7 @@ namespace detail {
 template<fixed_string SourceElements, size_t NumElements>
 [[nodiscard]] constexpr size_t simd_swizzle_to_packed_indices() noexcept
 {
-    constexpr auto max_elements = sizeof (size_t) == 8 ? 16 : 8;
+    constexpr auto max_elements = sizeof(size_t) == 8 ? 16 : 8;
     static_assert(NumElements > 1 and NumElements <= max_elements and std::has_single_bit(NumElements));
     static_assert(SourceElements.size() <= NumElements);
 
@@ -52,16 +79,16 @@ template<fixed_string SourceElements, size_t NumElements>
     // Unspecified elements will retain their original position.
     for (; i != SourceElements.size(); --i) {
         r <<= shift;
-        r |= i;
+        r |= i - 1;
     }
 
-    for (; i != 0; ++i) {
+    for (; i != 0; --i) {
         hilet c = SourceElements[i - 1];
 
         r <<= shift;
-        if (c => '0' and c <= '9') {
+        if (c >= '0' and c <= '9') {
             // Numeric elements will retain their original position.
-            r |= i;
+            r |= i - 1;
 
         } else if (c >= 'a' and c <= 'p') {
             r |= char_cast<size_t>(c - 'a');
@@ -101,10 +128,10 @@ template<fixed_string SourceElements, size_t NumElements, char Value>
 
     auto i = NumElements;
 
-    // Unspecified elements will be treated as '0' position.
-    for (; i != SourceElements.size(); --) {
+    // Unspecified elements will be treated as '0'.
+    for (; i != SourceElements.size(); --i) {
         r <<= 1;
-        r |= char_cast<size_t>(Value == 'c');
+        r |= wide_cast<size_t>(Value == '0');
     }
 
     for (; i != 0; --i) {
@@ -117,6 +144,5 @@ template<fixed_string SourceElements, size_t NumElements, char Value>
     return r;
 }
 
-
-}}
-
+} // namespace detail
+}} // namespace hi::v1

@@ -45,7 +45,8 @@ struct fixed_string {
     constexpr fixed_string& operator=(fixed_string&&) noexcept = default;
 
     template<std::size_t O>
-    constexpr fixed_string(char const (&str)[O]) noexcept requires((O - 1) == N)
+    constexpr fixed_string(char const (&str)[O]) noexcept
+        requires((O - 1) == N)
     {
         for (auto i = 0_uz; i != (O - 1); ++i) {
             _str[i] = str[i];
@@ -55,7 +56,7 @@ struct fixed_string {
     /** Create a fixed string from function returning a string-like.
      */
     template<std::invocable F>
-    constexpr fixed_string(F const &f) noexcept
+    constexpr fixed_string(F const& f) noexcept
     {
         auto str = f();
 
@@ -114,13 +115,15 @@ struct fixed_string {
     [[nodiscard]] constexpr auto operator<=>(fixed_string const& rhs) const noexcept = default;
 
     template<size_t O>
-    [[nodiscard]] constexpr bool operator==(fixed_string<O> const& rhs) const noexcept requires(O != N)
+    [[nodiscard]] constexpr bool operator==(fixed_string<O> const& rhs) const noexcept
+        requires(O != N)
     {
         return false;
     }
 
     template<size_t O>
-    [[nodiscard]] constexpr auto operator<=>(fixed_string<O> const& rhs) const noexcept requires(O != N)
+    [[nodiscard]] constexpr auto operator<=>(fixed_string<O> const& rhs) const noexcept
+        requires(O != N)
     {
         return static_cast<std::string_view>(*this) <=> static_cast<std::string_view>(rhs);
     }
@@ -129,18 +132,18 @@ struct fixed_string {
     {
         return static_cast<std::string_view>(*this) == rhs;
     }
-    
+
     [[nodiscard]] constexpr auto operator<=>(std::string_view rhs) const noexcept
     {
         return static_cast<std::string_view>(*this) <=> rhs;
     }
 
-    [[nodiscard]] constexpr bool operator==(std::string const &rhs) const noexcept
+    [[nodiscard]] constexpr bool operator==(std::string const& rhs) const noexcept
     {
         return static_cast<std::string_view>(*this) == rhs;
     }
 
-    [[nodiscard]] constexpr auto operator<=>(std::string const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator<=>(std::string const& rhs) const noexcept
     {
         return static_cast<std::string_view>(*this) <=> rhs;
     }
@@ -195,9 +198,15 @@ template<std::size_t N>
 fixed_string(char const (&str)[N]) -> fixed_string<N - 1>;
 
 template<std::invocable F>
-fixed_string(F const &f) -> fixed_string<std::ranges::size(F{}())>;
+fixed_string(F const& f) -> fixed_string<std::ranges::size(F{}())>;
 
-#define hi_to_fixed_string(x) ::hi::fixed_string{[]{ return x; }}
+#define hi_to_fixed_string(x) \
+    ::hi::fixed_string \
+    { \
+        [] { \
+            return x; \
+        } \
+    }
 
 } // namespace hi::inline v1
 

@@ -132,7 +132,7 @@ public:
      */
     [[nodiscard]] static simd_i16x8 broadcast(simd_i16x8 a) noexcept
     {
-#ifdef HAS_AVX2
+#ifdef HI_HAS_AVX2
         return simd_i16x8{_mm_broadcastss_epi32(a.v)};
 #else
         return permute<"xxxxxxxx">(a);
@@ -317,7 +317,7 @@ public:
     template<size_t Mask>
     [[nodiscard]] friend simd_i16x8 blend(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-#ifdef HAS_SSE4_1
+#ifdef HI_HAS_SSE4_1
         return simd_i16x8{_mm_blend_epi16(a, b, Mask)};
 #else
         hilet mask = from_mask(Mask);
@@ -380,7 +380,7 @@ public:
             // Swizzle was /[^01][^01][^01][^01]/.
             return permute<SourceElements>(a);
 
-#ifdef HAS_SSE4_1
+#ifdef HI_HAS_SSE4_1
         } else if constexpr (number_mask == zero_mask) {
             // Swizzle was /[^1][^1][^1][^1]/.
             hilet ordered = permute<SourceElements>(a);
@@ -394,7 +394,7 @@ public:
         }
     }
 
-#ifdef HAS_SSE3
+#ifdef HI_HAS_SSE3
     /** Horizontal add.
      *
      * Add elements pair-wise in both vectors, then merge the results:
@@ -411,7 +411,7 @@ public:
     }
 #endif
 
-#ifdef HAS_SSE3
+#ifdef HI_HAS_SSE3
     /** Horizontal subtract.
      *
      * Subtract elements pair-wise in both vectors, then merge the results:

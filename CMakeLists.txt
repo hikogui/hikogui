@@ -72,8 +72,19 @@ if(BUILD_TESTING)
 
     include(GoogleTest)
     add_executable(hikogui_tests)
+    add_executable(hikogui_x64v1_tests)
+    add_executable(hikogui_x64v2_tests)
+    add_executable(hikogui_x64v2_5_tests)
+    add_executable(hikogui_x64v3_tests)
+    add_executable(hikogui_x64v4_tests)
+
     # PRE_TEST delays test discovery until just prior to test execution
     gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
+    gtest_discover_tests(hikogui_x64v1_tests DISCOVERY_MODE PRE_TEST)
+    gtest_discover_tests(hikogui_x64v2_tests DISCOVERY_MODE PRE_TEST)
+    gtest_discover_tests(hikogui_x64v2_5_tests DISCOVERY_MODE PRE_TEST)
+    gtest_discover_tests(hikogui_x64v3_tests DISCOVERY_MODE PRE_TEST)
+    gtest_discover_tests(hikogui_x64v4_tests DISCOVERY_MODE PRE_TEST)
 
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     set_target_properties(gtest      PROPERTIES FOLDER extern)
@@ -446,16 +457,42 @@ if (BUILD_TESTING)
     target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
     target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
+    target_link_libraries(hikogui_x64v1_tests PRIVATE gtest_main hikogui)
+    target_link_libraries(hikogui_x64v2_tests PRIVATE gtest_main hikogui)
+    target_link_libraries(hikogui_x64v2_5_tests PRIVATE gtest_main hikogui)
+    target_link_libraries(hikogui_x64v3_tests PRIVATE gtest_main hikogui)
+    target_link_libraries(hikogui_x64v4_tests PRIVATE gtest_main hikogui)
+
+    target_include_directories(hikogui_x64v1_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(hikogui_x64v2_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(hikogui_x64v2_5_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(hikogui_x64v3_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(hikogui_x64v4_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+    target_compile_options(hikogui_x64v1_tests PRIVATE -DHI_X86_64_MAX_LEVEL=100)
+    target_compile_options(hikogui_x64v2_tests PRIVATE -DHI_X86_64_MAX_LEVEL=200)
+    target_compile_options(hikogui_x64v2_5_tests PRIVATE -DHI_X86_64_MAX_LEVEL=250)
+    target_compile_options(hikogui_x64v3_tests PRIVATE -DHI_X86_64_MAX_LEVEL=300)
+    target_compile_options(hikogui_x64v4_tests PRIVATE -DHI_X86_64_MAX_LEVEL=400)
 
     add_custom_target(hikogui_tests_resources
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/data ${CMAKE_CURRENT_BINARY_DIR}
     )
     add_dependencies(hikogui_tests hikogui_tests_resources)
+    add_dependencies(hikogui_x64v1_tests hikogui_tests_resources)
+    add_dependencies(hikogui_x64v2_tests hikogui_tests_resources)
+    add_dependencies(hikogui_x64v2_5_tests hikogui_tests_resources)
+    add_dependencies(hikogui_x64v3_tests hikogui_tests_resources)
+    add_dependencies(hikogui_x64v4_tests hikogui_tests_resources)
 
     #-------------------------------------------------------------------
     # Installation Rules: hikogui_tests                      (executable)
     #-------------------------------------------------------------------
-    install(TARGETS hikogui_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+    install(TARGETS hikogui_tests hikogui_x64v1_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+    install(TARGETS hikogui_tests hikogui_x64v2_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+    install(TARGETS hikogui_tests hikogui_x64v2_5_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+    install(TARGETS hikogui_tests hikogui_x64v3_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+    install(TARGETS hikogui_tests hikogui_x64v4_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
     install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
 endif()
 
@@ -475,6 +512,11 @@ add_subdirectory(examples/widgets)
 
 show_build_target_properties(hikogui)
 show_build_target_properties(hikogui_tests)
+show_build_target_properties(hikogui_x64v1_tests)
+show_build_target_properties(hikogui_x64v2_tests)
+show_build_target_properties(hikogui_x64v2_5_tests)
+show_build_target_properties(hikogui_x64v3_tests)
+show_build_target_properties(hikogui_x64v4_tests)
 
 #-------------------------------------------------------------------
 # Build Documentation

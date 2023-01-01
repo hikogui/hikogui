@@ -122,7 +122,7 @@ public:
      */
     [[nodiscard]] static simd_i32x4 broadcast(simd_i32x4 a) noexcept
     {
-#ifdef HAS_AVX2
+#ifdef HI_HAS_AVX2
         return simd_i32x4{_mm_broadcastss_epi32(a.v)};
 #else
         return permute<"xxxx">(a);
@@ -261,7 +261,7 @@ public:
     [[nodiscard]] friend simd_i32x4 set_zero(simd_i32x4 a) noexcept
     {
         static_assert(Mask <= 0b1111);
-#ifdef HAS_SSE4_1
+#ifdef HI_HAS_SSE4_1
         return simd_i32x4{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(a), _mm_castsi128_ps(a), Mask))};
 #else
         hilet mask = from_mask(Mask);
@@ -281,7 +281,7 @@ public:
     {
         static_assert(Index < 4);
 
-#ifdef HAS_SSE4_1
+#ifdef HI_HAS_SSE4_1
         return simd_i32x4{_mm_insert_epi32(a, b, narrow_cast<int>(Index))};
 #else
         hilet mask = from_mask(1_uz << Index);
@@ -298,7 +298,7 @@ public:
     template<size_t Index>
     [[nodiscard]] friend float extract(simd_i32x4 a) noexcept
     {
-#ifdef HAS_SSE4_1
+#ifdef HI_HAS_SSE4_1
         return std::bit_cast<float>(_mm_extract_epi32(a, Index));
 #else
         auto r = static_cast<std::array<float, 4>(a);
@@ -317,7 +317,7 @@ public:
     template<size_t Mask>
     [[nodiscard]] friend simd_i32x4 blend(simd_i32x4 a, simd_i32x4 b) noexcept
     {
-#ifdef HAS_SSE4_1
+#ifdef HI_HAS_SSE4_1
         return simd_i32x4{_mm_blend_epi32(a, b, Mask)};
 #else
         hilet mask = from_mask(Mask);
@@ -380,7 +380,7 @@ public:
             // Swizzle was /[^01][^01][^01][^01]/.
             return permute<SourceElements>(a);
 
-#ifdef HAS_SSE4_1
+#ifdef HI_HAS_SSE4_1
         } else if constexpr (number_mask == zero_mask) {
             // Swizzle was /[^1][^1][^1][^1]/.
             hilet ordered = permute<SourceElements>(a);
@@ -394,7 +394,7 @@ public:
         }
     }
 
-#ifdef HAS_SSE3
+#ifdef HI_HAS_SSE3
     /** Horizontal add.
      *
      * Add elements pair-wise in both vectors, then merge the results:
@@ -411,7 +411,7 @@ public:
     }
 #endif
 
-#ifdef HAS_SSE3
+#ifdef HI_HAS_SSE3
     /** Horizontal subtract.
      *
      * Subtract elements pair-wise in both vectors, then merge the results:

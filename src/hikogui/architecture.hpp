@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 /** @file architecture.hpp
-*
-* Functions and macros for handling architectural difference between compilers, CPUs and operating systems.
-*/
+ *
+ * Functions and macros for handling architectural difference between compilers, CPUs and operating systems.
+ */
 
 #pragma once
 
@@ -109,131 +109,52 @@ constexpr std::size_t hardware_constructive_interference_size = 64;
 #endif
 
 #if defined(__AVX512BW__) && defined(__AVX512CD__) && defined(__AVX512DQ__) && defined(__AVX512F__) && defined(__AVX512VL__)
-#define HI_X86_64_V4 1
-#define HI_X86_64_V3 1
-#define HI_X86_64_V2_5 1
-#define HI_X86_64_V2 1
-#define HI_X86_64_V1 1
-#define HI_HAS_SSE 1
-#define HI_HAS_SSE2 1
-#define HI_HAS_SSE3 1
-#define HI_HAS_SSE4_1 1
-#define HI_HAS_SSE4_2 1
-#define HI_HAS_SSSE3 1
-#define HI_HAS_AVX 1
-#define HI_HAS_AVX2 1
-#define HI_HAS_BMI1 1
-#define HI_HAS_BMI2 1
+#define HI_X86_64_LEVEL 400
+#elif defined(__AVX2__)
+#define HI_X86_64_LEVEL 300
+#elif defined(__AVX__)
+#define HI_X86_64_LEVEL 250
+#elif defined(__SSE4_2__) && defined(__SSSE3__)
+#define HI_X86_64_LEVEL 200
+#elif HI_PROCESSOR == HI_CPU_X64
+#define HI_X86_64_LEVEL 100
+#endif
+
+#if defined(HI_X86_64_MAX_LEVEL) && defined(HI_X86_64_LEVEL) && HI_X86_64_MAX_LEVEL < HI_X86_64_LEVEL
+#undef HI_X86_64_LEVEL
+#define HI_X86_64_LEVEL HI_X86_64_MAX_LEVEL
+#endif
+
+#if defined(HI_X86_64_LEVEL) && HI_X86_64_LEVEL >= 400
 #define HI_HAS_AVX512F 1
 #define HI_HAS_AVX512BW 1
 #define HI_HAS_AVX512CD 1
 #define HI_HAS_AVX512DQ 1
 #define HI_HAS_AVX512VL 1
+#endif
 
-#elif defined(__AVX2__)
-#define HI_X86_64_V3 1
-#define HI_X86_64_V2_5 1
-#define HI_X86_64_V2 1
-#define HI_X86_64_V1 1
-#define HI_HAS_SSE 1
-#define HI_HAS_SSE2 1
-#define HI_HAS_SSE3 1
-#define HI_HAS_SSE4_1 1
-#define HI_HAS_SSE4_2 1
-#define HI_HAS_SSSE3 1
-#define HI_HAS_AVX 1
+#if defined(HI_X86_64_LEVEL) && HI_X86_64_LEVEL >= 300
 #define HI_HAS_AVX2 1
 #define HI_HAS_BMI1 1
 #define HI_HAS_BMI2 1
+#endif
 
-#elif defined(__AVX__)
-#define HI_X86_64_V2_5 1
-#define HI_X86_64_V2 1
-#define HI_X86_64_V1 1
-#define HI_HAS_SSE 1
-#define HI_HAS_SSE2 1
-#define HI_HAS_SSE3 1
-#define HI_HAS_SSE4_1 1
-#define HI_HAS_SSE4_2 1
-#define HI_HAS_SSSE3 1
+#if defined(HI_X86_64_LEVEL) && HI_X86_64_LEVEL >= 250
 #define HI_HAS_AVX 1
+#endif
 
-// x86_64_v2 can not be selected in MSVC, but can be in gcc and clang.
-#elif defined(__SSE4_2__) && defined(__SSSE3__)
-#define HI_X86_64_V2 1
-#define HI_X86_64_V1 1
-#define HI_HAS_SSE 1
-#define HI_HAS_SSE2 1
+#if defined(HI_X86_64_LEVEL) && HI_X86_64_LEVEL >= 200
 #define HI_HAS_SSE3 1
 #define HI_HAS_SSE4_1 1
 #define HI_HAS_SSE4_2 1
 #define HI_HAS_SSSE3 1
+#endif
 
-#elif HI_PROCESSOR == HI_CPU_X64
-#define HI_X86_64_V1 1
+#if defined(HI_X86_64_LEVEL) && HI_X86_64_LEVEL >= 100
 #define HI_HAS_SSE 1
 #define HI_HAS_SSE2 1
-
-#elif HI_PROCESSOR == HI_CPU_X86
-#elif HI_PROCESSOR == HI_CPU_ARM64
-#elif HI_PROCESSOR == HI_CPU_ARM
 #endif
 
-//#if defined(HI_X86_64_V1)
-//constexpr bool x86_64_v1 = true;
-//#else
-//constexpr bool x86_64_v1 = false;
-//#endif
-//
-//#if defined(HI_X86_64_V2)
-//constexpr bool x86_64_v2 = true;
-//#else
-//constexpr bool x86_64_v2 = false;
-//#endif
-//
-//#if defined(HI_X86_64_V2_5)
-//constexpr bool x86_64_v2_5 = true;
-//#else
-//constexpr bool x86_64_v2_5 = false;
-//#endif
-//
-//#if defined(HI_X86_64_V3)
-//constexpr bool x86_64_v3 = true;
-//#else
-//constexpr bool x86_64_v3 = false;
-//#endif
-//
-//#if defined(HI_X86_64_V4)
-//constexpr bool x86_64_v4 = true;
-//#else
-//constexpr bool x86_64_v4 = false;
-//#endif
-
-#if HI_PROCESSOR == HI_CPU_X64
-/** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)
- * Part of c++17 but never implemented by clang or gcc.
- */
-
-/** Maximum size of contiguous memory to promote true sharing. Guaranteed to be at least alignof(std::max_align_t)
- * Part of c++17 but never implemented by clang or gcc.
- */
-#elif HI_PROCESSOR == HI_CPU_ARM
-/** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)
- * Part of c++17 but never implemented by clang or gcc.
- */
-constexpr std::size_t hardware_destructive_interference_size = 64;
-
-/** Maximum size of contiguous memory to promote true sharing. Guaranteed to be at least alignof(std::max_align_t)
- * Part of c++17 but never implemented by clang or gcc.
- */
-constexpr std::size_t hardware_constructive_interference_size = 64;
-
-#elif HI_PROCESSOR == HI_CPU_UNKNOWN
-constexpr std::size_t hardware_destructive_interference_size = 128;
-constexpr std::size_t hardware_constructive_interference_size = 64;
-#else
-#error "Missing implementation of hardware_destructive_interference_size and hardware_constructive_interference_size"
-#endif
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 using os_handle = void *;
