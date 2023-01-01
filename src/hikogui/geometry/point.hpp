@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/numeric_array.hpp"
 #include "vector.hpp"
 #include "extent.hpp"
 #include "../cast.hpp"

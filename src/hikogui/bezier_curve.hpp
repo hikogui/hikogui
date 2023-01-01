@@ -8,7 +8,7 @@
 #include "math.hpp"
 #include "bezier.hpp"
 #include "utility.hpp"
-#include "rapid/sdf_r8.hpp"
+#include "SIMD/sdf_r8.hpp"
 #include "geometry/alignment.hpp"
 #include "geometry/vector.hpp"
 #include "geometry/point.hpp"

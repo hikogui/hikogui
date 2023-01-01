@@ -9,7 +9,7 @@
 #pragma once
 
 #include "vector.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/numeric_array.hpp"
 #include "../cast.hpp"
 #include "../numbers.hpp"
 #include <compare>

@@ -11,7 +11,7 @@
 #include "alignment.hpp"
 #include "extent.hpp"
 #include "point.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/numeric_array.hpp"
 #include "../concepts.hpp"
 #include "../unfair_mutex.hpp"
 #include "../cast.hpp"

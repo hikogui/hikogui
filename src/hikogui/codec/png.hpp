@@ -7,7 +7,7 @@
 #include "../file/file_view.hpp"
 #include "../utility.hpp"
 #include "../pixel_map.hpp"
-#include "../rapid/sfloat_rgba16.hpp"
+#include "../SIMD/sfloat_rgba16.hpp"
 #include "../geometry/identity.hpp"
 #include "../byte_string.hpp"
 #include "../strings.hpp"

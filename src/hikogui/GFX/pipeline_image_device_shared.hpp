@@ -8,7 +8,7 @@
 #include "pipeline_image_vertex.hpp"
 #include "paged_image.hpp"
 #include "../utility.hpp"
-#include "../rapid/sfloat_rgba16.hpp"
+#include "../SIMD/sfloat_rgba16.hpp"
 #include "../geometry/quad.hpp"
 #include "../vector_span.hpp"
 #include <vma/vk_mem_alloc.h>

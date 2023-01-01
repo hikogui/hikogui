@@ -14,7 +14,7 @@
 #include "i18n/translate.hpp"
 #include "unicode/gstring.hpp"
 #include "pixel_map.hpp"
-#include "rapid/sfloat_rgba16.hpp"
+#include "SIMD/sfloat_rgba16.hpp"
 #include "text/glyph_ids.hpp"
 #include "text/elusive_icon.hpp"
 #include "text/hikogui_icon.hpp"

@@ -6,7 +6,7 @@
 
 #include "axis_aligned_rectangle.hpp"
 #include "alignment.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/numeric_array.hpp"
 #include <array>
 
 namespace hi::inline v1 {

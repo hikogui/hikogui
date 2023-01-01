@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/numeric_array.hpp"
 #include "../cast.hpp"
 
 namespace hi { inline namespace v1 {

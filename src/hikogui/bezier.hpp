@@ -5,7 +5,7 @@
 #pragma once
 
 #include "polynomial.hpp"
-#include "rapid/numeric_array.hpp"
+#include "SIMD/numeric_array.hpp"
 #include "geometry/point.hpp"
 #include <array>
 #include <optional>

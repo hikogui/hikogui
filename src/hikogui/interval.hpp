@@ -7,7 +7,7 @@
 #include "utility.hpp"
 #include "assert.hpp"
 #include "concepts.hpp"
-#include "rapid/numeric_array.hpp"
+#include "SIMD/numeric_array.hpp"
 #include <type_traits>
 #include <limits>
 #include <concepts>
