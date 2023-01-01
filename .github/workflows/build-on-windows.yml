@@ -145,6 +145,11 @@ jobs:
         run: |
           copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* .
           hikogui_tests.exe --gtest_output=xml:test_results_gtest.xml
+          hikogui_x64v1_tests.exe --gtest_output=xml:test_x64v1_results_gtest.xml
+          hikogui_x64v2_tests.exe --gtest_output=xml:test_x64v2_results_gtest.xml
+          hikogui_x64v2_5_tests.exe --gtest_output=xml:test_x64v2_5_results_gtest.xml
+          hikogui_x64v3_tests.exe --gtest_output=xml:test_x64v3_results_gtest.xml
+          hikogui_x64v4_tests.exe --gtest_output=xml:test_x64v4_results_gtest.xml
 
       - name: ♻ Transform Test Results (gtest ➔ junit)
         working-directory: build-dbg
