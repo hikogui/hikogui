@@ -458,6 +458,8 @@ public:
 
         if constexpr (order == 0b11'10'01'00) {
             return a;
+        } else if constexpr (order == 0b00'00'00'00) {
+            return broadcast(a);
         } else {
 #ifdef HI_HAS_AVX
             return simd_f32x4{_mm_permute_ps(a.v, order)};

@@ -56,6 +56,56 @@ TEST(simd_f32x4, construct)
     }
 }
 
+TEST(simd_f32x4, conversion)
+{
+    auto a = S{1.0f, 2.0f, 3.0f, 4.0f};
+    auto expected = A{1.0f, 2.0f, 3.0f, 4.0f};
+
+    {
+        auto result = A{};
+        a.store(result);
+        ASSERT_EQ(result, expected);
+    }
+
+    {
+        auto result = A{};
+        auto result_span = std::span(result.data(), result.size());
+        a.store(result_span);
+        ASSERT_EQ(result, expected);
+    }
+
+    {
+        auto result = A{};
+        a.store(result.data());
+        ASSERT_EQ(result, expected);
+    }
+
+    {
+        auto result = A{};
+        a.store(static_cast<void *>(result.data()));
+        ASSERT_EQ(result, expected);
+    }
+}
+
+TEST(simd_f32x4, empty)
+{
+    ASSERT_TRUE(S(0.0f, 0.0f, 0.0f, 0.0f).empty());
+    ASSERT_FALSE(S(0.0f, 0.0f, 0.0f, -1.0f).empty());
+    ASSERT_FALSE(S(0.0f, 0.0f, 0.0f, 1.0f).empty());
+    ASSERT_FALSE(S(0.0f, 0.0f, -1.0f, 0.0f).empty());
+    ASSERT_FALSE(S(0.0f, 0.0f, 1.0f, 0.0f).empty());
+    ASSERT_FALSE(S(-1.0f, 0.0f, 0.0f, 0.0f).empty());
+    ASSERT_FALSE(S(1.0f, 0.0f, 0.0f, 0.0f).empty());
+    ASSERT_FALSE(S(-1.0f, -1.0f, -1.0f, -1.0f).empty());
+    ASSERT_FALSE(S(1.0f, 1.0f, 1.0f, 1.0f).empty());
+
+    ASSERT_FALSE(S(0.0f, 0.0f, 0.0f, -0.0f).empty());
+    ASSERT_FALSE(S(0.0f, 0.0f, 0.0f, std::numeric_limits<float>::quiet_NaN()).empty());
+
+    // Calculations should never yield a negative zero.
+    ASSERT_TRUE((S(0.0f, 0.0f, 1.0f, -1.0f) - S(0.0f, 0.0f, 1.0f, -1.0f)).empty());
+}
+
 TEST(simd_f32x4, compare)
 {
     ASSERT_TRUE(

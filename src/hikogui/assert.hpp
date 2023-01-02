@@ -102,6 +102,14 @@ concept bound_check_range_helper = requires(Context&& range) {
         [[unlikely]] return y; \
     }
 
+/** Assert if a value is within bounds.
+ * Independent of built type this macro will always check and abort on fail.
+ *
+ * Lower-bound is inclusive and Upper-bound is exclusive.
+ * 
+ * @param x The value to check if it is within bounds.
+ * @param ... One upper-bound; or a lower-bound and upper-bound.
+ */
 #define hi_assert_bounds(x, ...) \
     do { \
         if (not ::hi::bound_check(x, __VA_ARGS__)) { \
@@ -132,6 +140,17 @@ concept bound_check_range_helper = requires(Context&& range) {
  */
 #define hi_axiom(expression, ...) hi_assert(expression __VA_OPT__(, ) __VA_ARGS__)
 
+/** Specify an axiom that the value is within bounds.
+ * An axiom is checked in debug mode, and is used as an optimization
+ * in release mode.
+ *
+ * Lower-bound is inclusive and Upper-bound is exclusive.
+ *
+ * @param x The value to check if it is within bounds.
+ * @param ... One upper-bound; or a lower-bound and upper-bound.
+ */
+#define hi_axiom_bounds(a, ...) hi_assert_bounds(a, __VA_ARGS__)
+
 /** Assert if an expression is not nullptr.
  * If the expression is not a nullptr then return from the function.
  *
@@ -156,6 +175,17 @@ concept bound_check_range_helper = requires(Context&& range) {
  * @param ... A string-literal as the reason why the axiom exists.
  */
 #define hi_axiom(expression, ...) hi_assume(expression)
+
+/** Specify an axiom that the value is within bounds.
+ * An axiom is checked in debug mode, and is used as an optimization
+ * in release mode.
+ *
+ * Lower-bound is inclusive and Upper-bound is exclusive.
+ *
+ * @param x The value to check if it is within bounds.
+ * @param ... One upper-bound; or a lower-bound and upper-bound.
+ */
+#define hi_axiom_bounds(a, ...) hi_assume(not ::hi::bound_check(x, __VA_ARGS__))
 
 /** Assert if an expression is not nullptr.
  * If the expression is not a nullptr then return from the function.
