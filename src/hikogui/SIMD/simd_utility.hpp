@@ -6,6 +6,7 @@
 
 #include "../architecture.hpp"
 #include "../fixed_string.hpp"
+#include <type_traits>
 
 #ifdef HI_HAS_SSE
 #include <xmmintrin.h>
@@ -145,4 +146,14 @@ template<fixed_string SourceElements, size_t NumElements, char Value>
 }
 
 } // namespace detail
+
+template<typename T, size_t N>
+struct low_level_simd : std::false_type {};
+
+template<typename T, size_t N>
+constexpr bool has_low_level_simd_v = low_level_simd<T, N>::value;
+
+template<typename T, size_t N>
+using low_level_simd_t = low_level_simd<T, N>::type;
+
 }} // namespace hi::v1

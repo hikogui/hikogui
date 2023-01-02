@@ -642,6 +642,11 @@ private:
     }
 };
 
+template<>
+struct low_level_simd<float, 4> : std::true_type {
+    using type = simd_f32x4;
+};
+
 #endif
 
 }} // namespace hi::v1

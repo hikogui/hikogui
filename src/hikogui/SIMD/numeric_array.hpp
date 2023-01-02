@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "simd_f32x4_sse.hpp"
+#include "simd_i32x4_sse2.hpp"
+
 #include "../architecture.hpp"
 #include "../concepts.hpp"
 #include "../cast.hpp"
@@ -173,7 +176,7 @@ struct numeric_array {
     template<numeric_limited U, std::size_t M>
     [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const& other) noexcept : v()
     {
-        if (!std::is_constant_evaluated()) {
+        if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
             if constexpr (is_f64x4 and other.is_f32x4) {
                 v = numeric_array{_mm256_cvteps_pd(other.reg())};
@@ -262,7 +265,7 @@ struct numeric_array {
         :
         v()
     {
-        if (!std::is_constant_evaluated()) {
+        if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
             if constexpr (is_f64x4 and other1.is_f64x2 and other2.is_f64x2) {
                 v = numeric_array{_mm256_set_m128d(other2.reg(), other1.reg())};
@@ -323,7 +326,9 @@ struct numeric_array {
         get<0>(v) = x;
     }
 
-    [[nodiscard]] constexpr explicit numeric_array(T const& x, T const& y) noexcept requires(N >= 2) : v()
+    [[nodiscard]] constexpr explicit numeric_array(T const& x, T const& y) noexcept
+        requires(N >= 2)
+        : v()
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE2)
@@ -337,7 +342,9 @@ struct numeric_array {
         get<1>(v) = y;
     }
 
-    [[nodiscard]] constexpr explicit numeric_array(T const& x, T const& y, T const& z) noexcept requires(N >= 3) : v()
+    [[nodiscard]] constexpr explicit numeric_array(T const& x, T const& y, T const& z) noexcept
+        requires(N >= 3)
+        : v()
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE2)
@@ -352,7 +359,9 @@ struct numeric_array {
         get<2>(v) = z;
     }
 
-    [[nodiscard]] constexpr explicit numeric_array(T const& x, T const& y, T const& z, T const& w) noexcept requires(N >= 4) : v()
+    [[nodiscard]] constexpr explicit numeric_array(T const& x, T const& y, T const& z, T const& w) noexcept
+        requires(N >= 4)
+        : v()
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE2)
@@ -434,69 +443,91 @@ struct numeric_array {
         return v;
     }
 
+    [[nodiscard]] explicit numeric_array(low_level_simd_t<value_type, N> rhs) noexcept
+        requires(has_low_level_simd_v<value_type, N>)
+        : v(static_cast<container_type>(rhs))
+    {
+    }
+
+    [[nodiscard]] auto simd() const noexcept
+        requires(has_low_level_simd_v<value_type, N>)
+    {
+        return low_level_simd_t<value_type, N>{v};
+    }
+
 #if defined(HI_HAS_SSE2)
-    [[nodiscard]] __m128i reg() const noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
+    [[nodiscard]] __m128i reg() const noexcept
+        requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         return _mm_loadu_si128(reinterpret_cast<__m128i const *>(v.data()));
     }
 
-    [[nodiscard]] __m128i reg() const noexcept requires(is_f16x4)
+    [[nodiscard]] __m128i reg() const noexcept
+        requires(is_f16x4)
     {
         return _mm_set_epi16(0, 0, 0, 0, get<3>(v).get(), get<2>(v).get(), get<1>(v).get(), get<0>(v).get());
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
-    [[nodiscard]] __m128 reg() const noexcept requires(is_f32x4)
+    [[nodiscard]] __m128 reg() const noexcept
+        requires(is_f32x4)
     {
         return _mm_loadu_ps(v.data());
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
-    [[nodiscard]] __m128d reg() const noexcept requires(is_f64x2)
+    [[nodiscard]] __m128d reg() const noexcept
+        requires(is_f64x2)
     {
         return _mm_loadu_pd(v.data());
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
-    [[nodiscard]] explicit numeric_array(__m128i const& rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
+    [[nodiscard]] explicit numeric_array(__m128i const& rhs) noexcept
+        requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), rhs);
     }
 #endif
 
 #if defined(HI_HAS_SSE4_1)
-    [[nodiscard]] explicit numeric_array(__m128i const& rhs) noexcept requires(is_f16x4) :
-        v(std::bit_cast<decltype(v)>(_mm_extract_epi64(rhs, 0)))
+    [[nodiscard]] explicit numeric_array(__m128i const& rhs) noexcept
+        requires(is_f16x4)
+        : v(std::bit_cast<decltype(v)>(_mm_extract_epi64(rhs, 0)))
     {
     }
 #endif
 
 #if defined(HI_HAS_SSE4_1)
-    [[nodiscard]] explicit numeric_array(__m128i const& rhs) noexcept requires(is_u8x4) :
-        v(std::bit_cast<decltype(v)>(_mm_extract_epi32(rhs, 0)))
+    [[nodiscard]] explicit numeric_array(__m128i const& rhs) noexcept
+        requires(is_u8x4)
+        : v(std::bit_cast<decltype(v)>(_mm_extract_epi32(rhs, 0)))
     {
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
-    [[nodiscard]] explicit numeric_array(__m128 const& rhs) noexcept requires(is_f32x4)
+    [[nodiscard]] explicit numeric_array(__m128 const& rhs) noexcept
+        requires(is_f32x4)
     {
         _mm_storeu_ps(v.data(), rhs);
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
-    [[nodiscard]] explicit numeric_array(__m128d const& rhs) noexcept requires(is_f64x2)
+    [[nodiscard]] explicit numeric_array(__m128d const& rhs) noexcept
+        requires(is_f64x2)
     {
         _mm_storeu_pd(v.data(), rhs);
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
-    numeric_array& operator=(__m128i const& rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
+    numeric_array& operator=(__m128i const& rhs) noexcept
+        requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), rhs);
         return *this;
@@ -504,7 +535,8 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_SSE2)
-    numeric_array& operator=(__m128 const& rhs) noexcept requires(is_f32x4)
+    numeric_array& operator=(__m128 const& rhs) noexcept
+        requires(is_f32x4)
     {
         _mm_storeu_ps(v.data(), rhs);
         return *this;
@@ -512,7 +544,8 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_SSE2)
-    numeric_array& operator=(__m128d const& rhs) noexcept requires(is_f64x2)
+    numeric_array& operator=(__m128d const& rhs) noexcept
+        requires(is_f64x2)
     {
         _mm_storeu_pd(v.data(), rhs);
         return *this;
@@ -520,49 +553,56 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_AVX)
-    [[nodiscard]] __m256i reg() const noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
+    [[nodiscard]] __m256i reg() const noexcept
+        requires(std::is_integral_v<T> and sizeof(T) * N == 32)
     {
         return _mm256_loadu_si256(reinterpret_cast<__m256i const *>(v.data()));
     }
 #endif
 
 #if defined(HI_HAS_AVX)
-    [[nodiscard]] __m256 reg() const noexcept requires(is_f32x8)
+    [[nodiscard]] __m256 reg() const noexcept
+        requires(is_f32x8)
     {
         return _mm256_loadu_ps(v.data());
     }
 #endif
 
 #if defined(HI_HAS_AVX)
-    [[nodiscard]] __m256d reg() const noexcept requires(is_f64x4)
+    [[nodiscard]] __m256d reg() const noexcept
+        requires(is_f64x4)
     {
         return _mm256_loadu_pd(v.data());
     }
 #endif
 
 #if defined(HI_HAS_AVX)
-    [[nodiscard]] explicit numeric_array(__m256i const& rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
+    [[nodiscard]] explicit numeric_array(__m256i const& rhs) noexcept
+        requires(std::is_integral_v<T> and sizeof(T) * N == 32)
     {
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(v.data()), rhs);
     }
 #endif
 
 #if defined(HI_HAS_AVX)
-    [[nodiscard]] explicit numeric_array(__m256 const& rhs) noexcept requires(is_f32x8)
+    [[nodiscard]] explicit numeric_array(__m256 const& rhs) noexcept
+        requires(is_f32x8)
     {
         _mm256_storeu_ps(v.data(), rhs);
     }
 #endif
 
 #if defined(HI_HAS_AVX)
-    [[nodiscard]] explicit numeric_array(__m256d const& rhs) noexcept requires(is_f64x4)
+    [[nodiscard]] explicit numeric_array(__m256d const& rhs) noexcept
+        requires(is_f64x4)
     {
         _mm256_storeu_pd(v.data(), rhs);
     }
 #endif
 
 #if defined(HI_HAS_AVX)
-    numeric_array& operator=(__m256i const& rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
+    numeric_array& operator=(__m256i const& rhs) noexcept
+        requires(std::is_integral_v<T> and sizeof(T) * N == 32)
     {
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(v.data()), rhs);
         return *this;
@@ -570,7 +610,8 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_AVX)
-    numeric_array& operator=(__m256 const& rhs) noexcept requires(is_f32x8)
+    numeric_array& operator=(__m256 const& rhs) noexcept
+        requires(is_f32x8)
     {
         _mm256_storeu_ps(v.data(), rhs);
         return *this;
@@ -578,7 +619,8 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_AVX)
-    numeric_array& operator=(__m256d const& rhs) noexcept requires(is_f64x4)
+    numeric_array& operator=(__m256d const& rhs) noexcept
+        requires(is_f64x4)
     {
         _mm256_storeu_pd(v.data(), rhs);
         return *this;
@@ -814,112 +856,134 @@ struct numeric_array {
         return a() == T{0};
     }
 
-    [[nodiscard]] constexpr T const& x() const noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T const& x() const noexcept
+        requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T const& y() const noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T const& y() const noexcept
+        requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T const& z() const noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T const& z() const noexcept
+        requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T const& w() const noexcept requires(N >= 4)
+    [[nodiscard]] constexpr T const& w() const noexcept
+        requires(N >= 4)
     {
         return std::get<3>(v);
     }
 
-    [[nodiscard]] constexpr T& x() noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T& x() noexcept
+        requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T& y() noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T& y() noexcept
+        requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T& z() noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T& z() noexcept
+        requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T& w() noexcept requires(N >= 4)
+    [[nodiscard]] constexpr T& w() noexcept
+        requires(N >= 4)
     {
         return std::get<3>(v);
     }
 
-    [[nodiscard]] constexpr T const& r() const noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T const& r() const noexcept
+        requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T const& g() const noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T const& g() const noexcept
+        requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T const& b() const noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T const& b() const noexcept
+        requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T const& a() const noexcept requires(N >= 4)
+    [[nodiscard]] constexpr T const& a() const noexcept
+        requires(N >= 4)
     {
         return std::get<3>(v);
     }
 
-    [[nodiscard]] constexpr T& r() noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T& r() noexcept
+        requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T& g() noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T& g() noexcept
+        requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T& b() noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T& b() noexcept
+        requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T& a() noexcept requires(N >= 4)
+    [[nodiscard]] constexpr T& a() noexcept
+        requires(N >= 4)
     {
         return std::get<3>(v);
     }
 
-    [[nodiscard]] constexpr T const& width() const noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T const& width() const noexcept
+        requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T const& height() const noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T const& height() const noexcept
+        requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T const& depth() const noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T const& depth() const noexcept
+        requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T& width() noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T& width() noexcept
+        requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T& height() noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T& height() noexcept
+        requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T& depth() noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T& depth() noexcept
+        requires(N >= 3)
     {
         return std::get<2>(v);
     }
@@ -1523,7 +1587,8 @@ struct numeric_array {
      * @return Result of the hypot calculation.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend T hypot(numeric_array const& rhs) noexcept requires (std::is_floating_point_v<value_type>)
+    [[nodiscard]] friend T hypot(numeric_array const& rhs) noexcept
+        requires(std::is_floating_point_v<value_type>)
     {
         return std::sqrt(dot<Mask>(rhs, rhs));
     }
@@ -2124,6 +2189,9 @@ struct numeric_array {
     [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
+            if constexpr (requires { lhs.simd() + rhs.simd(); }) {
+                return numeric_array{lhs.simd() + rhs.simd()};
+            }
 #if defined(HI_HAS_AVX2)
             if constexpr (is_i64x4 or is_u64x4) {
                 return numeric_array{_mm256_add_epi64(lhs.reg(), rhs.reg())};
@@ -2147,17 +2215,12 @@ struct numeric_array {
                 return numeric_array{_mm_add_pd(lhs.reg(), rhs.reg())};
             } else if constexpr (is_i64x2 or is_u64x2) {
                 return numeric_array{_mm_add_epi64(lhs.reg(), rhs.reg())};
-            } else if constexpr (is_i32x4 or is_u32x4) {
+            } else if constexpr (is_u32x4) {
                 return numeric_array{_mm_add_epi32(lhs.reg(), rhs.reg())};
             } else if constexpr (is_i16x8 or is_u16x8) {
                 return numeric_array{_mm_add_epi16(lhs.reg(), rhs.reg())};
             } else if constexpr (is_i8x16 or is_u8x16) {
                 return numeric_array{_mm_add_epi8(lhs.reg(), rhs.reg())};
-            }
-#endif
-#if defined(HI_HAS_SSE)
-            if constexpr (is_f32x4) {
-                return numeric_array{_mm_add_ps(lhs.reg(), rhs.reg())};
             }
 #endif
         }
@@ -2592,7 +2655,8 @@ struct numeric_array {
 
     /** Calculate the 2D normal on a 2D vector.
      */
-    [[nodiscard]] friend constexpr numeric_array cross_2D(numeric_array const& rhs) noexcept requires(N >= 2)
+    [[nodiscard]] friend constexpr numeric_array cross_2D(numeric_array const& rhs) noexcept
+        requires(N >= 2)
     {
         hi_axiom(rhs.z() == 0.0f && rhs.is_vector());
         return numeric_array{-rhs.y(), rhs.x()};
@@ -2600,7 +2664,8 @@ struct numeric_array {
 
     /** Calculate the 2D unit-normal on a 2D vector.
      */
-    [[nodiscard]] friend constexpr numeric_array normal_2D(numeric_array const& rhs) noexcept requires(N >= 2)
+    [[nodiscard]] friend constexpr numeric_array normal_2D(numeric_array const& rhs) noexcept
+        requires(N >= 2)
     {
         return normalize<0b0011>(cross_2D(rhs));
     }
@@ -2608,7 +2673,8 @@ struct numeric_array {
     /** Calculate the cross-product between two 2D vectors.
      * a.x * b.y - a.y * b.x
      */
-    [[nodiscard]] friend constexpr float cross_2D(numeric_array const& lhs, numeric_array const& rhs) noexcept requires(N >= 2)
+    [[nodiscard]] friend constexpr float cross_2D(numeric_array const& lhs, numeric_array const& rhs) noexcept
+        requires(N >= 2)
     {
         hilet tmp1 = rhs.yxwz();
         hilet tmp2 = lhs * tmp1;
@@ -2633,7 +2699,8 @@ struct numeric_array {
         return left - right;
     }
 
-    [[nodiscard]] static constexpr numeric_array byte_srl_shuffle_indices(unsigned int rhs) requires(is_i8x16)
+    [[nodiscard]] static constexpr numeric_array byte_srl_shuffle_indices(unsigned int rhs)
+        requires(is_i8x16)
     {
         static_assert(std::endian::native == std::endian::little);
 
@@ -2649,7 +2716,8 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] static constexpr numeric_array byte_sll_shuffle_indices(unsigned int rhs) requires(is_i8x16)
+    [[nodiscard]] static constexpr numeric_array byte_sll_shuffle_indices(unsigned int rhs)
+        requires(is_i8x16)
     {
         static_assert(std::endian::native == std::endian::little);
 
@@ -2670,7 +2738,7 @@ struct numeric_array {
     [[nodiscard]] friend constexpr numeric_array shuffle(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(std::is_integral_v<value_type>)
     {
-        if (!std::is_constant_evaluated()) {
+        if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSSE3)
             if constexpr (is_i8x16 or is_u8x16) {
                 return numeric_array{_mm_shuffle_epi8(lhs.reg(), rhs.reg())};
@@ -2803,7 +2871,7 @@ struct numeric_array {
     {
         auto r = numeric_array{};
 
-        if (!std::is_constant_evaluated()) {
+        if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE4_1)
             if constexpr (is_f32x4) {
                 constexpr uint8_t insert_mask = static_cast<uint8_t>((FromElement << 6) | (ToElement << 4));
@@ -2863,7 +2931,7 @@ struct numeric_array {
     {
         static_assert(sizeof...(Elements) <= N);
 
-        if (!std::is_constant_evaluated()) {
+        if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
             if constexpr (is_f64x2) {
                 return numeric_array{_mm_swizzle_pd<Elements...>(reg())};
@@ -2883,7 +2951,8 @@ struct numeric_array {
     }
 
 #define SWIZZLE(swizzle_name, D, ...) \
-    [[nodiscard]] constexpr numeric_array swizzle_name() const noexcept requires(D == N) \
+    [[nodiscard]] constexpr numeric_array swizzle_name() const noexcept \
+        requires(D == N) \
     { \
         return swizzle<__VA_ARGS__>(); \
     }
@@ -3039,8 +3108,7 @@ using f64x8 = numeric_array<double, 8>;
 } // namespace hi::inline v1
 
 template<class T, std::size_t N>
-struct std::tuple_size<hi::numeric_array<T, N>> : std::integral_constant<std::size_t, N> {
-};
+struct std::tuple_size<hi::numeric_array<T, N>> : std::integral_constant<std::size_t, N> {};
 
 template<std::size_t I, class T, std::size_t N>
 struct std::tuple_element<I, hi::numeric_array<T, N>> {
