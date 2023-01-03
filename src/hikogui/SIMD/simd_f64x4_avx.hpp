@@ -443,7 +443,7 @@ public:
         if constexpr (order == 0b11'10'01'00) {
             return a;
         } else {
-            return _mm256_permute4x64_pd(a.v, order);
+            return simd_f64x4{_mm256_permute4x64_pd(a.v, order)};
         }
 
 #else

@@ -143,7 +143,7 @@ public:
     [[nodiscard]] static simd_u32x4 broadcast(simd_u32x4 a) noexcept
     {
 #ifdef HI_HAS_AVX2
-        return simd_u32x4{_mm_broadcastss_epi32(a.v)};
+        return simd_u32x4{_mm_broadcastd_epi32(a.v)};
 #else
         return simd_u32x4{_mm_shuffle_epi32(a.v, 0b00'00'00'00)};
 #endif

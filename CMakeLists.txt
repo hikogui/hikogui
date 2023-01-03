@@ -78,6 +78,12 @@ if(BUILD_TESTING)
     add_executable(hikogui_x64v3_tests)
     add_executable(hikogui_x64v4_tests)
 
+    target_compile_options(hikogui_x64v1_tests PRIVATE -DHI_X86_64_MAX_LEVEL=100)
+    target_compile_options(hikogui_x64v2_tests PRIVATE -arch:AVX -DHI_X86_64_MAX_LEVEL=200) # Actually SSE4_2
+    target_compile_options(hikogui_x64v2_5_tests PRIVATE -arch:AVX -DHI_X86_64_MAX_LEVEL=250)
+    target_compile_options(hikogui_x64v3_tests PRIVATE -arch:AVX2 -DHI_X86_64_MAX_LEVEL=300)
+    target_compile_options(hikogui_x64v4_tests PRIVATE -arch:AVX512 -DHI_X86_64_MAX_LEVEL=400)
+
     # PRE_TEST delays test discovery until just prior to test execution
     gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
     gtest_discover_tests(hikogui_x64v1_tests DISCOVERY_MODE PRE_TEST)
@@ -242,7 +248,7 @@ elseif (MSVC)
 
     # Support Intel's SkyLake and AMD's Excavator.
     # see hardware_support.md
-    target_compile_options(hikogui PUBLIC -arch:AVX)
+    #target_compile_options(hikogui PUBLIC -arch:AVX)
 
     # The hikogui generic tokenizer uses large constexpr tables.
     target_compile_options(hikogui PUBLIC "-constexpr:steps100000000")
@@ -468,12 +474,6 @@ if (BUILD_TESTING)
     target_include_directories(hikogui_x64v2_5_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     target_include_directories(hikogui_x64v3_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     target_include_directories(hikogui_x64v4_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-    target_compile_options(hikogui_x64v1_tests PRIVATE -DHI_X86_64_MAX_LEVEL=100)
-    target_compile_options(hikogui_x64v2_tests PRIVATE -DHI_X86_64_MAX_LEVEL=200)
-    target_compile_options(hikogui_x64v2_5_tests PRIVATE -DHI_X86_64_MAX_LEVEL=250)
-    target_compile_options(hikogui_x64v3_tests PRIVATE -DHI_X86_64_MAX_LEVEL=300)
-    target_compile_options(hikogui_x64v4_tests PRIVATE -DHI_X86_64_MAX_LEVEL=400)
 
     add_custom_target(hikogui_tests_resources
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/data ${CMAKE_CURRENT_BINARY_DIR}
