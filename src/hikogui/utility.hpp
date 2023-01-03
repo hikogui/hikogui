@@ -29,6 +29,19 @@
 #define hi_forward(x) std::forward<decltype(x)>(x)
 #endif
 
+/** Return the result of an expression if the expression is valid.
+ *
+ * This macro uses a `requires {}` expression to determine if the expression is valid.
+ *
+ * @param expression The expression to evaluate if it is valid.
+ */
+#define hi_return_if_valid(expression) \
+    do { \
+        if constexpr (requires { expression; }) { \
+            return expression; \
+        } \
+    } while (false)
+
 // One clang-format off is not enough to stop clang-format to format.
 // clang-format off
 // clang-format off        

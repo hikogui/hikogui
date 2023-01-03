@@ -12,6 +12,7 @@ target_sources(hikogui PRIVATE
     simd_f32x4_sse.hpp
     simd_i16x8_sse2.hpp
     simd_i32x4_sse2.hpp
+    simd_u32x4_sse2.hpp
     srgb_abgr8_pack.hpp
     sfloat_rgba16.hpp
     sfloat_rgba32.hpp
@@ -30,22 +31,27 @@ if(BUILD_TESTING)
     target_sources(hikogui_x64v1_tests PRIVATE
         simd_f32x4_tests.cpp
         simd_i32x4_tests.cpp
+        simd_u32x4_tests.cpp
     )
     target_sources(hikogui_x64v2_tests PRIVATE
         simd_f32x4_tests.cpp
         simd_i32x4_tests.cpp
+        simd_u32x4_tests.cpp
     )
     target_sources(hikogui_x64v2_5_tests PRIVATE
         simd_f32x4_tests.cpp
         simd_i32x4_tests.cpp
+        simd_u32x4_tests.cpp
     )
     target_sources(hikogui_x64v3_tests PRIVATE
         simd_f32x4_tests.cpp
         simd_i32x4_tests.cpp
+        simd_u32x4_tests.cpp
     )
     target_sources(hikogui_x64v4_tests PRIVATE
         simd_f32x4_tests.cpp
         simd_i32x4_tests.cpp
+        simd_u32x4_tests.cpp
     )
 endif()
 

@@ -13,6 +13,7 @@
 #include "../type_traits.hpp"
 #include "../float16.hpp"
 #include "../math.hpp"
+#include "../utility.hpp"
 
 #if defined(HI_HAS_AVX)
 #include "swizzle_avx.hpp"
@@ -2186,12 +2187,12 @@ struct numeric_array {
         return broadcast(lhs) ^ rhs;
     }
 
+
+
     [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { lhs.simd() + rhs.simd(); }) {
-                return numeric_array{lhs.simd() + rhs.simd()};
-            }
+            hi_return_if_valid(numeric_array{lhs.simd() + rhs.simd()});
 #if defined(HI_HAS_AVX2)
             if constexpr (is_i64x4 or is_u64x4) {
                 return numeric_array{_mm256_add_epi64(lhs.reg(), rhs.reg())};
