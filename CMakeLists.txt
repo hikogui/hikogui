@@ -61,37 +61,16 @@ include(CTest)
 # Find Dependencies
 #-------------------------------------------------------------------
 
-#
-# GoogleTest - non-vcpkg, directly build from externals
-#
 if(BUILD_TESTING)
+    #
+    # GoogleTest - non-vcpkg, directly build from externals
+    #
     set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
     set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
     FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.11.0)
     FetchContent_MakeAvailable(googletest)
 
     include(GoogleTest)
-    add_executable(hikogui_tests)
-    add_executable(hikogui_x64v1_tests)
-    add_executable(hikogui_x64v2_tests)
-    add_executable(hikogui_x64v2_5_tests)
-    add_executable(hikogui_x64v3_tests)
-    add_executable(hikogui_x64v4_tests)
-
-    target_compile_options(hikogui_x64v1_tests PRIVATE -DHI_X86_64_MAX_LEVEL=100)
-    target_compile_options(hikogui_x64v2_tests PRIVATE -arch:AVX -DHI_X86_64_MAX_LEVEL=200) # Actually SSE4_2
-    target_compile_options(hikogui_x64v2_5_tests PRIVATE -arch:AVX -DHI_X86_64_MAX_LEVEL=250)
-    target_compile_options(hikogui_x64v3_tests PRIVATE -arch:AVX2 -DHI_X86_64_MAX_LEVEL=300)
-    target_compile_options(hikogui_x64v4_tests PRIVATE -arch:AVX512 -DHI_X86_64_MAX_LEVEL=400)
-
-    # PRE_TEST delays test discovery until just prior to test execution
-    gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
-    gtest_discover_tests(hikogui_x64v1_tests DISCOVERY_MODE PRE_TEST)
-    gtest_discover_tests(hikogui_x64v2_tests DISCOVERY_MODE PRE_TEST)
-    gtest_discover_tests(hikogui_x64v2_5_tests DISCOVERY_MODE PRE_TEST)
-    gtest_discover_tests(hikogui_x64v3_tests DISCOVERY_MODE PRE_TEST)
-    gtest_discover_tests(hikogui_x64v4_tests DISCOVERY_MODE PRE_TEST)
-
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     set_target_properties(gtest      PROPERTIES FOLDER extern)
     set_target_properties(gtest_main PROPERTIES FOLDER extern)
@@ -125,6 +104,7 @@ set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 #-------------------------------------------------------------------
 # Setup Sources
 #-------------------------------------------------------------------
+set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 
 # This needs to be below the build target commands (add_*).
 # We omit adding source files to the `add_*` commands, but add them
@@ -208,11 +188,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # It seems this check should only be used for interopability with swift
     target_compile_options(hikogui PUBLIC -Wno-nullability-completeness)
 
-    # IvyBridge:                     F16C             FSGSBASE, AVX,           AES, PCLMUL        MMX, SSE, SSE2, SSE3,        SSSE3, SSE4.1, SSE4.2,     POPCNT, RDRND
-    # Steamroller 0x15-v3: BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM
-    # POPCNT is supported by Steamroller through he SSE4A instruction set.
-    target_compile_options(hikogui PUBLIC -mf16c -mfsgsbase -mavx -maes -mpclmul -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mpopcnt)
-
     # The Microsoft version of clang does not implement all clang command line arguments.
     if (NOT MSVC)
         # The hikogui generic tokenizer uses large constexpr tables.
@@ -245,10 +220,6 @@ elseif (MSVC)
 
     # Set the execution and source character encoding to UTF-8
     target_compile_options(hikogui PUBLIC -utf-8)
-
-    # Support Intel's SkyLake and AMD's Excavator.
-    # see hardware_support.md
-    #target_compile_options(hikogui PUBLIC -arch:AVX)
 
     # The hikogui generic tokenizer uses large constexpr tables.
     target_compile_options(hikogui PUBLIC "-constexpr:steps100000000")
@@ -459,41 +430,191 @@ install(FILES
 # Build Target: hikogui_tests                            (executable)
 #-------------------------------------------------------------------
 
-if (BUILD_TESTING)
-    target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
-    target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-    target_link_libraries(hikogui_x64v1_tests PRIVATE gtest_main hikogui)
-    target_link_libraries(hikogui_x64v2_tests PRIVATE gtest_main hikogui)
-    target_link_libraries(hikogui_x64v2_5_tests PRIVATE gtest_main hikogui)
-    target_link_libraries(hikogui_x64v3_tests PRIVATE gtest_main hikogui)
-    target_link_libraries(hikogui_x64v4_tests PRIVATE gtest_main hikogui)
-
-    target_include_directories(hikogui_x64v1_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(hikogui_x64v2_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(hikogui_x64v2_5_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(hikogui_x64v3_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(hikogui_x64v4_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
+if(BUILD_TESTING)
     add_custom_target(hikogui_tests_resources
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/data ${CMAKE_CURRENT_BINARY_DIR}
     )
-    add_dependencies(hikogui_tests hikogui_tests_resources)
-    add_dependencies(hikogui_x64v1_tests hikogui_tests_resources)
-    add_dependencies(hikogui_x64v2_tests hikogui_tests_resources)
-    add_dependencies(hikogui_x64v2_5_tests hikogui_tests_resources)
-    add_dependencies(hikogui_x64v3_tests hikogui_tests_resources)
-    add_dependencies(hikogui_x64v4_tests hikogui_tests_resources)
 
-    #-------------------------------------------------------------------
-    # Installation Rules: hikogui_tests                      (executable)
-    #-------------------------------------------------------------------
-    install(TARGETS hikogui_tests hikogui_x64v1_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
-    install(TARGETS hikogui_tests hikogui_x64v2_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
-    install(TARGETS hikogui_tests hikogui_x64v2_5_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
-    install(TARGETS hikogui_tests hikogui_x64v3_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
-    install(TARGETS hikogui_tests hikogui_x64v4_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+    add_executable(hikogui_tests)
+    target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
+    target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    add_dependencies(hikogui_tests hikogui_tests_resources)
+
+    target_sources(hikogui_tests PRIVATE
+        ${SOURCE_DIR}/audio/audio_sample_unpacker_tests.cpp
+        #${SOURCE_DIR}/audio/audio_sample_packer_tests.cpp
+        ${SOURCE_DIR}/char_maps/ascii_tests.cpp
+        ${SOURCE_DIR}/char_maps/char_converter_tests.cpp
+        ${SOURCE_DIR}/char_maps/cp_1252_tests.cpp
+        ${SOURCE_DIR}/char_maps/iso_8859_1_tests.cpp
+        ${SOURCE_DIR}/char_maps/utf_8_tests.cpp
+        ${SOURCE_DIR}/char_maps/utf_16_tests.cpp
+        ${SOURCE_DIR}/char_maps/utf_32_tests.cpp
+        ${SOURCE_DIR}/codec/BON8_tests.cpp
+        ${SOURCE_DIR}/codec/JSON_tests.cpp
+        ${SOURCE_DIR}/codec/gzip_tests.cpp
+        ${SOURCE_DIR}/codec/base_n_tests.cpp
+        ${SOURCE_DIR}/codec/SHA2_tests.cpp
+        ${SOURCE_DIR}/color/color_space_tests.cpp
+        ${SOURCE_DIR}/file/file_view_tests.cpp
+        ${SOURCE_DIR}/file/glob_tests.cpp
+        ${SOURCE_DIR}/file/URI_tests.cpp
+        ${SOURCE_DIR}/file/URL_tests.cpp
+        ${SOURCE_DIR}/formula/formula_tests.cpp
+        ${SOURCE_DIR}/geometry/identity_tests.cpp
+        ${SOURCE_DIR}/geometry/matrix_tests.cpp
+        ${SOURCE_DIR}/geometry/point_tests.cpp
+        ${SOURCE_DIR}/geometry/scale_tests.cpp
+        ${SOURCE_DIR}/geometry/transform_tests.cpp
+        ${SOURCE_DIR}/geometry/translate_tests.cpp
+        ${SOURCE_DIR}/geometry/vector_tests.cpp
+        ${SOURCE_DIR}/i18n/iso_639_tests.cpp
+        ${SOURCE_DIR}/i18n/iso_3166_tests.cpp
+        ${SOURCE_DIR}/i18n/iso_15924_tests.cpp
+        ${SOURCE_DIR}/i18n/language_tag_tests.cpp
+        ${SOURCE_DIR}/layout/spreadsheet_address_tests.cpp
+        ${SOURCE_DIR}/random/dither_tests.cpp
+        ${SOURCE_DIR}/random/seed_tests.cpp
+        ${SOURCE_DIR}/random/xorshift128p_tests.cpp
+        ${SOURCE_DIR}/SIMD/numeric_array_tests.cpp
+        ${SOURCE_DIR}/skeleton/skeleton_tests.cpp
+        ${SOURCE_DIR}/unicode/unicode_bidi_tests.cpp
+        ${SOURCE_DIR}/unicode/unicode_break_tests.cpp
+        ${SOURCE_DIR}/unicode/unicode_text_segmentation_tests.cpp
+        ${SOURCE_DIR}/unicode/unicode_normalization_tests.cpp
+        ${SOURCE_DIR}/widgets/text_widget_tests.cpp
+        ${SOURCE_DIR}/algorithm_tests.cpp
+        ${SOURCE_DIR}/bezier_curve_tests.cpp
+        ${SOURCE_DIR}/bigint_tests.cpp
+        ${SOURCE_DIR}/bound_integer_tests.cpp
+        ${SOURCE_DIR}/cast_tests.cpp
+        ${SOURCE_DIR}/counters_tests.cpp
+        ${SOURCE_DIR}/datum_tests.cpp
+        ${SOURCE_DIR}/dead_lock_detector_tests.cpp
+        ${SOURCE_DIR}/decimal_tests.cpp
+        ${SOURCE_DIR}/defer_tests.cpp
+        ${SOURCE_DIR}/enum_metadata_tests.cpp
+        ${SOURCE_DIR}/exceptions_tests.cpp
+        ${SOURCE_DIR}/fixed_string_tests.cpp
+        ${SOURCE_DIR}/float16_tests.cpp
+        ${SOURCE_DIR}/format_check_tests.cpp
+        ${SOURCE_DIR}/forward_value_tests.cpp
+        ${SOURCE_DIR}/gap_buffer_tests.cpp
+        ${SOURCE_DIR}/generator_tests.cpp
+        ${SOURCE_DIR}/interval_tests.cpp
+        ${SOURCE_DIR}/int_carry_tests.cpp
+        ${SOURCE_DIR}/int_overflow_tests.cpp
+        ${SOURCE_DIR}/jsonpath_tests.cpp
+        ${SOURCE_DIR}/lean_vector_tests.cpp
+        ${SOURCE_DIR}/math_tests.cpp
+        ${SOURCE_DIR}/group_ptr_tests.cpp
+        ${SOURCE_DIR}/notifier_tests.cpp
+        ${SOURCE_DIR}/graphic_path_tests.cpp
+        ${SOURCE_DIR}/packed_int_array_tests.cpp
+        ${SOURCE_DIR}/pixel_map_tests.cpp
+        ${SOURCE_DIR}/polymorphic_optional_tests.cpp
+        ${SOURCE_DIR}/polynomial_tests.cpp
+        ${SOURCE_DIR}/ranges_tests.cpp
+        ${SOURCE_DIR}/rcu_tests.cpp
+        ${SOURCE_DIR}/reflection_tests.cpp
+        ${SOURCE_DIR}/safe_int_tests.cpp
+        ${SOURCE_DIR}/shared_state_tests.cpp
+        ${SOURCE_DIR}/sip_hash_tests.cpp
+        ${SOURCE_DIR}/small_map_tests.cpp
+        ${SOURCE_DIR}/strings_tests.cpp
+        ${SOURCE_DIR}/tokenizer_tests.cpp
+        ${SOURCE_DIR}/tree_tests.cpp
+        ${SOURCE_DIR}/type_traits_tests.cpp
+    )
+
     install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+    show_build_target_properties(hikogui_tests)
+    gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
+
+    if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
+        add_executable(hikogui_x64v1_tests)
+        add_executable(hikogui_x64v2_tests)
+        add_executable(hikogui_x64v3_tests)
+        add_executable(hikogui_x64v4_tests)
+
+        target_link_libraries(hikogui_x64v1_tests PRIVATE gtest_main hikogui)
+        target_link_libraries(hikogui_x64v2_tests PRIVATE gtest_main hikogui)
+        target_link_libraries(hikogui_x64v3_tests PRIVATE gtest_main hikogui)
+        target_link_libraries(hikogui_x64v4_tests PRIVATE gtest_main hikogui)
+
+        target_include_directories(hikogui_x64v1_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        target_include_directories(hikogui_x64v2_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        target_include_directories(hikogui_x64v3_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        target_include_directories(hikogui_x64v4_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+        add_dependencies(hikogui_x64v1_tests hikogui_tests_resources)
+        add_dependencies(hikogui_x64v2_tests hikogui_tests_resources)
+        add_dependencies(hikogui_x64v3_tests hikogui_tests_resources)
+        add_dependencies(hikogui_x64v4_tests hikogui_tests_resources)
+
+        target_sources(hikogui_x64v1_tests PRIVATE
+            ${SOURCE_DIR}/SIMD/simd_f32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_i32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_u32x4_tests.cpp
+        )
+        target_sources(hikogui_x64v2_tests PRIVATE
+            ${SOURCE_DIR}/SIMD/simd_f32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_i32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_u32x4_tests.cpp
+        )
+        target_sources(hikogui_x64v3_tests PRIVATE
+            ${SOURCE_DIR}/SIMD/simd_f32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_i32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_u32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_f64x4_tests.cpp
+        )
+        target_sources(hikogui_x64v4_tests PRIVATE
+            ${SOURCE_DIR}/SIMD/simd_f32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_i32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_u32x4_tests.cpp
+            ${SOURCE_DIR}/SIMD/simd_f64x4_tests.cpp
+        )
+        
+        install(TARGETS hikogui_tests hikogui_x64v1_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+        install(TARGETS hikogui_tests hikogui_x64v2_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+        install(TARGETS hikogui_tests hikogui_x64v3_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+        install(TARGETS hikogui_tests hikogui_x64v4_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+
+        show_build_target_properties(hikogui_x64v1_tests)
+        show_build_target_properties(hikogui_x64v2_tests)
+        show_build_target_properties(hikogui_x64v3_tests)
+        show_build_target_properties(hikogui_x64v4_tests)
+
+        gtest_discover_tests(hikogui_x64v1_tests DISCOVERY_MODE PRE_TEST)
+        gtest_discover_tests(hikogui_x64v2_tests DISCOVERY_MODE PRE_TEST)
+        gtest_discover_tests(hikogui_x64v3_tests DISCOVERY_MODE PRE_TEST)
+        gtest_discover_tests(hikogui_x64v4_tests DISCOVERY_MODE PRE_TEST)
+
+        if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+            target_compile_options(hikogui_x64v1_tests PRIVATE -march=x86-64)
+            target_compile_options(hikogui_x64v2_tests PRIVATE -march=x86-64-v2)
+            target_compile_options(hikogui_x64v3_tests PRIVATE -march=x86-64-v3)
+            target_compile_options(hikogui_x64v4_tests PRIVATE -march=x86-64-v4)
+
+        elseif(${CMAKE_CXX_COMPILER_ID} MATCHES GCC)
+            target_compile_options(hikogui_x64v1_tests PRIVATE -march=x86-64)
+            target_compile_options(hikogui_x64v2_tests PRIVATE -march=x86-64-v2)
+            target_compile_options(hikogui_x64v3_tests PRIVATE -march=x86-64-v3)
+            target_compile_options(hikogui_x64v4_tests PRIVATE -march=x86-64-v4)
+
+        elseif (MSVC)
+            # On MSVC the architecture flags do not exactly correspond with the x86-64 architecture levels.
+            # The HI_X86_64_MAX_LEVEL macro limits use for intrinsic usage to the exact level for testing purposes.
+            target_compile_options(hikogui_x64v1_tests PRIVATE -DHI_X86_64_MAX_LEVEL=1)
+            target_compile_options(hikogui_x64v2_tests PRIVATE -arch:AVX -DHI_X86_64_MAX_LEVEL=2)
+            target_compile_options(hikogui_x64v3_tests PRIVATE -arch:AVX2 -DHI_X86_64_MAX_LEVEL=3)
+            target_compile_options(hikogui_x64v4_tests PRIVATE -arch:AVX512 -DHI_X86_64_MAX_LEVEL=4)
+        else()
+            message(WARNING "Unknown compiler to generate architecture depended tests.") 
+        endif()
+    else()
+        message(WARNING "Unknown CPU to generate architecture depended tests.") 
+    endif()
 endif()
 
 #-------------------------------------------------------------------
@@ -511,13 +632,6 @@ add_subdirectory(examples/widgets)
 #-------------------------------------------------------------------
 
 show_build_target_properties(hikogui)
-show_build_target_properties(hikogui_tests)
-show_build_target_properties(hikogui_x64v1_tests)
-show_build_target_properties(hikogui_x64v2_tests)
-show_build_target_properties(hikogui_x64v2_5_tests)
-show_build_target_properties(hikogui_x64v3_tests)
-show_build_target_properties(hikogui_x64v4_tests)
-
 #-------------------------------------------------------------------
 # Build Documentation
 #-------------------------------------------------------------------

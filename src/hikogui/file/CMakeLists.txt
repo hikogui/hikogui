@@ -19,12 +19,3 @@ target_sources(hikogui PRIVATE
     URI.hpp
     URL.hpp
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        file_view_tests.cpp
-        glob_tests.cpp
-        URI_tests.cpp
-        URL_tests.cpp
-    )
-endif()
