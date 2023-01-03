@@ -318,7 +318,7 @@ public:
     /** Select elements from two vectors.
      *
      * @tparam Mask A mask to select bits from @a a when '0'; or @a b when '1'. The
-     *         lsb corrosponds with element zero.
+     *         lsb corresponds with element zero.
      * @param a A vector for which element are selected when the bit in @a Mask is '0'.
      * @param b A vector for which element are selected when the bit in @a Mask is '1'.
      * @return A vector with element selected from @a a and @a b

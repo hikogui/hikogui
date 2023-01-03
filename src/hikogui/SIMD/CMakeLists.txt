@@ -42,16 +42,19 @@ if(BUILD_TESTING)
         simd_f32x4_tests.cpp
         simd_i32x4_tests.cpp
         simd_u32x4_tests.cpp
+        simd_f64x4_tests.cpp
     )
     target_sources(hikogui_x64v3_tests PRIVATE
         simd_f32x4_tests.cpp
         simd_i32x4_tests.cpp
         simd_u32x4_tests.cpp
+        simd_f64x4_tests.cpp
     )
     target_sources(hikogui_x64v4_tests PRIVATE
         simd_f32x4_tests.cpp
         simd_i32x4_tests.cpp
         simd_u32x4_tests.cpp
+        simd_f64x4_tests.cpp
     )
 endif()
 

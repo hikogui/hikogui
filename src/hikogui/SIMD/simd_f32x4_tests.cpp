@@ -99,7 +99,7 @@ TEST(simd_f32x4, empty)
     ASSERT_FALSE(S(-1.0f, -1.0f, -1.0f, -1.0f).empty());
     ASSERT_FALSE(S(1.0f, 1.0f, 1.0f, 1.0f).empty());
 
-    ASSERT_FALSE(S(0.0f, 0.0f, 0.0f, -0.0f).empty());
+    ASSERT_TRUE(S(0.0f, 0.0f, 0.0f, -0.0f).empty());
     ASSERT_FALSE(S(0.0f, 0.0f, 0.0f, std::numeric_limits<float>::quiet_NaN()).empty());
 
     // Calculations should never yield a negative zero.
