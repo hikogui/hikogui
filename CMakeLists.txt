@@ -16,9 +16,10 @@ include(SetupCompiler)
 # Build Options
 #-------------------------------------------------------------------
 
-option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
-option(HI_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
-option(HI_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
+option(BUILD_SHARED_LIBS    "Build shared libraries"                             OFF)
+option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
+option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
+option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" "")
 
 #-------------------------------------------------------------------
 # Project
@@ -189,6 +190,8 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # It seems this check should only be used for interopability with swift
     target_compile_options(hikogui PUBLIC -Wno-nullability-completeness)
 
+    target_compile_options(hikogui PUBLIC -march=${HI_ARCHITECTURE})
+
     # The Microsoft version of clang does not implement all clang command line arguments.
     if (NOT MSVC)
         # The hikogui generic tokenizer uses large constexpr tables.
@@ -199,6 +202,13 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
+    if("${HI_ARCHITECTURE}" STREQUAL "x86-64-v4")
+        target_compile_options(hikogui PUBLIC -arch:AVX512)
+    elseif("${HI_ARCHITECTURE}" STREQUAL "x86-64-v3")
+        target_compile_options(hikogui PUBLIC -arch:AVX2)
+    elseif("${HI_ARCHITECTURE}" STREQUAL "x86-64-v2")
+        target_compile_options(hikogui PUBLIC -arch:AVX)
+    endif()
 
     # Turn on a lot of warnings by default.
     target_compile_options(hikogui PUBLIC -W4)

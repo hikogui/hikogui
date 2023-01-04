@@ -26,13 +26,14 @@ friend namespace v1 {
  * In the function below a `mask` values least-significan-bit corrosponds to element 0.
  *
  */
-class simd_i16x8 {
-public:
+struct simd_i16x8 {
     using value_type = int16_t;
     constexpr static size_t size = 8;
     using register_type = __m128i;
 
-    simd_i16x8(simd_i16x8 const &) noexcept = default;
+    register_type v;
+
+    simd_i16x8(simd_i16x8 const&) noexcept = default;
     simd_i16x8(simd_i16x8 &&) noexcept = default;
     simd_i16x8 &operator=(simd_i16x8 const &) noexcept = default;
     simd_i16x8 &operator=(simd_i16x8 &&) noexcept = default;
@@ -467,9 +468,6 @@ public:
     {
         return simd_i16x8{_mm_andnot_si128(a.v, b.v)};
     }
-
-private:
-    register_type v;
 
     template<fixed_string SourceElements>
     [[nodiscard]] static simd_i16x8 swizzle_numbers() noexcept

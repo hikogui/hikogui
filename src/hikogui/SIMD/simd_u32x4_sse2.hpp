@@ -29,12 +29,13 @@ namespace hi { inline namespace v1 {
  * In the function below a `mask` values least-significant-bit corresponds to element 0.
  *
  */
-class simd_u32x4 {
-public:
+struct simd_u32x4 {
     using value_type = uint32_t;
     constexpr static size_t size = 4;
     using register_type = __m128i;
     using array_type = std::array<value_type, size>;
+
+    register_type v;
 
     simd_u32x4(simd_u32x4 const&) noexcept = default;
     simd_u32x4(simd_u32x4&&) noexcept = default;
@@ -44,6 +45,13 @@ public:
     /** Initialize all elements to zero.
      */
     simd_u32x4() noexcept : v(_mm_setzero_si128()) {}
+
+    [[nodiscard]] explicit simd_u32x4(register_type other) noexcept : v(other) {}
+
+    [[nodiscard]] explicit operator register_type() const noexcept
+    {
+        return v;
+    }
 
     /** Initialize the element to the values in the arguments.
      *
@@ -110,12 +118,7 @@ public:
         return r;
     }
 
-    [[nodiscard]] explicit simd_u32x4(register_type other) noexcept : v(other) {}
-
-    [[nodiscard]] explicit operator register_type() const noexcept
-    {
-        return v;
-    }
+    [[nodiscard]] explicit simd_u32x4(simd_i32x4 const &a) noexcept;
 
     /** Broadcast a single value to all the elements.
      *
@@ -465,9 +468,6 @@ public:
     {
         return a << "(" << get<0>(b) << ", " << get<1>(b) << ", " << get<2>(b) << ", " << get<3>(b) << ")";
     }
-
-private:
-    register_type v;
 
     template<fixed_string SourceElements>
     [[nodiscard]] static simd_u32x4 swizzle_numbers() noexcept

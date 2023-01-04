@@ -30,12 +30,13 @@ namespace hi { inline namespace v1 {
  * In the function below a `mask` values least-significant-bit corresponds to element 0.
  *
  */
-class simd_f32x4 {
-public:
+struct simd_f32x4 {
     using value_type = float;
     constexpr static size_t size = 4;
     using array_type = std::array<value_type, size>;
     using register_type = __m128;
+
+    register_type v;
 
     simd_f32x4(simd_f32x4 const&) noexcept = default;
     simd_f32x4(simd_f32x4&&) noexcept = default;
@@ -45,6 +46,13 @@ public:
     /** Initialize all elements to zero.
      */
     simd_f32x4() noexcept : v(_mm_setzero_ps()) {}
+
+    [[nodiscard]] explicit simd_f32x4(register_type other) noexcept : v(other) {}
+
+    [[nodiscard]] explicit operator register_type() const noexcept
+    {
+        return v;
+    }
 
     /** Initialize the first element to @a a and other elements to zero.
      *
@@ -101,12 +109,12 @@ public:
         return r;
     }
 
-    [[nodiscard]] explicit simd_f32x4(register_type other) noexcept : v(other) {}
-
-    [[nodiscard]] explicit operator register_type() const noexcept
-    {
-        return v;
-    }
+#ifdef HI_HAS_SSE2
+    [[nodiscard]] explicit simd_f32x4(simd_i32x4 const& a) noexcept;
+#endif
+#ifdef HI_HAS_AVX
+    [[nodiscard]] explicit simd_f32x4(simd_f64x4 const& a) noexcept;
+#endif
 
     /** Check if all elements are zero.
      */
@@ -614,9 +622,6 @@ public:
     {
         return a << "(" << get<0>(b) << ", " << get<1>(b) << ", " << get<2>(b) << ", " << get<3>(b) << ")";
     }
-
-private:
-    register_type v;
 
     template<fixed_string SourceElements>
     [[nodiscard]] static simd_f32x4 swizzle_numbers() noexcept

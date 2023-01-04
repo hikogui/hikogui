@@ -9,6 +9,7 @@
 #include "simd_i32x4_sse2.hpp"
 #include "simd_i64x4_avx2.hpp"
 #include "simd_u32x4_sse2.hpp"
+#include "simd_conversions_x86.hpp"
 
 #include "../architecture.hpp"
 #include "../concepts.hpp"
@@ -120,8 +121,8 @@ struct numeric_array {
     constexpr numeric_array() noexcept : v()
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { v = static_cast<container_type>(low_level_simd_t<value_type, N>{}); }) {
-                v = static_cast<container_type>(low_level_simd_t<value_type, N>{});
+            if constexpr (requires { *this = numeric_array{low_level_simd_t<value_type, N>{}}; }) {
+                *this = numeric_array{low_level_simd_t<value_type, N>{}};
             }
         }
     }
@@ -135,73 +136,10 @@ struct numeric_array {
     [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, N> const& other) noexcept : v()
     {
         if (not std::is_constant_evaluated()) {
-#if defined(HI_HAS_AVX)
-            if constexpr (is_f64x4 and other.is_f32x4) {
-                v = numeric_array{_mm256_cvteps_pd(other.reg())};
-                return;
-            } else if constexpr (is_f64x4 and other.is_i32x4) {
-                v = numeric_array{_mm256_cvtepi32_pd(other.reg())};
-                return;
-            } else if constexpr (is_f32x4 and other.is_f64x4) {
-                v = numeric_array{_mm256_cvtpd_ps(other.reg())};
-                return;
-            } else if constexpr (is_i32x4 and other.is_f64x4) {
-                v = numeric_array{_mm256_cvtpd_epi32(other.reg())};
-                return;
-            } else if constexpr (is_i32x8 and other.is_f32x8) {
-                v = numeric_array{_mm256_cvtps_epi32(other.reg())};
-                return;
-            } else if constexpr (is_f32x8 and other.is_i32x8) {
-                v = numeric_array{_mm256_cvtepi32_ps(other.reg())};
+            if constexpr (requires { *this = numeric_array{low_level_simd_t<value_type,N>{other.simd()}}; }) {
+                *this = numeric_array{low_level_simd_t<value_type, N>{other.simd()}};
                 return;
             }
-#endif
-#if defined(HI_HAS_SSE4_1)
-            if constexpr (is_u8x4 and other.is_f32x4) {
-                hilet i32_4 = _mm_cvtps_epi32(other.reg());
-                hilet i16_8 = _mm_packs_epi32(i32_4, _mm_setzero_si128());
-                hilet u8_16 = _mm_packus_epi16(i16_8, _mm_setzero_si128());
-                v = numeric_array{u8_16};
-                return;
-            } else if constexpr (is_i64x4 and other.is_i32x4) {
-                v = numeric_array{_mm_cvtepi32_epi64(other.reg())};
-                return;
-            } else if constexpr (is_i64x4 and other.is_i16x8) {
-                v = numeric_array{_mm_cvtepi16_epi64(other.reg())};
-                return;
-            } else if constexpr (is_i32x4 and other.is_i16x8) {
-                v = numeric_array{_mm_cvtepi16_epi32(other.reg())};
-                return;
-            } else if constexpr (is_i64x2 and other.is_i8x16) {
-                v = numeric_array{_mm_cvtepi8_epi64(other.reg())};
-                return;
-            } else if constexpr (is_i32x4 and other.is_i8x16) {
-                v = numeric_array{_mm_cvtepi8_epi32(other.reg())};
-                return;
-            } else if constexpr (is_i16x8 and other.is_i8x16) {
-                v = numeric_array{_mm_cvtepi8_epi16(other.reg())};
-                return;
-            } else if constexpr (is_f16x4 and other.is_f32x4) {
-                v = numeric_array{_mm_cvtps_ph_sse4_1(other.reg())};
-                return;
-            } else if constexpr (is_f32x4 and other.is_f16x4) {
-                v = numeric_array{_mm_cvtph_ps_sse2(other.reg())};
-                return;
-            }
-
-#endif
-#if defined(HI_HAS_SSE2)
-            if constexpr (is_f64x2 and other.is_i32x4) {
-                v = numeric_array{_mm_cvtepi32_pd(other.reg())};
-                return;
-            } else if constexpr (is_f32x4 and other.is_i32x4) {
-                v = numeric_array{_mm_cvtepi32_ps(other.reg())};
-                return;
-            } else if constexpr (is_i32x4 and other.is_f32x4) {
-                v = numeric_array{_mm_cvtps_epi32(other.reg())};
-                return;
-            }
-#endif
         }
 
         for (std::size_t i = 0; i != N; ++i) {

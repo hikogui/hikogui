@@ -8,7 +8,8 @@
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_VERBOSE_MAKEFILE": "ON"
+                "CMAKE_VERBOSE_MAKEFILE": "ON",
+                "HI_ARCHITECTURE": "x86-64-v4"
             },
             "architecture": {
                 "value": "x64",

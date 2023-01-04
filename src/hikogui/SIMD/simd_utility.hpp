@@ -34,6 +34,11 @@
 #endif
 
 namespace hi { inline namespace v1 {
+struct simd_f32x4;
+struct simd_f64x4;
+struct simd_i32x4;
+struct simd_i64x4;
+struct simd_u32x4;
 
 #ifdef HI_HAS_SSE
 enum class simd_rounding_mode : int {
