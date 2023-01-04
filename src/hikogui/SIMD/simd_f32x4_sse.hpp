@@ -423,6 +423,7 @@ public:
     [[nodiscard]] friend simd_f32x4 blend(simd_f32x4 a, simd_f32x4 b) noexcept
     {
         static_assert(Mask <= 0b1111);
+
         if constexpr (Mask == 0b0000) {
             return a;
         } else if constexpr (Mask == 0b1111) {

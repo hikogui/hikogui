@@ -10,8 +10,10 @@ target_sources(hikogui PRIVATE
     unorm_a2bgr10_pack.hpp
     simd_utility.hpp
     simd_f32x4_sse.hpp
+    simd_f64x4_avx.hpp
     simd_i16x8_sse2.hpp
     simd_i32x4_sse2.hpp
+    simd_i64x4_avx2.hpp
     simd_u32x4_sse2.hpp
     srgb_abgr8_pack.hpp
     sfloat_rgba16.hpp

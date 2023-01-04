@@ -351,13 +351,7 @@ public:
     [[nodiscard]] friend simd_f64x4 set_zero(simd_f64x4 a) noexcept
     {
         static_assert(Mask <= 0b1111);
-        if constexpr (Mask == 0b0000) {
-            return a;
-        } else if constexpr (Mask == 0b1111) {
-            return {};
-        } else {
-            return simd_f64x4{_mm256_blend_pd(a.v, _mm256_setzero_pd(), Mask)};
-        }
+        return blend<Mask>(a, simd_f64x4{});
     }
 
     /** Insert a value into an element of a vector.
@@ -371,9 +365,7 @@ public:
     [[nodiscard]] friend simd_f64x4 insert(simd_f64x4 a, value_type b) noexcept
     {
         static_assert(Index < 4);
-
-        constexpr auto mask = 1 << Index;
-        return simd_f64x4{_mm256_blend_pd(a.v, _mm256_set1_pd(b), mask)};
+        return blend<1_uz << Index>(a, broadcast(b));
     }
 
     /** Extract an element from a vector.
@@ -412,6 +404,7 @@ public:
     [[nodiscard]] friend simd_f64x4 blend(simd_f64x4 a, simd_f64x4 b) noexcept
     {
         static_assert(Mask <= 0b1111);
+
         if constexpr (Mask == 0b0000) {
             return a;
         } else if constexpr (Mask == 0b1111) {

@@ -62,40 +62,49 @@ public:
     {
     }
 
-    [[nodiscard]] explicit simd_i64x4(value_type const *other) noexcept : v(_mm256_loadu_si256(other)) {}
+    [[nodiscard]] explicit simd_i64x4(value_type const *other) noexcept :
+        v(_mm256_loadu_si256(reinterpret_cast<register_type const *>(other)))
+    {
+    }
 
     void store(value_type *out) const noexcept
     {
         hi_axiom_not_null(out);
-        _mm256_storeu_si256(out, v);
+        _mm256_storeu_si256(reinterpret_cast<register_type *>(out), v);
     }
 
-    [[nodiscard]] explicit simd_i64x4(void const *other) noexcept : v(_mm256_loadu_si256(static_cast<value_type const *>(other))) {}
+    [[nodiscard]] explicit simd_i64x4(void const *other) noexcept :
+        v(_mm256_loadu_si256(static_cast<register_type const *>(other)))
+    {
+    }
 
     void store(void *out) const noexcept
     {
         hi_axiom_not_null(out);
-        _mm256_storeu_si256(static_cast<value_type *>(out), v);
+        _mm256_storeu_si256(static_cast<register_type *>(out), v);
     }
 
     [[nodiscard]] explicit simd_i64x4(std::span<value_type const> other) noexcept
     {
         hi_axiom(other.size() >= 4);
-        v = _mm256_loadu_si256(other.data());
+        v = _mm256_loadu_si256(reinterpret_cast<register_type const *>(other.data()));
     }
 
     void store(std::span<value_type> out) const noexcept
     {
         hi_axiom(out.size() >= 4);
-        _mm256_storeu_si256(out.data(), v);
+        _mm256_storeu_si256(reinterpret_cast<register_type *>(out.data()), v);
     }
 
-    [[nodiscard]] explicit simd_i64x4(array_type other) noexcept : v(_mm256_loadu_si256(other.data())) {}
+    [[nodiscard]] explicit simd_i64x4(array_type other) noexcept :
+        v(_mm256_loadu_si256(reinterpret_cast<register_type const *>(other.data())))
+    {
+    }
 
     [[nodiscard]] explicit operator array_type() const noexcept
     {
         auto r = array_type{};
-        _mm256_storeu_si256(r.data(), v);
+        _mm256_storeu_si256(reinterpret_cast<register_type *>(r.data()), v);
         return r;
     }
 
@@ -145,7 +154,7 @@ public:
      */
     [[nodiscard]] static simd_i64x4 broadcast(simd_i64x4 a) noexcept
     {
-        return simd_i64x4{_mm256_permute4x64_epi64(a.v, 0b00'00'00'00)}; 
+        return simd_i64x4{_mm256_permute4x64_epi64(a.v, 0b00'00'00'00)};
     }
 
     /** Create a vector with all the bits set.
@@ -155,11 +164,30 @@ public:
         return eq(simd_i64x4{}, simd_i64x4{});
     }
 
+    [[nodiscard]] static simd_i64x4 from_mask(size_t a) noexcept
+    {
+        hi_axiom(a <= 0b1111);
+
+        uint64_t a_ = a;
+
+        a_ <<= 31;
+        auto tmp = _mm_cvtsi32_si128(static_cast<uint32_t>(a_));
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 1);
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 2);
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 3);
+
+        tmp = _mm_srai_epi32(tmp, 31);
+        return simd_i64x4{_mm256_cvtepi32_epi64(tmp)};
+    }
+
     /** Concatenate the top bit of each element.
      */
     [[nodiscard]] size_t mask() const noexcept
     {
-        return narrow_cast<size_t>(_mm256_movemask_epi64(_mm256_castpd_si256(v)));
+        return narrow_cast<size_t>(_mm256_movemask_pd(_mm256_castsi256_pd(v)));
     }
 
     /** Compare if all elements in both vectors are equal.
@@ -170,7 +198,7 @@ public:
      */
     [[nodiscard]] friend bool operator==(simd_i64x4 a, simd_i64x4 b) noexcept
     {
-        return _mm256_movemask_epi64(_mm256_cmpeq_epi64(a.v, b.v)) == 0b1111;
+        return eq(a, b).mask() == 0b1111;
     }
 
     [[nodiscard]] friend simd_i64x4 eq(simd_i64x4 a, simd_i64x4 b) noexcept
@@ -185,7 +213,7 @@ public:
 
     [[nodiscard]] friend simd_i64x4 lt(simd_i64x4 a, simd_i64x4 b) noexcept
     {
-        return ~ge(a, b);
+        return simd_i64x4{_mm256_cmpgt_epi64(b.v, a.v)};
     }
 
     [[nodiscard]] friend simd_i64x4 gt(simd_i64x4 a, simd_i64x4 b) noexcept
@@ -200,7 +228,7 @@ public:
 
     [[nodiscard]] friend simd_i64x4 ge(simd_i64x4 a, simd_i64x4 b) noexcept
     {
-        return gt(a, b) | eq(a, b);
+        return ~lt(a, b);
     }
 
     [[nodiscard]] friend simd_i64x4 operator+(simd_i64x4 a) noexcept
@@ -243,16 +271,46 @@ public:
         return not_and(a, ones());
     }
 
+    [[nodiscard]] friend simd_i64x4 operator<<(simd_i64x4 a, unsigned int b) noexcept
+    {
+        hi_axiom_bounds(b, sizeof(value_type) * CHAR_BIT);
+        return simd_i64x4{_mm256_slli_epi64(a.v, b)};
+    }
+
+    [[nodiscard]] friend simd_i64x4 operator>>(simd_i64x4 a, unsigned int b) noexcept
+    {
+        hi_axiom_bounds(b, sizeof(value_type) * CHAR_BIT);
+
+#ifdef HI_HAS_AVX512F
+        return simd_i64x4{_mm256_srai_epi64(a.v, b)};
+
+#else
+        hilet shifted_value = _mm256_srli_epi64(a.v, b);
+        hilet zero = _mm256_setzero_si256();
+        hilet ones = _mm256_cmpeq_epi64(zero, zero);
+        hilet shifted_ones = _mm256_slli_epi64(ones, 63 - b);
+        hilet is_negative = _mm256_cmpgt_epi64(zero, a.v);
+        hilet masked_shifted_ones = _mm256_and_si256(is_negative, shifted_ones);
+        return simd_i64x4{_mm256_or_si256(shifted_value, masked_shifted_ones)};
+#endif
+    }
+
     [[nodiscard]] friend simd_i64x4 min(simd_i64x4 a, simd_i64x4 b) noexcept
     {
+        hilet mask = lt(a, b);
+        return (mask & a) | not_and(mask, b);
     }
 
     [[nodiscard]] friend simd_i64x4 max(simd_i64x4 a, simd_i64x4 b) noexcept
     {
+        hilet mask = gt(a, b);
+        return (mask & a) | not_and(mask, b);
     }
 
     [[nodiscard]] friend simd_i64x4 abs(simd_i64x4 a) noexcept
     {
+        hilet mask = gt(a, simd_i64x4{});
+        return (mask & a) | not_and(mask, -a);
     }
 
     /** Set elements to zero.
@@ -266,13 +324,7 @@ public:
     {
         static_assert(Mask <= 0b1111);
 
-        if constexpr (Mask == 0b0000) {
-            return a;
-        } else if constexpr (Mask == 0b1111) {
-            return {};
-        } else {
-            return blend(a, simd_i64x4{}, Mask)};
-        }
+        return blend<Mask>(a, simd_i64x4{});
     }
 
     /** Insert a value into an element of a vector.
@@ -286,9 +338,7 @@ public:
     [[nodiscard]] friend simd_i64x4 insert(simd_i64x4 a, value_type b) noexcept
     {
         static_assert(Index < 4);
-
-        constexpr auto mask = 1 << Index;
-        return blend(a, broadcast(b), mask)};
+        return blend<1_uz << Index>(a, broadcast(b));
     }
 
     /** Extract an element from a vector.
@@ -302,7 +352,7 @@ public:
     {
         static_assert(Index < size);
 
-        return _mm256_extract_epi64(a, Index);
+        return _mm256_extract_epi64(a.v, Index);
     }
 
     /** Select elements from two vectors.
@@ -328,7 +378,7 @@ public:
                 (Mask & 0b0001) | ((Mask & 0b0001) << 1) |
                 ((Mask & 0b0010) << 1) | ((Mask & 0b0010) << 2) |
                 ((Mask & 0b0100) << 2) | ((Mask & 0b0100) << 3) |
-                ((Mask & 0b1000) << 3) | ((Mask & 0b1000) << 4) |
+                ((Mask & 0b1000) << 3) | ((Mask & 0b1000) << 4);
             // clang-format on
             return simd_i64x4{_mm256_blend_epi32(a.v, b.v, dmask)};
         }
