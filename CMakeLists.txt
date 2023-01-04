@@ -52,6 +52,7 @@ project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
+include(CPUID)
 
 # disable adding CTest build targets like "NightlyStart" (before ctest include)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)

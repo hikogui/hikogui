@@ -154,25 +154,25 @@
             "name": "vc17-x64-windows-static-dbg-all",
             "displayName": "Library",
             "configurePreset": "vc17-x64-windows-static-dbg",
-            "targets": [ "hikogui", "hikogui_tests", "hikogui_x64v1_tests", "hikogui_x64v2_tests",  "hikogui_x64v3_tests", "hikogui_x64v4_tests" ]
+            "targets": [ "hikogui", "hikogui_all_tests"]
         },
         {
             "name": "vc17-x64-windows-static-dbg-examples",
             "displayName": "Library + Examples",
             "configurePreset": "vc17-x64-windows-static-dbg",
-            "targets": [ "hikogui", "hikogui_tests", "hikogui_x64v1_tests", "hikogui_x64v2_tests",  "hikogui_x64v3_tests", "hikogui_x64v4_tests", "examples" ]
+            "targets": [ "hikogui", "hikogui_all_tests", "examples" ]
         },
         {
             "name": "vc17-x64-windows-static-rel-all",
             "displayName": "Library",
             "configurePreset": "vc17-x64-windows-static-rel",
-            "targets": [ "hikogui", "hikogui_tests", "hikogui_x64v1_tests", "hikogui_x64v2_tests",  "hikogui_x64v3_tests", "hikogui_x64v4_tests" ]
+            "targets": [ "hikogui", "hikogui_all_tests"]
         },
         {
             "name": "vc17-x64-windows-static-rel-examples",
             "displayName": "Library + Examples",
             "configurePreset": "vc17-x64-windows-static-rel",
-            "targets": [ "hikogui", "hikogui_tests", "hikogui_x64v1_tests", "hikogui_x64v2_tests",  "hikogui_x64v3_tests", "hikogui_x64v4_tests", "examples" ]
+            "targets": [ "hikogui", "hikogui_all_tests", "examples" ]
         }
     ]
 }

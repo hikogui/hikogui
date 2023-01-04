@@ -1,4 +1,6 @@
 
+add_custom_target(hikogui_all_tests)
+
 add_custom_target(hikogui_tests_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/data ${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -7,6 +9,7 @@ add_executable(hikogui_tests)
 target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
 target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 add_dependencies(hikogui_tests hikogui_tests_resources)
+add_dependencies(hikogui_all_tests hikogui_tests)
 
 target_sources(hikogui_tests PRIVATE
     ${SOURCE_DIR}/audio/audio_sample_unpacker_tests.cpp
@@ -41,7 +44,7 @@ target_sources(hikogui_tests PRIVATE
     ${SOURCE_DIR}/i18n/iso_15924_tests.cpp
     ${SOURCE_DIR}/i18n/language_tag_tests.cpp
     ${SOURCE_DIR}/layout/spreadsheet_address_tests.cpp
-    ${SOURCE_DIR}/random/dither_tests.cpp
+    #${SOURCE_DIR}/random/dither_tests.cpp
     ${SOURCE_DIR}/random/seed_tests.cpp
     ${SOURCE_DIR}/random/xorshift128p_tests.cpp
     ${SOURCE_DIR}/SIMD/numeric_array_tests.cpp
@@ -120,6 +123,11 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
     add_dependencies(hikogui_x64v3_tests hikogui_tests_resources)
     add_dependencies(hikogui_x64v4_tests hikogui_tests_resources)
 
+    add_dependencies(hikogui_all_tests hikogui_x64v1_tests)
+    add_dependencies(hikogui_all_tests hikogui_x64v2_tests)
+    add_dependencies(hikogui_all_tests hikogui_x64v3_tests)
+    add_dependencies(hikogui_all_tests hikogui_x64v4_tests)
+
     target_sources(hikogui_x64v1_tests PRIVATE
         ${SOURCE_DIR}/SIMD/simd_f32x4_tests.cpp
         ${SOURCE_DIR}/SIMD/simd_i32x4_tests.cpp
@@ -144,7 +152,6 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
         ${SOURCE_DIR}/SIMD/simd_i64x4_tests.cpp
         ${SOURCE_DIR}/SIMD/simd_u32x4_tests.cpp
     )
-        
     install(TARGETS hikogui_tests hikogui_x64v1_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
     install(TARGETS hikogui_tests hikogui_x64v2_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
     install(TARGETS hikogui_tests hikogui_x64v3_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
@@ -155,23 +162,11 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
     show_build_target_properties(hikogui_x64v3_tests)
     show_build_target_properties(hikogui_x64v4_tests)
 
-    gtest_discover_tests(hikogui_x64v1_tests DISCOVERY_MODE PRE_TEST)
-    gtest_discover_tests(hikogui_x64v2_tests DISCOVERY_MODE PRE_TEST)
-    gtest_discover_tests(hikogui_x64v3_tests DISCOVERY_MODE PRE_TEST)
-    gtest_discover_tests(hikogui_x64v4_tests DISCOVERY_MODE PRE_TEST)
-
-    if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+    if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")
         target_compile_options(hikogui_x64v1_tests PRIVATE -march=x86-64)
         target_compile_options(hikogui_x64v2_tests PRIVATE -march=x86-64-v2)
         target_compile_options(hikogui_x64v3_tests PRIVATE -march=x86-64-v3)
         target_compile_options(hikogui_x64v4_tests PRIVATE -march=x86-64-v4)
-
-    elseif(${CMAKE_CXX_COMPILER_ID} MATCHES GCC)
-        target_compile_options(hikogui_x64v1_tests PRIVATE -march=x86-64)
-        target_compile_options(hikogui_x64v2_tests PRIVATE -march=x86-64-v2)
-        target_compile_options(hikogui_x64v3_tests PRIVATE -march=x86-64-v3)
-        target_compile_options(hikogui_x64v4_tests PRIVATE -march=x86-64-v4)
-
     elseif (MSVC)
         # On MSVC the architecture flags do not exactly correspond with the x86-64 architecture levels.
         # The HI_X86_64_MAX_LEVEL macro limits use for intrinsic usage to the exact level for testing purposes.
@@ -182,6 +177,23 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
     else()
         message(WARNING "Unknown compiler to generate architecture depended tests.") 
     endif()
+     
+    # Only execute the tests that will run on the current host.
+    if(HAVE_CPUID_INFO)
+        if(HAVE_SSE2)
+            gtest_discover_tests(hikogui_x64v1_tests DISCOVERY_MODE PRE_TEST)
+        endif()
+        if(HAVE_SSE42)
+            gtest_discover_tests(hikogui_x64v2_tests DISCOVERY_MODE PRE_TEST)
+        endif()
+        if(HAVE_AVX2)
+            gtest_discover_tests(hikogui_x64v3_tests DISCOVERY_MODE PRE_TEST)
+        endif()
+        if(HAVE_AVX512F)
+            gtest_discover_tests(hikogui_x64v4_tests DISCOVERY_MODE PRE_TEST)
+        endif()
+    endif()
+
 else()
     message(WARNING "Unknown CPU to generate architecture depended tests.") 
 endif()

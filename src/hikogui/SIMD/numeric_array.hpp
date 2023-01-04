@@ -5,7 +5,10 @@
 #pragma once
 
 #include "simd_f32x4_sse.hpp"
+#include "simd_f64x4_avx.hpp"
 #include "simd_i32x4_sse2.hpp"
+#include "simd_i64x4_avx2.hpp"
+#include "simd_u32x4_sse2.hpp"
 
 #include "../architecture.hpp"
 #include "../concepts.hpp"
@@ -17,27 +20,9 @@
 
 #if defined(HI_HAS_AVX)
 #include "swizzle_avx.hpp"
-#include <immintrin.h> // AVX, AVX2, FMA
-#endif
-#if defined(HI_HAS_SSE4_2)
-#include <nmmintrin.h> // SSE4.2
 #endif
 #if defined(HI_HAS_SSE4_1)
 #include "float16_sse4_1.hpp"
-#include <smmintrin.h> // SSE4.1
-#include <ammintrin.h> // SSE4A
-#endif
-#if defined(HI_HAS_SSSE3)
-#include <tmmintrin.h> // SSSE3
-#endif
-#if defined(HI_HAS_SSE3)
-#include <pmmintrin.h> // SSE3
-#endif
-#if defined(HI_HAS_SSE2)
-#include <emmintrin.h> // SSE2
-#endif
-#if defined(HI_HAS_SSE)
-#include <xmmintrin.h> // SSE
 #endif
 
 #include <cstdint>
@@ -132,40 +117,12 @@ struct numeric_array {
 
     container_type v;
 
-    constexpr numeric_array() noexcept
+    constexpr numeric_array() noexcept : v()
     {
         if (not std::is_constant_evaluated()) {
-#if defined(HI_HAS_AVX)
-            if constexpr (is_i64x4 or is_u64x4 or is_i32x8 or is_u32x8 or is_i16x16 or is_u16x16 or is_i8x32 or is_u8x32) {
-                _mm256_storeu_si256(reinterpret_cast<__m256i *>(v.data()), _mm256_setzero_si256());
-                return;
-            } else if constexpr (is_f64x4) {
-                _mm256_storeu_pd(reinterpret_cast<__m256d *>(v.data()), _mm256_setzero_pd());
-                return;
-            } else if constexpr (is_f32x8) {
-                _mm256_storeu_ps(v.data(), _mm256_setzero_ps());
-                return;
+            if constexpr (requires { v = static_cast<container_type>(low_level_simd_t<value_type, N>{}); }) {
+                v = static_cast<container_type>(low_level_simd_t<value_type, N>{});
             }
-#endif
-#if defined(HI_HAS_SSE2)
-            if constexpr (is_i64x2 or is_u64x2 or is_i32x4 or is_u32x4 or is_i16x8 or is_u16x8 or is_i8x16 or is_u8x16) {
-                _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), _mm_setzero_si128());
-                return;
-            } else if constexpr (is_f64x2) {
-                _mm_storeu_pd(reinterpret_cast<__m128d *>(v.data()), _mm_setzero_pd());
-                return;
-            }
-#endif
-#if defined(HI_HAS_SSE)
-            if constexpr (is_f32x4) {
-                _mm_storeu_ps(v.data(), _mm_setzero_ps());
-                return;
-            }
-#endif
-        }
-
-        for (auto i = 0_uz; i != N; ++i) {
-            v[i] = T{};
         }
     }
 
@@ -174,8 +131,8 @@ struct numeric_array {
     constexpr numeric_array& operator=(numeric_array const& rhs) noexcept = default;
     constexpr numeric_array& operator=(numeric_array&& rhs) noexcept = default;
 
-    template<numeric_limited U, std::size_t M>
-    [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const& other) noexcept : v()
+    template<numeric_limited U>
+    [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, N> const& other) noexcept : v()
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
@@ -248,15 +205,11 @@ struct numeric_array {
         }
 
         for (std::size_t i = 0; i != N; ++i) {
-            if (i < M) {
-                if constexpr (std::is_integral_v<T> and std::is_floating_point_v<U>) {
-                    // SSE conversion round floats before converting to integer.
-                    v[i] = static_cast<value_type>(std::round(other[i]));
-                } else {
-                    v[i] = static_cast<value_type>(other[i]);
-                }
+            if constexpr (std::is_integral_v<T> and std::is_floating_point_v<U>) {
+                // SSE conversion round floats before converting to integer.
+                v[i] = static_cast<value_type>(std::round(other[i]));
             } else {
-                v[i] = T{};
+                v[i] = static_cast<value_type>(other[i]);
             }
         }
     }
@@ -2186,8 +2139,6 @@ struct numeric_array {
     {
         return broadcast(lhs) ^ rhs;
     }
-
-
 
     [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
