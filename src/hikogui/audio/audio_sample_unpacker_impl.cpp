@@ -57,7 +57,7 @@ load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direct
     hi_axiom(src != nullptr);
     hi_axiom(stride > 0);
 
-    auto r = shuffle(i8x16::load(src), load_shuffle_indices);
+    auto r = permute(i8x16::load(src), load_shuffle_indices);
     src += stride;
     return r;
 }
@@ -75,7 +75,7 @@ load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direct
 
     auto int_samples = i8x16{};
     do {
-        int_samples = shuffle(int_samples, concat_shuffle_indices);
+        int_samples = permute(int_samples, concat_shuffle_indices);
         // Due to int_samples reset the dependency is broken on the first iteration, the load_samples
         // call here should be pipelined in parallel with the first shuffle.
         int_samples |= load_samples(src, load_shuffle_indices, stride);
@@ -127,7 +127,7 @@ void audio_sample_unpacker::operator()(std::byte const *hi_restrict src, float *
         while (dst != dst_fast_end) {
             hilet int_samples =
                 load_samples(src, _load_shuffle_indices, _concat_shuffle_indices, _num_chunks_per_quad, _chunk_stride);
-            hilet float_samples = bit_cast<f32x4>(int_samples);
+            hilet float_samples = f32x4::cast_from(int_samples);
             store_samples(dst, float_samples);
         }
         while (dst != dst_end) {
