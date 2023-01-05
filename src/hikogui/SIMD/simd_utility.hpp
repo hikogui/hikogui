@@ -152,8 +152,12 @@ template<fixed_string SourceElements, size_t NumElements, char Value>
 
 } // namespace detail
 
+struct low_level_simd_invalid {};
+
 template<typename T, size_t N>
-struct low_level_simd : std::false_type {};
+struct low_level_simd : std::false_type {
+    using type = low_level_simd_invalid;
+};
 
 template<typename T, size_t N>
 constexpr bool has_low_level_simd_v = low_level_simd<T, N>::value;

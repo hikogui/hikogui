@@ -198,7 +198,7 @@ public:
      *
      * @return a reference to the x element.
      */
-    [[nodiscard]] constexpr value_type const& width() const noexcept
+    [[nodiscard]] constexpr value_type width() const noexcept
     {
         return _v.x();
     }
@@ -209,7 +209,7 @@ public:
      *
      * @return a reference to the y element.
      */
-    [[nodiscard]] constexpr value_type const& height() const noexcept
+    [[nodiscard]] constexpr value_type height() const noexcept
     {
         return _v.y();
     }
@@ -220,7 +220,7 @@ public:
      *
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr value_type const& depth() const noexcept
+    [[nodiscard]] constexpr value_type depth() const noexcept
         requires(D == 3)
     {
         return _v.z();

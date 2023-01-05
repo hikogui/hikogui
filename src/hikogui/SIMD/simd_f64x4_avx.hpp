@@ -109,6 +109,7 @@ struct simd_f64x4 {
 
     [[nodiscard]] explicit simd_f64x4(simd_f32x4 const& a) noexcept;
     [[nodiscard]] explicit simd_f64x4(simd_i32x4 const& a) noexcept;
+    //[[nodiscard]] explicit simd_f64x4(simd_f64x2 const &a, simd_f64x2 const &b) noexcept; 
 
     /** Check if all elements are zero.
      */

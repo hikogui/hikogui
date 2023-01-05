@@ -81,6 +81,18 @@ struct fixed_string {
         return N;
     }
 
+    template<size_t I>
+    [[nodiscard]] constexpr friend char& get(fixed_string& a) noexcept
+    {
+        return std::get<I>(a._str);
+    }
+
+    template<size_t I>
+    [[nodiscard]] constexpr friend char const& get(fixed_string const& a) noexcept
+    {
+        return std::get<I>(a._str);
+    }
+
     [[nodiscard]] constexpr char& operator[](size_t index) noexcept
     {
 #ifndef NDEBUG

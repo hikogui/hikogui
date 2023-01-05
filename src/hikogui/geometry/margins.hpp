@@ -41,7 +41,7 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr value_type const& left() const noexcept
+    [[nodiscard]] constexpr value_type left() const noexcept
     {
         return _v.x();
     }
@@ -51,7 +51,7 @@ public:
         return _v.x();
     }
 
-    [[nodiscard]] constexpr value_type const& bottom() const noexcept
+    [[nodiscard]] constexpr value_type bottom() const noexcept
     {
         return _v.y();
     }
@@ -61,7 +61,7 @@ public:
         return _v.y();
     }
 
-    [[nodiscard]] constexpr value_type const& right() const noexcept
+    [[nodiscard]] constexpr value_type right() const noexcept
     {
         return _v.z();
     }
@@ -71,7 +71,7 @@ public:
         return _v.z();
     }
 
-    [[nodiscard]] constexpr value_type const& top() const noexcept
+    [[nodiscard]] constexpr value_type top() const noexcept
     {
         return _v.w();
     }

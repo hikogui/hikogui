@@ -148,22 +148,22 @@ public:
         return _v.w();
     }
 
-    [[nodiscard]] constexpr float16 const& r() const noexcept
+    [[nodiscard]] constexpr float16 r() const noexcept
     {
         return _v.x();
     }
 
-    [[nodiscard]] constexpr float16 const& g() const noexcept
+    [[nodiscard]] constexpr float16 g() const noexcept
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr float16 const& b() const noexcept
+    [[nodiscard]] constexpr float16 b() const noexcept
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr float16 const& a() const noexcept
+    [[nodiscard]] constexpr float16 a() const noexcept
     {
         return _v.w();
     }

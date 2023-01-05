@@ -212,6 +212,15 @@
             <Item Name="[up]">up</Item>
         </Expand>
     </Type>
+    <Type Name="hi::v1::circle">
+        <DisplayString>{{ c=({_v.v[0],g}, {_v.v[1],g}), r={_v.v[3],g} }}</DisplayString>
+        <Expand>
+            <Item Name="[x]">_v.v[0],g</Item>
+            <Item Name="[y]">_v.v[1],g</Item>
+            <Item Name="[z]">_v.v[2],g</Item>
+            <Item Name="[radius]">_v.v[3],g</Item>
+        </Expand>
+    </Type>
     <Type Name="hi::v1::quad">
         <DisplayString>{{ {p0}, {p1}, {p2}, {p3} }}</DisplayString>
         <Expand>

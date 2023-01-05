@@ -119,7 +119,7 @@ public:
     /** Access the x element from the vector.
      * @return a reference to the x element.
      */
-    [[nodiscard]] constexpr value_type const& x() const noexcept
+    [[nodiscard]] constexpr value_type x() const noexcept
     {
         return _v.x();
     }
@@ -127,7 +127,7 @@ public:
     /** Access the y element from the vector.
      * @return a reference to the y element.
      */
-    [[nodiscard]] constexpr value_type const& y() const noexcept
+    [[nodiscard]] constexpr value_type y() const noexcept
     {
         return _v.y();
     }
@@ -135,7 +135,7 @@ public:
     /** Access the z element from the vector.
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr value_type const& z() const noexcept
+    [[nodiscard]] constexpr value_type z() const noexcept
         requires(D == 3)
     {
         return _v.z();

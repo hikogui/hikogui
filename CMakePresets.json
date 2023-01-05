@@ -9,7 +9,7 @@
             "cacheVariables": {
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
                 "CMAKE_VERBOSE_MAKEFILE": "ON",
-                "HI_ARCHITECTURE": "x86-64-v4"
+                "HI_ARCHITECTURE": "x86-64-v3"
             },
             "architecture": {
                 "value": "x64",
