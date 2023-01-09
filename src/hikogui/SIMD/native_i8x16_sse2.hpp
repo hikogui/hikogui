@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "simd_utility.hpp"
+#include "native_simd_utility.hpp"
 #include "../assert.hpp"
 #include <array>
 #include <ostream>
@@ -28,7 +28,7 @@ namespace hi { inline namespace v1 {
  * In the function below a `mask` values least-significant-bit corresponds to element 0.
  *
  */
-struct simd_i8x16 {
+struct native_i8x16 {
     using value_type = int8_t;
     constexpr static size_t size = 4;
     using register_type = __m128i;
@@ -36,16 +36,16 @@ struct simd_i8x16 {
 
     register_type v;
 
-    simd_i8x16(simd_i8x16 const&) noexcept = default;
-    simd_i8x16(simd_i8x16&&) noexcept = default;
-    simd_i8x16& operator=(simd_i8x16 const&) noexcept = default;
-    simd_i8x16& operator=(simd_i8x16&&) noexcept = default;
+    native_i8x16(native_i8x16 const&) noexcept = default;
+    native_i8x16(native_i8x16&&) noexcept = default;
+    native_i8x16& operator=(native_i8x16 const&) noexcept = default;
+    native_i8x16& operator=(native_i8x16&&) noexcept = default;
 
     /** Initialize all elements to zero.
      */
-    simd_i8x16() noexcept : v(_mm_setzero_si128()) {}
+    native_i8x16() noexcept : v(_mm_setzero_si128()) {}
 
-    [[nodiscard]] explicit simd_i8x16(register_type other) noexcept : v(other) {}
+    [[nodiscard]] explicit native_i8x16(register_type other) noexcept : v(other) {}
 
     [[nodiscard]] explicit operator register_type() const noexcept
     {
@@ -71,7 +71,7 @@ struct simd_i8x16 {
      * @param o The value for element 14.
      * @param p The value for element 15.
      */
-    [[nodiscard]] simd_i8x16(
+    [[nodiscard]] native_i8x16(
         value_type a,
         value_type b = value_type{0},
         value_type c = value_type{0},
@@ -93,7 +93,7 @@ struct simd_i8x16 {
     {
     }
 
-    [[nodiscard]] explicit simd_i8x16(value_type const *other) noexcept :
+    [[nodiscard]] explicit native_i8x16(value_type const *other) noexcept :
         v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other)))
     {
     }
@@ -104,7 +104,7 @@ struct simd_i8x16 {
         _mm_storeu_si128(reinterpret_cast<register_type *>(out), v);
     }
 
-    [[nodiscard]] explicit simd_i8x16(void const *other) noexcept : v(_mm_loadu_si128(static_cast<register_type const *>(other)))
+    [[nodiscard]] explicit native_i8x16(void const *other) noexcept : v(_mm_loadu_si128(static_cast<register_type const *>(other)))
     {
     }
 
@@ -114,7 +114,7 @@ struct simd_i8x16 {
         _mm_storeu_si128(static_cast<register_type *>(out), v);
     }
 
-    [[nodiscard]] explicit simd_i8x16(std::span<value_type const> other) noexcept
+    [[nodiscard]] explicit native_i8x16(std::span<value_type const> other) noexcept
     {
         hi_axiom(other.size() >= size);
         v = _mm_loadu_si128(reinterpret_cast<register_type const *>(other.data()));
@@ -126,7 +126,7 @@ struct simd_i8x16 {
         _mm_storeu_si128(reinterpret_cast<register_type *>(out.data()), v);
     }
 
-    [[nodiscard]] explicit simd_i8x16(array_type other) noexcept :
+    [[nodiscard]] explicit native_i8x16(array_type other) noexcept :
         v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other.data())))
     {
     }
@@ -139,8 +139,8 @@ struct simd_i8x16 {
     }
 
 #ifdef AVX512F
-    [[nodiscard]] explicit simd_i8x16(simd_f32x16 const& a) noexcept;
-    [[nodiscard]] explicit simd_i8x16(simd_u32x16 const& a) noexcept;
+    [[nodiscard]] explicit native_i8x16(native_f32x16 const& a) noexcept;
+    [[nodiscard]] explicit native_i8x16(native_u32x16 const& a) noexcept;
 #endif
 
     /** Broadcast a single value to all the elements.
@@ -152,9 +152,9 @@ struct simd_i8x16 {
      * r[12] = a; r[13] = a; r[14] = a; r[15] = a;
      * ```
      */
-    [[nodiscard]] static simd_i8x16 broadcast(value_type a) noexcept
+    [[nodiscard]] static native_i8x16 broadcast(value_type a) noexcept
     {
-        return simd_i8x16{_mm_set1_epi8(a)};
+        return native_i8x16{_mm_set1_epi8(a)};
     }
 
     /** Broadcast the first element to all the elements.
@@ -178,30 +178,30 @@ struct simd_i8x16 {
      * r[15] = a[0]
      * ```
      */
-    [[nodiscard]] static simd_i8x16 broadcast(simd_i8x16 a) noexcept
+    [[nodiscard]] static native_i8x16 broadcast(native_i8x16 a) noexcept
     {
 #ifdef HI_HAS_AVX2
-        return simd_i8x16{_mm_broadcastb_epi8(a.v)};
+        return native_i8x16{_mm_broadcastb_epi8(a.v)};
 #elif HI_HAS_SSSE3
-        return simd_i8x16{_mm_shuffle_epi8(a.v, _mm_setzero_si128())};
+        return native_i8x16{_mm_shuffle_epi8(a.v, _mm_setzero_si128())};
 #else
         auto tmp = _mm_extract_epi16(a.v, 0) & 0xff;
         tmp <<= 8;
         tmp |= tmp;
         tmp <<= 16;
         tmp |= tmp;
-        return simd_i8x16{_mm_shuffle_epi8(tmp, 0b00'00'00'00)};
+        return native_i8x16{_mm_shuffle_epi8(tmp, 0b00'00'00'00)};
 #endif
     }
 
-    [[nodiscard]] static simd_i8x16 ones() noexcept
+    [[nodiscard]] static native_i8x16 ones() noexcept
     {
-        return simd_i8x16{_mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()))};
+        return native_i8x16{_mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()))};
     }
 
     [[nodiscard]] bool empty() const noexcept
     {
-        return *this == simd_i8x16{};
+        return *this == native_i8x16{};
     }
 
     explicit operator bool() const noexcept
@@ -216,108 +216,108 @@ struct simd_i8x16 {
         return narrow_cast<size_t>(_mm_movemask_epi8(v));
     }
 
-    [[nodiscard]] friend bool operator==(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend bool operator==(native_i8x16 a, native_i8x16 b) noexcept
     {
         return eq(a, b).mask() == 0b1111'1111'1111'1111;
     }
 
-    [[nodiscard]] friend simd_i8x16 eq(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 eq(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return simd_i8x16{_mm_cmpeq_epi8(a.v, b.v)};
+        return native_i8x16{_mm_cmpeq_epi8(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i8x16 ne(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 ne(native_i8x16 a, native_i8x16 b) noexcept
     {
         return ~eq(a, b);
     }
 
-    [[nodiscard]] friend simd_i8x16 lt(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 lt(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return simd_i8x16{_mm_cmplt_epi8(a.v, b.v)};
+        return native_i8x16{_mm_cmplt_epi8(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i8x16 gt(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 gt(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return simd_i8x16{_mm_cmpgt_epi8(a.v, b.v)};
+        return native_i8x16{_mm_cmpgt_epi8(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i8x16 le(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 le(native_i8x16 a, native_i8x16 b) noexcept
     {
         return ~gt(a, b);
     }
 
-    [[nodiscard]] friend simd_i8x16 ge(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 ge(native_i8x16 a, native_i8x16 b) noexcept
     {
         return ~lt(a, b);
     }
 
-    [[nodiscard]] friend simd_i8x16 operator+(simd_i8x16 a) noexcept
+    [[nodiscard]] friend native_i8x16 operator+(native_i8x16 a) noexcept
     {
         return a;
     }
 
-    [[nodiscard]] friend simd_i8x16 operator-(simd_i8x16 a) noexcept
+    [[nodiscard]] friend native_i8x16 operator-(native_i8x16 a) noexcept
     {
-        return simd_i8x16{} - a;
+        return native_i8x16{} - a;
     }
 
-    [[nodiscard]] friend simd_i8x16 operator+(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator+(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return simd_i8x16{_mm_add_epi8(a.v, b.v)};
+        return native_i8x16{_mm_add_epi8(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i8x16 operator-(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator-(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return simd_i8x16{_mm_sub_epi8(a.v, b.v)};
+        return native_i8x16{_mm_sub_epi8(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i8x16 operator&(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator&(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return simd_i8x16{_mm_and_si128(a.v, b.v)};
+        return native_i8x16{_mm_and_si128(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i8x16 operator|(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator|(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return simd_i8x16{_mm_or_si128(a.v, b.v)};
+        return native_i8x16{_mm_or_si128(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i8x16 operator^(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator^(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return simd_i8x16{_mm_xor_si128(a.v, b.v)};
+        return native_i8x16{_mm_xor_si128(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i8x16 operator~(simd_i8x16 a) noexcept
+    [[nodiscard]] friend native_i8x16 operator~(native_i8x16 a) noexcept
     {
         hilet ones = _mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()));
-        return simd_i8x16{_mm_andnot_si128(a.v, ones)};
+        return native_i8x16{_mm_andnot_si128(a.v, ones)};
     }
 
-    [[nodiscard]] friend simd_i8x16 min(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 min(native_i8x16 a, native_i8x16 b) noexcept
     {
 #if HI_HAS_SSE4_1
-        return simd_i8x16{_mm_min_epi8(a.v, b.v)};
+        return native_i8x16{_mm_min_epi8(a.v, b.v)};
 #else
         hilet mask = lt(a, b);
         return (mask & a) | not_and(mask, b);
 #endif
     }
 
-    [[nodiscard]] friend simd_i8x16 max(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 max(native_i8x16 a, native_i8x16 b) noexcept
     {
 #if HI_HAS_SSE4_1
-        return simd_i8x16{_mm_max_epi8(a.v, b.v)};
+        return native_i8x16{_mm_max_epi8(a.v, b.v)};
 #else
         hilet mask = gt(a, b);
         return (mask & a) | not_and(mask, b);
 #endif
     }
 
-    [[nodiscard]] friend simd_i8x16 abs(simd_i8x16 a) noexcept
+    [[nodiscard]] friend native_i8x16 abs(native_i8x16 a) noexcept
     {
 #if HI_HAS_SSSE3
-        return simd_i8x16{_mm_abs_epi8(a.v)};
+        return native_i8x16{_mm_abs_epi8(a.v)};
 #else
-        hilet mask = gt(a, simd_i8x16{});
+        hilet mask = gt(a, native_i8x16{});
         return (mask & a) | not_and(mask, -a);
 #endif
     }
@@ -329,11 +329,11 @@ struct simd_i8x16 {
      * @return argument @a with elements set to zero where the corrosponding @a Mask bit was '1'.
      */
     template<size_t Mask>
-    [[nodiscard]] friend simd_i8x16 set_zero(simd_i8x16 a) noexcept
+    [[nodiscard]] friend native_i8x16 set_zero(native_i8x16 a) noexcept
     {
         static_assert(Mask <= 0b1111);
 #ifdef HI_HAS_SSE4_1
-        return simd_i8x16{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(a.v), _mm_castsi128_ps(a.v), Mask))};
+        return native_i8x16{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(a.v), _mm_castsi128_ps(a.v), Mask))};
 #else
         hilet mask = from_mask<Mask>();
         return not_and(mask, a);
@@ -348,12 +348,12 @@ struct simd_i8x16 {
      * @return The vector with the inserted value.
      */
     template<size_t Index>
-    [[nodiscard]] friend simd_i8x16 insert(simd_i8x16 a, value_type b) noexcept
+    [[nodiscard]] friend native_i8x16 insert(native_i8x16 a, value_type b) noexcept
     {
         static_assert(Index < 4);
 
 #ifdef HI_HAS_SSE4_1
-        return simd_i8x16{_mm_insert_epi8(a.v, b, Index)};
+        return native_i8x16{_mm_insert_epi8(a.v, b, Index)};
 #else
         hilet mask = from_mask<1_uz << Index>();
         return not_and(mask, a) | (mask & broadcast(b));
@@ -367,7 +367,7 @@ struct simd_i8x16 {
      * @return The value of the selected element.
      */
     template<size_t Index>
-    [[nodiscard]] friend value_type get(simd_i8x16 a) noexcept
+    [[nodiscard]] friend value_type get(native_i8x16 a) noexcept
     {
 #ifdef HI_HAS_SSE4_1
         return _mm_extract_epi8(a.v, Index);
@@ -382,12 +382,12 @@ struct simd_i8x16 {
      * r = ~a & b
      *
      */
-    [[nodiscard]] friend simd_i8x16 not_and(simd_i8x16 a, simd_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 not_and(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return simd_i8x16{_mm_andnot_si128(a.v, b.v)};
+        return native_i8x16{_mm_andnot_si128(a.v, b.v)};
     }
 
-    friend std::ostream& operator<<(std::ostream& a, simd_i8x16 b) noexcept
+    friend std::ostream& operator<<(std::ostream& a, native_i8x16 b) noexcept
     {
         return a << "(" << get<0>(b) << ", " << get<1>(b) << ", " << get<2>(b) << ", " << get<3>(b) << ")";
     }
@@ -395,7 +395,7 @@ struct simd_i8x16 {
 
 template<>
 struct low_level_simd<int8_t, 16> : std::true_type {
-    using type = simd_i8x16;
+    using type = native_i8x16;
 };
 
 #endif

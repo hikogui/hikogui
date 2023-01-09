@@ -304,7 +304,35 @@ template<std::integral L, std::integral... R>
 using common_integer_t = common_integer<L, R...>::type;
 
 
-/** Type-trait to copy const volitile qualifiers from one type to another.
+template<typename T, std::size_t N>
+struct is_complete_type_helper {
+    using type = T;
+};
+
+/** type-trait to check if the given type is complete.
+ * 
+ * This type-trait is mostly used to determine if there is a template-specialization
+ * for a type.
+ * 
+ * @note ODR violation is possible when used when a type may become complete at a later time.
+ */
+template<typename, typename = void>
+struct is_complete_type : std::false_type {};
+
+template<typename T>
+struct is_complete_type<T, std::void_t<decltype(sizeof(T))>> : std::true_type {};
+
+/** type-trait to check if the given type is complete.
+ * 
+ * This type-trait is mostly used to determine if there is a template-specialization
+ * for a type.
+ * 
+ * @note ODR violation is possible when used when a type may become complete at a later time.
+ */
+template<typename T>
+constexpr static bool is_complete_type_v = is_complete_type<T>::value;
+
+/** Type-trait to copy const volatile qualifiers from one type to another.
  */
 template<typename To, typename From, typename Ei=void>
 struct copy_cv {};
@@ -593,11 +621,6 @@ struct selector;
 
 
 /** Documentation of a type.
- *
- *
- *
- *
- *
  *
  * ```cpp
  * namespace my {

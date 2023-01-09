@@ -2,13 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "simd_i32x4_sse2.hpp"
+#include "native_i32x4_sse2.hpp"
 #include <gtest/gtest.h>
 
-using S = hi::simd_i32x4;
+using S = hi::native_i32x4;
 using A = S::array_type;
 
-TEST(simd_i32x4, construct)
+TEST(native_i32x4, construct)
 {
     {
         auto expected = A{0, 0, 0, 0};
@@ -56,7 +56,7 @@ TEST(simd_i32x4, construct)
     }
 }
 
-TEST(simd_i32x4, conversion)
+TEST(native_i32x4, conversion)
 {
     auto a = S{1, 2, 3, 4};
     auto expected = A{1, 2, 3, 4};
@@ -87,7 +87,7 @@ TEST(simd_i32x4, conversion)
     }
 }
 
-TEST(simd_i32x4, empty)
+TEST(native_i32x4, empty)
 {
     ASSERT_TRUE(S(0, 0, 0, 0).empty());
     ASSERT_FALSE(S(0, 0, 0, -1).empty());
@@ -100,7 +100,7 @@ TEST(simd_i32x4, empty)
     ASSERT_FALSE(S(1, 1, 1, 1).empty());
 }
 
-TEST(simd_i32x4, compare)
+TEST(native_i32x4, compare)
 {
     ASSERT_TRUE(S(1, 2, 0, -4) == S(1, 2, 0, -4));
     ASSERT_FALSE(S(2, 2, 0, -4) == S(1, 2, 0, -4));
@@ -122,7 +122,7 @@ TEST(simd_i32x4, compare)
     ASSERT_EQ(ge(S(1, 2, -3, 4), S(2, 2, 2, 2)).mask(), 0b1010);
 }
 
-TEST(simd_i32x4, math)
+TEST(native_i32x4, math)
 {
     ASSERT_EQ(-S(0, 2, 3, 42), S(0, -2, -3, -42));
     ASSERT_EQ(+S(0, 2, 3, 42), S(0, 2, 3, 42));
@@ -135,7 +135,7 @@ TEST(simd_i32x4, math)
     ASSERT_EQ(abs(S(0, 2, -3, -3)), S(0, 2, 3, 3));
 }
 
-TEST(simd_i32x4, bit_wise)
+TEST(native_i32x4, bit_wise)
 {
     ASSERT_EQ(S(0, 2, -3, 42) >> 1, S(0, 1, -2, 21));
     ASSERT_EQ(S(0, 2, -3, 42) << 1, S(0, 4, -6, 84));
@@ -147,7 +147,7 @@ TEST(simd_i32x4, bit_wise)
     ASSERT_EQ(not_and(S::from_mask(0b1010), S(1, 2, 3, 42)), S(1, 0, 3, 0));
 }
 
-TEST(simd_i32x4, access)
+TEST(native_i32x4, access)
 {
     auto tmp = S(1, 2, 3, 4);
 
@@ -170,7 +170,7 @@ TEST(simd_i32x4, access)
     ASSERT_EQ(set_zero<0b1111>(tmp), S(0, 0, 0, 0));
 }
 
-TEST(simd_i32x4, blend)
+TEST(native_i32x4, blend)
 {
     auto a = S(1, 2, 3, 4);
     auto b = S(42, 43, 44, 45);
@@ -184,7 +184,7 @@ TEST(simd_i32x4, blend)
     ASSERT_EQ(blend<0b1111>(a, b), S(42, 43, 44, 45));
 }
 
-TEST(simd_i32x4, permute)
+TEST(native_i32x4, permute)
 {
     auto tmp = S(2, 3, 4, 5);
 
@@ -207,7 +207,7 @@ TEST(simd_i32x4, permute)
     ASSERT_EQ(permute<"dddd">(tmp), S(5, 5, 5, 5));
 }
 
-TEST(simd_i32x4, swizzle)
+TEST(native_i32x4, swizzle)
 {
     auto tmp = S(2, 3, 4, 5);
 
@@ -247,7 +247,7 @@ TEST(simd_i32x4, swizzle)
     ASSERT_EQ(swizzle<"1111">(tmp), S(1, 1, 1, 1));
 }
 
-TEST(simd_i32x4, horizontal)
+TEST(native_i32x4, horizontal)
 {
 #ifdef HI_HAS_SSE3
     ASSERT_EQ(horizontal_add(S(2, 3, 4, 5), S(12, 13, 14, 15)), S(5, 9, 25, 29));

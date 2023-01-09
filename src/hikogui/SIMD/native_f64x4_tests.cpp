@@ -2,13 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "simd_f64x4_avx.hpp"
+#include "native_f64x4_avx.hpp"
 #include <gtest/gtest.h>
 
-using S = hi::simd_f64x4;
+using S = hi::native_f64x4;
 using A = S::array_type;
 
-TEST(simd_f64x4, construct)
+TEST(native_f64x4, construct)
 {
     {
         auto expected = A{0.0, 0.0, 0.0, 0.0};
@@ -56,7 +56,7 @@ TEST(simd_f64x4, construct)
     }
 }
 
-TEST(simd_f64x4, conversion)
+TEST(native_f64x4, conversion)
 {
     auto a = S{1.0, 2.0, 3.0, 4.0};
     auto expected = A{1.0, 2.0, 3.0, 4.0};
@@ -87,7 +87,7 @@ TEST(simd_f64x4, conversion)
     }
 }
 
-TEST(simd_f64x4, empty)
+TEST(native_f64x4, empty)
 {
     ASSERT_TRUE(S(0.0, 0.0, 0.0, 0.0).empty());
     ASSERT_FALSE(S(0.0, 0.0, 0.0, -1.0).empty());
@@ -106,7 +106,7 @@ TEST(simd_f64x4, empty)
     ASSERT_TRUE((S(0.0, 0.0, 1.0, -1.0) - S(0.0, 0.0, 1.0, -1.0)).empty());
 }
 
-TEST(simd_f64x4, compare)
+TEST(native_f64x4, compare)
 {
     ASSERT_TRUE(
         S(1.0, 2.0, std::numeric_limits<double>::quiet_NaN(), -4.0) ==
@@ -159,7 +159,7 @@ TEST(simd_f64x4, compare)
     ASSERT_EQ(ge(S(1.0, 2.0, std::numeric_limits<double>::quiet_NaN(), 4.0), S(2.0, 2.0, 2.0, 2.0)).mask(), 0b1010);
 }
 
-TEST(simd_f64x4, math)
+TEST(native_f64x4, math)
 {
     ASSERT_EQ(-S(0.0, 2.0, 3.0, 42.0), S(0.0, -2.0, -3.0, -42.0));
     ASSERT_EQ(+S(0.0, 2.0, 3.0, 42.0), S(0.0, 2.0, 3.0, 42.0));
@@ -187,7 +187,7 @@ TEST(simd_f64x4, math)
 #endif
 }
 
-TEST(simd_f64x4, bit_wise)
+TEST(native_f64x4, bit_wise)
 {
     ASSERT_EQ(S(0.0, 2.0, 0.0, 42.0) | S(1.0, 0.0, -3.0, 0.0), S(1.0, 2.0, -3.0, 42.0));
     ASSERT_EQ(S(1.0, 2.0, 3.0, 42.0) & S::from_mask(0b1010), S(0.0, 2.0, 0.0, 42.0));
@@ -197,7 +197,7 @@ TEST(simd_f64x4, bit_wise)
     ASSERT_EQ(not_and(S::from_mask(0b1010), S(1.0, 2.0, 3.0, 42.0)), S(1.0, 0.0, 3.0, 0.0));
 }
 
-TEST(simd_f64x4, access)
+TEST(native_f64x4, access)
 {
     auto tmp = S(1.0, 2.0, 3.0, 4.0);
 
@@ -220,7 +220,7 @@ TEST(simd_f64x4, access)
     ASSERT_EQ(set_zero<0b1111>(tmp), S(0.0, 0.0, 0.0, 0.0));
 }
 
-TEST(simd_f64x4, blend)
+TEST(native_f64x4, blend)
 {
     auto a = S(1.0, 2.0, 3.0, 4.0);
     auto b = S(42.0, 43.0, 44.0, 45.0);
@@ -234,7 +234,7 @@ TEST(simd_f64x4, blend)
     ASSERT_EQ(blend<0b1111>(a, b), S(42.0, 43.0, 44.0, 45.0));
 }
 
-TEST(simd_f64x4, permute)
+TEST(native_f64x4, permute)
 {
     auto tmp = S(2.0, 3.0, 4.0, 5.0);
 
@@ -257,7 +257,7 @@ TEST(simd_f64x4, permute)
     ASSERT_EQ(permute<"dddd">(tmp), S(5.0, 5.0, 5.0, 5.0));
 }
 
-TEST(simd_f64x4, swizzle)
+TEST(native_f64x4, swizzle)
 {
     auto tmp = S(2.0, 3.0, 4.0, 5.0);
 
@@ -297,7 +297,7 @@ TEST(simd_f64x4, swizzle)
     ASSERT_EQ(swizzle<"1111">(tmp), S(1.0, 1.0, 1.0, 1.0));
 }
 
-TEST(simd_f64x4, horizontal)
+TEST(native_f64x4, horizontal)
 {
     ASSERT_EQ(horizontal_add(S(2.0, 3.0, 4.0, 5.0), S(12.0, 13.0, 14.0, 15.0)), S(5.0, 9.0, 25.0, 29.0));
     ASSERT_EQ(horizontal_sub(S(42.0, 3.0, 34.0, 5.0), S(2.0, 13.0, 24.0, 15.0)), S(39.0, 29.0, -11.0, 9.0));

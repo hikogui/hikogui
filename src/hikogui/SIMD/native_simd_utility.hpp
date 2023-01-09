@@ -6,6 +6,7 @@
 
 #include "../architecture.hpp"
 #include "../fixed_string.hpp"
+#include "../float16.hpp"
 #include <type_traits>
 
 #ifdef HI_HAS_SSE
@@ -34,14 +35,9 @@
 #endif
 
 namespace hi { inline namespace v1 {
-struct simd_f32x4;
-struct simd_f64x4;
-struct simd_i32x4;
-struct simd_i64x4;
-struct simd_u32x4;
 
 #ifdef HI_HAS_SSE
-enum class simd_rounding_mode : int {
+enum class native_rounding_mode : int {
     nearest = _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC,
     negative_infinite = _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC,
     positive_infinite = _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC,
@@ -70,7 +66,7 @@ namespace detail {
  * @return Indices packed into a integer, lsb contains the index of the first element.
  */
 template<fixed_string SourceElements, size_t NumElements>
-[[nodiscard]] constexpr size_t simd_swizzle_to_packed_indices() noexcept
+[[nodiscard]] constexpr size_t native_swizzle_to_packed_indices() noexcept
 {
     constexpr auto max_elements = sizeof(size_t) == 8 ? 16 : 8;
     static_assert(NumElements > 1 and NumElements <= max_elements and std::has_single_bit(NumElements));
@@ -125,7 +121,7 @@ template<fixed_string SourceElements, size_t NumElements>
  *         is the first element.
  */
 template<fixed_string SourceElements, size_t NumElements, char Value>
-[[nodiscard]] constexpr size_t simd_swizzle_to_mask() noexcept
+[[nodiscard]] constexpr size_t native_swizzle_to_mask() noexcept
 {
     static_assert(NumElements > 1 and NumElements <= sizeof(size_t) * CHAR_BIT and std::has_single_bit(NumElements));
     static_assert(SourceElements.size() <= NumElements);
@@ -152,17 +148,50 @@ template<fixed_string SourceElements, size_t NumElements, char Value>
 
 } // namespace detail
 
-struct low_level_simd_invalid {};
-
+/** A native-SIMD type.
+ *
+ * Specializations of this type will use the CPU specific SIMD register type and operations / intrinsics.
+ *
+ * If a specialization does not exist than the CPU does not support this type natively.
+ *
+ * @tparam T The element type; an arithmetic type other than bool.
+ * @tparam N Number of elements.
+ */
 template<typename T, size_t N>
-struct low_level_simd : std::false_type {
-    using type = low_level_simd_invalid;
-};
+struct native_simd;
 
-template<typename T, size_t N>
-constexpr bool has_low_level_simd_v = low_level_simd<T, N>::value;
-
-template<typename T, size_t N>
-using low_level_simd_t = low_level_simd<T, N>::type;
+using native_f64x8 = native_simd<double, 8>;
+using native_f64x4 = native_simd<double, 4>;
+using native_f64x2 = native_simd<double, 2>;
+using native_f32x16 = native_simd<float, 16>;
+using native_f32x8 = native_simd<float, 8>;
+using native_f32x4 = native_simd<float, 4>;
+using native_f16x32 = native_simd<float16, 32>;
+using native_f16x16 = native_simd<float16, 16>;
+using native_f16x8 = native_simd<float16, 8>;
+using native_i64x8 = native_simd<int64_t, 8>;
+using native_i64x4 = native_simd<int64_t, 4>;
+using native_i64x2 = native_simd<int64_t, 2>;
+using native_i32x16 = native_simd<int32_t, 16>;
+using native_i32x8 = native_simd<int32_t, 8>;
+using native_i32x4 = native_simd<int32_t, 4>;
+using native_i16x32 = native_simd<int16_t, 32>;
+using native_i16x16 = native_simd<int16_t, 16>;
+using native_i16x8 = native_simd<int16_t, 8>;
+using native_i8x64 = native_simd<int16_t, 64>;
+using native_i8x32 = native_simd<int16_t, 32>;
+using native_i8x16 = native_simd<int16_t, 16>;
+using native_u64x8 = native_simd<uint64_t, 8>;
+using native_u64x4 = native_simd<uint64_t, 4>;
+using native_u64x2 = native_simd<uint64_t, 2>;
+using native_u32x16 = native_simd<uint32_t, 16>;
+using native_u32x8 = native_simd<uint32_t, 8>;
+using native_u32x4 = native_simd<uint32_t, 4>;
+using native_u16x32 = native_simd<uint16_t, 32>;
+using native_u16x16 = native_simd<uint16_t, 16>;
+using native_u16x8 = native_simd<uint16_t, 8>;
+using native_u8x64 = native_simd<uint16_t, 64>;
+using native_u8x32 = native_simd<uint16_t, 32>;
+using native_u8x16 = native_simd<uint16_t, 16>;
 
 }} // namespace hi::v1

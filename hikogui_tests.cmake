@@ -129,28 +129,28 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
     add_dependencies(hikogui_all_tests hikogui_x64v4_tests)
 
     target_sources(hikogui_x64v1_tests PRIVATE
-        ${SOURCE_DIR}/SIMD/simd_f32x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_i32x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_u32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
     )
     target_sources(hikogui_x64v2_tests PRIVATE
-        ${SOURCE_DIR}/SIMD/simd_f32x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_i32x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_u32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
     )
     target_sources(hikogui_x64v3_tests PRIVATE
-        ${SOURCE_DIR}/SIMD/simd_f32x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_f64x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_i32x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_i64x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_u32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_f64x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_i64x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
     )
     target_sources(hikogui_x64v4_tests PRIVATE
-        ${SOURCE_DIR}/SIMD/simd_f32x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_f64x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_i32x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_i64x4_tests.cpp
-        ${SOURCE_DIR}/SIMD/simd_u32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_f64x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_i64x4_tests.cpp
+        ${SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
     )
     install(TARGETS hikogui_tests hikogui_x64v1_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
     install(TARGETS hikogui_tests hikogui_x64v2_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)

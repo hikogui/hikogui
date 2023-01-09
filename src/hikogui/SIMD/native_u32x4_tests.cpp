@@ -2,13 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "simd_i64x4_avx2.hpp"
+#include "native_u32x4_sse2.hpp"
 #include <gtest/gtest.h>
 
-using S = hi::simd_i64x4;
+using S = hi::native_u32x4;
 using A = S::array_type;
 
-TEST(simd_i64x4, construct)
+TEST(native_u32x4, construct)
 {
     {
         auto expected = A{0, 0, 0, 0};
@@ -56,7 +56,7 @@ TEST(simd_i64x4, construct)
     }
 }
 
-TEST(simd_i64x4, conversion)
+TEST(native_u32x4, conversion)
 {
     auto a = S{1, 2, 3, 4};
     auto expected = A{1, 2, 3, 4};
@@ -87,58 +87,48 @@ TEST(simd_i64x4, conversion)
     }
 }
 
-TEST(simd_i64x4, empty)
+TEST(native_u32x4, empty)
 {
     ASSERT_TRUE(S(0, 0, 0, 0).empty());
-    ASSERT_FALSE(S(0, 0, 0, -1).empty());
     ASSERT_FALSE(S(0, 0, 0, 1).empty());
-    ASSERT_FALSE(S(0, 0, -1, 0).empty());
     ASSERT_FALSE(S(0, 0, 1, 0).empty());
-    ASSERT_FALSE(S(-1, 0, 0, 0).empty());
     ASSERT_FALSE(S(1, 0, 0, 0).empty());
-    ASSERT_FALSE(S(-1, -1, -1, -1).empty());
     ASSERT_FALSE(S(1, 1, 1, 1).empty());
 }
 
-TEST(simd_i64x4, compare)
+TEST(native_u32x4, compare)
 {
-    ASSERT_TRUE(S(1, 2, 0, -4) == S(1, 2, 0, -4));
-    ASSERT_FALSE(S(2, 2, 0, -4) == S(1, 2, 0, -4));
-    ASSERT_FALSE(S(2, 3, 0, -5) == S(1, 2, 0, -4));
+    ASSERT_TRUE(S(1, 2, 0, 4) == S(1, 2, 0, 4));
+    ASSERT_FALSE(S(2, 2, 0, 4) == S(1, 2, 0, 4));
+    ASSERT_FALSE(S(2, 3, 0, 5) == S(1, 2, 0, 4));
 
-    ASSERT_FALSE(S(1, 2, 0, -4) != S(1, 2, 0, -4));
-    ASSERT_TRUE(S(2, 2, 0, -4) != S(1, 2, 0, -4));
-    ASSERT_TRUE(S(2, 3, 0, -5) != S(1, 2, 0, -4));
+    ASSERT_FALSE(S(1, 2, 0, 4) != S(1, 2, 0, 4));
+    ASSERT_TRUE(S(2, 2, 0, 4) != S(1, 2, 0, 4));
+    ASSERT_TRUE(S(2, 3, 0, 5) != S(1, 2, 0, 4));
 
-    ASSERT_EQ(eq(S(1, 2, 0, -4), S(1, 2, 42, -4)).mask(), 0b1011);
-    ASSERT_EQ(eq(S(2, 2, 0, -4), S(1, 2, 42, -4)).mask(), 0b1010);
+    ASSERT_EQ(eq(S(1, 2, 0, 4), S(1, 2, 42, 4)).mask(), 0b1011);
+    ASSERT_EQ(eq(S(2, 2, 0, 4), S(1, 2, 42, 4)).mask(), 0b1010);
 
-    ASSERT_EQ(ne(S(1, 2, 0, -4), S(1, 2, 42, -4)).mask(), 0b0100);
-    ASSERT_EQ(ne(S(2, 2, 0, -4), S(1, 2, 42, -4)).mask(), 0b0101);
-
-    ASSERT_EQ(lt(S(1, 2, -3, 4), S(2, 2, 2, 2)).mask(), 0b0101);
-    ASSERT_EQ(le(S(1, 2, -3, 4), S(2, 2, 2, 2)).mask(), 0b0111);
-    ASSERT_EQ(gt(S(1, 2, -3, 4), S(2, 2, 2, 2)).mask(), 0b1000);
-    ASSERT_EQ(ge(S(1, 2, -3, 4), S(2, 2, 2, 2)).mask(), 0b1010);
+    ASSERT_EQ(ne(S(1, 2, 0, 4), S(1, 2, 42, 4)).mask(), 0b0100);
+    ASSERT_EQ(ne(S(2, 2, 0, 4), S(1, 2, 42, 4)).mask(), 0b0101);
 }
 
-TEST(simd_i64x4, math)
+TEST(native_u32x4, math)
 {
-    ASSERT_EQ(-S(0, 2, 3, 42), S(0, -2, -3, -42));
-    ASSERT_EQ(+S(0, 2, 3, 42), S(0, 2, 3, 42));
-    ASSERT_EQ(S(0, 2, 3, 42) + S(1, 4, -3, 2), S(1, 6, 0, 44));
-    ASSERT_EQ(S(0, 2, 3, 42) - S(1, 4, -3, 2), S(-1, -2, 6, 40));
+    ASSERT_EQ(+S(0, 2, 3, 0x7fff'ffff), S(0, 2, 3, 0x7fff'ffff));
+    ASSERT_EQ(S(0, 2, 3, 0x7fff'ffff) + S(1, 4, 0xffff'fffd, 2), S(1, 6, 0, 0x8000'0001));
+    ASSERT_EQ(S(0, 2, 3, 0x8000'0001) - S(1, 4, 0xffff'fffd, 2), S(0xffff'ffff, 0xffff'fffe, 6, 0x7fff'ffff));
+    ASSERT_EQ(S(0, 2, 3, 0x7fff'ffff) * S(1, 4, 0xffff'fffd, 2), S(0, 8, 0xffff'fff7, 0xffff'fffe));
 
-    ASSERT_EQ(min(S(0, 2, 0, 42), S(1, 0, -3, 1)), S(0, 0, -3, 1));
-    ASSERT_EQ(max(S(0, 2, 0, 42), S(1, 0, -3, 1)), S(1, 2, 0, 42));
-    ASSERT_EQ(abs(S(0, 2, -3, -3)), S(0, 2, 3, 3));
+    ASSERT_EQ(min(S(0, 2, 0, 0x7fff'ffff), S(1, 0, 0xffff'fffd, 1)), S(0, 0, 0, 1));
+    ASSERT_EQ(max(S(0, 2, 0, 0x7fff'ffff), S(1, 0, 0xffff'fffd, 1)), S(1, 2, 0xffff'fffd, 0x7fff'ffff));
 }
 
-TEST(simd_i64x4, bit_wise)
+TEST(native_u32x4, bit_wise)
 {
-    ASSERT_EQ(S(0, 2, -3, 42) >> 1, S(0, 1, -2, 21));
-    ASSERT_EQ(S(0, 2, -3, 42) << 1, S(0, 4, -6, 84));
-    ASSERT_EQ(S(0, 2, 0, 42) | S(1, 0, -3, 0), S(1, 2, -3, 42));
+    ASSERT_EQ(S(0, 2, 0x8000'0000, 42) >> 1, S(0, 1, 0x4000'0000, 21));
+    ASSERT_EQ(S(0, 2, 0x8000'0001, 42) << 1, S(0, 4, 2, 84));
+    ASSERT_EQ(S(0, 2, 0, 42) | S(1, 0, 3, 0), S(1, 2, 3, 42));
     ASSERT_EQ(S(1, 2, 3, 42) & S::from_mask(0b1010), S(0, 2, 0, 42));
     ASSERT_EQ(S::from_mask(0b0011) ^ S::from_mask(0b1010), S::from_mask(0b1001));
     ASSERT_EQ(~S::from_mask(0b1010), S::from_mask(0b0101));
@@ -146,7 +136,7 @@ TEST(simd_i64x4, bit_wise)
     ASSERT_EQ(not_and(S::from_mask(0b1010), S(1, 2, 3, 42)), S(1, 0, 3, 0));
 }
 
-TEST(simd_i64x4, access)
+TEST(native_u32x4, access)
 {
     auto tmp = S(1, 2, 3, 4);
 
@@ -169,7 +159,7 @@ TEST(simd_i64x4, access)
     ASSERT_EQ(set_zero<0b1111>(tmp), S(0, 0, 0, 0));
 }
 
-TEST(simd_i64x4, blend)
+TEST(native_u32x4, blend)
 {
     auto a = S(1, 2, 3, 4);
     auto b = S(42, 43, 44, 45);
@@ -183,7 +173,7 @@ TEST(simd_i64x4, blend)
     ASSERT_EQ(blend<0b1111>(a, b), S(42, 43, 44, 45));
 }
 
-TEST(simd_i64x4, permute)
+TEST(native_u32x4, permute)
 {
     auto tmp = S(2, 3, 4, 5);
 
@@ -206,7 +196,7 @@ TEST(simd_i64x4, permute)
     ASSERT_EQ(permute<"dddd">(tmp), S(5, 5, 5, 5));
 }
 
-TEST(simd_i64x4, swizzle)
+TEST(native_u32x4, swizzle)
 {
     auto tmp = S(2, 3, 4, 5);
 
@@ -244,4 +234,14 @@ TEST(simd_i64x4, swizzle)
     ASSERT_EQ(swizzle<"1b01">(tmp), S(1, 3, 0, 1));
     ASSERT_EQ(swizzle<"11b1">(tmp), S(1, 1, 3, 1));
     ASSERT_EQ(swizzle<"1111">(tmp), S(1, 1, 1, 1));
+}
+
+TEST(native_u32x4, horizontal)
+{
+#ifdef HI_HAS_SSE3
+    ASSERT_EQ(horizontal_add(S(2, 3, 4, 5), S(12, 13, 14, 15)), S(5, 9, 25, 29));
+    ASSERT_EQ(horizontal_sub(S(42, 3, 34, 5), S(2, 13, 24, 15)), S(39, 29, 0xffff'fff5, 9));
+#endif
+
+    ASSERT_EQ(horizontal_sum(S(1, 2, 3, 4)), S::broadcast(10));
 }

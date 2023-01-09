@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "simd_f32x4_sse.hpp"
-#include "simd_f64x4_avx.hpp"
-#include "simd_i32x4_sse2.hpp"
-#include "simd_i64x4_avx2.hpp"
-#include "simd_u32x4_sse2.hpp"
-#include "simd_conversions_x86.hpp"
+#include "native_f32x4_sse.hpp"
+#include "native_f64x4_avx.hpp"
+#include "native_i32x4_sse2.hpp"
+#include "native_i64x4_avx2.hpp"
+#include "native_u32x4_sse2.hpp"
+#include "native_simd_conversions_x86.hpp"
 
 #include "../architecture.hpp"
 #include "../concepts.hpp"
@@ -60,10 +60,10 @@ struct numeric_array {
     using value_type = T;
     constexpr static size_t size = N;
 
-    using array_type = std::array<value_type, size>;
-    using simd_type = low_level_simd_t<value_type, size>;
-    constexpr static bool has_simd_type = has_low_level_simd_v<value_type, size>;
+    constexpr static bool has_native_type = is_complete_type_v<native_simd<T, N>>;
+    using native_type = std::conditional_t<has_native_type, native_simd<T, N>, unusable_t>;
 
+    using array_type = std::array<value_type, size>;
     using size_type = typename array_type::size_type;
     using difference_type = typename array_type::difference_type;
     using reference = typename array_type::reference;
@@ -78,8 +78,8 @@ struct numeric_array {
     constexpr numeric_array() noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { *this = numeric_array{low_level_simd_t<value_type, N>{}}; }) {
-                *this = numeric_array{low_level_simd_t<value_type, N>{}};
+            if constexpr (requires { *this = numeric_array{native_type{}}; }) {
+                *this = numeric_array{native_type{}};
             }
         }
         v = array_type{};
@@ -94,8 +94,8 @@ struct numeric_array {
     [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, N> const& other) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { *this = numeric_array{low_level_simd_t<value_type, N>{other.simd()}}; }) {
-                *this = numeric_array{low_level_simd_t<value_type, N>{other.simd()}};
+            if constexpr (requires { *this = numeric_array{native_type{other.reg()}}; }) {
+                *this = numeric_array{native_type{other.reg()}};
                 return;
             }
         }
@@ -116,8 +116,8 @@ struct numeric_array {
         numeric_array<U, size / 2> const& b) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { numeric_array{simd_type{a.simd(), b.simd()}}; }) {
-                *this = numeric_array{simd_type{a.simd(), b.simd()}};
+            if constexpr (requires { numeric_array{native_type{a.reg(), b.reg()}}; }) {
+                *this = numeric_array{native_type{a.reg(), b.reg()}};
                 return;
             }
         }
@@ -137,8 +137,8 @@ struct numeric_array {
     [[nodiscard]] constexpr explicit numeric_array(value_type first, Args... args) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { numeric_array{simd_type{first, static_cast<value_type>(args)...}}; }) {
-                *this = numeric_array{simd_type{first, static_cast<value_type>(args)...}};
+            if constexpr (requires { numeric_array{native_type{first, static_cast<value_type>(args)...}}; }) {
+                *this = numeric_array{native_type{first, static_cast<value_type>(args)...}};
                 return;
             }
         }
@@ -148,7 +148,7 @@ struct numeric_array {
 
     [[nodiscard]] static constexpr numeric_array broadcast(T rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{simd_type::broadcast(rhs)});
+        HI_X_runtime_evaluate_if_valid(numeric_array{native_type::broadcast(rhs)});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -179,24 +179,24 @@ struct numeric_array {
         return v;
     }
 
-    [[nodiscard]] explicit numeric_array(simd_type rhs) noexcept
-        requires(has_simd_type)
+    [[nodiscard]] explicit numeric_array(native_type rhs) noexcept
+        requires(has_native_type)
         : v(static_cast<array_type>(rhs))
     {
     }
 
-    [[nodiscard]] auto simd() const noexcept
-        requires(has_simd_type)
+    [[nodiscard]] auto reg() const noexcept
+        requires(has_native_type)
     {
-        return simd_type{v};
+        return native_type{v};
     }
 
     template<numeric_limited O, size_t M>
     [[nodiscard]] constexpr static numeric_array cast_from(numeric_array<O, M> const& rhs) noexcept
         requires(sizeof(numeric_array<O, M>) == sizeof(numeric_array))
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{simd_type::cast_from(rhs.simd())});
-        
+        HI_X_runtime_evaluate_if_valid(numeric_array{native_type::cast_from(rhs.reg())});
+
         return std::bit_cast<numeric_array>(rhs);
     }
 
@@ -207,7 +207,7 @@ struct numeric_array {
     template<std::size_t S>
     [[nodiscard]] static constexpr numeric_array load(std::byte const *ptr) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{simd_type{ptr}});
+        HI_X_runtime_evaluate_if_valid(numeric_array{native_type{ptr}});
 
         auto r = numeric_array{};
         std::memcpy(&r, ptr, S);
@@ -220,7 +220,7 @@ struct numeric_array {
      */
     [[nodiscard]] static constexpr numeric_array load(std::byte const *ptr) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{simd_type{ptr}});
+        HI_X_runtime_evaluate_if_valid(numeric_array{native_type{ptr}});
 
         auto r = numeric_array{};
         std::memcpy(&r, ptr, sizeof(r));
@@ -233,7 +233,7 @@ struct numeric_array {
      */
     [[nodiscard]] static constexpr numeric_array load(T const *ptr) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{simd_type{ptr}});
+        HI_X_runtime_evaluate_if_valid(numeric_array{native_type{ptr}});
 
         auto r = numeric_array{};
         std::memcpy(&r, ptr, sizeof(r));
@@ -243,7 +243,7 @@ struct numeric_array {
     template<std::size_t S>
     constexpr void store(std::byte *ptr) const noexcept
     {
-        HI_X_runtime_evaluate_if_valid(simd().store(ptr));
+        HI_X_runtime_evaluate_if_valid(reg().store(ptr));
         std::memcpy(ptr, this, S);
     }
 
@@ -252,7 +252,7 @@ struct numeric_array {
      */
     constexpr void store(std::byte *ptr) const noexcept
     {
-        HI_X_runtime_evaluate_if_valid(simd().store(ptr));
+        HI_X_runtime_evaluate_if_valid(reg().store(ptr));
         store<sizeof(*this)>(ptr);
     }
 
@@ -352,28 +352,28 @@ struct numeric_array {
     [[nodiscard]] constexpr T x() const noexcept
         requires(N >= 1)
     {
-        HI_X_runtime_evaluate_if_valid(get<0>(simd()));
+        HI_X_runtime_evaluate_if_valid(get<0>(reg()));
         return std::get<0>(v);
     }
 
     [[nodiscard]] constexpr T y() const noexcept
         requires(N >= 2)
     {
-        HI_X_runtime_evaluate_if_valid(get<1>(simd()));
+        HI_X_runtime_evaluate_if_valid(get<1>(reg()));
         return std::get<1>(v);
     }
 
     [[nodiscard]] constexpr T z() const noexcept
         requires(N >= 3)
     {
-        HI_X_runtime_evaluate_if_valid(get<2>(simd()));
+        HI_X_runtime_evaluate_if_valid(get<2>(reg()));
         return std::get<2>(v);
     }
 
     [[nodiscard]] constexpr T w() const noexcept
         requires(N >= 4)
     {
-        HI_X_runtime_evaluate_if_valid(get<3>(simd()));
+        HI_X_runtime_evaluate_if_valid(get<3>(reg()));
         return std::get<3>(v);
     }
 
@@ -594,7 +594,7 @@ struct numeric_array {
     [[nodiscard]] friend constexpr T get(numeric_array const& rhs) noexcept
     {
         static_assert(I < N, "Index out of bounds");
-        HI_X_runtime_evaluate_if_valid(get<I>(rhs.simd()));
+        HI_X_runtime_evaluate_if_valid(get<I>(rhs.reg()));
         return std::get<I>(rhs.v);
     }
 
@@ -609,7 +609,7 @@ struct numeric_array {
     [[nodiscard]] constexpr friend numeric_array insert(numeric_array const& lhs, value_type rhs) noexcept
     {
         static_assert(I < size);
-        HI_X_runtime_evaluate_if_valid(numeric_array{insert<I>(lhs.simd(), rhs)});
+        HI_X_runtime_evaluate_if_valid(numeric_array{insert<I>(lhs.reg(), rhs)});
 
         auto r = lhs;
         std::get<I>(r.v) = rhs;
@@ -623,7 +623,7 @@ struct numeric_array {
     template<std::size_t Mask = ~std::size_t{0}>
     [[nodiscard]] friend constexpr numeric_array set_zero(numeric_array rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{set_zero<Mask>(rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{set_zero<Mask>(rhs.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -646,7 +646,7 @@ struct numeric_array {
     template<std::size_t Mask>
     [[nodiscard]] friend constexpr numeric_array blend(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{blend<Mask>(lhs.simd(), rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{blend<Mask>(lhs.reg(), rhs.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -659,7 +659,7 @@ struct numeric_array {
      */
     [[nodiscard]] friend constexpr numeric_array blend(numeric_array const& a, numeric_array const& b, numeric_array const& mask)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{blend(a.simd(), b.simd(), mask.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{blend(a.reg(), b.reg(), mask.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -680,25 +680,25 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{-rhs.simd()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{-rhs.reg()});
         return T{0} - rhs;
     }
 
     [[nodiscard]] friend constexpr numeric_array abs(numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{abs(rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{abs(rhs.reg())});
         return max(rhs, -rhs);
     }
 
     [[nodiscard]] friend constexpr numeric_array rcp(numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{rcp(rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{rcp(rhs.reg())});
         return T{1} / rhs;
     }
 
     [[nodiscard]] friend constexpr numeric_array sqrt(numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{sqrt(rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{sqrt(rhs.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -709,14 +709,14 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array rcp_sqrt(numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{rcp_sqrt(rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{rcp_sqrt(rhs.reg())});
         return rcp(sqrt(rhs));
     }
 
     [[nodiscard]] friend constexpr numeric_array floor(numeric_array const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{floor(rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{floor(rhs.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -728,7 +728,7 @@ struct numeric_array {
     [[nodiscard]] friend constexpr numeric_array ceil(numeric_array const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{ceil(rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{ceil(rhs.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -740,7 +740,7 @@ struct numeric_array {
     [[nodiscard]] friend constexpr numeric_array round(numeric_array const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{round(rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{round(rhs.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -759,7 +759,7 @@ struct numeric_array {
     template<std::size_t Mask>
     [[nodiscard]] hi_force_inline friend constexpr T dot(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(get<0>(dot<Mask>(lhs.simd(), rhs.simd())));
+        HI_X_runtime_evaluate_if_valid(get<0>(dot<Mask>(lhs.reg(), rhs.reg())));
 
         auto r = T{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -780,7 +780,7 @@ struct numeric_array {
     [[nodiscard]] friend T hypot(numeric_array const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
-        HI_X_runtime_evaluate_if_valid(get<0>(sqrt(dot<Mask>(rhs.simd(), rhs.simd()))));
+        HI_X_runtime_evaluate_if_valid(get<0>(sqrt(dot<Mask>(rhs.reg(), rhs.reg()))));
         return std::sqrt(dot<Mask>(rhs, rhs));
     }
 
@@ -793,7 +793,7 @@ struct numeric_array {
     template<std::size_t Mask>
     [[nodiscard]] hi_force_inline friend constexpr T squared_hypot(numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(get<0>(dot<Mask>(rhs.simd(), rhs.simd())));
+        HI_X_runtime_evaluate_if_valid(get<0>(dot<Mask>(rhs.reg(), rhs.reg())));
         return dot<Mask>(rhs, rhs);
     }
 
@@ -805,7 +805,7 @@ struct numeric_array {
     template<std::size_t Mask>
     [[nodiscard]] friend constexpr T rcp_hypot(numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(get<0>(rcp_sqrt(dot<Mask>(rhs.simd(), rhs.simd()))));
+        HI_X_runtime_evaluate_if_valid(get<0>(rcp_sqrt(dot<Mask>(rhs.reg(), rhs.reg()))));
         return 1.0f / hypot<Mask>(rhs);
     }
 
@@ -819,7 +819,7 @@ struct numeric_array {
     template<std::size_t Mask>
     [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{rhs * rcp_sqrt(dot<Mask>(rhs.simd(), rhs.simd()))});
+        HI_X_runtime_evaluate_if_valid(numeric_array{rhs * rcp_sqrt(dot<Mask>(rhs.reg(), rhs.reg()))});
 
         hilet rcp_hypot_ = rcp_hypot<Mask>(rhs);
 
@@ -835,7 +835,7 @@ struct numeric_array {
     [[nodiscard]] friend constexpr std::size_t eq(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
-        HI_X_runtime_evaluate_if_valid(eq(lhs.simd(), rhs.simd()).mask());
+        HI_X_runtime_evaluate_if_valid(eq(lhs.reg(), rhs.reg()).mask());
 
         std::size_t r = 0;
         for (std::size_t i = 0; i != N; ++i) {
@@ -847,7 +847,7 @@ struct numeric_array {
     [[nodiscard]] friend constexpr std::size_t ne(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
-        HI_X_runtime_evaluate_if_valid(ne(lhs.simd(), rhs.simd()).mask());
+        HI_X_runtime_evaluate_if_valid(ne(lhs.reg(), rhs.reg()).mask());
 
         constexpr std::size_t not_mask = (1 << N) - 1;
         return eq(lhs, rhs) ^ not_mask;
@@ -856,7 +856,7 @@ struct numeric_array {
     [[nodiscard]] friend constexpr std::size_t gt(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
-        HI_X_runtime_evaluate_if_valid(gt(lhs.simd(), rhs.simd()).mask());
+        HI_X_runtime_evaluate_if_valid(gt(lhs.reg(), rhs.reg()).mask());
 
         unsigned int r = 0;
         for (std::size_t i = 0; i != N; ++i) {
@@ -868,14 +868,14 @@ struct numeric_array {
     [[nodiscard]] friend constexpr std::size_t lt(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
-        HI_X_runtime_evaluate_if_valid(lt(lhs.simd(), rhs.simd()).mask());
+        HI_X_runtime_evaluate_if_valid(lt(lhs.reg(), rhs.reg()).mask());
         return gt(rhs, lhs);
     }
 
     [[nodiscard]] friend constexpr std::size_t ge(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
-        HI_X_runtime_evaluate_if_valid(ge(lhs.simd(), rhs.simd()).mask());
+        HI_X_runtime_evaluate_if_valid(ge(lhs.reg(), rhs.reg()).mask());
         constexpr std::size_t not_mask = (1 << N) - 1;
         return lt(lhs, rhs) ^ not_mask;
     }
@@ -883,14 +883,14 @@ struct numeric_array {
     [[nodiscard]] friend constexpr std::size_t le(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
-        HI_X_runtime_evaluate_if_valid(le(lhs.simd(), rhs.simd()).mask());
+        HI_X_runtime_evaluate_if_valid(le(lhs.reg(), rhs.reg()).mask());
         constexpr std::size_t not_mask = (1 << N) - 1;
         return gt(lhs, rhs) ^ not_mask;
     }
 
     [[nodiscard]] friend constexpr numeric_array gt_mask(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{gt(lhs.simd(), rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{gt(lhs.reg(), rhs.reg())});
 
         using uint_type = make_uintxx_t<sizeof(T) * CHAR_BIT>;
         constexpr auto ones = std::bit_cast<T>(~uint_type{0});
@@ -904,13 +904,13 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr bool operator==(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(lhs.simd() == rhs.simd());
+        HI_X_runtime_evaluate_if_valid(lhs.reg() == rhs.reg());
         return not ne(lhs, rhs);
     }
 
     [[nodiscard]] friend constexpr numeric_array operator<<(numeric_array const& lhs, unsigned int rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() << rhs});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() << rhs});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -921,7 +921,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator>>(numeric_array const& lhs, unsigned int rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() >> rhs});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() >> rhs});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -958,7 +958,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() | rhs.simd()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() | rhs.reg()});
 
         using uint_type = make_uintxx_t<sizeof(T) * CHAR_BIT>;
 
@@ -982,7 +982,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator&(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() & rhs.simd()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() & rhs.reg()});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -1003,7 +1003,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() ^ rhs.simd()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() ^ rhs.reg()});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -1024,7 +1024,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() + rhs.simd()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() + rhs.reg()});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -1045,7 +1045,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() - rhs.simd()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() - rhs.reg()});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -1066,7 +1066,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() * rhs.simd()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() * rhs.reg()});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -1087,7 +1087,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() / rhs.simd()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() / rhs.reg()});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -1108,7 +1108,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.simd() % rhs.simd()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() % rhs.reg()});
         hilet div_result = floor(lhs / rhs);
         return lhs - (div_result * rhs);
     }
@@ -1125,7 +1125,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array min(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{min(lhs.simd(), rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{min(lhs.reg(), rhs.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -1136,7 +1136,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array max(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{max(lhs.simd(), rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{max(lhs.reg(), rhs.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -1153,7 +1153,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array hadd(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{horizontal_add(lhs.simd(), rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{horizontal_add(lhs.reg(), rhs.reg())});
 
         hi_axiom(N % 2 == 0);
 
@@ -1178,7 +1178,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array hsub(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{horizontal_sub(lhs.simd(), rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{horizontal_sub(lhs.reg(), rhs.reg())});
 
         hi_axiom(N % 2 == 0);
 
@@ -1296,7 +1296,7 @@ struct numeric_array {
     [[nodiscard]] friend constexpr numeric_array permute(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(std::is_integral_v<value_type>)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{permute(lhs.simd(), rhs.simd())});
+        HI_X_runtime_evaluate_if_valid(numeric_array{permute(lhs.reg(), rhs.reg())});
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -1334,8 +1334,8 @@ struct numeric_array {
         static_assert(sizeof...(Columns) == size, "Can only transpose square matrices");
 
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires {transpose(columns.simd()...);}) {
-                hilet tmp = transpose(columns.simd()...);
+            if constexpr (requires { transpose(columns.reg()...); }) {
+                hilet tmp = transpose(columns.reg()...);
                 auto r = std::array<numeric_array, size>{};
                 for (auto i = 0_uz; i != size; ++i) {
                     r[i] = numeric_array{tmp[i]};
@@ -1416,14 +1416,13 @@ struct numeric_array {
     template<std::size_t FromElement, std::size_t ToElement>
     [[nodiscard]] constexpr friend numeric_array insert(numeric_array const& lhs, numeric_array const& rhs)
     {
-        auto r = numeric_array{};
-
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { numeric_array{insert<FromElement, ToElement>(lhs, rhs)}; }) {
-                return numeric_array{insert<FromElement, ToElement>(lhs, rhs)};
+            if constexpr (requires { numeric_array{insert<FromElement, ToElement>(lhs.reg(), rhs.reg())}; }) {
+                return numeric_array{insert<FromElement, ToElement>(lhs.reg(), rhs.reg())};
             }
         }
 
+        auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = (i == ToElement) ? rhs[FromElement] : lhs[i];
         }
@@ -1443,7 +1442,7 @@ struct numeric_array {
     {
         static_assert(Order.size() <= N);
 
-        HI_X_runtime_evaluate_if_valid(numeric_array{simd().swizzle<Order>()});
+        HI_X_runtime_evaluate_if_valid(numeric_array{reg().swizzle<Order>()});
 
         auto r = numeric_array{};
         swizzle_detail<0, Order>(r);

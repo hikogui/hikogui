@@ -231,6 +231,18 @@ template<typename T, typename U>
  */
 struct override_t {};
 
+/** A type that can not be constructed, copied, moved or destructed.
+ */
+struct unusable_t {
+    unusable_t() = delete;
+    ~unusable_t() = delete;
+    unusable_t(unusable_t const&) = delete;
+    unusable_t(unusable_t&&) = delete;
+    unusable_t &operator=(unusable_t const&) = delete;
+    unusable_t &operator=(unusable_t&&) = delete;
+};
+
+
 template<class T, class U>
 [[nodiscard]] constexpr auto&& forward_like(U&& x) noexcept
 {

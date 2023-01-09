@@ -8,13 +8,15 @@ target_sources(hikogui PRIVATE
     numeric_array.hpp
     swizzle_avx.hpp
     unorm_a2bgr10_pack.hpp
-    simd_utility.hpp
-    simd_f32x4_sse.hpp
-    simd_f64x4_avx.hpp
-    simd_i16x8_sse2.hpp
-    simd_i32x4_sse2.hpp
-    simd_i64x4_avx2.hpp
-    simd_u32x4_sse2.hpp
+    native_f32x4_sse.hpp
+    native_f64x4_avx.hpp
+    native_i8x16_sse2.hpp
+    native_i16x8_sse2.hpp
+    native_i32x4_sse2.hpp
+    native_i64x4_avx2.hpp
+    native_simd_conversions_x86.hpp
+    native_simd_utility.hpp
+    native_u32x4_sse2.hpp
     srgb_abgr8_pack.hpp
     sfloat_rgba16.hpp
     sfloat_rgba32.hpp

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "simd_utility.hpp"
+#include "native_simd_utility.hpp"
 #include "../assert.hpp"
 #include <span>
 #include <array>
@@ -30,7 +30,8 @@ namespace hi { inline namespace v1 {
  * In the function below a `mask` values least-significant-bit corresponds to element 0.
  *
  */
-struct simd_i64x4 {
+template<>
+struct native_simd<int64_t,4> {
     using value_type = int64_t;
     constexpr static size_t size = 4;
     using array_type = std::array<value_type, size>;
@@ -38,16 +39,16 @@ struct simd_i64x4 {
 
     register_type v;
 
-    simd_i64x4(simd_i64x4 const&) noexcept = default;
-    simd_i64x4(simd_i64x4&&) noexcept = default;
-    simd_i64x4& operator=(simd_i64x4 const&) noexcept = default;
-    simd_i64x4& operator=(simd_i64x4&&) noexcept = default;
+    native_simd(native_simd const&) noexcept = default;
+    native_simd(native_simd&&) noexcept = default;
+    native_simd& operator=(native_simd const&) noexcept = default;
+    native_simd& operator=(native_simd&&) noexcept = default;
 
     /** Initialize all elements to zero.
      */
-    simd_i64x4() noexcept : v(_mm256_setzero_si256()) {}
+    native_simd() noexcept : v(_mm256_setzero_si256()) {}
 
-    [[nodiscard]] explicit simd_i64x4(register_type other) noexcept : v(other) {}
+    [[nodiscard]] explicit native_simd(register_type other) noexcept : v(other) {}
 
     [[nodiscard]] explicit operator register_type() const noexcept
     {
@@ -61,7 +62,7 @@ struct simd_i64x4 {
      * @param c The value for element 2.
      * @param d The value for element 3.
      */
-    [[nodiscard]] simd_i64x4(
+    [[nodiscard]] native_simd(
         value_type a,
         value_type b = value_type{0},
         value_type c = value_type{0},
@@ -70,7 +71,7 @@ struct simd_i64x4 {
     {
     }
 
-    [[nodiscard]] explicit simd_i64x4(value_type const *other) noexcept :
+    [[nodiscard]] explicit native_simd(value_type const *other) noexcept :
         v(_mm256_loadu_si256(reinterpret_cast<register_type const *>(other)))
     {
     }
@@ -81,7 +82,7 @@ struct simd_i64x4 {
         _mm256_storeu_si256(reinterpret_cast<register_type *>(out), v);
     }
 
-    [[nodiscard]] explicit simd_i64x4(void const *other) noexcept :
+    [[nodiscard]] explicit native_simd(void const *other) noexcept :
         v(_mm256_loadu_si256(static_cast<register_type const *>(other)))
     {
     }
@@ -92,7 +93,7 @@ struct simd_i64x4 {
         _mm256_storeu_si256(static_cast<register_type *>(out), v);
     }
 
-    [[nodiscard]] explicit simd_i64x4(std::span<value_type const> other) noexcept
+    [[nodiscard]] explicit native_simd(std::span<value_type const> other) noexcept
     {
         hi_axiom(other.size() >= 4);
         v = _mm256_loadu_si256(reinterpret_cast<register_type const *>(other.data()));
@@ -104,7 +105,7 @@ struct simd_i64x4 {
         _mm256_storeu_si256(reinterpret_cast<register_type *>(out.data()), v);
     }
 
-    [[nodiscard]] explicit simd_i64x4(array_type other) noexcept :
+    [[nodiscard]] explicit native_simd(array_type other) noexcept :
         v(_mm256_loadu_si256(reinterpret_cast<register_type const *>(other.data())))
     {
     }
@@ -116,14 +117,14 @@ struct simd_i64x4 {
         return r;
     }
 
-    [[nodiscard]] explicit simd_i64x4(simd_i32x4 const& a) noexcept;
-    [[nodiscard]] explicit simd_i64x4(simd_u32x4 const& a) noexcept;
+    [[nodiscard]] explicit native_simd(native_i32x4 const& a) noexcept;
+    [[nodiscard]] explicit native_simd(native_u32x4 const& a) noexcept;
 
     /** Check if all elements are zero.
      */
     [[nodiscard]] bool empty() const noexcept
     {
-        return eq(*this, simd_i64x4{}).mask() == 0b1111;
+        return eq(*this, native_simd{}).mask() == 0b1111;
     }
 
     /** Check if any element is non-zero.
@@ -142,9 +143,9 @@ struct simd_i64x4 {
      * r[3] = a
      * ```
      */
-    [[nodiscard]] static simd_i64x4 broadcast(value_type a) noexcept
+    [[nodiscard]] static native_simd broadcast(value_type a) noexcept
     {
-        return simd_i64x4{_mm256_set1_epi64x(a)};
+        return native_simd{_mm256_set1_epi64x(a)};
     }
 
     /** Broadcast the first element to all the elements.
@@ -156,19 +157,19 @@ struct simd_i64x4 {
      * r[3] = a[0]
      * ```
      */
-    [[nodiscard]] static simd_i64x4 broadcast(simd_i64x4 a) noexcept
+    [[nodiscard]] static native_simd broadcast(native_simd a) noexcept
     {
-        return simd_i64x4{_mm256_permute4x64_epi64(a.v, 0b00'00'00'00)};
+        return native_simd{_mm256_permute4x64_epi64(a.v, 0b00'00'00'00)};
     }
 
     /** Create a vector with all the bits set.
      */
-    [[nodiscard]] static simd_i64x4 ones() noexcept
+    [[nodiscard]] static native_simd ones() noexcept
     {
-        return eq(simd_i64x4{}, simd_i64x4{});
+        return eq(native_simd{}, native_simd{});
     }
 
-    [[nodiscard]] static simd_i64x4 from_mask(size_t a) noexcept
+    [[nodiscard]] static native_simd from_mask(size_t a) noexcept
     {
         hi_axiom(a <= 0b1111);
 
@@ -184,7 +185,7 @@ struct simd_i64x4 {
         tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 3);
 
         tmp = _mm_srai_epi32(tmp, 31);
-        return simd_i64x4{_mm256_cvtepi32_epi64(tmp)};
+        return native_simd{_mm256_cvtepi32_epi64(tmp)};
     }
 
     /** Concatenate the top bit of each element.
@@ -200,93 +201,93 @@ struct simd_i64x4 {
      * way as IEEE-754. This is because when you comparing two vectors
      * having a NaN in one of the elements does not invalidate the complete vector.
      */
-    [[nodiscard]] friend bool operator==(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend bool operator==(native_simd a, native_simd b) noexcept
     {
         return eq(a, b).mask() == 0b1111;
     }
 
-    [[nodiscard]] friend simd_i64x4 eq(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd eq(native_simd a, native_simd b) noexcept
     {
-        return simd_i64x4{_mm256_cmpeq_epi64(a.v, b.v)};
+        return native_simd{_mm256_cmpeq_epi64(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i64x4 ne(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd ne(native_simd a, native_simd b) noexcept
     {
         return ~eq(a, b);
     }
 
-    [[nodiscard]] friend simd_i64x4 lt(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd lt(native_simd a, native_simd b) noexcept
     {
-        return simd_i64x4{_mm256_cmpgt_epi64(b.v, a.v)};
+        return native_simd{_mm256_cmpgt_epi64(b.v, a.v)};
     }
 
-    [[nodiscard]] friend simd_i64x4 gt(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd gt(native_simd a, native_simd b) noexcept
     {
-        return simd_i64x4{_mm256_cmpgt_epi64(a.v, b.v)};
+        return native_simd{_mm256_cmpgt_epi64(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i64x4 le(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd le(native_simd a, native_simd b) noexcept
     {
         return ~gt(a, b);
     }
 
-    [[nodiscard]] friend simd_i64x4 ge(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd ge(native_simd a, native_simd b) noexcept
     {
         return ~lt(a, b);
     }
 
-    [[nodiscard]] friend simd_i64x4 operator+(simd_i64x4 a) noexcept
+    [[nodiscard]] friend native_simd operator+(native_simd a) noexcept
     {
         return a;
     }
 
-    [[nodiscard]] friend simd_i64x4 operator-(simd_i64x4 a) noexcept
+    [[nodiscard]] friend native_simd operator-(native_simd a) noexcept
     {
-        return simd_i64x4{} - a;
+        return native_simd{} - a;
     }
 
-    [[nodiscard]] friend simd_i64x4 operator+(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd operator+(native_simd a, native_simd b) noexcept
     {
-        return simd_i64x4{_mm256_add_epi64(a.v, b.v)};
+        return native_simd{_mm256_add_epi64(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i64x4 operator-(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd operator-(native_simd a, native_simd b) noexcept
     {
-        return simd_i64x4{_mm256_sub_epi64(a.v, b.v)};
+        return native_simd{_mm256_sub_epi64(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i64x4 operator&(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd operator&(native_simd a, native_simd b) noexcept
     {
-        return simd_i64x4{_mm256_and_si256(a.v, b.v)};
+        return native_simd{_mm256_and_si256(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i64x4 operator|(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd operator|(native_simd a, native_simd b) noexcept
     {
-        return simd_i64x4{_mm256_or_si256(a.v, b.v)};
+        return native_simd{_mm256_or_si256(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i64x4 operator^(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd operator^(native_simd a, native_simd b) noexcept
     {
-        return simd_i64x4{_mm256_xor_si256(a.v, b.v)};
+        return native_simd{_mm256_xor_si256(a.v, b.v)};
     }
 
-    [[nodiscard]] friend simd_i64x4 operator~(simd_i64x4 a) noexcept
+    [[nodiscard]] friend native_simd operator~(native_simd a) noexcept
     {
         return not_and(a, ones());
     }
 
-    [[nodiscard]] friend simd_i64x4 operator<<(simd_i64x4 a, unsigned int b) noexcept
+    [[nodiscard]] friend native_simd operator<<(native_simd a, unsigned int b) noexcept
     {
         hi_axiom_bounds(b, sizeof(value_type) * CHAR_BIT);
-        return simd_i64x4{_mm256_slli_epi64(a.v, b)};
+        return native_simd{_mm256_slli_epi64(a.v, b)};
     }
 
-    [[nodiscard]] friend simd_i64x4 operator>>(simd_i64x4 a, unsigned int b) noexcept
+    [[nodiscard]] friend native_simd operator>>(native_simd a, unsigned int b) noexcept
     {
         hi_axiom_bounds(b, sizeof(value_type) * CHAR_BIT);
 
 #ifdef HI_HAS_AVX512F
-        return simd_i64x4{_mm256_srai_epi64(a.v, b)};
+        return native_simd{_mm256_srai_epi64(a.v, b)};
 
 #else
         hilet shifted_value = _mm256_srli_epi64(a.v, b);
@@ -295,25 +296,25 @@ struct simd_i64x4 {
         hilet shifted_ones = _mm256_slli_epi64(ones, 63 - b);
         hilet is_negative = _mm256_cmpgt_epi64(zero, a.v);
         hilet masked_shifted_ones = _mm256_and_si256(is_negative, shifted_ones);
-        return simd_i64x4{_mm256_or_si256(shifted_value, masked_shifted_ones)};
+        return native_simd{_mm256_or_si256(shifted_value, masked_shifted_ones)};
 #endif
     }
 
-    [[nodiscard]] friend simd_i64x4 min(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd min(native_simd a, native_simd b) noexcept
     {
         hilet mask = lt(a, b);
         return (mask & a) | not_and(mask, b);
     }
 
-    [[nodiscard]] friend simd_i64x4 max(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd max(native_simd a, native_simd b) noexcept
     {
         hilet mask = gt(a, b);
         return (mask & a) | not_and(mask, b);
     }
 
-    [[nodiscard]] friend simd_i64x4 abs(simd_i64x4 a) noexcept
+    [[nodiscard]] friend native_simd abs(native_simd a) noexcept
     {
-        hilet mask = gt(a, simd_i64x4{});
+        hilet mask = gt(a, native_simd{});
         return (mask & a) | not_and(mask, -a);
     }
 
@@ -324,11 +325,11 @@ struct simd_i64x4 {
      * @return argument @a with elements set to zero where the corresponding @a Mask bit was '1'.
      */
     template<size_t Mask>
-    [[nodiscard]] friend simd_i64x4 set_zero(simd_i64x4 a) noexcept
+    [[nodiscard]] friend native_simd set_zero(native_simd a) noexcept
     {
         static_assert(Mask <= 0b1111);
 
-        return blend<Mask>(a, simd_i64x4{});
+        return blend<Mask>(a, native_simd{});
     }
 
     /** Insert a value into an element of a vector.
@@ -339,7 +340,7 @@ struct simd_i64x4 {
      * @return The vector with the inserted value.
      */
     template<size_t Index>
-    [[nodiscard]] friend simd_i64x4 insert(simd_i64x4 a, value_type b) noexcept
+    [[nodiscard]] friend native_simd insert(native_simd a, value_type b) noexcept
     {
         static_assert(Index < 4);
         return blend<1_uz << Index>(a, broadcast(b));
@@ -352,7 +353,7 @@ struct simd_i64x4 {
      * @return The value of the selected element.
      */
     template<size_t Index>
-    [[nodiscard]] friend value_type get(simd_i64x4 a) noexcept
+    [[nodiscard]] friend value_type get(native_simd a) noexcept
     {
         static_assert(Index < size);
 
@@ -368,7 +369,7 @@ struct simd_i64x4 {
      * @return A vector with element selected from @a a and @a b
      */
     template<size_t Mask>
-    [[nodiscard]] friend simd_i64x4 blend(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd blend(native_simd a, native_simd b) noexcept
     {
         static_assert(Mask <= 0b1111);
 
@@ -384,7 +385,7 @@ struct simd_i64x4 {
                 ((Mask & 0b0100) << 2) | ((Mask & 0b0100) << 3) |
                 ((Mask & 0b1000) << 3) | ((Mask & 0b1000) << 4);
             // clang-format on
-            return simd_i64x4{_mm256_blend_epi32(a.v, b.v, dmask)};
+            return native_simd{_mm256_blend_epi32(a.v, b.v, dmask)};
         }
     }
 
@@ -401,15 +402,15 @@ struct simd_i64x4 {
      * @returns A vector with the elements swizzled.
      */
     template<fixed_string SourceElements>
-    [[nodiscard]] friend simd_i64x4 permute(simd_i64x4 a) noexcept
+    [[nodiscard]] friend native_simd permute(native_simd a) noexcept
     {
         static_assert(SourceElements.size() == size);
-        constexpr auto order = detail::simd_swizzle_to_packed_indices<SourceElements, size>();
+        constexpr auto order = detail::native_swizzle_to_packed_indices<SourceElements, size>();
 
         if constexpr (order == 0b11'10'01'00) {
             return a;
         } else {
-            return simd_i64x4{_mm256_permute4x64_epi64(a.v, order)};
+            return native_simd{_mm256_permute4x64_epi64(a.v, order)};
         }
     }
 
@@ -430,11 +431,11 @@ struct simd_i64x4 {
      * @returns A vector with the elements swizzled.
      */
     template<fixed_string SourceElements>
-    [[nodiscard]] friend simd_i64x4 swizzle(simd_i64x4 a) noexcept
+    [[nodiscard]] friend native_simd swizzle(native_simd a) noexcept
     {
         static_assert(SourceElements.size() == size);
-        constexpr auto one_mask = detail::simd_swizzle_to_mask<SourceElements, size, '1'>();
-        constexpr auto zero_mask = detail::simd_swizzle_to_mask<SourceElements, size, '0'>();
+        constexpr auto one_mask = detail::native_swizzle_to_mask<SourceElements, size, '1'>();
+        constexpr auto zero_mask = detail::native_swizzle_to_mask<SourceElements, size, '0'>();
         constexpr auto number_mask = one_mask | zero_mask;
 
         if constexpr (number_mask == 0b1111) {
@@ -464,21 +465,21 @@ struct simd_i64x4 {
      * r = ~a & b
      *
      */
-    [[nodiscard]] friend simd_i64x4 not_and(simd_i64x4 a, simd_i64x4 b) noexcept
+    [[nodiscard]] friend native_simd not_and(native_simd a, native_simd b) noexcept
     {
-        return simd_i64x4{_mm256_andnot_si256(a.v, b.v)};
+        return native_simd{_mm256_andnot_si256(a.v, b.v)};
     }
 
-    friend std::ostream& operator<<(std::ostream& a, simd_i64x4 b) noexcept
+    friend std::ostream& operator<<(std::ostream& a, native_simd b) noexcept
     {
         return a << "(" << get<0>(b) << ", " << get<1>(b) << ", " << get<2>(b) << ", " << get<3>(b) << ")";
     }
 
     template<fixed_string SourceElements>
-    [[nodiscard]] static simd_i64x4 swizzle_numbers() noexcept
+    [[nodiscard]] static native_simd swizzle_numbers() noexcept
     {
-        constexpr auto one_mask = detail::simd_swizzle_to_mask<SourceElements, size, '1'>();
-        constexpr auto zero_mask = detail::simd_swizzle_to_mask<SourceElements, size, '0'>();
+        constexpr auto one_mask = detail::native_swizzle_to_mask<SourceElements, size, '1'>();
+        constexpr auto zero_mask = detail::native_swizzle_to_mask<SourceElements, size, '0'>();
         constexpr auto number_mask = one_mask | zero_mask;
         constexpr auto alpha_mask = ~number_mask & 0b1111;
 
@@ -489,18 +490,13 @@ struct simd_i64x4 {
             return broadcast(1);
 
         } else {
-            return simd_i64x4{
+            return native_simd{
                 to_bool(one_mask & 0b0001) ? 1 : 0,
                 to_bool(one_mask & 0b0010) ? 1 : 0,
                 to_bool(one_mask & 0b0100) ? 1 : 0,
                 to_bool(one_mask & 0b1000) ? 1 : 0};
         }
     }
-};
-
-template<>
-struct low_level_simd<int64_t, 4> : std::true_type {
-    using type = simd_i64x4;
 };
 
 #endif
