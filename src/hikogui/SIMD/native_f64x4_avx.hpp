@@ -116,7 +116,7 @@ struct native_simd<double,4> {
      */
     [[nodiscard]] bool empty() const noexcept
     {
-        return eq(*this, native_simd{}).mask() == 0b1111;
+        return (*this == native_simd{}).mask() == 0b1111;
     }
 
     /** Check if any element is non-zero.
@@ -163,7 +163,7 @@ struct native_simd<double,4> {
      */
     [[nodiscard]] static native_simd ones() noexcept
     {
-        return eq(native_simd{}, native_simd{});
+        return native_simd{} == native_simd{};
     }
 
     [[nodiscard]] static native_simd from_mask(size_t a) noexcept
@@ -198,9 +198,16 @@ struct native_simd<double,4> {
      * way as IEEE-754. This is because when you comparing two vectors
      * having a NaN in one of the elements does not invalidate the complete vector.
      */
-    [[nodiscard]] friend bool operator==(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend bool equal(native_simd a, native_simd b) noexcept
     {
         return _mm256_movemask_pd(_mm256_cmp_pd(a.v, b.v, _CMP_EQ_UQ)) == 0b1111;
+    }
+
+    [[nodiscard]] friend native_simd
+    almost_eq(native_simd a, native_simd b, value_type epsilon = std::numeric_limits<value_type>::epsilon()) noexcept
+    {
+        auto abs_diff = abs(a - b);
+        return abs_diff < broadcast(epsilon);
     }
 
     [[nodiscard]] friend bool
@@ -209,39 +216,32 @@ struct native_simd<double,4> {
         return almost_eq(a, b, epsilon).mask() == 0b1111;
     }
 
-    [[nodiscard]] friend native_simd eq(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator==(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm256_cmp_pd(a.v, b.v, _CMP_EQ_OQ)};
     }
 
-    [[nodiscard]] friend native_simd
-    almost_eq(native_simd a, native_simd b, value_type epsilon = std::numeric_limits<value_type>::epsilon()) noexcept
-    {
-        auto abs_diff = abs(a - b);
-        return lt(abs_diff, broadcast(epsilon));
-    }
-
-    [[nodiscard]] friend native_simd ne(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator!=(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm256_cmp_pd(a.v, b.v, _CMP_NEQ_UQ)};
     }
 
-    [[nodiscard]] friend native_simd lt(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator<(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm256_cmp_pd(a.v, b.v, _CMP_LT_OQ)};
     }
 
-    [[nodiscard]] friend native_simd gt(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator>(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm256_cmp_pd(a.v, b.v, _CMP_GT_OQ)};
     }
 
-    [[nodiscard]] friend native_simd le(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator<=(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm256_cmp_pd(a.v, b.v, _CMP_LE_OQ)};
     }
 
-    [[nodiscard]] friend native_simd ge(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator>=(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm256_cmp_pd(a.v, b.v, _CMP_GE_OQ)};
     }

@@ -86,10 +86,10 @@ constexpr uint16_t cvtss_sh(float value) noexcept
 }
 
 class float16 {
-    uint16_t v;
+    uint16_t v = 0;
 
 public:
-    constexpr float16() noexcept : v(0) {}
+    constexpr float16() noexcept = default;
     constexpr float16(float16 const &) noexcept = default;
     constexpr float16(float16 &&) noexcept = default;
     constexpr float16 &operator=(float16 const &) noexcept = default;

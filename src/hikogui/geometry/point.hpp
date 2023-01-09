@@ -228,7 +228,7 @@ public:
     [[nodiscard]] constexpr friend bool operator==(point const& lhs, point const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
-        return lhs._v == rhs._v;
+        return equal(lhs._v, rhs._v);
     }
 
     template<int E>

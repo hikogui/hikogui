@@ -160,7 +160,7 @@ struct native_simd<int32_t,4> {
 
     [[nodiscard]] bool empty() const noexcept
     {
-        return *this == native_simd{};
+        return equal(*this, native_simd{});
     }
 
     explicit operator bool() const noexcept
@@ -207,39 +207,39 @@ struct native_simd<int32_t,4> {
         return narrow_cast<size_t>(_mm_movemask_ps(_mm_castsi128_ps(v)));
     }
 
-    [[nodiscard]] friend bool operator==(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend bool equal(native_simd a, native_simd b) noexcept
     {
-        return eq(a, b).mask() == 0b1111;
+        return (a == b).mask() == 0b1111;
     }
 
-    [[nodiscard]] friend native_simd eq(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator==(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm_cmpeq_epi32(a.v, b.v)};
     }
 
-    [[nodiscard]] friend native_simd ne(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator!=(native_simd a, native_simd b) noexcept
     {
-        return ~eq(a, b);
+        return ~(a == b);
     }
 
-    [[nodiscard]] friend native_simd lt(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator<(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm_cmplt_epi32(a.v, b.v)};
     }
 
-    [[nodiscard]] friend native_simd gt(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator>(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm_cmpgt_epi32(a.v, b.v)};
     }
 
-    [[nodiscard]] friend native_simd le(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator<=(native_simd a, native_simd b) noexcept
     {
-        return ~gt(a, b);
+        return ~(a > b);
     }
 
-    [[nodiscard]] friend native_simd ge(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator>=(native_simd a, native_simd b) noexcept
     {
-        return ~lt(a, b);
+        return ~(a < b);
     }
 
     [[nodiscard]] friend native_simd operator+(native_simd a) noexcept

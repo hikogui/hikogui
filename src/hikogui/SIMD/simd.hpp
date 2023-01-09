@@ -58,6 +58,8 @@ namespace hi::inline v1 {
 template<numeric_limited T, std::size_t N>
 struct simd {
     using value_type = T;
+    using unsigned_type = make_uintxx_t<sizeof(value_type) * CHAR_BIT>;
+
     constexpr static size_t size = N;
 
     constexpr static bool has_native_type = is_complete_type_v<native_simd<T, N>>;
@@ -72,6 +74,9 @@ struct simd {
     using const_pointer = typename array_type::const_pointer;
     using iterator = typename array_type::iterator;
     using const_iterator = typename array_type::const_iterator;
+
+    constexpr static value_type zero_value = value_type{};
+    constexpr static value_type ones_value = std::bit_cast<value_type>(std::numeric_limits<unsigned_type>::max());
 
     array_type v;
 
@@ -111,9 +116,7 @@ struct simd {
     }
 
     template<numeric_limited U>
-    [[nodiscard]] constexpr explicit simd(
-        simd<U, size / 2> const& a,
-        simd<U, size / 2> const& b) noexcept
+    [[nodiscard]] constexpr explicit simd(simd<U, size / 2> const& a, simd<U, size / 2> const& b) noexcept
     {
         if (not std::is_constant_evaluated()) {
             if constexpr (requires { simd{native_type{a.reg(), b.reg()}}; }) {
@@ -256,6 +259,18 @@ struct simd {
         store<sizeof(*this)>(ptr);
     }
 
+    [[nodiscard]] size_t mask() const noexcept
+    {
+        HI_X_runtime_evaluate_if_valid(reg().mask());
+
+        auto r = 0_uz;
+        for (auto i = N; i != 0; --i) {
+            r <<= 1;
+            r |= std::bit_cast<unsigned_type>(v[i - 1]) >> (sizeof(unsigned_type) * CHAR_BIT - 1);
+        }
+        return r;
+    }
+
     /** Check if the vector is non-zero.
      * @return True if at least one element is non-zero.
      */
@@ -264,9 +279,9 @@ struct simd {
         if constexpr (std::is_floating_point_v<T>) {
             hilet ep = epsilon();
             // check if any of the elements is outside of epsilon range,
-            return to_bool(gt(-ep, *this) | gt(*this, ep));
+            return to_bool((*this < -ep).mask() | (*this > ep).mask());
         } else {
-            return to_bool(ne(*this, T{0}));
+            return to_bool((*this != T{}).mask());
         }
     }
 
@@ -485,7 +500,118 @@ struct simd {
         return z();
     }
 
-    constexpr simd& operator<<=(unsigned int rhs) noexcept
+#define HI_X_binary_math_op(op) \
+    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
+    { \
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
+\
+        auto r = simd{}; \
+        for (std::size_t i = 0; i != N; ++i) { \
+            r |= lhs.v[i] op rhs.v[i]; \
+        } \
+        return r; \
+    }
+
+    // clang-format off
+    HI_X_binary_math_op(+)
+    HI_X_binary_math_op(-)
+    HI_X_binary_math_op(*)
+    HI_X_binary_math_op(/)
+    // clang-format on
+#undef HI_X_binary_math_op
+
+        [[nodiscard]] friend constexpr simd
+        operator%(simd lhs, simd rhs) noexcept
+    {
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() % rhs.reg()});
+        hilet div_result = floor(lhs / rhs);
+        return lhs - (div_result * rhs);
+    }
+
+#define HI_X_binary_cmp_op(op) \
+    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
+    { \
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
+\
+        auto r = simd{}; \
+        for (std::size_t i = 0; i != N; ++i) { \
+            r |= lhs.v[i] op rhs.v[i] ? ones_value : zero_value; \
+        } \
+        return r; \
+    }
+
+    // clang-format off
+    HI_X_binary_cmp_op(==)
+    HI_X_binary_cmp_op(!=)
+    HI_X_binary_cmp_op(<)
+    HI_X_binary_cmp_op(>)
+    HI_X_binary_cmp_op(<=)
+    HI_X_binary_cmp_op(>=)
+    // clang-format on
+#undef HI_X_binary_cmp_op
+
+#define HI_X_binary_bit_op(op) \
+    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
+        requires(not std::is_same_v<value_type, float16>) \
+    { \
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
+\
+        auto r = simd{}; \
+        for (std::size_t i = 0; i != N; ++i) { \
+            r[i] = std::bit_cast<value_type>(std::bit_cast<unsigned_type>(lhs.v[i]) op std::bit_cast<unsigned_type>(rhs.v[i])); \
+        } \
+        return r; \
+    }
+        // clang-format off
+    HI_X_binary_bit_op(^)
+    HI_X_binary_bit_op(&)
+    HI_X_binary_bit_op(|)
+    // clang-format on
+#undef HI_X_binary_bit_op
+
+            [[nodiscard]] friend constexpr bool equal(simd lhs, simd rhs) noexcept
+    {
+        HI_X_runtime_evaluate_if_valid(equal(lhs.reg(), rhs.reg()));
+
+        for (auto i = 0_uz; i != N; ++i) {
+            if (lhs.v[i] != rhs.v[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+#define HI_X_binary_op_broadcast(op) \
+    [[nodiscard]] friend constexpr auto operator op(value_type lhs, simd rhs) noexcept \
+        requires(requires { broadcast(lhs) op rhs; }) \
+    { \
+        return broadcast(lhs) op rhs; \
+    } \
+\
+    [[nodiscard]] friend constexpr auto operator op(simd lhs, value_type rhs) noexcept \
+        requires(requires { lhs op broadcast(rhs); }) \
+    { \
+        return lhs op broadcast(rhs); \
+    }
+
+    // clang-format off
+    HI_X_binary_op_broadcast(==)
+    HI_X_binary_op_broadcast(!=)
+    HI_X_binary_op_broadcast(<=)
+    HI_X_binary_op_broadcast(>=)
+    HI_X_binary_op_broadcast(+)
+    HI_X_binary_op_broadcast(-)
+    HI_X_binary_op_broadcast(*)
+    HI_X_binary_op_broadcast(/)
+    HI_X_binary_op_broadcast(%)
+    HI_X_binary_op_broadcast(&)
+    HI_X_binary_op_broadcast(|)
+    HI_X_binary_op_broadcast(^)
+// clang-format on
+#undef HI_X_binary_op_broadcast
+
+                constexpr simd&
+                operator<<=(unsigned int rhs) noexcept
     {
         return *this = *this << rhs;
     }
@@ -495,92 +621,37 @@ struct simd {
         return *this = *this >> rhs;
     }
 
-    constexpr simd& operator|=(simd const& rhs) noexcept
-    {
-        return *this = *this | rhs;
+#define HI_X_inplace_op(long_op, short_op) \
+    constexpr simd& operator long_op(simd rhs) noexcept \
+        requires(requires { *this short_op rhs; }) \
+    { \
+        return *this = *this short_op rhs; \
+    } \
+\
+    constexpr simd& operator long_op(value_type rhs) noexcept \
+        requires(requires { *this short_op rhs; }) \
+    { \
+        return *this = *this short_op rhs; \
     }
 
-    constexpr simd& operator|=(T const& rhs) noexcept
-    {
-        return *this = *this | rhs;
-    }
+    // clang-format off
+    HI_X_inplace_op(+=, +)
+    HI_X_inplace_op(-=, -)
+    HI_X_inplace_op(*=, *)
+    HI_X_inplace_op(/=, /)
+    HI_X_inplace_op(%=, %)
+    HI_X_inplace_op(|=, |)
+    HI_X_inplace_op(&=, &)
+    HI_X_inplace_op(^=, ^)
+// clang-format on
+#undef HI_X_inplace_op
 
-    constexpr simd& operator&=(simd const& rhs) noexcept
-    {
-        return *this = *this & rhs;
-    }
-
-    constexpr simd& operator&=(T const& rhs) noexcept
-    {
-        return *this = *this & rhs;
-    }
-
-    constexpr simd& operator^=(simd const& rhs) noexcept
-    {
-        return *this = *this ^ rhs;
-    }
-
-    constexpr simd& operator^=(T const& rhs) noexcept
-    {
-        return *this = *this ^ rhs;
-    }
-
-    constexpr simd& operator+=(simd const& rhs) noexcept
-    {
-        return *this = *this + rhs;
-    }
-
-    constexpr simd& operator+=(T const& rhs) noexcept
-    {
-        return *this = *this + rhs;
-    }
-
-    constexpr simd& operator-=(simd const& rhs) noexcept
-    {
-        return *this = *this - rhs;
-    }
-
-    constexpr simd& operator-=(T const& rhs) noexcept
-    {
-        return *this = *this - rhs;
-    }
-
-    constexpr simd& operator*=(simd const& rhs) noexcept
-    {
-        return *this = *this * rhs;
-    }
-
-    constexpr simd& operator*=(T const& rhs) noexcept
-    {
-        return *this = *this * rhs;
-    }
-
-    constexpr simd& operator/=(simd const& rhs) noexcept
-    {
-        return *this = *this / rhs;
-    }
-
-    constexpr simd& operator/=(T const& rhs) noexcept
-    {
-        return *this = *this / rhs;
-    }
-
-    constexpr simd& operator%=(simd const& rhs) noexcept
-    {
-        return *this = *this % rhs;
-    }
-
-    constexpr simd& operator%=(T const& rhs) noexcept
-    {
-        return *this = *this % rhs;
-    }
-
-    /** Get a element from the numeric array.
-     *
-     * @tparam I Index into the array
-     */
-    template<std::size_t I>
-    [[nodiscard]] friend constexpr T& get(simd& rhs) noexcept
+        /** Get a element from the numeric array.
+         *
+         * @tparam I Index into the array
+         */
+        template<std::size_t I>
+        [[nodiscard]] friend constexpr T& get(simd& rhs) noexcept
     {
         static_assert(I < N, "Index out of bounds");
         return std::get<I>(rhs.v);
@@ -832,82 +903,6 @@ struct simd {
         return r;
     }
 
-    [[nodiscard]] friend constexpr std::size_t eq(simd const& lhs, simd const& rhs) noexcept
-        requires(N <= sizeof(std::size_t) * CHAR_BIT)
-    {
-        HI_X_runtime_evaluate_if_valid(eq(lhs.reg(), rhs.reg()).mask());
-
-        std::size_t r = 0;
-        for (std::size_t i = 0; i != N; ++i) {
-            r |= static_cast<std::size_t>(lhs.v[i] == rhs.v[i]) << i;
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr std::size_t ne(simd const& lhs, simd const& rhs) noexcept
-        requires(N <= sizeof(std::size_t) * CHAR_BIT)
-    {
-        HI_X_runtime_evaluate_if_valid(ne(lhs.reg(), rhs.reg()).mask());
-
-        constexpr std::size_t not_mask = (1 << N) - 1;
-        return eq(lhs, rhs) ^ not_mask;
-    }
-
-    [[nodiscard]] friend constexpr std::size_t gt(simd const& lhs, simd const& rhs) noexcept
-        requires(N <= sizeof(std::size_t) * CHAR_BIT)
-    {
-        HI_X_runtime_evaluate_if_valid(gt(lhs.reg(), rhs.reg()).mask());
-
-        unsigned int r = 0;
-        for (std::size_t i = 0; i != N; ++i) {
-            r |= static_cast<std::size_t>(lhs.v[i] > rhs.v[i]) << i;
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr std::size_t lt(simd const& lhs, simd const& rhs) noexcept
-        requires(N <= sizeof(std::size_t) * CHAR_BIT)
-    {
-        HI_X_runtime_evaluate_if_valid(lt(lhs.reg(), rhs.reg()).mask());
-        return gt(rhs, lhs);
-    }
-
-    [[nodiscard]] friend constexpr std::size_t ge(simd const& lhs, simd const& rhs) noexcept
-        requires(N <= sizeof(std::size_t) * CHAR_BIT)
-    {
-        HI_X_runtime_evaluate_if_valid(ge(lhs.reg(), rhs.reg()).mask());
-        constexpr std::size_t not_mask = (1 << N) - 1;
-        return lt(lhs, rhs) ^ not_mask;
-    }
-
-    [[nodiscard]] friend constexpr std::size_t le(simd const& lhs, simd const& rhs) noexcept
-        requires(N <= sizeof(std::size_t) * CHAR_BIT)
-    {
-        HI_X_runtime_evaluate_if_valid(le(lhs.reg(), rhs.reg()).mask());
-        constexpr std::size_t not_mask = (1 << N) - 1;
-        return gt(lhs, rhs) ^ not_mask;
-    }
-
-    [[nodiscard]] friend constexpr simd gt_mask(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{gt(lhs.reg(), rhs.reg())});
-
-        using uint_type = make_uintxx_t<sizeof(T) * CHAR_BIT>;
-        constexpr auto ones = std::bit_cast<T>(~uint_type{0});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r[i] = lhs.v[i] > rhs.v[i] ? ones : T{0};
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr bool operator==(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(lhs.reg() == rhs.reg());
-        return not ne(lhs, rhs);
-    }
-
     [[nodiscard]] friend constexpr simd operator<<(simd const& lhs, unsigned int rhs) noexcept
     {
         HI_X_runtime_evaluate_if_valid(simd{lhs.reg() << rhs});
@@ -956,173 +951,6 @@ struct simd {
         return (lhs >> rhs) | (lhs << remainder);
     }
 
-    [[nodiscard]] friend constexpr simd operator|(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() | rhs.reg()});
-
-        using uint_type = make_uintxx_t<sizeof(T) * CHAR_BIT>;
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] =
-                std::bit_cast<T>(static_cast<uint_type>(std::bit_cast<uint_type>(lhs.v[i]) | std::bit_cast<uint_type>(rhs.v[i])));
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd operator|(simd const& lhs, T const& rhs) noexcept
-    {
-        return lhs | broadcast(rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd operator|(T const& lhs, simd const& rhs) noexcept
-    {
-        return broadcast(lhs) | rhs;
-    }
-
-    [[nodiscard]] friend constexpr simd operator&(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() & rhs.reg()});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] & rhs.v[i];
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd operator&(simd const& lhs, T const& rhs) noexcept
-    {
-        return lhs & broadcast(rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd operator&(T const& lhs, simd const& rhs) noexcept
-    {
-        return broadcast(lhs) & rhs;
-    }
-
-    [[nodiscard]] friend constexpr simd operator^(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() ^ rhs.reg()});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] ^ rhs.v[i];
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd operator^(simd const& lhs, T const& rhs) noexcept
-    {
-        return lhs ^ broadcast(rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd operator^(T const& lhs, simd const& rhs) noexcept
-    {
-        return broadcast(lhs) ^ rhs;
-    }
-
-    [[nodiscard]] friend constexpr simd operator+(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() + rhs.reg()});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] + rhs.v[i];
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd operator+(simd const& lhs, T const& rhs) noexcept
-    {
-        return lhs + broadcast(rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd operator+(T const& lhs, simd const& rhs) noexcept
-    {
-        return broadcast(lhs) + rhs;
-    }
-
-    [[nodiscard]] friend constexpr simd operator-(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() - rhs.reg()});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] - rhs.v[i];
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd operator-(simd const& lhs, T const& rhs) noexcept
-    {
-        return lhs - broadcast(rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd operator-(T const& lhs, simd const& rhs) noexcept
-    {
-        return broadcast(lhs) - rhs;
-    }
-
-    [[nodiscard]] friend constexpr simd operator*(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() * rhs.reg()});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] * rhs.v[i];
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd operator*(simd const& lhs, T const& rhs) noexcept
-    {
-        return lhs * broadcast(rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd operator*(T const& lhs, simd const& rhs) noexcept
-    {
-        return broadcast(lhs) * rhs;
-    }
-
-    [[nodiscard]] friend constexpr simd operator/(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() / rhs.reg()});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] / rhs.v[i];
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd operator/(simd const& lhs, T const& rhs) noexcept
-    {
-        return lhs / broadcast(rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd operator/(T const& lhs, simd const& rhs) noexcept
-    {
-        return broadcast(lhs) / rhs;
-    }
-
-    [[nodiscard]] friend constexpr simd operator%(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() % rhs.reg()});
-        hilet div_result = floor(lhs / rhs);
-        return lhs - (div_result * rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd operator%(simd const& lhs, T const& rhs) noexcept
-    {
-        return lhs % broadcast(rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd operator%(T const& lhs, simd const& rhs) noexcept
-    {
-        return broadcast(lhs) % rhs;
-    }
-
     [[nodiscard]] friend constexpr simd min(simd const& lhs, simd const& rhs) noexcept
     {
         HI_X_runtime_evaluate_if_valid(simd{min(lhs.reg(), rhs.reg())});
@@ -1145,8 +973,7 @@ struct simd {
         return r;
     }
 
-    [[nodiscard]] friend constexpr simd
-    clamp(simd const& lhs, simd const& low, simd const& high) noexcept
+    [[nodiscard]] friend constexpr simd clamp(simd const& lhs, simd const& low, simd const& high) noexcept
     {
         return min(max(lhs, low), high);
     }

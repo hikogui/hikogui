@@ -216,39 +216,39 @@ struct native_i8x16 {
         return narrow_cast<size_t>(_mm_movemask_epi8(v));
     }
 
-    [[nodiscard]] friend bool operator==(native_i8x16 a, native_i8x16 b) noexcept
+    [[nodiscard]] friend bool equal(native_i8x16 a, native_i8x16 b) noexcept
     {
         return eq(a, b).mask() == 0b1111'1111'1111'1111;
     }
 
-    [[nodiscard]] friend native_i8x16 eq(native_i8x16 a, native_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator==(native_i8x16 a, native_i8x16 b) noexcept
     {
         return native_i8x16{_mm_cmpeq_epi8(a.v, b.v)};
     }
 
-    [[nodiscard]] friend native_i8x16 ne(native_i8x16 a, native_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator!=(native_i8x16 a, native_i8x16 b) noexcept
     {
         return ~eq(a, b);
     }
 
-    [[nodiscard]] friend native_i8x16 lt(native_i8x16 a, native_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator<(native_i8x16 a, native_i8x16 b) noexcept
     {
         return native_i8x16{_mm_cmplt_epi8(a.v, b.v)};
     }
 
-    [[nodiscard]] friend native_i8x16 gt(native_i8x16 a, native_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator>(native_i8x16 a, native_i8x16 b) noexcept
     {
         return native_i8x16{_mm_cmpgt_epi8(a.v, b.v)};
     }
 
-    [[nodiscard]] friend native_i8x16 le(native_i8x16 a, native_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator<=(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return ~gt(a, b);
+        return ~(a > b);
     }
 
-    [[nodiscard]] friend native_i8x16 ge(native_i8x16 a, native_i8x16 b) noexcept
+    [[nodiscard]] friend native_i8x16 operator>=(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return ~lt(a, b);
+        return ~(a < b);
     }
 
     [[nodiscard]] friend native_i8x16 operator+(native_i8x16 a) noexcept

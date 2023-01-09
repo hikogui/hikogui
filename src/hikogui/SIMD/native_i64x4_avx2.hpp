@@ -124,7 +124,7 @@ struct native_simd<int64_t,4> {
      */
     [[nodiscard]] bool empty() const noexcept
     {
-        return eq(*this, native_simd{}).mask() == 0b1111;
+        return equal(*this, native_simd{});
     }
 
     /** Check if any element is non-zero.
@@ -166,7 +166,7 @@ struct native_simd<int64_t,4> {
      */
     [[nodiscard]] static native_simd ones() noexcept
     {
-        return eq(native_simd{}, native_simd{});
+        return native_simd{} == native_simd{};
     }
 
     [[nodiscard]] static native_simd from_mask(size_t a) noexcept
@@ -201,39 +201,39 @@ struct native_simd<int64_t,4> {
      * way as IEEE-754. This is because when you comparing two vectors
      * having a NaN in one of the elements does not invalidate the complete vector.
      */
-    [[nodiscard]] friend bool operator==(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend bool equal(native_simd a, native_simd b) noexcept
     {
-        return eq(a, b).mask() == 0b1111;
+        return (a == b).mask() == 0b1111;
     }
 
-    [[nodiscard]] friend native_simd eq(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator==(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm256_cmpeq_epi64(a.v, b.v)};
     }
 
-    [[nodiscard]] friend native_simd ne(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator!=(native_simd a, native_simd b) noexcept
     {
-        return ~eq(a, b);
+        return ~(a == b);
     }
 
-    [[nodiscard]] friend native_simd lt(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator<(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm256_cmpgt_epi64(b.v, a.v)};
     }
 
-    [[nodiscard]] friend native_simd gt(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator>(native_simd a, native_simd b) noexcept
     {
         return native_simd{_mm256_cmpgt_epi64(a.v, b.v)};
     }
 
-    [[nodiscard]] friend native_simd le(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator<=(native_simd a, native_simd b) noexcept
     {
-        return ~gt(a, b);
+        return ~(a > b);
     }
 
-    [[nodiscard]] friend native_simd ge(native_simd a, native_simd b) noexcept
+    [[nodiscard]] friend native_simd operator>=(native_simd a, native_simd b) noexcept
     {
-        return ~lt(a, b);
+        return ~(a < b);
     }
 
     [[nodiscard]] friend native_simd operator+(native_simd a) noexcept
@@ -302,19 +302,19 @@ struct native_simd<int64_t,4> {
 
     [[nodiscard]] friend native_simd min(native_simd a, native_simd b) noexcept
     {
-        hilet mask = lt(a, b);
+        hilet mask = a < b;
         return (mask & a) | not_and(mask, b);
     }
 
     [[nodiscard]] friend native_simd max(native_simd a, native_simd b) noexcept
     {
-        hilet mask = gt(a, b);
+        hilet mask = a > b;
         return (mask & a) | not_and(mask, b);
     }
 
     [[nodiscard]] friend native_simd abs(native_simd a) noexcept
     {
-        hilet mask = gt(a, native_simd{});
+        hilet mask = a >= native_simd{};
         return (mask & a) | not_and(mask, -a);
     }
 
