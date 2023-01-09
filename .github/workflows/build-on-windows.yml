@@ -71,7 +71,7 @@ jobs:
 
       - name: 🎯 Cache VULKAN SDK & Runtime
         id: cache-vulkan
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3
         with:
           path: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
           key: cache-windows-vulkan-${{steps.vulkan-version.outputs.VULKAN_VERSION}}-0
