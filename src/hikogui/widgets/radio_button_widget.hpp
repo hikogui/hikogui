@@ -33,7 +33,7 @@ namespace hi { inline namespace v1 {
  * different `on_value`: 1, 2 and 3. Initially the value is 0, and therefor none
  * of the radio buttons is selected when the application is started.
  *
- * @snippet widgets/radio_button_example.cpp Create three radio buttons
+ * @snippet widgets/radio_button_example_impl.cpp Create three radio buttons
  *
  * @note Unlike some other GUI toolkits a radio button is a singular widget.
  *       Multiple radio buttons may share a delegate or an observer which
@@ -92,17 +92,21 @@ public:
     }
 
     /// @privatesection
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    extent2 _button_size;
-    aarectangle _button_rectangle;
+    box_constraints _label_constraints;
+
+    extent2i _button_size;
+    aarectanglei _button_rectangle;
+    circle _button_circle;
+
     animator<float> _animated_value = _animation_duration;
-    aarectangle _pip_rectangle;
+    circle _pip_circle;
 
     void draw_radio_button(draw_context const& context) noexcept;
     void draw_radio_pip(draw_context const& context) noexcept;

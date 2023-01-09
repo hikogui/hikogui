@@ -3,28 +3,28 @@
     "mode": "light",
 
     // Distance between widgets and between widgets and the border of the container.
-    "margin": 4.5,
+    "margin": 5,
 
     // The line-width of a border.
-    "border-width": 1.0,
+    "border-width": 1,
 
     // The rounding radius of boxes with rounded corners.
-    "rounding-radius": 4.0,
+    "rounding-radius": 4,
 
     // The size of small square widgets.
-    "size": 11.0,
+    "size": 11,
 
     // The size of large widgets. Such as the minimum scroll bar size.
-    "large-size": 18.5,
+    "large-size": 19,
 
     // Size of icons inside a widget.
-    "icon-size": 7.5,
+    "icon-size": 7,
 
     // Size of icons representing the length of am average word of a label's text.
-    "large-icon-size": 22.5,
+    "large-icon-size": 23,
 
     // Size of icons being inline with a label's text.
-    "label-icon-size": 15.0,
+    "label-icon-size": 15,
 
     // The colors values are either:
     // - integers are in sRGB
@@ -78,44 +78,44 @@
     "small-label-style": {
         "family": "Arial",
         "weight": "Normal",
-        "size": 10.0,
+        "size": 10,
         "color": "foreground"
     },
 
     "label-style": {
         "family": "Arial",
         "weight": "Regular",
-        "size": 12.0,
+        "size": 12,
         "color": "foreground"
     },
     "warning-label-style": {
         "family": "Times New Roman",
         "weight": "Regular",
-        "size": 12.0,
+        "size": 12,
         "color": "foreground"
     },
     "error-label-style": {
         "family": "Arial",
         "weight": "Regular",
-        "size": 12.0,
+        "size": 12,
         "color": "red"
     },
     "help-label-style": {
         "family": "Arial",
         "weight": "Regular",
-        "size": 12.0,
+        "size": 12,
         "color": [88, 86, 214]
     },
     "placeholder-label-style": {
         "family": "Arial",
         "weight": "Regular",
-        "size": 12.0,
+        "size": 12,
         "color": [142, 142, 147]
     },
     "link-label-style": {
         "family": "Arial",
         "weight": "Regular",
-        "size": 12.0,
+        "size": 12,
         "color": [0, 122, 255]
     }
 }

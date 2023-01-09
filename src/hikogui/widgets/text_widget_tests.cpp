@@ -5,6 +5,7 @@
 #include "text_widget.hpp"
 #include "../file/path_location.hpp"
 #include "../GUI/theme_book.hpp"
+#include "../GUI/gui_window.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -14,35 +15,54 @@ using namespace hi;
 
 class text_widget_tests : public ::testing::Test {
 protected:
+    class window_widget_moc : public hi::widget {
+    public:
+        window_widget_moc() noexcept : hi::widget(nullptr) {}
+
+        [[nodiscard]] hi::theme const& theme() const noexcept override
+        {
+            return _theme;
+        }
+
+        hi::theme _theme;
+    };
+
     std::unique_ptr<hi::font_book> font_book;
     std::unique_ptr<hi::theme_book> theme_book;
     hi::theme theme;
 
-    set_constraints_context c_context;
-
     observer<std::string> text;
+    std::shared_ptr<window_widget_moc> window_widget;
     std::shared_ptr<hi::text_widget> widget;
+
 
     void SetUp() override
     {
+        hi::start_system();
+        os_settings::start_subsystem();
+
         // Cursor movement (including editing) requires the text to be shaped.
         // text shaping requires fonts and text styles.
-        font_book = std::make_unique<hi::font_book>(make_vector(get_paths(path_location::font_dirs)));
-        theme_book = std::make_unique<hi::theme_book>(*font_book, make_vector(get_paths(path_location::theme_dirs)));
+        auto &fb = font_book::global();
+        for (auto const &path : get_paths(path_location::font_dirs)) {
+            fb.register_font_directory(path);
+        }
+        theme_book = std::make_unique<hi::theme_book>(fb, make_vector(get_paths(path_location::theme_dirs)));
         theme = theme_book->find("default", theme_mode::light);
-        c_context = set_constraints_context{font_book.get(), &theme, unicode_bidi_class::L};
 
-        widget = std::make_shared<hi::text_widget>(nullptr, text);
+        window_widget = std::make_shared<window_widget_moc>();
+        window_widget->_theme = theme;
+
+        widget = std::make_shared<hi::text_widget>(window_widget.get(), text);
         widget->mode = hi::widget_mode::enabled;
 
-        auto constraints = widget->set_constraints(c_context);
-        auto l_context = widget_layout{};
-        l_context.shape.width = constraints.preferred_width;
-        l_context.shape.height = constraints.preferred_height;
-        l_context.shape.baseline = constraints.preferred_height / 2;
-        l_context.font_book = font_book.get();
-        l_context.theme = &theme;
-        widget->set_layout(l_context);
+        auto constraints = widget->update_constraints();
+        auto layout = widget_layout{};
+        layout.shape.rectangle = aarectanglei{constraints.preferred};
+        layout.shape.baseline = constraints.preferred.height() / 2;
+        // display_time_point is used to check for valid widget_layout. 
+        layout.display_time_point = std::chrono::utc_clock::now();
+        widget->set_layout(layout);
     }
 };
 

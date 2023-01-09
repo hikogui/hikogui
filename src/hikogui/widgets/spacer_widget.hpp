@@ -27,15 +27,13 @@ public:
         co_return;
     }
 
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
 
         auto r = box_constraints{};
-        r.maximum_width = box_constraints::max_int();
-        r.maximum_height = box_constraints::max_int();
-
-        return _constraints = r;
+        r.maximum = extent2i::large();
+        return r;
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -45,7 +43,7 @@ public:
 
     void draw(draw_context const& context) noexcept {}
 
-    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept
     {
         return hitbox{};
     }

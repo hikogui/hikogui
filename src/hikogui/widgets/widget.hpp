@@ -8,22 +8,23 @@
 
 #pragma once
 
+#include "widget_layout.hpp"
+#include "widget_mode.hpp"
 #include "../GFX/draw_context.hpp"
 #include "../GUI/theme.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
 #include "../GUI/gui_event.hpp"
+#include "../layout/box_constraints.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
 #include "../observer.hpp"
 #include "../chrono.hpp"
 #include "../generator.hpp"
-#include "set_constraints_context.hpp"
-#include "../layout/box_constraints.hpp"
-#include "widget_layout.hpp"
-#include "widget_mode.hpp"
+#include "../cache.hpp"
+#include "../os_settings.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -31,12 +32,12 @@
 
 namespace hi { inline namespace v1 {
 class gui_window;
-class font_book;
+class gfx_surface;
 
 /** An interactive graphical object as part of the user-interface.
  *
  * Rendering is done in three distinct phases:
- *  1. Updating Constraints: `widget::set_constraints()`
+ *  1. Updating Constraints: `widget::update_constraints()`
  *  2. Updating Layout: `widget::set_layout()`
  *  3. Drawing: `widget::draw()`
  *
@@ -93,21 +94,13 @@ public:
      */
     int logical_layer = 0;
 
-    /** The minimum width this widget is allowed to be.
+    /** The minimum size this widget is allowed to be.
      */
-    observer<int> minimum_width = 0;
+    observer<extent2i> minimum = extent2i{};
 
-    /** The minimum height this widget is allowed to be.
+    /** The maximum size this widget is allowed to be.
      */
-    observer<int> minimum_height = 0;
-
-    /** The maximum width this widget is allowed to be.
-     */
-    observer<int> maximum_width = box_constraints::max_int();
-
-    /** The maximum height this widget is allowed to be.
-     */
-    observer<int> maximum_height = box_constraints::max_int();
+    observer<extent2i> maximum = extent2i::large();
 
     /*! Constructor for creating sub views.
      */
@@ -126,7 +119,7 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test(point2i position) const noexcept
     {
         return {};
     }
@@ -137,7 +130,7 @@ public:
      *
      * @param position The coordinate of the mouse local to the parent widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position) const noexcept
     {
         return hitbox_test(_layout.from_parent * position);
     }
@@ -149,7 +142,7 @@ public:
      * @param position The coordinate of the mouse local to the parent widget.
      * @param sibling_hitbox The hitbox of a sibling to combine with the hitbox of this widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position, hitbox sibling_hitbox) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position, hitbox sibling_hitbox) const noexcept
     {
         return std::max(sibling_hitbox, hitbox_test(_layout.from_parent * position));
     }
@@ -165,7 +158,7 @@ public:
 
     /** Update the constraints of the widget.
      *
-     * Typically the implementation of this function starts with recursively calling set_constraints()
+     * Typically the implementation of this function starts with recursively calling update_constraints()
      * on its children.
      *
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
@@ -174,11 +167,10 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual box_constraints const& set_constraints(set_constraints_context const& context) noexcept = 0;
-
-    box_constraints const& constraints() const noexcept
+    virtual [[nodiscard]] box_constraints update_constraints() noexcept
     {
-        return _constraints;
+        _layout = {};
+        return {*minimum, *minimum, *maximum};
     }
 
     /** Update the internal layout of the widget.
@@ -192,7 +184,10 @@ public:
      *       matrices.
      * @param layout The layout for this child.
      */
-    virtual void set_layout(widget_layout const& context) noexcept = 0;
+    virtual void set_layout(widget_layout const& context) noexcept
+    {
+        _layout = context;
+    }
 
     /** Get the current layout for this widget.
      */
@@ -215,7 +210,7 @@ public:
      *
      * @param context The context to where the widget will draw.
      */
-    virtual void draw(draw_context const& context) noexcept = 0;
+    virtual void draw(draw_context const& context) noexcept {}
 
     virtual bool process_event(gui_event const& event) const noexcept
     {
@@ -286,7 +281,7 @@ public:
      *
      * @param rectangle The rectangle in window coordinates.
      */
-    virtual void scroll_to_show(hi::aarectangle rectangle) noexcept;
+    virtual void scroll_to_show(hi::aarectanglei rectangle) noexcept;
 
     /** Scroll to show the important part of the widget.
      */
@@ -300,18 +295,41 @@ public:
      */
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
 
-    virtual [[nodiscard]] color background_color() const noexcept;
+    [[nodiscard]] virtual gui_window *window() const noexcept
+    {
+        if (parent) {
+            return parent->window();
+        } else {
+            return nullptr;
+        }
+    }
 
-    virtual [[nodiscard]] color foreground_color() const noexcept;
+    [[nodiscard]] virtual hi::theme const& theme() const noexcept
+    {
+        hi_assert_not_null(parent);
+        return parent->theme();
+    }
 
-    virtual [[nodiscard]] color focus_color() const noexcept;
+    [[nodiscard]] virtual gfx_surface const *surface() const noexcept
+    {
+        if (parent) {
+            return parent->surface();
+        } else {
+            return nullptr;
+        }
+    }
 
-    virtual [[nodiscard]] color accent_color() const noexcept;
+    [[nodiscard]] virtual color background_color() const noexcept;
 
-    virtual [[nodiscard]] color label_color() const noexcept;
+    [[nodiscard]] virtual color foreground_color() const noexcept;
+
+    [[nodiscard]] virtual color focus_color() const noexcept;
+
+    [[nodiscard]] virtual color accent_color() const noexcept;
+
+    [[nodiscard]] virtual color label_color() const noexcept;
 
 protected:
-    box_constraints _constraints;
     widget_layout _layout;
 
     decltype(mode)::callback_token _mode_cbt;
@@ -330,6 +348,6 @@ protected:
      * @param requested_rectangle A rectangle in the local coordinate system.
      * @return A rectangle that fits the window's constraints in the local coordinate system.
      */
-    [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
+    [[nodiscard]] aarectanglei make_overlay_rectangle(aarectanglei requested_rectangle) const noexcept;
 };
 }} // namespace hi::v1

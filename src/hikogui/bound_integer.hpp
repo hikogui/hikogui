@@ -120,17 +120,17 @@ struct bound_integer {
         return *this;
     }
 
-    template<numeric_integral T>
-    explicit constexpr operator T() noexcept(values_between_bounds_fit_in_type_v<T>)
-    {
-        if constexpr (not values_between_bounds_fit_in_type_v<T>) {
-            if (not(std::numeric_limits<T>::min() <= value and value <= std::numeric_limits<T>::max())) {
-                throw std::overflow_error("operator T()");
-            }
-        }
-
-        return static_cast<T>(value);
-    }
+    //template<numeric_integral T>
+    //explicit constexpr operator T() noexcept(values_between_bounds_fit_in_type_v<T>)
+    //{
+    //    if constexpr (not values_between_bounds_fit_in_type_v<T>) {
+    //        if (not(std::numeric_limits<T>::min() <= value and value <= std::numeric_limits<T>::max())) {
+    //            throw std::overflow_error("operator T()");
+    //        }
+    //    }
+    //
+    //    return static_cast<T>(value);
+    //}
 
     explicit constexpr operator bool() noexcept
     {

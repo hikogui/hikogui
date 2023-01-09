@@ -23,18 +23,17 @@ public:
 
     ~gui_window_win32();
 
-    void create_window(extent2 new_size) override;
+    void create_window(extent2i new_size) override;
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
     void set_cursor(mouse_cursor cursor) noexcept override;
     void close_window() override;
     void set_size_state(gui_window_size state) noexcept override;
-    [[nodiscard]] aarectangle workspace_rectangle() const noexcept override;
-    [[nodiscard]] aarectangle fullscreen_rectangle() const noexcept override;
+    [[nodiscard]] aarectanglei workspace_rectangle() const noexcept override;
+    [[nodiscard]] aarectanglei fullscreen_rectangle() const noexcept override;
     [[nodiscard]] hi::subpixel_orientation subpixel_orientation() const noexcept override;
-    [[nodiscard]] unicode_bidi_class writing_direction() const noexcept override;
     void open_system_menu() override;
-    void set_window_size(extent2 extent) override;
+    void set_window_size(extent2i extent) override;
     [[nodiscard]] std::optional<std::string> get_text_from_clipboard() const noexcept override;
     void put_text_on_clipboard(std::string_view str) const noexcept override;
 
@@ -46,7 +45,7 @@ private:
     char32_t high_surrogate = 0;
     gui_event mouse_button_event;
     utc_nanoseconds multi_click_time_point;
-    point2 multi_click_position;
+    point2i multi_click_position;
     uint8_t multi_click_count;
 
     bool keymenu_pressed = false;

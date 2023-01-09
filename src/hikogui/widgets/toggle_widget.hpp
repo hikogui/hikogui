@@ -45,7 +45,7 @@ namespace hi { inline namespace v1 {
  * observes `value`. When the value is 1 the toggle is 'on', when the value is 2
  * the toggle is 'off'.
  *
- * @snippet widgets/toggle_example.cpp Create a toggle
+ * @snippet widgets/toggle_example_impl.cpp Create a toggle
  *
  * @ingroup widgets
  */
@@ -150,18 +150,20 @@ public:
     }
 
     /// @privatesection
-    box_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    extent2 _button_size;
-    aarectangle _button_rectangle;
+    box_constraints _label_constraints;
+
+    extent2i _button_size;
+    aarectanglei _button_rectangle;
     animator<float> _animated_value = _animation_duration;
-    aarectangle _pip_rectangle;
-    float _pip_move_range;
+    circle _pip_circle;
+    int _pip_move_range;
 
     void draw_toggle_button(draw_context const& context) noexcept;
     void draw_toggle_pip(draw_context const& context) noexcept;

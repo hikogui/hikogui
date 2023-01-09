@@ -229,6 +229,7 @@ public:
      * @return The length of the vector.
      */
     [[nodiscard]] constexpr friend value_type hypot(vector const& rhs) noexcept
+        requires std::is_floating_point_v<value_type>
     {
         hi_axiom(rhs.holds_invariant());
         return hypot<element_mask>(rhs._v);

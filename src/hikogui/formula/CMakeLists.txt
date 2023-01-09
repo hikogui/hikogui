@@ -3,7 +3,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(hikogui PRIVATE
-    formula.cpp
+    formula_impl.cpp
     formula.hpp
     formula_add_node.hpp
     formula_arguments.hpp
@@ -49,7 +49,7 @@ target_sources(hikogui PRIVATE
     formula_node.hpp
     formula_parse_context.hpp
     formula_plus_node.hpp
-    formula_post_process_context.cpp
+    formula_post_process_context_impl.cpp
     formula_post_process_context.hpp
     formula_pow_node.hpp
     formula_shl_node.hpp

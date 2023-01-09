@@ -101,21 +101,21 @@ public:
         }
     }
 
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
 
         for (auto& child : _children) {
-            child.set_constraints(child.value->set_constraints(context));
+            child.set_constraints(child.value->update_constraints());
         }
 
-        return _constraints = _children.get_constraints(context.left_to_right());
+        return _children.constraints(os_settings::left_to_right());
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _children.set_layout(context.shape, context.theme->baseline_adjustment);
+            _children.set_layout(context.shape, theme().baseline_adjustment());
 
             for (hilet& child : _children) {
                 child.value->set_layout(context.transform(child.shape, 0.0f));
@@ -132,7 +132,7 @@ public:
         }
     }
 
-    hitbox hitbox_test(point3 position) const noexcept override
+    hitbox hitbox_test(point2i position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 

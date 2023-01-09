@@ -72,13 +72,13 @@ public:
             this, aperture->content_height, aperture->aperture_height, aperture->offset_y);
 
         if (to_bool(axis & axis::horizontal)) {
-            minimum_width = 0;
+            minimum.copy()->width() = 0;
         } else {
             horizontal_scroll_bar->mode = widget_mode::collapse;
         }
 
         if (to_bool(axis & axis::vertical)) {
-            minimum_height = 0;
+            minimum.copy()->height() = 0;
         } else {
             vertical_scroll_bar->mode = widget_mode::collapse;
         }
@@ -115,21 +115,21 @@ public:
         co_yield _horizontal_scroll_bar;
     }
 
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
 
         for (auto& cell : _grid) {
-            cell.set_constraints(cell.value->set_constraints(context));
+            cell.set_constraints(cell.value->update_constraints());
         }
-        auto grid_constraints = _grid.get_constraints(context.left_to_right());
-        return _constraints = grid_constraints.constrain(*minimum_width, *minimum_height, *maximum_width, *maximum_height);
+        auto grid_constraints = _grid.constraints(os_settings::left_to_right());
+        return grid_constraints.constrain(*minimum, *maximum);
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _grid.set_layout(context.shape, context.theme->baseline_adjustment);
+            _grid.set_layout(context.shape, theme().baseline_adjustment());
         }
 
         for (hilet& cell : _grid) {
@@ -140,12 +140,10 @@ public:
                 // The grid cells are always ordered in row-major.
                 // This the vertical scroll bar is _grid[1] and the horizontal scroll bar is _grid[2].
                 if (not _vertical_scroll_bar->visible()) {
-                    shape.x = 0;
-                    shape.width = _layout.width();
+                    shape.rectangle = aarectanglei{0, shape.y(), _layout.width(), shape.height()};
                 }
                 if (not _horizontal_scroll_bar->visible()) {
-                    shape.y = 0;
-                    shape.height = _layout.height();
+                    shape.rectangle = aarectanglei{shape.x(), 0, shape.width(), _layout.height()};
                 }
             }
 
@@ -162,7 +160,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
@@ -172,7 +170,7 @@ public:
             r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{this, position});
+                r = std::max(r, hitbox{this, _layout.elevation});
             }
             return r;
 

@@ -171,8 +171,11 @@ template<std::integral Out, arithmetic In>
  * @param rhs The value to cast.
  * @return The value casted to a different type without loss of precision.
  */
+template<typename Out, typename In>
+[[nodiscard]] constexpr Out narrow_cast(In const &rhs) noexcept;
+
 template<arithmetic Out, arithmetic In>
-[[nodiscard]] constexpr Out narrow_cast(In rhs) noexcept
+[[nodiscard]] constexpr Out narrow_cast(In const &rhs) noexcept
 {
     if constexpr (type_in_range_v<Out, In>) {
         return static_cast<Out>(rhs);
@@ -180,6 +183,36 @@ template<arithmetic Out, arithmetic In>
         hilet r = static_cast<Out>(rhs);
         hi_axiom(detail::narrow_validate(r, rhs));
         return r;
+    }
+}
+
+template<arithmetic Out, arithmetic In>
+[[nodiscard]] constexpr Out round_cast(In rhs) noexcept
+{
+    if constexpr (std::is_floating_point_v<In>) {
+        return narrow_cast<Out>(std::round(rhs));
+    } else {
+        return narrow_cast<Out>(rhs);
+    }
+}
+
+template<arithmetic Out, arithmetic In>
+[[nodiscard]] constexpr Out floor_cast(In rhs) noexcept
+{
+    if constexpr (std::is_floating_point_v<In>) {
+        return narrow_cast<Out>(std::floor(rhs));
+    } else {
+        return narrow_cast<Out>(rhs);
+    }
+}
+
+template<arithmetic Out, arithmetic In>
+[[nodiscard]] constexpr Out ceil_cast(In rhs) noexcept
+{
+    if constexpr (std::is_floating_point_v<In>) {
+        return narrow_cast<Out>(std::ceil(rhs));
+    } else {
+        return narrow_cast<Out>(rhs);
     }
 }
 

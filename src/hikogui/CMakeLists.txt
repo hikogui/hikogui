@@ -21,7 +21,7 @@ add_subdirectory(text)
 add_subdirectory(unicode)
 add_subdirectory(widgets)
 
-configure_file(metadata.cpp.in metadata.cpp @ONLY)
+configure_file(metadata_impl.cpp.in metadata_impl.cpp @ONLY)
 
 target_sources(hikogui PRIVATE
     algorithm.hpp
@@ -30,44 +30,45 @@ target_sources(hikogui PRIVATE
     assert.hpp
     atomic.hpp
     awaitable.hpp
-    awaitable_timer.cpp
+    awaitable_timer_impl.cpp
 	awaitable_timer.hpp
     bezier.hpp
-    bezier_curve.cpp
+    bezier_curve_impl.cpp
     bezier_curve.hpp
     bezier_point.hpp
     bigint.hpp
     bits.hpp
     bound_integer.hpp
     byte_string.hpp
+    cache.hpp
     callback_flags.hpp
     cast.hpp
     check.hpp
     chrono.hpp
     concepts.hpp
     console.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
-    counters.cpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/console_win32_impl.cpp>
+    counters_impl.cpp
     counters.hpp
     CP1252.hpp
     #cpu_id.hpp
-    #$<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR}:AMD64>:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64.cpp>
+    #$<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR}:AMD64>:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64_impl.cpp>
     crt.hpp
     crt_utils.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32_impl.cpp>
     datum.hpp
-    dead_lock_detector.cpp
+    dead_lock_detector_impl.cpp
     dead_lock_detector.hpp
     debugger.hpp
     $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32_impl.cpp>
     decimal.hpp
     defer.hpp
     dialog.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32_impl.cpp>
     endian.hpp
     enum_metadata.hpp
-    exception.cpp
+    exception_impl.cpp
     exception.hpp
     fixed.hpp
     float16.hpp
@@ -89,19 +90,19 @@ target_sources(hikogui PRIVATE
     label.hpp
     lean_vector.hpp
     locked_memory_allocator.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>
-    log.cpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32_impl.cpp>
+    log_impl.cpp
     log.hpp
     $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/log_win32_impl.cpp>
     long_tagged_id.hpp
 	loop.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32_impl.cpp>
     math.hpp
     memory.hpp
     group_ptr.hpp
     meta.hpp
-    ${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/metadata_impl.cpp
     metadata.hpp
     numbers.hpp
     notifier.hpp
@@ -110,18 +111,18 @@ target_sources(hikogui PRIVATE
     observable_value.hpp
     observer.hpp
     operator.hpp
-    os_settings.cpp
+    os_settings_impl.cpp
     os_settings.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32_impl.cpp>
     architecture.hpp
     packed_int_array.hpp
     parse_location.hpp
-    preferences.cpp
+    preferences_impl.cpp
     preferences.hpp
-    graphic_path.cpp
+    graphic_path_impl.cpp
     graphic_path.hpp
     pickle.hpp
-    pixel_map.cpp
+    pixel_map_impl.cpp
     pixel_map.hpp
     pixel_map.inl
     placement.hpp
@@ -131,7 +132,7 @@ target_sources(hikogui PRIVATE
     ranges.hpp
     rcu.hpp
     recursive_iterator.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
     utility.hpp
     range_map.hpp
@@ -150,18 +151,18 @@ target_sources(hikogui PRIVATE
     tagged_id.hpp
     tagged_map.hpp
     task.hpp
-    $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
-    thread.cpp
+    $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos_impl.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32_impl.cpp>
+    thread_impl.cpp
     thread.hpp
-    time_stamp_count.cpp
+    time_stamp_count_impl.cpp
     time_stamp_count.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32.cpp>
-    time_stamp_utc.cpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32_impl.cpp>
+    time_stamp_utc_impl.cpp
     time_stamp_utc.hpp
-    tokenizer.cpp
+    tokenizer_impl.cpp
     tokenizer.hpp
-    trace.cpp
+    trace_impl.cpp
     trace.hpp
     tree.hpp
     type_traits.hpp

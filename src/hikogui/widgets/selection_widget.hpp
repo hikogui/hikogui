@@ -37,7 +37,7 @@ concept selection_widget_attribute = label_widget_attribute<Context>;
  * the `option_list`. At application startup, value is zero and none
  * of the options is selected:
  *
- * @snippet widgets/selection_example.cpp Create selection
+ * @snippet widgets/selection_example_impl.cpp Create selection
  *
  * @ingroup widgets
  */
@@ -172,11 +172,11 @@ public:
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
@@ -192,10 +192,10 @@ private:
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    aarectangle _left_box_rectangle;
+    aarectanglei _left_box_rectangle;
 
     glyph_ids _chevrons_glyph;
-    aarectangle _chevrons_rectangle;
+    aarectanglei _chevrons_rectangle;
 
     bool _selecting = false;
     bool _has_options = false;

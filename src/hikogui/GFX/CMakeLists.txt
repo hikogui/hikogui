@@ -3,67 +3,67 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(hikogui PRIVATE
-    draw_context.cpp
+    draw_context_impl.cpp
     draw_context.hpp
-    gfx_device.cpp
+    gfx_device_impl.cpp
     gfx_device.hpp
-    gfx_device_vulkan.cpp
+    gfx_device_vulkan_impl.cpp
     gfx_device_vulkan.hpp
-    gfx_surface.cpp
+    gfx_surface_impl.cpp
     gfx_surface.hpp
     gfx_surface_state.hpp
-    gfx_surface_vulkan.cpp
+    gfx_surface_vulkan_impl.cpp
     gfx_surface_vulkan.hpp
-    gfx_system.cpp
+    gfx_system_impl.cpp
     gfx_system.hpp
     gfx_system_globals.hpp
-    gfx_system_vulkan.cpp
+    gfx_system_vulkan_impl.cpp
     gfx_system_vulkan.hpp
     #$<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_macos.hpp>
     #$<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/fgx_system_vulkan_macos.mm>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.cpp>
-    paged_image.cpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32_impl.cpp>
+    paged_image_impl.cpp
     paged_image.hpp
     pipeline.hpp
-    pipeline_vulkan.cpp
+    pipeline_vulkan_impl.cpp
     pipeline_vulkan.hpp
-    pipeline_alpha.cpp
+    pipeline_alpha_impl.cpp
     pipeline_alpha.hpp
-    pipeline_alpha_device_shared.cpp
+    pipeline_alpha_device_shared_impl.cpp
     pipeline_alpha_device_shared.hpp
     pipeline_alpha_push_constants.hpp
     pipeline_alpha_vertex.hpp
-    pipeline_box.cpp
+    pipeline_box_impl.cpp
     pipeline_box.hpp
-    pipeline_box_device_shared.cpp
+    pipeline_box_device_shared_impl.cpp
     pipeline_box_device_shared.hpp
     pipeline_box_push_constants.hpp
     pipeline_box_vertex.hpp
-    pipeline_image.cpp
+    pipeline_image_impl.cpp
     pipeline_image.hpp
-    pipeline_image_device_shared.cpp
+    pipeline_image_device_shared_impl.cpp
     pipeline_image_device_shared.hpp
     pipeline_image_push_constants.hpp
-    pipeline_image_texture_map.cpp
+    pipeline_image_texture_map_impl.cpp
     pipeline_image_texture_map.hpp
     pipeline_image_vertex.hpp
-    pipeline_SDF.cpp
+    pipeline_SDF_impl.cpp
     pipeline_SDF.hpp
-    pipeline_SDF_device_shared.cpp
+    pipeline_SDF_device_shared_impl.cpp
     pipeline_SDF_device_shared.hpp
     pipeline_SDF_push_constants.hpp
     pipeline_SDF_specialization_constants.hpp
-    pipeline_SDF_texture_map.cpp
+    pipeline_SDF_texture_map_impl.cpp
     pipeline_SDF_texture_map.hpp
     pipeline_SDF_vertex.hpp
-    pipeline_tone_mapper.cpp
+    pipeline_tone_mapper_impl.cpp
     pipeline_tone_mapper.hpp
-    pipeline_tone_mapper_device_shared.cpp
+    pipeline_tone_mapper_device_shared_impl.cpp
     pipeline_tone_mapper_device_shared.hpp
     pipeline_tone_mapper_push_constants.hpp
-    RenderDoc.cpp
+    RenderDoc_impl.cpp
     RenderDoc.hpp
     subpixel_orientation.hpp
-    VulkanMemoryAllocator.cpp
+    VulkanMemoryAllocator_impl.cpp
 )
 

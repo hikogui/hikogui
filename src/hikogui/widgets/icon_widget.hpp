@@ -67,7 +67,7 @@ public:
     }
 
     /// @privatesection
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     /// @endprivatesection
@@ -81,7 +81,7 @@ private:
     std::atomic<bool> _icon_has_modified = true;
 
     extent2 _icon_size;
-    aarectangle _icon_rectangle;
+    aarectanglei _icon_rectangle;
 
     icon_widget(widget *parent) noexcept;
 };

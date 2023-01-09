@@ -1523,7 +1523,7 @@ struct numeric_array {
      * @return Result of the hypot calculation.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr T hypot(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend T hypot(numeric_array const& rhs) noexcept requires (std::is_floating_point_v<value_type>)
     {
         return std::sqrt(dot<Mask>(rhs, rhs));
     }
@@ -2242,9 +2242,9 @@ struct numeric_array {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
             if constexpr (is_i32x8) {
-                return numeric_array{_mm256_mul_epi32(lhs.reg(), rhs.reg())};
+                return numeric_array{_mm256_mullo_epi32(lhs.reg(), rhs.reg())};
             } else if constexpr (is_u32x8) {
-                return numeric_array{_mm256_mul_epu32(lhs.reg(), rhs.reg())};
+                return numeric_array{_mm256_mullo_epu32(lhs.reg(), rhs.reg())};
             }
 #endif
 #if defined(HI_HAS_AVX)
@@ -2256,7 +2256,7 @@ struct numeric_array {
 #endif
 #if defined(HI_HAS_SSE4_1)
             if constexpr (is_i32x4) {
-                return numeric_array{_mm_mul_epi32(lhs.reg(), rhs.reg())};
+                return numeric_array{_mm_mullo_epi32(lhs.reg(), rhs.reg())};
             } else if constexpr (is_f16x4) {
                 return numeric_array{numeric_array<float, 4>{lhs} * numeric_array<float, 4>{rhs}};
             }
@@ -2308,6 +2308,8 @@ struct numeric_array {
 #if defined(HI_HAS_SSE)
             if constexpr (is_f32x4) {
                 return numeric_array{_mm_div_ps(lhs.reg(), rhs.reg())};
+            } else if constexpr (is_i32x4) {
+                return numeric_array{_mm_div_epi32(lhs.reg(), rhs.reg())};
             }
 #endif
         }

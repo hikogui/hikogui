@@ -49,15 +49,33 @@ public:
     }
 
     /** Get the configured writing direction.
-    * 
-    * The writing-direction is extracted from the first language/script configured on the system.
-    * 
-    * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
-    */
+     *
+     * The writing-direction is extracted from the first language/script configured on the system.
+     *
+     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
+     */
     [[nodiscard]] static unicode_bidi_class writing_direction() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         return _writing_direction.load(std::memory_order::relaxed);
+    }
+
+    /** Check if the configured writing direction is left-to-right.
+     *
+     * @retval true If the writing direction is left-to-right.
+     */
+    [[nodiscard]] static bool left_to_right() noexcept
+    {
+        return writing_direction() == unicode_bidi_class::L;
+    }
+
+    /** Check if the configured writing direction is right-to-left.
+     *
+     * @retval true If the writing direction is right-to-left.
+     */
+    [[nodiscard]] static bool right_to_left() noexcept
+    {
+        return not left_to_right();
     }
 
     /** Get the configured light/dark theme mode
@@ -193,7 +211,7 @@ public:
      *
      * @return The rectangle describing the size and location inside the desktop.
      */
-    [[nodiscard]] static aarectangle primary_monitor_rectangle() noexcept
+    [[nodiscard]] static aarectanglei primary_monitor_rectangle() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
@@ -212,7 +230,7 @@ public:
      *
      * @return The bounding rectangle around the desktop. With the origin being equal to the origin of the primary monitor.
      */
-    [[nodiscard]] static aarectangle desktop_rectangle() noexcept
+    [[nodiscard]] static aarectanglei desktop_rectangle() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
@@ -223,7 +241,8 @@ public:
      */
     static void gather() noexcept;
 
-    [[nodiscard]] static callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    [[nodiscard]] static callback_token
+    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
         hilet lock = std::scoped_lock(_mutex);
         return _notifier.subscribe(hi_forward(callback), flags);
@@ -267,9 +286,8 @@ private:
     static inline std::atomic<int> _maximum_window_width = 1920;
     static inline std::atomic<int> _maximum_window_height = 1080;
     static inline std::atomic<uintptr_t> _primary_monitor_id = 0;
-    static inline aarectangle _primary_monitor_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
-    static inline aarectangle _desktop_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
-
+    static inline aarectanglei _primary_monitor_rectangle = aarectanglei{0, 0, 1920, 1080};
+    static inline aarectanglei _desktop_rectangle = aarectanglei{0, 0, 1920, 1080};
 
     [[nodiscard]] static bool subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;
@@ -289,8 +307,8 @@ private:
     [[nodiscard]] static int gather_maximum_window_width();
     [[nodiscard]] static int gather_maximum_window_height();
     [[nodiscard]] static uintptr_t gather_primary_monitor_id();
-    [[nodiscard]] static aarectangle gather_primary_monitor_rectangle();
-    [[nodiscard]] static aarectangle gather_desktop_rectangle();
+    [[nodiscard]] static aarectanglei gather_primary_monitor_rectangle();
+    [[nodiscard]] static aarectanglei gather_desktop_rectangle();
 };
 
 } // namespace hi::inline v1

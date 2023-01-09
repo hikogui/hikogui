@@ -25,7 +25,6 @@ template<typename T>
 class pixel_map;
 class mat;
 class gfx_device_vulkan;
-class shaped_text;
 struct attributed_glyph;
 
 namespace pipeline_SDF {
@@ -106,10 +105,6 @@ struct device_shared final {
     /** This will transition the atlas to 'shader-read'.
      */
     void prepare_atlas_for_rendering();
-
-    /** Prepare the atlas for drawing a text.
-     */
-    void prepareAtlas(shaped_text const &text) noexcept;
 
     /** Get the bounding box, including draw border of a glyph.
      */

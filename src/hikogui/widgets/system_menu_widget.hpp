@@ -45,17 +45,17 @@ public:
         co_yield _icon_widget.get();
     }
 
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
     /// @endprivatesection
 private:
     std::shared_ptr<icon_widget> _icon_widget;
     box_constraints _icon_constraints;
     box_shape _icon_shape;
 
-    aarectangle _system_menu_rectangle;
+    aarectanglei _system_menu_rectangle;
 };
 
 }} // namespace hi::v1

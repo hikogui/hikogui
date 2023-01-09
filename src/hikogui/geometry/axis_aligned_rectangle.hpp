@@ -14,6 +14,8 @@
 #include "../rapid/numeric_array.hpp"
 #include "../concepts.hpp"
 #include "../unfair_mutex.hpp"
+#include "../cast.hpp"
+#include "../numbers.hpp"
 #include <concepts>
 #include <mutex>
 
@@ -33,6 +35,15 @@ public:
     constexpr axis_aligned_rectangle& operator=(axis_aligned_rectangle const& rhs) noexcept = default;
     constexpr axis_aligned_rectangle(axis_aligned_rectangle&& rhs) noexcept = default;
     constexpr axis_aligned_rectangle& operator=(axis_aligned_rectangle&& rhs) noexcept = default;
+
+    /** Create a large axis aligned rectangle.
+     */
+    [[nodiscard]] constexpr static axis_aligned_rectangle large() noexcept
+    {
+        return {
+            point<value_type, 2>{-large_number_v<value_type>, -large_number_v<value_type>},
+            point<value_type, 2>{large_number_v<value_type>, large_number_v<value_type>}};
+    }
 
     constexpr explicit axis_aligned_rectangle(array_type const& other) noexcept : v(other)
     {
@@ -56,7 +67,8 @@ public:
      * The rectangle's left bottom corner is at the origin.
      * @param extent The size of the box.
      */
-    constexpr explicit axis_aligned_rectangle(extent<value_type, 2> const& extent) noexcept : v(static_cast<array_type>(extent)._00xy())
+    constexpr explicit axis_aligned_rectangle(extent<value_type, 2> const& extent) noexcept :
+        v(static_cast<array_type>(extent)._00xy())
     {
         hi_axiom(holds_invariant());
     }
@@ -218,14 +230,14 @@ public:
      */
     [[nodiscard]] constexpr value_type middle() const noexcept
     {
-        return (bottom() + top()) * 0.5f;
+        return (bottom() + top()) / value_type{2};
     }
 
     /** The center on the x-axis between left and right.
      */
     [[nodiscard]] constexpr value_type center() const noexcept
     {
-        return (left() + right()) * 0.5f;
+        return (left() + right()) / value_type{2};
     }
 
     /** Get the center of the rectangle.
@@ -262,7 +274,7 @@ public:
      * @param rhs The coordinate of the point to test. This point is
      *            converted to 2D by this function.
      */
-    [[nodiscard]] constexpr bool contains(point3 const& rhs) const noexcept
+    [[nodiscard]] constexpr bool contains(point<value_type, 3> const& rhs) const noexcept
     {
         return contains(point<value_type, 2>{rhs});
     }
@@ -284,7 +296,7 @@ public:
             x = haystack.right() - needle.width();
 
         } else if (alignment == horizontal_alignment::center) {
-            x = haystack.center() - needle.width() * 0.5f;
+            x = haystack.center() - needle.width() / value_type{2};
 
         } else {
             hi_no_default();
@@ -298,7 +310,7 @@ public:
             y = haystack.top() - needle.height();
 
         } else if (alignment == vertical_alignment::middle) {
-            y = haystack.middle() - needle.height() * 0.5f;
+            y = haystack.middle() - needle.height() / value_type{2};
 
         } else {
             hi_no_default();
@@ -413,7 +425,8 @@ public:
         return lhs + -rhs;
     }
 
-    [[nodiscard]] friend constexpr axis_aligned_rectangle round(axis_aligned_rectangle const& rhs) noexcept requires std::is_same_v<value_type, float>
+    [[nodiscard]] friend constexpr axis_aligned_rectangle round(axis_aligned_rectangle const& rhs) noexcept
+        requires std::is_same_v<value_type, float>
     {
         hilet p0 = round(get<0>(rhs));
         hilet size = round(rhs.size());
@@ -434,7 +447,6 @@ public:
      */
     [[nodiscard]] friend constexpr axis_aligned_rectangle
     ceil(axis_aligned_rectangle const& lhs, extent<value_type, 2> const& rhs) noexcept
-        requires std::is_same_v<value_type, float>
     {
         hilet p0 = floor(get<0>(lhs), rhs);
         hilet p3 = ceil(get<3>(lhs), rhs);
@@ -514,6 +526,22 @@ using aarectanglei = geo::axis_aligned_rectangle<int>;
  */
 [[nodiscard]] aarectanglei fit(aarectanglei const& bounds, aarectanglei const& rectangle) noexcept;
 
+template<>
+[[nodiscard]] constexpr aarectanglei narrow_cast(aarectangle const& rhs) noexcept
+{
+    return {narrow_cast<int>(rhs.x()), narrow_cast<int>(rhs.y()), narrow_cast<int>(rhs.width()), narrow_cast<int>(rhs.height())};
+}
+
+template<>
+[[nodiscard]] constexpr aarectangle narrow_cast(aarectanglei const& rhs) noexcept
+{
+    return {
+        narrow_cast<float>(rhs.x()),
+        narrow_cast<float>(rhs.y()),
+        narrow_cast<float>(rhs.width()),
+        narrow_cast<float>(rhs.height())};
+}
+
 }} // namespace hi::v1
 
 template<typename T>
@@ -563,10 +591,7 @@ public:
         return std::exchange(_value, desired);
     }
 
-    bool compare_exchange_weak(
-        value_type& expected, value_type desired,
-        std::memory_order,
-        std::memory_order) noexcept
+    bool compare_exchange_weak(value_type& expected, value_type desired, std::memory_order, std::memory_order) noexcept
     {
         hilet lock = std::scoped_lock(_mutex);
         if (_value == expected) {
@@ -587,9 +612,8 @@ public:
         return compare_exchange_weak(expected, desired, success, failure);
     }
 
-    bool compare_exchange_weak(
-        value_type& expected, value_type desired,
-        std::memory_order order = std::memory_order_seq_cst) noexcept
+    bool
+    compare_exchange_weak(value_type& expected, value_type desired, std::memory_order order = std::memory_order_seq_cst) noexcept
     {
         return compare_exchange_weak(expected, desired, order, order);
     }

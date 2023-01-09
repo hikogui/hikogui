@@ -161,7 +161,7 @@ def replace_copyright_detail(filename, contributors, prefix):
     open(filename, "wb").write(text.encode("UTF-8"))
 
 def replace_copyright(filename, contributors):
-    if filename.endswith(".cpp") or filename.endswith(".hpp"):
+    if filename.endswith("_impl.cpp") or filename.endswith(".hpp"):
         replace_copyright_detail(filename, contributors, "// ")
     elif filename.endswith("CMakeLists.txt"):
         replace_copyright_detail(filename, contributors, "# ")

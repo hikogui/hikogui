@@ -12,6 +12,7 @@
 #include "../GUI/gui_event.hpp"
 #include "../geometry/axis.hpp"
 #include "../observer.hpp"
+#include "../numbers.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -63,25 +64,25 @@ public:
 
     ~scroll_bar_widget() {}
 
-    box_constraints const& set_constraints(set_constraints_context const& context) noexcept override
+    [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
 
         if (*mode <= widget_mode::collapse) {
-            return _constraints = {};
+            return {};
         }
 
-        // The minimum size is twice the length of the slider, which is twice the context.theme->size()
+        // The minimum size is twice the length of the slider, which is twice the theme().size()
         if constexpr (axis == axis::vertical) {
-            return _constraints = {
-                       {context.theme->icon_size, context.theme->size * 4.0f},
-                       {context.theme->icon_size, context.theme->size * 4.0f},
-                       {context.theme->icon_size, 32767.0f}};
+            return {
+                extent2i{theme().icon_size(), theme().size() * 4},
+                extent2i{theme().icon_size(), theme().size() * 4},
+                extent2i{theme().icon_size(), large_number_v<int>}};
         } else {
-            return _constraints = {
-                       {context.theme->size * 4.0f, context.theme->icon_size},
-                       {context.theme->size * 4.0f, context.theme->icon_size},
-                       {32767.0f, context.theme->icon_size}};
+            return {
+                extent2i{theme().size() * 4, theme().icon_size()},
+                extent2i{theme().size() * 4, theme().icon_size()},
+                extent2i{large_number_v<int>, theme().icon_size()}};
         }
     }
 
@@ -97,17 +98,9 @@ public:
         // Calculate the position of the slider.
         hilet slider_offset = narrow_cast<int>(std::round(*offset * travel_vs_hidden_content_ratio()));
         if constexpr (axis == axis::vertical) {
-            _slider_rectangle = aarectangle{
-                0.0f,
-                narrow_cast<float>(slider_offset),
-                narrow_cast<float>(context.width()),
-                narrow_cast<float>(slider_length())};
+            _slider_rectangle = aarectanglei{0, slider_offset, context.width(), slider_length()};
         } else {
-            _slider_rectangle = aarectangle{
-                narrow_cast<float>(slider_offset),
-                0.0f,
-                narrow_cast<float>(slider_length()),
-                narrow_cast<float>(context.height())};
+            _slider_rectangle = aarectanglei{slider_offset, 0, slider_length(), context.height()};
         }
     }
 
@@ -124,13 +117,13 @@ public:
         }
     }
 
-    hitbox hitbox_test(point3 position) const noexcept override
+    hitbox hitbox_test(point2i position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
         if (*mode >= widget_mode::partial and layout().contains(position) and visible() and
             _slider_rectangle.contains(position)) {
-            return {this, position, hitbox_type::scroll_bar};
+            return {this, _layout.elevation, hitbox_type::scroll_bar};
         } else {
             return {};
         }
@@ -173,20 +166,20 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return _layout.theme->color(semantic_color::fill, semantic_layer);
+        return theme().color(semantic_color::fill, semantic_layer);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
         if (*hover) {
-            return _layout.theme->color(semantic_color::fill, semantic_layer + 2);
+            return theme().color(semantic_color::fill, semantic_layer + 2);
         } else {
-            return _layout.theme->color(semantic_color::fill, semantic_layer + 1);
+            return theme().color(semantic_color::fill, semantic_layer + 1);
         }
     }
 
 private:
-    aarectangle _slider_rectangle;
+    aarectanglei _slider_rectangle;
 
     int _offset_before_drag;
 
@@ -222,7 +215,7 @@ private:
             }
         }();
 
-        return std::clamp(preferred_length, narrow_cast<int>(_layout.theme->size) * 2, rail_length());
+        return std::clamp(preferred_length, narrow_cast<int>(theme().size()) * 2, rail_length());
     }
 
     /** The amount of travel that the slider can make.
@@ -274,10 +267,11 @@ private:
 
     void draw_slider(draw_context const& context) noexcept
     {
-        hilet corner_radii = axis == axis::vertical ? hi::corner_radii{_slider_rectangle.width() * 0.5f} :
-                                                      hi::corner_radii{_slider_rectangle.height() * 0.5f};
+        hilet corner_radii = axis == axis::vertical ? hi::corner_radii{narrow_cast<float>(_slider_rectangle.width() / 2)} :
+                                                      hi::corner_radii{narrow_cast<float>(_slider_rectangle.height() / 2)};
 
-        context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_radii);
+        context.draw_box(
+            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_slider_rectangle), foreground_color(), corner_radii);
     }
 };
 

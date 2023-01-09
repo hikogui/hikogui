@@ -9,9 +9,17 @@
 
 #pragma once
 
+#include "concepts.hpp"
 #include <concepts>
 
 namespace hi::inline v1 {
+
+/** A large number.
+* 
+* This number 16777215 (2^24 - 1). Integers beyond this number may not be accurately represented by a float. 
+*/
+template<typename T> requires (std::numeric_limits<T>::max() >= 16777215)
+constexpr auto large_number_v = T{16777215};
 
 /** The number of points (typography) per inch.
  */
