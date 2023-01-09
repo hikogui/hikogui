@@ -158,25 +158,30 @@ struct simd_f64x4 {
 #endif
     }
 
-    /** For each bit in mask set corresponding element to all-ones or all-zeros.
-     */
-    [[nodiscard]] static simd_f64x4 from_mask(size_t mask) noexcept
-    {
-        hi_axiom(mask <= 0b1111);
-
-        constexpr auto all_ones = std::bit_cast<value_type>(uint64_t{0xffff'ffff'ffff'ffff});
-        return simd_f64x4{
-            mask & 0b0001 ? all_ones : 0.0f,
-            mask & 0b0010 ? all_ones : 0.0f,
-            mask & 0b0100 ? all_ones : 0.0f,
-            mask & 0b1000 ? all_ones : 0.0f};
-    }
-
     /** Create a vector with all the bits set.
      */
     [[nodiscard]] static simd_f64x4 ones() noexcept
     {
         return eq(simd_f64x4{}, simd_f64x4{});
+    }
+
+    [[nodiscard]] static simd_f64x4 from_mask(size_t a) noexcept
+    {
+        hi_axiom(a <= 0b1111);
+
+        uint64_t a_ = a;
+
+        a_ <<= 31;
+        auto tmp = _mm_cvtsi32_si128(static_cast<uint32_t>(a_));
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 1);
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 2);
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 3);
+
+        tmp = _mm_srai_epi32(tmp, 31);
+        return simd_f64x4{_mm256_castsi256_pd(_mm256_cvtepi32_epi64(tmp))};
     }
 
     /** Concatenate the top bit of each element.

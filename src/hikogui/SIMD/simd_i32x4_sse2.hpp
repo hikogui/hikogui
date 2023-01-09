@@ -167,15 +167,31 @@ struct simd_i32x4 {
         return not empty();
     }
 
+    template<size_t Mask>
+    [[nodiscard]] static simd_i32x4 from_mask() noexcept
+    {
+
+    }
+
     /** For each bit in mask set corresponding element to all-ones or all-zeros.
      */
     [[nodiscard]] static simd_i32x4 from_mask(size_t mask) noexcept
     {
-        hi_axiom(mask <= 0b1111);
+        hi_axiom(a <= 0b1111);
 
-        constexpr auto ones_ = std::bit_cast<value_type>(0xffff'ffffU);
-        return simd_i32x4{
-            mask & 0b0001 ? ones_ : 0, mask & 0b0010 ? ones_ : 0, mask & 0b0100 ? ones_ : 0, mask & 0b1000 ? ones_ : 0};
+        uint64_t a_ = a;
+
+        a_ <<= 31;
+        auto tmp = _mm_cvtsi32_si128(static_cast<uint32_t>(a_));
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 1);
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 2);
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 3);
+
+        tmp = _mm_srai_epi32(tmp, 31);
+        return simd_i32x4{tmp};
     }
 
     /** Concatenate the top bit of each element.
@@ -321,7 +337,7 @@ struct simd_i32x4 {
 #ifdef HI_HAS_SSE4_1
         return simd_i32x4{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(a.v), _mm_castsi128_ps(a.v), Mask))};
 #else
-        hilet mask = from_mask(Mask);
+        hilet mask = from_mask<Mask>();
         return not_and(mask, a);
 #endif
     }
@@ -341,7 +357,7 @@ struct simd_i32x4 {
 #ifdef HI_HAS_SSE4_1
         return simd_i32x4{_mm_insert_epi32(a.v, b, Index)};
 #else
-        hilet mask = from_mask(1_uz << Index);
+        hilet mask = from_mask<1_uz << Index>();
         return not_and(mask, a) | (mask & broadcast(b));
 #endif
     }
@@ -377,7 +393,7 @@ struct simd_i32x4 {
 #ifdef HI_HAS_SSE4_1
         return simd_i32x4{_mm_blend_epi32(a.v, b.v, Mask)};
 #else
-        hilet mask = from_mask(Mask);
+        hilet mask = from_mask<Mask>();
         return not_and(mask, a) | (mask & b);
 #endif
     }

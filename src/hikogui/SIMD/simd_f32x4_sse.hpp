@@ -166,14 +166,21 @@ struct simd_f32x4 {
      */
     [[nodiscard]] static simd_f32x4 from_mask(size_t mask) noexcept
     {
-        hi_axiom(mask <= 0b1111);
+        hi_axiom(a <= 0b1111);
 
-        constexpr auto all_ones = std::bit_cast<value_type>(uint32_t{0xffff'ffff});
-        return simd_f32x4{
-            mask & 0b0001 ? all_ones : 0.0f,
-            mask & 0b0010 ? all_ones : 0.0f,
-            mask & 0b0100 ? all_ones : 0.0f,
-            mask & 0b1000 ? all_ones : 0.0f};
+        uint64_t a_ = a;
+
+        a_ <<= 31;
+        auto tmp = _mm_cvtsi32_si128(static_cast<uint32_t>(a_));
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 1);
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 2);
+        a_ >>= 1;
+        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 3);
+
+        tmp = _mm_srai_epi32(tmp, 31);
+        return simd_f32x4{_mm_castsi128_ps(tmp)};
     }
 
     /** Create a vector with all the bits set.
@@ -404,6 +411,16 @@ struct simd_f32x4 {
 #endif
     }
 
+    template<size_t SrcIndex, size_t DstIndex>
+    [[nodiscard]] friend simd_f32x4 insert(simd_f32x4 a, simd_f32x4 b) noexcept
+    {
+#ifdef HI_HAS_SSE4_1
+        return simd_f32x4{_mm_insert_ps(a, b, (SrcIndex << 6) | (DstIndex << 4));
+#else
+        return insert<DstIndex>(a, get<SrcIndex>(b));
+#endif
+    }
+
     /** Extract an element from a vector.
      *
      * @tparam Index the index of the element.
@@ -476,6 +493,8 @@ struct simd_f32x4 {
 #endif
         }
     }
+
+    [[nodiscard]] friend simd_f32x4 permute(simd_f32x4 a, simd_i32x4 const &source_elements) noexcept;
 
     /** Swizzle elements.
      *
@@ -616,6 +635,12 @@ struct simd_f32x4 {
     [[nodiscard]] friend simd_f32x4 not_and(simd_f32x4 a, simd_f32x4 b) noexcept
     {
         return simd_f32x4{_mm_andnot_ps(a.v, b.v)};
+    }
+
+    [[nodiscard]] friend std::array<simd_f32x4,4> transpose(simd_f32x4 a, simd_f32x4 b, simd_f32x4 c, simd_f32x4 d) noexcept
+    {
+        _MM_TRANSPOSE4_PS(a, b, c, d);
+        return {a, b, c, d};
     }
 
     friend std::ostream& operator<<(std::ostream& a, simd_f32x4 b) noexcept

@@ -31,4 +31,9 @@ inline namespace v1 {
 [[nodiscard]] inline simd_i64x4::simd_i64x4(simd_u32x4 const& a) noexcept : v(_mm256_cvtepu32_epi64(a.v)) {}
 #endif
 
+[[nodiscard]] inline simd_f32x4 permute(simd_f32x4 a, simd_i32x4 const &source_elements) noexcept
+{
+    return simd_f32x4{_mm_shufflevar_ps(a.v, source_elements.v)};
+}
+
 }}

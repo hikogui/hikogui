@@ -42,6 +42,12 @@ struct simd_i16x8 {
      */
     simd_i16x8() noexcept : v(_mm_setzero_si128()) {}
 
+    [[nodiscard]] explicit simd_i16x8(register_type other) noexcept : v(other) {}
+
+    [[nodiscard]] explicit operator register_type () const noexcept {
+        return v;
+    }
+
     /** Initialize the element to the values in the arguments.
      *
      * @param a The value for element 0.
@@ -94,12 +100,6 @@ struct simd_i16x8 {
     }
 
 
-    [[nodiscard]] explicit simd_i16x8(register_type other) noexcept : v(other) {}
-
-    [[nodiscard]] explicit operator register_type () const noexcept {
-        return v;
-    }
-
     /** Broadcast a single value to all the elements.
      *
      * ```
@@ -115,7 +115,7 @@ struct simd_i16x8 {
      */
     [[nodiscard]] static simd_i16x8 broadcast(int16_t a) noexcept
     {
-        return simd_i16x8{_mm_set1_epi32(a)};
+        return simd_i16x8{_mm_set1_epi16(a)};
     }
 
     /** Broadcast the first element to all the elements.
@@ -134,7 +134,7 @@ struct simd_i16x8 {
     [[nodiscard]] static simd_i16x8 broadcast(simd_i16x8 a) noexcept
     {
 #ifdef HI_HAS_AVX2
-        return simd_i16x8{_mm_broadcastss_epi32(a.v)};
+        return simd_i16x8{_mm_broadcastss_epi16(a.v)};
 #else
         return permute<"xxxxxxxx">(a);
 #endif
@@ -346,7 +346,7 @@ struct simd_i16x8 {
         if constexpr (order == 0b11'10'01'00) {
             return a.v;
         } else {
-            return simd_i16x8{_mm_shuffle_epi32(a.v, order)};
+            return simd_i16x8{_mm_shuffle_epi16(a.v, order)};
         }
     }
 
@@ -408,7 +408,7 @@ struct simd_i16x8 {
      */
     [[nodiscard]] friend simd_i16x8 horizontal_add(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i16x8{_mm_hadd_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_hadd_epi16(a.v, b.v)};
     }
 #endif
 
@@ -425,7 +425,7 @@ struct simd_i16x8 {
      */
     [[nodiscard]] friend simd_i16x8 horizontal_sub(simd_i16x8 a, simd_i16x8 b) noexcept
     {
-        return simd_i16x8{_mm_hsub_epi32(a.v, b.v)};
+        return simd_i16x8{_mm_hsub_epi16(a.v, b.v)};
     }
 #endif
 
@@ -481,10 +481,10 @@ struct simd_i16x8 {
             return simd_i16x8{_mm_setzero_si128()};
 
         } else if constexpr ((one_mask | alpha_mask)== 0b1111) {
-            return simd_i16x8{_mm_set1_epi32(1)};
+            return simd_i16x8{_mm_set1_epi16(1)};
 
         } else {
-            return simd_i16x8{_mm_set_epi32(
+            return simd_i16x8{_mm_set_epi16(
                 to_bool(one_mask & 0b0001) ? 1 : 0,
                 to_bool(one_mask & 0b0010) ? 1 : 0,
                 to_bool(one_mask & 0b0100) ? 1 : 0,
