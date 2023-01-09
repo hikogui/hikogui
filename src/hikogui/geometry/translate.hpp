@@ -17,7 +17,7 @@ public:
     static_assert(D == 2 || D == 3, "Only 2D or 3D translation-matrices are supported");
 
     using value_type = T;
-    using array_type = numeric_array<value_type, 4>;
+    using array_type = simd<value_type, 4>;
 
     constexpr translate(translate const&) noexcept = default;
     constexpr translate(translate&&) noexcept = default;

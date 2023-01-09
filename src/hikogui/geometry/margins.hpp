@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../SIMD/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../cast.hpp"
 
 namespace hi { inline namespace v1 {
@@ -21,7 +21,7 @@ template<typename T>
 class margins {
 public:
     using value_type = T;
-    using array_type = numeric_array<T, 4>;
+    using array_type = simd<T, 4>;
 
     constexpr margins(margins const&) noexcept = default;
     constexpr margins(margins&&) noexcept = default;

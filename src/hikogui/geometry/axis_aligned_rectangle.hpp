@@ -11,7 +11,7 @@
 #include "alignment.hpp"
 #include "extent.hpp"
 #include "point.hpp"
-#include "../SIMD/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../concepts.hpp"
 #include "../unfair_mutex.hpp"
 #include "../cast.hpp"
@@ -28,7 +28,7 @@ template<typename T>
 class axis_aligned_rectangle {
 public:
     using value_type = T;
-    using array_type = numeric_array<value_type, 4>;
+    using array_type = simd<value_type, 4>;
 
     constexpr axis_aligned_rectangle() noexcept : v() {}
     constexpr axis_aligned_rectangle(axis_aligned_rectangle const& rhs) noexcept = default;

@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "numeric_array.hpp"
+#include "simd.hpp"
 #include "hikogui/utility.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
@@ -10,7 +10,7 @@
 using namespace std;
 using namespace hi;
 
-TEST(numeric_array, Compare)
+TEST(simd, Compare)
 {
     hilet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
@@ -19,7 +19,7 @@ TEST(numeric_array, Compare)
     ASSERT_TRUE(tmp == f32x4(2.0f, 3.0f, 4.0f, 5.0f));
 }
 
-TEST(numeric_array, Arithmatic)
+TEST(simd, Arithmatic)
 {
     hilet tmp1 = f32x4{9.0f, 6.0f, 4.0f, 14.0f};
     hilet tmp2 = f32x4{3.0f, -2.0f, 8.0f, 7.0f};
@@ -54,7 +54,7 @@ TEST(numeric_array, Arithmatic)
     }
 }
 
-TEST(numeric_array, Length)
+TEST(simd, Length)
 {
     hilet tmp = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
 
@@ -62,7 +62,7 @@ TEST(numeric_array, Length)
     ASSERT_NEAR(hypot<0b0111>(tmp), 5.3851f, 0.001f);
 }
 
-TEST(numeric_array, DotProduct)
+TEST(simd, DotProduct)
 {
     hilet a = f32x4(1.0f, 3.0f, -5.0f, 0.0f);
     hilet b = f32x4(4.0f, -2.0f, -1.0f, 0.0f);
@@ -70,7 +70,7 @@ TEST(numeric_array, DotProduct)
     ASSERT_EQ(dot<0b0111>(a, b), 3.0f);
 }
 
-TEST(numeric_array, CrossProduct)
+TEST(simd, CrossProduct)
 {
     hilet a = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
     hilet b = f32x4(5.0f, 6.0f, 7.0f, 0.0f);
@@ -78,7 +78,7 @@ TEST(numeric_array, CrossProduct)
     ASSERT_EQ(cross_3D(a, b), f32x4(-3.0f, 6.0f, -3.0f));
 }
 
-TEST(numeric_array, Getters)
+TEST(simd, Getters)
 {
     hilet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
@@ -96,7 +96,7 @@ TEST(numeric_array, Getters)
     ASSERT_EQ(tmp[3], 5.0f);
 }
 
-TEST(numeric_array, normalize)
+TEST(simd, normalize)
 {
     auto tmp = f32x4{2.0f, 3.0f, 4.0f, 0.0f};
     auto r = normalize<0b0111>(tmp);
@@ -105,7 +105,7 @@ TEST(numeric_array, normalize)
     ASSERT_NEAR(r[2], 0.7427813527082074, 0.001);
     ASSERT_EQ(r[3], 0.0);
 }
-TEST(numeric_array, Setters)
+TEST(simd, Setters)
 {
     auto tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
@@ -127,7 +127,7 @@ TEST(numeric_array, Setters)
     ASSERT_EQ(tmp, f32x4(22.0f, 23.0f, 24.0f, 25.0f));
 }
 
-TEST(numeric_array, Inserts_f32x4)
+TEST(simd, Inserts_f32x4)
 {
     constexpr auto tmp1 = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
     constexpr auto tmp2 = f32x4{42.0f, 43.0f, 44.0f, 45.0f};
@@ -153,7 +153,7 @@ TEST(numeric_array, Inserts_f32x4)
     static_assert(insert<3, 3>(tmp1, tmp2) == f32x4(2.0f, 3.0f, 4.0f, 45.0f));
 }
 
-TEST(numeric_array, Inserts_u64x2)
+TEST(simd, Inserts_u64x2)
 {
     constexpr auto tmp1 = u64x2{2, 3};
     constexpr auto tmp2 = u64x2{42, 43};
@@ -173,7 +173,7 @@ TEST(numeric_array, Inserts_u64x2)
     ASSERT_EQ(r11, u64x2(2, 43));
 }
 
-TEST(numeric_array, Swizzle2)
+TEST(simd, Swizzle2)
 {
     hilet tmp = f32x2{2.0f, 3.0f};
 
@@ -198,9 +198,9 @@ TEST(numeric_array, Swizzle2)
     ASSERT_EQ(tmp._11(), f32x2(1.0f, 1.0f));
 }
 
-TEST(numeric_array, Swizzle3)
+TEST(simd, Swizzle3)
 {
-    using f32x3 = numeric_array<float, 3>;
+    using f32x3 = simd<float, 3>;
 
     hilet tmp = f32x3{2.0f, 3.0f, 4.0f};
 
@@ -335,7 +335,7 @@ TEST(numeric_array, Swizzle3)
     ASSERT_EQ(tmp._111(), f32x3(1.0f, 1.0f, 1.0f));
 }
 
-TEST(numeric_array, Swizzle4)
+TEST(simd, Swizzle4)
 {
     hilet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 

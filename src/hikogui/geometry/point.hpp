@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../SIMD/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "vector.hpp"
 #include "extent.hpp"
 #include "../cast.hpp"
@@ -24,7 +24,7 @@ template<typename T, int D>
 class point {
 public:
     using value_type = T;
-    using array_type = numeric_array<value_type, 4>;
+    using array_type = simd<value_type, 4>;
 
     static_assert(D == 2 || D == 3, "Only 2D or 3D points are supported");
 
@@ -73,7 +73,7 @@ public:
         return _v;
     }
 
-    /** Construct a point from a array_type-numeric_array.
+    /** Construct a point from a array_type-simd.
      */
     [[nodiscard]] constexpr explicit point(array_type const& other) noexcept : _v(other)
     {

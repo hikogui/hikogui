@@ -5,7 +5,7 @@
 #pragma once
 
 #include "seed.hpp"
-#include "../SIMD/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../utility.hpp"
 #include <random>
 

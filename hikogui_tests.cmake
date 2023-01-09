@@ -47,7 +47,7 @@ target_sources(hikogui_tests PRIVATE
     #${SOURCE_DIR}/random/dither_tests.cpp
     ${SOURCE_DIR}/random/seed_tests.cpp
     ${SOURCE_DIR}/random/xorshift128p_tests.cpp
-    ${SOURCE_DIR}/SIMD/numeric_array_tests.cpp
+    ${SOURCE_DIR}/SIMD/simd_tests.cpp
     ${SOURCE_DIR}/skeleton/skeleton_tests.cpp
     ${SOURCE_DIR}/unicode/unicode_bidi_tests.cpp
     ${SOURCE_DIR}/unicode/unicode_break_tests.cpp

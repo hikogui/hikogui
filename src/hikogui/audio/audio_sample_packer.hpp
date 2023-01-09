@@ -7,7 +7,7 @@
 #include "audio_sample_format.hpp"
 #include "../utility.hpp"
 #include "../architecture.hpp"
-#include "../SIMD/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../random/dither.hpp"
 #include <cstddef>
 #include <bit>

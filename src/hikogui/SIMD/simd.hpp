@@ -46,17 +46,17 @@ hi_warning_ignore_msvc(26490);
 
 namespace hi::inline v1 {
 
-#define HI_X_runtime_evaluate_if_valid(x) \
+#define HI_X_runtime_evaluate_if_valid(...) \
     do { \
         if (not std::is_constant_evaluated()) { \
-            if constexpr (requires { x; }) { \
-                return x; \
+            if constexpr (requires { __VA_ARGS__; }) { \
+                return __VA_ARGS__; \
             } \
         } \
     } while (false)
 
 template<numeric_limited T, std::size_t N>
-struct numeric_array {
+struct simd {
     using value_type = T;
     constexpr static size_t size = N;
 
@@ -75,27 +75,27 @@ struct numeric_array {
 
     array_type v;
 
-    constexpr numeric_array() noexcept
+    constexpr simd() noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { *this = numeric_array{native_type{}}; }) {
-                *this = numeric_array{native_type{}};
+            if constexpr (requires { *this = simd{native_type{}}; }) {
+                *this = simd{native_type{}};
             }
         }
         v = array_type{};
     }
 
-    constexpr numeric_array(numeric_array const& rhs) noexcept = default;
-    constexpr numeric_array(numeric_array&& rhs) noexcept = default;
-    constexpr numeric_array& operator=(numeric_array const& rhs) noexcept = default;
-    constexpr numeric_array& operator=(numeric_array&& rhs) noexcept = default;
+    constexpr simd(simd const& rhs) noexcept = default;
+    constexpr simd(simd&& rhs) noexcept = default;
+    constexpr simd& operator=(simd const& rhs) noexcept = default;
+    constexpr simd& operator=(simd&& rhs) noexcept = default;
 
     template<numeric_limited U>
-    [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, N> const& other) noexcept
+    [[nodiscard]] constexpr explicit simd(simd<U, N> const& other) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { *this = numeric_array{native_type{other.reg()}}; }) {
-                *this = numeric_array{native_type{other.reg()}};
+            if constexpr (requires { *this = simd{native_type{other.reg()}}; }) {
+                *this = simd{native_type{other.reg()}};
                 return;
             }
         }
@@ -111,13 +111,13 @@ struct numeric_array {
     }
 
     template<numeric_limited U>
-    [[nodiscard]] constexpr explicit numeric_array(
-        numeric_array<U, size / 2> const& a,
-        numeric_array<U, size / 2> const& b) noexcept
+    [[nodiscard]] constexpr explicit simd(
+        simd<U, size / 2> const& a,
+        simd<U, size / 2> const& b) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { numeric_array{native_type{a.reg(), b.reg()}}; }) {
-                *this = numeric_array{native_type{a.reg(), b.reg()}};
+            if constexpr (requires { simd{native_type{a.reg(), b.reg()}}; }) {
+                *this = simd{native_type{a.reg(), b.reg()}};
                 return;
             }
         }
@@ -134,11 +134,11 @@ struct numeric_array {
     }
 
     template<std::convertible_to<value_type>... Args>
-    [[nodiscard]] constexpr explicit numeric_array(value_type first, Args... args) noexcept
+    [[nodiscard]] constexpr explicit simd(value_type first, Args... args) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { numeric_array{native_type{first, static_cast<value_type>(args)...}}; }) {
-                *this = numeric_array{native_type{first, static_cast<value_type>(args)...}};
+            if constexpr (requires { simd{native_type{first, static_cast<value_type>(args)...}}; }) {
+                *this = simd{native_type{first, static_cast<value_type>(args)...}};
                 return;
             }
         }
@@ -146,18 +146,18 @@ struct numeric_array {
         v = array_type{first, static_cast<value_type>(args)...};
     }
 
-    [[nodiscard]] static constexpr numeric_array broadcast(T rhs) noexcept
+    [[nodiscard]] static constexpr simd broadcast(T rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{native_type::broadcast(rhs)});
+        HI_X_runtime_evaluate_if_valid(simd{native_type::broadcast(rhs)});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = rhs;
         }
         return r;
     }
 
-    [[nodiscard]] static constexpr numeric_array epsilon() noexcept
+    [[nodiscard]] static constexpr simd epsilon() noexcept
     {
         if constexpr (std::is_floating_point_v<T>) {
             return broadcast(std::numeric_limits<T>::epsilon());
@@ -166,9 +166,9 @@ struct numeric_array {
         }
     }
 
-    [[nodiscard]] numeric_array(std::array<T, N> const& rhs) noexcept : v(rhs) {}
+    [[nodiscard]] simd(std::array<T, N> const& rhs) noexcept : v(rhs) {}
 
-    numeric_array& operator=(std::array<T, N> const& rhs) noexcept
+    simd& operator=(std::array<T, N> const& rhs) noexcept
     {
         v = rhs;
         return *this;
@@ -179,7 +179,7 @@ struct numeric_array {
         return v;
     }
 
-    [[nodiscard]] explicit numeric_array(native_type rhs) noexcept
+    [[nodiscard]] explicit simd(native_type rhs) noexcept
         requires(has_native_type)
         : v(static_cast<array_type>(rhs))
     {
@@ -192,12 +192,12 @@ struct numeric_array {
     }
 
     template<numeric_limited O, size_t M>
-    [[nodiscard]] constexpr static numeric_array cast_from(numeric_array<O, M> const& rhs) noexcept
-        requires(sizeof(numeric_array<O, M>) == sizeof(numeric_array))
+    [[nodiscard]] constexpr static simd cast_from(simd<O, M> const& rhs) noexcept
+        requires(sizeof(simd<O, M>) == sizeof(simd))
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{native_type::cast_from(rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{native_type::cast_from(rhs.reg())});
 
-        return std::bit_cast<numeric_array>(rhs);
+        return std::bit_cast<simd>(rhs);
     }
 
     /** Load a numeric array from memory.
@@ -205,11 +205,11 @@ struct numeric_array {
      * @return A numeric array.
      */
     template<std::size_t S>
-    [[nodiscard]] static constexpr numeric_array load(std::byte const *ptr) noexcept
+    [[nodiscard]] static constexpr simd load(std::byte const *ptr) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{native_type{ptr}});
+        HI_X_runtime_evaluate_if_valid(simd{native_type{ptr}});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         std::memcpy(&r, ptr, S);
         return r;
     }
@@ -218,11 +218,11 @@ struct numeric_array {
      * @param ptr A Pointer to an array of values in memory.
      * @return A numeric array.
      */
-    [[nodiscard]] static constexpr numeric_array load(std::byte const *ptr) noexcept
+    [[nodiscard]] static constexpr simd load(std::byte const *ptr) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{native_type{ptr}});
+        HI_X_runtime_evaluate_if_valid(simd{native_type{ptr}});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         std::memcpy(&r, ptr, sizeof(r));
         return r;
     }
@@ -231,11 +231,11 @@ struct numeric_array {
      * @param ptr A Pointer to an array of values in memory.
      * @return A numeric array.
      */
-    [[nodiscard]] static constexpr numeric_array load(T const *ptr) noexcept
+    [[nodiscard]] static constexpr simd load(T const *ptr) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{native_type{ptr}});
+        HI_X_runtime_evaluate_if_valid(simd{native_type{ptr}});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         std::memcpy(&r, ptr, sizeof(r));
         return r;
     }
@@ -485,92 +485,92 @@ struct numeric_array {
         return z();
     }
 
-    constexpr numeric_array& operator<<=(unsigned int rhs) noexcept
+    constexpr simd& operator<<=(unsigned int rhs) noexcept
     {
         return *this = *this << rhs;
     }
 
-    constexpr numeric_array& operator>>=(unsigned int rhs) noexcept
+    constexpr simd& operator>>=(unsigned int rhs) noexcept
     {
         return *this = *this >> rhs;
     }
 
-    constexpr numeric_array& operator|=(numeric_array const& rhs) noexcept
+    constexpr simd& operator|=(simd const& rhs) noexcept
     {
         return *this = *this | rhs;
     }
 
-    constexpr numeric_array& operator|=(T const& rhs) noexcept
+    constexpr simd& operator|=(T const& rhs) noexcept
     {
         return *this = *this | rhs;
     }
 
-    constexpr numeric_array& operator&=(numeric_array const& rhs) noexcept
+    constexpr simd& operator&=(simd const& rhs) noexcept
     {
         return *this = *this & rhs;
     }
 
-    constexpr numeric_array& operator&=(T const& rhs) noexcept
+    constexpr simd& operator&=(T const& rhs) noexcept
     {
         return *this = *this & rhs;
     }
 
-    constexpr numeric_array& operator^=(numeric_array const& rhs) noexcept
+    constexpr simd& operator^=(simd const& rhs) noexcept
     {
         return *this = *this ^ rhs;
     }
 
-    constexpr numeric_array& operator^=(T const& rhs) noexcept
+    constexpr simd& operator^=(T const& rhs) noexcept
     {
         return *this = *this ^ rhs;
     }
 
-    constexpr numeric_array& operator+=(numeric_array const& rhs) noexcept
+    constexpr simd& operator+=(simd const& rhs) noexcept
     {
         return *this = *this + rhs;
     }
 
-    constexpr numeric_array& operator+=(T const& rhs) noexcept
+    constexpr simd& operator+=(T const& rhs) noexcept
     {
         return *this = *this + rhs;
     }
 
-    constexpr numeric_array& operator-=(numeric_array const& rhs) noexcept
+    constexpr simd& operator-=(simd const& rhs) noexcept
     {
         return *this = *this - rhs;
     }
 
-    constexpr numeric_array& operator-=(T const& rhs) noexcept
+    constexpr simd& operator-=(T const& rhs) noexcept
     {
         return *this = *this - rhs;
     }
 
-    constexpr numeric_array& operator*=(numeric_array const& rhs) noexcept
+    constexpr simd& operator*=(simd const& rhs) noexcept
     {
         return *this = *this * rhs;
     }
 
-    constexpr numeric_array& operator*=(T const& rhs) noexcept
+    constexpr simd& operator*=(T const& rhs) noexcept
     {
         return *this = *this * rhs;
     }
 
-    constexpr numeric_array& operator/=(numeric_array const& rhs) noexcept
+    constexpr simd& operator/=(simd const& rhs) noexcept
     {
         return *this = *this / rhs;
     }
 
-    constexpr numeric_array& operator/=(T const& rhs) noexcept
+    constexpr simd& operator/=(T const& rhs) noexcept
     {
         return *this = *this / rhs;
     }
 
-    constexpr numeric_array& operator%=(numeric_array const& rhs) noexcept
+    constexpr simd& operator%=(simd const& rhs) noexcept
     {
         return *this = *this % rhs;
     }
 
-    constexpr numeric_array& operator%=(T const& rhs) noexcept
+    constexpr simd& operator%=(T const& rhs) noexcept
     {
         return *this = *this % rhs;
     }
@@ -580,7 +580,7 @@ struct numeric_array {
      * @tparam I Index into the array
      */
     template<std::size_t I>
-    [[nodiscard]] friend constexpr T& get(numeric_array& rhs) noexcept
+    [[nodiscard]] friend constexpr T& get(simd& rhs) noexcept
     {
         static_assert(I < N, "Index out of bounds");
         return std::get<I>(rhs.v);
@@ -591,7 +591,7 @@ struct numeric_array {
      * @tparam I Index into the array
      */
     template<std::size_t I>
-    [[nodiscard]] friend constexpr T get(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr T get(simd const& rhs) noexcept
     {
         static_assert(I < N, "Index out of bounds");
         HI_X_runtime_evaluate_if_valid(get<I>(rhs.reg()));
@@ -606,10 +606,10 @@ struct numeric_array {
      * @return The vector with the inserted value.
      */
     template<std::size_t I>
-    [[nodiscard]] constexpr friend numeric_array insert(numeric_array const& lhs, value_type rhs) noexcept
+    [[nodiscard]] constexpr friend simd insert(simd const& lhs, value_type rhs) noexcept
     {
         static_assert(I < size);
-        HI_X_runtime_evaluate_if_valid(numeric_array{insert<I>(lhs.reg(), rhs)});
+        HI_X_runtime_evaluate_if_valid(simd{insert<I>(lhs.reg(), rhs)});
 
         auto r = lhs;
         std::get<I>(r.v) = rhs;
@@ -621,11 +621,11 @@ struct numeric_array {
      * @tparam Mask bit mask where '1' means to zero, '0' to keep original.
      */
     template<std::size_t Mask = ~std::size_t{0}>
-    [[nodiscard]] friend constexpr numeric_array set_zero(numeric_array rhs) noexcept
+    [[nodiscard]] friend constexpr simd set_zero(simd rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{set_zero<Mask>(rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{set_zero<Mask>(rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             if (to_bool((Mask >> i) & 1)) {
                 r.v[i] = T{0};
@@ -644,11 +644,11 @@ struct numeric_array {
      * @return The blended array.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr numeric_array blend(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd blend(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{blend<Mask>(lhs.reg(), rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{blend<Mask>(lhs.reg(), rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = to_bool((Mask >> i) & 1) ? rhs[i] : lhs[i];
         }
@@ -657,11 +657,11 @@ struct numeric_array {
 
     /** Blend the values using a dynamic mask.
      */
-    [[nodiscard]] friend constexpr numeric_array blend(numeric_array const& a, numeric_array const& b, numeric_array const& mask)
+    [[nodiscard]] friend constexpr simd blend(simd const& a, simd const& b, simd const& mask)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{blend(a.reg(), b.reg(), mask.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{blend(a.reg(), b.reg(), mask.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = mask[i] < T{0} ? b[i] : a[i];
         }
@@ -673,76 +673,76 @@ struct numeric_array {
      * @tparam Mask bit mask where '1' means to negate, '0' to keep original.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr numeric_array neg(numeric_array rhs) noexcept
+    [[nodiscard]] friend constexpr simd neg(simd rhs) noexcept
     {
         return blend<Mask>(rhs, -rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator-(simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{-rhs.reg()});
+        HI_X_runtime_evaluate_if_valid(simd{-rhs.reg()});
         return T{0} - rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array abs(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd abs(simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{abs(rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{abs(rhs.reg())});
         return max(rhs, -rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array rcp(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd rcp(simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{rcp(rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{rcp(rhs.reg())});
         return T{1} / rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array sqrt(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd sqrt(simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{sqrt(rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{sqrt(rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = std::sqrt(rhs.v[i]);
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array rcp_sqrt(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd rcp_sqrt(simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{rcp_sqrt(rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{rcp_sqrt(rhs.reg())});
         return rcp(sqrt(rhs));
     }
 
-    [[nodiscard]] friend constexpr numeric_array floor(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd floor(simd const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{floor(rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{floor(rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = std::floor(rhs.v[i]);
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array ceil(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd ceil(simd const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{ceil(rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{ceil(rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = std::ceil(rhs.v[i]);
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array round(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd round(simd const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{round(rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{round(rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = std::round(rhs.v[i]);
         }
@@ -757,7 +757,7 @@ struct numeric_array {
      * @return Result of the dot product.
      */
     template<std::size_t Mask>
-    [[nodiscard]] hi_force_inline friend constexpr T dot(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] hi_force_inline friend constexpr T dot(simd const& lhs, simd const& rhs) noexcept
     {
         HI_X_runtime_evaluate_if_valid(get<0>(dot<Mask>(lhs.reg(), rhs.reg())));
 
@@ -777,7 +777,7 @@ struct numeric_array {
      * @return Result of the hypot calculation.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend T hypot(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend T hypot(simd const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
         HI_X_runtime_evaluate_if_valid(get<0>(sqrt(dot<Mask>(rhs.reg(), rhs.reg()))));
@@ -791,7 +791,7 @@ struct numeric_array {
      * @return Result of the hypot-squared calculation.
      */
     template<std::size_t Mask>
-    [[nodiscard]] hi_force_inline friend constexpr T squared_hypot(numeric_array const& rhs) noexcept
+    [[nodiscard]] hi_force_inline friend constexpr T squared_hypot(simd const& rhs) noexcept
     {
         HI_X_runtime_evaluate_if_valid(get<0>(dot<Mask>(rhs.reg(), rhs.reg())));
         return dot<Mask>(rhs, rhs);
@@ -803,7 +803,7 @@ struct numeric_array {
      * @return Result of the hypot-squared calculation.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr T rcp_hypot(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr T rcp_hypot(simd const& rhs) noexcept
     {
         HI_X_runtime_evaluate_if_valid(get<0>(rcp_sqrt(dot<Mask>(rhs.reg(), rhs.reg()))));
         return 1.0f / hypot<Mask>(rhs);
@@ -817,13 +817,13 @@ struct numeric_array {
      * @return The normalized vector.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd normalize(simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{rhs * rcp_sqrt(dot<Mask>(rhs.reg(), rhs.reg()))});
+        HI_X_runtime_evaluate_if_valid(simd{rhs * rcp_sqrt(dot<Mask>(rhs.reg(), rhs.reg()))});
 
         hilet rcp_hypot_ = rcp_hypot<Mask>(rhs);
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             if (to_bool(Mask & (1_uz << i))) {
                 r.v[i] = rhs.v[i] * rcp_hypot_;
@@ -832,7 +832,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr std::size_t eq(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t eq(simd const& lhs, simd const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         HI_X_runtime_evaluate_if_valid(eq(lhs.reg(), rhs.reg()).mask());
@@ -844,7 +844,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr std::size_t ne(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t ne(simd const& lhs, simd const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         HI_X_runtime_evaluate_if_valid(ne(lhs.reg(), rhs.reg()).mask());
@@ -853,7 +853,7 @@ struct numeric_array {
         return eq(lhs, rhs) ^ not_mask;
     }
 
-    [[nodiscard]] friend constexpr std::size_t gt(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t gt(simd const& lhs, simd const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         HI_X_runtime_evaluate_if_valid(gt(lhs.reg(), rhs.reg()).mask());
@@ -865,14 +865,14 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr std::size_t lt(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t lt(simd const& lhs, simd const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         HI_X_runtime_evaluate_if_valid(lt(lhs.reg(), rhs.reg()).mask());
         return gt(rhs, lhs);
     }
 
-    [[nodiscard]] friend constexpr std::size_t ge(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t ge(simd const& lhs, simd const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         HI_X_runtime_evaluate_if_valid(ge(lhs.reg(), rhs.reg()).mask());
@@ -880,7 +880,7 @@ struct numeric_array {
         return lt(lhs, rhs) ^ not_mask;
     }
 
-    [[nodiscard]] friend constexpr std::size_t le(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t le(simd const& lhs, simd const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         HI_X_runtime_evaluate_if_valid(le(lhs.reg(), rhs.reg()).mask());
@@ -888,42 +888,42 @@ struct numeric_array {
         return gt(lhs, rhs) ^ not_mask;
     }
 
-    [[nodiscard]] friend constexpr numeric_array gt_mask(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd gt_mask(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{gt(lhs.reg(), rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{gt(lhs.reg(), rhs.reg())});
 
         using uint_type = make_uintxx_t<sizeof(T) * CHAR_BIT>;
         constexpr auto ones = std::bit_cast<T>(~uint_type{0});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = lhs.v[i] > rhs.v[i] ? ones : T{0};
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr bool operator==(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(simd const& lhs, simd const& rhs) noexcept
     {
         HI_X_runtime_evaluate_if_valid(lhs.reg() == rhs.reg());
         return not ne(lhs, rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator<<(numeric_array const& lhs, unsigned int rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator<<(simd const& lhs, unsigned int rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() << rhs});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() << rhs});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] << rhs;
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator>>(numeric_array const& lhs, unsigned int rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator>>(simd const& lhs, unsigned int rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() >> rhs});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() >> rhs});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] >> rhs;
         }
@@ -934,7 +934,7 @@ struct numeric_array {
      *
      * @note It is undefined behavior if: rhs <= 0 or rhs >= sizeof(value_type) * CHAR_BIT.
      */
-    [[nodiscard]] friend constexpr numeric_array rotl(numeric_array const& lhs, unsigned int rhs) noexcept
+    [[nodiscard]] friend constexpr simd rotl(simd const& lhs, unsigned int rhs) noexcept
     {
         hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
 
@@ -947,7 +947,7 @@ struct numeric_array {
      *
      * @note It is undefined behavior if: rhs <= 0 or rhs >= sizeof(value_type) * CHAR_BIT.
      */
-    [[nodiscard]] friend constexpr numeric_array rotr(numeric_array const& lhs, unsigned int rhs) noexcept
+    [[nodiscard]] friend constexpr simd rotr(simd const& lhs, unsigned int rhs) noexcept
     {
         hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
 
@@ -956,13 +956,13 @@ struct numeric_array {
         return (lhs >> rhs) | (lhs << remainder);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator|(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() | rhs.reg()});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() | rhs.reg()});
 
         using uint_type = make_uintxx_t<sizeof(T) * CHAR_BIT>;
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] =
                 std::bit_cast<T>(static_cast<uint_type>(std::bit_cast<uint_type>(lhs.v[i]) | std::bit_cast<uint_type>(rhs.v[i])));
@@ -970,194 +970,194 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const& lhs, T const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator|(simd const& lhs, T const& rhs) noexcept
     {
         return lhs | broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator|(T const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator|(T const& lhs, simd const& rhs) noexcept
     {
         return broadcast(lhs) | rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator&(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator&(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() & rhs.reg()});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() & rhs.reg()});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] & rhs.v[i];
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator&(numeric_array const& lhs, T const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator&(simd const& lhs, T const& rhs) noexcept
     {
         return lhs & broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator&(T const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator&(T const& lhs, simd const& rhs) noexcept
     {
         return broadcast(lhs) & rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator^(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() ^ rhs.reg()});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() ^ rhs.reg()});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] ^ rhs.v[i];
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const& lhs, T const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator^(simd const& lhs, T const& rhs) noexcept
     {
         return lhs ^ broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator^(T const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator^(T const& lhs, simd const& rhs) noexcept
     {
         return broadcast(lhs) ^ rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator+(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() + rhs.reg()});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() + rhs.reg()});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] + rhs.v[i];
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const& lhs, T const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator+(simd const& lhs, T const& rhs) noexcept
     {
         return lhs + broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator+(T const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator+(T const& lhs, simd const& rhs) noexcept
     {
         return broadcast(lhs) + rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator-(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() - rhs.reg()});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() - rhs.reg()});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] - rhs.v[i];
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const& lhs, T const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator-(simd const& lhs, T const& rhs) noexcept
     {
         return lhs - broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator-(T const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator-(T const& lhs, simd const& rhs) noexcept
     {
         return broadcast(lhs) - rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator*(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() * rhs.reg()});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() * rhs.reg()});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] * rhs.v[i];
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const& lhs, T const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator*(simd const& lhs, T const& rhs) noexcept
     {
         return lhs * broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator*(T const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator*(T const& lhs, simd const& rhs) noexcept
     {
         return broadcast(lhs) * rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator/(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() / rhs.reg()});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() / rhs.reg()});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] / rhs.v[i];
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const& lhs, T const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator/(simd const& lhs, T const& rhs) noexcept
     {
         return lhs / broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator/(T const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator/(T const& lhs, simd const& rhs) noexcept
     {
         return broadcast(lhs) / rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator%(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{lhs.reg() % rhs.reg()});
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() % rhs.reg()});
         hilet div_result = floor(lhs / rhs);
         return lhs - (div_result * rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const& lhs, T const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator%(simd const& lhs, T const& rhs) noexcept
     {
         return lhs % broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator%(T const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd operator%(T const& lhs, simd const& rhs) noexcept
     {
         return broadcast(lhs) % rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array min(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd min(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{min(lhs.reg(), rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{min(lhs.reg(), rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = std::min(lhs.v[i], rhs.v[i]);
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array max(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd max(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{max(lhs.reg(), rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{max(lhs.reg(), rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = std::max(lhs.v[i], rhs.v[i]);
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array
-    clamp(numeric_array const& lhs, numeric_array const& low, numeric_array const& high) noexcept
+    [[nodiscard]] friend constexpr simd
+    clamp(simd const& lhs, simd const& low, simd const& high) noexcept
     {
         return min(max(lhs, low), high);
     }
 
-    [[nodiscard]] friend constexpr numeric_array hadd(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd hadd(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{horizontal_add(lhs.reg(), rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{horizontal_add(lhs.reg(), rhs.reg())});
 
         hi_axiom(N % 2 == 0);
 
-        auto r = numeric_array{};
+        auto r = simd{};
 
         std::size_t src_i = 0;
         std::size_t dst_i = 0;
@@ -1176,13 +1176,13 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array hsub(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd hsub(simd const& lhs, simd const& rhs) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{horizontal_sub(lhs.reg(), rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{horizontal_sub(lhs.reg(), rhs.reg())});
 
         hi_axiom(N % 2 == 0);
 
-        auto r = numeric_array{};
+        auto r = simd{};
 
         std::size_t src_i = 0;
         std::size_t dst_i = 0;
@@ -1206,7 +1206,7 @@ struct numeric_array {
      * @tparam Mask bit mask where '1' means to add, '0' means to subtract.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr numeric_array addsub(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd addsub(simd const& lhs, simd const& rhs) noexcept
     {
         constexpr std::size_t not_mask = (1 << N) - 1;
         return lhs + neg<Mask ^ not_mask>(rhs);
@@ -1214,15 +1214,15 @@ struct numeric_array {
 
     /** Calculate the 2D normal on a 2D vector.
      */
-    [[nodiscard]] friend constexpr numeric_array cross_2D(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd cross_2D(simd const& rhs) noexcept
         requires(N >= 2)
     {
-        return numeric_array{-rhs.y(), rhs.x()};
+        return simd{-rhs.y(), rhs.x()};
     }
 
     /** Calculate the 2D unit-normal on a 2D vector.
      */
-    [[nodiscard]] friend constexpr numeric_array normal_2D(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd normal_2D(simd const& rhs) noexcept
         requires(N >= 2)
     {
         return normalize<0b0011>(cross_2D(rhs));
@@ -1231,7 +1231,7 @@ struct numeric_array {
     /** Calculate the cross-product between two 2D vectors.
      * a.x * b.y - a.y * b.x
      */
-    [[nodiscard]] friend constexpr float cross_2D(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr float cross_2D(simd const& lhs, simd const& rhs) noexcept
         requires(N >= 2)
     {
         hilet tmp1 = rhs.yxwz();
@@ -1244,7 +1244,7 @@ struct numeric_array {
     // y=a.z*b.x - a.x*b.z
     // z=a.x*b.y - a.y*b.x
     // w=a.w*b.w - a.w*b.w
-    [[nodiscard]] constexpr friend numeric_array cross_3D(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] constexpr friend simd cross_3D(simd const& lhs, simd const& rhs) noexcept
         requires(N == 4)
     {
         hilet a_left = lhs.yzxw();
@@ -1257,12 +1257,12 @@ struct numeric_array {
         return left - right;
     }
 
-    [[nodiscard]] static constexpr numeric_array byte_srl_shuffle_indices(unsigned int rhs)
+    [[nodiscard]] static constexpr simd byte_srl_shuffle_indices(unsigned int rhs)
         requires(std::is_same_v<value_type, int8_t> and size == 16)
     {
         static_assert(std::endian::native == std::endian::little);
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (auto i = 0; i != 16; ++i) {
             if ((i + rhs) < 16) {
                 r[i] = narrow_cast<int8_t>(i + rhs);
@@ -1274,12 +1274,12 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] static constexpr numeric_array byte_sll_shuffle_indices(unsigned int rhs)
+    [[nodiscard]] static constexpr simd byte_sll_shuffle_indices(unsigned int rhs)
         requires(std::is_same_v<value_type, int8_t> and size == 16)
     {
         static_assert(std::endian::native == std::endian::little);
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (auto i = 0; i != 16; ++i) {
             if ((i - rhs) >= 0) {
                 r[i] = narrow_cast<int8_t>(i - rhs);
@@ -1293,12 +1293,12 @@ struct numeric_array {
 
     /** Shuffle a 16x byte array, using the indices from the right-hand-side.
      */
-    [[nodiscard]] friend constexpr numeric_array permute(numeric_array const& lhs, numeric_array const& rhs) noexcept
+    [[nodiscard]] friend constexpr simd permute(simd const& lhs, simd const& rhs) noexcept
         requires(std::is_integral_v<value_type>)
     {
-        HI_X_runtime_evaluate_if_valid(numeric_array{permute(lhs.reg(), rhs.reg())});
+        HI_X_runtime_evaluate_if_valid(simd{permute(lhs.reg(), rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             if (rhs[i] >= 0) {
                 r[i] = lhs[rhs[i] & 0xf];
@@ -1312,14 +1312,14 @@ struct numeric_array {
 
     /** Find a point at the midpoint between two points.
      */
-    [[nodiscard]] friend constexpr numeric_array midpoint(numeric_array const& p1, numeric_array const& p2) noexcept
+    [[nodiscard]] friend constexpr simd midpoint(simd const& p1, simd const& p2) noexcept
     {
         return (p1 + p2) * 0.5f;
     }
 
     /** Find the point on the other side and at the same distance of an anchor-point.
      */
-    [[nodiscard]] friend constexpr numeric_array reflect_point(numeric_array const& p, numeric_array const anchor) noexcept
+    [[nodiscard]] friend constexpr simd reflect_point(simd const& p, simd const anchor) noexcept
     {
         return anchor - (p - anchor);
     }
@@ -1329,22 +1329,22 @@ struct numeric_array {
     // Internal to _MM_TRANSPOSE4_PS
     hi_warning_ignore_msvc(26494);
     template<typename... Columns>
-    [[nodiscard]] friend constexpr std::array<numeric_array, size> transpose(Columns const&...columns) noexcept
+    [[nodiscard]] friend constexpr std::array<simd, size> transpose(Columns const&...columns) noexcept
     {
         static_assert(sizeof...(Columns) == size, "Can only transpose square matrices");
 
         if (not std::is_constant_evaluated()) {
             if constexpr (requires { transpose(columns.reg()...); }) {
                 hilet tmp = transpose(columns.reg()...);
-                auto r = std::array<numeric_array, size>{};
+                auto r = std::array<simd, size>{};
                 for (auto i = 0_uz; i != size; ++i) {
-                    r[i] = numeric_array{tmp[i]};
+                    r[i] = simd{tmp[i]};
                 }
                 return r;
             }
         }
 
-        auto r = std::array<numeric_array, N>{};
+        auto r = std::array<simd, N>{};
         auto f = [&r, &columns... ]<std::size_t... Ints>(std::index_sequence<Ints...>)
         {
             auto tf = [&r](auto i, auto v) {
@@ -1360,7 +1360,7 @@ struct numeric_array {
     }
     hi_warning_pop();
 
-    [[nodiscard]] constexpr friend numeric_array composit(numeric_array const& under, numeric_array const& over) noexcept
+    [[nodiscard]] constexpr friend simd composit(simd const& under, simd const& over) noexcept
         requires(N == 4 && std::is_floating_point_v<T>)
     {
         if (get<3>(over) <= value_type{0}) {
@@ -1383,13 +1383,13 @@ struct numeric_array {
         return output_color / output_color.www1();
     }
 
-    [[nodiscard]] constexpr friend numeric_array composit(numeric_array const& under, numeric_array const& over) noexcept
+    [[nodiscard]] constexpr friend simd composit(simd const& under, simd const& over) noexcept
         requires(std::is_same_v<value_type, float16> and size == 4)
     {
-        return numeric_array{composit(static_cast<numeric_array<float, 4>>(under), static_cast<numeric_array<float, 4>>(over))};
+        return simd{composit(static_cast<simd<float, 4>>(under), static_cast<simd<float, 4>>(over))};
     }
 
-    [[nodiscard]] friend std::string to_string(numeric_array const& rhs) noexcept
+    [[nodiscard]] friend std::string to_string(simd const& rhs) noexcept
     {
         auto r = std::string{};
 
@@ -1404,7 +1404,7 @@ struct numeric_array {
         return r;
     }
 
-    friend std::ostream& operator<<(std::ostream& lhs, numeric_array const& rhs)
+    friend std::ostream& operator<<(std::ostream& lhs, simd const& rhs)
     {
         return lhs << to_string(rhs);
     }
@@ -1414,15 +1414,11 @@ struct numeric_array {
      * It also can clear any of the elements to zero.
      */
     template<std::size_t FromElement, std::size_t ToElement>
-    [[nodiscard]] constexpr friend numeric_array insert(numeric_array const& lhs, numeric_array const& rhs)
+    [[nodiscard]] constexpr friend simd insert(simd const& lhs, simd const& rhs)
     {
-        if (not std::is_constant_evaluated()) {
-            if constexpr (requires { numeric_array{insert<FromElement, ToElement>(lhs.reg(), rhs.reg())}; }) {
-                return numeric_array{insert<FromElement, ToElement>(lhs.reg(), rhs.reg())};
-            }
-        }
+        HI_X_runtime_evaluate_if_valid(simd{insert<FromElement, ToElement>(lhs.reg(), rhs.reg())});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
             r[i] = (i == ToElement) ? rhs[FromElement] : lhs[i];
         }
@@ -1438,19 +1434,19 @@ struct numeric_array {
      *         The elements at the end of the array are set to zero.
      */
     template<fixed_string Order>
-    [[nodiscard]] constexpr numeric_array swizzle() const
+    [[nodiscard]] constexpr simd swizzle() const
     {
         static_assert(Order.size() <= N);
 
-        HI_X_runtime_evaluate_if_valid(numeric_array{reg().swizzle<Order>()});
+        HI_X_runtime_evaluate_if_valid(simd{reg().swizzle<Order>()});
 
-        auto r = numeric_array{};
+        auto r = simd{};
         swizzle_detail<0, Order>(r);
         return r;
     }
 
 #define SWIZZLE(name, str) \
-    [[nodiscard]] constexpr numeric_array name() const noexcept \
+    [[nodiscard]] constexpr simd name() const noexcept \
         requires(sizeof(str) - 1 <= N) \
     { \
         return swizzle<str>(); \
@@ -1505,7 +1501,7 @@ struct numeric_array {
 #undef SWIZZLE_4D
 
     template<size_t I, fixed_string Order>
-    constexpr void swizzle_detail(numeric_array& r) const noexcept
+    constexpr void swizzle_detail(simd& r) const noexcept
     {
         static_assert(I < size);
 
@@ -1529,79 +1525,81 @@ struct numeric_array {
     }
 };
 
-using i8x1 = numeric_array<int8_t, 1>;
-using i8x2 = numeric_array<int8_t, 2>;
-using i8x4 = numeric_array<int8_t, 4>;
-using i8x8 = numeric_array<int8_t, 8>;
-using i8x16 = numeric_array<int8_t, 16>;
-using i8x32 = numeric_array<int8_t, 32>;
-using i8x64 = numeric_array<int8_t, 64>;
+using i8x1 = simd<int8_t, 1>;
+using i8x2 = simd<int8_t, 2>;
+using i8x4 = simd<int8_t, 4>;
+using i8x8 = simd<int8_t, 8>;
+using i8x16 = simd<int8_t, 16>;
+using i8x32 = simd<int8_t, 32>;
+using i8x64 = simd<int8_t, 64>;
 
-using u8x1 = numeric_array<uint8_t, 1>;
-using u8x2 = numeric_array<uint8_t, 2>;
-using u8x4 = numeric_array<uint8_t, 4>;
-using u8x8 = numeric_array<uint8_t, 8>;
-using u8x16 = numeric_array<uint8_t, 16>;
-using u8x32 = numeric_array<uint8_t, 32>;
-using u8x64 = numeric_array<uint8_t, 64>;
+using u8x1 = simd<uint8_t, 1>;
+using u8x2 = simd<uint8_t, 2>;
+using u8x4 = simd<uint8_t, 4>;
+using u8x8 = simd<uint8_t, 8>;
+using u8x16 = simd<uint8_t, 16>;
+using u8x32 = simd<uint8_t, 32>;
+using u8x64 = simd<uint8_t, 64>;
 
-using i16x1 = numeric_array<int16_t, 1>;
-using i16x2 = numeric_array<int16_t, 2>;
-using i16x4 = numeric_array<int16_t, 4>;
-using i16x8 = numeric_array<int16_t, 8>;
-using i16x16 = numeric_array<int16_t, 16>;
-using i16x32 = numeric_array<int16_t, 32>;
+using i16x1 = simd<int16_t, 1>;
+using i16x2 = simd<int16_t, 2>;
+using i16x4 = simd<int16_t, 4>;
+using i16x8 = simd<int16_t, 8>;
+using i16x16 = simd<int16_t, 16>;
+using i16x32 = simd<int16_t, 32>;
 
-using u16x1 = numeric_array<uint16_t, 1>;
-using u16x2 = numeric_array<uint16_t, 2>;
-using u16x4 = numeric_array<uint16_t, 4>;
-using u16x8 = numeric_array<uint16_t, 8>;
-using u16x16 = numeric_array<uint16_t, 16>;
-using u16x32 = numeric_array<uint16_t, 32>;
+using u16x1 = simd<uint16_t, 1>;
+using u16x2 = simd<uint16_t, 2>;
+using u16x4 = simd<uint16_t, 4>;
+using u16x8 = simd<uint16_t, 8>;
+using u16x16 = simd<uint16_t, 16>;
+using u16x32 = simd<uint16_t, 32>;
 
-using f16x4 = numeric_array<float16, 4>;
+using f16x4 = simd<float16, 4>;
 
-using i32x1 = numeric_array<int32_t, 1>;
-using i32x2 = numeric_array<int32_t, 2>;
-using i32x4 = numeric_array<int32_t, 4>;
-using i32x8 = numeric_array<int32_t, 8>;
-using i32x16 = numeric_array<int32_t, 16>;
+using i32x1 = simd<int32_t, 1>;
+using i32x2 = simd<int32_t, 2>;
+using i32x4 = simd<int32_t, 4>;
+using i32x8 = simd<int32_t, 8>;
+using i32x16 = simd<int32_t, 16>;
 
-using u32x1 = numeric_array<uint32_t, 1>;
-using u32x2 = numeric_array<uint32_t, 2>;
-using u32x4 = numeric_array<uint32_t, 4>;
-using u32x8 = numeric_array<uint32_t, 8>;
-using u32x16 = numeric_array<uint32_t, 16>;
+using u32x1 = simd<uint32_t, 1>;
+using u32x2 = simd<uint32_t, 2>;
+using u32x4 = simd<uint32_t, 4>;
+using u32x8 = simd<uint32_t, 8>;
+using u32x16 = simd<uint32_t, 16>;
 
-using f32x1 = numeric_array<float, 1>;
-using f32x2 = numeric_array<float, 2>;
-using f32x4 = numeric_array<float, 4>;
-using f32x8 = numeric_array<float, 8>;
-using f32x16 = numeric_array<float, 16>;
+using f32x1 = simd<float, 1>;
+using f32x2 = simd<float, 2>;
+using f32x4 = simd<float, 4>;
+using f32x8 = simd<float, 8>;
+using f32x16 = simd<float, 16>;
 
-using i64x1 = numeric_array<int64_t, 1>;
-using i64x2 = numeric_array<int64_t, 2>;
-using i64x4 = numeric_array<int64_t, 4>;
-using i64x8 = numeric_array<int64_t, 8>;
+using i64x1 = simd<int64_t, 1>;
+using i64x2 = simd<int64_t, 2>;
+using i64x4 = simd<int64_t, 4>;
+using i64x8 = simd<int64_t, 8>;
 
-using u64x1 = numeric_array<uint64_t, 1>;
-using u64x2 = numeric_array<uint64_t, 2>;
-using u64x4 = numeric_array<uint64_t, 4>;
-using u64x8 = numeric_array<uint64_t, 8>;
+using u64x1 = simd<uint64_t, 1>;
+using u64x2 = simd<uint64_t, 2>;
+using u64x4 = simd<uint64_t, 4>;
+using u64x8 = simd<uint64_t, 8>;
 
-using f64x1 = numeric_array<double, 1>;
-using f64x2 = numeric_array<double, 2>;
-using f64x4 = numeric_array<double, 4>;
-using f64x8 = numeric_array<double, 8>;
+using f64x1 = simd<double, 1>;
+using f64x2 = simd<double, 2>;
+using f64x4 = simd<double, 4>;
+using f64x8 = simd<double, 8>;
 
 } // namespace hi::inline v1
 
 template<class T, std::size_t N>
-struct std::tuple_size<hi::numeric_array<T, N>> : std::integral_constant<std::size_t, N> {};
+struct std::tuple_size<hi::simd<T, N>> : std::integral_constant<std::size_t, N> {};
 
 template<std::size_t I, class T, std::size_t N>
-struct std::tuple_element<I, hi::numeric_array<T, N>> {
+struct std::tuple_element<I, hi::simd<T, N>> {
     using type = T;
 };
+
+#undef HI_X_runtime_evaluate_if_valid
 
 hi_warning_pop();

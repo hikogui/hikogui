@@ -9,7 +9,7 @@
 #pragma once
 
 #include "vector.hpp"
-#include "../SIMD/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../cast.hpp"
 #include "../numbers.hpp"
 #include <compare>
@@ -31,7 +31,7 @@ template<typename T, int D>
 class extent {
 public:
     using value_type = T;
-    using array_type = numeric_array<value_type, 4>;
+    using array_type = simd<value_type, 4>;
 
     static_assert(D == 2 || D == 3, "Only 2D or 3D extents are supported");
 

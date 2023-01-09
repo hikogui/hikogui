@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../SIMD/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 
 namespace hi::inline v1 {
 
@@ -21,7 +21,7 @@ template<typename T, int D>
 class vector {
 public:
     using value_type = T;
-    using array_type = numeric_array<value_type, 4>;
+    using array_type = simd<value_type, 4>;
 
     static_assert(D == 2 || D == 3, "Only 2D or 3D vectors are supported");
 
@@ -59,7 +59,7 @@ public:
         return _v;
     }
 
-    /** Construct a vector from a array_type-numeric_array.
+    /** Construct a vector from a array_type-simd.
      */
     [[nodiscard]] constexpr explicit vector(array_type const& other) noexcept : _v(other)
     {

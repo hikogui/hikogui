@@ -5,7 +5,7 @@
 #pragma once
 
 #include "semantic_color.hpp"
-#include "../SIMD/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../assert.hpp"
 
 namespace hi::inline v1 {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../SIMD/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../geometry/matrix.hpp"
 #include "../geometry/scale.hpp"
 
