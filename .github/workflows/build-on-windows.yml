@@ -223,4 +223,4 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2 # https://github.com/EnricoMi/publish-unit-test-result-action
         if: always()
         with:
-          files: artifacts/**/test_results*.xml
+          junit_files: artifacts/**/test_results*.xml
