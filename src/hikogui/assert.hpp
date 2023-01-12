@@ -185,7 +185,7 @@ concept bound_check_range_helper = requires(Context&& range) {
  * @param x The value to check if it is within bounds.
  * @param ... One upper-bound; or a lower-bound and upper-bound.
  */
-#define hi_axiom_bounds(a, ...) hi_assume(not ::hi::bound_check(x, __VA_ARGS__))
+#define hi_axiom_bounds(x, ...) hi_assume(not ::hi::bound_check(x, __VA_ARGS__))
 
 /** Assert if an expression is not nullptr.
  * If the expression is not a nullptr then return from the function.
