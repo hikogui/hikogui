@@ -19,15 +19,6 @@
 #include "../math.hpp"
 #include "../utility.hpp"
 #include "../fixed_string.hpp"
-#include "../stdint.hpp"
-
-//#if defined(HI_HAS_AVX)
-//#include "swizzle_avx.hpp"
-//#endif
-//#if defined(HI_HAS_SSE4_1)
-//#include "float16_sse4_1.hpp"
-//#endif
-
 #include <cstdint>
 #include <ostream>
 #include <string>

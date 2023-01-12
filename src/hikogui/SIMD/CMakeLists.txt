@@ -6,7 +6,6 @@ target_sources(hikogui PRIVATE
     float16_sse4_1.hpp
     int_abgr8_pack.hpp
     simd.hpp
-    swizzle_avx.hpp
     unorm_a2bgr10_pack.hpp
     native_f32x4_sse.hpp
     native_f64x4_avx.hpp
