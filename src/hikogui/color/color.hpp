@@ -5,7 +5,7 @@
 #pragma once
 
 #include "semantic_color.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../assert.hpp"
 
 namespace hi::inline v1 {
@@ -148,22 +148,22 @@ public:
         return _v.w();
     }
 
-    [[nodiscard]] constexpr float16 const& r() const noexcept
+    [[nodiscard]] constexpr float16 r() const noexcept
     {
         return _v.x();
     }
 
-    [[nodiscard]] constexpr float16 const& g() const noexcept
+    [[nodiscard]] constexpr float16 g() const noexcept
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr float16 const& b() const noexcept
+    [[nodiscard]] constexpr float16 b() const noexcept
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr float16 const& a() const noexcept
+    [[nodiscard]] constexpr float16 a() const noexcept
     {
         return _v.w();
     }
@@ -173,7 +173,10 @@ public:
         return _v.w() >= 0.0 && _v.w() <= 1.0;
     }
 
-    [[nodiscard]] constexpr friend bool operator==(color const& lhs, color const& rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(color const& lhs, color const& rhs) noexcept
+    {
+        return equal(lhs._v, rhs._v);
+    }
 
     [[nodiscard]] constexpr friend color operator*(color const& lhs, color const& rhs) noexcept
     {

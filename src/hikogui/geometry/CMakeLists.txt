@@ -25,15 +25,3 @@ target_sources(hikogui PRIVATE
     translate.hpp
     vector.hpp
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        identity_tests.cpp
-        matrix_tests.cpp
-        point_tests.cpp
-        scale_tests.cpp
-        transform_tests.cpp
-        translate_tests.cpp
-        vector_tests.cpp
-    )
-endif()

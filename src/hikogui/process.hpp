@@ -66,7 +66,7 @@ void process_call(Functor &&functor, std::string_view data)
     auto args = std::vector<std::string>{};
     args.push_back(process_path());
     args.push_back(process_name());
-    args.push_back(std::format("--process-call={},{}", functor.name(), data);
+    args.push_back(std::format("--process-call={},{}", functor.name(), data));
     auto pid = process_exec(std::move(args));
     process_wait(pid);
 };

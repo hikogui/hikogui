@@ -9,9 +9,3 @@ target_sources(hikogui PRIVATE
     grid_layout.hpp
     spreadsheet_address.hpp
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        spreadsheet_address_tests.cpp
-    )
-endif()

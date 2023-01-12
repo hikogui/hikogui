@@ -16,9 +16,10 @@ include(SetupCompiler)
 # Build Options
 #-------------------------------------------------------------------
 
-option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
-option(HI_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
-option(HI_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
+option(BUILD_SHARED_LIBS    "Build shared libraries"                             OFF)
+option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
+option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
+option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" "")
 
 #-------------------------------------------------------------------
 # Project
@@ -52,6 +53,7 @@ project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
+include(CPUID)
 
 # disable adding CTest build targets like "NightlyStart" (before ctest include)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
@@ -61,20 +63,16 @@ include(CTest)
 # Find Dependencies
 #-------------------------------------------------------------------
 
-#
-# GoogleTest - non-vcpkg, directly build from externals
-#
 if(BUILD_TESTING)
+    #
+    # GoogleTest - non-vcpkg, directly build from externals
+    #
     set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
     set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
     FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.11.0)
     FetchContent_MakeAvailable(googletest)
 
     include(GoogleTest)
-    add_executable(hikogui_tests)
-    # PRE_TEST delays test discovery until just prior to test execution
-    gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
-
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     set_target_properties(gtest      PROPERTIES FOLDER extern)
     set_target_properties(gtest_main PROPERTIES FOLDER extern)
@@ -108,6 +106,7 @@ set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 #-------------------------------------------------------------------
 # Setup Sources
 #-------------------------------------------------------------------
+set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 
 # This needs to be below the build target commands (add_*).
 # We omit adding source files to the `add_*` commands, but add them
@@ -191,10 +190,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # It seems this check should only be used for interopability with swift
     target_compile_options(hikogui PUBLIC -Wno-nullability-completeness)
 
-    # IvyBridge:                     F16C             FSGSBASE, AVX,           AES, PCLMUL        MMX, SSE, SSE2, SSE3,        SSSE3, SSE4.1, SSE4.2,     POPCNT, RDRND
-    # Steamroller 0x15-v3: BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM
-    # POPCNT is supported by Steamroller through he SSE4A instruction set.
-    target_compile_options(hikogui PUBLIC -mf16c -mfsgsbase -mavx -maes -mpclmul -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mpopcnt)
+    target_compile_options(hikogui PUBLIC -march=${HI_ARCHITECTURE})
 
     # The Microsoft version of clang does not implement all clang command line arguments.
     if (NOT MSVC)
@@ -206,6 +202,13 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
+    if("${HI_ARCHITECTURE}" STREQUAL "x86-64-v4")
+        target_compile_options(hikogui PUBLIC -arch:AVX512)
+    elseif("${HI_ARCHITECTURE}" STREQUAL "x86-64-v3")
+        target_compile_options(hikogui PUBLIC -arch:AVX2)
+    elseif("${HI_ARCHITECTURE}" STREQUAL "x86-64-v2")
+        target_compile_options(hikogui PUBLIC -arch:AVX)
+    endif()
 
     # Turn on a lot of warnings by default.
     target_compile_options(hikogui PUBLIC -W4)
@@ -228,10 +231,6 @@ elseif (MSVC)
 
     # Set the execution and source character encoding to UTF-8
     target_compile_options(hikogui PUBLIC -utf-8)
-
-    # Support Intel's SkyLake and AMD's Excavator.
-    # see hardware_support.md
-    target_compile_options(hikogui PUBLIC -arch:AVX)
 
     # The hikogui generic tokenizer uses large constexpr tables.
     target_compile_options(hikogui PUBLIC "-constexpr:steps100000000")
@@ -442,21 +441,8 @@ install(FILES
 # Build Target: hikogui_tests                            (executable)
 #-------------------------------------------------------------------
 
-if (BUILD_TESTING)
-    target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
-    target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-
-    add_custom_target(hikogui_tests_resources
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/data ${CMAKE_CURRENT_BINARY_DIR}
-    )
-    add_dependencies(hikogui_tests hikogui_tests_resources)
-
-    #-------------------------------------------------------------------
-    # Installation Rules: hikogui_tests                      (executable)
-    #-------------------------------------------------------------------
-    install(TARGETS hikogui_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
-    install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+if(BUILD_TESTING)
+    include(CMakeLists_tests.cmake)
 endif()
 
 #-------------------------------------------------------------------
@@ -474,8 +460,6 @@ add_subdirectory(examples/widgets)
 #-------------------------------------------------------------------
 
 show_build_target_properties(hikogui)
-show_build_target_properties(hikogui_tests)
-
 #-------------------------------------------------------------------
 # Build Documentation
 #-------------------------------------------------------------------

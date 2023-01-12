@@ -7,7 +7,7 @@
 #include "../cast.hpp"
 #include "../memory.hpp"
 #include "../endian.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include <bit>
 #include <cstdint>
 #include <tuple>
@@ -53,7 +53,7 @@ store_samples(i8x16 int_samples, std::byte *& dst, i8x16 store_shuffle_indices, 
     // Read out the samples from the other channels, that where packed before.
     auto tmp = i8x16::load(dst);
 
-    hilet packed_samples = shuffle(int_samples, store_shuffle_indices);
+    hilet packed_samples = permute(int_samples, store_shuffle_indices);
 
     // When the shuffle-index is -1 use the samples from the other channels.
     tmp = blend(packed_samples, tmp, store_shuffle_indices);
@@ -78,7 +78,7 @@ store_samples(i8x16 int_samples, std::byte *& dst, i8x16 store_shuffle_indices, 
 
     do {
         store_samples(int_samples, dst, store_shuffle_indices, stride);
-        int_samples = shuffle(int_samples, concat_shuffle_indices);
+        int_samples = permute(int_samples, concat_shuffle_indices);
         // The result of the last shuffle is not used, so will be pipelined by the CPU.
     } while (--num_chunks);
 }
@@ -131,7 +131,7 @@ void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi
     if (_format.is_float) {
         while (src != src_fast_end) {
             hilet float_samples = load_samples(src);
-            hilet int_samples = bit_cast<i8x16>(float_samples);
+            hilet int_samples = i8x16::cast_from(float_samples);
             store_samples(int_samples, dst, store_shuffle_indices, concat_shuffle_indices, num_chunks_per_quad, chunk_stride);
         }
         while (src != src_end) {
@@ -155,7 +155,7 @@ void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi
             float_samples = min(float_samples, one);
             float_samples = max(float_samples, min_one);
             float_samples *= multiplier;
-            hilet int_samples = bit_cast<i8x16>(static_cast<i32x4>(float_samples));
+            hilet int_samples = i8x16::cast_from(static_cast<i32x4>(float_samples));
             store_samples(int_samples, dst, store_shuffle_indices, concat_shuffle_indices, num_chunks_per_quad, chunk_stride);
         }
         while (src != src_end) {

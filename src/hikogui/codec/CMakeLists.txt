@@ -18,13 +18,3 @@ target_sources(hikogui PRIVATE
     BON8.hpp
     BON8_impl.cpp
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        BON8_tests.cpp
-        JSON_tests.cpp
-        gzip_tests.cpp
-        base_n_tests.cpp
-        SHA2_tests.cpp
-    )
-endif()

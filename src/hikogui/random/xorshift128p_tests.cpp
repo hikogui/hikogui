@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "xorshift128p.hpp"
-#include <gtest/gtest.h>
+#include "../SIMD/simd_test_utility.hpp"
 #include <iostream>
 #include <string>
 #include <limits>
@@ -23,6 +23,6 @@ TEST(xorshift128p, compare_64_and_128_bits)
         expected[1] = r1.next<uint64_t>();
 
         auto result = r2.next<u64x2>();
-        ASSERT_EQ(result, expected);
+        HI_ASSERT_SIMD_EQ(result, expected);
     }
 }

@@ -13,15 +13,3 @@ target_sources(hikogui PRIVATE
     utf_16.hpp
     utf_32.hpp
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        ascii_tests.cpp
-        char_converter_tests.cpp
-        cp_1252_tests.cpp
-        iso_8859_1_tests.cpp
-        utf_8_tests.cpp
-        utf_16_tests.cpp
-        utf_32_tests.cpp
-    )
-endif()

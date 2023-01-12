@@ -5,9 +5,17 @@
 target_sources(hikogui PRIVATE
     float16_sse4_1.hpp
     int_abgr8_pack.hpp
-    numeric_array.hpp
-    swizzle_avx.hpp
+    simd.hpp
     unorm_a2bgr10_pack.hpp
+    native_f32x4_sse.hpp
+    native_f64x4_avx.hpp
+    native_i8x16_sse2.hpp
+    native_i16x8_sse2.hpp
+    native_i32x4_sse2.hpp
+    native_i64x4_avx2.hpp
+    native_simd_conversions_x86.hpp
+    native_simd_utility.hpp
+    native_u32x4_sse2.hpp
     srgb_abgr8_pack.hpp
     sfloat_rgba16.hpp
     sfloat_rgba32.hpp
@@ -17,10 +25,3 @@ target_sources(hikogui PRIVATE
     sdf_r8.hpp
     uint_abgr8_pack.hpp
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        numeric_array_tests.cpp
-    )
-endif()
-

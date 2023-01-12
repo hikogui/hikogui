@@ -8,7 +8,7 @@
 #include "../float16.hpp"
 #include "../pixel_map.hpp"
 #include "../geometry/corner_radii.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../hash.hpp"
 #include <algorithm>
 #include <bit>

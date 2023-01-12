@@ -5,7 +5,7 @@
 #pragma once
 
 #include "seed.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../utility.hpp"
 #include <random>
 
@@ -91,19 +91,19 @@ public:
     template<>
     [[nodiscard]] u32x4 next() noexcept
     {
-        return bit_cast<u32x4>(next<u64x2>());
+        return u32x4::cast_from(next<u64x2>());
     }
 
     template<>
     [[nodiscard]] i32x4 next() noexcept
     {
-        return bit_cast<i32x4>(next<u64x2>());
+        return i32x4::cast_from(next<u64x2>());
     }
 
     template<>
     [[nodiscard]] i16x8 next() noexcept
     {
-        return bit_cast<i16x8>(next<u64x2>());
+        return i16x8::cast_from(next<u64x2>());
     }
 
 private:

@@ -7,7 +7,7 @@
 #include "../utility.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include <bit>
 
 namespace hi::inline v1 {

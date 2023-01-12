@@ -10,8 +10,8 @@
 #include "geometry/axis_aligned_rectangle.hpp"
 #include "geometry/transform.hpp"
 #include "geometry/line_join_style.hpp"
-#include "rapid/sfloat_rgba16.hpp"
-#include "rapid/sdf_r8.hpp"
+#include "SIMD/sfloat_rgba16.hpp"
+#include "SIMD/sdf_r8.hpp"
 #include <vector>
 
 namespace hi::inline v1 {

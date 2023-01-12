@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../rapid/sfloat_rg32.hpp"
+#include "../SIMD/sfloat_rg32.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace hi::inline v1::pipeline_SDF {

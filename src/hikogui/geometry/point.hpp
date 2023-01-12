@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "vector.hpp"
 #include "extent.hpp"
 #include "../cast.hpp"
@@ -24,7 +24,7 @@ template<typename T, int D>
 class point {
 public:
     using value_type = T;
-    using array_type = numeric_array<value_type, 4>;
+    using array_type = simd<value_type, 4>;
 
     static_assert(D == 2 || D == 3, "Only 2D or 3D points are supported");
 
@@ -73,7 +73,7 @@ public:
         return _v;
     }
 
-    /** Construct a point from a array_type-numeric_array.
+    /** Construct a point from a array_type-simd.
      */
     [[nodiscard]] constexpr explicit point(array_type const& other) noexcept : _v(other)
     {
@@ -133,7 +133,7 @@ public:
     /** Access the x element from the point.
      * @return a reference to the x element.
      */
-    [[nodiscard]] constexpr value_type const& x() const noexcept
+    [[nodiscard]] constexpr value_type x() const noexcept
     {
         return _v.x();
     }
@@ -141,7 +141,7 @@ public:
     /** Access the y element from the point.
      * @return a reference to the y element.
      */
-    [[nodiscard]] constexpr value_type const& y() const noexcept
+    [[nodiscard]] constexpr value_type y() const noexcept
     {
         return _v.y();
     }
@@ -149,7 +149,7 @@ public:
     /** Access the z element from the point.
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr value_type const& z() const noexcept
+    [[nodiscard]] constexpr value_type z() const noexcept
         requires(D == 3)
     {
         return _v.z();
@@ -228,7 +228,7 @@ public:
     [[nodiscard]] constexpr friend bool operator==(point const& lhs, point const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
-        return lhs._v == rhs._v;
+        return equal(lhs._v, rhs._v);
     }
 
     template<int E>

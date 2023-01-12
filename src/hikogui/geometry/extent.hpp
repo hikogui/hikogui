@@ -9,7 +9,7 @@
 #pragma once
 
 #include "vector.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../cast.hpp"
 #include "../numbers.hpp"
 #include <compare>
@@ -31,7 +31,7 @@ template<typename T, int D>
 class extent {
 public:
     using value_type = T;
-    using array_type = numeric_array<value_type, 4>;
+    using array_type = simd<value_type, 4>;
 
     static_assert(D == 2 || D == 3, "Only 2D or 3D extents are supported");
 
@@ -198,7 +198,7 @@ public:
      *
      * @return a reference to the x element.
      */
-    [[nodiscard]] constexpr value_type const& width() const noexcept
+    [[nodiscard]] constexpr value_type width() const noexcept
     {
         return _v.x();
     }
@@ -209,7 +209,7 @@ public:
      *
      * @return a reference to the y element.
      */
-    [[nodiscard]] constexpr value_type const& height() const noexcept
+    [[nodiscard]] constexpr value_type height() const noexcept
     {
         return _v.y();
     }
@@ -220,7 +220,7 @@ public:
      *
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr value_type const& depth() const noexcept
+    [[nodiscard]] constexpr value_type depth() const noexcept
         requires(D == 3)
     {
         return _v.z();
@@ -330,7 +330,7 @@ public:
     [[nodiscard]] constexpr friend bool operator==(extent const& lhs, extent const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
-        return lhs._v == rhs._v;
+        return equal(lhs._v, rhs._v);
     }
 
     [[nodiscard]] constexpr friend std::partial_ordering operator<=>(extent const& lhs, extent const& rhs) noexcept
@@ -365,19 +365,19 @@ public:
     {
         constexpr std::size_t mask = 0b11;
 
-        hilet equal = eq(lhs._v, rhs._v) & mask;
+        hilet equal = (lhs._v == rhs._v).mask() & mask;
         if (equal == mask) {
             // Only equivalent if all elements are equal.
             return std::partial_ordering::equivalent;
         }
 
-        hilet less = lt(lhs._v, rhs._v) & mask;
+        hilet less = (lhs._v < rhs._v).mask() & mask;
         if ((less | equal) == mask) {
             // If one or more elements is less (but none are greater) then the ordering is less.
             return std::partial_ordering::less;
         }
 
-        hilet greater = gt(lhs._v, rhs._v) & mask;
+        hilet greater = (lhs._v > rhs._v).mask() & mask;
         if ((greater | equal) == mask) {
             // If one or more elements is greater (but none are less) then the ordering is greater.
             return std::partial_ordering::greater;

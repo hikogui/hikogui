@@ -22,9 +22,3 @@ target_sources(hikogui PRIVATE
     skeleton_top_node.hpp
     skeleton_while_node.hpp
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        skeleton_tests.cpp
-    )
-endif()

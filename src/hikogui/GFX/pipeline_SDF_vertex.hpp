@@ -5,9 +5,9 @@
 #pragma once
 
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../rapid/sfloat_rgba16.hpp"
-#include "../rapid/sfloat_rgba32.hpp"
-#include "../rapid/sfloat_rgb32.hpp"
+#include "../SIMD/sfloat_rgba16.hpp"
+#include "../SIMD/sfloat_rgba32.hpp"
+#include "../SIMD/sfloat_rgb32.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace hi::inline v1::pipeline_SDF {

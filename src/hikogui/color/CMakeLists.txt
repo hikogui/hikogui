@@ -12,9 +12,3 @@ target_sources(hikogui PRIVATE
 	semantic_color.hpp
     sRGB.hpp
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        color_space_tests.cpp
-    )
-endif()

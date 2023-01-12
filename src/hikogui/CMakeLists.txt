@@ -15,7 +15,7 @@ add_subdirectory(GFX)
 add_subdirectory(GUI)
 add_subdirectory(i18n)
 add_subdirectory(random)
-add_subdirectory(rapid)
+add_subdirectory(SIMD)
 add_subdirectory(skeleton)
 add_subdirectory(text)
 add_subdirectory(unicode)
@@ -132,6 +132,7 @@ target_sources(hikogui PRIVATE
     ranges.hpp
     rcu.hpp
     recursive_iterator.hpp
+    reflection.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
     utility.hpp
@@ -177,50 +178,3 @@ target_sources(hikogui PRIVATE
     wfree_unordered_map.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_headers.hpp>
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        algorithm_tests.cpp
-        bezier_curve_tests.cpp
-        bigint_tests.cpp
-        bound_integer_tests.cpp
-        cast_tests.cpp
-        counters_tests.cpp
-        datum_tests.cpp
-        dead_lock_detector_tests.cpp
-        decimal_tests.cpp
-        defer_tests.cpp
-        enum_metadata_tests.cpp
-        exceptions_tests.cpp
-        fixed_string_tests.cpp
-        float16_tests.cpp
-        format_check_tests.cpp
-        forward_value_tests.cpp
-        gap_buffer_tests.cpp
-        generator_tests.cpp
-        interval_tests.cpp
-        int_carry_tests.cpp
-        int_overflow_tests.cpp
-        jsonpath_tests.cpp
-        lean_vector_tests.cpp
-        math_tests.cpp
-        group_ptr_tests.cpp
-        notifier_tests.cpp
-        graphic_path_tests.cpp
-        packed_int_array_tests.cpp
-        pixel_map_tests.cpp
-        polymorphic_optional_tests.cpp
-        polynomial_tests.cpp
-        ranges_tests.cpp
-        rcu_tests.cpp
-        safe_int_tests.cpp
-        shared_state_tests.cpp
-        sip_hash_tests.cpp
-        small_map_tests.cpp
-        strings_tests.cpp
-        tokenizer_tests.cpp
-        tree_tests.cpp
-        type_traits_tests.cpp
-    )
-endif()
-

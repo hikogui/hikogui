@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "numeric_array.hpp"
+#include "simd.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {

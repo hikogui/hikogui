@@ -132,7 +132,7 @@ public:
             {
                 // Found end-of-line
                 hilet bspan = peek(byteNr + 1);
-                return {reinterpret_cast<char *>(bspan.data(), byteNr + 1};
+                return {reinterpret_cast<char *>(bspan.data()), byteNr + 1};
             }
             ++i;
             ++byteNr;

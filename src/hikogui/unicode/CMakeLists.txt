@@ -33,12 +33,3 @@ target_sources(hikogui PRIVATE
     unicode_text_segmentation.hpp
     unicode_word_break.hpp
 )
-
-if(BUILD_TESTING)
-    target_sources(hikogui_tests PRIVATE
-        unicode_bidi_tests.cpp
-        unicode_break_tests.cpp
-        unicode_text_segmentation_tests.cpp
-        unicode_normalization_tests.cpp
-    )
-endif()

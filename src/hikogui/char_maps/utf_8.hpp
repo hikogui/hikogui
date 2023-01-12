@@ -67,9 +67,8 @@ struct char_map<"utf-8"> {
                 // code-unit as if it was CP-1252.
                 it -= 2;
                 return read_fallback(it, last);
-
             }
-            
+
             // After we read the first two code-units how many more to do.
             auto todo = length - 2;
             if (todo > std::distance(it, last)) [[unlikely]] {
@@ -102,7 +101,7 @@ struct char_map<"utf-8"> {
             }
             return {cp, true};
         }
-    };
+    }
 
     [[nodiscard]] constexpr std::pair<uint8_t, bool> size(char32_t code_point) const noexcept
     {

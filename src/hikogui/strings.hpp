@@ -613,6 +613,8 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
     return make_cstr(s.c_str(), s.size());
 }
 
+
+
 } // namespace hi::inline v1
 
 hi_warning_pop();
