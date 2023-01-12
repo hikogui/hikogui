@@ -144,20 +144,7 @@ jobs:
         working-directory: build-dbg
         run: |
           copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* .
-          hikogui_tests.exe --gtest_output=xml:test_results_gtest.xml
-          hikogui_x64v1_tests.exe --gtest_output=xml:test_x64v1_results_gtest.xml
-          hikogui_x64v2_tests.exe --gtest_output=xml:test_x64v2_results_gtest.xml
-          hikogui_x64v2_5_tests.exe --gtest_output=xml:test_x64v2_5_results_gtest.xml
-          hikogui_x64v3_tests.exe --gtest_output=xml:test_x64v3_results_gtest.xml
-          hikogui_x64v4_tests.exe --gtest_output=xml:test_x64v4_results_gtest.xml
-
-      - name: ♻ Transform Test Results (gtest ➔ junit)
-        working-directory: build-dbg
-        shell: pwsh
-        run: |
-          $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
-          $xsl.Load("${{github.workspace}}\.github\gtest_to_junit.xsl")
-          $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{github.workspace}}\test_results_${{matrix.config.NAME}}.xml")
+          ctest --output-junit "${{github.workspace}}\test_results_${{matrix.config.NAME}}.xml"
 
       # We upload multiple files into the same artifact file (zip).
       # Each file is differently named by adding the job name of the matrix as a suffix.
@@ -171,18 +158,21 @@ jobs:
           path: test_results_*.xml
 
       - name: 📑 Generate CodeCoverage Report
+        working-directory: build-dbg
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
           OpenCppCoverageSetup-x64-0.9.9.0.exe /VERYSILENT /DIR=.\bin\coverage
-          .\bin\coverage\OpenCppCoverage.exe --sources=src ^
+          .\bin\coverage\OpenCppCoverage.exe ^
+          --sources=src ^
           --excluded_sources=src\*_tests.cpp ^
           --excluded_sources=src\*\*_tests.cpp ^
           --excluded_sources=build-rel\_deps ^
           --excluded_sources=build-dbg\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
           --working_dir=.\\build-dbg ^
-          -- ".\\build-dbg\\hikogui_tests.exe"
+          --cover_children ^
+          -- ctest.exe
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
