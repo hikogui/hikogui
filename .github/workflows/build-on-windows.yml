@@ -158,7 +158,6 @@ jobs:
           path: test_results_*.xml
 
       - name: 📑 Generate CodeCoverage Report
-        working-directory: build-dbg
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
