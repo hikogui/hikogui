@@ -199,16 +199,6 @@ struct native_i8x16 {
         return native_i8x16{_mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()))};
     }
 
-    [[nodiscard]] bool empty() const noexcept
-    {
-        return *this == native_i8x16{};
-    }
-
-    explicit operator bool() const noexcept
-    {
-        return not empty();
-    }
-
     /** Concatenate the top bit of each element.
      */
     [[nodiscard]] size_t mask() const noexcept

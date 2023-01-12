@@ -160,38 +160,30 @@ template<fixed_string SourceElements, size_t NumElements, char Value>
 template<typename T, size_t N>
 struct native_simd;
 
-using native_f64x8 = native_simd<double, 8>;
-using native_f64x4 = native_simd<double, 4>;
-using native_f64x2 = native_simd<double, 2>;
-using native_f32x16 = native_simd<float, 16>;
-using native_f32x8 = native_simd<float, 8>;
-using native_f32x4 = native_simd<float, 4>;
-using native_f16x32 = native_simd<float16, 32>;
-using native_f16x16 = native_simd<float16, 16>;
-using native_f16x8 = native_simd<float16, 8>;
-using native_i64x8 = native_simd<int64_t, 8>;
-using native_i64x4 = native_simd<int64_t, 4>;
-using native_i64x2 = native_simd<int64_t, 2>;
-using native_i32x16 = native_simd<int32_t, 16>;
-using native_i32x8 = native_simd<int32_t, 8>;
-using native_i32x4 = native_simd<int32_t, 4>;
-using native_i16x32 = native_simd<int16_t, 32>;
-using native_i16x16 = native_simd<int16_t, 16>;
-using native_i16x8 = native_simd<int16_t, 8>;
-using native_i8x64 = native_simd<int16_t, 64>;
-using native_i8x32 = native_simd<int16_t, 32>;
-using native_i8x16 = native_simd<int16_t, 16>;
-using native_u64x8 = native_simd<uint64_t, 8>;
-using native_u64x4 = native_simd<uint64_t, 4>;
-using native_u64x2 = native_simd<uint64_t, 2>;
-using native_u32x16 = native_simd<uint32_t, 16>;
-using native_u32x8 = native_simd<uint32_t, 8>;
-using native_u32x4 = native_simd<uint32_t, 4>;
-using native_u16x32 = native_simd<uint16_t, 32>;
-using native_u16x16 = native_simd<uint16_t, 16>;
-using native_u16x8 = native_simd<uint16_t, 8>;
-using native_u8x64 = native_simd<uint16_t, 64>;
-using native_u8x32 = native_simd<uint16_t, 32>;
-using native_u8x16 = native_simd<uint16_t, 16>;
-
 }} // namespace hi::v1
+
+template<typename T, size_t N>
+struct std::equal_to<::hi::native_simd<T, N>> {
+    [[nodiscard]] constexpr bool operator()(::hi::native_simd<T, N> const& lhs, ::hi::native_simd<T, N> const& rhs) noexcept
+    {
+        return equal(lhs, rhs);
+    }
+};
+
+namespace testing::internal {
+
+// Add equality operator to Google-test internal namespace so that ASSERT_EQ() work.
+template<typename T, size_t N>
+inline bool operator==(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
+{
+    return std::equal_to<::hi::native_simd<T, N>>{}(lhs, rhs);
+}
+
+// Add equality operator to Google-test internal namespace so that ASSERT_NE() work.
+template<typename T, size_t N>
+inline bool operator!=(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
+{
+    return not std::equal_to<::hi::native_simd<T, N>>{}(lhs, rhs);
+}
+
+} // namespace testing::internal

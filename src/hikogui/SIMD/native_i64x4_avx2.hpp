@@ -117,22 +117,8 @@ struct native_simd<int64_t,4> {
         return r;
     }
 
-    [[nodiscard]] explicit native_simd(native_i32x4 const& a) noexcept;
-    [[nodiscard]] explicit native_simd(native_u32x4 const& a) noexcept;
-
-    /** Check if all elements are zero.
-     */
-    [[nodiscard]] bool empty() const noexcept
-    {
-        return equal(*this, native_simd{});
-    }
-
-    /** Check if any element is non-zero.
-     */
-    [[nodiscard]] explicit operator bool() const noexcept
-    {
-        return not empty();
-    }
+    [[nodiscard]] explicit native_simd(native_simd<int32_t,4> const& a) noexcept;
+    [[nodiscard]] explicit native_simd(native_simd<uint32_t,4> const& a) noexcept;
 
     /** Broadcast a single value to all the elements.
      *

@@ -119,7 +119,7 @@ struct native_simd<uint32_t,4> {
         return r;
     }
 
-    [[nodiscard]] explicit native_simd(native_i32x4 const &a) noexcept;
+    [[nodiscard]] explicit native_simd(native_simd<int32_t,4> const &a) noexcept;
 
     /** Broadcast a single value to all the elements.
      *
@@ -156,16 +156,6 @@ struct native_simd<uint32_t,4> {
     [[nodiscard]] static native_simd ones() noexcept
     {
         return native_simd{_mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()))};
-    }
-
-    [[nodiscard]] bool empty() const noexcept
-    {
-        return equal(*this, native_simd{});
-    }
-
-    explicit operator bool() const noexcept
-    {
-        return not empty();
     }
 
     /** For each bit in mask set corresponding element to all-ones or all-zeros.

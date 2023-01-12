@@ -174,20 +174,36 @@ struct make_intmax<T> {
 template<typename T>
 using make_intmax_t = typename make_intmax<T>::type;
 
+/** Has an signed integer of a specific size, natively supported by the compiler.
+ * @tparam N The number of bits of the signed integer.
+ */
+template<std::size_t N> struct has_native_intxx : std::false_type {};
+
+/** Has an unsigned integer of a specific size, natively supported by the compiler.
+ * @tparam N The number of bits of the unsigned integer.
+ */
+template<std::size_t N> struct has_native_uintxx : std::false_type {};
+
+/** Has an float of a specific size, natively supported by the compiler.
+ * @tparam N The number of bits of the float.
+ */
+template<std::size_t N> struct has_native_floatxx : std::false_type {};
+
 /** Has an signed integer of a specific size.
  * @tparam N The number of bits of the signed integer.
  */
-template<std::size_t N> struct has_intxx : public std::false_type {};
+template<std::size_t N> struct has_intxx : has_native_intxx<N> {};
 
 /** Has an unsigned integer of a specific size.
  * @tparam N The number of bits of the unsigned integer.
  */
-template<std::size_t N> struct has_uintxx : public std::false_type {};
+template<std::size_t N> struct has_uintxx : has_native_uintxx<N> {};
+
 
 /** Has an float of a specific size.
  * @tparam N The number of bits of the float.
  */
-template<std::size_t N> struct has_floatxx : public std::false_type {};
+template<std::size_t N> struct has_floatxx : has_native_floatxx<N> {};
 
 /** Make an signed integer.
  * @tparam N The number of bits of the signed integer.
@@ -204,33 +220,39 @@ template<std::size_t N> struct make_uintxx {};
  */
 template<std::size_t N> struct make_floatxx {};
 
-#if (HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC) && (HI_PROCESSOR == HI_CPU_X64)
-template<> struct has_intxx<128> : public std::true_type {};
-template<> struct has_uintxx<128> : public std::true_type {};
-template<> struct make_intxx<128> { using type = __int128; };
-template<> struct make_uintxx<128> { using type = unsigned __int128; };
+#ifdef HI_HAS_INT128
+template<> struct has_native_intxx<128> : std::true_type {};
+template<> struct has_native_uintxx<128> : std::true_type {};
 #endif
-template<> struct has_intxx<64> : public std::true_type {};
-template<> struct has_uintxx<64> : public std::true_type {};
-template<> struct has_floatxx<64> : public std::true_type {};
+template<> struct has_native_intxx<64> : std::true_type {};
+template<> struct has_native_uintxx<64> : std::true_type {};
+template<> struct has_native_floatxx<64> : std::true_type {};
+template<> struct has_native_intxx<32> : std::true_type {};
+template<> struct has_native_uintxx<32> : std::true_type {};
+template<> struct has_native_floatxx<32> : std::true_type {};
+template<> struct has_native_intxx<16> : std::true_type {};
+template<> struct has_native_uintxx<16> : std::true_type {};
+template<> struct has_native_intxx<8> : std::true_type {};
+template<> struct has_native_uintxx<8> : std::true_type {};
+
+#ifdef HI_HAS_INT128
+template<> struct make_intxx<128> { using type = int128_t; };
+template<> struct make_uintxx<128> { using type = uint128_t; };
+#endif
 template<> struct make_intxx<64> { using type = int64_t; };
 template<> struct make_uintxx<64> { using type = uint64_t; };
 template<> struct make_floatxx<64> { using type = double; };
-template<> struct has_intxx<32> : public std::true_type {};
-template<> struct has_uintxx<32> : public std::true_type {};
-template<> struct has_floatxx<32> : public std::true_type {};
 template<> struct make_intxx<32> { using type = int32_t; };
 template<> struct make_uintxx<32> { using type = uint32_t; };
 template<> struct make_floatxx<32> { using type = float; };
-template<> struct has_intxx<16> : public std::true_type {};
-template<> struct has_uintxx<16> : public std::true_type {};
 template<> struct make_intxx<16> { using type = int16_t; };
 template<> struct make_uintxx<16> { using type = uint16_t; };
-template<> struct has_intxx<8> : public std::true_type {};
-template<> struct has_uintxx<8> : public std::true_type {};
 template<> struct make_intxx<8> { using type = int8_t; };
 template<> struct make_uintxx<8> { using type = uint8_t; };
 
+template<std::size_t N> constexpr bool has_native_intxx_v = has_native_intxx<N>::value;
+template<std::size_t N> constexpr bool has_native_uintxx_v = has_native_uintxx<N>::value;
+template<std::size_t N> constexpr bool has_native_floatxx_v = has_native_floatxx<N>::value;
 template<std::size_t N> constexpr bool has_intxx_v = has_intxx<N>::value;
 template<std::size_t N> constexpr bool has_uintxx_v = has_uintxx<N>::value;
 template<std::size_t N> constexpr bool has_floatxx_v = has_floatxx<N>::value;
@@ -303,35 +325,6 @@ struct common_integer<L, M, R...> {
 template<std::integral L, std::integral... R>
 using common_integer_t = common_integer<L, R...>::type;
 
-
-template<typename T, std::size_t N>
-struct is_complete_type_helper {
-    using type = T;
-};
-
-/** type-trait to check if the given type is complete.
- * 
- * This type-trait is mostly used to determine if there is a template-specialization
- * for a type.
- * 
- * @note ODR violation is possible when used when a type may become complete at a later time.
- */
-template<typename, typename = void>
-struct is_complete_type : std::false_type {};
-
-template<typename T>
-struct is_complete_type<T, std::void_t<decltype(sizeof(T))>> : std::true_type {};
-
-/** type-trait to check if the given type is complete.
- * 
- * This type-trait is mostly used to determine if there is a template-specialization
- * for a type.
- * 
- * @note ODR violation is possible when used when a type may become complete at a later time.
- */
-template<typename T>
-constexpr static bool is_complete_type_v = is_complete_type<T>::value;
-
 /** Type-trait to copy const volatile qualifiers from one type to another.
  */
 template<typename To, typename From, typename Ei=void>
@@ -385,19 +378,19 @@ template<typename T>
 inline constexpr bool has_add_callback_v = has_add_callback<T>::value;
 
 template<typename BaseType, typename DerivedType>
-struct is_decayed_base_of : public std::is_base_of<std::decay_t<BaseType>,std::decay_t<DerivedType>> {};
+struct is_decayed_base_of : std::is_base_of<std::decay_t<BaseType>,std::decay_t<DerivedType>> {};
 
 template<typename BaseType, typename DerivedType>
 constexpr bool is_decayed_base_of_v = is_decayed_base_of<BaseType,DerivedType>::value;
 
 template<typename DerivedType, typename BaseType>
-struct is_derived_from : public std::is_base_of<BaseType,DerivedType> {};
+struct is_derived_from : std::is_base_of<BaseType,DerivedType> {};
 
 template<typename DerivedType, typename BaseType>
 constexpr bool is_derived_from_v = is_derived_from<DerivedType,BaseType>::value;
 
 template<typename DerivedType, typename BaseType>
-struct is_decayed_derived_from : public is_decayed_base_of<BaseType,DerivedType> {};
+struct is_decayed_derived_from : is_decayed_base_of<BaseType,DerivedType> {};
 
 template<typename DerivedType, typename BaseType>
 constexpr bool is_decayed_derived_from_v = is_decayed_derived_from<DerivedType,BaseType>::value;
@@ -409,10 +402,10 @@ template<typename Context, typename Expected>
 constexpr bool is_different_v = not std::is_same_v<std::decay_t<Context>,std::decay_t<Expected>>;
 
 template<typename T>
-struct is_atomic : public std::false_type {};
+struct is_atomic : std::false_type {};
 
 template<typename T>
-struct is_atomic<std::atomic<T>> : public std::true_type {};
+struct is_atomic<std::atomic<T>> : std::true_type {};
 
 template<typename T>
 constexpr bool is_atomic_v = is_atomic<T>::value;

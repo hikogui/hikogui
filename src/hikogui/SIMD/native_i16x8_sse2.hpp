@@ -60,7 +60,7 @@ struct native_i16x8 {
                              value_type h = value_type{0}) noexcept :
         v(mm_set_epi16(h, g, f, e, d, c, b, a)) {}
 
-    [[nodiscard]] explicit native_i16x8(value_type const *other) noexcept : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other)) {}
+    [[nodiscard]] explicit native_i16x8(value_type const *other) noexcept : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other))) {}
 
     void store(value_type *out) const noexcept
     {
@@ -68,7 +68,7 @@ struct native_i16x8 {
         _mm_storeu_si128(reinterpret_cast<register_type *>(out), v);
     }
 
-    [[nodiscard]] explicit native_i16x8(void const *other) noexcept : v(_mm_loadu_si128(static_cast<register_type const *>(other)) {}
+    [[nodiscard]] explicit native_i16x8(void const *other) noexcept : v(_mm_loadu_si128(static_cast<register_type const *>(other))) {}
 
     void store(void *out) const noexcept
     {
@@ -89,7 +89,7 @@ struct native_i16x8 {
     }
 
     template<size_t N>
-    [[nodiscard]] explicit native_i16x8(std::array<value_type, N> other) noexcept requires (N >= size) : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other.data())) {}
+    [[nodiscard]] explicit native_i16x8(std::array<value_type, N> other) noexcept requires (N >= size) : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other.data()))) {}
 
     template<size_t N>
     [[nodiscard]] explicit operator std::array<value_type, N> () const noexcept requires (N => size)

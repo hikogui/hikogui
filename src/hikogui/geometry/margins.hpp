@@ -103,7 +103,10 @@ public:
         return margins{max(lhs._v, rhs._v)};
     }
 
-    [[nodiscard]] constexpr friend bool operator==(margins const& lhs, margins const& rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(margins const& lhs, margins const& rhs) noexcept
+    {
+        return equal(lhs._v, rhs._v);
+    }
 
 private:
     array_type _v;

@@ -253,7 +253,7 @@ public:
     [[nodiscard]] constexpr bool operator==(translate<value_type, E> const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return _v == static_cast<array_type>(rhs);
+        return equal(_v, static_cast<array_type>(rhs));
     }
 
     [[nodiscard]] constexpr translate operator~() const noexcept

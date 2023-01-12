@@ -211,7 +211,7 @@ public:
     [[nodiscard]] constexpr friend bool operator==(vector const& lhs, vector const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
-        return lhs._v == rhs._v;
+        return equal(lhs._v, rhs._v);
     }
 
     /** Get the squared length of the vector.

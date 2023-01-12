@@ -30,7 +30,7 @@ namespace hi { inline namespace v1 {
  *
  */
 template<>
-struct native_simd<int32_t,4> {
+struct native_simd<int32_t, 4> {
     using value_type = int32_t;
     constexpr static size_t size = 4;
     using register_type = __m128i;
@@ -115,10 +115,10 @@ struct native_simd<int32_t,4> {
         return r;
     }
 
-    [[nodiscard]] explicit native_simd(native_f32x4 const& a) noexcept;
-    [[nodiscard]] explicit native_simd(native_u32x4 const& a) noexcept;
+    [[nodiscard]] explicit native_simd(native_simd<float, 4> const& a) noexcept;
+    [[nodiscard]] explicit native_simd(native_simd<uint32_t, 4> const& a) noexcept;
 #ifdef HI_HAS_AVX
-    [[nodiscard]] explicit native_simd(native_f64x4 const &a) noexcept;
+    [[nodiscard]] explicit native_simd(native_simd<double, 4> const& a) noexcept;
 #endif
 
     /** Broadcast a single value to all the elements.
@@ -158,16 +158,6 @@ struct native_simd<int32_t,4> {
         return native_simd{_mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()))};
     }
 
-    [[nodiscard]] bool empty() const noexcept
-    {
-        return equal(*this, native_simd{});
-    }
-
-    explicit operator bool() const noexcept
-    {
-        return not empty();
-    }
-
     template<size_t Mask>
     [[nodiscard]] static native_simd from_mask() noexcept
     {
@@ -175,8 +165,7 @@ struct native_simd<int32_t,4> {
             to_bool(Mask & 0b0001) ? static_cast<value_type>(0xffff'ffff) : 0,
             to_bool(Mask & 0b0010) ? static_cast<value_type>(0xffff'ffff) : 0,
             to_bool(Mask & 0b0100) ? static_cast<value_type>(0xffff'ffff) : 0,
-            to_bool(Mask & 0b1000) ? static_cast<value_type>(0xffff'ffff) : 0
-        };
+            to_bool(Mask & 0b1000) ? static_cast<value_type>(0xffff'ffff) : 0};
     }
 
     /** For each bit in mask set corresponding element to all-ones or all-zeros.
@@ -305,7 +294,7 @@ struct native_simd<int32_t,4> {
 #if HI_HAS_SSE4_1
         return native_simd{_mm_min_epi32(a.v, b.v)};
 #else
-        hilet mask = lt(a, b);
+        hilet mask = a < b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -315,7 +304,7 @@ struct native_simd<int32_t,4> {
 #if HI_HAS_SSE4_1
         return native_simd{_mm_max_epi32(a.v, b.v)};
 #else
-        hilet mask = gt(a, b);
+        hilet mask = a > b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -325,7 +314,7 @@ struct native_simd<int32_t,4> {
 #if HI_HAS_SSSE3
         return native_simd{_mm_abs_epi32(a.v)};
 #else
-        hilet mask = gt(a, native_simd{});
+        hilet mask = a >= native_simd{};
         return (mask & a) | not_and(mask, -a);
 #endif
     }

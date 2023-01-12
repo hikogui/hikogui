@@ -19,13 +19,14 @@
 #include "../math.hpp"
 #include "../utility.hpp"
 #include "../fixed_string.hpp"
+#include "../stdint.hpp"
 
-#if defined(HI_HAS_AVX)
-#include "swizzle_avx.hpp"
-#endif
-#if defined(HI_HAS_SSE4_1)
-#include "float16_sse4_1.hpp"
-#endif
+//#if defined(HI_HAS_AVX)
+//#include "swizzle_avx.hpp"
+//#endif
+//#if defined(HI_HAS_SSE4_1)
+//#include "float16_sse4_1.hpp"
+//#endif
 
 #include <cstdint>
 #include <ostream>
@@ -44,8 +45,6 @@ hi_warning_ignore_msvc(4702);
 // Needed for casting pointers to or from SSE registers.
 hi_warning_ignore_msvc(26490);
 
-namespace hi::inline v1 {
-
 #define HI_X_runtime_evaluate_if_valid(...) \
     do { \
         if (not std::is_constant_evaluated()) { \
@@ -55,15 +54,104 @@ namespace hi::inline v1 {
         } \
     } while (false)
 
+#define HI_X_accessor(index, name) \
+    [[nodiscard]] constexpr T name() const noexcept \
+        requires(N > index) \
+    { \
+        HI_X_runtime_evaluate_if_valid(get<index>(reg())); \
+        return std::get<index>(v); \
+    } \
+\
+    [[nodiscard]] constexpr T& name() noexcept \
+        requires(N > index) \
+    { \
+        return std::get<index>(v); \
+    }
+
+#define HI_X_binary_math_op(op) \
+    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
+        requires(requires(value_type a, value_type b) { a op b; }) \
+    { \
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
+\
+        auto r = simd{}; \
+        for (std::size_t i = 0; i != N; ++i) { \
+            r[i] = lhs[i] op rhs[i]; \
+        } \
+        return r; \
+    }
+
+#define HI_X_binary_bit_op(op) \
+    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
+    { \
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
+\
+        auto r = simd{}; \
+        for (std::size_t i = 0; i != N; ++i) { \
+            hilet lhs_vi = std::bit_cast<unsigned_type>(lhs[i]); \
+            hilet rhs_vi = std::bit_cast<unsigned_type>(rhs[i]); \
+            hilet r_vi = static_cast<unsigned_type>(lhs_vi op rhs_vi); \
+            r[i] = std::bit_cast<value_type>(r_vi); \
+        } \
+        return r; \
+    }
+
+#define HI_X_binary_shift_op(op) \
+    [[nodiscard]] friend constexpr simd operator op(simd const& lhs, unsigned int rhs) noexcept \
+    { \
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs}); \
+\
+        auto r = simd{}; \
+        for (std::size_t i = 0; i != N; ++i) { \
+            r.v[i] = lhs.v[i] op rhs; \
+        } \
+        return r; \
+    }
+
+#define HI_X_binary_cmp_op(op) \
+    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
+        requires(requires(value_type a, value_type b) { a op b; }) \
+    { \
+        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
+\
+        auto r = simd{}; \
+        for (std::size_t i = 0; i != N; ++i) { \
+            r[i] = lhs[i] op rhs[i] ? ones_value : zero_value; \
+        } \
+        return r; \
+    }
+
+#define HI_X_binary_op_broadcast(op) \
+    [[nodiscard]] friend constexpr auto operator op(value_type lhs, simd rhs) noexcept \
+        requires(requires(value_type a, value_type b) { a op b; }) \
+    { \
+        return broadcast(lhs) op rhs; \
+    } \
+\
+    [[nodiscard]] friend constexpr auto operator op(simd lhs, value_type rhs) noexcept \
+        requires(requires(value_type a, value_type b) { a op b; }) \
+    { \
+        return lhs op broadcast(rhs); \
+    }
+
+#define HI_X_inplace_op(long_op, short_op) \
+    constexpr simd& operator long_op(auto rhs) noexcept \
+        requires(requires { *this short_op rhs; }) \
+    { \
+        return *this = *this short_op rhs; \
+    }
+
+namespace hi::inline v1 {
+
 template<numeric_limited T, std::size_t N>
 struct simd {
     using value_type = T;
-    using unsigned_type = make_uintxx_t<sizeof(value_type) * CHAR_BIT>;
-
     constexpr static size_t size = N;
 
-    constexpr static bool has_native_type = is_complete_type_v<native_simd<T, N>>;
-    using native_type = std::conditional_t<has_native_type, native_simd<T, N>, unusable_t>;
+    using unsigned_type = make_uintxx_t<sizeof(value_type) * CHAR_BIT>;
+
+    constexpr static bool has_native_type = requires { typename native_simd<value_type, size>::value_type; };
+    using native_type = native_simd<value_type, size>;
 
     using array_type = std::array<value_type, size>;
     using size_type = typename array_type::size_type;
@@ -183,13 +271,13 @@ struct simd {
     }
 
     [[nodiscard]] explicit simd(native_type rhs) noexcept
-        requires(has_native_type)
+        requires(requires { typename native_type::value_type; })
         : v(static_cast<array_type>(rhs))
     {
     }
 
     [[nodiscard]] auto reg() const noexcept
-        requires(has_native_type)
+        requires(requires { typename native_type::value_type; })
     {
         return native_type{v};
     }
@@ -259,7 +347,7 @@ struct simd {
         store<sizeof(*this)>(ptr);
     }
 
-    [[nodiscard]] size_t mask() const noexcept
+    [[nodiscard]] constexpr size_t mask() const noexcept
     {
         HI_X_runtime_evaluate_if_valid(reg().mask());
 
@@ -269,20 +357,6 @@ struct simd {
             r |= std::bit_cast<unsigned_type>(v[i - 1]) >> (sizeof(unsigned_type) * CHAR_BIT - 1);
         }
         return r;
-    }
-
-    /** Check if the vector is non-zero.
-     * @return True if at least one element is non-zero.
-     */
-    constexpr explicit operator bool() const noexcept
-    {
-        if constexpr (std::is_floating_point_v<T>) {
-            hilet ep = epsilon();
-            // check if any of the elements is outside of epsilon range,
-            return to_bool((*this < -ep).mask() | (*this > ep).mask());
-        } else {
-            return to_bool((*this != T{}).mask());
-        }
     }
 
     [[nodiscard]] constexpr T const& operator[](std::size_t i) const noexcept
@@ -364,212 +438,38 @@ struct simd {
         return v.empty();
     }
 
-    [[nodiscard]] constexpr T x() const noexcept
-        requires(N >= 1)
-    {
-        HI_X_runtime_evaluate_if_valid(get<0>(reg()));
-        return std::get<0>(v);
-    }
+    HI_X_accessor(0, x);
+    HI_X_accessor(1, y);
+    HI_X_accessor(2, z);
+    HI_X_accessor(3, w);
+    HI_X_accessor(0, r);
+    HI_X_accessor(1, g);
+    HI_X_accessor(2, b);
+    HI_X_accessor(3, a);
+    HI_X_accessor(0, width);
+    HI_X_accessor(1, height);
+    HI_X_accessor(2, depth);
 
-    [[nodiscard]] constexpr T y() const noexcept
-        requires(N >= 2)
-    {
-        HI_X_runtime_evaluate_if_valid(get<1>(reg()));
-        return std::get<1>(v);
-    }
+    HI_X_binary_math_op(+);
+    HI_X_binary_math_op(-);
+    HI_X_binary_math_op(*);
+    HI_X_binary_math_op(/);
+    HI_X_binary_math_op(%);
 
-    [[nodiscard]] constexpr T z() const noexcept
-        requires(N >= 3)
-    {
-        HI_X_runtime_evaluate_if_valid(get<2>(reg()));
-        return std::get<2>(v);
-    }
+    HI_X_binary_cmp_op(==);
+    HI_X_binary_cmp_op(!=);
+    HI_X_binary_cmp_op(<);
+    HI_X_binary_cmp_op(>);
+    HI_X_binary_cmp_op(<=);
+    HI_X_binary_cmp_op(>=);
 
-    [[nodiscard]] constexpr T w() const noexcept
-        requires(N >= 4)
-    {
-        HI_X_runtime_evaluate_if_valid(get<3>(reg()));
-        return std::get<3>(v);
-    }
+    HI_X_binary_bit_op(^);
+    HI_X_binary_bit_op(&);
+    HI_X_binary_bit_op(|);
+    HI_X_binary_shift_op(<<);
+    HI_X_binary_shift_op(>>);
 
-    [[nodiscard]] constexpr T& x() noexcept
-        requires(N >= 1)
-    {
-        return std::get<0>(v);
-    }
-
-    [[nodiscard]] constexpr T& y() noexcept
-        requires(N >= 2)
-    {
-        return std::get<1>(v);
-    }
-
-    [[nodiscard]] constexpr T& z() noexcept
-        requires(N >= 3)
-    {
-        return std::get<2>(v);
-    }
-
-    [[nodiscard]] constexpr T& w() noexcept
-        requires(N >= 4)
-    {
-        return std::get<3>(v);
-    }
-
-    [[nodiscard]] constexpr T r() const noexcept
-        requires(N >= 1)
-    {
-        return x();
-    }
-
-    [[nodiscard]] constexpr T g() const noexcept
-        requires(N >= 2)
-    {
-        return y();
-    }
-
-    [[nodiscard]] constexpr T b() const noexcept
-        requires(N >= 3)
-    {
-        return z();
-    }
-
-    [[nodiscard]] constexpr T a() const noexcept
-        requires(N >= 4)
-    {
-        return w();
-    }
-
-    [[nodiscard]] constexpr T& r() noexcept
-        requires(N >= 1)
-    {
-        return x();
-    }
-
-    [[nodiscard]] constexpr T& g() noexcept
-        requires(N >= 2)
-    {
-        return y();
-    }
-
-    [[nodiscard]] constexpr T& b() noexcept
-        requires(N >= 3)
-    {
-        return z();
-    }
-
-    [[nodiscard]] constexpr T& a() noexcept
-        requires(N >= 4)
-    {
-        return w();
-    }
-
-    [[nodiscard]] constexpr T width() const noexcept
-        requires(N >= 1)
-    {
-        return x();
-    }
-
-    [[nodiscard]] constexpr T height() const noexcept
-        requires(N >= 2)
-    {
-        return y();
-    }
-
-    [[nodiscard]] constexpr T depth() const noexcept
-        requires(N >= 3)
-    {
-        return z();
-    }
-
-    [[nodiscard]] constexpr T& width() noexcept
-        requires(N >= 1)
-    {
-        return x();
-    }
-
-    [[nodiscard]] constexpr T& height() noexcept
-        requires(N >= 2)
-    {
-        return y();
-    }
-
-    [[nodiscard]] constexpr T& depth() noexcept
-        requires(N >= 3)
-    {
-        return z();
-    }
-
-#define HI_X_binary_math_op(op) \
-    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
-    { \
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
-\
-        auto r = simd{}; \
-        for (std::size_t i = 0; i != N; ++i) { \
-            r |= lhs.v[i] op rhs.v[i]; \
-        } \
-        return r; \
-    }
-
-    // clang-format off
-    HI_X_binary_math_op(+)
-    HI_X_binary_math_op(-)
-    HI_X_binary_math_op(*)
-    HI_X_binary_math_op(/)
-    // clang-format on
-#undef HI_X_binary_math_op
-
-        [[nodiscard]] friend constexpr simd
-        operator%(simd lhs, simd rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() % rhs.reg()});
-        hilet div_result = floor(lhs / rhs);
-        return lhs - (div_result * rhs);
-    }
-
-#define HI_X_binary_cmp_op(op) \
-    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
-    { \
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
-\
-        auto r = simd{}; \
-        for (std::size_t i = 0; i != N; ++i) { \
-            r |= lhs.v[i] op rhs.v[i] ? ones_value : zero_value; \
-        } \
-        return r; \
-    }
-
-    // clang-format off
-    HI_X_binary_cmp_op(==)
-    HI_X_binary_cmp_op(!=)
-    HI_X_binary_cmp_op(<)
-    HI_X_binary_cmp_op(>)
-    HI_X_binary_cmp_op(<=)
-    HI_X_binary_cmp_op(>=)
-    // clang-format on
-#undef HI_X_binary_cmp_op
-
-#define HI_X_binary_bit_op(op) \
-    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
-        requires(not std::is_same_v<value_type, float16>) \
-    { \
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
-\
-        auto r = simd{}; \
-        for (std::size_t i = 0; i != N; ++i) { \
-            r[i] = std::bit_cast<value_type>(std::bit_cast<unsigned_type>(lhs.v[i]) op std::bit_cast<unsigned_type>(rhs.v[i])); \
-        } \
-        return r; \
-    }
-        // clang-format off
-    HI_X_binary_bit_op(^)
-    HI_X_binary_bit_op(&)
-    HI_X_binary_bit_op(|)
-    // clang-format on
-#undef HI_X_binary_bit_op
-
-            [[nodiscard]] friend constexpr bool equal(simd lhs, simd rhs) noexcept
+    [[nodiscard]] friend constexpr bool equal(simd lhs, simd rhs) noexcept
     {
         HI_X_runtime_evaluate_if_valid(equal(lhs.reg(), rhs.reg()));
 
@@ -581,77 +481,38 @@ struct simd {
         return true;
     }
 
-#define HI_X_binary_op_broadcast(op) \
-    [[nodiscard]] friend constexpr auto operator op(value_type lhs, simd rhs) noexcept \
-        requires(requires { broadcast(lhs) op rhs; }) \
-    { \
-        return broadcast(lhs) op rhs; \
-    } \
-\
-    [[nodiscard]] friend constexpr auto operator op(simd lhs, value_type rhs) noexcept \
-        requires(requires { lhs op broadcast(rhs); }) \
-    { \
-        return lhs op broadcast(rhs); \
-    }
+    HI_X_binary_op_broadcast(==);
+    HI_X_binary_op_broadcast(!=);
+    HI_X_binary_op_broadcast(<);
+    HI_X_binary_op_broadcast(>);
+    HI_X_binary_op_broadcast(<=);
+    HI_X_binary_op_broadcast(>=);
+    HI_X_binary_op_broadcast(+);
+    HI_X_binary_op_broadcast(-);
+    HI_X_binary_op_broadcast(*);
+    HI_X_binary_op_broadcast(/);
+    HI_X_binary_op_broadcast(%);
+    HI_X_binary_op_broadcast(&);
+    HI_X_binary_op_broadcast(|);
+    HI_X_binary_op_broadcast(^);
 
-    // clang-format off
-    HI_X_binary_op_broadcast(==)
-    HI_X_binary_op_broadcast(!=)
-    HI_X_binary_op_broadcast(<=)
-    HI_X_binary_op_broadcast(>=)
-    HI_X_binary_op_broadcast(+)
-    HI_X_binary_op_broadcast(-)
-    HI_X_binary_op_broadcast(*)
-    HI_X_binary_op_broadcast(/)
-    HI_X_binary_op_broadcast(%)
-    HI_X_binary_op_broadcast(&)
-    HI_X_binary_op_broadcast(|)
-    HI_X_binary_op_broadcast(^)
-// clang-format on
-#undef HI_X_binary_op_broadcast
+    HI_X_inplace_op(+=, +);
+    HI_X_inplace_op(-=, -);
+    HI_X_inplace_op(*=, *);
+    HI_X_inplace_op(/=, /);
+    HI_X_inplace_op(%=, %);
+    HI_X_inplace_op(|=, |);
+    HI_X_inplace_op(&=, &);
+    HI_X_inplace_op(^=, ^);
+    HI_X_inplace_op(<<=, <<);
+    HI_X_inplace_op(>>=, >>);
 
-                constexpr simd&
-                operator<<=(unsigned int rhs) noexcept
-    {
-        return *this = *this << rhs;
-    }
-
-    constexpr simd& operator>>=(unsigned int rhs) noexcept
-    {
-        return *this = *this >> rhs;
-    }
-
-#define HI_X_inplace_op(long_op, short_op) \
-    constexpr simd& operator long_op(simd rhs) noexcept \
-        requires(requires { *this short_op rhs; }) \
-    { \
-        return *this = *this short_op rhs; \
-    } \
-\
-    constexpr simd& operator long_op(value_type rhs) noexcept \
-        requires(requires { *this short_op rhs; }) \
-    { \
-        return *this = *this short_op rhs; \
-    }
-
-    // clang-format off
-    HI_X_inplace_op(+=, +)
-    HI_X_inplace_op(-=, -)
-    HI_X_inplace_op(*=, *)
-    HI_X_inplace_op(/=, /)
-    HI_X_inplace_op(%=, %)
-    HI_X_inplace_op(|=, |)
-    HI_X_inplace_op(&=, &)
-    HI_X_inplace_op(^=, ^)
-// clang-format on
-#undef HI_X_inplace_op
-
-        /** Get a element from the numeric array.
-         *
-         * @tparam I Index into the array
-         */
-        template<std::size_t I>
-        [[nodiscard]] friend constexpr T& get(simd& rhs) noexcept
+    /** Get a element from the numeric array.
+     *
+     * @tparam I Index into the array
+     */
+    template<std::size_t I>
+    [[nodiscard]] friend constexpr T& get(simd& rhs) noexcept
     {
         static_assert(I < N, "Index out of bounds");
         return std::get<I>(rhs.v);
@@ -734,7 +595,7 @@ struct simd {
 
         auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
-            r[i] = mask[i] < T{0} ? b[i] : a[i];
+            r[i] = mask[i] != T{0} ? b[i] : a[i];
         }
         return r;
     }
@@ -899,28 +760,6 @@ struct simd {
             if (to_bool(Mask & (1_uz << i))) {
                 r.v[i] = rhs.v[i] * rcp_hypot_;
             }
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd operator<<(simd const& lhs, unsigned int rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() << rhs});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] << rhs;
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd operator>>(simd const& lhs, unsigned int rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() >> rhs});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] >> rhs;
         }
         return r;
     }
@@ -1337,13 +1176,24 @@ struct simd {
 
         if constexpr (c == '1') {
             r = insert<I>(r, value_type{1});
+
         } else if constexpr (c == '0') {
             r = insert<I>(r, value_type{0});
-        } else {
+
+        } else if constexpr (c >= 'a' and c <= 'v') {
             constexpr size_t src_index = c - 'a';
             static_assert(src_index < size);
 
             r = insert<I>(r, get<src_index>(*this));
+
+        } else if constexpr (c >= 'w' and c <= 'z') {
+            constexpr size_t src_index = c == 'x' ? 0 : c == 'y' ? 1 : c == 'z' ? 2 : 3;
+            static_assert(src_index < size);
+
+            r = insert<I>(r, get<src_index>(*this));
+
+        } else {
+            hi_static_no_default();
         }
 
         if constexpr (I + 1 < size) {
@@ -1427,6 +1277,35 @@ struct std::tuple_element<I, hi::simd<T, N>> {
     using type = T;
 };
 
+template<typename T, size_t N>
+struct std::equal_to<::hi::simd<T, N>> {
+    constexpr bool operator()(::hi::simd<T, N> const& lhs, ::hi::simd<T, N> const& rhs) const noexcept
+    {
+        return equal(lhs, rhs);
+    }
+};
+
+// Add equality operator to Google-test internal namespace so that ASSERT_EQ() work.
+template<typename T, size_t N>
+inline bool operator==(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
+{
+    return std::equal_to{}(lhs, rhs);
+}
+
+// Add equality operator to Google-test internal namespace so that ASSERT_NE() work.
+template<typename T, size_t N>
+inline bool operator!=(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
+{
+    return not std::equal_to<::hi::simd<T, N>>{}(lhs, rhs);
+}
+
+#undef HI_X_accessor
+#undef HI_X_binary_cmp_op
+#undef HI_X_binary_math_op
+#undef HI_X_binary_bit_op
+#undef HI_X_binary_shift_op
+#undef HI_X_binary_op_broadcast
+#undef HI_X_inplace_op
 #undef HI_X_runtime_evaluate_if_valid
 
 hi_warning_pop();

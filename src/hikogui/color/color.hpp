@@ -173,7 +173,10 @@ public:
         return _v.w() >= 0.0 && _v.w() <= 1.0;
     }
 
-    [[nodiscard]] constexpr friend bool operator==(color const& lhs, color const& rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(color const& lhs, color const& rhs) noexcept
+    {
+        return equal(lhs._v, rhs._v);
+    }
 
     [[nodiscard]] constexpr friend color operator*(color const& lhs, color const& rhs) noexcept
     {

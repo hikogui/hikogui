@@ -90,16 +90,17 @@ class float16 {
 
 public:
     constexpr float16() noexcept = default;
-    constexpr float16(float16 const &) noexcept = default;
-    constexpr float16(float16 &&) noexcept = default;
-    constexpr float16 &operator=(float16 const &) noexcept = default;
-    constexpr float16 &operator=(float16 &&) noexcept = default;
+    ~float16() = default;
+    constexpr float16(float16 const&) noexcept = default;
+    constexpr float16(float16&&) noexcept = default;
+    constexpr float16& operator=(float16 const&) noexcept = default;
+    constexpr float16& operator=(float16&&) noexcept = default;
 
     constexpr explicit float16(float other) noexcept : v(cvtss_sh(other)) {}
     constexpr explicit float16(double other) noexcept : float16(static_cast<float>(other)) {}
     constexpr explicit float16(long double other) noexcept : float16(static_cast<float>(other)) {}
 
-    constexpr float16 &operator=(float other) noexcept
+    constexpr float16& operator=(float other) noexcept
     {
         v = cvtss_sh(other);
         return *this;
@@ -122,7 +123,7 @@ public:
         return v;
     }
 
-    constexpr float16 &set(uint16_t rhs) noexcept
+    constexpr float16& set(uint16_t rhs) noexcept
     {
         v = rhs;
         return *this;
@@ -133,24 +134,72 @@ public:
         return std::hash<uint16_t>{}(v);
     }
 
-    [[nodiscard]] constexpr friend bool operator==(float16 const &lhs, float16 const &rhs) noexcept = default;
-
-    [[nodiscard]] constexpr friend float16 operator*(float16 const &lhs, float16 const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(float16 const& lhs, float16 const& rhs) noexcept
     {
-        return float16{static_cast<float>(lhs) * static_cast<float>(rhs)};
+        return static_cast<float>(lhs) == static_cast<float>(rhs);
     }
+
+    [[nodiscard]] constexpr friend auto operator<=>(float16 const& lhs, float16 const& rhs) noexcept
+    {
+        return static_cast<float>(lhs) <=> static_cast<float>(rhs);
+    }
+
+#define HI_X_binary_math_op(op) \
+    [[nodiscard]] constexpr friend float16 operator op(float16 const& lhs, float16 const& rhs) noexcept \
+    { \
+        return float16{static_cast<float>(lhs) op static_cast<float>(rhs)}; \
+    }
+
+    // clang-format off
+    HI_X_binary_math_op(+)
+    HI_X_binary_math_op(-)
+    HI_X_binary_math_op(*)
+    HI_X_binary_math_op(/)
+    // clang-format on
+#undef HI_X_binary_math_op
+
+    //[[nodiscard]] constexpr friend float16 operator%(float16 const& lhs, float16 const& rhs) noexcept
+    //{
+    //    hilet lhs_ = static_cast<float>(lhs);
+    //    hilet rhs_ = static_cast<float>(rhs);
+    //    hilet div_result = std::floor(lhs_ / rhs_);
+    //    return float16{lhs_ - (div_result * rhs_)};
+    //}
+
+#define HI_X_binary_bit_op(op) \
+    [[nodiscard]] constexpr friend float16 operator op(float16 const& lhs, float16 const& rhs) noexcept \
+    { \
+        return float16::from_uint16_t(lhs.v op rhs.v); \
+    }
+
+        // clang-format off
+    HI_X_binary_bit_op(|)
+    HI_X_binary_bit_op(&)
+    HI_X_binary_bit_op(^)
+    // clang-format on
+#undef HI_X_binary_bit_op
 };
+
+// Check if float16 can be std::bit_cast<uint16_t>().
+static_assert(sizeof(float16) == sizeof(uint16_t));
+static_assert(std::is_trivially_copy_constructible_v<float16>);
+static_assert(std::is_trivially_move_constructible_v<float16>);
+static_assert(std::is_trivially_copy_assignable_v<float16>);
+static_assert(std::is_trivially_move_assignable_v<float16>);
+static_assert(std::is_trivially_destructible_v<float16>);
+
+static_assert(requires(float16 a) { std::bit_cast<uint16_t>(a); });
+static_assert(requires(uint16_t a) { std::bit_cast<float16>(a); });
 
 } // namespace hi::inline v1
 
 template<>
 struct std::hash<hi::float16> {
-    std::size_t operator()(hi::float16 const &rhs) noexcept
+    std::size_t operator()(hi::float16 const& rhs) noexcept
     {
         return rhs.hash();
     }
 };
-
 
 template<>
 struct std::numeric_limits<hi::float16> {

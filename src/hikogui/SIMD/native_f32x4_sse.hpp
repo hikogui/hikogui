@@ -112,25 +112,11 @@ struct native_simd<float, 4> {
     }
 
 #ifdef HI_HAS_SSE2
-    [[nodiscard]] explicit native_simd(native_i32x4 const& a) noexcept;
+    [[nodiscard]] explicit native_simd(native_simd<int32_t, 4> const& a) noexcept;
 #endif
 #ifdef HI_HAS_AVX
-    [[nodiscard]] explicit native_simd(native_f64x4 const& a) noexcept;
+    [[nodiscard]] explicit native_simd(native_simd<double, 4> const& a) noexcept;
 #endif
-
-    /** Check if all elements are zero.
-     */
-    [[nodiscard]] bool empty() const noexcept
-    {
-        return equal(*this, native_simd{});
-    }
-
-    /** Check if any element is non-zero.
-     */
-    [[nodiscard]] explicit operator bool() const noexcept
-    {
-        return not empty();
-    }
 
     /** Broadcast a single value to all the elements.
      *
@@ -498,7 +484,7 @@ struct native_simd<float, 4> {
         }
     }
 
-    [[nodiscard]] friend native_simd permute(native_simd a, native_i32x4 const& source_elements) noexcept;
+    [[nodiscard]] friend native_simd permute(native_simd a, native_simd<int32_t, 4> const& source_elements) noexcept;
 
     /** Swizzle elements.
      *

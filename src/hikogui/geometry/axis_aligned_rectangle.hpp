@@ -341,7 +341,7 @@ public:
 
     [[nodiscard]] friend constexpr bool operator==(axis_aligned_rectangle const& lhs, axis_aligned_rectangle const& rhs) noexcept
     {
-        return lhs.v == rhs.v;
+        return equal(lhs.v, rhs.v);
     }
 
     [[nodiscard]] friend constexpr bool overlaps(axis_aligned_rectangle const& lhs, axis_aligned_rectangle const& rhs) noexcept
