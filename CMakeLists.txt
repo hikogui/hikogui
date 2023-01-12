@@ -442,7 +442,7 @@ install(FILES
 #-------------------------------------------------------------------
 
 if(BUILD_TESTING)
-    include(hikogui_tests.cmake)
+    include(CMakeLists_tests.cmake)
 endif()
 
 #-------------------------------------------------------------------

@@ -248,7 +248,7 @@ const InstructionSet::InstructionSet_Internal InstructionSet::CPU_Rep;
 // Print out supported instruction set extensions
 int main()
 {
-    std::ofstream fo(\"cpuid.txt\");
+    std::ofstream fo(\"${CMAKE_BINARY_DIR}/cpuid.txt\");
     auto& outstream = fo;//std::cout;
 
     auto support_message = [&outstream](std::string isa_feature, bool is_supported) {
@@ -312,47 +312,60 @@ int main()
     return 0;
 }
 "
-HAVE_CPUID_INFO
+CPUID_X86_SUCCESS
 )
 
-if(HAVE_CPUID_INFO)
+set(HOST_IS_X86_64 FALSE)
+set(HOST_IS_X86_64_1 FALSE)
+set(HOST_IS_X86_64_2 FALSE)
+set(HOST_IS_X86_64_3 FALSE)
+set(HOST_IS_X86_64_4 FALSE)
+if(CPUID_X86_SUCCESS)
     set(_CPUID_INFO "${CMAKE_BINARY_DIR}/cpuid.txt")
-    set(HAVE_AVX512F FALSE)
-    set(HAVE_AVX2    FALSE)
-    set(HAVE_SSE42   FALSE)
-    set(HAVE_SSE2    FALSE)
-
     file(STRINGS ${_CPUID_INFO} _FEATURES)
 
     message(STATUS "Host CPU features:")
 
     foreach(FEATURE IN ITEMS ${_FEATURES})
-
         message(STATUS "  ${FEATURE}")
 
         string(COMPARE EQUAL "${FEATURE}" "AVX512F supported" _FEATURE_FOUND)
         if(${_FEATURE_FOUND})
             if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
-                set(HAVE_AVX512F ${_FEATURE_FOUND})
+                set(HOST_IS_X86_64_4 ${_FEATURE_FOUND})
             else()
-                message(WARNING "Compiler doesn't support AVX512 instructuion set")
+                message(WARNING "Compiler doesn't support AVX512 instruction set")
             endif()
         endif()
+
         string(COMPARE EQUAL "${FEATURE}" "AVX2 supported" _FEATURE_FOUND)
         if(${_FEATURE_FOUND})
-            set(HAVE_AVX2 ${_FEATURE_FOUND})
+            set(HOST_IS_X86_64_3 ${_FEATURE_FOUND})
         endif()
+
         string(COMPARE EQUAL "${FEATURE}" "SSE4.2 supported" _FEATURE_FOUND)
         if(${_FEATURE_FOUND})
-            set(HAVE_SSE42 ${_FEATURE_FOUND})
+            set(HOST_IS_X86_64_2 ${_FEATURE_FOUND})
         endif()
+
         string(COMPARE EQUAL "${FEATURE}" "SSE2 supported" _FEATURE_FOUND)
         if(${_FEATURE_FOUND})
-            set(HAVE_SSE2 ${_FEATURE_FOUND})
+            set(HOST_IS_X86_64 ${_FEATURE_FOUND})
+            set(HOST_IS_X86_64_1 ${_FEATURE_FOUND})
         endif()
     endforeach(FEATURE)
 
     unset(_FEATURE_FOUND)
     unset(_CPUID_INFO)
     unset(_FEATURES)
+
+    if(HOST_IS_X86_64_4)
+        message(STATUS "Host CPU architecture level: x86-64-v4")
+    elseif(HOST_IS_X86_64_3)
+        message(STATUS "Host CPU architecture level: x86-64-v3")
+    elseif(HOST_IS_X86_64_2)
+        message(STATUS "Host CPU architecture level: x86-64-v2")
+    elseif(HOST_IS_X86_64_1)
+        message(STATUS "Host CPU architecture level: x86-64-v1")
+    endif()
 endif()
