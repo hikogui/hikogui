@@ -26,7 +26,7 @@ struct GSUB_version_1_0 {
     big_uint16_t lookup_list_offset;
 };
 
-struct GSUB_ligature
+struct GSUB_ligature {
 
 };
 

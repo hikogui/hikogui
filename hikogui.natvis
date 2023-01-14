@@ -109,14 +109,14 @@
         <DisplayString Condition="_value == 0x34">bottom-justified</DisplayString>
         <DisplayString Condition="_value == 0x35">bottom-right</DisplayString>
     </Type>
-    <Type Name="hi::v1::numeric_array&lt;*,2&gt;">
+    <Type Name="hi::v1::simd&lt;*,2&gt;">
         <DisplayString>{v[0],g}, {v[1],g}</DisplayString>
         <Expand>
             <Item Name="[x]">v[0],g</Item>
             <Item Name="[y]">v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::numeric_array&lt;*,4&gt;">
+    <Type Name="hi::v1::simd&lt;*,4&gt;">
         <DisplayString>{v[0],g}, {v[1],g}, {v[2],g}, {v[3],g}</DisplayString>
         <Expand>
             <Item Name="[x]">v[0],g</Item>
@@ -125,7 +125,7 @@
             <Item Name="[w]">v[3],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::numeric_array&lt;*,8&gt;">
+    <Type Name="hi::v1::simd&lt;*,8&gt;">
         <DisplayString>{v[0],g}, {v[1],g}, {v[2],g}, {v[3],g}, {v[4],g}, {v[5],g}, {v[6],g}, {v[7],g}</DisplayString>
         <Expand>
             <Item Name="[0]">v[0],g</Item>
@@ -210,6 +210,15 @@
             <Item Name="[origin]">origin</Item>
             <Item Name="[right]">right</Item>
             <Item Name="[up]">up</Item>
+        </Expand>
+    </Type>
+    <Type Name="hi::v1::circle">
+        <DisplayString>{{ c=({_v.v[0],g}, {_v.v[1],g}), r={_v.v[3],g} }}</DisplayString>
+        <Expand>
+            <Item Name="[x]">_v.v[0],g</Item>
+            <Item Name="[y]">_v.v[1],g</Item>
+            <Item Name="[z]">_v.v[2],g</Item>
+            <Item Name="[radius]">_v.v[3],g</Item>
         </Expand>
     </Type>
     <Type Name="hi::v1::quad">

@@ -7,7 +7,7 @@
 #include "utility.hpp"
 #include "assert.hpp"
 #include "concepts.hpp"
-#include "rapid/numeric_array.hpp"
+#include "SIMD/simd.hpp"
 #include <type_traits>
 #include <limits>
 #include <concepts>
@@ -29,7 +29,7 @@ template<numeric_limited T>
 struct interval {
 public:
     using value_type = T;
-    using bound_type = numeric_array<value_type, 2>;
+    using bound_type = simd<value_type, 2>;
 
     bound_type v;
 

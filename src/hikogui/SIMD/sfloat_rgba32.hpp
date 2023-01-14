@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "numeric_array.hpp"
+#include "simd.hpp"
 #include "../geometry/corner_radii.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"

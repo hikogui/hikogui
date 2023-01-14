@@ -8,6 +8,4 @@ namespace hi::inline v1 {
 struct {
 };
 
-hi_cpu_id(
-
 }; // namespace hi::inline v1

@@ -53,8 +53,8 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
 
         _pip_circle = align(button_square, circle{theme().size() * 0.5f - 3.0f}, alignment::middle_center());
 
-        hilet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_circle.diameter();
-        _pip_move_range = _button_rectangle.width() - _pip_circle.diameter() - pip_to_button_margin_x2;
+        hilet pip_to_button_margin_x2 = _button_rectangle.height() - narrow_cast<int>(_pip_circle.diameter());
+        _pip_move_range = _button_rectangle.width() - narrow_cast<int>(_pip_circle.diameter()) - pip_to_button_margin_x2;
     }
     super::set_layout(context);
 }

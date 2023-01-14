@@ -32,3 +32,4 @@ void console_output(std::string_view text, std::ostream &output = std::cout) noe
 #define hi_print(fmt, ...) console_output(std::format(fmt __VA_OPT__(, ) __VA_ARGS__))
 
 } // namespace hi::inline v1
+

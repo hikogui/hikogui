@@ -29,6 +29,19 @@
 #define hi_forward(x) std::forward<decltype(x)>(x)
 #endif
 
+/** Return the result of an expression if the expression is valid.
+ *
+ * This macro uses a `requires {}` expression to determine if the expression is valid.
+ *
+ * @param expression The expression to evaluate if it is valid.
+ */
+#define hi_return_if_valid(expression) \
+    do { \
+        if constexpr (requires { expression; }) { \
+            return expression; \
+        } \
+    } while (false)
+
 // One clang-format off is not enough to stop clang-format to format.
 // clang-format off
 // clang-format off        
@@ -214,7 +227,40 @@ template<typename T, typename U>
     return lhs.exchange(rhs, std::memory_order::relaxed) != rhs;
 }
 
+/** Tag used for special functions or constructions to do a override compared to another function of the same na,e
+ */
 struct override_t {};
+
+/** A type that can not be constructed, copied, moved or destructed.
+ */
+struct unusable_t {
+    unusable_t() = delete;
+    ~unusable_t() = delete;
+    unusable_t(unusable_t const&) = delete;
+    unusable_t(unusable_t&&) = delete;
+    unusable_t &operator=(unusable_t const&) = delete;
+    unusable_t &operator=(unusable_t&&) = delete;
+};
+
+
+template<class T, class U>
+[[nodiscard]] constexpr auto&& forward_like(U&& x) noexcept
+{
+    constexpr bool is_adding_const = std::is_const_v<std::remove_reference_t<T>>;
+    if constexpr (std::is_lvalue_reference_v<T&&>) {
+        if constexpr (is_adding_const) {
+            return std::as_const(x);
+        } else {
+            return static_cast<U&>(x);
+        }
+    } else {
+        if constexpr (is_adding_const) {
+            return std::move(std::as_const(x));
+        } else {
+            return std::move(x);
+        }
+    }
+}
 
 }} // namespace hi::v1
 

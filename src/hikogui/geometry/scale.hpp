@@ -175,7 +175,7 @@ public:
     [[nodiscard]] constexpr bool operator==(scale<E> const &rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return _v == static_cast<f32x4>(rhs);
+        return equal(_v, static_cast<f32x4>(rhs));
     }
 
     [[nodiscard]] constexpr bool holds_invariant() const noexcept

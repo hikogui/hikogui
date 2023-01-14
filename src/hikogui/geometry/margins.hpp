@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../cast.hpp"
 
 namespace hi { inline namespace v1 {
@@ -21,7 +21,7 @@ template<typename T>
 class margins {
 public:
     using value_type = T;
-    using array_type = numeric_array<T, 4>;
+    using array_type = simd<T, 4>;
 
     constexpr margins(margins const&) noexcept = default;
     constexpr margins(margins&&) noexcept = default;
@@ -41,7 +41,7 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr value_type const& left() const noexcept
+    [[nodiscard]] constexpr value_type left() const noexcept
     {
         return _v.x();
     }
@@ -51,7 +51,7 @@ public:
         return _v.x();
     }
 
-    [[nodiscard]] constexpr value_type const& bottom() const noexcept
+    [[nodiscard]] constexpr value_type bottom() const noexcept
     {
         return _v.y();
     }
@@ -61,7 +61,7 @@ public:
         return _v.y();
     }
 
-    [[nodiscard]] constexpr value_type const& right() const noexcept
+    [[nodiscard]] constexpr value_type right() const noexcept
     {
         return _v.z();
     }
@@ -71,7 +71,7 @@ public:
         return _v.z();
     }
 
-    [[nodiscard]] constexpr value_type const& top() const noexcept
+    [[nodiscard]] constexpr value_type top() const noexcept
     {
         return _v.w();
     }
@@ -103,7 +103,10 @@ public:
         return margins{max(lhs._v, rhs._v)};
     }
 
-    [[nodiscard]] constexpr friend bool operator==(margins const& lhs, margins const& rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(margins const& lhs, margins const& rhs) noexcept
+    {
+        return equal(lhs._v, rhs._v);
+    }
 
 private:
     array_type _v;

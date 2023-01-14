@@ -11,7 +11,7 @@
 #include "alignment.hpp"
 #include "extent.hpp"
 #include "point.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include "../concepts.hpp"
 #include "../unfair_mutex.hpp"
 #include "../cast.hpp"
@@ -28,7 +28,7 @@ template<typename T>
 class axis_aligned_rectangle {
 public:
     using value_type = T;
-    using array_type = numeric_array<value_type, 4>;
+    using array_type = simd<value_type, 4>;
 
     constexpr axis_aligned_rectangle() noexcept : v() {}
     constexpr axis_aligned_rectangle(axis_aligned_rectangle const& rhs) noexcept = default;
@@ -108,14 +108,14 @@ public:
      */
     [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
-        return le(v, v.zwzw()) == 0b1111;
+        return (v <= v.zwzw()).mask() == 0b1111;
     }
 
     /** Check if the rectangle has no area.
      */
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return eq(v, v.zwxy()) == 0b1111;
+        return (v == v.zwxy()).mask() == 0b1111;
     }
 
     /** True when the rectangle has an area.
@@ -266,7 +266,7 @@ public:
     [[nodiscard]] constexpr bool contains(point<value_type, 2> const& rhs) const noexcept
     {
         // No need to check with empty due to half open range check.
-        return ge(static_cast<array_type>(rhs).xyxy(), v) == 0b0011;
+        return (static_cast<array_type>(rhs).xyxy() >= v).mask() == 0b0011;
     }
 
     /** Check if a 3D coordinate is inside the rectangle.
@@ -341,7 +341,7 @@ public:
 
     [[nodiscard]] friend constexpr bool operator==(axis_aligned_rectangle const& lhs, axis_aligned_rectangle const& rhs) noexcept
     {
-        return lhs.v == rhs.v;
+        return equal(lhs.v, rhs.v);
     }
 
     [[nodiscard]] friend constexpr bool overlaps(axis_aligned_rectangle const& lhs, axis_aligned_rectangle const& rhs) noexcept
@@ -353,12 +353,12 @@ public:
         hilet rhs_swap = rhs.v.zwxy();
 
         // lhs.p0.x > rhs.p3.x | lhs.p0.y > rhs.p3.y
-        if ((gt(lhs.v, rhs_swap) & 0b0011) != 0) {
+        if (((lhs.v > rhs_swap).mask() & 0b0011) != 0) {
             return false;
         }
 
         // lhs.p3.x < rhs.p0.x | lhs.p3.y < rhs.p0.y
-        if ((lt(lhs.v, rhs_swap) & 0b1100) != 0) {
+        if (((lhs.v < rhs_swap).mask() & 0b1100) != 0) {
             return false;
         }
 

@@ -6,7 +6,7 @@
 
 #include "axis_aligned_rectangle.hpp"
 #include "alignment.hpp"
-#include "../rapid/numeric_array.hpp"
+#include "../SIMD/simd.hpp"
 #include <array>
 
 namespace hi::inline v1 {
@@ -106,7 +106,7 @@ public:
     [[nodiscard]] constexpr bool is_axis_aligned() const noexcept
     {
         hilet should_be_zeroes = static_cast<f32x4>(right).yz00() | static_cast<f32x4>(up)._00xz();
-        return not should_be_zeroes;
+        return equal(should_be_zeroes, f32x4{});
     }
 
     /** The axis-aligned bounding box around the rectangle.

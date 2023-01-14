@@ -8,13 +8,13 @@ Low level geometry types
 
 ### numeric\_array<T,N>
 
-The `numeric_array` is an array of numbers, with many mathematical operations
-on the array of numbers. The `numeric_array` is designed to be useable in
+The `simd` is an array of numbers, with many mathematical operations
+on the array of numbers. The `simd` is designed to be useable in
 constexpr and easily to vectorize by the optimizer.
 
 ### f32x4
 
-The `f32x4` is an `numeric_array<float,4>`.
+The `f32x4` is an `simd<float,4>`.
 
 Many of the operations on a `f32x4` are hand optimized using the intel intrinsics on SSE registers.
 

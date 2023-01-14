@@ -543,10 +543,10 @@ private:
         auto r = f32x4::broadcast(width * 0.5f);
 
         if (c1 == line_end_cap::flat) {
-            r = zero<0b0101>(r);
+            r = set_zero<0b0101>(r);
         }
         if (c2 == line_end_cap::flat) {
-            r = zero<0b1010>(r);
+            r = set_zero<0b1010>(r);
         }
 
         return corner_radii{r};

@@ -39,9 +39,3 @@ target_sources(hikogui PRIVATE
     true_type_font.hpp
     hikogui_icon.hpp
 )
-
-#if(BUILD_TESTING)
-#    target_sources(hikogui_tests PRIVATE
-#    )
-#endif()
-#
