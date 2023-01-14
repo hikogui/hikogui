@@ -251,8 +251,11 @@ public:
         add(line_comment, "\n\f\v", idle, token_type::comment, no_read);
     }
 
-    constexpr void add_line_comment() noexcept
+    constexpr void add_identifier() noexcept
     {
+        add(idle, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", identifier);
+        add(identifier, identifier, token_type::identigier, no_read);
+        add(identifier, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789", identifier);
     }
 
     [[nodiscard]] constexpr static size_t make_index(state_type from, char c) noexcept
