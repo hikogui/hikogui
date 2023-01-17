@@ -85,10 +85,9 @@ constexpr uint16_t cvtss_sh(float value) noexcept
     return static_cast<uint16_t>(u);
 }
 
-class float16 {
+struct float16 {
     uint16_t v = 0;
 
-public:
     constexpr float16() noexcept = default;
     ~float16() = default;
     constexpr float16(float16 const&) noexcept = default;
