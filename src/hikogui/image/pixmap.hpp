@@ -1,7 +1,18 @@
+// Copyright Take Vos 2023.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
 
-namespace hi {
-inline namespace v1 {
+#include "../utility.hpp"
+#include "../assert.hpp"
+#include <cstddef>
+#include <memory>
+#include <span>
+
+namespace hi { inline namespace v1 {
+template<typename T>
+class pixmap_view;
 
 /** A 2D pixel-based image.
  *
@@ -23,9 +34,9 @@ public:
      */
     using size_type = size_t;
     using pointer = value_type *;
-    using const_pointer = value_typeT const *;
-    using reference = value_type &;
-    using const_reference = value_type const &;
+    using const_pointer = value_type const *;
+    using reference = value_type&;
+    using const_reference = value_type const&;
     using interator = pointer;
     using const_iterator = const_pointer;
 
@@ -37,14 +48,11 @@ public:
      */
     using const_row_type = std::span<value_type const>;
 
-    constexpr static bool allocator_propagate_on_copy_assignment = std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value;
-    constexpr static bool allocator_propagate_on_move_assignment = std::allocator_traits<allocator_type>::propagate_on_container_move_assignment::value;
-
     ~pixmap()
     {
+        std::destroy(this->begin(), this->end());
         if (_data != nullptr) {
-            std::destroy(this->begin(), this->end());
-            std::allocator_traits<T>::deallocator(_allocator, _data, _capacity);
+            std::allocator_traits<allocator_type>::deallocate(_allocator, _data, _capacity);
         }
     }
 
@@ -57,16 +65,15 @@ public:
      *
      * @param other The other image to copy.
      */
-    constexpr pixmap(pixmap const &other) noexcept :
-        _capacity(other._width * other._height),
+    constexpr pixmap(pixmap const& other) :
+        _capacity(other.size()),
         _width(other._width),
         _height(other._height),
         _allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(other._allocator))
     {
-        std::allocator_traits<T>::allocate(_allocator, _capacity);
+        _data = std::allocator_traits<allocator_type>::allocate(_allocator, _capacity);
         std::uninitialized_copy(other.begin(), other.end(), this->begin());
     }
-
 
     /** Move constructor.
      *
@@ -74,12 +81,14 @@ public:
      *
      * @param other The other image to copy.
      */
-    constexpr pixmap(pixmap &&other) noexcept :
+    constexpr pixmap(pixmap&& other) noexcept :
         _data(std::exchange(other._data, nullptr)),
         _capacity(std::exchange(other._capacity, 0)),
         _width(std::exchange(other._width, 0)),
         _height(std::exchange(other._height, 0)),
-        _allocator(std::echange(other._allocator, {})) {}
+        _allocator(std::exchange(other._allocator, {}))
+    {
+    }
 
     /** Copy assignment.
      *
@@ -88,44 +97,54 @@ public:
      *
      * @param other The other image to copy.
      */
-    constexpr pixmap &operator=(pixmap const &other) noexcept
-    { 
+    constexpr pixmap& operator=(pixmap const& other)
+    {
+        constexpr auto propogate_allocator = std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value;
+
+        hilet use_this_allocator = this->_allocator == other._allocator or not propogate_allocator;
+
         if (&other == this) {
-            return;
-        }
+            return *this;
 
-        hilet use_this_allocator = this->_allocator == other._allocator or not allocator_propagate_on_copy_assignment;
+        } else if (this->_capacity >= other.size() and use_this_allocator) {
+            static_assert(std::is_nothrow_copy_constructible_v<value_type>);
 
-        if (this->_capacity >= other.size() and use_this_allocator) {
             // Reuse allocation.
-            hilet old_end = end();
+            clear();
             _width = other._width;
             _height = other._height;
-
-            if (std::distance(this->end(), old_end) > 0) {
-                // remove the pixels at the end of the previous image.
-                std::destroy(this->end(), old_end);
-            }
-            std::copy(other.begin(), other.end(), this->begin());
+            std::uninitialized_copy(other.begin(), other.end(), this->begin());
+            return *this;
 
         } else {
-            if (_data != nullptr) {
-                std::destroy(this->begin(), this->end());
-                std::allocator_traits<T>::deallocator(_allocator, _data, _capacity);
+            auto& new_allocator = propogate_allocator ? const_cast<allocator_type&>(other._allocator) : this->_allocator;
+            hilet new_capacity = other.size();
+
+            value_type *new_data = nullptr;
+            try {
+                new_data = std::allocator_traits<allocator_type>::allocate(new_allocator, other.size());
+                std::uninitialized_copy(other.begin(), other.end(), new_data);
+            } catch (...) {
+                std::allocator_traits<allocator_type>::deallocate(_allocator, new_data, new_capacity);
+                throw;
             }
 
+            try {
+                clear();
+                shrink_to_fit();
+            } catch (...) {
+                std::destroy_n(new_data, new_capacity);
+                std::allocator_traits<allocator_type>::deallocate(_allocator, new_data, new_capacity);
+                throw;
+            }
+
+            _data = new_data;
+            _capacity = new_capacity;
             _width = other._width;
             _height = other._height;
-            _capacity = other.size();
-            if constexpr (allocator_propagate_on_copy_assignment) {
-                _allocator = other._allocator;
-            }
-            _data = std::allocator_traits<T>::allocate(_allocator, _capacity);
-
-            std::uninitialized_copy(other.begin(), other.end(), this->begin());
+            _allocator = new_allocator;
+            return *this;
         }
-
-        return *this;
     }
 
     /** Move assignment.
@@ -135,13 +154,14 @@ public:
      *
      * @param other The other image to copy.
      */
-    constexpr pixmap &operator=(pixmap &&other) noexcept
+    constexpr pixmap& operator=(pixmap&& other)
     {
-        if (&other == this) {
-            return;
-        }
+        constexpr auto propogate_allocator = std::allocator_traits<allocator_type>::propagate_on_container_move_assignment::value;
 
-        if (_allocator == other._allocator or allocator_propagate_on_move_assignment) {
+        if (&other == this) {
+            return *this;
+
+        } else if (_allocator == other._allocator or propogate_allocator) {
             clear();
             shrink_to_fit();
 
@@ -150,49 +170,59 @@ public:
             _width = std::exchange(other._width, 0);
             _height = std::exchange(other._height, 0);
             _allocator = other._allocator;
+            return *this;
 
-        } else if (_capacity >= other._width * other._height) {
+        } else if (_capacity >= other.size()) {
             // Reuse allocation.
-            auto old_end = this->end();
+            clear();
             _width = other._width;
             _height = other._height;
-            
-            // Remove pixels beyond new size.
-            if (std::distance(this->end, old_end) > 0) {
-                std::destroy(this->end(), old_end);
-            }
 
-            // Move the data from other, and reset the image.
-            std::move(other.begin(), other.end(), this->begin());
-            other._width = 0;
-            other._height = 0;
+            std::uninitialized_move(other.begin(), other.end(), this->begin());
+
+            // Clear, but leave the allocation intact, so that it can be reused.
+            other.clear();
+            return *this;
 
         } else {
-            // Deallocate previous image.
-            std::destroy(this->begin(), this->end());
-            std::allocator_traits<allocator_type>::deallocate(_allocator, _data, _capacity);
+            hilet new_capacity = other.size();
+            value_type *new_data = nullptr;
+            try {
+                new_data = std::allocator_traits<allocator_type>::allocate(_allocator, new_capacity);
+                std::uninitialized_move(other.begin(), other.end(), new_data);
+            } catch (...) {
+                std::allocator_traits<allocator_type>::deallocate(_allocator, new_data, new_capacity);
+                throw;
+            }
 
-            // Create new image data.
+            try {
+                clear();
+                shrink_to_fit();
+            } catch (...) {
+                std::destroy_n(new_data, new_capacity);
+                std::allocator_traits<allocator_type>::deallocate(_allocator, new_data, new_capacity);
+                throw;
+            }
+
+            _data = new_data;
+            _capacity = new_capacity;
             _width = other._width;
             _height = other._height;
-            _capacity = other._width * other._height;
             _data = std::allocator_traits<allocator_type>::allocate(_allocator, _capacity);
 
-            // Move the data from other, and reset the image.
-            std::uninitialized_move(other.begin(), other.end(), this->begin());
-            other._width = 0;
-            other._height = 0; 
+            // Clear, but leave the allocation intact, so that it can be reused.
+            other.clear();
+            return *this;
         }
-
-        return *this;
     }
 
     [[nodiscard]] constexpr pixmap() noexcept = default;
 
     /** Create an pixmap of width and height.
      */
-    [[nodiscard]] constexpr pixmap(size_type width, size_type height, allocator_type allocator = allocator_type{}) noexcept
+    [[nodiscard]] constexpr pixmap(size_type width, size_type height, allocator_type allocator = allocator_type{}) :
         _data(std::allocator_traits<allocator_type>::allocate(allocator, width * height)),
+        _capacity(width * height),
         _width(width),
         _height(height),
         _allocator(allocator)
@@ -200,38 +230,72 @@ public:
         std::uninitialized_value_construct(begin(), end());
     }
 
-    [[nodiscard]] constexpr pixmap(value_type *data, size_type width, size_type height, size_type stride, allocator_type allocator = allocator_type{}) noexcept :
+    template<std::convertible_to<value_type> O>
+    [[nodiscard]] constexpr pixmap(
+        O *hi_restrict data,
+        size_type width,
+        size_type height,
+        size_type stride,
+        allocator_type allocator = allocator_type{}) :
         _data(std::allocator_traits<allocator_type>::allocate(allocator, width * height)),
+        _capacity(width * height),
         _width(width),
         _height(height),
         _allocator(allocator)
     {
         if (width == stride) {
-            std::uninitialized_copy(data, data + width * height, this->begin());
+            try {
+                std::uninitialized_copy(data, data + width * height, begin());
+            } catch (...) {
+                std::allocator_traits<allocator_type>::deallocate(_allocator, _data, _capacity);
+                throw;
+            }
+
         } else {
             auto src = data;
-            auto dst = this->begin();
-            auto dst_end = this->end();
+            auto dst = begin();
+            auto dst_end = end();
 
-            while (dst != dst_end) {
-                std::uninitialized_copy(src, src + width, dst);
-                dst += width;
-                src += stride;
+            try {
+                while (dst != dst_end) {
+                    std::uninitialized_copy(src, src + width, dst);
+                    dst += width;
+                    src += stride;
+                }
+            } catch (...) {
+                std::destroy(begin(), dst);
+                std::allocator_traits<allocator_type>::deallocate(_allocator, _data, _capacity);
+                throw;
             }
         }
     }
 
-    [[nodiscard]] constexpr pixmap(value_type *data, size_type width, size_type height, allocator_type allocator = allocator_type{}) noexcept :
-        pixmap(data, width, height, width, allocator) {}
+    template<std::convertible_to<value_type> O>
+    [[nodiscard]] constexpr pixmap(
+        O *hi_restrict data,
+        size_type width,
+        size_type height,
+        allocator_type allocator = allocator_type{}) noexcept :
+        pixmap(data, width, height, width, allocator)
+    {
+    }
 
     template<std::convertible_to<value_type> O>
-    [[nodiscard]] constexpr pixmap(pixmap<O> const &other, allocator_type allocator = allocator_type{}) noexcept :
-        _data(std::allocator_traits<allocator_type>::allocate(allocator, width * height)),
-        _width(width),
-        _height(height),
-        _allocator(allocator)
+    [[nodiscard]] constexpr explicit pixmap(pixmap<O> const& other, allocator_type allocator = allocator_type{}) :
+        pixmap(other.data(), other.width(), other.height(), allocator)
     {
-        std::uninitialized_copy(other.begin(), other.end(), this->begin());
+    }
+
+    template<std::convertible_to<value_type> O>
+    [[nodiscard]] constexpr explicit pixmap(pixmap_view<O> const& other, allocator_type allocator = allocator_type{}) :
+        pixmap(other.data(), other.width(), other.height(), other.stride(), allocator)
+    {
+    }
+
+    template<std::same_as<value_type const> O>
+    [[nodiscard]] constexpr operator pixmap_view<O>() const noexcept
+    {
+        return pixmap_view<O>{_data, _width, _height};
     }
 
     [[nodiscard]] constexpr allocator_type get_allocator() const noexcept
@@ -278,7 +342,7 @@ public:
         return _data;
     }
 
-    [[nodiscard]] constexpr iterator begin() noexcept
+    [[nodiscard]] constexpr interator begin() noexcept
     {
         return _data;
     }
@@ -293,7 +357,7 @@ public:
         return _data;
     }
 
-    [[nodiscard]] constexpr iterator end() noexcept
+    [[nodiscard]] constexpr interator end() noexcept
     {
         return _data + size();
     }
@@ -334,12 +398,13 @@ public:
         return {_data + y * _width, _width};
     }
 
-    [[nodiscard]] constexpr pixmap subimage(size_type x, size_type y, size_type new_width, size_type new_height, allocator_type allocator) const noexcept
+    [[nodiscard]] constexpr pixmap
+    subimage(size_type x, size_type y, size_type new_width, size_type new_height, allocator_type allocator) const noexcept
     {
         hi_axiom(x + new_width <= _width);
         hi_axiom(y + new_height <= _height);
 
-        hilet p = _data + y * _width + _height;
+        hilet p = _data + y * _width + x;
         return {p, new_width, new_height, _width, allocator};
     }
 
@@ -357,8 +422,6 @@ public:
 
     constexpr void shrink_to_fit()
     {
-        hilet new_capacity = size();
-
         if (empty()) {
             if (_data != nullptr) {
                 std::allocator_traits<allocator_type>::deallocate(_allocator, _data, _capacity);
@@ -368,12 +431,20 @@ public:
             return;
         }
 
-        hilet new_data = new_capacity ? std::allocator_triats<allocator_type>::allocate(_allocator, new_capacity) : nullptr;
-
-
-        if (empty()) {
-            auto new_data = nullptr;
+        hilet new_capacity = size();
+        value_type *new_data = nullptr;
+        try {
+            new_data = std::allocator_traits<allocator_type>::allocate(_allocator, new_capacity);
+            std::uninitialized_move(begin(), end(), new_data);
+        } catch (...) {
+            std::allocator_traits<allocator_type>::deallocate(_allocator, new_data, new_capacity);
+            throw;
         }
+
+        std::destroy(begin(), end());
+        hilet old_capacity = std::exchange(_capacity, new_capacity);
+        hilet old_data = std::exchange(_data, new_data);
+        std::allocator_traits<allocator_type>::deallocate(_allocator, old_data, old_capacity);
     }
 
 private:
@@ -384,6 +455,7 @@ private:
     [[no_unique_address]] allocator_type _allocator = {};
 };
 
+template<typename T, typename Allocator = std::allocator<std::remove_const_t<T>>>
+pixmap(pixmap_view<T> const& other, Allocator allocator = std::allocator{}) -> pixmap<std::remove_const_t<T>>;
 
-}}
-
+}} // namespace hi::v1

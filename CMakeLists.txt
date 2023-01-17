@@ -101,12 +101,13 @@ endif()
 #-------------------------------------------------------------------
 
 add_library(hikogui)
+set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
+include(CMakeLists_includes.cmake)
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 
 #-------------------------------------------------------------------
 # Setup Sources
 #-------------------------------------------------------------------
-set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 
 # This needs to be below the build target commands (add_*).
 # We omit adding source files to the `add_*` commands, but add them
@@ -385,12 +386,12 @@ include(GNUInstallDirs)
 install(TARGETS hikogui RESOURCE)
 
 # Copy all header files for the library.
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.hpp")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.h")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#        FILES_MATCHING PATTERN "*.hpp")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#        FILES_MATCHING PATTERN "*.h")
 
 # Copy all resource files needing to be added to the resource directory of an application
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources/
@@ -401,6 +402,7 @@ get_target_property(target_type hikogui TYPE)
 if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
+        FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
@@ -408,6 +410,7 @@ if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
 else()
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
+        FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib
