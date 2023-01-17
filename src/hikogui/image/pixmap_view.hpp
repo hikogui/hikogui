@@ -27,6 +27,41 @@ public:
     using nc_value_type = std::remove_const_t<value_type>;
     using size_type = size_t;
 
+    template<typename PixmapView>
+    struct row_iterator {
+        PixmapView *_ptr;
+        size_t _y;
+
+        // clang-format off
+        constexpr row_iterator(row_iterator const &) noexcept = default;
+        constexpr row_iterator(row_iterator &&) noexcept = default;
+        constexpr row_iterator &operator=(row_iterator const &) noexcept = default;
+        constexpr row_iterator &operator=(row_iterator &&) noexcept = default;
+        [[nodiscard]] constexpr row_iterator(Pixmap *ptr, size_t y) noexcept : _ptr(ptr), _y(y) {}
+        [[nodiscard]] constexpr friend bool operator==(row_iterator const &, row_iterator const &) noexcept = default;
+        constexpr row_iterator &operator++() noexcept { ++y; return *this; }
+        constexpr row_iterator &operator++(int) noexcept { auto tmp = *this; ++y; return tmp; }
+        constexpr row_iterator &operator-- noexcept { --y; return *this; }
+        constexpr row_iterator &operator--(int) noexcept { auto tmp = *this; --y; return tmp; }
+        [[nodiscard]] constexpr auto operator*() const noexcept { return (*_ptr)[y]; }
+        // clang-format on
+    };
+
+    template<typename PixmapView>
+    struct row_range {
+        PixmapView *_ptr;
+
+        // clang-format off
+        constexpr row_range(row_range const &) noexcept = default;
+        constexpr row_range(row_range &&) noexcept = default;
+        constexpr row_range &operator=(row_range const &) noexcept = default;
+        constexpr row_range &operator=(row_range &&) noexcept = default;
+        [[nodiscard]] constexpr row_range(Pixmap *ptr) noexcept : _ptr(ptr) {}
+        [[nodiscard]] constexpr auto begin() const noexcept { return row_iterator{_ptr, 0_uz}; }
+        [[nodiscard]] constexpr auto end() const noexcept { return row_iterator{_ptr, _ptr->height()}; }
+        // clang-format on
+    };
+
     ~pixmap_view() = default;
     constexpr pixmap_view(pixmap_view const&) noexcept = default;
     constexpr pixmap_view(pixmap_view&&) noexcept = default;
@@ -115,6 +150,16 @@ public:
         return {_data + y * _stride, _width};
     }
 
+    [[nodiscard]] constexpr auto rows() noexcept
+    {
+        return row_range{this};
+    }
+
+    [[nodiscard]] constexpr auto rows() const noexcept
+    {
+        return row_range{this};
+    }
+
     [[nodiscard]] constexpr pixmap_view subimage(size_type x, size_type y, size_type new_width, size_type new_height) noexcept
     {
         return {_data + y * _stride + x, new_width, new_height, _stride};
@@ -147,8 +192,7 @@ public:
         if (dst._width == dst._stride) {
             std::fill_n(dst._data, dst._width, dst._height, value);
         } else {
-            for (auto y = 0_uz; y != dst._height; ++y) {
-                hilet line = dst[y];
+            for (auto line: dst.rows()) {
                 std::fill(line.begin(), line.end(), value);
             }
         }
