@@ -21,8 +21,6 @@
 #include <unordered_map>
 
 namespace hi::inline v1 {
-template<typename T>
-class pixel_map;
 class mat;
 class gfx_device_vulkan;
 struct attributed_glyph;

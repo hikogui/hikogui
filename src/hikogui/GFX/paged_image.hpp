@@ -5,6 +5,9 @@
 #pragma once
 
 #include "../geometry/extent.hpp"
+#include "../SIMD/sfloat_rgba16.hpp"
+#include "../image/pixmap_view.hpp"
+#include "../image/pixmap.hpp"
 #include <cstdlib>
 #include <span>
 #include <atomic>
@@ -12,11 +15,7 @@
 #include <vector>
 
 namespace hi::inline v1 {
-
-template<typename T>
-class pixel_map;
 class png;
-class sfloat_rgba16;
 class gfx_surface;
 class gfx_device;
 
@@ -35,14 +34,20 @@ struct paged_image {
 
     ~paged_image();
     constexpr paged_image() noexcept = default;
-    paged_image(paged_image &&other) noexcept;
-    paged_image &operator=(paged_image &&other) noexcept;
-    paged_image(paged_image const &other) = delete;
-    paged_image &operator=(paged_image const &other) = delete;
+    paged_image(paged_image&& other) noexcept;
+    paged_image& operator=(paged_image&& other) noexcept;
+    paged_image(paged_image const& other) = delete;
+    paged_image& operator=(paged_image const& other) = delete;
 
     paged_image(gfx_surface const *surface, std::size_t width, std::size_t height) noexcept;
-    paged_image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &image) noexcept;
-    paged_image(gfx_surface const *surface, png const &image) noexcept;
+    paged_image(gfx_surface const *surface, pixmap_view<sfloat_rgba16 const> image) noexcept;
+    paged_image(gfx_surface const *surface, pixmap<sfloat_rgba16> const& image) noexcept :
+        paged_image(surface, pixmap_view<sfloat_rgba16 const>{image})
+    {
+    }
+
+
+    paged_image(gfx_surface const *surface, png const& image) noexcept;
 
     [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
@@ -70,11 +75,11 @@ struct paged_image {
 
     /** Upload image to atlas.
      */
-    void upload(pixel_map<sfloat_rgba16> const &image) noexcept;
+    void upload(pixmap_view<sfloat_rgba16 const> image) noexcept;
 
     /** Upload image to atlas.
      */
-    void upload(png const &image) noexcept;
+    void upload(png const& image) noexcept;
 };
 
 } // namespace hi::inline v1

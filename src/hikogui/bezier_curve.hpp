@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "pixel_map.hpp"
+#include "image/pixmap_view.hpp"
 #include "math.hpp"
 #include "bezier.hpp"
 #include "utility.hpp"
@@ -402,12 +402,12 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator first, std::vect
  * @param image An alpha-channel image to make opaque where pixel is inside the contours
  * @param curves All curves of path, in no particular order.
  */
-void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) noexcept;
+void fill(pixmap_view<uint8_t> image, std::vector<bezier_curve> const& curves) noexcept;
 
 /** Fill a signed distance field image from the given contour.
  * @param image An signed-distance-field which show distance toward the closest curve
  * @param curves All curves of path, in no particular order.
  */
-void fill(pixel_map<sdf_r8>& image, std::vector<bezier_curve> const& curves) noexcept;
+void fill(pixmap_view<sdf_r8> image, std::vector<bezier_curve> const& curves) noexcept;
 
 } // namespace hi::inline v1

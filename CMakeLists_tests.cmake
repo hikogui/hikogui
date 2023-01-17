@@ -84,7 +84,6 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/notifier_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/packed_int_array_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/pixel_map_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/polymorphic_optional_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/polynomial_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/ranges_tests.cpp

@@ -6,7 +6,7 @@
 
 #include "../color/color.hpp"
 #include "../float16.hpp"
-#include "../pixel_map.hpp"
+#include "../image/pixmap_view.hpp"
 #include "../geometry/corner_radii.hpp"
 #include "../SIMD/simd.hpp"
 #include "../hash.hpp"
@@ -78,7 +78,7 @@ public:
     }
 };
 
-inline void fill(pixel_map<sfloat_rgba16> &image, f32x4 color) noexcept
+inline void fill(pixmap_view<sfloat_rgba16> image, f32x4 color) noexcept
 {
     for (std::size_t y = 0; y != image.height(); ++y) {
         auto row = image[y];
@@ -88,39 +88,39 @@ inline void fill(pixel_map<sfloat_rgba16> &image, f32x4 color) noexcept
     }
 }
 
-inline void composit(pixel_map<sfloat_rgba16> &under, pixel_map<sfloat_rgba16> const &over) noexcept
+inline void composit(pixmap_view<sfloat_rgba16> under, pixmap_view<sfloat_rgba16 const> over) noexcept
 {
     hi_assert(over.height() >= under.height());
     hi_assert(over.width() >= under.width());
 
-    for (std::size_t rowNr = 0; rowNr != under.height(); ++rowNr) {
-        hilet overRow = over.at(rowNr);
-        auto underRow = under.at(rowNr);
-        for (std::size_t columnNr = 0; columnNr != under.width(); ++columnNr) {
-            hilet &overPixel = overRow[columnNr];
-            auto &underPixel = underRow[columnNr];
+    for (auto y = 0_uz; y != under.height(); ++y) {
+        hilet over_line = over[y];
+        hilet under_line = under[y];
+        for (auto x = 0_uz; x != under.width(); ++x) {
+            hilet &overPixel = over_line[x];
+            auto &underPixel = under_line[x];
 
             underPixel = composit(static_cast<f16x4>(underPixel), static_cast<f16x4>(overPixel));
         }
     }
 }
 
-inline void composit(pixel_map<sfloat_rgba16> &under, color over, pixel_map<uint8_t> const &mask) noexcept
+inline void composit(pixmap_view<sfloat_rgba16> under, color over, pixmap_view<uint8_t const> mask) noexcept
 {
     hi_assert(mask.height() >= under.height());
     hi_assert(mask.width() >= under.width());
 
-    auto maskPixel = color{1.0f, 1.0f, 1.0f, 1.0f};
+    auto mask_pixel = color{1.0f, 1.0f, 1.0f, 1.0f};
 
-    for (std::size_t rowNr = 0; rowNr != under.height(); ++rowNr) {
-        hilet maskRow = mask.at(rowNr);
-        auto underRow = under.at(rowNr);
-        for (std::size_t columnNr = 0; columnNr != under.width(); ++columnNr) {
-            hilet maskValue = maskRow[columnNr] / 255.0f;
-            maskPixel.a() = maskValue;
+    for (auto y = 0_uz; y != under.height(); ++y) {
+        hilet mask_line = mask[y];
+        hilet under_line = under[y];
+        for (auto x = 0_uz; x != under.width(); ++x) {
+            hilet mask_value = mask_line[x] / 255.0f;
+            mask_pixel.a() = mask_value;
 
-            auto &pixel = underRow[columnNr];
-            pixel = composit(static_cast<color>(pixel), over * maskPixel);
+            auto &pixel = under_line[x];
+            pixel = composit(static_cast<color>(pixel), over * mask_pixel);
         }
     }
 }

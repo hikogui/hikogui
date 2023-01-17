@@ -7,6 +7,7 @@
 #include "pipeline_image_texture_map.hpp"
 #include "pipeline_image_vertex.hpp"
 #include "paged_image.hpp"
+#include "../image/pixmap_view.hpp"
 #include "../utility.hpp"
 #include "../SIMD/sfloat_rgba16.hpp"
 #include "../geometry/quad.hpp"
@@ -17,8 +18,6 @@
 
 namespace hi::inline v1 {
 class gfx_device_vulkan;
-template<typename T>
-class pixel_map;
 
 namespace pipeline_image {
 
@@ -71,7 +70,7 @@ struct device_shared {
      *
      * The returned pixel-map is offset by the page::border.
      */
-    hi::pixel_map<sfloat_rgba16> get_staging_pixel_map();
+    hi::pixmap_view<sfloat_rgba16> get_staging_pixmap();
 
     /** Prepare the atlas so that it can be used as a texture map by the shaders.
      */
@@ -96,9 +95,9 @@ private:
 
     /** Get a submap of the staging pixel map to draw the image in.
      */
-    hi::pixel_map<sfloat_rgba16> get_staging_pixel_map(std::size_t width, std::size_t height)
+    hi::pixmap_view<sfloat_rgba16> get_staging_pixmap(std::size_t width, std::size_t height)
     {
-        return get_staging_pixel_map().submap(0, 0, width, height);
+        return get_staging_pixmap().subimage(0, 0, width, height);
     }
 
     /** Add a transparent border around the image.
@@ -128,7 +127,7 @@ private:
 
     /** Copy the image from the staging pixel map into the atlas.
      */
-    void update_atlas_with_staging_pixel_map(paged_image const &image) noexcept;
+    void update_atlas_with_staging_pixmap(paged_image const &image) noexcept;
 
     void build_shaders();
     void teardown_shaders(gfx_device_vulkan *vulkan_device);

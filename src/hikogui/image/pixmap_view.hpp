@@ -44,20 +44,20 @@ public:
     {
     }
 
-    template<typename Allocator>
-    [[nodiscard]] constexpr explicit pixmap_view(pixmap<value_type, Allocator> const& other) :
+    template<std::same_as<std::remove_const_t<value_type>> O, typename Allocator>
+    [[nodiscard]] constexpr pixmap_view(pixmap<O, Allocator> const& other) noexcept :
         pixmap_view(other.data(), other.width(), other.height())
     {
     }
 
-    template<typename Allocator>
-    [[nodiscard]] constexpr explicit pixmap_view(pixmap<value_type, Allocator>& other) :
+    template<std::same_as<std::remove_const_t<value_type>> O, typename Allocator>
+    [[nodiscard]] constexpr pixmap_view(pixmap<O, Allocator>& other) noexcept :
         pixmap_view(other.data(), other.width(), other.height())
     {
     }
 
-    template<typename Allocator>
-    [[nodiscard]] constexpr explicit pixmap_view(pixmap<value_type, Allocator>&& other) = delete;
+    template<std::same_as<std::remove_const_t<value_type>> O, typename Allocator>
+    [[nodiscard]] constexpr pixmap_view(pixmap<O, Allocator>&& other) = delete;
 
     [[nodiscard]] constexpr size_type empty() const noexcept
     {
@@ -106,24 +106,52 @@ public:
     [[nodiscard]] constexpr row_type operator[](size_type y) noexcept
     {
         hi_axiom(y < _height);
-        return {_data + y * _stride, width};
+        return {_data + y * _stride, _width};
     }
 
     [[nodiscard]] constexpr const_row_type operator[](size_type y) const noexcept
     {
         hi_axiom(y < _height);
-        return {_data + y * _stride, width};
+        return {_data + y * _stride, _width};
     }
 
-    [[nodiscard]] constexpr pixmap_view subimage(size_type x, size_type y, size_type width, size_type height) noexcept
+    [[nodiscard]] constexpr pixmap_view subimage(size_type x, size_type y, size_type new_width, size_type new_height) noexcept
     {
-        return {_data + y * _stride + x, width, height, _stride};
+        return {_data + y * _stride + x, new_width, new_height, _stride};
     }
 
     [[nodiscard]] constexpr pixmap_view<value_type const>
-    subimage(size_type x, size_type y, size_type width, size_type height) const noexcept
+    subimage(size_type x, size_type y, size_type new_width, size_type new_height) const noexcept
     {
-        return {_data + y * _stride + x, width, height, _stride};
+        return {_data + y * _stride + x, new_width, new_height, _stride};
+    }
+
+    constexpr friend void copy(pixmap_view src, pixmap_view<std::remove_const_t<value_type>> dst) noexcept
+    {
+        hi_axiom(src.width() == dst.width());
+        hi_axiom(src.height() == dst.height());
+
+        if (src.width() == src.stride() and dst.width() == dst.stride()) {
+            std::copy(src.data(), src.data() + src.width() * src.height(), dst.data());
+        } else {
+            for (auto y = 0_uz; y != src.height(); ++y) {
+                hilet src_line = src[y];
+                hilet dst_line = dst[y];
+                std::copy(src_line.begin(), src_line.end(), dst_line.begin());
+            }
+        }
+    }
+
+    constexpr friend void fill(pixmap_view dst, value_type value = value_type{}) noexcept
+    {
+        if (dst._width == dst._stride) {
+            std::fill_n(dst._data, dst._width, dst._height, value);
+        } else {
+            for (auto y = 0_uz; y != dst._height; ++y) {
+                hilet line = dst[y];
+                std::fill(line.begin(), line.end(), value);
+            }
+        }
     }
 
 private:

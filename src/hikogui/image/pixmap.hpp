@@ -298,6 +298,14 @@ public:
         return pixmap_view<O>{_data, _width, _height};
     }
 
+    [[nodiscard]] constexpr friend bool operator==(pixmap const& lhs, pixmap const& rhs) noexcept
+    {
+        if (lhs._width != rhs._width or lhs._height != rhs._height) {
+            return false;
+        }
+        return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+    }
+
     [[nodiscard]] constexpr allocator_type get_allocator() const noexcept
     {
         return _allocator;
@@ -337,7 +345,7 @@ public:
         return _data;
     }
 
-    [[nodiscard]] constexpr const_pointer *data() const noexcept
+    [[nodiscard]] constexpr const_pointer data() const noexcept
     {
         return _data;
     }
@@ -445,6 +453,11 @@ public:
         hilet old_capacity = std::exchange(_capacity, new_capacity);
         hilet old_data = std::exchange(_data, new_data);
         std::allocator_traits<allocator_type>::deallocate(_allocator, old_data, old_capacity);
+    }
+
+    constexpr friend void fill(pixmap &dst, value_type value = value_type{}) noexcept
+    {
+        std::fill(dst.begin(), dst.end(), value);
     }
 
 private:

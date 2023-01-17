@@ -38,7 +38,7 @@ paged_image::paged_image(gfx_surface const *surface, std::size_t width, std::siz
     }
 }
 
-paged_image::paged_image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &image) noexcept :
+paged_image::paged_image(gfx_surface const *surface, pixmap_view<sfloat_rgba16 const> image) noexcept :
     paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
 {
     if (this->device) {
@@ -98,15 +98,15 @@ void paged_image::upload(png const &image) noexcept
 
         state = state_type::drawing;
 
-        auto staging_image = vulkan_device->image_pipeline->get_staging_pixel_map(image.width(), image.height());
+        auto staging_image = vulkan_device->image_pipeline->get_staging_pixmap(image.width(), image.height());
         image.decode_image(staging_image);
-        vulkan_device->image_pipeline->update_atlas_with_staging_pixel_map(*this);
+        vulkan_device->image_pipeline->update_atlas_with_staging_pixmap(*this);
 
         state = state_type::uploaded;
     }
 }
 
-void paged_image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
+void paged_image::upload(pixmap_view<sfloat_rgba16 const> image) noexcept
 {
     hi_assert(image.width() == width and image.height() == height);
 
@@ -115,9 +115,9 @@ void paged_image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
 
         state = state_type::drawing;
 
-        auto staging_image = vulkan_device->image_pipeline->get_staging_pixel_map(image.width(), image.height());
+        auto staging_image = vulkan_device->image_pipeline->get_staging_pixmap(image.width(), image.height());
         copy(image, staging_image);
-        vulkan_device->image_pipeline->update_atlas_with_staging_pixel_map(*this);
+        vulkan_device->image_pipeline->update_atlas_with_staging_pixmap(*this);
 
         state = state_type::uploaded;
     }

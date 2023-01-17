@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/pixel_map.inl"
+#include "hikogui/pixmap.inl"
 #include "hikogui/graphic_path.hpp"
 #include "hikogui/bezier_curve.hpp"
 #include <gtest/gtest.h>
@@ -12,15 +12,15 @@
 using namespace std;
 using namespace hi;
 
-TEST(pixel_map_tests, rotate90)
+TEST(pixmap_tests, rotate90)
 {
-    auto mask = pixel_map<uint8_t>(2, 2);
+    auto mask = pixmap<uint8_t>(2, 2);
     mask[1][0] = 3;
     mask[1][1] = 4;
     mask[0][0] = 1;
     mask[0][1] = 2;
 
-    auto r = pixel_map<uint8_t>(2, 2);
+    auto r = pixmap<uint8_t>(2, 2);
     rotate90(r, mask);
     ASSERT_EQ(r[1][0], 4);
     ASSERT_EQ(r[1][1], 2);
@@ -28,15 +28,15 @@ TEST(pixel_map_tests, rotate90)
     ASSERT_EQ(r[0][1], 1);
 }
 
-TEST(pixel_map_tests, rotate270)
+TEST(pixmap_tests, rotate270)
 {
-    auto mask = pixel_map<uint8_t>(2, 2);
+    auto mask = pixmap<uint8_t>(2, 2);
     mask[1][0] = 3;
     mask[1][1] = 4;
     mask[0][0] = 1;
     mask[0][1] = 2;
 
-    auto r = pixel_map<uint8_t>(2, 2);
+    auto r = pixmap<uint8_t>(2, 2);
     rotate270(r, mask);
     ASSERT_EQ(r[1][0], 1);
     ASSERT_EQ(r[1][1], 3);
@@ -44,9 +44,9 @@ TEST(pixel_map_tests, rotate270)
     ASSERT_EQ(r[0][1], 4);
 }
 
-TEST(pixel_map_tests, renderMaskFromPath)
+TEST(pixmap_tests, renderMaskFromPath)
 {
-    auto mask = pixel_map<uint8_t>(9, 3);
+    auto mask = pixmap<uint8_t>(9, 3);
     fill(mask);
 
     auto path = graphic_path();

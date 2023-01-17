@@ -4,5 +4,5 @@
 
 #pragma once
 
-#include "pixmap.hpp"
+#include "image/pixmap.hpp"
 #include "pixmap_view.hpp"

@@ -7,7 +7,7 @@
 #include "gfx_device_vulkan.hpp"
 #include "../file/URL.hpp"
 #include "../geometry/corner_radii.hpp"
-#include "../pixel_map.hpp"
+#include "../image/pixmap.hpp"
 #include <array>
 
 namespace hi::inline v1::pipeline_box {

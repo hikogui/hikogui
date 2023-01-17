@@ -10,7 +10,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/translate.hpp"
-#include "../pixel_map.hpp"
+#include "../image/pixmap.hpp"
 #include "../memory.hpp"
 #include "../cast.hpp"
 #include <array>
@@ -73,7 +73,7 @@ void device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const &location)
 {
     // Flush the given image, included the border.
     device.flushAllocation(
-        stagingTexture.allocation, 0, (stagingTexture.pixel_map.height() * stagingTexture.pixel_map.stride()) * sizeof(sdf_r8));
+        stagingTexture.allocation, 0, (stagingTexture.pixmap.height() * stagingTexture.pixmap.stride()) * sizeof(sdf_r8));
 
     stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferSrcOptimal);
 
@@ -149,7 +149,7 @@ void device_shared::add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info 
     hilet lock = std::scoped_lock(gfx_system_mutex);
     prepareStagingPixmapForDrawing();
     info = allocate_rect(image_size, image_size / draw_bounding_box.size());
-    auto pixmap = stagingTexture.pixel_map.submap(aarectangle{info.size});
+    auto pixmap = stagingTexture.pixmap.subimage(0, 0, narrow_cast<size_t>(info.size.width()), narrow_cast<size_t>(info.size.height()));
     fill(pixmap, draw_path);
     uploadStagingPixmapToAtlas(info);
 }
@@ -309,7 +309,7 @@ void device_shared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        hi::pixel_map<sdf_r8>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
+        hi::pixmap_view<sdf_r8>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),

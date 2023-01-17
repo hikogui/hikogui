@@ -122,9 +122,6 @@ target_sources(hikogui PRIVATE
     graphic_path_impl.cpp
     graphic_path.hpp
     pickle.hpp
-    pixel_map_impl.cpp
-    pixel_map.hpp
-    pixel_map.inl
     placement.hpp
     polymorphic_optional.hpp
     polynomial.hpp

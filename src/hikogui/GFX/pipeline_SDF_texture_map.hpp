@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../pixel_map.hpp"
+#include "../image/pixmap_view.hpp"
 #include "../SIMD/sdf_r8.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
@@ -18,7 +18,7 @@ struct texture_map {
     vk::Image image;
     VmaAllocation allocation = {};
     vk::ImageView view;
-    hi::pixel_map<sdf_r8> pixel_map;
+    hi::pixmap_view<sdf_r8> pixmap;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
     void transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout);

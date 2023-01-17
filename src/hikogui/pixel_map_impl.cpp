@@ -2,13 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "pixel_map.inl"
+#include "pixmap.inl"
 #include "endian.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {
 
-void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexcept
+void mergeMaximum(pixmap<uint8_t> &dst, pixmap<uint8_t> const &src) noexcept
 {
     hi_assert(src.width() >= dst.width());
     hi_assert(src.height() >= dst.height());
