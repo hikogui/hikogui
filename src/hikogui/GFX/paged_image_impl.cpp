@@ -10,9 +10,7 @@
 #include "../log.hpp"
 #include "../utility.hpp"
 #include "../cast.hpp"
-#include "../geometry/translate.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
-#include "../geometry/extent.hpp"
+#include "../geometry/module.hpp"
 #include "../codec/png.hpp"
 
 namespace hi::inline v1 {
@@ -38,7 +36,7 @@ paged_image::paged_image(gfx_surface const *surface, std::size_t width, std::siz
     }
 }
 
-paged_image::paged_image(gfx_surface const *surface, pixmap_view<sfloat_rgba16 const> image) noexcept :
+paged_image::paged_image(gfx_surface const *surface, pixmap_span<sfloat_rgba16 const> image) noexcept :
     paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
 {
     if (this->device) {
@@ -106,7 +104,7 @@ void paged_image::upload(png const &image) noexcept
     }
 }
 
-void paged_image::upload(pixmap_view<sfloat_rgba16 const> image) noexcept
+void paged_image::upload(pixmap_span<sfloat_rgba16 const> image) noexcept
 {
     hi_assert(image.width() == width and image.height() == height);
 

@@ -12,7 +12,7 @@
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
 #include "../GFX/subpixel_orientation.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/module.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
 #include "../widgets/toolbar_widget.hpp"

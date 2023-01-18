@@ -5,11 +5,10 @@
 #pragma once
 
 #include "../utility.hpp"
-#include "../geometry/rectangle.hpp"
+#include "../geometry/module.hpp"
 #include "../vector_span.hpp"
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
-#include "../geometry/corner_radii.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

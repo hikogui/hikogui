@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../SIMD/module.hpp"
-#include "../geometry/matrix.hpp"
+#include "../geometry/module.hpp"
 #include <array>
 
 namespace hi::inline v1 {

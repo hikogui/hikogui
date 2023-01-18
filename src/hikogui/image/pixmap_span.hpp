@@ -15,7 +15,7 @@ template<typename T, typename Allocator>
 class pixmap;
 
 template<typename T>
-class pixmap_view {
+class pixmap_span {
 public:
     using value_type = T;
     using reference = value_type&;
@@ -62,37 +62,37 @@ public:
         // clang-format on
     };
 
-    ~pixmap_view() = default;
-    constexpr pixmap_view(pixmap_view const&) noexcept = default;
-    constexpr pixmap_view(pixmap_view&&) noexcept = default;
-    constexpr pixmap_view& operator=(pixmap_view const&) noexcept = default;
-    constexpr pixmap_view& operator=(pixmap_view&&) noexcept = default;
-    [[nodiscard]] constexpr pixmap_view() noexcept = default;
+    ~pixmap_span() = default;
+    constexpr pixmap_span(pixmap_span const&) noexcept = default;
+    constexpr pixmap_span(pixmap_span&&) noexcept = default;
+    constexpr pixmap_span& operator=(pixmap_span const&) noexcept = default;
+    constexpr pixmap_span& operator=(pixmap_span&&) noexcept = default;
+    [[nodiscard]] constexpr pixmap_span() noexcept = default;
 
-    [[nodiscard]] constexpr pixmap_view(value_type *data, size_type width, size_type height, size_type stride) noexcept :
+    [[nodiscard]] constexpr pixmap_span(value_type *data, size_type width, size_type height, size_type stride) noexcept :
         _data(data), _width(width), _height(height), _stride(stride)
     {
     }
 
-    [[nodiscard]] constexpr pixmap_view(value_type *data, size_type width, size_type height) noexcept :
-        pixmap_view(data, width, height, width)
+    [[nodiscard]] constexpr pixmap_span(value_type *data, size_type width, size_type height) noexcept :
+        pixmap_span(data, width, height, width)
     {
     }
 
     template<std::same_as<std::remove_const_t<value_type>> O, typename Allocator>
-    [[nodiscard]] constexpr pixmap_view(pixmap<O, Allocator> const& other) noexcept :
-        pixmap_view(other.data(), other.width(), other.height())
+    [[nodiscard]] constexpr pixmap_span(pixmap<O, Allocator> const& other) noexcept :
+        pixmap_span(other.data(), other.width(), other.height())
     {
     }
 
     template<std::same_as<std::remove_const_t<value_type>> O, typename Allocator>
-    [[nodiscard]] constexpr pixmap_view(pixmap<O, Allocator>& other) noexcept :
-        pixmap_view(other.data(), other.width(), other.height())
+    [[nodiscard]] constexpr pixmap_span(pixmap<O, Allocator>& other) noexcept :
+        pixmap_span(other.data(), other.width(), other.height())
     {
     }
 
     template<std::same_as<std::remove_const_t<value_type>> O, typename Allocator>
-    [[nodiscard]] constexpr pixmap_view(pixmap<O, Allocator>&& other) = delete;
+    [[nodiscard]] constexpr pixmap_span(pixmap<O, Allocator>&& other) = delete;
 
     [[nodiscard]] constexpr size_type empty() const noexcept
     {
@@ -160,18 +160,18 @@ public:
         return row_range{this};
     }
 
-    [[nodiscard]] constexpr pixmap_view subimage(size_type x, size_type y, size_type new_width, size_type new_height) noexcept
+    [[nodiscard]] constexpr pixmap_span subimage(size_type x, size_type y, size_type new_width, size_type new_height) noexcept
     {
         return {_data + y * _stride + x, new_width, new_height, _stride};
     }
 
-    [[nodiscard]] constexpr pixmap_view<value_type const>
+    [[nodiscard]] constexpr pixmap_span<value_type const>
     subimage(size_type x, size_type y, size_type new_width, size_type new_height) const noexcept
     {
         return {_data + y * _stride + x, new_width, new_height, _stride};
     }
 
-    constexpr friend void copy(pixmap_view src, pixmap_view<std::remove_const_t<value_type>> dst) noexcept
+    constexpr friend void copy(pixmap_span src, pixmap_span<std::remove_const_t<value_type>> dst) noexcept
     {
         hi_axiom(src.width() == dst.width());
         hi_axiom(src.height() == dst.height());
@@ -187,7 +187,7 @@ public:
         }
     }
 
-    constexpr friend void fill(pixmap_view dst, value_type value = value_type{}) noexcept
+    constexpr friend void fill(pixmap_span dst, value_type value = value_type{}) noexcept
     {
         if (dst._width == dst._stride) {
             std::fill_n(dst._data, dst._width, dst._height, value);
@@ -206,9 +206,9 @@ private:
 };
 
 template<typename T, typename Allocator>
-pixmap_view(pixmap<T, Allocator> const& other) -> pixmap_view<T const>;
+pixmap_span(pixmap<T, Allocator> const& other) -> pixmap_span<T const>;
 
 template<typename T, typename Allocator>
-pixmap_view(pixmap<T, Allocator>& other) -> pixmap_view<T>;
+pixmap_span(pixmap<T, Allocator>& other) -> pixmap_span<T>;
 
 }} // namespace hi::v1

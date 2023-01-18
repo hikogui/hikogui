@@ -17,9 +17,7 @@
 #include "keyboard_focus_direction.hpp"
 #include "mouse_buttons.hpp"
 #include "../unicode/grapheme.hpp"
-#include "../geometry/vector.hpp"
-#include "../geometry/point.hpp"
-#include "../geometry/translate.hpp"
+#include "../geometry/module.hpp"
 #include "../chrono.hpp"
 #include <chrono>
 #include <memory>

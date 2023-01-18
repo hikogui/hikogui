@@ -11,7 +11,7 @@
 #include "elusive_icon.hpp"
 #include "hikogui_icon.hpp"
 #include "../unicode/grapheme.hpp"
-#include "../geometry/alignment.hpp"
+#include "../geometry/module.hpp"
 #include "../subsystem.hpp"
 #include "../generator.hpp"
 #include <limits>

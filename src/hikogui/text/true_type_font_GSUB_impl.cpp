@@ -4,8 +4,7 @@
 
 #include "true_type_font.hpp"
 #include "../unicode/UTF.hpp"
-#include "../geometry/vector.hpp"
-#include "../geometry/point.hpp"
+#include "../geometry/module.hpp"
 #include "../placement.hpp"
 #include "../strings.hpp"
 #include "../endian.hpp"

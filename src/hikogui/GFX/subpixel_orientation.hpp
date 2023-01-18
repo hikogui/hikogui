@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "../geometry/extent.hpp"
+#include "../geometry/module.hpp"
 #include "../enum_metadata.hpp"
 #include <format>
 

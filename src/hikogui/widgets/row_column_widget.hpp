@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "../GUI/theme.hpp"
-#include "../geometry/axis.hpp"
+#include "../geometry/module.hpp"
 #include "../layout/row_column_layout.hpp"
 #include <memory>
 #include <type_traits>

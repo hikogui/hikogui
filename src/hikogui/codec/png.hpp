@@ -7,7 +7,7 @@
 #include "../file/file_view.hpp"
 #include "../utility.hpp"
 #include "../image/module.hpp"
-#include "../geometry/identity.hpp"
+#include "../geometry/module.hpp"
 #include "../byte_string.hpp"
 #include "../strings.hpp"
 #include <span>
@@ -36,7 +36,7 @@ public:
         return _height;
     }
 
-    void decode_image(pixmap_view<sfloat_rgba16> image) const;
+    void decode_image(pixmap_span<sfloat_rgba16> image) const;
 
     [[nodiscard]] static pixmap<sfloat_rgba16> load(std::filesystem::path const& path);
 
@@ -93,7 +93,7 @@ private:
     void unfilter_line_up(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
-    void data_to_image(bstring bytes, pixmap_view<sfloat_rgba16> image) const noexcept;
+    void data_to_image(bstring bytes, pixmap_span<sfloat_rgba16> image) const noexcept;
     void data_to_image_line(std::span<std::byte const> bytes, std::span<sfloat_rgba16> row) const noexcept;
     u16x4 extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
 };

@@ -9,7 +9,7 @@
 #include "paged_image.hpp"
 #include "../utility.hpp"
 #include "../image/module.hpp"
-#include "../geometry/quad.hpp"
+#include "../geometry/module.hpp"
 #include "../vector_span.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
@@ -69,7 +69,7 @@ struct device_shared {
      *
      * The returned pixel-map is offset by the page::border.
      */
-    hi::pixmap_view<sfloat_rgba16> get_staging_pixmap();
+    hi::pixmap_span<sfloat_rgba16> get_staging_pixmap();
 
     /** Prepare the atlas so that it can be used as a texture map by the shaders.
      */
@@ -94,7 +94,7 @@ private:
 
     /** Get a submap of the staging pixel map to draw the image in.
      */
-    hi::pixmap_view<sfloat_rgba16> get_staging_pixmap(std::size_t width, std::size_t height)
+    hi::pixmap_span<sfloat_rgba16> get_staging_pixmap(std::size_t width, std::size_t height)
     {
         return get_staging_pixmap().subimage(0, 0, width, height);
     }

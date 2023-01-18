@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../geometry/corner_radii.hpp"
+#include "../geometry/module.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {

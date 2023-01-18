@@ -5,7 +5,7 @@
 #pragma once
 
 #include "gfx_surface_delegate.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/module.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vector>
 #include <cstdint>

@@ -12,7 +12,7 @@
 
 namespace hi { inline namespace v1 {
 template<typename T>
-class pixmap_view;
+class pixmap_span;
 
 /** A 2D pixel-based image.
  *
@@ -322,15 +322,15 @@ public:
     }
 
     template<std::convertible_to<value_type> O>
-    [[nodiscard]] constexpr explicit pixmap(pixmap_view<O> const& other, allocator_type allocator = allocator_type{}) :
+    [[nodiscard]] constexpr explicit pixmap(pixmap_span<O> const& other, allocator_type allocator = allocator_type{}) :
         pixmap(other.data(), other.width(), other.height(), other.stride(), allocator)
     {
     }
 
     template<std::same_as<value_type const> O>
-    [[nodiscard]] constexpr operator pixmap_view<O>() const noexcept
+    [[nodiscard]] constexpr operator pixmap_span<O>() const noexcept
     {
-        return pixmap_view<O>{_data, _width, _height};
+        return pixmap_span<O>{_data, _width, _height};
     }
 
     [[nodiscard]] constexpr friend bool operator==(pixmap const& lhs, pixmap const& rhs) noexcept
@@ -514,6 +514,6 @@ private:
 };
 
 template<typename T, typename Allocator = std::allocator<std::remove_const_t<T>>>
-pixmap(pixmap_view<T> const& other, Allocator allocator = std::allocator{}) -> pixmap<std::remove_const_t<T>>;
+pixmap(pixmap_span<T> const& other, Allocator allocator = std::allocator{}) -> pixmap<std::remove_const_t<T>>;
 
 }} // namespace hi::v1

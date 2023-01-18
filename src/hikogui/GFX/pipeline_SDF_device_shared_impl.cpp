@@ -7,10 +7,8 @@
 #include "gfx_device_vulkan.hpp"
 #include "gfx_system.hpp"
 #include "../file/URL.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
-#include "../geometry/scale.hpp"
-#include "../geometry/translate.hpp"
-#include "../image/pixmap.hpp"
+#include "../geometry/module.hpp"
+#include "../image/module.hpp"
 #include "../memory.hpp"
 #include "../cast.hpp"
 #include <array>
@@ -309,7 +307,7 @@ void device_shared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        hi::pixmap_view<sdf_r8>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
+        hi::pixmap_span<sdf_r8>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),

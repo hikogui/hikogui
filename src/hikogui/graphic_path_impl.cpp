@@ -4,7 +4,7 @@
 
 #include "graphic_path.hpp"
 #include "bezier_curve.hpp"
-#include "image/pixmap.hpp"
+#include "image/module.hpp"
 #include "utility.hpp"
 
 namespace hi::inline v1 {
@@ -502,7 +502,7 @@ graphic_path graphic_path::centerScale(extent2 extent, float padding) const noex
     return (translate2(offset) * scale2(scale, scale)) * *this;
 }
 
-void composit(pixmap_view<sfloat_rgba16> dst, color color, graphic_path const &path) noexcept
+void composit(pixmap_span<sfloat_rgba16> dst, color color, graphic_path const &path) noexcept
 {
     hi_assert(!path.hasLayers());
     hi_assert(!path.isContourOpen());
@@ -516,7 +516,7 @@ void composit(pixmap_view<sfloat_rgba16> dst, color color, graphic_path const &p
     composit(dst, color, mask);
 }
 
-void composit(pixmap_view<sfloat_rgba16> dst, graphic_path const &src) noexcept
+void composit(pixmap_span<sfloat_rgba16> dst, graphic_path const &src) noexcept
 {
     hi_assert(src.hasLayers() && !src.isLayerOpen());
 
@@ -527,7 +527,7 @@ void composit(pixmap_view<sfloat_rgba16> dst, graphic_path const &src) noexcept
     }
 }
 
-void fill(pixmap_view<sdf_r8> dst, graphic_path const &path) noexcept
+void fill(pixmap_span<sdf_r8> dst, graphic_path const &path) noexcept
 {
     fill(dst, path.getBeziers());
 }

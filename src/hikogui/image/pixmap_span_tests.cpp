@@ -2,13 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "pixmap_view.hpp"
+#include "pixmap_span.hpp"
 #include "pixmap.hpp"
 #include <gtest/gtest.h>
 
-TEST(pixmap_view, construct_empty)
+TEST(pixmap_span, construct_empty)
 {
-    auto a = hi::pixmap_view<uint8_t>{};
+    auto a = hi::pixmap_span<uint8_t>{};
     ASSERT_TRUE(a.empty());
     ASSERT_EQ(a.width(), 0);
     ASSERT_EQ(a.height(), 0);
@@ -25,10 +25,10 @@ static auto make_test_pixmap()
     return r;
 }
 
-TEST(pixmap_view, convert_from_pixmap)
+TEST(pixmap_span, convert_from_pixmap)
 {
     auto a = make_test_pixmap();
-    auto b = hi::pixmap_view{a};
+    auto b = hi::pixmap_span{a};
 
     ASSERT_FALSE(b.empty());
     ASSERT_EQ(b.width(), 4);
@@ -49,10 +49,10 @@ TEST(pixmap_view, convert_from_pixmap)
     ASSERT_EQ(b(3, 2), 11);
 }
 
-TEST(pixmap_view, convert_to_pixmap)
+TEST(pixmap_span, convert_to_pixmap)
 {
     auto a = make_test_pixmap();
-    auto b = hi::pixmap_view<uint8_t>{a};
+    auto b = hi::pixmap_span<uint8_t>{a};
     auto c = b.subimage(1, 0, 2, 2);
 
     ASSERT_FALSE(c.empty());
@@ -76,12 +76,12 @@ TEST(pixmap_view, convert_to_pixmap)
     ASSERT_EQ(d(1, 1), 6);
 }
 
-TEST(pixmap_view, construct_from_data)
+TEST(pixmap_span, construct_from_data)
 {
     auto a = make_test_pixmap();
 
     // Create a smaller image_view, last argument is the stride.
-    auto b = hi::pixmap_view<uint8_t>{a.data(), 3, 3, 4};
+    auto b = hi::pixmap_span<uint8_t>{a.data(), 3, 3, 4};
 
     ASSERT_FALSE(b.empty());
     ASSERT_EQ(b.width(), 3);
@@ -99,17 +99,17 @@ TEST(pixmap_view, construct_from_data)
     ASSERT_EQ(b(2, 2), 10);
 }
 
-TEST(pixmap_view, copy_assign)
+TEST(pixmap_span, copy_assign)
 {
     auto a = make_test_pixmap();
-    auto b = hi::pixmap_view<uint8_t>{};
+    auto b = hi::pixmap_span<uint8_t>{};
 
     ASSERT_EQ(b.width(), 0);
     ASSERT_EQ(b.height(), 0);
     ASSERT_EQ(b.stride(), 0);
     ASSERT_EQ(b.data(), nullptr);
 
-    b = hi::pixmap_view<uint8_t>{a};
+    b = hi::pixmap_span<uint8_t>{a};
 
     ASSERT_EQ(b.width(), 4);
     ASSERT_EQ(b.height(), 3);
@@ -130,10 +130,10 @@ TEST(pixmap_view, copy_assign)
     ASSERT_EQ(b(3, 2), 11);
 }
 
-TEST(pixmap_view, subimage)
+TEST(pixmap_span, subimage)
 {
     auto a_ = make_test_pixmap();
-    auto a = hi::pixmap_view<uint8_t>{a_};
+    auto a = hi::pixmap_span<uint8_t>{a_};
 
     {
         auto b = a.subimage(0, 0, 4, 3);

@@ -7,8 +7,7 @@
 #include "box_constraints.hpp"
 #include "box_shape.hpp"
 #include "spreadsheet_address.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
-#include "../geometry/axis.hpp"
+#include "../geometry/module.hpp"
 #include "../cast.hpp"
 #include <cstdint>
 #include <numeric>

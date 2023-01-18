@@ -17,7 +17,7 @@ struct texture_map {
     vk::Image image;
     VmaAllocation allocation = {};
     vk::ImageView view;
-    hi::pixmap_view<sdf_r8> pixmap;
+    hi::pixmap_span<sdf_r8> pixmap;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
     void transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout);

@@ -426,7 +426,7 @@ void png::data_to_image_line(std::span<std::byte const> bytes, std::span<sfloat_
     }
 }
 
-void png::data_to_image(bstring bytes, pixmap_view<sfloat_rgba16> image) const noexcept
+void png::data_to_image(bstring bytes, pixmap_span<sfloat_rgba16> image) const noexcept
 {
     auto bytes_span = std::span(bytes);
 
@@ -439,7 +439,7 @@ void png::data_to_image(bstring bytes, pixmap_view<sfloat_rgba16> image) const n
     }
 }
 
-void png::decode_image(pixmap_view<sfloat_rgba16> image) const
+void png::decode_image(pixmap_span<sfloat_rgba16> image) const
 {
     // There is a filter selection byte in front of every line.
     hilet image_data_size = _stride * _height;

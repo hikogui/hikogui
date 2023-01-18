@@ -9,10 +9,7 @@
 #pragma once
 
 #include "../layout/box_shape.hpp"
-#include "../geometry/matrix.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
-#include "../geometry/transform.hpp"
-#include "../geometry/translate.hpp"
+#include "../geometry/module.hpp"
 #include "../unicode/unicode_bidi_class.hpp"
 #include "../text/font_book.hpp"
 #include "../GUI/gui_window_size.hpp"

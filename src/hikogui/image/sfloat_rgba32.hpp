@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../SIMD/module.hpp"
-#include "../geometry/corner_radii.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/module.hpp"
 #include "../color/color.hpp"
 #include <algorithm>
 

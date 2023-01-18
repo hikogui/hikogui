@@ -11,9 +11,7 @@
 #include "../utility.hpp"
 #include "../log.hpp"
 #include "../vector_span.hpp"
-#include "../geometry/rectangle.hpp"
-#include "../geometry/scale.hpp"
-#include "../geometry/transform.hpp"
+#include "../geometry/module.hpp"
 #include "../color/quad_color.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>

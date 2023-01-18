@@ -4,7 +4,7 @@
 
 #include "grid_widget.hpp"
 #include "../algorithm.hpp"
-#include "../geometry/alignment.hpp"
+#include "../geometry/module.hpp"
 #include "../log.hpp"
 
 namespace hi::inline v1 {

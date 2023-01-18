@@ -6,8 +6,8 @@
 
 #include "../color/color.hpp"
 #include "../float16.hpp"
-#include "pixmap_view.hpp"
-#include "../geometry/corner_radii.hpp"
+#include "pixmap_span.hpp"
+#include "../geometry/module.hpp"
 #include "../SIMD/module.hpp"
 #include "../hash.hpp"
 #include <algorithm>
@@ -78,7 +78,7 @@ public:
     }
 };
 
-inline void fill(pixmap_view<sfloat_rgba16> image, f32x4 color) noexcept
+inline void fill(pixmap_span<sfloat_rgba16> image, f32x4 color) noexcept
 {
     for (std::size_t y = 0; y != image.height(); ++y) {
         auto row = image[y];
@@ -88,7 +88,7 @@ inline void fill(pixmap_view<sfloat_rgba16> image, f32x4 color) noexcept
     }
 }
 
-inline void composit(pixmap_view<sfloat_rgba16> under, pixmap_view<sfloat_rgba16 const> over) noexcept
+inline void composit(pixmap_span<sfloat_rgba16> under, pixmap_span<sfloat_rgba16 const> over) noexcept
 {
     hi_assert(over.height() >= under.height());
     hi_assert(over.width() >= under.width());
@@ -105,7 +105,7 @@ inline void composit(pixmap_view<sfloat_rgba16> under, pixmap_view<sfloat_rgba16
     }
 }
 
-inline void composit(pixmap_view<sfloat_rgba16> under, color over, pixmap_view<uint8_t const> mask) noexcept
+inline void composit(pixmap_span<sfloat_rgba16> under, color over, pixmap_span<uint8_t const> mask) noexcept
 {
     hi_assert(mask.height() >= under.height());
     hi_assert(mask.width() >= under.width());

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "pixmap.hpp"
-#include "pixmap_view.hpp"
+#include "pixmap_span.hpp"
 #include "sdf_r8.hpp"
 #include "sfloat_rg32.hpp"
 #include "sfloat_rgb32.hpp"

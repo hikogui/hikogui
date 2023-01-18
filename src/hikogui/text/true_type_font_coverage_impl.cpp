@@ -3,8 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "true_type_font.hpp"
-#include "../geometry/vector.hpp"
-#include "../geometry/point.hpp"
+#include "../geometry/module.hpp"
 #include "../placement.hpp"
 #include "../strings.hpp"
 #include "../endian.hpp"

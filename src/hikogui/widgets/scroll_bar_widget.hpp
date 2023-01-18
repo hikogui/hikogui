@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "../GUI/gui_event.hpp"
-#include "../geometry/axis.hpp"
+#include "../geometry/module.hpp"
 #include "../observer.hpp"
 #include "../numbers.hpp"
 #include <memory>

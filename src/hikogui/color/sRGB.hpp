@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../float16.hpp"
-#include "../geometry/matrix.hpp"
+#include "../geometry/module.hpp"
 #include "../codec/base_n.hpp"
 #include "color.hpp"
 #include <cmath>

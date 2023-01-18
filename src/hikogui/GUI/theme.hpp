@@ -10,9 +10,7 @@
 #include "../utility.hpp"
 #include "../datum.hpp"
 #include "../color/color.hpp"
-#include "../geometry/extent.hpp"
-#include "../geometry/margins.hpp"
-#include "../geometry/corner_radii.hpp"
+#include "../geometry/module.hpp"
 #include "../subsystem.hpp"
 #include <array>
 #include <filesystem>

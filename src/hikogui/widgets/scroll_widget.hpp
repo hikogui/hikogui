@@ -11,7 +11,7 @@
 #include "widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
-#include "../geometry/axis.hpp"
+#include "../geometry/module.hpp"
 #include "../layout/grid_layout.hpp"
 
 namespace hi { inline namespace v1 {

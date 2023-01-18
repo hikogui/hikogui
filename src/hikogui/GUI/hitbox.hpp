@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../geometry/point.hpp"
+#include "../geometry/module.hpp"
 #include "../assert.hpp"
 #include <limits>
 #include <cstdint>

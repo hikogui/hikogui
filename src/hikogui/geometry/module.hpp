@@ -1,3 +1,32 @@
+// Copyright Take Vos 2021-2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+#pragma once
+
+#include "alignment.hpp"
+#include "axis.hpp"
+#include "axis_aligned_rectangle.hpp"
+#include "circle.hpp"
+#include "corner_radii.hpp"
+#include "extent.hpp"
+#include "identity.hpp"
+#include "line_end_cap.hpp"
+#include "line_join_style.hpp"
+#include "line_segment.hpp"
+#include "lookat.hpp"
+#include "margins.hpp"
+#include "matrix.hpp"
+#include "perspective.hpp"
+#include "point.hpp"
+#include "quad.hpp"
+#include "rectangle.hpp"
+#include "rotate.hpp"
+#include "scale.hpp"
+#include "transform.hpp"
+#include "translate.hpp"
+#include "vector.hpp"
+
 namespace hi {
 inline namespace v1 {
 /**

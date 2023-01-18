@@ -103,6 +103,7 @@ endif()
 add_library(hikogui)
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 include(CMakeLists_includes.cmake)
+include(CMakeLists_implementations.cmake)
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 
 #-------------------------------------------------------------------

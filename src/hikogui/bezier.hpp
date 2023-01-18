@@ -6,7 +6,7 @@
 
 #include "polynomial.hpp"
 #include "SIMD/module.hpp"
-#include "geometry/point.hpp"
+#include "geometry/module.hpp"
 #include <array>
 #include <optional>
 

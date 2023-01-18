@@ -272,7 +272,7 @@ static void fillRow(std::span<uint8_t> row, std::size_t rowY, std::vector<bezier
     }
 }
 
-void fill(pixmap_view<uint8_t> image, std::vector<bezier_curve> const& curves) noexcept
+void fill(pixmap_span<uint8_t> image, std::vector<bezier_curve> const& curves) noexcept
 {
     for (auto y = 0_uz; y < image.height(); y++) {
         fillRow(image[y], y, curves);
@@ -300,7 +300,7 @@ void fill(pixmap_view<uint8_t> image, std::vector<bezier_curve> const& curves) n
 }
 
 
-void fill(pixmap_view<sdf_r8> image, std::vector<bezier_curve> const& curves) noexcept
+void fill(pixmap_span<sdf_r8> image, std::vector<bezier_curve> const& curves) noexcept
 {
     for (auto row_nr = 0_uz; row_nr != image.height(); ++row_nr) {
         hilet row = image[row_nr];

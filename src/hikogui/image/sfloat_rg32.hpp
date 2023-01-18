@@ -5,10 +5,7 @@
 #pragma once
 
 #include "../SIMD/module.hpp"
-#include "../geometry/extent.hpp"
-#include "../geometry/scale.hpp"
-#include "../geometry/vector.hpp"
-#include "../geometry/point.hpp"
+#include "../geometry/module.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {

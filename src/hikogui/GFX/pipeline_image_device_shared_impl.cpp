@@ -7,7 +7,7 @@
 #include "paged_image.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../file/URL.hpp"
-#include "../image/pixmap.hpp"
+#include "../image/module.hpp"
 #include "../memory.hpp"
 #include "../cast.hpp"
 #include <array>
@@ -49,7 +49,7 @@ void device_shared::free_pages(std::vector<std::size_t> const &pages) noexcept
     _atlas_free_pages.insert(_atlas_free_pages.end(), pages.begin(), pages.end());
 }
 
-hi::pixmap_view<sfloat_rgba16> device_shared::get_staging_pixmap()
+hi::pixmap_span<sfloat_rgba16> device_shared::get_staging_pixmap()
 {
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
@@ -334,7 +334,7 @@ void device_shared::build_atlas()
         image,
         allocation,
         vk::ImageView(),
-        hi::pixmap_view<sfloat_rgba16>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
+        hi::pixmap_span<sfloat_rgba16>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),

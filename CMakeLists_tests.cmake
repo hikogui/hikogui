@@ -44,7 +44,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/image/pixmap_view_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/image/pixmap_span_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/layout/spreadsheet_address_tests.cpp
     #${HIKOGUI_SOURCE_DIR}/random/dither_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/seed_tests.cpp

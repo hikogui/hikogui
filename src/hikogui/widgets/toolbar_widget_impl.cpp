@@ -6,7 +6,7 @@
 #include "spacer_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"
 #include "../scoped_buffer.hpp"
-#include "../geometry/translate.hpp"
+#include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
 

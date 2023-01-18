@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "../geometry/matrix.hpp"
-#include "../geometry/scale.hpp"
+#include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
 
