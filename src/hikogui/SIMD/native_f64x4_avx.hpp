@@ -149,7 +149,15 @@ struct native_simd<double,4> {
      */
     [[nodiscard]] static native_simd ones() noexcept
     {
-        return native_simd{} == native_simd{};
+#ifdef HI_HAS_AVX2
+        auto ones = _mm256_undefined_si256();
+        ones = _mm256_cmpeq_epi32(ones, ones);
+        return native_simd{_mm256_castsi256_pd(ones)};
+#else
+        auto ones = _mm256_setzero_pd();
+        ones = _mm256_cmpeq_pd(ones, ones);
+        return native_simd{ones};
+#endif
     }
 
     [[nodiscard]] static native_simd from_mask(size_t a) noexcept

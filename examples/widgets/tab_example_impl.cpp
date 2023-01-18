@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "hikogui/module.hpp"
 #include "hikogui/GUI/gui_system.hpp"
 #include "hikogui/widgets/tab_widget.hpp"
 #include "hikogui/widgets/toolbar_tab_button_widget.hpp"

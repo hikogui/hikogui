@@ -155,7 +155,8 @@ struct native_simd<int32_t, 4> {
 
     [[nodiscard]] static native_simd ones() noexcept
     {
-        return native_simd{_mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()))};
+        auto tmp = _mm_undefined_si128();
+        return native_simd{_mm_cmpeq_epi32(tmp, tmp)};
     }
 
     template<size_t Mask>
@@ -273,7 +274,8 @@ struct native_simd<int32_t, 4> {
 
     [[nodiscard]] friend native_simd operator~(native_simd a) noexcept
     {
-        hilet ones = _mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()));
+        auto ones = _mm_undefined_si128();
+        ones = _mm_cmpeq_epi32(ones, ones);
         return native_simd{_mm_andnot_si128(a.v, ones)};
     }
 

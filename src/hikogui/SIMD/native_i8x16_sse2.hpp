@@ -185,18 +185,26 @@ struct native_i8x16 {
 #elif HI_HAS_SSSE3
         return native_i8x16{_mm_shuffle_epi8(a.v, _mm_setzero_si128())};
 #else
-        auto tmp = _mm_extract_epi16(a.v, 0) & 0xff;
-        tmp <<= 8;
-        tmp |= tmp;
-        tmp <<= 16;
-        tmp |= tmp;
-        return native_i8x16{_mm_shuffle_epi8(tmp, 0b00'00'00'00)};
+        // Create a mask for 1 byte each 32 bit word, AND it with a.v.
+        auto tmp = _mm_undefined_si128();
+        tmp = _mm_cmpeq_epi32(tmp, tmp);
+        tmp = _mm_slli_epi32(tmp, 24);
+        tmp = _mm_and_si128(tmp, a.v);
+
+        // Broadcast the first byte to all the bytes in the first 32 bit word.
+        tmp = _mm_or_si128(tmp, _mm_slli_epi32(tmp, 8));
+        tmp = _mm_or_si128(tmp, _mm_slli_epi32(tmp,16));
+
+        // Broadcast the first 32 bit word to all 4 32 bit words.
+        tmp = _mm_shuffle_epi32(tmp, 0b00'00'00'00);
+        return native_i8x16{tmp};
 #endif
     }
 
     [[nodiscard]] static native_i8x16 ones() noexcept
     {
-        return native_i8x16{_mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()))};
+        auto tmp = _mm_undefined_si128();
+        return native_i8x16{_mm_cmpeq_epi32(tmp, tmp)};
     }
 
     /** Concatenate the top bit of each element.
@@ -278,7 +286,8 @@ struct native_i8x16 {
 
     [[nodiscard]] friend native_i8x16 operator~(native_i8x16 a) noexcept
     {
-        hilet ones = _mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()));
+        auto ones = _mm_undefined_si128();
+        ones = _mm_cmpeq_epi32(ones, ones);
         return native_i8x16{_mm_andnot_si128(a.v, ones)};
     }
 
@@ -287,7 +296,7 @@ struct native_i8x16 {
 #if HI_HAS_SSE4_1
         return native_i8x16{_mm_min_epi8(a.v, b.v)};
 #else
-        hilet mask = lt(a, b);
+        hilet mask = a < b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -297,7 +306,7 @@ struct native_i8x16 {
 #if HI_HAS_SSE4_1
         return native_i8x16{_mm_max_epi8(a.v, b.v)};
 #else
-        hilet mask = gt(a, b);
+        hilet mask = a > b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -307,7 +316,7 @@ struct native_i8x16 {
 #if HI_HAS_SSSE3
         return native_i8x16{_mm_abs_epi8(a.v)};
 #else
-        hilet mask = gt(a, native_i8x16{});
+        hilet mask = a > native_i8x16{};
         return (mask & a) | not_and(mask, -a);
 #endif
     }

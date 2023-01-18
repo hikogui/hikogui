@@ -141,7 +141,18 @@ struct native_simd<float16,8> {
 #ifdef HI_HAS_AVX2
         return native_simd{_mm_broadcastw_epi16(a.v)};
 #else
-        return permute<"aaaaaaaa">(a);
+        // Create a mask for 1 word each dword, AND it with a.v.
+        auto tmp = _mm_undefined_si128();
+        tmp = _mm_cmpeq_epi32(tmp, tmp);
+        tmp = _mm_slli_epi32(tmp, 16);
+        tmp = _mm_and_si128(tmp, a.v);
+
+        // Broadcast the first word to all the bytes in the first dword.
+        tmp = _mm_or_si128(tmp, _mm_slli_epi32(tmp, 16));
+
+        // Broadcast the first dword to all 4 dwords.
+        tmp = _mm_shuffle_epi32(tmp, 0b00'00'00'00);
+        return native_simd{tmp};
 #endif
     }
 
@@ -203,7 +214,8 @@ struct native_simd<float16,8> {
 
     [[nodiscard]] friend native_simd operator~(native_simd a) noexcept
     {
-        hilet ones = _mm_castps_si128(_mm_cmpneq_ps(_mm_setzero_ps(), _mm_setzero_ps()));
+        auto ones = _mm_undefined_si128();
+        ones = _mm_cmpeq_epi32(ones, ones);
         return native_simd{_mm_andnot_si128(a.v, ones)};
     }
 
@@ -277,17 +289,18 @@ struct native_simd<float16,8> {
      * @param a The vector to swizzle the elements
      * @returns A vector with the elements swizzled.
      */
-    template<fixed_string SourceElements>
-    [[nodiscard]] static native_simd permute(native_simd a) noexcept
-    {
-        constexpr auto order = detail::native_swizzle_to_packed_indices<SourceElements, size>();
-
-        if constexpr (order == 0b111'110'101'100'011'010'001'000) {
-            return a.v;
-        } else {
-            return native_simd{_mm_shuffle_epi16(a.v, order)};
-        }
-    }
+    //template<fixed_string SourceElements>
+    //[[nodiscard]] static native_simd permute(native_simd a) noexcept
+    //{
+    //    constexpr auto order = detail::native_swizzle_to_packed_indices<SourceElements, size>();
+    //
+    //    if constexpr (order == 0b111'110'101'100'011'010'001'000) {
+    //        return a.v;
+    //    } else {
+    //        auto tmp = _mm_shufflelo(a.v, 
+    //        return native_simd{_mm_shuffle_epi16(a.v, order)};
+    //    }
+    //}
 
     /** Swizzle elements.
      *

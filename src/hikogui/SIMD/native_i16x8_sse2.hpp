@@ -131,14 +131,14 @@ struct native_i16x8 {
      * r[7] = a[0]
      * ```
      */
-    [[nodiscard]] static native_i16x8 broadcast(native_i16x8 a) noexcept
-    {
-#ifdef HI_HAS_AVX2
-        return native_i16x8{_mm_broadcastw_epi16(a.v)};
-#else
-        return permute<"xxxxxxxx">(a);
-#endif
-    }
+//    [[nodiscard]] static native_i16x8 broadcast(native_i16x8 a) noexcept
+//    {
+//#ifdef HI_HAS_AVX2
+//        return native_i16x8{_mm_broadcastw_epi16(a.v)};
+//#else
+//        return permute<"xxxxxxxx">(a);
+//#endif
+//    }
 
     /** For each bit in mask set corrosponding element to all-ones or all-zeros.
      */
@@ -238,7 +238,8 @@ struct native_i16x8 {
 
     [[nodiscard]] friend native_i16x8 operator~(native_i16x8 a) noexcept
     {
-        hilet ones = _mm_castps_si128(_mm_cmpneq_ps(_mm_setzero_ps(), _mm_setzero_ps()));
+        auto ones = _mm_undefined_si128();
+        ones = _mm_cmpeq_epi32(ones, ones);
         return native_i16x8{_mm_andnot_si128(a.v, ones)};
     }
 

@@ -3,8 +3,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-cmake_minimum_required(VERSION 3.19)
 
+cmake_minimum_required(VERSION 3.25)
 #-------------------------------------------------------------------
 # Configure early CMAKE paths
 #-------------------------------------------------------------------
@@ -45,6 +45,9 @@ string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 0)
+set(CMAKE_EXPERIMENTAL_CXX_SCANDEP_SOURCE 0)
+set(CMAKE_CXX_SCAN_FOR_MODULES 0)
 
 #-------------------------------------------------------------------
 # Setup CMake Includes
@@ -104,6 +107,7 @@ add_library(hikogui)
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 include(CMakeLists_includes.cmake)
 include(CMakeLists_implementations.cmake)
+include(CMakeLists_pch.cmake)
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 
 #-------------------------------------------------------------------
