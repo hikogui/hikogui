@@ -7,12 +7,10 @@
 #include "bezier_point.hpp"
 #include "bezier_curve.hpp"
 #include "exception.hpp"
-#include "image/pixmap_view.hpp"
 #include "geometry/axis_aligned_rectangle.hpp"
 #include "geometry/transform.hpp"
 #include "geometry/line_join_style.hpp"
-#include "SIMD/sfloat_rgba16.hpp"
-#include "SIMD/sdf_r8.hpp"
+#include "image/module.hpp"
 #include <vector>
 
 namespace hi::inline v1 {

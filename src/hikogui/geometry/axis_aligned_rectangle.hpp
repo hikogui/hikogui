@@ -11,7 +11,7 @@
 #include "alignment.hpp"
 #include "extent.hpp"
 #include "point.hpp"
-#include "../SIMD/simd.hpp"
+#include "../SIMD/module.hpp"
 #include "../concepts.hpp"
 #include "../unfair_mutex.hpp"
 #include "../cast.hpp"

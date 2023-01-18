@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "simd.hpp"
+#include "../SIMD/module.hpp"
 #include "../geometry/corner_radii.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../SIMD/simd.hpp"
+#include "../SIMD/module.hpp"
 #include "vector.hpp"
 #include "extent.hpp"
 #include "../cast.hpp"

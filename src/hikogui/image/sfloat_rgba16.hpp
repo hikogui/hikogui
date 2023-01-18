@@ -6,9 +6,9 @@
 
 #include "../color/color.hpp"
 #include "../float16.hpp"
-#include "../image/pixmap_view.hpp"
+#include "pixmap_view.hpp"
 #include "../geometry/corner_radii.hpp"
-#include "../SIMD/simd.hpp"
+#include "../SIMD/module.hpp"
 #include "../hash.hpp"
 #include <algorithm>
 #include <bit>

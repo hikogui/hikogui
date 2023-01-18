@@ -5,9 +5,7 @@
 #pragma once
 
 #include "../geometry/extent.hpp"
-#include "../SIMD/sfloat_rgba16.hpp"
-#include "../image/pixmap_view.hpp"
-#include "../image/pixmap.hpp"
+#include "../image/module.hpp"
 #include <cstdlib>
 #include <span>
 #include <atomic>

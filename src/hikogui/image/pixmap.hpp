@@ -60,11 +60,11 @@ public:
         constexpr row_iterator &operator=(row_iterator &&) noexcept = default;
         [[nodiscard]] constexpr row_iterator(Pixmap *ptr, size_t y) noexcept : _ptr(ptr), _y(y) {}
         [[nodiscard]] constexpr friend bool operator==(row_iterator const &, row_iterator const &) noexcept = default;
-        constexpr row_iterator &operator++() noexcept { ++y; return *this; }
-        constexpr row_iterator &operator++(int) noexcept { auto tmp = *this; ++y; return tmp; }
-        constexpr row_iterator &operator-- noexcept { --y; return *this; }
-        constexpr row_iterator &operator--(int) noexcept { auto tmp = *this; --y; return tmp; }
-        [[nodiscard]] constexpr auto operator*() const noexcept { return (*_ptr)[y]; }
+        constexpr row_iterator &operator++() noexcept { ++_y; return *this; }
+        constexpr row_iterator &operator++(int) noexcept { auto tmp = *this; ++_y; return tmp; }
+        constexpr row_iterator &operator--() noexcept { --_y; return *this; }
+        constexpr row_iterator &operator--(int) noexcept { auto tmp = *this; --_y; return tmp; }
+        [[nodiscard]] constexpr auto operator*() const noexcept { return (*_ptr)[_y]; }
         // clang-format on
     };
 

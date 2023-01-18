@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../SIMD/sfloat_rg32.hpp"
+#include "../image/module.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace hi::inline v1::pipeline_box {

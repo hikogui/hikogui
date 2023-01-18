@@ -8,7 +8,7 @@
 #pragma once
 
 #include "../assert.hpp"
-#include "../SIMD/simd.hpp"
+#include "../SIMD/module.hpp"
 #include <random>
 #include <concepts>
 #include <type_traits>

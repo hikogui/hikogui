@@ -7,7 +7,7 @@
 #include "../chrono.hpp"
 #include "../utility.hpp"
 #include "../assert.hpp"
-#include "../SIMD/simd.hpp"
+#include "../SIMD/module.hpp"
 #include <span>
 
 namespace hi::inline v1 {

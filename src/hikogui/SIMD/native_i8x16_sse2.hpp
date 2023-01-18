@@ -87,7 +87,7 @@ struct native_i8x16 {
         value_type m = value_type{0},
         value_type n = value_type{0},
         value_type o = value_type{0},
-        value_type p = value_type{0},
+        value_type p = value_type{0}
         ) noexcept :
         v(_mm_set_epi8(p, o, n, m, l, k, j, i, h, g, f, e, d, c, b, a))
     {
@@ -208,7 +208,7 @@ struct native_i8x16 {
 
     [[nodiscard]] friend bool equal(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return eq(a, b).mask() == 0b1111'1111'1111'1111;
+        return (a == b).mask() == 0b1111'1111'1111'1111;
     }
 
     [[nodiscard]] friend native_i8x16 operator==(native_i8x16 a, native_i8x16 b) noexcept
@@ -218,7 +218,7 @@ struct native_i8x16 {
 
     [[nodiscard]] friend native_i8x16 operator!=(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return ~eq(a, b);
+        return ~(a == b);
     }
 
     [[nodiscard]] friend native_i8x16 operator<(native_i8x16 a, native_i8x16 b) noexcept
@@ -360,7 +360,7 @@ struct native_i8x16 {
     [[nodiscard]] friend value_type get(native_i8x16 a) noexcept
     {
 #ifdef HI_HAS_SSE4_1
-        return _mm_extract_epi8(a.v, Index);
+        return static_cast<value_type>(_mm_extract_epi8(a.v, Index));
 #else
         auto r = static_cast<array_type>(a);
         return std::get<Index>(r);
@@ -381,11 +381,6 @@ struct native_i8x16 {
     {
         return a << "(" << get<0>(b) << ", " << get<1>(b) << ", " << get<2>(b) << ", " << get<3>(b) << ")";
     }
-};
-
-template<>
-struct low_level_simd<int8_t, 16> : std::true_type {
-    using type = native_i8x16;
 };
 
 #endif

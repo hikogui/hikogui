@@ -6,7 +6,7 @@
 #include "../float16.hpp"
 
 namespace hi {
-friend namespace v1 {
+inline namespace v1 {
 
 #ifdef HI_HAS_SSE2
 
@@ -63,7 +63,7 @@ struct native_simd<float16,8> {
     [[nodiscard]] native_simd(value_type a, value_type b = value_type{}, value_type c = value_type{}, value_type d = value_type{},
                              value_type e = value_type{}, value_type f = value_type{}, value_type g = value_type{},
                              value_type h = value_type{}) noexcept :
-        v(mm_set_epi16(h.v, g.v, f.v, e.v, d.v, c.v, b.v, a.v)) {}
+        v(_mm_set_epi16(h.v, g.v, f.v, e.v, d.v, c.v, b.v, a.v)) {}
 
     [[nodiscard]] explicit native_simd(value_type const *other) noexcept : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other))) {}
 
@@ -97,7 +97,7 @@ struct native_simd<float16,8> {
     [[nodiscard]] explicit native_simd(std::array<value_type, N> other) noexcept requires (N >= size) : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other.data()))) {}
 
     template<size_t N>
-    [[nodiscard]] explicit operator std::array<value_type, N> () const noexcept requires (N => size)
+    [[nodiscard]] explicit operator std::array<value_type, N> () const noexcept requires (N >= size)
     {
         auto r = std::array<value_type, size>{};
         _mm_storeu_si128(reinterpret_cast<register_type *>(r.data()), v);
@@ -139,7 +139,7 @@ struct native_simd<float16,8> {
     [[nodiscard]] static native_simd broadcast(native_simd a) noexcept
     {
 #ifdef HI_HAS_AVX2
-        return native_simd{_mm_broadcastss_epi16(a.v)};
+        return native_simd{_mm_broadcastw_epi16(a.v)};
 #else
         return permute<"aaaaaaaa">(a);
 #endif
@@ -151,15 +151,15 @@ struct native_simd<float16,8> {
     {
         hi_axiom(mask <= 0b1111'1111);
 
-        return set<native_simd>(
-            mask & 0b1000'0000 ? 0 : value_type{0xffff},
-            mask & 0b0100'0000 ? 0 : value_type{0xffff},
-            mask & 0b0010'0000 ? 0 : value_type{0xffff},
-            mask & 0b0001'0000 ? 0 : value_type{0xffff},
-            mask & 0b0000'1000 ? 0 : value_type{0xffff},
-            mask & 0b0000'0100 ? 0 : value_type{0xffff},
-            mask & 0b0000'0010 ? 0 : value_type{0xffff},
-            mask & 0b0000'0001 ? 0 : value_type{0xffff});
+        return native_simd{
+            mask & 0b0000'0001 ? value_type{} : value_type::from_uint16_t(0xffff),
+            mask & 0b0000'0010 ? value_type{} : value_type::from_uint16_t(0xffff),
+            mask & 0b0000'0100 ? value_type{} : value_type::from_uint16_t(0xffff),
+            mask & 0b0000'1000 ? value_type{} : value_type::from_uint16_t(0xffff),
+            mask & 0b0001'0000 ? value_type{} : value_type::from_uint16_t(0xffff),
+            mask & 0b0010'0000 ? value_type{} : value_type::from_uint16_t(0xffff),
+            mask & 0b0100'0000 ? value_type{} : value_type::from_uint16_t(0xffff),
+            mask & 0b1000'0000 ? value_type{} : value_type::from_uint16_t(0xffff)};
     }
 
     /** Concatonate the top bit of each element.
@@ -203,7 +203,7 @@ struct native_simd<float16,8> {
 
     [[nodiscard]] friend native_simd operator~(native_simd a) noexcept
     {
-        hilet ones = _mm_castps_si128_mm_cmpneq_ps(_mm_setzero_ps(), _mm_setzero_ps());
+        hilet ones = _mm_castps_si128(_mm_cmpneq_ps(_mm_setzero_ps(), _mm_setzero_ps()));
         return native_simd{_mm_andnot_si128(a.v, ones)};
     }
 
@@ -280,7 +280,7 @@ struct native_simd<float16,8> {
     template<fixed_string SourceElements>
     [[nodiscard]] static native_simd permute(native_simd a) noexcept
     {
-        constexpr auto order = detail::swizzle_to_packed_indices<SourceElements, size>();
+        constexpr auto order = detail::native_swizzle_to_packed_indices<SourceElements, size>();
 
         if constexpr (order == 0b111'110'101'100'011'010'001'000) {
             return a.v;

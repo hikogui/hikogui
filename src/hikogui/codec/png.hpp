@@ -6,9 +6,7 @@
 
 #include "../file/file_view.hpp"
 #include "../utility.hpp"
-#include "../image/pixmap.hpp"
-#include "../image/pixmap_view.hpp"
-#include "../SIMD/sfloat_rgba16.hpp"
+#include "../image/module.hpp"
 #include "../geometry/identity.hpp"
 #include "../byte_string.hpp"
 #include "../strings.hpp"

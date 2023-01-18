@@ -15,7 +15,7 @@
  */
 
 
-#include "hikogui/SIMD/sfloat_rgba32x4.hpp"
+#include "hikogui/image/module.hpp"
 #include <vulkan/vulkan.h>
 #include <vma/vk_mem_alloc.h>
 #include <stdio.h>

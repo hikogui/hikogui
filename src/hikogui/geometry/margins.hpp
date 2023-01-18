@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../SIMD/simd.hpp"
+#include "../SIMD/module.hpp"
 #include "../cast.hpp"
 
 namespace hi { inline namespace v1 {

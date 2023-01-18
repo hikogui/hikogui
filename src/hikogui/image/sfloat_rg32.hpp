@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../SIMD/simd.hpp"
+#include "../SIMD/module.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/vector.hpp"

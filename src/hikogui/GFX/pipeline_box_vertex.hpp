@@ -6,10 +6,7 @@
 
 #include "../vector_span.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../SIMD/sfloat_rgba16.hpp"
-#include "../SIMD/sfloat_rgba32.hpp"
-#include "../SIMD/sfloat_rgb32.hpp"
-#include "../SIMD/int_abgr8_pack.hpp"
+#include "../image/module.hpp"
 #include <vulkan/vulkan.hpp>
 #include <span>
 

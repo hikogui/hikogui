@@ -7,7 +7,7 @@
 #include "utility.hpp"
 #include "assert.hpp"
 #include "concepts.hpp"
-#include "SIMD/simd.hpp"
+#include "SIMD/module.hpp"
 #include <type_traits>
 #include <limits>
 #include <concepts>

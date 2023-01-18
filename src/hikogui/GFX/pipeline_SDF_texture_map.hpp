@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "../image/pixmap_view.hpp"
-#include "../SIMD/sdf_r8.hpp"
+#include "../image/module.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 

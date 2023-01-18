@@ -37,13 +37,13 @@ public:
         constexpr row_iterator(row_iterator &&) noexcept = default;
         constexpr row_iterator &operator=(row_iterator const &) noexcept = default;
         constexpr row_iterator &operator=(row_iterator &&) noexcept = default;
-        [[nodiscard]] constexpr row_iterator(Pixmap *ptr, size_t y) noexcept : _ptr(ptr), _y(y) {}
+        [[nodiscard]] constexpr row_iterator(PixmapView *ptr, size_t y) noexcept : _ptr(ptr), _y(y) {}
         [[nodiscard]] constexpr friend bool operator==(row_iterator const &, row_iterator const &) noexcept = default;
-        constexpr row_iterator &operator++() noexcept { ++y; return *this; }
-        constexpr row_iterator &operator++(int) noexcept { auto tmp = *this; ++y; return tmp; }
-        constexpr row_iterator &operator-- noexcept { --y; return *this; }
-        constexpr row_iterator &operator--(int) noexcept { auto tmp = *this; --y; return tmp; }
-        [[nodiscard]] constexpr auto operator*() const noexcept { return (*_ptr)[y]; }
+        constexpr row_iterator &operator++() noexcept { ++_y; return *this; }
+        constexpr row_iterator &operator++(int) noexcept { auto tmp = *this; ++_y; return tmp; }
+        constexpr row_iterator &operator--() noexcept { --_y; return *this; }
+        constexpr row_iterator &operator--(int) noexcept { auto tmp = *this; --_y; return tmp; }
+        [[nodiscard]] constexpr auto operator*() const noexcept { return (*_ptr)[_y]; }
         // clang-format on
     };
 
@@ -56,7 +56,7 @@ public:
         constexpr row_range(row_range &&) noexcept = default;
         constexpr row_range &operator=(row_range const &) noexcept = default;
         constexpr row_range &operator=(row_range &&) noexcept = default;
-        [[nodiscard]] constexpr row_range(Pixmap *ptr) noexcept : _ptr(ptr) {}
+        [[nodiscard]] constexpr row_range(PixmapView *ptr) noexcept : _ptr(ptr) {}
         [[nodiscard]] constexpr auto begin() const noexcept { return row_iterator{_ptr, 0_uz}; }
         [[nodiscard]] constexpr auto end() const noexcept { return row_iterator{_ptr, _ptr->height()}; }
         // clang-format on

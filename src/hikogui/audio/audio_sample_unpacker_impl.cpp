@@ -7,7 +7,7 @@
 #include "../cast.hpp"
 #include "../memory.hpp"
 #include "../endian.hpp"
-#include "../SIMD/simd.hpp"
+#include "../SIMD/module.hpp"
 #include <bit>
 #include <cstdint>
 #include <tuple>
