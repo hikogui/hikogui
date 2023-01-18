@@ -9,8 +9,7 @@
 #include "GUI/theme_mode.hpp"
 #include "GFX/subpixel_orientation.hpp"
 #include "geometry/module.hpp"
-#include "unfair_mutex.hpp"
-#include "subsystem.hpp"
+#include "utility/module.hpp"
 #include "loop.hpp"
 #include "notifier.hpp"
 #include <vector>

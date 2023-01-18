@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "crt_utils.hpp"
 
 #if not defined(HI_CRT_NO_MAIN)
@@ -34,7 +34,7 @@
 int hi_main(int argc, char *argv[]);
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-#include "win32_headers.hpp"
+#include "utility/win32_headers.hpp"
 
 /** Windows entry-point.
  * This function will call `hi_main()`.

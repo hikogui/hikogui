@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "fixed_string.hpp"
+#include "utility/module.hpp"
 #include "time_stamp_count.hpp"
 #include "counters.hpp"
 #include "datum.hpp"

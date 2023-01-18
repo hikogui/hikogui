@@ -4,9 +4,7 @@
 
 #include "thread.hpp"
 #include "unfair_mutex.hpp"
-#include "log.hpp"
-#include "exception.hpp"
-#include "GUI/gui_system.hpp"
+#include "assert.hpp"
 #include <bit>
 #include <unordered_map>
 #include <string>

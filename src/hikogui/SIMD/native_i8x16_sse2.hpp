@@ -5,7 +5,7 @@
 #pragma once
 
 #include "native_simd_utility.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include <array>
 #include <ostream>
 

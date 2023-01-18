@@ -5,8 +5,7 @@
 #pragma once
 
 #include "keyboard_modifiers.hpp"
-#include "../utility.hpp"
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include "../strings.hpp"
 #include "../enum_metadata.hpp"
 #include <unordered_map>

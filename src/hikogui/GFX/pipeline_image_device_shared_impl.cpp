@@ -9,7 +9,7 @@
 #include "../file/URL.hpp"
 #include "../image/module.hpp"
 #include "../memory.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include <array>
 
 namespace hi::inline v1::pipeline_image {

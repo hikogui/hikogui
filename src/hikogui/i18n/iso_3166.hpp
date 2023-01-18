@@ -5,8 +5,7 @@
 #pragma once
 
 #include <cctype>
-#include "../assert.hpp"
-#include "../check.hpp"
+#include "../utility/module.hpp"
 #include "../strings.hpp"
 
 namespace hi::inline v1 {

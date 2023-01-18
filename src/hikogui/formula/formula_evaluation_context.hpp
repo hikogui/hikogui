@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../datum.hpp"
-#include "../exception.hpp"
 #include <unordered_map>
 #include <vector>
 #include <string_view>

@@ -10,8 +10,7 @@
 
 #include "path_location.hpp"
 #include "../char_maps/to_string.hpp"
-#include "../utility.hpp"
-#include "../type_traits.hpp"
+#include "../utility/module.hpp"
 #include <vector>
 #include <string>
 #include <string_view>

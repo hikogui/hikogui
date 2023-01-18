@@ -16,7 +16,7 @@
 #include "../GUI/theme.hpp"
 #include "../GFX/subpixel_orientation.hpp"
 #include "../chrono.hpp"
-#include "../math.hpp"
+#include "../utility/module.hpp"
 
 namespace hi { inline namespace v1 {
 

@@ -14,9 +14,7 @@
 #include "unicode_east_asian_width.hpp"
 #include "unicode_decomposition_type.hpp"
 #include "unicode_script.hpp"
-#include "../utility.hpp"
-#include "../assert.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

@@ -5,8 +5,7 @@
 #pragma once
 
 #include "audio_sample_format.hpp"
-#include "../utility.hpp"
-#include "../architecture.hpp"
+#include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
 #include <cstddef>
 #include <bit>

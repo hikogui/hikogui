@@ -5,8 +5,7 @@
 #pragma once
 
 #include "geometry/module.hpp"
-#include "utility.hpp"
-#include "cast.hpp"
+#include "utility/module.hpp"
 #include <vector>
 
 namespace hi::inline v1 {

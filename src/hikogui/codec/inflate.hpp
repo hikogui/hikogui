@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../byte_string.hpp"
 #include "../endian.hpp"
 #include <span>

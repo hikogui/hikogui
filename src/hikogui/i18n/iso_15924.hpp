@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include "../unicode/unicode_script.hpp"
 #include "../unicode/unicode_bidi_class.hpp"
 #include <string_view>

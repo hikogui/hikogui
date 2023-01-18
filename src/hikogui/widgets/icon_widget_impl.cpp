@@ -5,7 +5,7 @@
 #include "icon_widget.hpp"
 #include "../text/font_book.hpp"
 #include "../GUI/theme.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

@@ -49,6 +49,31 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_simd_utility.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_sse2.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/architecture.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/cast.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/check.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/compare.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/concepts.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/dead_lock_detector.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/debugger.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/debugger.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/exception.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/fixed_string.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/float16.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/hash.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/math.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/numbers.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/subsystem.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/test.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/thread.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/type_traits.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/unfair_mutex.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/unfair_recursive_mutex.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/utility.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/win32_headers.hpp>
     ${HIKOGUI_SOURCE_DIR}/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/terminate.hpp
 
 )

@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../geometry/module.hpp"
-#include "../assert.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include <cstdint>
 #include <limits>
 #include <concepts>

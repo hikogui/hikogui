@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../byte_string.hpp"
-#include "../utility.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include <bit>
 #include <array>
 #include <cstdint>

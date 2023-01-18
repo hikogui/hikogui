@@ -8,8 +8,7 @@
 #include "gfx_device_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
 #include "../log.hpp"
-#include "../utility.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include "../geometry/module.hpp"
 #include "../codec/png.hpp"
 

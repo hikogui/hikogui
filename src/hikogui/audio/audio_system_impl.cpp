@@ -3,7 +3,7 @@
 
 #include "audio_system.hpp"
 #include "audio_system_aggregate.hpp"
-#include "../architecture.hpp"
+#include "../utility/module.hpp"
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include "audio_system_win32.hpp"
 #endif

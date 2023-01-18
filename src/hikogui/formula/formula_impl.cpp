@@ -54,7 +54,7 @@
 #include "formula_vector_literal_node.hpp"
 #include "../operator.hpp"
 #include "../strings.hpp"
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include <format>
 #include <string>
 #include <string_view>

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../float16.hpp"
+#include "../utility/module.hpp"
 #include "../geometry/module.hpp"
 #include "../codec/base_n.hpp"
 #include "color.hpp"

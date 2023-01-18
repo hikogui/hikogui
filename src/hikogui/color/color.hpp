@@ -6,7 +6,7 @@
 
 #include "semantic_color.hpp"
 #include "../SIMD/module.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

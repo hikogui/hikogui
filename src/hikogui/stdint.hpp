@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "architecture.hpp"
+#include "utility/module.hpp"
 
 #if (HI_COMPILER == HI_CC_GCC || HI_COMPILER == HI_CC_CLANG) && (HI_PROCESSOR == HI_CPU_X64 || HI_PROCESSOR == HI_CPU_ARM64)
 #define HI_HAS_INT128 1

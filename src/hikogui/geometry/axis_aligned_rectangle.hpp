@@ -12,10 +12,7 @@
 #include "extent.hpp"
 #include "point.hpp"
 #include "../SIMD/module.hpp"
-#include "../concepts.hpp"
-#include "../unfair_mutex.hpp"
-#include "../cast.hpp"
-#include "../numbers.hpp"
+#include "../utility/module.hpp"
 #include <concepts>
 #include <mutex>
 

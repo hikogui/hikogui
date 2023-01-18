@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../generator.hpp"
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include <filesystem>
 #include <ranges>
 

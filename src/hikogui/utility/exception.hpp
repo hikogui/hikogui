@@ -30,19 +30,9 @@ inline std::atomic<char const *> terminate_message = nullptr;
 #define hi_set_terminate_message(...) \
     ::hi::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__, std::memory_order::relaxed)
 
-/** The old terminate handler.
- *
- * This is the handler returned by `std::set_terminate()`.
+/** Get the OS error message from the last error received on this thread.
  */
-inline std::terminate_handler old_terminate_handler;
-
-/** The HikoGUI terminate handler.
- *
- * This handler will print an error message on the console or pop-up a dialogue box.
- *
- * @note Use `hi_set_terminate_message()` to set a message.
- */
-[[noreturn]] void terminate_handler() noexcept;
+[[nodiscard]] std::string get_last_error_message() noexcept;
 
 /** Exception thrown during parsing on an error.
  * This exception is often thrown due to an error in the syntax

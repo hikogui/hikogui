@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include "../utility.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include "../enum_metadata.hpp"
 #include <cstdint>
 

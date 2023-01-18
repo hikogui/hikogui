@@ -8,10 +8,7 @@
 
 #pragma once
 
-#include "../assert.hpp"
-#include "../cast.hpp"
-#include "../concepts.hpp"
-#include "../math.hpp"
+#include "../utility/module.hpp"
 #include <optional>
 
 namespace hi::inline v1 {

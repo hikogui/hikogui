@@ -20,8 +20,7 @@
 #if defined(HI_HAS_SSE)
 #include <xmmintrin.h> // SSE
 #endif
-#include "../utility.hpp"
-#include "../float16.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

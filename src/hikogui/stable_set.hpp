@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "unfair_mutex.hpp"
+#include "utility/module.hpp"
 #include <mutex>
 #include <memory>
 #include <atomic>

@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "../architecture.hpp"
-#include "../fixed_string.hpp"
-#include "../float16.hpp"
+#include "../utility/module.hpp"
 #include <type_traits>
 
 #ifdef HI_HAS_SSE

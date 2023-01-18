@@ -11,10 +11,7 @@
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_east_asian_width.hpp"
 #include "unicode_break_opportunity.hpp"
-#include "../utility.hpp"
-#include "../cast.hpp"
-#include "../assert.hpp"
-#include "../math.hpp"
+#include "../utility/module.hpp"
 #include <cstdint>
 #include <vector>
 #include <algorithm>

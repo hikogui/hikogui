@@ -7,7 +7,7 @@
 #include "font_metrics.hpp"
 #include "../unicode/unicode_general_category.hpp"
 #include "../geometry/module.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../alignment.hpp"
 #include <vector>
 #include <cstddef>

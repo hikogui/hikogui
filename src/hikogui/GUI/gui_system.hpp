@@ -9,8 +9,7 @@
 #include "gui_system_delegate.hpp"
 #include "../unicode/unicode_bidi_class.hpp"
 #include "../GFX/gfx_device.hpp"
-#include "../thread.hpp"
-#include "../unfair_recursive_mutex.hpp"
+#include "../utility/module.hpp"
 #include "../observer.hpp"
 #include <span>
 #include <memory>

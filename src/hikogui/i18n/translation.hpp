@@ -6,7 +6,7 @@
 
 #include "language.hpp"
 #include "../formula/formula.hpp"
-#include "../hash.hpp"
+#include "../utility/module.hpp"
 #include "../os_settings.hpp"
 #include <string>
 #include <string_view>

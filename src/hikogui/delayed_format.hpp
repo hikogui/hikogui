@@ -5,7 +5,7 @@
 #include <format>
 #include <tuple>
 #include "forward_value.hpp"
-#include "fixed_string.hpp"
+#include "utility/module.hpp"
 
 #pragma once
 

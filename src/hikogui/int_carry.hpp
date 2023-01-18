@@ -4,10 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "assert.hpp"
-#include "type_traits.hpp"
-#include "architecture.hpp"
+#include "utility/module.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>

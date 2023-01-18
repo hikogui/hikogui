@@ -5,8 +5,7 @@
 #pragma once
 
 #include "gfx_device.hpp"
-#include "../unfair_recursive_mutex.hpp"
-#include "../subsystem.hpp"
+#include "../utility/module.hpp"
 #include <span>
 #include <memory>
 #include <mutex>

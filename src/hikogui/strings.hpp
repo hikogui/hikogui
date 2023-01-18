@@ -6,12 +6,7 @@
 
 #include "char_maps/to_string.hpp"
 #include "algorithm.hpp"
-#include "cast.hpp"
-#include "utility.hpp"
-#include "assert.hpp"
-#include "architecture.hpp"
-#include "concepts.hpp"
-#include "exception.hpp"
+#include "utility/module.hpp"
 #include <string>
 #include <string_view>
 #include <iterator>

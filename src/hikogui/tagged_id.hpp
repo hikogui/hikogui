@@ -4,11 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "cast.hpp"
-#include "math.hpp"
-#include "fixed_string.hpp"
-#include "concepts.hpp"
+#include "utility/module.hpp"
 #include <limits>
 #include <typeinfo>
 #include <typeindex>

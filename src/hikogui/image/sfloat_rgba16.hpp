@@ -5,11 +5,10 @@
 #pragma once
 
 #include "../color/color.hpp"
-#include "../float16.hpp"
 #include "pixmap_span.hpp"
 #include "../geometry/module.hpp"
 #include "../SIMD/module.hpp"
-#include "../hash.hpp"
+#include "../utility/module.hpp"
 #include <algorithm>
 #include <bit>
 #include <array>

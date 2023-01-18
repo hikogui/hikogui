@@ -6,9 +6,8 @@
 
 #include "strings.hpp"
 #include "small_vector.hpp"
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "decimal.hpp"
-#include "exception.hpp"
 #include "parse_location.hpp"
 #include "charconv.hpp"
 #include <chrono>

@@ -5,9 +5,7 @@
 #pragma once
 
 #include "text_cursor.hpp"
-#include "../utility.hpp"
-#include "../assert.hpp"
-#include "../math.hpp"
+#include "../utility/module.hpp"
 #include <tuple>
 #include <cstdlib>
 #include <algorithm>

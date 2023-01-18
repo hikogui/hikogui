@@ -5,7 +5,7 @@
 #pragma once
 
 #include "unicode_decomposition_type.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include "../algorithm.hpp"
 #include <cstdint>
 #include <string>

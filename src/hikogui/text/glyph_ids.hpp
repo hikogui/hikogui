@@ -8,8 +8,7 @@
 #include "glyph_atlas_info.hpp"
 #include "../graphic_path.hpp"
 #include "../geometry/module.hpp"
-#include "../utility.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include <bit>
 #include <memory>
 #include <cstddef>

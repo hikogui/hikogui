@@ -5,7 +5,7 @@
 #include "theme_book.hpp"
 #include "../text/font_book.hpp"
 #include "../file/glob.hpp"
-#include "../subsystem.hpp"
+#include "../utility/module.hpp"
 #include "../trace.hpp"
 #include "../log.hpp"
 

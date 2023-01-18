@@ -5,7 +5,7 @@
 #pragma once
 
 #include "strings.hpp"
-#include "fixed_string.hpp"
+#include "utility/module.hpp"
 #include <string>
 #include <string_view>
 #include <exception>

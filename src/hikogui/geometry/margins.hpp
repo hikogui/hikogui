@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../SIMD/module.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 
 namespace hi { inline namespace v1 {
 namespace geo {

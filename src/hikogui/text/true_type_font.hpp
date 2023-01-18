@@ -8,7 +8,7 @@
 #include "../file/file_view.hpp"
 #include "../graphic_path.hpp"
 #include "../counters.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include <memory>
 #include <filesystem>
 

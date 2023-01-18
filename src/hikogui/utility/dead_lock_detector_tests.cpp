@@ -2,9 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/dead_lock_detector.hpp"
-#include "hikogui/utility.hpp"
-#include "hikogui/exception.hpp"
+#include "dead_lock_detector.hpp"
+#include "utility.hpp"
+#include "exception.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

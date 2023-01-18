@@ -7,10 +7,8 @@
 
 #pragma once
 
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "strings.hpp"
-#include "type_traits.hpp"
-#include "fixed_string.hpp"
 #include "i18n/translate.hpp"
 #include "unicode/gstring.hpp"
 #include "image/module.hpp"

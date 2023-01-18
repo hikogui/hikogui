@@ -10,8 +10,7 @@
 
 #include "vector.hpp"
 #include "../SIMD/module.hpp"
-#include "../cast.hpp"
-#include "../numbers.hpp"
+#include "../utility/module.hpp"
 #include <compare>
 
 namespace hi { inline namespace v1 {

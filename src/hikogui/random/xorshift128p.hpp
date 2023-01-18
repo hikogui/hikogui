@@ -6,7 +6,7 @@
 
 #include "seed.hpp"
 #include "../SIMD/module.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include <random>
 
 namespace hi::inline v1 {

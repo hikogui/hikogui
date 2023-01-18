@@ -4,5 +4,5 @@ target_precompile_headers(hikogui PUBLIC
 )
 
 target_precompile_headers(hikogui PRIVATE
-    ${HIKOGUI_SOURCE_DIR}/win32_headers.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/win32_headers.hpp
 )

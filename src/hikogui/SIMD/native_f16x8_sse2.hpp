@@ -3,7 +3,7 @@
 #pragma once
 
 #include "native_simd_utility.hpp"
-#include "../float16.hpp"
+#include "../utility/module.hpp"
 
 namespace hi {
 inline namespace v1 {

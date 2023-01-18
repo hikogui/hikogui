@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
 #include <random>
 #include <concepts>

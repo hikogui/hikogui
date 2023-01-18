@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "../assert.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include <bit>
 #include <cstdint>
 #include <string>

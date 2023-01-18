@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "assert.hpp"
-#include "cast.hpp"
+#include "utility/module.hpp"
 #include <atomic>
 #include <cstdint>
 

@@ -5,10 +5,8 @@
 #pragma once
 
 #include "../byte_string.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../datum.hpp"
-#include "../exception.hpp"
-#include "../cast.hpp"
 #include <cstddef>
 #include <string>
 

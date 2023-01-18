@@ -4,10 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "assert.hpp"
-#include "concepts.hpp"
-#include "math.hpp"
+#include "utility/module.hpp"
 #include <concepts>
 #include <memory>
 #include <vector>

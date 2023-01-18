@@ -9,7 +9,7 @@
 #include "pipeline_image_device_shared.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../file/file_view.hpp"
-#include "../architecture.hpp"
+#include "../utility/module.hpp"
 #include <span>
 
 namespace hi::inline v1 {

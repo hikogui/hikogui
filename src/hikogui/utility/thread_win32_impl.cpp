@@ -5,8 +5,6 @@
 #include "win32_headers.hpp"
 
 #include "thread.hpp"
-#include "strings.hpp"
-#include "log.hpp"
 #include "exception.hpp"
 #include "unfair_mutex.hpp"
 #include <mutex>
@@ -23,16 +21,11 @@ extern unfair_mutex thread_names_mutex;
 
 void set_thread_name(std::string_view name) noexcept
 {
-    hilet wname = to_wstring(name);
-    SetThreadDescription(GetCurrentThread(), wname.data());
-
-    auto name_ = std::string{name};
-    auto id = current_thread_id();
-
-    hi_log_info("Set thread id {} to name '{}'", id, name);
+    hilet wname = win32_string_to_wstring(name);
+    SetThreadDescription(GetCurrentThread(), wname.c_str());
 
     hilet lock = std::scoped_lock(detail::thread_names_mutex);
-    detail::thread_names.emplace(id, std::move(name_));
+    detail::thread_names.emplace(current_thread_id(), std::string{name});
 }
 
 static std::vector<bool> mask_int_to_vec(DWORD_PTR rhs) noexcept
@@ -56,15 +49,15 @@ static DWORD_PTR mask_vec_to_int(std::vector<bool> const &rhs) noexcept
     return r;
 }
 
-[[nodiscard]] std::vector<bool> process_affinity_mask() noexcept
+[[nodiscard]] std::vector<bool> process_affinity_mask()
 {
     DWORD_PTR process_mask;
     DWORD_PTR system_mask;
 
     auto process_handle = GetCurrentProcess();
 
-    if (!GetProcessAffinityMask(process_handle, &process_mask, &system_mask)) {
-        hi_log_fatal("Could not get process affinity mask: {}", get_last_error_message());
+    if (not GetProcessAffinityMask(process_handle, &process_mask, &system_mask)) {
+        throw os_error(std::format("Could not get process affinity mask.", get_last_error_message()));
     }
 
     return mask_int_to_vec(process_mask);

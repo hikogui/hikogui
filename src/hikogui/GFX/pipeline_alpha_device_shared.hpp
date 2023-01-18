@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../geometry/module.hpp"
 #include "../vector_span.hpp"
 #include "../color/color.hpp"

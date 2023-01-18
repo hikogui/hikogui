@@ -7,6 +7,20 @@
 #include "image/module.hpp"
 #include "geometry/module.hpp"
 #include "SIMD/module.hpp"
+#include "utility/module.hpp"
+
+/** @file module.hpp
+* 
+* 
+* Dependencies:
+*  - utility: -
+*  - SIMD: utility
+*  - geometry: SIMD, utility
+*  - color: geometry
+*  - image: geometry, SIMD, color, utility
+* 
+* 
+*/
 
 /** @namespace hi The HikoGUI namespace.
  */

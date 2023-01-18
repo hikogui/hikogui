@@ -4,12 +4,8 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "architecture.hpp"
+#include "utility/module.hpp"
 #include "memory.hpp"
-#include "assert.hpp"
-#include "cast.hpp"
-#include "concepts.hpp"
 
 #ifdef HI_HAS_SSE
 #include <immintrin.h>

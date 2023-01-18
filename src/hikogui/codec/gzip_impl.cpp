@@ -4,7 +4,7 @@
 
 #include "gzip.hpp"
 #include "inflate.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../endian.hpp"
 #include "../placement.hpp"
 

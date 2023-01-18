@@ -7,11 +7,10 @@
 #include "theme_mode.hpp"
 #include "../text/semantic_text_style.hpp"
 #include "../text/text_style.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../datum.hpp"
 #include "../color/color.hpp"
 #include "../geometry/module.hpp"
-#include "../subsystem.hpp"
 #include <array>
 #include <filesystem>
 #include <string>

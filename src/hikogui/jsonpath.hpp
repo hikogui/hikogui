@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "tokenizer.hpp"
 #include "generator.hpp"
-#include "check.hpp"
 #include <string>
 #include <variant>
 #include <string_view>

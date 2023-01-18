@@ -15,8 +15,7 @@
 #include "../i18n/iso_15924.hpp"
 #include "../i18n/iso_639.hpp"
 #include "../graphic_path.hpp"
-#include "../exception.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../hash_map.hpp"
 #include <span>
 #include <vector>

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../fixed_string.hpp"
+#include "../utility/module.hpp"
 #include "../memory.hpp"
 #include "../endian.hpp"
 #include <string>

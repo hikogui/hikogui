@@ -5,7 +5,7 @@
 #pragma once
 
 #include "tag.hpp"
-#include "fixed_string.hpp"
+#include "utility/module.hpp"
 #include <typeinfo>
 #include <typeindex>
 #include <array>

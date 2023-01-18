@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../file/file_view.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../image/module.hpp"
 #include "../geometry/module.hpp"
 #include "../byte_string.hpp"

@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "hikogui/polynomial.hpp"
-#include "hikogui/math.hpp"
+#include "polynomial.hpp"
+#include "utility/module.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

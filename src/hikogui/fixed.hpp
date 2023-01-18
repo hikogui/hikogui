@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "string_tag.hpp"
 #include "safe_int.hpp"
 #include <type_traits>

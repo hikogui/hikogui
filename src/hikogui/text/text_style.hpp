@@ -12,11 +12,9 @@
 #include "../color/color.hpp"
 #include "../i18n/iso_15924.hpp"
 #include "../i18n/iso_639.hpp"
-#include "../numbers.hpp"
+#include "../utility/module.hpp"
 #include "../log.hpp"
 #include "../stable_set.hpp"
-#include "../cast.hpp"
-#include "../assert.hpp"
 #include <ostream>
 #include <vector>
 #include <algorithm>

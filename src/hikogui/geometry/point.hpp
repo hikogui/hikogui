@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "../SIMD/module.hpp"
 #include "vector.hpp"
 #include "extent.hpp"
-#include "../cast.hpp"
+#include "../SIMD/module.hpp"
+#include "../utility/module.hpp"
 #include <format>
 
 namespace hi::inline v1 {

@@ -4,9 +4,7 @@
 
 #include "iso_15924.hpp"
 #include "../unicode/unicode_script.hpp"
-#include "../cast.hpp"
-#include "../fixed_string.hpp"
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include "../strings.hpp"
 #include <array>
 

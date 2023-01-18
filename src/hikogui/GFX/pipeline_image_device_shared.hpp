@@ -7,7 +7,7 @@
 #include "pipeline_image_texture_map.hpp"
 #include "pipeline_image_vertex.hpp"
 #include "paged_image.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../image/module.hpp"
 #include "../geometry/module.hpp"
 #include "../vector_span.hpp"

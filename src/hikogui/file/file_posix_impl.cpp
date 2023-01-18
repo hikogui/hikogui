@@ -4,7 +4,7 @@
 
 #include "file.hpp"
 #include "log.hpp"
-#include "exception.hpp"
+#include "../utility/module.hpp"
 #include "strings.hpp"
 #include <fcntl.h>
 #include <sys/types.h>

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "fixed_string.hpp"
+#include "utility/module.hpp"
 #include <typeinfo>
 #include <string_view>
 

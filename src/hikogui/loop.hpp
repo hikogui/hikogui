@@ -6,7 +6,7 @@
 
 #include "function_fifo.hpp"
 #include "function_timer.hpp"
-#include "subsystem.hpp"
+#include "utility/module.hpp"
 #include "net/network_event.hpp"
 #include <functional>
 #include <type_traits>

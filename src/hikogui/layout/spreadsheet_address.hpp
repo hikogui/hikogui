@@ -26,7 +26,7 @@
 #pragma once
 
 #include "../strings.hpp"
-#include "../check.hpp"
+#include "../utility/module.hpp"
 #include <tuple>
 #include <string_view>
 

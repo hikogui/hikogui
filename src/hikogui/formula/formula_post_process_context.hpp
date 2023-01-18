@@ -5,7 +5,7 @@
 #pragma once
 
 #include "formula_evaluation_context.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../datum.hpp"
 #include "../strings.hpp"
 #include <functional>

@@ -6,7 +6,7 @@
 #include "unicode_normalization.hpp"
 #include "unicode_description.hpp"
 #include "../log.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include <mutex>
 
 namespace hi::inline v1 {

@@ -6,7 +6,7 @@
 
 #include "box_constraints.hpp"
 #include "../geometry/module.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include <limits>
 #include <optional>
 

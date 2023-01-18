@@ -10,7 +10,7 @@
 #include <memory>
 #include <memory_resource>
 #include "arguments.hpp"
-#include "assert.hpp"
+#include "utility/module.hpp"
 
 namespace hi::inline v1 {
 

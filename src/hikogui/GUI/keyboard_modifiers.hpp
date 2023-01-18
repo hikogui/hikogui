@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include "../utility.hpp"
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include "../strings.hpp"
-#include "../cast.hpp"
 #include <cstdint>
 
 namespace hi::inline v1 {

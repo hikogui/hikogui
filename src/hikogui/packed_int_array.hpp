@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "utility.hpp"
 #include "memory.hpp"
-#include "math.hpp"
+#include "utility/module.hpp"
 #include <cstddef>
 #include <climits>
 #include <concepts>

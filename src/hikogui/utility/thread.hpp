@@ -72,7 +72,7 @@ void set_thread_name(std::string_view name) noexcept;
  * @return A bit mask on which CPUs the process is allowed to run on.
  *         Or zero on failure.
  */
-[[nodiscard]] std::vector<bool> process_affinity_mask() noexcept;
+[[nodiscard]] std::vector<bool> process_affinity_mask();
 
 /** Set the current thread CPU affinity mask.
  *

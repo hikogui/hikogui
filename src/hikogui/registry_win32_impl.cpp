@@ -3,10 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "registry_win32.hpp"
-#include "exception.hpp"
+#include "utility/module.hpp"
 #include "strings.hpp"
 #include "log.hpp"
-#include "win32_headers.hpp"
+#include "utility/win32_headers.hpp"
 
 namespace hi::inline v1 {
 

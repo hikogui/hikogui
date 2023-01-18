@@ -11,8 +11,7 @@
 #include "URI.hpp"
 #include "path_location.hpp"
 #include "../char_maps/to_string.hpp"
-#include "../utility.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include <string>
 #include <string_view>
 #include <optional>

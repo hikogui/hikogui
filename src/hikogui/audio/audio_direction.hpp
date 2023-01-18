@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include "../enum_metadata.hpp"
 
 namespace hi::inline v1 {

@@ -6,9 +6,8 @@
 
 #include "image/module.hpp"
 #include "geometry/module.hpp"
-#include "math.hpp"
+#include "utility/module.hpp"
 #include "bezier.hpp"
-#include "utility.hpp"
 #include <tuple>
 #include <limits>
 #include <algorithm>

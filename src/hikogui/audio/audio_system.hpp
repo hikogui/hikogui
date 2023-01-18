@@ -5,7 +5,7 @@
 #pragma once
 
 #include "audio_device.hpp"
-#include "../unfair_recursive_mutex.hpp"
+#include "../utility/module.hpp"
 #include "../generator.hpp"
 #include <vector>
 #include <memory>

@@ -6,10 +6,9 @@
 
 #include "formula_post_process_context.hpp"
 #include "formula_evaluation_context.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../parse_location.hpp"
 #include "../datum.hpp"
-#include "../exception.hpp"
 #include <vector>
 #include <memory>
 #include <string>

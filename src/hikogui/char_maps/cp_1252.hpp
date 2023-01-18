@@ -9,9 +9,7 @@
 #pragma once
 
 #include "char_converter.hpp"
-#include "../cast.hpp"
-#include "../utility.hpp"
-#include "../architecture.hpp"
+#include "../utility/module.hpp"
 #include <cstdint>
 #include <utility>
 

@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "../cast.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>

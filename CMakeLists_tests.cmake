@@ -56,20 +56,24 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_text_segmentation_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_normalization_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/cast_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/dead_lock_detector_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/fixed_string_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/float16_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/math_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/exceptions_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/type_traits_tests.cpp
+    $<$<PLATFORM_ID:Darwin>:${HIKOGUI_SOURCE_DIR}/utility/debugger_macos.mm>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/algorithm_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/bezier_curve_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/bigint_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/bound_integer_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/cast_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/counters_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/datum_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/dead_lock_detector_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/decimal_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/defer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/enum_metadata_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/exceptions_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/fixed_string_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/float16_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/format_check_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/forward_value_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/gap_buffer_tests.cpp
@@ -79,7 +83,6 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/int_overflow_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/jsonpath_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/lean_vector_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/math_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/group_ptr_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/notifier_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path_tests.cpp
@@ -96,7 +99,6 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/strings_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/tokenizer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/tree_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/type_traits_tests.cpp
 )
 
 install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)

@@ -18,7 +18,7 @@
 #include "../color/quad_color.hpp"
 #include "../widgets/widget_layout.hpp"
 #include "../vector_span.hpp"
-#include "../concepts.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 class gfx_device;

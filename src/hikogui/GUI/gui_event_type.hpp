@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../enum_metadata.hpp"
 #include <string>
 #include <string_view>

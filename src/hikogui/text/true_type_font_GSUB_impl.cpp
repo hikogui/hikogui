@@ -9,7 +9,7 @@
 #include "../strings.hpp"
 #include "../endian.hpp"
 #include "../log.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include <cstddef>
 #include <span>
 
