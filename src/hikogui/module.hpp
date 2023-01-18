@@ -5,8 +5,10 @@
 #pragma once
 
 #include "image/module.hpp"
+#include "color/module.hpp"
 #include "geometry/module.hpp"
 #include "SIMD/module.hpp"
+#include "char_maps/module.hpp"
 #include "utility/module.hpp"
 
 /** @file module.hpp
