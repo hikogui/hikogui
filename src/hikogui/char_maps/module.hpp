@@ -1,3 +1,18 @@
+// Copyright Take Vos 2022, 2023.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+#pragma once
+
+#include "ascii.hpp"
+#include "char_converter.hpp"
+#include "cp_1252.hpp"
+#include "iso_8859_1.hpp"
+#include "to_string.hpp"
+#include "utf_8.hpp"
+#include "utf_16.hpp"
+#include "utf_32.hpp"
+
 namespace hi {
 inline namespace v1 {
 /**

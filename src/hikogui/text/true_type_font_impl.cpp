@@ -4,9 +4,9 @@
 
 #include "true_type_font.hpp"
 #include "../geometry/module.hpp"
+#include "../utility/module.hpp"
 #include "../placement.hpp"
 #include "../strings.hpp"
-#include "../endian.hpp"
 #include "../log.hpp"
 #include <cstddef>
 #include <span>

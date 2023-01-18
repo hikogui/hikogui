@@ -16,9 +16,9 @@
 *  - utility: -
 *  - SIMD: utility
 *  - geometry: SIMD, utility
-*  - color: geometry
+*  - color: geometry, SIMD, utility
 *  - image: geometry, SIMD, color, utility
-* 
+*  - char_maps: utility
 * 
 */
 

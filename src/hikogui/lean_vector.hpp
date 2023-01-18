@@ -8,7 +8,6 @@
 #pragma once
 
 #include "utility/module.hpp"
-#include "memory.hpp"
 #include <bit>
 #include <new>
 #include <cstddef>

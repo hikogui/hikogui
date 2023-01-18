@@ -5,7 +5,6 @@
 #include "gzip.hpp"
 #include "inflate.hpp"
 #include "../utility/module.hpp"
-#include "../endian.hpp"
 #include "../placement.hpp"
 
 hi_warning_push();

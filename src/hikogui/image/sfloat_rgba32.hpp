@@ -6,7 +6,7 @@
 
 #include "../SIMD/module.hpp"
 #include "../geometry/module.hpp"
-#include "../color/color.hpp"
+#include "../color/module.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "sfloat_rgba16.hpp"
-#include "../color/sRGB.hpp"
+#include "../color/module.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {

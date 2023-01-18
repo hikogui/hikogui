@@ -12,7 +12,7 @@
 #include "audio_device_state.hpp"
 #include "speaker_mapping.hpp"
 #include "../label.hpp"
-#include "../enum_metadata.hpp"
+#include "../utility/module.hpp"
 #include "../loop.hpp"
 #include <string>
 #include <memory>

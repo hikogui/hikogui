@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../enum_metadata.hpp"
+#include "../utility/module.hpp"
 #include <unordered_map>
 #include <string>
 #include <ostream>

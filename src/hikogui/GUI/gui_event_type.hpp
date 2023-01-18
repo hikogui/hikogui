@@ -9,7 +9,6 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../enum_metadata.hpp"
 #include <string>
 #include <string_view>
 #include <ostream>

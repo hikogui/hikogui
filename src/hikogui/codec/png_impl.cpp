@@ -5,11 +5,9 @@
 
 #include "png.hpp"
 #include "zlib.hpp"
-#include "../endian.hpp"
+#include "../utility/module.hpp"
 #include "../placement.hpp"
-#include "../color/sRGB.hpp"
-#include "../color/Rec2100.hpp"
-#include "../color/color_space.hpp"
+#include "../color/module.hpp"
 
 namespace hi::inline v1 {
 

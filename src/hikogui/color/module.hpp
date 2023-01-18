@@ -1,5 +1,21 @@
-Color
-=====
+// Copyright Take Vos 2023.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+#pragma once
+
+#include "color.hpp"
+#include "color_space.hpp"
+#include "quad_color.hpp"
+#include "Rec2020.hpp"
+#include "Rec2100.hpp"
+#include "semantic_color.hpp"
+#include "sRGB.hpp"
+
+namespace hi { inline namespace v1 {
+
+/**
+\defgroup color Color, color spaces and transfer functions.
 
 This document describes how color is used in the hikogui library.
 
@@ -181,3 +197,8 @@ with in increasing memory addresses.
 If the format is packed, then the color components are packed together in a single integer.
 The color components are packed inside the integer from `msb` to `lsb`.
 The integers are 8, 16, 32, 64 or 128 bits in size. The integer is stored in memory in native-byte-order.
+
+
+ */
+
+}} // namespace hi::v1

@@ -6,7 +6,6 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../enum_metadata.hpp"
 #include <cstdint>
 
 namespace hi::inline v1 {

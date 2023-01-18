@@ -6,7 +6,7 @@
 
 #include "locked_memory_allocator.hpp"
 #include "log.hpp"
-#include "memory.hpp"
+#include "utility/module.hpp"
 
 namespace hi::inline v1 {
 

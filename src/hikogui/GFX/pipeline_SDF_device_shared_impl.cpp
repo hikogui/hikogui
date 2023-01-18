@@ -9,7 +9,6 @@
 #include "../file/URL.hpp"
 #include "../geometry/module.hpp"
 #include "../image/module.hpp"
-#include "../memory.hpp"
 #include "../utility/module.hpp"
 #include <array>
 

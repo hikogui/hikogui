@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../enum_metadata.hpp"
 
 namespace hi::inline v1 {
 

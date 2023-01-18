@@ -17,7 +17,6 @@
 #include "line_segment.hpp"
 #include "corner_radii.hpp"
 #include "axis_aligned_rectangle.hpp"
-#include "../color/color.hpp"
 #include <array>
 
 namespace hi {
@@ -378,25 +377,6 @@ public:
     [[nodiscard]] constexpr line_segment operator*(line_segment const& rhs) const noexcept
     {
         return line_segment{*this * rhs.origin(), *this * rhs.direction()};
-    }
-
-    /** Transform a color by a color matrix.
-     *
-     * The alpha value is not included in the transformation and copied from the input.
-     *
-     * @note It is undefined behavior if the matrix contains a translation.
-     * @param rhs The color to be transformed.
-     * @return The transformed color.
-     */
-    [[nodiscard]] constexpr auto operator*(color const& rhs) const noexcept
-    {
-        hi_axiom(rhs.holds_invariant());
-        auto r = color{
-            _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
-            _col2 * static_cast<f32x4>(rhs).zzzz() + _col3};
-
-        r.a() = rhs.a();
-        return r;
     }
 
     /** Matrix/Matrix multiplication.

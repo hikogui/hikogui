@@ -9,7 +9,7 @@
 #include "../text/text_style.hpp"
 #include "../utility/module.hpp"
 #include "../datum.hpp"
-#include "../color/color.hpp"
+#include "../color/module.hpp"
 #include "../geometry/module.hpp"
 #include <array>
 #include <filesystem>

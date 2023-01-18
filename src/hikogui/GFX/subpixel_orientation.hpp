@@ -8,7 +8,7 @@
 #pragma once
 
 #include "../geometry/module.hpp"
-#include "../enum_metadata.hpp"
+#include "../utility/module.hpp"
 #include <format>
 
 namespace hi::inline v1 {

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "utility/module.hpp"
-#include "memory.hpp"
 #include "counters.hpp"
 #include <array>
 #include <memory>

@@ -4,7 +4,7 @@
 
 #include "bezier_curve.hpp"
 #include "bezier_point.hpp"
-#include "memory.hpp"
+#include "utility/module.hpp"
 #include <optional>
 
 namespace hi::inline v1 {

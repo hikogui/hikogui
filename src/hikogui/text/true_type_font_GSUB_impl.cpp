@@ -7,7 +7,6 @@
 #include "../geometry/module.hpp"
 #include "../placement.hpp"
 #include "../strings.hpp"
-#include "../endian.hpp"
 #include "../log.hpp"
 #include "../utility/module.hpp"
 #include <cstddef>

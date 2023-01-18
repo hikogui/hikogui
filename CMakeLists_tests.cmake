@@ -14,6 +14,7 @@ add_dependencies(hikogui_all_tests hikogui_tests)
 target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/audio/audio_sample_unpacker_tests.cpp
     #${HIKOGUI_SOURCE_DIR}/audio/audio_sample_packer_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/char_maps/random_char.hpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/ascii_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/char_converter_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/cp_1252_tests.cpp
@@ -58,6 +59,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/dead_lock_detector_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/enum_metadata_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/float16_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/math_tests.cpp
@@ -73,7 +75,6 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/datum_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/decimal_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/defer_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/enum_metadata_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/format_check_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/forward_value_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/gap_buffer_tests.cpp

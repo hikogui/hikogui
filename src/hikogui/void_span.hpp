@@ -5,7 +5,6 @@
 #pragma once
 
 #include "utility/module.hpp"
-#include "memory.hpp"
 #include "byte_string.hpp"
 #include <span>
 #include <cstddef>

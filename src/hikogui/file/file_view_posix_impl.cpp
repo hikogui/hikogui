@@ -5,7 +5,6 @@
 #include "file_view.hpp"
 #include "../utility/module.hpp"
 #include "log.hpp"
-#include "memory.hpp"
 #include <mutex>
 #include <sys/mman.h>
 

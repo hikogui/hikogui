@@ -4,9 +4,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 add_subdirectory(audio)
-add_subdirectory(char_maps)
 add_subdirectory(codec)
-add_subdirectory(color)
 add_subdirectory(file)
 add_subdirectory(formula)
 add_subdirectory(layout)
@@ -44,7 +42,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/console_win32_impl.cpp>
     counters_impl.cpp
     counters.hpp
-    CP1252.hpp
     #cpu_id.hpp
     #$<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR}:AMD64>:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64_impl.cpp>
     crt.hpp
@@ -55,8 +52,6 @@ target_sources(hikogui PRIVATE
     defer.hpp
     dialog.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32_impl.cpp>
-    endian.hpp
-    enum_metadata.hpp
     fixed.hpp
     format_check.hpp
     forward_value.hpp
@@ -83,7 +78,6 @@ target_sources(hikogui PRIVATE
     long_tagged_id.hpp
 	loop.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32_impl.cpp>
-    memory.hpp
     group_ptr.hpp
     meta.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/metadata_impl.cpp

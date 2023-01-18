@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "char_maps/to_string.hpp"
+#include "char_maps/module.hpp"
 #include "algorithm.hpp"
 #include "utility/module.hpp"
 #include <string>

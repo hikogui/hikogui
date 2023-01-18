@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "memory.hpp"
 #include "utility/module.hpp"
 #include <cstddef>
 #include <climits>

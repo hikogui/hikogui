@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "../color/color.hpp"
 #include "pixmap_span.hpp"
+#include "../color/module.hpp"
 #include "../geometry/module.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"

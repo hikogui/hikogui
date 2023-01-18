@@ -8,7 +8,6 @@
 #include "../log.hpp"
 #include "../utility/module.hpp"
 #include "../strings.hpp"
-#include "../memory.hpp"
 #include "../defer.hpp"
 #include <type_traits>
 

@@ -49,11 +49,6 @@ public:
         return rhs;
     }
 
-    [[nodiscard]] constexpr color operator*(color const& rhs) const noexcept
-    {
-        return rhs;
-    }
-
     template<typename O>
     [[nodiscard]] constexpr axis_aligned_rectangle<O> operator*(axis_aligned_rectangle<O> const& rhs) const noexcept
     {

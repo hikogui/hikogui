@@ -9,8 +9,6 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../memory.hpp"
-#include "../endian.hpp"
 #include <string>
 #include <string_view>
 #if defined(HI_HAS_SSE2)

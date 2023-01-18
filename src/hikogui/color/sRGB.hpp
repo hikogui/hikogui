@@ -6,7 +6,6 @@
 
 #include "../utility/module.hpp"
 #include "../geometry/module.hpp"
-#include "../codec/base_n.hpp"
 #include "color.hpp"
 #include <cmath>
 #include <array>
@@ -115,10 +114,12 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
         tmp += "ff";
     }
 
-    uint8_t const r = (base16::int_from_char<uint8_t>(tmp[0]) << 4) | base16::int_from_char<uint8_t>(tmp[1]);
-    uint8_t const g = (base16::int_from_char<uint8_t>(tmp[2]) << 4) | base16::int_from_char<uint8_t>(tmp[3]);
-    uint8_t const b = (base16::int_from_char<uint8_t>(tmp[4]) << 4) | base16::int_from_char<uint8_t>(tmp[5]);
-    uint8_t const a = (base16::int_from_char<uint8_t>(tmp[6]) << 4) | base16::int_from_char<uint8_t>(tmp[7]);
+    auto packed = from_string<uint32_t>(tmp);
+
+    uint8_t const r = truncate<uint8_t>(packed >> 24);
+    uint8_t const g = truncate<uint8_t>(packed >> 16);
+    uint8_t const b = truncate<uint8_t>(packed >> 8);
+    uint8_t const a = truncate<uint8_t>(packed);
     return color_from_sRGB(r, g, b, a);
 }
 

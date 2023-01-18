@@ -4,8 +4,6 @@
 
 #include "audio_sample_unpacker.hpp"
 #include "../utility/module.hpp"
-#include "../memory.hpp"
-#include "../endian.hpp"
 #include "../SIMD/module.hpp"
 #include <bit>
 #include <cstdint>
