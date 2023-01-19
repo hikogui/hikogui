@@ -18,6 +18,7 @@
 #include "exception.hpp"
 #include "fixed_string.hpp"
 #include "float16.hpp"
+#include "global_state.hpp"
 #include "hash.hpp"
 #include "math.hpp"
 #include "memory.hpp"
