@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "utility/module.hpp"
 #include "memory.hpp"
 
 #ifdef HI_HAS_SSE

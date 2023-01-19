@@ -81,6 +81,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/exception.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/float16.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/global_state.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/hash.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/math.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/memory.hpp

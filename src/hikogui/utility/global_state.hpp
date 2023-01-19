@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "utility/module.hpp"
+#include "cast.hpp"
 #include <atomic>
 #include <type_traits>
 #include <bit>

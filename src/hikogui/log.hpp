@@ -11,7 +11,6 @@
 #include "meta.hpp"
 #include "utility/module.hpp"
 #include "delayed_format.hpp"
-#include "global_state.hpp"
 #include "format_check.hpp"
 #include <chrono>
 #include <format>

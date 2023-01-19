@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "utility/module.hpp"
+#include "utility.hpp"
+#include "cast.hpp"
 #include <cstddef>
 #include <type_traits>
 #include <array>

@@ -60,7 +60,6 @@ target_sources(hikogui PRIVATE
 	function_timer.hpp
     gap_buffer.hpp
     generator.hpp
-    global_state.hpp
     hash_map.hpp
     huffman.hpp
     int_carry.hpp
