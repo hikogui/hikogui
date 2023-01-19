@@ -100,7 +100,8 @@
             "displayName": "MSVC-x64-Release",
             "inherits": "vc17-x64-windows-static",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Release",
+                "HI_ENABLE_PCH": "OFF"
             }
         },
         {
@@ -137,7 +138,8 @@
             "inherits": "vc17-x64-windows-static-rel",
             "binaryDir": "build-rel",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install"
+                "CMAKE_INSTALL_PREFIX": "install",
+                "HI_ENABLE_PCH": "OFF"
             }
         },
         {
@@ -146,7 +148,8 @@
             "inherits": "vc17-x64-windows-static-dbg",
             "binaryDir": "build-dbg",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install"
+                "CMAKE_INSTALL_PREFIX": "install",
+                "HI_ENABLE_PCH": "OFF"
             }
         }
     ],

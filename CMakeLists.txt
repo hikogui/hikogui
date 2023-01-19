@@ -19,6 +19,7 @@ include(SetupCompiler)
 option(BUILD_SHARED_LIBS    "Build shared libraries"                             OFF)
 option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
+option(HI_ENABLE_PCH        "Compile with precompiled headers"                   ON)
 option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" "")
 
 #-------------------------------------------------------------------
@@ -107,7 +108,9 @@ add_library(hikogui)
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 include(CMakeLists_includes.cmake)
 include(CMakeLists_implementations.cmake)
-include(CMakeLists_pch.cmake)
+if(HI_ENABLE_PCH)
+    include(CMakeLists_pch.cmake)
+endif()
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 
 #-------------------------------------------------------------------
