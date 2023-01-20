@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file color/quad_color.hpp Defined the quad_color tye.
+/** @file color/quad_color.hpp Defined the quad_color type.
  * @ingroup color
  */
 
@@ -11,7 +11,7 @@
 #include "color.hpp"
 
 namespace hi {
-inline namespace {
+inline namespace v1 {
 
 /** A color for each corner of a quad.
  * @ingroup color
