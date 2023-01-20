@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file color/sRGB.hpp Color matrix and transfer functions for the sRGB color space.
+ * @ingroup color
+ */
+
 #pragma once
 
 #include "../utility/module.hpp"
@@ -15,11 +19,18 @@ hi_warning_push();
 // std::pow() is not constexpr and needed to fill in the gamma conversion tables.
 hi_warning_ignore_msvc(26426);
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
+/** Matrix to convert sRGB to XYZ.
+ * @ingroup color
+ */
 constexpr matrix3 sRGB_to_XYZ =
     matrix3{0.41239080f, 0.35758434f, 0.18048079f, 0.21263901f, 0.71516868f, 0.07219232f, 0.01933082f, 0.11919478f, 0.95053215f};
 
+/** Matrix to convert XYZ to sRGB.
+ * @ingroup color
+ */
 constexpr matrix3 XYZ_to_sRGB = matrix3{
     3.24096994f,
     -1.53738318f,
@@ -31,6 +42,12 @@ constexpr matrix3 XYZ_to_sRGB = matrix3{
     -0.20397696f,
     1.05697151f};
 
+/** sRGB linear to gamma transfer function.
+ *
+ * @ingroup color
+ * @param u The linear color value, between 0.0 and 1.0.
+ * @return The color value converted to the sRGB gamma corrected value between 0.0 and 1.0.
+ */
 [[nodiscard]] inline float sRGB_linear_to_gamma(float u) noexcept
 {
     if (u <= 0.0031308) {
@@ -40,6 +57,12 @@ constexpr matrix3 XYZ_to_sRGB = matrix3{
     }
 }
 
+/** sRGB gamma to linear transfer function.
+ *
+ * @ingroup color
+ * @param u The sRGB gamma corrected color value, between 0.0 and 1.0.
+ * @return The color value converted to a linear color value between 0.0 and 1.0.
+ */
 [[nodiscard]] inline float sRGB_gamma_to_linear(float u) noexcept
 {
     if (u <= 0.04045) {
@@ -48,6 +71,8 @@ constexpr matrix3 XYZ_to_sRGB = matrix3{
         return std::pow((u + 0.055f) / 1.055f, 2.4f);
     }
 }
+
+namespace detail {
 
 [[nodiscard]] inline auto sRGB_linear16_to_gamma8_table_generator() noexcept
 {
@@ -61,13 +86,6 @@ constexpr matrix3 XYZ_to_sRGB = matrix3{
     return r;
 }
 
-inline auto sRGB_linear16_to_gamma8_table = sRGB_linear16_to_gamma8_table_generator();
-
-[[nodiscard]] inline uint8_t sRGB_linear16_to_gamma8(float16 u) noexcept
-{
-    return sRGB_linear16_to_gamma8_table[u.get()];
-}
-
 [[nodiscard]] inline auto sRGB_gamma8_to_linear16_table_generator() noexcept
 {
     std::array<float16, 256> r{};
@@ -79,22 +97,60 @@ inline auto sRGB_linear16_to_gamma8_table = sRGB_linear16_to_gamma8_table_genera
     return r;
 }
 
+inline auto sRGB_linear16_to_gamma8_table = sRGB_linear16_to_gamma8_table_generator();
 inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_generator();
 
+}
+
+/** sRGB linear float-16 to gamma transfer function.
+ *
+ * This function uses a lookup table for quick conversion.
+ *
+ * @ingroup color
+ * @param u The linear color value, between 0.0 and 1.0.
+ * @return The color value converted to the sRGB gamma corrected value between 0.0 and 1.0.
+ */
+[[nodiscard]] inline uint8_t sRGB_linear16_to_gamma8(float16 u) noexcept
+{
+    return detail::sRGB_linear16_to_gamma8_table[u.get()];
+}
+
+/** sRGB gamma to linear float-16 transfer function.
+ *
+ * This function uses a lookup table for quick conversion.
+ *
+ * @ingroup color
+ * @param u The sRGB gamma corrected color value, between 0.0 and 1.0.
+ * @return The color value converted to a linear color value between 0.0 and 1.0.
+ */
 [[nodiscard]] inline float16 sRGB_gamma8_to_linear16(uint8_t u) noexcept
 {
-    return sRGB_gamma8_to_linear16_table[u];
+    return detail::sRGB_gamma8_to_linear16_table[u];
 }
 
+/** Convert gama corrected sRGB color to the linear color.
+ *
+ * @ingroup color
+ * @param r The sRGB gamma corrected color value, between 0.0 and 1.0.
+ * @param g The sRGB gamma corrected color value, between 0.0 and 1.0.
+ * @param b The sRGB gamma corrected color value, between 0.0 and 1.0.
+ * @param a Alpha value, between 0.0 and 1.0. not-premultiplied
+ * @return A linear color.
+ */
 [[nodiscard]] inline color color_from_sRGB(float r, float g, float b, float a) noexcept
 {
-    return color{
-        sRGB_gamma_to_linear(narrow_cast<float>(r)),
-        sRGB_gamma_to_linear(narrow_cast<float>(g)),
-        sRGB_gamma_to_linear(narrow_cast<float>(b)),
-        a};
+    return color{sRGB_gamma_to_linear(r), sRGB_gamma_to_linear(g), sRGB_gamma_to_linear(b), a};
 }
 
+/** Convert gama corrected sRGB color to the linear color.
+ *
+ * @ingroup color
+ * @param r The sRGB gamma corrected color value, between 0 and 255.
+ * @param g The sRGB gamma corrected color value, between 0 and 255.
+ * @param b The sRGB gamma corrected color value, between 0 and 255.
+ * @param a Alpha value, between 0 and 255. not-premultiplied
+ * @return A linear color.
+ */
 [[nodiscard]] inline color color_from_sRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
 {
     return color_from_sRGB(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
@@ -123,6 +179,6 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
     return color_from_sRGB(r, g, b, a);
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 hi_warning_pop();

@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file color/color.hpp Defined the color type.
+ * @ingroup color
+ */
+
 #pragma once
 
 #include "semantic_color.hpp"
@@ -36,6 +40,8 @@ namespace hi::inline v1 {
  * This color format is inspired by scRGB, however scRGB only describes
  * a 12- or 16-bit integer per component encoding of RGB values between
  * -0.5 and 7.5.
+ *
+ * @ingroup color
  */
 class color {
 public:

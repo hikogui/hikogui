@@ -4,10 +4,29 @@
 
 #pragma once
 
+/** @file color_space Functions to create color conversion matrices.
+ * @ingroup color
+ */
+
 #include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
 
+/** Create a color space conversion matrix.
+ *
+ * Coordinates for color primaries and white-point are in the CIE xy chromaticity
+ * coordinate system.
+ *
+ * @ingroup color
+ * @param wx x-coord for the white point.
+ * @param wy y-coord for the white point.
+ * @param rx x-coord for the red primary.
+ * @param ry y-coord for the red primary.
+ * @param gx x-coord for the green primary.
+ * @param gy y-coord for the green primary.
+ * @param bx x-coord for the blue primary.
+ * @param by y-coord for the blue primary.
+ */
 [[nodiscard]] constexpr matrix3
 color_primaries_to_RGBtoXYZ(float wx, float wy, float rx, float ry, float gx, float gy, float bx, float by) noexcept
 {
