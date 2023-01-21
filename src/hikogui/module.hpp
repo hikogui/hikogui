@@ -9,6 +9,7 @@
 #include "geometry/module.hpp"
 #include "SIMD/module.hpp"
 #include "char_maps/module.hpp"
+#include "concurrency/module.hpp"
 #include "utility/module.hpp"
 
 /** @file module.hpp
@@ -17,7 +18,7 @@
 * Dependencies:
 *  - utility: -
 *  - SIMD: utility
-*  - geometry: SIMD, utility
+*  - geometry: SIMD, utility, concurrency
 *  - color: geometry, SIMD, utility
 *  - image: geometry, SIMD, color, utility
 *  - char_maps: utility

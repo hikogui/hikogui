@@ -5,6 +5,7 @@
 #pragma once
 
 #include "utility/module.hpp"
+#include "concurrency/module.hpp"
 #include <memory>
 #include <vector>
 #include <functional>

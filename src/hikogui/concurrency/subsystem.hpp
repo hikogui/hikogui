@@ -2,11 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file concurrency/subsystem.hpp Functions for starting and stopping subsystems.
+ * @ingroup concurrency
+ */
+
 #pragma once
 
-#include "assert.hpp"
+#include "../utility/module.hpp"
 #include "unfair_recursive_mutex.hpp"
-#include "type_traits.hpp"
 #include "global_state.hpp"
 #include <atomic>
 #include <vector>
@@ -15,7 +18,7 @@
 #include <type_traits>
 #include <mutex>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 namespace detail {
 
 /** A list of deinit function to be called on shutdown.
@@ -33,7 +36,8 @@ hi_no_inline typename T::value_type start_subsystem(
     T& check_variable,
     typename T::value_type off_value,
     typename T::value_type (*init_function)(),
-    void (*deinit_function)()) requires(is_atomic_v<T>)
+    void (*deinit_function)())
+    requires(is_atomic_v<T>)
 {
     hi_assert_not_null(init_function);
     hi_assert_not_null(deinit_function);
@@ -98,6 +102,7 @@ hi_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*ini
  *
  * This will also register the deinit function to be called on system shutdown.
  *
+ * @ingroup concurrency
  * @param check_variable The variable to check before initializing.
  * @param off_value The value of the check_variable when the subsystem is off.
  * @param init_function The init function to call to initialize the subsystem
@@ -109,7 +114,8 @@ typename T::value_type start_subsystem(
     T& check_variable,
     typename T::value_type off_value,
     typename T::value_type (*init_function)(),
-    void (*deinit_function)()) requires(is_atomic_v<T>)
+    void (*deinit_function)())
+    requires(is_atomic_v<T>)
 {
     // We can do a relaxed load, if:
     //  - off_value, then we will lock before writing check_variable and memory order will be guaranteed
@@ -129,6 +135,7 @@ typename T::value_type start_subsystem(
  *
  * This will also register the deinit function to be called on system shutdown.
  *
+ * @ingroup concurrency
  * @param state_bit The global state bit to check if the subsystem is already initialized.
  * @param init_function The init function to call to initialize the subsystem
  * @param deinit_function the deinit function to call when shutting down the system.
@@ -156,6 +163,7 @@ inline bool start_subsystem(global_state_type state_bit, bool (*init_function)()
  *
  * This will also register the deinit function to be called on system shutdown.
  *
+ * @ingroup concurrency
  * @param check_variable The variable to check before initializing.
  * @param off_value The value of the check_variable when the subsystem is off.
  * @param init_function The init function to call to initialize the subsystem
@@ -163,7 +171,8 @@ inline bool start_subsystem(global_state_type state_bit, bool (*init_function)()
  * @return return value from the init_function; off_value if the system is shutting down.
  */
 template<typename T>
-requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
+    requires(is_atomic_v<T>)
+typename T::value_type start_subsystem_or_terminate(
     T& check_variable,
     typename T::value_type off_value,
     typename T::value_type (*init_function)(),
@@ -184,6 +193,7 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
  *
  * This will unregister and call the deinit function.
  *
+ * @ingroup concurrency
  * @param deinit_function the deinit function to call.
  */
 inline void stop_subsystem(void (*deinit_function)())
@@ -198,6 +208,8 @@ inline void stop_subsystem(void (*deinit_function)())
 
 /** Start the system.
  * Subsystems will only initialize once the system is started.
+ *
+ * @ingroup concurrency
  */
 inline void start_system() noexcept
 {
@@ -209,6 +221,8 @@ inline void start_system() noexcept
  *
  * Any attempts at registering deinit functions after this call
  * will fail and the deinit function will be called directly.
+ *
+ * @ingroup concurrency
  */
 inline void shutdown_system() noexcept
 {
@@ -227,4 +241,4 @@ inline void shutdown_system() noexcept
     detail::subsystem_mutex.unlock();
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

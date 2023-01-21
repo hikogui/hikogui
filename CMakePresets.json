@@ -87,6 +87,15 @@
             }
         },
         {
+            "name": "vc17-x64-windows-static-dbg-nopch",
+            "displayName": "MSVC-x64-Debug (no-PCH)",
+            "inherits": "vc17-x64-windows-static",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "HI_ENABLE_PCH": "OFF"
+            }
+        },
+        {
             "name": "vc17-x64-windows-static-dbg-asan",
             "hidden": true,
             "displayName": "MSVC-x64-Debug (ASAN)",
@@ -164,6 +173,18 @@
             "name": "vc17-x64-windows-static-dbg-examples",
             "displayName": "Library + Examples",
             "configurePreset": "vc17-x64-windows-static-dbg",
+            "targets": [ "hikogui", "hikogui_all_tests", "examples" ]
+        },
+{
+            "name": "vc17-x64-windows-static-dbg-nopch-all",
+            "displayName": "Library",
+            "configurePreset": "vc17-x64-windows-static-dbg-nopch",
+            "targets": [ "hikogui", "hikogui_all_tests"]
+        },
+        {
+            "name": "vc17-x64-windows-static-dbg-nopch-examples",
+            "displayName": "Library + Examples",
+            "configurePreset": "vc17-x64-windows-static-dbg-nopch",
             "targets": [ "hikogui", "hikogui_all_tests", "examples" ]
         },
         {

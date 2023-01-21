@@ -4,6 +4,7 @@
 
 #include "hikogui/file/path_location.hpp"
 #include "hikogui/utility/module.hpp"
+#include "hikogui/concurrency/module.hpp"
 #include "hikogui/metadata.hpp"
 #include "hikogui/strings.hpp"
 #include <atomic>

@@ -101,7 +101,6 @@ target_sources(hikogui PRIVATE
     polynomial.hpp
     range_map.hpp
     ranges.hpp
-    rcu.hpp
     recursive_iterator.hpp
     reflection.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32_impl.cpp>
@@ -138,6 +137,5 @@ target_sources(hikogui PRIVATE
     void_span.hpp
     when_any.hpp
     wfree_fifo.hpp
-    wfree_idle_count.hpp
     wfree_unordered_map.hpp
 )

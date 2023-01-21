@@ -5,7 +5,8 @@
 #pragma once
 
 #include "wfree_idle_count.hpp"
-#include "utility/module.hpp"
+#include "unfair_mutex.hpp"
+#include "../utility/module.hpp"
 #include <vector>
 #include <tuple>
 #include <mutex>

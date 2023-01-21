@@ -9,9 +9,10 @@
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
 #include "meta.hpp"
-#include "utility/module.hpp"
 #include "delayed_format.hpp"
 #include "format_check.hpp"
+#include "utility/module.hpp"
+#include "concurrency/module.hpp"
 #include <chrono>
 #include <format>
 #include <string>

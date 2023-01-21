@@ -13,6 +13,7 @@
 #include "point.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
 #include <concepts>
 #include <mutex>
 

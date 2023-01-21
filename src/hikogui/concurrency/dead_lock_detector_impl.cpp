@@ -4,9 +4,9 @@
 
 #include "dead_lock_detector.hpp"
 #include "unfair_mutex.hpp"
-#include "exception.hpp"
 #include "thread.hpp"
 #include "subsystem.hpp"
+#include "../utility/module.hpp"
 #include <mutex>
 
 namespace hi::inline v1 {

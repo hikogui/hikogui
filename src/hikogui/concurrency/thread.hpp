@@ -2,10 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file concurrency/thread.hpp Functions and types for accessing operating system threads.
+ * @ingroup concurrency
+ */
+
 #pragma once
 
-#include "utility.hpp"
-#include "architecture.hpp"
+#include "../utility/module.hpp"
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <intrin.h>
 #endif
@@ -16,7 +19,7 @@
 #include <chrono>
 #include <bit>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 constexpr std::size_t maximum_num_cpus = 64;
@@ -35,6 +38,8 @@ inline thread_local thread_id current_thread_id_dummy = 0;
 
 /** Get the current thread id.
  * Get the current thread id quickly.
+ *
+ * @ingroup concurrency
  */
 [[nodiscard]] inline thread_id current_thread_id() noexcept
 {
@@ -53,6 +58,8 @@ inline thread_local thread_id current_thread_id_dummy = 0;
  * by the operating system and debugger.
  *
  * Every thread should call this function exactly once.
+ *
+ * @ingroup concurrency
  */
 void set_thread_name(std::string_view name) noexcept;
 
@@ -61,6 +68,7 @@ void set_thread_name(std::string_view name) noexcept;
  * This function is designed to be reasonably fast, so that it can be used
  * in the logger thread.
  *
+ * @ingroup concurrency
  * @note Can only read names that where set using set_thread_name().
  * @param id The thread id.
  * @return Name of the thread set with `set_hread_name()`. Or the numeric thread-id as string.
@@ -69,6 +77,7 @@ void set_thread_name(std::string_view name) noexcept;
 
 /** Get the current process CPU affinity mask.
  *
+ * @ingroup concurrency
  * @return A bit mask on which CPUs the process is allowed to run on.
  *         Or zero on failure.
  */
@@ -79,17 +88,19 @@ void set_thread_name(std::string_view name) noexcept;
  * The given mask must be a strict subset of the mask returned from
  * process_affinity_mask().
  *
+ * @ingroup concurrency
  * @param mask A bit mask on which CPUs the thread should run on.
  * @throw std::os_error When unable to set the thread affinity to the given index
  * @return The previous bit mask. Or zero on failure.
  */
-std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask);
+std::vector<bool> set_thread_affinity_mask(std::vector<bool> const& mask);
 
 /** Set the current thread CPU affinity to a single CPU.
  *
  * The given processor index must be a part of the mask returned from
  * process_affinity_mask().
  *
+ * @ingroup concurrency
  * @param cpu_id The index of the CPU the thread should run on.
  * @return The previous bit mask. Or zero on failure.
  * @throw std::os_error When unable to set the thread affinity to the given index
@@ -100,17 +111,19 @@ std::vector<bool> set_thread_affinity(std::size_t cpu_id);
  * It is possible to detect when `advance_thread_affinity()` is at the last cpu;
  * in that case the cpu parameter is less than or equal to the return value.
  *
+ * @ingroup concurrency
  * @param[inout] cpu On input The cpu to start a search in the available-cpu list.
  *                    On output the cpu next on the available-cpu list.
  *
  * @return The cpu that was selected to run on.
  */
-std::size_t advance_thread_affinity(std::size_t &cpu) noexcept;
+std::size_t advance_thread_affinity(std::size_t& cpu) noexcept;
 
 /** Get the current CPU id.
  *
+ * @ingroup concurrency
  * @return The current CPU id.
  */
 [[nodiscard]] std::size_t current_cpu_id() noexcept;
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

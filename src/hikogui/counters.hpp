@@ -8,6 +8,7 @@
 #pragma once
 
 #include "utility/module.hpp"
+#include "concurrency/module.hpp"
 #include "time_stamp_count.hpp"
 #include "atomic.hpp"
 #include <span>

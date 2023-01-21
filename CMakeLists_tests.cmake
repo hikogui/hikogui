@@ -57,8 +57,9 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_text_segmentation_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_normalization_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/rcu_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/utility/dead_lock_detector_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/enum_metadata_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/float16_tests.cpp
@@ -91,7 +92,6 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/polymorphic_optional_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/polynomial_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/ranges_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/rcu_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/reflection_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/safe_int_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/shared_state_tests.cpp

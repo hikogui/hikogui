@@ -2,9 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file concurrency/global_state.hpp An atomic access global variable for quick access to state of the system.
+ * @ingroup concurrency
+ */
+
 #pragma once
 
-#include "cast.hpp"
+#include "../utility/module.hpp"
 #include <atomic>
 #include <type_traits>
 #include <bit>
@@ -14,7 +18,12 @@ hi_warning_push();
 // Need it for allow the use of enum in an atomic operation.
 hi_warning_ignore_msvc(26490);
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
+
+/** The flag-type used for global state.
+ *
+ * @ingroup concurrency
+ */
 enum class global_state_type : uint64_t {
     log_debug = 0x01,
     log_info = 0x02,
@@ -72,7 +81,7 @@ enum class global_state_type : uint64_t {
     return to_bool(rhs & global_state_type::system_is_shutting_down);
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
 
 template<>
 struct std::atomic<hi::global_state_type> {
@@ -173,7 +182,7 @@ struct std::atomic<hi::global_state_type> {
     }
 };
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** The global state of the hikogui framework.
  *
@@ -183,19 +192,38 @@ namespace hi::inline v1 {
  *
  * In many cases using std::memory_order::relaxed loads are enough of a
  * guarantee to read this variable.
+ *
+ * @ingroup concurrency
  */
 inline std::atomic<global_state_type> global_state = global_state_type::log_level_default;
 
+/** Check if the HikoGUI system is running.
+ *
+ * The system is running when it is allowed to start subsystems.
+ *
+ * @ingroup concurrency
+ */
 [[nodiscard]] inline bool is_system_running() noexcept
 {
     return is_system_running(global_state.load(std::memory_order::relaxed));
 }
 
+/** Check if the HikoGUI system is being shut down.
+ *
+ * When the system is being shut down no subsystems are allowed to start.
+ *
+ * @ingroup concurrency
+ */
 [[nodiscard]] inline bool is_system_shutting_down() noexcept
 {
     return is_system_shutting_down(global_state.load(std::memory_order::relaxed));
 }
 
+/** Set the logging level.
+ *
+ * @ingroup concurrency
+ * @param log_level A mask of which log levels should be logged.
+ */
 inline void set_log_level(global_state_type log_level) noexcept
 {
     // Only the log_* bits should be set.
@@ -208,6 +236,7 @@ inline void set_log_level(global_state_type log_level) noexcept
 
 /** Disable a subsystem.
  *
+ * @ingroup concurrency
  * @param subsystem The subsystem to disable.
  * @param order Memory order to use on the global_state variable.
  * @return True if the subsystem was enabled.
@@ -220,6 +249,7 @@ inline bool global_state_disable(global_state_type subsystem, std::memory_order 
 
 /** Enable a subsystem.
  *
+ * @ingroup concurrency
  * @param subsystem The subsystem to disable.
  * @param order Memory order to use on the global_state variable.
  * @return True if the subsystem was enabled.
@@ -230,6 +260,6 @@ inline bool global_state_enable(global_state_type subsystem, std::memory_order o
     return to_bool(global_state.fetch_or(subsystem, order) & subsystem);
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
 
 hi_warning_pop();

@@ -2,17 +2,18 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file concurrency/unfair_mutex.hpp Definition of the unfair_mutex.
+ * @ingroup concurrency
+ */
+
 #pragma once
 
-#include "utility.hpp"
-#include "thread.hpp"
-#include "assert.hpp"
 #include "dead_lock_detector.hpp"
+#include "../utility/module.hpp"
 #include <atomic>
 #include <memory>
-#include <thread>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** An unfair mutex
  * This is a fast implementation of a mutex which does not fairly arbitrate
@@ -28,6 +29,8 @@ namespace hi::inline v1 {
  *     - lock(): MOV r,1; XOR r,r; LOCK CMPXCHG; JNE (skip)
  *     - unlock(): LOCK XADD [],-1; CMP; JE
  *
+ * @ingroup concurrency
+ * @tparam UseDeadLockDetector true when the unfair_mutex will use the deadlock detector.
  */
 template<bool UseDeadLockDetector>
 class unfair_mutex_impl {
@@ -169,4 +172,4 @@ using unfair_mutex = unfair_mutex_impl<true>;
 using unfair_mutex = unfair_mutex_impl<false>;
 #endif
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -2,13 +2,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file concurrency/unfair_recusive_mutex.hpp Definition of the unfair_recursive_mutex.
+ * @ingroup concurrency
+ */
+
 #pragma once
 
 #include "unfair_mutex.hpp"
 #include "thread.hpp"
 #include <thread>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** An unfair recursive-mutex
  * This is a fast implementation of a recursive-mutex which does not fairly
@@ -28,6 +32,7 @@ namespace hi::inline v1 {
  *     - lock(): LEA, 2*MOV r,[]; CMP; JNE (skip); LEA, INC [], JMP
  *     - unlock(): ADD [],-1; JNE
  *
+ * @ingroup concurrency
  */
 class unfair_recursive_mutex {
     /* Thread annotation syntax.
@@ -46,8 +51,8 @@ class unfair_recursive_mutex {
     uint32_t count = 0;
 
 public:
-    unfair_recursive_mutex(unfair_recursive_mutex const &) = delete;
-    unfair_recursive_mutex &operator=(unfair_recursive_mutex const &) = delete;
+    unfair_recursive_mutex(unfair_recursive_mutex const&) = delete;
+    unfair_recursive_mutex& operator=(unfair_recursive_mutex const&) = delete;
 
     unfair_recursive_mutex() = default;
     ~unfair_recursive_mutex() = default;
@@ -187,4 +192,4 @@ public:
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

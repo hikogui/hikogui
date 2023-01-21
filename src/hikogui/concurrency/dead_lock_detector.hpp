@@ -2,24 +2,27 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file concurrency/dead_lock_detector.hpp A deadlock detector service for unfair_mutex.
+ * @ingroup concurrency
+ */
+
 #pragma once
 
-#include "assert.hpp"
-#include "architecture.hpp"
+#include "../utility/module.hpp"
 #include <vector>
 #include <algorithm>
 #include <compare>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 namespace detail {
 
 struct dead_lock_detector_pair {
     void *before;
     void *after;
 
-    friend bool operator==(dead_lock_detector_pair const &lhs, dead_lock_detector_pair const &rhs) noexcept = default;
+    friend bool operator==(dead_lock_detector_pair const& lhs, dead_lock_detector_pair const& rhs) noexcept = default;
     friend std::strong_ordering
-    operator<=>(dead_lock_detector_pair const &lhs, dead_lock_detector_pair const &rhs) noexcept = default;
+    operator<=>(dead_lock_detector_pair const& lhs, dead_lock_detector_pair const& rhs) noexcept = default;
 };
 
 } // namespace detail
@@ -31,6 +34,8 @@ struct dead_lock_detector_pair {
  *
  * In the future when MSVC allows constinit thread_local variables we can change the implementation
  * to allow the dead lock detector before main().
+ *
+ * @ingroup concurrency
  */
 class dead_lock_detector {
 public:
@@ -78,4 +83,4 @@ private:
     [[nodiscard]] static void *check_graph(void *object) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
