@@ -47,7 +47,7 @@ public:
      */
     overlay_widget(widget *parent) noexcept;
 
-    void set_widget(std::shared_ptr<widget> new_widget) noexcept;
+    void set_widget(std::unique_ptr<widget> new_widget) noexcept;
 
     /** Add a content widget directly to this overlay widget.
      *
@@ -64,16 +64,16 @@ public:
         hi_axiom(loop::main().on_thread());
         hi_assert(_content == nullptr);
 
-        auto tmp = std::make_shared<Widget>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         set_widget(std::move(tmp));
         return ref;
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
-        co_yield _content.get();
+        co_yield *_content;
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override;
@@ -85,7 +85,7 @@ public:
     [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
     /// @endprivatesection
 private:
-    std::shared_ptr<widget> _content;
+    std::unique_ptr<widget> _content;
     box_constraints _content_constraints;
     box_shape _content_shape;
 

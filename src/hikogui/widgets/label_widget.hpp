@@ -83,10 +83,10 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
-        co_yield _icon_widget.get();
-        co_yield _text_widget.get();
+        co_yield *_icon_widget;
+        co_yield *_text_widget;
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override;
@@ -102,8 +102,8 @@ private:
     decltype(text_style)::callback_token _text_style_cbt;
     decltype(alignment)::callback_token _alignment_cbt;
 
-    std::shared_ptr<icon_widget> _icon_widget;
-    std::shared_ptr<text_widget> _text_widget;
+    std::unique_ptr<icon_widget> _icon_widget;
+    std::unique_ptr<text_widget> _text_widget;
     grid_layout<widget *> _grid;
 
     void set_attributes() noexcept {}

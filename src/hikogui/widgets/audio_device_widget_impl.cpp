@@ -12,7 +12,7 @@ audio_device_widget::~audio_device_widget() {}
 audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio_system) noexcept :
     super(parent), _audio_system(&audio_system)
 {
-    _grid_widget = std::make_shared<grid_widget>(this);
+    _grid_widget = std::make_unique<grid_widget>(this);
     _device_selection_widget = &_grid_widget->make_widget<selection_widget>("A1", device_id, _device_list);
 
     _sync_device_list_task = sync_device_list();
@@ -35,8 +35,9 @@ audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio
     }
 }
 
-[[nodiscard]] generator<widget *> audio_device_widget::children() const noexcept{
-    co_yield _grid_widget.get();
+[[nodiscard]] generator<widget const&> audio_device_widget::children(bool include_invisible) const noexcept
+{
+    co_yield *_grid_widget;
 }
 
 [[nodiscard]] box_constraints audio_device_widget::update_constraints() noexcept

@@ -20,11 +20,11 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
 {
     hi_assert_not_null(this->delegate);
 
-    _current_label_widget = std::make_shared<label_widget>(this, alignment, text_style);
+    _current_label_widget = std::make_unique<label_widget>(this, alignment, text_style);
     _current_label_widget->mode = widget_mode::invisible;
-    _off_label_widget = std::make_shared<label_widget>(this, off_label, alignment, semantic_text_style::placeholder);
+    _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, semantic_text_style::placeholder);
 
-    _overlay_widget = std::make_shared<overlay_widget>(this);
+    _overlay_widget = std::make_unique<overlay_widget>(this);
     _overlay_widget->mode = widget_mode::invisible;
     _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();
@@ -43,11 +43,11 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
     this->delegate->init(*this);
 }
 
-[[nodiscard]] generator<widget *> selection_widget::children() const noexcept
+[[nodiscard]] generator<widget const &> selection_widget::children(bool include_invisible) const noexcept
 {
-    co_yield _overlay_widget.get();
-    co_yield _current_label_widget.get();
-    co_yield _off_label_widget.get();
+    co_yield *_overlay_widget;
+    co_yield *_current_label_widget;
+    co_yield *_off_label_widget;
 }
 
 [[nodiscard]] box_constraints selection_widget::update_constraints() noexcept
@@ -195,7 +195,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         auto r = _overlay_widget->hitbox_test_from_parent(position);
 
         if (layout().contains(position)) {
-            r = std::max(r, hitbox{this, _layout.elevation, _has_options ? hitbox_type::button : hitbox_type::_default});
+            r = std::max(r, hitbox{id, _layout.elevation, _has_options ? hitbox_type::button : hitbox_type::_default});
         }
 
         return r;
@@ -251,10 +251,10 @@ void selection_widget::start_selecting() noexcept
     _selecting = true;
     _overlay_widget->mode = widget_mode::enabled;
     if (auto selected_menu_button = get_selected_menu_button()) {
-        process_event(gui_event::window_set_keyboard_target(selected_menu_button, keyboard_focus_group::menu));
+        process_event(gui_event::window_set_keyboard_target(selected_menu_button->id, keyboard_focus_group::menu));
 
     } else if (auto first_menu_button = get_first_menu_button()) {
-        process_event(gui_event::window_set_keyboard_target(first_menu_button, keyboard_focus_group::menu));
+        process_event(gui_event::window_set_keyboard_target(first_menu_button->id, keyboard_focus_group::menu));
     }
 
     request_redraw();

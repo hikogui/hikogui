@@ -40,9 +40,9 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
-        co_yield _icon_widget.get();
+        co_yield *_icon_widget;
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override;
@@ -51,7 +51,7 @@ public:
     [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
     /// @endprivatesection
 private:
-    std::shared_ptr<icon_widget> _icon_widget;
+    std::unique_ptr<icon_widget> _icon_widget;
     box_constraints _icon_constraints;
     box_shape _icon_shape;
 

@@ -74,7 +74,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        auto tmp = std::make_shared<WidgetType>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<WidgetType>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
 
         hi_assert_not_null(delegate);
@@ -86,10 +86,10 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
         for (hilet& child : _children) {
-            co_yield child.get();
+            co_yield *child;
         }
     }
 
@@ -97,14 +97,14 @@ public:
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
-    [[nodiscard]] widget const *find_next_widget(
-        widget const *current_widget,
+    [[nodiscard]] widget_id find_next_widget(
+        widget_id current_widget,
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept override;
     /// @endprivatsectopn
 private:
     widget const *_previous_selected_child = nullptr;
-    std::vector<std::shared_ptr<widget>> _children;
+    std::vector<std::unique_ptr<widget>> _children;
     notifier<>::callback_token _delegate_cbt;
 
     using const_iterator = decltype(_children)::const_iterator;

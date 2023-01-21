@@ -17,11 +17,11 @@ text_field_widget::text_field_widget(widget *parent, std::shared_ptr<delegate_ty
     });
     this->delegate->init(*this);
 
-    _scroll_widget = std::make_shared<scroll_widget<axis::none>>(this);
+    _scroll_widget = std::make_unique<scroll_widget<axis::none>>(this);
     _text_widget = &_scroll_widget->make_widget<text_widget>(_text, alignment, text_style);
     _text_widget->mode = widget_mode::partial;
 
-    _error_label_widget = std::make_shared<label_widget>(this, _error_label, alignment::top_left(), semantic_text_style::error);
+    _error_label_widget = std::make_unique<label_widget>(this, _error_label, alignment::top_left(), semantic_text_style::error);
 
     _continues_cbt = continues.subscribe([&](auto...) {
         ++global_counter<"text_field_widget:continues:constrain">;
@@ -47,9 +47,9 @@ text_field_widget::~text_field_widget()
     delegate->deinit(*this);
 }
 
-[[nodiscard]] generator<widget *> text_field_widget::children() const noexcept
+[[nodiscard]] generator<widget const&> text_field_widget::children(bool include_invisible) const noexcept
 {
-    co_yield _scroll_widget.get();
+    co_yield *_scroll_widget;
 }
 
 [[nodiscard]] box_constraints text_field_widget::update_constraints() noexcept

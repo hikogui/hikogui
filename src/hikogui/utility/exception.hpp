@@ -145,6 +145,13 @@ private:
     }
 };
 
+/** Exception thrown when an item was not found.
+ */
+class not_found_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
+
 /** Exception thrown during execution of a dynamic operation.
  * This exception is often thrown on operation between multiple polymorphic objects
  * which do not support the combined operation.

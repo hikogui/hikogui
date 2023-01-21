@@ -77,11 +77,11 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const &context) noexcept override;
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
-        co_yield _on_label_widget.get();
-        co_yield _off_label_widget.get();
-        co_yield _other_label_widget.get();
+        co_yield *_on_label_widget;
+        co_yield *_off_label_widget;
+        co_yield *_other_label_widget;
     }
 
     [[nodiscard]] color background_color() const noexcept override;
@@ -91,15 +91,15 @@ public:
     bool handle_event(gui_event const& event) noexcept override;
     /// @endprivatesection
 protected:
-    std::shared_ptr<label_widget> _on_label_widget;
+    std::unique_ptr<label_widget> _on_label_widget;
     box_constraints _on_label_constraints;
     box_shape _on_label_shape;
 
-    std::shared_ptr<label_widget> _off_label_widget;
+    std::unique_ptr<label_widget> _off_label_widget;
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    std::shared_ptr<label_widget> _other_label_widget;
+    std::unique_ptr<label_widget> _other_label_widget;
     box_constraints _other_label_constraints;
     box_shape _other_label_shape;
 

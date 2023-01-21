@@ -92,7 +92,7 @@ public:
             // The `position` argument is used to handle widgets that are visually overlapping, widgets with higher elevation
             // get priority. When this widget is enabled it should show a button-cursor, otherwise just the normal arrow.
             return {
-                this, _layout.elevation, *mode >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
+                id, _layout.elevation, *mode >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
 
         } else {
             return {};

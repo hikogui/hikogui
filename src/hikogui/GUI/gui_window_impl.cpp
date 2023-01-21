@@ -38,7 +38,7 @@ void gui_window::init()
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
 
-    widget = std::make_shared<window_widget>(this, title);
+    widget = std::make_unique<window_widget>(this, title);
 
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
@@ -155,11 +155,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         // Guarantee that the layout size is always at least the minimum size.
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
         hilet widget_layout_size = max(_widget_constraints.minimum, widget_size);
-        widget->set_layout(widget_layout{
-            widget_layout_size,
-            _size_state,
-            subpixel_orientation(),
-            display_time_point});
+        widget->set_layout(widget_layout{widget_layout_size, _size_state, subpixel_orientation(), display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectanglei{widget_size};
@@ -194,36 +190,37 @@ void gui_window::render(utc_nanoseconds display_time_point)
     }
 }
 
-void gui_window::update_mouse_target(hi::widget const *new_target_widget, point2i position) noexcept
+void gui_window::update_mouse_target(widget_id new_target_id, point2i position) noexcept
 {
     hi_axiom(loop::main().on_thread());
 
-    if (auto mouse_target_widget = _mouse_target_widget.lock()) {
-        if (new_target_widget == mouse_target_widget.get()) {
+    if (_mouse_target_id) {
+        if (new_target_id == _mouse_target_id) {
             // Focus does not change.
             return;
         }
 
         // The mouse target needs to be updated, send exit to previous target.
-        send_events_to_widget(mouse_target_widget.get(), std::vector{gui_event{gui_event_type::mouse_exit}});
+        send_events_to_widget(_mouse_target_id, std::vector{gui_event{gui_event_type::mouse_exit}});
     }
 
-    if (new_target_widget != nullptr) {
-        _mouse_target_widget = new_target_widget->weak_from_this();
-        hi_assert(not _mouse_target_widget.expired(), "All widgets must be allocated with shared_ptr.");
-        send_events_to_widget(new_target_widget, std::vector{gui_event::make_mouse_enter(position)});
+    if (new_target_id) {
+        _mouse_target_id = new_target_id;
+        send_events_to_widget(new_target_id, std::vector{gui_event::make_mouse_enter(position)});
     } else {
-        _mouse_target_widget.reset();
+        _mouse_target_id = std::nullopt;
     }
 }
 
-void gui_window::update_keyboard_target(hi::widget const *new_target_widget, keyboard_focus_group group) noexcept
+void gui_window::update_keyboard_target(widget_id new_target_id, keyboard_focus_group group) noexcept
 {
     hi_axiom(loop::main().on_thread());
 
+    auto new_target_widget = get_if(widget.get(), new_target_id, false);
+
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
-    auto new_target_parent_chain = new_target_widget ? new_target_widget->parent_chain() : std::vector<hi::widget const *>{};
+    auto new_target_parent_chain = new_target_widget ? new_target_widget->parent_chain() : std::vector<widget_id>{};
 
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
@@ -232,13 +229,14 @@ void gui_window::update_keyboard_target(hi::widget const *new_target_widget, key
         new_target_widget = nullptr;
     }
 
-    if (auto keyboard_target_widget = _keyboard_target_widget.lock()) {
-        if (new_target_widget == keyboard_target_widget.get()) {
+    if (auto keyboard_target_widget = get_if(widget.get(), _keyboard_target_id, false)) {
+        // keyboard target still exists and visible.
+        if (new_target_widget == keyboard_target_widget) {
             // Focus does not change.
             return;
         }
 
-        send_events_to_widget(keyboard_target_widget.get(), std::vector{gui_event{gui_event_type::keyboard_exit}});
+        send_events_to_widget(_keyboard_target_id, std::vector{gui_event{gui_event_type::keyboard_exit}});
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
@@ -246,16 +244,15 @@ void gui_window::update_keyboard_target(hi::widget const *new_target_widget, key
 
     // Tell the new widget that keyboard focus was entered.
     if (new_target_widget != nullptr) {
-        _keyboard_target_widget = new_target_widget->weak_from_this();
-        hi_assert(not _keyboard_target_widget.expired(), "All widgets must be allocated with shared_ptr.");
-        send_events_to_widget(new_target_widget, std::vector{gui_event{gui_event_type::keyboard_enter}});
+        _keyboard_target_id = new_target_widget->id;
+        send_events_to_widget(_keyboard_target_id, std::vector{gui_event{gui_event_type::keyboard_enter}});
     } else {
-        _keyboard_target_widget.reset();
+        _keyboard_target_id = std::nullopt;
     }
 }
 
 void gui_window::update_keyboard_target(
-    hi::widget const *start_widget,
+    widget_id start_widget,
     keyboard_focus_group group,
     keyboard_focus_direction direction) noexcept
 {
@@ -271,9 +268,7 @@ void gui_window::update_keyboard_target(
 
 void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept
 {
-    if (hilet keyboard_target_widget = _keyboard_target_widget.lock()) {
-        update_keyboard_target(keyboard_target_widget.get(), group, direction);
-    }
+    return update_keyboard_target(_keyboard_target_id, group, direction);
 }
 
 hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
@@ -330,12 +325,12 @@ bool gui_window::process_event(gui_event const& event) noexcept
     case window_set_keyboard_target:
         {
             hilet& target = event.keyboard_target();
-            if (target.widget == nullptr) {
+            if (target.widget_id == nullptr) {
                 update_keyboard_target(target.group, target.direction);
             } else if (target.direction == keyboard_focus_direction::here) {
-                update_keyboard_target(target.widget, target.group);
+                update_keyboard_target(target.widget_id, target.group);
             } else {
-                update_keyboard_target(target.widget, target.group, target.direction);
+                update_keyboard_target(target.widget_id, target.group, target.direction);
             }
         }
         return true;
@@ -352,10 +347,10 @@ bool gui_window::process_event(gui_event const& event) noexcept
     case mouse_move:
         {
             hilet hitbox = widget->hitbox_test(event.mouse().position);
-            update_mouse_target(hitbox.widget, event.mouse().position);
+            update_mouse_target(hitbox.widget_id, event.mouse().position);
 
             if (event == mouse_down) {
-                update_keyboard_target(hitbox.widget, keyboard_focus_group::all);
+                update_keyboard_target(hitbox.widget_id, keyboard_focus_group::all);
             }
         }
         break;
@@ -378,12 +373,8 @@ bool gui_window::process_event(gui_event const& event) noexcept
     }
 
     hilet handled = [&] {
-        hilet target_widget = event.variant() == gui_event_variant::mouse ? _mouse_target_widget : _keyboard_target_widget;
-        if (hilet target_widget_ = target_widget.lock()) {
-            return send_events_to_widget(target_widget_.get(), events);
-        } else {
-            return false;
-        }
+        hilet target_id = event.variant() == gui_event_variant::mouse ? _mouse_target_id : _keyboard_target_id;
+        return send_events_to_widget(target_id, events);
     }();
 
     // Intercept the keyboard generated escape.
@@ -399,17 +390,18 @@ bool gui_window::process_event(gui_event const& event) noexcept
     return handled;
 }
 
-bool gui_window::send_events_to_widget(hi::widget const *target_widget, std::vector<gui_event> const& events) noexcept
+bool gui_window::send_events_to_widget(hi::widget_id target_id, std::vector<gui_event> const& events) noexcept
 {
-    if (not target_widget) {
+    if (not target_id) {
         // If there was no target, send the event to the window's widget.
-        target_widget = widget.get();
+        target_id = widget->id;
     }
 
+    auto target_widget = get_if(widget.get(), target_id, false);
     while (target_widget) {
         // Each widget will try to handle the first event it can.
         for (hilet& event : events) {
-            if (const_cast<hi::widget *>(target_widget)->handle_event(target_widget->layout().from_window * event)) {
+            if (target_widget->handle_event(target_widget->layout().from_window * event)) {
                 return true;
             }
         }

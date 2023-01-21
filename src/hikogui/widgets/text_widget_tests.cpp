@@ -32,8 +32,8 @@ protected:
     hi::theme theme;
 
     observer<std::string> text;
-    std::shared_ptr<window_widget_moc> window_widget;
-    std::shared_ptr<hi::text_widget> widget;
+    std::unique_ptr<window_widget_moc> window_widget;
+    std::unique_ptr<hi::text_widget> widget;
 
 
     void SetUp() override
@@ -50,10 +50,10 @@ protected:
         theme_book = std::make_unique<hi::theme_book>(fb, make_vector(get_paths(path_location::theme_dirs)));
         theme = theme_book->find("default", theme_mode::light);
 
-        window_widget = std::make_shared<window_widget_moc>();
+        window_widget = std::make_unique<window_widget_moc>();
         window_widget->_theme = theme;
 
-        widget = std::make_shared<hi::text_widget>(window_widget.get(), text);
+        widget = std::make_unique<hi::text_widget>(window_widget.get(), text);
         widget->mode = hi::widget_mode::enabled;
 
         auto constraints = widget->update_constraints();

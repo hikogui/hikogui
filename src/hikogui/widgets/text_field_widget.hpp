@@ -107,7 +107,7 @@ public:
     } : text_field_widget(parent, make_default_text_field_delegate(hi_forward(value)), hi_forward(attributes)...) {}
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override;
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
@@ -121,7 +121,7 @@ private:
 
     /** The scroll widget embeds the text widget.
      */
-    std::shared_ptr<scroll_widget<axis::none>> _scroll_widget;
+    std::unique_ptr<scroll_widget<axis::none>> _scroll_widget;
     box_constraints _scroll_constraints;
     box_shape _scroll_shape;
 
@@ -136,7 +136,7 @@ private:
     /** An error string to show to the user.
      */
     observer<label> _error_label;
-    std::shared_ptr<label_widget> _error_label_widget;
+    std::unique_ptr<label_widget> _error_label_widget;
     box_constraints _error_label_constraints;
     box_shape _error_label_shape;
 

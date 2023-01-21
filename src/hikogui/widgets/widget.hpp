@@ -16,6 +16,7 @@
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
 #include "../GUI/gui_event.hpp"
+#include "../GUI/widget_id.hpp"
 #include "../layout/box_constraints.hpp"
 #include "../geometry/module.hpp"
 #include "../observer.hpp"
@@ -23,6 +24,7 @@
 #include "../generator.hpp"
 #include "../cache.hpp"
 #include "../os_settings.hpp"
+#include "../tagged_id.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -52,7 +54,7 @@ public:
      *
      * @note This is a uint32_t equal to the operating system's accessibility identifier.
      */
-    uint32_t id = 0;
+    widget_id id = {};
 
     /** The widget mode.
      * The current visibility and interactivity of a widget.
@@ -102,13 +104,27 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    widget(widget *parent) noexcept;
+    explicit widget(widget *parent) noexcept;
 
     virtual ~widget();
     widget(const widget&) = delete;
     widget& operator=(const widget&) = delete;
     widget(widget&&) = delete;
     widget& operator=(widget&&) = delete;
+
+    /** Get a list of child widgets.
+     */
+    [[nodiscard]] virtual generator<widget const&> children(bool include_invisible) const noexcept
+    {
+        co_return;
+    }
+
+    [[nodiscard]] generator<widget&> children(bool include_invisible) noexcept
+    {
+        for (auto& child : const_cast<widget const *>(this)->children(include_invisible)) {
+            co_yield const_cast<widget&>(child);
+        }
+    }
 
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
@@ -239,9 +255,8 @@ public:
      * @param reject_list The widgets that should ignore this command
      * @return True when the command was handled by this widget or recursed child.
      */
-    virtual bool handle_event_recursive(
-        gui_event const& event,
-        std::vector<widget const *> const& reject_list = std::vector<widget const *>{}) noexcept;
+    virtual bool
+    handle_event_recursive(gui_event const& event, std::vector<widget_id> const& reject_list = std::vector<widget_id>{}) noexcept;
 
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
@@ -256,14 +271,14 @@ public:
                                        keyboard focus was found.
      * @retval nullptr When current_keyboard_widget is not found in this widget.
      */
-    [[nodiscard]] virtual widget const *find_next_widget(
-        widget const *current_keyboard_widget,
+    [[nodiscard]] virtual widget_id find_next_widget(
+        widget_id current_keyboard_widget,
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept;
 
-    [[nodiscard]] widget const *find_first_widget(keyboard_focus_group group) const noexcept;
+    [[nodiscard]] widget_id find_first_widget(keyboard_focus_group group) const noexcept;
 
-    [[nodiscard]] widget const *find_last_widget(keyboard_focus_group group) const noexcept;
+    [[nodiscard]] widget_id find_last_widget(keyboard_focus_group group) const noexcept;
 
     /** Is this widget the first widget in the parent container.
      */
@@ -291,7 +306,7 @@ public:
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
-    [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
+    [[nodiscard]] std::vector<widget_id> parent_chain() const noexcept;
 
     [[nodiscard]] virtual gui_window *window() const noexcept
     {
@@ -332,11 +347,6 @@ protected:
 
     decltype(mode)::callback_token _mode_cbt;
 
-    [[nodiscard]] virtual generator<widget *> children() const noexcept
-    {
-        co_return;
-    }
-
     /** Make an overlay rectangle.
      *
      * This function tries to create a rectangle for an overlay-widget that
@@ -348,4 +358,26 @@ protected:
      */
     [[nodiscard]] aarectanglei make_overlay_rectangle(aarectanglei requested_rectangle) const noexcept;
 };
+
+inline widget *get_if(widget *start, widget_id id, bool include_invisible) noexcept
+{
+    if (start->id == id) {
+        return start;
+    }
+    for (auto& child : start->children(include_invisible)) {
+        if (hilet r = get_if(&child, id, include_invisible); r != nullptr) {
+            return r;
+        }
+    }
+    return nullptr;
+}
+
+inline widget& get(widget& start, widget_id id, bool include_invisible)
+{
+    if (auto r = get_if(std::addressof(start), id, include_invisible); r != nullptr) {
+        return *r;
+    }
+    throw not_found_error("get widget by id");
+}
+
 }} // namespace hi::v1

@@ -54,7 +54,7 @@ public:
     [[nodiscard]] toolbar_widget& toolbar() noexcept;
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override;
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept;
     void draw(draw_context const& context) noexcept override;
@@ -68,11 +68,11 @@ public:
 private:
     gui_window *_window;
 
-    std::shared_ptr<grid_widget> _content;
+    std::unique_ptr<grid_widget> _content;
     box_constraints _content_constraints;
     box_shape _content_shape;
 
-    std::shared_ptr<toolbar_widget> _toolbar;
+    std::unique_ptr<toolbar_widget> _toolbar;
     box_constraints _toolbar_constraints;
     box_shape _toolbar_shape;
 

@@ -123,7 +123,7 @@ public:
 
         if (*mode >= widget_mode::partial and layout().contains(position) and visible() and
             _slider_rectangle.contains(position)) {
-            return {this, _layout.elevation, hitbox_type::scroll_bar};
+            return {id, _layout.elevation, hitbox_type::scroll_bar};
         } else {
             return {};
         }
