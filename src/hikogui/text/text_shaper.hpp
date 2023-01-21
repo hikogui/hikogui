@@ -13,7 +13,7 @@
 #include "glyph_ids.hpp"
 #include "font.hpp"
 #include "../layout/box_constraints.hpp"
-#include "../geometry/alignment.hpp"
+#include "../geometry/module.hpp"
 #include "../unicode/unicode_description.hpp"
 #include "../unicode/unicode_break_opportunity.hpp"
 #include "../unicode/unicode_bidi.hpp"

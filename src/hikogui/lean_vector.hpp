@@ -7,8 +7,7 @@
 
 #pragma once
 
-#include "cast.hpp"
-#include "memory.hpp"
+#include "utility/module.hpp"
 #include <bit>
 #include <new>
 #include <cstddef>

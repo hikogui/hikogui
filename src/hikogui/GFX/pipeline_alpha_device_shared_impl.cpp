@@ -6,8 +6,8 @@
 #include "pipeline_alpha_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../file/URL.hpp"
-#include "../geometry/corner_radii.hpp"
-#include "../pixel_map.hpp"
+#include "../geometry/module.hpp"
+#include "../image/module.hpp"
 #include <array>
 
 namespace hi::inline v1::pipeline_alpha {

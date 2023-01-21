@@ -2,13 +2,21 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file color/semantic_color.hpp defines the semantic_color type.
+ * @ingroup color
+ */
+
 #pragma once
 
-#include "../enum_metadata.hpp"
+#include "../utility/module.hpp"
 #include <array>
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
+/** Semantic colors.
+ * @ingroup color
+ */
 enum class semantic_color : unsigned char {
     blue,
     green,
@@ -64,18 +72,26 @@ constexpr auto semantic_color_metadata = enum_metadata{
 
 // clang-format on
 
+/** Convert a semantic color to a string.
+ *
+ * @ingroup color
+ */
 [[nodiscard]] inline std::string_view to_string(semantic_color rhs) noexcept
 {
     return semantic_color_metadata[rhs];
 }
 
 
+/** Convert a string to a semantic color.
+ *
+ * @ingroup color
+ */
 [[nodiscard]] inline semantic_color semantic_color_from_string(std::string_view str)
 {
     return semantic_color_metadata[str];
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 template<typename CharT>
 struct std::formatter<hi::semantic_color, CharT> : std::formatter<std::string_view, CharT> {

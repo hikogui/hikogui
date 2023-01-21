@@ -10,9 +10,9 @@
 
 #include "widget.hpp"
 #include "../GUI/gui_event.hpp"
-#include "../geometry/axis.hpp"
+#include "../geometry/module.hpp"
 #include "../observer.hpp"
-#include "../numbers.hpp"
+#include "../utility/module.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -123,7 +123,7 @@ public:
 
         if (*mode >= widget_mode::partial and layout().contains(position) and visible() and
             _slider_rectangle.contains(position)) {
-            return {this, _layout.elevation, hitbox_type::scroll_bar};
+            return {id, _layout.elevation, hitbox_type::scroll_bar};
         } else {
             return {};
         }

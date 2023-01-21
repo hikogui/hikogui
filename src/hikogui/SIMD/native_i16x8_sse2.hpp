@@ -5,7 +5,7 @@
 #include "native_simd_utility.hpp"
 
 namespace hi {
-friend namespace v1 {
+inline namespace v1 {
 
 #ifdef HI_HAS_SSE2
 
@@ -58,7 +58,7 @@ struct native_i16x8 {
     [[nodiscard]] native_i16x8(value_type a, value_type b = value_type{0}, value_type c = value_type{0}, value_type d = value_type{0},
                              value_type e = value_type{0}, value_type f = value_type{0}, value_type g = value_type{0},
                              value_type h = value_type{0}) noexcept :
-        v(mm_set_epi16(h, g, f, e, d, c, b, a)) {}
+        v(_mm_set_epi16(h, g, f, e, d, c, b, a)) {}
 
     [[nodiscard]] explicit native_i16x8(value_type const *other) noexcept : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other))) {}
 
@@ -92,7 +92,7 @@ struct native_i16x8 {
     [[nodiscard]] explicit native_i16x8(std::array<value_type, N> other) noexcept requires (N >= size) : v(_mm_loadu_si128(reinterpret_cast<register_type const *>(other.data()))) {}
 
     template<size_t N>
-    [[nodiscard]] explicit operator std::array<value_type, N> () const noexcept requires (N => size)
+    [[nodiscard]] explicit operator std::array<value_type, N> () const noexcept requires (N >= size)
     {
         auto r = std::array<value_type, size>{};
         _mm_storeu_si128(reinterpret_cast<register_type *>(r.data()), v);
@@ -131,14 +131,14 @@ struct native_i16x8 {
      * r[7] = a[0]
      * ```
      */
-    [[nodiscard]] static native_i16x8 broadcast(native_i16x8 a) noexcept
-    {
-#ifdef HI_HAS_AVX2
-        return native_i16x8{_mm_broadcastss_epi16(a.v)};
-#else
-        return permute<"xxxxxxxx">(a);
-#endif
-    }
+//    [[nodiscard]] static native_i16x8 broadcast(native_i16x8 a) noexcept
+//    {
+//#ifdef HI_HAS_AVX2
+//        return native_i16x8{_mm_broadcastw_epi16(a.v)};
+//#else
+//        return permute<"xxxxxxxx">(a);
+//#endif
+//    }
 
     /** For each bit in mask set corrosponding element to all-ones or all-zeros.
      */
@@ -146,15 +146,15 @@ struct native_i16x8 {
     {
         hi_axiom(mask <= 0b1111'1111);
 
-        return set<native_i16x8>(
-            mask & 0b1000'0000 ? 0 : value_type{0xffff},
-            mask & 0b0100'0000 ? 0 : value_type{0xffff},
-            mask & 0b0010'0000 ? 0 : value_type{0xffff},
-            mask & 0b0001'0000 ? 0 : value_type{0xffff},
-            mask & 0b0000'1000 ? 0 : value_type{0xffff},
-            mask & 0b0000'0100 ? 0 : value_type{0xffff},
-            mask & 0b0000'0010 ? 0 : value_type{0xffff},
-            mask & 0b0000'0001 ? 0 : value_type{0xffff});
+        return native_i16x8{
+            mask & 0b0000'0001 ? 0 : char_cast<value_type>(0xffff),
+            mask & 0b0000'0010 ? 0 : char_cast<value_type>(0xffff),
+            mask & 0b0000'0100 ? 0 : char_cast<value_type>(0xffff),
+            mask & 0b0000'1000 ? 0 : char_cast<value_type>(0xffff),
+            mask & 0b0001'0000 ? 0 : char_cast<value_type>(0xffff),
+            mask & 0b0010'0000 ? 0 : char_cast<value_type>(0xffff),
+            mask & 0b0100'0000 ? 0 : char_cast<value_type>(0xffff),
+            mask & 0b1000'0000 ? 0 : char_cast<value_type>(0xffff)};
     }
 
     /** Concatonate the top bit of each element.
@@ -238,13 +238,14 @@ struct native_i16x8 {
 
     [[nodiscard]] friend native_i16x8 operator~(native_i16x8 a) noexcept
     {
-        hilet ones = _mm_castps_si128_mm_cmpneq_ps(_mm_setzero_ps(), _mm_setzero_ps());
+        auto ones = _mm_undefined_si128();
+        ones = _mm_cmpeq_epi32(ones, ones);
         return native_i16x8{_mm_andnot_si128(a.v, ones)};
     }
 
     [[nodiscard]] friend native_i16x8 operator<<(native_i16x8 a, int b) noexcept
     {
-        return native_i16x8{_mm_ssli_epi16(a.v, b)};
+        return native_i16x8{_mm_slli_epi16(a.v, b)};
     }
 
     [[nodiscard]] friend native_i16x8 operator>>(native_i16x8 a, int b) noexcept
@@ -338,17 +339,17 @@ struct native_i16x8 {
      * @param a The vector to swizzle the elements
      * @returns A vector with the elements swizzled.
      */
-    template<fixed_string SourceElements>
-    [[nodiscard]] static native_i16x8 permute(native_i16x8 a) noexcept
-    {
-        constexpr auto order = detail::swizzle_to_packed_indices<SourceElements, size>();
-
-        if constexpr (order == 0b11'10'01'00) {
-            return a.v;
-        } else {
-            return native_i16x8{_mm_shuffle_epi16(a.v, order)};
-        }
-    }
+    //template<fixed_string SourceElements>
+    //[[nodiscard]] static native_i16x8 permute(native_i16x8 a) noexcept
+    //{
+    //    constexpr auto order = detail::native_swizzle_to_packed_indices<SourceElements, size>();
+    //
+    //    if constexpr (order == 0b111'110'101'100'011'010'001'000) {
+    //        return a.v;
+    //    } else {
+    //        return native_i16x8{_mm_shuffle_epi16(a.v, order)};
+    //    }
+    //}
 
     /** Swizzle elements.
      *
@@ -435,11 +436,11 @@ struct native_i16x8 {
      * r = broadcast(a[0] + a[1] + a[2] + a[3])
      * ```
      */
-    [[nodiscard]] friend native_i16x8 horizontal_sum(native_i16x8 a) noexcept
-    {
-        auto tmp = a + permute<"cdab">(a);
-        return tmp + permute<"badc">(tmp);
-    }
+    //[[nodiscard]] friend native_i16x8 horizontal_sum(native_i16x8 a) noexcept
+    //{
+    //    auto tmp = a + permute<"cdab">(a);
+    //    return tmp + permute<"badc">(tmp);
+    //}
 
     /** Dot product.
      *

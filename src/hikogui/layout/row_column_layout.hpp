@@ -5,7 +5,7 @@
 #pragma once
 
 #include "grid_layout.hpp"
-#include "../geometry/axis.hpp"
+#include "../geometry/module.hpp"
 
 namespace hi { inline namespace v1 {
 

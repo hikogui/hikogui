@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "../assert.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include "../pickle.hpp"
 #include "../text/hikogui_icon.hpp"
 #include <array>

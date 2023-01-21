@@ -10,8 +10,7 @@
 #include "font.hpp"
 #include "../unicode/unicode_description.hpp"
 #include "../unicode/grapheme.hpp"
-#include "../geometry/point.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
 class font_book;

@@ -6,8 +6,7 @@
 
 #include <cstdint>
 #include <string_view>
-#include "../exception.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

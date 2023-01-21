@@ -4,8 +4,7 @@
 
 #include "bezier_curve.hpp"
 #include "bezier_point.hpp"
-#include "pixel_map.inl"
-#include "memory.hpp"
+#include "utility/module.hpp"
 #include <optional>
 
 namespace hi::inline v1 {
@@ -188,7 +187,7 @@ static std::optional<std::vector<std::pair<float, float>>> getFillSpansAtY(std::
     return r;
 }
 
-static void fillPartialPixels(pixel_row<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
+static void fillPartialPixels(std::span<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
 {
     hilet pixelCoverage = std::clamp(endX, i + 0.0f, i + 1.0f) - std::clamp(startX, i + 0.0f, i + 1.0f);
 
@@ -196,7 +195,7 @@ static void fillPartialPixels(pixel_row<uint8_t> row, ssize_t const i, float con
     pixel = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + pixel, 255.0f));
 }
 
-static void fillFullPixels(pixel_row<uint8_t> row, ssize_t const start, ssize_t const size) noexcept
+static void fillFullPixels(std::span<uint8_t> row, ssize_t const start, ssize_t const size) noexcept
 {
     if (size < 16) {
         hilet end = start + size;
@@ -231,9 +230,9 @@ static void fillFullPixels(pixel_row<uint8_t> row, ssize_t const start, ssize_t 
 /*! Render pixels in a row between two x values.
  * Fully covered sub-pixel will have the value 51.
  */
-static void fillRowSpan(pixel_row<uint8_t> row, float const startX, float const endX) noexcept
+static void fillRowSpan(std::span<uint8_t> row, float const startX, float const endX) noexcept
 {
-    if (startX >= row.width() || endX < 0.0f) {
+    if (startX >= row.size() || endX < 0.0f) {
         return;
     }
 
@@ -241,7 +240,7 @@ static void fillRowSpan(pixel_row<uint8_t> row, float const startX, float const 
     hilet endXplusOne = endX + 1.0f;
     hilet endX_int = narrow_cast<std::size_t>(endXplusOne);
     hilet startColumn = std::max(startX_int, std::size_t{0});
-    hilet endColumn = std::min(endX_int, row.width());
+    hilet endColumn = std::min(endX_int, row.size());
     hilet nrColumns = endColumn - startColumn;
 
     if (nrColumns == 1) {
@@ -253,7 +252,7 @@ static void fillRowSpan(pixel_row<uint8_t> row, float const startX, float const 
     }
 }
 
-static void fillRow(pixel_row<uint8_t> row, std::size_t rowY, std::vector<bezier_curve> const& curves) noexcept
+static void fillRow(std::span<uint8_t> row, std::size_t rowY, std::vector<bezier_curve> const& curves) noexcept
 {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
@@ -273,10 +272,10 @@ static void fillRow(pixel_row<uint8_t> row, std::size_t rowY, std::vector<bezier
     }
 }
 
-void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) noexcept
+void fill(pixmap_span<uint8_t> image, std::vector<bezier_curve> const& curves) noexcept
 {
-    for (std::size_t rowNr = 0; rowNr < image.height(); rowNr++) {
-        fillRow(image.at(rowNr), rowNr, curves);
+    for (auto y = 0_uz; y < image.height(); y++) {
+        fillRow(image[y], y, curves);
     }
 }
 
@@ -301,13 +300,13 @@ void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) no
 }
 
 
-void fill(pixel_map<sdf_r8>& image, std::vector<bezier_curve> const& curves) noexcept
+void fill(pixmap_span<sdf_r8> image, std::vector<bezier_curve> const& curves) noexcept
 {
-    for (int row_nr = 0; row_nr != image.height(); ++row_nr) {
-        auto row = image.at(row_nr);
-        auto y = static_cast<float>(row_nr);
-        for (int column_nr = 0; column_nr != image.width(); ++column_nr) {
-            auto x = static_cast<float>(column_nr);
+    for (auto row_nr = 0_uz; row_nr != image.height(); ++row_nr) {
+        hilet row = image[row_nr];
+        hilet y = static_cast<float>(row_nr);
+        for (auto column_nr = 0_uz; column_nr != image.width(); ++column_nr) {
+            hilet x = static_cast<float>(column_nr);
             row[column_nr] = generate_sdf_r8_pixel(point2(x, y), curves);
         }
     }

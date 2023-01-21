@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "architecture.hpp"
+#include "utility/module.hpp"
 #include <atomic>
 #include <thread>
 #include <chrono>

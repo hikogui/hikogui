@@ -11,11 +11,9 @@
 #include "alignment.hpp"
 #include "extent.hpp"
 #include "point.hpp"
-#include "../SIMD/simd.hpp"
-#include "../concepts.hpp"
-#include "../unfair_mutex.hpp"
-#include "../cast.hpp"
-#include "../numbers.hpp"
+#include "../SIMD/module.hpp"
+#include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
 #include <concepts>
 #include <mutex>
 

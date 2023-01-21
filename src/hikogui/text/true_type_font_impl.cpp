@@ -3,11 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "true_type_font.hpp"
-#include "../geometry/vector.hpp"
-#include "../geometry/point.hpp"
+#include "../geometry/module.hpp"
+#include "../utility/module.hpp"
 #include "../placement.hpp"
 #include "../strings.hpp"
-#include "../endian.hpp"
 #include "../log.hpp"
 #include <cstddef>
 #include <span>
@@ -901,7 +900,7 @@ void true_type_font::parse_maxp_table(std::span<std::byte const> table_bytes)
 
 bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const>& glyph_bytes) const noexcept
 {
-    assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, false);
+    assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
     std::size_t startOffset = 0;
     std::size_t endOffset = 0;
@@ -947,9 +946,9 @@ static void get_kern0_kerning(
 
     hilet i = std::lower_bound(entries.begin(), entries.end(), std::pair{glyph1_id, glyph2_id}, [](hilet& a, hilet& b) {
         if (a.left.value() == b.first) {
-            return a.right.value() < b.second;
+            return a.right.value() < *b.second;
         } else {
-            return a.left.value() < b.first;
+            return a.left.value() < *b.first;
         }
     });
     assert_or_return(i != entries.end(), );
@@ -1068,7 +1067,7 @@ bool true_type_font::update_glyph_metrics(
     hi::glyph_id kern_glyph1_id,
     hi::glyph_id kern_glyph2_id) const noexcept
 {
-    assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, false);
+    assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
     ssize_t offset = 0;
 
@@ -1081,7 +1080,7 @@ bool true_type_font::update_glyph_metrics(
 
     float advanceWidth = 0.0f;
     float leftSideBearing;
-    if (glyph_id < numberOfHMetrics) {
+    if (*glyph_id < numberOfHMetrics) {
         advanceWidth = longHorizontalMetricTable[*glyph_id].advanceWidth.value(unitsPerEm);
         leftSideBearing = longHorizontalMetricTable[*glyph_id].leftSideBearing.value(unitsPerEm);
     } else {
@@ -1320,7 +1319,7 @@ bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes,
 
 std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_path& glyph) const noexcept
 {
-    assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, {});
+    assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, {});
 
     std::span<std::byte const> glyph_bytes;
     assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), {});
@@ -1397,7 +1396,7 @@ bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> byte
 bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics& glyph_metrics, hi::glyph_id lookahead_glyph_id)
     const noexcept
 {
-    assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, false);
+    assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
     std::span<std::byte const> glyph_bytes;
     assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), false);

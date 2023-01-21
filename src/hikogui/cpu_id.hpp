@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "architecture.hpp"
-#include "cast.hpp"
+#include "utility/module.hpp"
 #include <array>
 
 #if HI_COMPILER == HI_CC_MSVC

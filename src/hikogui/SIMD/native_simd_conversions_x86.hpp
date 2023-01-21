@@ -40,6 +40,7 @@ namespace hi { inline namespace v1 {
 }
 #endif
 
+
 //[[nodiscard]] inline native_f32x4 permute(native_f32x4 a, native_i32x4 const &source_elements) noexcept
 //{
 //    return native_f32x4{_mm_shufflevar_ps(a.v, source_elements.v)};

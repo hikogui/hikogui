@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "widget_id.hpp"
 #include "gui_event_type.hpp"
 #include "gui_event_variant.hpp"
 #include "keyboard_virtual_key.hpp"
@@ -17,9 +18,7 @@
 #include "keyboard_focus_direction.hpp"
 #include "mouse_buttons.hpp"
 #include "../unicode/grapheme.hpp"
-#include "../geometry/vector.hpp"
-#include "../geometry/point.hpp"
-#include "../geometry/translate.hpp"
+#include "../geometry/module.hpp"
 #include "../chrono.hpp"
 #include <chrono>
 #include <memory>
@@ -63,10 +62,8 @@ struct mouse_event_data {
     uint8_t click_count = 0;
 };
 
-class widget;
-
 struct keyboard_target_data {
-    hi::widget const *widget = nullptr;
+    hi::widget_id widget_id = {};
     keyboard_focus_group group = keyboard_focus_group::normal;
     keyboard_focus_direction direction = keyboard_focus_direction::here;
 };
@@ -188,12 +185,12 @@ public:
     }
 
     [[nodiscard]] static gui_event window_set_keyboard_target(
-        widget const *widget,
+        widget_id id,
         keyboard_focus_group group = keyboard_focus_group::normal,
         keyboard_focus_direction direction = keyboard_focus_direction::here) noexcept
     {
         auto r = gui_event{gui_event_type::window_set_keyboard_target};
-        r.keyboard_target().widget = widget;
+        r.keyboard_target().widget_id = id;
         r.keyboard_target().group = group;
         r.keyboard_target().direction = direction;
         return r;

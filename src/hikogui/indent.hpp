@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "cast.hpp"
+#include "utility/module.hpp"
 
 namespace hi::inline v1 {
 

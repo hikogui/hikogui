@@ -5,9 +5,7 @@
 
 #pragma once
 
-#include "../utility.hpp"
-#include "../cast.hpp"
-#include "../enum_metadata.hpp"
+#include "../utility/module.hpp"
 #include <cstdint>
 
 namespace hi::inline v1 {

@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "../GUI/theme.hpp"
-#include "../geometry/axis.hpp"
+#include "../geometry/module.hpp"
 #include "../layout/row_column_layout.hpp"
 #include <memory>
 #include <type_traits>
@@ -74,7 +74,7 @@ public:
     template<typename Widget, typename... Args>
     Widget& make_widget(Args&&...args)
     {
-        auto tmp = std::make_shared<Widget>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         _children.push_back(std::move(tmp));
 
@@ -94,10 +94,10 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
         for (hilet& child : _children) {
-            co_yield child.value.get();
+            co_yield *child.value;
         }
     }
 
@@ -148,7 +148,7 @@ public:
     }
     /// @endprivatesection
 private:
-    row_column_layout<Axis, std::shared_ptr<widget>> _children;
+    row_column_layout<Axis, std::unique_ptr<widget>> _children;
 };
 
 /** Lays out children in a row.

@@ -85,8 +85,8 @@ void tab_widget::draw(draw_context const& context) noexcept
     }
 }
 
-[[nodiscard]] widget const *tab_widget::find_next_widget(
-    widget const *current_widget,
+[[nodiscard]] widget_id tab_widget::find_next_widget(
+    widget_id current_widget,
     keyboard_focus_group group,
     keyboard_focus_direction direction) const noexcept
 {

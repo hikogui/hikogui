@@ -4,7 +4,7 @@
 
 #include "zlib.hpp"
 #include "inflate.hpp"
-#include "../endian.hpp"
+#include "../utility/module.hpp"
 #include "../placement.hpp"
 
 namespace hi::inline v1 {

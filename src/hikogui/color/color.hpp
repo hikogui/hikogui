@@ -2,11 +2,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file color/color.hpp Defined the color type.
+ * @ingroup color
+ */
+
 #pragma once
 
 #include "semantic_color.hpp"
-#include "../SIMD/simd.hpp"
-#include "../assert.hpp"
+#include "../SIMD/module.hpp"
+#include "../geometry/module.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 
@@ -35,6 +40,8 @@ namespace hi::inline v1 {
  * This color format is inspired by scRGB, however scRGB only describes
  * a 12- or 16-bit integer per component encoding of RGB values between
  * -0.5 and 7.5.
+ *
+ * @ingroup color
  */
 class color {
 public:
@@ -197,6 +204,30 @@ public:
         return color{Y, Y, Y, rhs_.a()};
     }
 
+    /** Transform a color by a color matrix.
+     *
+     * The alpha value is not included in the transformation and copied from the input.
+     *
+     * @note It is undefined behavior if the matrix contains a translation.
+     * @param rhs The color to be transformed.
+     * @return The transformed color.
+     */
+    [[nodiscard]] constexpr friend color operator*(matrix3 const& lhs, color const& rhs) noexcept
+    {
+        hi_axiom(rhs.holds_invariant());
+        auto r = color{
+            get<0>(lhs) * static_cast<f32x4>(rhs).xxxx() + get<1>(lhs) * static_cast<f32x4>(rhs).yyyy() +
+            get<2>(lhs) * static_cast<f32x4>(rhs).zzzz() + get<3>(lhs)};
+
+        r.a() = rhs.a();
+        return r;
+    }
+
+    [[nodiscard]] constexpr friend color operator*(identity3 const& lhs, color const& rhs) noexcept
+    {
+        return rhs;
+    }
+
 private:
     f16x4 _v;
 };
@@ -205,7 +236,7 @@ private:
 
 template<>
 struct std::hash<hi::color> {
-    [[nodiscard]] size_t operator()(hi::color const &rhs) const noexcept
+    [[nodiscard]] size_t operator()(hi::color const& rhs) const noexcept
     {
         return rhs.hash();
     }

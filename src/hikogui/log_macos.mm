@@ -4,10 +4,8 @@
 #include "log.hpp"
 #include "trace.hpp"
 #include "cpu_utc_clock.hpp"
-#include "globals.hpp"
-#include "utility.hpp"
 #include "strings.hpp"
-#include "thread.hpp"
+#include "utility/module.hpp"
 #include <format>
 #include <exception>
 #include <memory>

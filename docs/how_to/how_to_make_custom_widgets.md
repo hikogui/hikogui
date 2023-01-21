@@ -180,7 +180,7 @@ You can also use this function to combine the `hitbox` results from several chil
 [[nodiscard]] hi::hitbox hitbox_test(hi::point3 position) const noexcept override
 {
     if (*mode >= hi::widget_mode::partial and layout().contains(position)) {
-        return {this, position, hi::hitbox::Type::Button};
+        return {id, position, hi::hitbox::Type::Button};
     } else {
         return {};
     }
@@ -365,7 +365,7 @@ The example function below yields the pointer to both children stored as member 
 stored in a vector.
 
 ```cpp
-[[nodiscard]] hi::generator<widget *> children() const noexcept override
+[[nodiscard]] hi::generator<widget const &> children(bool include_invisible) const noexcept override
 {
     co_yield _label_widget.get();
     co_yield _checkbox_widget.get();

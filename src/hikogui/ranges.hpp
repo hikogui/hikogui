@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "assert.hpp"
+#include "utility/module.hpp"
 #include <ranges>
 #include <algorithm>
 #include <concepts>

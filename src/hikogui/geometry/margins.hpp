@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "../SIMD/simd.hpp"
-#include "../cast.hpp"
+#include "../SIMD/module.hpp"
+#include "../utility/module.hpp"
 
 namespace hi { inline namespace v1 {
 namespace geo {

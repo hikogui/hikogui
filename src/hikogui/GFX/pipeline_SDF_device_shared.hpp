@@ -5,24 +5,21 @@
 #pragma once
 
 #include "pipeline_SDF_texture_map.hpp"
+#include "pipeline_SDF_vertex.hpp"
 #include "pipeline_SDF_specialization_constants.hpp"
 #include "../text/glyph_ids.hpp"
 #include "../text/glyph_atlas_info.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../log.hpp"
 #include "../vector_span.hpp"
-#include "../geometry/rectangle.hpp"
-#include "../geometry/scale.hpp"
-#include "../geometry/transform.hpp"
-#include "../color/quad_color.hpp"
+#include "../geometry/module.hpp"
+#include "../color/module.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 #include <unordered_map>
 
 namespace hi::inline v1 {
-template<typename T>
-class pixel_map;
 class mat;
 class gfx_device_vulkan;
 struct attributed_glyph;
@@ -31,7 +28,7 @@ namespace pipeline_SDF {
 struct Image;
 struct vertex;
 
-struct device_shared final {
+struct device_shared {
     // Studies in China have shown that literate individuals know and use between 3,000 and 4,000 characters.
     // Handle up to 7 * 7 * 128 == 6321 characters with a 16 x 1024 x 1024, 16 x 1 MByte
     //

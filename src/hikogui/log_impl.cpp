@@ -4,9 +4,8 @@
 
 #include "log.hpp"
 #include "trace.hpp"
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "strings.hpp"
-#include "thread.hpp"
 #include "console.hpp"
 #include <format>
 #include <exception>

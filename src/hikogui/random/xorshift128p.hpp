@@ -5,8 +5,8 @@
 #pragma once
 
 #include "seed.hpp"
-#include "../SIMD/simd.hpp"
-#include "../utility.hpp"
+#include "../SIMD/module.hpp"
+#include "../utility/module.hpp"
 #include <random>
 
 namespace hi::inline v1 {

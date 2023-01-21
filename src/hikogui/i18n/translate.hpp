@@ -7,7 +7,7 @@
 #include "language.hpp"
 #include "translation.hpp"
 #include "../forward_value.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include "../os_settings.hpp"
 #include <memory>
 #include <string>

@@ -6,7 +6,7 @@
 #include "spacer_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"
 #include "../scoped_buffer.hpp"
-#include "../geometry/translate.hpp"
+#include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
 
@@ -17,7 +17,7 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
     // The toolbar is a top level widget, which draws its background as the next level.
     semantic_layer = 0;
 
-    _children.push_back(std::make_shared<spacer_widget>(this));
+    _children.push_back(std::make_unique<spacer_widget>(this));
 }
 
 [[nodiscard]] box_constraints toolbar_widget::update_constraints() noexcept
@@ -103,7 +103,7 @@ hitbox toolbar_widget::hitbox_test(point2i position) const noexcept
 
     // By default the toolbar is used for dragging the window.
     if (*mode >= widget_mode::partial) {
-        auto r = layout().contains(position) ? hitbox{this, _layout.elevation, hitbox_type::move_area} : hitbox{};
+        auto r = layout().contains(position) ? hitbox{id, _layout.elevation, hitbox_type::move_area} : hitbox{};
 
         for (hilet& child : _children) {
             hi_assert_not_null(child.value);
@@ -116,7 +116,7 @@ hitbox toolbar_widget::hitbox_test(point2i position) const noexcept
     }
 }
 
-widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::shared_ptr<widget> widget) noexcept
+widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
 {
     auto& ref = *widget;
     switch (alignment) {

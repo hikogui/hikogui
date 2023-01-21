@@ -6,10 +6,8 @@
 
 #include "../GUI/gui_window.hpp"
 #include "gfx_system_globals.hpp"
-#include "../exception.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include "../bigint.hpp"
-#include "../unfair_recursive_mutex.hpp"
 #include <unordered_set>
 #include <mutex>
 #include <tuple>

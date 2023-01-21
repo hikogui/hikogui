@@ -120,12 +120,12 @@ bool widget::handle_event(gui_event const& event) noexcept
 
     case gui_widget_next:
         process_event(
-            gui_event::window_set_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::forward));
+            gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::forward));
         return true;
 
     case gui_widget_prev:
         process_event(
-            gui_event::window_set_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::backward));
+            gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::backward));
         return true;
 
     case gui_activate_next:
@@ -136,7 +136,7 @@ bool widget::handle_event(gui_event const& event) noexcept
         if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
             not is_last(keyboard_focus_group::toolbar)) {
             process_event(
-                gui_event::window_set_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
+                gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
             return true;
         }
         break;
@@ -145,7 +145,7 @@ bool widget::handle_event(gui_event const& event) noexcept
         if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
             not is_first(keyboard_focus_group::toolbar)) {
             process_event(
-                gui_event::window_set_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
+                gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
             return true;
         }
         break;
@@ -156,19 +156,18 @@ bool widget::handle_event(gui_event const& event) noexcept
     return false;
 }
 
-bool widget::handle_event_recursive(gui_event const& event, std::vector<widget const *> const& reject_list) noexcept
+bool widget::handle_event_recursive(gui_event const& event, std::vector<widget_id> const& reject_list) noexcept
 {
     hi_axiom(loop::main().on_thread());
 
     auto handled = false;
 
-    for (auto *child : children()) {
-        hi_assert_not_null(child);
-        handled |= child->handle_event_recursive(event, reject_list);
+    for (auto &child : children(false)) {
+        handled |= child.handle_event_recursive(event, reject_list);
     }
 
-    if (!std::ranges::any_of(reject_list, [this](hilet& x) {
-            return x == this;
+    if (!std::ranges::any_of(reject_list, [&](hilet& x) {
+            return x == id;
         })) {
         handled |= handle_event(event);
     }
@@ -176,8 +175,8 @@ bool widget::handle_event_recursive(gui_event const& event, std::vector<widget c
     return handled;
 }
 
-widget const *widget::find_next_widget(
-    widget const *current_keyboard_widget,
+widget_id widget::find_next_widget(
+    widget_id current_keyboard_widget,
     keyboard_focus_group group,
     keyboard_focus_direction direction) const noexcept
 {
@@ -185,15 +184,18 @@ widget const *widget::find_next_widget(
 
     auto found = false;
 
-    if (current_keyboard_widget == nullptr and accepts_keyboard_focus(group)) {
+    if (not current_keyboard_widget and accepts_keyboard_focus(group)) {
         // If there was no current_keyboard_widget, then return this if it accepts focus.
-        return this;
+        return id;
 
-    } else if (current_keyboard_widget == this) {
+    } else if (current_keyboard_widget == id) {
         found = true;
     }
 
-    auto children_ = make_vector(children());
+    auto children_ = std::vector<widget const *>{};
+    for (auto &child: children(false)) {
+        children_.push_back(std::addressof(child));
+    }
 
     if (direction == keyboard_focus_direction::backward) {
         std::reverse(begin(children_), end(children_));
@@ -228,31 +230,29 @@ widget const *widget::find_next_widget(
         return current_keyboard_widget;
     }
 
-    return nullptr;
+    return std::nullopt;
 }
 
-[[nodiscard]] widget const *widget::find_first_widget(keyboard_focus_group group) const noexcept
+[[nodiscard]] widget_id widget::find_first_widget(keyboard_focus_group group) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 
-    for (auto *child : children()) {
-        hi_assert_not_null(child);
-        if (child->accepts_keyboard_focus(group)) {
-            return child;
+    for (auto &child : children(false)) {
+        if (child.accepts_keyboard_focus(group)) {
+            return child.id;
         }
     }
-    return nullptr;
+    return std::nullopt;
 }
 
-[[nodiscard]] widget const *widget::find_last_widget(keyboard_focus_group group) const noexcept
+[[nodiscard]] widget_id widget::find_last_widget(keyboard_focus_group group) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 
-    widget const *found = nullptr;
-    for (widget const *child : children()) {
-        hi_assert_not_null(child);
-        if (child->accepts_keyboard_focus(group)) {
-            found = child;
+    auto found = widget_id{};
+    for (auto &child : children(false)) {
+        if (child.accepts_keyboard_focus(group)) {
+            found = child.id;
         }
     }
 
@@ -262,13 +262,13 @@ widget const *widget::find_next_widget(
 [[nodiscard]] bool widget::is_first(keyboard_focus_group group) const noexcept
 {
     hi_axiom(loop::main().on_thread());
-    return parent->find_first_widget(group) == this;
+    return parent->find_first_widget(group) == id;
 }
 
 [[nodiscard]] bool widget::is_last(keyboard_focus_group group) const noexcept
 {
     hi_axiom(loop::main().on_thread());
-    return parent->find_last_widget(group) == this;
+    return parent->find_last_widget(group) == id;
 }
 
 void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
@@ -283,16 +283,16 @@ void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
 /** Get a list of parents of a given widget.
  * The chain includes the given widget.
  */
-[[nodiscard]] std::vector<widget const *> widget::parent_chain() const noexcept
+[[nodiscard]] std::vector<widget_id> widget::parent_chain() const noexcept
 {
     hi_axiom(loop::main().on_thread());
 
-    std::vector<widget const *> chain;
+    std::vector<widget_id> chain;
 
     if (auto w = this) {
-        chain.push_back(w);
+        chain.push_back(w->id);
         while (to_bool(w = w->parent)) {
-            chain.push_back(w);
+            chain.push_back(w->id);
         }
     }
 

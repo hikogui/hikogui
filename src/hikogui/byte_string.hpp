@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "hash.hpp"
-#include "cast.hpp"
+#include "utility/module.hpp"
 #include <cstddef>
 #include <string>
 #include <string_view>

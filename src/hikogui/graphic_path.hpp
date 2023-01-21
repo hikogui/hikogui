@@ -6,19 +6,16 @@
 
 #include "bezier_point.hpp"
 #include "bezier_curve.hpp"
-#include "exception.hpp"
-#include "geometry/axis_aligned_rectangle.hpp"
-#include "geometry/transform.hpp"
-#include "geometry/line_join_style.hpp"
-#include "SIMD/sfloat_rgba16.hpp"
-#include "SIMD/sdf_r8.hpp"
+#include "utility/module.hpp"
+#include "geometry/module.hpp"
+#include "image/module.hpp"
 #include <vector>
 
 namespace hi::inline v1 {
 
 struct bezier_curve;
 template<typename T>
-class pixel_map;
+class pixmap_span;
 
 /** A path is a vector graphics object.
  * It represents:
@@ -260,19 +257,19 @@ struct graphic_path {
  * \param color color to composit.
  * \param mask mask where the color will be composited on the destination.
  */
-void composit(pixel_map<sfloat_rgba16> &dst, hi::color color, graphic_path const &mask) noexcept;
+void composit(pixmap_span<sfloat_rgba16> dst, hi::color color, graphic_path const &mask) noexcept;
 
 /** Composit color onto the destination image where the mask is solid.
  *
  * \param dst destination image.
  * \param mask mask where the color will be composited on the destination.
  */
-void composit(pixel_map<sfloat_rgba16> &dst, graphic_path const &mask) noexcept;
+void composit(pixmap_span<sfloat_rgba16> dst, graphic_path const &mask) noexcept;
 
 /** Fill a signed distance field image from the given path.
  * @param dst An signed-distance-field which show distance toward the closest curve
  * @param path A path.
  */
-void fill(pixel_map<sdf_r8> &dst, graphic_path const &path) noexcept;
+void fill(pixmap_span<sdf_r8> dst, graphic_path const &path) noexcept;
 
 } // namespace hi::inline v1

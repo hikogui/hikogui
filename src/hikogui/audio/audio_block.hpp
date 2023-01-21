@@ -5,9 +5,8 @@
 #pragma once
 
 #include "../chrono.hpp"
-#include "../utility.hpp"
-#include "../assert.hpp"
-#include "../SIMD/simd.hpp"
+#include "../utility/module.hpp"
+#include "../SIMD/module.hpp"
 #include <span>
 
 namespace hi::inline v1 {

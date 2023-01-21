@@ -3,13 +3,11 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "true_type_font.hpp"
-#include "../geometry/vector.hpp"
-#include "../geometry/point.hpp"
+#include "../geometry/module.hpp"
 #include "../placement.hpp"
 #include "../strings.hpp"
-#include "../endian.hpp"
 #include "../log.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include <cstddef>
 #include <span>
 
@@ -35,7 +33,7 @@ struct coverage_format2_range {
 {
     std::size_t offset = 0;
 
-    hi_assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, -2);
+    hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, -2);
 
     hi_assert_or_return(check_placement_ptr<coverage_format1>(bytes, offset), -2);
     hilet header1 = unsafe_make_placement_ptr<coverage_format1>(bytes, offset);

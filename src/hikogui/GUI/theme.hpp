@@ -7,13 +7,10 @@
 #include "theme_mode.hpp"
 #include "../text/semantic_text_style.hpp"
 #include "../text/text_style.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../datum.hpp"
-#include "../color/color.hpp"
-#include "../geometry/extent.hpp"
-#include "../geometry/margins.hpp"
-#include "../geometry/corner_radii.hpp"
-#include "../subsystem.hpp"
+#include "../color/module.hpp"
+#include "../geometry/module.hpp"
 #include <array>
 #include <filesystem>
 #include <string>

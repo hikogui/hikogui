@@ -8,10 +8,8 @@
 #include "i18n/language.hpp"
 #include "GUI/theme_mode.hpp"
 #include "GFX/subpixel_orientation.hpp"
-#include "geometry/extent.hpp"
-#include "geometry/axis_aligned_rectangle.hpp"
-#include "unfair_mutex.hpp"
-#include "subsystem.hpp"
+#include "geometry/module.hpp"
+#include "utility/module.hpp"
 #include "loop.hpp"
 #include "notifier.hpp"
 #include <vector>

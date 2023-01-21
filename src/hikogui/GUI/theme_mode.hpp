@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "../utility.hpp"
-#include "../assert.hpp"
-#include "../enum_metadata.hpp"
+#include "../utility/module.hpp"
 #include <string>
 #include <ostream>
 

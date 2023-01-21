@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../unicode/grapheme.hpp"
-#include "../hash.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

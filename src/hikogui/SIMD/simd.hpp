@@ -11,14 +11,7 @@
 #include "native_u32x4_sse2.hpp"
 #include "native_simd_conversions_x86.hpp"
 
-#include "../architecture.hpp"
-#include "../concepts.hpp"
-#include "../cast.hpp"
-#include "../type_traits.hpp"
-#include "../float16.hpp"
-#include "../math.hpp"
-#include "../utility.hpp"
-#include "../fixed_string.hpp"
+#include "../utility/module.hpp"
 #include <cstdint>
 #include <ostream>
 #include <string>

@@ -2,13 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file color/quad_color.hpp Defined the quad_color type.
+ * @ingroup color
+ */
 
 #pragma once
 
 #include "color.hpp"
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
+/** A color for each corner of a quad.
+ * @ingroup color
+ */
 class quad_color {
 public:
     color p0; ///< left-bottom
@@ -28,4 +35,5 @@ public:
     constexpr quad_color(color const &c) noexcept : p0(c), p1(c), p2(c), p3(c) {}
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
+

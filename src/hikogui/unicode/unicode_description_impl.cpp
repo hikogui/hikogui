@@ -7,7 +7,7 @@
 #include "ucd_compositions.hpp"
 #include "ucd_decompositions.hpp"
 #include "unicode_description.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

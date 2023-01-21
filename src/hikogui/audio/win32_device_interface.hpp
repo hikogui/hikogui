@@ -7,7 +7,7 @@
 #include "audio_direction.hpp"
 #include "audio_format_range.hpp"
 #include "../generator.hpp"
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include "../log.hpp"
 #include <string>
 

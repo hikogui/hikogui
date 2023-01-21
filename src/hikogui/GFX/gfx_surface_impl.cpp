@@ -5,7 +5,7 @@
 #include "gfx_surface.hpp"
 #include "gfx_device.hpp"
 #include "gfx_system.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

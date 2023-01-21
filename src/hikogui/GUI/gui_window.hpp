@@ -12,7 +12,7 @@
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
 #include "../GFX/subpixel_orientation.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/module.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
 #include "../widgets/toolbar_widget.hpp"
@@ -91,7 +91,7 @@ public:
 
     /** The widget covering the complete window.
      */
-    std::shared_ptr<window_widget> widget;
+    std::unique_ptr<window_widget> widget;
 
     /** Notifier used when the window is closing.
      * It is expected that after notifying these callbacks the instance of this class is destroyed.
@@ -190,7 +190,7 @@ public:
      */
     virtual void set_window_size(extent2i extent) = 0;
 
-    void update_mouse_target(hi::widget const *new_target_widget, point2i position = {}) noexcept;
+    void update_mouse_target(widget_id new_target_widget, point2i position = {}) noexcept;
 
     /** Change the keyboard focus to the given widget.
      * If the group of the widget is incorrect then no widget will be in focus.
@@ -198,7 +198,7 @@ public:
      * @param widget The new widget to focus, or empty to remove all keyboard focus.
      * @param group The group the widget must belong to.
      */
-    void update_keyboard_target(hi::widget const *widget, keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
+    void update_keyboard_target(widget_id widget, keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
 
     /** Change the keyboard focus to the previous or next widget from the given widget.
      * This function will find the closest widget from the given widget which belongs to the given
@@ -208,8 +208,7 @@ public:
      * @param group The group the widget must belong to.
      * @param direction The direction to search in, or current to select the current widget.
      */
-    void
-    update_keyboard_target(hi::widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
+    void update_keyboard_target(widget_id widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
 
     /** Change the keyboard focus to the given, previous or next widget.
      * This function will find the closest widget from the current widget which belongs to the given
@@ -300,12 +299,12 @@ private:
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.
      */
-    std::weak_ptr<hi::widget const> _mouse_target_widget;
+    widget_id _mouse_target_id;
 
     /** Target of the keyboard
      * widget where keyboard events are sent to.
      */
-    std::weak_ptr<hi::widget const> _keyboard_target_widget;
+    widget_id _keyboard_target_id;
 
     /** Send event to a target widget.
      *
@@ -315,7 +314,7 @@ private:
      *  - The parents of the widget up to and including the root widget.
      *  - The window itself.
      */
-    bool send_events_to_widget(hi::widget const *target_widget, std::vector<gui_event> const& events) noexcept;
+    bool send_events_to_widget(widget_id target_widget, std::vector<gui_event> const& events) noexcept;
 
     friend class widget;
 };

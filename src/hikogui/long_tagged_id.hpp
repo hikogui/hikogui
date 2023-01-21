@@ -5,7 +5,7 @@
 #pragma once
 
 #include "stdint.hpp"
-#include "fixed_string.hpp"
+#include "utility/module.hpp"
 #include "sip_hash.hpp"
 #include <bit>
 

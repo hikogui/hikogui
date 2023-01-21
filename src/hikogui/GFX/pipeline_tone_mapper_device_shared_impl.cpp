@@ -6,7 +6,7 @@
 #include "pipeline_tone_mapper_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../file/URL.hpp"
-#include "../pixel_map.hpp"
+#include "../image/module.hpp"
 #include <array>
 
 namespace hi::inline v1::pipeline_tone_mapper {

@@ -7,8 +7,7 @@
 #include "text_shaper_char.hpp"
 #include "font_metrics.hpp"
 #include "../unicode/unicode_bidi_class.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
-#include "../geometry/alignment.hpp"
+#include "../geometry/module.hpp"
 #include <vector>
 
 namespace hi::inline v1 {

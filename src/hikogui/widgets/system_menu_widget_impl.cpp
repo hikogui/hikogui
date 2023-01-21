@@ -8,7 +8,7 @@ namespace hi::inline v1 {
 
 system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
 {
-    _icon_widget = std::make_shared<icon_widget>(this, icon);
+    _icon_widget = std::make_unique<icon_widget>(this, icon);
 }
 
 [[nodiscard]] box_constraints system_menu_widget::update_constraints() noexcept
@@ -51,7 +51,7 @@ hitbox system_menu_widget::hitbox_test(point2i position) const noexcept
     if (*mode >= widget_mode::partial and layout().contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return {this, _layout.elevation, hitbox_type::application_icon};
+        return {id, _layout.elevation, hitbox_type::application_icon};
     } else {
         return {};
     }

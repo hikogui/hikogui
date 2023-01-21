@@ -3,11 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "file_mapping.hpp"
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include "../log.hpp"
-#include "../memory.hpp"
-#include "../utility.hpp"
-#include "../unfair_mutex.hpp"
 #include <mutex>
 
 namespace hi::inline v1 {

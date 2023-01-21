@@ -5,8 +5,8 @@
 #pragma once
 
 #include "polynomial.hpp"
-#include "SIMD/simd.hpp"
-#include "geometry/point.hpp"
+#include "SIMD/module.hpp"
+#include "geometry/module.hpp"
 #include <array>
 #include <optional>
 

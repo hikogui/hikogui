@@ -9,7 +9,7 @@
 
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_break_opportunity.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include <algorithm>
 #include <vector>
 

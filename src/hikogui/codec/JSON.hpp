@@ -6,10 +6,9 @@
 
 #include "../file/file_view.hpp"
 #include "../tokenizer.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../datum.hpp"
 #include "../strings.hpp"
-#include "../exception.hpp"
 #include "../indent.hpp"
 #include <string>
 #include <string_view>

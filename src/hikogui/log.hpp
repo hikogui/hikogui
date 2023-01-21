@@ -9,15 +9,10 @@
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
 #include "meta.hpp"
-#include "architecture.hpp"
 #include "delayed_format.hpp"
-#include "fixed_string.hpp"
-#include "subsystem.hpp"
-#include "global_state.hpp"
-#include "unfair_mutex.hpp"
-#include "debugger.hpp"
 #include "format_check.hpp"
-#include "thread.hpp"
+#include "utility/module.hpp"
+#include "concurrency/module.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -205,10 +200,6 @@ private:
 };
 
 inline log log_global;
-
-/** Get the OS error message from the last error received on this thread.
- */
-[[nodiscard]] std::string get_last_error_message() noexcept;
 
 }} // namespace hi::v1
 

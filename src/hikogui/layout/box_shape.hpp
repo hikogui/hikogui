@@ -5,8 +5,8 @@
 #pragma once
 
 #include "box_constraints.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
-#include "../utility.hpp"
+#include "../geometry/module.hpp"
+#include "../utility/module.hpp"
 #include <limits>
 #include <optional>
 

@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "architecture.hpp"
+#include "utility/module.hpp"
 #include <coroutine>
 #include <type_traits>
 

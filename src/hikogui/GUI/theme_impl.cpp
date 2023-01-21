@@ -6,7 +6,7 @@
 #include "theme_book.hpp"
 #include "../text/font_book.hpp"
 #include "../codec/JSON.hpp"
-#include "../color/sRGB.hpp"
+#include "../color/module.hpp"
 #include "../log.hpp"
 #include <algorithm>
 

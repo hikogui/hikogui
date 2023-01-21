@@ -9,14 +9,12 @@
 #include "font_family_id.hpp"
 #include "text_phrasing.hpp"
 #include "semantic_text_style.hpp"
-#include "../color/color.hpp"
+#include "../color/module.hpp"
 #include "../i18n/iso_15924.hpp"
 #include "../i18n/iso_639.hpp"
-#include "../numbers.hpp"
+#include "../utility/module.hpp"
 #include "../log.hpp"
 #include "../stable_set.hpp"
-#include "../cast.hpp"
-#include "../assert.hpp"
 #include <ostream>
 #include <vector>
 #include <algorithm>

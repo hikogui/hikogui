@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "unfair_mutex.hpp"
+#include "utility/module.hpp"
+#include "concurrency/module.hpp"
 #include "chrono.hpp"
 #include <array>
 #include <atomic>

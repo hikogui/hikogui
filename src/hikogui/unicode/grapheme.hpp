@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 #include "../strings.hpp"
-#include "../unfair_mutex.hpp"
-#include "../cast.hpp"
 #include "../stable_set.hpp"
 #include <cstdint>
 #include <string>

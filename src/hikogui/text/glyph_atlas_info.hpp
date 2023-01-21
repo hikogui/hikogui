@@ -5,10 +5,7 @@
 
 #pragma once
 
-#include "../geometry/point.hpp"
-#include "../geometry/extent.hpp"
-#include "../geometry/scale.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
 

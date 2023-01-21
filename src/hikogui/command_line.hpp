@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "architecture.hpp"
+#include "utility/module.hpp"
 #include "generator.hpp"
 
 namespace hi::inline v1 {

@@ -7,7 +7,7 @@
 #include "iso_15924.hpp"
 #include "iso_3166.hpp"
 #include "iso_639.hpp"
-#include "../hash.hpp"
+#include "../utility/module.hpp"
 #include "../generator.hpp"
 #include "../ranges.hpp"
 #include <vector>

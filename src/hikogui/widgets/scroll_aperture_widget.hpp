@@ -74,7 +74,7 @@ public:
         hi_axiom(loop::main().on_thread());
         hi_axiom(_content == nullptr);
 
-        auto tmp = std::make_shared<Widget>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         _content = std::move(tmp);
         return ref;
@@ -91,9 +91,9 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
-        co_yield _content.get();
+        co_yield *_content;
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
@@ -160,7 +160,7 @@ public:
             auto r = _content->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{this, _layout.elevation});
+                r = std::max(r, hitbox{id, _layout.elevation});
             }
             return r;
 
@@ -232,7 +232,7 @@ public:
 private:
     box_constraints _content_constraints;
     box_shape _content_shape;
-    std::shared_ptr<widget> _content;
+    std::unique_ptr<widget> _content;
     decltype(content_width)::callback_token _content_width_cbt;
     decltype(content_height)::callback_token _content_height_cbt;
     decltype(aperture_width)::callback_token _aperture_width_cbt;

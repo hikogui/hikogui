@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/geometry/matrix.hpp"
+#include "matrix.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -14,7 +14,7 @@ using namespace hi;
 
 TEST(matrix, invert)
 {
-    auto XYZ_to_sRGB = matrix<3>{
+    auto test_XYZ_to_sRGB = matrix<3>{
         3.24096994f,
         -1.53738318f,
         -0.49861076f,
@@ -32,10 +32,10 @@ TEST(matrix, invert)
         0.0f,
         1.0f};
 
-    auto sRGB_to_XYZ = ~XYZ_to_sRGB;
+    auto result_sRGB_to_XYZ = ~test_XYZ_to_sRGB;
 
-    ASSERT_NEAR_VEC(get<0>(sRGB_to_XYZ), f32x4(0.41239080f, 0.21263901f, 0.01933082f), 0.001);
-    ASSERT_NEAR_VEC(get<1>(sRGB_to_XYZ), f32x4(0.35758434f, 0.71516868f, 0.11919478f), 0.001);
-    ASSERT_NEAR_VEC(get<2>(sRGB_to_XYZ), f32x4(0.18048079f, 0.07219232f, 0.95053215f), 0.001);
-    ASSERT_NEAR_VEC(get<3>(sRGB_to_XYZ), f32x4(0.0f, 0.0f, 0.0f, 1.0f), 0.001);
+    ASSERT_NEAR_VEC(get<0>(result_sRGB_to_XYZ), f32x4(0.41239080f, 0.21263901f, 0.01933082f), 0.001);
+    ASSERT_NEAR_VEC(get<1>(result_sRGB_to_XYZ), f32x4(0.35758434f, 0.71516868f, 0.11919478f), 0.001);
+    ASSERT_NEAR_VEC(get<2>(result_sRGB_to_XYZ), f32x4(0.18048079f, 0.07219232f, 0.95053215f), 0.001);
+    ASSERT_NEAR_VEC(get<3>(result_sRGB_to_XYZ), f32x4(0.0f, 0.0f, 0.0f, 1.0f), 0.001);
 }

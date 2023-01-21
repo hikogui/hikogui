@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include "../geometry/axis_aligned_rectangle.hpp"
-#include "../SIMD/sfloat_rgba16.hpp"
-#include "../SIMD/sfloat_rgba32.hpp"
-#include "../SIMD/sfloat_rgb32.hpp"
+#include "../geometry/module.hpp"
+#include "../image/module.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace hi::inline v1::pipeline_SDF {

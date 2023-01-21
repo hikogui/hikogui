@@ -3,8 +3,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-cmake_minimum_required(VERSION 3.19)
 
+cmake_minimum_required(VERSION 3.25)
 #-------------------------------------------------------------------
 # Configure early CMAKE paths
 #-------------------------------------------------------------------
@@ -19,6 +19,7 @@ include(SetupCompiler)
 option(BUILD_SHARED_LIBS    "Build shared libraries"                             OFF)
 option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
+option(HI_ENABLE_PCH        "Compile with precompiled headers"                   ON)
 option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" "")
 
 #-------------------------------------------------------------------
@@ -45,6 +46,9 @@ string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 0)
+set(CMAKE_EXPERIMENTAL_CXX_SCANDEP_SOURCE 0)
+set(CMAKE_CXX_SCAN_FOR_MODULES 0)
 
 #-------------------------------------------------------------------
 # Setup CMake Includes
@@ -101,12 +105,17 @@ endif()
 #-------------------------------------------------------------------
 
 add_library(hikogui)
+set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
+include(CMakeLists_includes.cmake)
+include(CMakeLists_implementations.cmake)
+if(HI_ENABLE_PCH)
+    include(CMakeLists_pch.cmake)
+endif()
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 
 #-------------------------------------------------------------------
 # Setup Sources
 #-------------------------------------------------------------------
-set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 
 # This needs to be below the build target commands (add_*).
 # We omit adding source files to the `add_*` commands, but add them
@@ -385,12 +394,12 @@ include(GNUInstallDirs)
 install(TARGETS hikogui RESOURCE)
 
 # Copy all header files for the library.
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.hpp")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.h")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#        FILES_MATCHING PATTERN "*.hpp")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#        FILES_MATCHING PATTERN "*.h")
 
 # Copy all resource files needing to be added to the resource directory of an application
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources/
@@ -401,6 +410,7 @@ get_target_property(target_type hikogui TYPE)
 if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
+        FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
@@ -408,6 +418,7 @@ if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
 else()
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
+        FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib

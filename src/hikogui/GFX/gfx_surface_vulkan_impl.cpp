@@ -13,7 +13,7 @@
 #include "pipeline_tone_mapper.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../trace.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include <vector>
 
 namespace hi::inline v1 {

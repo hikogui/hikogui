@@ -4,11 +4,8 @@
 
 #pragma once
 
-#include "../geometry/extent.hpp"
-#include "../geometry/margins.hpp"
-#include "../geometry/alignment.hpp"
-#include "../assert.hpp"
-#include "../cast.hpp"
+#include "../geometry/module.hpp"
+#include "../utility/module.hpp"
 #include <cstdint>
 #include <limits>
 #include <concepts>

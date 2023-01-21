@@ -4,11 +4,8 @@
 
 #pragma once
 
-#include "assert.hpp"
-#include "type_traits.hpp"
-#include "concepts.hpp"
-#include "cast.hpp"
-#include "unfair_mutex.hpp"
+#include "utility/module.hpp"
+#include "concurrency/module.hpp"
 #include <memory>
 #include <vector>
 #include <functional>

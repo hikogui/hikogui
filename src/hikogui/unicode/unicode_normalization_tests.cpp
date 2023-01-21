@@ -6,7 +6,7 @@
 #include "../file/file_view.hpp"
 #include "../strings.hpp"
 #include "../generator.hpp"
-#include "../charconv.hpp"
+#include "../utility/module.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

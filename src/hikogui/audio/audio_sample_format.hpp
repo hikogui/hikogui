@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include "../utility.hpp"
-#include "../assert.hpp"
-#include "../cast.hpp"
-#include "../SIMD/simd.hpp"
+#include "../utility/module.hpp"
+#include "../SIMD/module.hpp"
 #include <bit>
 
 namespace hi::inline v1 {

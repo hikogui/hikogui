@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "hikogui/module.hpp"
 #include "hikogui/GUI/gui_system.hpp"
 #include "hikogui/widgets/widget.hpp"
 #include "hikogui/crt.hpp"
@@ -91,7 +92,7 @@ public:
             // The `position` argument is used to handle widgets that are visually overlapping, widgets with higher elevation
             // get priority. When this widget is enabled it should show a button-cursor, otherwise just the normal arrow.
             return {
-                this, _layout.elevation, *mode >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
+                id, _layout.elevation, *mode >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
 
         } else {
             return {};

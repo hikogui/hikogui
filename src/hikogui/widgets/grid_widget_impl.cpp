@@ -4,7 +4,7 @@
 
 #include "grid_widget.hpp"
 #include "../algorithm.hpp"
-#include "../geometry/alignment.hpp"
+#include "../geometry/module.hpp"
 #include "../log.hpp"
 
 namespace hi::inline v1 {
@@ -25,7 +25,7 @@ widget& grid_widget::add_widget(
     std::size_t first_row,
     std::size_t last_column,
     std::size_t last_row,
-    std::shared_ptr<widget> widget) noexcept
+    std::unique_ptr<widget> widget) noexcept
 {
     hi_axiom(loop::main().on_thread());
     hi_axiom(first_column < last_column);

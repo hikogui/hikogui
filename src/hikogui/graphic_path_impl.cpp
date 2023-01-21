@@ -3,10 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "graphic_path.hpp"
-#include "pixel_map.inl"
 #include "bezier_curve.hpp"
-#include "pixel_map.hpp"
-#include "utility.hpp"
+#include "image/module.hpp"
+#include "utility/module.hpp"
 
 namespace hi::inline v1 {
 
@@ -503,12 +502,12 @@ graphic_path graphic_path::centerScale(extent2 extent, float padding) const noex
     return (translate2(offset) * scale2(scale, scale)) * *this;
 }
 
-void composit(pixel_map<sfloat_rgba16> &dst, color color, graphic_path const &path) noexcept
+void composit(pixmap_span<sfloat_rgba16> dst, color color, graphic_path const &path) noexcept
 {
     hi_assert(!path.hasLayers());
     hi_assert(!path.isContourOpen());
 
-    auto mask = pixel_map<uint8_t>(dst.width(), dst.height());
+    auto mask = pixmap<uint8_t>(dst.width(), dst.height());
     fill(mask);
 
     hilet curves = path.getBeziers();
@@ -517,7 +516,7 @@ void composit(pixel_map<sfloat_rgba16> &dst, color color, graphic_path const &pa
     composit(dst, color, mask);
 }
 
-void composit(pixel_map<sfloat_rgba16> &dst, graphic_path const &src) noexcept
+void composit(pixmap_span<sfloat_rgba16> dst, graphic_path const &src) noexcept
 {
     hi_assert(src.hasLayers() && !src.isLayerOpen());
 
@@ -528,7 +527,7 @@ void composit(pixel_map<sfloat_rgba16> &dst, graphic_path const &src) noexcept
     }
 }
 
-void fill(pixel_map<sdf_r8> &dst, graphic_path const &path) noexcept
+void fill(pixmap_span<sdf_r8> dst, graphic_path const &path) noexcept
 {
     fill(dst, path.getBeziers());
 }

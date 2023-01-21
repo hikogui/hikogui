@@ -5,7 +5,7 @@
 #pragma once
 
 #include "native_simd_utility.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include <span>
 #include <array>
 #include <ostream>
@@ -152,7 +152,9 @@ struct native_simd<int64_t,4> {
      */
     [[nodiscard]] static native_simd ones() noexcept
     {
-        return native_simd{} == native_simd{};
+        auto ones = _mm256_undefined_si256();
+        ones = _mm256_cmpeq_epi32(ones, ones);
+        return native_simd{ones};
     }
 
     [[nodiscard]] static native_simd from_mask(size_t a) noexcept

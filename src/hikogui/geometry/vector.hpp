@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../SIMD/simd.hpp"
+#include "../SIMD/module.hpp"
 
 namespace hi::inline v1 {
 

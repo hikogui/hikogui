@@ -7,10 +7,8 @@
 #include "paged_image.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../file/URL.hpp"
-#include "../pixel_map.hpp"
-#include "../pixel_map.inl"
-#include "../memory.hpp"
-#include "../cast.hpp"
+#include "../image/module.hpp"
+#include "../utility/module.hpp"
 #include <array>
 
 namespace hi::inline v1::pipeline_image {
@@ -50,11 +48,11 @@ void device_shared::free_pages(std::vector<std::size_t> const &pages) noexcept
     _atlas_free_pages.insert(_atlas_free_pages.end(), pages.begin(), pages.end());
 }
 
-hi::pixel_map<sfloat_rgba16> device_shared::get_staging_pixel_map()
+hi::pixmap_span<sfloat_rgba16> device_shared::get_staging_pixmap()
 {
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
-    return staging_texture.pixel_map.submap(1, 1, staging_image_width - 2, staging_image_height - 2);
+    return staging_texture.pixmap.subimage(1, 1, staging_image_width - 2, staging_image_height - 2);
 }
 
 /** Get the coordinate in the atlas from a page index.
@@ -106,10 +104,10 @@ void device_shared::make_staging_border_transparent(aarectangle border_rectangle
     hi_assert(right >= 2);
 
     // Add a border below and above the image.
-    auto border_bottom_row = staging_texture.pixel_map[bottom];
-    auto border_top_row = staging_texture.pixel_map[top - 1];
-    auto image_bottom_row = staging_texture.pixel_map[bottom + 1];
-    auto image_top_row = staging_texture.pixel_map[top - 2];
+    auto border_bottom_row = staging_texture.pixmap[bottom];
+    auto border_top_row = staging_texture.pixmap[top - 1];
+    auto image_bottom_row = staging_texture.pixmap[bottom + 1];
+    auto image_top_row = staging_texture.pixmap[top - 2];
     for (auto x = 0_uz; x != width; ++x) {
         border_bottom_row[x] = make_transparent(image_bottom_row[x]);
         border_top_row[x] = make_transparent(image_top_row[x]);
@@ -117,7 +115,7 @@ void device_shared::make_staging_border_transparent(aarectangle border_rectangle
 
     // Add a border to the left and right of the image.
     for (auto y = 0_uz; y != height; ++y) {
-        auto row = staging_texture.pixel_map[y];
+        auto row = staging_texture.pixmap[y];
         row[left] = make_transparent(row[left + 1]);
         row[right - 2] = make_transparent(row[right - 1]);
     }
@@ -137,7 +135,7 @@ void device_shared::clear_staging_between_border_and_upload(aarectangle border_r
 
     // Clear the area to the right of the border.
     for (auto y = 0_uz; y != border_top; ++y) {
-        auto row = staging_texture.pixel_map[y];
+        auto row = staging_texture.pixmap[y];
         for (auto x = border_right; x != upload_right; ++x) {
             row[x] = {};
         }
@@ -145,7 +143,7 @@ void device_shared::clear_staging_between_border_and_upload(aarectangle border_r
 
     // Clear the area above the border.
     for (auto y = border_top; y != upload_top; ++y) {
-        auto row = staging_texture.pixel_map[y];
+        auto row = staging_texture.pixmap[y];
         for (auto x = 0_uz; x != upload_right; ++x) {
             row[x] = {};
         }
@@ -164,12 +162,12 @@ void device_shared::prepare_staging_for_upload(paged_image const &image) noexcep
     clear_staging_between_border_and_upload(border_rectangle, upload_rectangle);
 
     // Flush the given image, everything that may be uploaded.
-    static_assert(std::is_same_v<decltype(staging_texture.pixel_map)::value_type, sfloat_rgba16>);
-    device.flushAllocation(staging_texture.allocation, 0, upload_height * staging_texture.pixel_map.stride() * 8);
+    static_assert(std::is_same_v<decltype(staging_texture.pixmap)::value_type, sfloat_rgba16>);
+    device.flushAllocation(staging_texture.allocation, 0, upload_height * staging_texture.pixmap.stride() * 8);
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
 }
 
-void device_shared::update_atlas_with_staging_pixel_map(paged_image const &image) noexcept
+void device_shared::update_atlas_with_staging_pixmap(paged_image const &image) noexcept
 {
     prepare_staging_for_upload(image);
 
@@ -335,7 +333,7 @@ void device_shared::build_atlas()
         image,
         allocation,
         vk::ImageView(),
-        hi::pixel_map<sfloat_rgba16>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
+        hi::pixmap_span<sfloat_rgba16>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),

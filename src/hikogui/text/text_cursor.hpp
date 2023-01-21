@@ -4,10 +4,7 @@
 
 #pragma once
 
-#include "../utility.hpp"
-#include "../assert.hpp"
-#include "../math.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 #include "../unicode/unicode_description.hpp"
 #include <tuple>
 #include <cstdlib>

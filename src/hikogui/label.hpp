@@ -7,14 +7,11 @@
 
 #pragma once
 
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "strings.hpp"
-#include "type_traits.hpp"
-#include "fixed_string.hpp"
 #include "i18n/translate.hpp"
 #include "unicode/gstring.hpp"
-#include "pixel_map.hpp"
-#include "SIMD/sfloat_rgba16.hpp"
+#include "image/module.hpp"
 #include "text/glyph_ids.hpp"
 #include "text/elusive_icon.hpp"
 #include "text/hikogui_icon.hpp"
@@ -85,11 +82,11 @@ class text : public std::variant<std::monostate, std::string, gstring, translate
  *  - `hi::elusive_icon`
  *  - `hi::hikogui_icon`
  *  - `hi::glyph_ids`
- *  - `hi::pixel_map<hi::sfloat_rgba16>`
+ *  - `hi::pixmap<hi::sfloat_rgba16>`
  */
-class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixel_map<sfloat_rgba16>>
+class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixmap<sfloat_rgba16>>
 {
-    using std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixel_map<sfloat_rgba16>>::variant;
+    using std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixmap<sfloat_rgba16>>::variant;
 
     /** Check if icon contains an image.
      */

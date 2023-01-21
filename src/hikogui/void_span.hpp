@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "assert.hpp"
-#include "memory.hpp"
+#include "utility/module.hpp"
 #include "byte_string.hpp"
 #include <span>
 #include <cstddef>

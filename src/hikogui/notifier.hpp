@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "generator.hpp"
 #include "loop.hpp"
 #include "callback_flags.hpp"
-#include "unfair_mutex.hpp"
 #include <vector>
 #include <tuple>
 #include <functional>

@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "../geometry/point.hpp"
-#include "../assert.hpp"
+#include "../geometry/module.hpp"
+#include "../utility/module.hpp"
+#include "widget_id.hpp"
 #include <limits>
 #include <cstdint>
 #include <compare>
 
 namespace hi::inline v1 {
-class widget;
 
 enum class hitbox_type : uint8_t {
     outside,
@@ -34,26 +34,26 @@ enum class hitbox_type : uint8_t {
 class hitbox {
 public:
     hitbox_type type;
-    widget const *widget;
+    widget_id widget_id;
 
     constexpr hitbox(hitbox const&) noexcept = default;
     constexpr hitbox(hitbox&&) noexcept = default;
     constexpr hitbox& operator=(hitbox const&) noexcept = default;
     constexpr hitbox& operator=(hitbox&&) noexcept = default;
 
-    constexpr hitbox() noexcept : widget(nullptr), _elevation(-std::numeric_limits<float>::max()), type(hitbox_type::outside) {}
+    constexpr hitbox() noexcept : widget_id(), _elevation(-std::numeric_limits<float>::max()), type(hitbox_type::outside) {}
 
     constexpr hitbox(
-        hi::widget const *widget,
+        hi::widget_id widget_id,
         float elevation = -std::numeric_limits<float>::max(),
         hitbox_type type = hitbox_type::_default) noexcept :
-        widget(widget), _elevation(elevation), type(type)
+        widget_id(widget_id), _elevation(elevation), type(type)
     {
     }
 
     [[nodiscard]] constexpr friend std::strong_ordering operator<=>(hitbox const& lhs, hitbox const& rhs) noexcept
     {
-        if ((lhs.widget == nullptr) == (rhs.widget == nullptr)) {
+        if ((lhs.widget_id == nullptr) == (rhs.widget_id == nullptr)) {
             // Either both are widgets, or both are not widgets.
             hilet elevation_ordering = lhs._elevation <=> rhs._elevation;
             if (elevation_ordering == std::partial_ordering::equivalent) {
@@ -65,7 +65,7 @@ public:
             } else {
                 hi_no_default();
             }
-        } else if (lhs.widget == nullptr) {
+        } else if (lhs.widget_id == nullptr) {
             // If lhs is not a widget than it is less.
             return std::strong_ordering::less;
         } else {

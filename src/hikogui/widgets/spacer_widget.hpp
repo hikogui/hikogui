@@ -22,7 +22,7 @@ public:
 
     spacer_widget(widget *parent) noexcept : super(parent) {}
 
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
         co_return;
     }

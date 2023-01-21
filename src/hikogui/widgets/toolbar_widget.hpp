@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "../layout/row_column_layout.hpp"
-#include "../geometry/alignment.hpp"
+#include "../geometry/module.hpp"
 #include <memory>
 #include <ranges>
 
@@ -59,15 +59,15 @@ public:
     template<typename Widget, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
     Widget& make_widget(Args&&...args)
     {
-        auto widget = std::make_shared<Widget>(this, std::forward<Args>(args)...);
+        auto widget = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         return static_cast<Widget&>(add_widget(Alignment, std::move(widget)));
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
         for (hilet& child : _children) {
-            co_yield child.value.get();
+            co_yield *child.value;
         }
     }
 
@@ -78,7 +78,7 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    mutable row_layout<std::shared_ptr<widget>> _children;
+    mutable row_layout<std::unique_ptr<widget>> _children;
     mutable int _child_height_adjustment = 0;
     size_t _spacer_index = 0;
 
@@ -86,7 +86,7 @@ private:
 
     /** Add a widget directly to this widget.
      */
-    widget& add_widget(horizontal_alignment alignment, std::shared_ptr<widget> widget) noexcept;
+    widget& add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept;
 
     /** Check if a child tab-button has focus.
      *

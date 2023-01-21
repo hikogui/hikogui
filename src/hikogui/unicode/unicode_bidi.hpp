@@ -6,7 +6,7 @@
 
 #include "unicode_bidi_class.hpp"
 #include "unicode_description.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

@@ -3,15 +3,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../win32_headers.hpp"
+#include "../utility/win32_headers.hpp"
 
 #include "file_view.hpp"
 #include "file_win32.hpp"
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include "../log.hpp"
-#include "../memory.hpp"
-#include "../utility.hpp"
-#include "../cast.hpp"
 #include <format>
 
 namespace hi { inline namespace v1 {

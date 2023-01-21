@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "random/seed.hpp"
-#include "endian.hpp"
+#include "utility/module.hpp"
 #include <string_view>
 #include <string>
 #include <span>

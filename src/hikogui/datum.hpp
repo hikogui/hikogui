@@ -4,14 +4,9 @@
 
 #pragma once
 
-#include "exception.hpp"
-#include "assert.hpp"
-#include "concepts.hpp"
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "decimal.hpp"
 #include "byte_string.hpp"
-#include "hash.hpp"
-#include "charconv.hpp"
 #include "codec/base_n.hpp"
 #include "jsonpath.hpp"
 #include <cstdint>

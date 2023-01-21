@@ -11,7 +11,7 @@
 #include "widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
-#include "../geometry/axis.hpp"
+#include "../geometry/module.hpp"
 #include "../layout/grid_layout.hpp"
 
 namespace hi { inline namespace v1 {
@@ -65,10 +65,10 @@ public:
         // The scroll-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
 
-        auto aperture = std::make_shared<scroll_aperture_widget>(this);
-        auto horizontal_scroll_bar = std::make_shared<horizontal_scroll_bar_type>(
+        auto aperture = std::make_unique<scroll_aperture_widget>(this);
+        auto horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_type>(
             this, aperture->content_width, aperture->aperture_width, aperture->offset_x);
-        auto vertical_scroll_bar = std::make_shared<vertical_scroll_bar_type>(
+        auto vertical_scroll_bar = std::make_unique<vertical_scroll_bar_type>(
             this, aperture->content_height, aperture->aperture_height, aperture->offset_y);
 
         if (to_bool(axis & axis::horizontal)) {
@@ -108,11 +108,11 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
-        co_yield _aperture;
-        co_yield _vertical_scroll_bar;
-        co_yield _horizontal_scroll_bar;
+        co_yield *_aperture;
+        co_yield *_vertical_scroll_bar;
+        co_yield *_horizontal_scroll_bar;
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
@@ -170,7 +170,7 @@ public:
             r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{this, _layout.elevation});
+                r = std::max(r, hitbox{id, _layout.elevation});
             }
             return r;
 
@@ -180,7 +180,7 @@ public:
     }
     // @endprivatesection
 private:
-    grid_layout<std::shared_ptr<widget>> _grid;
+    grid_layout<std::unique_ptr<widget>> _grid;
 
     scroll_aperture_widget *_aperture;
     horizontal_scroll_bar_type *_horizontal_scroll_bar;

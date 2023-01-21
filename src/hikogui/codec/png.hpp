@@ -5,10 +5,9 @@
 #pragma once
 
 #include "../file/file_view.hpp"
-#include "../utility.hpp"
-#include "../pixel_map.hpp"
-#include "../SIMD/sfloat_rgba16.hpp"
-#include "../geometry/identity.hpp"
+#include "../utility/module.hpp"
+#include "../image/module.hpp"
+#include "../geometry/module.hpp"
 #include "../byte_string.hpp"
 #include "../strings.hpp"
 #include <span>
@@ -37,9 +36,9 @@ public:
         return _height;
     }
 
-    void decode_image(pixel_map<sfloat_rgba16>& image) const;
+    void decode_image(pixmap_span<sfloat_rgba16> image) const;
 
-    [[nodiscard]] static pixel_map<sfloat_rgba16> load(std::filesystem::path const& path);
+    [[nodiscard]] static pixmap<sfloat_rgba16> load(std::filesystem::path const& path);
 
 private:
     /** Matrix to convert png color values to sRGB.
@@ -94,8 +93,8 @@ private:
     void unfilter_line_up(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
-    void data_to_image(bstring bytes, pixel_map<sfloat_rgba16>& image) const noexcept;
-    void data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16>& row) const noexcept;
+    void data_to_image(bstring bytes, pixmap_span<sfloat_rgba16> image) const noexcept;
+    void data_to_image_line(std::span<std::byte const> bytes, std::span<sfloat_rgba16> row) const noexcept;
     u16x4 extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
 };
 

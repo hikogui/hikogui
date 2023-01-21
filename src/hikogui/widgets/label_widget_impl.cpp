@@ -10,8 +10,8 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
 {
     mode = widget_mode::select;
 
-    _icon_widget = std::make_shared<icon_widget>(this, label.get<"icon">());
-    _text_widget = std::make_shared<text_widget>(this, label.get<"text">());
+    _icon_widget = std::make_unique<icon_widget>(this, label.get<"icon">());
+    _text_widget = std::make_unique<text_widget>(this, label.get<"text">());
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
     _text_widget->mode = mode;

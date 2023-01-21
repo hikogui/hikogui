@@ -1,9 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "globals.hpp"
 #include "strings.hpp"
-#include "utility.hpp"
+#include "../utility/module.hpp"
 #include "url_parser.hpp"
 #include <regex>
 

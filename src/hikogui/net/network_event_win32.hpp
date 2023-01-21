@@ -5,7 +5,7 @@
 #pragma once
 
 #include "network_event.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

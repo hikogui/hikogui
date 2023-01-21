@@ -64,7 +64,7 @@ public:
     {
         hi_axiom(first_column < last_column);
         hi_axiom(first_row < last_row);
-        auto tmp = std::make_shared<Widget>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         return static_cast<Widget&>(add_widget(first_column, first_row, last_column, last_row, std::move(tmp)));
     }
 
@@ -98,10 +98,10 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
+    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
     {
         for (hilet& cell : _grid) {
-            co_yield cell.value.get();
+            co_yield *cell.value;
         }
     }
 
@@ -111,7 +111,7 @@ public:
     [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
     /// @endprivatesection
 private:
-    grid_layout<std::shared_ptr<widget>> _grid;
+    grid_layout<std::unique_ptr<widget>> _grid;
 
     /* Add a widget to the grid.
      */
@@ -120,7 +120,7 @@ private:
         std::size_t first_row,
         std::size_t last_column,
         std::size_t last_row,
-        std::shared_ptr<widget> child_widget) noexcept;
+        std::unique_ptr<widget> child_widget) noexcept;
 };
 
 }} // namespace hi::v1

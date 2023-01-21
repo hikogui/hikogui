@@ -17,9 +17,7 @@
 #include "triangle.hpp"
 #include "hikogui/file/URL.hpp"
 #include "hikogui/file/file_view.hpp"
-#include "hikogui/geometry/perspective.hpp"
-#include "hikogui/geometry/identity.hpp"
-#include "hikogui/geometry/lookat.hpp"
+#include "hikogui/module.hpp"
 #include <format>
 #include <vector>
 #include <exception>

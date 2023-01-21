@@ -7,9 +7,8 @@
 #include "glyph_id.hpp"
 #include "glyph_atlas_info.hpp"
 #include "../graphic_path.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
-#include "../utility.hpp"
-#include "../cast.hpp"
+#include "../geometry/module.hpp"
+#include "../utility/module.hpp"
 #include <bit>
 #include <memory>
 #include <cstddef>

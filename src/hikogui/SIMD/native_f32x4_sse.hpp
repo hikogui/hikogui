@@ -5,7 +5,7 @@
 #pragma once
 
 #include "native_simd_utility.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include <span>
 #include <array>
 #include <ostream>
@@ -175,7 +175,15 @@ struct native_simd<float, 4> {
      */
     [[nodiscard]] static native_simd ones() noexcept
     {
-        return native_simd{} == native_simd{};
+#ifdef HI_HAS_SSE2
+        auto ones = _mm_undefined_si128();
+        ones = _mm_cmpeq_epi32(ones, ones);
+        return native_simd{_mm_castsi128_ps(ones)};
+#else
+        auto ones = _mm_setzero_ps();
+        ones = _mm_cmpeq_ps(ones, ones);
+        return native_simd{ones};
+#endif
     }
 
     /** Concatenate the top bit of each element.

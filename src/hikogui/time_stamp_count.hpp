@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "architecture.hpp"
-#include "cast.hpp"
+#include "utility/module.hpp"
+#include "concurrency/module.hpp"
 #include "int_carry.hpp"
-#include "thread.hpp"
 #include <atomic>
 #include <array>
 #include <cstdint>

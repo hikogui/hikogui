@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
+#include "utility/module.hpp"
 #include "scoped_task.hpp"
 #include "notifier.hpp"
 #include "awaitable.hpp"

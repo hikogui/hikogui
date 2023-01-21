@@ -4,7 +4,7 @@
 
 #include "unicode_text_segmentation.hpp"
 #include "../file/file_view.hpp"
-#include "../charconv.hpp"
+#include "../utility/module.hpp"
 #include "../ranges.hpp"
 #include "../strings.hpp"
 #include <gtest/gtest.h>

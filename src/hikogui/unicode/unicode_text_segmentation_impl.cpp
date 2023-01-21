@@ -4,7 +4,7 @@
 
 #include "unicode_text_segmentation.hpp"
 #include "unicode_description.hpp"
-#include "../utility.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

@@ -7,8 +7,7 @@
 #include <type_traits>
 #include <memory>
 #include <initializer_list>
-#include "utility.hpp"
-#include "cast.hpp"
+#include "utility/module.hpp"
 
 namespace hi::inline v1 {
 

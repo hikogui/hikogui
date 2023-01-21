@@ -5,7 +5,7 @@
 #pragma once
 
 #include "native_simd_utility.hpp"
-#include "../assert.hpp"
+#include "../utility/module.hpp"
 #include <array>
 #include <ostream>
 
@@ -87,7 +87,7 @@ struct native_i8x16 {
         value_type m = value_type{0},
         value_type n = value_type{0},
         value_type o = value_type{0},
-        value_type p = value_type{0},
+        value_type p = value_type{0}
         ) noexcept :
         v(_mm_set_epi8(p, o, n, m, l, k, j, i, h, g, f, e, d, c, b, a))
     {
@@ -185,18 +185,26 @@ struct native_i8x16 {
 #elif HI_HAS_SSSE3
         return native_i8x16{_mm_shuffle_epi8(a.v, _mm_setzero_si128())};
 #else
-        auto tmp = _mm_extract_epi16(a.v, 0) & 0xff;
-        tmp <<= 8;
-        tmp |= tmp;
-        tmp <<= 16;
-        tmp |= tmp;
-        return native_i8x16{_mm_shuffle_epi8(tmp, 0b00'00'00'00)};
+        // Create a mask for 1 byte each 32 bit word, AND it with a.v.
+        auto tmp = _mm_undefined_si128();
+        tmp = _mm_cmpeq_epi32(tmp, tmp);
+        tmp = _mm_slli_epi32(tmp, 24);
+        tmp = _mm_and_si128(tmp, a.v);
+
+        // Broadcast the first byte to all the bytes in the first 32 bit word.
+        tmp = _mm_or_si128(tmp, _mm_slli_epi32(tmp, 8));
+        tmp = _mm_or_si128(tmp, _mm_slli_epi32(tmp,16));
+
+        // Broadcast the first 32 bit word to all 4 32 bit words.
+        tmp = _mm_shuffle_epi32(tmp, 0b00'00'00'00);
+        return native_i8x16{tmp};
 #endif
     }
 
     [[nodiscard]] static native_i8x16 ones() noexcept
     {
-        return native_i8x16{_mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()))};
+        auto tmp = _mm_undefined_si128();
+        return native_i8x16{_mm_cmpeq_epi32(tmp, tmp)};
     }
 
     /** Concatenate the top bit of each element.
@@ -208,7 +216,7 @@ struct native_i8x16 {
 
     [[nodiscard]] friend bool equal(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return eq(a, b).mask() == 0b1111'1111'1111'1111;
+        return (a == b).mask() == 0b1111'1111'1111'1111;
     }
 
     [[nodiscard]] friend native_i8x16 operator==(native_i8x16 a, native_i8x16 b) noexcept
@@ -218,7 +226,7 @@ struct native_i8x16 {
 
     [[nodiscard]] friend native_i8x16 operator!=(native_i8x16 a, native_i8x16 b) noexcept
     {
-        return ~eq(a, b);
+        return ~(a == b);
     }
 
     [[nodiscard]] friend native_i8x16 operator<(native_i8x16 a, native_i8x16 b) noexcept
@@ -278,7 +286,8 @@ struct native_i8x16 {
 
     [[nodiscard]] friend native_i8x16 operator~(native_i8x16 a) noexcept
     {
-        hilet ones = _mm_castps_si128(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()));
+        auto ones = _mm_undefined_si128();
+        ones = _mm_cmpeq_epi32(ones, ones);
         return native_i8x16{_mm_andnot_si128(a.v, ones)};
     }
 
@@ -287,7 +296,7 @@ struct native_i8x16 {
 #if HI_HAS_SSE4_1
         return native_i8x16{_mm_min_epi8(a.v, b.v)};
 #else
-        hilet mask = lt(a, b);
+        hilet mask = a < b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -297,7 +306,7 @@ struct native_i8x16 {
 #if HI_HAS_SSE4_1
         return native_i8x16{_mm_max_epi8(a.v, b.v)};
 #else
-        hilet mask = gt(a, b);
+        hilet mask = a > b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -307,7 +316,7 @@ struct native_i8x16 {
 #if HI_HAS_SSSE3
         return native_i8x16{_mm_abs_epi8(a.v)};
 #else
-        hilet mask = gt(a, native_i8x16{});
+        hilet mask = a > native_i8x16{};
         return (mask & a) | not_and(mask, -a);
 #endif
     }
@@ -360,7 +369,7 @@ struct native_i8x16 {
     [[nodiscard]] friend value_type get(native_i8x16 a) noexcept
     {
 #ifdef HI_HAS_SSE4_1
-        return _mm_extract_epi8(a.v, Index);
+        return static_cast<value_type>(_mm_extract_epi8(a.v, Index));
 #else
         auto r = static_cast<array_type>(a);
         return std::get<Index>(r);
@@ -381,11 +390,6 @@ struct native_i8x16 {
     {
         return a << "(" << get<0>(b) << ", " << get<1>(b) << ", " << get<2>(b) << ", " << get<3>(b) << ")";
     }
-};
-
-template<>
-struct low_level_simd<int8_t, 16> : std::true_type {
-    using type = native_i8x16;
 };
 
 #endif

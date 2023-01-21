@@ -6,8 +6,7 @@
 
 #include "observable_value.hpp"
 #include "observable.hpp"
-#include "type_traits.hpp"
-#include "concepts.hpp"
+#include "utility/module.hpp"
 
 namespace hi::inline v1 {
 

@@ -5,8 +5,8 @@
 #pragma once
 
 #include "observable.hpp"
-#include "rcu.hpp"
-#include "unfair_mutex.hpp"
+#include "concurrency/module.hpp"
+#include "utility/module.hpp"
 
 namespace hi::inline v1 {
 template<typename>

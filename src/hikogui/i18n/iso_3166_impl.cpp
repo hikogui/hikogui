@@ -3,11 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "iso_3166.hpp"
-#include "../cast.hpp"
-#include "../fixed_string.hpp"
-#include "../exception.hpp"
-#include "../charconv.hpp"
-#include "../check.hpp"
+#include "../utility/module.hpp"
 #include <array>
 
 namespace hi::inline v1 {

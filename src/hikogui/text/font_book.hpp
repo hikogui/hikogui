@@ -11,8 +11,8 @@
 #include "elusive_icon.hpp"
 #include "hikogui_icon.hpp"
 #include "../unicode/grapheme.hpp"
-#include "../geometry/alignment.hpp"
-#include "../subsystem.hpp"
+#include "../geometry/module.hpp"
+#include "../utility/module.hpp"
 #include "../generator.hpp"
 #include <limits>
 #include <array>

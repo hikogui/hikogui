@@ -6,7 +6,7 @@
 
 #include "chrono.hpp"
 #include "algorithm.hpp"
-#include "concepts.hpp"
+#include "utility/module.hpp"
 #include <cmath>
 
 namespace hi::inline v1 {

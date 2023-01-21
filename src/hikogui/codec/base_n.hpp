@@ -5,10 +5,7 @@
 #pragma once
 
 #include "../byte_string.hpp"
-#include "../utility.hpp"
-#include "../assert.hpp"
-#include "../cast.hpp"
-#include "../check.hpp"
+#include "../utility/module.hpp"
 #include <span>
 #include <cstdint>
 #include <array>

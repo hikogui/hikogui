@@ -6,8 +6,7 @@
 
 #include "keyboard_key.hpp"
 #include "gui_event.hpp"
-#include "../architecture.hpp"
-#include "../subsystem.hpp"
+#include "../utility/module.hpp"
 #include <unordered_map>
 #include <tuple>
 #include <filesystem>

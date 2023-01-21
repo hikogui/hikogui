@@ -5,9 +5,8 @@
 #pragma once
 
 #include "audio_sample_format.hpp"
-#include "../utility.hpp"
-#include "../architecture.hpp"
-#include "../SIMD/simd.hpp"
+#include "../utility/module.hpp"
+#include "../SIMD/module.hpp"
 #include "../random/dither.hpp"
 #include <cstddef>
 #include <bit>

@@ -3,11 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "audio_sample_unpacker.hpp"
-#include "../utility.hpp"
-#include "../cast.hpp"
-#include "../memory.hpp"
-#include "../endian.hpp"
-#include "../SIMD/simd.hpp"
+#include "../utility/module.hpp"
+#include "../SIMD/module.hpp"
 #include <bit>
 #include <cstdint>
 #include <tuple>

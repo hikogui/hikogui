@@ -9,9 +9,8 @@
 #pragma once
 
 #include "vector.hpp"
-#include "../SIMD/simd.hpp"
-#include "../cast.hpp"
-#include "../numbers.hpp"
+#include "../SIMD/module.hpp"
+#include "../utility/module.hpp"
 #include <compare>
 
 namespace hi { inline namespace v1 {

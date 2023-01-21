@@ -4,11 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "type_traits.hpp"
-#include "cast.hpp"
-#include "exception.hpp"
-#include "check.hpp"
+#include "utility/module.hpp"
 #include <span>
 
 hi_warning_push();

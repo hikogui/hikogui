@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include "../architecture.hpp"
-#include "../unfair_recursive_mutex.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

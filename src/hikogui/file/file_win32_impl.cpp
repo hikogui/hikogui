@@ -2,14 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../win32_headers.hpp"
+#include "../utility/win32_headers.hpp"
 
 #include "file_win32.hpp"
 #include "../log.hpp"
-#include "../exception.hpp"
+#include "../utility/module.hpp"
 #include "../strings.hpp"
-#include "../cast.hpp"
-#include "../memory.hpp"
 #include "../defer.hpp"
 #include <type_traits>
 

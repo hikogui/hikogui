@@ -5,7 +5,7 @@
 #include "icon_widget.hpp"
 #include "../text/font_book.hpp"
 #include "../GUI/theme.hpp"
-#include "../cast.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 
@@ -28,7 +28,7 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
         _glyph = {};
         _pixmap_backing = {};
 
-        if (hilet pixmap = get_if<pixel_map<sfloat_rgba16>>(&icon.read())) {
+        if (hilet pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon.read())) {
             _icon_type = icon_type::pixmap;
             _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
@@ -39,17 +39,17 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
                 process_event({gui_event_type::window_reconstrain});
             }
 
-        } else if (hilet g1 = get_if<glyph_ids>(&icon.read())) {
+        } else if (hilet g1 = std::get_if<glyph_ids>(&icon.read())) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
 
-        } else if (hilet g2 = get_if<elusive_icon>(&icon.read())) {
+        } else if (hilet g2 = std::get_if<elusive_icon>(&icon.read())) {
             _glyph = find_glyph(*g2);
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
 
-        } else if (hilet g3 = get_if<hikogui_icon>(&icon.read())) {
+        } else if (hilet g3 = std::get_if<hikogui_icon>(&icon.read())) {
             _glyph = find_glyph(*g3);
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;

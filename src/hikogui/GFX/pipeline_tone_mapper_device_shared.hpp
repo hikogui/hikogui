@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "../utility.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
+#include "../utility/module.hpp"
+#include "../geometry/module.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

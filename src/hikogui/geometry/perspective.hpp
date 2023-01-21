@@ -5,7 +5,7 @@
 #pragma once
 
 #include "matrix.hpp"
-#include "../math.hpp"
+#include "../utility/module.hpp"
 
 namespace hi { inline namespace v1 {
 namespace geo {

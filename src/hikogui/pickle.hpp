@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "assert.hpp"
+#include "utility/module.hpp"
 #include "datum.hpp"
-#include "concepts.hpp"
 #include "codec/base_n.hpp"
 #include <string>
 #include <limits>

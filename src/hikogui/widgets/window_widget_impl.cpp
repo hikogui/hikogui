@@ -16,7 +16,7 @@ namespace hi::inline v1 {
 
 void window_widget::constructor_implementation() noexcept
 {
-    _toolbar = std::make_shared<toolbar_widget>(this);
+    _toolbar = std::make_unique<toolbar_widget>(this);
 
     if (operating_system::current == operating_system::windows) {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
@@ -30,7 +30,7 @@ void window_widget::constructor_implementation() noexcept
         hi_no_default();
     }
 
-    _content = std::make_shared<grid_widget>(this);
+    _content = std::make_unique<grid_widget>(this);
 }
 
 [[nodiscard]] gui_window *window_widget::window() const noexcept
@@ -50,10 +50,10 @@ void window_widget::constructor_implementation() noexcept
     return _window->surface.get();
 }
 
-[[nodiscard]] generator<widget *> window_widget::children() const noexcept
+[[nodiscard]] generator<widget const&> window_widget::children(bool include_invisible) const noexcept
 {
-    co_yield _toolbar.get();
-    co_yield _content.get();
+    co_yield *_toolbar;
+    co_yield *_content;
 }
 
 [[nodiscard]] box_constraints window_widget::update_constraints() noexcept
@@ -163,48 +163,48 @@ hitbox window_widget::hitbox_test(point2i position) const noexcept
     // Corner resize has always priority.
     if (is_on_l_edge and is_on_b_edge) {
         if (_can_resize_width and _can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::bottom_left_resize_corner};
+            return {id, _layout.elevation, hitbox_type::bottom_left_resize_corner};
         } else if (_can_resize_width) {
-            return {this, _layout.elevation, hitbox_type::left_resize_border};
+            return {id, _layout.elevation, hitbox_type::left_resize_border};
         } else if (_can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::bottom_resize_border};
+            return {id, _layout.elevation, hitbox_type::bottom_resize_border};
         }
     } else if (is_on_r_edge and is_on_b_edge) {
         if (_can_resize_width and _can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::bottom_right_resize_corner};
+            return {id, _layout.elevation, hitbox_type::bottom_right_resize_corner};
         } else if (_can_resize_width) {
-            return {this, _layout.elevation, hitbox_type::right_resize_border};
+            return {id, _layout.elevation, hitbox_type::right_resize_border};
         } else if (_can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::bottom_resize_border};
+            return {id, _layout.elevation, hitbox_type::bottom_resize_border};
         }
     } else if (is_on_l_edge and is_on_t_edge) {
         if (_can_resize_width and _can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::top_left_resize_corner};
+            return {id, _layout.elevation, hitbox_type::top_left_resize_corner};
         } else if (_can_resize_width) {
-            return {this, _layout.elevation, hitbox_type::left_resize_border};
+            return {id, _layout.elevation, hitbox_type::left_resize_border};
         } else if (_can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::top_resize_border};
+            return {id, _layout.elevation, hitbox_type::top_resize_border};
         }
     } else if (is_on_r_edge and is_on_t_edge) {
         if (_can_resize_width and _can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::top_right_resize_corner};
+            return {id, _layout.elevation, hitbox_type::top_right_resize_corner};
         } else if (_can_resize_width) {
-            return {this, _layout.elevation, hitbox_type::right_resize_border};
+            return {id, _layout.elevation, hitbox_type::right_resize_border};
         } else if (_can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::top_resize_border};
+            return {id, _layout.elevation, hitbox_type::top_resize_border};
         }
     }
 
     // Border resize only has priority if there is no scroll-bar in the way.
     if (r.type != hitbox_type::scroll_bar) {
         if (is_on_l_edge and _can_resize_width) {
-            return {this, _layout.elevation, hitbox_type::left_resize_border};
+            return {id, _layout.elevation, hitbox_type::left_resize_border};
         } else if (is_on_r_edge and _can_resize_width) {
-            return {this, _layout.elevation, hitbox_type::right_resize_border};
+            return {id, _layout.elevation, hitbox_type::right_resize_border};
         } else if (is_on_b_edge and _can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::bottom_resize_border};
+            return {id, _layout.elevation, hitbox_type::bottom_resize_border};
         } else if (is_on_t_edge and _can_resize_height) {
-            return {this, _layout.elevation, hitbox_type::top_resize_border};
+            return {id, _layout.elevation, hitbox_type::top_resize_border};
         }
     }
 
@@ -238,7 +238,7 @@ bool window_widget::handle_event(gui_event const& event) noexcept
     switch (event.type()) {
     case gui_toolbar_open:
         process_event(
-            gui_event::window_set_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
+            gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
         return true;
     }
     return super::handle_event(event);

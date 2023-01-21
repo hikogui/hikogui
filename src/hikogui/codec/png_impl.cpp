@@ -5,11 +5,9 @@
 
 #include "png.hpp"
 #include "zlib.hpp"
-#include "../endian.hpp"
+#include "../utility/module.hpp"
 #include "../placement.hpp"
-#include "../color/sRGB.hpp"
-#include "../color/Rec2100.hpp"
-#include "../color/color_space.hpp"
+#include "../color/module.hpp"
 
 namespace hi::inline v1 {
 
@@ -409,7 +407,7 @@ u16x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) cons
     return u16x4{r, g, b, a};
 }
 
-void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16> &line) const noexcept
+void png::data_to_image_line(std::span<std::byte const> bytes, std::span<sfloat_rgba16> line) const noexcept
 {
     hilet alpha_mul = _bit_depth == 16 ? 1.0f / 65535.0f : 1.0f / 255.0f;
     for (int x = 0; x != _width; ++x) {
@@ -426,7 +424,7 @@ void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_
     }
 }
 
-void png::data_to_image(bstring bytes, pixel_map<sfloat_rgba16> &image) const noexcept
+void png::data_to_image(bstring bytes, pixmap_span<sfloat_rgba16> image) const noexcept
 {
     auto bytes_span = std::span(bytes);
 
@@ -439,7 +437,7 @@ void png::data_to_image(bstring bytes, pixel_map<sfloat_rgba16> &image) const no
     }
 }
 
-void png::decode_image(pixel_map<sfloat_rgba16> &image) const
+void png::decode_image(pixmap_span<sfloat_rgba16> image) const
 {
     // There is a filter selection byte in front of every line.
     hilet image_data_size = _stride * _height;
@@ -452,10 +450,10 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
     data_to_image(image_data, image);
 }
 
-pixel_map<sfloat_rgba16> png::load(std::filesystem::path const &path)
+pixmap<sfloat_rgba16> png::load(std::filesystem::path const &path)
 {
     hilet png_data = png(file_view{path});
-    auto image = pixel_map<sfloat_rgba16>{png_data.width(), png_data.height()};
+    auto image = pixmap<sfloat_rgba16>{png_data.width(), png_data.height()};
     png_data.decode_image(image);
     return image;
 }

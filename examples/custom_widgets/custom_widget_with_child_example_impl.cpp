@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "hikogui/module.hpp"
 #include "hikogui/GUI/gui_system.hpp"
 #include "hikogui/widgets/widget.hpp"
 #include "hikogui/widgets/label_widget.hpp"
@@ -18,8 +19,7 @@ public:
     {
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
-        _label_widget =
-            std::make_shared<hi::label_widget>(this, std::forward<Label>(label), hi::alignment::middle_center());
+        _label_widget = std::make_unique<hi::label_widget>(this, std::forward<Label>(label), hi::alignment::middle_center());
     }
 
     // The set_constraints() function is called when the window is first initialized,
@@ -105,15 +105,15 @@ protected:
     //
     // The allocator argument should not be used by the function, it is used by the caller
     // to allocate the co-routine's frame on the stack.
-    [[nodiscard]] hi::generator<widget *> children() const noexcept override
+    [[nodiscard]] hi::generator<widget const &> children(bool include_invisible) const noexcept override
     {
         // This function is often written as a co-routine that yields a pointer to each of its children.
-        co_yield _label_widget.get();
+        co_yield *_label_widget;
     }
 
 private:
     // Child widgets are owned by their parent.
-    std::shared_ptr<hi::label_widget> _label_widget;
+    std::unique_ptr<hi::label_widget> _label_widget;
     hi::box_constraints _label_constraints;
     hi::box_shape _label_shape;
 };
