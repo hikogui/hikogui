@@ -12,7 +12,7 @@
 #include <cmath>
 #include <array>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Rec.2100 to XYZ color space conversion matrix.
  * @ingroup color
@@ -62,4 +62,4 @@ constexpr matrix3 XYZ_to_Rec2100 = XYZ_to_Rec2020;
     return std::pow((Nm2 - c1) / (c2 - c3 * Nm2), 1.0f / m1);
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -10,7 +10,8 @@
 
 #include "../geometry/module.hpp"
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
 /** Create a color space conversion matrix.
  *
@@ -47,4 +48,4 @@ color_primaries_to_RGBtoXYZ(float wx, float wy, float rx, float ry, float gx, fl
     return C * S;
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

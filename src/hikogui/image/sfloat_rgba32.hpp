@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file image/sfloat_rgba32.hpp Defines the sfloat_rgba32.
+ * @ingroup image
+ */
+
 #pragma once
 
 #include "../SIMD/module.hpp"
@@ -11,6 +15,10 @@
 
 namespace hi::inline v1 {
 
+/** 4 x float32 pixel format.
+ *
+ * @ingroup image
+ */
 class sfloat_rgba32 {
     // Red, Green, Blue, Alpha in binary32 (native endian).
     std::array<float, 4> v;
