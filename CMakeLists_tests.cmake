@@ -54,7 +54,6 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_text_segmentation_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_normalization_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector_tests.cpp

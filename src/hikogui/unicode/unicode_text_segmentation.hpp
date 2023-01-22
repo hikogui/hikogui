@@ -31,7 +31,22 @@ struct grapheme_break_state {
  * @param state Current state of the grapheme-break algorithm.
  * @return true when a grapheme break exists before the current code-point.
  */
-[[nodiscard]] bool breaks_grapheme(char32_t code_point, grapheme_break_state &state) noexcept;
+[[nodiscard]] bool breaks_grapheme(char32_t code_point, grapheme_break_state& state) noexcept;
+
+template<typename It, typename ItEnd>
+[[nodiscard]] std::vector<unicode_break_opportunity> unicode_grapheme_break(It first, ItEnd last) noexcept
+{
+    auto r = std::vector<unicode_break_opportunity>{};
+    auto state = grapheme_break_state{};
+
+    for (auto it = first; it != last; ++it) {
+        hilet opertunity = breaks_grapheme(*it, state) ? unicode_break_opportunity::yes : unicode_break_opportunity::no;
+        r.push_back(opertunity);
+    }
+
+    r.push_back(unicode_break_opportunity::yes);
+    return r;
+}
 
 /** Wrap lines in text that are too wide.
  * This algorithm may modify white-space in text and change them into line seperators.
