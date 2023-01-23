@@ -196,7 +196,7 @@ public:
      *
      * @post This function will change what is returned by `widget::size()` and the transformation
      *       matrices.
-     * @param layout The layout for this child.
+     * @param context The layout for this child.
      */
     virtual void set_layout(widget_layout const& context) noexcept
     {

@@ -52,10 +52,10 @@ public:
 
     /** Construct a matrix from four columns.
      *
-     * @param col0 The 1st `f32x4 column.
-     * @param col1 The 2nd `f32x4 column.
-     * @param col2 The 3rd `f32x4 column.
-     * @param col3 The 4th `f32x4 column.
+     * @param col0 The 1st `f32x4` column.
+     * @param col1 The 2nd `f32x4` column.
+     * @param col2 The 3rd `f32x4` column.
+     * @param col3 The 4th `f32x4` column.
      */
     constexpr matrix(f32x4 col0, f32x4 col1, f32x4 col2, f32x4 col3 = f32x4{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
         _col0(col0), _col1(col1), _col2(col2), _col3(col3)
@@ -64,10 +64,10 @@ public:
 
     /** Construct a matrix from four vectors.
      *
-     * @param col0 The 1st `f32x4 column.
-     * @param col1 The 2nd `f32x4 column.
-     * @param col2 The 3rd `f32x4 column.
-     * @param col3 The 4th `f32x4 column.
+     * @param col0 The 1st `vector3` column.
+     * @param col1 The 2nd `vector3` column.
+     * @param col2 The 3rd `vector3` column.
+     * @param col3 The 4th `vector3` column.
      */
     constexpr matrix(vector3 col0, vector3 col1, vector3 col2, vector3 col3 = vector3{}) noexcept
         requires(D == 3)
@@ -425,7 +425,7 @@ public:
      * @tparam DstY Which of the original axis to use for the new matrix's y-axis.
      * @tparam DstZ Which of the original axis to use for the new matrix's z-axis.
      * @tparam DstW Which of the original axis to use for the new matrix's w-axis.
-     * @param The matrix to reflect
+     * @param rhs The matrix to reflect
      * @return The reflected matrix.
      */
     template<char DstX, char DstY, char DstZ, char DstW = 'w'>

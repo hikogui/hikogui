@@ -13,7 +13,7 @@
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** This is a RGBA floating point color.
  * The color can be converted between different color spaces using the matrix-class.
@@ -209,6 +209,7 @@ public:
      * The alpha value is not included in the transformation and copied from the input.
      *
      * @note It is undefined behavior if the matrix contains a translation.
+     * @param lhs The 3x3 color transformation matrix to use.
      * @param rhs The color to be transformed.
      * @return The transformed color.
      */
@@ -232,7 +233,7 @@ private:
     f16x4 _v;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
 
 template<>
 struct std::hash<hi::color> {

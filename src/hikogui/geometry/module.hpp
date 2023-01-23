@@ -88,8 +88,6 @@ left-top and right-top corner. Each number has the following meaning:
 A 4D red, green, blue and alpha value. A `color` can be transformed like a `vector3`.
 In this case, the alpha value is ignored and copied into the result.
 
-For more information, see: [color](color.md).
-
 ### rectangle
 
 A `rectangle` is a closed plane in three dimensions.

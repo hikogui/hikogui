@@ -11,8 +11,9 @@
 namespace hi {
 inline namespace v1 {
 
-/** The 4 radiuses of the corners of a quad or rectangle.
- * @ingroup geometry.
+/** The 4 radii of the corners of a quad or rectangle.
+ * 
+ * @ingroup geometry
  */
 class corner_radii {
 public:

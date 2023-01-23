@@ -19,7 +19,7 @@
 #include "../vector_span.hpp"
 #include "../utility/module.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class glyph_ids;
@@ -46,17 +46,50 @@ concept draw_attribute = std::same_as<Context, quad_color> or std::same_as<Conte
     std::same_as<Context, border_side> or std::same_as<Context, line_end_cap> or std::same_as<Context, corner_radii> or
     std::same_as<Context, aarectanglei> or std::same_as<Context, float> or std::same_as<Context, int>;
 
+/** The draw attributes used to draw shaped into the draw context.
+ */
 struct draw_attributes {
     unsigned char num_colors = 0;
     unsigned char num_line_caps = 0;
 
+    /** The fill color used for the color of a box inside the border.
+     *
+     * This is also used as the line-color when drawing lines. Or the
+     * color of the text. And the color for the primary cursor.
+     */
     quad_color fill_color = {};
+
+    /** The line color used for the color of the border of the box.
+     *
+     * This is also used as the color for the secondary cursor.
+     */
     quad_color line_color = {};
+
+    /** The width of a line, or the width of a border.
+     */
     float line_width = 0.0f;
+
+    /** The side on which side of the edge of a shape the border should be drawn.
+     */
     hi::border_side border_side = hi::border_side::on;
+
+    /** The radii of each corner of a quad.
+     */
     hi::corner_radii corner_radius = {};
+
+    /** The rectangle used the clip the shape when drawing.
+     *
+     * This rectangle is used for limiting drawing outside of a widget's rectangle.
+     * But it may also be used to cut shapes for special effects.
+     */
     aarectanglei clipping_rectangle = aarectanglei::large();
+
+    /** The shape of the beginning of a line.
+     */
     line_end_cap begin_line_cap = line_end_cap::flat;
+
+    /** The shape of the beginning of a line.
+     */
     line_end_cap end_line_cap = line_end_cap::flat;
 
     constexpr draw_attributes(draw_attributes const&) noexcept = default;
@@ -65,6 +98,26 @@ struct draw_attributes {
     constexpr draw_attributes& operator=(draw_attributes&&) noexcept = default;
     constexpr draw_attributes() noexcept = default;
 
+    /** Construct the draw attributes based on types and order of the attributes.
+     *
+     * The following order of attributes is maintained:
+     *  - By default the `fill_color` and `line_color` are transparent.
+     *  - The first `hi::color` or `hi::quad_color` is used for the `fill_color`.
+     *  - The second `hi::color` or `hi::quad_color` is used for the `line_color`.
+     *  - By default the `begin_line_cap` and `end_line_cap` are set to flat.
+     *  - The first `hi::line_end_cap` is used for both the `begin_line_cap` and `end_line_cap`.
+     *  - The second `hi::line_end_cap` is used to override the `end_line_cap`.
+     *  - By default the `border_side` is set to `border_side::on`
+     *  - A `hi::border_side` argument is used to set the `border_side`.
+     *  - By default the `corner_radius` are set to (0, 0, 0, 0).
+     *  - A `hi::corner_radii` argument is used to set the `corner_radius`.
+     *  - By default the `clipping_rectangle` is set to a rectangle encompassing the whole window.
+     *  - A `hi::aarectangle` argument is used to set the `clipping_rectangle`.
+     *  - By default the `line_width` is set to 0.
+     *  - A `float` or `int` argument is used to set the `line_width`.
+     *
+     * @param args The attributes to be set.
+     */
     template<draw_attribute... Args>
     constexpr draw_attributes(Args const&...args) noexcept
     {
@@ -207,15 +260,11 @@ public:
         return frame_buffer_index != std::numeric_limits<size_t>::max();
     }
 
-    /** Draw a box with rounded corners.
+    /** Draw a box.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param box The four points of the box to draw.
-     * @param fill_color The fill color of the inside of the box.
-     * @param line_color The line color of the border of the box.
-     * @param line_width The line width of the border.
-     * @param border_side The side of the edge where the border is drawn.
-     * @param corner_radius The corner radii of each corner of the box.
+     * @param attributes The drawing attributes to use.
      */
     void draw_box(widget_layout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
     {
@@ -223,12 +272,24 @@ public:
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, attributes);
     }
 
+    /** Draw a box.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param shape The shape of the box.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
+     */
     template<draw_quad_shape Shape, draw_attribute... Attributes>
     void draw_box(widget_layout const& layout, Shape const& shape, Attributes const&...attributes) const noexcept
     {
         return draw_box(layout, make_quad(shape), draw_attributes{attributes...});
     }
 
+    /** Draw a line.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param line The line segment to draw.
+     * @param attributes The drawing attributes to use.
+     */
     void draw_line(widget_layout const& layout, line_segment const& line, draw_attributes const& attributes) const noexcept
     {
         hilet box = make_rectangle(line, attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
@@ -240,12 +301,24 @@ public:
         return draw_box(layout, box, box_attributes);
     }
 
+    /** Draw a line.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param line The line segment to draw.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
+     */
     template<draw_attribute... Attributes>
     void draw_line(widget_layout const& layout, line_segment const& line, Attributes const&...attributes) const noexcept
     {
         return draw_line(layout, line, draw_attributes{attributes...});
     }
 
+    /** Draw a circle.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param circle The circle to draw.
+     * @param attributes The drawing attributes to use.
+     */
     void draw_circle(widget_layout const& layout, hi::circle const& circle, draw_attributes const& attributes) const noexcept
     {
         auto box_attributes = attributes;
@@ -253,6 +326,12 @@ public:
         return draw_box(layout, make_rectangle(circle), box_attributes);
     }
 
+    /** Draw a circle.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param circle The circle to draw.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
+     */
     template<draw_attribute... Attributes>
     void draw_circle(widget_layout const& layout, hi::circle const& circle, Attributes const&...attributes) const noexcept
     {
@@ -264,6 +343,7 @@ public:
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param box The four points of the box to draw.
      * @param image The image to show.
+     * @param attributes The drawing attributes to use.
      * @return True when the image was drawn, false if the image is not ready yet.
      *         Widgets may want to request a redraw if the image is not ready.
      */
@@ -278,6 +358,7 @@ public:
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param box The four points of the box to draw.
      * @param image The image to show.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      * @return True when the image was drawn, false if the image is not ready yet.
      *         Widgets may want to request a redraw if the image is not ready.
      */
@@ -292,10 +373,9 @@ public:
     /** Draw a glyph.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
-     * @param clipping_rectangle A more narrow clipping rectangle than supplied by layout.
      * @param box The size and position of the glyph.
-     * @param color The color that the glyph should be drawn in.
      * @param glyph The glyphs to draw.
+     * @param attributes The drawing attributes to use.
      */
     void draw_glyph(widget_layout const& layout, quad const& box, glyph_ids const& glyph, draw_attributes const& attributes)
         const noexcept
@@ -307,10 +387,9 @@ public:
     /** Draw a glyph.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
-     * @param clipping_rectangle A more narrow clipping rectangle than supplied by layout.
      * @param box The size and position of the glyph.
-     * @param color The color that the glyph should be drawn in.
      * @param glyph The glyphs to draw.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_quad_shape Shape, draw_attribute... Attributes>
     void draw_glyph(widget_layout const& layout, Shape const& box, glyph_ids const& glyph, Attributes const&...attributes)
@@ -323,8 +402,8 @@ public:
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param transform How to transform the shaped text relative to layout.
-     * @param color Text-color overriding the colors from the text_shaper.
      * @param text The shaped text to draw.
+     * @param attributes The drawing attributes to use.
      */
     void
     draw_text(widget_layout const& layout, matrix3 const& transform, text_shaper const& text, draw_attributes const& attributes)
@@ -341,8 +420,8 @@ public:
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param transform How to transform the shaped text relative to layout.
-     * @param color Text-color overriding the colors from the text_shaper.
      * @param text The shaped text to draw.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_attribute... Attributes>
     void draw_text(widget_layout const& layout, matrix3 const& transform, text_shaper const& text, Attributes const&...attributes)
@@ -354,9 +433,8 @@ public:
     /** Draw shaped text.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
-     * @param transform How to transform the shaped text relative to layout.
-     * @param color Text-color overriding the colors from the text_shaper.
      * @param text The shaped text to draw.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_attribute... Attributes>
     void draw_text(widget_layout const& layout, text_shaper const& text, Attributes const&...attributes) const noexcept
@@ -369,7 +447,7 @@ public:
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param text The shaped text to draw.
      * @param selection The text selection.
-     * @param color The color of the selection.
+     * @param attributes The drawing attributes to use.
      */
     void draw_text_selection(
         widget_layout const& layout,
@@ -386,7 +464,7 @@ public:
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param text The shaped text to draw.
      * @param selection The text selection.
-     * @param color The color of the selection.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_attribute... Attributes>
     void draw_text_selection(
@@ -403,10 +481,9 @@ public:
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param text The shaped text to draw.
      * @param cursor The position of the cursor.
-     * @param primary_color The color of the primary cursor (the insertion cursor).
-     * @param secondary_color The color of the secondary cursor (the append cursor).
      * @param overwrite_mode If true draw overwrite mode cursor; if false draw insertion mode cursors,
      * @param dead_character_mode If true draw the dead-character cursor. The dead_character_mode overrides all other cursors.
+     * @param attributes The drawing attributes to use.
      */
     void draw_text_cursors(
         widget_layout const& layout,
@@ -431,10 +508,9 @@ public:
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param text The shaped text to draw.
      * @param cursor The position of the cursor.
-     * @param primary_color The color of the primary cursor (the insertion cursor).
-     * @param secondary_color The color of the secondary cursor (the append cursor).
      * @param overwrite_mode If true draw overwrite mode cursor; if false draw insertion mode cursors,
      * @param dead_character_mode If true draw the dead-character cursor. The dead_character_mode overrides all other cursors.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_attribute... Attributes>
     void draw_text_cursors(
@@ -455,6 +531,7 @@ public:
      *
      * @param layout The layout of the widget.
      * @param box The box in local coordinates of the widget.
+     * @param attributes The drawing attributes to use.
      */
     void draw_hole(widget_layout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
     {
@@ -469,6 +546,7 @@ public:
      *
      * @param layout The layout of the widget.
      * @param box The box in local coordinates of the widget.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_quad_shape Shape, draw_attribute... Attributes>
     void draw_hole(widget_layout const& layout, Shape const& box, Attributes const&...attributes) const noexcept
@@ -476,6 +554,13 @@ public:
         return draw_hole(layout, make_quad(box), draw_attributes{attributes...});
     }
 
+    /** Checks if a widget's layout overlaps with the part of the window that is being drawn.
+     *
+     * @param context The draw context which contains the scissor rectangle.
+     * @param layout The layout of a widget which contains the rectangle where the widget is located
+     *               on the window
+     * @return True if the widget needs to draw into the context.
+     */
     [[nodiscard]] friend bool overlaps(draw_context const& context, widget_layout const& layout) noexcept
     {
         return overlaps(context.scissor_rectangle, layout.clipping_rectangle_on_window());
@@ -605,4 +690,4 @@ private:
     [[nodiscard]] bool _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image& image) const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

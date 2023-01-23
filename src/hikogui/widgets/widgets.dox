@@ -59,7 +59,7 @@ If instead you pass an observer to a widget's constructor, it will instantiate
 a default-delegate which uses the observer to control the widget.
 
 An observer is a type that observes a value, it will use a callback to notify listeners when the
-observed value changes. For more information see \ref observers.
+observed value changes. For more information see: \ref observer.
 
 ### Attributes
 

@@ -46,7 +46,7 @@ constexpr matrix3 XYZ_to_Rec2100 = XYZ_to_Rec2020;
 /** Rec.2100 gamma to linear transfer function.
  *
  * @ingroup color
- * @param L The Rec.2100 gamma corrected color value, between 0.0 and 1.0.
+ * @param N The Rec.2100 gamma corrected color value, between 0.0 and 1.0.
  * @return The color value converted to a linear color value between 0.0 and 1.0.
  */
 [[nodiscard]] inline float Rec2100_gamma_to_linear(float N) noexcept
