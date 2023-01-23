@@ -28,9 +28,8 @@ jobs:
               repo: context.repo.repo,
               run_id: ${{ github.event.workflow_run.id }},
             });
-            console.log(artifacts);
             var testArtifact = artifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "test_results"
+              return artifact.name == "test-results"
             })[0];
             var download = await github.rest.actions.downloadArtifact({
               owner: context.repo.owner,

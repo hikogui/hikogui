@@ -152,52 +152,58 @@ unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_b
 
     hi_axiom(r.size() == infos.size() + 1);
 
-    auto RI_count = 0_uz;
-    hilet size = narrow_cast<std::ptrdiff_t>(infos.size());
-    for (auto i = 0_z; i < size; ++i) {
-        hilet& next = infos[i];
-        if (next == Regional_Indicator) {
-            ++RI_count;
-        } else {
-            RI_count = 0;
-        }
-
+    for (auto i = 0_uz; i != infos.size(); ++i) {
         if (r[i] != unassigned) {
             continue;
         }
 
+        hilet& next = infos[i];
+
+        // WB4: (Extend | Format | ZWJ)* is assigned to no-break.
         hi_axiom(not next.is_skip());
 
-        std::ptrdiff_t k;
-
-        hilet prev = [&] {
-            for (k = i - 1; k >= 0; --k) {
-                if (not infos[k].is_skip()) {
-                    return infos[k];
-                }
+        auto prev_i = narrow_cast<ptrdiff_t>(i) - 1;
+        auto prev = unicode_word_break_info{};
+        for (; prev_i >= 0 ; --prev_i) {
+            if (not infos[prev_i].is_skip()) {
+                prev = infos[prev_i];
+                break;
             }
-            return unicode_word_break_info{};
-        }();
+        }
 
-        hilet prev_prev = [&] {
-            for (--k; k >= 0; --k) {
-                if (not infos[k].is_skip()) {
-                    return infos[k];
-                }
+        auto prev_prev_i = prev_i - 1;
+        auto prev_prev = unicode_word_break_info{};
+        for (; prev_prev_i >= 0; --prev_prev_i) {
+            if (not infos[prev_prev_i].is_skip()) {
+                prev_prev = infos[prev_prev_i];
+                break;
             }
-            return unicode_word_break_info{};
-        }();
+        }
 
-        hilet next_next = [&] {
-            for (k = i + 1; k < size; ++k) {
-                if (not infos[k].is_skip()) {
-                    return infos[k];
-                }
+        auto next_next_i = i + 1;
+        auto next_next = unicode_word_break_info{};
+        for (; next_next_i != infos.size(); ++next_next_i) {
+            if (not infos[next_next_i].is_skip()) {
+                next_next = infos[next_next_i];
+                break;
             }
-            return unicode_word_break_info{};
-        }();
+        }
 
-        r[i] = [&]() {
+        auto RI_i = prev_i - 1;
+        auto RI_is_pair = true;
+        if (prev == Regional_Indicator and next == Regional_Indicator) {
+            // Track back before prev, and count consecutive RI.
+            for (; RI_i >= 0; --RI_i) {
+                if (infos[RI_i].is_skip()) {
+                    continue;
+                } else if (infos[RI_i] != Regional_Indicator) {
+                    break;
+                }
+                RI_is_pair = not RI_is_pair;
+            }
+        }
+
+        r[i] = [&] {
             if (is_AHLetter(prev) and is_AHLetter(next)) {
                 return no; // WB5
             } else if (is_AHLetter(prev) and (next == MidLetter or is_MidNumLetQ(next)) and is_AHLetter(next_next)) {
@@ -227,7 +233,7 @@ unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_b
                 return no; // WB13a
             } else if (prev == ExtendNumLet and (is_AHLetter(next) or next == Numeric or next == Katakana)) {
                 return no; // WB13b
-            } else if (prev == Regional_Indicator and next == Regional_Indicator and (RI_count % 2) == 1) {
+            } else if (prev == Regional_Indicator and next == Regional_Indicator and RI_is_pair) {
                 return no; // WB15 WB16
             } else {
                 return yes; // WB999
@@ -246,7 +252,8 @@ unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_b
  * @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline unicode_break_vector unicode_word_break(It first, ItEnd last, DescriptionFunc const& description_func) noexcept
+[[nodiscard]] inline unicode_break_vector
+unicode_word_break(It first, ItEnd last, DescriptionFunc const& description_func) noexcept
 {
     auto size = narrow_cast<size_t>(std::distance(first, last));
     auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};

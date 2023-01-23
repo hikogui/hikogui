@@ -9,7 +9,7 @@ then
 fi
 
 
-python tools/generate_unicode_data.py \
+python3 tools/generate_unicode_data.py \
     --compositions-template=tools/ucd/ucd_compositions.hpp.psp \
     --compositions-output=src/hikogui/unicode/ucd_compositions.hpp \
     --decompositions-template=tools/ucd/ucd_decompositions.hpp.psp \
