@@ -306,9 +306,10 @@ public:
 
     /** Construct constraints for this axis.
      *
-     * @param cell The cells
+     * @param cells The cells
      * @param num The number of cells in the direction of the current axis
-     * @param mirrored true If the axis needs to be mirrored.
+     * @param forward True if the axis is used from left-to-right or bottom-to-top,
+     *                False if the axis is used from right-to-left or top-to-bottom.
      */
     constexpr grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool forward) noexcept :
         _constraints(num), _forward(forward)

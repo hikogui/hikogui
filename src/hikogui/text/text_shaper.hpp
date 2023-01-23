@@ -80,6 +80,8 @@ public:
      *             Use U+2029 as paragraph separator, and if needed U+2028 as line separator.
      * @param style The initial text-style to use to display the text.
      * @param dpi_scale The scaling factor to use to scale a font's size to match the physical display.
+     * @param alignment The alignment how to align the text.
+     * @param text_direction The default text direction when it can not be deduced from the text.
      * @param script The script of the text.
      */
     [[nodiscard]] text_shaper(
@@ -169,20 +171,12 @@ public:
     /** Layout the lines of the text.
      *
      * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
-     * and fold the lines using the unicode line breaking algorithm to the @a max_line_width.
-     *
-     * The @a alignment parameter is used to align the lines vertically:
-     *  - top: y=0 is the base-line of the top line, with following lines below it.
-     *  - bottom: y=0 is the base-line of the bottom line, with previous lines above it.
-     *  - middle, odd number of lines: y=0 is the base-line of the middle line.
-     *  - middle, even number of lines: y=0 is half-way between the base-line of the two lines in the middle.
+     * and fold the lines using the unicode line breaking algorithm to the width of the @a rectangle.
      *
      * @post The lines have been laid out.
      * @param rectangle The rectangle to position the glyphs in.
      * @param baseline The position of the recommended base-line.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
-     * @param writing_direction The default writing direction.
-     * @param alignment The alignment of the text (default: flush, middle).
      * @param line_spacing The scaling of the spacing between lines (default: 1.0).
      * @param paragraph_spacing The scaling of the spacing between paragraphs (default: 1.5).
      */

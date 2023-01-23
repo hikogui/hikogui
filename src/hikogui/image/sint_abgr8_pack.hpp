@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file image/sint_abgr8_pack.hpp Defines the sint_abgr8_pack type.
+ * @ingroup image
+ */
+
 #pragma once
 
 #include "../geometry/module.hpp"
@@ -9,6 +13,10 @@
 
 namespace hi::inline v1 {
 
+/** 4 x int8_t packed pixel format.
+ *
+ * @ingroup image
+ */
 class sint_abgr8_pack {
     uint32_t v = 0;
 

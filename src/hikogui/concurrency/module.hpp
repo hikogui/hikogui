@@ -16,7 +16,9 @@
 namespace hi {
 inline namespace v1 {
 
-/** @defgroup concurrency Types and functions for handling multiple threads of execution.
+/** @defgroup concurrency Concurrency.
+
+Types and functions for handling multiple threads of execution.
 */
 
 }}

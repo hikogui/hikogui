@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file image/sfloat_rgba16.hpp Defines the sfloat_rgba16.
+ * @ingroup image
+ */
+
 #pragma once
 
 #include "pixmap_span.hpp"
@@ -15,6 +19,10 @@
 
 namespace hi::inline v1 {
 
+/** 4 x float16 pixel format.
+ *
+ * @ingroup image
+ */
 class sfloat_rgba16 {
     // Red, Green, Blue, Alpha in binary16 (native endian).
     std::array<float16, 4> v;
