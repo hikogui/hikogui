@@ -721,7 +721,8 @@ public:
      * This function will not change the allocation and iterators up
      * to the erased items remain valid.
      *
-     * @param pos An iterator pointing to the item to be removed.
+     * @param first An iterator pointing to the first item to be removed.
+     * @param last An iterator pointing beyond the last item to be removed.
      * @return An iterator to the item after the removed items, or end().
      */
     iterator erase(const_iterator first, const_iterator last)

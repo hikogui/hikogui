@@ -67,7 +67,7 @@ public:
      * If possible this function will use `load()` to do an efficient unaligned
      * load from memory.
      *
-     * @note It is undefined behavior if @i is out-of-bound.
+     * @note It is undefined behavior if @a i is out-of-bound.
      * @param i An index into the array.
      * @return The unsigned integer retrieved from the array.
      */
@@ -87,7 +87,7 @@ public:
      * If possible this function will use `load()` to do an efficient unaligned
      * load from memory.
      *
-     * @note It is undefined behavior if @I is out-of-bound.
+     * @note It is undefined behavior if @a I is out-of-bound.
      * @tparam I An index into the array.
      * @param rhs The packed int array to read from.
      * @return The unsigned integer retrieved from the array.

@@ -4,7 +4,7 @@
 
 #pragma once
 
-/** @file color_space Functions to create color conversion matrices.
+/** @file color/color_space.hpp Functions to create color conversion matrices.
  * @ingroup color
  */
 
