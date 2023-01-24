@@ -9,6 +9,10 @@
 #include <array>
 #include <ostream>
 
+hi_warning_push();
+// Ignore "C26490: Don't use reinterpret_cast", needed for intrinsic loads and stores.
+hi_warning_ignore_msvc(26490);
+
 namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_SSE2
@@ -155,7 +159,7 @@ struct native_simd<int32_t, 4> {
 
     [[nodiscard]] static native_simd ones() noexcept
     {
-        auto tmp = _mm_undefined_si128();
+        hilet tmp = _mm_undefined_si128();
         return native_simd{_mm_cmpeq_epi32(tmp, tmp)};
     }
 
@@ -178,13 +182,13 @@ struct native_simd<int32_t, 4> {
         uint64_t a_ = a;
 
         a_ <<= 31;
-        auto tmp = _mm_cvtsi32_si128(static_cast<uint32_t>(a_));
+        auto tmp = _mm_cvtsi32_si128(char_cast<uint32_t>(a_));
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 1);
+        tmp = _mm_insert_epi32(tmp, char_cast<uint32_t>(a_), 1);
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 2);
+        tmp = _mm_insert_epi32(tmp, char_cast<uint32_t>(a_), 2);
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 3);
+        tmp = _mm_insert_epi32(tmp, char_cast<uint32_t>(a_), 3);
 
         tmp = _mm_srai_epi32(tmp, 31);
         return native_simd{tmp};
@@ -571,3 +575,5 @@ struct native_simd<int32_t, 4> {
 #endif
 
 }} // namespace hi::v1
+
+hi_warning_pop();

@@ -34,6 +34,10 @@ public:
     using value_type = Value;
 
     constexpr hash_map_entry() noexcept : _h{0} {}
+    constexpr hash_map_entry(hash_map_entry const&) noexcept = default;
+    constexpr hash_map_entry(hash_map_entry&&) noexcept = default;
+    constexpr hash_map_entry &operator=(hash_map_entry const&) noexcept = default;
+    constexpr hash_map_entry &operator=(hash_map_entry&&) noexcept = default;
     constexpr ~hash_map_entry()
     {
         if (hash() != 0) {
@@ -223,6 +227,7 @@ public:
         while (true) {
             // _capacities are selected for their ability to avalanche bad hash values.
             auto node = _nodes + hash_plus_count % _capacity;
+            hi_axiom_not_null(node);
             if (node->hash() == hash and node->key() == key) {
                 return iterator{node, true};
 
@@ -273,7 +278,10 @@ private:
      */
     hi_no_inline constexpr void move_nodes(node_type *src, std::size_t src_size, node_type *dst, std::size_t dst_size) noexcept
     {
-        auto *dst_ = std::uninitialized_value_construct_n(dst, dst_size);
+        hi_axiom_not_null(src);
+        hi_axiom_not_null(dst);
+        auto dst_ = std::uninitialized_value_construct_n(dst, dst_size);
+        hi_axiom_not_null(dst_);
 
         hilet src_last = src + src_size;
         for (auto src_it = src; src_it != src_last; ++src_it) {

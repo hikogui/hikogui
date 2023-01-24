@@ -29,17 +29,17 @@ public:
 
     constexpr sfloat_rgba32x4(std::array<f32x4,4> const& rhs) noexcept
     {
-        for (auto j = 0; j != 4; ++j) {
-            for (auto i = 0; i != 4; ++i) {
-                _v[j*4 + i] = rhs[j][i];
+        for (auto j = 0_uz; j != 4; ++j) {
+            for (auto i = 0_uz; i != 4; ++i) {
+                _v[j * 4 + i] = rhs[j][i];
             }
         }
     }
 
     constexpr sfloat_rgba32x4& operator=(std::array<f32x4, 4> const& rhs) noexcept
     {
-        for (auto j = 0; j != 4; ++j) {
-            for (auto i = 0; i != 4; ++i) {
+        for (auto j = 0_uz; j != 4; ++j) {
+            for (auto i = 0_uz; i != 4; ++i) {
                 _v[j * 4 + i] = rhs[j][i];
             }
         }
@@ -49,7 +49,7 @@ public:
     constexpr sfloat_rgba32x4(matrix3 const& rhs) noexcept : sfloat_rgba32x4(static_cast<std::array<f32x4, 4>>(rhs)) {}
 
 private:
-    std::array<float, 16> _v;
+    std::array<float, 16> _v = {};
 };
 
 } // namespace hi::inline v1

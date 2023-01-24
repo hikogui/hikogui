@@ -156,7 +156,7 @@ struct char_map<"cp-1252"> {
             return {uint8_t{1}, false};
 
         } else if (code_point < 0x2123) {
-            return {uint8_t{1}, range_2000_2122[code_point - 0x2000] != 0x3f};
+            return {uint8_t{1}, range_2000_2122[wide_cast<size_t>(code_point) - 0x2000] != 0x3f};
 
         } else {
             return {uint8_t{1}, false};

@@ -159,13 +159,13 @@ struct native_simd<float, 4> {
         uint64_t a_ = a;
 
         a_ <<= 31;
-        auto tmp = _mm_cvtsi32_si128(static_cast<uint32_t>(a_));
+        auto tmp = _mm_cvtsi32_si128(char_cast<uint32_t>(a_));
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 1);
+        tmp = _mm_insert_epi32(tmp, char_cast<uint32_t>(a_), 1);
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 2);
+        tmp = _mm_insert_epi32(tmp, char_cast<uint32_t>(a_), 2);
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, static_cast<uint32_t>(a_), 3);
+        tmp = _mm_insert_epi32(tmp, char_cast<uint32_t>(a_), 3);
 
         tmp = _mm_srai_epi32(tmp, 31);
         return native_simd{_mm_castsi128_ps(tmp)};
@@ -211,7 +211,7 @@ struct native_simd<float, 4> {
     [[nodiscard]] friend native_simd
     almost_eq(native_simd a, native_simd b, value_type epsilon = std::numeric_limits<value_type>::epsilon()) noexcept
     {
-        auto abs_diff = abs(a - b);
+        hilet abs_diff = abs(a - b);
         return abs_diff < broadcast(epsilon);
     }
 
@@ -582,7 +582,7 @@ struct native_simd<float, 4> {
      */
     [[nodiscard]] friend native_simd horizontal_sum(native_simd a) noexcept
     {
-        auto tmp = a + permute<"cdab">(a);
+        hilet tmp = a + permute<"cdab">(a);
         return tmp + permute<"badc">(tmp);
     }
 
