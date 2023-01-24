@@ -182,13 +182,13 @@ struct native_simd<int32_t, 4> {
         uint64_t a_ = a;
 
         a_ <<= 31;
-        auto tmp = _mm_cvtsi32_si128(char_cast<uint32_t>(a_));
+        auto tmp = _mm_cvtsi32_si128(truncate<uint32_t>(a_));
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, char_cast<uint32_t>(a_), 1);
+        tmp = _mm_insert_epi32(tmp, truncate<uint32_t>(a_), 1);
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, char_cast<uint32_t>(a_), 2);
+        tmp = _mm_insert_epi32(tmp, truncate<uint32_t>(a_), 2);
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, char_cast<uint32_t>(a_), 3);
+        tmp = _mm_insert_epi32(tmp, truncate<uint32_t>(a_), 3);
 
         tmp = _mm_srai_epi32(tmp, 31);
         return native_simd{tmp};

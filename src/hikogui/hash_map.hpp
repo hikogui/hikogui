@@ -278,19 +278,21 @@ private:
      */
     hi_no_inline constexpr void move_nodes(node_type *src, std::size_t src_size, node_type *dst, std::size_t dst_size) noexcept
     {
-        hi_axiom_not_null(src);
         hi_axiom_not_null(dst);
-        auto dst_ = std::uninitialized_value_construct_n(dst, dst_size);
+        hilet dst_ = std::uninitialized_value_construct_n(dst, dst_size);
         hi_axiom_not_null(dst_);
 
         hilet src_last = src + src_size;
         for (auto src_it = src; src_it != src_last; ++src_it) {
+            hi_axiom_not_null(src_it);
             hilet hash = src_it->hash();
 
             if (hash != 0) {
                 auto hash_plus_count = hash;
                 while (true) {
-                    auto dst_it = dst_ + hash_plus_count % dst_size;
+                    hilet dst_it = dst_ + hash_plus_count % dst_size;
+                    hi_axiom_not_null(dst_it);
+
                     if (dst_it->hash() == 0) {
                         dst_it->set(hash, std::move(src_it->_hkv.key), std::move(src_it->_hkv.value));
                         break;

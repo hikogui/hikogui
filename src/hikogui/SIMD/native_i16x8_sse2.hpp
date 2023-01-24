@@ -147,14 +147,14 @@ struct native_i16x8 {
         hi_axiom(mask <= 0b1111'1111);
 
         return native_i16x8{
-            mask & 0b0000'0001 ? 0 : char_cast<value_type>(0xffff),
-            mask & 0b0000'0010 ? 0 : char_cast<value_type>(0xffff),
-            mask & 0b0000'0100 ? 0 : char_cast<value_type>(0xffff),
-            mask & 0b0000'1000 ? 0 : char_cast<value_type>(0xffff),
-            mask & 0b0001'0000 ? 0 : char_cast<value_type>(0xffff),
-            mask & 0b0010'0000 ? 0 : char_cast<value_type>(0xffff),
-            mask & 0b0100'0000 ? 0 : char_cast<value_type>(0xffff),
-            mask & 0b1000'0000 ? 0 : char_cast<value_type>(0xffff)};
+            mask & 0b0000'0001 ? 0 : truncate<value_type>(0xffff),
+            mask & 0b0000'0010 ? 0 : truncate<value_type>(0xffff),
+            mask & 0b0000'0100 ? 0 : truncate<value_type>(0xffff),
+            mask & 0b0000'1000 ? 0 : truncate<value_type>(0xffff),
+            mask & 0b0001'0000 ? 0 : truncate<value_type>(0xffff),
+            mask & 0b0010'0000 ? 0 : truncate<value_type>(0xffff),
+            mask & 0b0100'0000 ? 0 : truncate<value_type>(0xffff),
+            mask & 0b1000'0000 ? 0 : truncate<value_type>(0xffff)};
     }
 
     /** Concatonate the top bit of each element.
