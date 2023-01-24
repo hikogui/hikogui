@@ -133,10 +133,23 @@ template<numeric T, same_as_byte B>
     return little_to_native(load<T>(src));
 }
 
+template<numeric T>
+[[nodiscard]] inline T load_le(void const *src) noexcept
+{
+    return load_le<T>(reinterpret_cast<std::byte const *>(src));
+}
+
+
 template<numeric T, same_as_byte B>
 [[nodiscard]] constexpr T load_be(B const *src) noexcept
 {
     return big_to_native(load<T>(src));
+}
+
+template<numeric T>
+[[nodiscard]] inline T load_be(void const *src) noexcept
+{
+    return load_be<T>(reinterpret_cast<std::byte const *>(src));
 }
 
 template<typename T, std::endian E, std::size_t A = alignof(T)>

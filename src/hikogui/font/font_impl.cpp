@@ -7,7 +7,7 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] glyph_ids font::find_glyph(grapheme g) const noexcept
+[[nodiscard]] glyph_ids font::find_glyph(grapheme g) const
 {
     if (not loaded() and not unicode_mask.contains(g)) {
         // If the grapheme is not available in the font prevent font loading.

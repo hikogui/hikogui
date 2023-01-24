@@ -82,12 +82,12 @@ public:
     /** Get the glyph for a code-point.
      * @return glyph-id, or invalid when not found or error.
      */
-    [[nodiscard]] virtual hi::glyph_id find_glyph(char32_t c) const noexcept = 0;
+    [[nodiscard]] virtual hi::glyph_id find_glyph(char32_t c) const = 0;
 
     /** Get the glyphs for a grapheme.
      * @return a set of glyph-ids, or invalid when not found or error.
      */
-    [[nodiscard]] hi::glyph_ids find_glyph(grapheme g) const noexcept;
+    [[nodiscard]] hi::glyph_ids find_glyph(grapheme g) const;
 
     /*! Load a glyph into a path.
      * The glyph is directly loaded from the font file.
@@ -96,7 +96,7 @@ public:
      * \param path The path constructed by the loader.
      * \return empty on failure, or the glyphID of the metrics to use.
      */
-    virtual std::optional<hi::glyph_id> load_glyph(hi::glyph_id glyph_id, graphic_path &path) const noexcept = 0;
+    virtual std::optional<hi::glyph_id> load_glyph(hi::glyph_id glyph_id, graphic_path &path) const = 0;
 
     /*! Load a glyph into a path.
      * The glyph is directly loaded from the font file.
@@ -109,7 +109,7 @@ public:
     virtual bool load_glyph_metrics(
         hi::glyph_id glyph_id,
         glyph_metrics &metrics,
-        hi::glyph_id lookahead_glyph_id = hi::glyph_id{}) const noexcept = 0;
+        hi::glyph_id lookahead_glyph_id = hi::glyph_id{}) const = 0;
 
     /** Get the kerning between two glyphs.
      *
@@ -117,7 +117,7 @@ public:
      * @param next_glyph The glyph on the right
      * @return The vector to add to the advance of the current_glyph.
      */
-    [[nodiscard]] virtual vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const noexcept = 0;
+    [[nodiscard]] virtual vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const = 0;
 
     struct substitution_and_kerning_type {
         /** The glyph.
@@ -145,9 +145,9 @@ public:
      * @param[in,out] word A run of glyphs, from the same font, font-size and script of a word.
      */
     virtual void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
-        const noexcept = 0;
+        const = 0;
 
-    glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept
+    glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const
     {
         if (glyphs.has_num_glyphs<1>()) [[likely]] {
             hilet index = static_cast<std::size_t>(get<0>(glyphs));

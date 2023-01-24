@@ -5,6 +5,7 @@
 #pragma once
 
 #include "math.hpp"
+#include "concepts.hpp"
 #include <concepts>
 #include <memory>
 #include <vector>
@@ -257,9 +258,6 @@ inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
     return value;
 }
 
-template<typename Context>
-concept same_as_byte = std::same_as<Context, char> or std::same_as<Context, unsigned char> or std::same_as<Context, std::byte>;
-
 /** Make an unaligned load of an unsigned integer.
  */
 template<numeric T, same_as_byte B>
@@ -285,6 +283,12 @@ template<numeric T, same_as_byte B>
         }
     }
     return r;
+}
+
+template<numeric T>
+[[nodiscard]] inline T load(void const *src) noexcept
+{
+    return load<T>(reinterpret_cast<std::byte const *>(src));
 }
 
 template<numeric T, same_as_byte B>
@@ -315,6 +319,12 @@ template<numeric T, same_as_byte B>
             src_ >>= 8;
         }
     }
+}
+
+template<numeric T>
+[[nodiscard]] inline void store(T src, void *dst) noexcept
+{
+    return store(src, reinterpret_cast<std::byte *>(dst));
 }
 
 template<numeric T>

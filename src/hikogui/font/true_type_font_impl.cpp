@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "true_type_font.hpp"
+#include "otype_utilities.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 #include "../placement.hpp"
@@ -11,53 +12,8 @@
 #include <cstddef>
 #include <span>
 
-#define assert_or_return(x, y) \
-    if (!(x)) { \
-        [[unlikely]] return y; \
-    }
 
 namespace hi::inline v1 {
-
-struct Fixed_buf_t {
-    big_uint32_buf_t x;
-
-    constexpr float operator*() const noexcept
-    {
-        return static_cast<float>(*x) / 65536.0f;
-    }
-};
-
-struct shortFrac_buf_t {
-    big_int16_buf_t x;
-    float value() const noexcept
-    {
-        return static_cast<float>(*x) / 32768.0f;
-    }
-};
-
-struct FWord_buf_t {
-    big_int16_buf_t x;
-    [[nodiscard]] constexpr float operator*(float EmPerUnit) const noexcept
-    {
-        return static_cast<float>(*x) * EmPerUnit;
-    }
-};
-
-struct FByte_buf_t {
-    int8_t x;
-    [[nodiscard]] constexpr float operator*(float EmPerUnit) const noexcept
-    {
-        return static_cast<float>(x) * EmPerUnit;
-    }
-};
-
-struct uFWord_buf_t {
-    big_uint16_buf_t x;
-    [[nodiscard]] constexpr float operator*(float EmPerUnit) const noexcept
-    {
-        return static_cast<float>(*x) * EmPerUnit;
-    }
-};
 
 struct CMAPHeader {
     big_uint16_buf_t version;
@@ -396,7 +352,7 @@ struct GLYFEntry {
     return _cmap_table_bytes.subspan(entry_offset, _cmap_table_bytes.size() - entry_offset);
 }
 
-static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char32_t c) noexcept
+static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char32_t c)
 {
     // We are not checking for validity of the table, as this is being done in `parseCharacterMapFormat4`.
 
@@ -407,16 +363,14 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
 
     std::size_t offset = 0;
 
-    hi_assert(check_placement_ptr<CMAPFormat4>(bytes, offset));
-    hilet header = unsafe_make_placement_ptr<CMAPFormat4>(bytes, offset);
+    hilet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
 
     hilet length = *header->length;
     hi_assert(length <= bytes.size());
 
     hilet num_segments = *header->segCountX2 / 2;
 
-    hi_assert(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
-    hilet end_codes = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
+    hilet end_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
 
     auto c16 = static_cast<uint16_t>(c);
     hilet end_code_it = std::lower_bound(end_codes.begin(), end_codes.end(), c16, [](hilet& item, hilet& value) {
@@ -430,8 +384,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
 
     offset += ssizeof(uint16_t); // reservedPad
 
-    hi_assert(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
-    hilet start_codes = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
+    hilet start_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
 
     hilet start_code = *start_codes[segment_i];
     if (c16 < start_code) {
@@ -439,13 +392,11 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
         return {};
     }
 
-    hi_assert(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
-    hilet id_deltas = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
+    hilet id_deltas = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
 
     // The glyphIdArray is included inside idRangeOffset.
     hilet id_range_offset_count = (length - offset) / ssizeof(uint16_t);
-    hi_assert(check_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count));
-    hilet id_range_offsets = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count);
+    hilet id_range_offsets = make_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count);
 
     // Found the glyph.
     hilet id_range_offset = *id_range_offsets[segment_i];
@@ -510,12 +461,11 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
     return r;
 }
 
-static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char32_t c) noexcept
+static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char32_t c)
 {
     std::size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<CMAPFormat6>(bytes, offset), {});
-    hilet header = unsafe_make_placement_ptr<CMAPFormat6>(bytes, offset);
+    hilet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
 
     hilet firstCode = static_cast<char32_t>(*header->firstCode);
     hilet entryCount = *header->entryCount;
@@ -524,11 +474,10 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
         return {};
     }
 
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, entryCount), {});
-    hilet glyphIndexArray = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, entryCount);
+    hilet glyphIndexArray = make_placement_array<big_uint16_buf_t>(bytes, offset, entryCount);
 
     hilet charOffset = c - firstCode;
-    assert_or_return(charOffset < glyphIndexArray.size(), {});
+    hi_assert_or_return(charOffset < glyphIndexArray.size(), {});
     return glyph_id{*glyphIndexArray[charOffset]};
 }
 
@@ -548,17 +497,15 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
     return r;
 }
 
-static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c) noexcept
+static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c)
 {
     std::size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<CMAPFormat12>(bytes, offset), {});
-    hilet header = unsafe_make_placement_ptr<CMAPFormat12>(bytes, offset);
+    hilet header = make_placement_ptr<CMAPFormat12>(bytes, offset);
 
     hilet numGroups = *header->numGroups;
 
-    assert_or_return(check_placement_array<CMAPFormat12Group>(bytes, offset, numGroups), {});
-    hilet entries = unsafe_make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
+    hilet entries = make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
 
     hilet i = std::lower_bound(entries.begin(), entries.end(), c, [](hilet& element, char32_t value) {
         return *element.endCharCode < value;
@@ -615,12 +562,11 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     }
 }
 
-[[nodiscard]] glyph_id true_type_font::find_glyph(char32_t c) const noexcept
+[[nodiscard]] glyph_id true_type_font::find_glyph(char32_t c) const
 {
     load_view();
 
-    assert_or_return(check_placement_ptr<big_uint16_buf_t>(_cmap_bytes), {});
-    hilet format = **unsafe_make_placement_ptr<big_uint16_buf_t>(_cmap_bytes);
+    hilet format = **make_placement_ptr<big_uint16_buf_t>(_cmap_bytes);
 
     switch (format) {
     case 4:
@@ -901,31 +847,31 @@ void true_type_font::parse_maxp_table(std::span<std::byte const> table_bytes)
     num_glyphs = *table->num_glyphs;
 }
 
-bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const>& glyph_bytes) const noexcept
+bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const>& glyph_bytes) const
 {
-    assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
+    hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
     std::size_t startOffset = 0;
     std::size_t endOffset = 0;
     if (_loca_table_is_offset32) {
         hilet entries = make_placement_array<big_uint32_buf_t>(_loca_table_bytes);
-        assert_or_return(static_cast<int>(glyph_id) + 1 < entries.size(), false);
+        hi_assert_or_return(static_cast<int>(glyph_id) + 1 < entries.size(), false);
 
         startOffset = *entries[*glyph_id];
         endOffset = *entries[*glyph_id + 1];
 
     } else {
         hilet entries = make_placement_array<big_uint16_buf_t>(_loca_table_bytes);
-        assert_or_return(static_cast<int>(glyph_id) + 1 < entries.size(), false);
+        hi_assert_or_return(static_cast<int>(glyph_id) + 1 < entries.size(), false);
 
         startOffset = *entries[*glyph_id] * 2;
         endOffset = *entries[*glyph_id + 1] * 2;
     }
 
-    assert_or_return(startOffset <= endOffset, false);
+    hi_assert_or_return(startOffset <= endOffset, false);
     hilet size = endOffset - startOffset;
 
-    assert_or_return(endOffset <= static_cast<std::size_t>(_glyf_table_bytes.size()), false);
+    hi_assert_or_return(endOffset <= static_cast<std::size_t>(_glyf_table_bytes.size()), false);
     glyph_bytes = _glyf_table_bytes.subspan(startOffset, size);
     return true;
 }
@@ -936,16 +882,14 @@ static void get_kern0_kerning(
     float emScale,
     glyph_id glyph1_id,
     glyph_id glyph2_id,
-    vector2& r) noexcept
+    vector2& r)
 {
     std::size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<KERNFormat0>(bytes, offset), );
-    hilet formatheader = unsafe_make_placement_ptr<KERNFormat0>(bytes, offset);
+    hilet formatheader = make_placement_ptr<KERNFormat0>(bytes, offset);
     hilet nPairs = *formatheader->nPairs;
 
-    assert_or_return(check_placement_array<KERNFormat0_entry>(bytes, offset, nPairs), );
-    hilet entries = unsafe_make_placement_array<KERNFormat0_entry>(bytes, offset, nPairs);
+    hilet entries = make_placement_array<KERNFormat0_entry>(bytes, offset, nPairs);
 
     hilet i = std::lower_bound(entries.begin(), entries.end(), std::pair{glyph1_id, glyph2_id}, [](hilet& a, hilet& b) {
         if (*a.left == b.first) {
@@ -954,7 +898,7 @@ static void get_kern0_kerning(
             return *a.left < *b.first;
         }
     });
-    assert_or_return(i != entries.end(), );
+    hi_assert_or_return(i != entries.end(), );
 
     if (glyph1_id == *i->left && glyph2_id == *i->right) {
         // Writing direction is assumed horizontal.
@@ -995,18 +939,17 @@ static void get_kern3_kerning(
     float unitsPerEm,
     glyph_id glyph1_id,
     glyph_id glyph2_id,
-    vector2& r) noexcept
+    vector2& r)
 {
 }
 
 [[nodiscard]] static vector2
-get_kern_kerning(std::span<std::byte const> const& bytes, float emScale, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
+get_kern_kerning(std::span<std::byte const> const& bytes, float emScale, glyph_id glyph1_id, glyph_id glyph2_id)
 {
     auto r = vector2{0.0f, 0.0f};
     std::size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<KERNTable_ver0>(bytes, offset), r);
-    hilet header_ver0 = unsafe_make_placement_ptr<KERNTable_ver0>(bytes, offset);
+    hilet header_ver0 = make_placement_ptr<KERNTable_ver0>(bytes, offset);
     uint32_t version = *header_ver0->version;
 
     uint32_t nTables = 0;
@@ -1016,9 +959,8 @@ get_kern_kerning(std::span<std::byte const> const& bytes, float emScale, glyph_i
     } else {
         // Restart with version 1 table.
         offset = 0;
-        assert_or_return(check_placement_ptr<KERNTable_ver1>(bytes, offset), r);
-        hilet header_ver1 = unsafe_make_placement_ptr<KERNTable_ver1>(bytes, offset);
-        assert_or_return(*header_ver1->version == 0x00010000, r);
+        hilet header_ver1 = make_placement_ptr<KERNTable_ver1>(bytes, offset);
+        hi_assert_or_return(*header_ver1->version == 0x00010000, r);
         nTables = *header_ver1->nTables;
     }
 
@@ -1028,14 +970,12 @@ get_kern_kerning(std::span<std::byte const> const& bytes, float emScale, glyph_i
         uint16_t coverage = 0;
         uint32_t length = 0;
         if (version == 0x0000) {
-            assert_or_return(check_placement_ptr<KERNSubtable_ver0>(bytes, offset), r);
-            hilet subheader = unsafe_make_placement_ptr<KERNSubtable_ver0>(bytes, offset);
+            hilet subheader = make_placement_ptr<KERNSubtable_ver0>(bytes, offset);
             coverage = *subheader->coverage;
             length = *subheader->length;
 
         } else {
-            assert_or_return(check_placement_ptr<KERNSubtable_ver1>(bytes, offset), r);
-            hilet subheader = unsafe_make_placement_ptr<KERNSubtable_ver1>(bytes, offset);
+            hilet subheader = make_placement_ptr<KERNSubtable_ver1>(bytes, offset);
             coverage = *subheader->coverage;
             length = *subheader->length;
         }
@@ -1055,7 +995,7 @@ get_kern_kerning(std::span<std::byte const> const& bytes, float emScale, glyph_i
     return r;
 }
 
-[[nodiscard]] vector2 true_type_font::get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const noexcept
+[[nodiscard]] vector2 true_type_font::get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const
 {
     if (not _kern_table_bytes.empty()) {
         return get_kern_kerning(_kern_table_bytes, emScale, current_glyph, next_glyph);
@@ -1068,18 +1008,16 @@ bool true_type_font::update_glyph_metrics(
     hi::glyph_id glyph_id,
     hi::glyph_metrics& glyph_metrics,
     hi::glyph_id kern_glyph1_id,
-    hi::glyph_id kern_glyph2_id) const noexcept
+    hi::glyph_id kern_glyph2_id) const
 {
-    assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
+    hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
     ssize_t offset = 0;
 
-    assert_or_return(check_placement_array<HMTXEntry>(_hmtx_table_bytes, offset, numberOfHMetrics), false);
-    hilet longHorizontalMetricTable = unsafe_make_placement_array<HMTXEntry>(_hmtx_table_bytes, offset, numberOfHMetrics);
+    hilet longHorizontalMetricTable = make_placement_array<HMTXEntry>(_hmtx_table_bytes, offset, numberOfHMetrics);
 
     hilet numberOfLeftSideBearings = num_glyphs - numberOfHMetrics;
-    assert_or_return(check_placement_array<FWord_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings), false);
-    hilet leftSideBearings = unsafe_make_placement_array<FWord_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings);
+    hilet leftSideBearings = make_placement_array<FWord_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings);
 
     float advanceWidth = 0.0f;
     float leftSideBearing;
@@ -1108,23 +1046,21 @@ constexpr uint8_t FLAG_Y_SHORT = 0x04;
 constexpr uint8_t FLAG_REPEAT = 0x08;
 constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
-bool true_type_font::load_simple_glyph(std::span<std::byte const> glyph_bytes, graphic_path& glyph) const noexcept
+bool true_type_font::load_simple_glyph(std::span<std::byte const> glyph_bytes, graphic_path& glyph) const
 {
     std::size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes, offset), false);
-    hilet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes, offset);
+    hilet entry = make_placement_ptr<GLYFEntry>(glyph_bytes, offset);
 
     hilet numberOfContours = static_cast<std::size_t>(*entry->numberOfContours);
 
     // Check includes instructionLength.
-    assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours), false);
-    hilet endPoints = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours);
+    hilet endPoints = make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours);
 
     int max_end_point = -1;
     for (hilet endPoint : endPoints) {
         // End points must be incrementing and contours must have at least one point.
-        assert_or_return(wide_cast<int>(*endPoint) >= max_end_point, false);
+        hi_assert_or_return(wide_cast<int>(*endPoint) >= max_end_point, false);
         max_end_point = wide_cast<int>(*endPoint);
 
         glyph.contourEndPoints.push_back(*endPoint);
@@ -1133,34 +1069,31 @@ bool true_type_font::load_simple_glyph(std::span<std::byte const> glyph_bytes, g
     hilet numberOfPoints = *endPoints[numberOfContours - 1] + 1;
 
     // Skip over the instructions.
-    assert_or_return(check_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset), false);
-    hilet instructionLength = **unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset);
+    hilet instructionLength = **make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset);
     offset += instructionLength * ssizeof(uint8_t);
 
     // Extract all the flags.
     std::vector<uint8_t> flags;
     flags.reserve(numberOfPoints);
     while (flags.size() < numberOfPoints) {
-        assert_or_return(check_placement_ptr<uint8_t>(glyph_bytes, offset), false);
-        hilet flag = *unsafe_make_placement_ptr<uint8_t>(glyph_bytes, offset);
+        hilet flag = *make_placement_ptr<uint8_t>(glyph_bytes, offset);
 
         flags.push_back(flag);
         if (flag & FLAG_REPEAT) {
-            assert_or_return(check_placement_ptr<uint8_t>(glyph_bytes, offset), false);
-            hilet repeat = *unsafe_make_placement_ptr<uint8_t>(glyph_bytes, offset);
+            hilet repeat = *make_placement_ptr<uint8_t>(glyph_bytes, offset);
 
             for (std::size_t i = 0; i < repeat; i++) {
                 flags.push_back(flag);
             }
         }
     }
-    assert_or_return(flags.size() == numberOfPoints, false);
+    hi_assert_or_return(flags.size() == numberOfPoints, false);
 
     hilet point_table_size = std::accumulate(flags.begin(), flags.end(), static_cast<std::size_t>(0), [](auto size, auto flag) {
         return size + ((flag & FLAG_X_SHORT) > 0 ? 1 : ((flag & FLAG_X_SAME) > 0 ? 0 : 2)) +
             ((flag & FLAG_Y_SHORT) > 0 ? 1 : ((flag & FLAG_Y_SAME) > 0 ? 0 : 2));
     });
-    assert_or_return(offset + point_table_size <= static_cast<std::size_t>(glyph_bytes.size()), false);
+    hi_assert_or_return(offset + point_table_size <= static_cast<std::size_t>(glyph_bytes.size()), false);
 
     // Get xCoordinates
     std::vector<int16_t> xCoordinates;
@@ -1236,43 +1169,37 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 [[maybe_unused]] constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
 bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes, graphic_path& glyph, glyph_id& metrics_glyph_id)
-    const noexcept
+    const
 {
     std::size_t offset = ssizeof(GLYFEntry);
 
     uint16_t flags;
     do {
-        assert_or_return(check_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset), false);
-        flags = **unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset);
+        flags = **make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset);
 
-        assert_or_return(check_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset), false);
-        hilet subGlyphIndex = **unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset);
+        hilet subGlyphIndex = **make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset);
 
         graphic_path subGlyph;
-        assert_or_return(load_glyph(glyph_id{subGlyphIndex}, subGlyph), false);
+        hi_assert_or_return(load_glyph(glyph_id{subGlyphIndex}, subGlyph), false);
 
         auto subGlyphOffset = vector2{};
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                assert_or_return(check_placement_array<FWord_buf_t>(glyph_bytes, offset, 2), false);
-                hilet tmp = unsafe_make_placement_array<FWord_buf_t>(glyph_bytes, offset, 2);
+                hilet tmp = make_placement_array<FWord_buf_t>(glyph_bytes, offset, 2);
                 subGlyphOffset = vector2{tmp[0] * emScale, tmp[1] * emScale};
             } else {
-                assert_or_return(check_placement_array<FByte_buf_t>(glyph_bytes, offset, 2), false);
-                hilet tmp = unsafe_make_placement_array<FByte_buf_t>(glyph_bytes, offset, 2);
+                hilet tmp = make_placement_array<FByte_buf_t>(glyph_bytes, offset, 2);
                 subGlyphOffset = vector2{tmp[0] * emScale, tmp[1] * emScale};
             }
         } else {
             std::size_t pointNr1;
             std::size_t pointNr2;
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2), false);
-                hilet tmp = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2);
+                hilet tmp = make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2);
                 pointNr1 = *tmp[0];
                 pointNr2 = *tmp[1];
             } else {
-                assert_or_return(check_placement_array<uint8_t>(glyph_bytes, offset, 2), false);
-                hilet tmp = unsafe_make_placement_array<uint8_t>(glyph_bytes, offset, 2);
+                hilet tmp = make_placement_array<uint8_t>(glyph_bytes, offset, 2);
                 pointNr1 = tmp[0];
                 pointNr2 = tmp[1];
             }
@@ -1284,17 +1211,14 @@ bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes,
         // Start with an identity matrix.
         auto subGlyphScale = scale2{};
         if (flags & FLAG_WE_HAVE_A_SCALE) {
-            assert_or_return(check_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset), false);
-            subGlyphScale = scale2(unsafe_make_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset)->value());
+            subGlyphScale = scale2(make_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset)->value());
 
         } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
-            assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2), false);
-            hilet tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2);
+            hilet tmp = make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2);
             subGlyphScale = scale2(tmp[0].value(), tmp[1].value());
 
         } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
-            assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4), false);
-            hilet tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4);
+            hilet tmp = make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4);
             hi_not_implemented();
             // subGlyphScale = mat::S(
             //    tmp[0].value(),
@@ -1320,27 +1244,26 @@ bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes,
     return true;
 }
 
-std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_path& glyph) const noexcept
+std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_path& glyph) const
 {
-    assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, {});
+    hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, {});
 
     std::span<std::byte const> glyph_bytes;
-    assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), {});
+    hi_assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), {});
 
     auto metrics_glyph_id = glyph_id;
 
     if (glyph_bytes.size() > 0) {
-        assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes), {});
-        hilet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
+        hilet entry = make_placement_ptr<GLYFEntry>(glyph_bytes);
         hilet numberOfContours = *entry->numberOfContours;
 
-        assert_or_return((entry->xMin * 1.0f) <= (entry->xMax * 1.0f), {});
-        assert_or_return((entry->yMin * 1.0f) <= (entry->yMax * 1.0f), {});
+        hi_assert_or_return((entry->xMin * 1.0f) <= (entry->xMax * 1.0f), {});
+        hi_assert_or_return((entry->yMin * 1.0f) <= (entry->yMax * 1.0f), {});
 
         if (numberOfContours > 0) {
-            assert_or_return(load_simple_glyph(glyph_bytes, glyph), {});
+            hi_assert_or_return(load_simple_glyph(glyph_bytes, glyph), {});
         } else if (numberOfContours < 0) {
-            assert_or_return(load_compound_glyph(glyph_bytes, glyph, metrics_glyph_id), {});
+            hi_assert_or_return(load_compound_glyph(glyph_bytes, glyph, metrics_glyph_id), {});
         } else {
             // Empty glyph, such as white-space ' '.
         }
@@ -1352,17 +1275,15 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
     return metrics_glyph_id;
 }
 
-bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> bytes, glyph_id& metrics_glyph_id) const noexcept
+bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> bytes, glyph_id& metrics_glyph_id) const
 {
     std::size_t offset = ssizeof(GLYFEntry);
 
     uint16_t flags;
     do {
-        assert_or_return(check_placement_ptr<big_uint16_buf_t>(bytes, offset), false);
-        flags = **unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset);
+        flags = **make_placement_ptr<big_uint16_buf_t>(bytes, offset);
 
-        assert_or_return(check_placement_ptr<big_uint16_buf_t>(bytes, offset), false);
-        hilet subGlyphIndex = **unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset);
+        hilet subGlyphIndex = **make_placement_ptr<big_uint16_buf_t>(bytes, offset);
 
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
@@ -1397,18 +1318,17 @@ bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> byte
 }
 
 bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics& glyph_metrics, hi::glyph_id lookahead_glyph_id)
-    const noexcept
+    const
 {
-    assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
+    hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
     std::span<std::byte const> glyph_bytes;
-    assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), false);
+    hi_assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), false);
 
     auto metricsGlyphIndex = glyph_id;
 
     if (glyph_bytes.size() > 0) {
-        assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes), false);
-        hilet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
+        hilet entry = make_placement_ptr<GLYFEntry>(glyph_bytes);
         hilet numberOfContours = *entry->numberOfContours;
 
         hilet xyMin = point2{entry->xMin * emScale, entry->yMin * emScale};
@@ -1418,7 +1338,7 @@ bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics
         if (numberOfContours > 0) {
             // A simple glyph does not include metrics information in the data.
         } else if (numberOfContours < 0) {
-            assert_or_return(load_compound_glyph_metrics(glyph_bytes, metricsGlyphIndex), false);
+            hi_assert_or_return(load_compound_glyph_metrics(glyph_bytes, metricsGlyphIndex), false);
         } else {
             // Empty glyph, such as white-space ' '.
         }
@@ -1444,11 +1364,11 @@ bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics
     hilet entries = make_placement_array<SFNTEntry>(bytes, offset, *header->numTables);
 
     hilet tag = fourcc_from_cstr(table_name);
-    auto it = std::lower_bound(cbegin(entries), cend(entries), tag, [](auto const& entry, auto const& tag) {
+    auto it = std::lower_bound(entries.begin(), entries.end(), tag, [](auto const& entry, auto const& tag) {
         return *entry.tag < tag;
     });
 
-    if (it != cend(entries) and *it->tag == tag) {
+    if (it != entries.end() and *it->tag == tag) {
         return bytes.subspan(*it->offset, *it->length);
     } else {
         return {};
