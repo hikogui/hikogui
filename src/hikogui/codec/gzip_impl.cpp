@@ -40,8 +40,8 @@ static bstring gzip_decompress_member(std::span<std::byte const> bytes, std::siz
     hilet FCOMMENT = to_bool(header->FLG & 16);
 
     if (FEXTRA) {
-        hilet XLEN = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
-        offset += XLEN->value();
+        hilet XLEN = **make_placement_ptr<little_uint16_buf_t>(bytes, offset);
+        offset += XLEN;
     }
 
     if (FNAME) {
@@ -66,11 +66,11 @@ static bstring gzip_decompress_member(std::span<std::byte const> bytes, std::siz
 
     auto r = inflate(bytes, offset, max_size);
 
-    [[maybe_unused]] auto CRC32 = make_placement_ptr<little_uint32_buf_t>(bytes, offset);
-    [[maybe_unused]] auto ISIZE = make_placement_ptr<little_uint32_buf_t>(bytes, offset);
+    [[maybe_unused]] auto CRC32 = **make_placement_ptr<little_uint32_buf_t>(bytes, offset);
+    [[maybe_unused]] auto ISIZE = **make_placement_ptr<little_uint32_buf_t>(bytes, offset);
 
     hi_parse_check(
-        ISIZE->value() == (size(r) & 0xffffffff),
+        ISIZE == (size(r) & 0xffffffff),
         "GZIP Member header ISIZE must be same as the lower 32 bits of the inflated size.");
     return r;
 }

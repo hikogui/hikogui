@@ -139,11 +139,6 @@ public:
         return std::distance(begin(), end());
     }
 
-    bool contains(std::size_t index) const noexcept
-    {
-        return index < size();
-    }
-
     value_type *begin() const noexcept
     {
         return std::launder(reinterpret_cast<value_type *>(_begin));

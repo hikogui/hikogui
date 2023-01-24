@@ -14,12 +14,12 @@ static void inflate_copy_block(std::span<std::byte const> bytes, std::size_t &bi
 {
     auto offset = (bit_offset + 7) / 8;
 
-    auto LEN = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
-    [[maybe_unused]] auto NLEN = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
+    auto LEN = **make_placement_ptr<little_uint16_buf_t>(bytes, offset);
+    [[maybe_unused]] auto NLEN = **make_placement_ptr<little_uint16_buf_t>(bytes, offset);
 
-    hi_parse_check((offset + LEN->value()) <= bytes.size(), "input buffer overrun");
-    hi_parse_check((r.size() + LEN->value()) <= max_size, "output buffer overrun");
-    r.append(&bytes[offset], LEN->value());
+    hi_parse_check((offset + LEN) <= bytes.size(), "input buffer overrun");
+    hi_parse_check((r.size() + LEN) <= max_size, "output buffer overrun");
+    r.append(&bytes[offset], LEN);
 
     bit_offset = offset * 8;
 }
