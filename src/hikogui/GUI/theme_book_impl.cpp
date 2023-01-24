@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "theme_book.hpp"
-#include "../text/font_book.hpp"
+#include "../font/module.hpp"
 #include "../file/glob.hpp"
 #include "../utility/module.hpp"
 #include "../trace.hpp"

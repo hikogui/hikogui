@@ -5,7 +5,7 @@
 #pragma once
 
 #include "text_shaper_char.hpp"
-#include "font_book.hpp"
+#include "../font/module.hpp"
 
 namespace hi::inline v1 {
 

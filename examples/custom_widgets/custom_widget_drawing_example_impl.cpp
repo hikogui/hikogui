@@ -12,7 +12,7 @@
 #include "hikogui/widgets/momentary_button_widget.hpp"
 #include "hikogui/widgets/selection_widget.hpp"
 #include "hikogui/widgets/radio_button_widget.hpp"
-#include "hikogui/text/font_book.hpp"
+#include "hikogui/font/module.hpp"
 #include "hikogui/codec/png.hpp"
 #include "hikogui/file/URL.hpp"
 #include "hikogui/crt.hpp"

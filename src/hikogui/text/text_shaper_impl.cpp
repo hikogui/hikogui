@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_shaper.hpp"
-#include "font_book.hpp"
+#include "../font/module.hpp"
 #include "../unicode/unicode_line_break.hpp"
 #include "../unicode/unicode_bidi.hpp"
 #include "../unicode/unicode_word_break.hpp"

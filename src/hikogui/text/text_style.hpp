@@ -4,15 +4,14 @@
 
 #pragma once
 
-#include "font_variant.hpp"
 #include "text_decoration.hpp"
-#include "font_family_id.hpp"
 #include "text_phrasing.hpp"
 #include "semantic_text_style.hpp"
 #include "../color/module.hpp"
 #include "../i18n/iso_15924.hpp"
 #include "../i18n/iso_639.hpp"
 #include "../utility/module.hpp"
+#include "../font/module.hpp"
 #include "../log.hpp"
 #include "../stable_set.hpp"
 #include <ostream>
