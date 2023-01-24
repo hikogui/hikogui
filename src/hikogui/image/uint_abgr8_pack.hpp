@@ -18,7 +18,7 @@ namespace hi::inline v1 {
  * @ingroup image
  */
 class uint_abgr8_pack {
-    uint32_t v;
+    uint32_t v = {};
 
 public:
     constexpr uint_abgr8_pack() = default;

@@ -19,7 +19,7 @@ namespace hi::inline v1 {
  * @ingroup image
  */
 class srgb_abgr8_pack {
-    uint32_t v;
+    uint32_t v = {};
 
 public:
     constexpr srgb_abgr8_pack() = default;

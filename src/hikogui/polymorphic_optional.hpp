@@ -265,7 +265,8 @@ public:
             }
 
             // Overwrite the buffer with the new slot.
-            auto new_ptr = new (_buffer.data()) Value(std::forward<Args>(args)...);
+            hilet new_ptr = new (_buffer.data()) Value(std::forward<Args>(args)...);
+            hi_assume(new_ptr != nullptr);
             hi_axiom(equal_ptr(new_ptr, this));
 
             if constexpr (std::is_same_v<func_result, void>) {

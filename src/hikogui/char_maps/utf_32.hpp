@@ -10,6 +10,11 @@
 
 #include "char_converter.hpp"
 
+hi_warning_push();
+// C26490: Don't use reinterpret_cast.
+// Needed for SIMD intrinsics.
+hi_warning_ignore_msvc(26490);
+
 namespace hi { inline namespace v1 {
 
 /** Unicode UTF-32 encoding.
@@ -23,7 +28,8 @@ struct char_map<"utf-32"> {
     [[nodiscard]] std::endian guess_endian(void const *ptr, size_t size, std::endian endian) const noexcept
     {
         hi_assert_not_null(ptr);
-        auto *ptr_ = reinterpret_cast<uint8_t const *>(ptr);
+        auto *ptr_ = static_cast<uint8_t const *>(ptr);
+        hi_axiom_not_null(ptr_);
 
         if (size < 4) {
             return std::endian::native;
@@ -149,3 +155,5 @@ struct char_map<"utf-32"> {
 };
 
 }} // namespace hi::v1
+
+hi_warning_pop();

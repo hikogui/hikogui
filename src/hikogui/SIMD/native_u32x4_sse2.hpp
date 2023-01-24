@@ -9,6 +9,10 @@
 #include <array>
 #include <ostream>
 
+hi_warning_push();
+// Ignore "C26490: Don't use reinterpret_cast", needed for intrinsic loads and stores.
+hi_warning_ignore_msvc(26490);
+
 namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_SSE2
@@ -155,7 +159,7 @@ struct native_simd<uint32_t,4> {
 
     [[nodiscard]] static native_simd ones() noexcept
     {
-        auto tmp = _mm_undefined_si128();
+        hilet tmp = _mm_undefined_si128();
         return native_simd{_mm_cmpeq_epi32(tmp, tmp)};
     }
 
@@ -443,7 +447,7 @@ struct native_simd<uint32_t,4> {
      */
     [[nodiscard]] friend native_simd horizontal_sum(native_simd a) noexcept
     {
-        auto tmp = a + permute<"cdab">(a);
+        hilet tmp = a + permute<"cdab">(a);
         return tmp + permute<"badc">(tmp);
     }
 
@@ -489,3 +493,5 @@ struct native_simd<uint32_t,4> {
 #endif
 
 }} // namespace hi::v1
+
+hi_warning_pop();
