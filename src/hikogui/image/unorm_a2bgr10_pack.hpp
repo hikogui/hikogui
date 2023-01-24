@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file image/unorm_a2bgr10_pack.hpp Defines the unorm_a2bgr10_pack type.
+ * @ingroup image
+ */
+
 #pragma once
 
 #include "../SIMD/module.hpp"
@@ -18,6 +22,10 @@ namespace hi::inline v1 {
 //    return (a << 30) | (b << 20) | (g << 10) | r;
 //}
 
+/** 1 x uint2_t, 3 x uint10_t pixel packed format.
+ *
+ * @ingroup image
+ */
 struct unorm_a2bgr10_pack {
     uint32_t value;
 

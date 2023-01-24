@@ -2,6 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file assert.hpp Utilities to assert and bound check.
+ */
+
 #pragma once
 
 #include "architecture.hpp"
@@ -12,8 +15,9 @@
 #include <exception>
 #include <ranges>
 
-/** @file assert.hpp Utilities to assert and bound check.
- */
+hi_warning_push();
+// "C26472: Don't use a static_cast for arithmetic", asserts use static_cast specifically for savety.
+hi_warning_ignore_msvc(26472);
 
 namespace hi { inline namespace v1 {
 
@@ -27,8 +31,8 @@ namespace hi { inline namespace v1 {
 {
     using value_type = common_integer_t<decltype(index), decltype(upper)>;
 
-    auto index_ = static_cast<value_type>(index);
-    auto upper_ = static_cast<value_type>(upper);
+    hilet index_ = static_cast<value_type>(index);
+    hilet upper_ = static_cast<value_type>(upper);
     return index_ < upper_;
 }
 
@@ -36,7 +40,7 @@ namespace hi { inline namespace v1 {
  *
  * @note It is undefined behavior when @a upper is lower than @a lower.
  * @param index The index to check.
- * @param upper The lower bound.
+ * @param lower The lower bound.
  * @param upper The upper bound.
  * @return true If index is greater or equal to lower bound and index is less than upper bound.
  */
@@ -149,12 +153,12 @@ concept bound_check_range_helper = requires(Context&& range) {
  * @param x The value to check if it is within bounds.
  * @param ... One upper-bound; or a lower-bound and upper-bound.
  */
-#define hi_axiom_bounds(a, ...) hi_assert_bounds(a, __VA_ARGS__)
+#define hi_axiom_bounds(x, ...) hi_assert_bounds(x, __VA_ARGS__)
 
 /** Assert if an expression is not nullptr.
  * If the expression is not a nullptr then return from the function.
  *
- * @param x The expression to test
+ * @param expression The expression to test
  * @param ... A string-literal as the reason why the not-null check exists.
  */
 #define hi_axiom_not_null(expression, ...) hi_assert_not_null(expression __VA_OPT__(, ) __VA_ARGS__)
@@ -230,3 +234,5 @@ concept bound_check_range_helper = requires(Context&& range) {
 #define hi_static_not_implemented(...) hi_static_no_default("Not implemented: " __VA_ARGS__)
 
 }} // namespace hi::v1
+
+hi_warning_pop();

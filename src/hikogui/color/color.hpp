@@ -13,16 +13,16 @@
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** This is a RGBA floating point color.
  * The color can be converted between different color spaces using the matrix-class.
  *
  * But in most cases in the application and hikogui library this color would be in
- * the tsRGBA color space. This color space is compatible with the sRGB standard
+ * the scRGBA color space. This color space is compatible with the sRGB standard
  * IEC 61966-2-1:1999.
  *
- * tsRGB details:
+ * scRGB details:
  * - the ITU-R BT.709 color primaries.
  * - A linear transfer function (unlike sRGB).
  * - R=0.0, G=0.0, B=0.0: Black
@@ -30,16 +30,12 @@ namespace hi::inline v1 {
  * - RGB values above 1.0 are allowed for HDR (high dynamic range)
  * - RGB values below 0.0 are allowed for WCG (wide color gamut)
  *
- * tsRGBA details:
+ * scRGBA details:
  * - Includes an alpha value
- * - Alpha values are linear and must be between 0.0 through 1.0.
+ * - Alpha values are linear and must be between 0.0 and 1.0.
  * - A=0.0 fully transparent
  * - A=1.0 fully opaque
  * - RGB values are NOT pre-multiplied with the alpha.
- *
- * This color format is inspired by scRGB, however scRGB only describes
- * a 12- or 16-bit integer per component encoding of RGB values between
- * -0.5 and 7.5.
  *
  * @ingroup color
  */
@@ -209,6 +205,7 @@ public:
      * The alpha value is not included in the transformation and copied from the input.
      *
      * @note It is undefined behavior if the matrix contains a translation.
+     * @param lhs The 3x3 color transformation matrix to use.
      * @param rhs The color to be transformed.
      * @return The transformed color.
      */
@@ -232,7 +229,7 @@ private:
     f16x4 _v;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
 
 template<>
 struct std::hash<hi::color> {

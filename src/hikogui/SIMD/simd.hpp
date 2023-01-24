@@ -25,9 +25,12 @@
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
 hi_warning_ignore_msvc(4702);
-// C26490: Don't use reinterpret_cast (type.1).
-// Needed for casting pointers to or from SSE registers.
-hi_warning_ignore_msvc(26490);
+// C26467: Converting from floating point to unsigned integral types results in non-portable code if...
+// We are trying to get SIMD intrinsics to work the same as scalar functions. 
+hi_warning_ignore_msvc(26467);
+// C26472: Don't use static_cast for arithmetic conversions.
+// We are trying to get SIMD intrinsics to work the same as scalar functions.
+hi_warning_ignore_msvc(26472)
 
 #define HI_X_runtime_evaluate_if_valid(...) \
     do { \

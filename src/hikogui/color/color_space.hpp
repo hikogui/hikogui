@@ -4,13 +4,14 @@
 
 #pragma once
 
-/** @file color_space Functions to create color conversion matrices.
+/** @file color/color_space.hpp Functions to create color conversion matrices.
  * @ingroup color
  */
 
 #include "../geometry/module.hpp"
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
 /** Create a color space conversion matrix.
  *
@@ -47,4 +48,4 @@ color_primaries_to_RGBtoXYZ(float wx, float wy, float rx, float ry, float gx, fl
     return C * S;
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

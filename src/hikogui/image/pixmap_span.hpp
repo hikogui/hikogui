@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file image/pixmap_span.hpp Defines the pixmap_span type.
+ * @ingroup image
+ */
+
 #pragma once
 
 #include "../utility/module.hpp"
@@ -13,6 +17,11 @@ namespace hi { inline namespace v1 {
 template<typename T, typename Allocator>
 class pixmap;
 
+/** A non-owning 2D pixel-based image.
+ *
+ * @ingroup image
+ * @tparam T The pixel format.
+ */
 template<typename T>
 class pixmap_span {
 public:

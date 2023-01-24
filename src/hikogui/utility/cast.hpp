@@ -143,7 +143,7 @@ template<arithmetic Out, arithmetic In>
  *
  * @tparam Out the signed- or unsigned-integer type to cast to.
  * @param rhs The value to convert.
- * @return The converted value, which is saturated if @rhs is over- or underflowing.
+ * @return The converted value, which is saturated if @a rhs is over- or underflowing.
  */
 template<std::integral Out, arithmetic In>
 [[nodiscard]] constexpr Out saturate_cast(In rhs) noexcept
@@ -174,6 +174,14 @@ template<std::integral Out, arithmetic In>
 template<typename Out, typename In>
 [[nodiscard]] constexpr Out narrow_cast(In const &rhs) noexcept;
 
+/** Cast numeric values without loss of precision.
+ *
+ * @note It is undefined behavior to cast a value which will cause a loss of precision.
+ * @tparam Out The numeric type to cast to
+ * @tparam In The numeric type to cast from
+ * @param rhs The value to cast.
+ * @return The value casted to a different type without loss of precision.
+ */
 template<arithmetic Out, arithmetic In>
 [[nodiscard]] constexpr Out narrow_cast(In const &rhs) noexcept
 {
@@ -244,6 +252,16 @@ template<std::integral Out, std::integral In>
     return static_cast<Out>(out_unsigned);
 }
 
+/** Cast a character.
+ *
+ * Both the input and output types are interpreted as unsigned values, even if
+ * they are signed values. For example `char` may be either signed or unsigned,
+ * but you have to treat those as unsigned values.
+ *
+ * @note @a rhs value after casting, must fit in the output type.
+ * @param rhs The value of the character.
+ * @return The casted value.
+ */
 template<std::integral Out>
 [[nodiscard]] constexpr Out char_cast(std::byte rhs) noexcept
 {

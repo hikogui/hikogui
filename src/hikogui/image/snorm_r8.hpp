@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file image/snorm_r8.hpp Defines the snorm_r8.
+ * @ingroup image
+ */
+
 #pragma once
 
 #include "../utility/module.hpp"
@@ -14,6 +18,10 @@ namespace hi::inline v1 {
     return narrow_cast<int8_t>(std::round(std::clamp(rhs, -1.0f, 1.0f) * 127.0f));
 }
 
+/** 1 x int8_t pixel format.
+ *
+ * @ingroup image
+ */
 struct snorm_r8 {
     int8_t value;
 

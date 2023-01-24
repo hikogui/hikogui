@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file image/sdf_r8.hpp Defines the signed distance field pixel type sdf_r8.
+ * @ingroup image
+ */
+
 #pragma once
 
 #include "snorm_r8.hpp"
@@ -16,6 +20,8 @@ namespace hi::inline v1 {
 
 /** A pixel of a single channel signed distance field.
  * https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf
+ *
+ * @ingroup image
  */
 struct sdf_r8 : public snorm_r8 {
     /** Max distance in pixels represented by the signed distance field.

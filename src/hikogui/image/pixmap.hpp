@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file image/pixmap.hpp Defines the pixmap type.
+* @ingroup image
+*/
+
 #pragma once
 
 #include "../utility/module.hpp"
@@ -15,6 +19,7 @@ class pixmap_span;
 
 /** A 2D pixel-based image.
  *
+ * @ingroup image
  * @tparam T The pixel format.
  * @tparam Allocator The allocator to use for allocating the array of pixels.
  */

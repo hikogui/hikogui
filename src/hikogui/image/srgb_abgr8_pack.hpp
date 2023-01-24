@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file image/srgb_abgr8_pack.hpp Defines the srgb_abgr8_pack type.
+ * @ingroup image
+ */
+
 #pragma once
 
 #include "sfloat_rgba16.hpp"
@@ -10,8 +14,12 @@
 
 namespace hi::inline v1 {
 
+/** 4 x uint8_t pixel packed format with sRGB transfer function.
+ *
+ * @ingroup image
+ */
 class srgb_abgr8_pack {
-    uint32_t v;
+    uint32_t v = {};
 
 public:
     constexpr srgb_abgr8_pack() = default;

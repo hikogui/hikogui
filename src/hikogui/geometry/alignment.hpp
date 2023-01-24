@@ -35,7 +35,6 @@ enum class vertical_alignment : uint8_t {
 };
 
 /** Create a guideline between two points.
- * @ingroup geometry
  *
  * The vertical guideline is mostly used to create a baseline; in this
  * case the guideline_width is set to the cap-height of a font.
@@ -45,6 +44,8 @@ enum class vertical_alignment : uint8_t {
  *  - aligned-middle: The middle of the guideline will be in the middle between bottom and top; clamped by the padding.
  *  - aligned-none: nullopt.
  *
+ * @ingroup geometry
+ * @param alignment The vertical alignment how to place the guideline.
  * @param bottom The y-coordinate of the bottom.
  * @param top The y-coordinate of the top.
  * @param padding_bottom Distance from @a bottom that can not be used.
@@ -141,13 +142,14 @@ enum class horizontal_alignment : uint8_t {
  *  - aligned-none: nullopt.
  *
  * @note The padding is a soft-constraint and may be ignored if needed.
+ * @param alignment The horizontal alignment where to put the guideline.
  * @param left The x-coordinate of the left.
  * @param right The x-coordinate of the right.
  * @param padding_left Distance from @a left that can not be used.
  * @param padding_right Distance from @a right that can not be used.
  * @param guideline_width The thickness of the guideline
  * @return The x-coordinate of the left of the guideline.
- * @retval nullopt No alignment, or guideline does not fit in the space.
+ * @retval std::nullopt No alignment, or guideline does not fit in the space.
  */
 template<arithmetic T>
 [[nodiscard]] constexpr std::optional<T>

@@ -203,7 +203,7 @@ struct native_i8x16 {
 
     [[nodiscard]] static native_i8x16 ones() noexcept
     {
-        auto tmp = _mm_undefined_si128();
+        hilet tmp = _mm_undefined_si128();
         return native_i8x16{_mm_cmpeq_epi32(tmp, tmp)};
     }
 

@@ -58,7 +58,7 @@ public:
      */
     hi_force_inline void lock() noexcept
     {
-        auto lock_count = _lock_count.fetch_add(1, std::memory_order::acquire);
+        hilet lock_count = _lock_count.fetch_add(1, std::memory_order::acquire);
         hi_axiom(lock_count != std::numeric_limits<uint32_t>::max());
     }
 
