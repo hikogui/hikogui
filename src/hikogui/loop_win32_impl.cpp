@@ -37,6 +37,7 @@
 #include "utility/win32_headers.hpp"
 
 #include "loop.hpp"
+#include "defer.hpp"
 #include "counters.hpp"
 #include "trace.hpp"
 #include "utility/module.hpp"
@@ -228,16 +229,20 @@ public:
             WSANETWORKEVENTS events;
             if (WSAEnumNetworkEvents(_sockets[index], _handles[index], &events) != 0) {
                 switch (WSAGetLastError()) {
-                case WSANOTINITIALISED: hi_log_fatal("WSAStartup was not called.");
-                case WSAENETDOWN: hi_log_fatal("The network subsystem has failed.");
-                case WSAEINVAL: hi_log_fatal("One of the specified parameters was invalid.");
+                case WSANOTINITIALISED:
+                    hi_log_fatal("WSAStartup was not called.");
+                case WSAENETDOWN:
+                    hi_log_fatal("The network subsystem has failed.");
+                case WSAEINVAL:
+                    hi_log_fatal("One of the specified parameters was invalid.");
                 case WSAEINPROGRESS:
                     hi_log_warning(
                         "A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a "
                         "callback "
                         "function.");
                     break;
-                case WSAEFAULT: hi_log_fatal("The lpNetworkEvents parameter is not a valid part of the user address space.");
+                case WSAEFAULT:
+                    hi_log_fatal("The lpNetworkEvents parameter is not a valid part of the user address space.");
                 case WSAENOTSOCK:
                     // If somehow the socket was destroyed, lets just remove it.
                     hi_log_error("Error during WSAEnumNetworkEvents on socket {}: {}", _sockets[index], get_last_error_message());
@@ -245,7 +250,8 @@ public:
                     _sockets.erase(_sockets.begin() + index);
                     _socket_functions.erase(_socket_functions.begin() + index);
                     break;
-                default: hi_no_default();
+                default:
+                    hi_no_default();
                 }
 
             } else {
@@ -456,10 +462,6 @@ private:
      */
     void vsync_thread_update_dxgi_output() noexcept
     {
-        IDXGIFactory *factory = nullptr;
-        IDXGIAdapter *adapter = nullptr;
-        DXGI_OUTPUT_DESC description;
-
         if (not compare_store(_primary_monitor_id, os_settings::primary_monitor_id())) {
             return;
         }
@@ -469,43 +471,48 @@ private:
             _primary_monitor_output = nullptr;
         }
 
+        IDXGIFactory *factory = nullptr;
         if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void **)&factory))) {
             hi_log_error_once("vsync:error:CreateDXGIFactory", "Could not IDXGIFactory. {}", get_last_error_message());
-            goto fail;
+            return;
         }
+        hi_assert_not_null(factory);
+        auto d1 = defer([&] {
+            factory->Release();
+        });
 
+        IDXGIAdapter *adapter = nullptr;
         if (FAILED(factory->EnumAdapters(0, &adapter))) {
             hi_log_error_once("vsync:error:EnumAdapters", "Could not get IDXGIAdapter. {}", get_last_error_message());
-            goto fail;
+            return;
         }
+        hi_assert_not_null(adapter);
+        auto d2 = defer([&] {
+            adapter->Release();
+        });
 
         if (FAILED(adapter->EnumOutputs(0, &_primary_monitor_output))) {
             hi_log_error_once("vsync:error:EnumOutputs", "Could not get IDXGIOutput. {}", get_last_error_message());
-            goto fail;
+            return;
         }
 
+        DXGI_OUTPUT_DESC description;
         if (FAILED(_primary_monitor_output->GetDesc(&description))) {
             hi_log_error_once("vsync:error:GetDesc", "Could not get IDXGIOutput description. {}", get_last_error_message());
             _primary_monitor_output->Release();
             _primary_monitor_output = nullptr;
-            goto fail;
+            return;
         }
 
         if (description.Monitor != std::bit_cast<HMONITOR>(_primary_monitor_id)) {
             hi_log_error_once("vsync:error:not-primary-monitor", "DXGI primary monitor does not match desktop primary monitor");
             _primary_monitor_output->Release();
             _primary_monitor_output = nullptr;
-            goto fail;
+            return;
         }
 
-fail:
-        if (adapter) {
-            adapter->Release();
-        }
-
-        if (factory) {
-            factory->Release();
-        }
+        d2.cancel();
+        d1.cancel();
     }
 
     /** Update the `vsync_time`.

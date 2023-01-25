@@ -6,6 +6,7 @@
 #include "utility/module.hpp"
 #include <type_traits>
 #include <concepts>
+#include <functional>
 
 #pragma once
 
@@ -17,7 +18,6 @@ namespace hi::inline v1 {
 * at the closing brace, in reverse order of declaration. This means that multiple
 * `defer` instances will call their lambdas in reverse order of declaration as well.
 */
-template<std::invocable<> T>
 class defer {
 public:
     defer() = delete;
@@ -27,19 +27,23 @@ public:
     defer &operator=(defer const &) = delete;
 
     template<std::invocable<> Func>
-    [[nodiscard]] constexpr defer(Func &&func) noexcept : _func(std::forward<Func>(func)) {}
+    [[nodiscard]] defer(Func &&func) noexcept : _func(std::forward<Func>(func)) {}
 
-    constexpr ~defer()
+    ~defer()
     {
-        std::move(_func)();
+        if (_func) {
+            _func();
+        }
+    }
+
+    void cancel() noexcept
+    {
+        _func = nullptr;
     }
 
 private:
-    T _func;
+    std::function<void()> _func;
 };
-
-template<std::invocable<> Func>
-defer(Func &&) -> defer<std::remove_cvref_t<Func>>;
 
 }
 

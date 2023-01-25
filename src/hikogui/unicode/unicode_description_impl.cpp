@@ -24,10 +24,12 @@ namespace hi::inline v1 {
 [[nodiscard]] std::u32string unicode_description::decompose() const noexcept
 {
     constexpr uint64_t mask = 0x1f'ffff;
+    constexpr char32_t terminator = 0x1f'ffff;
 
     auto r = std::u32string{};
     if (_decomposition_index <= 0x10'ffff) {
         r += truncate<char32_t>(_decomposition_index);
+        return r;
 
     } else if (_decomposition_index < 0x1f'ffff) {
         auto index = _decomposition_index - 0x11'0000;
@@ -36,37 +38,25 @@ namespace hi::inline v1 {
         do {
             hi_assert_bounds(index, ucd_decompositions);
             tmp = ucd_decompositions[index++];
-            
-            // Entry 0[20:0]
-            if (auto c = truncate<char32_t>(tmp & mask); c != mask) {
-                r += c;
-            } else {
-                goto done;                
-            }
-            tmp >>= 21;
 
-            // Entry 0[41:21]
-            if (auto c = truncate<char32_t>(tmp & mask); c != mask) {
-                r += c;
-            } else {
-                goto done;
-            }
-            tmp >>= 21;
+            // Entry 0 [20:0]
+            // Entry 1 [41:21]
+            // Entry 2 [62:42]
+            for (auto i = 0_uz; i != 3; ++i) {
+                auto c = truncate<char32_t>(tmp & mask);
+                if (c == terminator) {
+                    return r;
+                }
 
-            // Entry 0[62:42]
-            if (auto c = truncate<char32_t>(tmp & mask); c != mask) {
                 r += c;
-            } else {
-                goto done;
+                tmp >>= 21;
             }
-            tmp >>= 21;
 
             // Continue if 0[63] == '0'.
         } while (tmp == 0);
-    }
 
-done:
-    return r;
+        return r;
+    }
 }
 
 [[nodiscard]] char32_t unicode_description::compose(char32_t other) const noexcept
@@ -105,7 +95,7 @@ done:
             return 0xffff;
         }
         tmp >>= 21;
-        
+
         // Entry 1[41:21] and 1[62:42]
         if (hilet c = truncate<char32_t>(tmp & mask); c <= other) {
             tmp >>= 21;
