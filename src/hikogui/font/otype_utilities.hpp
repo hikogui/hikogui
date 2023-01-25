@@ -9,6 +9,8 @@
 
 namespace hi { inline namespace v1 {
 
+/** Open-type 16.16 signed fixed point, range between -32768.0 and 32767.999
+ */
 struct Fixed_buf_t {
     big_uint32_buf_t x;
 
@@ -18,35 +20,43 @@ struct Fixed_buf_t {
     }
 };
 
+/** Open-type 16-bit signed fraction, range between -2.0 and 1.999
+ */
 struct shortFrac_buf_t {
     big_int16_buf_t x;
     float value() const noexcept
     {
-        return static_cast<float>(*x) / 32768.0f;
+        return static_cast<float>(*x) / 16384.0f;
     }
 };
 
+/** Open-type for 16 signed integer that must be scaled by the EM-scale.
+ */
 struct FWord_buf_t {
     big_int16_buf_t x;
-    [[nodiscard]] constexpr float operator*(float EmPerUnit) const noexcept
+    [[nodiscard]] constexpr float operator*(float Em_scale) const noexcept
     {
-        return static_cast<float>(*x) * EmPerUnit;
+        return static_cast<float>(*x) * Em_scale;
     }
 };
 
+/** Open-type for 8 signed integer that must be scaled by the EM-scale.
+ */
 struct FByte_buf_t {
     int8_t x;
-    [[nodiscard]] constexpr float operator*(float EmPerUnit) const noexcept
+    [[nodiscard]] constexpr float operator*(float Em_scale) const noexcept
     {
-        return static_cast<float>(x) * EmPerUnit;
+        return static_cast<float>(x) * Em_scale;
     }
 };
 
+/** Open-type for 16 unsigned integer that must be scaled by the EM-scale.
+ */
 struct uFWord_buf_t {
     big_uint16_buf_t x;
-    [[nodiscard]] constexpr float operator*(float EmPerUnit) const noexcept
+    [[nodiscard]] constexpr float operator*(float Em_scale) const noexcept
     {
-        return static_cast<float>(*x) * EmPerUnit;
+        return static_cast<float>(*x) * Em_scale;
     }
 };
 
