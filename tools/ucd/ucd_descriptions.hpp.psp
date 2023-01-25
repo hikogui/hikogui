@@ -33,7 +33,7 @@ namespace hi::inline v1 {
 
 $chunk_size = chunks[0].size
 
-#ifdef __INTELLISENSE__
+#if defined(__INTELLISENSE__) or defined(_PREFAST_)
 constexpr auto ucd_descriptions = std::array{
 $for chunk_index, chunk in enumerate(chunks):
     // $chunk.comment(chunk_index)$

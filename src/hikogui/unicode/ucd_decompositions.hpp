@@ -7,7 +7,7 @@
 
 namespace hi::inline v1 {
 
-#ifdef __INTELLISENSE__
+#if defined(__INTELLISENSE__) or defined(_PREFAST_)
 constexpr auto ucd_decompositions = std::array<uint64_t, 1>{ 0xfffffc0061000020ULL };
 #else
 constexpr auto ucd_decompositions = std::array<uint64_t, 13509>{    

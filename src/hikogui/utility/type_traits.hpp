@@ -325,6 +325,12 @@ struct common_integer<L, M, R...> {
 template<std::integral L, std::integral... R>
 using common_integer_t = common_integer<L, R...>::type;
 
+template<typename T>
+struct remove_cvptr { using type = std::remove_cv_t<std::remove_pointer_t<T>>; };
+
+template<typename T>
+using remove_cvptr_t = remove_cvptr<T>::type;
+
 /** Type-trait to copy const volatile qualifiers from one type to another.
  */
 template<typename To, typename From, typename Ei=void>

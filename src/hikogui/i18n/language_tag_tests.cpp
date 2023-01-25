@@ -36,12 +36,13 @@ hi_warning_push() hi_warning_ignore_msvc(4834)
     // "x-bcde" user-defined extension is ignored.
     ASSERT_EQ(tag::parse("nl-Cyrl-NL-x-bcde").to_string(), "nl-Cyrl-NL");
 
-    ASSERT_THROW(tag::parse("x-NL"), hi::parse_error);
-    ASSERT_THROW(tag::parse("xxxx-NL"), hi::parse_error);
+    tag tmp;
+    ASSERT_THROW(tmp = tag::parse("x-NL"), hi::parse_error);
+    ASSERT_THROW(tmp = tag::parse("xxxx-NL"), hi::parse_error);
     // "Food" script does not exist.
-    ASSERT_THROW(tag::parse("nl-Food-NL"), hi::parse_error);
+    ASSERT_THROW(tmp = tag::parse("nl-Food-NL"), hi::parse_error);
     // Region "AA" does not exist.
-    ASSERT_THROW(tag::parse("nl-Latn-AA"), hi::parse_error);
+    ASSERT_THROW(tmp = tag::parse("nl-Latn-AA"), hi::parse_error);
 }
 TEST(language_tag, construct)
 {

@@ -135,11 +135,11 @@ void gui_window_win32::create_window(extent2i new_size)
     // Now we extend the drawable area over the titlebar and and border, excluding the drop shadow.
     // At least one value needs to be postive for the drop-shadow to be rendered.
     MARGINS m{0, 0, 0, 1};
-    DwmExtendFrameIntoClientArea(reinterpret_cast<HWND>(win32Window), &m);
+    DwmExtendFrameIntoClientArea(win32Window, &m);
 
     // Force WM_NCCALCSIZE to be send to the window.
     SetWindowPos(
-        reinterpret_cast<HWND>(win32Window),
+        win32Window,
         nullptr,
         0,
         0,
@@ -148,7 +148,7 @@ void gui_window_win32::create_window(extent2i new_size)
         SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     if (!firstWindowHasBeenOpened) {
-        hilet win32_window_ = reinterpret_cast<HWND>(win32Window);
+        hilet win32_window_ = win32Window;
         switch (gui_window_size::normal) {
         case gui_window_size::normal:
             ShowWindow(win32_window_, SW_SHOWNORMAL);
@@ -167,12 +167,12 @@ void gui_window_win32::create_window(extent2i new_size)
 
     track_mouse_leave_event_parameters.cbSize = sizeof(track_mouse_leave_event_parameters);
     track_mouse_leave_event_parameters.dwFlags = TME_LEAVE;
-    track_mouse_leave_event_parameters.hwndTrack = reinterpret_cast<HWND>(win32Window);
+    track_mouse_leave_event_parameters.hwndTrack = win32Window;
     track_mouse_leave_event_parameters.dwHoverTime = HOVER_DEFAULT;
 
-    ShowWindow(reinterpret_cast<HWND>(win32Window), SW_SHOW);
+    ShowWindow(win32Window, SW_SHOW);
 
-    auto _dpi = GetDpiForWindow(reinterpret_cast<HWND>(win32Window));
+    auto _dpi = GetDpiForWindow(win32Window);
     if (_dpi == 0) {
         throw gui_error("Could not retrieve dpi for window.");
     }
@@ -204,7 +204,7 @@ gui_window_win32::~gui_window_win32()
 void gui_window_win32::close_window()
 {
     hi_axiom(loop::main().on_thread());
-    if (not PostMessageW(reinterpret_cast<HWND>(win32Window), WM_CLOSE, 0, 0)) {
+    if (not PostMessageW(win32Window, WM_CLOSE, 0, 0)) {
         hi_log_error("Could not send WM_CLOSE to window {}: {}", title, get_last_error_message());
     }
 }
@@ -220,7 +220,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     if (_size_state == gui_window_size::normal) {
         _restore_rectangle = rectangle;
     } else if (_size_state == gui_window_size::minimized) {
-        ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
+        ShowWindow(win32Window, SW_RESTORE);
         _size_state = gui_window_size::normal;
     }
 
@@ -230,11 +230,11 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
         hilet width = narrow_cast<int>(_restore_rectangle.width());
         hilet height = narrow_cast<int>(_restore_rectangle.height());
         hilet inv_top = narrow_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
-        SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
+        SetWindowPos(win32Window, HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::normal;
 
     } else if (state == gui_window_size::minimized) {
-        ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
+        ShowWindow(win32Window, SW_MINIMIZE);
         _size_state = gui_window_size::minimized;
 
     } else if (state == gui_window_size::maximized) {
@@ -247,7 +247,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
         hilet left = std::clamp(rectangle.left(), workspace.left(), workspace.right() - width);
         hilet top = std::clamp(rectangle.top(), workspace.bottom() + height, workspace.top());
         hilet inv_top = narrow_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
-        SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
+        SetWindowPos(win32Window, HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::maximized;
 
     } else if (state == gui_window_size::fullscreen) {
@@ -263,14 +263,14 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
         hilet width = narrow_cast<int>(fullscreen.width());
         hilet height = narrow_cast<int>(fullscreen.height());
         hilet inv_top = narrow_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
-        SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
+        SetWindowPos(win32Window, HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::fullscreen;
     }
 }
 
 [[nodiscard]] aarectanglei gui_window_win32::workspace_rectangle() const noexcept
 {
-    hilet monitor = MonitorFromWindow(reinterpret_cast<HWND>(win32Window), MONITOR_DEFAULTTOPRIMARY);
+    hilet monitor = MonitorFromWindow(win32Window, MONITOR_DEFAULTTOPRIMARY);
     if (monitor == NULL) {
         hi_log_error("Could not get monitor for the window.");
         return {0, 0, 1920, 1080};
@@ -295,7 +295,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 
 [[nodiscard]] aarectanglei gui_window_win32::fullscreen_rectangle() const noexcept
 {
-    hilet monitor = MonitorFromWindow(reinterpret_cast<HWND>(win32Window), MONITOR_DEFAULTTOPRIMARY);
+    hilet monitor = MonitorFromWindow(win32Window, MONITOR_DEFAULTTOPRIMARY);
     if (monitor == NULL) {
         hi_log_error("Could not get monitor for the window.");
         return {0, 0, 1920, 1080};
@@ -441,7 +441,7 @@ void gui_window_win32::set_window_size(extent2i new_extent)
 
 void gui_window_win32::put_text_on_clipboard(std::string_view text) const noexcept
 {
-    if (not OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
+    if (not OpenClipboard(win32Window)) {
         // Another application could have the clipboard locked.
         hi_log_info("Could not open win32 clipboard '{}'", get_last_error_message());
         return;

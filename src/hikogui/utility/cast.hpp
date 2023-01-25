@@ -5,6 +5,7 @@
 #pragma once
 
 #include "utility.hpp"
+#include "type_traits.hpp"
 #include "concepts.hpp"
 #include "assert.hpp"
 #include "compare.hpp"
@@ -24,6 +25,9 @@ hi_warning_ignore_msvc(26467);
 // C26496: The variable 'r' does not change after construction, mark it as const (con.4).
 // False positive
 hi_warning_ignore_msvc(26496);
+// C26466: Don't use static_cast downcast. A cast from a polymorphic type should use dynamic_cast (type.2)
+// Used in down_cast<>() specifically for doing this savely.
+hi_warning_ignore_msvc(26466);
 
 namespace hi::inline v1 {
 template<typename T>
@@ -39,7 +43,11 @@ template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
     requires std::is_pointer_v<Out> and
     (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    return static_cast<Out>(rhs);
+    if constexpr (std::is_same_v<std::remove_const_t<In>, remove_cvptr_t<Out>>) {
+        return rhs;
+    } else {
+        return static_cast<Out>(rhs);
+    }
 }
 
 /** Cast a reference to a class to its base class or itself.
@@ -58,7 +66,11 @@ template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
     requires std::is_reference_v<Out> and
     (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
-    return static_cast<Out>(rhs);
+    if constexpr (std::is_same_v<std::remove_const_t<In>, std::remove_cvref_t<Out>>) {
+        return rhs;
+    } else {
+        return static_cast<Out>(rhs);
+    }
 }
 
 /** Cast a pointer to a class to its derived class or itself.
@@ -73,8 +85,12 @@ template<typename Out, base_of<std::remove_pointer_t<Out>> In>
     requires std::is_pointer_v<Out> and
     (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    hi_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
-    return static_cast<Out>(rhs);
+    if constexpr (std::is_same_v<std::remove_const_t<In>, remove_cvptr_t<Out>>) {
+        return rhs;
+    } else {
+        hi_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
+        return static_cast<Out>(rhs);
+    }
 }
 
 /** Cast a pointer to a class to its derived class or itself.
@@ -99,8 +115,12 @@ template<typename Out, base_of<std::remove_reference_t<Out>> In>
     requires std::is_reference_v<Out> and
     (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
-    hi_axiom(dynamic_cast<std::add_pointer_t<std::remove_reference_t<Out>>>(std::addressof(rhs)) != nullptr);
-    return static_cast<Out>(rhs);
+    if constexpr (std::is_same_v<std::remove_const_t<In>, std::remove_cvref_t<Out>>) {
+        return rhs;
+    } else {
+        hi_axiom(dynamic_cast<std::add_pointer_t<std::remove_reference_t<Out>>>(std::addressof(rhs)) != nullptr);
+        return static_cast<Out>(rhs);
+    }
 }
 
 /** Cast a number to a type that will be able to represent all values without loss of precision.
@@ -172,7 +192,7 @@ template<std::integral Out, arithmetic In>
  * @return The value casted to a different type without loss of precision.
  */
 template<typename Out, typename In>
-[[nodiscard]] constexpr Out narrow_cast(In const &rhs) noexcept;
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept;
 
 /** Cast numeric values without loss of precision.
  *
@@ -183,7 +203,7 @@ template<typename Out, typename In>
  * @return The value casted to a different type without loss of precision.
  */
 template<arithmetic Out, arithmetic In>
-[[nodiscard]] constexpr Out narrow_cast(In const &rhs) noexcept
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
 {
     if constexpr (type_in_range_v<Out, In>) {
         return static_cast<Out>(rhs);

@@ -20,11 +20,13 @@ namespace hi::inline v1 {
     hilet status = RegGetValueW(HKEY_CURRENT_USER, wpath.c_str(), wname.c_str(), RRF_RT_DWORD, NULL, &result, &result_length);
 
     switch (status) {
-    case ERROR_SUCCESS: break;
+    case ERROR_SUCCESS:
+        break;
     case ERROR_BAD_PATHNAME:
     case ERROR_FILE_NOT_FOUND:
         throw os_error(std::format("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status));
-    default: hi_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
+    default:
+        hi_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
     }
 
     return static_cast<uint32_t>(result);
@@ -35,33 +37,29 @@ namespace hi::inline v1 {
     hilet wpath = hi::to_wstring(path);
     hilet wname = hi::to_wstring(name);
 
-    wchar_t initial_buffer[64];
-    wchar_t *result = initial_buffer;
-    DWORD result_length = sizeof(initial_buffer);
+    auto result = std::wstring{};
+    result.resize(64);
 
     for (auto repeat = 0; repeat != 5; ++repeat) {
-        hilet status =
-            RegGetValueW(HKEY_CURRENT_USER, wpath.c_str(), wname.c_str(), RRF_RT_REG_MULTI_SZ, NULL, result, &result_length);
-
-        if (status == ERROR_SUCCESS) {
-            auto r = ZZWSTR_to_string(result, result + result_length);
-            if (result != initial_buffer) {
-                delete[] result;
-            }
-            return r;
-        }
-
-        if (result != initial_buffer) {
-            delete[] result;
-        }
+        auto result_length = narrow_cast<DWORD>(result.size() * sizeof(wchar_t));
+        hilet status = RegGetValueW(
+            HKEY_CURRENT_USER, wpath.c_str(), wname.c_str(), RRF_RT_REG_MULTI_SZ, NULL, result.data(), &result_length);
 
         switch (status) {
-        case ERROR_MORE_DATA: result = new wchar_t[result_length]; break;
+        case ERROR_SUCCESS:
+            return ZZWSTR_to_string(result.data(), result.data() + result_length);
+
+        case ERROR_MORE_DATA:
+            hi_assert(result_length % 2 == 0);
+            result.resize(result_length / sizeof(wchar_t));
+            break;
 
         case ERROR_BAD_PATHNAME:
         case ERROR_FILE_NOT_FOUND:
             throw os_error(std::format("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status));
-        default: hi_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
+
+        default:
+            hi_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
         }
     }
 

@@ -7,6 +7,11 @@
 #include "../recursive_iterator.hpp"
 #include <algorithm>
 
+hi_warning_push();
+// C26438: Avoid 'goto' (es.76)
+// The bidi algorithm is described by the Unicode standard in terms of goto.
+hi_warning_ignore_msvc(26438);
+
 namespace hi::inline v1::detail {
 
 [[nodiscard]] static unicode_bidi_class unicode_bidi_P2(
@@ -1060,3 +1065,5 @@ static void unicode_bidi_P1_line(
 }
 
 } // namespace hi::inline v1::detail
+
+hi_warning_pop();
