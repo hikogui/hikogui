@@ -41,7 +41,7 @@ namespace hi::inline v1 {
     result.resize(64);
 
     for (auto repeat = 0; repeat != 5; ++repeat) {
-        DWORD result_length = result.size() * sizeof(wchar_t);
+        auto result_length = narrow_cast<DWORD>(result.size() * sizeof(wchar_t));
         hilet status = RegGetValueW(
             HKEY_CURRENT_USER, wpath.c_str(), wname.c_str(), RRF_RT_REG_MULTI_SZ, NULL, result.data(), &result_length);
 
@@ -50,7 +50,8 @@ namespace hi::inline v1 {
             return ZZWSTR_to_string(result.data(), result.data() + result_length);
 
         case ERROR_MORE_DATA:
-            result.resize(result_length);
+            hi_assert(result_length % 2 == 0);
+            result.resize(result_length / sizeof(wchar_t));
             break;
 
         case ERROR_BAD_PATHNAME:

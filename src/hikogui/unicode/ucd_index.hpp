@@ -7,7 +7,7 @@
 
 namespace hi::inline v1 {
 
-#ifdef __INTELLISENSE__
+#if defined(__INTELLISENSE__) or defined(_PREFAST_)
 constexpr auto ucd_index = std::array<uint16_t, 1>{ 0 };
 #else
 constexpr auto ucd_index = std::array<uint16_t, 34816>{    

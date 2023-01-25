@@ -7,7 +7,7 @@
 
 namespace hi::inline v1 {
 
-#ifdef __INTELLISENSE__
+#if defined(__INTELLISENSE__) or defined(_PREFAST_)
 constexpr auto ucd_compositions = std::array<uint64_t, 1>{ $"0x{:016x}ULL".format(compositions[0])$ };
 #else
 constexpr auto ucd_compositions = std::array<uint64_t, $len(compositions)$>{\
