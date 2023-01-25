@@ -180,7 +180,7 @@ public:
     [[nodiscard]] reference_type back() noexcept
     {
         hi_axiom(!empty());
-        return *std::launder(reinterpret_cast<pointer_type>(_top - 1));
+        return *std::launder(_top - 1);
     }
 
     /** Get a reference to the element at the top of the stack.
@@ -189,7 +189,7 @@ public:
     [[nodiscard]] const_reference_type back() const noexcept
     {
         hi_axiom(!empty());
-        return *std::launder(reinterpret_cast<pointer_type>(_top - 1));
+        return *std::launder(_top - 1);
     }
 
     /** Construct an object after the current top of the stack.
