@@ -40,6 +40,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/font/glyph_metrics.hpp
     ${HIKOGUI_SOURCE_DIR}/font/hikogui_icon.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_utilities.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_sfnt.hpp
     ${HIKOGUI_SOURCE_DIR}/font/true_type_font.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/alignment.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/axis.hpp

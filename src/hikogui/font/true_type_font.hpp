@@ -5,6 +5,7 @@
 #pragma once
 
 #include "font.hpp"
+#include "otype_sfnt.hpp"
 #include "../file/file_view.hpp"
 #include "../graphic_path.hpp"
 #include "../counters.hpp"
@@ -108,15 +109,15 @@ private:
 
     void cache_tables() const
     {
-        _cmap_table_bytes = get_table_bytes("cmap");
+        _cmap_table_bytes = otype_search_sfnt<"cmap">(as_span<std::byte const>(_view));
         _cmap_bytes = parse_cmap_table_directory();
-        _loca_table_bytes = get_table_bytes("loca");
-        _glyf_table_bytes = get_table_bytes("glyf");
-        _hmtx_table_bytes = get_table_bytes("hmtx");
+        _loca_table_bytes = otype_search_sfnt<"loca">(as_span<std::byte const>(_view));
+        _glyf_table_bytes = otype_search_sfnt<"glyf">(as_span<std::byte const>(_view));
+        _hmtx_table_bytes = otype_search_sfnt<"hmtx">(as_span<std::byte const>(_view));
 
         // Optional tables.
-        _kern_table_bytes = get_table_bytes("kern");
-        _GSUB_table_bytes = get_table_bytes("GSUB");
+        _kern_table_bytes = otype_search_sfnt<"kern">(as_span<std::byte const>(_view));
+        _GSUB_table_bytes = otype_search_sfnt<"GSUB">(as_span<std::byte const>(_view));
     }
 
     void load_view() const noexcept
@@ -129,12 +130,6 @@ private:
         ++global_counter<"ttf:map">;
         cache_tables();
     }
-
-    /** Get the bytes of a table.
-     *
-     * @return The bytes of a table, or empty if the table does not exist.
-     */
-    [[nodiscard]] std::span<std::byte const> get_table_bytes(char const *table_name) const;
 
     /** Parses the directory table of the font file.
      *

@@ -198,13 +198,20 @@ struct fixed_string {
     }
 };
 
-// template<typename CharT>
-//[[nodiscard]] constexpr std::size_t fixed_string_length_(CharT const *str) noexcept
-//{
-//     std::size_t i = 0;
-//     while (str[i++] != CharT{}) {}
-//     return i;
-// }
+template<fixed_string Tag>
+[[nodiscard]] consteval uint32_t fourcc() noexcept
+{
+    static_assert(Tag.size() == 4, "fourcc must get a 4 character fixed_string");
+
+    return (static_cast<uint32_t>(get<0>(Tag)) << 24) | (static_cast<uint32_t>(get<1>(Tag)) << 16) |
+        (static_cast<uint32_t>(get<2>(Tag)) << 8) | static_cast<uint32_t>(get<3>(Tag));
+}
+
+template<fixed_string Tag>
+consteval uint32_t operator"" _fcc()
+{
+    return fourcc<Tag>();
+}
 
 template<std::size_t N>
 fixed_string(char const (&str)[N]) -> fixed_string<N - 1>;

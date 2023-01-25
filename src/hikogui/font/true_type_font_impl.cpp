@@ -4,6 +4,7 @@
 
 #include "true_type_font.hpp"
 #include "otype_utilities.hpp"
+#include "otype_sfnt.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 #include "../placement.hpp"
@@ -144,31 +145,16 @@ struct OS2Table0 {
     // big_uint16_buf_t usWinDescent;
 };
 
-struct SFNTHeader {
-    big_uint32_buf_t scalerType;
-    big_uint16_buf_t numTables;
-    big_uint16_buf_t searchRange;
-    big_uint16_buf_t entrySelector;
-    big_uint16_buf_t rangeShift;
-};
-
-struct SFNTEntry {
-    big_uint32_buf_t tag;
-    big_uint32_buf_t checkSum;
-    big_uint32_buf_t offset;
-    big_uint32_buf_t length;
-};
-
 struct HHEATable {
     big_int16_buf_t majorVersion;
     big_int16_buf_t minorVersion;
-    FWord_buf_t ascender;
-    FWord_buf_t descender;
-    FWord_buf_t lineGap;
-    uFWord_buf_t advanceWidthMax;
-    FWord_buf_t minLeftSideBearing;
-    FWord_buf_t minRightSideBearing;
-    FWord_buf_t xMaxExtent;
+    otype_fword_buf_t ascender;
+    otype_fword_buf_t descender;
+    otype_fword_buf_t lineGap;
+    otype_fuword_buf_t advanceWidthMax;
+    otype_fword_buf_t minLeftSideBearing;
+    otype_fword_buf_t minRightSideBearing;
+    otype_fword_buf_t xMaxExtent;
     big_int16_buf_t caretSlopeRise;
     big_int16_buf_t caretSlopRun;
     big_int16_buf_t caretOffset;
@@ -183,17 +169,17 @@ struct HHEATable {
 struct HEADTable {
     big_uint16_buf_t majorVersion;
     big_uint16_buf_t minorVersion;
-    Fixed_buf_t fontRevision;
+    otype_fixed15_16_buf_t fontRevision;
     big_uint32_buf_t checkSumAdjustment;
     big_uint32_buf_t magicNumber;
     big_uint16_buf_t flags;
     big_uint16_buf_t unitsPerEm;
     big_uint64_buf_t created;
     big_uint64_buf_t modified;
-    FWord_buf_t xMin;
-    FWord_buf_t yMin;
-    FWord_buf_t xMax;
-    FWord_buf_t yMax;
+    otype_fword_buf_t xMin;
+    otype_fword_buf_t yMin;
+    otype_fword_buf_t xMax;
+    otype_fword_buf_t yMax;
     big_uint16_buf_t macStyle;
     big_uint16_buf_t lowestRecPPEM;
     big_int16_buf_t fontDirectionHint;
@@ -271,20 +257,20 @@ struct KERNFormat0 {
 struct KERNFormat0_entry {
     big_uint16_buf_t left;
     big_uint16_buf_t right;
-    FWord_buf_t value;
+    otype_fword_buf_t value;
 };
 
 struct HMTXEntry {
-    uFWord_buf_t advanceWidth;
-    FWord_buf_t leftSideBearing;
+    otype_fuword_buf_t advanceWidth;
+    otype_fword_buf_t leftSideBearing;
 };
 
 struct GLYFEntry {
     big_int16_buf_t numberOfContours;
-    FWord_buf_t xMin;
-    FWord_buf_t yMin;
-    FWord_buf_t xMax;
-    FWord_buf_t yMax;
+    otype_fword_buf_t xMin;
+    otype_fword_buf_t yMin;
+    otype_fword_buf_t xMax;
+    otype_fword_buf_t yMax;
 };
 
 [[nodiscard]] std::span<std::byte const> true_type_font::parse_cmap_table_directory() const
@@ -1017,7 +1003,7 @@ bool true_type_font::update_glyph_metrics(
     hilet longHorizontalMetricTable = make_placement_array<HMTXEntry>(_hmtx_table_bytes, offset, numberOfHMetrics);
 
     hilet numberOfLeftSideBearings = num_glyphs - numberOfHMetrics;
-    hilet leftSideBearings = make_placement_array<FWord_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings);
+    hilet leftSideBearings = make_placement_array<otype_fword_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings);
 
     float advanceWidth = 0.0f;
     float leftSideBearing;
@@ -1185,10 +1171,10 @@ bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes,
         auto subGlyphOffset = vector2{};
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                hilet tmp = make_placement_array<FWord_buf_t>(glyph_bytes, offset, 2);
+                hilet tmp = make_placement_array<otype_fword_buf_t>(glyph_bytes, offset, 2);
                 subGlyphOffset = vector2{tmp[0] * emScale, tmp[1] * emScale};
             } else {
-                hilet tmp = make_placement_array<FByte_buf_t>(glyph_bytes, offset, 2);
+                hilet tmp = make_placement_array<otype_fbyte_buf_t>(glyph_bytes, offset, 2);
                 subGlyphOffset = vector2{tmp[0] * emScale, tmp[1] * emScale};
             }
         } else {
@@ -1211,14 +1197,14 @@ bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes,
         // Start with an identity matrix.
         auto subGlyphScale = scale2{};
         if (flags & FLAG_WE_HAVE_A_SCALE) {
-            subGlyphScale = scale2(make_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset)->value());
+            subGlyphScale = scale2(make_placement_ptr<otype_fixed1_14_buf_t>(glyph_bytes, offset)->value());
 
         } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
-            hilet tmp = make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2);
+            hilet tmp = make_placement_array<otype_fixed1_14_buf_t>(glyph_bytes, offset, 2);
             subGlyphScale = scale2(tmp[0].value(), tmp[1].value());
 
         } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
-            hilet tmp = make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4);
+            hilet tmp = make_placement_array<otype_fixed1_14_buf_t>(glyph_bytes, offset, 4);
             hi_not_implemented();
             // subGlyphScale = mat::S(
             //    tmp[0].value(),
@@ -1287,9 +1273,9 @@ bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> byte
 
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                offset += ssizeof(FWord_buf_t) * 2;
+                offset += ssizeof(otype_fword_buf_t) * 2;
             } else {
-                offset += ssizeof(FByte_buf_t) * 2;
+                offset += ssizeof(otype_fbyte_buf_t) * 2;
             }
         } else {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
@@ -1300,11 +1286,11 @@ bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> byte
         }
 
         if (flags & FLAG_WE_HAVE_A_SCALE) {
-            offset += ssizeof(shortFrac_buf_t);
+            offset += ssizeof(otype_fixed1_14_buf_t);
         } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
-            offset += ssizeof(shortFrac_buf_t) * 2;
+            offset += ssizeof(otype_fixed1_14_buf_t) * 2;
         } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
-            offset += ssizeof(shortFrac_buf_t) * 4;
+            offset += ssizeof(otype_fixed1_14_buf_t) * 4;
         }
 
         if (flags & FLAG_USE_MY_METRICS) {
@@ -1350,50 +1336,25 @@ bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics
     return update_glyph_metrics(metricsGlyphIndex, glyph_metrics, glyph_id, lookahead_glyph_id);
 }
 
-[[nodiscard]] std::span<std::byte const> true_type_font::get_table_bytes(char const *table_name) const
-{
-    hilet bytes = as_span<std::byte const>(_view);
-
-    std::size_t offset = 0;
-    hilet header = make_placement_ptr<SFNTHeader>(bytes, offset);
-
-    if (!(*header->scalerType == fourcc("true") || *header->scalerType == 0x00010000)) {
-        throw parse_error("sfnt.scalerType is not 'true' or 0x00010000");
-    }
-
-    hilet entries = make_placement_array<SFNTEntry>(bytes, offset, *header->numTables);
-
-    hilet tag = fourcc_from_cstr(table_name);
-    auto it = std::lower_bound(entries.begin(), entries.end(), tag, [](auto const& entry, auto const& tag) {
-        return *entry.tag < tag;
-    });
-
-    if (it != entries.end() and *it->tag == tag) {
-        return bytes.subspan(*it->offset, *it->length);
-    } else {
-        return {};
-    }
-}
-
 void true_type_font::parse_font_directory()
 {
-    if (auto headTableBytes = get_table_bytes("head"); not headTableBytes.empty()) {
+    if (auto headTableBytes = otype_search_sfnt<"head">(as_span<std::byte const>(_view)); not headTableBytes.empty()) {
         parse_head_table(headTableBytes);
     }
 
-    if (auto nameTableBytes = get_table_bytes("name"); not nameTableBytes.empty()) {
+    if (auto nameTableBytes = otype_search_sfnt<"name">(as_span<std::byte const>(_view)); not nameTableBytes.empty()) {
         parse_name_table(nameTableBytes);
     }
 
-    if (auto maxpTableBytes = get_table_bytes("maxp"); not maxpTableBytes.empty()) {
+    if (auto maxpTableBytes = otype_search_sfnt<"maxp">(as_span<std::byte const>(_view)); not maxpTableBytes.empty()) {
         parse_maxp_table(maxpTableBytes);
     }
 
-    if (auto hheaTableBytes = get_table_bytes("hhea"); not hheaTableBytes.empty()) {
+    if (auto hheaTableBytes = otype_search_sfnt<"hhea">(as_span<std::byte const>(_view)); not hheaTableBytes.empty()) {
         parse_hhea_table(hheaTableBytes);
     }
 
-    if (auto os2TableBytes = get_table_bytes("OS/2"); not os2TableBytes.empty()) {
+    if (auto os2TableBytes = otype_search_sfnt<"OS/2">(as_span<std::byte const>(_view)); not os2TableBytes.empty()) {
         parse_OS2_table(os2TableBytes);
     }
 
