@@ -5,6 +5,7 @@
 #pragma once
 
 #include "utility.hpp"
+#include "type_traits.hpp"
 #include "concepts.hpp"
 #include "assert.hpp"
 #include "compare.hpp"
@@ -42,7 +43,7 @@ template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
     requires std::is_pointer_v<Out> and
     (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    if constexpr (std::is_same_v<In, std::remove_pointer_t<Out>>) {
+    if constexpr (std::is_same_v<std::remove_const_t<In>, remove_cvptr_t<Out>>) {
         return rhs;
     } else {
         return static_cast<Out>(rhs);
@@ -65,7 +66,7 @@ template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
     requires std::is_reference_v<Out> and
     (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
-    if constexpr (std::is_same_v<In, std::remove_reference_t<Out>>) {
+    if constexpr (std::is_same_v<std::remove_const_t<In>, std::remove_cvref_t<Out>>) {
         return rhs;
     } else {
         return static_cast<Out>(rhs);
@@ -84,7 +85,7 @@ template<typename Out, base_of<std::remove_pointer_t<Out>> In>
     requires std::is_pointer_v<Out> and
     (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    if constexpr (std::is_same_v<In, std::remove_pointer_t<Out>>) {
+    if constexpr (std::is_same_v<std::remove_const_t<In>, remove_cvptr_t<Out>>) {
         return rhs;
     } else {
         hi_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
@@ -114,7 +115,7 @@ template<typename Out, base_of<std::remove_reference_t<Out>> In>
     requires std::is_reference_v<Out> and
     (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
-    if constexpr (std::is_same_v<In, std::remove_reference_t<Out>>) {
+    if constexpr (std::is_same_v<std::remove_const_t<In>, std::remove_cvref_t<Out>>) {
         return rhs;
     } else {
         hi_axiom(dynamic_cast<std::add_pointer_t<std::remove_reference_t<Out>>>(std::addressof(rhs)) != nullptr);
