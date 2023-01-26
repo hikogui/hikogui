@@ -1012,8 +1012,8 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
         features += "GSUB,";
     }
 
-    if (OS2_x_height > 0) {
-        metrics.x_height = _em_scale * OS2_x_height;
+    if (OS2_x_height > 0.0f) {
+        metrics.x_height = OS2_x_height;
     } else {
         hilet glyph_id = find_glyph('x');
         if (glyph_id) {
@@ -1023,8 +1023,8 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
         }
     }
 
-    if (OS2_cap_height > 0) {
-        metrics.cap_height = _em_scale * OS2_cap_height;
+    if (OS2_cap_height > 0.0f) {
+        metrics.cap_height = OS2_cap_height;
     } else {
         hilet glyph_id = find_glyph('H');
         if (glyph_id) {
