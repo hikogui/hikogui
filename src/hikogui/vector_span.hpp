@@ -258,9 +258,7 @@ public:
     void emplace_back(Args &&...args) noexcept
     {
         hi_axiom(_end != _max);
-        // Since we throw away the pointer, we have to std::launder all access to this object.
-        [[maybe_unused]] value_type *ptr = new (_end) value_type(std::forward<Args>(args)...);
-        ++_end;
+        std::construct_at(_end++, std::forward<Args>(args)...);
     }
 
     void pop_back() noexcept

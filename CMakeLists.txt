@@ -314,7 +314,7 @@ elseif (MSVC)
         message(NOTICE "The following environment variables need to be set for the core guidelines checker to work:")
         message(NOTICE "    esp.extensions=cppcorecheck.dll")
         message(NOTICE "    esp.annotationbuildlevel=ignore")
-        message(NOTICE "    CAExcludePath=C:\\VulkanSDK;C:\\Program Files")
+        message(NOTICE "    CAExcludePath=C:\\VulkanSDK;C:\\Program Files;C:\\Users\\Tjienta\\Projects\\hikogui\\out\\build\\vc17-x64-windows-static-ana\\_deps")
         message(NOTICE "")
         target_compile_options(hikogui PUBLIC -analyze:plugin EspXEngine.dll)
 
@@ -348,15 +348,21 @@ elseif (MSVC)
         # https://developercommunity.visualstudio.com/t/c28020-false-positives/923103
         target_compile_options(hikogui PUBLIC -wd28020)
 
-        # Turn off every warning fix one at a time:
-        target_compile_options(hikogui PUBLIC -wd26400)
-        target_compile_options(hikogui PUBLIC -wd26403)
-        target_compile_options(hikogui PUBLIC -wd26408)
+        # C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11)
+        # Can't exclude unit-test and google-test uses new and delete in the TEST() macro.
         target_compile_options(hikogui PUBLIC -wd26409)
-        target_compile_options(hikogui PUBLIC -wd26414)
-        target_compile_options(hikogui PUBLIC -wd26415)
+
+        # C26426: Global initializer calls a non-constexpr function (i.22)
+        # Can't exclude unit-test and google-test does this a lot.
         target_compile_options(hikogui PUBLIC -wd26426)
-        target_compile_options(hikogui PUBLIC -wd26429)
+
+        # Turn off every warning fix one at a time:
+        #target_compile_options(hikogui PUBLIC -wd26400)
+        #target_compile_options(hikogui PUBLIC -wd26403)
+        #target_compile_options(hikogui PUBLIC -wd26408)
+        #target_compile_options(hikogui PUBLIC -wd26414)
+        #target_compile_options(hikogui PUBLIC -wd26415)
+        #target_compile_options(hikogui PUBLIC -wd26429)
         target_compile_options(hikogui PUBLIC -wd26432)
         target_compile_options(hikogui PUBLIC -wd26433)
         target_compile_options(hikogui PUBLIC -wd26434)

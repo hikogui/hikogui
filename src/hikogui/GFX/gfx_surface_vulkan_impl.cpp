@@ -37,9 +37,10 @@ void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
     hilet lock = std::scoped_lock(gfx_system_mutex);
     super::set_device(device);
 
-    auto device_ = down_cast<gfx_device_vulkan *>(device);
-    _present_queue = &device_->get_present_queue(*this);
-    _graphics_queue = &device_->get_graphics_queue(*this);
+    auto &device_ = down_cast<gfx_device_vulkan &>(*device);
+
+    _present_queue = &device_.get_present_queue(*this);
+    _graphics_queue = &device_.get_graphics_queue(*this);
 }
 
 gfx_device_vulkan& gfx_surface_vulkan::vulkan_device() const noexcept

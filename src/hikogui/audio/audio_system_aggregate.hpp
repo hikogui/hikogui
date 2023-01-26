@@ -15,10 +15,10 @@ public:
     audio_system_aggregate() = default;
     virtual ~audio_system_aggregate() {}
 
-    [[nodiscard]] generator<audio_device *> devices() noexcept override
+    [[nodiscard]] generator<audio_device &> devices() noexcept override
     {
         for (auto &child : _children) {
-            for (auto device: child.system->devices()) {
+            for (auto &device: child.system->devices()) {
                 co_yield device;
             }
         }

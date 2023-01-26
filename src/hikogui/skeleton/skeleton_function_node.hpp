@@ -18,10 +18,10 @@ struct skeleton_function_node final : skeleton_node {
     skeleton_function_node(
         parse_location location,
         formula_post_process_context &context,
-        std::unique_ptr<formula_node> function_declaration_expression) noexcept :
+        formula_node const &function_declaration_expression) noexcept :
         skeleton_node(std::move(location))
     {
-        auto name_and_arguments = function_declaration_expression->get_name_and_argument_names();
+        auto name_and_arguments = function_declaration_expression.get_name_and_argument_names();
         hi_assert(name_and_arguments.size() >= 1);
 
         name = name_and_arguments[0];

@@ -110,9 +110,9 @@ static std::unique_ptr<formula_node> parse_operation_formula(
             return std::make_unique<formula_logical_and_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("||"): return std::make_unique<formula_logical_or_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("?"):
-            return std::make_unique<formula_ternary_operator_node>(op.location, std::move(lhs), std::move(rhs));
+            return std::make_unique<formula_ternary_operator_node>(op.location, std::move(lhs), *rhs);
         case operator_to_int("["): return std::make_unique<formula_index_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("("): return std::make_unique<formula_call_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("("): return std::make_unique<formula_call_node>(op.location, std::move(lhs), *rhs);
         case operator_to_int("="): return std::make_unique<formula_assign_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("+="):
             return std::make_unique<formula_inplace_add_node>(op.location, std::move(lhs), std::move(rhs));

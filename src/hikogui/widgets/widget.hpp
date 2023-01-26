@@ -361,6 +361,8 @@ protected:
 
 inline widget *get_if(widget *start, widget_id id, bool include_invisible) noexcept
 {
+    hi_assert_not_null(start);
+
     if (start->id == id) {
         return start;
     }

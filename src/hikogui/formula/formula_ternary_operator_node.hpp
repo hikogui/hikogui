@@ -16,15 +16,14 @@ struct formula_ternary_operator_node final : formula_node {
     formula_ternary_operator_node(
         parse_location location,
         std::unique_ptr<formula_node> lhs,
-        std::unique_ptr<formula_node> pair) :
+        formula_node &pair) :
         formula_node(std::move(location)), lhs(std::move(lhs))
     {
-        formula_arguments *pair_ = dynamic_cast<formula_arguments *>(pair.get());
-        hi_assert(pair_ != nullptr);
-        hi_assert(pair_->args.size() == 2);
+        formula_arguments &pair_ = dynamic_cast<formula_arguments &>(pair);
+        hi_assert(pair_.args.size() == 2);
 
-        rhs_true = std::move(pair_->args[0]);
-        rhs_false = std::move(pair_->args[1]);
+        rhs_true = std::move(pair_.args[0]);
+        rhs_false = std::move(pair_.args[1]);
         // The unique_ptrs inside pair_ are now empty.
     }
 

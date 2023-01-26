@@ -85,6 +85,8 @@ enum class graphic_character_t {
 
 [[nodiscard]] constexpr uint64_t operator_to_int(char const *s) noexcept
 {
+    hi_axiom_not_null(s);
+
     uint64_t r = 0;
     for (; *s != '\0'; s++) {
         r <<= 5;
