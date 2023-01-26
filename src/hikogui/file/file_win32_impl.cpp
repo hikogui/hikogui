@@ -170,13 +170,10 @@ void file_win32::rename(std::filesystem::path const& destination, bool overwrite
 
     hilet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
 
-    auto rename_info = reinterpret_cast<PFILE_RENAME_INFO>(std::malloc(rename_info_size));
-    if (rename_info == nullptr) {
-        throw std::bad_alloc();
-    }
-    hilet d = defer{[&] {
-        free(rename_info);
-    }};
+    auto rename_info_alloc = std::string{};
+    rename_info_alloc.resize(rename_info_size);
+
+    auto rename_info = reinterpret_cast<PFILE_RENAME_INFO>(rename_info_alloc.data());
 
     rename_info->ReplaceIfExists = overwrite_existing;
     rename_info->RootDirectory = nullptr;

@@ -11,6 +11,11 @@
 #include "log.hpp"
 #include "terminate.hpp"
 
+hi_warning_push();
+// C26400: Do not assign the result of an allocation or a function cal with an owner<T> return value to... (i11)
+// For compatibility reasons we work with raw pointers here.
+hi_warning_ignore_msvc(26400);
+
 namespace hi::inline v1 {
 
 std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
@@ -75,3 +80,5 @@ int crt_finish(int argc, char **argv, int exit_code)
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

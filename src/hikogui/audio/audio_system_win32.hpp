@@ -25,10 +25,10 @@ public:
     audio_system_win32();
     virtual ~audio_system_win32();
 
-    [[nodiscard]] generator<audio_device *> devices() noexcept override
+    [[nodiscard]] generator<audio_device &> devices() noexcept override
     {
         for (hilet &device : _devices) {
-            co_yield device.get();
+            co_yield *device;
         }
     }
 

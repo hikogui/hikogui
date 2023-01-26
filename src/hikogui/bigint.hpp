@@ -306,6 +306,8 @@ struct bigint {
 
     static bigint from_big_endian(uint8_t const *data) noexcept
     {
+        hi_axiom_not_null(data);
+
         auto r = bigint{};
         for (ssize_t i = static_cast<ssize_t>(num_digits) - 1; i >= 0; i--) {
             digit_type d = 0;

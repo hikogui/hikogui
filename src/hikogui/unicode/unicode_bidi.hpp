@@ -66,14 +66,14 @@ struct unicode_bidi_char_info {
     unicode_bidi_class bidi_class;
 
     [[nodiscard]] unicode_bidi_char_info(std::size_t index, char32_t code_point, unicode_description const *description) noexcept
-        :
-        index(index),
-        description(description),
-        code_point(code_point),
-        embedding_level(0),
-        direction(description->bidi_class()),
-        bidi_class(description->bidi_class())
     {
+        hi_axiom_not_null(description);
+        this->index = index;
+        this->description = description;
+        this->code_point = code_point;
+        this->embedding_level = 0;
+        this->direction = description->bidi_class();
+        this->bidi_class = description->bidi_class();
     }
 
     /** Constructor for testing to bypass normal initialization.

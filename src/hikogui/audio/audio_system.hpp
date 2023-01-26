@@ -39,7 +39,7 @@ public:
      *
      * @return A generator-coroutine object that can be iterated over.
      */
-    [[nodiscard]] virtual generator<audio_device *> devices() noexcept = 0;
+    [[nodiscard]] virtual generator<audio_device &> devices() noexcept = 0;
 
     /** Subscribe a function to be called when the device list changes.
      *

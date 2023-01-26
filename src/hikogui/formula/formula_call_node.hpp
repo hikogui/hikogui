@@ -12,12 +12,11 @@ struct formula_call_node final : formula_node {
     std::unique_ptr<formula_node> lhs;
     formula_vector args;
 
-    formula_call_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
+    formula_call_node(parse_location location, std::unique_ptr<formula_node> lhs, formula_node &rhs) :
         formula_node(std::move(location)), lhs(std::move(lhs))
     {
-        auto rhs_ = dynamic_cast<formula_arguments *>(rhs.get());
-        hi_assert(rhs_ != nullptr);
-        args = std::move(rhs_->args);
+        auto &rhs_ = dynamic_cast<formula_arguments &>(rhs);
+        args = std::move(rhs_.args);
     }
 
     void post_process(formula_post_process_context &context) override

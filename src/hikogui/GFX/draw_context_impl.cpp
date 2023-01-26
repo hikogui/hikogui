@@ -87,8 +87,8 @@ draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& bo
         return false;
     }
 
-    hilet pipeline = down_cast<gfx_device_vulkan&>(device).image_pipeline.get();
-    pipeline->place_vertices(*_image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
+    auto &pipeline = *down_cast<gfx_device_vulkan&>(device).image_pipeline;
+    pipeline.place_vertices(*_image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
     return true;
 }
 
@@ -99,7 +99,7 @@ void draw_context::_draw_glyph(
     draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
-    hilet pipeline = down_cast<gfx_device_vulkan&>(device).SDF_pipeline.get();
+    auto &pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
 
     if (_sdf_vertices->full()) {
         auto box_attributes = attributes;
@@ -110,10 +110,10 @@ void draw_context::_draw_glyph(
     }
 
     hilet atlas_was_updated =
-        pipeline->place_vertices(*_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, glyph, attributes.fill_color);
+        pipeline.place_vertices(*_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, glyph, attributes.fill_color);
 
     if (atlas_was_updated) {
-        pipeline->prepare_atlas_for_rendering();
+        pipeline.prepare_atlas_for_rendering();
     }
 }
 
@@ -124,7 +124,7 @@ void draw_context::_draw_text(
     draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
-    hilet pipeline = down_cast<gfx_device_vulkan&>(device).SDF_pipeline.get();
+    auto &pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
 
     auto atlas_was_updated = false;
     for (hilet& c : text) {
@@ -143,12 +143,12 @@ void draw_context::_draw_text(
             break;
         }
 
-        atlas_was_updated |= pipeline->place_vertices(
+        atlas_was_updated |= pipeline.place_vertices(
             *_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, c.glyph, color);
     }
 
     if (atlas_was_updated) {
-        pipeline->prepare_atlas_for_rendering();
+        pipeline.prepare_atlas_for_rendering();
     }
 }
 

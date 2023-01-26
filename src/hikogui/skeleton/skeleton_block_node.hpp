@@ -18,10 +18,10 @@ struct skeleton_block_node final : skeleton_node {
     skeleton_block_node(
         parse_location location,
         formula_post_process_context &context,
-        std::unique_ptr<formula_node> name_expression) noexcept :
-        skeleton_node(std::move(location)), name(name_expression->get_name())
+        formula_node const &name_expression) noexcept :
+        skeleton_node(std::move(location)), name(name_expression.get_name())
     {
-        name = name_expression->get_name();
+        name = name_expression.get_name();
 
         super_function =
             context.set_function(name, [&](formula_evaluation_context &context, datum::vector_type const &arguments) {

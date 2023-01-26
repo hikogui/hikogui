@@ -143,7 +143,7 @@ struct skeleton_parse_context {
 
     [[nodiscard]] bool found_while(parse_location location, std::unique_ptr<formula_node> expression) noexcept;
 
-    void include(parse_location location, std::unique_ptr<formula_node> expression);
+    void include(parse_location location, formula_node &expression);
 };
 
 } // namespace hi::inline v1
