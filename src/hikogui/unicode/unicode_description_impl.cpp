@@ -56,6 +56,9 @@ namespace hi::inline v1 {
         } while (tmp == 0);
 
         return r;
+
+    } else {
+        return r;
     }
 }
 

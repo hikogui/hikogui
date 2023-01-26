@@ -65,7 +65,7 @@ RenderDoc::RenderDoc() noexcept
 
 void RenderDoc::set_overlay(bool frameRate, bool frameNumber, bool captureList) noexcept
 {
-    if (!api) {
+    if (not api) {
         return;
     }
 
@@ -96,10 +96,10 @@ void RenderDoc::set_overlay(bool frameRate, bool frameNumber, bool captureList) 
         and_mask |= eRENDERDOC_Overlay_CaptureList;
     }
 
-    auto *api_ = reinterpret_cast<RENDERDOC_API_1_4_1 *>(api);
+    auto &api_ = *reinterpret_cast<RENDERDOC_API_1_4_1 *>(api);
 
     and_mask = ~and_mask;
-    api_->MaskOverlayBits(and_mask, or_mask);
+    api_.MaskOverlayBits(and_mask, or_mask);
 }
 
 } // namespace hi::inline v1

@@ -24,9 +24,9 @@ audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio
         {
             auto proxy = _device_list.copy();
             proxy->clear();
-            for (auto device : _audio_system->devices()) {
-                if (device->state() == hi::audio_device_state::active and to_bool(device->direction() & *direction)) {
-                    proxy->emplace_back(device->id(), device->label());
+            for (auto &device : _audio_system->devices()) {
+                if (device.state() == hi::audio_device_state::active and to_bool(device.direction() & *direction)) {
+                    proxy->emplace_back(device.id(), device.label());
                 }
             }
         }

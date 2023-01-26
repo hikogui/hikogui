@@ -5,6 +5,11 @@
 #include "hikogui/group_ptr.hpp"
 #include <gtest/gtest.h>
 
+hi_warning_push();
+// C26414: Move, copy, reassign or reset a local smart pointer (r.5)
+// We are testing a smart-pointer-like (group_ptr), so we hit this warning explicitely.
+hi_warning_ignore_msvc(26414)
+
 namespace test_group_ptr {
 
 class A : public hi::enable_group_ptr<A> {
@@ -34,7 +39,7 @@ TEST(group_ptr, simple)
 {
     using namespace test_group_ptr;
 
-    hi::group_ptr<A> a;
+    auto a = hi::group_ptr<A>{};
     ASSERT_FALSE(a);
 
     a = std::make_shared<A>(42);
@@ -399,3 +404,5 @@ TEST(group_ptr, notify_three_args)
     ASSERT_EQ(b_count, 3);
     ASSERT_EQ(c_count, 4);
 }
+
+hi_warning_pop();

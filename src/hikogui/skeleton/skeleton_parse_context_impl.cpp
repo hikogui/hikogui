@@ -119,13 +119,13 @@ skeleton_parse_context::found_while(parse_location _location, std::unique_ptr<fo
     }
 }
 
-void skeleton_parse_context::include(parse_location _location, std::unique_ptr<formula_node> expression)
+void skeleton_parse_context::include(parse_location _location, formula_node &expression)
 {
     auto tmp_post_process_context = formula_post_process_context();
-    expression->post_process(tmp_post_process_context);
+    expression.post_process(tmp_post_process_context);
 
     auto evaluation_context = formula_evaluation_context();
-    hilet argument = expression->evaluate(evaluation_context);
+    hilet argument = expression.evaluate(evaluation_context);
 
     auto new_skeleton_path = std::filesystem::current_path();
     if (_location.has_file()) {

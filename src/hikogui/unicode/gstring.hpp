@@ -26,6 +26,7 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr char_type *assign(char_type *p, std::size_t count, char_type a) noexcept
     {
+        hi_axiom_not_null(p);
         for (std::size_t i = 0; i != count; ++i) {
             p[i] = a;
         }
@@ -44,6 +45,9 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr char_type *move(char_type *dst, char_type const *src, std::size_t count) noexcept
     {
+        hi_axiom_not_null(src);
+        hi_axiom_not_null(dst);
+
         if (src >= dst) {
             for (std::size_t i = 0; i != count; ++i) {
                 dst[i] = src[i];
@@ -58,6 +62,9 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr char_type *copy(char_type *dst, char_type const *src, std::size_t count) noexcept
     {
+        hi_axiom_not_null(src);
+        hi_axiom_not_null(dst);
+
         for (std::size_t i = 0; i != count; ++i) {
             dst[i] = src[i];
         }
@@ -66,6 +73,9 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr int compare(char_type const *s1, char_type const *s2, std::size_t count) noexcept
     {
+        hi_axiom_not_null(s1);
+        hi_axiom_not_null(s2);
+
         for (std::size_t i = 0; i != count; ++i) {
             if (s1[i] != s2[i]) {
                 return s1[i] < s2[i] ? -1 : 1;
@@ -76,6 +86,8 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr std::size_t length(char_type const *s) noexcept
     {
+        hi_axiom_not_null(s);
+
         std::size_t i = 0;
         while (not s[i].empty()) {
             ++i;
@@ -85,6 +97,8 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr char_type const *find(const char_type *p, std::size_t count, const char_type &ch) noexcept
     {
+        hi_axiom_not_null(p);
+
         for (std::size_t i = 0; i != count; ++i, ++p) {
             if (*p == ch) {
                 return p;

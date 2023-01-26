@@ -89,13 +89,13 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
 
     } else if (context.starts_with_and_advance_over("function ")) {
         context.push<skeleton_function_node>(
-            location, context.post_process_context, context.parse_expression_and_advance_over("\n"));
+            location, context.post_process_context, *context.parse_expression_and_advance_over("\n"));
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("block ")) {
         context.push<skeleton_block_node>(
-            location, context.post_process_context, context.parse_expression_and_advance_over("\n"));
+            location, context.post_process_context, *context.parse_expression_and_advance_over("\n"));
 
         context.start_of_text_segment();
 
@@ -125,7 +125,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("include ")) {
-        context.include(location, context.parse_expression_and_advance_over("\n"));
+        context.include(location, *context.parse_expression_and_advance_over("\n"));
         context.start_of_text_segment();
 
     } else { // Add '#' and the current character to text.

@@ -49,14 +49,14 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
-    auto window = std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
+    auto &window = *std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
     hi_axiom(loop::main().on_thread());
 
     // WM_CLOSE and WM_DESTROY will re-enter and run the destructor for `window`.
     // We can no longer call virtual functions on the `window` object.
     if (uMsg == WM_CLOSE) {
         // Listeners can close the window by calling the destructor on `window`.
-        window->closing();
+        window.closing();
         return 0;
 
     } else if (uMsg == WM_DESTROY) {
@@ -69,11 +69,11 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         // Also remove the win32Window from the window, so that we don't get double DestroyWindow().
-        window->win32Window = nullptr;
+        window.win32Window = nullptr;
         return 0;
 
     } else {
-        if (auto result = window->windowProc(uMsg, wParam, lParam); result != -1) {
+        if (auto result = window.windowProc(uMsg, wParam, lParam); result != -1) {
             return result;
         }
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -689,34 +689,34 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_SIZING:
         {
-            hilet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
-            if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
+            hilet &rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
+            if (rect_ptr.right < rect_ptr.left or rect_ptr.bottom < rect_ptr.top) {
                 hi_log_error(
                     "Invalid RECT received on WM_SIZING: left={}, right={}, bottom={}, top={}",
-                    rect_ptr->left,
-                    rect_ptr->right,
-                    rect_ptr->bottom,
-                    rect_ptr->top);
+                    rect_ptr.left,
+                    rect_ptr.right,
+                    rect_ptr.bottom,
+                    rect_ptr.top);
 
             } else {
-                setOSWindowRectangleFromRECT(*rect_ptr);
+                setOSWindowRectangleFromRECT(rect_ptr);
             }
         }
         break;
 
     case WM_MOVING:
         {
-            hilet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
-            if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
+            hilet &rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
+            if (rect_ptr.right < rect_ptr.left or rect_ptr.bottom < rect_ptr.top) {
                 hi_log_error(
                     "Invalid RECT received on WM_MOVING: left={}, right={}, bottom={}, top={}",
-                    rect_ptr->left,
-                    rect_ptr->right,
-                    rect_ptr->bottom,
-                    rect_ptr->top);
+                    rect_ptr.left,
+                    rect_ptr.right,
+                    rect_ptr.bottom,
+                    rect_ptr.top);
 
             } else {
-                setOSWindowRectangleFromRECT(*rect_ptr);
+                setOSWindowRectangleFromRECT(rect_ptr);
             }
         }
         break;

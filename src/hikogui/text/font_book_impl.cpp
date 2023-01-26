@@ -292,6 +292,7 @@ void font_book::post_process() noexcept
 
     // Scan fonts which are fallback to this.
     for (hilet fallback : font.fallback_chain) {
+        hi_axiom_not_null(fallback);
         if (glyph_ids = fallback->find_glyph(g)) {
             _glyph_cache[key] = glyph_ids;
             return glyph_ids;
