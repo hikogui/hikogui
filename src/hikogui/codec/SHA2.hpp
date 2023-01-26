@@ -254,6 +254,9 @@ class SHA2 {
 
     constexpr void add_to_overflow(cbyteptr &ptr, std::byte const *last) noexcept
     {
+        hi_axiom_not_null(ptr);
+        hi_axiom_not_null(last);
+
         while (overflow_it != overflow.end() && ptr != last) {
             *(overflow_it++) = *(ptr++);
         }

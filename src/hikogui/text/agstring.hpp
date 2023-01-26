@@ -76,6 +76,7 @@ struct std::char_traits<hi::agrapheme> {
     static constexpr int compare(char_type const *s1, char_type const *s2, std::size_t count) noexcept
     {
         hi_axiom_not_null(s1);
+        hi_axiom_not_null(s2);
 
         for (std::size_t i = 0; i != count; ++i) {
             if (s1[i] != s2[i]) {
