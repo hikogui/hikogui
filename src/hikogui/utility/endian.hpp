@@ -127,7 +127,7 @@ template<std::integral T>
     }
 }
 
-template<numeric T, same_as_byte B>
+template<numeric T, byte_like B>
 [[nodiscard]] constexpr T load_le(B const *src) noexcept
 {
     return little_to_native(load<T>(src));
@@ -140,7 +140,7 @@ template<numeric T>
 }
 
 
-template<numeric T, same_as_byte B>
+template<numeric T, byte_like B>
 [[nodiscard]] constexpr T load_be(B const *src) noexcept
 {
     return big_to_native(load<T>(src));

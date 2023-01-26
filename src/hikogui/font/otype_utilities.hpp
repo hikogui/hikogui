@@ -82,10 +82,39 @@ template<typename T, std::unsigned_integral Key>
     return item_key == key ? base : nullptr;
 }
 
-template<typename T, std::unsigned_integral Key>
-[[nodiscard]] constexpr T const *otype_search_table(placement_array<T> const &table, Key const& key) noexcept
+static std::optional<std::string> otype_get_string(
+    std::span<std::byte const> bytes,
+    uint16_t platform_id,
+    uint16_t platform_specific_id,
+    uint16_t language_id)
 {
-    return otype_search_table(std::span<T const>(table), key);
+    switch (platform_id) {
+    case 2: // Deprecated, but compatible with unicode.
+    case 0: // Unicode, encoded as UTF-16LE or UTF-16BE (BE is default guess).
+        if (language_id == 0 || language_id == 0xffff) { // Language independent.
+            hi_parse_check(bytes.size() % 2 == 0, "Length in bytes of a name must be multiple of two");
+            return char_converter<"utf-16", "utf-8">{}.read(bytes.data(), bytes.size(), std::endian::big);
+        }
+        break;
+
+    case 1: // Macintosh
+        if (platform_specific_id == 0 && language_id == 0) { // Roman script ASCII, English
+            return char_converter<"utf-8", "utf-8">{}.read(bytes.data(), bytes.size());
+        }
+        break;
+
+    case 3: // Windows
+        if (platform_specific_id == 1 && language_id == 0x409) { // UTF-16BE, English - United States.
+            hi_parse_check(bytes.size() % 2 == 0, "Length in bytes of a name must be multiple of two");
+            return char_converter<"utf-16", "utf-8">{}.read(bytes.data(), bytes.size(), std::endian::big);
+        }
+        break;
+
+    default:
+        break;
+    }
+    return {};
 }
+
 
 }} // namespace hi::v1

@@ -30,8 +30,7 @@ private:
     uint16_t OS2_x_height = 0;
     uint16_t OS2_cap_height = 0;
 
-    float unitsPerEm;
-    float emScale;
+    float _em_scale;
 
     uint16_t numberOfHMetrics;
 
@@ -42,10 +41,12 @@ public:
     {
         ++global_counter<"ttf:map">;
         try {
-            parse_font_directory();
+            _bytes = as_span<std::byte const>(_view);
+            parse_font_directory(_bytes);
 
             // Clear the view to reclaim resources.
             _view = {};
+            _bytes = {};
             ++global_counter<"ttf:unmap">;
 
         } catch (std::exception const &e) {
@@ -98,6 +99,7 @@ public:
     }
 
 private:
+    mutable std::span<std::byte const> _bytes;
     mutable std::span<std::byte const> _cmap_table_bytes;
     mutable std::span<std::byte const> _cmap_bytes;
     mutable std::span<std::byte const> _loca_table_bytes;
@@ -105,19 +107,19 @@ private:
     mutable std::span<std::byte const> _hmtx_table_bytes;
     mutable std::span<std::byte const> _kern_table_bytes;
     mutable std::span<std::byte const> _GSUB_table_bytes;
-    bool _loca_table_is_offset32;
+    bool _loca_is_offset32;
 
-    void cache_tables() const
+    void cache_tables(std::span<std::byte const> bytes) const
     {
-        _cmap_table_bytes = otype_search_sfnt<"cmap">(as_span<std::byte const>(_view));
+        _cmap_table_bytes = otype_search_sfnt<"cmap">(bytes);
         _cmap_bytes = parse_cmap_table_directory();
-        _loca_table_bytes = otype_search_sfnt<"loca">(as_span<std::byte const>(_view));
-        _glyf_table_bytes = otype_search_sfnt<"glyf">(as_span<std::byte const>(_view));
-        _hmtx_table_bytes = otype_search_sfnt<"hmtx">(as_span<std::byte const>(_view));
+        _loca_table_bytes = otype_search_sfnt<"loca">(bytes);
+        _glyf_table_bytes = otype_search_sfnt<"glyf">(bytes);
+        _hmtx_table_bytes = otype_search_sfnt<"hmtx">(bytes);
 
         // Optional tables.
-        _kern_table_bytes = otype_search_sfnt<"kern">(as_span<std::byte const>(_view));
-        _GSUB_table_bytes = otype_search_sfnt<"GSUB">(as_span<std::byte const>(_view));
+        _kern_table_bytes = otype_search_sfnt<"kern">(bytes);
+        _GSUB_table_bytes = otype_search_sfnt<"GSUB">(bytes);
     }
 
     void load_view() const noexcept
@@ -127,8 +129,9 @@ private:
         }
 
         _view = file_view{_path};
+        _bytes = as_span<std::byte const>(_view);
         ++global_counter<"ttf:map">;
-        cache_tables();
+        cache_tables(_bytes);
     }
 
     /** Parses the directory table of the font file.
@@ -136,9 +139,8 @@ private:
      * This function is called by the constructor to set up references
      * inside the file for each table.
      */
-    void parse_font_directory();
+    void parse_font_directory(std::span<std::byte const> bytes);
 
-    void parse_head_table(std::span<std::byte const> headTableBytes);
     void parse_hhea_table(std::span<std::byte const> bytes);
     void parse_name_table(std::span<std::byte const> bytes);
     void parse_OS2_table(std::span<std::byte const> bytes);

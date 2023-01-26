@@ -129,9 +129,11 @@ concept scoped_enum = std::is_enum_v<T>;
 template<typename Context, typename Expected, typename... OtherExpected>
 concept forward_of = is_forward_of_v<Context, Expected, OtherExpected...>;
 
+/** An array of this type will implicitly create objects within that array.
+* 
+* P059R6: Implicit creation of objects for low-level object manipulation.
+*/
 template<typename Context>
-concept same_as_byte =
-    std::same_as<std::remove_const_t<Context>, char> or std::same_as<std::remove_const_t<Context>, unsigned char> or
-    std::same_as<std::remove_const_t<Context>, signed char> or std::same_as<std::remove_const_t<Context>, std::byte>;
+concept byte_like = is_byte_like_v<Context>;
 
 } // namespace hi::inline v1

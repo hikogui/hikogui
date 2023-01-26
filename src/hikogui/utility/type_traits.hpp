@@ -115,11 +115,34 @@ template<> struct is_character<wchar_t> : std::true_type {};
 template<> struct is_character<char8_t> : std::true_type {};
 template<> struct is_character<char16_t> : std::true_type {};
 template<> struct is_character<char32_t> : std::true_type {};
+template<> struct is_character<char const> : std::true_type {};
+template<> struct is_character<wchar_t const> : std::true_type {};
+template<> struct is_character<char8_t const> : std::true_type {};
+template<> struct is_character<char16_t const> : std::true_type {};
+template<> struct is_character<char32_t const> : std::true_type {};
 
 /*! True is the supplied type is a character integer.
 * This distinguishes between integer characters and integer numbers.
 */
 template<typename T> inline constexpr bool is_character_v = is_character<T>::value;
+
+/** An array of this type will implicitly create objects within that array.
+* 
+* P059R6: Implicit creation of objects for low-level object manipulation.
+*/
+template<typename T> struct is_byte_like : std::false_type {};
+template<> struct is_byte_like<char> : std::true_type {};
+template<> struct is_byte_like<unsigned char> : std::true_type {};
+template<> struct is_byte_like<std::byte> : std::true_type {};
+template<> struct is_byte_like<char const> : std::true_type {};
+template<> struct is_byte_like<unsigned char const> : std::true_type {};
+template<> struct is_byte_like<std::byte const> : std::true_type {};
+
+/** An array of this type will implicitly create objects within that array.
+* 
+* P059R6: Implicit creation of objects for low-level object manipulation.
+*/
+template<typename T> inline constexpr bool is_byte_like_v = is_byte_like<T>::value;
 
 /** type-trait to convert a character to a string type.
  */

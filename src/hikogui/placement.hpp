@@ -28,7 +28,7 @@ public:
 
     using value_type = T;
 
-    template<same_as_byte Byte>
+    template<byte_like Byte>
     placement_ptr(std::span<Byte> bytes, std::size_t& offset)
     {
         if (offset + sizeof(value_type) > bytes.size()) {
@@ -91,7 +91,7 @@ public:
     using reference = container_type::reference;
     using pointer = container_type::pointer;
 
-    template<same_as_byte Byte>
+    template<byte_like Byte>
     placement_array(std::span<Byte> bytes, std::size_t& offset, std::size_t n)
     {
         if (offset + n * sizeof(T) > bytes.size()) {
@@ -144,27 +144,27 @@ private:
     std::span<value_type> _items;
 };
 
-template<typename T, same_as_byte Byte>
+template<typename T, byte_like Byte>
 [[nodiscard]] auto make_placement_array(std::span<Byte> bytes, std::size_t& offset, std::size_t n)
 {
     return placement_array<copy_cv_t<T, Byte>>(bytes, offset, n);
 }
 
-template<typename T, same_as_byte Byte>
+template<typename T, byte_like Byte>
 [[nodiscard]] auto make_placement_array(std::span<Byte> bytes, std::size_t&& offset, std::size_t n)
 {
     std::size_t _offset = offset;
     return make_placement_array<T>(bytes, _offset, n);
 }
 
-template<typename T, same_as_byte Byte>
+template<typename T, byte_like Byte>
 [[nodiscard]] auto make_placement_array(std::span<Byte> bytes, std::size_t& offset)
 {
     hilet n = bytes.size() / ssizeof(T);
     return make_placement_array<T>(bytes, offset, n);
 }
 
-template<typename T, same_as_byte Byte>
+template<typename T, byte_like Byte>
 [[nodiscard]] auto make_placement_array(std::span<Byte> bytes, std::size_t&& offset = 0)
 {
     std::size_t _offset = offset;

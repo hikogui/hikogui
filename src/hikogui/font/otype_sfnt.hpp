@@ -13,7 +13,7 @@ namespace hi {
 inline namespace v1 {
 
 template<fixed_string Name>
-[[nodiscard]] std::span<std::byte const> otype_search_sfnt(std::span<std::byte const> data)
+[[nodiscard]] std::span<std::byte const> otype_search_sfnt(std::span<std::byte const> bytes)
 {
     struct header_type {
         big_uint32_buf_t scaler_type;
@@ -31,16 +31,16 @@ template<fixed_string Name>
     };
 
     std::size_t offset = 0;
-    hilet header = make_placement_ptr<header_type>(data, offset);
+    hilet& header = implicit_cast<header_type>(offset, bytes);
 
-    if (not (*header->scaler_type == "true"_fcc or *header->scaler_type == 0x00010000)) {
+    if (not (*header.scaler_type == "true"_fcc or *header.scaler_type == 0x00010000)) {
         throw parse_error("sfnt.scalerType is not 'true' or 0x00010000");
     }
 
-    hilet entries = make_placement_array<entry_type>(data, offset, *header->num_tables);
+    hilet entries = implicit_cast<entry_type>(offset, bytes, *header.num_tables);
 
     if (auto entry = otype_search_table(entries, fourcc<Name>())) {
-        return data.subspan(*entry->offset, *entry->length);
+        return bytes.subspan(*entry->offset, *entry->length);
     } else {
         return {};
     }

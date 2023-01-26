@@ -260,7 +260,7 @@ inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
 
 /** Make an unaligned load of an unsigned integer.
  */
-template<numeric T, same_as_byte B>
+template<numeric T, byte_like B>
 [[nodiscard]] constexpr T load(B const *src) noexcept
 {
     auto r = T{};
@@ -291,7 +291,7 @@ template<numeric T>
     return load<T>(reinterpret_cast<std::byte const *>(src));
 }
 
-template<numeric T, same_as_byte B>
+template<numeric T, byte_like B>
 [[nodiscard]] constexpr void store(T src, B *dst) noexcept
 {
     using unsigned_type = std::make_unsigned_t<T>;
