@@ -15,18 +15,14 @@ struct sip_hash_seed_type {
     uint64_t k0;
     uint64_t k1;
 
-    sip_hash_seed_type(uint64_t k0, uint64_t k1) noexcept :
-        k0(k0), k1(k1)
-    {
-    }
+    sip_hash_seed_type(uint64_t k0, uint64_t k1) noexcept : k0(k0), k1(k1) {}
 
     sip_hash_seed_type() noexcept : sip_hash_seed_type(seed<uint64_t>{}(), seed<uint64_t>{}()) {}
 };
 
 inline auto sip_hash_seed = sip_hash_seed_type();
 
-struct sip_hash_seed_tag {
-};
+struct sip_hash_seed_tag {};
 
 } // namespace detail
 
@@ -38,10 +34,7 @@ public:
     constexpr sip_hash& operator=(sip_hash const&) noexcept = default;
     constexpr sip_hash& operator=(sip_hash&&) noexcept = default;
 
-    sip_hash(detail::sip_hash_seed_tag) noexcept :
-        sip_hash(detail::sip_hash_seed.k0, detail::sip_hash_seed.k1)
-    {
-    }
+    sip_hash(detail::sip_hash_seed_tag) noexcept : sip_hash(detail::sip_hash_seed.k0, detail::sip_hash_seed.k1) {}
 
     /** Create a sip_hash initialized with the global initialized key.
      */
@@ -100,7 +93,11 @@ public:
         // If a partial 64-bit word was already submitted, complete that word.
         if (hilet offset = _b & 7) {
             hilet num_bytes = std::min(8_uz - offset, size);
-            unaligned_load_le(m, src, num_bytes, offset);
+
+            // Accumulate remaining bytes in m.
+            for (auto i = offset; i != offset + num_bytes; ++i) {
+                m |= char_cast<uint64_t>(src[i]) << (i * CHAR_BIT);
+            }
 
             if (offset + num_bytes == 8) {
                 _compress(v0, v1, v2, v3, std::exchange(m, 0));
@@ -119,8 +116,8 @@ public:
         }
 
         // Add the incomplete word in the state, to be compressed later.
-        if (todo) {
-            unaligned_load_le(m, src, todo);
+        for (auto i = 0_uz; i != todo; ++i) {
+            m |= char_cast<uint64_t>(src[i]) << (i * CHAR_BIT);
         }
 
         _v0 = v0;
@@ -161,7 +158,10 @@ public:
 
         // The length, and 0 to 7 of the last bytes from the src.
         m = wide_cast<uint64_t>(size & 0xff) << 56;
-        unaligned_load_le(m, src, size & 7);
+
+        for (auto i = 0_uz; i != (size & 7); ++i) {
+            m |= char_cast<uint64_t>(src[i]) << (i * CHAR_BIT);
+        }
         _compress(v0, v1, v2, v3, m);
         _finalize(v0, v1, v2, v3);
 
@@ -256,7 +256,7 @@ struct sip_hash24 {
 };
 
 template<typename CharT, typename CharTrait>
-struct sip_hash24<std::basic_string_view<CharT,CharTrait>> {
+struct sip_hash24<std::basic_string_view<CharT, CharTrait>> {
     [[nodiscard]] uint64_t operator()(std::basic_string_view<CharT, CharTrait> const& rhs) const noexcept
     {
         return _sip_hash24{}(rhs.data(), rhs.size());

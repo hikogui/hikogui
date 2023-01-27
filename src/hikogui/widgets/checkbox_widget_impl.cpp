@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "checkbox_widget.hpp"
-#include "../text/font_book.hpp"
+#include "../font/module.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 
 namespace hi::inline v1 {

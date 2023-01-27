@@ -63,54 +63,54 @@ template<typename DerivedType, typename BaseType>
 concept decayed_derived_from = hi::is_decayed_derived_from_v<DerivedType, BaseType>;
 
 template<typename BaseType, typename DerivedType>
-concept strict_base_of = base_of<BaseType, DerivedType> && !std::same_as<BaseType, DerivedType>;
+concept strict_base_of = base_of<BaseType, DerivedType> && !
+std::same_as<BaseType, DerivedType>;
 
 template<typename BaseType, typename DerivedType>
-concept strict_derived_from = derived_from<BaseType, DerivedType> && !std::same_as<BaseType, DerivedType>;
+concept strict_derived_from = derived_from<BaseType, DerivedType> && !
+std::same_as<BaseType, DerivedType>;
 
 template<typename T>
-concept pre_incrementable = requires(T a)
-{
-    {++a};
-};
+concept pre_incrementable = requires(T a) {
+                                {
+                                    ++a
+                                };
+                            };
 
 template<typename T>
-concept pre_decrementable = requires(T a)
-{
-    {--a};
-};
+concept pre_decrementable = requires(T a) {
+                                {
+                                    --a
+                                };
+                            };
 
 template<typename T>
-concept to_stringable = requires(T v)
-{
-    {
-        to_string(v)
-        } -> std::convertible_to<std::string>;
-};
+concept to_stringable = requires(T v) {
+                            {
+                                to_string(v)
+                                } -> std::convertible_to<std::string>;
+                        };
 
 template<typename T>
-concept from_stringable = requires()
-{
-    {
-        from_string<T>(std::string_view{})
-        } -> std::convertible_to<T>;
-};
+concept from_stringable = requires() {
+                              {
+                                  from_string<T>(std::string_view{})
+                                  } -> std::convertible_to<T>;
+                          };
 
 template<typename From, typename To>
-concept static_castableable = requires(From v)
-{
-    {
-        static_cast<To>(v)
-        } -> std::convertible_to<To>;
-};
+concept static_castableable = requires(From v) {
+                                  {
+                                      static_cast<To>(v)
+                                      } -> std::convertible_to<To>;
+                              };
 
 template<typename T>
-concept sizeable = requires(T v)
-{
-    {
-        size(v)
-        } -> std::convertible_to<std::size_t>;
-};
+concept sizeable = requires(T v) {
+                       {
+                           size(v)
+                           } -> std::convertible_to<std::size_t>;
+                   };
 
 template<typename T>
 concept scalar = std::is_scalar_v<T>;
@@ -128,5 +128,12 @@ concept scoped_enum = std::is_enum_v<T>;
  */
 template<typename Context, typename Expected, typename... OtherExpected>
 concept forward_of = is_forward_of_v<Context, Expected, OtherExpected...>;
+
+/** An array of this type will implicitly create objects within that array.
+* 
+* P059R6: Implicit creation of objects for low-level object manipulation.
+*/
+template<typename Context>
+concept byte_like = is_byte_like_v<Context>;
 
 } // namespace hi::inline v1

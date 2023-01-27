@@ -17,6 +17,36 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/color/Rec2100.hpp
     ${HIKOGUI_SOURCE_DIR}/color/semantic_color.hpp
     ${HIKOGUI_SOURCE_DIR}/color/sRGB.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/global_state.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/rcu.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_mutex.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_recursive_mutex.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/subsystem.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/thread.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/elusive_icon.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_book.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_family_id.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_grapheme_id.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_metrics.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_variant.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_weight.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/glyph_atlas_info.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/glyph_id.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/glyph_ids.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/glyph_metrics.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/hikogui_icon.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_utilities.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_head.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_hhea.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_maxp.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_name.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_os2.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_sfnt.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/true_type_font.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/alignment.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/axis.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/axis_aligned_rectangle.hpp
@@ -66,15 +96,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_simd_utility.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_sse2.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/global_state.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/rcu.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/module.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_mutex.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_recursive_mutex.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/subsystem.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/thread.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/architecture.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast.hpp

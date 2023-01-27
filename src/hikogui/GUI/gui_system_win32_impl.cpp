@@ -6,7 +6,7 @@
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
 #include "../GFX/gfx_system_vulkan.hpp"
-#include "../text/font_book.hpp"
+#include "../font/module.hpp"
 #include "../file/path_location.hpp"
 #include "../file/URL.hpp"
 #include "../trace.hpp"

@@ -289,7 +289,7 @@
     <Type Name="hi::v1::endian_buf_t&lt;short,1,1&gt;">
         <DisplayString>{static_cast&lt;int16_t&gt;(_value[0] * 256 + _value[1])}</DisplayString>
     </Type>
-    <Type Name="hi::v1::FWord_buf_t">
+    <Type Name="hi::v1::otype_fword_buf_t">
         <DisplayString>{static_cast&lt;int16_t&gt;(x._value[0] * 256 + x._value[1])}</DisplayString>
     </Type>
 </AutoVisualizer>

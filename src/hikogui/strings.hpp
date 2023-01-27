@@ -322,19 +322,14 @@ template<typename T, size_t N>
     return r;
 }
 
-template<typename T>
-[[nodiscard]] constexpr uint32_t fourcc_from_cstr(T const *txt) noexcept requires(sizeof(T) == 1)
+[[nodiscard]] constexpr uint32_t fourcc_from_cstr(char const *txt) noexcept
 {
     hi_assert_not_null(txt);
-    auto r = uint32_t{};
-    r |= truncate<uint8_t>(txt[0]);
-    r <<= 8;
-    r |= truncate<uint8_t>(txt[1]);
-    r <<= 8;
-    r |= truncate<uint8_t>(txt[2]);
-    r <<= 8;
-    r |= truncate<uint8_t>(txt[3]);
-    return r;
+    return
+        (char_cast<uint32_t>(txt[0]) << 24) |
+        (char_cast<uint32_t>(txt[1]) << 16) |
+        (char_cast<uint32_t>(txt[2]) << 8) |
+        char_cast<uint32_t>(txt[3]);
 }
 
 [[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept

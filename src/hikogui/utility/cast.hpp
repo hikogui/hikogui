@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <concepts>
 #include <climits>
+#include <span>
 
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
@@ -396,9 +397,103 @@ template<typename T>
 }
 
 template<typename T>
-[[nodiscard]] inline std::intptr_t to_int(T *ptr) noexcept
+[[nodiscard]] std::intptr_t to_int(T *ptr) noexcept
 {
     return reinterpret_cast<std::intptr_t>(ptr);
+}
+
+template<typename T, byte_like Byte>
+[[nodiscard]] copy_cv_t<T, Byte>& implicit_cast(std::span<Byte> bytes)
+{
+    using value_type = copy_cv_t<T, Byte>;
+
+    static_assert(std::is_trivially_default_constructible_v<value_type>);
+    static_assert(std::is_trivially_destructible_v<value_type>);
+
+    if (sizeof(value_type) > bytes.size()) {
+        throw std::bad_cast();
+    }
+    hi_axiom_not_null(bytes.data()); 
+
+    if constexpr (alignof(value_type) != 1) {
+        if (std::bit_cast<std::uintptr_t>(bytes.data()) % alignof(value_type) != 0) {
+            throw std::bad_cast();
+        }
+    }
+
+    return *reinterpret_cast<value_type *>(bytes.data());
+}
+
+template<typename T, byte_like Byte>
+[[nodiscard]] std::span<copy_cv_t<T, Byte>> implicit_cast(std::span<Byte> bytes, size_t n)
+{
+    using value_type = copy_cv_t<T, Byte>;
+
+    static_assert(std::is_trivially_default_constructible_v<value_type>);
+    static_assert(std::is_trivially_destructible_v<value_type>);
+
+    if (sizeof(value_type) * n > bytes.size()) {
+        throw std::bad_cast();
+    }
+    hi_axiom_not_null(bytes.data());
+
+    if constexpr (alignof(value_type) != 1) {
+        if (std::bit_cast<std::uintptr_t>(bytes.data()) % alignof(value_type) != 0) {
+            throw std::bad_cast();
+        }
+    }
+
+    return {reinterpret_cast<value_type *>(bytes.data()), n};
+}
+
+template<typename T, byte_like Byte>
+[[nodiscard]] copy_cv_t<T, Byte>& implicit_cast(size_t& offset, std::span<Byte> bytes)
+{
+    using value_type = copy_cv_t<T, Byte>;
+
+    static_assert(std::is_trivially_default_constructible_v<value_type>);
+    static_assert(std::is_trivially_destructible_v<value_type>);
+
+    if (sizeof(value_type) + offset > bytes.size()) {
+        throw std::bad_cast();
+    }
+    hi_axiom_not_null(bytes.data());
+
+    hilet data = bytes.data() + offset;
+
+    if constexpr (alignof(value_type) != 1) {
+        if (std::bit_cast<std::uintptr_t>(data) % alignof(value_type) != 0) {
+            throw std::bad_cast();
+        }
+    }
+
+    offset += sizeof(value_type);
+    return *reinterpret_cast<value_type *>(data);
+}
+
+template<typename T, byte_like Byte>
+[[nodiscard]] std::span<copy_cv_t<T, Byte>> implicit_cast(size_t& offset, std::span<Byte> bytes, size_t n)
+{
+    using value_type = copy_cv_t<T, Byte>;
+
+    static_assert(std::is_trivially_default_constructible_v<value_type>);
+    static_assert(std::is_trivially_destructible_v<value_type>);
+
+    if (sizeof(value_type) * n + offset > bytes.size()) {
+        throw std::bad_cast();
+    }
+    hi_axiom_not_null(bytes.data());
+
+    hilet data = bytes.data() + offset;
+
+    if constexpr (alignof(value_type) != 1) {
+        if (std::bit_cast<std::uintptr_t>(data) % alignof(value_type) != 0) {
+            throw std::bad_cast();
+        }
+    }
+
+    offset += sizeof(value_type) * n;
+    return {reinterpret_cast<value_type *>(data), n};
 }
 
 } // namespace hi::inline v1

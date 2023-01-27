@@ -9,6 +9,7 @@
 #include "geometry/module.hpp"
 #include "SIMD/module.hpp"
 #include "char_maps/module.hpp"
+#include "font/module.hpp"
 #include "concurrency/module.hpp"
 #include "utility/module.hpp"
 

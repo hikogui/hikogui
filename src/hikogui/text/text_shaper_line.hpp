@@ -5,7 +5,7 @@
 #pragma once
 
 #include "text_shaper_char.hpp"
-#include "font_metrics.hpp"
+#include "../font/module.hpp"
 #include "../unicode/unicode_bidi_class.hpp"
 #include "../geometry/module.hpp"
 #include <vector>

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "math.hpp"
+#include "concepts.hpp"
 #include <concepts>
 #include <memory>
 #include <vector>
@@ -164,8 +165,6 @@ constexpr bool is_aligned(T *p)
     return (reinterpret_cast<ptrdiff_t>(p) % std::alignment_of<T>::value) == 0;
 }
 
-
-
 template<typename T>
 constexpr T *ceil(T *ptr, std::size_t alignment) noexcept
 {
@@ -261,8 +260,8 @@ inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
 
 /** Make an unaligned load of an unsigned integer.
  */
-template<numeric T>
-[[nodiscard]] hi_force_inline constexpr T load(uint8_t const *src) noexcept
+template<numeric T, byte_like B>
+[[nodiscard]] constexpr T load(B const *src) noexcept
 {
     auto r = T{};
 
@@ -275,19 +274,25 @@ template<numeric T>
     if constexpr (std::endian::native == std::endian::little) {
         for (auto i = sizeof(T); i != 0; --i) {
             r <<= 8;
-            r |= src[i-1];
+            r |= static_cast<uint8_t>(src[i - 1]);
         }
     } else {
         for (auto i = 0; i != sizeof(T); ++i) {
             r <<= 8;
-            r |= src[i];
+            r |= static_cast<uint8_t>(src[i]);
         }
     }
     return r;
 }
 
 template<numeric T>
-[[nodiscard]] hi_force_inline constexpr void store(T src, uint8_t const *dst) noexcept
+[[nodiscard]] inline T load(void const *src) noexcept
+{
+    return load<T>(reinterpret_cast<std::byte const *>(src));
+}
+
+template<numeric T, byte_like B>
+[[nodiscard]] constexpr void store(T src, B *dst) noexcept
 {
     using unsigned_type = std::make_unsigned_t<T>;
 
@@ -295,7 +300,7 @@ template<numeric T>
 
     if (not std::is_constant_evaluated()) {
 #if HI_COMPILER == HI_CC_MSVC
-        *reinterpret_cast<__unaligned unsigned_type const *>(dst) = src_;
+        *reinterpret_cast<__unaligned unsigned_type *>(dst) = src_;
         return;
 #else
         std::memcpy(dst, &src, sizeof(T));
@@ -305,15 +310,21 @@ template<numeric T>
 
     if constexpr (std::endian::native == std::endian::little) {
         for (auto i = 0; i != sizeof(T); ++i) {
-            dst[i] = static_cast<uint8_t>(src_);
+            dst[i] = static_cast<B>(src_);
             src_ >>= 8;
         }
     } else {
         for (auto i = sizeof(T); i != 0; --i) {
-            dst[i] = static_cast<uint8_t>(src_);
+            dst[i - 1] = static_cast<B>(src_);
             src_ >>= 8;
         }
     }
+}
+
+template<numeric T>
+[[nodiscard]] inline void store(T src, void *dst) noexcept
+{
+    return store(src, reinterpret_cast<std::byte *>(dst));
 }
 
 template<numeric T>

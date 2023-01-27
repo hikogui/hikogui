@@ -9,7 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../text/glyph_ids.hpp"
+#include "../font/module.hpp"
 #include <memory>
 #include <string>
 #include <array>

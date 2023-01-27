@@ -97,8 +97,8 @@ void png::read_IHDR(std::span<std::byte const> bytes)
 {
     hilet ihdr = make_placement_ptr<IHDR>(bytes);
 
-    _width = ihdr->width.value();
-    _height = ihdr->height.value();
+    _width = *ihdr->width;
+    _height = *ihdr->height;
     _bit_depth = ihdr->bit_depth;
     _color_type = ihdr->color_type;
     _compression_method = ihdr->compression_method;
@@ -138,14 +138,14 @@ void png::read_cHRM(std::span<std::byte const> bytes)
     hilet chrm = make_placement_ptr<cHRM>(bytes);
 
     hilet color_to_XYZ = color_primaries_to_RGBtoXYZ(
-        narrow_cast<float>(chrm->white_point_x.value()) / 100'000.0f,
-        narrow_cast<float>(chrm->white_point_y.value()) / 100'000.0f,
-        narrow_cast<float>(chrm->red_x.value()) / 100'000.0f,
-        narrow_cast<float>(chrm->red_y.value()) / 100'000.0f,
-        narrow_cast<float>(chrm->green_x.value()) / 100'000.0f,
-        narrow_cast<float>(chrm->green_y.value()) / 100'000.0f,
-        narrow_cast<float>(chrm->blue_x.value()) / 100'000.0f,
-        narrow_cast<float>(chrm->blue_y.value()) / 100'000.0f);
+        narrow_cast<float>(*chrm->white_point_x) / 100'000.0f,
+        narrow_cast<float>(*chrm->white_point_y) / 100'000.0f,
+        narrow_cast<float>(*chrm->red_x) / 100'000.0f,
+        narrow_cast<float>(*chrm->red_y) / 100'000.0f,
+        narrow_cast<float>(*chrm->green_x) / 100'000.0f,
+        narrow_cast<float>(*chrm->green_y) / 100'000.0f,
+        narrow_cast<float>(*chrm->blue_x) / 100'000.0f,
+        narrow_cast<float>(*chrm->blue_y) / 100'000.0f);
 
     _color_to_sRGB = XYZ_to_sRGB * color_to_XYZ;
 }
@@ -153,7 +153,7 @@ void png::read_cHRM(std::span<std::byte const> bytes)
 void png::read_gAMA(std::span<std::byte const> bytes)
 {
     hilet gama = make_placement_ptr<gAMA>(bytes);
-    hilet gamma = narrow_cast<float>(gama->gamma.value()) / 100'000.0f;
+    hilet gamma = narrow_cast<float>(*gama->gamma) / 100'000.0f;
     hi_parse_check(gamma != 0.0f, "Gamma value can not be zero");
 
     generate_gamma_transfer_function(1.0f / gamma);
@@ -209,7 +209,7 @@ void png::read_chunks(std::span<std::byte const> bytes, std::size_t &offset)
 
     while (!has_IEND) {
         hilet header = make_placement_ptr<ChunkHeader>(bytes, offset);
-        hilet length = narrow_cast<ssize_t>(header->length.value());
+        hilet length = narrow_cast<ssize_t>(*header->length);
         hi_parse_check(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
         hi_parse_check(offset + length + ssizeof(uint32_t) <= bytes.size(), "Chuck extents beyond file.");
 

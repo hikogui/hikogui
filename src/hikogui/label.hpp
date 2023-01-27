@@ -12,9 +12,7 @@
 #include "i18n/translate.hpp"
 #include "unicode/gstring.hpp"
 #include "image/module.hpp"
-#include "text/glyph_ids.hpp"
-#include "text/elusive_icon.hpp"
-#include "text/hikogui_icon.hpp"
+#include "font/module.hpp"
 #include <string>
 #include <type_traits>
 #include <memory>
