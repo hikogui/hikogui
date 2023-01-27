@@ -81,7 +81,7 @@ public:
      *
      * @param other The vector to move.
      */
-    lean_vector(lean_vector&& other) noexcept
+    lean_vector(lean_vector&& other)
     {
         if (other._is_short()) {
             hilet other_size = other._short_size();

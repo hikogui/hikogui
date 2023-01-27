@@ -33,7 +33,7 @@ public:
         x.data_ = 0;
     }
 
-    MoveOnly& operator=(MoveOnly&& x) noexcept
+    MoveOnly& operator=(MoveOnly&& x)
     {
         data_ = x.data_;
         x.data_ = 0;
@@ -125,7 +125,7 @@ struct EmplaceConstructibleMoveableAndAssignable {
 struct Throws {
     Throws() : v_(0) {}
     Throws(int v) : v_(v) {}
-    Throws(const Throws& rhs) noexcept : v_(rhs.v_)
+    Throws(const Throws& rhs) : v_(rhs.v_)
     {
         if (sThrows)
             throw 1;
