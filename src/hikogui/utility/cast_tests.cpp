@@ -10,6 +10,7 @@
 namespace cast_tests {
 
 struct A {
+    virtual ~A() = default;
     virtual int foo() const
     {
         return 42;

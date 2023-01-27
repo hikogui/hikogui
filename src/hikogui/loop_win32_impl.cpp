@@ -139,7 +139,7 @@ public:
         hi_axiom(on_thread());
     }
 
-    int resume(std::stop_token stop_token) noexcept
+    int resume(std::stop_token stop_token) noexcept override
     {
         // Once the loop is resuming, all other calls should be from the same thread.
         _thread_id = current_thread_id();
@@ -188,7 +188,7 @@ public:
         return *_exit_code;
     }
 
-    void resume_once(bool block) noexcept
+    void resume_once(bool block) noexcept override
     {
         using namespace std::chrono_literals;
 

@@ -11,6 +11,8 @@ class gui_system;
 
 class gui_system_delegate {
 public:
+    virtual ~gui_system_delegate() = default;
+
     [[nodiscard]] virtual void init(gui_system& self) noexcept {};
 
     [[nodiscard]] virtual void deinit(gui_system& self) noexcept {};

@@ -27,8 +27,8 @@ private:
      */
     mutable file_view _view;
 
-    uint16_t OS2_x_height = 0;
-    uint16_t OS2_cap_height = 0;
+    float OS2_x_height = 0;
+    float OS2_cap_height = 0;
 
     float _em_scale;
 
@@ -93,7 +93,7 @@ public:
 
     [[nodiscard]] vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const override;
 
-    virtual void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
+    void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
         const override
     {
     }

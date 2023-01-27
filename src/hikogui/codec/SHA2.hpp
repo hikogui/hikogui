@@ -11,6 +11,11 @@
 #include <cstdint>
 #include <span>
 
+hi_warning_push();
+// C26429: Symbol '' is never tested for nullness, it can be marked as not_null (f.23)
+// False positive reported: https://developercommunity.visualstudio.com/t/C26429-false-positive-on-reference-to-po/10262151
+hi_warning_ignore_msvc(26429);
+
 namespace hi::inline v1 {
 namespace detail::SHA2 {
 
@@ -459,3 +464,5 @@ public:
 };
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

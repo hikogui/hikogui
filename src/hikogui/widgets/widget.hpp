@@ -237,7 +237,7 @@ public:
 
     /** Request the widget to be redrawn on the next frame.
      */
-    void request_redraw() const noexcept
+    virtual void request_redraw() const noexcept
     {
         process_event({gui_event_type::window_redraw, layout().clipping_rectangle_on_window()});
     }

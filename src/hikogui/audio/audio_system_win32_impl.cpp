@@ -12,7 +12,12 @@
 #include "../locked_memory_allocator.hpp"
 #include "../loop.hpp"
 
-namespace hi::inline v1 {
+hi_warning_push();
+// C26435: Function '' should specify exactly one of 'virtual', 'override' or 'final' (c.128)
+// STDMETHOD macro from the win32 API includes virtual.
+hi_warning_ignore_msvc(26435);
+
+namespace hi { inline namespace v1 {
 
 [[nodiscard]] std::unique_ptr<audio_system> audio_system::make_unique() noexcept
 {
@@ -27,9 +32,11 @@ const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 
 class audio_system_win32_notification_client : public IMMNotificationClient {
 public:
+    virtual ~audio_system_win32_notification_client() = default;
+
     audio_system_win32_notification_client(audio_system_win32 *system) : IMMNotificationClient(), _system(system) {}
 
-    STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow, ERole role, LPCWSTR device_id)
+    STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow, ERole role, LPCWSTR device_id) override
     {
         loop::main().wfree_post_function([this]() {
             _system->update_device_list();
@@ -38,7 +45,7 @@ public:
         return S_OK;
     }
 
-    STDMETHOD(OnDeviceAdded)(LPCWSTR device_id)
+    STDMETHOD(OnDeviceAdded)(LPCWSTR device_id) override
     {
         loop::main().wfree_post_function([this]() {
             _system->update_device_list();
@@ -47,7 +54,7 @@ public:
         return S_OK;
     }
 
-    STDMETHOD(OnDeviceRemoved)(LPCWSTR device_id)
+    STDMETHOD(OnDeviceRemoved)(LPCWSTR device_id) override
     {
         // OnDeviceRemoved can not be implemented according to the win32 specification due
         // to conflicting requirements.
@@ -64,7 +71,7 @@ public:
         return S_OK;
     }
 
-    STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD state)
+    STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD state) override
     {
         loop::main().wfree_post_function([this]() {
             _system->update_device_list();
@@ -73,7 +80,7 @@ public:
         return S_OK;
     }
 
-    STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id, PROPERTYKEY const key)
+    STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id, PROPERTYKEY const key) override
     {
         loop::main().wfree_post_function([this]() {
             _system->update_device_list();
@@ -82,17 +89,17 @@ public:
         return S_OK;
     }
 
-    STDMETHOD(QueryInterface)(REFIID iid, void **object)
+    STDMETHOD(QueryInterface)(REFIID iid, void **object) override
     {
         hi_no_default();
     }
 
-    STDMETHOD_(ULONG, AddRef)()
+    STDMETHOD_(ULONG, AddRef)() override
     {
         hi_no_default();
     }
 
-    STDMETHOD_(ULONG, Release)()
+    STDMETHOD_(ULONG, Release)() override
     {
         hi_no_default();
     }
@@ -193,4 +200,6 @@ void audio_system_win32::update_device_list() noexcept
     device_collection->Release();
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
+
+hi_warning_pop();

@@ -17,7 +17,7 @@ public:
     ~file_win32();
     file_win32(std::filesystem::path const &path, hi::access_mode access_mode);
     
-    [[nodiscard]] virtual bool closed() noexcept
+    [[nodiscard]] bool closed() noexcept override
     {
         return _file_handle == nullptr;
     }

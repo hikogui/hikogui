@@ -28,11 +28,12 @@ class MoveOnly {
 
 public:
     MoveOnly(int data = 1) : data_(data) {}
-    MoveOnly(MoveOnly&& x) : data_(x.data_)
+    MoveOnly(MoveOnly&& x) noexcept : data_(x.data_)
     {
         x.data_ = 0;
     }
-    MoveOnly& operator=(MoveOnly&& x)
+
+    MoveOnly& operator=(MoveOnly&& x) noexcept
     {
         data_ = x.data_;
         x.data_ = 0;
@@ -124,7 +125,7 @@ struct EmplaceConstructibleMoveableAndAssignable {
 struct Throws {
     Throws() : v_(0) {}
     Throws(int v) : v_(v) {}
-    Throws(const Throws& rhs) : v_(rhs.v_)
+    Throws(const Throws& rhs) noexcept : v_(rhs.v_)
     {
         if (sThrows)
             throw 1;
@@ -139,7 +140,7 @@ struct Throws {
         v_ = rhs.v_;
         return *this;
     }
-    Throws& operator=(Throws&& rhs)
+    Throws& operator=(Throws&& rhs) noexcept
     {
         v_ = rhs.v_;
         return *this;
@@ -411,6 +412,8 @@ TEST(lean_vector, iterators_construction)
     const T t[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     C c(std::begin(t), std::end(t));
     C::iterator i = c.begin();
+    hi_assert_not_null(i);
+
     ASSERT_EQ(*i, 0);
     ++i;
     ASSERT_EQ(*i, 1);
@@ -1065,13 +1068,13 @@ TEST(lean_vector, emplace)
     public:
         A(int i, double d) : i_(i), d_(d) {}
 
-        A(A&& a) : i_(a.i_), d_(a.d_)
+        A(A&& a) noexcept : i_(a.i_), d_(a.d_)
         {
             a.i_ = 0;
             a.d_ = 0;
         }
 
-        A& operator=(A&& a)
+        A& operator=(A&& a) noexcept
         {
             i_ = a.i_;
             d_ = a.d_;
@@ -1126,13 +1129,13 @@ TEST(lean_vector, emplace_back)
     public:
         A(int i, double d) : i_(i), d_(d) {}
 
-        A(A&& a) : i_(a.i_), d_(a.d_)
+        A(A&& a) noexcept : i_(a.i_), d_(a.d_)
         {
             a.i_ = 0;
             a.d_ = 0;
         }
 
-        A& operator=(A&& a)
+        A& operator=(A&& a) noexcept
         {
             i_ = a.i_;
             d_ = a.d_;

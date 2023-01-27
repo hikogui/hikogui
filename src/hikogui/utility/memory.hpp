@@ -273,12 +273,16 @@ template<numeric T, byte_like B>
 
     if constexpr (std::endian::native == std::endian::little) {
         for (auto i = sizeof(T); i != 0; --i) {
-            r <<= 8;
+            if constexpr (sizeof(r) > 1) {
+                r <<= 8;
+            }
             r |= static_cast<uint8_t>(src[i - 1]);
         }
     } else {
         for (auto i = 0; i != sizeof(T); ++i) {
-            r <<= 8;
+            if constexpr (sizeof(r) > 1) {
+                r <<= 8;
+            }
             r |= static_cast<uint8_t>(src[i]);
         }
     }
@@ -330,6 +334,8 @@ template<numeric T>
 template<numeric T>
 [[nodiscard]] hi_force_inline constexpr void store_or(T src, uint8_t *dst) noexcept
 {
+    hi_axiom_not_null(dst);
+
     using unsigned_type = std::make_unsigned_t<T>;
 
     auto src_ = static_cast<unsigned_type>(src);

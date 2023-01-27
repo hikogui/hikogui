@@ -119,8 +119,7 @@ bool widget::handle_event(gui_event const& event) noexcept
         return true;
 
     case gui_widget_next:
-        process_event(
-            gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::forward));
+        process_event(gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::forward));
         return true;
 
     case gui_widget_prev:
@@ -162,7 +161,7 @@ bool widget::handle_event_recursive(gui_event const& event, std::vector<widget_i
 
     auto handled = false;
 
-    for (auto &child : children(false)) {
+    for (auto& child : children(false)) {
         handled |= child.handle_event_recursive(event, reject_list);
     }
 
@@ -193,7 +192,7 @@ widget_id widget::find_next_widget(
     }
 
     auto children_ = std::vector<widget const *>{};
-    for (auto &child: children(false)) {
+    for (auto& child : children(false)) {
         children_.push_back(std::addressof(child));
     }
 
@@ -202,6 +201,8 @@ widget_id widget::find_next_widget(
     }
 
     for (auto *child : children_) {
+        hi_axiom_not_null(child);
+
         if (found) {
             // Find the first focus accepting widget.
             if (auto tmp = child->find_next_widget({}, group, direction)) {
@@ -237,7 +238,7 @@ widget_id widget::find_next_widget(
 {
     hi_axiom(loop::main().on_thread());
 
-    for (auto &child : children(false)) {
+    for (auto& child : children(false)) {
         if (child.accepts_keyboard_focus(group)) {
             return child.id;
         }
@@ -250,7 +251,7 @@ widget_id widget::find_next_widget(
     hi_axiom(loop::main().on_thread());
 
     auto found = widget_id{};
-    for (auto &child : children(false)) {
+    for (auto& child : children(false)) {
         if (child.accepts_keyboard_focus(group)) {
             found = child.id;
         }

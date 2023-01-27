@@ -87,7 +87,7 @@ public:
         return std::make_unique<translate_args>(*this);
     }
 
-    [[nodiscard]] virtual bool equal_to(translate_args_base const& rhs) const noexcept override
+    [[nodiscard]] bool equal_to(translate_args_base const& rhs) const noexcept override
     {
         if (auto *rhs_ = dynamic_cast<translate_args const *>(&rhs)) {
             return _values == rhs_->_values;

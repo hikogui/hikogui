@@ -36,13 +36,13 @@ protected:
     vk::Buffer vertexBuffer;
     VmaAllocation vertexBufferAllocation;
 
-    std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
-    std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
-    std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const override;
-    virtual ssize_t getDescriptorSetVersion() const override;
-    std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
-    vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
-    std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
+    [[nodiscard]] std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
+    [[nodiscard]] std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
+    [[nodiscard]] std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const override;
+    [[nodiscard]] ssize_t getDescriptorSetVersion() const override;
+    [[nodiscard]] std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
+    [[nodiscard]] vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
+    [[nodiscard]] std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
 
 private:
     void build_vertex_buffers() override;

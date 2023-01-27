@@ -97,7 +97,7 @@ public:
     {
     }
 
-    void request_redraw() const noexcept
+    void request_redraw() const noexcept override
     {
         // A toolbar tab button draws a focus line across the whole toolbar
         // which is beyond it's own clipping rectangle. The parent is the toolbar
