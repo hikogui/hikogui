@@ -14,6 +14,11 @@
 
 using namespace hi;
 
+hi_warning_push();
+// C26439: This kind of function should not throw. Declare it 'noexcept' (f.6)
+// These test are required to test for throwing move constructor/operators.
+hi_warning_ignore_msvc(26439)
+
 namespace lean_vector_detail {
 
 class Copyable {
@@ -28,12 +33,12 @@ class MoveOnly {
 
 public:
     MoveOnly(int data = 1) : data_(data) {}
-    MoveOnly(MoveOnly&& x) : data_(x.data_)
+    MoveOnly(MoveOnly&& x) noexcept : data_(x.data_)
     {
         x.data_ = 0;
     }
 
-    MoveOnly& operator=(MoveOnly&& x)
+    MoveOnly& operator=(MoveOnly&& x) noexcept
     {
         data_ = x.data_;
         x.data_ = 0;

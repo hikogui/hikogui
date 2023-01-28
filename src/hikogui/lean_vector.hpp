@@ -81,7 +81,7 @@ public:
      *
      * @param other The vector to move.
      */
-    lean_vector(lean_vector&& other)
+    lean_vector(lean_vector&& other) noexcept(std::is_nothrow_move_constructible_v<value_type>)
     {
         if (other._is_short()) {
             hilet other_size = other._short_size();
