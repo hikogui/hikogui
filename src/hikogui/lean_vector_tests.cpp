@@ -28,7 +28,7 @@ class MoveOnly {
 
 public:
     MoveOnly(int data = 1) : data_(data) {}
-    MoveOnly(MoveOnly&& x) noexcept : data_(x.data_)
+    MoveOnly(MoveOnly&& x) : data_(x.data_)
     {
         x.data_ = 0;
     }
@@ -140,7 +140,7 @@ struct Throws {
         v_ = rhs.v_;
         return *this;
     }
-    Throws& operator=(Throws&& rhs) noexcept
+    Throws& operator=(Throws&& rhs)
     {
         v_ = rhs.v_;
         return *this;
@@ -1068,13 +1068,13 @@ TEST(lean_vector, emplace)
     public:
         A(int i, double d) : i_(i), d_(d) {}
 
-        A(A&& a) noexcept : i_(a.i_), d_(a.d_)
+        A(A&& a) : i_(a.i_), d_(a.d_)
         {
             a.i_ = 0;
             a.d_ = 0;
         }
 
-        A& operator=(A&& a) noexcept
+        A& operator=(A&& a)
         {
             i_ = a.i_;
             d_ = a.d_;
@@ -1129,13 +1129,13 @@ TEST(lean_vector, emplace_back)
     public:
         A(int i, double d) : i_(i), d_(d) {}
 
-        A(A&& a) noexcept : i_(a.i_), d_(a.d_)
+        A(A&& a) : i_(a.i_), d_(a.d_)
         {
             a.i_ = 0;
             a.d_ = 0;
         }
 
-        A& operator=(A&& a) noexcept
+        A& operator=(A&& a)
         {
             i_ = a.i_;
             d_ = a.d_;
