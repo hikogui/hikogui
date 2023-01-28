@@ -37,15 +37,15 @@ struct device_shared final {
     /*! Deallocate vulkan resources.
      * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `device`.
      */
-    void destroy(gfx_device_vulkan *vulkanDevice);
+    void destroy(gfx_device_vulkan const*vulkanDevice);
 
-    void drawInCommandBuffer(vk::CommandBuffer& commandBuffer);
+    void drawInCommandBuffer(vk::CommandBuffer const& commandBuffer);
 
     static void place_vertices(vector_span<vertex>& vertices, aarectangle clipping_rectangle, quad box, float alpha);
 
 private:
     void buildShaders();
-    void teardownShaders(gfx_device_vulkan *vulkanDevice);
+    void teardownShaders(gfx_device_vulkan const*vulkanDevice);
 };
 
 } // namespace pipeline_alpha

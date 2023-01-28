@@ -22,6 +22,9 @@
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
 hi_warning_ignore_msvc(4702);
+// C26472: Don't use static_cast for arithmetic conversions... (type.1)
+// int_carry does many static_casts on purpose.
+hi_warning_ignore_msvc(26472)
 
 namespace hi {
 

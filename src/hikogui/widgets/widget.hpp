@@ -121,7 +121,7 @@ public:
 
     [[nodiscard]] generator<widget&> children(bool include_invisible) noexcept
     {
-        for (auto& child : const_cast<widget const *>(this)->children(include_invisible)) {
+        for (auto& child : this->children(include_invisible)) {
             co_yield const_cast<widget&>(child);
         }
     }

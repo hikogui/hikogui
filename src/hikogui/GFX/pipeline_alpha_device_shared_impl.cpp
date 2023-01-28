@@ -19,13 +19,13 @@ device_shared::device_shared(gfx_device_vulkan const& device) : device(device)
 
 device_shared::~device_shared() {}
 
-void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
+void device_shared::destroy(gfx_device_vulkan const*vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     teardownShaders(vulkanDevice);
 }
 
-void device_shared::drawInCommandBuffer(vk::CommandBuffer& commandBuffer)
+void device_shared::drawInCommandBuffer(vk::CommandBuffer const& commandBuffer)
 {
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
@@ -53,7 +53,7 @@ void device_shared::buildShaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}};
 }
 
-void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
+void device_shared::teardownShaders(gfx_device_vulkan const*vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);

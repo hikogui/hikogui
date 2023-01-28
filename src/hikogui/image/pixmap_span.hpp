@@ -13,6 +13,11 @@
 #include <span>
 #include <memory>
 
+hi_warning_push();
+// C26459: You called an STL function 'std::copy' with a raw pointer paramter... (stl.1)
+// Using iterators adds a lot of code without any extra safety.
+hi_warning_ignore_msvc(26459);
+
 namespace hi { inline namespace v1 {
 template<typename T, typename Allocator>
 class pixmap;
@@ -220,3 +225,5 @@ template<typename T, typename Allocator>
 pixmap_span(pixmap<T, Allocator>& other) -> pixmap_span<T>;
 
 }} // namespace hi::v1
+
+hi_warning_pop();

@@ -40,7 +40,7 @@ namespace hi::inline v1 {
             }
         }
     }
-    return reinterpret_cast<std::byte *>(p);
+    return static_cast<std::byte *>(p);
 }
 
 void locked_memory_allocator_deallocate(std::byte *p, std::size_t n) noexcept

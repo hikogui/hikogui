@@ -79,7 +79,7 @@ void draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, d
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image& image) const noexcept
+draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept
 {
     hi_assert_not_null(_image_vertices);
 

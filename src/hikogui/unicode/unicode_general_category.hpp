@@ -110,7 +110,7 @@ enum class unicode_general_category : uint8_t {
 
 [[nodiscard]] constexpr bool is_noncharacter(char32_t rhs) noexcept
 {
-    hilet rhs_ = static_cast<uint32_t>(rhs);
+    hilet rhs_ = char_cast<uint32_t>(rhs);
     return rhs_ >= 0x11'0000 or (rhs_ & 0xfffe) == 0xfffe or (rhs >= 0xfdd0 and rhs <= 0xfdef);
 }
 

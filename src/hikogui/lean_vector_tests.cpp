@@ -1649,3 +1649,5 @@ TEST(lean_vector, swap_noexcept)
     typedef lean_vector<lean_vector_detail::MoveOnly> C;
     static_assert(noexcept(swap(std::declval<C&>(), std::declval<C&>())));
 }
+
+hi_warning_pop();

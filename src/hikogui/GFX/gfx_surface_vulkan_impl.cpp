@@ -507,7 +507,7 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
 }
 
 void gfx_surface_vulkan::fill_command_buffer(
-    swapchain_image_info& current_image,
+    swapchain_image_info const& current_image,
     draw_context const& context,
     vk::Rect2D render_area)
 {

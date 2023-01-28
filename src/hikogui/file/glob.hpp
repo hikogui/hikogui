@@ -775,7 +775,7 @@ private:
 
     template<bool Left>
     [[nodiscard]] constexpr static bool
-    matches_strip(const_iterator& first, const_iterator& last, std::u32string_view& str) noexcept
+    matches_strip(const_iterator& first, const_iterator & last, std::u32string_view& str) noexcept
     {
         while (first != last) {
             hilet it = Left ? first : last - 1;

@@ -687,7 +687,7 @@ private:
         glyph_ids const& glyph,
         draw_attributes const& attributes) const noexcept;
 
-    [[nodiscard]] bool _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image& image) const noexcept;
+    [[nodiscard]] bool _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;
 };
 
 }} // namespace hi::v1

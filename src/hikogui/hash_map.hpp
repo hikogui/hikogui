@@ -282,7 +282,7 @@ private:
         hilet dst_ = std::uninitialized_value_construct_n(dst, dst_size);
         hi_axiom_not_null(dst_);
 
-        hilet src_last = src + src_size;
+        auto const * const src_last = src + src_size;
         for (auto src_it = src; src_it != src_last; ++src_it) {
             hi_axiom_not_null(src_it);
             hilet hash = src_it->hash();

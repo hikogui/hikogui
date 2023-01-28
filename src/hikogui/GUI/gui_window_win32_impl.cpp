@@ -89,7 +89,7 @@ static void createWindowClass()
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(gui_system::instance);
+        win32WindowClass.hInstance = static_cast<HINSTANCE>(gui_system::instance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -410,7 +410,7 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                     return {};
                 }
 
-                hilet wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
+                auto const *const wstr_c = static_cast<wchar_t const *>(GlobalLock(cb_data));
                 if (wstr_c == nullptr) {
                     hi_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
                     return {};
@@ -472,7 +472,7 @@ void gui_window_win32::put_text_on_clipboard(std::string_view text) const noexce
     });
 
     {
-        auto wtext_c = reinterpret_cast<wchar_t *>(GlobalLock(wtext_handle));
+        auto wtext_c = static_cast<wchar_t *>(GlobalLock(wtext_handle));
         if (wtext_c == nullptr) {
             hi_log_error("Could not lock string data '{}'", get_last_error_message());
             return;
@@ -561,17 +561,17 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 {
     auto r = keyboard_modifiers::none;
 
-    if ((static_cast<uint16_t>(GetAsyncKeyState(VK_SHIFT)) & 0x8000) != 0) {
+    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_SHIFT)) & 0x8000) != 0) {
         r |= keyboard_modifiers::shift;
     }
-    if ((static_cast<uint16_t>(GetAsyncKeyState(VK_CONTROL)) & 0x8000) != 0) {
+    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_CONTROL)) & 0x8000) != 0) {
         r |= keyboard_modifiers::control;
     }
-    if ((static_cast<uint16_t>(GetAsyncKeyState(VK_MENU)) & 0x8000) != 0) {
+    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_MENU)) & 0x8000) != 0) {
         r |= keyboard_modifiers::alt;
     }
-    if ((static_cast<uint16_t>(GetAsyncKeyState(VK_LWIN)) & 0x8000) != 0 ||
-        (static_cast<uint16_t>(GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0) {
+    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_LWIN)) & 0x8000) != 0 ||
+        (narrow_cast<uint16_t>(GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0) {
         r |= keyboard_modifiers::super;
     }
 
@@ -785,7 +785,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_UNICHAR:
-        if (auto c = static_cast<char32_t>(wParam); c == UNICODE_NOCHAR) {
+        if (auto c = char_cast<char32_t>(wParam); c == UNICODE_NOCHAR) {
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
 
@@ -795,7 +795,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_DEADCHAR:
-        if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
+        if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
             if (auto g = grapheme{c}; g.valid()) {
                 process_event(gui_event::keyboard_partial_grapheme(g));
             }
@@ -803,7 +803,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_CHAR:
-        if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
+        if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
             if (auto g = grapheme{c}; g.valid()) {
                 process_event(gui_event::keyboard_grapheme(g));
             }

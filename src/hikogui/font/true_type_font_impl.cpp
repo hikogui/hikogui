@@ -196,7 +196,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
 
     hilet end_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
 
-    auto c16 = static_cast<uint16_t>(c);
+    auto c16 = char_cast<uint16_t>(c);
     hilet end_code_it = std::lower_bound(end_codes.begin(), end_codes.end(), c16, [](hilet& item, hilet& value) {
         return *item < value;
     });
@@ -204,7 +204,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
         // The character to find has a higher value than available in the table.
         return {};
     }
-    hilet segment_i = static_cast<uint16_t>(std::distance(end_codes.begin(), end_code_it));
+    hilet segment_i = narrow_cast<uint16_t>(std::distance(end_codes.begin(), end_code_it));
 
     offset += ssizeof(uint16_t); // reservedPad
 
@@ -291,9 +291,9 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
 
     hilet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
 
-    hilet firstCode = static_cast<char32_t>(*header->firstCode);
+    hilet firstCode = char_cast<char32_t>(*header->firstCode);
     hilet entryCount = *header->entryCount;
-    if (c < firstCode || c >= static_cast<char32_t>(firstCode + entryCount)) {
+    if (c < firstCode || c >= char_cast<char32_t>(firstCode + entryCount)) {
         // Character outside of range.
         return {};
     }
@@ -311,10 +311,10 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
 
     std::size_t offset = 0;
     hilet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
-    hilet firstCode = static_cast<char32_t>(*header->firstCode);
+    hilet firstCode = char_cast<char32_t>(*header->firstCode);
     hilet entryCount = *header->entryCount;
 
-    r.add(static_cast<char32_t>(firstCode), static_cast<char32_t>(firstCode) + entryCount);
+    r.add(char_cast<char32_t>(firstCode), char_cast<char32_t>(firstCode) + entryCount);
 
     r.optimize();
     r.shrink_to_fit();
@@ -362,7 +362,7 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
 
     hilet entries = make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
     for (hilet& entry : entries) {
-        r.add(static_cast<char32_t>(*entry.startCharCode), static_cast<char32_t>(*entry.endCharCode) + 1);
+        r.add(char_cast<char32_t>(*entry.startCharCode), char_cast<char32_t>(*entry.endCharCode) + 1);
     }
 
     r.optimize();

@@ -57,12 +57,12 @@ enum class tokenizer_action_t : uint8_t {
 
 constexpr uint16_t get_offset(tokenizer_state_t state, char c = '\0') noexcept
 {
-    return (static_cast<uint16_t>(state) << 8) | static_cast<uint8_t>(c);
+    return (wide_cast<uint16_t>(to_underlying(state)) << 8) | char_cast<uint8_t>(c);
 }
 
 constexpr tokenizer_action_t operator|(tokenizer_action_t lhs, tokenizer_action_t rhs)
 {
-    return static_cast<tokenizer_action_t>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+    return static_cast<tokenizer_action_t>(to_underlying(lhs) | to_underlying(rhs));
 }
 
 constexpr tokenizer_action_t operator|(tokenizer_action_t lhs, char rhs)
@@ -77,7 +77,7 @@ constexpr tokenizer_action_t operator|(tokenizer_action_t lhs, char rhs)
 
 constexpr bool operator>=(tokenizer_action_t lhs, tokenizer_action_t rhs)
 {
-    return (static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)) == static_cast<uint8_t>(rhs);
+    return (to_underlying(lhs) & to_underlying(rhs)) == to_underlying(rhs);
 }
 
 struct tokenizer_transition_t {
@@ -150,7 +150,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Dot()
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (is_digit(c)) {
@@ -171,7 +171,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Zero(
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == 'x' || c == 'X' || c == 'd' || c == 'D' || c == 'o' || c == 'O' || c == 'b' || c == 'B') {
@@ -191,7 +191,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Numbe
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (is_digit(c)) {
@@ -225,7 +225,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DashA
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {'-'};
 
         if (is_digit(c)) {
@@ -247,7 +247,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Colon
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {':'};
 
         if (is_digit(c)) {
@@ -297,7 +297,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Date(
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (is_digit(c) || c == '-') {
@@ -319,7 +319,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Time(
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (is_digit(c) || c == ':' || c == '.') {
@@ -340,7 +340,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Float
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (is_digit(c) || c == 'e' || c == 'E' || c == '-') {
@@ -365,7 +365,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Slash
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '/') {
@@ -388,7 +388,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_LineC
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
@@ -411,7 +411,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Block
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
@@ -436,7 +436,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Block
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
@@ -464,7 +464,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Quote
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '\'') {
@@ -487,7 +487,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DQuot
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '"') {
@@ -507,7 +507,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Doubl
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '"') {
@@ -530,7 +530,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Quote
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
@@ -564,7 +564,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DQuot
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
@@ -630,7 +630,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DQuot
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         switch (c) {
@@ -662,7 +662,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Block
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
@@ -693,7 +693,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Block
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '"') {
@@ -715,7 +715,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Block
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '"') {
@@ -738,7 +738,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Block
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         transition.next = tokenizer_state_t::BlockString;
@@ -755,7 +755,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Block
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         switch (c) {
@@ -787,7 +787,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Opera
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         switch (c) {
@@ -822,7 +822,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Opera
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         switch (c) {
@@ -859,7 +859,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Colon
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         switch (c) {
@@ -890,7 +890,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Opera
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         switch (c) {
@@ -943,7 +943,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Initi
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
@@ -1053,7 +1053,7 @@ constexpr bool optimizeTransitionTableOnce(transitionTable_t &r)
         if (transition.action == tokenizer_action_t::Idle) {
             foundOptimization = true;
 
-            transition = r[get_offset(transition.next, static_cast<char>(i & 0xff))];
+            transition = r[get_offset(transition.next, char_cast<char>(i & 0xff))];
         }
     }
     return foundOptimization;

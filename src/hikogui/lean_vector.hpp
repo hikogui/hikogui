@@ -15,6 +15,11 @@
 #include <algorithm>
 #include <iterator>
 
+hi_warning_push();
+// C26450: You called an STL function '' with raw pointer... (stl.1)
+// Using an iterator requires a lot of code which will not make it safer.
+hi_warning_ignore_msvc(26459);
+
 namespace hi { inline namespace v1 {
 
 /** Lean-vector with (SVO) short-vector-optimization.
@@ -937,7 +942,7 @@ private:
         if constexpr (std::endian::native == std::endian::little) {
             p = ceil(advance_bytes(p, 1), alignof(value_type));
         }
-        return std::launder(reinterpret_cast<pointer>(p));
+        return std::launder(static_cast<pointer>(p));
     }
 
     [[nodiscard]] pointer _long_data() const noexcept
@@ -1085,3 +1090,5 @@ template<std::input_iterator It, std::input_iterator ItEnd>
 lean_vector(It first, ItEnd last) -> lean_vector<typename std::iterator_traits<It>::value_type>;
 
 }} // namespace hi::v1
+
+hi_warning_pop();

@@ -168,14 +168,14 @@ constexpr bool is_aligned(T *p)
 template<typename T>
 constexpr T *ceil(T *ptr, std::size_t alignment) noexcept
 {
-    hilet aligned_byte_offset = ceil(reinterpret_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
+    hilet aligned_byte_offset = ceil(reinterpret_cast<uintptr_t>(ptr), wide_cast<uintptr_t>(alignment));
     return reinterpret_cast<T *>(aligned_byte_offset);
 }
 
 template<typename T>
 constexpr T *floor(T *ptr, std::size_t alignment) noexcept
 {
-    hilet aligned_byte_offset = floor(reinterpret_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
+    hilet aligned_byte_offset = floor(reinterpret_cast<uintptr_t>(ptr), wide_cast<uintptr_t>(alignment));
     return reinterpret_cast<T *>(aligned_byte_offset);
 }
 

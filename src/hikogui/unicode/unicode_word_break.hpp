@@ -48,7 +48,7 @@ public:
     constexpr unicode_word_break_info& operator=(unicode_word_break_info&&) noexcept = default;
 
     constexpr unicode_word_break_info(unicode_word_break_property const& word_break_property, bool pictographic) noexcept :
-        _value(to_underlying(word_break_property) | (static_cast<uint8_t>(pictographic) << 7))
+        _value(to_underlying(word_break_property) | (wide_cast<uint8_t>(pictographic) << 7))
     {
     }
 

@@ -69,7 +69,7 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression_and_advan
         return false;
     }
 
-    auto ptr = dynamic_cast<skeleton_do_node *>(statement_stack.back().get());
+    auto const * const ptr = dynamic_cast<skeleton_do_node const *>(statement_stack.back().get());
     return ptr != nullptr;
 }
 

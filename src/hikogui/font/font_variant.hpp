@@ -27,7 +27,7 @@ public:
     }
 
     constexpr font_variant(font_weight weight, bool italic) noexcept :
-        value(static_cast<uint8_t>(static_cast<int>(weight) + (italic ? half() : 0)))
+        value(narrow_cast<uint8_t>(static_cast<int>(weight) + (italic ? half() : 0)))
     {
     }
     constexpr font_variant() noexcept : font_variant(font_weight::Regular, false) {}
@@ -53,14 +53,14 @@ public:
 
     constexpr font_variant &set_weight(font_weight rhs) noexcept
     {
-        value = static_cast<uint8_t>(static_cast<int>(rhs) + (italic() ? half() : 0));
+        value = narrow_cast<uint8_t>(static_cast<int>(rhs) + (italic() ? half() : 0));
         hi_axiom(value < max());
         return *this;
     }
 
     constexpr font_variant &set_italic(bool rhs) noexcept
     {
-        value = static_cast<uint8_t>(static_cast<int>(weight()) + (rhs ? half() : 0));
+        value = narrow_cast<uint8_t>(static_cast<int>(weight()) + (rhs ? half() : 0));
         hi_axiom(value < max());
         return *this;
     }

@@ -62,7 +62,7 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
 bool toolbar_widget::tab_button_has_focus() const noexcept
 {
     for (hilet& cell : _children) {
-        if (auto *c = dynamic_cast<toolbar_tab_button_widget *>(cell.value.get())) {
+        if (auto const * const c = dynamic_cast<toolbar_tab_button_widget *>(cell.value.get())) {
             if (*c->focus and c->state() == hi::button_state::on) {
                 return true;
             }

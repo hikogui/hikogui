@@ -131,7 +131,7 @@ public:
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(hi::font_book &font_book, hi::font const &font) noexcept;
+    void initialize_glyph(hi::font_book const &font_book, hi::font const &font) noexcept;
 
     /** Initialize the glyph based on the grapheme.
      *

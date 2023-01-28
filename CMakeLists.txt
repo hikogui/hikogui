@@ -348,6 +348,11 @@ elseif (MSVC)
         # https://developercommunity.visualstudio.com/t/c28020-false-positives/923103
         target_compile_options(hikogui PUBLIC -wd28020)
 
+        # C26465: Don't use const_cat to cast away const or volatile, const_cast is not required constness... (type.3)
+        # False positive on string literal,
+        # bug reported: https://developercommunity.visualstudio.com/t/C26465-false-positive-on-string-literal/10263615
+        target_compile_options(hikogui PUBLIC -wd26465)
+
         # C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11)
         # Can't exclude unit-test and google-test uses new and delete in the TEST() macro.
         target_compile_options(hikogui PUBLIC -wd26409)
@@ -356,19 +361,14 @@ elseif (MSVC)
         # Can't exclude unit-test and google-test does this a lot.
         target_compile_options(hikogui PUBLIC -wd26426)
 
-        # Turn off every warning fix one at a time:
-        #target_compile_options(hikogui PUBLIC -wd26436)
-        #target_compile_options(hikogui PUBLIC -wd26439)
-        #target_compile_options(hikogui PUBLIC -wd26452)
+        # C26455: Default constructor should not throw. Declare it 'noexcept' (f.6)
+        # Can't exclude unit-test and google-test uses throwing default constructors in the TEST() macro.
         target_compile_options(hikogui PUBLIC -wd26455)
-        target_compile_options(hikogui PUBLIC -wd26459)
-        target_compile_options(hikogui PUBLIC -wd26460)
-        target_compile_options(hikogui PUBLIC -wd26461)
-        target_compile_options(hikogui PUBLIC -wd26462)
-        target_compile_options(hikogui PUBLIC -wd26465)
-        target_compile_options(hikogui PUBLIC -wd26467)
-        target_compile_options(hikogui PUBLIC -wd26471)
-        target_compile_options(hikogui PUBLIC -wd26472)
+
+
+
+        # Turn off every warning fix one at a time:
+        #target_compile_options(hikogui PUBLIC -wd26472)
         target_compile_options(hikogui PUBLIC -wd26473)
         target_compile_options(hikogui PUBLIC -wd26474)
         target_compile_options(hikogui PUBLIC -wd26475)

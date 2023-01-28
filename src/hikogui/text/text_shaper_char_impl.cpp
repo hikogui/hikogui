@@ -32,7 +32,7 @@ void text_shaper_char::set_glyph(hi::glyph_ids &&new_glyph) noexcept
     }
 }
 
-void text_shaper_char::initialize_glyph(hi::font_book &font_book, hi::font const &font) noexcept
+void text_shaper_char::initialize_glyph(hi::font_book const &font_book, hi::font const &font) noexcept
 {
     if (not glyph_is_initial) {
         set_glyph(font_book.find_glyph(font, grapheme));

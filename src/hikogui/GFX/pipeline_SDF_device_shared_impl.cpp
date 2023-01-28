@@ -14,7 +14,7 @@
 
 namespace hi::inline v1::pipeline_SDF {
 
-device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
+device_shared::device_shared(gfx_device_vulkan const& device) : device(device)
 {
     buildShaders();
     buildAtlas();
@@ -22,7 +22,7 @@ device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 
 device_shared::~device_shared() {}
 
-void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
+void device_shared::destroy(gfx_device_vulkan const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 
@@ -66,7 +66,7 @@ void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
     return r;
 }
 
-void device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const &location)
+void device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const& location)
 {
     // Flush the given image, included the border.
     device.flushAllocation(
@@ -83,7 +83,7 @@ void device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const &location)
         {narrow_cast<int32_t>(location.position.x()), narrow_cast<int32_t>(location.position.y()), 0},
         {narrow_cast<uint32_t>(location.size.width()), narrow_cast<uint32_t>(location.size.height()), 1}}};
 
-    auto &atlasTexture = atlasTextures.at(narrow_cast<std::size_t>(location.position.z()));
+    auto& atlasTexture = atlasTextures.at(narrow_cast<std::size_t>(location.position.z()));
     atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyImage(
@@ -102,7 +102,7 @@ void device_shared::prepareStagingPixmapForDrawing()
 void device_shared::prepare_atlas_for_rendering()
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
-    for (auto &atlasTexture : atlasTextures) {
+    for (auto& atlasTexture : atlasTextures) {
         atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
@@ -123,7 +123,7 @@ void device_shared::prepare_atlas_for_rendering()
  *  |                     |
  *  O---------------------+
  */
-void device_shared::add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info &info) noexcept
+void device_shared::add_glyph_to_atlas(glyph_ids const& glyph, glyph_atlas_info& info) noexcept
 {
     hilet[glyph_path, glyph_bounding_box] = glyph.get_path_and_bounding_box();
 
@@ -146,22 +146,23 @@ void device_shared::add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info 
     hilet lock = std::scoped_lock(gfx_system_mutex);
     prepareStagingPixmapForDrawing();
     info = allocate_rect(image_size, image_size / draw_bounding_box.size());
-    auto pixmap = stagingTexture.pixmap.subimage(0, 0, narrow_cast<size_t>(info.size.width()), narrow_cast<size_t>(info.size.height()));
+    auto pixmap =
+        stagingTexture.pixmap.subimage(0, 0, narrow_cast<size_t>(info.size.width()), narrow_cast<size_t>(info.size.height()));
     fill(pixmap, draw_path);
     uploadStagingPixmapToAtlas(info);
 }
 
-aarectangle device_shared::get_bounding_box(glyph_ids const &glyphs) const noexcept
+aarectangle device_shared::get_bounding_box(glyph_ids const& glyphs) const noexcept
 {
     // Adjust bounding box by adding a border based on 1EM.
     return glyphs.get_bounding_box() + scaledDrawBorder;
 }
 
 bool device_shared::place_vertices(
-    vector_span<vertex> &vertices,
-    aarectangle const &clipping_rectangle,
-    quad const &box,
-    glyph_ids const &glyphs,
+    vector_span<vertex>& vertices,
+    aarectangle const& clipping_rectangle,
+    quad const& box,
+    glyph_ids const& glyphs,
     quad_color colors) noexcept
 {
     hilet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(glyphs);
@@ -174,7 +175,6 @@ bool device_shared::place_vertices(
     auto t2 = point3(get<2>(atlas_rect->texture_coordinates), image_index);
     auto t3 = point3(get<3>(atlas_rect->texture_coordinates), image_index);
 
-
     vertices.emplace_back(box_with_border.p0, clipping_rectangle, t0, colors.p0);
     vertices.emplace_back(box_with_border.p1, clipping_rectangle, t1, colors.p1);
     vertices.emplace_back(box_with_border.p2, clipping_rectangle, t2, colors.p2);
@@ -182,7 +182,7 @@ bool device_shared::place_vertices(
     return glyph_was_added;
 }
 
-void device_shared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
+void device_shared::drawInCommandBuffer(vk::CommandBuffer const& commandBuffer)
 {
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
@@ -207,7 +207,7 @@ void device_shared::buildShaders()
          &fragmentShaderSpecializationInfo}};
 }
 
-void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
+void device_shared::teardownShaders(gfx_device_vulkan const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 
@@ -336,13 +336,13 @@ void device_shared::buildAtlas()
     addAtlasImage();
 }
 
-void device_shared::teardownAtlas(gfx_device_vulkan *vulkanDevice)
+void device_shared::teardownAtlas(gfx_device_vulkan const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 
     vulkanDevice->destroy(atlasSampler);
 
-    for (const auto &atlasImage : atlasTextures) {
+    for (const auto& atlasImage : atlasTextures) {
         vulkanDevice->destroy(atlasImage.view);
         vulkanDevice->destroyImage(atlasImage.image, atlasImage.allocation);
     }

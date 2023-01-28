@@ -93,7 +93,7 @@ void unicode_mask::add(char32_t first, char32_t last) noexcept
     while (first != last) {
         if (it == _entries.end()) {
             // Append the items.
-            hilet last_to_insert = std::min({last, static_cast<char32_t>(first + entry_type::capacity())});
+            hilet last_to_insert = std::min({last, char_cast<char32_t>(first + entry_type::capacity())});
 
             it = _entries.emplace(it, first, last_to_insert) + 1;
             _size += last_to_insert - first;
@@ -102,7 +102,7 @@ void unicode_mask::add(char32_t first, char32_t last) noexcept
 
         } else if (first < it->begin()) {
             // Insert the left side before the current entry.
-            hilet last_to_insert = std::min({last, it->begin(), static_cast<char32_t>(first + entry_type::capacity())});
+            hilet last_to_insert = std::min({last, it->begin(), char_cast<char32_t>(first + entry_type::capacity())});
 
             it = _entries.emplace(it, first, last_to_insert) + 1;
             _size += last_to_insert - first;
