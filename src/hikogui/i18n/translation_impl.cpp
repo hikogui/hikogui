@@ -45,6 +45,8 @@ get_translation(std::string_view msgid, long long n, std::vector<language *> con
     auto key = translation_key{msgid};
 
     for (hilet *language : languages) {
+        hi_axiom_not_null(language);
+
         key.language = language;
 
         hilet i = translations.find(key);

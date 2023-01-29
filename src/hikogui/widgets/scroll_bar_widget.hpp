@@ -129,7 +129,7 @@ public:
         }
     }
 
-    bool handle_event(gui_event const& event) noexcept
+    bool handle_event(gui_event const& event) noexcept override
     {
         switch (event.type()) {
         case gui_event_type::mouse_down:

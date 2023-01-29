@@ -371,6 +371,8 @@ void text_widget::delete_word_prev() noexcept
 
 void text_widget::reset_state(char const *states) noexcept
 {
+    hi_assert_not_null(states);
+
     while (*states != 0) {
         switch (*states) {
         case 'D':

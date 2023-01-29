@@ -220,7 +220,8 @@ TEST(datum, find_one_or_create1)
     auto bookstore_copy = bookstore;
 
     auto *new_book = bookstore_copy.find_one_or_create(jsonpath("$.store.book[4]"));
-    ASSERT_FALSE(new_book == nullptr);
+    hi_assert_not_null(new_book);
+
     *new_book = datum::make_map("title", "Hitchhikers Guide To The Galaxy", "price", 42.0);
 
     ASSERT_EQ(bookstore_copy["store"]["book"][4]["title"], "Hitchhikers Guide To The Galaxy");
@@ -232,7 +233,8 @@ TEST(datum, find_one_or_create2)
     auto bookstore_copy = bookstore;
 
     auto *new_book_title = bookstore_copy.find_one_or_create(jsonpath("$.store.book[4].title"));
-    ASSERT_FALSE(new_book_title == nullptr);
+    hi_assert_not_null(new_book_title);
+
     *new_book_title = "Hitchhikers Guide To The Galaxy";
 
     ASSERT_EQ(bookstore_copy["store"]["book"][4]["title"], "Hitchhikers Guide To The Galaxy");

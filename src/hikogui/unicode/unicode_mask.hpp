@@ -20,7 +20,7 @@ public:
     constexpr unicode_mask_entry() noexcept : _value(0) {}
 
     constexpr unicode_mask_entry(char32_t first, char32_t last) noexcept :
-        _value(static_cast<uint32_t>((first << size_bit) | (last - first)))
+        _value(narrow_cast<uint32_t>((first << size_bit) | (last - first)))
     {
         hi_axiom(last >= first);
         hi_axiom(last - first <= capacity());
@@ -38,7 +38,7 @@ public:
 
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        return static_cast<std::size_t>(_value & size_mask);
+        return narrow_cast<std::size_t>(_value & size_mask);
     }
 
     [[nodiscard]] constexpr bool empty() const noexcept
@@ -58,22 +58,22 @@ public:
 
     [[nodiscard]] constexpr char32_t begin() const noexcept
     {
-        return static_cast<char32_t>(_value >> size_bit);
+        return narrow_cast<char32_t>(_value >> size_bit);
     }
 
     [[nodiscard]] constexpr char32_t end() const noexcept
     {
-        return begin() + static_cast<char32_t>(size());
+        return begin() + narrow_cast<char32_t>(size());
     }
 
     constexpr unicode_mask_entry &add_back(std::size_t num_code_points) noexcept
     {
-        return *this = unicode_mask_entry{begin(), static_cast<char32_t>(end() + num_code_points)};
+        return *this = unicode_mask_entry{begin(), narrow_cast<char32_t>(end() + num_code_points)};
     }
 
     constexpr unicode_mask_entry &remove_front(std::size_t num_code_points) noexcept
     {
-        return *this = unicode_mask_entry{static_cast<char32_t>(begin() + num_code_points), end()};
+        return *this = unicode_mask_entry{narrow_cast<char32_t>(begin() + num_code_points), end()};
     }
 
     [[nodiscard]] constexpr bool contains(char32_t rhs) const noexcept

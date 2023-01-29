@@ -146,7 +146,7 @@ void preferences::write(jsonpath const &path, datum const value) noexcept
 datum preferences::read(jsonpath const &path) noexcept
 {
     hilet lock = std::scoped_lock(mutex);
-    if (auto *r = _data.find_one(path)) {
+    if (auto const * const r = _data.find_one(path)) {
         return *r;
     } else {
         return datum{std::monostate{}};

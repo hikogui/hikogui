@@ -151,7 +151,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept
+    void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             for (hilet& cell : _grid) {

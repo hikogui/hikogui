@@ -14,6 +14,7 @@ hi_warning_push();
 hi_warning_ignore_msvc(26492);
 // We are going to remove placement.hpp anyway.
 hi_warning_ignore_msvc(26403);
+hi_warning_ignore_msvc(26460);
 
 namespace hi::inline v1 {
 template<typename T>

@@ -14,6 +14,11 @@
 
 using namespace hi;
 
+hi_warning_push();
+// C26439: This kind of function should not throw. Declare it 'noexcept' (f.6)
+// These test are required to test for throwing move constructor/operators.
+hi_warning_ignore_msvc(26439)
+
 namespace lean_vector_detail {
 
 class Copyable {
@@ -28,11 +33,12 @@ class MoveOnly {
 
 public:
     MoveOnly(int data = 1) : data_(data) {}
-    MoveOnly(MoveOnly&& x) : data_(x.data_)
+    MoveOnly(MoveOnly&& x) noexcept : data_(x.data_)
     {
         x.data_ = 0;
     }
-    MoveOnly& operator=(MoveOnly&& x)
+
+    MoveOnly& operator=(MoveOnly&& x) noexcept
     {
         data_ = x.data_;
         x.data_ = 0;
@@ -411,6 +417,8 @@ TEST(lean_vector, iterators_construction)
     const T t[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     C c(std::begin(t), std::end(t));
     C::iterator i = c.begin();
+    hi_assert_not_null(i);
+
     ASSERT_EQ(*i, 0);
     ++i;
     ASSERT_EQ(*i, 1);
@@ -1641,3 +1649,5 @@ TEST(lean_vector, swap_noexcept)
     typedef lean_vector<lean_vector_detail::MoveOnly> C;
     static_assert(noexcept(swap(std::declval<C&>(), std::declval<C&>())));
 }
+
+hi_warning_pop();

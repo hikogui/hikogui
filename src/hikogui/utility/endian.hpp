@@ -149,7 +149,7 @@ template<numeric T, byte_like B>
 template<numeric T>
 [[nodiscard]] inline T load_be(void const *src) noexcept
 {
-    return load_be<T>(reinterpret_cast<std::byte const *>(src));
+    return load_be<T>(static_cast<std::byte const *>(src));
 }
 
 template<typename T, std::endian E, std::size_t A = alignof(T)>

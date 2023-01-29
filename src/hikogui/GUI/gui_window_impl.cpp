@@ -229,7 +229,7 @@ void gui_window::update_keyboard_target(widget_id new_target_id, keyboard_focus_
         new_target_widget = nullptr;
     }
 
-    if (auto keyboard_target_widget = get_if(widget.get(), _keyboard_target_id, false)) {
+    if (auto const * const keyboard_target_widget = get_if(widget.get(), _keyboard_target_id, false)) {
         // keyboard target still exists and visible.
         if (new_target_widget == keyboard_target_widget) {
             // Focus does not change.

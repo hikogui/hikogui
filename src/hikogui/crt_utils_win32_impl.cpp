@@ -31,11 +31,14 @@ std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
     // and splits in separate arguments.
     int wargc = 0;
     auto wargv = CommandLineToArgvW(GetCommandLineW(), &wargc);
+    hi_assert_not_null(wargv);
 
     // Convert the wchar arguments to UTF-8 and create nul terminated
     // c-strings. main() compatibility requires writable strings, so
     // we need to allocate old-style.
     char **argv = new char *[wargc + 2];
+    hi_assert_not_null(argv);
+
     int argc = 0;
     for (; argc != wargc; ++argc) {
         argv[argc] = hi::make_cstr(hi::to_string(std::wstring(wargv[argc])));
@@ -70,6 +73,8 @@ std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 
 int crt_finish(int argc, char **argv, int exit_code)
 {
+    hi_assert_not_null(argv);
+
     hi::shutdown_system();
 
     for (auto i = 0; i != argc; ++i) {

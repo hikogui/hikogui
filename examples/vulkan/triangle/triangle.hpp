@@ -42,7 +42,7 @@ public:
     void buildForNewSwapchain(std::vector<VkImageView> const& imageViews, VkExtent2D imageSize, VkFormat imageFormat);
     void teardownForLostSwapchain();
 
-    virtual void render(
+    void render(
         uint32_t currentBuffer,
         VkSemaphore presentCompleteSemaphore,
         VkSemaphore renderCompleteSemaphore,

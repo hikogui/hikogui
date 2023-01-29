@@ -41,9 +41,9 @@ public:
         _layout = context;
     }
 
-    void draw(draw_context const& context) noexcept {}
+    void draw(draw_context const& context) noexcept override {}
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
     {
         return hitbox{};
     }

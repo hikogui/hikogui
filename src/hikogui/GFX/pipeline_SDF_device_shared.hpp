@@ -80,14 +80,14 @@ struct device_shared {
      * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan>
      * device`.
      */
-    void destroy(gfx_device_vulkan *vulkanDevice);
+    void destroy(gfx_device_vulkan const *vulkanDevice);
 
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
      */
     [[nodiscard]] glyph_atlas_info allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept;
 
-    void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
+    void drawInCommandBuffer(vk::CommandBuffer const &commandBuffer);
 
     /** Once drawing in the staging pixmap is completed, you can upload it to the atlas.
      * This will transition the stating texture to 'source' and the atlas to 'destination'.
@@ -125,10 +125,10 @@ struct device_shared {
 
 private:
     void buildShaders();
-    void teardownShaders(gfx_device_vulkan *vulkanDevice);
+    void teardownShaders(gfx_device_vulkan const*vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(gfx_device_vulkan *vulkanDevice);
+    void teardownAtlas(gfx_device_vulkan const*vulkanDevice);
     void add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info &info) noexcept;
 
     /**

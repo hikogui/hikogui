@@ -69,6 +69,8 @@ template<typename T, std::unsigned_integral Key>
 
     // A faster lower-bound search with less branches that are more predictable.
     while (len > 1) {
+        hi_axiom_not_null(base);
+
         hilet half = len / 2;
         hilet& item = base[half - 1];
         hilet item_key = load_be<Key>(&item);

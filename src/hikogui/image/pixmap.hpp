@@ -13,6 +13,14 @@
 #include <memory>
 #include <span>
 
+hi_warning_push();
+// C26439: This kind of function should not throw. Declare it 'noexcept' (f.6)
+// move assignment can throw because allocation may be needed due to proper allocator implementation.
+hi_warning_ignore_msvc(26439);
+// C26459: You called an STL function 'std::unitialized_move' with a raw pointer... (stl.1)
+// Writing iterators instead of using raw pointers will require a lot of code without any added safety.
+hi_warning_ignore_msvc(26459);
+
 namespace hi { inline namespace v1 {
 template<typename T>
 class pixmap_span;
@@ -521,3 +529,5 @@ template<typename T, typename Allocator = std::allocator<std::remove_const_t<T>>
 pixmap(pixmap_span<T> const& other, Allocator allocator = std::allocator{}) -> pixmap<std::remove_const_t<T>>;
 
 }} // namespace hi::v1
+
+hi_warning_pop();

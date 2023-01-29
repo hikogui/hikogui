@@ -82,7 +82,8 @@ public:
         _debug_state = debug_state_type::partial;
 #endif
         auto todo = size;
-        auto *src = reinterpret_cast<char const *>(data);
+        auto *src = static_cast<char const *>(data);
+        hi_axiom_not_null(src);
 
         auto v0 = _v0;
         auto v1 = _v1;
@@ -139,7 +140,8 @@ public:
      */
     [[nodiscard]] uint64_t complete_message(void const *data, size_t size) const noexcept
     {
-        auto *src = reinterpret_cast<char const *>(data);
+        auto *src = static_cast<char const *>(data);
+        hi_axiom_not_null(src);
 
 #ifndef NDEBUG
         hi_assert(_debug_state == debug_state_type::idle);

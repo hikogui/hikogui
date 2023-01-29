@@ -309,7 +309,7 @@ struct bigint {
         hi_axiom_not_null(data);
 
         auto r = bigint{};
-        for (ssize_t i = static_cast<ssize_t>(num_digits) - 1; i >= 0; i--) {
+        for (ssize_t i = narrow_cast<ssize_t>(num_digits) - 1; i >= 0; i--) {
             digit_type d = 0;
             for (std::size_t j = 0; j < sizeof(digit_type); j++) {
                 d <<= 8;

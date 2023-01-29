@@ -22,6 +22,12 @@
 #include <mutex>
 #include <filesystem>
 
+hi_warning_push();
+// C26434: Function '' hides a non-virtual function ''.
+// False positive reported: https://developercommunity.visualstudio.com/t/C26434-false-positive-with-conversion-op/10262199
+hi_warning_ignore_msvc(26434);
+
+
 namespace hi { inline namespace v1 {
 
 /** Universal Resource Locator.
@@ -291,3 +297,5 @@ struct std::formatter<hi::URL, CharT> : std::formatter<hi::URI, CharT> {
         return std::formatter<hi::URI, CharT>::format(t, fc);
     }
 };
+
+hi_warning_pop();

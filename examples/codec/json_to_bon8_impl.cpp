@@ -20,6 +20,8 @@ int usage()
 
 int hi_main(int argc, char* argv[])
 {
+    hi_axiom_not_null(argv);
+
     if (argc != 3) {
         return usage();
     }

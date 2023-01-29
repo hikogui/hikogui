@@ -214,7 +214,7 @@ static void fillFullPixels(std::span<uint8_t> row, ssize_t const start, ssize_t 
 
         // add 51 for each pixel, 8 pixels at a time.
         auto u64p = reinterpret_cast<uint64_t *>(u8p);
-        hilet u64end = reinterpret_cast<uint64_t *>(hi::floor(u8end, sizeof(uint64_t)));
+        auto const * const u64end = reinterpret_cast<uint64_t const *>(hi::floor(u8end, sizeof(uint64_t)));
         while (u64p < u64end) {
             *(u64p++) += 0x3333333333333333ULL;
         }

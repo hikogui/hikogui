@@ -53,7 +53,7 @@ struct device_shared {
      * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan>
      * device`.
      */
-    void destroy(gfx_device_vulkan *vulkanDevice);
+    void destroy(gfx_device_vulkan const*vulkanDevice);
 
     /** Allocate pages from the atlas.
      */
@@ -63,7 +63,7 @@ struct device_shared {
      */
     void free_pages(std::vector<std::size_t> const &pages) noexcept;
 
-    void draw_in_command_buffer(vk::CommandBuffer &commandBuffer);
+    void draw_in_command_buffer(vk::CommandBuffer const &commandBuffer);
 
     /** Get the full staging pixel map excluding border.
      *
@@ -129,10 +129,10 @@ private:
     void update_atlas_with_staging_pixmap(paged_image const &image) noexcept;
 
     void build_shaders();
-    void teardown_shaders(gfx_device_vulkan *vulkan_device);
+    void teardown_shaders(gfx_device_vulkan const *vulkan_device);
     void add_atlas_image();
     void build_atlas();
-    void teardown_atlas(gfx_device_vulkan *vulkan_device);
+    void teardown_atlas(gfx_device_vulkan const *vulkan_device);
 
     friend paged_image;
 };

@@ -9,6 +9,11 @@
 #include <array>
 #include <ostream>
 
+hi_warning_push();
+// C26472: Don't use a static_cast for arithmetic conversions.
+// This is a low level type.
+hi_warning_ignore_msvc(26472);
+
 namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_SSE2
@@ -395,3 +400,5 @@ struct native_i8x16 {
 #endif
 
 }} // namespace hi::v1
+
+hi_warning_pop();

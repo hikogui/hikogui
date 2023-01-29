@@ -21,7 +21,7 @@ device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 
 device_shared::~device_shared() {}
 
-void device_shared::destroy(gfx_device_vulkan *vulkan_device)
+void device_shared::destroy(gfx_device_vulkan const*vulkan_device)
 {
     hi_assert_not_null(vulkan_device);
     teardown_shaders(vulkan_device);
@@ -91,12 +91,12 @@ static point2 get_staging_position(const paged_image &image, std::size_t page_in
 
 void device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
 {
-    hilet width = static_cast<std::size_t>(border_rectangle.width());
-    hilet height = static_cast<std::size_t>(border_rectangle.height());
-    hilet bottom = static_cast<std::size_t>(border_rectangle.bottom());
-    hilet top = static_cast<std::size_t>(border_rectangle.top());
-    hilet left = static_cast<std::size_t>(border_rectangle.left());
-    hilet right = static_cast<std::size_t>(border_rectangle.right());
+    hilet width = narrow_cast<std::size_t>(border_rectangle.width());
+    hilet height = narrow_cast<std::size_t>(border_rectangle.height());
+    hilet bottom = narrow_cast<std::size_t>(border_rectangle.bottom());
+    hilet top = narrow_cast<std::size_t>(border_rectangle.top());
+    hilet left = narrow_cast<std::size_t>(border_rectangle.left());
+    hilet right = narrow_cast<std::size_t>(border_rectangle.right());
 
     hi_assert(bottom == 0);
     hi_assert(left == 0);
@@ -221,7 +221,7 @@ void device_shared::prepare_atlas_for_rendering()
     }
 }
 
-void device_shared::draw_in_command_buffer(vk::CommandBuffer &commandBuffer)
+void device_shared::draw_in_command_buffer(vk::CommandBuffer const &commandBuffer)
 {
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
@@ -236,7 +236,7 @@ void device_shared::build_shaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragment_shader_module, "main"}};
 }
 
-void device_shared::teardown_shaders(gfx_device_vulkan *vulkanDevice)
+void device_shared::teardown_shaders(gfx_device_vulkan const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertex_shader_module);
@@ -362,7 +362,7 @@ void device_shared::build_atlas()
     add_atlas_image();
 }
 
-void device_shared::teardown_atlas(gfx_device_vulkan *vulkan_device)
+void device_shared::teardown_atlas(gfx_device_vulkan const *vulkan_device)
 {
     hi_assert_not_null(vulkan_device);
     vulkan_device->destroy(atlas_sampler);

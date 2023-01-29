@@ -565,7 +565,7 @@ stop_processing:
 
 [[nodiscard]] static unicode_bidi_class unicode_bidi_N0_preceding_strong_type(
     unicode_bidi_isolated_run_sequence& isolated_run_sequence,
-    unicode_bidi_isolated_run_sequence::iterator& open_bracket) noexcept
+    unicode_bidi_isolated_run_sequence::iterator const& open_bracket) noexcept
 {
     using enum unicode_bidi_class;
 
@@ -977,7 +977,7 @@ static void unicode_bidi_L3(unicode_bidi_char_info_iterator first, unicode_bidi_
 
 [[nodiscard]] static int8_t unicode_bidi_P3(unicode_bidi_class paragraph_bidi_class) noexcept
 {
-    return static_cast<int8_t>(paragraph_bidi_class == unicode_bidi_class::AL || paragraph_bidi_class == unicode_bidi_class::R);
+    return wide_cast<int8_t>(paragraph_bidi_class == unicode_bidi_class::AL or paragraph_bidi_class == unicode_bidi_class::R);
 }
 
 static void unicode_bidi_P1_line(
