@@ -81,7 +81,7 @@ namespace hi { inline namespace v1 {
     };
 
     hilet& header = implicit_cast<header_type_0>(bytes);
-    hi_parse_check(*header.version <= 5, "'OS/2' version must be between 0 and 5");
+    hi_check(*header.version <= 5, "'OS/2' version must be between 0 and 5");
 
     auto r = return_type{};
 

@@ -166,10 +166,10 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
             hilet b_ = get<long long>(b);
             hilet a_ = get<long long>(a);
 
-            hi_parse_check(r_ >= 0 and r_ <= 255, "integer red-color value not within 0 and 255");
-            hi_parse_check(g_ >= 0 and g_ <= 255, "integer green-color value not within 0 and 255");
-            hi_parse_check(b_ >= 0 and b_ <= 255, "integer blue-color value not within 0 and 255");
-            hi_parse_check(a_ >= 0 and a_ <= 255, "integer alpha-color value not within 0 and 255");
+            hi_check(r_ >= 0 and r_ <= 255, "integer red-color value not within 0 and 255");
+            hi_check(g_ >= 0 and g_ <= 255, "integer green-color value not within 0 and 255");
+            hi_check(b_ >= 0 and b_ <= 255, "integer blue-color value not within 0 and 255");
+            hi_check(a_ >= 0 and a_ <= 255, "integer alpha-color value not within 0 and 255");
 
             return color_from_sRGB(
                 static_cast<uint8_t>(r_), static_cast<uint8_t>(g_), static_cast<uint8_t>(b_), static_cast<uint8_t>(a_));

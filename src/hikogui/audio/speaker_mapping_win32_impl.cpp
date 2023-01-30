@@ -19,7 +19,7 @@ namespace hi::inline v1 {
         SPEAKER_TOP_FRONT_CENTER | SPEAKER_TOP_FRONT_RIGHT | SPEAKER_TOP_BACK_LEFT | SPEAKER_TOP_BACK_CENTER |
         SPEAKER_TOP_BACK_RIGHT;
 
-    hi_parse_check((from & ~valid_mask) == 0, "Unknown speaker locations");
+    hi_check((from & ~valid_mask) == 0, "Unknown speaker locations");
 
     if (from & SPEAKER_FRONT_LEFT) {
         r |= speaker_mapping::front_left;

@@ -127,30 +127,93 @@ template<std::integral T>
     }
 }
 
+template<numeric T, std::endian Endian = std::endian::native, byte_like B>
+[[nodiscard]] constexpr T load(B const *src) noexcept
+{
+    auto value = unaligned_load<T>(src);
+    if constexpr (Endian != std::endian::native) {
+        value = byte_swap(value);
+    }
+    return value;
+}
+
+template<numeric T, std::endian Endian = std::endian::native>
+[[nodiscard]] inline T load(void const *src) noexcept
+{
+    auto value = unaligned_load<T>(src);
+    if constexpr (Endian != std::endian::native) {
+        value = byte_swap(value);
+    }
+    return value;
+}
+
 template<numeric T, byte_like B>
 [[nodiscard]] constexpr T load_le(B const *src) noexcept
 {
-    return little_to_native(load<T>(src));
+    return load<T, std::endian::little>(src);
 }
 
 template<numeric T>
 [[nodiscard]] inline T load_le(void const *src) noexcept
 {
-    return load_le<T>(reinterpret_cast<std::byte const *>(src));
+    return load<T, std::endian::little>(src);
 }
 
 
 template<numeric T, byte_like B>
 [[nodiscard]] constexpr T load_be(B const *src) noexcept
 {
-    return big_to_native(load<T>(src));
+    return load<T, std::endian::big>(src);
 }
 
 template<numeric T>
 [[nodiscard]] inline T load_be(void const *src) noexcept
 {
-    return load_be<T>(static_cast<std::byte const *>(src));
+    return load<T, std::endian::big>(src);
 }
+
+template<std::endian Endian = std::endian::native, numeric T, byte_like B>
+constexpr void store(T value, B const *dst) noexcept
+{
+    if constexpr (Endian != std::endian::native) {
+        value = byte_swap(value);
+    }
+    unaligned_store<T>(value, dst);
+}
+
+template<std::endian Endian = std::endian::native, numeric T>
+constexpr void store(T value, void const *dst) noexcept
+{
+    if constexpr (Endian != std::endian::native) {
+        value = byte_swap(value);
+    }
+    unaligned_store<T>(value, dst);
+}
+
+template<numeric T, byte_like B>
+constexpr void store_le(T value, B const *dst) noexcept
+{
+    store<std::endian::little>(value, dst);
+}
+
+template<numeric T>
+inline void store_le(T value, void const *dst) noexcept
+{
+    store<std::endian::little>(value, dst);
+}
+
+template<numeric T, byte_like B>
+constexpr void store_be(T value, B const *dst) noexcept
+{
+    store<std::endian::big>(value, dst);
+}
+
+template<numeric T>
+inline void store_be(T value, void const *dst) noexcept
+{
+    store<std::endian::big>(value, dst);
+}
+
 
 template<typename T, std::endian E, std::size_t A = alignof(T)>
 struct endian_buf_t {
@@ -162,20 +225,12 @@ struct endian_buf_t {
 
     [[nodiscard]] constexpr value_type operator*() const noexcept
     {
-        auto x = load<value_type>(_value);
-        if constexpr (E != std::endian::native) {
-            x = byte_swap(x);
-        }
-        return x;
+        return load<value_type, endian>(_value);
     }
 
     constexpr endian_buf_t& operator=(value_type x) noexcept
     {
-        if constexpr (E != std::endian::native) {
-            x = byte_swap(x);
-        }
-
-        store(x, _value);
+        store<endian>(x, _value);
         return *this;
     }
 };

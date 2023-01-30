@@ -82,6 +82,64 @@ concept bound_check_range_helper = requires(Context&& range) {
     return static_cast<size_t>(index) < std::ranges::size(range);
 }
 
+#define hi_check(expression, message, ...) \
+    do { \
+        if (not(expression)) { \
+            if constexpr (__VA_OPT__(not ) false) { \
+                throw std::logic_error(std::format(message __VA_OPT__(, ) __VA_ARGS__)); \
+            } else { \
+                throw std::logic_error(message); \
+            } \
+        } \
+    } while (false)
+
+/** Assert if a value is within bounds.
+ * Independent of built type this macro will always check and throw on fail.
+ *
+ * Lower-bound is inclusive and Upper-bound is exclusive.
+ *
+ * @param x The value to check if it is within bounds.
+ * @param ... One upper-bound; or a lower-bound and upper-bound.
+ */
+#define hi_check_bounds(x, ...) \
+    do { \
+        if (not ::hi::bound_check(x, __VA_ARGS__)) { \
+            throw std::out_of_range("assert bounds: " hi_stringify(x) " between " hi_stringify(__VA_ARGS__)); \
+        } \
+    } while (false)
+
+#define hi_check_subspan(span, offset, ...) \
+    [&](auto _hi_check_subspan_span, size_t _hi_check_subspan_offset, auto... _hi_check_subspan_count) { \
+        if constexpr (sizeof...(_hi_check_subspan_count) == 0) { \
+            if (_hi_check_subspan_offset < _hi_check_subspan_span.size()) { \
+                return _hi_check_subspan_span.subspan(_hi_check_subspan_offset); \
+            } \
+        } else if constexpr (sizeof...(_hi_check_subspan_count) == 1) { \
+            if (_hi_check_subspan_offset + wide_cast<size_t>(_hi_check_subspan_count...) <= _hi_check_subspan_span.size()) { \
+                return _hi_check_subspan_span.subspan(_hi_check_subspan_offset, _hi_check_subspan_count...); \
+            } \
+        } \
+        throw std::out_of_range( \
+            "assert bounds on: " hi_stringify(span) ".subspan(" hi_stringify(offset __VA_OPT__(", ") __VA_ARGS__) ")"); \
+    }(span, offset __VA_OPT__(, ) __VA_ARGS__)
+
+#define hi_check_at(span, index) \
+    [&](auto _hi_check_subspan_span, size_t _hi_check_subspan_index) { \
+        if (_hi_check_subspan_index < _hi_check_subspan_span.size()) { \
+            return _hi_check_subspan_span[_hi_check_subspan_index]; \
+        } else { \
+            throw std::out_of_range("assert bounds on: " hi_stringify(span) "[" hi_stringify(index) "]"); \
+        } \
+    }(span, index)
+
+#define hi_hresult_check(expression) \
+    ([](HRESULT result) { \
+        if (FAILED(result)) { \
+            throw ::hi::io_error(std::format("Call to '{}' failed with {:08x}", #expression, result)); \
+        } \
+        return result; \
+    }(expression))
+
 /** Assert if expression is true.
  * Independent of built type this macro will always check and abort on fail.
  *
@@ -110,7 +168,7 @@ concept bound_check_range_helper = requires(Context&& range) {
  * Independent of built type this macro will always check and abort on fail.
  *
  * Lower-bound is inclusive and Upper-bound is exclusive.
- * 
+ *
  * @param x The value to check if it is within bounds.
  * @param ... One upper-bound; or a lower-bound and upper-bound.
  */

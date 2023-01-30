@@ -111,15 +111,15 @@ private:
 
     void cache_tables(std::span<std::byte const> bytes) const
     {
-        _cmap_table_bytes = otype_search_sfnt<"cmap">(bytes);
+        _cmap_table_bytes = otype_sfnt_search<"cmap">(bytes);
         _cmap_bytes = parse_cmap_table_directory();
-        _loca_table_bytes = otype_search_sfnt<"loca">(bytes);
-        _glyf_table_bytes = otype_search_sfnt<"glyf">(bytes);
-        _hmtx_table_bytes = otype_search_sfnt<"hmtx">(bytes);
+        _loca_table_bytes = otype_sfnt_search<"loca">(bytes);
+        _glyf_table_bytes = otype_sfnt_search<"glyf">(bytes);
+        _hmtx_table_bytes = otype_sfnt_search<"hmtx">(bytes);
 
         // Optional tables.
-        _kern_table_bytes = otype_search_sfnt<"kern">(bytes);
-        _GSUB_table_bytes = otype_search_sfnt<"GSUB">(bytes);
+        _kern_table_bytes = otype_sfnt_search<"kern">(bytes);
+        _GSUB_table_bytes = otype_sfnt_search<"GSUB">(bytes);
     }
 
     void load_view() const noexcept

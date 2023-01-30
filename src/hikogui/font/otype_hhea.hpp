@@ -11,7 +11,7 @@
 
 namespace hi { inline namespace v1 {
 
-[[nodiscard]] auto otype_parse_hhea(std::span<std::byte const> bytes, float em_scale)
+[[nodiscard]] auto otype_hhea_parse(std::span<std::byte const> bytes, float em_scale)
 {
     struct header_type {
         big_int16_buf_t major_version;
@@ -42,7 +42,7 @@ namespace hi { inline namespace v1 {
     };
 
     hilet& header = implicit_cast<header_type>(bytes);
-    hi_parse_check(*header.major_version == 1 && *header.minor_version == 0, "'hhea' version is not 1.0");
+    hi_check(*header.major_version == 1 && *header.minor_version == 0, "'hhea' version is not 1.0");
 
     auto r = return_type{};
     r.ascender = header.ascender * em_scale;
@@ -50,8 +50,8 @@ namespace hi { inline namespace v1 {
     r.line_gap = header.line_gap * em_scale;
     r.number_of_h_metrics = *header.number_of_h_metrics;
 
-    hi_parse_check(r.ascender > 0.0f, "'hhea' ascender must be larger than 0.0");
-    hi_parse_check(r.descender <= 0.0f, "'hhea' descender must be less than or equal to 0.0");
+    hi_check(r.ascender > 0.0f, "'hhea' ascender must be larger than 0.0");
+    hi_check(r.descender <= 0.0f, "'hhea' descender must be less than or equal to 0.0");
     return r;
 }
 

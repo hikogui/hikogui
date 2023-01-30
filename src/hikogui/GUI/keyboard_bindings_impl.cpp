@@ -14,16 +14,16 @@ void keyboard_bindings::load_bindings(std::filesystem::path const &path, bool sy
     hilet data = parse_JSON(path);
 
     try {
-        hi_parse_check(data.contains("bindings"), "Missing key 'bindings' at top level.");
+        hi_check(data.contains("bindings"), "Missing key 'bindings' at top level.");
 
         hilet binding_list = data["bindings"];
-        hi_parse_check(
+        hi_check(
             holds_alternative<datum::vector_type>(binding_list), "Expecting array value for key 'bindings' at top level.");
 
         for (hilet &binding : binding_list) {
-            hi_parse_check(holds_alternative<datum::map_type>(binding), "Expecting object for a binding, got {}", binding);
+            hi_check(holds_alternative<datum::map_type>(binding), "Expecting object for a binding, got {}", binding);
 
-            hi_parse_check(
+            hi_check(
                 binding.contains("key") && binding.contains("command"),
                 "Expecting required 'key' and 'command' for a binding, got {}",
                 binding);

@@ -11,7 +11,7 @@
 
 namespace hi { inline namespace v1 {
 
-[[nodiscard]] auto otype_parse_head(std::span<std::byte const> bytes)
+[[nodiscard]] auto otype_head_parse(std::span<std::byte const> bytes)
 {
     struct header_type {
         big_uint16_buf_t major_version;
@@ -41,8 +41,8 @@ namespace hi { inline namespace v1 {
 
     hilet& header = implicit_cast<header_type>(bytes);
 
-    hi_parse_check(*header.major_version == 1 and *header.minor_version == 0, "'head' version is not 1.0");
-    hi_parse_check(*header.magic_number == 0x5f0f3cf5, "'head' magic is not 0x5f0f3cf5");
+    hi_check(*header.major_version == 1 and *header.minor_version == 0, "'head' version is not 1.0");
+    hi_check(*header.magic_number == 0x5f0f3cf5, "'head' magic is not 0x5f0f3cf5");
 
     // All data to be returned must be copied before it is checked, because the
     // underlying data may be modified by an external application.
