@@ -76,7 +76,8 @@ public:
             return;
         }
 
-        std::sort(_map.begin(), _map.end());
+        // Sort the entries in reverse order so that the lower_bound search becomes upper_bound.
+        std::sort(_map.begin(), _map.end(), std::greater<uint64_t>{});
 
         auto it = _map.begin();
         auto prev_it = it++;

@@ -351,4 +351,43 @@ DataIt back_strip(DataIt data_first, DataIt data_last, ValueIt value_first, Valu
     return data_first;
 }
 
+/** The fast lower bound algorithm.
+ *
+ * @tparam T The type of the table element.
+ * @tparam Key The type of the key
+ * @tparam Endian The endianess of the key in the table.
+ * @param table A span of elements to search, the key is in the first bytes of each element.
+ * @param key A unsigned integral to search in the elements.
+ * @return A pointer to the entry found.
+ */
+template<typename T, std::unsigned_integral Key, std::endian Endian = std::endian::native>
+[[nodiscard]] constexpr T &fast_lower_bound(std::span<T> table, Key const& key) noexcept
+{
+    auto base = table.data();
+    auto len = table.size();
+
+    // A faster lower-bound search with less branches that are more predictable.
+    while (len > 1) {
+        hi_axiom_not_null(base);
+
+        hilet half = len / 2;
+        hilet& item = base[half - 1];
+
+        auto item_key = load<Key>(&item);
+        if constexpr (Endian != std::endian::native) {
+            item_key = byte_swap(item_key);
+        }
+
+        if (item_key < key) {
+            base += half;
+        }
+        len -= half;
+    }
+
+    return *base;
+
+    hilet item_key = load_be<Key>(base);
+    return item_key == key ? base : nullptr;
+}
+
 } // namespace hi::inline v1
