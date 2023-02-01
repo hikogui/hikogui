@@ -361,7 +361,7 @@ DataIt back_strip(DataIt data_first, DataIt data_last, ValueIt value_first, Valu
  * @return A pointer to the entry found.
  */
 template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
-[[nodiscard]] inline std::pair<T *, Key> fast_lower_bound(std::span<T> table, Key const& key) noexcept
+[[nodiscard]] constexpr T& fast_lower_bound(std::span<T> table, Key const& key) noexcept
 {
     auto base = table.data();
     auto len = table.size();
@@ -377,56 +377,36 @@ template<std::endian Endian = std::endian::native, typename T, std::unsigned_int
         }
         len -= half;
     }
-
-    hilet item_key = load<Key, Endian>(base);
-    return {base, item_key};
+    return *base;
 }
 
-/** The fast lower bound algorithm with little-endian keys.
- *
- * @tparam T The type of the table element.
- * @tparam Key The type of the key
- * @param table A span of elements to search, the key is in the first bytes of each element.
- * @param key A unsigned integral to search in the elements.
- * @return A pointer to the entry found.
+/** Search for the item that is equal to the key.
  */
-template<typename T, std::unsigned_integral Key>
-[[nodiscard]] constexpr std::pair<T *, Key> fast_lower_bound_le(std::span<T> table, Key key) noexcept
-{
-    return fast_lower_bound<std::endian::little>(table, key);
-}
-
-/** The fast lower bound algorithm with big-endian keys.
- *
- * @tparam T The type of the table element.
- * @tparam Key The type of the key
- * @param table A span of elements to search, the key is in the first bytes of each element.
- * @param key A unsigned integral to search in the elements.
- * @return A pointer to the entry found.
- */
-template<typename T, std::unsigned_integral Key>
-[[nodiscard]] constexpr std::pair<T *, Key> fast_lower_bound_be(std::span<T> table, Key key) noexcept
-{
-    return fast_lower_bound<std::endian::big>(table, key);
-}
-
 template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
-[[nodiscard]] constexpr T *fast_binary_search(std::span<T> table, Key const& key) noexcept
+[[nodiscard]] constexpr T *fast_binary_search_eq(std::span<T> table, Key const& key) noexcept
 {
-    hilet [item, item_key] = fast_lower_bound<Endian>(table, key);
-    return item_key == key ? item : nullptr;
+    hilet& item = fast_lower_bound<Endian>(table, key);
+    auto ptr = std::addressof(item);
+
+    return load<Key, Endian>(ptr) == key ? ptr : nullptr;
 }
 
-template<typename T, std::unsigned_integral Key>
+/** Search for the item that is less or equal to the key.
+ */
+template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
 [[nodiscard]] constexpr T *fast_binary_search_le(std::span<T> table, Key const& key) noexcept
 {
-    return fast_binary_search<std::endian::little>(table, key);
-}
+    hilet& item = fast_lower_bound<Endian>(table, key);
+    auto ptr = std::addressof(item);
 
-template<typename T, std::unsigned_integral Key>
-[[nodiscard]] constexpr T *fast_binary_search_be(std::span<T> table, Key const& key) noexcept
-{
-    return fast_binary_search<std::endian::big>(table, key);
+    do {
+        if (load<Key, Endian>(ptr) <= key) {
+            return ptr;
+        }
+        // The following line should happen only once, or fast_lower_bound() has a bug.
+    } while (ptr-- != table.data());
+
+    return nullptr;
 }
 
 } // namespace hi::inline v1

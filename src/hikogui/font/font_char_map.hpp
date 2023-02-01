@@ -9,6 +9,7 @@
 #pragma once
 
 #include "glyph_id.hpp"
+#include "../algorithm.hpp"
 #include "../utility/module.hpp"
 #include <cstdint>
 #include <vector>
@@ -47,21 +48,21 @@ public:
      * @param start_glyph The starting glyph of the range.
      * @param count The number of code-points in this range.
      */
-    [[nodiscard]] constexpr void add(char32_t start_code_point, uint32_t start_glyph, size_t count) noexcept
+    [[nodiscard]] constexpr void add(char32_t start_code_point, uint16_t start_glyph, size_t count) noexcept
     {
 #ifndef NDEBUG
         _prepared = false;
 #endif
 
         while (count != 0) {
-            hilet short_count = std::min(count, size_t{0x10000});
+            hilet short_count = truncate<uint16_t>(std::min(count, size_t{0xffff}));
             hi_axiom(short_count != 0);
 
-            _map.push_back(make_item(start_code_point, start_glyph, short_count));
+            _map.emplace_back(start_code_point, start_glyph, short_count);
 
             count -= short_count;
-            start_code_point += narrow_cast<char32_t>(short_count);
-            start_glyph += narrow_cast<uint32_t>(short_count);
+            start_code_point += short_count;
+            start_glyph += short_count;
         }
     }
 
@@ -77,26 +78,35 @@ public:
         }
 
         // Sort the entries in reverse order so that the lower_bound search becomes upper_bound.
-        std::sort(_map.begin(), _map.end(), std::greater<uint64_t>{});
+        std::sort(_map.begin(), _map.end(), [](hilet& a, hilet& b) {
+            return a.code_point < b.code_point;
+        });
 
         auto it = _map.begin();
         auto prev_it = it++;
         while (it != _map.end()) {
-            hilet[p_code_point, p_glyph, p_count] = split_item(*prev_it);
-            hilet[c_code_point, c_glyph, c_count] = split_item(*it);
+            hi_axiom(prev_it->code_point + prev_it->count <= it->code_point);
 
-            hi_axiom(p_code_point + p_count <= c_code_point);
+            if (prev_it->code_point + prev_it->count == it->code_point and prev_it->glyph + prev_it->count == it->glyph) {
+                hilet merged_count = wide_cast<uint32_t>(prev_it->count) + wide_cast<uint32_t>(it->count);
+                if (merged_count <= 0xffff) {
+                    prev_it->count = truncate<uint16_t>(merged_count);
+                    it = _map.erase(it);
+                    // Don't change prev or it; since we just deleted instead of advanced.
+                    continue;
 
-            if (p_count + c_count <= 0x10000 and p_code_point + p_count == c_code_point and p_glyph + p_count == c_glyph) {
-                *prev_it = make_item(p_code_point, p_glyph, p_count + c_count);
-                it = _map.erase(it);
-
-            } else {
-                prev_it = it++;
+                } else {
+                    hilet moved_count = truncate<uint16_t>(0xffff - prev_it->count);
+                    prev_it->count = 0xffff;
+                    it->code_point += moved_count;
+                    it->glyph += moved_count;
+                    it->count -= moved_count;
+                }
             }
+
+            prev_it = it++;
         }
 
-        std::reverse(_map.begin(), _map.end());
         _map.shrink_to_fit();
 
 #ifndef NDEBUG
@@ -109,80 +119,37 @@ public:
      * @param code_point The code-point to find in the character map.
      * @return The corrosponding glyph found representing the code-point, or an empty glyph if not found.
      */
-    [[nodiscard]] constexpr glyph_id find(char32_t code_point) const noexcept
+    [[nodiscard]] inline glyph_id find(char32_t code_point) const noexcept
     {
 #ifndef NDEBUG
         hi_assert(_prepared);
 #endif
 
-        hilet key = wide_cast<uint64_t>(code_point) << 32 | 0xffff'ffff;
-
-        // A faster upper-bound search with less branches that are more predictable.
-        auto base = _map.data();
-        auto len = _map.size();
-        while (len > 1) {
-            hi_axiom_not_null(base);
-
-            hilet half = len / 2;
-            if (base[half - 1] > key) {
-                base += half;
+        if (hilet item_ptr = fast_binary_search_le(std::span{_map}, char_cast<uint32_t>(code_point))) {
+            hilet delta = code_point - item_ptr->code_point;
+            if (delta >= item_ptr->count) {
+                return glyph_id{};
             }
-            len -= half;
-        }
 
-        // Extract manually so that count does not need to be incremented.
-        auto item = *base;
-        auto item_glyph = truncate<uint16_t>(item);
-        item >>= 16;
-        auto item_count = truncate<uint16_t>(item);
-        item >>= 16;
-        auto item_code_point = truncate<char32_t>(item);
+            return glyph_id{item_ptr->glyph + delta};
 
-        hilet delta = code_point - item_code_point;
-
-        if (delta <= item_count) {
-            return glyph_id{item_glyph + delta};
         } else {
-            // The key falls in a gap.
             return glyph_id{};
         }
     }
 
 private:
-    /** A std::make_heap list of code-point-range to glyph id.
-     *
-     * Each 64-bit integer is used as follows:
-     *  - [63:43] 21-bit unicode start code-point.
-     *  - [42:32] 11-bit count + 1 number of code-points encoded (zero count, means one code-point).
-     *  - [31:0] 32-bit start glyph-id (0xffff is reserved).
-     */
-    std::vector<uint64_t> _map = {};
+    struct item_type {
+        char32_t code_point;
+        uint16_t glyph;
+        uint16_t count;
+    };
+
+    std::vector<item_type> _map = {};
 
 #ifndef NDEBUG
     bool _prepared = false;
 #endif
-
-    [[nodiscard]] constexpr static uint64_t make_item(char32_t code_point, uint16_t glyph, size_t count) noexcept
-    {
-        hi_axiom(count != 0 and count <= 0x10000);
-
-        auto item = wide_cast<uint64_t>(code_point);
-        item <<= 16;
-        item |= count - 1;
-        item <<= 16;
-        item |= glyph;
-        return item;
-    }
-
-    [[nodiscard]] constexpr static std::tuple<char32_t, uint16_t, size_t> split_item(uint64_t item) noexcept
-    {
-        hilet glyph = truncate<uint16_t>(item);
-        item >>= 16;
-        hilet count = wide_cast<size_t>(truncate<uint16_t>(item)) + 1;
-        item >>= 16;
-        hilet code_point = truncate<char32_t>(item);
-        return {code_point, glyph, count};
-    }
 };
 
 }} // namespace hi::v1

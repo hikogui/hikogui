@@ -127,6 +127,16 @@ template<std::integral T>
     }
 }
 
+template<numeric T, std::endian Endian = std::endian::native>
+[[nodiscard]] constexpr T load(T const *src) noexcept
+{
+    auto value = *src;
+    if constexpr (Endian != std::endian::native) {
+        value = byte_swap(value);
+    }
+    return value;
+}
+
 template<numeric T, std::endian Endian = std::endian::native, byte_like B>
 [[nodiscard]] constexpr T load(B const *src) noexcept
 {
@@ -147,6 +157,12 @@ template<numeric T, std::endian Endian = std::endian::native>
     return value;
 }
 
+template<numeric T>
+[[nodiscard]] constexpr T load_le(T const *src) noexcept
+{
+    return load<T, std::endian::little>(src);
+}
+
 template<numeric T, byte_like B>
 [[nodiscard]] constexpr T load_le(B const *src) noexcept
 {
@@ -159,6 +175,11 @@ template<numeric T>
     return load<T, std::endian::little>(src);
 }
 
+template<numeric T>
+[[nodiscard]] constexpr T load_be(T const *src) noexcept
+{
+    return load<T, std::endian::big>(src);
+}
 
 template<numeric T, byte_like B>
 [[nodiscard]] constexpr T load_be(B const *src) noexcept

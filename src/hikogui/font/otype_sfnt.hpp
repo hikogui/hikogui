@@ -39,10 +39,7 @@ template<fixed_string Name>
 
     hilet entries = implicit_cast<entry_type>(offset, bytes, *header.num_tables);
 
-    hilet [entry, entry_key] = fast_lower_bound_be(entries, fourcc<Name>());
-    hi_axiom_not_null(entry);
-
-    if (entry_key == fourcc<Name>()) {
+    if (hilet entry = fast_binary_search_eq<std::endian::big>(entries, fourcc<Name>())) {
         return hi_check_subspan(bytes, *entry->offset, *entry->length);
     } else {
         return {};
