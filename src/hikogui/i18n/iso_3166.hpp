@@ -23,7 +23,7 @@ public:
 
     constexpr iso_3166(uint16_t number) : _v(number)
     {
-        hi_parse_check(number <= 999, "ISO-3166 number must be between 0 and 999, got {}", number);
+        hi_check(number <= 999, "ISO-3166 number must be between 0 and 999, got {}", number);
     }
 
     iso_3166(std::string_view str);

@@ -116,7 +116,7 @@ struct GLYFEntry {
     std::size_t offset = 0;
 
     hilet header = make_placement_ptr<CMAPHeader>(_cmap_table_bytes, offset);
-    hi_parse_check(*header->version == 0, "CMAP version is not 0");
+    hi_check(*header->version == 0, "CMAP version is not 0");
 
     uint16_t numTables = *header->numTables;
     hilet entries = make_placement_array<CMAPEntry>(_cmap_table_bytes, offset, numTables);
@@ -168,10 +168,10 @@ struct GLYFEntry {
     }
 
     // There must be a bestEntry because a unicode table is required by the true-type standard.
-    hi_parse_check(bestEntry != nullptr, "Missing Unicode CMAP entry");
+    hi_check(bestEntry != nullptr, "Missing Unicode CMAP entry");
 
     hilet entry_offset = *bestEntry->offset;
-    hi_parse_check(entry_offset < _cmap_table_bytes.size(), "CMAP entry is located beyond buffer");
+    hi_check(entry_offset < _cmap_table_bytes.size(), "CMAP entry is located beyond buffer");
 
     return _cmap_table_bytes.subspan(entry_offset, _cmap_table_bytes.size() - entry_offset);
 }
@@ -253,7 +253,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
     std::size_t offset = 0;
     hilet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
     hilet length = *header->length;
-    hi_parse_check(length <= bytes.size(), "CMAP header length is larger than table.");
+    hi_check(length <= bytes.size(), "CMAP header length is larger than table.");
     hilet num_segments = *header->segCountX2 / 2;
 
     hilet end_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
@@ -276,7 +276,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
             c16 -= start_code;
             c16 += segment_i;
             c16 += id_range_offset / 2;
-            hi_parse_check(c16 < id_range_offsets.size(), "id_range_offsets invalid");
+            hi_check(c16 < id_range_offsets.size(), "id_range_offsets invalid");
         }
     }
 
@@ -909,32 +909,32 @@ bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics
 
 void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
 {
-    if (auto head_bytes = otype_search_sfnt<"head">(bytes); not head_bytes.empty()) {
-        auto head = otype_parse_head(head_bytes);
+    if (auto head_bytes = otype_sfnt_search<"head">(bytes); not head_bytes.empty()) {
+        auto head = otype_head_parse(head_bytes);
         _loca_is_offset32 = head.loca_is_offset32;
         _em_scale = head.em_scale;
     }
 
-    if (auto name_bytes = otype_search_sfnt<"name">(bytes); not name_bytes.empty()) {
-        auto names = otype_parse_name(name_bytes);
+    if (auto name_bytes = otype_sfnt_search<"name">(bytes); not name_bytes.empty()) {
+        auto names = otype_name_get_family(name_bytes);
         family_name = std::move(names.family_name);
         sub_family_name = std::move(names.sub_family_name);
     }
 
-    if (auto maxp_bytes = otype_search_sfnt<"maxp">(bytes); not maxp_bytes.empty()) {
-        auto maxp = otype_parse_maxp(maxp_bytes);
+    if (auto maxp_bytes = otype_sfnt_search<"maxp">(bytes); not maxp_bytes.empty()) {
+        auto maxp = otype_maxp_parse(maxp_bytes);
         num_glyphs = maxp.num_glyphs;
     }
 
-    if (auto hhea_bytes = otype_search_sfnt<"hhea">(bytes); not hhea_bytes.empty()) {
-        auto hhea = otype_parse_hhea(hhea_bytes, _em_scale);
+    if (auto hhea_bytes = otype_sfnt_search<"hhea">(bytes); not hhea_bytes.empty()) {
+        auto hhea = otype_hhea_parse(hhea_bytes, _em_scale);
         metrics.ascender = hhea.ascender;
         metrics.descender = -hhea.descender;
         metrics.line_gap = hhea.line_gap;
         numberOfHMetrics = hhea.number_of_h_metrics;
     }
 
-    if (auto os2_bytes = otype_search_sfnt<"OS/2">(bytes); not os2_bytes.empty()) {
+    if (auto os2_bytes = otype_sfnt_search<"OS/2">(bytes); not os2_bytes.empty()) {
         auto os2 = otype_parse_os2(os2_bytes, _em_scale);
         weight = os2.weight;
         condensed = os2.condensed;

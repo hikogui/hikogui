@@ -261,7 +261,7 @@ inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
 /** Make an unaligned load of an unsigned integer.
  */
 template<numeric T, byte_like B>
-[[nodiscard]] constexpr T load(B const *src) noexcept
+[[nodiscard]] constexpr T unaligned_load(B const *src) noexcept
 {
     auto r = T{};
 
@@ -290,26 +290,21 @@ template<numeric T, byte_like B>
 }
 
 template<numeric T>
-[[nodiscard]] inline T load(void const *src) noexcept
+[[nodiscard]] inline T unaligned_load(void const *src) noexcept
 {
-    return load<T>(reinterpret_cast<std::byte const *>(src));
+    return unaligned_load<T>(reinterpret_cast<std::byte const *>(src));
 }
 
 template<numeric T, byte_like B>
-[[nodiscard]] constexpr void store(T src, B *dst) noexcept
+[[nodiscard]] constexpr void unaligned_store(T src, B *dst) noexcept
 {
     using unsigned_type = std::make_unsigned_t<T>;
 
     hilet src_ = static_cast<unsigned_type>(src);
 
     if (not std::is_constant_evaluated()) {
-#if HI_COMPILER == HI_CC_MSVC
-        *reinterpret_cast<__unaligned unsigned_type *>(dst) = src_;
-        return;
-#else
         std::memcpy(dst, &src, sizeof(T));
         return;
-#endif
     }
 
     if constexpr (std::endian::native == std::endian::little) {
@@ -326,9 +321,9 @@ template<numeric T, byte_like B>
 }
 
 template<numeric T>
-[[nodiscard]] inline void store(T src, void *dst) noexcept
+[[nodiscard]] inline void unaligned_store(T src, void *dst) noexcept
 {
-    return store(src, reinterpret_cast<std::byte *>(dst));
+    return unaligned_store(src, reinterpret_cast<std::byte *>(dst));
 }
 
 template<numeric T>

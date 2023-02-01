@@ -82,6 +82,99 @@ concept bound_check_range_helper = requires(Context&& range) {
     return static_cast<size_t>(index) < std::ranges::size(range);
 }
 
+/** Check if the expression is valid, or throw a parse_error.
+* 
+* This function is used to check if an expression is correct during the
+* parsing of data.
+* 
+* @param expression The expression to check.
+* @param message The message to set in the parse_error.
+* @param ... Optional format parameters for the message.
+* @throws parse_error When the expression yields false.
+*/
+#define hi_check(expression, message, ...) \
+    do { \
+        if (not(expression)) { \
+            if constexpr (__VA_OPT__(not ) false) { \
+                throw parse_error(std::format(message __VA_OPT__(, ) __VA_ARGS__)); \
+            } else { \
+                throw parse_error(message); \
+            } \
+        } \
+    } while (false)
+
+/** Assert if a value is within bounds, or throw a parse_error.
+ *
+ * This function is used to check if a value is within bounds
+ * during parsing of data.
+ *
+ * Lower-bound is inclusive and Upper-bound is exclusive.
+ *
+ * @param x The value to check if it is within bounds.
+ * @param ... One upper-bound; or a lower-bound and upper-bound.
+ * @throws parse_error When the expression yields false.
+ */
+#define hi_check_bounds(x, ...) \
+    do { \
+        if (not ::hi::bound_check(x, __VA_ARGS__)) { \
+            throw parse_error("assert bounds: " hi_stringify(x) " between " hi_stringify(__VA_ARGS__)); \
+        } \
+    } while (false)
+
+/** Get a subspan, or throw a parse_error.
+ *
+ * This function is used to get a subspan of data with bounds
+ * checks during parsing of data.
+ *
+ * @param span The span to take the subspan of.
+ * @param offset The offset within the span to start the subspan.
+ * @param ... Optional count for the number of elements in the subspan.
+ *            When not specified the subspan is up to the end of the span.
+ * @return A subspan.
+ * @throws parse_error When the subspan does not fit the given span.
+ */
+#define hi_check_subspan(span, offset, ...) \
+    [&](auto _hi_check_subspan_span, size_t _hi_check_subspan_offset, auto... _hi_check_subspan_count) { \
+        if constexpr (sizeof...(_hi_check_subspan_count) == 0) { \
+            if (_hi_check_subspan_offset < _hi_check_subspan_span.size()) { \
+                return _hi_check_subspan_span.subspan(_hi_check_subspan_offset); \
+            } \
+        } else if constexpr (sizeof...(_hi_check_subspan_count) == 1) { \
+            if (_hi_check_subspan_offset + wide_cast<size_t>(_hi_check_subspan_count...) <= _hi_check_subspan_span.size()) { \
+                return _hi_check_subspan_span.subspan(_hi_check_subspan_offset, _hi_check_subspan_count...); \
+            } \
+        } \
+        throw parse_error( \
+            "assert bounds on: " hi_stringify(span) ".subspan(" hi_stringify(offset __VA_OPT__(", ") __VA_ARGS__) ")"); \
+    }(span, offset __VA_OPT__(, ) __VA_ARGS__)
+
+/** Get an element from a span, or throw a parse_error.
+ *
+ * This function is used to get an element of span with bounds
+ * checks during parsing of data.
+ *
+ * @param span The span to take the subspan of.
+ * @param index The index to the element in the span.
+ * @return A reference to the element.
+ * @throws parse_error When the index is not contained in the given span.
+ */
+#define hi_check_at(span, index) \
+    [&](auto _hi_check_subspan_span, size_t _hi_check_subspan_index) { \
+        if (_hi_check_subspan_index < _hi_check_subspan_span.size()) { \
+            return _hi_check_subspan_span[_hi_check_subspan_index]; \
+        } else { \
+            throw parse_error("assert bounds on: " hi_stringify(span) "[" hi_stringify(index) "]"); \
+        } \
+    }(span, index)
+
+#define hi_hresult_check(expression) \
+    ([](HRESULT result) { \
+        if (FAILED(result)) { \
+            throw ::hi::io_error(std::format("Call to '{}' failed with {:08x}", #expression, result)); \
+        } \
+        return result; \
+    }(expression))
+
 /** Assert if expression is true.
  * Independent of built type this macro will always check and abort on fail.
  *
@@ -110,7 +203,7 @@ concept bound_check_range_helper = requires(Context&& range) {
  * Independent of built type this macro will always check and abort on fail.
  *
  * Lower-bound is inclusive and Upper-bound is exclusive.
- * 
+ *
  * @param x The value to check if it is within bounds.
  * @param ... One upper-bound; or a lower-bound and upper-bound.
  */

@@ -76,7 +76,7 @@ inline std::pair<std::size_t, std::size_t>
 parse_spreadsheet_address(std::string_view address, std::size_t start_column_nr = 0, std::size_t start_row_nr = 0)
 {
     auto [column_nr_is_relative, column_nr, row_nr_is_relative, row_nr] = _parse_spreadsheet_address(address);
-    hi_parse_check(address.empty(), "Extra characters in spread sheet address {}", address);
+    hi_check(address.empty(), "Extra characters in spread sheet address {}", address);
 
     if (column_nr_is_relative) {
         column_nr += start_column_nr;
@@ -109,7 +109,7 @@ parse_spreadsheet_range(std::string_view address, std::size_t start_column_nr = 
     if (address.starts_with(":")) {
         address.remove_prefix(1);
         auto [column_nr_is_relative2, column_nr2, row_nr_is_relative2, row_nr2] = _parse_spreadsheet_address(address);
-        hi_parse_check(address.empty(), "Extra characters in spread sheet address {}", address);
+        hi_check(address.empty(), "Extra characters in spread sheet address {}", address);
 
         if (column_nr_is_relative2) {
             column_nr2 += start_column_nr;
@@ -118,12 +118,12 @@ parse_spreadsheet_range(std::string_view address, std::size_t start_column_nr = 
             row_nr2 += start_row_nr;
         }
 
-        hi_parse_check(column_nr1 <= column_nr2, "Column range must be in ascending direction");
-        hi_parse_check(row_nr1 <= row_nr2, "Column range must be in ascending direction");
+        hi_check(column_nr1 <= column_nr2, "Column range must be in ascending direction");
+        hi_check(row_nr1 <= row_nr2, "Column range must be in ascending direction");
         return {column_nr1, row_nr1, column_nr2 + 1, row_nr2 + 1};
 
     } else {
-        hi_parse_check(address.empty(), "Extra characters in spread sheet address {}", address);
+        hi_check(address.empty(), "Extra characters in spread sheet address {}", address);
         return {column_nr1, row_nr1, column_nr1 + 1, row_nr1 + 1};
     }
 }

@@ -13,7 +13,7 @@ namespace hi {
 inline namespace v1 {
 
 template<fixed_string Name>
-[[nodiscard]] std::span<std::byte const> otype_search_sfnt(std::span<std::byte const> bytes)
+[[nodiscard]] std::span<std::byte const> otype_sfnt_search(std::span<std::byte const> bytes)
 {
     struct header_type {
         big_uint32_buf_t scaler_type;
@@ -39,8 +39,8 @@ template<fixed_string Name>
 
     hilet entries = implicit_cast<entry_type>(offset, bytes, *header.num_tables);
 
-    if (auto entry = otype_search_table(entries, fourcc<Name>())) {
-        return bytes.subspan(*entry->offset, *entry->length);
+    if (hilet entry = fast_binary_search_eq<std::endian::big>(entries, fourcc<Name>())) {
+        return hi_check_subspan(bytes, *entry->offset, *entry->length);
     } else {
         return {};
     }

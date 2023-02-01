@@ -57,7 +57,7 @@ void png::read_header(std::span<std::byte const> bytes, std::size_t &offset)
         png_header->signature[3] == 71 && png_header->signature[4] == 13 && png_header->signature[5] == 10 &&
         png_header->signature[6] == 26 && png_header->signature[7] == 10;
 
-    hi_parse_check(valid_signature, "invalid PNG file signature");
+    hi_check(valid_signature, "invalid PNG file signature");
 }
 
 void png::generate_sRGB_transfer_function() noexcept
@@ -105,18 +105,18 @@ void png::read_IHDR(std::span<std::byte const> bytes)
     _filter_method = ihdr->filter_method;
     _interlace_method = ihdr->interlace_method;
 
-    hi_parse_check(_width <= 16384, "PNG width too large.");
-    hi_parse_check(_height <= 16384, "PNG height too large.");
-    hi_parse_check(_bit_depth == 8 || _bit_depth == 16, "PNG only bit depth of 8 or 16 is implemented.");
-    hi_parse_check(_compression_method == 0, "Only deflate/inflate compression is allowed.");
-    hi_parse_check(_filter_method == 0, "Only adaptive filtering is allowed.");
-    hi_parse_check(_interlace_method == 0, "Only non interlaced PNG are implemented.");
+    hi_check(_width <= 16384, "PNG width too large.");
+    hi_check(_height <= 16384, "PNG height too large.");
+    hi_check(_bit_depth == 8 || _bit_depth == 16, "PNG only bit depth of 8 or 16 is implemented.");
+    hi_check(_compression_method == 0, "Only deflate/inflate compression is allowed.");
+    hi_check(_filter_method == 0, "Only adaptive filtering is allowed.");
+    hi_check(_interlace_method == 0, "Only non interlaced PNG are implemented.");
 
     _is_palletted = (_color_type & 1) != 0;
     _is_color = (_color_type & 2) != 0;
     _has_alpha = (_color_type & 4) != 0;
-    hi_parse_check((_color_type & 0xf8) == 0, "Invalid color type");
-    hi_parse_check(!_is_palletted, "Paletted images are not supported");
+    hi_check((_color_type & 0xf8) == 0, "Invalid color type");
+    hi_check(!_is_palletted, "Paletted images are not supported");
 
     if (_is_palletted) {
         _samples_per_pixel = 1;
@@ -154,7 +154,7 @@ void png::read_gAMA(std::span<std::byte const> bytes)
 {
     hilet gama = make_placement_ptr<gAMA>(bytes);
     hilet gamma = narrow_cast<float>(*gama->gamma) / 100'000.0f;
-    hi_parse_check(gamma != 0.0f, "Gamma value can not be zero");
+    hi_check(gamma != 0.0f, "Gamma value can not be zero");
 
     generate_gamma_transfer_function(1.0f / gamma);
 }
@@ -163,7 +163,7 @@ void png::read_sRGB(std::span<std::byte const> bytes)
 {
     hilet srgb = make_placement_ptr<sRGB>(bytes);
     hilet rendering_intent = srgb->rendering_intent;
-    hi_parse_check(rendering_intent <= 3, "Invalid rendering intent");
+    hi_check(rendering_intent <= 3, "Invalid rendering intent");
 
     _color_to_sRGB = geo::identity();
     generate_sRGB_transfer_function();
@@ -210,8 +210,8 @@ void png::read_chunks(std::span<std::byte const> bytes, std::size_t &offset)
     while (!has_IEND) {
         hilet header = make_placement_ptr<ChunkHeader>(bytes, offset);
         hilet length = narrow_cast<ssize_t>(*header->length);
-        hi_parse_check(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
-        hi_parse_check(offset + length + ssizeof(uint32_t) <= bytes.size(), "Chuck extents beyond file.");
+        hi_check(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
+        hi_check(offset + length + ssizeof(uint32_t) <= bytes.size(), "Chuck extents beyond file.");
 
         switch (fourcc(header->type)) {
         case fourcc("IDAT"): _idat_chunk_data.push_back(bytes.subspan(offset, length)); break;
@@ -236,7 +236,7 @@ void png::read_chunks(std::span<std::byte const> bytes, std::size_t &offset)
         [[maybe_unused]] hilet crc = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
     }
 
-    hi_parse_check(!IHDR_bytes.empty(), "Missing IHDR chunk.");
+    hi_check(!IHDR_bytes.empty(), "Missing IHDR chunk.");
     read_IHDR(IHDR_bytes);
     if (!cHRM_bytes.empty()) {
         read_cHRM(cHRM_bytes);
@@ -443,7 +443,7 @@ void png::decode_image(pixmap_span<sfloat_rgba16> image) const
     hilet image_data_size = _stride * _height;
 
     auto image_data = decompress_IDATs(image_data_size);
-    hi_parse_check(ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
+    hi_check(ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
 
     unfilter_lines(image_data);
 

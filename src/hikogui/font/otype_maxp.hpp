@@ -11,7 +11,7 @@
 
 namespace hi { inline namespace v1 {
 
-[[nodiscard]] auto otype_parse_maxp(std::span<std::byte const> bytes)
+[[nodiscard]] auto otype_maxp_parse(std::span<std::byte const> bytes)
 {
     struct header_type_05 {
         big_uint32_buf_t version;
@@ -42,7 +42,7 @@ namespace hi { inline namespace v1 {
 
     hilet& header = implicit_cast<header_type_05>(bytes);
     hilet version = *header.version;
-    hi_parse_check(version == 0x00010000 || version == 0x00005000, "MAXP version must be 0.5 or 1.0");
+    hi_check(version == 0x00010000 || version == 0x00005000, "MAXP version must be 0.5 or 1.0");
 
     auto r = return_type{};
     r.num_glyphs = *header.num_glyphs;

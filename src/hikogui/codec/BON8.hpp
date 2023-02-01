@@ -458,7 +458,7 @@ void BON8_encoder::add(datum const& value)
     hilet c0 = static_cast<uint8_t>(*ptr);
     hilet count = c0 <= 0xdf ? 2 : c0 <= 0xef ? 3 : 4;
 
-    hi_parse_check(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
+    hi_check(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
 
     hilet c1 = static_cast<uint8_t>(*(ptr + 1));
     return (c1 < 0x80 or c1 > 0xbf) ? -count : count;
@@ -480,7 +480,7 @@ void BON8_encoder::add(datum const& value)
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
-        hi_parse_check(ptr != last, "Incomplete signed integer at end of buffer");
+        hi_check(ptr != last, "Incomplete signed integer at end of buffer");
         u64 <<= 8;
         u64 |= static_cast<uint64_t>(*(ptr++));
     }
@@ -503,7 +503,7 @@ void BON8_encoder::add(datum const& value)
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
-        hi_parse_check(ptr != last, "Incomplete signed integer at end of buffer");
+        hi_check(ptr != last, "Incomplete signed integer at end of buffer");
         u64 <<= 8;
         u64 |= static_cast<uint64_t>(*(ptr++));
     }
@@ -567,7 +567,7 @@ void BON8_encoder::add(datum const& value)
 
         } else {
             auto key = decode_BON8(ptr, last);
-            hi_parse_check(holds_alternative<std::string>(key), "Key in object is not a string");
+            hi_check(holds_alternative<std::string>(key), "Key in object is not a string");
 
             auto value = decode_BON8(ptr, last);
             map.emplace(std::move(key), std::move(value));
@@ -583,7 +583,7 @@ void BON8_encoder::add(datum const& value)
 
     while (count--) {
         auto key = decode_BON8(ptr, last);
-        hi_parse_check(holds_alternative<std::string>(key), "Key in object is not a string");
+        hi_check(holds_alternative<std::string>(key), "Key in object is not a string");
 
         auto value = decode_BON8(ptr, last);
         map.emplace(std::move(key), std::move(value));

@@ -120,7 +120,7 @@ public:
         ssize_t byteNr = 0;
         ssize_t i = 0;
         while (packetNr < nrpackets()) {
-            hi_parse_check(byteNr < nrBytes, "New-line not found within {} bytes", nrBytes);
+            hi_check(byteNr < nrBytes, "New-line not found within {} bytes", nrBytes);
 
             if (i == ssize(packets[packetNr])) {
                 // Advance to next packet.

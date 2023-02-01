@@ -61,53 +61,24 @@ struct otype_fuword_buf_t {
     }
 };
 
-template<typename T, std::unsigned_integral Key>
-[[nodiscard]] constexpr T *otype_search_table(std::span<T> table, Key const& key) noexcept
-{
-    auto base = table.data();
-    auto len = table.size();
-
-    // A faster lower-bound search with less branches that are more predictable.
-    while (len > 1) {
-        hi_axiom_not_null(base);
-
-        hilet half = len / 2;
-        hilet& item = base[half - 1];
-        hilet item_key = load_be<Key>(&item);
-        if (item_key < key) {
-            base += half;
-        }
-        len -= half;
-    }
-
-    hilet item_key = load_be<Key>(base);
-    return item_key == key ? base : nullptr;
-}
-
-static std::optional<std::string> otype_get_string(
-    std::span<std::byte const> bytes,
-    uint16_t platform_id,
-    uint16_t platform_specific_id,
-    uint16_t language_id)
+static std::optional<std::string>
+otype_get_string(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t platform_specific_id)
 {
     switch (platform_id) {
     case 2: // Deprecated, but compatible with unicode.
-    case 0: // Unicode, encoded as UTF-16LE or UTF-16BE (BE is default guess).
-        if (language_id == 0 || language_id == 0xffff) { // Language independent.
-            hi_parse_check(bytes.size() % 2 == 0, "Length in bytes of a name must be multiple of two");
-            return char_converter<"utf-16", "utf-8">{}.read(bytes.data(), bytes.size(), std::endian::big);
-        }
-        break;
+    case 0: // Unicode, encoded as UTF-16BE, should not be UTF-16LE, but sometimes it is.
+        hi_check(bytes.size() % 2 == 0, "Length in bytes of a name must be multiple of two");
+        return char_converter<"utf-16", "utf-8">{}.read(bytes.data(), bytes.size(), std::endian::big);
 
     case 1: // Macintosh
-        if (platform_specific_id == 0 && language_id == 0) { // Roman script ASCII, English
+        if (platform_specific_id == 0) { // Roman script ASCII
             return char_converter<"utf-8", "utf-8">{}.read(bytes.data(), bytes.size());
         }
         break;
 
     case 3: // Windows
-        if (platform_specific_id == 1 && language_id == 0x409) { // UTF-16BE, English - United States.
-            hi_parse_check(bytes.size() % 2 == 0, "Length in bytes of a name must be multiple of two");
+        if (platform_specific_id == 1 or platform_specific_id == 10) { // UTF-16BE
+            hi_check(bytes.size() % 2 == 0, "Length in bytes of a name must be multiple of two");
             return char_converter<"utf-16", "utf-8">{}.read(bytes.data(), bytes.size(), std::endian::big);
         }
         break;
@@ -117,6 +88,5 @@ static std::optional<std::string> otype_get_string(
     }
     return {};
 }
-
 
 }} // namespace hi::v1

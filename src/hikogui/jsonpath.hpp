@@ -273,14 +273,14 @@ using jsonpath_node = std::variant<
     auto step = 1_z;
     if (*it == tokenizer_name_t::Operator and *it == ":") {
         ++it;
-        hi_parse_check(*it == tokenizer_name_t::IntegerLiteral, "Expect integer as third slice argument, got {}.", *it);
+        hi_check(*it == tokenizer_name_t::IntegerLiteral, "Expect integer as third slice argument, got {}.", *it);
         step = static_cast<ssize_t>(*it);
         ++it;
     }
 
-    hi_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of slicing operator ']', got {}.", *it);
+    hi_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of slicing operator ']', got {}.", *it);
 
-    hi_parse_check(step != 0, "Slicing operator's step must not be zero");
+    hi_check(step != 0, "Slicing operator's step must not be zero");
     return jsonpath_slice{first, last, step};
 }
 
@@ -290,12 +290,12 @@ using jsonpath_node = std::variant<
 
     while (*it == tokenizer_name_t::Operator and *it == ",") {
         ++it;
-        hi_parse_check(*it == tokenizer_name_t::IntegerLiteral, "Expect integer literal after comma ',', got {}.", *it);
+        hi_check(*it == tokenizer_name_t::IntegerLiteral, "Expect integer literal after comma ',', got {}.", *it);
         tmp.push_back(static_cast<ssize_t>(*it));
         ++it;
     }
 
-    hi_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of slicing operator ']', got {}.", *it);
+    hi_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of slicing operator ']', got {}.", *it);
     return tmp;
 }
 
@@ -305,12 +305,12 @@ using jsonpath_node = std::variant<
 
     while (*it == tokenizer_name_t::Operator and *it == ",") {
         ++it;
-        hi_parse_check(*it == tokenizer_name_t::StringLiteral, "Expect string literal after comma ',', got {}.", *it);
+        hi_check(*it == tokenizer_name_t::StringLiteral, "Expect string literal after comma ',', got {}.", *it);
         tmp.push_back(static_cast<std::string>(*it));
         ++it;
     }
 
-    hi_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of indexing operator ']', got {}.", *it);
+    hi_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of indexing operator ']', got {}.", *it);
     return tmp;
 }
 
@@ -320,7 +320,7 @@ using jsonpath_node = std::variant<
 
     if (*it == tokenizer_name_t::Operator and *it == "*") {
         ++it;
-        hi_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of indexing operator ']', got {}.", *it);
+        hi_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of indexing operator ']', got {}.", *it);
         return jsonpath_wildcard{};
 
     } else if (*it == tokenizer_name_t::Operator and *it == ":") {
@@ -395,15 +395,15 @@ public:
                 _nodes.emplace_back(parse_jsonpath_indexing_operator(it, it_end));
 
             } else if (*it == tokenizer_name_t::Name and *it == "$") {
-                hi_parse_check(_nodes.empty(), "Root node '$' not at start of path.");
+                hi_check(_nodes.empty(), "Root node '$' not at start of path.");
                 _nodes.emplace_back(jsonpath_root{});
 
             } else if (*it == tokenizer_name_t::Operator and *it == "@") {
-                hi_parse_check(_nodes.empty(), "Current node '@' not at start of path.");
+                hi_check(_nodes.empty(), "Current node '@' not at start of path.");
                 _nodes.emplace_back(jsonpath_current{});
 
             } else if (*it == tokenizer_name_t::Name) {
-                hi_parse_check(_nodes.empty(), "Unexpected child name {}.", *it);
+                hi_check(_nodes.empty(), "Unexpected child name {}.", *it);
                 _nodes.emplace_back(jsonpath_names{static_cast<std::string>(*it)});
 
             } else if (*it == tokenizer_name_t::End) {

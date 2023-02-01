@@ -18,7 +18,7 @@ namespace hi::inline v1 {
  * @return Output container containing the transformed elements.
  */
 template<typename T, typename U, typename F>
-inline T transform(const U &input, F operation)
+inline T transform(const U& input, F operation)
 {
     T result = {};
     result.reserve(input.size());
@@ -44,14 +44,14 @@ constexpr std::array<T, N> generate_array(F operation)
 }
 
 /** Remove element from a container.
-* 
-* @note The elements before @a element remain in order.
-* @note The elements after @a element are not in the original order.
-* @param first The iterator pointing to the first element of the container
-* @param last The iterator pointing one beyond the last element of the container.
-* @param element The iterator that points to the element to be removed.
-* @return The iterator one past the last element.
-*/
+ *
+ * @note The elements before @a element remain in order.
+ * @note The elements after @a element are not in the original order.
+ * @param first The iterator pointing to the first element of the container
+ * @param last The iterator pointing one beyond the last element of the container.
+ * @param element The iterator that points to the element to be removed.
+ * @return The iterator one past the last element.
+ */
 template<typename It>
 constexpr It unordered_remove(It first, It last, It element)
 {
@@ -80,15 +80,15 @@ constexpr It rfind_if(It const first, It const last, UnaryPredicate predicate)
 template<typename It, typename UnaryPredicate>
 constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicate)
 {
-    return rfind_if(first, last, [&](hilet &x) {
+    return rfind_if(first, last, [&](hilet& x) {
         return !predicate(x);
     });
 }
 
 template<typename It, typename T>
-constexpr It rfind(It const first, It const last, T const &value)
+constexpr It rfind(It const first, It const last, T const& value)
 {
-    return rfind_if(first, last, [&](hilet &x) {
+    return rfind_if(first, last, [&](hilet& x) {
         return x == value;
     });
 }
@@ -103,8 +103,8 @@ constexpr It rfind(It const first, It const last, T const &value)
 template<typename It, typename ItAny>
 [[nodiscard]] constexpr It find_any(It data_first, It data_last, ItAny value_first, ItAny value_last) noexcept
 {
-    return std::find_if(data_first, data_last, [value_first, value_last](hilet &data) {
-        return std::any_of(value_first, value_last, [&data](hilet &value) {
+    return std::find_if(data_first, data_last, [value_first, value_last](hilet& data) {
+        return std::any_of(value_first, value_last, [&data](hilet& value) {
             return data == value;
         });
     });
@@ -303,7 +303,7 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
  */
 auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_last) noexcept
 {
-    return shuffle_by_index(first, last, indices_first, indices_last, [](hilet &x) {
+    return shuffle_by_index(first, last, indices_first, indices_last, [](hilet& x) {
         return narrow_cast<std::size_t>(x);
     });
 }
@@ -349,6 +349,64 @@ DataIt back_strip(DataIt data_first, DataIt data_last, ValueIt value_first, Valu
     }
 
     return data_first;
+}
+
+/** The fast lower bound algorithm.
+ *
+ * @tparam T The type of the table element.
+ * @tparam Key The type of the key
+ * @tparam Endian The endianess of the key in the table.
+ * @param table A span of elements to search, the key is in the first bytes of each element.
+ * @param key A unsigned integral to search in the elements.
+ * @return A pointer to the entry found.
+ */
+template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
+[[nodiscard]] constexpr T& fast_lower_bound(std::span<T> table, Key const& key) noexcept
+{
+    auto base = table.data();
+    auto len = table.size();
+
+    // A faster lower-bound search with less branches that are more predictable.
+    while (len > 1) {
+        hi_axiom_not_null(base);
+
+        hilet half = len / 2;
+
+        if (load<Key, Endian>(base + half - 1) < key) {
+            base += half;
+        }
+        len -= half;
+    }
+    return *base;
+}
+
+/** Search for the item that is equal to the key.
+ */
+template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
+[[nodiscard]] constexpr T *fast_binary_search_eq(std::span<T> table, Key const& key) noexcept
+{
+    hilet& item = fast_lower_bound<Endian>(table, key);
+    auto ptr = std::addressof(item);
+
+    return load<Key, Endian>(ptr) == key ? ptr : nullptr;
+}
+
+/** Search for the item that is less or equal to the key.
+ */
+template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
+[[nodiscard]] constexpr T *fast_binary_search_le(std::span<T> table, Key const& key) noexcept
+{
+    hilet& item = fast_lower_bound<Endian>(table, key);
+    auto ptr = std::addressof(item);
+
+    do {
+        if (load<Key, Endian>(ptr) <= key) {
+            return ptr;
+        }
+        // The following line should happen only once, or fast_lower_bound() has a bug.
+    } while (ptr-- != table.data());
+
+    return nullptr;
 }
 
 } // namespace hi::inline v1

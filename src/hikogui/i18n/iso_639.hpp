@@ -32,7 +32,7 @@ public:
     template<std::size_t I>
     constexpr friend iso_639& set(iso_639& rhs, char c)
     {
-        hi_parse_check(
+        hi_check(
             c == 0 or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '1' and c <= '5'),
             "Must be letters or the digits between '1' and '5', or nul");
 
@@ -85,7 +85,7 @@ public:
     constexpr iso_639(std::string_view str) : _v(0)
     {
         try {
-            hi_parse_check(str.size() == 2 or str.size() == 3, "ISO-639 incorrect length.");
+            hi_check(str.size() == 2 or str.size() == 3, "ISO-639 incorrect length.");
 
             set<0>(*this, str[0]);
             set<1>(*this, str[1]);

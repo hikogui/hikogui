@@ -106,7 +106,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Name(
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (is_name_next(c) || c == '-') {
@@ -128,7 +128,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Minus
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         if (c == '0') {
@@ -598,7 +598,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Quote
     std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        hilet c = static_cast<char>(i);
+        hilet c = char_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
         switch (c) {

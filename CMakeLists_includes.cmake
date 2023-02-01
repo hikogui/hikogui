@@ -29,6 +29,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/font/elusive_icon.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_book.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_char_map.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_family_id.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_grapheme_id.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_metrics.hpp
@@ -100,7 +101,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/charconv.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/check.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/compare.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/concepts.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/debugger.hpp

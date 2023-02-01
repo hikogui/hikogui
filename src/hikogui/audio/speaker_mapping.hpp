@@ -119,7 +119,7 @@ struct pickle<speaker_mapping> {
 
     [[nodiscard]] speaker_mapping decode(long long rhs) const
     {
-        hi_parse_check(rhs >= 0, "Expect speaker mapping to be encoded as a natural number, got {}.", rhs);
+        hi_check(rhs >= 0, "Expect speaker mapping to be encoded as a natural number, got {}.", rhs);
         return static_cast<speaker_mapping>(rhs);
     }
 
