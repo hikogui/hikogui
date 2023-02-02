@@ -94,9 +94,9 @@ struct bigint {
 
         if constexpr (std::is_signed_v<decltype(value)>) {
             // Sign extent the value to the size of the first digit.
-            digits[0] = static_cast<digit_type>(static_cast<signed_digit_type>(value));
+            digits[0] = truncate<digit_type>(narrow_cast<signed_digit_type>(value));
         } else {
-            digits[0] = static_cast<digit_type>(value);
+            digits[0] = narrow_cast<digit_type>(value);
         }
 
         // Sign extent to the rest of the digits.
@@ -137,43 +137,43 @@ struct bigint {
 
     constexpr explicit operator unsigned long long() const noexcept
     {
-        return static_cast<unsigned long long>(digits[0]);
+        return truncate<unsigned long long>(digits[0]);
     }
     constexpr explicit operator signed long long() const noexcept
     {
-        return static_cast<signed long long>(digits[0]);
+        return truncate<signed long long>(digits[0]);
     }
     constexpr explicit operator unsigned long() const noexcept
     {
-        return static_cast<unsigned long>(digits[0]);
+        return truncate<unsigned long>(digits[0]);
     }
     constexpr explicit operator signed long() const noexcept
     {
-        return static_cast<signed long>(digits[0]);
+        return truncate<signed long>(digits[0]);
     }
     constexpr explicit operator unsigned int() const noexcept
     {
-        return static_cast<unsigned int>(digits[0]);
+        return truncate<unsigned int>(digits[0]);
     }
     constexpr explicit operator signed int() const noexcept
     {
-        return static_cast<signed int>(digits[0]);
+        return truncate<signed int>(digits[0]);
     }
     constexpr explicit operator unsigned short() const noexcept
     {
-        return static_cast<unsigned short>(digits[0]);
+        return truncate<unsigned short>(digits[0]);
     }
     constexpr explicit operator signed short() const noexcept
     {
-        return static_cast<signed short>(digits[0]);
+        return truncate<signed short>(digits[0]);
     }
     constexpr explicit operator unsigned char() const noexcept
     {
-        return static_cast<unsigned char>(digits[0]);
+        return truncate<unsigned char>(digits[0]);
     }
     constexpr explicit operator signed char() const noexcept
     {
-        return static_cast<signed char>(digits[0]);
+        return truncate<signed char>(digits[0]);
     }
 
     constexpr explicit operator bool() const noexcept
@@ -592,7 +592,7 @@ struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
         }
 
         if constexpr (value_type::is_signed and value_type::num_digits > 0) {
-            r.digits[value_type::num_digits - 1] = static_cast<hi_typename value_type::digit_type>(smin);
+            r.digits[value_type::num_digits - 1] = truncate<typename value_type::digit_type>(smin);
         }
 
         return r;

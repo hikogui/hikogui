@@ -5,6 +5,11 @@
 #include "native_i64x4_avx2.hpp"
 #include "simd_test_utility.hpp"
 
+hi_warning_push();
+// C26474: Don't cast between pointer types when the conversion could be implicit (type.1).
+// For the test we need to do this explicit.
+hi_warning_ignore_msvc(26474);
+
 using S = hi::native_simd<int64_t,4>;
 using A = S::array_type;
 
@@ -228,3 +233,5 @@ TEST(native_i64x4, swizzle)
     HI_ASSERT_SIMD_EQ(swizzle<"11b1">(tmp), S(1, 1, 3, 1));
     HI_ASSERT_SIMD_EQ(swizzle<"1111">(tmp), S(1, 1, 1, 1));
 }
+
+hi_warning_pop();

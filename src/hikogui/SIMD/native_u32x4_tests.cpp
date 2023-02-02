@@ -5,6 +5,11 @@
 #include "native_u32x4_sse2.hpp"
 #include "simd_test_utility.hpp"
 
+hi_warning_push();
+// C26474: Don't cast between pointer types when the conversion could be implicit (type.1).
+// For the test we need to do this explicit.
+hi_warning_ignore_msvc(26474);
+
 using S = hi::native_simd<uint32_t,4>;
 using A = S::array_type;
 
@@ -232,3 +237,5 @@ TEST(native_u32x4, horizontal)
 
     HI_ASSERT_SIMD_EQ(horizontal_sum(S(1, 2, 3, 4)), S::broadcast(10));
 }
+
+hi_warning_pop();

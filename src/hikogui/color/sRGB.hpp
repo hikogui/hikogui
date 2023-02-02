@@ -19,8 +19,7 @@ hi_warning_push();
 // std::pow() is not constexpr and needed to fill in the gamma conversion tables.
 hi_warning_ignore_msvc(26426);
 
-namespace hi {
-inline namespace v1 {
+namespace hi { inline namespace v1 {
 
 /** Matrix to convert sRGB to XYZ.
  * @ingroup color
@@ -79,8 +78,8 @@ namespace detail {
     std::array<uint8_t, 65536> r{};
 
     for (int i = 0; i != 65536; ++i) {
-        r[i] = truncate<uint8_t>(
-            std::clamp(sRGB_linear_to_gamma(float16::from_uint16_t(narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f);
+        r[i] = narrow_cast<uint8_t>(
+            std::floor(std::clamp(sRGB_linear_to_gamma(float16::from_uint16_t(narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f));
     }
 
     return r;
@@ -100,7 +99,7 @@ namespace detail {
 inline auto sRGB_linear16_to_gamma8_table = sRGB_linear16_to_gamma8_table_generator();
 inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_generator();
 
-}
+} // namespace detail
 
 /** sRGB linear float-16 to gamma transfer function.
  *
@@ -179,6 +178,6 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
     return color_from_sRGB(r, g, b, a);
 }
 
-}} // namespace hi::inline v1
+}} // namespace hi::v1
 
 hi_warning_pop();
