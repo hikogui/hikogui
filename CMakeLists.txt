@@ -369,8 +369,8 @@ elseif (MSVC)
 
         # Turn off every warning fix one at a time:
         #target_compile_options(hikogui PUBLIC -wd26472)
-        target_compile_options(hikogui PUBLIC -wd26473)
-        target_compile_options(hikogui PUBLIC -wd26474)
+        #target_compile_options(hikogui PUBLIC -wd26473)
+        #target_compile_options(hikogui PUBLIC -wd26474)
         target_compile_options(hikogui PUBLIC -wd26475)
         target_compile_options(hikogui PUBLIC -wd26476)
         target_compile_options(hikogui PUBLIC -wd26478)

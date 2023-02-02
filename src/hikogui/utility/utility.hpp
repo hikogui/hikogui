@@ -178,6 +178,9 @@ hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
 // We do not have access to narrow_cast in this file.
 hi_warning_ignore_msvc(26472);
+// C26473: Don't cast between pointer types where the source type and the target type are the same (type.1).
+// hi_forward need to specifically cast a value to a reference using static_cast.
+hi_warning_ignore_msvc(26473);
 
 namespace hi { inline namespace v1 {
 

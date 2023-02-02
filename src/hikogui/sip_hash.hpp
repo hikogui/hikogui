@@ -126,7 +126,7 @@ public:
         _v2 = v2;
         _v3 = v3;
         _m = m;
-        _b = static_cast<uint8_t>(_b + size);
+        _b = truncate<uint8_t>(_b + size);
     }
 
     /** Hash a complete message.
