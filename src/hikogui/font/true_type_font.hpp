@@ -6,6 +6,7 @@
 
 #include "font.hpp"
 #include "otype_sfnt.hpp"
+#include "font_char_map.hpp"
 #include "../file/file_view.hpp"
 #include "../graphic_path.hpp"
 #include "../counters.hpp"
@@ -16,26 +17,6 @@
 namespace hi::inline v1 {
 
 class true_type_font final : public font {
-private:
-    /** The url to retrieve the view.
-     */
-    std::filesystem::path _path;
-
-    /** The resource view of the font-file.
-     *
-     * This view may be reset if there is a path available.
-     */
-    mutable file_view _view;
-
-    float OS2_x_height = 0;
-    float OS2_cap_height = 0;
-
-    float _em_scale;
-
-    uint16_t numberOfHMetrics;
-
-    int num_glyphs;
-
 public:
     true_type_font(std::filesystem::path const& path) : _path(path), _view(file_view{path})
     {
@@ -99,20 +80,35 @@ public:
     }
 
 private:
+    /** The url to retrieve the view.
+     */
+    std::filesystem::path _path;
+
+    /** The resource view of the font-file.
+     *
+     * This view may be reset if there is a path available.
+     */
+    mutable file_view _view;
+
+    float OS2_x_height = 0;
+    float OS2_cap_height = 0;
+
+    float _em_scale;
+
+    uint16_t numberOfHMetrics;
+
+    int num_glyphs;
     mutable std::span<std::byte const> _bytes;
-    mutable std::span<std::byte const> _cmap_table_bytes;
-    mutable std::span<std::byte const> _cmap_bytes;
     mutable std::span<std::byte const> _loca_table_bytes;
     mutable std::span<std::byte const> _glyf_table_bytes;
     mutable std::span<std::byte const> _hmtx_table_bytes;
     mutable std::span<std::byte const> _kern_table_bytes;
     mutable std::span<std::byte const> _GSUB_table_bytes;
     bool _loca_is_offset32;
+    font_char_map _char_map;
 
     void cache_tables(std::span<std::byte const> bytes) const
     {
-        _cmap_table_bytes = otype_sfnt_search<"cmap">(bytes);
-        _cmap_bytes = parse_cmap_table_directory();
         _loca_table_bytes = otype_sfnt_search<"loca">(bytes);
         _glyf_table_bytes = otype_sfnt_search<"glyf">(bytes);
         _hmtx_table_bytes = otype_sfnt_search<"hmtx">(bytes);

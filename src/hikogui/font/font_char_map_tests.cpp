@@ -9,12 +9,12 @@ TEST(font_char_map, add_and_search)
 {
     auto cm = hi::font_char_map{};
 
-    cm.add(U'a', 100, 26);
-    cm.add(U'5', 305, 2);
-    cm.add(U'0', 200, 4);
-    cm.add(U'4', 204, 1);
+    cm.add(U'a', U'z', 100);
+    cm.add(U'5', U'6', 305);
+    cm.add(U'0', U'3', 200);
+    cm.add(U'4', U'4', 204);
     // '7' is missing.
-    cm.add(U'8', 208, 2);
+    cm.add(U'8', U'9', 208);
 
     cm.prepare();
 

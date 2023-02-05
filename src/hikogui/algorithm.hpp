@@ -358,10 +358,10 @@ DataIt back_strip(DataIt data_first, DataIt data_last, ValueIt value_first, Valu
  * @tparam Endian The endianess of the key in the table.
  * @param table A span of elements to search, the key is in the first bytes of each element.
  * @param key A unsigned integral to search in the elements.
- * @return A pointer to the entry found.
+ * @return A pointer to the entry found,or nullptr if not found.
  */
 template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
-[[nodiscard]] constexpr T& fast_lower_bound(std::span<T> table, Key const& key) noexcept
+[[nodiscard]] constexpr T *fast_lower_bound(std::span<T> table, Key const& key) noexcept
 {
     auto base = table.data();
     auto len = table.size();
@@ -377,7 +377,10 @@ template<std::endian Endian = std::endian::native, typename T, std::unsigned_int
         }
         len -= half;
     }
-    return *base;
+    if (load<Key, Endian>(base) < key) {
+        return nullptr;
+    }
+    return base;
 }
 
 /** Search for the item that is equal to the key.
@@ -385,28 +388,16 @@ template<std::endian Endian = std::endian::native, typename T, std::unsigned_int
 template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
 [[nodiscard]] constexpr T *fast_binary_search_eq(std::span<T> table, Key const& key) noexcept
 {
-    hilet& item = fast_lower_bound<Endian>(table, key);
-    auto ptr = std::addressof(item);
+    hilet ptr = fast_lower_bound<Endian>(table, key);
+    if (ptr == nullptr) {
+        return nullptr;
+    }
 
-    return load<Key, Endian>(ptr) == key ? ptr : nullptr;
-}
+    if (load<Key, Endian>(ptr) != key) {
+        return nullptr;
+    }
 
-/** Search for the item that is less or equal to the key.
- */
-template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
-[[nodiscard]] constexpr T *fast_binary_search_le(std::span<T> table, Key const& key) noexcept
-{
-    hilet& item = fast_lower_bound<Endian>(table, key);
-    auto ptr = std::addressof(item);
-
-    do {
-        if (load<Key, Endian>(ptr) <= key) {
-            return ptr;
-        }
-        // The following line should happen only once, or fast_lower_bound() has a bug.
-    } while (ptr-- != table.data());
-
-    return nullptr;
+    return ptr;
 }
 
 } // namespace hi::inline v1
