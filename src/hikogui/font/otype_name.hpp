@@ -166,7 +166,7 @@ otype_name_search(std::span<std::byte const> bytes, uint16_t name_id, language_t
     return std::nullopt;
 }
 
-[[nodiscard]] auto otype_name_get_family(std::span<std::byte const> bytes)
+[[nodiscard]] inline auto otype_name_get_family(std::span<std::byte const> bytes)
 {
     struct return_type {
         std::string family_name;

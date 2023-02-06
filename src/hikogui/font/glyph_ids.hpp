@@ -249,7 +249,7 @@ public:
     [[nodiscard]] constexpr glyph_id get_single() const noexcept
     {
         hi_axiom(has_num_glyphs<1>());
-        return get_glyph(1);
+        return get_glyph(0);
     }
 
     /** Get the number of glyphs.
