@@ -8,6 +8,7 @@
 #include "otype_hhea.hpp"
 #include "otype_hmtx.hpp"
 #include "otype_kern.hpp"
+#include "otype_loca.hpp"
 #include "otype_maxp.hpp"
 #include "otype_name.hpp"
 #include "otype_os2.hpp"
@@ -38,36 +39,6 @@ struct GLYFEntry {
 [[nodiscard]] glyph_id true_type_font::find_glyph(char32_t c) const
 {
     return _char_map.find(c);
-}
-
-bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const>& glyph_bytes) const
-{
-    load_view();
-    hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
-
-    std::size_t startOffset = 0;
-    std::size_t endOffset = 0;
-    if (_loca_is_offset32) {
-        hilet entries = make_placement_array<big_uint32_buf_t>(_loca_table_bytes);
-        hi_assert_or_return(static_cast<int>(glyph_id) + 1 < entries.size(), false);
-
-        startOffset = *entries[*glyph_id];
-        endOffset = *entries[*glyph_id + 1];
-
-    } else {
-        hilet entries = make_placement_array<big_uint16_buf_t>(_loca_table_bytes);
-        hi_assert_or_return(static_cast<int>(glyph_id) + 1 < entries.size(), false);
-
-        startOffset = *entries[*glyph_id] * 2;
-        endOffset = *entries[*glyph_id + 1] * 2;
-    }
-
-    hi_assert_or_return(startOffset <= endOffset, false);
-    hilet size = endOffset - startOffset;
-
-    hi_assert_or_return(endOffset <= static_cast<std::size_t>(_glyf_table_bytes.size()), false);
-    glyph_bytes = _glyf_table_bytes.subspan(startOffset, size);
-    return true;
 }
 
 bool true_type_font::update_glyph_metrics(
@@ -307,8 +278,7 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
 
     hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, {});
 
-    std::span<std::byte const> glyph_bytes;
-    hi_assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), {});
+    hilet glyph_bytes = otype_loca_get(_loca_table_bytes, _glyf_table_bytes, glyph_id, _loca_is_offset32);
 
     auto metrics_glyph_id = glyph_id;
 
@@ -385,8 +355,7 @@ bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics
 
     hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
-    std::span<std::byte const> glyph_bytes;
-    hi_assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), false);
+    hilet glyph_bytes = otype_loca_get(_loca_table_bytes, _glyf_table_bytes, glyph_id, _loca_is_offset32);
 
     auto metricsGlyphIndex = glyph_id;
 

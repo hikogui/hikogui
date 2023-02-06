@@ -146,11 +146,6 @@ private:
      */
     [[nodiscard]] hi::unicode_mask parse_cmap_table_mask() const;
 
-    /** Find the glyph in the loca table.
-     * called by loadGlyph()
-     */
-    bool get_glyf_bytes(hi::glyph_id glyph_id, std::span<std::byte const> &bytes) const;
-
     /** Update the glyph metrics from the font tables.
      * called by loadGlyph()
      */

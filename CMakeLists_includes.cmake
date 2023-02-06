@@ -45,6 +45,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/font/otype_hhea.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_hmtx.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_kern.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_loca.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_maxp.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_name.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_os2.hpp
