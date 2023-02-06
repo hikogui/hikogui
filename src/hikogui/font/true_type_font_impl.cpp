@@ -10,6 +10,7 @@
 #include "otype_name.hpp"
 #include "otype_os2.hpp"
 #include "otype_sfnt.hpp"
+#include "otype_cmap.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 #include "../placement.hpp"
@@ -21,47 +22,7 @@
 
 namespace hi::inline v1 {
 
-struct CMAPHeader {
-    big_uint16_buf_t version;
-    big_uint16_buf_t numTables;
-};
 
-struct CMAPEntry {
-    big_uint16_buf_t platformID;
-    big_uint16_buf_t platformSpecificID;
-    big_uint32_buf_t offset;
-};
-
-struct CMAPFormat4 {
-    big_uint16_buf_t format;
-    big_uint16_buf_t length;
-    big_uint16_buf_t language;
-    big_uint16_buf_t segCountX2;
-    big_uint16_buf_t searchRange;
-    big_uint16_buf_t entrySelector;
-    big_uint16_buf_t rangeShift;
-};
-
-struct CMAPFormat6 {
-    big_uint16_buf_t format;
-    big_uint16_buf_t length;
-    big_uint16_buf_t language;
-    big_uint16_buf_t firstCode;
-    big_uint16_buf_t entryCount;
-};
-
-struct CMAPFormat12 {
-    big_uint32_buf_t format;
-    big_uint32_buf_t length;
-    big_uint32_buf_t language;
-    big_uint32_buf_t numGroups;
-};
-
-struct CMAPFormat12Group {
-    big_uint32_buf_t startCharCode;
-    big_uint32_buf_t endCharCode;
-    big_uint32_buf_t startglyph_id;
-};
 
 struct KERNTable_ver0 {
     big_uint16_buf_t version;
@@ -111,301 +72,14 @@ struct GLYFEntry {
     otype_fword_buf_t yMax;
 };
 
-[[nodiscard]] std::span<std::byte const> true_type_font::parse_cmap_table_directory() const
-{
-    std::size_t offset = 0;
-
-    hilet header = make_placement_ptr<CMAPHeader>(_cmap_table_bytes, offset);
-    hi_check(*header->version == 0, "CMAP version is not 0");
-
-    uint16_t numTables = *header->numTables;
-    hilet entries = make_placement_array<CMAPEntry>(_cmap_table_bytes, offset, numTables);
-
-    // Entries are ordered by platformID, then platformSpecificID.
-    // This allows us to search reasonable quickly for the best entries.
-    // The following order is searched: 0.4,0.3,0.2,0.1,3.10,3.1,3.0.
-    CMAPEntry const *bestEntry = nullptr;
-    for (hilet& entry : entries) {
-        switch (*entry.platformID) {
-        case 0:
-            {
-                // Unicode.
-                switch (*entry.platformSpecificID) {
-                case 0: // Default
-                case 1: // Version 1.1
-                case 2: // ISO 10646 1993
-                case 3: // Unicode 2.0 BMP-only
-                case 4: // Unicode 2.0 non-BMP
-                    // The best entry is the last one.
-                    bestEntry = &entry;
-                    break;
-                default:
-                    // Not interesting
-                    break;
-                }
-            }
-            break;
-
-        case 3:
-            {
-                // Microsoft Windows
-                switch (*entry.platformSpecificID) {
-                case 0: // Symbol
-                case 1: // Unicode 16-bit
-                case 10: // Unicode 32-bit
-                    // The best entry is the last one.
-                    bestEntry = &entry;
-                    break;
-                default:
-                    // Not unicode
-                    break;
-                }
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
-    // There must be a bestEntry because a unicode table is required by the true-type standard.
-    hi_check(bestEntry != nullptr, "Missing Unicode CMAP entry");
-
-    hilet entry_offset = *bestEntry->offset;
-    hi_check(entry_offset < _cmap_table_bytes.size(), "CMAP entry is located beyond buffer");
-
-    return _cmap_table_bytes.subspan(entry_offset, _cmap_table_bytes.size() - entry_offset);
-}
-
-static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char32_t c)
-{
-    // We are not checking for validity of the table, as this is being done in `parseCharacterMapFormat4`.
-
-    if (c > 0xffff) {
-        // character value too high.
-        return {};
-    }
-
-    std::size_t offset = 0;
-
-    hilet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
-
-    hilet length = *header->length;
-    hi_assert(length <= bytes.size());
-
-    hilet num_segments = *header->segCountX2 / 2;
-
-    hilet end_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
-
-    auto c16 = char_cast<uint16_t>(c);
-    hilet end_code_it = std::lower_bound(end_codes.begin(), end_codes.end(), c16, [](hilet& item, hilet& value) {
-        return *item < value;
-    });
-    if (end_code_it == end_codes.end()) {
-        // The character to find has a higher value than available in the table.
-        return {};
-    }
-    hilet segment_i = narrow_cast<uint16_t>(std::distance(end_codes.begin(), end_code_it));
-
-    offset += ssizeof(uint16_t); // reservedPad
-
-    hilet start_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
-
-    hilet start_code = *start_codes[segment_i];
-    if (c16 < start_code) {
-        // The character to find is inside a gap in the table.
-        return {};
-    }
-
-    hilet id_deltas = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
-
-    // The glyphIdArray is included inside idRangeOffset.
-    hilet id_range_offset_count = (length - offset) / ssizeof(uint16_t);
-    hilet id_range_offsets = make_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count);
-
-    // Found the glyph.
-    hilet id_range_offset = *id_range_offsets[segment_i];
-    if (id_range_offset == 0) {
-        // Use modulo 65536 arithmetic.
-        c16 += *id_deltas[segment_i];
-        return glyph_id{c16};
-
-    } else {
-        c16 -= start_code;
-        c16 += segment_i;
-        c16 += id_range_offset / 2;
-
-        hi_assert_bounds(c16, id_range_offsets);
-        uint16_t glyph_index = *id_range_offsets[c16];
-        if (glyph_index == 0) {
-            return {};
-        } else {
-            // Use modulo 65536 arithmetic.
-            glyph_index += *id_deltas[segment_i];
-            return glyph_id{glyph_index};
-        }
-    }
-}
-
-[[nodiscard]] static unicode_mask parseCharacterMapFormat4(std::span<std::byte const> bytes)
-{
-    unicode_mask r;
-
-    std::size_t offset = 0;
-    hilet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
-    hilet length = *header->length;
-    hi_check(length <= bytes.size(), "CMAP header length is larger than table.");
-    hilet num_segments = *header->segCountX2 / 2;
-
-    hilet end_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
-    offset += ssizeof(uint16_t); // reservedPad
-    hilet start_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
-
-    hilet id_deltas = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
-
-    hilet id_range_offset_count = (length - offset) / ssizeof(uint16_t);
-    hilet id_range_offsets = make_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count);
-
-    for (uint16_t segment_i = 0; segment_i != num_segments; ++segment_i) {
-        hilet end_code = *end_codes[segment_i];
-        hilet start_code = *start_codes[segment_i];
-        r.add(static_cast<char32_t>(start_code), static_cast<char32_t>(end_code) + 1);
-
-        hilet id_range_offset = *id_range_offsets[segment_i];
-        if (id_range_offset != 0) {
-            auto c16 = end_code;
-            c16 -= start_code;
-            c16 += segment_i;
-            c16 += id_range_offset / 2;
-            hi_check(c16 < id_range_offsets.size(), "id_range_offsets invalid");
-        }
-    }
-
-    r.optimize();
-    r.shrink_to_fit();
-    return r;
-}
-
-static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char32_t c)
-{
-    std::size_t offset = 0;
-
-    hilet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
-
-    hilet firstCode = char_cast<char32_t>(*header->firstCode);
-    hilet entryCount = *header->entryCount;
-    if (c < firstCode || c >= char_cast<char32_t>(firstCode + entryCount)) {
-        // Character outside of range.
-        return {};
-    }
-
-    hilet glyphIndexArray = make_placement_array<big_uint16_buf_t>(bytes, offset, entryCount);
-
-    hilet charOffset = c - firstCode;
-    hi_assert_or_return(charOffset < glyphIndexArray.size(), {});
-    return glyph_id{*glyphIndexArray[charOffset]};
-}
-
-[[nodiscard]] static unicode_mask parseCharacterMapFormat6(std::span<std::byte const> bytes)
-{
-    unicode_mask r;
-
-    std::size_t offset = 0;
-    hilet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
-    hilet firstCode = char_cast<char32_t>(*header->firstCode);
-    hilet entryCount = *header->entryCount;
-
-    r.add(char_cast<char32_t>(firstCode), char_cast<char32_t>(firstCode) + entryCount);
-
-    r.optimize();
-    r.shrink_to_fit();
-    return r;
-}
-
-static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c)
-{
-    std::size_t offset = 0;
-
-    hilet header = make_placement_ptr<CMAPFormat12>(bytes, offset);
-
-    hilet numGroups = *header->numGroups;
-
-    hilet entries = make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
-
-    hilet i = std::lower_bound(entries.begin(), entries.end(), c, [](hilet& element, char32_t value) {
-        return *element.endCharCode < value;
-    });
-
-    if (i != entries.end()) {
-        hilet& entry = *i;
-        hilet startCharCode = *entry.startCharCode;
-        if (c >= startCharCode) {
-            c -= startCharCode;
-            return glyph_id{*entry.startglyph_id + c};
-        } else {
-            // Character was not in this group.
-            return {};
-        }
-
-    } else {
-        // Character was not in map.
-        return {};
-    }
-}
-
-[[nodiscard]] static unicode_mask parseCharacterMapFormat12(std::span<std::byte const> bytes)
-{
-    unicode_mask r;
-
-    std::size_t offset = 0;
-    hilet header = make_placement_ptr<CMAPFormat12>(bytes, offset);
-    hilet numGroups = *header->numGroups;
-
-    hilet entries = make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
-    for (hilet& entry : entries) {
-        r.add(char_cast<char32_t>(*entry.startCharCode), char_cast<char32_t>(*entry.endCharCode) + 1);
-    }
-
-    r.optimize();
-    r.shrink_to_fit();
-    return r;
-}
-
-[[nodiscard]] unicode_mask true_type_font::parse_cmap_table_mask() const
-{
-    hilet format = **make_placement_ptr<big_uint16_buf_t>(_cmap_bytes);
-
-    switch (format) {
-    case 4:
-        return parseCharacterMapFormat4(_cmap_bytes);
-    case 6:
-        return parseCharacterMapFormat6(_cmap_bytes);
-    case 12:
-        return parseCharacterMapFormat12(_cmap_bytes);
-    default:
-        throw parse_error(std::format("Unknown character map format {}", format));
-    }
-}
-
 [[nodiscard]] glyph_id true_type_font::find_glyph(char32_t c) const
 {
-    load_view();
-
-    hilet format = **make_placement_ptr<big_uint16_buf_t>(_cmap_bytes);
-
-    switch (format) {
-    case 4:
-        return searchCharacterMapFormat4(_cmap_bytes, c);
-    case 6:
-        return searchCharacterMapFormat6(_cmap_bytes, c);
-    case 12:
-        return searchCharacterMapFormat12(_cmap_bytes, c);
-    default:
-        return {};
-    }
+    return _char_map.find(c);
 }
 
 bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const>& glyph_bytes) const
 {
+    load_view();
     hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
     std::size_t startOffset = 0;
@@ -554,6 +228,8 @@ get_kern_kerning(std::span<std::byte const> const& bytes, float _em_scale, glyph
 
 [[nodiscard]] vector2 true_type_font::get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const
 {
+    load_view();
+
     if (not _kern_table_bytes.empty()) {
         return get_kern_kerning(_kern_table_bytes, _em_scale, current_glyph, next_glyph);
     } else {
@@ -567,6 +243,8 @@ bool true_type_font::update_glyph_metrics(
     hi::glyph_id kern_glyph1_id,
     hi::glyph_id kern_glyph2_id) const
 {
+    load_view();
+
     hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
     ssize_t offset = 0;
@@ -605,6 +283,8 @@ constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
 bool true_type_font::load_simple_glyph(std::span<std::byte const> glyph_bytes, graphic_path& glyph) const
 {
+    load_view();
+
     std::size_t offset = 0;
 
     hilet entry = make_placement_ptr<GLYFEntry>(glyph_bytes, offset);
@@ -728,6 +408,8 @@ constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes, graphic_path& glyph, glyph_id& metrics_glyph_id)
     const
 {
+    load_view();
+
     std::size_t offset = ssizeof(GLYFEntry);
 
     uint16_t flags;
@@ -803,6 +485,8 @@ bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes,
 
 std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_path& glyph) const
 {
+    load_view();
+
     hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, {});
 
     std::span<std::byte const> glyph_bytes;
@@ -834,6 +518,8 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
 
 bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> bytes, glyph_id& metrics_glyph_id) const
 {
+    load_view();
+
     std::size_t offset = ssizeof(GLYFEntry);
 
     uint16_t flags;
@@ -877,6 +563,8 @@ bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> byte
 bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics& glyph_metrics, hi::glyph_id lookahead_glyph_id)
     const
 {
+    load_view();
+
     hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
 
     std::span<std::byte const> glyph_bytes;
@@ -934,6 +622,12 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
         numberOfHMetrics = hhea.number_of_h_metrics;
     }
 
+    if (auto cmap_bytes = otype_sfnt_search<"cmap">(bytes); not cmap_bytes.empty()) {
+        _char_map = otype_cmap_parse(cmap_bytes);
+    } else {
+        throw parse_error("Could not find 'cmap'");
+    }
+
     if (auto os2_bytes = otype_sfnt_search<"OS/2">(bytes); not os2_bytes.empty()) {
         auto os2 = otype_parse_os2(os2_bytes, _em_scale);
         weight = os2.weight;
@@ -946,7 +640,8 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     }
 
     cache_tables(bytes);
-    unicode_mask = parse_cmap_table_mask();
+
+    unicode_mask = _char_map.make_mask();
 
     // Parsing the weight, italic and other features from the sub-family-name
     // is much more reliable than the explicit data in the OS/2 table.
