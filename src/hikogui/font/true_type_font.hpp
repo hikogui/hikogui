@@ -6,6 +6,7 @@
 
 #include "font.hpp"
 #include "otype_sfnt.hpp"
+#include "otype_kern.hpp"
 #include "font_char_map.hpp"
 #include "../file/file_view.hpp"
 #include "../graphic_path.hpp"
@@ -72,7 +73,11 @@ public:
     bool load_glyph_metrics(hi::glyph_id glyph_id, glyph_metrics &metrics, hi::glyph_id lookahead_glyph_id = hi::glyph_id{})
         const override;
 
-    [[nodiscard]] vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const override;
+    [[nodiscard]] vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const override
+    {
+        load_view();
+        return otype_kern_find(_kern_table_bytes, current_glyph, next_glyph, _em_scale);
+    }
 
     void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
         const override
@@ -136,13 +141,6 @@ private:
      * inside the file for each table.
      */
     void parse_font_directory(std::span<std::byte const> bytes);
-
-    void parse_hhea_table(std::span<std::byte const> bytes);
-    void parse_name_table(std::span<std::byte const> bytes);
-    void parse_OS2_table(std::span<std::byte const> bytes);
-    void parse_maxp_table(std::span<std::byte const> bytes);
-
-    [[nodiscard]] std::span<std::byte const> parse_cmap_table_directory() const;
 
     /** Parse the character map to create unicode_ranges.
      */

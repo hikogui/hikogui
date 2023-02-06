@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2022.
+// Copyright Take Vos 2019-2023.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,6 +6,8 @@
 #include "otype_utilities.hpp"
 #include "otype_head.hpp"
 #include "otype_hhea.hpp"
+#include "otype_hmtx.hpp"
+#include "otype_kern.hpp"
 #include "otype_maxp.hpp"
 #include "otype_name.hpp"
 #include "otype_os2.hpp"
@@ -24,45 +26,6 @@ namespace hi::inline v1 {
 
 
 
-struct KERNTable_ver0 {
-    big_uint16_buf_t version;
-    big_uint16_buf_t nTables;
-};
-
-struct KERNTable_ver1 {
-    big_uint32_buf_t version;
-    big_uint32_buf_t nTables;
-};
-
-struct KERNSubtable_ver0 {
-    big_uint16_buf_t version;
-    big_uint16_buf_t length;
-    big_uint16_buf_t coverage;
-};
-
-struct KERNSubtable_ver1 {
-    big_uint32_buf_t length;
-    big_uint16_buf_t coverage;
-    big_uint16_buf_t tupleIndex;
-};
-
-struct KERNFormat0 {
-    big_uint16_buf_t nPairs;
-    big_uint16_buf_t searchRange;
-    big_uint16_buf_t entrySelector;
-    big_uint16_buf_t rangeShift;
-};
-
-struct KERNFormat0_entry {
-    big_uint16_buf_t left;
-    big_uint16_buf_t right;
-    otype_fword_buf_t value;
-};
-
-struct HMTXEntry {
-    otype_fuword_buf_t advanceWidth;
-    otype_fword_buf_t leftSideBearing;
-};
 
 struct GLYFEntry {
     big_int16_buf_t numberOfContours;
@@ -107,136 +70,6 @@ bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const
     return true;
 }
 
-static void get_kern0_kerning(
-    std::span<std::byte const> const& bytes,
-    uint16_t coverage,
-    float _em_scale,
-    glyph_id glyph1_id,
-    glyph_id glyph2_id,
-    vector2& r)
-{
-    std::size_t offset = 0;
-
-    hilet formatheader = make_placement_ptr<KERNFormat0>(bytes, offset);
-    hilet nPairs = *formatheader->nPairs;
-
-    hilet entries = make_placement_array<KERNFormat0_entry>(bytes, offset, nPairs);
-
-    hilet i = std::lower_bound(entries.begin(), entries.end(), std::pair{glyph1_id, glyph2_id}, [](hilet& a, hilet& b) {
-        if (*a.left == b.first) {
-            return *a.right < *b.second;
-        } else {
-            return *a.left < *b.first;
-        }
-    });
-    hi_assert_or_return(i != entries.end(), );
-
-    if (glyph1_id == *i->left && glyph2_id == *i->right) {
-        // Writing direction is assumed horizontal.
-        switch (coverage & 0xf) {
-        case 0x1:
-            r.x() = r.x() + i->value * _em_scale;
-            break;
-        case 0x3:
-            r.x() = std::min(r.x(), i->value * _em_scale);
-            break;
-        case 0x5:
-            r.y() = r.y() + i->value * _em_scale;
-            break;
-        case 0x7:
-            r.y() = std::min(r.y(), i->value * _em_scale);
-            break;
-        // Override
-        case 0x9:
-            r.x() = i->value * _em_scale;
-            break;
-        case 0xb:
-            r.x() = i->value * _em_scale;
-            break;
-        case 0xd:
-            r.y() = i->value * _em_scale;
-            break;
-        case 0xf:
-            r.y() = i->value * _em_scale;
-            break;
-        default:;
-        }
-    }
-}
-
-static void get_kern3_kerning(
-    std::span<std::byte const> const& bytes,
-    uint16_t coverage,
-    float _em_scale,
-    glyph_id glyph1_id,
-    glyph_id glyph2_id,
-    vector2& r)
-{
-}
-
-[[nodiscard]] static vector2
-get_kern_kerning(std::span<std::byte const> const& bytes, float _em_scale, glyph_id glyph1_id, glyph_id glyph2_id)
-{
-    auto r = vector2{0.0f, 0.0f};
-    std::size_t offset = 0;
-
-    hilet header_ver0 = make_placement_ptr<KERNTable_ver0>(bytes, offset);
-    uint32_t version = *header_ver0->version;
-
-    uint32_t nTables = 0;
-    if (version == 0x0000) {
-        nTables = *header_ver0->nTables;
-
-    } else {
-        // Restart with version 1 table.
-        offset = 0;
-        hilet header_ver1 = make_placement_ptr<KERNTable_ver1>(bytes, offset);
-        hi_assert_or_return(*header_ver1->version == 0x00010000, r);
-        nTables = *header_ver1->nTables;
-    }
-
-    for (uint32_t subtableIndex = 0; subtableIndex != nTables; ++subtableIndex) {
-        hilet subtable_offset = offset;
-
-        uint16_t coverage = 0;
-        uint32_t length = 0;
-        if (version == 0x0000) {
-            hilet subheader = make_placement_ptr<KERNSubtable_ver0>(bytes, offset);
-            coverage = *subheader->coverage;
-            length = *subheader->length;
-
-        } else {
-            hilet subheader = make_placement_ptr<KERNSubtable_ver1>(bytes, offset);
-            coverage = *subheader->coverage;
-            length = *subheader->length;
-        }
-
-        switch (coverage >> 8) {
-        case 0: // Pairs
-            get_kern0_kerning(bytes.subspan(offset), coverage, _em_scale, glyph1_id, glyph2_id, r);
-            break;
-        case 3: // Compact 2D kerning values.
-            get_kern3_kerning(bytes.subspan(offset), coverage, _em_scale, glyph1_id, glyph2_id, r);
-            break;
-        }
-
-        offset = subtable_offset + length;
-    }
-
-    return r;
-}
-
-[[nodiscard]] vector2 true_type_font::get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const
-{
-    load_view();
-
-    if (not _kern_table_bytes.empty()) {
-        return get_kern_kerning(_kern_table_bytes, _em_scale, current_glyph, next_glyph);
-    } else {
-        return vector2{0.0f, 0.0f};
-    }
-}
-
 bool true_type_font::update_glyph_metrics(
     hi::glyph_id glyph_id,
     hi::glyph_metrics& glyph_metrics,
@@ -245,30 +78,15 @@ bool true_type_font::update_glyph_metrics(
 {
     load_view();
 
-    hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
+    hi_assert_or_return(*glyph_id >= 0 and *glyph_id < num_glyphs, false);
 
-    ssize_t offset = 0;
+    hilet [advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, numberOfHMetrics, _em_scale);
 
-    hilet longHorizontalMetricTable = make_placement_array<HMTXEntry>(_hmtx_table_bytes, offset, numberOfHMetrics);
+    glyph_metrics.advance = vector2{advance_width, 0.0f};
+    glyph_metrics.left_side_bearing = left_side_bearing;
+    glyph_metrics.right_side_bearing = advance_width - (left_side_bearing + glyph_metrics.bounding_rectangle.width());
 
-    hilet numberOfLeftSideBearings = num_glyphs - numberOfHMetrics;
-    hilet leftSideBearings = make_placement_array<otype_fword_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings);
-
-    float advanceWidth = 0.0f;
-    float leftSideBearing;
-    if (*glyph_id < numberOfHMetrics) {
-        advanceWidth = longHorizontalMetricTable[*glyph_id].advanceWidth * _em_scale;
-        leftSideBearing = longHorizontalMetricTable[*glyph_id].leftSideBearing * _em_scale;
-    } else {
-        advanceWidth = longHorizontalMetricTable[numberOfHMetrics - 1].advanceWidth * _em_scale;
-        leftSideBearing = leftSideBearings[*glyph_id - numberOfHMetrics] * _em_scale;
-    }
-
-    glyph_metrics.advance = vector2{advanceWidth, 0.0f};
-    glyph_metrics.left_side_bearing = leftSideBearing;
-    glyph_metrics.right_side_bearing = advanceWidth - (leftSideBearing + glyph_metrics.bounding_rectangle.width());
-
-    if (kern_glyph1_id && kern_glyph2_id) {
+    if (kern_glyph1_id and kern_glyph2_id) {
         glyph_metrics.advance += get_kerning(kern_glyph1_id, kern_glyph2_id);
     }
 

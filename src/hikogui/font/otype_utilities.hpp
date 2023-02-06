@@ -61,7 +61,7 @@ struct otype_fuword_buf_t {
     }
 };
 
-static std::optional<std::string>
+inline std::optional<std::string>
 otype_get_string(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t platform_specific_id)
 {
     switch (platform_id) {
