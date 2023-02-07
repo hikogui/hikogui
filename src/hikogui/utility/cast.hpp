@@ -251,6 +251,25 @@ template<std::integral Out, arithmetic In>
     return static_cast<Out>(rhs);
 }
 
+template<std::integral Out, std::integral In>
+[[nodiscard]] constexpr Out sign_cast(In rhs) noexcept
+    requires(sizeof(Out) == sizeof(In))
+{
+    return static_cast<Out>(rhs);
+}
+
+template<std::signed_integral Out, std::signed_integral In>
+[[nodiscard]] constexpr Out saturate_cast(In rhs) noexcept
+{
+    if constexpr (sizeof(Out) >= sizeof(In)) {{
+        return static_cast<Out>(rhs);
+    } else {
+        constexpr auto lo = static_cast<In>(std::numeric_limits<Out>::min());
+        constexpr auto hi = static_cast<In>(std::numeric_limits<Out>::max());
+        return static_cast<out>(std::clamp(rhs, lo, hi));
+    }
+}
+
 /** Cast a character.
  *
  * Both the input and output types are interpreted as unsigned values, even if
@@ -495,6 +514,7 @@ template<typename T, byte_like Byte>
     offset += sizeof(value_type) * n;
     return {reinterpret_cast<value_type *>(data), n};
 }
+
 
 } // namespace hi::inline v1
 

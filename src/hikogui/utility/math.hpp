@@ -110,10 +110,26 @@ constexpr void inplace_clamp(T& a, T const& lo, T const& hi) noexcept
     a = clamp(a, lo, hi);
 }
 
-template<typename T>
-[[nodiscard]] constexpr T abs(T a) noexcept
+
+/** Absolute value of a signed number converted to an unsigned number.
+ *
+ * This function correctly handles `std::numeric_limits<T>::min()`.
+ *
+ * @param rhs A signed number.
+ * @return An unsigned number.
+ */
+template<std::signed_integral T>
+[[nodiscard]] constexpr friend std::make_unsigned_t<T> abs_unsigned(T rhs) noexcept
 {
-    return a < T{} ? -a : a;
+    auto rhs_u = static_cast<std::make_unsigned_t<T>>(rhs);
+    auto res_u = -rhs_u;
+
+    // All positive numbers and int_min, would result in a negative number.
+    if (static_cast<T>(res_u) < 0) {
+        // int_min casted to unsigned in int_max + 1.
+        res_u = rhs_u;
+    }
+    return rhs_u;
 }
 
 template<std::floating_point T>

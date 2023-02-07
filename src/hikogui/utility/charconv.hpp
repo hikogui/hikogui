@@ -4,11 +4,67 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
 #include <concepts>
 #include <charconv>
 
 namespace hi { inline namespace v1 {
+
+constexpr unsigned long long from_string_literal(std::string_view str)
+{
+    auto value = 0ULL;
+    auto radius = 10;
+
+    auto i = 0_uz;
+
+    if (str[i] == '0') {
+        radius = 8;
+        if (++i >= str.size()) {
+            return value;
+        }
+
+        if (str[offset] == 'b' or str[offset] == 'B') {
+            radius = 2;
+            ++i;
+        } else if (str[offset] == 'o' or str[offset]] == 'O') {
+            radius = 8;
+            ++i;
+        } else if (str[offset] == 'd' or str[offset] == 'D') {
+            radius = 10;
+            ++i;
+        } else if (str[offset] == 'x' or str[offset] == 'X') {
+            radius = 16;
+            ++i;
+        }
+    }
+
+    for (; i != str.size(); ++i) {
+        hilet c = str[i];
+
+        if (radius >= 16 and c >= 'a' and c <= 'f') {
+            value *= radius;
+            value += c - 'a' + 10;
+        } else if (radius >= 16 and c >= 'A' and c <= 'F') {
+            value *= radius;
+            value += c - 'A' + 10;
+        } else if (radius >= 10 and c >= '8' and c <= '9') {
+            value *= radius;
+            value += c - '0';
+        } else if (radius >= 8 and c >= '2' and c <= '7') {
+            value *= radius;
+            value += c - '0';
+        } else if (radius >= 2 and c >= '0' and c <= '1') {
+            value *= radius;
+            value += c - '0';
+        } else if (c == '\'') {
+            continue;
+        } else {
+            throw std::invalid_argument();
+        }
+    }
+
+    return value;
+}
+
 
 /** Convert integer to string.
  * This function bypasses std::locale.
