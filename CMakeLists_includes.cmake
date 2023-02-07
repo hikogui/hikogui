@@ -41,6 +41,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/font/glyph_metrics.hpp
     ${HIKOGUI_SOURCE_DIR}/font/hikogui_icon.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_cmap.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/otype_glyf.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_head.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_hhea.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_hmtx.hpp

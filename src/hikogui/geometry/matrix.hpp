@@ -79,6 +79,21 @@ public:
     {
     }
 
+    /** Construct a matrix from four vectors.
+     *
+     * @param col0 The 1st `vector2` column.
+     * @param col1 The 2nd `vector2` column.
+     */
+    constexpr matrix(vector2 col0, vector2 col1) noexcept
+        requires(D == 2)
+        :
+        _col0(static_cast<f32x4>(col0)),
+        _col1(static_cast<f32x4>(col1)),
+        _col2(f32x4{0.0f, 0.0f, 1.0f, 0.0f}),
+        _col3(f32x4{0.0f, 0.0f, 0.0f, 1.0f})
+    {
+    }
+
     /** Construct a 3x3 matrix from scalar values.
      *
      * The function parameters are in row-major order for pretty formatting in source code.

@@ -4,6 +4,8 @@
 
 #include "true_type_font.hpp"
 #include "otype_utilities.hpp"
+#include "otype_cmap.hpp"
+#include "otype_glyf.hpp"
 #include "otype_head.hpp"
 #include "otype_hhea.hpp"
 #include "otype_hmtx.hpp"
@@ -13,7 +15,6 @@
 #include "otype_name.hpp"
 #include "otype_os2.hpp"
 #include "otype_sfnt.hpp"
-#include "otype_cmap.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 #include "../placement.hpp"
@@ -22,364 +23,69 @@
 #include <cstddef>
 #include <span>
 
-
 namespace hi::inline v1 {
-
-
-
-
-struct GLYFEntry {
-    big_int16_buf_t numberOfContours;
-    otype_fword_buf_t xMin;
-    otype_fword_buf_t yMin;
-    otype_fword_buf_t xMax;
-    otype_fword_buf_t yMax;
-};
 
 [[nodiscard]] glyph_id true_type_font::find_glyph(char32_t c) const
 {
     return _char_map.find(c);
 }
 
-bool true_type_font::update_glyph_metrics(
-    hi::glyph_id glyph_id,
-    hi::glyph_metrics& glyph_metrics,
-    hi::glyph_id kern_glyph1_id,
-    hi::glyph_id kern_glyph2_id) const
+graphic_path true_type_font::load_path(glyph_id glyph_id) const
 {
     load_view();
 
-    hi_assert_or_return(*glyph_id >= 0 and *glyph_id < num_glyphs, false);
-
-    hilet [advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, numberOfHMetrics, _em_scale);
-
-    glyph_metrics.advance = vector2{advance_width, 0.0f};
-    glyph_metrics.left_side_bearing = left_side_bearing;
-    glyph_metrics.right_side_bearing = advance_width - (left_side_bearing + glyph_metrics.bounding_rectangle.width());
-
-    if (kern_glyph1_id and kern_glyph2_id) {
-        glyph_metrics.advance += get_kerning(kern_glyph1_id, kern_glyph2_id);
-    }
-
-    return true;
-}
-
-constexpr uint8_t FLAG_ON_CURVE = 0x01;
-constexpr uint8_t FLAG_X_SHORT = 0x02;
-constexpr uint8_t FLAG_Y_SHORT = 0x04;
-constexpr uint8_t FLAG_REPEAT = 0x08;
-constexpr uint8_t FLAG_X_SAME = 0x10;
-constexpr uint8_t FLAG_Y_SAME = 0x20;
-bool true_type_font::load_simple_glyph(std::span<std::byte const> glyph_bytes, graphic_path& glyph) const
-{
-    load_view();
-
-    std::size_t offset = 0;
-
-    hilet entry = make_placement_ptr<GLYFEntry>(glyph_bytes, offset);
-
-    hilet numberOfContours = static_cast<std::size_t>(*entry->numberOfContours);
-
-    // Check includes instructionLength.
-    hilet endPoints = make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours);
-
-    int max_end_point = -1;
-    for (hilet endPoint : endPoints) {
-        // End points must be incrementing and contours must have at least one point.
-        hi_assert_or_return(wide_cast<int>(*endPoint) >= max_end_point, false);
-        max_end_point = wide_cast<int>(*endPoint);
-
-        glyph.contourEndPoints.push_back(*endPoint);
-    }
-
-    hilet numberOfPoints = *endPoints[numberOfContours - 1] + 1;
-
-    // Skip over the instructions.
-    hilet instructionLength = **make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset);
-    offset += instructionLength * ssizeof(uint8_t);
-
-    // Extract all the flags.
-    std::vector<uint8_t> flags;
-    flags.reserve(numberOfPoints);
-    while (flags.size() < numberOfPoints) {
-        hilet flag = *make_placement_ptr<uint8_t>(glyph_bytes, offset);
-
-        flags.push_back(flag);
-        if (flag & FLAG_REPEAT) {
-            hilet repeat = *make_placement_ptr<uint8_t>(glyph_bytes, offset);
-
-            for (std::size_t i = 0; i < repeat; i++) {
-                flags.push_back(flag);
-            }
-        }
-    }
-    hi_assert_or_return(flags.size() == numberOfPoints, false);
-
-    hilet point_table_size = std::accumulate(flags.begin(), flags.end(), static_cast<std::size_t>(0), [](auto size, auto flag) {
-        return size + ((flag & FLAG_X_SHORT) > 0 ? 1 : ((flag & FLAG_X_SAME) > 0 ? 0 : 2)) +
-            ((flag & FLAG_Y_SHORT) > 0 ? 1 : ((flag & FLAG_Y_SAME) > 0 ? 0 : 2));
-    });
-    hi_assert_or_return(offset + point_table_size <= static_cast<std::size_t>(glyph_bytes.size()), false);
-
-    // Get xCoordinates
-    std::vector<int16_t> xCoordinates;
-    xCoordinates.reserve(numberOfPoints);
-    for (hilet flag : flags) {
-        if ((flag & FLAG_X_SHORT) > 0) {
-            if ((flag & FLAG_X_SAME) > 0) {
-                xCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
-            } else {
-                // Negative short.
-                xCoordinates.push_back(-static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
-            }
-        } else {
-            if ((flag & FLAG_X_SAME) > 0) {
-                xCoordinates.push_back(0);
-            } else {
-                // Long
-                xCoordinates.push_back(**make_placement_ptr<big_int16_buf_t>(glyph_bytes, offset));
-            }
-        }
-    }
-
-    // Get yCoordinates
-    std::vector<int16_t> yCoordinates;
-    yCoordinates.reserve(numberOfPoints);
-    for (hilet flag : flags) {
-        if ((flag & FLAG_Y_SHORT) > 0) {
-            if ((flag & FLAG_Y_SAME) > 0) {
-                yCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
-            } else {
-                // Negative short.
-                yCoordinates.push_back(-static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
-            }
-        } else {
-            if ((flag & FLAG_Y_SAME) > 0) {
-                yCoordinates.push_back(0);
-            } else {
-                // Long
-                yCoordinates.push_back(**make_placement_ptr<big_int16_buf_t>(glyph_bytes, offset));
-            }
-        }
-    }
-
-    // Create absolute points
-    int16_t x = 0;
-    int16_t y = 0;
-    std::size_t pointNr = 0;
-    std::vector<bezier_point> points;
-    points.reserve(numberOfPoints);
-    for (hilet flag : flags) {
-        x += xCoordinates[pointNr];
-        y += yCoordinates[pointNr];
-
-        hilet type = (flag & FLAG_ON_CURVE) > 0 ? bezier_point::Type::Anchor : bezier_point::Type::QuadraticControl;
-
-        glyph.points.emplace_back(x * _em_scale, y * _em_scale, type);
-        pointNr++;
-    }
-
-    return true;
-}
-
-constexpr uint16_t FLAG_ARG_1_AND_2_ARE_WORDS = 0x0001;
-constexpr uint16_t FLAG_ARGS_ARE_XY_VALUES = 0x0002;
-[[maybe_unused]] constexpr uint16_t FLAG_ROUND_XY_TO_GRID = 0x0004;
-constexpr uint16_t FLAG_WE_HAVE_A_SCALE = 0x0008;
-constexpr uint16_t FLAG_MORE_COMPONENTS = 0x0020;
-constexpr uint16_t FLAG_WE_HAVE_AN_X_AND_Y_SCALE = 0x0040;
-constexpr uint16_t FLAG_WE_HAVE_A_TWO_BY_TWO = 0x0080;
-[[maybe_unused]] constexpr uint16_t FLAG_WE_HAVE_INSTRUCTIONS = 0x0100;
-constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
-[[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
-constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
-[[maybe_unused]] constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes, graphic_path& glyph, glyph_id& metrics_glyph_id)
-    const
-{
-    load_view();
-
-    std::size_t offset = ssizeof(GLYFEntry);
-
-    uint16_t flags;
-    do {
-        flags = **make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset);
-
-        hilet subGlyphIndex = **make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset);
-
-        graphic_path subGlyph;
-        hi_assert_or_return(load_glyph(glyph_id{subGlyphIndex}, subGlyph), false);
-
-        auto subGlyphOffset = vector2{};
-        if (flags & FLAG_ARGS_ARE_XY_VALUES) {
-            if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                hilet tmp = make_placement_array<otype_fword_buf_t>(glyph_bytes, offset, 2);
-                subGlyphOffset = vector2{tmp[0] * _em_scale, tmp[1] * _em_scale};
-            } else {
-                hilet tmp = make_placement_array<otype_fbyte_buf_t>(glyph_bytes, offset, 2);
-                subGlyphOffset = vector2{tmp[0] * _em_scale, tmp[1] * _em_scale};
-            }
-        } else {
-            std::size_t pointNr1;
-            std::size_t pointNr2;
-            if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                hilet tmp = make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2);
-                pointNr1 = *tmp[0];
-                pointNr2 = *tmp[1];
-            } else {
-                hilet tmp = make_placement_array<uint8_t>(glyph_bytes, offset, 2);
-                pointNr1 = tmp[0];
-                pointNr2 = tmp[1];
-            }
-            // XXX Implement
-            hi_log_warning("Reading glyph from font with !FLAG_ARGS_ARE_XY_VALUES");
-            return false;
-        }
-
-        // Start with an identity matrix.
-        auto subGlyphScale = scale2{};
-        if (flags & FLAG_WE_HAVE_A_SCALE) {
-            subGlyphScale = scale2(make_placement_ptr<otype_fixed1_14_buf_t>(glyph_bytes, offset)->value());
-
-        } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
-            hilet tmp = make_placement_array<otype_fixed1_14_buf_t>(glyph_bytes, offset, 2);
-            subGlyphScale = scale2(tmp[0].value(), tmp[1].value());
-
-        } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
-            hilet tmp = make_placement_array<otype_fixed1_14_buf_t>(glyph_bytes, offset, 4);
-            hi_not_implemented();
-            // subGlyphScale = mat::S(
-            //    tmp[0].value(),
-            //    tmp[1].value(),
-            //    tmp[2].value(),
-            //    tmp[3].value()
-            //)
-        }
-
-        if (flags & FLAG_SCALED_COMPONENT_OFFSET) {
-            subGlyphOffset = subGlyphScale * subGlyphOffset;
-        }
-
-        if (flags & FLAG_USE_MY_METRICS) {
-            metrics_glyph_id = subGlyphIndex;
-        }
-
-        glyph += translate2(subGlyphOffset) * subGlyphScale * subGlyph;
-
-    } while (flags & FLAG_MORE_COMPONENTS);
-    // Ignore trailing instructions.
-
-    return true;
-}
-
-std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_path& glyph) const
-{
-    load_view();
-
-    hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, {});
+    hi_check(*glyph_id < num_glyphs, "glyph_id is not valid in this font.");
 
     hilet glyph_bytes = otype_loca_get(_loca_table_bytes, _glyf_table_bytes, glyph_id, _loca_is_offset32);
 
-    auto metrics_glyph_id = glyph_id;
+    if (otype_glyf_is_compound(glyph_bytes)) {
+        auto r = graphic_path{};
 
-    if (glyph_bytes.size() > 0) {
-        hilet entry = make_placement_ptr<GLYFEntry>(glyph_bytes);
-        hilet numberOfContours = *entry->numberOfContours;
+        for (hilet& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
+            auto component_path = component.scale * load_path(component.glyph_id);
 
-        hi_assert_or_return((entry->xMin * 1.0f) <= (entry->xMax * 1.0f), {});
-        hi_assert_or_return((entry->yMin * 1.0f) <= (entry->yMax * 1.0f), {});
+            if (component.use_points) {
+                hilet compound_point = hi_check_at(r.points, component.compound_point_index).p;
+                hilet component_point = hi_check_at(component_path.points, component.component_point_index).p;
+                hilet offset = translate2{compound_point - component_point};
+                component_path = offset * component_path;
+            } else {
+                component_path = translate2{component.offset} * component_path;
+            }
 
-        if (numberOfContours > 0) {
-            hi_assert_or_return(load_simple_glyph(glyph_bytes, glyph), {});
-        } else if (numberOfContours < 0) {
-            hi_assert_or_return(load_compound_glyph(glyph_bytes, glyph, metrics_glyph_id), {});
-        } else {
-            // Empty glyph, such as white-space ' '.
+            r += component_path;
         }
+        return r;
 
     } else {
-        // Empty glyph, such as white-space ' '.
+        return otype_glyf_get_path(glyph_bytes, _em_scale);
     }
-
-    return metrics_glyph_id;
 }
 
-bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> bytes, glyph_id& metrics_glyph_id) const
+glyph_metrics true_type_font::load_metrics(hi::glyph_id glyph_id) const
 {
     load_view();
 
-    std::size_t offset = ssizeof(GLYFEntry);
-
-    uint16_t flags;
-    do {
-        flags = **make_placement_ptr<big_uint16_buf_t>(bytes, offset);
-
-        hilet subGlyphIndex = **make_placement_ptr<big_uint16_buf_t>(bytes, offset);
-
-        if (flags & FLAG_ARGS_ARE_XY_VALUES) {
-            if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                offset += ssizeof(otype_fword_buf_t) * 2;
-            } else {
-                offset += ssizeof(otype_fbyte_buf_t) * 2;
-            }
-        } else {
-            if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                offset += ssizeof(big_uint16_buf_t) * 2;
-            } else {
-                offset += ssizeof(uint8_t) * 2;
-            }
-        }
-
-        if (flags & FLAG_WE_HAVE_A_SCALE) {
-            offset += ssizeof(otype_fixed1_14_buf_t);
-        } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
-            offset += ssizeof(otype_fixed1_14_buf_t) * 2;
-        } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
-            offset += ssizeof(otype_fixed1_14_buf_t) * 4;
-        }
-
-        if (flags & FLAG_USE_MY_METRICS) {
-            metrics_glyph_id = subGlyphIndex;
-            return true;
-        }
-    } while (flags & FLAG_MORE_COMPONENTS);
-    // Ignore trailing instructions.
-
-    return true;
-}
-
-bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics& glyph_metrics, hi::glyph_id lookahead_glyph_id)
-    const
-{
-    load_view();
-
-    hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, false);
+    hi_check(*glyph_id < num_glyphs, "glyph_id is not valid in this font.");
 
     hilet glyph_bytes = otype_loca_get(_loca_table_bytes, _glyf_table_bytes, glyph_id, _loca_is_offset32);
 
-    auto metricsGlyphIndex = glyph_id;
-
-    if (glyph_bytes.size() > 0) {
-        hilet entry = make_placement_ptr<GLYFEntry>(glyph_bytes);
-        hilet numberOfContours = *entry->numberOfContours;
-
-        hilet xyMin = point2{entry->xMin * _em_scale, entry->yMin * _em_scale};
-        hilet xyMax = point2{entry->xMax * _em_scale, entry->yMax * _em_scale};
-        glyph_metrics.bounding_rectangle = aarectangle{xyMin, xyMax};
-
-        if (numberOfContours > 0) {
-            // A simple glyph does not include metrics information in the data.
-        } else if (numberOfContours < 0) {
-            hi_assert_or_return(load_compound_glyph_metrics(glyph_bytes, metricsGlyphIndex), false);
-        } else {
-            // Empty glyph, such as white-space ' '.
+    if (otype_glyf_is_compound(glyph_bytes)) {
+        for (hilet& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
+            if (component.use_for_metrics) {
+                return load_metrics(component.glyph_id);
+            }
         }
-
-    } else {
-        // Empty glyph, such as white-space ' '.
     }
 
-    return update_glyph_metrics(metricsGlyphIndex, glyph_metrics, glyph_id, lookahead_glyph_id);
+    auto r = glyph_metrics{};
+    r.bounding_rectangle = otype_glyf_get_bounding_box(glyph_bytes, _em_scale);
+    hilet[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, numberOfHMetrics, _em_scale);
+
+    r.advance = vector2{advance_width, 0.0f};
+    r.left_side_bearing = left_side_bearing;
+    r.right_side_bearing = advance_width - (left_side_bearing + r.bounding_rectangle.width());
+    return r;
 }
 
 void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
@@ -499,9 +205,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     } else {
         hilet glyph_id = find_glyph('x');
         if (glyph_id) {
-            hi::glyph_metrics glyph_metrics;
-            load_glyph_metrics(glyph_id, glyph_metrics);
-            metrics.x_height = glyph_metrics.bounding_rectangle.height();
+            metrics.x_height = load_metrics(glyph_id).bounding_rectangle.height();
         }
     }
 
@@ -510,17 +214,13 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     } else {
         hilet glyph_id = find_glyph('H');
         if (glyph_id) {
-            hi::glyph_metrics glyph_metrics;
-            load_glyph_metrics(glyph_id, glyph_metrics);
-            metrics.cap_height = glyph_metrics.bounding_rectangle.height();
+            metrics.cap_height = load_metrics(glyph_id).bounding_rectangle.height();
         }
     }
 
     hilet glyph_id = find_glyph('8');
     if (glyph_id) {
-        hi::glyph_metrics glyph_metrics;
-        load_glyph_metrics(glyph_id, glyph_metrics);
-        metrics.digit_advance = glyph_metrics.advance.x();
+        metrics.digit_advance = load_metrics(glyph_id).advance.x();
     }
 }
 

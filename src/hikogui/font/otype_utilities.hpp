@@ -25,7 +25,8 @@ struct otype_fixed15_16_buf_t {
  */
 struct otype_fixed1_14_buf_t {
     big_int16_buf_t x;
-    float value() const noexcept
+    
+    constexpr float operator*() const noexcept
     {
         return static_cast<float>(*x) / 16384.0f;
     }

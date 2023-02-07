@@ -31,16 +31,16 @@ public:
             _bytes = {};
             ++global_counter<"ttf:unmap">;
 
-        } catch (std::exception const &e) {
+        } catch (std::exception const& e) {
             throw parse_error(std::format("{}: Could not parse font directory.\n{}", path.string(), e.what()));
         }
     }
 
     true_type_font() = delete;
-    true_type_font(true_type_font const &other) = delete;
-    true_type_font &operator=(true_type_font const &other) = delete;
-    true_type_font(true_type_font &&other) = delete;
-    true_type_font &operator=(true_type_font &&other) = delete;
+    true_type_font(true_type_font const& other) = delete;
+    true_type_font& operator=(true_type_font const& other) = delete;
+    true_type_font(true_type_font&& other) = delete;
+    true_type_font& operator=(true_type_font&& other) = delete;
     ~true_type_font() = default;
 
     [[nodiscard]] bool loaded() const noexcept override
@@ -53,25 +53,9 @@ public:
      */
     [[nodiscard]] hi::glyph_id find_glyph(char32_t c) const override;
 
-    /** Load a glyph into a path.
-     * The glyph is directly loaded from the font file.
-     *
-     * @param glyph_id the index of a glyph inside the font.
-     * @param path The path constructed by the loader.
-     * @return empty on failure, or the glyphID of the metrics to use.
-     */
-    std::optional<hi::glyph_id> load_glyph(hi::glyph_id glyph_id, graphic_path &path) const override;
+    [[nodiscard]] graphic_path load_path(hi::glyph_id glyph_id) const override;
 
-    /** Load a glyphMetrics into a path.
-     * The glyph is directly loaded from the font file.
-     *
-     * @param glyph_id the index of a glyph inside the font.
-     * @param metrics The metrics constructed by the loader.
-     * @param lookahead_glyph_id The next glyph, used for determining kerning.
-     * @return 1 on success, 0 on not implemented
-     */
-    bool load_glyph_metrics(hi::glyph_id glyph_id, glyph_metrics &metrics, hi::glyph_id lookahead_glyph_id = hi::glyph_id{})
-        const override;
+    [[nodiscard]] glyph_metrics load_metrics(hi::glyph_id glyph_id) const override;
 
     [[nodiscard]] vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const override
     {
@@ -79,8 +63,8 @@ public:
         return otype_kern_find(_kern_table_bytes, current_glyph, next_glyph, _em_scale);
     }
 
-    void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
-        const override
+    void
+    substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type>& word) const override
     {
     }
 
@@ -145,37 +129,6 @@ private:
     /** Parse the character map to create unicode_ranges.
      */
     [[nodiscard]] hi::unicode_mask parse_cmap_table_mask() const;
-
-    /** Update the glyph metrics from the font tables.
-     * called by loadGlyph()
-     */
-    bool update_glyph_metrics(
-        hi::glyph_id glyph_id,
-        glyph_metrics &metrics,
-        hi::glyph_id kern_glyph1_id = hi::glyph_id{},
-        hi::glyph_id kern_glyph2_id = hi::glyph_id{}) const;
-
-    bool load_simple_glyph(std::span<std::byte const> bytes, graphic_path &glyph) const;
-
-    /** Load a compound glyph.
-     * This will call loadGlyph() recursively.
-     *
-     * \param bytes Bytes inside the glyf table of this specific compound glyph.
-     * \param glyph The path to update with points from the subglyphs.
-     * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
-     *                          this value is only updated when the USE_MY_METRICS flag was set.
-     */
-    bool
-    load_compound_glyph(std::span<std::byte const> bytes, graphic_path &glyph, hi::glyph_id &metrics_glyph_id) const;
-
-    /** Load a compound glyph.
-     * This will call loadGlyph() recursively.
-     *
-     * \param bytes Bytes inside the glyf table of this specific compound glyph.
-     * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
-     *                          this value is only updated when the USE_MY_METRICS flag was set.
-     */
-    bool load_compound_glyph_metrics(std::span<std::byte const> bytes, hi::glyph_id &metrics_glyph_id) const;
 
     /** Get the index of the glyph from the coverage table.
      *
