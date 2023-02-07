@@ -11,6 +11,7 @@
 #include "../strings.hpp"
 #include "../generator.hpp"
 #include "../ranges.hpp"
+#include "../utility/module.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -51,8 +52,8 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
         } else if (column == "\xc3\x97") {
             r.expected.push_back(hi::unicode_break_opportunity::no);
         } else {
-            auto code_point = static_cast<char32_t>(std::stoi(std::string(column), nullptr, 16));
-            r.code_points += code_point;
+            auto const code_point = std::stoi(std::string(column), nullptr, 16);
+            r.code_points += hi::char_cast<char32_t>(code_point);
         }
     }
 

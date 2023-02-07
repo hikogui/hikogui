@@ -132,7 +132,7 @@ private:
 
             hilet arg = args_[i];
             hi_axiom(arg <= mask);
-            store_or(static_cast<value_type>(arg << bit_offset), r.data() + byte_offset);
+            store_or(arg << bit_offset, r.data() + byte_offset);
         }
 
         return r;

@@ -159,14 +159,14 @@ otype_name_search(std::span<std::byte const> bytes, uint16_t name_id, language_t
         hilet name_bytes = hi_check_subspan(storage_bytes, *entry.offset, *entry.length);
 
         if (auto s = otype_get_string(name_bytes, platform_id, platform_specific_id)) {
-            return {std::move(s)};
+            return s;
         }
     }
 
     return std::nullopt;
 }
 
-[[nodiscard]] auto otype_name_get_family(std::span<std::byte const> bytes)
+[[nodiscard]] inline auto otype_name_get_family(std::span<std::byte const> bytes)
 {
     struct return_type {
         std::string family_name;

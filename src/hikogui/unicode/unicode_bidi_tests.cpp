@@ -226,7 +226,7 @@ struct unicode_bidi_character_test {
     auto r = unicode_bidi_character_test{};
     r.line_nr = line_nr;
     std::transform(begin(hex_characters), end(hex_characters), std::back_inserter(r.characters), [](hilet &x) {
-        return static_cast<char32_t>(hi::from_string<uint32_t>(x, 16));
+        return char_cast<char32_t>(hi::from_string<uint32_t>(x, 16));
     });
 
     r.paragraph_direction = paragraph_direction == 0 ? unicode_bidi_class::L :

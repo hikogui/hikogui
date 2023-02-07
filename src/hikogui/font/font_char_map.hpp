@@ -11,6 +11,7 @@
 #include "glyph_id.hpp"
 #include "../algorithm.hpp"
 #include "../utility/module.hpp"
+#include "../unicode/unicode_mask.hpp"
 #include <cstdint>
 #include <vector>
 #include <tuple>
@@ -34,10 +35,15 @@ public:
     constexpr font_char_map& operator=(font_char_map const&) noexcept = default;
     constexpr font_char_map& operator=(font_char_map&&) noexcept = default;
 
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return _map.empty();
+    }
+
     /** Reserve space for a set of ranges to be added.
      * @param n The number of ranges to be added.
      */
-    void reserve(size_t n)
+    constexpr void reserve(size_t n)
     {
         return _map.reserve(n);
     }
@@ -45,24 +51,27 @@ public:
     /** Add a range of code points.
      *
      * @param start_code_point The starting code-point of the range.
+     * @param end_code_point The ending code-point of the range (inclusive).
      * @param start_glyph The starting glyph of the range.
-     * @param count The number of code-points in this range.
      */
-    [[nodiscard]] constexpr void add(char32_t start_code_point, uint16_t start_glyph, size_t count) noexcept
+    [[nodiscard]] constexpr void add(char32_t start_code_point, char32_t end_code_point, uint16_t start_glyph) noexcept
     {
 #ifndef NDEBUG
         _prepared = false;
 #endif
+        hi_axiom(start_code_point <= end_code_point);
+        auto count = wide_cast<size_t>(end_code_point - start_code_point + 1);
+        hi_axiom(start_glyph + count < 0xffff, "Only glyph_ids 0 through 0xfffe are valid");
 
         while (count != 0) {
-            hilet short_count = truncate<uint16_t>(std::min(count, size_t{0xffff}));
+            hilet short_count = std::min(count, entry_type::max_count);
             hi_axiom(short_count != 0);
 
-            _map.emplace_back(start_code_point, start_glyph, short_count);
+            _map.emplace_back(start_code_point, char_cast<char32_t>(start_code_point + short_count - 1), start_glyph);
 
             count -= short_count;
-            start_code_point += short_count;
-            start_glyph += short_count;
+            start_code_point += narrow_cast<char32_t>(short_count);
+            start_glyph += narrow_cast<uint16_t>(short_count);
         }
     }
 
@@ -79,28 +88,31 @@ public:
 
         // Sort the entries in reverse order so that the lower_bound search becomes upper_bound.
         std::sort(_map.begin(), _map.end(), [](hilet& a, hilet& b) {
-            return a.code_point < b.code_point;
+            return a.end_code_point < b.end_code_point;
         });
 
         auto it = _map.begin();
         auto prev_it = it++;
         while (it != _map.end()) {
-            hi_axiom(prev_it->code_point + prev_it->count <= it->code_point);
+            hi_axiom(prev_it->end_code_point < it->start_code_point());
 
-            if (prev_it->code_point + prev_it->count == it->code_point and prev_it->glyph + prev_it->count == it->glyph) {
-                hilet merged_count = wide_cast<uint32_t>(prev_it->count) + wide_cast<uint32_t>(it->count);
-                if (merged_count <= 0xffff) {
-                    prev_it->count = truncate<uint16_t>(merged_count);
+            if (mergable(*prev_it, *it)) {
+                hilet merged_count = std::min(prev_it->count() + it->count(), entry_type::max_count);
+                hilet move_count = merged_count - prev_it->count();
+                hi_axiom(move_count <= entry_type::max_count);
+
+                prev_it->end_code_point += narrow_cast<char32_t>(move_count);
+                prev_it->set_count(prev_it->count() + move_count);
+
+                if (move_count == it->count()) {
                     it = _map.erase(it);
                     // Don't change prev or it; since we just deleted instead of advanced.
                     continue;
 
                 } else {
-                    hilet moved_count = truncate<uint16_t>(0xffff - prev_it->count);
-                    prev_it->count = 0xffff;
-                    it->code_point += moved_count;
-                    it->glyph += moved_count;
-                    it->count -= moved_count;
+                    hi_axiom(move_count < it->count());
+                    it->start_glyph += narrow_cast<uint16_t>(move_count);
+                    it->set_count(it->count() - move_count);
                 }
             }
 
@@ -125,27 +137,84 @@ public:
         hi_assert(_prepared);
 #endif
 
-        if (hilet item_ptr = fast_binary_search_le(std::span{_map}, char_cast<uint32_t>(code_point))) {
-            hilet delta = code_point - item_ptr->code_point;
-            if (delta >= item_ptr->count) {
-                return glyph_id{};
-            }
-
-            return glyph_id{item_ptr->glyph + delta};
-
-        } else {
-            return glyph_id{};
+        if (hilet item_ptr = fast_lower_bound(std::span{_map}, char_cast<uint32_t>(code_point))) {
+            return item_ptr->get(code_point);
         }
+        return {};
+    }
+
+    [[nodiscard]] unicode_mask make_mask() const noexcept
+    {
+        auto r = unicode_mask();
+
+        for (hilet& entry : _map) {
+            r.add(entry.start_code_point(), entry.end_code_point + 1);
+        }
+
+        r.optimize();
+        r.shrink_to_fit();
+        return r;
     }
 
 private:
-    struct item_type {
-        char32_t code_point;
-        uint16_t glyph;
-        uint16_t count;
+    struct entry_type {
+        constexpr static size_t max_count = 0x1'0000;
+
+        char32_t end_code_point;
+        uint16_t start_glyph;
+        uint16_t _count;
+
+        constexpr entry_type(char32_t start_code_point, char32_t end_code_point, uint16_t start_glyph) noexcept :
+            end_code_point(end_code_point),
+            start_glyph(start_glyph),
+            _count(narrow_cast<uint16_t>(end_code_point - start_code_point))
+        {
+            hi_axiom(start_code_point <= end_code_point);
+        }
+
+        [[nodiscard]] constexpr size_t count() const noexcept
+        {
+            return wide_cast<size_t>(_count) + 1;
+        }
+
+        [[nodiscard]] constexpr void set_count(size_t new_count) noexcept
+        {
+            hi_axiom(new_count > 0);
+            hi_axiom(new_count <= max_count);
+            _count = narrow_cast<uint16_t>(new_count - 1);
+        }
+
+        [[nodiscard]] constexpr char32_t start_code_point() const noexcept
+        {
+            return end_code_point - _count;
+        }
+
+        [[nodiscard]] constexpr uint16_t end_glyph() const noexcept
+        {
+            return narrow_cast<uint16_t>(start_glyph + _count);
+        }
+
+        [[nodiscard]] constexpr friend bool mergable(entry_type const& lhs, entry_type const& rhs) noexcept
+        {
+            return lhs.end_code_point + 1 == rhs.start_code_point() and lhs.end_glyph() + 1 == rhs.start_glyph;
+        }
+
+        [[nodiscard]] constexpr glyph_id get(char32_t code_point) const noexcept
+        {
+            auto diff = wide_cast<ptrdiff_t>(code_point) - wide_cast<ptrdiff_t>(end_code_point);
+            if (diff > 0) {
+                return {};
+            }
+            diff += _count;
+            if (diff < 0) {
+                return {};
+            }
+            diff += start_glyph;
+            return glyph_id{truncate<uint16_t>(diff)};
+        }
     };
 
-    std::vector<item_type> _map = {};
+    std::vector<entry_type> _map = {};
 
 #ifndef NDEBUG
     bool _prepared = false;

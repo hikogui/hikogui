@@ -29,6 +29,9 @@ hi_warning_ignore_msvc(26496);
 // C26466: Don't use static_cast downcast. A cast from a polymorphic type should use dynamic_cast (type.2)
 // Used in down_cast<>() specifically for doing this savely.
 hi_warning_ignore_msvc(26466);
+// C26474: Don't cast between pointer types when the conversion could be implicit (type.1).
+// Since these functions are templates this happens.
+hi_warning_ignore_msvc(26474);
 
 namespace hi::inline v1 {
 template<typename T>
@@ -245,10 +248,28 @@ template<arithmetic Out, arithmetic In>
     }
 }
 
-template<std::integral Out, arithmetic In>
+/** Cast an integral to an unsigned integral of the same size.
+ */
+template<std::integral In>
+[[nodiscard]] constexpr std::make_unsigned_t<In> to_unsigned(In rhs) noexcept
+{
+    return static_cast<std::make_unsigned_t<In>>(rhs);
+}
+
+/** Cast an integral to an signed integral of the same size.
+ */
+template<std::integral In>
+[[nodiscard]] constexpr std::make_signed_t<In> to_signed(In rhs) noexcept
+{
+    return static_cast<std::make_signed_t<In>>(rhs);
+}
+
+/** Cast between integral types truncating or zero-extending the result.
+ */
+template<std::integral Out, std::integral In>
 [[nodiscard]] constexpr Out truncate(In rhs) noexcept
 {
-    return static_cast<Out>(rhs);
+    return static_cast<Out>(to_unsigned(rhs));
 }
 
 template<std::integral Out, std::integral In>
@@ -432,7 +453,7 @@ template<typename T, byte_like Byte>
     if (sizeof(value_type) > bytes.size()) {
         throw std::bad_cast();
     }
-    hi_axiom_not_null(bytes.data()); 
+    hi_axiom_not_null(bytes.data());
 
     if constexpr (alignof(value_type) != 1) {
         if (std::bit_cast<std::uintptr_t>(bytes.data()) % alignof(value_type) != 0) {

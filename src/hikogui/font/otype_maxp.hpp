@@ -11,7 +11,7 @@
 
 namespace hi { inline namespace v1 {
 
-[[nodiscard]] auto otype_maxp_parse(std::span<std::byte const> bytes)
+[[nodiscard]] inline auto otype_maxp_parse(std::span<std::byte const> bytes)
 {
     struct header_type_05 {
         big_uint32_buf_t version;

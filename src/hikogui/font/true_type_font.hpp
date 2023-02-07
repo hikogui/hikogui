@@ -6,6 +6,8 @@
 
 #include "font.hpp"
 #include "otype_sfnt.hpp"
+#include "otype_kern.hpp"
+#include "font_char_map.hpp"
 #include "../file/file_view.hpp"
 #include "../graphic_path.hpp"
 #include "../counters.hpp"
@@ -16,26 +18,6 @@
 namespace hi::inline v1 {
 
 class true_type_font final : public font {
-private:
-    /** The url to retrieve the view.
-     */
-    std::filesystem::path _path;
-
-    /** The resource view of the font-file.
-     *
-     * This view may be reset if there is a path available.
-     */
-    mutable file_view _view;
-
-    float OS2_x_height = 0;
-    float OS2_cap_height = 0;
-
-    float _em_scale;
-
-    uint16_t numberOfHMetrics;
-
-    int num_glyphs;
-
 public:
     true_type_font(std::filesystem::path const& path) : _path(path), _view(file_view{path})
     {
@@ -91,7 +73,11 @@ public:
     bool load_glyph_metrics(hi::glyph_id glyph_id, glyph_metrics &metrics, hi::glyph_id lookahead_glyph_id = hi::glyph_id{})
         const override;
 
-    [[nodiscard]] vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const override;
+    [[nodiscard]] vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const override
+    {
+        load_view();
+        return otype_kern_find(_kern_table_bytes, current_glyph, next_glyph, _em_scale);
+    }
 
     void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
         const override
@@ -99,20 +85,35 @@ public:
     }
 
 private:
+    /** The url to retrieve the view.
+     */
+    std::filesystem::path _path;
+
+    /** The resource view of the font-file.
+     *
+     * This view may be reset if there is a path available.
+     */
+    mutable file_view _view;
+
+    float OS2_x_height = 0;
+    float OS2_cap_height = 0;
+
+    float _em_scale;
+
+    uint16_t numberOfHMetrics;
+
+    int num_glyphs;
     mutable std::span<std::byte const> _bytes;
-    mutable std::span<std::byte const> _cmap_table_bytes;
-    mutable std::span<std::byte const> _cmap_bytes;
     mutable std::span<std::byte const> _loca_table_bytes;
     mutable std::span<std::byte const> _glyf_table_bytes;
     mutable std::span<std::byte const> _hmtx_table_bytes;
     mutable std::span<std::byte const> _kern_table_bytes;
     mutable std::span<std::byte const> _GSUB_table_bytes;
     bool _loca_is_offset32;
+    font_char_map _char_map;
 
     void cache_tables(std::span<std::byte const> bytes) const
     {
-        _cmap_table_bytes = otype_sfnt_search<"cmap">(bytes);
-        _cmap_bytes = parse_cmap_table_directory();
         _loca_table_bytes = otype_sfnt_search<"loca">(bytes);
         _glyf_table_bytes = otype_sfnt_search<"glyf">(bytes);
         _hmtx_table_bytes = otype_sfnt_search<"hmtx">(bytes);
@@ -141,21 +142,9 @@ private:
      */
     void parse_font_directory(std::span<std::byte const> bytes);
 
-    void parse_hhea_table(std::span<std::byte const> bytes);
-    void parse_name_table(std::span<std::byte const> bytes);
-    void parse_OS2_table(std::span<std::byte const> bytes);
-    void parse_maxp_table(std::span<std::byte const> bytes);
-
-    [[nodiscard]] std::span<std::byte const> parse_cmap_table_directory() const;
-
     /** Parse the character map to create unicode_ranges.
      */
     [[nodiscard]] hi::unicode_mask parse_cmap_table_mask() const;
-
-    /** Find the glyph in the loca table.
-     * called by loadGlyph()
-     */
-    bool get_glyf_bytes(hi::glyph_id glyph_id, std::span<std::byte const> &bytes) const;
 
     /** Update the glyph metrics from the font tables.
      * called by loadGlyph()
