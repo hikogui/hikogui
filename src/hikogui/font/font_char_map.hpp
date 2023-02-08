@@ -11,7 +11,7 @@
 #include "glyph_id.hpp"
 #include "../algorithm.hpp"
 #include "../utility/module.hpp"
-#include "../unicode/unicode_mask.hpp"
+#include <bitset>
 #include <cstdint>
 #include <vector>
 #include <tuple>
@@ -55,6 +55,26 @@ public:
         return _count;
     }
 
+    /** Update a code-point mask.
+     *
+     * @param mask The mask to be updated.
+     * @return Number of code-point that where added and where not in the mask before.
+     */
+    constexpr size_t update_mask(std::bitset<0x11'0000>& mask) const noexcept
+    {
+        auto r = 0_uz;
+        for (hilet &entry: _map) {
+            // Make sure this loop is inclusive.
+            for (auto cp = entry.start_code_point(); cp <= entry.end_code_point; ++cp) {
+                if (not mask.test(cp)) {
+                    ++r;
+                    mask.set(cp);
+                }
+            }
+        }
+        return r;
+    }
+
     /** Add a range of code points.
      *
      * @param start_code_point The starting code-point of the range.
@@ -67,19 +87,19 @@ public:
         _prepared = false;
 #endif
         hi_axiom(start_code_point <= end_code_point);
-        auto count = wide_cast<size_t>(end_code_point - start_code_point + 1);
-        _count += count;
-        hi_axiom(start_glyph + count < 0xffff, "Only glyph_ids 0 through 0xfffe are valid");
+        auto todo = wide_cast<size_t>(end_code_point - start_code_point + 1);
+        _count += todo;
+        hi_axiom(start_glyph + todo < 0xffff, "Only glyph_ids 0 through 0xfffe are valid");
 
-        while (count != 0) {
-            hilet short_count = std::min(count, entry_type::max_count);
-            hi_axiom(short_count != 0);
+        while (todo != 0) {
+            hilet doing = std::min(todo, entry_type::max_count);
+            hi_axiom(doing != 0);
 
-            _map.emplace_back(start_code_point, char_cast<char32_t>(start_code_point + short_count - 1), start_glyph);
+            _map.emplace_back(start_code_point, char_cast<char32_t>(start_code_point + doing - 1), start_glyph);
 
-            count -= short_count;
-            start_code_point += narrow_cast<char32_t>(short_count);
-            start_glyph += narrow_cast<uint16_t>(short_count);
+            todo -= doing;
+            start_code_point += narrow_cast<char32_t>(doing);
+            start_glyph += narrow_cast<uint16_t>(doing);
         }
     }
 
@@ -149,19 +169,6 @@ public:
             return item_ptr->get(code_point);
         }
         return {};
-    }
-
-    [[nodiscard]] unicode_mask make_mask() const noexcept
-    {
-        auto r = unicode_mask();
-
-        for (hilet& entry : _map) {
-            r.add(entry.start_code_point(), entry.end_code_point + 1);
-        }
-
-        r.optimize();
-        r.shrink_to_fit();
-        return r;
     }
 
 private:

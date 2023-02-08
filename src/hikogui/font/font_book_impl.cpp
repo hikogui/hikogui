@@ -4,7 +4,6 @@
 
 #include "font_book.hpp"
 #include "true_type_font.hpp"
-#include "font_char_mask.hpp"
 #include "../file/glob.hpp"
 #include "../trace.hpp"
 #include "../ranges.hpp"
@@ -131,9 +130,9 @@ void font_book::register_font_directory(std::filesystem::path const& path, bool 
         return (item->italic == italic) and almost_equal(item->weight, weight);
     });
 
-    auto unicode_mask = hi::font_char_mask{};
+    auto char_mask = std::bitset<0x11'0000>{};
     for (auto& font : r) {
-        if (not unicode_mask.add(font->char_map)) {
+        if (font->char_map.update_mask(char_mask) == 0) {
             // This font did not add any code points.
             font = nullptr;
         }

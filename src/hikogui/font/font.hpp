@@ -11,7 +11,6 @@
 #include "font_variant.hpp"
 #include "font_metrics.hpp"
 #include "font_char_map.hpp"
-#include "../unicode/unicode_mask.hpp"
 #include "../unicode/gstring.hpp"
 #include "../i18n/iso_15924.hpp"
 #include "../i18n/iso_639.hpp"
