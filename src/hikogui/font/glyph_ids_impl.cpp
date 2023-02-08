@@ -21,24 +21,9 @@ namespace hi::inline v1 {
     for (std::size_t i = 0; i < num_glyphs(); i++) {
         hilet glyph_id = (*this)[i];
 
-        graphic_path glyph_path;
-        if (not font().load_glyph(glyph_id, glyph_path)) {
-            hi_log_error(
-                "Could not load glyph {} in font {} - {}",
-                static_cast<int>(glyph_id),
-                font().family_name,
-                font().sub_family_name);
-        }
-        path += glyph_path;
+        path += font().load_path(glyph_id);
 
-        glyph_metrics glyph_metrics;
-        if (not font().load_glyph_metrics(glyph_id, glyph_metrics)) {
-            hi_log_error(
-                "Could not load glyph-metrics {} in font {} - {}",
-                static_cast<int>(glyph_id),
-                font().family_name,
-                font().sub_family_name);
-        }
+        hilet glyph_metrics = font().load_metrics(glyph_id);
 
         if (i == 0) {
             bounding_box = glyph_metrics.bounding_rectangle;
@@ -58,14 +43,7 @@ namespace hi::inline v1 {
     for (std::size_t i = 0; i < num_glyphs(); i++) {
         hilet glyph_id = (*this)[i];
 
-        glyph_metrics glyph_metrics;
-        if (not font().load_glyph_metrics(glyph_id, glyph_metrics)) {
-            hi_log_error(
-                "Could not load glyph-metrics {} in font {} - {}",
-                static_cast<int>(glyph_id),
-                font().family_name,
-                font().sub_family_name);
-        }
+        auto glyph_metrics = font().load_metrics(glyph_id);
 
         if (i == 0) {
             bounding_box = glyph_metrics.bounding_rectangle;

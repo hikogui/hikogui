@@ -68,10 +68,10 @@ public:
 
     font() = default;
     virtual ~font() = default;
-    font(font const &) = delete;
-    font &operator=(font const &) = delete;
-    font(font &&) = delete;
-    font &operator=(font &&) = delete;
+    font(font const&) = delete;
+    font& operator=(font const&) = delete;
+    font(font&&) = delete;
+    font& operator=(font&&) = delete;
 
     /** Return if the font is loaded.
      *
@@ -89,14 +89,15 @@ public:
      */
     [[nodiscard]] hi::glyph_ids find_glyph(grapheme g) const;
 
-    /*! Load a glyph into a path.
+    /** Load a glyph into a path.
      * The glyph is directly loaded from the font file.
      *
-     * \param glyph_id the id of a glyph inside the font.
-     * \param path The path constructed by the loader.
-     * \return empty on failure, or the glyphID of the metrics to use.
+     * @param glyph_id the id of a glyph inside the font.
+     * @return The path loaded from the font file.
+     * @throws std::exception If there was an error while loading the path.
+     *         Recommend to disable the font on error.
      */
-    virtual std::optional<hi::glyph_id> load_glyph(hi::glyph_id glyph_id, graphic_path &path) const = 0;
+    [[nodiscard]] virtual graphic_path load_path(hi::glyph_id glyph_id) const = 0;
 
     /*! Load a glyph into a path.
      * The glyph is directly loaded from the font file.
@@ -106,10 +107,7 @@ public:
      * \param lookahead_glyph_id The id of a glyph to the right, needed for kerning.
      * \return true on success, false on error.
      */
-    virtual bool load_glyph_metrics(
-        hi::glyph_id glyph_id,
-        glyph_metrics &metrics,
-        hi::glyph_id lookahead_glyph_id = hi::glyph_id{}) const = 0;
+    [[nodiscard]] virtual glyph_metrics load_metrics(hi::glyph_id glyph_id) const = 0;
 
     /** Get the kerning between two glyphs.
      *
@@ -144,10 +142,10 @@ public:
      * @param script The script that the word is written in.
      * @param[in,out] word A run of glyphs, from the same font, font-size and script of a word.
      */
-    virtual void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
-        const = 0;
+    virtual void
+    substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type>& word) const = 0;
 
-    glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const
+    glyph_atlas_info& atlas_info(glyph_ids const& glyphs) const
     {
         if (glyphs.has_num_glyphs<1>()) [[likely]] {
             hilet index = static_cast<std::size_t>(get<0>(glyphs));
@@ -166,7 +164,7 @@ public:
         return {weight, italic};
     }
 
-    [[nodiscard]] friend std::string to_string(font const &rhs) noexcept
+    [[nodiscard]] friend std::string to_string(font const& rhs) noexcept
     {
         return std::format(
             "{} - {}: style={}{}{}{}{}{}, features={}",
@@ -190,7 +188,7 @@ private:
 
 template<typename CharT>
 struct std::formatter<hi::font, CharT> : formatter<std::string_view, CharT> {
-    auto format(hi::font const &t, auto &fc)
+    auto format(hi::font const& t, auto& fc)
     {
         return formatter<string_view, CharT>::format(to_string(t), fc);
     }
