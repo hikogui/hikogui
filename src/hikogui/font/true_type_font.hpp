@@ -48,11 +48,6 @@ public:
         return to_bool(_view);
     }
 
-    /** Get the glyph for a code-point.
-     * @return glyph-index, or invalid when not found or error.
-     */
-    [[nodiscard]] hi::glyph_id find_glyph(char32_t c) const override;
-
     [[nodiscard]] graphic_path load_path(hi::glyph_id glyph_id) const override;
 
     [[nodiscard]] glyph_metrics load_metrics(hi::glyph_id glyph_id) const override;
@@ -63,10 +58,7 @@ public:
         return otype_kern_find(_kern_table_bytes, current_glyph, next_glyph, _em_scale);
     }
 
-    void
-    substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type>& word) const override
-    {
-    }
+    [[nodiscard]] shape_run_result_type shape_run(iso_639 language, iso_15924 script, gstring run) const override;
 
 private:
     /** The url to retrieve the view.
@@ -94,7 +86,6 @@ private:
     mutable std::span<std::byte const> _kern_table_bytes;
     mutable std::span<std::byte const> _GSUB_table_bytes;
     bool _loca_is_offset32;
-    font_char_map _char_map;
 
     void cache_tables(std::span<std::byte const> bytes) const
     {
@@ -125,10 +116,6 @@ private:
      * inside the file for each table.
      */
     void parse_font_directory(std::span<std::byte const> bytes);
-
-    /** Parse the character map to create unicode_ranges.
-     */
-    [[nodiscard]] hi::unicode_mask parse_cmap_table_mask() const;
 
     /** Get the index of the glyph from the coverage table.
      *

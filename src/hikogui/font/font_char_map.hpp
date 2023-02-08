@@ -48,6 +48,13 @@ public:
         return _map.reserve(n);
     }
 
+    /** Get the number of code-points supported by the char-map.
+     */
+    constexpr size_t count() const noexcept
+    {
+        return _count;
+    }
+
     /** Add a range of code points.
      *
      * @param start_code_point The starting code-point of the range.
@@ -61,6 +68,7 @@ public:
 #endif
         hi_axiom(start_code_point <= end_code_point);
         auto count = wide_cast<size_t>(end_code_point - start_code_point + 1);
+        _count += count;
         hi_axiom(start_glyph + count < 0xffff, "Only glyph_ids 0 through 0xfffe are valid");
 
         while (count != 0) {
@@ -215,6 +223,10 @@ private:
     };
 
     std::vector<entry_type> _map = {};
+
+    /** Total number of code-points added.
+     */
+    size_t _count = 0;
 
 #ifndef NDEBUG
     bool _prepared = false;

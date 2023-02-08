@@ -25,11 +25,6 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] glyph_id true_type_font::find_glyph(char32_t c) const
-{
-    return _char_map.find(c);
-}
-
 graphic_path true_type_font::load_path(glyph_id glyph_id) const
 {
     load_view();
@@ -116,7 +111,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     }
 
     if (auto cmap_bytes = otype_sfnt_search<"cmap">(bytes); not cmap_bytes.empty()) {
-        _char_map = otype_cmap_parse(cmap_bytes);
+        char_map = otype_cmap_parse(cmap_bytes);
     } else {
         throw parse_error("Could not find 'cmap'");
     }
@@ -133,8 +128,6 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     }
 
     cache_tables(bytes);
-
-    unicode_mask = _char_map.make_mask();
 
     // Parsing the weight, italic and other features from the sub-family-name
     // is much more reliable than the explicit data in the OS/2 table.
@@ -222,6 +215,13 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     if (glyph_id) {
         metrics.digit_advance = load_metrics(glyph_id).advance.x();
     }
+}
+
+[[nodiscard]] font::shape_run_result_type true_type_font::shape_run(iso_639 language, iso_15924 script, gstring run) const
+{
+    auto r = shape_run_result_type{};
+
+    return r;
 }
 
 } // namespace hi::inline v1
