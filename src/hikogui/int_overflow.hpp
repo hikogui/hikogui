@@ -39,28 +39,28 @@ inline bool convert_overflow(T x, U *r)
 }
 
 template<std::integral T>
-constexpr bool add_overflow(T lhs, T rhs, T *r) noexcept
+constexpr bool overflow_add(T lhs, T rhs, T *r) noexcept
 {
-    if (not std::constant_evaluated()) {
+    if (not std::is_constant_evaluated()) {
 #if HI_COMPILER == HI_CC_GCC || HI_COMPPILER == HI_CC_CLANG
         // ADD, JO
         return __builtin_add_overflow(lhs, rhs, r);
 #endif
     }
 
-    if constexpr (std::is_unsigned_v<T>) {
-        // LEA, CMP, JB
-        *r = lhs + rhs;
-        return *r < lhs;
+    // LEA,XOR,XOR,TEST,JS
+    hilet lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
+    hilet rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
+    hilet r_ = lhs_ + rhs_;
+    *r = static_cast<T>(r_);
 
-    } else {
-        // LEA,XOR,XOR,TEST,JS
-        hilet lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
-        hilet rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
-        hilet r_ = lhs_ + rhs_;
-        *r = static_cast<T>(r_);
-        return ((lhs ^ *r) & (rhs ^ *r)) < 0;
-    }
+    // p + p = p : (0^0) & (0^0) = 0
+    // p + p = x : (0^1) & (0^1) = 1
+    // n + n = n : (1^1) & (1^1) = 0
+    // n + n = x : (1^0) & (1^0) = 1
+    // p + n = p : (0^1) & (1^1) = 0
+    // n + p = p : (1^1) & (0^1) = 0
+    return ((lhs ^ *r) & (rhs ^ *r)) < 0;
 }
 
 template<std::integral T>
