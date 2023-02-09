@@ -48,10 +48,9 @@ public:
         return to_bool(_view);
     }
 
-    [[nodiscard]] graphic_path load_path(hi::glyph_id glyph_id) const override;
-
-    [[nodiscard]] glyph_metrics load_metrics(hi::glyph_id glyph_id) const override;
-
+    [[nodiscard]] graphic_path get_path(hi::glyph_id glyph_id) const override;
+    [[nodiscard]] float get_advance(hi::glyph_id glyph_id) const override;
+    [[nodiscard]] glyph_metrics get_metrics(hi::glyph_id glyph_id) const override;
     [[nodiscard]] shape_run_result_type shape_run(iso_639 language, iso_15924 script, gstring run) const override;
 
 private:
@@ -70,7 +69,7 @@ private:
 
     float _em_scale;
 
-    uint16_t numberOfHMetrics;
+    uint16_t _num_horizontal_metrics;
 
     int num_glyphs;
     mutable std::span<std::byte const> _bytes;

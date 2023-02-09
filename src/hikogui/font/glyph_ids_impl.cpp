@@ -21,9 +21,9 @@ namespace hi::inline v1 {
     for (std::size_t i = 0; i < num_glyphs(); i++) {
         hilet glyph_id = (*this)[i];
 
-        path += font().load_path(glyph_id);
+        path += font().get_path(glyph_id);
 
-        hilet glyph_metrics = font().load_metrics(glyph_id);
+        hilet glyph_metrics = font().get_metrics(glyph_id);
 
         if (i == 0) {
             bounding_box = glyph_metrics.bounding_rectangle;
@@ -43,7 +43,7 @@ namespace hi::inline v1 {
     for (std::size_t i = 0; i < num_glyphs(); i++) {
         hilet glyph_id = (*this)[i];
 
-        auto glyph_metrics = font().load_metrics(glyph_id);
+        auto glyph_metrics = font().get_metrics(glyph_id);
 
         if (i == 0) {
             bounding_box = glyph_metrics.bounding_rectangle;

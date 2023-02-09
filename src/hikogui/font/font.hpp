@@ -105,17 +105,25 @@ public:
      * @throws std::exception If there was an error while loading the path.
      *         Recommend to disable the font on error.
      */
-    [[nodiscard]] virtual graphic_path load_path(hi::glyph_id glyph_id) const = 0;
+    [[nodiscard]] virtual graphic_path get_path(hi::glyph_id glyph_id) const = 0;
 
-    /*! Load a glyph into a path.
+    /** Get the advance for a glyph.
+     *
+     * @param glyph_id The glyph to look up the advance for.
+     * @return The advance for the glyph.
+     * @throws std::exception If there was an error looking up the glyph.
+     */
+    [[nodiscard]] virtual float get_advance(hi::glyph_id glyph_id) const = 0;
+
+    /** Load a glyph into a path.
      * The glyph is directly loaded from the font file.
      *
-     * \param glyph_id the id of a glyph inside the font.
-     * \param metrics The metrics constructed by the loader.
-     * \param lookahead_glyph_id The id of a glyph to the right, needed for kerning.
-     * \return true on success, false on error.
+     * @param glyph_id the id of a glyph inside the font.
+     * @param metrics The metrics constructed by the loader.
+     * @param lookahead_glyph_id The id of a glyph to the right, needed for kerning.
+     * @return true on success, false on error.
      */
-    [[nodiscard]] virtual glyph_metrics load_metrics(hi::glyph_id glyph_id) const = 0;
+    [[nodiscard]] virtual glyph_metrics get_metrics(hi::glyph_id glyph_id) const = 0;
 
     struct shape_run_result_type {
         /** Position of each grapheme.

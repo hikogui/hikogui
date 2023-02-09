@@ -25,7 +25,7 @@
 
 namespace hi::inline v1 {
 
-graphic_path true_type_font::load_path(glyph_id glyph_id) const
+graphic_path true_type_font::get_path(glyph_id glyph_id) const
 {
     load_view();
 
@@ -37,7 +37,7 @@ graphic_path true_type_font::load_path(glyph_id glyph_id) const
         auto r = graphic_path{};
 
         for (hilet& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
-            auto component_path = component.scale * load_path(component.glyph_id);
+            auto component_path = component.scale * get_path(component.glyph_id);
 
             if (component.use_points) {
                 hilet compound_point = hi_check_at(r.points, component.compound_point_index).p;
@@ -57,7 +57,16 @@ graphic_path true_type_font::load_path(glyph_id glyph_id) const
     }
 }
 
-glyph_metrics true_type_font::load_metrics(hi::glyph_id glyph_id) const
+[[nodiscard]] float true_type_font::get_advance(hi::glyph_id glyph_id) const
+{
+    load_view();
+
+    hi_check(*glyph_id < num_glyphs, "glyph_id is not valid in this font.");
+    hilet[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
+    return advance_width;
+}
+
+glyph_metrics true_type_font::get_metrics(hi::glyph_id glyph_id) const
 {
     load_view();
 
@@ -68,14 +77,14 @@ glyph_metrics true_type_font::load_metrics(hi::glyph_id glyph_id) const
     if (otype_glyf_is_compound(glyph_bytes)) {
         for (hilet& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
             if (component.use_for_metrics) {
-                return load_metrics(component.glyph_id);
+                return get_metrics(component.glyph_id);
             }
         }
     }
 
     auto r = glyph_metrics{};
     r.bounding_rectangle = otype_glyf_get_bounding_box(glyph_bytes, _em_scale);
-    hilet[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, numberOfHMetrics, _em_scale);
+    hilet[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
 
     r.advance = advance_width;
     r.left_side_bearing = left_side_bearing;
@@ -107,7 +116,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
         metrics.ascender = hhea.ascender;
         metrics.descender = -hhea.descender;
         metrics.line_gap = hhea.line_gap;
-        numberOfHMetrics = hhea.number_of_h_metrics;
+        _num_horizontal_metrics = hhea.number_of_h_metrics;
     }
 
     if (auto cmap_bytes = otype_sfnt_search<"cmap">(bytes); not cmap_bytes.empty()) {
@@ -198,7 +207,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     } else {
         hilet glyph_id = find_glyph('x');
         if (glyph_id) {
-            metrics.x_height = load_metrics(glyph_id).bounding_rectangle.height();
+            metrics.x_height = get_metrics(glyph_id).bounding_rectangle.height();
         }
     }
 
@@ -207,13 +216,13 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     } else {
         hilet glyph_id = find_glyph('H');
         if (glyph_id) {
-            metrics.cap_height = load_metrics(glyph_id).bounding_rectangle.height();
+            metrics.cap_height = get_metrics(glyph_id).bounding_rectangle.height();
         }
     }
 
     hilet glyph_id = find_glyph('8');
     if (glyph_id) {
-        metrics.digit_advance = load_metrics(glyph_id).advance;
+        metrics.digit_advance = get_metrics(glyph_id).advance;
     }
 }
 
@@ -227,7 +236,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
         hilet glyphs = find_glyph(grapheme);
         auto grapheme_advance = 0.0f;
         for (hilet glyph_id : glyphs) {
-            hilet glyph_metrics = load_metrics(glyph_id);
+            hilet glyph_metrics = get_metrics(glyph_id);
             hilet glyph_bounding_rectangle = translate2{x, 0.0f} * glyph_metrics.bounding_rectangle;
             hilet glyph_position = point2{x, 0.0f};
 
