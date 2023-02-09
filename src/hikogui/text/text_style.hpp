@@ -175,6 +175,11 @@ public:
     using int_type = uint16_t;
 
     constexpr text_style() : _value(0xffff) {}
+    constexpr text_style(text_style const&) noexcept = default;
+    constexpr text_style(text_style&&) noexcept = default;
+    constexpr text_style& operator=(text_style const&) noexcept = default;
+    constexpr text_style& operator=(text_style&&) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(text_style const&, text_style const&) noexcept = default;
 
     constexpr text_style(semantic_text_style rhs) noexcept : _value(0xff00 + to_underlying(rhs)) {}
 

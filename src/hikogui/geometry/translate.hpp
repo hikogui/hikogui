@@ -117,12 +117,31 @@ public:
         return _v.x();
     }
 
-    [[nodiscard]] constexpr value_type y() const noexcept requires(D >= 2)
+    [[nodiscard]] constexpr value_type y() const noexcept
+        requires(D >= 2)
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr value_type z() const noexcept requires(D >= 3)
+    [[nodiscard]] constexpr value_type z() const noexcept
+        requires(D >= 3)
+    {
+        return _v.z();
+    }
+
+    [[nodiscard]] constexpr value_type& x() noexcept
+    {
+        return _v.x();
+    }
+
+    [[nodiscard]] constexpr value_type& y() noexcept
+        requires(D >= 2)
+    {
+        return _v.y();
+    }
+
+    [[nodiscard]] constexpr value_type& z() noexcept
+        requires(D >= 3)
     {
         return _v.z();
     }
@@ -184,11 +203,24 @@ public:
         return point<value_type, std::max(D, E)>{_v + static_cast<array_type>(rhs)};
     }
 
+    constexpr friend point<value_type, 2>& operator*=(point<value_type, 2>& lhs, translate const& rhs) noexcept
+        requires(D == 2)
+    {
+        return lhs = rhs * lhs;
+    }
+
     [[nodiscard]] constexpr axis_aligned_rectangle<value_type>
     operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept
         requires(D == 2)
     {
         return axis_aligned_rectangle<value_type>{*this * get<0>(rhs), *this * get<3>(rhs)};
+    }
+
+    constexpr friend axis_aligned_rectangle<value_type>&
+    operator*=(axis_aligned_rectangle<value_type>& lhs, translate const& rhs) noexcept
+        requires(D == 2)
+    {
+        return lhs = rhs * lhs;
     }
 
     [[nodiscard]] constexpr rectangle operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept
@@ -294,7 +326,7 @@ constexpr translate3i translate_z(int z) noexcept
 }
 
 template<>
-[[nodiscard]] constexpr translate2 narrow_cast(translate2i const &rhs) noexcept
+[[nodiscard]] constexpr translate2 narrow_cast(translate2i const& rhs) noexcept
 {
     return {narrow_cast<float>(rhs.x()), narrow_cast<float>(rhs.y())};
 }

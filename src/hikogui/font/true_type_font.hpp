@@ -52,12 +52,6 @@ public:
 
     [[nodiscard]] glyph_metrics load_metrics(hi::glyph_id glyph_id) const override;
 
-    [[nodiscard]] vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const override
-    {
-        load_view();
-        return otype_kern_find(_kern_table_bytes, current_glyph, next_glyph, _em_scale);
-    }
-
     [[nodiscard]] shape_run_result_type shape_run(iso_639 language, iso_15924 script, gstring run) const override;
 
 private:
@@ -124,6 +118,12 @@ private:
      * @return Coverage-index of the glyph when found, -1 if not found, -2 on error.
      */
     [[nodiscard]] std::ptrdiff_t get_coverage_index(std::span<std::byte const> bytes, hi::glyph_id glyph);
+
+    /** Shape the given text with very basic rules.
+    */
+    [[nodiscard]] font::shape_run_result_type shape_run_basic(gstring run) const;
+
+    void shape_run_kern(font::shape_run_result_type &shape_result) const;
 };
 
 } // namespace hi::inline v1

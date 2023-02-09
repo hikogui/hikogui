@@ -33,7 +33,7 @@ void text_shaper_char::initialize_glyph(hi::font_book const& font_book, hi::font
     if (not glyph_is_initial) {
         set_glyph(font_book.find_glyph(font, grapheme));
 
-        width = metrics.advance.x();
+        width = metrics.advance;
         glyph_is_initial = true;
     }
 }
