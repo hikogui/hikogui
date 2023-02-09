@@ -7,33 +7,26 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] glyph_ids font::find_glyph(grapheme g) const
+[[nodiscard]] lean_vector<glyph_id> font::find_glyph(grapheme g) const
 {
-    if (not loaded() and not unicode_mask.contains(g)) {
-        // If the grapheme is not available in the font prevent font loading.
-        // However if the font is loaded, then just look up the grapheme directly from the font.
-        return {};
-    }
-
     // Create a glyph_ids object for a single grapheme.
-    auto r = glyph_ids(*this);
-    r.set_num_graphemes(1);
+    auto r = lean_vector<glyph_id>{};
 
     // First try composed normalization
-    for (std::size_t i = 0; i != g.size(); ++i) {
+    for (auto i = 0_uz; i != g.size(); ++i) {
         if (hilet glyph_id = find_glyph(g[i])) {
-            r += glyph_id;
+            r.push_back(glyph_id);
         } else {
             r.clear();
             break;
         }
     }
 
-    if (not r) {
-        // First try decomposed normalization
+    if (r.empty()) {
+        // Now try decomposed normalization
         for (hilet c : g.decomposed()) {
             if (hilet glyph_id = find_glyph(c)) {
-                r += glyph_id;
+                r.push_back(glyph_id);
             } else {
                 r.clear();
                 break;

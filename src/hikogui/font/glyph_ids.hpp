@@ -9,6 +9,7 @@
 #include "../graphic_path.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
+#include "../lean_vector.hpp"
 #include <bit>
 #include <memory>
 #include <cstddef>
@@ -185,6 +186,22 @@ public:
      * @param font The font to be used for this glyph_ids.
      */
     constexpr glyph_ids(hi::font const& font) noexcept : _font(&font), _ptr(make_ptr(1)) {}
+
+    /** Create a glyph_ids object from a font and a single glyph_id.
+     */
+    constexpr glyph_ids(hi::font const& font, hi::glyph_id glyph_id) noexcept : glyph_ids(font)
+    {
+        *this += glyph_id;
+    }
+
+    /** Create a glyph_ids object from a font and a list of glyph_ids.
+     */
+    glyph_ids(hi::font const& font, lean_vector<glyph_id> const& glyph_ids) noexcept : glyph_ids(font)
+    {
+        for (hilet glyph_id : glyph_ids) {
+            *this += glyph_id;
+        }
+    }
 
     /** Get the font for this glyph_ids object.
      */

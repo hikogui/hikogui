@@ -24,8 +24,6 @@ target_sources(hikogui PRIVATE
     unicode_general_category.hpp
     unicode_grapheme_cluster_break.hpp
     unicode_line_break.hpp
-    unicode_mask_impl.cpp
-    unicode_mask.hpp
     unicode_normalization_impl.cpp
     unicode_normalization.hpp
     unicode_sentence_break.hpp

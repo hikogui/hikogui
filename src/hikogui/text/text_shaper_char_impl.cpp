@@ -46,7 +46,7 @@ void text_shaper_char::initialize_glyph(hi::font_book& font_book) noexcept
 void text_shaper_char::replace_glyph(char32_t code_point) noexcept
 {
     hilet& font = glyph.font();
-    set_glyph(font.find_glyph(hi::grapheme{code_point}));
+    set_glyph(glyph_ids{font, font.find_glyph(code_point)});
 
     glyph_is_initial = false;
 }

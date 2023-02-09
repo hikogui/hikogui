@@ -126,13 +126,13 @@ public:
     [[nodiscard]] glyph_ids find_glyph(elusive_icon rhs) const noexcept
     {
         hi_assert_not_null(_elusive_icon_font);
-        return _elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
+        return {*_elusive_icon_font, _elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)})};
     }
 
     [[nodiscard]] glyph_ids find_glyph(hikogui_icon rhs) const noexcept
     {
         hi_assert_not_null(_hikogui_icon_font);
-        return _hikogui_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
+        return {*_hikogui_icon_font, _hikogui_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)})};
     }
 
 private:
@@ -167,20 +167,6 @@ private:
     mutable std::unordered_map<font_grapheme_id, glyph_ids> _glyph_cache;
 
     [[nodiscard]] std::vector<hi::font *> make_fallback_chain(font_weight weight, bool italic) noexcept;
-
-    /** Morph the set of glyphs using the font's morph tables.
-     */
-    // void morph_glyphs(glyph_array &glyphs) const noexcept;
-
-    /** Lookup the glyphs in the atlas and optionally render.
-     */
-    // void atlas_lookup(glyph &glyph) noexcept;
-
-    /** Lookup the glyphs in the atlas and optionally render.
-     */
-    // void atlas_lookup(glyph_array &glyphs) noexcept;
-
-    // void kern_glyphs(glyph_array &glyphs) const noexcept;
 
     /** Generate fallback font family names.
      */
