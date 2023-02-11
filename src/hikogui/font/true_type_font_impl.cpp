@@ -25,7 +25,7 @@
 
 namespace hi::inline v1 {
 
-graphic_path true_type_font::load_path(glyph_id glyph_id) const
+graphic_path true_type_font::get_path(glyph_id glyph_id) const
 {
     load_view();
 
@@ -37,7 +37,7 @@ graphic_path true_type_font::load_path(glyph_id glyph_id) const
         auto r = graphic_path{};
 
         for (hilet& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
-            auto component_path = component.scale * load_path(component.glyph_id);
+            auto component_path = component.scale * get_path(component.glyph_id);
 
             if (component.use_points) {
                 hilet compound_point = hi_check_at(r.points, component.compound_point_index).p;
@@ -57,7 +57,16 @@ graphic_path true_type_font::load_path(glyph_id glyph_id) const
     }
 }
 
-glyph_metrics true_type_font::load_metrics(hi::glyph_id glyph_id) const
+[[nodiscard]] float true_type_font::get_advance(hi::glyph_id glyph_id) const
+{
+    load_view();
+
+    hi_check(*glyph_id < num_glyphs, "glyph_id is not valid in this font.");
+    hilet[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
+    return advance_width;
+}
+
+glyph_metrics true_type_font::get_metrics(hi::glyph_id glyph_id) const
 {
     load_view();
 
@@ -68,16 +77,16 @@ glyph_metrics true_type_font::load_metrics(hi::glyph_id glyph_id) const
     if (otype_glyf_is_compound(glyph_bytes)) {
         for (hilet& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
             if (component.use_for_metrics) {
-                return load_metrics(component.glyph_id);
+                return get_metrics(component.glyph_id);
             }
         }
     }
 
     auto r = glyph_metrics{};
     r.bounding_rectangle = otype_glyf_get_bounding_box(glyph_bytes, _em_scale);
-    hilet[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, numberOfHMetrics, _em_scale);
+    hilet[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
 
-    r.advance = vector2{advance_width, 0.0f};
+    r.advance = advance_width;
     r.left_side_bearing = left_side_bearing;
     r.right_side_bearing = advance_width - (left_side_bearing + r.bounding_rectangle.width());
     return r;
@@ -107,7 +116,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
         metrics.ascender = hhea.ascender;
         metrics.descender = -hhea.descender;
         metrics.line_gap = hhea.line_gap;
-        numberOfHMetrics = hhea.number_of_h_metrics;
+        _num_horizontal_metrics = hhea.number_of_h_metrics;
     }
 
     if (auto cmap_bytes = otype_sfnt_search<"cmap">(bytes); not cmap_bytes.empty()) {
@@ -198,7 +207,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     } else {
         hilet glyph_id = find_glyph('x');
         if (glyph_id) {
-            metrics.x_height = load_metrics(glyph_id).bounding_rectangle.height();
+            metrics.x_height = get_metrics(glyph_id).bounding_rectangle.height();
         }
     }
 
@@ -207,19 +216,91 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     } else {
         hilet glyph_id = find_glyph('H');
         if (glyph_id) {
-            metrics.cap_height = load_metrics(glyph_id).bounding_rectangle.height();
+            metrics.cap_height = get_metrics(glyph_id).bounding_rectangle.height();
         }
     }
 
     hilet glyph_id = find_glyph('8');
     if (glyph_id) {
-        metrics.digit_advance = load_metrics(glyph_id).advance.x();
+        metrics.digit_advance = get_metrics(glyph_id).advance;
+    }
+}
+
+[[nodiscard]] font::shape_run_result_type true_type_font::shape_run_basic(gstring run) const
+{
+    auto r = font::shape_run_result_type{};
+    r.reserve(run.size());
+
+    auto x = 0.0f;
+    for (hilet grapheme : run) {
+        hilet glyphs = find_glyph(grapheme);
+        auto grapheme_advance = 0.0f;
+        for (hilet glyph_id : glyphs) {
+            hilet glyph_metrics = get_metrics(glyph_id);
+            hilet glyph_bounding_rectangle = translate2{x, 0.0f} * glyph_metrics.bounding_rectangle;
+            hilet glyph_position = point2{x, 0.0f};
+
+            x += glyph_metrics.advance;
+            grapheme_advance += glyph_metrics.advance;
+
+            r.glyphs.push_back(glyph_id);
+            r.glyph_positions.push_back(glyph_position);
+            r.glyph_bounding_rectangles.push_back(glyph_bounding_rectangle);
+        }
+        r.grapheme_advances.push_back(grapheme_advance);
+        r.glyph_count.push_back(glyphs.size());
+    }
+    return r;
+}
+
+void true_type_font::shape_run_kern(font::shape_run_result_type& shape_result) const
+{
+    hilet num_graphemes = shape_result.grapheme_advances.size();
+
+    auto total_kerning = translate2{};
+    auto prev_glyph_id = hi::glyph_id{};
+    auto glyph_index = 0_uz;
+    for (auto i = 0_uz; i != num_graphemes; ++i) {
+        hilet num_glyphs_in_grapheme = shape_result.glyph_count[i];
+        for (auto j = 0_uz; j != num_glyphs_in_grapheme; ++j, ++glyph_index) {
+            auto glyph_id = shape_result.glyphs[glyph_index];
+
+            if (prev_glyph_id) {
+                auto kerning = otype_kern_find(_kern_table_bytes, prev_glyph_id, glyph_id, _em_scale);
+                if (kerning.y() != 0.0f) {
+                    throw parse_error("'kern' table contains vertical kerning.");
+                }
+                total_kerning.x() += kerning.x();
+            }
+
+            shape_result.glyph_bounding_rectangles[glyph_index] *= total_kerning;
+            shape_result.glyph_positions[glyph_index] *= total_kerning;
+
+            prev_glyph_id = glyph_id;
+        }
+
+        shape_result.grapheme_advances[i] += total_kerning.x();
     }
 }
 
 [[nodiscard]] font::shape_run_result_type true_type_font::shape_run(iso_639 language, iso_15924 script, gstring run) const
 {
-    auto r = shape_run_result_type{};
+    auto r = shape_run_basic(run);
+
+    // Glyphs should be morphed only once.
+    auto morphed = false;
+    // Glyphs should be positioned only once.
+    auto positioned = false;
+
+    if (not positioned and not _kern_table_bytes.empty()) {
+        try {
+            shape_run_kern(r);
+            positioned = true;
+        } catch (std::exception const& e) {
+            hi_log_error("Turning off invalid 'kern' table in font '{} {}': {}", family_name, sub_family_name, e.what());
+            _kern_table_bytes = {};
+        }
+    }
 
     return r;
 }

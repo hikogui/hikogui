@@ -34,7 +34,7 @@ struct glyph_metrics {
 
     /*! The distance to the next character.
      */
-    vector2 advance = {0.0f, 0.0f};
+    float advance = 0.0f;
 
     glyph_metrics() noexcept = default;
     glyph_metrics(glyph_metrics const &) noexcept = default;

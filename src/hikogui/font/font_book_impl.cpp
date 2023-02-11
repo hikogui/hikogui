@@ -13,7 +13,7 @@
 
 namespace hi::inline v1 {
 
-font_book &font_book::global() noexcept
+font_book& font_book::global() noexcept
 {
     if (not _global) {
         _global = std::make_unique<font_book>();
@@ -21,9 +21,7 @@ font_book &font_book::global() noexcept
     return *_global;
 }
 
-font_book::~font_book()
-{
-}
+font_book::~font_book() {}
 
 font_book::font_book()
 {
@@ -295,6 +293,22 @@ void font_book::post_process() noexcept
 
     // If all everything has failed, use the tofu block of the original font.
     return _glyph_cache[key] = hi::glyph_ids{font, glyph_id{0}};
+}
+
+[[nodiscard]] font_book::estimate_run_result_type font_book::estimate_run(font const& font, gstring run) const noexcept
+{
+    auto r = estimate_run_result_type{};
+    r.reserve(run.size());
+
+    for (hilet grapheme: run) {
+        hilet glyphs = find_glyph(font, grapheme);
+        hilet &font = glyphs.font();
+
+        r.fonts.push_back(&font);
+        r.advances.push_back(font.get_advance(get<0>(glyphs)));
+    }
+
+    return r;
 }
 
 } // namespace hi::inline v1
