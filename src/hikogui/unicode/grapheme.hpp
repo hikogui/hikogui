@@ -44,9 +44,9 @@ struct grapheme {
      * This class will hold:
      * - A single code point between U+0000 to U+10ffff, or
      * - An index + 0x110000 into the long_graphemes table, or
-     * - 0x1fffff meaning empty/eof.
+     * - 0xff'ffff meaning empty/eof.
      *
-     * Bits [31:21] are always '0'.
+     * Bits [31:24] are always '0'.
      */
     value_type _value;
 
@@ -56,7 +56,19 @@ struct grapheme {
     constexpr grapheme& operator=(grapheme const&) noexcept = default;
     constexpr grapheme& operator=(grapheme&&) noexcept = default;
 
-    constexpr grapheme(nullptr_t) noexcept : _value(0x1f'ffff) {}
+    constexpr grapheme(nullptr_t) noexcept : _value(0xff'ffff) {}
+
+    constexpr grapheme(intrinsic_t, value_type value) : _value(value) {}
+
+    constexpr value_type &intrinsic() noexcept
+    {
+        return _value;
+    }
+
+    constexpr value_type const &intrinsic() const noexcept
+    {
+        return _value;
+    }
 
     /** Encode a single code-point.
      */
@@ -104,7 +116,7 @@ struct grapheme {
     [[nodiscard]] static constexpr grapheme eof() noexcept
     {
         grapheme r;
-        r._value = 0x1f'ffff;
+        r._value = 0xff'ffff;
         return r;
     }
 
@@ -112,14 +124,14 @@ struct grapheme {
      */
     constexpr void clear() noexcept
     {
-        _value = 0x1f'ffff;
+        _value = 0xff'ffff;
     }
 
     /** Check if the grapheme is empty.
      */
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return _value == 0x1f'ffff;
+        return _value == 0xff'ffff;
     }
 
     /** Check if the grapheme holds any code-points.
@@ -140,7 +152,7 @@ struct grapheme {
 
     [[nodiscard]] std::u32string const& long_grapheme() const noexcept
     {
-        hi_assert(_value >= 0x10'0000 and _value < 0x1f'ffff);
+        hi_assert(_value >= 0x10'0000 and _value < 0xff'ffff);
         return detail::long_graphemes[_value - 0x11'0000];
     }
 
@@ -148,7 +160,7 @@ struct grapheme {
      */
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        if (_value == 0x1f'ffff) {
+        if (_value == 0xff'ffff) {
             return 0;
 
         } else if (_value <= 0x10'ffff) {

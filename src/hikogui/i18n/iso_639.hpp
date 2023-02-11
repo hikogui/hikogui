@@ -18,8 +18,7 @@ namespace hi::inline v1 {
  *  3. ISO 639-3 (2007)
  *  4. ISO 639-5 (2008)
  *
- * This class compresses this 2 or 3 character language code inside 16 bits,
- * so that together with the script only 32 bits are needed per attributed character.
+ * This class compresses this 2 or 3 character language code inside 16 bits.
  */
 class iso_639 {
 public:
