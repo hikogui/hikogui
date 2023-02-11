@@ -13,7 +13,7 @@ text_shaper_line::text_shaper_line(
     iterator first,
     iterator last,
     float width,
-    hi::font_metrics const &metrics) noexcept :
+    hi::font_metrics const& metrics) noexcept :
     first(first), last(last), columns(), metrics(metrics), line_nr(line_nr), y(0.0f), width(width), last_category()
 {
     auto last_visible_it = first;
@@ -41,23 +41,66 @@ text_shaper_line::text_shaper_line(
     }
 }
 
-/**
- */
-static void advance_glyphs(text_shaper_line::column_vector &columns, float y) noexcept
+static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::iterator first, text_shaper_line::column_vector::iterator last) noexcept
 {
-    auto p = point2{0.0f, y};
-    for (auto it = columns.begin(); it != columns.end(); ++it) {
-        hilet char_it = *it;
-        hilet next_it = it + 1;
-        hilet kerning = next_it == columns.end() ? vector2{} : char_it->get_kerning(**next_it);
+    hi_axiom(first != last);
 
-        char_it->position = p;
-        p += char_it->metrics.advance + kerning;
+    hilet char_it = *first;
+    hilet& font = char_it->glyph.font();
+    hilet script = char_it->script;
+    hilet language = iso_639{};
+
+    auto run = gstring{};
+    run.reserve(std::distance(first, last));
+    for (auto it = first; it != last; ++it) {
+        run += (*it)->grapheme;
+    }
+
+    auto result = font.shape_run(language, script, run);
+    result.scale(char_it->scale);
+    hi_axiom(result.grapheme_advances.size() == run.size());
+    hi_axiom(result.glyph_count.size() == run.size());
+
+    auto grapheme_index = 0_uz;
+    auto glyph_index = 0_uz;
+    for (auto it = first; it != last; ++it, ++grapheme_index) {
+        (*it)->position = p;
+
+        p += vector2{result.grapheme_advances[grapheme_index], 0.0f};
     }
 }
 
+/**
+ */
+static void advance_glyphs(text_shaper_line::column_vector& columns, float y) noexcept
+{
+    if (columns.empty()) {
+        return;
+    }
+
+    auto p = point2{0.0f, y};
+
+    auto run_start = columns.begin();
+    for (auto it = run_start + 1; it != columns.end(); ++it) {
+        hilet start_char_it = *run_start;
+        hilet char_it = *it;
+
+        hilet same_font = &start_char_it->glyph.font() == &char_it->glyph.font();
+        hilet same_style = start_char_it->style == char_it->style;
+        hilet same_size = start_char_it->scale == char_it->scale;
+        hilet same_language = true;
+        hilet same_script = start_char_it->script == char_it->script;
+
+        if (not(same_font and same_style and same_size and same_language and same_script)) {
+            advance_glyphs_run(p, run_start, it);
+            run_start = it;
+        }
+    }
+    advance_glyphs_run(p, run_start, columns.end());
+}
+
 [[nodiscard]] static std::pair<float, size_t>
-calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_class paragraph_direction)
+calculate_precise_width(text_shaper_line::column_vector& columns, unicode_bidi_class paragraph_direction)
 {
     if (columns.empty()) {
         return {0.0f, 0_uz};
@@ -79,7 +122,7 @@ calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_c
             break;
         }
 
-        right_x = (*it)->position.x() + (*it)->metrics.advance.x();
+        right_x = (*it)->position.x() + (*it)->metrics.advance;
         if (not is_visible((*it)->description->general_category())) {
             ++num_white_space;
         }
@@ -88,22 +131,22 @@ calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_c
     hilet width = right_x - left_x;
 
     // Adjust the offset to left align on the first visible character.
-    for (auto &char_it : columns) {
+    for (auto& char_it : columns) {
         char_it->position.x() -= left_x;
     }
 
     return {width, num_white_space};
 }
 
-static void move_glyphs(text_shaper_line::column_vector &columns, float offset) noexcept
+static void move_glyphs(text_shaper_line::column_vector& columns, float offset) noexcept
 {
-    for (hilet &char_it : columns) {
+    for (hilet& char_it : columns) {
         char_it->position.x() += offset;
     }
 }
 
 [[nodiscard]] static bool align_glyphs_justified(
-    text_shaper_line::column_vector &columns,
+    text_shaper_line::column_vector& columns,
     float max_line_width,
     float visible_width,
     size_t num_internal_white_space) noexcept
@@ -119,7 +162,7 @@ static void move_glyphs(text_shaper_line::column_vector &columns, float offset) 
 
     hilet extra_space_per_whitespace = extra_space / num_internal_white_space;
     auto offset = 0.0f;
-    for (hilet &char_it : columns) {
+    for (hilet& char_it : columns) {
         char_it->position.x() += offset;
 
         // Add extra space for each white space in the visible part of the line. Leave the
@@ -133,7 +176,7 @@ static void move_glyphs(text_shaper_line::column_vector &columns, float offset) 
 }
 
 static void align_glyphs(
-    text_shaper_line::column_vector &columns,
+    text_shaper_line::column_vector& columns,
     horizontal_alignment alignment,
     unicode_bidi_class paragraph_direction,
     float max_line_width,
@@ -160,7 +203,7 @@ static void align_glyphs(
     return move_glyphs(columns, offset);
 }
 
-static void round_glyph_positions(text_shaper_line::column_vector &columns, float sub_pixel_width) noexcept
+static void round_glyph_positions(text_shaper_line::column_vector& columns, float sub_pixel_width) noexcept
 {
     hilet rcp_sub_pixel_width = 1.0f / sub_pixel_width;
     for (auto it : columns) {
@@ -168,7 +211,8 @@ static void round_glyph_positions(text_shaper_line::column_vector &columns, floa
     }
 }
 
-static void create_bounding_rectangles(text_shaper_line::column_vector &columns, float y, float ascender, float descender) noexcept
+static void
+create_bounding_rectangles(text_shaper_line::column_vector& columns, float y, float ascender, float descender) noexcept
 {
     for (auto it = columns.begin(); it != columns.end(); ++it) {
         hilet next_it = it + 1;
@@ -176,12 +220,10 @@ static void create_bounding_rectangles(text_shaper_line::column_vector &columns,
         if (next_it == columns.end()) {
             char_it->rectangle = {
                 point2{char_it->position.x(), y - descender},
-                point2{char_it->position.x() + char_it->metrics.advance.x(), y + ascender}};
+                point2{char_it->position.x() + char_it->metrics.advance, y + ascender}};
         } else {
             hilet next_char_it = *next_it;
-            char_it->rectangle = {
-                point2{char_it->position.x(), y - descender},
-                point2{next_char_it->position.x(), y + ascender}};
+            char_it->rectangle = {point2{char_it->position.x(), y - descender}, point2{next_char_it->position.x(), y + ascender}};
         }
     }
 }
@@ -221,7 +263,7 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
         return {last, false};
     }
 
-    auto column_it = std::lower_bound(columns.begin(), columns.end(), position.x(), [](hilet &char_it, hilet &x) {
+    auto column_it = std::lower_bound(columns.begin(), columns.end(), position.x(), [](hilet& char_it, hilet& x) {
         return char_it->rectangle.right() < x;
     });
     if (column_it == columns.end()) {

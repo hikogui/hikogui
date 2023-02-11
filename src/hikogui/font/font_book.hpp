@@ -30,7 +30,7 @@ namespace hi::inline v1 {
  */
 class font_book {
 public:
-    static font_book &global() noexcept;
+    static font_book& global() noexcept;
 
     ~font_book();
     font_book(font_book const&) = delete;
@@ -134,6 +134,46 @@ public:
         hi_assert_not_null(_hikogui_icon_font);
         return {*_hikogui_icon_font, _hikogui_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)})};
     }
+
+    struct estimate_run_result_type {
+        /** The resolved font to use for each grapheme.
+         *
+         * If a grapheme is not available to be displayed by a font, then
+         * a fallback font is searched. Use this particular font when
+         * text-shaping a run.
+         */
+        std::vector<font const *> fonts;
+
+        /** The estimated advance for each grapheme.
+         *
+         * This advance is used in the line folding algorithm.
+         */
+        std::vector<float> advances;
+
+        void reserve(size_t count) noexcept
+        {
+            fonts.reserve(count);
+            advances.reserve(count);
+        }
+
+        void scale(float s) noexcept
+        {
+            for (auto& advance : advances) {
+                advance *= s;
+            }
+        }
+    };
+
+    /** Estimate a run of text.
+     *
+     * This function is used by the text shaper to estimate the advance for
+     * each grapheme in a run (same style, size, color, font, language, script).
+     * 
+     * @param The font for this run of text.
+     * @param run The run of text.
+     * @return A list of resolved fonts for each grapheme, A list of estimated advance for each grapheme.
+     */
+    [[nodiscard]] estimate_run_result_type estimate_run(font const& font, gstring run) const noexcept;
 
 private:
     inline static std::unique_ptr<font_book> _global = nullptr;

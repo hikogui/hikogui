@@ -105,38 +105,34 @@ public:
      * @throws std::exception If there was an error while loading the path.
      *         Recommend to disable the font on error.
      */
-    [[nodiscard]] virtual graphic_path load_path(hi::glyph_id glyph_id) const = 0;
+    [[nodiscard]] virtual graphic_path get_path(hi::glyph_id glyph_id) const = 0;
 
-    /*! Load a glyph into a path.
+    /** Get the advance for a glyph.
+     *
+     * @param glyph_id The glyph to look up the advance for.
+     * @return The advance for the glyph.
+     * @throws std::exception If there was an error looking up the glyph.
+     */
+    [[nodiscard]] virtual float get_advance(hi::glyph_id glyph_id) const = 0;
+
+    /** Load a glyph into a path.
      * The glyph is directly loaded from the font file.
      *
-     * \param glyph_id the id of a glyph inside the font.
-     * \param metrics The metrics constructed by the loader.
-     * \param lookahead_glyph_id The id of a glyph to the right, needed for kerning.
-     * \return true on success, false on error.
+     * @param glyph_id the id of a glyph inside the font.
+     * @param metrics The metrics constructed by the loader.
+     * @param lookahead_glyph_id The id of a glyph to the right, needed for kerning.
+     * @return true on success, false on error.
      */
-    [[nodiscard]] virtual glyph_metrics load_metrics(hi::glyph_id glyph_id) const = 0;
-
-    /** Get the kerning between two glyphs.
-     *
-     * @param current_glyph The glyph on the left
-     * @param next_glyph The glyph on the right
-     * @return The vector to add to the advance of the current_glyph.
-     */
-    [[nodiscard]] virtual vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const = 0;
+    [[nodiscard]] virtual glyph_metrics get_metrics(hi::glyph_id glyph_id) const = 0;
 
     struct shape_run_result_type {
-        /** The bounding rectangle for each grapheme.
-         *
-         * The coordinates are in EM units and start at zero
-         * at the left-most / first grapheme.
-         *
-         * There is exactly one entry for each grapheme in the call to `shape_run()`.
-         *
-         * These bounding rectangles are used for user-interacting
-         * with the graphemes.
+        /** Position of each grapheme.
          */
-        std::vector<aarectangle> grapheme_boxes;
+        std::vector<float> grapheme_advances;
+
+        /** The number of glyphs used by each grapheme.
+         */
+        std::vector<size_t> glyph_count;
 
         /** The glyphs representing all the graphemes.
          *
@@ -146,6 +142,10 @@ public:
          */
         std::vector<glyph_id> glyphs;
 
+        /** Position of each glyph.
+         */
+        std::vector<point2> glyph_positions;
+
         /** The bounding rectangle for each glyph.
          *
          * The coordinates are in EM units and start at zero
@@ -153,13 +153,30 @@ public:
          *
          * There is exactly one bounding rectangle for each glyph.
          */
-        std::vector<aarectangle> glyph_boxes;
+        std::vector<aarectangle> glyph_bounding_rectangles;
 
-        /** The advance for this run of graphemes.
-         *
-         * The value is in EM units.
-         */
-        float advance;
+        void reserve(size_t count) noexcept
+        {
+            grapheme_advances.reserve(count);
+            glyph_count.reserve(count);
+            glyphs.reserve(count);
+            glyph_positions.reserve(count);
+            glyph_bounding_rectangles.reserve(count);
+        }
+
+        void scale(float s) noexcept
+        {
+            auto M = scale2{s};
+            for (auto& tmp : grapheme_advances) {
+                tmp = s * tmp;
+            }
+            for (auto& tmp : glyph_positions) {
+                tmp = M * tmp;
+            }
+            for (auto& tmp : glyph_bounding_rectangles) {
+                tmp = M * tmp;
+            }
+        }
     };
 
     /** Shape a run of graphemes.

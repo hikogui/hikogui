@@ -23,7 +23,7 @@ namespace hi::inline v1 {
 void text_shaper_char::set_glyph(hi::glyph_ids&& new_glyph) noexcept
 {
     glyph = std::move(new_glyph);
-    auto glyph_metrics = glyph.font().load_metrics(glyph[0]);
+    auto glyph_metrics = glyph.font().get_metrics(glyph[0]);
     scale = glyph.font().metrics.round_scale(dpi_scale * style->size);
     metrics = scale * glyph_metrics;
 }
@@ -33,7 +33,7 @@ void text_shaper_char::initialize_glyph(hi::font_book const& font_book, hi::font
     if (not glyph_is_initial) {
         set_glyph(font_book.find_glyph(font, grapheme));
 
-        width = metrics.advance.x();
+        width = metrics.advance;
         glyph_is_initial = true;
     }
 }

@@ -157,17 +157,6 @@ public:
         return scale * glyph.font().metrics;
     }
 
-    [[nodiscard]] vector2 get_kerning(text_shaper_char const &next) const noexcept
-    {
-        if (&(glyph.font()) != &(next.glyph.font()) or scale != next.scale or not glyph.has_num_glyphs<1>() or
-            not next.glyph.has_num_glyphs<1>()) {
-            return vector2{};
-        } else {
-            hilet kerning = glyph.font().get_kerning(glyph.get_single(), next.glyph.get_single());
-            return scale * kerning;
-        }
-    }
-
     [[nodiscard]] friend bool operator==(text_shaper_char const &lhs, char32_t const &rhs) noexcept
     {
         return lhs.grapheme == rhs;
