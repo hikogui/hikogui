@@ -1,6 +1,5 @@
 
 
-
 #pragma once
 
 #include "character.hpp"
@@ -15,7 +14,7 @@ class std::char_traits<hi::character> {
     using pos_type = size_t;
     using state_type;
 
-    static constexpr void assign(char_type &p, size_t count, char_type const & a) noexcept
+    static constexpr void assign(char_type& p, size_t count, char_type const& a) noexcept
     {
         r = a;
     }
@@ -36,7 +35,7 @@ class std::char_traits<hi::character> {
         return a < b;
     }
 
-    static constexpr char_type* move(char_type* dest, const char_type* src, std::size_t count) noexcept
+    static constexpr char_type *move(char_type *dest, const char_type *src, std::size_t count) noexcept
     {
         auto first = src;
         auto last = src + count;
@@ -49,19 +48,19 @@ class std::char_traits<hi::character> {
         return dest;
     }
 
-    static constexpr char_type* copy(char_type* dest, const char_type* src, std::size_t count) noexcept
+    static constexpr char_type *copy(char_type *dest, const char_type *src, std::size_t count) noexcept
     {
         std::copy_n(src, count, dest);
         return dest;
     }
 
-    static constexpr int compare(const char_type* s1, const char_type* s2, std::size_t count) noexcept
+    static constexpr int compare(const char_type *s1, const char_type *s2, std::size_t count) noexcept
     {
         auto r = lexicographical_compare_three_way(s1, s1 + count, s2, s2 * count);
         return r == std::string_ordering::equal ? 0 : r == std::strong_ordering::less ? -1 : 1;
     }
 
-    static constexpr std::size_t length(const char_type* s) noexcept
+    static constexpr std::size_t length(const char_type *s) noexcept
     {
         auto ptr = s;
 
@@ -69,7 +68,7 @@ class std::char_traits<hi::character> {
         return std::distance(s, ptr);
     }
 
-    static constexpr const char_type* find(const char_type* p, std::size_t count, const char_type& ch) noexcept
+    static constexpr const char_type *find(const char_type *p, std::size_t count, const char_type& ch) noexcept
     {
         auto first = p;
         auto last = p + count;
@@ -108,107 +107,68 @@ class std::char_traits<hi::character> {
         }
         return e;
     }
-
 };
 
-namespace hi {
-inline namespace v1 {
+namespace hi { inline namespace v1 {
 
-using text = std::basic_string<character>'
-using text_view = std::basic_string_view<character>'
+using text = std::basic_string<character>;
+using text_view = std::basic_string_view<character>;
 
-
-// clang-format off
-[[nodiscard]] constexpr text to_text_with_markup(std::gstring_view str) noexcept
+[[nodiscard]] constexpr text to_text_with_markup(std::gstring_view str, character_attributes default_attributes) noexcept
 {
-    enum class {
-        idle,
-        command,
-    } state_type;
-
     auto r = text{};
-    auto language = iso_639{};
-    auto phrasing = phrasing::regular;
-    auto text_theme = text_theme::user_interface;
+    auto attributes = default_attributes;
 
     auto in_command = false;
     auto capture = std::string{};
     for (hilet c : str) {
         if (in_command) {
             if (c == ' ') {
-                if (capture.empty()) {
-                    // Fallback by dislaying the original text.
-                    r += character{grapheme{'~'}, phrasing, language, text_theme};
-                    r += character{grapheme{' '}, phrasing, language, text_theme};
+                try {
+                    if (capture.empty()) {
+                        throw parse_error("Empty markup command.");
 
-                } else if (capture.size() == 1) {
-                    switch (capture.front()) {
-                    case 'r': phrasing = phrasing::regular; break;
-                    case 'e': phrasing = phrasing::emphesis; break;
-                    case 's': phrasing = phrasing::strong; break;
-                    case 'c': phrasing = phrasing::code; break;
-                    case 'a': phrasing = phrasing::abbreviation; break;
-                    case 'b': phrasing = phrasing::bold; break;
-                    case 'i': phrasing = phrasing::italic; break;
-                    case 'k': phrasing = phrasing::keyboard; break;
-                    case 'h': phrasing = phrasing::mark; break;
-                    case 'm': phrasing = phrasing::math; break;
-                    case 'x': phrasing = phrasing::example; break;
-                    case 'u': phrasing = phrasing::unarticulated; break;
-                    case 'q': phrasing = phrasing::citation; break;
-                    case 'l': phrasing = phrasing::link; break;
-                    default:
-                        // Fallback by dislaying the original text.
-                        r += character{grapheme{'~'}, phrasing, language, text_theme};
-                        for (hilet c: capture) {
-                            r += character{c, phrasing, language, text_theme};
+                    } else if (capture.size() == 1) {
+                        if (capture.front() == '.') {
+                            attributes = default_attributes;
+                        } else if (auto phrasing = to_text_phrasing(capture.front())) {
+                            attributes.phrasing = *phrasing;
+                        } else {
+                            throw parse_error("Unknown markup phrasing command");
                         }
-                        r += character{grapheme{' '}, phrasing, language, text_theme};
-                    }
 
-                } else if (capture.front() >= '0' and capture.front() <= '9') {
-                    // Get the text-theme.
-                    try {
+                    } else if (capture.front() >= '0' and capture.front() <= '9') {
+                        // Get the text-theme.
                         auto theme_id = from_string<uint16_t>(capture);
-                        text_theme = hi::text_theme{override_t{}, theme_id};
-
-                    } catch (...) {
-                        // Fallback by dislaying the original text.
-                        r += character{grapheme{'~'}, phrasing, language, text_theme};
-                        for (hilet c: capture) {
-                            r += character{c, phrasing, language, text_theme};
+                        if (theme_id < 1000) {
+                            attributes.text_theme = hi::text_theme{override_t{}, theme_id};
+                        } else {
+                            throw parse_error("Invalid markup text theme-id");
                         }
-                        r += character{grapheme{' '}, phrasing, language, text_theme};
-                    }
 
-                } else if (capture.front() >= 'A' and capture.front() <= 'Z') {
-                    try {
+                    } else if (capture.front() >= 'A' and capture.front() <= 'Z') {
                         auto language_tag = hi::language_tag{capture};
-                        language = language_tag.language();
+                        attributes.language = language_tag.language();
+                        attributes.country = language_tag.country();
 
-                    } catch (...) {
-                        // Fallback by dislaying the original text.
-                        r += character{grapheme{'~'}, phrasing, language, text_theme};
-                        for (hilet c: capture) {
-                            r += character{c, phrasing, language, text_theme};
-                        }
-                        r += character{grapheme{' '}, phrasing, language, text_theme};
+                    } else {
+                        throw parse_error("Unknown markup command.");
                     }
 
-                } else {
+                } catch (...) {
                     // Fallback by dislaying the original text.
-                    r += character{grapheme{'~'}, phrasing, language, text_theme};
-                    for (hilet c: capture) {
-                        r += character{c, phrasing, language, text_theme};
+                    r += character{grapheme{'~'}, attributes};
+                    for (hilet c : capture) {
+                        r += character{c, attributes};
                     }
-                    r += character{grapheme{' '}, phrasing, language, text_theme};
+                    r += character{grapheme{' '}, attributes};
                 }
 
                 capture.clear();
                 in_command = false;
 
             } else if (c == '~') {
-                r += haracter{grapheme{'~'}, phrasing, language, text_theme};
+                r += character{grapheme{'~'}, attributes};
                 in_command = false;
 
             } else {
@@ -216,15 +176,29 @@ using text_view = std::basic_string_view<character>'
             }
         } else if (c == '~') {
             in_command = true;
-        } else
-            r.append(character{c, phrasing, language, text_theme);
+        } else {
+            r += character{c, attributes};
         }
     }
 
     return r;
 }
-// clang-format on
 
+[[nodiscard]] constexpr text to_text_with_markup(std::string_view str, character_attributes default_attributes) noexcept
+{
+    return to_text_with_markup(to_gstring(str), default_attributes);
+}
 
-}}
+template<character_attribute... Attributes>
+[[nodiscard]] constexpr text to_text_with_markup(std::gstring_view str, Attributes const& attributes) noexcept
+{
+    return to_text_with_markup(str, character_attributes{attributes...});
+}
 
+template<character_attribute... Attributes>
+[[nodiscard]] constexpr text to_text_with_markup(std::string_view str, Attributes const& attributes) noexcept
+{
+    return to_text_with_markup(str, character_attributes{attributes...});
+}
+
+}} // namespace hi::v1

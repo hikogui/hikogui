@@ -82,9 +82,19 @@ The commands are:
   '~' [a-z] ' '               | Select phrasing.
   '~' [0-9]+ ' '              | Select text-theme.
   '~' <ietf language tag> ' ' | Select language.
+  '~' '.' ' '                 | Set phrasing, text-theme and language back to default.
   '~' '~'                     | Literal '~'.
 
 All other combination with brackets is reserved.
+
+When converting text back to string with markup the canonical output is as follows:
+ - Commands are only output when there is a change of attributes.
+ - When multiple attributes change at the same time the commands are output in the order:
+   + theme
+   + phrasing
+   + language
+ - If default attributes are passed to the convertion function then the "default" command
+   must be used when able, but not for the first character (no attributes changed).
 
 ### Phrasing
  

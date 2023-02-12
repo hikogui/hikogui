@@ -44,11 +44,15 @@ struct grapheme {
      * This class will hold:
      * - A single code point between U+0000 to U+10ffff, or
      * - An index + 0x110000 into the long_graphemes table, or
-     * - 0xff'ffff meaning empty/eof.
+     * - 0x1f'ffff meaning empty/eof.
      *
-     * Bits [31:24] are always '0'.
+     * Bits [31:21] are always '0'.
      */
     value_type _value;
+
+    constexpr static auto _table_first = value_type{0x11'0000};
+    constexpr static auto _table_last = value_type{0x1f'ffff};
+    constexpr static auto _eof = value_type{0x1f'ffff};
 
     constexpr grapheme() noexcept = default;
     constexpr grapheme(grapheme const&) noexcept = default;
@@ -56,7 +60,7 @@ struct grapheme {
     constexpr grapheme& operator=(grapheme const&) noexcept = default;
     constexpr grapheme& operator=(grapheme&&) noexcept = default;
 
-    constexpr grapheme(nullptr_t) noexcept : _value(0xff'ffff) {}
+    constexpr grapheme(nullptr_t) noexcept : _value(_eof) {}
 
     constexpr grapheme(intrinsic_t, value_type value) : _value(value) {}
 
@@ -74,7 +78,7 @@ struct grapheme {
      */
     constexpr explicit grapheme(char32_t code_point) noexcept : _value(truncate<value_type>(code_point))
     {
-        hi_axiom(code_point <= 0x10ffff);
+        hi_axiom(code_point < _table_first);
     }
 
     constexpr explicit grapheme(char ascii_char) noexcept : _value(truncate<value_type>(ascii_char))
@@ -115,23 +119,21 @@ struct grapheme {
      */
     [[nodiscard]] static constexpr grapheme eof() noexcept
     {
-        grapheme r;
-        r._value = 0xff'ffff;
-        return r;
+        return grapheme{intrinsic_t{}, _eof};
     }
 
     /** Clear the grapheme.
      */
     constexpr void clear() noexcept
     {
-        _value = 0xff'ffff;
+        _value = _eof;
     }
 
     /** Check if the grapheme is empty.
      */
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return _value == 0xff'ffff;
+        return _value == _eof;
     }
 
     /** Check if the grapheme holds any code-points.
@@ -152,18 +154,18 @@ struct grapheme {
 
     [[nodiscard]] std::u32string const& long_grapheme() const noexcept
     {
-        hi_assert(_value >= 0x10'0000 and _value < 0xff'ffff);
-        return detail::long_graphemes[_value - 0x11'0000];
+        hi_assert(_value >= _table_first and _value < _table_last);
+        return detail::long_graphemes[_value - _table_first];
     }
 
     /** Return the number of code-points encoded in the grapheme.
      */
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        if (_value == 0xff'ffff) {
+        if (_value == _eof) {
             return 0;
 
-        } else if (_value <= 0x10'ffff) {
+        } else if (_value < _table_first) {
             return 1;
 
         } else {
@@ -181,7 +183,7 @@ struct grapheme {
     {
         hi_assert_bounds(i, *this);
 
-        if (_value <= 0x10'ffff) {
+        if (_value < _table_first) {
             return truncate<char32_t>(_value);
         } else {
             return long_grapheme()[i];
@@ -200,7 +202,7 @@ struct grapheme {
     {
         hi_assert_bounds(I, rhs);
 
-        if (rhs._value <= 0x10'ffff) {
+        if (rhs._value < _table_first) {
             return rhs._value;
         } else {
             return rhs.long_grapheme()[I];
@@ -211,7 +213,7 @@ struct grapheme {
      */
     [[nodiscard]] constexpr std::u32string composed() const noexcept
     {
-        if (_value <= 0x10'ffff) {
+        if (_value < _table_first) {
             return std::u32string{truncate<char32_t>(_value)};
         } else {
             return long_grapheme();
