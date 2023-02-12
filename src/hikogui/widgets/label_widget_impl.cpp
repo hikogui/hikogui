@@ -13,7 +13,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
     _icon_widget = std::make_unique<icon_widget>(this, label.get<"icon">());
     _text_widget = std::make_unique<text_widget>(this, label.get<"text">());
     _text_widget->alignment = alignment;
-    _text_widget->text_style = text_style;
+    _text_widget->text_theme = text_theme;
     _text_widget->mode = mode;
 
     _alignment_cbt = alignment.subscribe([this](auto...) {
@@ -25,28 +25,28 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
     });
     (*_alignment_cbt)(*alignment);
 
-    _text_style_cbt = text_style.subscribe(
+    _text_theme_cbt = text_theme.subscribe(
         [this](auto...) {
-            switch (*text_style) {
-            case semantic_text_style::label:
+            switch (*text_theme) {
+            case semantic_text_theme::label:
                 _icon_widget->color = color::foreground();
                 break;
-            case semantic_text_style::small_label:
+            case semantic_text_theme::small_label:
                 _icon_widget->color = color::foreground();
                 break;
-            case semantic_text_style::warning:
+            case semantic_text_theme::warning:
                 _icon_widget->color = color::orange();
                 break;
-            case semantic_text_style::error:
+            case semantic_text_theme::error:
                 _icon_widget->color = color::red();
                 break;
-            case semantic_text_style::help:
+            case semantic_text_theme::help:
                 _icon_widget->color = color::indigo();
                 break;
-            case semantic_text_style::placeholder:
+            case semantic_text_theme::placeholder:
                 _icon_widget->color = color::gray();
                 break;
-            case semantic_text_style::link:
+            case semantic_text_theme::link:
                 _icon_widget->color = color::blue();
                 break;
             default:
@@ -97,7 +97,7 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
     hilet icon_size =
         (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
         theme().large_icon_size() :
-        narrow_cast<int>(std::ceil(theme().text_style(*text_style)->size * theme().scale));
+        narrow_cast<int>(std::ceil(theme().text_theme(*text_theme)->size * theme().scale));
 
     _icon_widget->minimum = extent2i{icon_size, icon_size};
     _icon_widget->maximum = extent2i{icon_size, icon_size};

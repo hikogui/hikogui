@@ -22,8 +22,8 @@ namespace hi::inline v1 {
  * Currently the main use case is for `grapheme`. Where it stores multi code-point
  * graphemes into the stable_set, while holding the index in the `grapheme` object.
  *
- * Another use case is for `text_style` objects which only hold an index while
- * the `actual_text_style`  objects are stored in the stable_set.
+ * Another use case is for `text_theme` objects which only hold an index while
+ * the `actual_text_theme`  objects are stored in the stable_set.
  */
 template<typename Key>
 class stable_set {

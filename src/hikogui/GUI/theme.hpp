@@ -5,8 +5,9 @@
 #pragma once
 
 #include "theme_mode.hpp"
-#include "../text/semantic_text_style.hpp"
+#include "../text/text_phrasing.hpp"
 #include "../text/text_style.hpp"
+#include "../text/text_theme.hpp"
 #include "../utility/module.hpp"
 #include "../datum.hpp"
 #include "../color/module.hpp"
@@ -138,8 +139,8 @@ public:
 
     [[nodiscard]] hi::color color(hi::semantic_color original_color, ssize_t nesting_level = 0) const noexcept;
     [[nodiscard]] hi::color color(hi::color original_color, ssize_t nesting_level = 0) const noexcept;
-    [[nodiscard]] hi::text_style text_style(semantic_text_style theme_color) const noexcept;
-    [[nodiscard]] hi::text_style text_style(hi::text_style original_style) const noexcept;
+
+    [[nodiscard]] text_theme const& text_theme() const noexcept;
 
 private:
     /** Distance between widgets and between widgets and the border of the container.
@@ -179,7 +180,8 @@ private:
     int _baseline_adjustment = 9;
 
     std::array<std::vector<hi::color>, semantic_color_metadata.size()> _colors;
-    std::array<hi::text_style, semantic_text_style_metadata.size()> _text_styles;
+
+    hi::text_theme _text_theme;
 
     [[nodiscard]] float parse_float(datum const& data, char const *object_name);
     [[nodiscard]] long long parse_long_long(datum const& data, char const *object_name);
@@ -189,9 +191,10 @@ private:
     [[nodiscard]] hi::color parse_color_value(datum const& data);
     [[nodiscard]] hi::color parse_color(datum const& data, char const *object_name);
     [[nodiscard]] std::vector<hi::color> parse_color_list(datum const& data, char const *object_name);
-    [[nodiscard]] hi::text_style parse_text_style_value(hi::font_book const& font_book, datum const& data);
+    [[nodiscard]] hi::text_theme parse_text_theme_value(hi::font_book const& font_book, datum const& data);
     [[nodiscard]] font_weight parse_font_weight(datum const& data, char const *object_name);
-    [[nodiscard]] hi::text_style parse_text_style(hi::font_book const& font_book, datum const& data, char const *object_name);
+    [[nodiscard]] hi::text_style parse_text_style(hi::font_book const& font_book, datum const& data);
+    [[nodiscard]] hi::text_theme parse_text_theme(hi::font_book const& font_book, datum const& data, char const *object_name);
     void parse(hi::font_book const& font_book, datum const& data);
 
     [[nodiscard]] friend std::string to_string(theme const& rhs) noexcept

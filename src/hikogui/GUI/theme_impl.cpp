@@ -68,20 +68,6 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     }
 }
 
-[[nodiscard]] hi::text_style theme::text_style(semantic_text_style semantic_text_style) const noexcept
-{
-    return _text_styles[to_underlying(semantic_text_style)];
-}
-
-[[nodiscard]] hi::text_style theme::text_style(hi::text_style original_style) const noexcept
-{
-    if (original_style.is_semantic()) {
-        return text_style(static_cast<semantic_text_style>(original_style));
-    } else {
-        return original_style;
-    }
-}
-
 [[nodiscard]] std::string theme::parse_string(datum const& data, char const *object_name)
 {
     // Extract name
@@ -107,7 +93,8 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     } else if (auto ll = get_if<long long>(object)) {
         return static_cast<float>(*ll);
     } else {
-        throw parse_error(std::format("'{}' attribute must be a floating point number, got {}.", object_name, object.type_name()));
+        throw parse_error(
+            std::format("'{}' attribute must be a floating point number, got {}.", object_name, object.type_name()));
     }
 }
 
@@ -266,7 +253,7 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     }
 }
 
-[[nodiscard]] text_style theme::parse_text_style_value(hi::font_book const& font_book, datum const& data)
+[[nodiscard]] text_theme theme::parse_text_theme_value(hi::font_book const& font_book, datum const& data)
 {
     if (!holds_alternative<datum::map_type>(data)) {
         throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
@@ -294,22 +281,41 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     auto sub_styles = std::vector<text_sub_style>{};
     sub_styles.emplace_back(
         text_phrasing_mask::all, iso_639{}, iso_15924{}, family_id, variant, font_size, color, text_decoration{});
-    return hi::text_style(sub_styles);
+    return hi::text_theme(sub_styles);
 }
 
-[[nodiscard]] text_style theme::parse_text_style(hi::font_book const& font_book, datum const& data, char const *object_name)
+[[nodiscard]] text_style theme::parse_text_style(hi::font_book const &font_book, datum const &data)
+{
+
+}
+
+[[nodiscard]] text_theme theme::parse_text_theme(hi::font_book const& font_book, datum const& data, char const *object_name)
 {
     // Extract name
-    if (!data.contains(object_name)) {
+    if (not data.contains(object_name)) {
         throw parse_error(std::format("Missing text-style '{}'", object_name));
     }
 
-    hilet textStyleObject = data[object_name];
-    try {
-        return parse_text_style_value(font_book, textStyleObject);
-    } catch (parse_error const& e) {
-        throw parse_error(std::format("Could not parse text-style '{}'\n{}", object_name, e.what()));
+    hilet text_theme_object = data[object_name];
+
+    auto r = [&] {
+        if (object_name == "ui-text") {
+            return text_theme::get_theme(0);
+        } else {
+            throw parse_error(std::format("Unknown text-theme '{}', expect an array of styles.\n", object_name));
+        }
+    }();
+    // Remove all text-styles from the text-theme.
+    r.clear();
+
+    if (holds_alternative<datum::vector_type>(text_theme_object)) {
+        for (hilet &text_style_object: text_theme_object) {
+            r.add_style(parse_text_style(text_style_object));
+        }
+    } else {
+        throw parse_error(std::format("Could not parse text-theme '{}', expect an array of styles.\n", object_name));
     }
+    return r;
 }
 
 void theme::parse(hi::font_book const& font_book, datum const& data)
@@ -352,16 +358,7 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     std::get<to_underlying(semantic_color::primary_cursor)>(_colors) = parse_color_list(data, "primary-cursor-color");
     std::get<to_underlying(semantic_color::secondary_cursor)>(_colors) = parse_color_list(data, "secondary-cursor-color");
 
-    std::get<to_underlying(semantic_text_style::label)>(_text_styles) = parse_text_style(font_book, data, "label-style");
-    std::get<to_underlying(semantic_text_style::small_label)>(_text_styles) =
-        parse_text_style(font_book, data, "small-label-style");
-    std::get<to_underlying(semantic_text_style::warning)>(_text_styles) =
-        parse_text_style(font_book, data, "warning-label-style");
-    std::get<to_underlying(semantic_text_style::error)>(_text_styles) = parse_text_style(font_book, data, "error-label-style");
-    std::get<to_underlying(semantic_text_style::help)>(_text_styles) = parse_text_style(font_book, data, "help-label-style");
-    std::get<to_underlying(semantic_text_style::placeholder)>(_text_styles) =
-        parse_text_style(font_book, data, "placeholder-label-style");
-    std::get<to_underlying(semantic_text_style::link)>(_text_styles) = parse_text_style(font_book, data, "link-label-style");
+    _text_themes = parse_text_theme(font_book, data, "ui-text");
 
     _margin = parse_int(data, "margin");
     _border_width = parse_int(data, "border-width");
@@ -372,8 +369,7 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     _large_icon_size = parse_int(data, "large-icon-size");
     _label_icon_size = parse_int(data, "label-icon-size");
 
-    _baseline_adjustment =
-        narrow_cast<int>(std::ceil(std::get<to_underlying(semantic_text_style::label)>(_text_styles)->cap_height(font_book)));
+    _baseline_adjustment = _text_theme.style()->cap_height(font_book);
 }
 
 } // namespace hi::inline v1

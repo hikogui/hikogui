@@ -52,6 +52,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/random/seed_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/xorshift128p_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_tests.cpp

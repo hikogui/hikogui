@@ -6,7 +6,7 @@
 
 #include "text_decoration.hpp"
 #include "text_phrasing.hpp"
-#include "semantic_text_style.hpp"
+#include "semantic_text_theme.hpp"
 #include "../color/module.hpp"
 #include "../i18n/iso_15924.hpp"
 #include "../i18n/iso_639.hpp"
@@ -100,7 +100,7 @@ struct std::hash<hi::text_sub_style> {
 
 namespace hi::inline v1::detail {
 
-struct text_style_impl {
+struct text_theme_impl {
     using value_type = text_sub_style;
     using reference = value_type const&;
     using vector_type = std::vector<value_type>;
@@ -108,9 +108,9 @@ struct text_style_impl {
 
     vector_type _sub_styles;
 
-    constexpr text_style_impl() noexcept = default;
+    constexpr text_theme_impl() noexcept = default;
 
-    text_style_impl(std::vector<text_sub_style> sub_styles) noexcept : _sub_styles(std::move(sub_styles))
+    text_theme_impl(std::vector<text_sub_style> sub_styles) noexcept : _sub_styles(std::move(sub_styles))
     {
         hi_assert(not empty());
         hi_assert(all(back().phrasing_mask));
@@ -152,14 +152,14 @@ struct text_style_impl {
         return _sub_styles.end();
     }
 
-    [[nodiscard]] constexpr friend bool operator==(text_style_impl const&, text_style_impl const&) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(text_theme_impl const&, text_theme_impl const&) noexcept = default;
 };
 
 } // namespace hi::inline v1::detail
 
 template<>
-struct std::hash<hi::detail::text_style_impl> {
-    [[nodiscard]] size_t operator()(hi::detail::text_style_impl const& rhs) const noexcept
+struct std::hash<hi::detail::text_theme_impl> {
+    [[nodiscard]] size_t operator()(hi::detail::text_theme_impl const& rhs) const noexcept
     {
         return rhs.hash();
     }
@@ -167,25 +167,25 @@ struct std::hash<hi::detail::text_style_impl> {
 
 namespace hi::inline v1 {
 namespace detail {
-inline auto text_styles = stable_set<text_style_impl>{};
+inline auto text_themes = stable_set<text_theme_impl>{};
 }
 
-class text_style {
+class text_theme {
 public:
     using int_type = uint16_t;
 
-    constexpr text_style() : _value(0xffff) {}
-    constexpr text_style(text_style const&) noexcept = default;
-    constexpr text_style(text_style&&) noexcept = default;
-    constexpr text_style& operator=(text_style const&) noexcept = default;
-    constexpr text_style& operator=(text_style&&) noexcept = default;
-    [[nodiscard]] constexpr friend bool operator==(text_style const&, text_style const&) noexcept = default;
+    constexpr text_theme() : _value(0xffff) {}
+    constexpr text_theme(text_theme const&) noexcept = default;
+    constexpr text_theme(text_theme&&) noexcept = default;
+    constexpr text_theme& operator=(text_theme const&) noexcept = default;
+    constexpr text_theme& operator=(text_theme&&) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(text_theme const&, text_theme const&) noexcept = default;
 
-    constexpr text_style(semantic_text_style rhs) noexcept : _value(0xff00 + to_underlying(rhs)) {}
+    constexpr text_theme(semantic_text_theme rhs) noexcept : _value(0xff00 + to_underlying(rhs)) {}
 
-    text_style(std::vector<text_sub_style> rhs) noexcept
+    text_theme(std::vector<text_sub_style> rhs) noexcept
     {
-        hilet index = detail::text_styles.emplace(std::move(rhs));
+        hilet index = detail::text_themes.emplace(std::move(rhs));
         if (index < 0xff00) {
             _value = narrow_cast<uint16_t>(index);
         } else {
@@ -211,16 +211,16 @@ public:
         return _value >= 0xff00;
     }
 
-    constexpr explicit operator semantic_text_style() const noexcept
+    constexpr explicit operator semantic_text_theme() const noexcept
     {
-        return static_cast<semantic_text_style>(narrow_cast<std::underlying_type_t<semantic_text_style>>(_value - 0xff00));
+        return static_cast<semantic_text_theme>(narrow_cast<std::underlying_type_t<semantic_text_theme>>(_value - 0xff00));
     }
 
     text_sub_style const *operator->() const noexcept
     {
         hi_axiom(not empty());
         if (_value < 0xff00) {
-            return std::addressof(detail::text_styles[_value].back());
+            return std::addressof(detail::text_themes[_value].back());
         } else {
             hi_not_implemented();
         }
@@ -230,7 +230,7 @@ public:
     {
         hi_axiom(not empty());
         if (_value < 0xff00) {
-            return detail::text_styles[_value].back();
+            return detail::text_themes[_value].back();
         } else {
             hi_not_implemented();
         }
@@ -238,7 +238,7 @@ public:
 
     text_sub_style const& sub_style(text_phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
     {
-        for (hilet& style : detail::text_styles[_value]) {
+        for (hilet& style : detail::text_themes[_value]) {
             if (style.matches(phrasing, language, script)) {
                 return style;
             }

@@ -8,7 +8,6 @@ target_sources(hikogui PRIVATE
     agstring_impl.cpp
     agstring.hpp
     line_metrics.hpp
-    semantic_text_style.hpp
     text_cursor.hpp
     text_decoration.hpp
     text_selection.hpp
@@ -18,6 +17,6 @@ target_sources(hikogui PRIVATE
     text_shaper_char.hpp
     text_shaper_line_impl.cpp
     text_shaper_line.hpp
-    text_style_impl.cpp
-    text_style.hpp
+    text_theme_impl.cpp
+    text_theme.hpp
 )

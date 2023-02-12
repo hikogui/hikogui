@@ -8,7 +8,7 @@
 #pragma once
 
 #include "text_phrasing.hpp"
-#include "text_style.hpp"
+#include "text_theme.hpp"
 #include "character_attributes.hpp"
 #include "../i18n/iso_639.hpp"
 #include "../unicode/grapheme.hpp"
@@ -135,7 +135,7 @@ struct character {
         return iso_3166{intrinsic_t{}, (_value >> _country_shift) & _country_mask};
     }
 
-    [[nodiscard]] constexpr text_style style() const noexcept
+    [[nodiscard]] constexpr text_theme style() const noexcept
     {
         return text_theme{intrinsic_t{}, (_value >> _tex_theme_shift) & _text_theme_mask};
     }

@@ -7,7 +7,7 @@
 #include "text_shaper_char.hpp"
 #include "text_shaper_line.hpp"
 #include "text_cursor.hpp"
-#include "text_style.hpp"
+#include "text_theme.hpp"
 #include "../layout/box_constraints.hpp"
 #include "../font/module.hpp"
 #include "../geometry/module.hpp"
@@ -84,7 +84,7 @@ public:
     [[nodiscard]] text_shaper(
         hi::font_book& font_book,
         gstring const& text,
-        text_style const& style,
+        text_theme const& style,
         float dpi_scale,
         hi::alignment alignment,
         unicode_bidi_class text_direction,
@@ -93,7 +93,7 @@ public:
     [[nodiscard]] text_shaper(
         hi::font_book& font_book,
         std::string_view text,
-        text_style const& style,
+        text_theme const& style,
         float dpi_scale,
         hi::alignment alignment,
         unicode_bidi_class text_direction,

@@ -210,9 +210,9 @@ private:
  * @ingroup widget_delegates
  */
 template<>
-class default_text_delegate<text> : public text_delegate {
+class default_text_delegate<text_variant> : public text_delegate {
 public:
-    using value_type = text;
+    using value_type = text_variant;
 
     observer<value_type> value;
 

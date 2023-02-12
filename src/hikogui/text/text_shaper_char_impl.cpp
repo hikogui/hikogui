@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] text_shaper_char::text_shaper_char(hi::grapheme const& grapheme, text_style const& style, float dpi_scale) noexcept
+[[nodiscard]] text_shaper_char::text_shaper_char(hi::grapheme const& grapheme, text_theme const& style, float dpi_scale) noexcept
     :
     grapheme(grapheme),
     style(style),

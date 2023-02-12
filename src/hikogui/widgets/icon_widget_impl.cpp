@@ -42,17 +42,17 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
         } else if (hilet g1 = std::get_if<glyph_ids>(&icon.read())) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_theme(semantic_text_theme::label)->size * theme().scale;
 
         } else if (hilet g2 = std::get_if<elusive_icon>(&icon.read())) {
             _glyph = find_glyph(*g2);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_theme(semantic_text_theme::label)->size * theme().scale;
 
         } else if (hilet g3 = std::get_if<hikogui_icon>(&icon.read())) {
             _glyph = find_glyph(*g3);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_theme(semantic_text_theme::label)->size * theme().scale;
         }
     }
 

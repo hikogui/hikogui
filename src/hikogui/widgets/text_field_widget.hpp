@@ -73,7 +73,7 @@ public:
 
     /** The style of the text.
      */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_theme> text_theme = semantic_text_theme::label;
 
     /** The alignment of the text.
      */
@@ -96,7 +96,7 @@ public:
      *
      * @param parent The owner of this widget.
      * @param value The value or `observer` value which represents the state of the text-field.
-     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_theme`.
      */
     text_field_widget(
         widget *parent,
@@ -141,7 +141,7 @@ private:
     box_shape _error_label_shape;
 
     typename decltype(continues)::callback_token _continues_cbt;
-    typename decltype(text_style)::callback_token _text_style_cbt;
+    typename decltype(text_theme)::callback_token _text_theme_cbt;
     typename decltype(_text)::callback_token _text_cbt;
     typename decltype(_error_label)::callback_token _error_label_cbt;
 
@@ -150,8 +150,8 @@ private:
     {
         if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_theme>>) {
+            text_theme = hi_forward(first);
         } else {
             hi_static_no_default();
         }

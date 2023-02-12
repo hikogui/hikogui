@@ -8,7 +8,7 @@
 #include "../unicode/grapheme.hpp"
 #include "../i18n/iso_639.hpp"
 #include "text_phrasing.hpp"
-#include "text_style.hpp"
+#include "text_theme.hpp"
 #include <bit>
 
 namespace hi::inline v1 {
@@ -62,9 +62,9 @@ struct agrapheme {
         return std::bit_cast<iso_639>(truncate<uint16_t>(_value >> 16));
     }
 
-    [[nodiscard]] constexpr text_style style() const noexcept
+    [[nodiscard]] constexpr text_theme style() const noexcept
     {
-        return std::bit_cast<text_style>(truncate<uint16_t>(_value));
+        return std::bit_cast<text_theme>(truncate<uint16_t>(_value));
     }
 
     [[nodiscard]] text_sub_style sub_style(iso_15924 script = iso_15924{}) const noexcept

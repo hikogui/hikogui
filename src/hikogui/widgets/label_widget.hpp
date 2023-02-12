@@ -24,7 +24,7 @@ namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept label_widget_attribute =
-    forward_of<Context, observer<hi::label>, observer<hi::alignment>, observer<hi::semantic_text_style>>;
+    forward_of<Context, observer<hi::label>, observer<hi::alignment>, observer<hi::semantic_text_theme>>;
 
 /** The GUI widget displays and lays out text together with an icon.
  * @ingroup widgets
@@ -68,14 +68,14 @@ public:
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_theme> text_theme = semantic_text_theme::label;
 
     /** Construct a label widget.
      *
      * @see `label_widget::alignment`
      * @param parent The parent widget that owns this radio button widget.
      * @param attributes Different attributes used to configure the label widget:
-     *                   a `label`, `alignment` or `text_style`
+     *                   a `label`, `alignment` or `text_theme`
      */
     label_widget(widget *parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
     {
@@ -99,7 +99,7 @@ private:
     float _inner_margin;
 
     decltype(label)::callback_token _label_cbt;
-    decltype(text_style)::callback_token _text_style_cbt;
+    decltype(text_theme)::callback_token _text_theme_cbt;
     decltype(alignment)::callback_token _alignment_cbt;
 
     std::unique_ptr<icon_widget> _icon_widget;
@@ -113,8 +113,8 @@ private:
             label = hi_forward(first);
         } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_theme>>) {
+            text_theme = hi_forward(first);
         } else {
             hi_static_no_default();
         }

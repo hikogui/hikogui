@@ -22,67 +22,79 @@ namespace hi::inline v1 {
 enum class text_phrasing : uint8_t {
     /** Regular, normal text.
      */
-    regular,
+    regular = 0,
 
     /** Emphesised text; spoken as if the text is special importance, significant or promonent.
      * Often formatted in italic.
      */
-    emphesis,
+    emphesis = 1,
 
     /** Strong text; spoken louder, as if the text is not to be missed.
      * Often formatted in bold.
      */
-    strong,
+    strong = 2,
 
     /** Text is a piece of programming-code; a variable name, a function name.
      * Often formatted in a constant-width font, with a greater weight and in a different color and possible
      * background block, than the surrounding text.
      */
-    code,
+    code = 3,
 
     /** An abbreviation.
      * Sometimes formatted with a double underline and hovering will show the expansion of the abbreviation.
      */
-    abbreviation,
-
-    /** Used to make text bold without it being semantically strong.
-     */
-    bold,
-
-    /** Used to make text italic without it being semantically an emphesis.
-     */
-    italic,
+    abbreviation = 4,
 
     /** The text is quoted from somewhere.
      * Often formatted using a more italic / cursive font, with a lower weight.
      */
-    citation,
+    quote = 5,
 
     /** Used in help text to show which key or button to press.
      * Often formatted with a background that looks raised up like a button.
      * With the text in inverted color.
      */
-    keyboard,
+    keyboard = 6,
 
     /** The text is marked or highlighted as if being marked by a highlight pen.
      * Often formatted with a yellow background.
      */
-    mark,
+    highlight = 7,
 
     /** Text formatted as math.
      * Often formatted using a special math font.
      */
-    math,
+    math = 8,
 
     /** Used in help text to show an example.
      * Often formatted using a non-proportional font with a low resultion bitmap-like style.
      */
-    example, ///< Used for displaying console output.
+    example = 9, ///< Used for displaying console output.
 
     /** Unarticulated.
      * Often formatted using an underlying line.
      */
-    unarticulated,
+    unarticulated = 10,
+
+    /** Format a heading
+     * Often in bold, larger font and on a line by itself.
+     */
+    title = 11,
+
+    /** Format a "good" message
+     * Often in bright green.
+     */
+    success = 12,
+
+    /** Format a warning message
+     * Often in bright yellow.
+     */
+    warning = 13,
+
+    /** Format a "bad" message
+     * Often in bright red.
+     */
+    error = 14,
 };
 
 // clang-format off
@@ -92,17 +104,21 @@ constexpr auto text_phrasing_metadata = enum_metadata{
     text_phrasing::strong, "strong",
     text_phrasing::code, "code",
     text_phrasing::abbreviation, "abbreviation",
-    text_phrasing::bold, "bold",
-    text_phrasing::italic, "italic",
-    text_phrasing::citation, "citation",
+    text_phrasing::quote, "quote",
     text_phrasing::keyboard, "keyboard",
-    text_phrasing::mark, "mark",
+    text_phrasing::highlight, "highlight",
     text_phrasing::math, "math",
     text_phrasing::example, "example",
     text_phrasing::unarticulated, "unarticulated",
+    text_phrasing::title, "title",
+    text_phrasing::success, "success",
+    text_phrasing::warning, "warning",
+    text_phrasing::error, "error",
 };
 // clang-format on
+static_assert(text_phrasing_metadata.size() <= 15, "The mask of a text_phrasing is 16-bit");
 
+// clang-format off
 [[nodiscard]] constexpr std::optional<text_phrasing> to_text_phrasing(char c)
 {
     switch (c) {
@@ -111,17 +127,21 @@ constexpr auto text_phrasing_metadata = enum_metadata{
     case 's': return text_phrasing::strong;
     case 'c': return text_phrasing::code;
     case 'a': return text_phrasing::abbreviation;
-    case 'b': return text_phrasing::bold;
-    case 'i': return text_phrasing::italic;
-    case 'q': return text_phrasing::citation;
+    case 'q': return text_phrasing::quote;
     case 'k': return text_phrasing::keyboard;
-    case 'h': return text_phrasing::mark;
+    case 'h': return text_phrasing::highlight;
     case 'm': return text_phrasing::math;
     case 'x': return text_phrasing::example;
     case 'u': return text_phrasing::unarticulated;
-    default: return std::nullopt;
+    case 't': return text_phrasing::title;
+    case 'S': return text_phrasing::success;
+    case 'W': return text_phrasing::warning;
+    case 'E': return text_phrasing::error;
+    default:
+        return std::nullopt;
     }
 }
+// clang-format on
 
 enum class text_phrasing_mask : uint16_t {
     regular = 1 << to_underlying(text_phrasing::regular),
@@ -129,23 +149,42 @@ enum class text_phrasing_mask : uint16_t {
     strong = 1 << to_underlying(text_phrasing::strong),
     code = 1 << to_underlying(text_phrasing::code),
     abbreviation = 1 << to_underlying(text_phrasing::abbreviation),
-    bold = 1 << to_underlying(text_phrasing::bold),
-    italic = 1 << to_underlying(text_phrasing::italic),
-    citation = 1 << to_underlying(text_phrasing::citation),
+    quote = 1 << to_underlying(text_phrasing::quote),
     keyboard = 1 << to_underlying(text_phrasing::keyboard),
-    mark = 1 << to_underlying(text_phrasing::mark),
+    highlight = 1 << to_underlying(text_phrasing::highlight),
     math = 1 << to_underlying(text_phrasing::math),
     example = 1 << to_underlying(text_phrasing::example),
     unarticulated = 1 << to_underlying(text_phrasing::unarticulated),
+    title = 1 << to_underlying(text_phrasing::title),
+    success = 1 << to_underlying(text_phrasing::success),
+    warning = 1 << to_underlying(text_phrasing::warning),
+    error = 1 << to_underlying(text_phrasing::error),
 
-    all = regular | emphesis | strong | code | abbreviation | bold | italic | citation | keyboard | mark | math | example |
-        unarticulated
+    all = regular | emphesis | strong | code | abbreviation | quote | keyboard | highlight | math | example | unarticulated |
+        title | success | warning | error
 };
 
 [[nodiscard]] constexpr text_phrasing_mask to_text_phrasing_mask(text_phrasing const& rhs) noexcept
 {
     hi_axiom(to_underlying(rhs) < sizeof(text_phrasing_mask) * CHAR_BIT);
     return static_cast<text_phrasing_mask>(1 << to_underlying(rhs));
+}
+
+[[nodiscard]] constexpr text_phrasing_mask to_text_phrasing_mask(std::string const& str)
+{
+    auto r = text_phrasing_mask{};
+
+    for (hilet c : str) {
+        if (c == '*') {
+            r = text_phrasing_mask::all;
+        } else if (hilet p = to_text_phrasing(c)) {
+            r = r | to_text_phrasing_mask(*p);
+        } else {
+            throw parse_error(std::format("Unknown character '{}' in text-phrasing-mask", c));
+        }
+    }
+
+    return r;
 }
 
 [[nodiscard]] constexpr text_phrasing_mask operator&(text_phrasing_mask const& lhs, text_phrasing_mask const& rhs) noexcept

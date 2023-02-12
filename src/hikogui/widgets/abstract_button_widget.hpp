@@ -56,7 +56,7 @@ public:
 
     /** The text style to button's label.
      */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_theme> text_theme = semantic_text_theme::label;
 
     notifier<void()> pressed;
 
@@ -134,8 +134,8 @@ protected:
             alignment = hi_forward(first);
             set_attributes<I>(hi_forward(rest)...);
 
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_theme>>) {
+            text_theme = hi_forward(first);
             set_attributes<I>(hi_forward(rest)...);
 
         } else {

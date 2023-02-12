@@ -11,7 +11,7 @@
 #include "widget.hpp"
 #include "text_delegate.hpp"
 #include "../GUI/gui_event.hpp"
-#include "../text/semantic_text_style.hpp"
+#include "../text/semantic_text_theme.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../geometry/module.hpp"
@@ -30,7 +30,7 @@
 namespace hi { inline namespace v1 {
 
 template<typename Context>
-concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_style>>;
+concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_theme>>;
 
 /** A text widget.
  *
@@ -71,7 +71,7 @@ public:
 
     /** The style of the text.
      */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_theme> text_theme = semantic_text_theme::label;
 
     ~text_widget();
 
@@ -95,7 +95,7 @@ public:
      *
      * @param parent The owner of this widget.
      * @param text The text to be displayed.
-     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_theme`.
      */
     text_widget(
         widget *parent,
@@ -130,7 +130,7 @@ private:
 
     delegate_type::callback_token _delegate_cbt;
 
-    decltype(text_style)::callback_token _text_style_cbt;
+    decltype(text_theme)::callback_token _text_theme_cbt;
 
     text_selection _selection;
 
@@ -175,8 +175,8 @@ private:
     {
         if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_theme>>) {
+            text_theme = hi_forward(first);
         } else {
             hi_static_no_default();
         }

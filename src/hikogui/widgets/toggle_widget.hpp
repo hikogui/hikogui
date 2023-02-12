@@ -59,7 +59,7 @@ public:
      * @param parent The parent widget that owns this toggle widget.
      * @param delegate The delegate to use to manage the state of the toggle button.
      * @param attributes Different attributes used to configure the label's on the toggle button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment` or `semantic_text_theme`. If one label is
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
@@ -79,7 +79,7 @@ public:
      * @param parent The parent widget that owns this toggle widget.
      * @param value The value or `observer` value which represents the state of the toggle.
      * @param attributes Different attributes used to configure the label's on the toggle button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment` or `semantic_text_theme`. If one label is
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
@@ -96,7 +96,7 @@ public:
      * @param value The value or `observer` value which represents the state of the toggle.
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
      * @param attributes Different attributes used to configure the label's on the toggle button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment` or `semantic_text_theme`. If one label is
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
@@ -124,7 +124,7 @@ public:
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
      * @param off_value The off-value. This value is used to determine which value yields an 'off' state.
      * @param attributes Different attributes used to configure the label's on the toggle button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment` or `semantic_text_theme`. If one label is
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "text_style.hpp"
+#include "text_theme.hpp"
 #include "../font/module.hpp"
 #include "../unicode/unicode_description.hpp"
 #include "../unicode/grapheme.hpp"
@@ -21,7 +21,7 @@ public:
 
     /** The style of how to display the grapheme.
      */
-    hi::text_style style;
+    hi::text_theme style;
 
     /** The scale to resize the font's size to match the physical display.
      */
@@ -124,7 +124,7 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(hi::grapheme const &grapheme, text_style const &style, float dpi_scale) noexcept;
+    [[nodiscard]] text_shaper_char(hi::grapheme const &grapheme, text_theme const &style, float dpi_scale) noexcept;
 
     /** Initialize the glyph based on the grapheme.
      *

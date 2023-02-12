@@ -46,8 +46,8 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
         }
     });
 
-    _text_style_cbt = text_style.subscribe([&](auto...) {
-        ++global_counter<"text_widget:text_style:constrain">;
+    _text_theme_cbt = text_theme.subscribe([&](auto...) {
+        ++global_counter<"text_widget:text_theme:constrain">;
         request_scroll();
         process_event({gui_event_type::window_reconstrain});
     });
@@ -81,13 +81,13 @@ text_widget::~text_widget()
     // Make sure that the current selection fits the new text.
     _selection.resize(_text_cache.size());
 
-    hilet actual_text_style = theme().text_style(*text_style);
+    hilet actual_text_theme = theme().text_theme(*text_theme);
 
     // Create a new text_shaper with the new text.
     auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
     _shaped_text = text_shaper{
-        font_book::global(), _text_cache, actual_text_style, theme().scale, alignment_, os_settings::writing_direction()};
+        font_book::global(), _text_cache, actual_text_theme, theme().scale, alignment_, os_settings::writing_direction()};
 
     hilet shaped_text_rectangle =
         narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));
