@@ -91,6 +91,7 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32_impl.cpp>
     packed_int_array.hpp
     parse_location.hpp
+    pattern_match.hpp
     preferences_impl.cpp
     preferences.hpp
     graphic_path_impl.cpp

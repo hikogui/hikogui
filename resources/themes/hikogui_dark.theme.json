@@ -2,34 +2,53 @@
     "name": "default",
     "mode": "dark",
 
+    // The key of each theme value is a string where a dot '.' is used as a path separator
+    // and a star '*' is used as a wild card. The key is matched against theme values which
+    // are used in the application.
+
+    //  - string (starts with '#'): A hexadecimal sRGB(A) color value.
+    //  - string (starts with '$'): The exact name of a key defined in this file.
+    //  - ["phrasing": string,
+    //     "language": string,
+    //     "script": string,
+    //     "family": "string,
+    //     "weight": string,
+    //     "size": size_value,
+    //     "color": color}, ...]: A text-style. A maximum of 10 text-styles are allowed in a theme file.
+
+
+    // An integer value is a 'size' in virtual-pixels.
+    // After dpi-scaling the values are rounded up to the nearest integer.
+
     // Distance between widgets and between widgets and the border of the container.
-    "margin": 5,
+    "*.margin": 5,
 
     // The line-width of a border.
-    "border-width": 1,
+    "*.border.width": 1,
 
     // The rounding radius of boxes with rounded corners.
-    "rounding-radius": 4,
+    "*.rounding-radius": 4,
 
     // The size of small square widgets.
-    "size": 11,
+    "*.size": 11,
 
     // The size of large widgets. Such as the minimum scroll bar size.
-    "large-size": 19,
+    "*.size.large": 19,
 
     // Size of icons inside a widget.
-    "icon-size": 8,
+    "*.icon.size": 8,
 
-    // Size of icons representing the length of am average word of a label's text.
-    "large-icon-size": 23,
+    // Size of icons representing the length of an average word of a label's text.
+    "*.icon.size.large": 23,
 
     // Size of icons being inline with a label's text.
-    "label-icon-size": 15,
+    "*.label.icon.size": 15,
 
-    // The colors values are either:
-    // - integers are in sRGB
-    // - floats are in linear-extended-sRGB
-    // - string name of an color in the theme.
+    // A color can be defined in the following formats:
+    //  - [int, int, int]: sRGB value (0-255).
+    //  - [int, int, int, int]: sRGBA value (0-255).
+    //  - [float, float, float]: scRGB value.
+    //  - [float, float, float]: scRGBA value.
 
     // Bright colors, fitting theme.
     "blue"       : [ 10, 132, 255],
@@ -49,16 +68,18 @@
     "gray5"      : [ 44,  44,  46],
     "gray6"      : [ 28,  28,  30],
 
-    // Colors used by widgets, to show nesting inside containers,
-    "fill-color": [
+    // A list of colors is used for nesting widgets inside containers.
+
+    // Used for the background of widgets.
+    "*.color.fill": [
         [ 28,  28,  30],
         [ 44,  44,  46],
         [ 58,  58,  60],
         [ 72,  72,  74]
     ],
     
-    // Colors used by widgets for internal elements and disabled icons.
-    "border-color": [
+    // Used for the border of widgets.
+    "*.color.border": [
         [ 72,  72,  74],
         [ 99,  99, 102],
         [142, 142, 147],
@@ -66,21 +87,40 @@
     ],
 
     // Color for textual or primary elements like icons.
-    "foreground-color":       [250, 250, 255],
+    "*.color.primary": [250, 250, 255],
+    "*.color.secondary": [250, 250,  10],
 
     // Accent color used by widgets, to show icons, hover and keyboard focus
-    "accent-color":           [ 10, 132, 255],
-    "text-select-color":      [ 10, 132, 255],
-    "primary-cursor-color":   [250, 250, 255],
-    "secondary-cursor-color": [250, 250,  10],
+    "*.color.accent": [ 10, 132, 255],
+    "*.text.select.color": "$*.accent.color",
 
-    "text" : [
+    // You can reference other values defined in this value using a string that
+    // starts with a dollar sign '$'.
+
+    // The text style to use for normal text.
+    "*.text.style": "$default-text",
+
+    // The default text-theme.
+    "default-text" : [
+        // A text-theme contains several text-styles wich are selected from the phrasing,
+        // language, country and script of the text that is being displayed.
         {
-            "filter": {"phrasing": "*", "language": "*"},
+            // "*" is the default, otherwise a string of phrasing characters.
+            "phrasing": "*",
+            // "*" is the default, otherwise a iso-639 language code.
+            "language": "*",
+            // "*" is the default, otherwise a iso-3166 country code.
+            "country": "*",
+            // "*" is the default, otherwise a iso-15924 script code.
+            "script": "*",
+            // The family name of the font to select.
             "family": "Arial",
+            // A string defining the weight of the font.
             "weight": "Normal",
+            // The size in pt of the font.
             "size": 10,
-            "color": "foreground"
+            // The color the text will be displayed in.
+            "color": "$*.text.color"
         }
     ]
 }

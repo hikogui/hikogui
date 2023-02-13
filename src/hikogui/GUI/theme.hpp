@@ -5,17 +5,23 @@
 #pragma once
 
 #include "theme_mode.hpp"
+#include "theme_value.hpp"
 #include "../text/text_phrasing.hpp"
-#include "../text/text_style.hpp"
+// #include "../text/text_style.hpp"
 #include "../text/text_theme.hpp"
 #include "../utility/module.hpp"
 #include "../datum.hpp"
 #include "../color/module.hpp"
 #include "../geometry/module.hpp"
+#include "../pattern_match.hpp"
+#include "../generator.hpp"
+#include "../concurrency/module.hpp"
 #include <array>
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <atomic>
+#include <map>
 
 namespace hi::inline v1 {
 class font_book;
@@ -207,5 +213,8 @@ private:
         return lhs << to_string(rhs);
     }
 };
+
+
+
 
 } // namespace hi::inline v1
