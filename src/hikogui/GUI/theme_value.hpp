@@ -168,9 +168,4 @@ struct tv<Tag, text_theme_id> {
     }
 };
 
-void draw()
-{
-    auto size = tv<"radio_button.border.width", float>{}();
-}
-
 }} // namespace hi::v1
