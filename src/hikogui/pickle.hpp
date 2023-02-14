@@ -115,7 +115,7 @@ struct pickle<bool> {
 
     [[nodiscard]] bool decode(datum rhs) const
     {
-        if (auto *b = get_if<bool>(rhs)) {
+        if (auto *b = get_if<bool>(&rhs)) {
             return *b;
 
         } else {
@@ -133,7 +133,7 @@ struct pickle<std::string> {
 
     [[nodiscard]] std::string decode(datum rhs) const
     {
-        if (auto *b = get_if<std::string>(rhs)) {
+        if (auto *b = get_if<std::string>(&rhs)) {
             return *b;
 
         } else {

@@ -61,9 +61,8 @@ void window_widget::constructor_implementation() noexcept
     hi_assert_not_null(_content);
     hi_assert_not_null(_toolbar);
 
-    _layout = {};
-    _content_constraints =_content->update_constraints();
-    _toolbar_constraints =  _toolbar->update_constraints();
+    _content_constraints = _content->update_constraints();
+    _toolbar_constraints = _toolbar->update_constraints();
 
     auto r = box_constraints{};
     r.minimum.width() = std::max(
@@ -121,12 +120,9 @@ void window_widget::set_layout(widget_layout const& context) noexcept
         hilet between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
 
         hilet toolbar_rectangle = aarectanglei{
+            point2i{_toolbar_constraints.margins.left(), context.height() - toolbar_height - _toolbar_constraints.margins.top()},
             point2i{
-                _toolbar_constraints.margins.left(),
-                context.height() - toolbar_height - _toolbar_constraints.margins.top()},
-            point2i{
-                context.width() - _toolbar_constraints.margins.right(),
-                context.height() - _toolbar_constraints.margins.top()}};
+                context.width() - _toolbar_constraints.margins.right(), context.height() - _toolbar_constraints.margins.top()}};
         _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme().baseline_adjustment()};
 
         hilet content_rectangle = aarectanglei{

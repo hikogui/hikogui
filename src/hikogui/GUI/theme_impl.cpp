@@ -3,144 +3,97 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "theme.hpp"
-#include "theme_book.hpp"
-#include "../font/module.hpp"
+#include "theme_value.hpp"
 #include "../codec/JSON.hpp"
-#include "../color/module.hpp"
 #include "../log.hpp"
 #include <algorithm>
+#include <ranges>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
-theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
+[[nodiscard]] static font_weight parse_theme_font_weight(datum const& data)
 {
-    try {
-        hi_log_info("Parsing theme at {}", path.string());
-        hilet data = parse_JSON(path);
-        parse(font_book, data);
-    } catch (std::exception const& e) {
-        throw io_error(std::format("{}: Could not load theme.\n{}", path.string(), e.what()));
+    if (auto i = get_if<long long>(data)) {
+        return font_weight_from_int(*i);
+    } else if (auto s = get_if<std::string>(data)) {
+        return font_weight_from_string(*s);
+    } else {
+        throw parse_error(std::format("Unable to parse font weight, got {}.", data));
     }
 }
 
-[[nodiscard]] theme theme::transform(float new_dpi) const noexcept
+[[nodiscard]] static text_style parse_theme_text_style(hi::font_book const& font_book, datum const& data)
 {
-    auto r = *this;
+    hi_check(holds_alternative<datum::map_type>(data), "Expect a text-style to be an object, got '{}'", data);
 
-    hi_assert(new_dpi != 0.0f);
-    hi_assert(dpi != 0.0f);
-    hi_assert(scale != 0.0f);
+    auto language = iso_639{};
+    auto country = iso_3166{};
+    auto script = iso_15924{};
+    auto phrasing_mask = hi::text_phrasing_mask{};
+    auto family_id = font_family_id{};
+    auto size = 10;
+    auto weight = font_weight::Regular;
+    auto italic = false;
+    auto color = hi::color{};
+    for (hilet & [ name, value ] : get<datum::map_type>(data)) {
+        hi_check(holds_alternative<std::string>(name), "Expect the keys of a text-style to be integers, got {}", name);
 
-    auto delta_scale = new_dpi / dpi;
-    r.dpi = new_dpi;
-    r.scale = delta_scale * scale;
+        if (name == "language") {
+            hi_check(holds_alternative<std::string>(value), "Expect the language of a text-style to be a string.");
+            language = iso_639{get<std::string>(value)};
 
-    // Scale each size, and round so that everything will stay aligned on pixel boundaries.
-    r._margin = round_cast<int>(delta_scale * _margin);
-    r._border_width = round_cast<int>(delta_scale * _border_width);
-    r._rounding_radius = round_cast<int>(delta_scale * _rounding_radius);
-    r._size = round_cast<int>(delta_scale * _size);
-    r._large_size = round_cast<int>(delta_scale * _large_size);
-    r._icon_size = round_cast<int>(delta_scale * _icon_size);
-    r._large_icon_size = round_cast<int>(delta_scale * _large_icon_size);
-    r._label_icon_size = round_cast<int>(delta_scale * _label_icon_size);
-    // Cap height is not rounded, since the text-shaper will align the text to sub-pixel boundaries.
-    r._baseline_adjustment = ceil_cast<int>(delta_scale * _baseline_adjustment);
+        } else if (name == "country") {
+            hi_check(holds_alternative<std::string>(value), "Expect the country of a text-style to be a string.");
+            country = iso_3166{get<std::string>(value)};
 
+        } else if (name == "script") {
+            hi_check(holds_alternative<std::string>(value), "Expect the script of a text-style to be a string.");
+            script = iso_15924{get<std::string>(value)};
+
+        } else if (name == "phrasing") {
+            hi_check(holds_alternative<std::string>(value), "Expect the phrasing mask of a text-style to be a string.");
+            phrasing_mask = to_text_phrasing_mask(get<std::string>(value));
+
+        } else if (name == "family") {
+            hi_check(holds_alternative<std::string>(value), "Expect the font-family name to be a string, got {}", value);
+            family_id = font_book.find_family(get<std::string>(value));
+
+        } else if (name == "size") {
+            hi_check(holds_alternative<long long>(value), "Expect the font-size to be a integer, got {}", value);
+            size = static_cast<int>(value);
+
+        } else if (name == "weight") {
+            weight = parse_theme_font_weight(value);
+
+        } else if (name == "italic") {
+            hi_check(holds_alternative<bool>(value), "Expect italic to be a boolean, got {}", value);
+            italic = get<bool>(value);
+
+        } else if (name == "color") {
+            color = parse_theme_color(value);
+        }
+    }
+
+    auto variant = font_variant{weight, italic};
+    return {phrasing_mask, language, script, country, family_id, variant, size, color};
+}
+
+[[nodiscard]] static std::vector<text_style> parse_theme_text_styles(hi::font_book const& font_book, datum const& data)
+{
+    hi_assert(holds_alternative<datum::vector_type>(data));
+
+    auto r = std::vector<text_style>{};
+    for (auto& value : get<datum::vector_type>(data)) {
+        r.push_back(parse_theme_text_style(font_book, value));
+    }
     return r;
 }
 
-[[nodiscard]] hi::color theme::color(hi::semantic_color original_color, ssize_t nesting_level) const noexcept
+[[nodiscard]] static color parse_theme_color(datum const& data)
 {
-    hilet& shades = _colors[to_underlying(original_color)];
-    hi_assert(not shades.empty());
+    if (auto list = get_if<datum::vector_type>(&data)) {
+        hi_check(list->size() == 3 or list->size() == 4, "Color values must be 3 or 4 elements, got {}.", list->size());
 
-    nesting_level = std::max(ssize_t{0}, nesting_level);
-    return shades[nesting_level % ssize(shades)];
-}
-
-[[nodiscard]] hi::color theme::color(hi::color original_color, ssize_t nesting_level) const noexcept
-{
-    if (original_color.is_semantic()) {
-        return color(static_cast<semantic_color>(original_color), nesting_level);
-    } else {
-        return original_color;
-    }
-}
-
-[[nodiscard]] std::string theme::parse_string(datum const& data, char const *object_name)
-{
-    // Extract name
-    if (!data.contains(object_name)) {
-        throw parse_error(std::format("Missing '{}'", object_name));
-    }
-    hilet object = data[object_name];
-    if (!holds_alternative<std::string>(object)) {
-        throw parse_error(std::format("'{}' attribute must be a string, got {}.", object_name, object.type_name()));
-    }
-    return static_cast<std::string>(object);
-}
-
-[[nodiscard]] float theme::parse_float(datum const& data, char const *object_name)
-{
-    if (!data.contains(object_name)) {
-        throw parse_error(std::format("Missing '{}'", object_name));
-    }
-
-    hilet object = data[object_name];
-    if (auto f = get_if<double>(object)) {
-        return static_cast<float>(*f);
-    } else if (auto ll = get_if<long long>(object)) {
-        return static_cast<float>(*ll);
-    } else {
-        throw parse_error(
-            std::format("'{}' attribute must be a floating point number, got {}.", object_name, object.type_name()));
-    }
-}
-
-[[nodiscard]] long long theme::parse_long_long(datum const& data, char const *object_name)
-{
-    if (!data.contains(object_name)) {
-        throw parse_error(std::format("Missing '{}'", object_name));
-    }
-
-    hilet object = data[object_name];
-    if (auto f = get_if<long long>(object)) {
-        return static_cast<long long>(*f);
-    } else {
-        throw parse_error(std::format("'{}' attribute must be a integer, got {}.", object_name, object.type_name()));
-    }
-}
-
-[[nodiscard]] int theme::parse_int(datum const& data, char const *object_name)
-{
-    hilet value = parse_long_long(data, object_name);
-    if (value > std::numeric_limits<int>::max() or value < std::numeric_limits<int>::min()) {
-        throw parse_error(std::format("'{}' attribute is out of range, got {}.", object_name, value));
-    }
-    return narrow_cast<int>(value);
-}
-
-[[nodiscard]] bool theme::parse_bool(datum const& data, char const *object_name)
-{
-    if (!data.contains(object_name)) {
-        throw parse_error(std::format("Missing '{}'", object_name));
-    }
-
-    hilet object = data[object_name];
-    if (!holds_alternative<bool>(object)) {
-        throw parse_error(std::format("'{}' attribute must be a boolean, got {}.", object_name, object.type_name()));
-    }
-
-    return to_bool(object);
-}
-
-[[nodiscard]] color theme::parse_color_value(datum const& data)
-{
-    if (holds_alternative<datum::vector_type>(data)) {
-        if (data.size() != 3 && data.size() != 4) {
-            throw parse_error(std::format("Expect 3 or 4 values for a color, got {}.", data));
-        }
         hilet r = data[0];
         hilet g = data[1];
         hilet b = data[2];
@@ -168,6 +121,7 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
             hilet g_ = static_cast<float>(get<double>(g));
             hilet b_ = static_cast<float>(get<double>(b));
             hilet a_ = static_cast<float>(get<double>(a));
+            hi_check(a_ >= 0.0 and a_ <= 1.0, "float alpha-color vlaue not within 0.0 and 1.0");
 
             return hi::color(r_, g_, b_, a_);
 
@@ -175,201 +129,178 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
             throw parse_error(std::format("Expect all integers or all floating point numbers in a color, got {}.", data));
         }
 
-    } else if (hilet *color_name = get_if<std::string>(data)) {
-        hilet color_name_ = to_lower(*color_name);
-        if (color_name_.starts_with("#")) {
-            return color_from_sRGB(color_name_);
-
-        } else {
-            throw parse_error(std::format("Unable to parse color, got {}.", data));
-        }
+    } else if (auto string = get_if<std::string>(&data)) {
+        hi_check(not string->empty() and string->front() == '#', "Color string value must start with '#', got {}.", string);
+        return color_from_sRGB(*string);
     } else {
-        throw parse_error(std::format("Unable to parse color, got {}.", data));
+        throw parse_error(std::format("Unexepected color value type, got {}.", data));
     }
 }
 
-[[nodiscard]] hi::color theme::parse_color(datum const& data, char const *object_name)
+[[nodiscard]] static std::vector<color> parse_theme_colors(datum const& data)
 {
-    if (!data.contains(object_name)) {
-        throw parse_error(std::format("Missing color '{}'", object_name));
-    }
+    hi_assert(holds_alternative<datum::vector_type>(data));
+    hilet& list = get<datum::vector_type>(data);
+    hi_assert(not list.empty());
 
-    hilet color_object = data[object_name];
-
-    try {
-        return parse_color_value(color_object);
-    } catch (parse_error const&) {
-        if (auto s = get_if<std::string>(color_object)) {
-            return hi::color{semantic_color_from_string(*s)};
-        } else {
-            throw;
-        }
-    }
-}
-
-[[nodiscard]] std::vector<color> theme::parse_color_list(datum const& data, char const *object_name)
-{
-    // Extract name
-    if (!data.contains(object_name)) {
-        throw parse_error(std::format("Missing color list '{}'", object_name));
-    }
-
-    hilet color_list_object = data[object_name];
-    if (holds_alternative<datum::vector_type>(color_list_object) and not color_list_object.empty() and
-        holds_alternative<datum::vector_type>(color_list_object[0])) {
-        auto r = std::vector<hi::color>{};
-        ssize_t i = 0;
-        for (hilet& color : color_list_object) {
-            try {
-                r.push_back(parse_color_value(color));
-            } catch (parse_error const& e) {
-                throw parse_error(std::format("Could not parse {}nd entry of color list '{}'\n{}", i + 1, object_name, e.what()));
-            }
+    if (holds_alternative<long long>(list.front()) or holds_alternative<double>(list.front())) {
+        return {parse_theme_color(data)};
+    } else {
+        auto r = std::vector<color>{};
+        for (hilet& item : list) {
+            r.push_back(parse_theme_color(item));
         }
         return r;
-
-    } else {
-        try {
-            return {parse_color_value(data[object_name])};
-        } catch (parse_error const& e) {
-            throw parse_error(std::format("Could not parse color '{}'\n{}", object_name, e.what()));
-        }
     }
 }
 
-[[nodiscard]] font_weight theme::parse_font_weight(datum const& data, char const *object_name)
+[[nodiscard]] static theme::value_type parse_theme_value(hi::font_book const& font_book, datum const& data)
 {
-    if (!data.contains(object_name)) {
-        throw parse_error(std::format("Missing '{}'", object_name));
-    }
+    if (holds_alternative<long long>(data) or holds_alternative<double>(data)) {
+        // A size value.
+        return static_cast<float>(data);
 
-    hilet object = data[object_name];
-    if (auto i = get_if<long long>(object)) {
-        return font_weight_from_int(*i);
-    } else if (auto s = get_if<std::string>(object)) {
-        return font_weight_from_string(*s);
-    } else {
-        throw parse_error(std::format("Unable to parse font weight, got {}.", object.type_name()));
-    }
-}
-
-[[nodiscard]] text_theme theme::parse_text_theme_value(hi::font_book const& font_book, datum const& data)
-{
-    if (!holds_alternative<datum::map_type>(data)) {
-        throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
-    }
-
-    hilet family_id = font_book.find_family(parse_string(data, "family"));
-    hilet font_size = parse_float(data, "size");
-
-    auto variant = font_variant{};
-    if (data.contains("weight")) {
-        variant.set_weight(parse_font_weight(data, "weight"));
-    } else {
-        variant.set_weight(font_weight::Regular);
-    }
-
-    if (data.contains("italic")) {
-        variant.set_italic(parse_bool(data, "italic"));
-    } else {
-        variant.set_italic(false);
-    }
-
-    // resolve semantic color.
-    hilet color = this->color(parse_color(data, "color"), 0);
-
-    auto sub_styles = std::vector<text_sub_style>{};
-    sub_styles.emplace_back(
-        text_phrasing_mask::all, iso_639{}, iso_15924{}, family_id, variant, font_size, color, text_decoration{});
-    return hi::text_theme(sub_styles);
-}
-
-[[nodiscard]] text_style theme::parse_text_style(hi::font_book const &font_book, datum const &data)
-{
-
-}
-
-[[nodiscard]] text_theme theme::parse_text_theme(hi::font_book const& font_book, datum const& data, char const *object_name)
-{
-    // Extract name
-    if (not data.contains(object_name)) {
-        throw parse_error(std::format("Missing text-style '{}'", object_name));
-    }
-
-    hilet text_theme_object = data[object_name];
-
-    auto r = [&] {
-        if (object_name == "ui-text") {
-            return text_theme::get_theme(0);
+    } else if (auto string_value = get_if<std::string>(&data)) {
+        hi_check(not string_value->empty(), "Unexpected empty string as theme value.");
+        if (string_value->front() == '#') {
+            // An sRGB hex-color.
+            return std::vector<hi::color>{color_from_sRGB(*string_value)};
+        } else if (string_value->front() == '$') {
+            // A reference.
+            return string_value->substr(1);
         } else {
-            throw parse_error(std::format("Unknown text-theme '{}', expect an array of styles.\n", object_name));
+            throw parse_error(std::format("Unexpected '{}' as theme value.", *string_value));
         }
-    }();
-    // Remove all text-styles from the text-theme.
-    r.clear();
 
-    if (holds_alternative<datum::vector_type>(text_theme_object)) {
-        for (hilet &text_style_object: text_theme_object) {
-            r.add_style(parse_text_style(text_style_object));
+    } else if (auto list_value = get_if<datum::vector_type>(&data)) {
+        hi_check(not list_value->empty(), "Unexpected empty list as theme value.");
+        if (holds_alternative<datum::map_type>(list_value->front())) {
+            return parse_theme_text_styles(font_book, data);
+        } else {
+            return parse_theme_colors(data);
         }
+
     } else {
-        throw parse_error(std::format("Could not parse text-theme '{}', expect an array of styles.\n", object_name));
+        throw parse_error(std::format("Unexpected '{}' as theme value.", data));
     }
-    return r;
+}
+
+void static resolve_theme_references(theme::container_type& items)
+{
+    constexpr auto max_recursion = 256_uz;
+
+    // Sort items alphabetically.
+    std::sort(items.begin(), items.end(), [](hilet& a, hilet& b) {
+        return a.first < b.first;
+    });
+
+    for (auto& [name, value] : items) {
+        auto retry = max_recursion;
+        while (hilet reference = std::get_if<std::string>(&value)) {
+            hi_check(--retry != 0, "Maximum recursion depth reached when resolving reference '{}", *reference);
+
+            auto it = std::lower_bound(items.begin(), items.end(), *reference, [](hilet& item, hilet& value) {
+                return item.first < value;
+            });
+            hi_check(it != items.end() or it->first != *reference, "Could not find reference '{}' in theme file", *reference);
+            value = it->second;
+        }
+    }
+}
+
+void static order_by_specificity(theme::container_type& items)
+{
+    // Sort by name where:
+    // - names with a star '*' go first.
+    // - by the number of dots '.' in the name.
+    std::sort(items.begin(), items.end(), [](hilet& a, hilet& b) {
+        hilet& a_ = a.first;
+        hilet& b_ = b.first;
+
+        hilet a_score = a_.find('*') != a_.npos ? std::numeric_limits<size_t>::max() : std::count(a_.begin(), a_.end(), '.');
+        hilet b_score = b_.find('*') != b_.npos ? std::numeric_limits<size_t>::max() : std::count(b_.begin(), b_.end(), '.');
+        // Sort in reverse order.
+        return a_score < b_score;
+    });
+}
+
+theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
+{
+    try {
+        hi_log_info("Parsing theme at {}", path.string());
+        hilet data = parse_JSON(path);
+        parse(font_book, data);
+    } catch (std::exception const& e) {
+        throw io_error(std::format("{}: Could not load theme.\n{}", path.string(), e.what()));
+    }
+}
+
+[[nodiscard]] void theme::parse_data(hi::font_book const& font_book, datum const& data)
+{
+    hi_check(holds_alternative<datum::map_type>(data), "Expecting an object as the top level of a theme file.");
+    for (hilet & [ item_name, item_value ] : get<datum::map_type>(data)) {
+        hi_check(holds_alternative<std::string>(item_name), "Expecting a string as keys in the theme file, got {}", name);
+
+        if (item_name == "name") {
+            hi_check(
+                holds_alternative<std::string>(item_value),
+                "Expecting a string as the value for 'name' in theme file, got {}",
+                item_value);
+
+            name = get<std::string>(item_value);
+
+        } else if (item_name == "mode") {
+            hi_check(
+                holds_alternative<std::string>(item_value),
+                "Expecting a string as the value for 'mode' in theme file, got {}",
+                item_value);
+
+            if (item_value == "light") {
+                mode = theme_mode::light;
+            } else if (item_value == "dark") {
+                mode = theme_mode::dark;
+            } else {
+                throw parse_error(
+                    std::format("Expecting either 'dark' or 'light' as values for 'mode' in the theme file, got {}", item_value));
+            }
+
+        } else {
+            // All other names are for theme values.
+            // Use insert here so that exceptions from parse_theme_value do not cause the item to be created.
+            _items.push_back({get<std::string>(item_name), parse_theme_value(font_book, item_value)});
+        }
+    }
+}
+
+void theme::activate() const noexcept
+{
+    // The items are sorted by least specific first.
+    // That way more specific items will override the more specific theme values.
+    for (hilet & [ name, value ] : _items) {
+        if (auto colors = std::get_if<std::vector<hi::color>>(&value)) {
+            for (auto& theme_value : detail::theme_value_base<std::vector<hi::color>>::get(name)) {
+                theme_value = *colors;
+            }
+
+        } else if (auto size = std::get_if<float>(&value)) {
+            for (auto& theme_value : detail::theme_value_base<float>::get(name)) {
+                theme_value = *size;
+            }
+
+        } else if (auto text_styles = std::get_if<std::vector<text_style>>(&value)) {
+            hi_not_implemented();
+
+        } else {
+            hi_no_default();
+        }
+    }
 }
 
 void theme::parse(hi::font_book const& font_book, datum const& data)
 {
-    hi_assert(holds_alternative<datum::map_type>(data));
-
-    name = parse_string(data, "name");
-
-    hilet mode_name = to_lower(parse_string(data, "mode"));
-    if (mode_name == "light") {
-        mode = theme_mode::light;
-    } else if (mode_name == "dark") {
-        mode = theme_mode::dark;
-    } else {
-        throw parse_error(std::format("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name));
-    }
-
-    std::get<to_underlying(semantic_color::blue)>(_colors) = parse_color_list(data, "blue");
-    std::get<to_underlying(semantic_color::green)>(_colors) = parse_color_list(data, "green");
-    std::get<to_underlying(semantic_color::indigo)>(_colors) = parse_color_list(data, "indigo");
-    std::get<to_underlying(semantic_color::orange)>(_colors) = parse_color_list(data, "orange");
-    std::get<to_underlying(semantic_color::pink)>(_colors) = parse_color_list(data, "pink");
-    std::get<to_underlying(semantic_color::purple)>(_colors) = parse_color_list(data, "purple");
-    std::get<to_underlying(semantic_color::red)>(_colors) = parse_color_list(data, "red");
-    std::get<to_underlying(semantic_color::teal)>(_colors) = parse_color_list(data, "teal");
-    std::get<to_underlying(semantic_color::yellow)>(_colors) = parse_color_list(data, "yellow");
-
-    std::get<to_underlying(semantic_color::gray)>(_colors) = parse_color_list(data, "gray");
-    std::get<to_underlying(semantic_color::gray2)>(_colors) = parse_color_list(data, "gray2");
-    std::get<to_underlying(semantic_color::gray3)>(_colors) = parse_color_list(data, "gray3");
-    std::get<to_underlying(semantic_color::gray4)>(_colors) = parse_color_list(data, "gray4");
-    std::get<to_underlying(semantic_color::gray5)>(_colors) = parse_color_list(data, "gray5");
-    std::get<to_underlying(semantic_color::gray6)>(_colors) = parse_color_list(data, "gray6");
-
-    std::get<to_underlying(semantic_color::foreground)>(_colors) = parse_color_list(data, "foreground-color");
-    std::get<to_underlying(semantic_color::border)>(_colors) = parse_color_list(data, "border-color");
-    std::get<to_underlying(semantic_color::fill)>(_colors) = parse_color_list(data, "fill-color");
-    std::get<to_underlying(semantic_color::accent)>(_colors) = parse_color_list(data, "accent-color");
-    std::get<to_underlying(semantic_color::text_select)>(_colors) = parse_color_list(data, "text-select-color");
-    std::get<to_underlying(semantic_color::primary_cursor)>(_colors) = parse_color_list(data, "primary-cursor-color");
-    std::get<to_underlying(semantic_color::secondary_cursor)>(_colors) = parse_color_list(data, "secondary-cursor-color");
-
-    _text_themes = parse_text_theme(font_book, data, "ui-text");
-
-    _margin = parse_int(data, "margin");
-    _border_width = parse_int(data, "border-width");
-    _rounding_radius = parse_int(data, "rounding-radius");
-    _size = parse_int(data, "size");
-    _large_size = parse_int(data, "large-size");
-    _icon_size = parse_int(data, "icon-size");
-    _large_icon_size = parse_int(data, "large-icon-size");
-    _label_icon_size = parse_int(data, "label-icon-size");
-
-    _baseline_adjustment = _text_theme.style()->cap_height(font_book);
+    parse_data(font_book, data);
+    resolve_theme_references(_items);
+    order_by_specificity(_items);
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

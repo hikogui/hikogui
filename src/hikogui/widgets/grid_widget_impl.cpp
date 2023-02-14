@@ -46,8 +46,6 @@ widget& grid_widget::add_widget(
 
 [[nodiscard]] box_constraints grid_widget::update_constraints() noexcept
 {
-    _layout = {};
-
     for (auto& cell : _grid) {
         cell.set_constraints(cell.value->update_constraints());
     }

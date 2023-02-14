@@ -28,7 +28,6 @@ void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
 
 [[nodiscard]] box_constraints overlay_widget::update_constraints() noexcept
 {
-    _layout = {};
     _content_constraints = _content->update_constraints();
     return _content_constraints;
 }

@@ -152,7 +152,6 @@ a width and a height and then upload the image at a later time.
 ```cpp
 hi::box_constraints const &set_constraints(set_constraints_context const &context) noexcept override
 {
-    _layout = {};
     if (_image_was_modified.exchange(false)) {
         if (not (_image_backing = hi::paged_image{window.surface.get(), _image})) {
             // Could not get an image, retry.

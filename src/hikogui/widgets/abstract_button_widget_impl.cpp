@@ -31,7 +31,6 @@ abstract_button_widget::~abstract_button_widget()
 
 [[nodiscard]] box_constraints abstract_button_widget::update_constraints() noexcept
 {
-    _layout = {};
     _on_label_constraints = _on_label_widget->update_constraints();
     _off_label_constraints = _off_label_widget->update_constraints();
     _other_label_constraints = _other_label_widget->update_constraints();

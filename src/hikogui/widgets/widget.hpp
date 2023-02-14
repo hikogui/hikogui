@@ -11,7 +11,6 @@
 #include "widget_layout.hpp"
 #include "widget_mode.hpp"
 #include "../GFX/draw_context.hpp"
-#include "../GUI/theme.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
@@ -43,7 +42,7 @@ class gfx_surface;
  *
  * @ingroup widgets
  */
-class widget : public std::enable_shared_from_this<widget> {
+class widget {
 public:
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
@@ -69,6 +68,12 @@ public:
      */
     observer<bool> focus = false;
 
+    /** The scale by which to size the widget and its components.
+     *
+     * This value is set by the window when it's dpi changes.
+     */
+    float scale = 1.0f;
+
     /** The draw layer of the widget.
      * The semantic layer is used mostly by the `draw()` function
      * for selecting colors from the theme, to denote nesting widgets
@@ -83,7 +88,7 @@ public:
      * In most cases it would mean that a container widget that does not
      * draw itself will not increase the semantic_layer number.
      */
-    int semantic_layer = 0;
+    size_t semantic_layer = 0_uz;
 
     /** The logical layer of the widget.
      * The logical layer can be used to determine how far away
@@ -170,6 +175,14 @@ public:
         return false;
     }
 
+    /** Reset the layout before constraining.
+     */
+    void reset_layout(float dpi_scale)
+    {
+        scale = dpi_scale;
+        _layout = {};
+    }
+
     /** Update the constraints of the widget.
      *
      * Typically the implementation of this function starts with recursively calling update_constraints()
@@ -183,7 +196,6 @@ public:
      */
     virtual [[nodiscard]] box_constraints update_constraints() noexcept
     {
-        _layout = {};
         return {*minimum, *minimum, *maximum};
     }
 
@@ -317,12 +329,6 @@ public:
         }
     }
 
-    [[nodiscard]] virtual hi::theme const& theme() const noexcept
-    {
-        hi_assert_not_null(parent);
-        return parent->theme();
-    }
-
     [[nodiscard]] virtual gfx_surface const *surface() const noexcept
     {
         if (parent) {
@@ -380,6 +386,21 @@ inline widget& get(widget& start, widget_id id, bool include_invisible)
         return *r;
     }
     throw not_found_error("get widget by id");
+}
+
+template<std::invocable<widget&> F>
+inline void apply(widget& start, bool include_invisible, F const& f)
+{
+    for (auto& child : start.children(include_invisible)) {
+        apply(child, include_invisible, f);
+    }
+    f(start);
+}
+
+template<std::invocable<widget&> F>
+inline void apply(widget& start, F const& f)
+{
+    return apply(start, true, f);
 }
 
 }} // namespace hi::v1

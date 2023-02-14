@@ -60,7 +60,6 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
         repopulate_options();
     }
 
-    _layout = {};
     _off_label_constraints = _off_label_widget->update_constraints();
     _current_label_constraints = _current_label_widget->update_constraints();
     _overlay_constraints = _overlay_widget->update_constraints();

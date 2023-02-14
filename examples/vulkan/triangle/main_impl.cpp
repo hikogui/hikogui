@@ -34,10 +34,6 @@ public:
     // or when a widget wants to change its constraints.
     [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
-        // Almost all widgets will reset the `_layout` variable here so that it will
-        // trigger the calculations in `set_layout()` as well.
-        _layout = {};
-
         // Certain expensive calculations, such as loading of images and shaping of text
         // can be done in this function.
 

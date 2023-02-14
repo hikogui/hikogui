@@ -29,8 +29,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         auto r = box_constraints{};
         r.maximum = extent2i::large();
         return r;

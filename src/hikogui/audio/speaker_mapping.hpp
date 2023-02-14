@@ -125,7 +125,7 @@ struct pickle<speaker_mapping> {
 
     [[nodiscard]] speaker_mapping decode(datum const &rhs) const
     {
-        if (auto *i = get_if<long long>(rhs)) {
+        if (auto *i = get_if<long long>(&rhs)) {
             return decode(*i);
         } else {
             throw parse_error(std::format("Expect speaker mapping to be encoded as a integer, got {}", rhs));

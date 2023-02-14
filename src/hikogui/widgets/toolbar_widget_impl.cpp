@@ -22,8 +22,6 @@ toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
 
 [[nodiscard]] box_constraints toolbar_widget::update_constraints() noexcept
 {
-    _layout = {};
-
     for (auto& child : _children) {
         child.set_constraints(child.value->update_constraints());
     }

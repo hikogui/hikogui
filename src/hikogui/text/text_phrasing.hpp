@@ -164,6 +164,16 @@ enum class text_phrasing_mask : uint16_t {
         title | success | warning | error
 };
 
+[[nodiscard]] constexpr text_phrasing_mask operator&(text_phrasing_mask const& lhs, text_phrasing_mask const& rhs) noexcept
+{
+    return static_cast<text_phrasing_mask>(to_underlying(lhs) & to_underlying(rhs));
+}
+
+[[nodiscard]] constexpr text_phrasing_mask operator|(text_phrasing_mask const& lhs, text_phrasing_mask const& rhs) noexcept
+{
+    return static_cast<text_phrasing_mask>(to_underlying(lhs) | to_underlying(rhs));
+}
+
 [[nodiscard]] constexpr text_phrasing_mask to_text_phrasing_mask(text_phrasing const& rhs) noexcept
 {
     hi_axiom(to_underlying(rhs) < sizeof(text_phrasing_mask) * CHAR_BIT);
@@ -185,16 +195,6 @@ enum class text_phrasing_mask : uint16_t {
     }
 
     return r;
-}
-
-[[nodiscard]] constexpr text_phrasing_mask operator&(text_phrasing_mask const& lhs, text_phrasing_mask const& rhs) noexcept
-{
-    return static_cast<text_phrasing_mask>(to_underlying(lhs) & to_underlying(rhs));
-}
-
-[[nodiscard]] constexpr text_phrasing_mask operator|(text_phrasing_mask const& lhs, text_phrasing_mask const& rhs) noexcept
-{
-    return static_cast<text_phrasing_mask>(to_underlying(lhs) | to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr bool all(text_phrasing_mask const& rhs) noexcept

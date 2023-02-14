@@ -118,7 +118,7 @@ inline auto global_theme_value = tagged_theme_value<Tag, T>{};
  *  - `float operator()(float dpi_scale)`
  *  - `int operator()(float dpi_scale)`
  *  - `color operator()(size_t depth)`
- * 
+ *
  * @tparam Tag The name of the global theme value.
  * @tparam T The return type of the functor.
  */

@@ -33,8 +33,6 @@ tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) 
 
 [[nodiscard]] box_constraints tab_widget::update_constraints() noexcept
 {
-    _layout = {};
-
     auto& selected_child_ = selected_child();
 
     if (_previous_selected_child != &selected_child_) {

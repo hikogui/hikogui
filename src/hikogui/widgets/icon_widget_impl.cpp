@@ -20,8 +20,6 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
 
 [[nodiscard]] box_constraints icon_widget::update_constraints() noexcept
 {
-    _layout = {};
-
     if (_icon_has_modified.exchange(false)) {
         _icon_type = icon_type::no;
         _icon_size = {};

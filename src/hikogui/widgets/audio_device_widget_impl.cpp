@@ -42,7 +42,6 @@ audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio
 
 [[nodiscard]] box_constraints audio_device_widget::update_constraints() noexcept
 {
-    _layout = {};
     _grid_constraints = _grid_widget->update_constraints();
     return _grid_constraints;
 }

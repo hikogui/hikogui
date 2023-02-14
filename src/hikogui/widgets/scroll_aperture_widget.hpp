@@ -98,7 +98,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
         _content_constraints = _content->update_constraints();
 
         // The aperture can scroll so its minimum width and height are zero.

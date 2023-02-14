@@ -49,7 +49,7 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
-    auto &window = *std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
+    auto& window = *std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
     hi_axiom(loop::main().on_thread());
 
     // WM_CLOSE and WM_DESTROY will re-enter and run the destructor for `window`.
@@ -138,14 +138,7 @@ void gui_window_win32::create_window(extent2i new_size)
     DwmExtendFrameIntoClientArea(win32Window, &m);
 
     // Force WM_NCCALCSIZE to be send to the window.
-    SetWindowPos(
-        win32Window,
-        nullptr,
-        0,
-        0,
-        0,
-        0,
-        SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+    SetWindowPos(win32Window, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     if (!firstWindowHasBeenOpened) {
         hilet win32_window_ = win32Window;
@@ -689,7 +682,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_SIZING:
         {
-            hilet &rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
+            hilet& rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
             if (rect_ptr.right < rect_ptr.left or rect_ptr.bottom < rect_ptr.top) {
                 hi_log_error(
                     "Invalid RECT received on WM_SIZING: left={}, right={}, bottom={}, top={}",
@@ -706,7 +699,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_MOVING:
         {
-            hilet &rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
+            hilet& rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
             if (rect_ptr.right < rect_ptr.left or rect_ptr.bottom < rect_ptr.top) {
                 hi_log_error(
                     "Invalid RECT received on WM_MOVING: left={}, right={}, bottom={}, top={}",
@@ -948,6 +941,10 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             hi_axiom(loop::main().on_thread());
             // x-axis dpi value.
             dpi = narrow_cast<float>(LOWORD(wParam));
+            hilet scale = dpi / points_per_inch_v<float>;
+            apply(*widget, [&](auto& x) {
+                x.scale = scale;
+            });
 
             // Use the recommended rectangle to resize and reposition the window
             hilet new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));

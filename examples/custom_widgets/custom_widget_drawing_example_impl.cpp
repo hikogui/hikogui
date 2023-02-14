@@ -107,10 +107,6 @@ public:
     {
         this->_glyph = find_glyph(hi::elusive_icon::Briefcase);
 
-        // Almost all widgets will reset the `_layout` variable here so that it will
-        // trigger the calculations in `set_layout()` as well.
-        _layout = {};
-
         if (_image_was_modified.exchange(false)) {
             if (not(_image_backing = hi::paged_image{surface(), _image})) {
                 // Could not get an image, retry.

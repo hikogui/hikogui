@@ -67,7 +67,6 @@ text_field_widget::~text_field_widget()
         revert(false);
     }
 
-    _layout = {};
     _scroll_constraints =_scroll_widget->update_constraints();
 
     hilet scroll_width = 100;

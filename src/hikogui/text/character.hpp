@@ -117,7 +117,7 @@ struct character {
 
     [[nodiscard]] constexpr hi::grapheme grapheme() const noexcept
     {
-        return hi::grapheme{intrinsic_t{}, (value >> _grapheme_shift) & _grapheme_mask)};
+        return hi::grapheme{intrinsic_t{}, (value >> _grapheme_shift) & _grapheme_mask};
     }
 
     [[nodiscard]] constexpr hi::phrasing phrasing() const noexcept

@@ -129,7 +129,7 @@ void draw_context::_draw_text(
     auto atlas_was_updated = false;
     for (hilet& c : text) {
         hilet box = translate2{c.position} * c.metrics.bounding_rectangle;
-        hilet color = attributes.num_colors > 0 ? attributes.fill_color : quad_color{c.style->color};
+        hilet color = attributes.num_colors > 0 ? attributes.fill_color : quad_color{c.style.color};
 
         hi_assert_not_null(c.description);
         if (not is_visible(c.description->general_category())) {

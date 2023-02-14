@@ -13,8 +13,6 @@ window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexc
 
 [[nodiscard]] box_constraints window_traffic_lights_widget::update_constraints() noexcept
 {
-    _layout = {};
-
     if (theme().operating_system == operating_system::windows) {
         hilet size = extent2i{theme().large_size() * 3, theme().large_size()};
         return {size, size, size};

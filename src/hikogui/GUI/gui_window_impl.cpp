@@ -40,8 +40,10 @@ void gui_window::init()
 
     widget = std::make_unique<window_widget>(this, title);
 
-    // Execute a constraint check to determine initial window size.
-    theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
+    hilet scale = dpi / points_per_inch_v<float>;
+    apply(*widget, [&](auto& x) {
+        x.reset_layout(scale);
+    });
 
     _widget_constraints = widget->update_constraints();
     hilet new_size = _widget_constraints.preferred;
@@ -97,7 +99,10 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain) {
         hilet t2 = trace<"window::constrain">();
 
-        theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
+        hilet scale = dpi / points_per_inch_v<float>;
+        apply(*widget, [&](auto& x) {
+            x.reset_layout(scale);
+        });
 
         _widget_constraints = widget->update_constraints();
     }

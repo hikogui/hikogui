@@ -66,8 +66,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         if (*mode <= widget_mode::collapse) {
             return {};
         }

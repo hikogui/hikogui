@@ -19,7 +19,7 @@ struct character_attributes {
     text_phrasing phrasing;
     text_theme theme;
 
-    template<character_attribute... Args)
+    template<character_attribute... Args>
     character_attributes(Args const &...args) noexcept
     {
         add(args...);
@@ -47,7 +47,7 @@ struct character_attributes {
         theme = arg;
     }
 
-    template<character_attribute First, character_attribute Second, character_attribute... Rest)
+    template<character_attribute First, character_attribute Second, character_attribute... Rest>
     void add(First const &first, Second const &second, Rest const &...rest) noexcept
     {
         add(first);

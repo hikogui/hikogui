@@ -57,8 +57,6 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
 
 [[nodiscard]] box_constraints label_widget::update_constraints() noexcept
 {
-    _layout = {};
-
     // Resolve as if in left-to-right mode, the grid will flip itself.
     hilet resolved_alignment = resolve(*alignment, true);
 

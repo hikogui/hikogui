@@ -117,8 +117,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         for (auto& cell : _grid) {
             cell.set_constraints(cell.value->update_constraints());
         }

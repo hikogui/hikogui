@@ -180,13 +180,13 @@ static void format_JSON_impl(datum const &value, std::string &result, hi::indent
 {
     if (holds_alternative<nullptr_t>(value)) {
         result += "null";
-    } else if (hilet *b = get_if<bool>(value)) {
+    } else if (hilet *b = get_if<bool>(&value)) {
         result += *b ? "true" : "false";
-    } else if (hilet *i = get_if<long long>(value)) {
+    } else if (hilet *i = get_if<long long>(&value)) {
         result += hi::to_string(*i);
-    } else if (hilet *f = get_if<double>(value)) {
+    } else if (hilet *f = get_if<double>(&value)) {
         result += hi::to_string(*f);
-    } else if (hilet *s = get_if<std::string>(value)) {
+    } else if (hilet *s = get_if<std::string>(&value)) {
         result += '"';
         for (hilet c : *s) {
             switch (c) {
@@ -215,7 +215,7 @@ static void format_JSON_impl(datum const &value, std::string &result, hi::indent
         }
         result += '"';
 
-    } else if (hilet *v = get_if<datum::vector_type>(value)) {
+    } else if (hilet *v = get_if<datum::vector_type>(&value)) {
         result += indent;
         result += '[';
         result += '\n';
@@ -233,7 +233,7 @@ static void format_JSON_impl(datum const &value, std::string &result, hi::indent
         result += '\n';
         result += indent;
         result += ']';
-    } else if (hilet *m = get_if<datum::map_type>(value)) {
+    } else if (hilet *m = get_if<datum::map_type>(&value)) {
         result += indent;
         result += '{';
         result += '\n';

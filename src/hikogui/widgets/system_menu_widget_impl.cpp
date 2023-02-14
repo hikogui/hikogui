@@ -15,7 +15,6 @@ system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
 {
     hi_assert_not_null(_icon_widget);
 
-    _layout = {};
     _icon_constraints = _icon_widget->update_constraints();
 
     hilet size = extent2i{theme().large_size(), theme().large_size()};

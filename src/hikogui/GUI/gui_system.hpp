@@ -111,10 +111,8 @@ protected:
 private:
     std::weak_ptr<gui_system_delegate> _delegate;
 
-    /** The theme of the system.
-     * Should never be nullptr in reality.
-     */
-    hi::theme const *_theme = nullptr;
+    decltype(selected_theme)::callback_token _selected_theme_cbt;
+    os_settings::callback_token _os_settings_cbt;
 };
 
 } // namespace hi::inline v1

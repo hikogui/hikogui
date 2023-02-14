@@ -26,6 +26,22 @@ gui_system::gui_system(
     _delegate(delegate)
 {
     this->gfx->init();
+
+    _selected_theme_cbt = selected_theme.subscribe(
+        [&](auto...) {
+            auto& theme = this->theme_book->find(*selected_theme, os_settings::theme_mode());
+            theme.activate();
+        },
+        callback_flags::main);
+
+    _os_settings_cbt = os_settings::subscribe(
+        [&](auto...) {
+            auto& theme = this->theme_book->find(*selected_theme, os_settings::theme_mode());
+            theme.activate();
+        },
+        callback_flags::main);
+
+    (*_os_settings_cbt)();
 }
 
 gui_system::~gui_system()

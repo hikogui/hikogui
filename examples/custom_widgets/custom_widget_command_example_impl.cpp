@@ -29,9 +29,6 @@ public:
     // or when a widget wants to change its constraints.
     [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
-        // Reset _layout so that the set_layout() calculations will be triggered.
-        _layout = {};
-
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
         return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, theme().margin()};
     }

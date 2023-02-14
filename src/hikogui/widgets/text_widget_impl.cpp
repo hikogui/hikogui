@@ -72,8 +72,6 @@ text_widget::~text_widget()
 
 [[nodiscard]] box_constraints text_widget::update_constraints() noexcept
 {
-    _layout = {};
-
     // Read the latest text from the delegate.
     hi_assert_not_null(delegate);
     _text_cache = delegate->read(*this);

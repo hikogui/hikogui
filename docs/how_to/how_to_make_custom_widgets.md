@@ -44,8 +44,6 @@ taken from the theme. The label widget itself is based on `theme().size()` and t
 ```cpp
 hi::box_constraints const &set_constraints(set_constraints_context const &context) noexcept override
 {
-    _layout = {};
-
     auto const label_constraints = _label_widget->set_constraints(context);
     _constraints.minimum = label_constraints.minimum;
     _constraints.preferred = label_constraints.preferred + theme().margin();

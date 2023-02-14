@@ -84,7 +84,7 @@ public:
     [[nodiscard]] text_shaper(
         hi::font_book& font_book,
         gstring const& text,
-        text_theme const& style,
+        text_style const& style,
         float dpi_scale,
         hi::alignment alignment,
         unicode_bidi_class text_direction,
@@ -93,7 +93,7 @@ public:
     [[nodiscard]] text_shaper(
         hi::font_book& font_book,
         std::string_view text,
-        text_theme const& style,
+        text_style const& style,
         float dpi_scale,
         hi::alignment alignment,
         unicode_bidi_class text_direction,
