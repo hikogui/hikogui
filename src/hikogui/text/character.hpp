@@ -45,6 +45,16 @@ struct character {
      */
     value_type _value;
 
+        /**
+     * [20: 0] 21-bit: grapheme.
+     * [23:21] 3-bit: reserved '0'.
+     * [27:24] 4-bit: phrasing.
+     * [37:28] 10-bit: iso-15924 script.
+     * [47:38] 10-bit: iso-3166 country.
+     * [63:48] 16-bit: iso-639 language.
+     */
+
+
     constexpr static auto _eof = uint64_t{0x1f'ffff};
 
     constexpr static auto _grapheme_mask = uint64_t{0x1f'ffff};
