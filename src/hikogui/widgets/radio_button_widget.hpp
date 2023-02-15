@@ -49,7 +49,7 @@ public:
      * @param parent The parent widget that owns this radio button widget.
      * @param delegate The delegate to use to manage the state of the radio button.
      * @param attributes Different attributes used to configure the label's on the radio button:
-     *                   a `label`, `alignment` or `semantic_text_theme`. If one label is
+     *                   a `label`, `alignment` or `text_theme`. If one label is
      *                   passed it will be shown in all states. If two labels are passed
      *                   the first label is shown in on-state and the second for off-state.
      */
@@ -71,7 +71,7 @@ public:
      * @param on_value An optional on-value. This value is used to determine which
      *             value yields an 'on' state.
      * @param attributes Different attributes used to configure the label's on the radio button:
-     *                   a `label`, `alignment` or `semantic_text_theme`. If one label is
+     *                   a `label`, `alignment` or `text_theme`. If one label is
      *                   passed it will be shown in all states. If two labels are passed
      *                   the first label is shown in on-state and the second for off-state.
      */

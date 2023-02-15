@@ -27,29 +27,9 @@ label_widget::label_widget(widget *parent) noexcept : super(parent)
 
     _text_theme_cbt = text_theme.subscribe(
         [this](auto...) {
-            switch (*text_theme) {
-            case semantic_text_theme::label:
-                _icon_widget->color = color::foreground();
-                break;
-            case semantic_text_theme::small_label:
-                _icon_widget->color = color::foreground();
-                break;
-            case semantic_text_theme::warning:
-                _icon_widget->color = color::orange();
-                break;
-            case semantic_text_theme::error:
-                _icon_widget->color = color::red();
-                break;
-            case semantic_text_theme::help:
-                _icon_widget->color = color::indigo();
-                break;
-            case semantic_text_theme::placeholder:
-                _icon_widget->color = color::gray();
-                break;
-            case semantic_text_theme::link:
-                _icon_widget->color = color::blue();
-                break;
-            default:
+            if (auto color = text_theme->color()) {
+                _icon_widget->color = *color;
+            } else {
                 _icon_widget->color = color::foreground();
             }
         });

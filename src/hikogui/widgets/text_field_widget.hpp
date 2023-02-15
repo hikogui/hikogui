@@ -73,7 +73,7 @@ public:
 
     /** The style of the text.
      */
-    observer<semantic_text_theme> text_theme = semantic_text_theme::label;
+    observer<text_theme> text_theme = tv<"text_field.text.style", hi::text_theme>{}();
 
     /** The alignment of the text.
      */
@@ -96,7 +96,7 @@ public:
      *
      * @param parent The owner of this widget.
      * @param value The value or `observer` value which represents the state of the text-field.
-     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_theme`.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `text_theme`.
      */
     text_field_widget(
         widget *parent,
@@ -150,7 +150,7 @@ private:
     {
         if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_theme>>) {
+        } else if constexpr (forward_of<decltype(first), observer<hi::text_theme>>) {
             text_theme = hi_forward(first);
         } else {
             hi_static_no_default();

@@ -24,7 +24,7 @@ namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept label_widget_attribute =
-    forward_of<Context, observer<hi::label>, observer<hi::alignment>, observer<hi::semantic_text_theme>>;
+    forward_of<Context, observer<hi::label>, observer<hi::alignment>, observer<hi::text_theme>>;
 
 /** The GUI widget displays and lays out text together with an icon.
  * @ingroup widgets
@@ -68,7 +68,7 @@ public:
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
-    observer<semantic_text_theme> text_theme = semantic_text_theme::label;
+    observer<text_theme> text_theme = tv<"label.text.style", hi::text_theme>{}();
 
     /** Construct a label widget.
      *
@@ -113,7 +113,7 @@ private:
             label = hi_forward(first);
         } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_theme>>) {
+        } else if constexpr (forward_of<decltype(first), observer<hi::text_theme>>) {
             text_theme = hi_forward(first);
         } else {
             hi_static_no_default();

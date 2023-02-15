@@ -22,7 +22,8 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
 
     _current_label_widget = std::make_unique<label_widget>(this, alignment, text_theme);
     _current_label_widget->mode = widget_mode::invisible;
-    _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, semantic_text_theme::placeholder);
+    _off_label_widget =
+        std::make_unique<label_widget>(this, off_label, alignment, tv<"selection.placeholder.text.style", hi::text_theme>{}());
 
     _overlay_widget = std::make_unique<overlay_widget>(this);
     _overlay_widget->mode = widget_mode::invisible;
@@ -43,7 +44,7 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
     this->delegate->init(*this);
 }
 
-[[nodiscard]] generator<widget const &> selection_widget::children(bool include_invisible) const noexcept
+[[nodiscard]] generator<widget const&> selection_widget::children(bool include_invisible) const noexcept
 {
     co_yield *_overlay_widget;
     co_yield *_current_label_widget;

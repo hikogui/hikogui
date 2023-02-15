@@ -68,7 +68,7 @@ void abstract_button_widget::draw_button(draw_context const& context) noexcept
 {
     hi_axiom(loop::main().on_thread());
     if (_pressed) {
-        return theme().color(semantic_color::fill, semantic_layer + 2);
+        return tv<"button.fill.pressed.color", color>{}(semantic_layer);
     } else {
         return super::background_color();
     }

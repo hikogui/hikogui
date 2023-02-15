@@ -11,6 +11,7 @@
 #include "../utility/module.hpp"
 #include "../color/module.hpp"
 #include "../text/text_theme.hpp"
+#include "../geometry/module.hpp"
 #include "../generator.hpp"
 #include <atomic>
 #include <map>
@@ -23,8 +24,9 @@ namespace detail {
 template<typename T>
 class theme_value_base {
 public:
+    static_assert(not std::is_trivially_copyable_v<T>, "This should use the template specialization");
+
     using value_type = T;
-    constexpr static auto is_lock_free = std::atomic<value_type>::is_always_lock_free;
 
     constexpr theme_value_base() noexcept = default;
     theme_value_base(theme_value_base const&) = delete;
@@ -34,33 +36,21 @@ public:
 
     void lock() noexcept
     {
-        if constexpr (not is_lock_free) {
-            return _mutex.lock();
-        }
+        return _mutex.lock();
     }
 
     void unlock() noexcept
     {
-        if constexpr (not is_lock_free) {
-            return _mutex.unlock();
-        }
-    }
-
-    value_type operator*() const noexcept
-        requires(is_lock_free)
-    {
-        return std::atomic_ref(_value).load(std::memory_order::relaxed);
+        return _mutex.unlock();
     }
 
     value_type const& operator*() const noexcept
-        requires(not is_lock_free)
     {
         hi_axiom(_mutex.is_locked());
         return _value;
     }
 
     value_type& operator*() noexcept
-        requires(not is_lock_free)
     {
         hi_axiom(_mutex.is_locked());
         return _value;
@@ -68,12 +58,8 @@ public:
 
     theme_value_base& operator=(value_type const& value) noexcept
     {
-        if constexpr (is_lock_free) {
-            std::atomic_ref(_value).store(value, std::memory_order::relaxed);
-        } else {
-            hi_axiom(_mutex.is_locked());
-            _value = value;
-        }
+        hi_axiom(_mutex.is_locked());
+        _value = value;
         return *this;
     }
 
@@ -97,8 +83,56 @@ protected:
     inline static std::map<std::string, theme_value_base *> _map;
 };
 
+template<trivially_copyable T>
+    requires std::atomic<T>::is_always_lock_free
+class theme_value_base<T> {
+public:
+    using value_type = T;
+
+    constexpr theme_value_base() noexcept = default;
+    theme_value_base(theme_value_base const&) = delete;
+    theme_value_base(theme_value_base&&) = delete;
+    theme_value_base& operator=(theme_value_base const&) = delete;
+    theme_value_base& operator=(theme_value_base&&) = delete;
+
+    void lock() noexcept {}
+
+    void unlock() noexcept {}
+
+    value_type operator*() const noexcept
+    {
+        return _value.load(std::memory_order::relaxed);
+    }
+
+    theme_value_base& operator=(value_type const& value) noexcept
+    {
+        _value.store(value, std::memory_order::relaxed);
+        return *this;
+    }
+
+    [[nodiscard]] static generator<theme_value_base&> get(std::string const& key) noexcept
+    {
+        hilet lock = std::scoped_lock(_map_mutex);
+
+        for (hilet & [ item_key, item_value ] : _map) {
+            if (pattern_match(key, item_key)) {
+                co_yield *item_value;
+            }
+        }
+    }
+
+private:
+    std::atomic<value_type> _value;
+
+protected:
+    inline static unfair_mutex _map_mutex;
+    inline static std::map<std::string, theme_value_base *> _map;
+};
+
+
+
 template<fixed_string Tag, typename T>
-class tagged_theme_value : theme_value_base<T> {
+class tagged_theme_value : public theme_value_base<T> {
 public:
     constexpr static auto tag = Tag;
 
@@ -127,21 +161,39 @@ inline auto global_theme_value = tagged_theme_value<Tag, T>{};
 template<fixed_string Tag, typename T>
 struct tv;
 
-template<fixed_string Tag>
-struct tv<Tag, float> {
-    [[nodiscard]] float operator()(float dpi_scale) const noexcept
+template<fixed_string Tag, std::floating_point T>
+struct tv<Tag, T> {
+    [[nodiscard]] T operator()(float dpi_scale) const noexcept
     {
         hilet& value = detail::global_theme_value<Tag, float>;
         hilet lock = std::scoped_lock(value);
-        return *value * dpi_scale;
+        return wide_cast<T>(*value * dpi_scale);
+    }
+};
+
+template<fixed_string Tag, std::integral T>
+struct tv<Tag, T> {
+    [[nodiscard]] T operator()(float dpi_scale) const noexcept
+    {
+        return narrow_cast<T>(std::ceil(tv<Tag, float>{}(dpi_scale)));
     }
 };
 
 template<fixed_string Tag>
-struct tv<Tag, int> {
-    [[nodiscard]] int operator()(float dpi_scale) const noexcept
+struct tv<Tag, extent2i> {
+    [[nodiscard]] extent2i operator()(float dpi_scale) const noexcept
     {
-        return narrow_cast<int>(std::ceil(tv<Tag, float>(dpi_scale)));
+        hilet tmp = tv<Tag, float>{}(dpi_scale);
+        return extent2i{tmp, tmp};
+    }
+};
+
+template<fixed_string Tag>
+struct tv<Tag, marginsi> {
+    [[nodiscard]] marginsi operator()(float dpi_scale) const noexcept
+    {
+        hilet tmp = tv<Tag, float>{}(dpi_scale);
+        return marginsi{tmp};
     }
 };
 

@@ -52,11 +52,11 @@ public:
 
     /** The alignment of the button and on/off/other label.
      */
-    observer<alignment> alignment;
+    observer<hi::alignment> alignment;
 
     /** The text style to button's label.
      */
-    observer<semantic_text_theme> text_theme = semantic_text_theme::label;
+    observer<hi::text_theme> text_theme = tv<"button.text.style", hi::text_theme>{}();
 
     notifier<void()> pressed;
 
@@ -134,7 +134,7 @@ protected:
             alignment = hi_forward(first);
             set_attributes<I>(hi_forward(rest)...);
 
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_theme>>) {
+        } else if constexpr (forward_of<decltype(first), observer<hi::text_theme>>) {
             text_theme = hi_forward(first);
             set_attributes<I>(hi_forward(rest)...);
 

@@ -74,7 +74,7 @@ public:
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
-    observer<semantic_text_theme> text_theme = semantic_text_theme::label;
+    observer<hi::text_theme> text_theme = tv<"text_field.text.style", hi::text_theme>{}();
 
     ~selection_widget();
 
@@ -91,7 +91,7 @@ public:
      * @param delegate The delegate which will control the selection widget.
      * @param first_attribute First of @a attributes.
      * @param attributes Different attributes used to configure the label's on the selection box:
-     *                   a `label`, `alignment` or `semantic_text_theme`. If an label is passed
+     *                   a `label`, `alignment` or `text_theme`. If an label is passed
      *                   it is used as the label to show in the off-state.
      */
     selection_widget(
@@ -113,7 +113,7 @@ public:
      *                    labels. The keys are of the same type as the @a value.
      *                    The labels are of type `label`.
      * @param attributes Different attributes used to configure the label's on the selection box:
-     *                   a `label`, `alignment` or `semantic_text_theme`. If an label is passed
+     *                   a `label`, `alignment` or `text_theme`. If an label is passed
      *                   it is used as the label to show in the off-state.
      */
     template<
@@ -146,7 +146,7 @@ public:
      * @param off_value An optional off-value. This value is used to determine which
      *             value yields an 'off' state.
      * @param attributes Different attributes used to configure the label's on the selection box:
-     *                   a `label`, `alignment` or `semantic_text_theme`. If an label is passed
+     *                   a `label`, `alignment` or `text_theme`. If an label is passed
      *                   it is used as the label to show in the off-state.
      */
     template<
@@ -218,7 +218,7 @@ private:
             off_label = hi_forward(first);
         } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_theme>>) {
+        } else if constexpr (forward_of<decltype(first), observer<hi::text_theme>>) {
             text_theme = hi_forward(first);
         } else {
             hi_static_no_default();

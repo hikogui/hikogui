@@ -14,6 +14,5 @@ target_sources(hikogui PRIVATE
     text_shaper_char.hpp
     text_shaper_line_impl.cpp
     text_shaper_line.hpp
-    text_theme_impl.cpp
     text_theme.hpp
 )

@@ -23,6 +23,9 @@
     // Distance between widgets and between widgets and the border of the container.
     "*.margin": 5,
 
+    // Distance by how much the baseline is below the center.
+    "*.baseline":  9,
+
     // The line-width of a border.
     "*.border.width": 1,
 
@@ -33,13 +36,13 @@
     "*.size": 11,
 
     // The size of large widgets. Such as the minimum scroll bar size.
-    "*.size.large": 19,
+    "*.large.size": 19,
 
     // Size of icons inside a widget.
     "*.icon.size": 8,
 
     // Size of icons representing the length of an average word of a label's text.
-    "*.icon.size.large": 23,
+    "*.icon.large.size": 23,
 
     // Size of icons being inline with a label's text.
     "*.label.icon.size": 15,
@@ -71,7 +74,7 @@
     // A list of colors is used for nesting widgets inside containers.
 
     // Used for the background of widgets.
-    "*.color.fill": [
+    "*.fill": [
         [ 28,  28,  30],
         [ 44,  44,  46],
         [ 58,  58,  60],
@@ -79,7 +82,7 @@
     ],
     
     // Used for the border of widgets.
-    "*.color.border": [
+    "*.border": [
         [ 72,  72,  74],
         [ 99,  99, 102],
         [142, 142, 147],
@@ -87,8 +90,8 @@
     ],
 
     // Color for textual or primary elements like icons.
-    "*.color.primary": [250, 250, 255],
-    "*.color.secondary": [250, 250,  10],
+    "*.primary": [250, 250, 255],
+    "*.secondary": [250, 250,  10],
 
     // Accent color used by widgets, to show icons, hover and keyboard focus
     "*.color.accent": [ 10, 132, 255],

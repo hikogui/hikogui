@@ -11,6 +11,71 @@
 
 namespace hi { inline namespace v1 {
 
+[[nodiscard]] static color parse_theme_color(datum const& data)
+{
+    if (auto list = get_if<datum::vector_type>(&data)) {
+        hi_check(list->size() == 3 or list->size() == 4, "Color values must be 3 or 4 elements, got {}.", list->size());
+
+        hilet r = data[0];
+        hilet g = data[1];
+        hilet b = data[2];
+        hilet a = data.size() == 4 ? data[3] : (holds_alternative<long long>(r) ? datum{255} : datum{1.0});
+
+        if (holds_alternative<long long>(r) and holds_alternative<long long>(g) and holds_alternative<long long>(b) and
+            holds_alternative<long long>(a)) {
+            hilet r_ = get<long long>(r);
+            hilet g_ = get<long long>(g);
+            hilet b_ = get<long long>(b);
+            hilet a_ = get<long long>(a);
+
+            hi_check(r_ >= 0 and r_ <= 255, "integer red-color value not within 0 and 255");
+            hi_check(g_ >= 0 and g_ <= 255, "integer green-color value not within 0 and 255");
+            hi_check(b_ >= 0 and b_ <= 255, "integer blue-color value not within 0 and 255");
+            hi_check(a_ >= 0 and a_ <= 255, "integer alpha-color value not within 0 and 255");
+
+            return color_from_sRGB(
+                static_cast<uint8_t>(r_), static_cast<uint8_t>(g_), static_cast<uint8_t>(b_), static_cast<uint8_t>(a_));
+
+        } else if (
+            holds_alternative<double>(r) and holds_alternative<double>(g) and holds_alternative<double>(b) and
+            holds_alternative<double>(a)) {
+            hilet r_ = static_cast<float>(get<double>(r));
+            hilet g_ = static_cast<float>(get<double>(g));
+            hilet b_ = static_cast<float>(get<double>(b));
+            hilet a_ = static_cast<float>(get<double>(a));
+            hi_check(a_ >= 0.0 and a_ <= 1.0, "float alpha-color vlaue not within 0.0 and 1.0");
+
+            return hi::color(r_, g_, b_, a_);
+
+        } else {
+            throw parse_error(std::format("Expect all integers or all floating point numbers in a color, got {}.", data));
+        }
+
+    } else if (auto string = get_if<std::string>(&data)) {
+        hi_check(not string->empty() and string->front() == '#', "Color string value must start with '#', got {}.", string);
+        return color_from_sRGB(*string);
+    } else {
+        throw parse_error(std::format("Unexepected color value type, got {}.", data));
+    }
+}
+
+[[nodiscard]] static std::vector<color> parse_theme_colors(datum const& data)
+{
+    hi_assert(holds_alternative<datum::vector_type>(data));
+    hilet& list = get<datum::vector_type>(data);
+    hi_assert(not list.empty());
+
+    if (holds_alternative<long long>(list.front()) or holds_alternative<double>(list.front())) {
+        return {parse_theme_color(data)};
+    } else {
+        auto r = std::vector<color>{};
+        for (hilet& item : list) {
+            r.push_back(parse_theme_color(item));
+        }
+        return r;
+    }
+}
+
 [[nodiscard]] static font_weight parse_theme_font_weight(datum const& data)
 {
     if (auto i = get_if<long long>(&data)) {
@@ -89,70 +154,7 @@ namespace hi { inline namespace v1 {
     return r;
 }
 
-[[nodiscard]] static color parse_theme_color(datum const& data)
-{
-    if (auto list = get_if<datum::vector_type>(&data)) {
-        hi_check(list->size() == 3 or list->size() == 4, "Color values must be 3 or 4 elements, got {}.", list->size());
 
-        hilet r = data[0];
-        hilet g = data[1];
-        hilet b = data[2];
-        hilet a = data.size() == 4 ? data[3] : (holds_alternative<long long>(r) ? datum{255} : datum{1.0});
-
-        if (holds_alternative<long long>(r) and holds_alternative<long long>(g) and holds_alternative<long long>(b) and
-            holds_alternative<long long>(a)) {
-            hilet r_ = get<long long>(r);
-            hilet g_ = get<long long>(g);
-            hilet b_ = get<long long>(b);
-            hilet a_ = get<long long>(a);
-
-            hi_check(r_ >= 0 and r_ <= 255, "integer red-color value not within 0 and 255");
-            hi_check(g_ >= 0 and g_ <= 255, "integer green-color value not within 0 and 255");
-            hi_check(b_ >= 0 and b_ <= 255, "integer blue-color value not within 0 and 255");
-            hi_check(a_ >= 0 and a_ <= 255, "integer alpha-color value not within 0 and 255");
-
-            return color_from_sRGB(
-                static_cast<uint8_t>(r_), static_cast<uint8_t>(g_), static_cast<uint8_t>(b_), static_cast<uint8_t>(a_));
-
-        } else if (
-            holds_alternative<double>(r) and holds_alternative<double>(g) and holds_alternative<double>(b) and
-            holds_alternative<double>(a)) {
-            hilet r_ = static_cast<float>(get<double>(r));
-            hilet g_ = static_cast<float>(get<double>(g));
-            hilet b_ = static_cast<float>(get<double>(b));
-            hilet a_ = static_cast<float>(get<double>(a));
-            hi_check(a_ >= 0.0 and a_ <= 1.0, "float alpha-color vlaue not within 0.0 and 1.0");
-
-            return hi::color(r_, g_, b_, a_);
-
-        } else {
-            throw parse_error(std::format("Expect all integers or all floating point numbers in a color, got {}.", data));
-        }
-
-    } else if (auto string = get_if<std::string>(&data)) {
-        hi_check(not string->empty() and string->front() == '#', "Color string value must start with '#', got {}.", string);
-        return color_from_sRGB(*string);
-    } else {
-        throw parse_error(std::format("Unexepected color value type, got {}.", data));
-    }
-}
-
-[[nodiscard]] static std::vector<color> parse_theme_colors(datum const& data)
-{
-    hi_assert(holds_alternative<datum::vector_type>(data));
-    hilet& list = get<datum::vector_type>(data);
-    hi_assert(not list.empty());
-
-    if (holds_alternative<long long>(list.front()) or holds_alternative<double>(list.front())) {
-        return {parse_theme_color(data)};
-    } else {
-        auto r = std::vector<color>{};
-        for (hilet& item : list) {
-            r.push_back(parse_theme_color(item));
-        }
-        return r;
-    }
-}
 
 [[nodiscard]] static theme::value_type parse_theme_value(hi::font_book const& font_book, datum const& data)
 {
@@ -196,13 +198,13 @@ void static resolve_theme_references(theme::container_type& items)
 
     for (auto& [name, value] : items) {
         auto retry = max_recursion;
-        while (hilet reference = std::get_if<std::string>(&value)) {
-            hi_check(--retry != 0, "Maximum recursion depth reached when resolving reference '{}", *reference);
+        while (hilet ref = std::get_if<std::string>(&value)) {
+            hi_check(--retry != 0, "Maximum recursion depth reached when resolving reference '{}", *ref);
 
-            auto it = std::lower_bound(items.begin(), items.end(), *reference, [](hilet& item, hilet& value) {
+            auto it = std::lower_bound(items.begin(), items.end(), *ref, [](hilet& item, hilet& value) {
                 return item.first < value;
             });
-            hi_check(it != items.end() or it->first != *reference, "Could not find reference '{}' in theme file", *reference);
+            hi_check(it != items.end() or it->first != *ref, "Could not find reference '{}' in theme file", *ref);
             value = it->second;
         }
     }

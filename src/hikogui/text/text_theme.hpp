@@ -13,15 +13,18 @@
 
 namespace hi::inline v1 {
 
-
-
 class text_theme {
 public:
     constexpr text_theme() noexcept = default;
     constexpr text_theme(text_theme const&) noexcept = default;
     constexpr text_theme(text_theme&&) noexcept = default;
-    constexpr text_theme &operator=(text_theme const&) noexcept = default;
-    constexpr text_theme &operator=(text_theme&&) noexcept = default;
+    constexpr text_theme& operator=(text_theme const&) noexcept = default;
+    constexpr text_theme& operator=(text_theme&&) noexcept = default;
+
+    [[nodiscard]] constexpr static text_theme ui_theme() noexcept
+    {
+        return text_theme{intrinsic_t{}, 0};
+    }
 
     constexpr text_theme(intrinsic_t, uint16_t id) noexcept : _id(id)
     {
@@ -44,14 +47,25 @@ public:
         _themes[_id].clear();
     }
 
-    void set(std::vector<text_style> const &styles) noexcept
+    void set(std::vector<text_style> const& styles) noexcept
     {
         hilet lock = std::scoped_lock(_themes_mutex);
-        _themes[_id] = styles; 
+        _themes[_id] = styles;
+    }
+
+    /** Get the default color of text.
+     */
+    std::optional<hi::color> color() noexcept {
+        hilet lock = std::scoped_lock(_themes_mutex);
+        if (_themes[_id].empty()) {
+            return std::nullopt;
+        }
+
+        // The last style in a theme is the catch-all style.
+        return _themes[_id].back().color;
     }
 
 private:
-
     // 13-bit theme-id (0 through 8191).
     uint16_t _id;
 

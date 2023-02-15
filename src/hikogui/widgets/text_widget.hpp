@@ -29,7 +29,7 @@
 namespace hi { inline namespace v1 {
 
 template<typename Context>
-concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_theme>>;
+concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::text_theme>>;
 
 /** A text widget.
  *
@@ -70,7 +70,7 @@ public:
 
     /** The style of the text.
      */
-    observer<semantic_text_theme> text_theme = semantic_text_theme::label;
+    observer<hi::text_theme> text_theme = tv<"text.style", hi::text_theme>{}();
 
     ~text_widget();
 
@@ -94,7 +94,7 @@ public:
      *
      * @param parent The owner of this widget.
      * @param text The text to be displayed.
-     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_theme`.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `text_theme`.
      */
     text_widget(
         widget *parent,
@@ -174,7 +174,7 @@ private:
     {
         if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_theme>>) {
+        } else if constexpr (forward_of<decltype(first), observer<hi::text_theme>>) {
             text_theme = hi_forward(first);
         } else {
             hi_static_no_default();

@@ -21,7 +21,9 @@ text_field_widget::text_field_widget(widget *parent, std::shared_ptr<delegate_ty
     _text_widget = &_scroll_widget->make_widget<text_widget>(_text, alignment, text_theme);
     _text_widget->mode = widget_mode::partial;
 
-    _error_label_widget = std::make_unique<label_widget>(this, _error_label, alignment::top_left(), semantic_text_theme::error);
+    // XXX The error-label should use the text_phrasing::error.
+    _error_label_widget = std::make_unique<label_widget>(
+        this, _error_label, alignment::top_left(), tv<"text_field.error.text.style", hi::text_theme>{}());
 
     _continues_cbt = continues.subscribe([&](auto...) {
         ++global_counter<"text_field_widget:continues:constrain">;
@@ -177,17 +179,17 @@ hitbox text_field_widget::hitbox_test(point2i position) const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (not _error_label->empty()) {
-            return theme().text_theme(semantic_text_theme::error)->color;
+            return tv<"text_field.error.color", hi::color>{}(semantic_layer);
         } else if (*_text_widget->focus) {
-            return theme().color(semantic_color::accent);
+            return tv<"text_field.accent.color", hi::color>{}(semantic_layer);
         } else if (*hover) {
-            return theme().color(semantic_color::border, semantic_layer + 1);
+            return tv<"text_field.border.hover.color", hi::color>{}(semantic_layer);
         } else {
-            return theme().color(semantic_color::border, semantic_layer);
+            return tv<"text_field.border.color", hi::color>{}(semantic_layer);
         }
 
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return tv<"text_field.border.disabled.color", hi::color>{}(semantic_layer);
     }
 }
 

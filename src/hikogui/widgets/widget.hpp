@@ -16,6 +16,7 @@
 #include "../GUI/keyboard_focus_group.hpp"
 #include "../GUI/gui_event.hpp"
 #include "../GUI/widget_id.hpp"
+#include "../GUI/theme_value.hpp"
 #include "../layout/box_constraints.hpp"
 #include "../geometry/module.hpp"
 #include "../observer.hpp"
