@@ -14,13 +14,20 @@ concept character_attribute = std::same_as<Context, iso_639> or std::same_as<Con
     std::same_as<Context, language_tag> or std::same_as<Context, text_phrasing> or std::same_as<Context, text_theme>;
 
 struct character_attributes {
-    iso_639 language;
-    iso_3166 country;
-    text_phrasing phrasing;
-    text_theme theme;
+    iso_639 language = {};
+    iso_3166 region = {};
+    text_phrasing phrasing = {};
+    text_theme theme = {};
+
+    constexpr character_attributes() noexcept = default;
+    constexpr character_attributes(character_attributes const&) noexcept = default;
+    constexpr character_attributes(character_attributes&&) noexcept = default;
+    constexpr character_attributes& operator=(character_attributes const&) noexcept = default;
+    constexpr character_attributes& operator=(character_attributes&&) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(character_attributes const&, character_attributes const&) noexcept = default;
 
     template<character_attribute... Args>
-    character_attributes(Args const &...args) noexcept
+    character_attributes(Args const&...args) noexcept
     {
         add(args...);
     }
@@ -34,12 +41,12 @@ struct character_attributes {
 
     void add(iso_3166 const& arg) noexcept
     {
-        country = arg;
+        region = arg;
     }
 
     void add(text_phrasing const& arg) noexcept
     {
-        prasing = arg;
+        phrasing = arg;
     }
 
     void add(text_theme const& arg) noexcept
@@ -48,7 +55,7 @@ struct character_attributes {
     }
 
     template<character_attribute First, character_attribute Second, character_attribute... Rest>
-    void add(First const &first, Second const &second, Rest const &...rest) noexcept
+    void add(First const& first, Second const& second, Rest const&...rest) noexcept
     {
         add(first);
         add(second, rest...);

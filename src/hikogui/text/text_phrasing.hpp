@@ -207,4 +207,15 @@ enum class text_phrasing_mask : uint16_t {
     return to_bool(to_underlying(rhs));
 }
 
+/** Check if the text-phrasing is included in the text-phrasing-mask.
+ *
+ * @param lhs The text-phrasing-mask, i.e. the pattern.
+ * @param rhs The text-phrasing.
+ * @return True when the text-phrasing is part of the text-phrasing-mask.
+ */
+[[nodiscard]] constexpr bool matches(text_phrasing_mask const& lhs, text_phrasing const& rhs) noexcept
+{
+    return to_bool(lhs & to_text_phrasing_mask(rhs));
+}
+
 } // namespace hi::inline v1

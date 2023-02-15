@@ -19,19 +19,35 @@ namespace hi::inline v1 {
 class iso_15924 {
 public:
     constexpr iso_15924() noexcept : _v(999) {}
-    constexpr iso_15924(iso_15924 const &) noexcept = default;
-    constexpr iso_15924(iso_15924 &&) noexcept = default;
-    constexpr iso_15924 &operator=(iso_15924 const &) noexcept = default;
-    constexpr iso_15924 &operator=(iso_15924 &&) noexcept = default;
+    constexpr iso_15924(iso_15924 const&) noexcept = default;
+    constexpr iso_15924(iso_15924&&) noexcept = default;
+    constexpr iso_15924& operator=(iso_15924 const&) noexcept = default;
+    constexpr iso_15924& operator=(iso_15924&&) noexcept = default;
 
-    constexpr iso_15924(uint16_t number) : _v(number) {
+    constexpr iso_15924(uint16_t number) : _v(number)
+    {
         if (number > 999) {
             throw parse_error(std::format("Invalid script number '{}'", number));
         }
     }
 
-    iso_15924(unicode_script const &script) noexcept;
+    iso_15924(unicode_script const& script) noexcept;
     iso_15924(std::string_view code4);
+
+    constexpr iso_15924(intrinsic_t, uint16_t v) noexcept : _v(v)
+    {
+        hi_axiom(_v < 1000);
+    }
+
+    [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
+    {
+        return _v;
+    }
+
+    [[nodiscard]] constexpr uint16_t& intrinsic() noexcept
+    {
+        return _v;
+    }
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
@@ -45,7 +61,8 @@ public:
 
     /** Get the iso-15924 numeric value.
      */
-    [[nodiscard]] constexpr uint16_t number() const noexcept {
+    [[nodiscard]] constexpr uint16_t number() const noexcept
+    {
         return _v;
     }
 
@@ -59,7 +76,18 @@ public:
 
     [[nodiscard]] unicode_bidi_class writing_direction() const noexcept;
 
-    [[nodiscard]] constexpr friend bool operator==(iso_15924 const &lhs, iso_15924 const &rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(iso_15924 const& lhs, iso_15924 const& rhs) noexcept = default;
+
+    /** Check if rhs matches with lhs.
+     *
+     * @param lhs The script or wild-card.
+     * @param rhs The script.
+     * @return True when lhs is a wild-card or when lhs and rhs are equal.
+     */
+    [[nodiscard]] constexpr friend bool matches(iso_15924 const& lhs, iso_15924 const& rhs) noexcept
+    {
+        return lhs.empty() or lhs == rhs;
+    }
 
 private:
     uint16_t _v;
@@ -69,7 +97,7 @@ private:
 
 template<>
 struct std::hash<hi::iso_15924> {
-    [[nodiscard]] size_t operator()(hi::iso_15924 const &rhs) const noexcept
+    [[nodiscard]] size_t operator()(hi::iso_15924 const& rhs) const noexcept
     {
         return std::hash<uint16_t>{}(rhs.number());
     }

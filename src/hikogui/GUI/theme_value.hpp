@@ -9,6 +9,8 @@
 
 #include "../concurrency/module.hpp"
 #include "../utility/module.hpp"
+#include "../color/module.hpp"
+#include "../text/text_theme.hpp"
 #include "../generator.hpp"
 #include <atomic>
 #include <map>
@@ -159,10 +161,10 @@ struct tv<Tag, hi::color> {
 };
 
 template<fixed_string Tag>
-struct tv<Tag, text_theme_id> {
-    [[nodiscard]] float operator()() const noexcept
+struct tv<Tag, text_theme> {
+    [[nodiscard]] text_theme operator()() const noexcept
     {
-        hilet& value = detail::global_theme_value<Tag, text_theme_id>;
+        hilet& value = detail::global_theme_value<Tag, text_theme>;
         hilet lock = std::scoped_lock(value);
         return *value;
     }

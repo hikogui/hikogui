@@ -11,7 +11,6 @@
 #include "widget.hpp"
 #include "text_delegate.hpp"
 #include "../GUI/gui_event.hpp"
-#include "../text/semantic_text_theme.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../geometry/module.hpp"

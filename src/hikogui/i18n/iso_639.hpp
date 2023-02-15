@@ -50,7 +50,7 @@ public:
         return rhs;
     }
 
-        /** Get the letter at a specific position.
+    /** Get the letter at a specific position.
      *
      * @tparam I index
      * @param rhs The language code read from.
@@ -94,6 +94,18 @@ public:
         } catch (...) {
             throw parse_error(std::format("A ISO-639 language code must be 2 or 3 letters in length, got '{}'", str));
         }
+    }
+
+    constexpr iso_639(intrinsic_t, uint16_t v) noexcept : _v(v) {}
+
+    [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
+    {
+        return _v;
+    }
+
+    [[nodiscard]] constexpr uint16_t& intrinsic() noexcept
+    {
+        return _v;
     }
 
     /** Get the number of character.
@@ -155,6 +167,17 @@ public:
     /** Compare two language codes.
      */
     [[nodiscard]] constexpr friend auto operator<=>(iso_639 const& lhs, iso_639 const& rhs) noexcept = default;
+
+    /** Check if rhs matches with lhs.
+     *
+     * @param lhs The language or wild-card.
+     * @param rhs The language.
+     * @return True when lhs is a wild-card or when lhs and rhs are equal.
+     */
+    [[nodiscard]] constexpr friend bool matches(iso_639 const& lhs, iso_639 const& rhs) noexcept
+    {
+        return lhs.empty() or lhs == rhs;
+    }
 
 private:
     /**

@@ -13,9 +13,9 @@ namespace hi { inline namespace v1 {
 
 [[nodiscard]] static font_weight parse_theme_font_weight(datum const& data)
 {
-    if (auto i = get_if<long long>(data)) {
+    if (auto i = get_if<long long>(&data)) {
         return font_weight_from_int(*i);
-    } else if (auto s = get_if<std::string>(data)) {
+    } else if (auto s = get_if<std::string>(&data)) {
         return font_weight_from_string(*s);
     } else {
         throw parse_error(std::format("Unable to parse font weight, got {}.", data));
@@ -276,18 +276,18 @@ void theme::activate() const noexcept
 {
     // The items are sorted by least specific first.
     // That way more specific items will override the more specific theme values.
-    for (hilet & [ name, value ] : _items) {
-        if (auto colors = std::get_if<std::vector<hi::color>>(&value)) {
-            for (auto& theme_value : detail::theme_value_base<std::vector<hi::color>>::get(name)) {
+    for (hilet & [ item_name, item_value ] : _items) {
+        if (auto colors = std::get_if<std::vector<hi::color>>(&item_value)) {
+            for (auto& theme_value : detail::theme_value_base<std::vector<hi::color>>::get(item_name)) {
                 theme_value = *colors;
             }
 
-        } else if (auto size = std::get_if<float>(&value)) {
-            for (auto& theme_value : detail::theme_value_base<float>::get(name)) {
+        } else if (auto size = std::get_if<float>(&item_value)) {
+            for (auto& theme_value : detail::theme_value_base<float>::get(item_name)) {
                 theme_value = *size;
             }
 
-        } else if (auto text_styles = std::get_if<std::vector<text_style>>(&value)) {
+        } else if (auto text_styles = std::get_if<std::vector<text_style>>(&item_value)) {
             hi_not_implemented();
 
         } else {
