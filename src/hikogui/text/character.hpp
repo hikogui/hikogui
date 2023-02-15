@@ -36,12 +36,10 @@ struct character {
 
     /**
      * [20: 0] 21-bit: grapheme.
-     * [23:21] 3-bit: reserved '0'.
-     * [31:24] 8-bit: text theme.
-     * [47:32] 16-bit: iso-639 language.
-     * [57:48] 10-bit: iso-3166 country-code.
-     * [59:58] 2-bit: reserved '0'.
-     * [63:60] 4-bit: phrasing.
+     * [33:21] 13-bit: text theme.
+     * [37:34]  4-bit: phrasing.
+     * [47:38] 10-bit: iso-3166 country-code.
+     * [63:48] 16-bit: iso-639 language.
      */
     value_type _value;
 
@@ -49,14 +47,14 @@ struct character {
 
     constexpr static auto _grapheme_mask = uint64_t{0x1f'ffff};
     constexpr static auto _grapheme_shift = 0U;
-    constexpr static auto _text_theme_mask = uint64_t{0xff};
-    constexpr static auto _text_theme_shift = 24U;
-    constexpr static auto _language_mask = uint64_t{0xffff};
-    constexpr static auto _language_shift = 32U;
-    constexpr static auto _country_mask = uint64_t{0x3ff};
-    constexpr static auto _country_shift = 48U;
+    constexpr static auto _text_theme_mask = uint64_t{0x1fff};
+    constexpr static auto _text_theme_shift = 21U;
     constexpr static auto _phrasing_mask = uint64_t{0xf};
-    constexpr static auto _phrasing_shift = 60U;
+    constexpr static auto _phrasing_shift = 34U;
+    constexpr static auto _country_mask = uint64_t{0x3ff};
+    constexpr static auto _country_shift = 38U;
+    constexpr static auto _language_mask = uint64_t{0xffff};
+    constexpr static auto _language_shift = 48U;
 
     constexpr character() noexcept = default;
     constexpr character(character const&) noexcept = default;
