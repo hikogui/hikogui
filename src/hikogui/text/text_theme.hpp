@@ -11,4 +11,14 @@
 
 namespace hi::inline v1 {
 
+
+
+class text_theme {
+public:
+    text_theme
+
+private:
+    uint16_t _id;
+};
+
 } // namespace hi::inline v1
