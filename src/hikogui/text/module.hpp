@@ -74,16 +74,16 @@ Markup
 String literals and text in translation files may contain markup codes to control how
 text is displayed.
 
-The markup in string literals are prefixed with a tilde '~'.
+The markup in string literals are surrounded by square brackets '[' and ']'.
 The commands are:
 
   Code                        | Description
  :--------------------------- |:----------------------------------------------------------------
-  '~' [a-z] ' '               | Select phrasing.
-  '~' [0-9]+ ' '              | Select text-theme.
-  '~' <ietf language tag> ' ' | Select language.
-  '~' '.' ' '                 | Set phrasing, text-theme and language back to default.
-  '~' '~'                     | Literal '~'.
+  '[' [a-z] ']'               | Select phrasing.
+  '[' [0-9]+ ']'              | Select text-theme.
+  '[' <ietf language tag> ']' | Select language.
+  '[' '.' ']'                 | Set phrasing, text-theme and language back to default.
+  '[' '['                     | Literal '~'.
 
 All other combination with brackets is reserved.
 

@@ -123,7 +123,7 @@ using text_view = std::basic_string_view<character>;
     auto capture = std::string{};
     for (hilet c : str) {
         if (in_command) {
-            if (c == ' ') {
+            if (c == ']') {
                 try {
                     if (capture.empty()) {
                         throw parse_error("Empty markup command.");
@@ -157,24 +157,24 @@ using text_view = std::basic_string_view<character>;
 
                 } catch (...) {
                     // Fallback by dislaying the original text.
-                    r += character{grapheme{'~'}, attributes};
+                    r += character{grapheme{'['}, attributes};
                     for (hilet c : capture) {
                         r += character{c, attributes};
                     }
-                    r += character{grapheme{' '}, attributes};
+                    r += character{grapheme{']'}, attributes};
                 }
 
                 capture.clear();
                 in_command = false;
 
-            } else if (c == '~') {
-                r += character{grapheme{'~'}, attributes};
+            } else if (c == '[') {
+                r += character{grapheme{'['}, attributes};
                 in_command = false;
 
             } else {
                 capture += c;
             }
-        } else if (c == '~') {
+        } else if (c == '[') {
             in_command = true;
         } else {
             r += character{c, attributes};
