@@ -14,6 +14,7 @@
 #include "../text/text_cursor.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
+#include "../font/module.hpp"
 #include "../color/module.hpp"
 #include "../widgets/widget_layout.hpp"
 #include "../vector_span.hpp"
@@ -22,7 +23,6 @@
 namespace hi { inline namespace v1 {
 class gfx_device;
 class gfx_device_vulkan;
-class glyph_ids;
 struct paged_image;
 
 /** The side where the border is drawn.
@@ -377,11 +377,11 @@ public:
      * @param glyph The glyphs to draw.
      * @param attributes The drawing attributes to use.
      */
-    void draw_glyph(widget_layout const& layout, quad const& box, glyph_ids const& glyph, draw_attributes const& attributes)
+    void draw_glyph(widget_layout const& layout, quad const& box, hi::font const &font, glyph_id glyph, draw_attributes const& attributes)
         const noexcept
     {
         return _draw_glyph(
-            layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, glyph, attributes);
+            layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, font, glyph, attributes);
     }
 
     /** Draw a glyph.
@@ -392,10 +392,10 @@ public:
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_quad_shape Shape, draw_attribute... Attributes>
-    void draw_glyph(widget_layout const& layout, Shape const& box, glyph_ids const& glyph, Attributes const&...attributes)
+    void draw_glyph(widget_layout const& layout, Shape const& box, hi::font const &font, glyph_id glyph, Attributes const&...attributes)
         const noexcept
     {
-        return draw_glyph(layout, make_quad(box), glyph, draw_attributes{attributes...});
+        return draw_glyph(layout, make_quad(box), font, glyph, draw_attributes{attributes...});
     }
 
     /** Draw shaped text.
@@ -684,7 +684,8 @@ private:
     void _draw_glyph(
         aarectanglei const& clipping_rectangle,
         quad const& box,
-        glyph_ids const& glyph,
+        hi::font const &font,
+        glyph_id const& glyph,
         draw_attributes const& attributes) const noexcept;
 
     [[nodiscard]] bool _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;

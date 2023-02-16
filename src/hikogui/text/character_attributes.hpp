@@ -27,35 +27,35 @@ struct character_attributes {
     [[nodiscard]] constexpr friend bool operator==(character_attributes const&, character_attributes const&) noexcept = default;
 
     template<character_attribute... Args>
-    character_attributes(Args const&...args) noexcept
+    constexpr character_attributes(Args const&...args) noexcept
     {
         add(args...);
     }
 
-    void add() noexcept {}
+    constexpr void add() noexcept {}
 
-    void add(iso_639 const& arg) noexcept
+    constexpr void add(iso_639 const& arg) noexcept
     {
         language = arg;
     }
 
-    void add(iso_3166 const& arg) noexcept
+    constexpr void add(iso_3166 const& arg) noexcept
     {
         region = arg;
     }
 
-    void add(text_phrasing const& arg) noexcept
+    constexpr void add(text_phrasing const& arg) noexcept
     {
         phrasing = arg;
     }
 
-    void add(text_theme const& arg) noexcept
+    constexpr void add(text_theme const& arg) noexcept
     {
         theme = arg;
     }
 
     template<character_attribute First, character_attribute Second, character_attribute... Rest>
-    void add(First const& first, Second const& second, Rest const&...rest) noexcept
+    constexpr void add(First const& first, Second const& second, Rest const&...rest) noexcept
     {
         add(first);
         add(second, rest...);

@@ -65,24 +65,6 @@
     <Type Name="hi::v1::font">
         <DisplayString>{family_name} - {sub_family_name}</DisplayString>
     </Type>
-    <Type Name="hi::v1::glyph_ids">
-        <DisplayString Condition="(static_cast&lt;size_t&gt;(_ptr) &amp; 15) == 1">[] {*_font}</DisplayString>
-        <DisplayString Condition="(static_cast&lt;size_t&gt;(_ptr) &amp; 15) == 3">[{static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 16) &amp; 0xffff)}] {*_font}</DisplayString>
-        <DisplayString Condition="(static_cast&lt;size_t&gt;(_ptr) &amp; 15) == 5">[{static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 16) &amp; 0xffff)}, {static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 32) &amp; 0xffff)}] {*_font}</DisplayString>
-        <DisplayString Condition="(static_cast&lt;size_t&gt;(_ptr) &amp; 15) == 7">[{static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 16) &amp; 0xffff)}, {static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 32) &amp; 0xffff)}, {static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 48) &amp; 0xffff)}] {*_font}</DisplayString>
-        <DisplayString Condition="(static_cast&lt;size_t&gt;(_ptr) &amp; 1) == 0">{*_ptr} {*_font}</DisplayString>
-        <Expand>
-            <Item Name="[font]">*_font</Item>
-            <Item Name="[num_glyphs]" Condition="(static_cast&lt;size_t&gt;(_ptr) &amp; 1) == 1">static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 1) &amp; 3)</Item>
-            <Item Name="[num_glyphs]" Condition="(static_cast&lt;size_t&gt;(_ptr) &amp; 1) == 0">_ptr->_num_glyphs</Item>
-            <Item Name="[num_graphemes]" Condition="(static_cast&lt;size_t&gt;(_ptr) &amp; 1) == 1">static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 4) &amp; 15)</Item>
-            <Item Name="[num_graphemes]" Condition="(static_cast&lt;size_t&gt;(_ptr) &amp; 1) == 0">_ptr->_num_graphemes</Item>
-            <Item Name="[0]" Condition="((static_cast&lt;size_t&gt;(_ptr) &amp; 1) == 1) &amp;&amp; ((static_cast&lt;size_t&gt;(_ptr) &amp; 15) &gt;= 3)">static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 16) &amp; 0xffff)</Item>
-            <Item Name="[1]" Condition="((static_cast&lt;size_t&gt;(_ptr) &amp; 1) == 1) &amp;&amp; ((static_cast&lt;size_t&gt;(_ptr) &amp; 15) &gt;= 5)">static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 32) &amp; 0xffff)</Item>
-            <Item Name="[2]" Condition="((static_cast&lt;size_t&gt;(_ptr) &amp; 1) == 1) &amp;&amp; ((static_cast&lt;size_t&gt;(_ptr) &amp; 15) &gt;= 7)">static_cast&lt;int&gt;((static_cast&lt;size_t&gt;(_ptr) >> 48) &amp; 0xffff)</Item>
-            <ExpandedItem Condition="static_cast&lt;size_t&gt;(_ptr) &amp; 1 == 0">_ptr->_glyphs</ExpandedItem>
-        </Expand>
-    </Type>
     <Type Name="hi::v1::alignment">
         <DisplayString Condition="_value == 0x00">none-none</DisplayString>
         <DisplayString Condition="_value == 0x01">none-flush</DisplayString>

@@ -3,18 +3,23 @@
 #pragma once
 
 #include "character.hpp"
+#include "character_attributes.hpp"
+#include "../unicode/gstring.hpp"
+#include "../i18n/language_tag.hpp"
+#include "../utility/module.hpp"
 #include <string>
 #include <string_view>
+#include <algorithm>
 
 template<>
 class std::char_traits<hi::character> {
+public:
     using char_type = hi::character;
     using int_type = uint64_t;
     using off_type = size_t;
     using pos_type = size_t;
-    using state_type;
 
-    static constexpr void assign(char_type& p, size_t count, char_type const& a) noexcept
+    static constexpr void assign(char_type& r, char_type const& a) noexcept
     {
         r = a;
     }
@@ -56,8 +61,8 @@ class std::char_traits<hi::character> {
 
     static constexpr int compare(const char_type *s1, const char_type *s2, std::size_t count) noexcept
     {
-        auto r = lexicographical_compare_three_way(s1, s1 + count, s2, s2 * count);
-        return r == std::string_ordering::equal ? 0 : r == std::strong_ordering::less ? -1 : 1;
+        auto r = std::lexicographical_compare_three_way(s1, s1 + count, s2, s2 + count);
+        return r == std::strong_ordering::equal ? 0 : r == std::strong_ordering::less ? -1 : 1;
     }
 
     static constexpr std::size_t length(const char_type *s) noexcept
@@ -82,7 +87,7 @@ class std::char_traits<hi::character> {
 
     static constexpr char_type to_char_type(int_type c) noexcept
     {
-        return char_type{intrinsic_t{}, c};
+        return char_type{hi::intrinsic_t{}, c};
     }
 
     static constexpr int_type to_int_type(char_type c) noexcept
@@ -114,7 +119,7 @@ namespace hi { inline namespace v1 {
 using text = std::basic_string<character>;
 using text_view = std::basic_string_view<character>;
 
-[[nodiscard]] constexpr text to_text_with_markup(std::gstring_view str, character_attributes default_attributes) noexcept
+[[nodiscard]] constexpr text to_text_with_markup(gstring_view str, character_attributes default_attributes) noexcept
 {
     auto r = text{};
     auto attributes = default_attributes;
@@ -141,15 +146,15 @@ using text_view = std::basic_string_view<character>;
                         // Get the text-theme.
                         auto theme_id = from_string<uint16_t>(capture);
                         if (theme_id < 1000) {
-                            attributes.text_theme = hi::text_theme{override_t{}, theme_id};
+                            attributes.theme = hi::text_theme{intrinsic_t{}, theme_id};
                         } else {
                             throw parse_error("Invalid markup text theme-id");
                         }
 
                     } else if (capture.front() >= 'A' and capture.front() <= 'Z') {
                         auto language_tag = hi::language_tag{capture};
-                        attributes.language = language_tag.language();
-                        attributes.country = language_tag.country();
+                        attributes.language = language_tag.language;
+                        attributes.region = language_tag.region;
 
                     } else {
                         throw parse_error("Unknown markup command.");
@@ -158,8 +163,8 @@ using text_view = std::basic_string_view<character>;
                 } catch (...) {
                     // Fallback by dislaying the original text.
                     r += character{grapheme{'['}, attributes};
-                    for (hilet c : capture) {
-                        r += character{c, attributes};
+                    for (hilet cap_c : capture) {
+                        r += character{cap_c, attributes};
                     }
                     r += character{grapheme{']'}, attributes};
                 }
@@ -190,13 +195,13 @@ using text_view = std::basic_string_view<character>;
 }
 
 template<character_attribute... Attributes>
-[[nodiscard]] constexpr text to_text_with_markup(std::gstring_view str, Attributes const& attributes) noexcept
+[[nodiscard]] constexpr text to_text_with_markup(gstring_view str, Attributes const&... attributes) noexcept
 {
     return to_text_with_markup(str, character_attributes{attributes...});
 }
 
 template<character_attribute... Attributes>
-[[nodiscard]] constexpr text to_text_with_markup(std::string_view str, Attributes const& attributes) noexcept
+[[nodiscard]] constexpr text to_text_with_markup(std::string_view str, Attributes const&... attributes) noexcept
 {
     return to_text_with_markup(str, character_attributes{attributes...});
 }

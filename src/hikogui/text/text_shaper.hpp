@@ -8,6 +8,7 @@
 #include "text_shaper_line.hpp"
 #include "text_cursor.hpp"
 #include "text_theme.hpp"
+#include "text.hpp"
 #include "../layout/box_constraints.hpp"
 #include "../font/module.hpp"
 #include "../geometry/module.hpp"
@@ -83,21 +84,10 @@ public:
      */
     [[nodiscard]] text_shaper(
         hi::font_book& font_book,
-        gstring const& text,
-        text_style const& style,
+        hi::text const& text,
         float dpi_scale,
         hi::alignment alignment,
-        unicode_bidi_class text_direction,
-        unicode_script script = unicode_script::Common) noexcept;
-
-    [[nodiscard]] text_shaper(
-        hi::font_book& font_book,
-        std::string_view text,
-        text_style const& style,
-        float dpi_scale,
-        hi::alignment alignment,
-        unicode_bidi_class text_direction,
-        unicode_script script = unicode_script::Common) noexcept;
+        unicode_bidi_class text_direction) noexcept;
 
     [[nodiscard]] bool empty() const noexcept
     {
@@ -181,6 +171,7 @@ public:
         aarectangle rectangle,
         float baseline,
         extent2 sub_pixel_size,
+        float dpi_scale,
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
 
@@ -418,10 +409,6 @@ public:
 private:
     font_book *_font_book = nullptr;
 
-    /** The scaling factor to use to scale a font's size to match the physical pixels on the display.
-     */
-    float _dpi_scale;
-
     /** A list of character in logical order.
      *
      * @note Graphemes are not allowed to be typographical-ligatures.
@@ -455,10 +442,6 @@ private:
     /** Direction of the text as a whole.
      */
     unicode_bidi_class _text_direction;
-
-    /** The default script of the text.
-     */
-    unicode_script _script;
 
     /** A list of lines top-to-bottom order.
      *
@@ -495,11 +478,17 @@ private:
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
      * @post Glyphs in _text are positioned inside the given rectangle.
      */
-    void position_glyphs(aarectangle rectangle, extent2 sub_pixel_size) noexcept;
+    void position_glyphs(aarectangle rectangle, extent2 sub_pixel_size, float dpi_scale) noexcept;
 
-    /** Resolve the script of each character in text.
+    /** Resolve the script of each character in the text.
      */
     void resolve_script() noexcept;
+
+    /** Resolve the fonts and widths of each character in the text.
+    * 
+    * @pre `resolve_script()` has been called.
+    */
+    void resolve_font_and_widths(float dpi_scale) noexcept;
 
     [[nodiscard]] std::pair<text_cursor, text_cursor>
     get_selection_from_break(text_cursor cursor, unicode_break_vector const& break_opportunities) const noexcept;

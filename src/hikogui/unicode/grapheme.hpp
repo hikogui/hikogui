@@ -76,12 +76,12 @@ struct grapheme {
 
     /** Encode a single code-point.
      */
-    constexpr explicit grapheme(char32_t code_point) noexcept : _value(truncate<value_type>(code_point))
+    constexpr grapheme(char32_t code_point) noexcept : _value(truncate<value_type>(code_point))
     {
         hi_axiom(code_point < _table_first);
     }
 
-    constexpr explicit grapheme(char ascii_char) noexcept : _value(truncate<value_type>(ascii_char))
+    constexpr grapheme(char ascii_char) noexcept : _value(truncate<value_type>(ascii_char))
     {
         hi_axiom(ascii_char >= 0 and ascii_char <= 0x7f);
     }

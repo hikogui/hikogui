@@ -6,8 +6,6 @@
 
 #include "font.hpp"
 #include "font_family_id.hpp"
-#include "font_grapheme_id.hpp"
-#include "glyph_ids.hpp"
 #include "elusive_icon.hpp"
 #include "hikogui_icon.hpp"
 #include "../unicode/grapheme.hpp"
@@ -30,6 +28,16 @@ namespace hi::inline v1 {
  */
 class font_book {
 public:
+    struct font_glyph_type {
+        hi::font const *font;
+        hi::glyph_id glyph;
+    };
+
+    struct font_glyphs_type {
+        hi::font const *font;
+        lean_vector<glyph_id> glyphs;
+    };
+
     static font_book& global() noexcept;
 
     ~font_book();
@@ -77,7 +85,7 @@ public:
     /** Find font family id.
      * This function will always return a valid font_family_id by walking the fallback-chain.
      */
-    [[nodiscard]] font_family_id find_family(std::string_view family_name) const noexcept;
+    [[nodiscard]] font_family_id find_family(std::string const &family_name) const noexcept;
 
     /** Register font family id.
      * If the family already exists the existing family_id is returned.
@@ -111,7 +119,7 @@ public:
      * @param italic If the font to select should be italic or not.
      * @return a font id, possibly from a fallback font.
      */
-    [[nodiscard]] font const& find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept;
+    [[nodiscard]] font const& find_font(std::string const &family_name, font_weight weight, bool italic) const noexcept;
 
     /** Find a glyph using the given code-point.
      * This function will find a glyph matching the grapheme in the selected font, or
@@ -121,59 +129,29 @@ public:
      * @param grapheme The Unicode grapheme to find in the font.
      * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] glyph_ids find_glyph(font const& font, grapheme grapheme) const noexcept;
+    [[nodiscard]] font_glyphs_type find_glyph(font const& font, grapheme grapheme) const noexcept;
 
-    [[nodiscard]] glyph_ids find_glyph(elusive_icon rhs) const noexcept
+    /** Find a glyph using the given code-point.
+     * This function will find a glyph matching the grapheme in the selected font, or
+     * find the glyph in the fallback font.
+     *
+     * @param font The font to use to find the grapheme in.
+     * @param grapheme The Unicode grapheme to find in the font.
+     * @return A list of glyphs which matched the grapheme.
+     */
+    [[nodiscard]] font_glyph_type find_glyph(font const& font, char32_t code_point) const noexcept;
+
+    [[nodiscard]] font_glyph_type find_glyph(elusive_icon rhs) const noexcept
     {
         hi_assert_not_null(_elusive_icon_font);
-        return {*_elusive_icon_font, _elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)})};
+        return find_glyph(*_elusive_icon_font, to_underlying(rhs));
     }
 
-    [[nodiscard]] glyph_ids find_glyph(hikogui_icon rhs) const noexcept
+    [[nodiscard]] font_glyph_type find_glyph(hikogui_icon rhs) const noexcept
     {
         hi_assert_not_null(_hikogui_icon_font);
-        return {*_hikogui_icon_font, _hikogui_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)})};
+        return find_glyph(*_hikogui_icon_font, to_underlying(rhs));
     }
-
-    struct estimate_run_result_type {
-        /** The resolved font to use for each grapheme.
-         *
-         * If a grapheme is not available to be displayed by a font, then
-         * a fallback font is searched. Use this particular font when
-         * text-shaping a run.
-         */
-        std::vector<font const *> fonts;
-
-        /** The estimated advance for each grapheme.
-         *
-         * This advance is used in the line folding algorithm.
-         */
-        std::vector<float> advances;
-
-        void reserve(size_t count) noexcept
-        {
-            fonts.reserve(count);
-            advances.reserve(count);
-        }
-
-        void scale(float s) noexcept
-        {
-            for (auto& advance : advances) {
-                advance *= s;
-            }
-        }
-    };
-
-    /** Estimate a run of text.
-     *
-     * This function is used by the text shaper to estimate the advance for
-     * each grapheme in a run (same style, size, color, font, language, script).
-     * 
-     * @param The font for this run of text.
-     * @param run The run of text.
-     * @return A list of resolved fonts for each grapheme, A list of estimated advance for each grapheme.
-     */
-    [[nodiscard]] estimate_run_result_type estimate_run(font const& font, gstring run) const noexcept;
 
 private:
     inline static std::unique_ptr<font_book> _global = nullptr;
@@ -201,11 +179,6 @@ private:
      */
     mutable std::unordered_map<std::string, font_family_id> _family_name_cache;
 
-    /**
-     * Must be cleared when a new font is registered.
-     */
-    mutable std::unordered_map<font_grapheme_id, glyph_ids> _glyph_cache;
-
     [[nodiscard]] std::vector<hi::font *> make_fallback_chain(font_weight weight, bool italic) noexcept;
 
     /** Generate fallback font family names.
@@ -215,6 +188,11 @@ private:
     void create_family_name_fallback_chain() noexcept;
 };
 
+[[nodiscard]] inline font const &find_font(font_family_id family_id, font_variant variant) noexcept
+{
+    return font_book::global().find_font(family_id, variant);
+}
+
 /** Find a glyph using the given code-point.
  * This function will find a glyph matching the grapheme in the selected font, or
  * find the glyph in the fallback font.
@@ -223,17 +201,30 @@ private:
  * @param grapheme The Unicode grapheme to find in the font.
  * @return A list of glyphs which matched the grapheme.
  */
-[[nodiscard]] inline glyph_ids find_glyph(font const& font, grapheme grapheme) noexcept
+[[nodiscard]] inline auto find_glyph(font const& font, grapheme grapheme) noexcept
 {
     return font_book::global().find_glyph(font, grapheme);
 }
 
-[[nodiscard]] inline glyph_ids find_glyph(elusive_icon rhs) noexcept
+/** Find a glyph using the given code-point.
+ * This function will find a glyph matching the grapheme in the selected font, or
+ * find the glyph in the fallback font.
+ *
+ * @param font The font to use to find the grapheme in.
+ * @param grapheme The Unicode grapheme to find in the font.
+ * @return A list of glyphs which matched the grapheme.
+ */
+[[nodiscard]] inline auto find_glyph(font const& font, char32_t code_point) noexcept
+{
+    return font_book::global().find_glyph(font, code_point);
+}
+
+[[nodiscard]] inline auto find_glyph(elusive_icon rhs) noexcept
 {
     return font_book::global().find_glyph(rhs);
 }
 
-[[nodiscard]] inline glyph_ids find_glyph(hikogui_icon rhs) noexcept
+[[nodiscard]] inline auto find_glyph(hikogui_icon rhs) noexcept
 {
     return font_book::global().find_glyph(rhs);
 }

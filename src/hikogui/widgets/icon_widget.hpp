@@ -75,7 +75,7 @@ private:
     enum class icon_type { no, glyph, pixmap };
 
     icon_type _icon_type;
-    glyph_ids _glyph;
+    font_book::font_glyphs_type _glyph;
     paged_image _pixmap_backing;
     decltype(icon)::callback_token _icon_cbt;
     std::atomic<bool> _icon_has_modified = true;

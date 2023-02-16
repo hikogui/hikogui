@@ -245,9 +245,9 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
 
             r.glyphs.push_back(glyph_id);
             r.glyph_positions.push_back(glyph_position);
-            r.glyph_bounding_rectangles.push_back(glyph_bounding_rectangle);
+            r.glyph_rectangles.push_back(glyph_bounding_rectangle);
         }
-        r.grapheme_advances.push_back(grapheme_advance);
+        r.advances.push_back(grapheme_advance);
         r.glyph_count.push_back(glyphs.size());
     }
     return r;
@@ -255,7 +255,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
 
 void true_type_font::shape_run_kern(font::shape_run_result_type& shape_result) const
 {
-    hilet num_graphemes = shape_result.grapheme_advances.size();
+    hilet num_graphemes = shape_result.advances.size();
 
     auto total_kerning = translate2{};
     auto prev_glyph_id = hi::glyph_id{};
@@ -263,6 +263,7 @@ void true_type_font::shape_run_kern(font::shape_run_result_type& shape_result) c
     for (auto i = 0_uz; i != num_graphemes; ++i) {
         hilet num_glyphs_in_grapheme = shape_result.glyph_count[i];
         for (auto j = 0_uz; j != num_glyphs_in_grapheme; ++j, ++glyph_index) {
+            hi_axiom_bounds(glyph_index, shape_result.glyphs);
             auto glyph_id = shape_result.glyphs[glyph_index];
 
             if (prev_glyph_id) {
@@ -273,13 +274,17 @@ void true_type_font::shape_run_kern(font::shape_run_result_type& shape_result) c
                 total_kerning.x() += kerning.x();
             }
 
-            shape_result.glyph_bounding_rectangles[glyph_index] *= total_kerning;
+            hi_axiom_bounds(glyph_index, shape_result.glyph_rectangles);
+            shape_result.glyph_rectangles[glyph_index] *= total_kerning;
+
+            hi_axiom_bounds(glyph_index, shape_result.glyph_positions);
             shape_result.glyph_positions[glyph_index] *= total_kerning;
 
             prev_glyph_id = glyph_id;
         }
 
-        shape_result.grapheme_advances[i] += total_kerning.x();
+        hi_axiom_bounds(i, shape_result.advances);
+        shape_result.advances[i] += total_kerning.x();
     }
 }
 

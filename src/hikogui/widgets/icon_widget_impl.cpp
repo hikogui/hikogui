@@ -37,7 +37,7 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
                 process_event({gui_event_type::window_reconstrain});
             }
 
-        } else if (hilet g1 = std::get_if<glyph_ids>(&icon.read())) {
+        } else if (hilet g1 = std::get_if<font_book::font_glyphs_type>(&icon.read())) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_theme(semantic_text_theme::label)->size * theme().scale;

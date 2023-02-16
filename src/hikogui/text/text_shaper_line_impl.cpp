@@ -24,7 +24,7 @@ text_shaper_line::text_shaper_line(
         // Only calculate line metrics based on visible characters.
         // For example a paragraph separator is seldom available in a font.
         if (is_visible(it->description->general_category())) {
-            this->metrics = max(metrics, it->font_metrics());
+            this->metrics = max(metrics, it->font->metrics);
             last_visible_it = it;
         }
     }
@@ -41,38 +41,53 @@ text_shaper_line::text_shaper_line(
     }
 }
 
-static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::iterator first, text_shaper_line::column_vector::iterator last) noexcept
+static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::iterator first, text_shaper_line::column_vector::iterator last, float dpi_scale) noexcept
 {
     hi_axiom(first != last);
 
     hilet char_it = *first;
-    hilet& font = char_it->glyph.font();
+    hilet& font = *char_it->font;
+    hilet attributes = char_it->character.attributes();
     hilet script = char_it->script;
-    hilet language = iso_639{};
+    hilet style = char_it->style;
 
     auto run = gstring{};
     run.reserve(std::distance(first, last));
     for (auto it = first; it != last; ++it) {
-        run += (*it)->grapheme;
+        run += (*it)->character.grapheme();
     }
 
-    auto result = font.shape_run(language, script, run);
-    result.scale(char_it->scale);
-    hi_axiom(result.grapheme_advances.size() == run.size());
+    auto result = font.shape_run(attributes.language, script, run);
+    result.scale(style.size * dpi_scale);
+    hi_axiom(result.advances.size() == run.size());
     hi_axiom(result.glyph_count.size() == run.size());
 
     auto grapheme_index = 0_uz;
     auto glyph_index = 0_uz;
     for (auto it = first; it != last; ++it, ++grapheme_index) {
-        (*it)->position = p;
+        auto &c = **it;
 
-        p += vector2{result.grapheme_advances[grapheme_index], 0.0f};
+        c.position = p;
+        c.advance = result.advances[grapheme_index];
+        c.glyphs.clear();
+        c.glyph_rectangles.clear();
+
+        hilet glyph_count = result.glyph_count[grapheme_index];
+        for (auto j = 0_uz; j != glyph_count; ++j, ++glyph_index) {
+            hi_axiom_bounds(glyph_index, result.glyphs);
+            c.glyphs.push_back(result.glyphs[glyph_index]);
+
+            hi_axiom_bounds(glyph_index, result.glyph_rectangles);
+            c.glyph_rectangles.push_back(result.glyph_rectangles[glyph_index]);
+        }
+
+        p += vector2{c.advance, 0.0f};
     }
 }
 
 /**
  */
-static void advance_glyphs(text_shaper_line::column_vector& columns, float y) noexcept
+static void advance_glyphs(text_shaper_line::column_vector& columns, float y, float dpi_scale) noexcept
 {
     if (columns.empty()) {
         return;
@@ -85,18 +100,16 @@ static void advance_glyphs(text_shaper_line::column_vector& columns, float y) no
         hilet start_char_it = *run_start;
         hilet char_it = *it;
 
-        hilet same_font = &start_char_it->glyph.font() == &char_it->glyph.font();
-        hilet same_style = start_char_it->style == char_it->style;
-        hilet same_size = start_char_it->scale == char_it->scale;
-        hilet same_language = true;
+        hilet same_font = start_char_it->font == char_it->font;
+        hilet same_attributes = start_char_it->character.attributes() == char_it->character.attributes();
         hilet same_script = start_char_it->script == char_it->script;
 
-        if (not(same_font and same_style and same_size and same_language and same_script)) {
-            advance_glyphs_run(p, run_start, it);
+        if (not(same_font and same_attributes and same_script)) {
+            advance_glyphs_run(p, run_start, it, dpi_scale);
             run_start = it;
         }
     }
-    advance_glyphs_run(p, run_start, columns.end());
+    advance_glyphs_run(p, run_start, columns.end(), dpi_scale);
 }
 
 [[nodiscard]] static std::pair<float, size_t>
@@ -122,7 +135,7 @@ calculate_precise_width(text_shaper_line::column_vector& columns, unicode_bidi_c
             break;
         }
 
-        right_x = (*it)->position.x() + (*it)->metrics.advance;
+        right_x = (*it)->position.x() + (*it)->advance;
         if (not is_visible((*it)->description->general_category())) {
             ++num_white_space;
         }
@@ -220,7 +233,7 @@ create_bounding_rectangles(text_shaper_line::column_vector& columns, float y, fl
         if (next_it == columns.end()) {
             char_it->rectangle = {
                 point2{char_it->position.x(), y - descender},
-                point2{char_it->position.x() + char_it->metrics.advance, y + ascender}};
+                point2{char_it->position.x() + char_it->advance, y + ascender}};
         } else {
             hilet next_char_it = *next_it;
             char_it->rectangle = {point2{char_it->position.x(), y - descender}, point2{next_char_it->position.x(), y + ascender}};
@@ -228,10 +241,10 @@ create_bounding_rectangles(text_shaper_line::column_vector& columns, float y, fl
     }
 }
 
-void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept
+void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width, float dpi_scale) noexcept
 {
     // Reset the position and advance the glyphs.
-    advance_glyphs(columns, y);
+    advance_glyphs(columns, y, dpi_scale);
 
     // Calculate the precise width of the line.
     hilet[visible_width, num_internal_white_space] = calculate_precise_width(columns, paragraph_direction);

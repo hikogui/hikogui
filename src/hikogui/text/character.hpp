@@ -25,7 +25,7 @@ namespace hi { inline namespace v1 {
  *  - Grapheme; Used to select glyphs from the font.
  *  - Language; Used to select rules for ligatures and glyph positioning from a font.
  *              Spelling check and text-to-speech.
- *  - Country; Used for region specific spell check and selecting text-to-speech accents.
+ *  - region; Used for region specific spell check and selecting text-to-speech accents.
  *  - Script; Used to select ruled for ligatures and glyph positioning from a font.
  *            This is not available inside the character object but can be derived using
  *            unicode algorithms on a run of characters.
@@ -39,7 +39,7 @@ struct character {
      * [20: 0] 21-bit: grapheme.
      * [33:21] 13-bit: text theme.
      * [37:34]  4-bit: phrasing.
-     * [47:38] 10-bit: iso-3166 country-code.
+     * [47:38] 10-bit: iso-3166 region-code.
      * [63:48] 16-bit: iso-639 language.
      */
     value_type _value;
@@ -52,8 +52,8 @@ struct character {
     constexpr static auto _text_theme_shift = 21U;
     constexpr static auto _phrasing_mask = uint64_t{0xf};
     constexpr static auto _phrasing_shift = 34U;
-    constexpr static auto _country_mask = uint64_t{0x3ff};
-    constexpr static auto _country_shift = 38U;
+    constexpr static auto _region_mask = uint64_t{0x3ff};
+    constexpr static auto _region_shift = 38U;
     constexpr static auto _language_mask = uint64_t{0xffff};
     constexpr static auto _language_shift = 48U;
 
@@ -70,7 +70,7 @@ struct character {
         // [20: 0] 21-bit: grapheme.
         // [33:21] 13-bit: text theme.
         // [37:34]  4-bit: phrasing.
-        // [47:38] 10-bit: iso-3166 country-code.
+        // [47:38] 10-bit: iso-3166 region-code.
         // [63:48] 16-bit: iso-639 language.
         auto tmp = value_type{};
         tmp |= attributes.language.intrinsic();
@@ -126,11 +126,6 @@ struct character {
     }
 
     constexpr character(nullptr_t) noexcept : _value(0xff'ffff) {}
-
-    [[nodiscard]] constexpr hi::grapheme grapheme() const noexcept
-    {
-        return hi::grapheme{intrinsic_t{}, (_value >> _grapheme_shift) & _grapheme_mask};
-    }
 
     constexpr character& operator=(hi::grapheme grapheme) noexcept
     {
@@ -192,23 +187,23 @@ struct character {
         return *this;
     }
 
-    [[nodiscard]] constexpr iso_3166 country() const noexcept
+    [[nodiscard]] constexpr iso_3166 region() const noexcept
     {
-        return iso_3166{intrinsic_t{}, (_value >> _country_shift) & _country_mask};
+        return iso_3166{intrinsic_t{}, (_value >> _region_shift) & _region_mask};
     }
 
-    constexpr character& set_country(iso_3166 country) noexcept
+    constexpr character& set_region(iso_3166 region) noexcept
     {
-        hilet country_value = wide_cast<value_type>(country.intrinsic());
-        hi_axiom(country_value <= _country_mask);
-        _value &= ~(_country_mask << _country_shift);
-        _value |= country_value << _country_shift;
+        hilet region_value = wide_cast<value_type>(region.intrinsic());
+        hi_axiom(region_value <= _region_mask);
+        _value &= ~(_region_mask << _region_shift);
+        _value |= region_value << _region_shift;
         return *this;
     }
 
     constexpr character& set_language(hi::language_tag language_tag) noexcept
     {
-        return set_language(language_tag.language).set_country(language_tag.region);
+        return set_language(language_tag.language).set_region(language_tag.region);
     }
 
     [[nodiscard]] constexpr text_theme theme() const noexcept
@@ -230,7 +225,7 @@ struct character {
         // [20: 0] 21-bit: grapheme.
         // [33:21] 13-bit: text theme.
         // [37:34]  4-bit: phrasing.
-        // [47:38] 10-bit: iso-3166 country-code.
+        // [47:38] 10-bit: iso-3166 region-code.
         // [63:48] 16-bit: iso-639 language.
         auto tmp = _value;
         tmp >>= 21;
@@ -238,9 +233,9 @@ struct character {
         tmp >>= 13;
         hilet phrasing = static_cast<text_phrasing>(tmp & _phrasing_mask);
         tmp >>= 4;
-        hilet region = iso_3166{intrinsic_t{}, tmp & _country_mask};
+        hilet region = iso_3166{intrinsic_t{}, tmp & _region_mask};
         tmp >>= 10;
-        hilet language = iso_639{intrinsic_t{}, tmp};
+        hilet language = iso_639{intrinsic_t{}, narrow_cast<uint16_t>(tmp)};
         return character_attributes{language, region, phrasing, theme};
     }
 
@@ -249,7 +244,7 @@ struct character {
         // [20: 0] 21-bit: grapheme.
         // [33:21] 13-bit: text theme.
         // [37:34]  4-bit: phrasing.
-        // [47:38] 10-bit: iso-3166 country-code.
+        // [47:38] 10-bit: iso-3166 region-code.
         // [63:48] 16-bit: iso-639 language.
         auto tmp = value_type{};
         tmp |= attributes.language.intrinsic();

@@ -32,6 +32,8 @@ public:
     }
 
     iso_15924(unicode_script const& script) noexcept;
+    explicit operator unicode_script() const noexcept;
+
     iso_15924(std::string_view code4);
 
     constexpr iso_15924(intrinsic_t, uint16_t v) noexcept : _v(v)

@@ -143,7 +143,6 @@ void font_book::register_font_directory(std::filesystem::path const& path, bool 
 void font_book::post_process() noexcept
 {
     // Reset caches and fallback chains.
-    _glyph_cache.clear();
     _family_name_cache = _family_names;
 
     // Sort the list of fonts based on the amount of unicode code points it supports.
@@ -229,15 +228,15 @@ void font_book::post_process() noexcept
     }
 }
 
-[[nodiscard]] font_family_id font_book::find_family(std::string_view family_name) const noexcept
+[[nodiscard]] font_family_id font_book::find_family(std::string const &family_name) const noexcept
 {
-    for (auto name : generate_family_names(family_name)) {
-        if (hilet it = _family_name_cache.find(name); it != _family_name_cache.end()) {
-            return it->second;
-        }
+    if (hilet it = _family_name_cache.find(family_name); it != _family_name_cache.end()) {
+        return it->second;
+    }
 
+    for (auto name : generate_family_names(family_name)) {
         if (hilet it = _family_names.find(name); it != _family_names.end()) {
-            _family_name_cache[name] = it->second;
+            _family_name_cache[family_name] = it->second;
             return it->second;
         }
     }
@@ -264,51 +263,47 @@ void font_book::post_process() noexcept
     return find_font(family_id, font_variant(weight, italic));
 }
 
-[[nodiscard]] font const& font_book::find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept
+[[nodiscard]] font const& font_book::find_font(std::string const &family_name, font_weight weight, bool italic) const noexcept
 {
     return find_font(find_family(family_name), weight, italic);
 }
 
-[[nodiscard]] glyph_ids font_book::find_glyph(hi::font const& font, grapheme g) const noexcept
+[[nodiscard]] font_book::font_glyphs_type font_book::find_glyph(hi::font const& font, grapheme g) const noexcept
 {
-    auto key = font_grapheme_id{font, g};
-
-    auto i = _glyph_cache.find(key);
-    if (i != _glyph_cache.end()) {
-        return i->second;
-    }
-
     // First try the selected font.
     if (hilet glyph_ids = font.find_glyph(g); not glyph_ids.empty()) {
-        return _glyph_cache[key] = hi::glyph_ids{font, glyph_ids};
+        return {&font, std::move(glyph_ids)};
     }
 
     // Scan fonts which are fallback to this.
     for (hilet fallback : font.fallback_chain) {
         hi_axiom_not_null(fallback);
         if (hilet glyph_ids = fallback->find_glyph(g); not glyph_ids.empty()) {
-            return _glyph_cache[key] = hi::glyph_ids{*fallback, glyph_ids};
+            return {fallback, std::move(glyph_ids)};
         }
     }
 
     // If all everything has failed, use the tofu block of the original font.
-    return _glyph_cache[key] = hi::glyph_ids{font, glyph_id{0}};
+    return {&font, {glyph_id{0}}};
 }
 
-[[nodiscard]] font_book::estimate_run_result_type font_book::estimate_run(font const& font, gstring run) const noexcept
+[[nodiscard]] font_book::font_glyph_type font_book::find_glyph(hi::font const& font, char32_t code_point) const noexcept
 {
-    auto r = estimate_run_result_type{};
-    r.reserve(run.size());
-
-    for (hilet grapheme: run) {
-        hilet glyphs = find_glyph(font, grapheme);
-        hilet &actual_font = glyphs.font();
-
-        r.fonts.push_back(&actual_font);
-        r.advances.push_back(actual_font.get_advance(get<0>(glyphs)));
+    // First try the selected font.
+    if (hilet glyph_id = font.find_glyph(code_point)) {
+        return {&font, glyph_id};
     }
 
-    return r;
+    // Scan fonts which are fallback to this.
+    for (hilet fallback : font.fallback_chain) {
+        hi_axiom_not_null(fallback);
+        if (hilet glyph_id = fallback->find_glyph(code_point)) {
+            return {fallback, glyph_id};
+        }
+    }
+
+    // If all everything has failed, use the tofu block of the original font.
+    return {&font, glyph_id{0}};
 }
 
 } // namespace hi::inline v1

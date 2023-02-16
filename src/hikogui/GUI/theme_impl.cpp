@@ -52,7 +52,7 @@ namespace hi { inline namespace v1 {
         }
 
     } else if (auto string = get_if<std::string>(&data)) {
-        hi_check(not string->empty() and string->front() == '#', "Color string value must start with '#', got {}.", string);
+        hi_check(not string->empty() and string->front() == '#', "Color string value must start with '#', got {}.", data);
         return color_from_sRGB(*string);
     } else {
         throw parse_error(std::format("Unexepected color value type, got {}.", data));

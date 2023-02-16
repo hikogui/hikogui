@@ -111,14 +111,14 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
         char_its.end(),
         [&](text_shaper::char_const_iterator it) {
             if (it != text.end()) {
-                return std::make_pair(it->grapheme[0], it->description);
+                return std::make_pair(get<0>(it->character.grapheme()), it->description);
             } else {
                 return std::make_pair(unicode_LS, &unicode_description::find(unicode_LS));
             }
         },
         [&](text_shaper::char_iterator it, char32_t code_point) {
             hi_axiom(it != text.end());
-            it->replace_glyph(code_point);
+            it->bidi_character.set_grapheme(grapheme{code_point});
         },
         [&](text_shaper::char_iterator it, unicode_bidi_class direction) {
             if (it != text.end()) {
@@ -172,32 +172,43 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
     }
 }
 
+void text_shaper::resolve_font_and_widths(float dpi_scale) noexcept
+{
+    for (auto& c : _text) {
+        hilet attributes = c.character.attributes();
+
+        c.style = attributes.theme(attributes.phrasing, attributes.language, attributes.region, c.script);
+        hilet& style_font = find_font(c.style.family_id, c.style.variant);
+
+        hilet [actual_font, glyphs] = find_glyph(style_font, c.character.grapheme());
+
+        c.font = actual_font;
+        c.width = actual_font->get_advance(glyphs[0]) * c.style.size * dpi_scale;
+    }
+}
+
 [[nodiscard]] text_shaper::text_shaper(
     hi::font_book& font_book,
-    gstring const& text,
-    text_theme const& style,
+    hi::text const& text,
     float dpi_scale,
     hi::alignment alignment,
-    unicode_bidi_class text_direction,
-    unicode_script script) noexcept :
-    _font_book(&font_book), _bidi_context(text_direction), _dpi_scale(dpi_scale), _alignment(alignment), _script(script)
+    unicode_bidi_class text_direction) noexcept :
+    _font_book(&font_book), _bidi_context(text_direction), _alignment(alignment)
 {
-    hilet& font = font_book.find_font(style->family_id, style->variant);
-    _initial_line_metrics = (style->size * dpi_scale) * font.metrics;
-
+    // Copy the text to an internal vector of characters.
     _text.reserve(text.size());
     for (hilet& c : text) {
-        hilet clean_c = c == '\n' ? grapheme{unicode_PS} : c;
-
-        auto& tmp = _text.emplace_back(clean_c, style, dpi_scale);
-        tmp.initialize_glyph(font_book, font);
+        _text.emplace_back(c == '\n' ? grapheme{unicode_PS} : c);
     }
+
+    resolve_script();
+    resolve_font_and_widths(dpi_scale);
 
     _text_direction = unicode_bidi_direction(
         _text.begin(),
         _text.end(),
         [](text_shaper::char_const_reference it) {
-            return std::make_pair(it.grapheme[0], it.description);
+            return std::make_pair(it.character.grapheme()[0], it.description);
         },
         _bidi_context);
 
@@ -220,20 +231,6 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
         hi_axiom(c.description != nullptr);
         return *c.description;
     });
-
-    resolve_script();
-}
-
-[[nodiscard]] text_shaper::text_shaper(
-    font_book& font_book,
-    std::string_view text,
-    text_theme const& style,
-    float dpi_scale,
-    hi::alignment alignment,
-    unicode_bidi_class text_direction,
-    unicode_script script) noexcept :
-    text_shaper(font_book, to_gstring(text), style, dpi_scale, alignment, text_direction, script)
-{
 }
 
 [[nodiscard]] text_shaper::line_vector text_shaper::make_lines(
@@ -275,7 +272,7 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
     return r;
 }
 
-void text_shaper::position_glyphs(aarectangle rectangle, extent2 sub_pixel_size) noexcept
+void text_shaper::position_glyphs(aarectangle rectangle, extent2 sub_pixel_size, float dpi_scale) noexcept
 {
     hi_assert(not _lines.empty());
 
@@ -283,60 +280,80 @@ void text_shaper::position_glyphs(aarectangle rectangle, extent2 sub_pixel_size)
     bidi_algorithm(_lines, _text, _bidi_context);
     for (auto& line : _lines) {
         // Position the glyphs on each line. Possibly morph glyphs to handle ligatures and calculate the bounding rectangles.
-        line.layout(_alignment.horizontal(), rectangle.left(), rectangle.right(), sub_pixel_size.width());
+        line.layout(_alignment.horizontal(), rectangle.left(), rectangle.right(), sub_pixel_size.width(), dpi_scale);
     }
 }
 
 void text_shaper::resolve_script() noexcept
 {
     // Find the first script in the text if no script is found use the text_shaper's default script.
-    auto first_script = _script;
-    for (auto& c : _text) {
-        hilet script = c.description->script();
-        if (script != unicode_script::Common or script == unicode_script::Zzzz or script == unicode_script::Inherited) {
-            first_script = script;
-            break;
+    hilet first_script = [&]() {
+        // First pass, find a character from the Unicode description with a specific script.
+        for (hilet& c : _text) {
+            hilet script = c.description->script();
+            if (script != unicode_script::Common or script == unicode_script::Zzzz or script == unicode_script::Inherited) {
+                return script;
+            }
         }
-    }
+
+        // Second pass, find if the language or region is set manually.
+        for (hilet& c : _text) {
+            if (hilet language = c.character.language()) {
+                hilet tag = language_tag{language, c.character.region()}.expand();
+                if (hilet script = tag.script) {
+                    return static_cast<unicode_script>(script);
+                }
+            }
+        }
+        return unicode_script::Common;
+    }();
+
+    auto scripts = std::vector<unicode_script>(_text.size(), unicode_script::Common);
 
     // Backward pass: fix start of words and open-brackets.
     // After this pass unknown-script is no longer in the text.
     // Close brackets will not be fixed, those will be fixed in the last forward pass.
     auto word_script = unicode_script::Common;
     auto previous_script = first_script;
-    for (auto i = std::ssize(_text) - 1; i >= 0; --i) {
-        auto& c = _text[i];
+    for (auto i = _text.size(); i != 0; --i) {
+        hilet& c = _text[i - 1];
+        auto& script = scripts[i - 1];
 
-        if (_word_break_opportunities[i + 1] != unicode_break_opportunity::no) {
+        if (_word_break_opportunities[i] != unicode_break_opportunity::no) {
             word_script = unicode_script::Common;
         }
 
-        c.script = c.description->script();
-        if (c.script == unicode_script::Common or c.script == unicode_script::Zzzz) {
+        script = c.description->script();
+        if (script == unicode_script::Common or script == unicode_script::Zzzz) {
             hilet bracket_type = c.description->bidi_bracket_type();
             // clang-format off
-            c.script =
+            script =
                 bracket_type == unicode_bidi_bracket_type::o ? previous_script :
                 bracket_type == unicode_bidi_bracket_type::c ? unicode_script::Common :
                 word_script;
             // clang-format on
 
-        } else if (c.script != unicode_script::Inherited) {
-            previous_script = word_script = c.script;
+        } else if (script != unicode_script::Inherited) {
+            previous_script = word_script = script;
         }
     }
 
     // Forward pass: fix all common and inherited with previous or first script.
     previous_script = first_script;
     for (auto i = 0_uz; i != _text.size(); ++i) {
-        auto& c = _text[i];
+        hilet& c = _text[i];
+        auto& script = scripts[i];
 
-        if (c.script == unicode_script::Common or c.script == unicode_script::Inherited) {
-            c.script = previous_script;
+        if (script == unicode_script::Common or script == unicode_script::Inherited) {
+            script = previous_script;
 
         } else {
-            previous_script = c.script;
+            previous_script = script;
         }
+    }
+
+    for (auto i = 0_uz; i != _text.size(); ++i) {
+        _text[i].script = iso_15924{scripts[i]};
     }
 }
 
@@ -369,7 +386,7 @@ text_shaper::get_line_metrics(text_shaper::char_const_iterator first, text_shape
         // Only calculate line metrics based on visible characters.
         // For example a paragraph separator is seldom available in a font.
         if (is_visible(it->description->general_category())) {
-            inplace_max(metrics, it->font_metrics());
+            inplace_max(metrics, it->font->metrics);
         }
     }
 
@@ -489,13 +506,14 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     aarectangle rectangle,
     float baseline,
     extent2 sub_pixel_size,
+    float dpi_scale,
     float line_spacing,
     float paragraph_spacing) noexcept
 {
     _rectangle = rectangle;
     _lines = make_lines(rectangle, baseline, sub_pixel_size, line_spacing, paragraph_spacing);
     hi_assert(not _lines.empty());
-    position_glyphs(rectangle, sub_pixel_size);
+    position_glyphs(rectangle, sub_pixel_size, dpi_scale);
 }
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::get_it(size_t index) const noexcept

@@ -87,7 +87,7 @@ draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& bo
         return false;
     }
 
-    auto &pipeline = *down_cast<gfx_device_vulkan&>(device).image_pipeline;
+    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).image_pipeline;
     pipeline.place_vertices(*_image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
     return true;
 }
@@ -95,11 +95,12 @@ draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& bo
 void draw_context::_draw_glyph(
     aarectanglei const& clipping_rectangle,
     quad const& box,
-    glyph_ids const& glyph,
+    font const& font,
+    glyph_id const& glyph,
     draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
-    auto &pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
+    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
 
     if (_sdf_vertices->full()) {
         auto box_attributes = attributes;
@@ -109,8 +110,8 @@ void draw_context::_draw_glyph(
         return;
     }
 
-    hilet atlas_was_updated =
-        pipeline.place_vertices(*_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, glyph, attributes.fill_color);
+    hilet atlas_was_updated = pipeline.place_vertices(
+        *_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, font, glyph, attributes.fill_color);
 
     if (atlas_was_updated) {
         pipeline.prepare_atlas_for_rendering();
@@ -124,29 +125,37 @@ void draw_context::_draw_text(
     draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
-    auto &pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
+    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
 
     auto atlas_was_updated = false;
     for (hilet& c : text) {
-        hilet box = translate2{c.position} * c.metrics.bounding_rectangle;
-        hilet color = attributes.num_colors > 0 ? attributes.fill_color : quad_color{c.style.color};
-
         hi_assert_not_null(c.description);
         if (not is_visible(c.description->general_category())) {
             continue;
-
-        } else if (_sdf_vertices->full()) {
-            auto box_attributes = attributes;
-            box_attributes.fill_color = hi::color{1.0f, 0.0f, 1.0f}; // Magenta.
-            _draw_box(clipping_rectangle, box, box_attributes);
-            ++global_counter<"draw_glyph::overflow">;
-            break;
         }
 
-        atlas_was_updated |= pipeline.place_vertices(
-            *_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, c.glyph, color);
+        hilet color = attributes.num_colors > 0 ? attributes.fill_color : quad_color{c.style.color};
+        hi_axiom_not_null(c.font);
+        hilet& font = *c.font;
+
+        for (auto i = 0_uz; i != c.glyphs.size(); ++i) {
+            hilet glyph = c.glyphs[i];
+            hilet box = translate2{c.position} * c.glyph_rectangles[i];
+
+            if (_sdf_vertices->full()) {
+                auto box_attributes = attributes;
+                box_attributes.fill_color = hi::color{1.0f, 0.0f, 1.0f}; // Magenta.
+                _draw_box(clipping_rectangle, box, box_attributes);
+                ++global_counter<"draw_glyph::overflow">;
+                goto error;
+            }
+
+            atlas_was_updated |= pipeline.place_vertices(
+                *_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, font, glyph, color);
+        }
     }
 
+error:
     if (atlas_was_updated) {
         pipeline.prepare_atlas_for_rendering();
     }

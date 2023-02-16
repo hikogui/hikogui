@@ -272,6 +272,17 @@ constexpr auto iso_15924_code4_open_type_by_number_init() noexcept
     return r;
 }
 
+constexpr auto iso_15924_unicode_by_number_init() noexcept
+{
+    auto r = std::array<unicode_script, 1000>{};
+
+    for (hilet& info : iso_15924_infos) {
+        r[info.number] = info.unicode_script;
+    }
+
+    return r;
+}
+
 constexpr auto iso_15924_number_by_unicode_script_init() noexcept
 {
     auto r = std::array<uint16_t, 256>{};
@@ -305,10 +316,17 @@ constexpr auto iso_15924_number_by_code4_init() noexcept
 
 constexpr auto iso_15924_code4_by_number = iso_15924_code4_by_number_init();
 constexpr auto iso_15924_code4_open_type_by_number = iso_15924_code4_open_type_by_number_init();
+constexpr auto iso_15924_unicode_by_number = iso_15924_unicode_by_number_init();
 constexpr auto iso_15924_number_by_unicode_script = iso_15924_number_by_unicode_script_init();
 constexpr auto iso_15924_number_by_code4 = iso_15924_number_by_code4_init();
 
 iso_15924::iso_15924(hi::unicode_script const &script) noexcept : _v(iso_15924_number_by_unicode_script[to_underlying(script)]) {}
+
+iso_15924::operator unicode_script() const noexcept
+{
+    hi_axiom_bounds(_v, iso_15924_unicode_by_number);
+    return iso_15924_unicode_by_number[_v];
+}
 
 iso_15924::iso_15924(std::string_view code4)
 {

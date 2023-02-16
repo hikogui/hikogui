@@ -151,9 +151,9 @@ private:
 
     extent2i _button_size;
     aarectanglei _button_rectangle;
-    glyph_ids _check_glyph;
+    font_book::font_glyphs_type _check_glyph;
     aarectanglei _check_glyph_rectangle;
-    glyph_ids _minus_glyph;
+    font_book::font_glyphs_type _minus_glyph;
     aarectanglei _minus_glyph_rectangle;
 
     void draw_check_box(draw_context const& context) noexcept;

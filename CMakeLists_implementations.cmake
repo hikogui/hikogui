@@ -6,7 +6,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/concurrency/thread_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/font/font_book_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/font/font_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/font/glyph_ids_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/font/true_type_font_coverage_impl.cpp
     #${HIKOGUI_SOURCE_DIR}/font/true_type_font_GSUB_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/font/true_type_font_impl.cpp

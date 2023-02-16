@@ -20,11 +20,7 @@ public:
     constexpr text_theme(text_theme&&) noexcept = default;
     constexpr text_theme& operator=(text_theme const&) noexcept = default;
     constexpr text_theme& operator=(text_theme&&) noexcept = default;
-
-    [[nodiscard]] constexpr static text_theme ui_theme() noexcept
-    {
-        return text_theme{intrinsic_t{}, 0};
-    }
+    [[nodiscard]] constexpr friend bool operator==(text_theme const&, text_theme const&) = default;
 
     constexpr text_theme(intrinsic_t, uint16_t id) noexcept : _id(id)
     {
@@ -41,28 +37,33 @@ public:
         return _id;
     }
 
-    void clear() noexcept
-    {
-        hilet lock = std::scoped_lock(_themes_mutex);
-        _themes[_id].clear();
-    }
-
     void set(std::vector<text_style> const& styles) noexcept
     {
         hilet lock = std::scoped_lock(_themes_mutex);
+        hi_assert(not styles.empty());
         _themes[_id] = styles;
     }
 
-    /** Get the default color of text.
-     */
-    std::optional<hi::color> color() noexcept {
+    [[nodiscard]] text_style
+    operator()(text_phrasing phrasing, iso_639 language, iso_3166 region, iso_15924 script) const noexcept
+    {
         hilet lock = std::scoped_lock(_themes_mutex);
-        if (_themes[_id].empty()) {
-            return std::nullopt;
-        }
 
-        // The last style in a theme is the catch-all style.
-        return _themes[_id].back().color;
+        for (hilet& style : _themes[_id]) {
+            if (matches(style, phrasing, language, region, script)) {
+                return style;
+            }
+        }
+        hi_axiom(not _themes[_id].empty());
+        return _themes[_id].back();
+    }
+
+    /** Return the default text style.
+     */
+    [[nodiscard]] text_style operator*() const noexcept
+    {
+        hilet lock = std::scoped_lock(_themes_mutex);
+        return _themes[_id].back();
     }
 
 private:
