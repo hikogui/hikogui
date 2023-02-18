@@ -37,25 +37,11 @@ struct character {
 
     /**
      * [20: 0] 21-bit: grapheme.
-     * [33:21] 13-bit: text theme.
-     * [37:34]  4-bit: phrasing.
-     * [47:38] 10-bit: iso-3166 region-code.
-     * [63:48] 16-bit: iso-639 language.
+     * [63:21] 43-bit: attriutes.
      */
     value_type _value;
 
     constexpr static auto _eof = uint64_t{0x1f'ffff};
-
-    constexpr static auto _grapheme_mask = uint64_t{0x1f'ffff};
-    constexpr static auto _grapheme_shift = 0U;
-    constexpr static auto _text_theme_mask = uint64_t{0x1fff};
-    constexpr static auto _text_theme_shift = 21U;
-    constexpr static auto _phrasing_mask = uint64_t{0xf};
-    constexpr static auto _phrasing_shift = 34U;
-    constexpr static auto _region_mask = uint64_t{0x3ff};
-    constexpr static auto _region_shift = 38U;
-    constexpr static auto _language_mask = uint64_t{0xffff};
-    constexpr static auto _language_shift = 48U;
 
     constexpr character() noexcept = default;
     constexpr character(character const&) noexcept = default;
@@ -73,13 +59,7 @@ struct character {
         // [47:38] 10-bit: iso-3166 region-code.
         // [63:48] 16-bit: iso-639 language.
         auto tmp = value_type{};
-        tmp |= attributes.language.intrinsic();
-        tmp <<= 10;
-        tmp |= attributes.region.intrinsic();
-        tmp <<= 4;
-        tmp |= to_underlying(attributes.phrasing);
-        tmp <<= 13;
-        tmp |= attributes.theme.intrinsic();
+        tmp |= attributes.intrinsic();
         tmp <<= 21;
         tmp |= g.intrinsic();
         _value = tmp;
@@ -129,11 +109,7 @@ struct character {
 
     constexpr character& operator=(hi::grapheme grapheme) noexcept
     {
-        hilet grapheme_value = wide_cast<value_type>(grapheme.intrinsic());
-        hi_axiom(grapheme_value <= _grapheme_mask);
-        _value &= ~(_grapheme_mask << _grapheme_shift);
-        _value |= grapheme_value << _grapheme_shift;
-        return *this;
+        return set_grapheme(grapheme);
     }
 
     constexpr character& operator=(char32_t code_point) noexcept
@@ -148,115 +124,27 @@ struct character {
 
     [[nodiscard]] constexpr hi::grapheme grapheme() const noexcept
     {
-        return hi::grapheme{intrinsic_t{}, (_value >> _grapheme_shift) & _grapheme_mask};
+        return hi::grapheme{intrinsic_t{}, _value & 0x1f'ffff};
     }
 
     constexpr character& set_grapheme(hi::grapheme grapheme) noexcept
     {
         hilet grapheme_value = wide_cast<value_type>(grapheme.intrinsic());
-        _value &= ~(_grapheme_mask << _grapheme_shift);
-        _value |= grapheme_value << _grapheme_shift;
-        return *this;
-    }
-
-    [[nodiscard]] constexpr hi::text_phrasing phrasing() const noexcept
-    {
-        return static_cast<hi::text_phrasing>((_value >> _phrasing_shift) & _phrasing_mask);
-    }
-
-    constexpr character& set_phrasing(hi::text_phrasing phrasing) noexcept
-    {
-        hilet phrasing_value = wide_cast<value_type>(to_underlying(phrasing));
-        hi_axiom(phrasing_value <= _phrasing_mask);
-        _value &= ~(_phrasing_mask << _phrasing_shift);
-        _value |= phrasing_value << _phrasing_shift;
-        return *this;
-    }
-
-    [[nodiscard]] constexpr iso_639 language() const noexcept
-    {
-        return iso_639{intrinsic_t{}, (_value >> _language_shift) & _language_mask};
-    }
-
-    constexpr character& set_language(iso_639 language) noexcept
-    {
-        hilet language_value = wide_cast<value_type>(language.intrinsic());
-        hi_axiom(language_value <= _language_mask);
-        _value &= ~(_language_mask << _language_shift);
-        _value |= language_value << _language_shift;
-        return *this;
-    }
-
-    [[nodiscard]] constexpr iso_3166 region() const noexcept
-    {
-        return iso_3166{intrinsic_t{}, (_value >> _region_shift) & _region_mask};
-    }
-
-    constexpr character& set_region(iso_3166 region) noexcept
-    {
-        hilet region_value = wide_cast<value_type>(region.intrinsic());
-        hi_axiom(region_value <= _region_mask);
-        _value &= ~(_region_mask << _region_shift);
-        _value |= region_value << _region_shift;
-        return *this;
-    }
-
-    constexpr character& set_language(hi::language_tag language_tag) noexcept
-    {
-        return set_language(language_tag.language).set_region(language_tag.region);
-    }
-
-    [[nodiscard]] constexpr text_theme theme() const noexcept
-    {
-        return text_theme{intrinsic_t{}, (_value >> _text_theme_shift) & _text_theme_mask};
-    }
-
-    constexpr character& set_theme(hi::text_theme text_theme) noexcept
-    {
-        hilet text_theme_value = wide_cast<value_type>(text_theme.intrinsic());
-        hi_axiom(text_theme_value <= _text_theme_mask);
-        _value &= ~(_text_theme_mask << _text_theme_shift);
-        _value |= text_theme_value << _text_theme_shift;
+        _value >>= 21;
+        _value <<= 21;
+        _value |= grapheme_value;
         return *this;
     }
 
     [[nodiscard]] constexpr character_attributes attributes() const noexcept
     {
-        // [20: 0] 21-bit: grapheme.
-        // [33:21] 13-bit: text theme.
-        // [37:34]  4-bit: phrasing.
-        // [47:38] 10-bit: iso-3166 region-code.
-        // [63:48] 16-bit: iso-639 language.
-        auto tmp = _value;
-        tmp >>= 21;
-        hilet theme = text_theme{intrinsic_t{}, tmp & _text_theme_mask};
-        tmp >>= 13;
-        hilet phrasing = static_cast<text_phrasing>(tmp & _phrasing_mask);
-        tmp >>= 4;
-        hilet region = iso_3166{intrinsic_t{}, tmp & _region_mask};
-        tmp >>= 10;
-        hilet language = iso_639{intrinsic_t{}, narrow_cast<uint16_t>(tmp)};
-        return character_attributes{language, region, phrasing, theme};
+        return character_attributes{intrinsic_t{}, _value >> 21};
     }
 
     constexpr character& set_attributes(character_attributes attributes) noexcept
     {
-        // [20: 0] 21-bit: grapheme.
-        // [33:21] 13-bit: text theme.
-        // [37:34]  4-bit: phrasing.
-        // [47:38] 10-bit: iso-3166 region-code.
-        // [63:48] 16-bit: iso-639 language.
-        auto tmp = value_type{};
-        tmp |= attributes.language.intrinsic();
-        tmp <<= 10;
-        tmp |= attributes.region.intrinsic();
-        tmp <<= 4;
-        tmp |= to_underlying(attributes.phrasing);
-        tmp <<= 13;
-        tmp |= attributes.theme.intrinsic();
-        tmp <<= 21;
-        tmp |= grapheme();
-        _value = tmp;
+        _value &= 0x1f'ffff;
+        _value |= attributes.intrinsic << 21;
         return *this;
     }
 };
