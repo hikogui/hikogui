@@ -137,7 +137,7 @@ using text_view = std::basic_string_view<character>;
                         if (capture.front() == '.') {
                             attributes = default_attributes;
                         } else if (auto phrasing = to_text_phrasing(capture.front())) {
-                            attributes.phrasing = *phrasing;
+                            attributes.set_phrasing(*phrasing);
                         } else {
                             throw parse_error("Unknown markup phrasing command");
                         }
@@ -146,15 +146,14 @@ using text_view = std::basic_string_view<character>;
                         // Get the text-theme.
                         auto theme_id = from_string<uint16_t>(capture);
                         if (theme_id < 1000) {
-                            attributes.theme = hi::text_theme{intrinsic_t{}, theme_id};
+                            attributes.set_theme(hi::text_theme{intrinsic_t{}, theme_id});
                         } else {
                             throw parse_error("Invalid markup text theme-id");
                         }
 
                     } else if (capture.front() >= 'A' and capture.front() <= 'Z') {
                         auto language_tag = hi::language_tag{capture};
-                        attributes.language = language_tag.language;
-                        attributes.region = language_tag.region;
+                        attributes.set_language(language_tag);
 
                     } else {
                         throw parse_error("Unknown markup command.");

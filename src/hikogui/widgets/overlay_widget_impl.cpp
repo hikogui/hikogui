@@ -7,7 +7,7 @@
 
 namespace hi::inline v1 {
 
-overlay_widget::overlay_widget(widget *parent) noexcept : super(parent)
+overlay_widget::overlay_widget(widget_intf *parent) noexcept : super(parent)
 {
     if (parent) {
         // The overlay-widget will reset the semantic_layer as it is the bottom

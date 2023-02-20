@@ -83,7 +83,7 @@ public:
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      */
-    selection_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    selection_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Construct a selection widget with a delegate.
      *
@@ -95,7 +95,7 @@ public:
      *                   it is used as the label to show in the off-state.
      */
     selection_widget(
-        widget *parent,
+        widget_intf *parent,
         std::shared_ptr<delegate_type> delegate,
         selection_widget_attribute auto&& first_attribute,
         selection_widget_attribute auto&&...attributes) noexcept :
@@ -120,8 +120,7 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
         selection_widget_attribute... Attributes>
-    selection_widget(
-        widget *parent,
+    selection_widget(widget_intf *parent,
         Value&& value,
         OptionList&& option_list,
         Attributes&&...attributes) noexcept requires requires
@@ -155,7 +154,7 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         selection_widget_attribute... Attributes>
     selection_widget(
-        widget *parent,
+        widget_intf *parent,
         Value&& value,
         OptionList&& option_list,
         OffValue&& off_value,
@@ -171,7 +170,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override;
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;

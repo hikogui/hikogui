@@ -30,7 +30,7 @@ public:
     observer<int> offset_x;
     observer<int> offset_y;
 
-    scroll_aperture_widget(widget *parent) noexcept : super(parent)
+    scroll_aperture_widget(widget_intf *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
@@ -91,7 +91,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_content;
     }

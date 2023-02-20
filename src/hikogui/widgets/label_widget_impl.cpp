@@ -6,7 +6,7 @@
 
 namespace hi::inline v1 {
 
-label_widget::label_widget(widget *parent) noexcept : super(parent)
+label_widget::label_widget(widget_intf *parent) noexcept : super(parent)
 {
     mode = widget_mode::select;
 

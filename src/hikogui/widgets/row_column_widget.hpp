@@ -50,7 +50,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    row_column_widget(widget *parent) noexcept : super(parent)
+    row_column_widget(widget_intf *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
 
@@ -94,7 +94,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         for (hilet& child : _children) {
             co_yield *child.value;

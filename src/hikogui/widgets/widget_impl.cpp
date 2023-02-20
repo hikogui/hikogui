@@ -10,8 +10,8 @@
 
 namespace hi::inline v1 {
 
-widget::widget(widget *parent) noexcept :
-    parent(parent), id(narrow_cast<uint32_t>(++global_counter<"widget::id">)), logical_layer(0), semantic_layer(0)
+widget::widget(widget_intf *parent) noexcept :
+    super(parent), , logical_layer(0), semantic_layer(0)
 {
     hi_axiom(loop::main().on_thread());
 
@@ -234,43 +234,6 @@ widget_id widget::find_next_widget(
     return std::nullopt;
 }
 
-[[nodiscard]] widget_id widget::find_first_widget(keyboard_focus_group group) const noexcept
-{
-    hi_axiom(loop::main().on_thread());
-
-    for (auto& child : children(false)) {
-        if (child.accepts_keyboard_focus(group)) {
-            return child.id;
-        }
-    }
-    return std::nullopt;
-}
-
-[[nodiscard]] widget_id widget::find_last_widget(keyboard_focus_group group) const noexcept
-{
-    hi_axiom(loop::main().on_thread());
-
-    auto found = widget_id{};
-    for (auto& child : children(false)) {
-        if (child.accepts_keyboard_focus(group)) {
-            found = child.id;
-        }
-    }
-
-    return found;
-}
-
-[[nodiscard]] bool widget::is_first(keyboard_focus_group group) const noexcept
-{
-    hi_axiom(loop::main().on_thread());
-    return parent->find_first_widget(group) == id;
-}
-
-[[nodiscard]] bool widget::is_last(keyboard_focus_group group) const noexcept
-{
-    hi_axiom(loop::main().on_thread());
-    return parent->find_last_widget(group) == id;
-}
 
 void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
 {
@@ -281,24 +244,7 @@ void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
     }
 }
 
-/** Get a list of parents of a given widget.
- * The chain includes the given widget.
- */
-[[nodiscard]] std::vector<widget_id> widget::parent_chain() const noexcept
-{
-    hi_axiom(loop::main().on_thread());
 
-    std::vector<widget_id> chain;
-
-    if (auto w = this) {
-        chain.push_back(w->id);
-        while (to_bool(w = w->parent)) {
-            chain.push_back(w->id);
-        }
-    }
-
-    return chain;
-}
 
 [[nodiscard]] aarectanglei widget::make_overlay_rectangle(aarectanglei requested_rectangle) const noexcept
 {

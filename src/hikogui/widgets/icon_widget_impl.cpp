@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-icon_widget::icon_widget(widget *parent) noexcept : super(parent)
+icon_widget::icon_widget(widget_intf *parent) noexcept : super(parent)
 {
     _icon_cbt = icon.subscribe([this](auto...) {
         _icon_has_modified = true;

@@ -57,7 +57,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    scroll_widget(widget *parent) noexcept : super(parent)
+    scroll_widget(widget_intf *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
@@ -108,7 +108,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_aperture;
         co_yield *_vertical_scroll_bar;

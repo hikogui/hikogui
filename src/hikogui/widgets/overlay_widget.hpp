@@ -45,9 +45,9 @@ public:
      *
      * @param parent The parent widget.
      */
-    overlay_widget(widget *parent) noexcept;
+    overlay_widget(widget_intf *parent) noexcept;
 
-    void set_widget(std::unique_ptr<widget> new_widget) noexcept;
+    void set_widget(std::unique_ptr<widget_intf> new_widget) noexcept;
 
     /** Add a content widget directly to this overlay widget.
      *
@@ -71,7 +71,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_content;
     }

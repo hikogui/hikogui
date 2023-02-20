@@ -79,10 +79,9 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate to use to control the widget's data.
      */
-    text_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    text_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    text_widget(
-        widget *parent,
+    text_widget(widget_intf *parent,
         std::shared_ptr<delegate_type> delegate,
         text_widget_attribute auto&&...attributes) noexcept :
         text_widget(parent, std::move(delegate))
@@ -97,7 +96,7 @@ public:
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `text_theme`.
      */
     text_widget(
-        widget *parent,
+        widget_intf *parent,
         different_from<std::shared_ptr<delegate_type>> auto&& text,
         text_widget_attribute auto&&...attributes) noexcept requires requires
     {

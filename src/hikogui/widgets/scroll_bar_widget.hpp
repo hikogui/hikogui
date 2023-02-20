@@ -42,7 +42,7 @@ public:
     observer<int> content;
 
     scroll_bar_widget(
-        widget *parent,
+        widget_intf *parent,
         forward_of<observer<int>> auto&& content,
         forward_of<observer<int>> auto&& aperture,
         forward_of<observer<int>> auto&& offset) noexcept :

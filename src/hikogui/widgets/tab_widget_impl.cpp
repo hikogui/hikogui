@@ -13,7 +13,7 @@ tab_widget::~tab_widget()
     delegate->deinit(*this);
 }
 
-tab_widget::tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+tab_widget::tab_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(parent), delegate(std::move(delegate))
 {
     hi_axiom(loop::main().on_thread());
@@ -105,7 +105,7 @@ void tab_widget::draw(draw_context const& context) noexcept
     return _children.end();
 }
 
-[[nodiscard]] widget& tab_widget::selected_child() const noexcept
+[[nodiscard]] widget_intf& tab_widget::selected_child() const noexcept
 {
     hi_axiom(loop::main().on_thread());
     hi_assert(not _children.empty());

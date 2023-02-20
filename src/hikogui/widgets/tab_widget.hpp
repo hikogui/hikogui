@@ -47,7 +47,7 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate that will control this widget.
      */
-    tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    tab_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Construct a tab widget with an observer value.
      *
@@ -55,7 +55,7 @@ public:
      * @param value The value or observer value to monitor for which child widget
      *              to display.
      */
-    tab_widget(widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept
+    tab_widget(widget_intf *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept
         requires requires { make_default_tab_delegate(hi_forward(value)); }
         : tab_widget(parent, make_default_tab_delegate(hi_forward(value)))
     {
@@ -86,7 +86,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         for (hilet& child : _children) {
             co_yield *child;
@@ -110,7 +110,7 @@ private:
     using const_iterator = decltype(_children)::const_iterator;
 
     [[nodiscard]] const_iterator find_selected_child() const noexcept;
-    [[nodiscard]] widget& selected_child() const noexcept;
+    [[nodiscard]] widget_intf& selected_child() const noexcept;
 };
 
 }} // namespace hi::v1

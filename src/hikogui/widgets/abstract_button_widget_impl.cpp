@@ -8,7 +8,7 @@
 
 namespace hi::inline v1 {
 
-abstract_button_widget::abstract_button_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+abstract_button_widget::abstract_button_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(parent), delegate(std::move(delegate))
 {
     hi_assert_not_null(this->delegate);

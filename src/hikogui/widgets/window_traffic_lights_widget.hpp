@@ -27,7 +27,7 @@ class window_traffic_lights_widget final : public widget {
 public:
     using super = widget;
 
-    window_traffic_lights_widget(widget *parent) noexcept;
+    window_traffic_lights_widget(widget_intf *parent) noexcept;
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override;

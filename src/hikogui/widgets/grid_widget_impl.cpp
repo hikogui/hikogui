@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-grid_widget::grid_widget(widget *parent) noexcept : widget(parent)
+grid_widget::grid_widget(widget_intf *parent) noexcept : widget(parent)
 {
     hi_axiom(loop::main().on_thread());
 
@@ -20,7 +20,7 @@ grid_widget::grid_widget(widget *parent) noexcept : widget(parent)
 
 grid_widget::~grid_widget() {}
 
-widget& grid_widget::add_widget(
+widget_intf& grid_widget::add_widget(
     std::size_t first_column,
     std::size_t first_row,
     std::size_t last_column,

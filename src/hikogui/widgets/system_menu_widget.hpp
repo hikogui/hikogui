@@ -31,16 +31,16 @@ public:
 
     ~system_menu_widget() {}
 
-    system_menu_widget(widget *parent) noexcept;
+    system_menu_widget(widget_intf *parent) noexcept;
 
-    system_menu_widget(widget *parent, forward_of<observer<hi::icon>> auto&& icon) noexcept :
+    system_menu_widget(widget_intf *parent, forward_of<observer<hi::icon>> auto&& icon) noexcept :
         system_menu_widget(parent)
     {
         this->icon = hi_forward(icon);
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_icon_widget;
     }

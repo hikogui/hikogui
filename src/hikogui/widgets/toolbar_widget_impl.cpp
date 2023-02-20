@@ -10,7 +10,7 @@
 
 namespace hi::inline v1 {
 
-toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
+toolbar_widget::toolbar_widget(widget_intf *parent) noexcept : super(parent)
 {
     hi_axiom(loop::main().on_thread());
 
@@ -114,7 +114,7 @@ hitbox toolbar_widget::hitbox_test(point2i position) const noexcept
     }
 }
 
-widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
+widget_intf& toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
 {
     auto& ref = *widget;
     switch (alignment) {

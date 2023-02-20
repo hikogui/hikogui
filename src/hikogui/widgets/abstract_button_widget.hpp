@@ -62,7 +62,7 @@ public:
 
     ~abstract_button_widget();
 
-    abstract_button_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    abstract_button_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Get the current state of the button.
      * @return The state of the button: on / off / other.
@@ -77,7 +77,7 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const &context) noexcept override;
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_on_label_widget;
         co_yield *_off_label_widget;

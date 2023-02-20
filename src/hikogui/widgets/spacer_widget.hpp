@@ -20,9 +20,9 @@ class spacer_widget final : public widget {
 public:
     using super = widget;
 
-    spacer_widget(widget *parent) noexcept : super(parent) {}
+    spacer_widget(widget_intf *parent) noexcept : super(parent) {}
 
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         co_return;
     }

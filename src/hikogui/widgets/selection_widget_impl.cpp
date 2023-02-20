@@ -15,7 +15,7 @@ selection_widget::~selection_widget()
     delegate->deinit(*this);
 }
 
-selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+selection_widget::selection_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(parent), delegate(std::move(delegate))
 {
     hi_assert_not_null(this->delegate);
@@ -44,7 +44,7 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
     this->delegate->init(*this);
 }
 
-[[nodiscard]] generator<widget const&> selection_widget::children(bool include_invisible) const noexcept
+[[nodiscard]] generator<widget_intf const&> selection_widget::children(bool include_invisible) const noexcept
 {
     co_yield *_overlay_widget;
     co_yield *_current_label_widget;

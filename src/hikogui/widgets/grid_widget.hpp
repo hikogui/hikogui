@@ -46,7 +46,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    grid_widget(widget *parent) noexcept;
+    grid_widget(widget_intf *parent) noexcept;
 
     /** Add a widget directly to this grid-widget.
      *
@@ -98,7 +98,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         for (hilet& cell : _grid) {
             co_yield *cell.value;
@@ -115,7 +115,7 @@ private:
 
     /* Add a widget to the grid.
      */
-    widget& add_widget(
+    widget_intf& add_widget(
         std::size_t first_column,
         std::size_t first_row,
         std::size_t last_column,

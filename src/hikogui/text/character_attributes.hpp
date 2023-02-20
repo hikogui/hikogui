@@ -13,24 +13,9 @@ template<typename Context>
 concept character_attribute = std::same_as<Context, iso_639> or std::same_as<Context, iso_3166> or
     std::same_as<Context, language_tag> or std::same_as<Context, text_phrasing> or std::same_as<Context, text_theme>;
 
-struct character_attributes {
-    /** The value.
-     *
-     * [12:0] text-theme
-     * [16:13] phrasing
-     * [26:17] region.
-     * [42:27] language
-     */
-    uint64_t _v;
-
-    constexpr static auto _text_theme_mask = uint64_t{0x1fff};
-    constexpr static auto _text_theme_shift = 0U;
-    constexpr static auto _phrasing_mask = uint64_t{0xf};
-    constexpr static auto _phrasing_shift = 13U;
-    constexpr static auto _region_mask = uint64_t{0x3ff};
-    constexpr static auto _region_shift = 17U;
-    constexpr static auto _language_mask = uint64_t{0xffff};
-    constexpr static auto _language_shift = 27U;
+class character_attributes {
+public:
+    using value_type = uint64_t;
 
     constexpr character_attributes() noexcept = default;
     constexpr character_attributes(character_attributes const&) noexcept = default;
@@ -39,12 +24,27 @@ struct character_attributes {
     constexpr character_attributes& operator=(character_attributes&&) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(character_attributes const&, character_attributes const&) noexcept = default;
 
+    constexpr character_attributes(intrinsic_t, value_type value) noexcept : _value(value)
+    {
+        hi_axiom(_value <= 0x0000'07ff'ffff'ffffULL);
+    }
+
+    [[nodiscard]] constexpr value_type const& intrinsic() const
+    {
+        return _value;
+    }
+
+    [[nodiscard]] constexpr value_type & intrinsic()
+    {
+        return _value;
+    }
+
     [[nodiscard]] constexpr hi::text_phrasing phrasing() const noexcept
     {
         return static_cast<hi::text_phrasing>((_value >> _phrasing_shift) & _phrasing_mask);
     }
 
-    constexpr character& set_phrasing(hi::text_phrasing phrasing) noexcept
+    constexpr character_attributes& set_phrasing(hi::text_phrasing phrasing) noexcept
     {
         hilet phrasing_value = wide_cast<value_type>(to_underlying(phrasing));
         hi_axiom(phrasing_value <= _phrasing_mask);
@@ -58,7 +58,7 @@ struct character_attributes {
         return iso_639{intrinsic_t{}, (_value >> _language_shift) & _language_mask};
     }
 
-    constexpr character& set_language(iso_639 language) noexcept
+    constexpr character_attributes& set_language(iso_639 language) noexcept
     {
         hilet language_value = wide_cast<value_type>(language.intrinsic());
         hi_axiom(language_value <= _language_mask);
@@ -72,7 +72,7 @@ struct character_attributes {
         return iso_3166{intrinsic_t{}, (_value >> _region_shift) & _region_mask};
     }
 
-    constexpr character& set_region(iso_3166 region) noexcept
+    constexpr character_attributes& set_region(iso_3166 region) noexcept
     {
         hilet region_value = wide_cast<value_type>(region.intrinsic());
         hi_axiom(region_value <= _region_mask);
@@ -81,7 +81,7 @@ struct character_attributes {
         return *this;
     }
 
-    constexpr character& set_language(hi::language_tag language_tag) noexcept
+    constexpr character_attributes& set_language(hi::language_tag language_tag) noexcept
     {
         return set_language(language_tag.language).set_region(language_tag.region);
     }
@@ -91,7 +91,7 @@ struct character_attributes {
         return text_theme{intrinsic_t{}, (_value >> _text_theme_shift) & _text_theme_mask};
     }
 
-    constexpr character& set_theme(hi::text_theme text_theme) noexcept
+    constexpr character_attributes& set_theme(hi::text_theme text_theme) noexcept
     {
         hilet text_theme_value = wide_cast<value_type>(text_theme.intrinsic());
         hi_axiom(text_theme_value <= _text_theme_mask);
@@ -134,6 +134,25 @@ struct character_attributes {
         add(first);
         add(second, rest...);
     }
+
+private:
+    constexpr static auto _text_theme_mask = uint64_t{0x1fff};
+    constexpr static auto _text_theme_shift = 0U;
+    constexpr static auto _phrasing_mask = uint64_t{0xf};
+    constexpr static auto _phrasing_shift = 13U;
+    constexpr static auto _region_mask = uint64_t{0x3ff};
+    constexpr static auto _region_shift = 17U;
+    constexpr static auto _language_mask = uint64_t{0xffff};
+    constexpr static auto _language_shift = 27U;
+
+    /** The value.
+     *
+     * [12:0] text-theme
+     * [16:13] phrasing
+     * [26:17] region.
+     * [42:27] language
+     */
+    value_type _value;
 };
 
 }} // namespace hi::v1

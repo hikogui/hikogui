@@ -77,13 +77,13 @@ public:
      * @param attributes Different attributes used to configure the label widget:
      *                   a `label`, `alignment` or `text_theme`
      */
-    label_widget(widget *parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
+    label_widget(widget_intf *parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
     {
         set_attributes(hi_forward(attributes)...);
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_icon_widget;
         co_yield *_text_widget;
@@ -104,7 +104,7 @@ private:
 
     std::unique_ptr<icon_widget> _icon_widget;
     std::unique_ptr<text_widget> _text_widget;
-    grid_layout<widget *> _grid;
+    grid_layout<widget_intf *> _grid;
 
     void set_attributes() noexcept {}
     void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
@@ -122,7 +122,7 @@ private:
         set_attributes(hi_forward(rest)...);
     }
 
-    label_widget(widget *parent) noexcept;
+    label_widget(widget_intf *parent) noexcept;
 };
 
 }} // namespace hi::v1

@@ -177,7 +177,8 @@ void text_shaper::resolve_font_and_widths(float dpi_scale) noexcept
     for (auto& c : _text) {
         hilet attributes = c.character.attributes();
 
-        c.style = attributes.theme(attributes.phrasing, attributes.language, attributes.region, c.script);
+        hilet theme = attributes.theme();
+        c.style = theme(attributes.phrasing(), attributes.language(), attributes.region(), c.script);
         hilet& style_font = find_font(c.style.family_id, c.style.variant);
 
         hilet [actual_font, glyphs] = find_glyph(style_font, c.character.grapheme());
@@ -298,8 +299,9 @@ void text_shaper::resolve_script() noexcept
 
         // Second pass, find if the language or region is set manually.
         for (hilet& c : _text) {
-            if (hilet language = c.character.language()) {
-                hilet tag = language_tag{language, c.character.region()}.expand();
+            hilet attributes = c.character.attributes();
+            if (hilet language = attributes.language()) {
+                hilet tag = language_tag{language, attributes.region()}.expand();
                 if (hilet script = tag.script) {
                     return static_cast<unicode_script>(script);
                 }

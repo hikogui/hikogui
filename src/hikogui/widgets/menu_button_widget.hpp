@@ -42,7 +42,7 @@ public:
      *                   the first label is shown in on-state and the second for off-state.
      */
     menu_button_widget(
-        widget *parent,
+        widget_intf *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
@@ -67,7 +67,7 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    menu_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    menu_button_widget(widget_intf *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires
     {
         make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));

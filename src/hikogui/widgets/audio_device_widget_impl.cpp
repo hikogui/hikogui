@@ -9,7 +9,7 @@ namespace hi::inline v1 {
 
 audio_device_widget::~audio_device_widget() {}
 
-audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio_system) noexcept :
+audio_device_widget::audio_device_widget(widget_intf *parent, hi::audio_system& audio_system) noexcept :
     super(parent), _audio_system(&audio_system)
 {
     _grid_widget = std::make_unique<grid_widget>(this);
@@ -35,7 +35,7 @@ audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio
     }
 }
 
-[[nodiscard]] generator<widget const&> audio_device_widget::children(bool include_invisible) const noexcept
+[[nodiscard]] generator<widget_intf const&> audio_device_widget::children(bool include_invisible) const noexcept
 {
     co_yield *_grid_widget;
 }

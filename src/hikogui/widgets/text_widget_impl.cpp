@@ -10,7 +10,7 @@
 
 namespace hi::inline v1 {
 
-text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+text_widget::text_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(parent), delegate(std::move(delegate))
 {
     mode = widget_mode::select;

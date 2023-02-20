@@ -144,7 +144,7 @@ struct character {
     constexpr character& set_attributes(character_attributes attributes) noexcept
     {
         _value &= 0x1f'ffff;
-        _value |= attributes.intrinsic << 21;
+        _value |= attributes.intrinsic() << 21;
         return *this;
     }
 };

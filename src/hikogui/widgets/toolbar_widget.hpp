@@ -39,7 +39,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    toolbar_widget(widget *parent) noexcept;
+    toolbar_widget(widget_intf *parent) noexcept;
 
     /** Add a widget directly to this toolbar-widget.
      *
@@ -64,7 +64,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
     {
         for (hilet& child : _children) {
             co_yield *child.value;
@@ -82,11 +82,11 @@ private:
     mutable int _child_height_adjustment = 0;
     size_t _spacer_index = 0;
 
-    void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept;
+    void update_layout_for_child(widget_intf& child, ssize_t index, widget_layout const& context) const noexcept;
 
     /** Add a widget directly to this widget.
      */
-    widget& add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept;
+    widget_intf& add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept;
 
     /** Check if a child tab-button has focus.
      *

@@ -6,7 +6,7 @@
 
 namespace hi::inline v1 {
 
-system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
+system_menu_widget::system_menu_widget(widget_intf *parent) noexcept : super(parent)
 {
     _icon_widget = std::make_unique<icon_widget>(this, icon);
 }
