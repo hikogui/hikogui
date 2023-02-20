@@ -7,6 +7,6 @@
 
 TEST(text, construct)
 {
-    auto r = text{};
+    auto r = hi::text{};
     ASSERT_TRUE(r.empty());
 }

@@ -112,7 +112,7 @@ public:
     [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
     /// @endprivatesection
 private:
-    grid_layout<std::unique_ptr<widget>> _grid;
+    grid_layout<std::unique_ptr<widget_impl>> _grid;
 
     /* Add a widget to the grid.
      */
@@ -121,7 +121,7 @@ private:
         std::size_t first_row,
         std::size_t last_column,
         std::size_t last_row,
-        std::unique_ptr<widget> child_widget) noexcept;
+        std::unique_ptr<widget_impl> child_widget) noexcept;
 };
 
 }} // namespace hi::v1

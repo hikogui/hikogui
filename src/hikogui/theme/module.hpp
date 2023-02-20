@@ -48,6 +48,7 @@ Theme value names
   Component        | Description
  :---------------- |:----------------------------------------------------------------------
   .border          | The border around the widget, often the one that shows focus.
+  .outline         | The outline of the widget.
 
  */
 

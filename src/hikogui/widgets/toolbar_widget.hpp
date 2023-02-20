@@ -79,7 +79,7 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    mutable row_layout<std::unique_ptr<widget>> _children;
+    mutable row_layout<std::unique_ptr<widget_intf>> _children;
     mutable int _child_height_adjustment = 0;
     size_t _spacer_index = 0;
 
@@ -87,7 +87,7 @@ private:
 
     /** Add a widget directly to this widget.
      */
-    widget_intf& add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept;
+    widget_intf& add_widget(horizontal_alignment alignment, std::unique_ptr<widget_intf> widget) noexcept;
 
     /** Check if a child tab-button has focus.
      *

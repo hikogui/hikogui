@@ -9,12 +9,12 @@
 #pragma once
 
 #include "widget.hpp"
+#include "toolbar_widget.hpp"
+#include "system_menu_widget.hpp"
+#include "grid_widget.hpp"
 #include "../label.hpp"
 
 namespace hi { inline namespace v1 {
-class toolbar_widget;
-class system_menu_widget;
-class grid_widget;
 
 /** The top-level window widget.
  * This widget is the top-level widget that is owned by the `gui_window`.
@@ -46,13 +46,13 @@ public:
      * @see grid_widget
      * @return A reference to a grid_widget.
      */
-    [[nodiscard]] grid_widget& content() noexcept;
+    [[nodiscard]] grid_widget<Name>& content() noexcept;
 
     /** Get a reference to window's toolbar widget.
      * @see toolbar_widget
      * @return A reference to a toolbar_widget.
      */
-    [[nodiscard]] toolbar_widget& toolbar() noexcept;
+    [[nodiscard]] toolbar_widget<Name>& toolbar() noexcept;
 
     /// @privatesection
     [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override;

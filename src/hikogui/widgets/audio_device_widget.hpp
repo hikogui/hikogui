@@ -38,17 +38,64 @@ public:
      */
     observer<audio_direction> direction = audio_direction::bidirectional;
 
-    virtual ~audio_device_widget();
+    audio_device_widget(widget_intf *parent, hi::audio_system& audio_system) noexcept :
+        super(parent), _audio_system(&audio_system)
+    {
+        _grid_widget = std::make_unique<grid_widget>(this);
+        _device_selection_widget = &_grid_widget->make_widget<selection_widget>("A1", device_id, _device_list);
 
-    audio_device_widget(widget_intf *parent, hi::audio_system& audio_system) noexcept;
+        _sync_device_list_task = sync_device_list();
+    }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override;
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
-    hitbox hitbox_test(point2i position) const noexcept override;
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
+    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
+    {
+        co_yield *_grid_widget;
+    }
+
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _grid_constraints = _grid_widget->update_constraints();
+        return _grid_constraints;
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(layout, context)) {
+            hilet grid_rectangle = context.rectangle();
+            _grid_shape = {_grid_constraints, grid_rectangle, tv<"audio_device.baseline", int>{}(scale)};
+        }
+
+        _grid_widget->set_layout(context.transform(_grid_shape));
+    }
+
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible) {
+            _grid_widget->draw(context);
+        }
+    }
+
+    hitbox hitbox_test(point2i position) const noexcept override
+    {
+        if (*mode >= widget_mode::partial) {
+            auto r = hitbox{};
+            r = _grid_widget->hitbox_test_from_parent(position, r);
+            return r;
+        } else {
+            return hitbox{};
+        }
+    }
+
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        if (*mode >= widget_mode::partial) {
+            return _grid_widget->accepts_keyboard_focus(group);
+        } else {
+            return false;
+        }
+    }
+
     /// @endprivatesection
 private:
     hi::audio_system *_audio_system;
@@ -67,7 +114,22 @@ private:
 
     hi::scoped_task<> _sync_device_list_task;
 
-    [[nodiscard]] hi::scoped_task<> sync_device_list() noexcept;
+    [[nodiscard]] hi::scoped_task<> sync_device_list() noexcept
+    {
+        while (true) {
+            {
+                auto proxy = _device_list.copy();
+                proxy->clear();
+                for (auto& device : _audio_system->devices()) {
+                    if (device.state() == hi::audio_device_state::active and to_bool(device.direction() & *direction)) {
+                        proxy->emplace_back(device.id(), device.label());
+                    }
+                }
+            }
+
+            co_await when_any(*_audio_system, direction);
+        }
+    }
 };
 
 }} // namespace hi::v1

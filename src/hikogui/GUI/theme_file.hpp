@@ -23,46 +23,46 @@
 namespace hi { inline namespace v1 {
 class font_book;
 
-/** A theme loaded from a theme file.
+/** A theme_file loaded from a theme_file file.
  *
- * The theme object is not directly used when drawing the user interface.
- * The draw function will use the theme-value API `hi::tv` to select specific values.
+ * The theme_file object is not directly used when drawing the user interface.
+ * The draw function will use the theme_file-value API `hi::tv` to select specific values.
  *
- * When a theme is activated it will update the global `hi::tv` values.
+ * When a theme_file is activated it will update the global `hi::tv` values.
  *
- * Loading of themes is done through the theme-book.
+ * Loading of themes is done through the theme_file-book.
  */
-class theme {
+class theme_file {
 public:
     using value_type = std::variant<float, std::vector<hi::color>, std::vector<hi::text_style>, std::string>;
     using container_type = std::vector<std::pair<std::string, value_type>>;
 
-    /** The name of the theme.
+    /** The name of the theme-file.
      *
      * The name may be repeated, once for each mode.
      */
     std::string name;
 
-    /** The mode that this theme is used for.
+    /** The mode that this theme-file is used for.
      *
      * If there are multiple themes with the same name then
      * the mode selects among those themes based on the operating system's dark/light mode.
      */
     theme_mode mode = theme_mode::light;
 
-    theme() noexcept = default;
-    theme(theme const&) noexcept = default;
-    theme(theme&&) noexcept = default;
-    theme& operator=(theme const&) noexcept = default;
-    theme& operator=(theme&&) noexcept = default;
+    theme_file() noexcept = default;
+    theme_file(theme_file const&) noexcept = default;
+    theme_file(theme_file&&) noexcept = default;
+    theme_file& operator=(theme_file const&) noexcept = default;
+    theme_file& operator=(theme_file&&) noexcept = default;
 
-    /** Open and parse a theme file.
+    /** Open and parse a theme_file file.
      */
-    theme(hi::font_book const& font_book, std::filesystem::path const& url);
+    theme_file(hi::font_book const& font_book, std::filesystem::path const& url);
 
-    /** Activate this theme.
+    /** Activate this theme_file.
      *
-     * @post The global theme-values `hi::tv` have been overwritten with the values from this theme.
+     * @post The global theme_file-values `hi::tv` have been overwritten with the values from this theme_file.
      */
     void activate() const noexcept;
 
@@ -76,8 +76,8 @@ private:
 }} // namespace hi::v1
 
 template<typename CharT>
-struct std::formatter<hi::theme, CharT> : std::formatter<std::string, CharT> {
-    auto format(hi::theme const& t, auto& fc)
+struct std::formatter<hi::theme_file, CharT> : std::formatter<std::string, CharT> {
+    auto format(hi::theme_file const& t, auto& fc)
     {
         return std::formatter<std::string_view, CharT>::format(std::format("{}:{}", t.name, t.mode), fc);
     }

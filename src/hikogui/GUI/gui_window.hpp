@@ -10,7 +10,7 @@
 #include "gui_event.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
-#include "theme.hpp"
+#include "theme_file.hpp"
 #include "../GFX/subpixel_orientation.hpp"
 #include "../geometry/module.hpp"
 #include "../widgets/window_widget.hpp"

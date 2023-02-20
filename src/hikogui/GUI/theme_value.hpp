@@ -150,10 +150,10 @@ inline auto global_theme_value = tagged_theme_value<Tag, T>{};
  * @tparam T The return type of the functor.
  */
 template<fixed_string Tag, typename T>
-struct tv;
+struct theme;
 
 template<fixed_string Tag, std::floating_point T>
-struct tv<Tag, T> {
+struct theme<Tag, T> {
     [[nodiscard]] T operator[](widget_intf const *widget) const noexcept
     {
         hi_axiom_not_null(widget);
@@ -164,33 +164,33 @@ struct tv<Tag, T> {
 };
 
 template<fixed_string Tag, std::integral T>
-struct tv<Tag, T> {
+struct theme<Tag, T> {
     [[nodiscard]] T operator[](widget_intf const *widget) const noexcept
     {
-        return narrow_cast<T>(std::ceil(tv<Tag, float>{}[widget]));
+        return narrow_cast<T>(std::ceil(theme<Tag, float>{}[widget]));
     }
 };
 
 template<fixed_string Tag>
-struct tv<Tag, extent2i> {
+struct theme<Tag, extent2i> {
     [[nodiscard]] extent2i operator[](widget_intf const *widget) const noexcept
     {
-        hilet tmp = tv<Tag, int>{}[widget];
+        hilet tmp = theme<Tag, int>{}[widget];
         return extent2i{tmp, tmp};
     }
 };
 
 template<fixed_string Tag>
-struct tv<Tag, marginsi> {
+struct theme<Tag, marginsi> {
     [[nodiscard]] extent2i operator[](widget_intf const *widget) const noexcept
     {
-        hilet tmp = tv<Tag, int>{}[widget];
+        hilet tmp = theme<Tag, int>{}[widget];
         return marginsi{tmp};
     }
 };
 
 template<fixed_string Tag>
-struct tv<Tag, hi::color> {
+struct theme<Tag, hi::color> {
     [[nodiscard]] hi::color operator[](widget_intf const *widget) const noexcept
     {
         hi_axiom_not_null(widget);
@@ -201,7 +201,7 @@ struct tv<Tag, hi::color> {
 };
 
 template<fixed_string Tag>
-struct tv<Tag, text_theme> {
+struct theme<Tag, text_theme> {
     [[nodiscard]] text_theme operator[](widget_intf const *widget) const noexcept
     {
         hi_axiom_not_null(widget);

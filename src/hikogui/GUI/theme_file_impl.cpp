@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "theme.hpp"
+#include "theme_file.hpp"
 #include "theme_value.hpp"
 #include "../codec/JSON.hpp"
 #include "../log.hpp"
@@ -156,14 +156,14 @@ namespace hi { inline namespace v1 {
 
 
 
-[[nodiscard]] static theme::value_type parse_theme_value(hi::font_book const& font_book, datum const& data)
+[[nodiscard]] static theme_file::value_type parse_theme_value(hi::font_book const& font_book, datum const& data)
 {
     if (holds_alternative<long long>(data) or holds_alternative<double>(data)) {
         // A size value.
         return static_cast<float>(data);
 
     } else if (auto string_value = get_if<std::string>(&data)) {
-        hi_check(not string_value->empty(), "Unexpected empty string as theme value.");
+        hi_check(not string_value->empty(), "Unexpected empty string as theme_file value.");
         if (string_value->front() == '#') {
             // An sRGB hex-color.
             return std::vector<hi::color>{color_from_sRGB(*string_value)};
@@ -171,11 +171,11 @@ namespace hi { inline namespace v1 {
             // A reference.
             return string_value->substr(1);
         } else {
-            throw parse_error(std::format("Unexpected '{}' as theme value.", *string_value));
+            throw parse_error(std::format("Unexpected '{}' as theme_file value.", *string_value));
         }
 
     } else if (auto list_value = get_if<datum::vector_type>(&data)) {
-        hi_check(not list_value->empty(), "Unexpected empty list as theme value.");
+        hi_check(not list_value->empty(), "Unexpected empty list as theme_file value.");
         if (holds_alternative<datum::map_type>(list_value->front())) {
             return parse_theme_text_styles(font_book, data);
         } else {
@@ -183,11 +183,11 @@ namespace hi { inline namespace v1 {
         }
 
     } else {
-        throw parse_error(std::format("Unexpected '{}' as theme value.", data));
+        throw parse_error(std::format("Unexpected '{}' as theme_file value.", data));
     }
 }
 
-void static resolve_theme_references(theme::container_type& items)
+void static resolve_theme_references(theme_file::container_type& items)
 {
     constexpr auto max_recursion = 256_uz;
 
@@ -204,13 +204,13 @@ void static resolve_theme_references(theme::container_type& items)
             auto it = std::lower_bound(items.begin(), items.end(), *ref, [](hilet& item, hilet& value) {
                 return item.first < value;
             });
-            hi_check(it != items.end() or it->first != *ref, "Could not find reference '{}' in theme file", *ref);
+            hi_check(it != items.end() or it->first != *ref, "Could not find reference '{}' in theme_file file", *ref);
             value = it->second;
         }
     }
 }
 
-void static order_by_specificity(theme::container_type& items)
+void static order_by_specificity(theme_file::container_type& items)
 {
     // Sort by name where:
     // - names with a star '*' go first.
@@ -226,27 +226,27 @@ void static order_by_specificity(theme::container_type& items)
     });
 }
 
-theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
+theme_file::theme_file(hi::font_book const& font_book, std::filesystem::path const& path)
 {
     try {
-        hi_log_info("Parsing theme at {}", path.string());
+        hi_log_info("Parsing theme_file at {}", path.string());
         hilet data = parse_JSON(path);
         parse(font_book, data);
     } catch (std::exception const& e) {
-        throw io_error(std::format("{}: Could not load theme.\n{}", path.string(), e.what()));
+        throw io_error(std::format("{}: Could not load theme_file.\n{}", path.string(), e.what()));
     }
 }
 
-[[nodiscard]] void theme::parse_data(hi::font_book const& font_book, datum const& data)
+[[nodiscard]] void theme_file::parse_data(hi::font_book const& font_book, datum const& data)
 {
-    hi_check(holds_alternative<datum::map_type>(data), "Expecting an object as the top level of a theme file.");
+    hi_check(holds_alternative<datum::map_type>(data), "Expecting an object as the top level of a theme_file file.");
     for (hilet & [ item_name, item_value ] : get<datum::map_type>(data)) {
-        hi_check(holds_alternative<std::string>(item_name), "Expecting a string as keys in the theme file, got {}", name);
+        hi_check(holds_alternative<std::string>(item_name), "Expecting a string as keys in the theme_file file, got {}", name);
 
         if (item_name == "name") {
             hi_check(
                 holds_alternative<std::string>(item_value),
-                "Expecting a string as the value for 'name' in theme file, got {}",
+                "Expecting a string as the value for 'name' in theme_file file, got {}",
                 item_value);
 
             name = get<std::string>(item_value);
@@ -254,7 +254,7 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
         } else if (item_name == "mode") {
             hi_check(
                 holds_alternative<std::string>(item_value),
-                "Expecting a string as the value for 'mode' in theme file, got {}",
+                "Expecting a string as the value for 'mode' in theme_file file, got {}",
                 item_value);
 
             if (item_value == "light") {
@@ -263,21 +263,21 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
                 mode = theme_mode::dark;
             } else {
                 throw parse_error(
-                    std::format("Expecting either 'dark' or 'light' as values for 'mode' in the theme file, got {}", item_value));
+                    std::format("Expecting either 'dark' or 'light' as values for 'mode' in the theme_file file, got {}", item_value));
             }
 
         } else {
-            // All other names are for theme values.
+            // All other names are for theme_file values.
             // Use insert here so that exceptions from parse_theme_value do not cause the item to be created.
             _items.push_back({get<std::string>(item_name), parse_theme_value(font_book, item_value)});
         }
     }
 }
 
-void theme::activate() const noexcept
+void theme_file::activate() const noexcept
 {
     // The items are sorted by least specific first.
-    // That way more specific items will override the more specific theme values.
+    // That way more specific items will override the more specific theme_file values.
     for (hilet & [ item_name, item_value ] : _items) {
         if (auto colors = std::get_if<std::vector<hi::color>>(&item_value)) {
             for (auto& theme_value : detail::theme_value_base<std::vector<hi::color>>::get(item_name)) {
@@ -298,7 +298,7 @@ void theme::activate() const noexcept
     }
 }
 
-void theme::parse(hi::font_book const& font_book, datum const& data)
+void theme_file::parse(hi::font_book const& font_book, datum const& data)
 {
     parse_data(font_book, data);
     resolve_theme_references(_items);

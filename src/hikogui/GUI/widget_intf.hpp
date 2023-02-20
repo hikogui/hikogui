@@ -49,7 +49,7 @@ public:
 
     /** The widget is being clicked by the mouse.
      */
-    observer<bool> pressed = false;
+    observer<bool> clicked = false;
 
     /** The widget has keyboard focus.
      */

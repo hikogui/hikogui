@@ -49,7 +49,7 @@ public:
         tmp |= [&] {
             if (*widget.mode <= widget_mode::disabled) {
                 return 0;
-            } else if (*widget.pressed) {
+            } else if (*widget.clicked) {
                 return 3;
             } else if (*widget.focus) {
                 return 2;

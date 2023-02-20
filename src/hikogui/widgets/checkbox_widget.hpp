@@ -77,10 +77,11 @@ public:
     checkbox_widget(
         widget_intf *parent,
         different_from<std::shared_ptr<delegate_type>> auto&& value,
-        button_widget_attribute auto&&...attributes) noexcept requires requires
+        button_widget_attribute auto&&...attributes) noexcept
+        requires requires { make_default_toggle_button_delegate(hi_forward(value)); }
+        : checkbox_widget(parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...)
     {
-        make_default_toggle_button_delegate(hi_forward(value));
-    } : checkbox_widget(parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...) {}
+    }
 
     /** Construct a checkbox widget with a default button delegate.
      *
@@ -98,10 +99,8 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
     checkbox_widget(widget_intf *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires
-    {
-        make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value));
-    } :
+        requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)); }
+        :
         checkbox_widget(
             parent,
             make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)),
@@ -131,10 +130,9 @@ public:
         Value&& value,
         OnValue&& on_value,
         OffValue&& off_value,
-        Attributes&&...attributes) noexcept requires requires
-    {
-        make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value));
-    } :
+        Attributes&&...attributes) noexcept
+        requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)); }
+        :
         checkbox_widget(
             parent,
             make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
@@ -143,9 +141,68 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _label_constraints = super::update_constraints();
+
+        _button_size = theme<tag ^ "outer.size", extent2i>{}[this];
+        hilet extra_size = extent2i{theme<tag ^ "inner.margin", int>{}[this] + _button_size.width(), 0};
+
+        auto constraints = max(_label_constraints + extra_size, _button_size);
+        constraints.margins = theme<tag ^ "outer.margin", marginsi>{}[this];
+        constraints.alignment = *alignment;
+        return constraints;
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(layout, context)) {
+            auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
+
+            if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
+                _button_rectangle = align(context.rectangle(), _button_size, alignment_);
+            } else {
+                hi_not_implemented();
+            }
+
+            hilet inner_margin = theme<tag ^ "inner.margin", int>{}[this];
+            hilet baseline_offset = theme<tag ^ "baseline", int>{}[this];
+            hilet icon_size = theme<tag ^ "icon.size", int>{}[this];
+
+            hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
+            if (alignment_ == horizontal_alignment::left) {
+                hilet label_left = _button_rectangle.right() + inner_margin;
+                hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
+                _on_label_shape = _off_label_shape = _other_label_shape =
+                    box_shape(_label_constraints, label_rectangle, baseline_offset);
+
+            } else if (alignment_ == horizontal_alignment::right) {
+                hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
+                _on_label_shape = _off_label_shape = _other_label_shape =
+                    box_shape(_label_constraints, label_rectangle, baseline_offset);
+            } else {
+                hi_not_implemented();
+            }
+
+            _check_glyph = find_glyph(elusive_icon::Ok);
+            hilet check_glyph_bb = narrow_cast<aarectanglei>(_check_glyph.get_bounding_box() * icon_size);
+            _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
+
+            _minus_glyph = find_glyph(elusive_icon::Minus);
+            hilet minus_glyph_bb = narrow_cast<aarectanglei>(_minus_glyph.get_bounding_box() * icon_size);
+            _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
+        }
+        super::set_layout(context);
+    }
+
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+            draw_check_box(context);
+            draw_check_mark(context);
+            draw_button(context);
+        }
+    }
     /// @endprivatesection
 private:
     box_constraints _label_constraints;
@@ -157,8 +214,40 @@ private:
     font_book::font_glyphs_type _minus_glyph;
     aarectanglei _minus_glyph_rectangle;
 
-    void draw_check_box(draw_context const& context) noexcept;
-    void draw_check_mark(draw_context const& context) noexcept;
+    void draw_check_box(draw_context const& context) noexcept
+    {
+        context.draw_box(
+            layout,
+            _button_rectangle,
+            theme<tag ^ "fill.color", color>{}[this],
+            theme<tag ^ "border.color", color>{}[this],
+            theme<tag ^ "border.width", float>{}[this],
+            border_side::inside);
+    }
+
+    void draw_check_mark(draw_context const& context) noexcept
+    {
+        auto state_ = state();
+
+        // Checkmark or tristate.
+        if (state_ == hi::button_state::on) {
+            context.draw_glyph(
+                layout,
+                translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle),
+                _check_glyph,
+                theme<tag ^ "icon.color", color>{}[this]);
+
+        } else if (state_ == hi::button_state::off) {
+            ;
+
+        } else {
+            context.draw_glyph(
+                layout,
+                translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle),
+                _minus_glyph,
+                theme<tag ^ "icon.color", color>{}[this]);
+        }
+    }
 };
 
 }} // namespace hi::v1
