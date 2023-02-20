@@ -20,6 +20,7 @@
 namespace hi { inline namespace v1 {
 
 namespace detail {
+    
 
 template<typename T>
 class theme_value_base {
@@ -169,6 +170,12 @@ struct tv<Tag, T> {
         hilet lock = std::scoped_lock(value);
         return wide_cast<T>(*value * dpi_scale);
     }
+
+    [[nodiscard]] T operator()(widget_impl const *widget) const noexcept
+    {
+        hi_axiom_not_null(widget);
+        return (*this)(widget->semantic_layer);
+    }
 };
 
 template<fixed_string Tag, std::integral T>
@@ -176,6 +183,12 @@ struct tv<Tag, T> {
     [[nodiscard]] T operator()(float dpi_scale) const noexcept
     {
         return narrow_cast<T>(std::ceil(tv<Tag, float>{}(dpi_scale)));
+    }
+
+    [[nodiscard]] T operator()(widget_impl const *widget) const noexcept
+    {
+        hi_axiom_not_null(widget);
+        return (*this)(widget->semantic_layer);
     }
 };
 
@@ -186,6 +199,12 @@ struct tv<Tag, extent2i> {
         hilet tmp = tv<Tag, float>{}(dpi_scale);
         return extent2i{tmp, tmp};
     }
+
+    [[nodiscard]] extent2i operator()(widget_impl const *widget) const noexcept
+    {
+        hi_axiom_not_null(widget);
+        return (*this)(widget->semantic_layer);
+    }
 };
 
 template<fixed_string Tag>
@@ -194,6 +213,38 @@ struct tv<Tag, marginsi> {
     {
         hilet tmp = tv<Tag, float>{}(dpi_scale);
         return marginsi{tmp};
+    }
+
+    template<derived_from<widget_impl> Widget> requires (not std::is_same_v<Widget, widget_impl>)
+    [[nodiscard]] marginsi operator()(Widget const *widget) const noexcept
+    {
+        constexpr auto prefix = Widget::tag + "." + Tag;
+
+        hi_axiom_not_null(widget);
+
+        if (widget->mode <= widget_mode::disabled) {
+            return tv<prefix + ":disabled", margins>{}(widget->dpi_scale);
+
+        } else if (not widget->active) {
+            return tv<prefix + ":passive", margins>{}(widget->dpi_scale);
+
+        } else if (widget->focus) {
+            if () {
+            } else {
+                if (widget->hover == widget_hover::pressed) {
+                    return tv<prefix + ":focus:pressed", margins>{}(widget->dpi_scale);
+
+                } else if (widget->hover = widget_hover::hover) {
+                    return tv<prefix + ":focus:hover", margins>{}(widget->dpi_scale);
+
+                } else {
+                    return tv<prefix + ":focus", margins>{}(widget->dpi_scale);
+                }
+            }
+        }
+
+
+        return (*this)(widget->semantic_layer);
     }
 };
 
@@ -221,5 +272,6 @@ struct tv<Tag, text_theme> {
         return *value;
     }
 };
+
 
 }} // namespace hi::v1
