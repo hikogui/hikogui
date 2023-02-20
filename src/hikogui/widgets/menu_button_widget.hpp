@@ -27,9 +27,10 @@ namespace hi { inline namespace v1 {
  * caused by external factors. The canonical example is another menu button in
  * a set, which is configured with a different `on_value`.
  */
-class menu_button_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class menu_button_widget final : public abstract_button_widget<Name ^ "menu-button"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name ^ "menu-button">;
     using delegate_type = typename super::delegate_type;
 
     /** Construct a menu button widget.

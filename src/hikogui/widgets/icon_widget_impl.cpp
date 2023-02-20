@@ -66,7 +66,7 @@ icon_widget::icon_widget(widget_intf *parent) noexcept : super(parent)
 
 void icon_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
         } else {
@@ -83,13 +83,13 @@ void icon_widget::set_layout(widget_layout const& context) noexcept
 
 void icon_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         switch (_icon_type) {
         case icon_type::no:
             break;
 
         case icon_type::pixmap:
-            if (not context.draw_image(layout(), _icon_rectangle, _pixmap_backing)) {
+            if (not context.draw_image(layout, _icon_rectangle, _pixmap_backing)) {
                 // Continue redrawing until the image is loaded.
                 request_redraw();
             }
@@ -97,7 +97,7 @@ void icon_widget::draw(draw_context const& context) noexcept
 
         case icon_type::glyph:
             {
-                context.draw_glyph(layout(), _icon_rectangle, _glyph, theme().color(*color));
+                context.draw_glyph(layout, _icon_rectangle, _glyph, theme().color(*color));
             }
             break;
 

@@ -33,5 +33,10 @@ target_sources(hikogui PRIVATE
     theme_book_impl.cpp
     theme_book.hpp
     theme_mode.hpp
+    theme_value_index.hpp
+    theme_value.hpp
+    widget_intf.hpp
+    widget_mode.hpp
+    widget_layout.hpp
 )
 

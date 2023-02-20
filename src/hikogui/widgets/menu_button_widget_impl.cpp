@@ -27,7 +27,7 @@ namespace hi::inline v1 {
 
 void menu_button_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         hilet inside_rectangle = context.rectangle() - theme().margin<int>();
 
         if (os_settings::left_to_right()) {
@@ -59,7 +59,7 @@ void menu_button_widget::set_layout(widget_layout const& context) noexcept
 
 void menu_button_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         draw_menu_button(context);
         draw_check_mark(context);
         draw_button(context);
@@ -113,7 +113,7 @@ void menu_button_widget::draw_menu_button(draw_context const& context) noexcept
 {
     hilet border_color = *focus ? focus_color() : color::transparent();
     context.draw_box(
-        layout(), layout().rectangle(), background_color(), border_color, theme().border_width(), border_side::inside);
+        layout, layout.rectangle(), background_color(), border_color, theme().border_width(), border_side::inside);
 }
 
 void menu_button_widget::draw_check_mark(draw_context const& context) noexcept
@@ -123,7 +123,7 @@ void menu_button_widget::draw_check_mark(draw_context const& context) noexcept
     // Checkmark or tristate.
     if (state_ == hi::button_state::on) {
         context.draw_glyph(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), _check_glyph, accent_color());
+            layout, translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), _check_glyph, accent_color());
     }
 }
 

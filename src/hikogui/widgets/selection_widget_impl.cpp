@@ -84,7 +84,7 @@ selection_widget::selection_widget(widget_intf *parent, std::shared_ptr<delegate
 
 void selection_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         if (os_settings::left_to_right()) {
             _left_box_rectangle = aarectanglei{0, 0, theme().size(), context.height()};
 
@@ -137,7 +137,7 @@ void selection_widget::set_layout(widget_layout const& context) noexcept
 void selection_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible) {
-        if (overlaps(context, layout())) {
+        if (overlaps(context, layout)) {
             draw_outline(context);
             draw_left_box(context);
             draw_chevrons(context);
@@ -155,7 +155,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
     case gui_event_type::mouse_up:
-        if (*mode >= widget_mode::partial and _has_options and layout().rectangle().contains(event.mouse().position)) {
+        if (*mode >= widget_mode::partial and _has_options and layout.rectangle().contains(event.mouse().position)) {
             return handle_event(gui_event_type::gui_activate);
         }
         return true;
@@ -194,8 +194,8 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
     if (*mode >= widget_mode::partial) {
         auto r = _overlay_widget->hitbox_test_from_parent(position);
 
-        if (layout().contains(position)) {
-            r = std::max(r, hitbox{id, _layout.elevation, _has_options ? hitbox_type::button : hitbox_type::_default});
+        if (layout.contains(position)) {
+            r = std::max(r, hitbox{id, layout.elevation, _has_options ? hitbox_type::button : hitbox_type::_default});
         }
 
         return r;
@@ -320,8 +320,8 @@ void selection_widget::repopulate_options() noexcept
 void selection_widget::draw_outline(draw_context const& context) noexcept
 {
     context.draw_box(
-        layout(),
-        layout().rectangle(),
+        layout,
+        layout.rectangle(),
         background_color(),
         focus_color(),
         theme().border_width(),
@@ -334,13 +334,13 @@ void selection_widget::draw_left_box(draw_context const& context) noexcept
     hilet corner_radii = os_settings::left_to_right() ?
         hi::corner_radii(theme().rounding_radius<float>(), 0.0f, theme().rounding_radius<float>(), 0.0f) :
         hi::corner_radii(0.0f, theme().rounding_radius<float>(), 0.0f, theme().rounding_radius<float>());
-    context.draw_box(layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_left_box_rectangle), focus_color(), corner_radii);
+    context.draw_box(layout, translate_z(0.1f) * narrow_cast<aarectangle>(_left_box_rectangle), focus_color(), corner_radii);
 }
 
 void selection_widget::draw_chevrons(draw_context const& context) noexcept
 {
     context.draw_glyph(
-        layout(), translate_z(0.2f) * narrow_cast<aarectangle>(_chevrons_rectangle), _chevrons_glyph, label_color());
+        layout, translate_z(0.2f) * narrow_cast<aarectangle>(_chevrons_rectangle), _chevrons_glyph, label_color());
 }
 
 } // namespace hi::inline v1

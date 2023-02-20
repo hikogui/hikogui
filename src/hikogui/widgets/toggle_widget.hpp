@@ -49,9 +49,10 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class toggle_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class toggle_widget final : public abstract_button_widget<Name ^ "toggle"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name ^ "toggle">;
     using delegate_type = typename super::delegate_type;
 
     /** Construct a toggle widget.

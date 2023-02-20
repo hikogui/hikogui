@@ -36,9 +36,10 @@ namespace hi { inline namespace v1 {
  *
  * @image html grid_widget.png
  */
-class grid_widget : public widget {
+template<fixed_string Name = "">
+class grid_widget : public widget<Name ^ "grid"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "grid">;
 
     ~grid_widget();
 

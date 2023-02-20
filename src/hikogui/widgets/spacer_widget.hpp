@@ -16,9 +16,10 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  *
  */
-class spacer_widget final : public widget {
+template<fixed_string Name = "">
+class spacer_widget final : public widget<Name ^ "spacer"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "spacer">;
 
     spacer_widget(widget_intf *parent) noexcept : super(parent) {}
 
@@ -36,7 +37,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = context;
+        layout = context;
     }
 
     void draw(draw_context const& context) noexcept override {}

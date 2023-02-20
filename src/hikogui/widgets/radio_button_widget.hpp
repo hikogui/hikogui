@@ -39,9 +39,10 @@ namespace hi { inline namespace v1 {
  *       Multiple radio buttons may share a delegate or an observer which
  *       allows radio buttons to act as a set.
  */
-class radio_button_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class radio_button_widget final : public abstract_button_widget<Name ^ "radio-button"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name ^ "radio-button">;
     using delegate_type = typename super::delegate_type;
 
     /** Construct a radio button widget.

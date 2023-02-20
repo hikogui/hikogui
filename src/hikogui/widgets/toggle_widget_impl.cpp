@@ -22,7 +22,7 @@ namespace hi::inline v1 {
 
 void toggle_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
         if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
@@ -61,7 +61,7 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
 
 void toggle_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         draw_toggle_button(context);
         draw_toggle_pip(context);
         draw_button(context);
@@ -71,7 +71,7 @@ void toggle_widget::draw(draw_context const& context) noexcept
 void toggle_widget::draw_toggle_button(draw_context const& context) noexcept
 {
     context.draw_box(
-        layout(),
+        layout,
         _button_rectangle,
         background_color(),
         focus_color(),
@@ -90,7 +90,7 @@ void toggle_widget::draw_toggle_pip(draw_context const& context) noexcept
     hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
 
     hilet forground_color_ = state() == button_state::on ? accent_color() : foreground_color();
-    context.draw_circle(layout(), positioned_pip_circle * 1.02f, forground_color_);
+    context.draw_circle(layout, positioned_pip_circle * 1.02f, forground_color_);
 }
 
 } // namespace hi::inline v1

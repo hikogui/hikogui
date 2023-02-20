@@ -43,9 +43,10 @@ namespace hi { inline namespace v1 {
  *       `radio_button_widget` this is accomplished by sharing a delegate or a
  *       observer between the toolbar tab button and the tab widget.
  */
-class toolbar_tab_button_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class toolbar_tab_button_widget final : public abstract_button_widget<Name ^ "toolbar-tab-button"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name ^ "toolbar-tab-button">;
     using delegate_type = typename super::delegate_type;
 
     /** Construct a toolbar tab button widget.

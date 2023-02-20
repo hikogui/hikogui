@@ -16,7 +16,7 @@
 #include "../text/text_shaper.hpp"
 #include "../font/module.hpp"
 #include "../color/module.hpp"
-#include "../widgets/widget_layout.hpp"
+#include "../GUI/widget_layout.hpp"
 #include "../vector_span.hpp"
 #include "../utility/module.hpp"
 

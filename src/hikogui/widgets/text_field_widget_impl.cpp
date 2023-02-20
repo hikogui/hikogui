@@ -100,7 +100,7 @@ text_field_widget::~text_field_widget()
 
 void text_field_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         hilet scroll_size = extent2i{
             context.width(),
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
@@ -123,7 +123,7 @@ void text_field_widget::set_layout(widget_layout const& context) noexcept
 
 void text_field_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         draw_background_box(context);
 
         _scroll_widget->draw(context);
@@ -224,10 +224,10 @@ void text_field_widget::draw_background_box(draw_context const& context) const n
     hilet outline = narrow_cast<aarectangle>(_scroll_shape.rectangle);
 
     hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
-    context.draw_box(layout(), outline, background_color(), corner_radii);
+    context.draw_box(layout, outline, background_color(), corner_radii);
 
     hilet line = line_segment(get<0>(outline), get<1>(outline));
-    context.draw_line(layout(), translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width(), focus_color());
+    context.draw_line(layout, translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width(), focus_color());
 }
 
 } // namespace hi::inline v1

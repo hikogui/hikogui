@@ -240,7 +240,7 @@ void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
     hi_axiom(loop::main().on_thread());
 
     if (parent) {
-        parent->scroll_to_show(_layout.to_parent * rectangle);
+        parent->scroll_to_show(layout.to_parent * rectangle);
     }
 }
 
@@ -251,10 +251,10 @@ void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
     hi_axiom(loop::main().on_thread());
 
     // Move the request_rectangle to window coordinates.
-    hilet requested_window_rectangle = translate2i{layout().clipping_rectangle_on_window()} * requested_rectangle;
-    hilet window_bounds = aarectanglei{layout().window_size} - theme().margin<int>();
+    hilet requested_window_rectangle = translate2i{layout.clipping_rectangle_on_window()} * requested_rectangle;
+    hilet window_bounds = aarectanglei{layout.window_size} - theme().margin<int>();
     hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
-    return layout().from_window * response_window_rectangle;
+    return layout.from_window * response_window_rectangle;
 }
 
 } // namespace hi::inline v1

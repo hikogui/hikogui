@@ -23,9 +23,10 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class window_traffic_lights_widget final : public widget {
+template<fixed_string Name = "">
+class window_traffic_lights_widget final : public widget<Name ^ "window-traffic-lights"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "window-traffic-lights">;
 
     window_traffic_lights_widget(widget_intf *parent) noexcept;
 

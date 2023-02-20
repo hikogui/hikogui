@@ -36,12 +36,12 @@ namespace hi { inline namespace v1 {
  * @tparam Axis the axis to lay out child widgets. Either `axis::horizontal` or
  * `axis::vertical`.
  */
-template<axis Axis>
-class row_column_widget final : public widget {
+template<fixed_string Tag, axis Axis>
+class row_column_widget final : public widget<Tag> {
 public:
     static_assert(Axis == axis::horizontal or Axis == axis::vertical);
 
-    using super = widget;
+    using super = widget<Tag>;
     static constexpr hi::axis axis = Axis;
 
     ~row_column_widget() {}
@@ -112,7 +112,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             _children.set_layout(context.shape, theme().baseline_adjustment());
 
             for (hilet& child : _children) {
@@ -152,11 +152,13 @@ private:
 /** Lays out children in a row.
  * @ingroup widgets
  */
-using row_widget = row_column_widget<axis::x>;
+template<fixed_string Name = "">
+using row_widget = row_column_widget<Name ^ "row", axis::x>;
 
 /** Lays out children in a column.
  * @ingroup widgets
  */
-using column_widget = row_column_widget<axis::y>;
+template<fixed_string Name = "">
+using column_widget = row_column_widget<Name ^ "column", axis::y>;
 
 }} // namespace hi::v1

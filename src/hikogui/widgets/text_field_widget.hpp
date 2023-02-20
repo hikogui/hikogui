@@ -59,10 +59,11 @@ concept text_field_widget_attribute = text_widget_attribute<Context>;
  *
  * @ingroup widgets
  */
-class text_field_widget final : public widget {
+template<fixed_string Name = "">
+class text_field_widget final : public widget<Name ^ "text-field"> {
 public:
     using delegate_type = text_field_delegate;
-    using super = widget;
+    using super = widget<Name ^ "text-field">;
 
     std::shared_ptr<delegate_type> delegate;
 

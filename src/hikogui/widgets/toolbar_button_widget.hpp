@@ -16,9 +16,10 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class toolbar_button_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class toolbar_button_widget final : public abstract_button_widget<Name ^ "toolbar-button"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name ^ "toolbar-button">;
     using delegate_type = typename super::delegate_type;
 
     toolbar_button_widget(

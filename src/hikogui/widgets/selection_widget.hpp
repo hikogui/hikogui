@@ -41,9 +41,10 @@ concept selection_widget_attribute = label_widget_attribute<Context>;
  *
  * @ingroup widgets
  */
-class selection_widget final : public widget {
+template<fixed_string Name = "">
+class selection_widget final : public widget<Name ^ "selection"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "selection">;
     using delegate_type = selection_delegate;
 
     std::shared_ptr<delegate_type> delegate;

@@ -31,9 +31,10 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class toolbar_widget final : public widget {
+template<fixed_string Name = "">
+class toolbar_widget final : public widget<Name ^ "toolbar"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "toolbar">;
 
     /** Constructs an empty row/column widget.
      *

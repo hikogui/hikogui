@@ -30,10 +30,10 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  * @tparam Axis which axis (horizontal or vertical) this scroll bar is used for.
  */
-template<axis Axis>
-class scroll_bar_widget final : public widget {
+template<axis Axis, fixed_string Name = "">
+class scroll_bar_widget final : public widget<Name ^ "scroll-bar"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "scroll-bar">;
 
     static constexpr hi::axis axis = Axis;
 
@@ -86,7 +86,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = context;
+        layout = context;
 
         if (*mode <= widget_mode::collapse) {
             _slider_rectangle = {};
@@ -109,7 +109,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout()) and visible()) {
+        if (*mode > widget_mode::invisible and overlaps(context, layout) and visible()) {
             draw_rails(context);
             draw_slider(context);
         }
@@ -119,9 +119,9 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout().contains(position) and visible() and
+        if (*mode >= widget_mode::partial and layout.contains(position) and visible() and
             _slider_rectangle.contains(position)) {
-            return {id, _layout.elevation, hitbox_type::scroll_bar};
+            return {id, layout.elevation, hitbox_type::scroll_bar};
         } else {
             return {};
         }
@@ -198,7 +198,7 @@ private:
     [[nodiscard]] int rail_length() const noexcept
     {
         hi_axiom(loop::main().on_thread());
-        return axis == axis::vertical ? layout().height() : layout().width();
+        return axis == axis::vertical ? layout.height() : layout.width();
     }
 
     [[nodiscard]] int slider_length() const noexcept
@@ -259,8 +259,8 @@ private:
     void draw_rails(draw_context const& context) noexcept
     {
         hilet corner_radii =
-            axis == axis::vertical ? hi::corner_radii{layout().width() * 0.5f} : hi::corner_radii{layout().height() * 0.5f};
-        context.draw_box(layout(), layout().rectangle(), background_color(), corner_radii);
+            axis == axis::vertical ? hi::corner_radii{layout.width() * 0.5f} : hi::corner_radii{layout.height() * 0.5f};
+        context.draw_box(layout, layout.rectangle(), background_color(), corner_radii);
     }
 
     void draw_slider(draw_context const& context) noexcept
@@ -269,7 +269,7 @@ private:
                                                       hi::corner_radii{narrow_cast<float>(_slider_rectangle.height() / 2)};
 
         context.draw_box(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_slider_rectangle), foreground_color(), corner_radii);
+            layout, translate_z(0.1f) * narrow_cast<aarectangle>(_slider_rectangle), foreground_color(), corner_radii);
     }
 };
 

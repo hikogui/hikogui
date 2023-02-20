@@ -33,9 +33,10 @@ namespace hi { inline namespace v1 {
  *       `toolbar_tab_button_widget`. This is accomplished by sharing a delegate
  *       or a observer between the toolbar tab button and the tab widget.
  */
-class tab_widget final : public widget {
+template<fixed_string Name = "">
+class tab_widget final : public widget<Name ^ "tab"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "tab">;
     using delegate_type = tab_delegate;
 
     std::shared_ptr<delegate_type> delegate;

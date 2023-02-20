@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "widget_layout.hpp"
-#include "widget_mode.hpp"
 #include "../GFX/draw_context.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
@@ -43,53 +41,18 @@ class gfx_surface;
  *
  * @ingroup widgets
  */
+template<fixed_string Tag>
 class widget : public widget_intf {
 public:
     using super = widget_intf;
 
-    /** The widget mode.
-     * The current visibility and interactivity of a widget.
-     */
-    observer<widget_mode> mode = widget_mode::enabled;
-
-    /** Mouse cursor is hovering over the widget.
-     */
-    observer<bool> hover = false;
-
-    /** The widget has keyboard focus.
-     */
-    observer<bool> focus = false;
-
-    /** The scale by which to size the widget and its components.
+    /** The (custom)-name of the widget.
      *
-     * This value is set by the window when it's dpi changes.
+     * This is of the format:
+     *  - "<name>.<widget-type>."
+     *  - "<widget-type>."
      */
-    float scale = 1.0f;
-
-    /** The draw layer of the widget.
-     * The semantic layer is used mostly by the `draw()` function
-     * for selecting colors from the theme, to denote nesting widgets
-     * inside other widgets.
-     *
-     * Semantic layers start at 0 for the window-widget and for any pop-up
-     * widgets.
-     *
-     * The semantic layer is increased by one, whenever a user of the
-     * user-interface would understand the next layer to begin.
-     *
-     * In most cases it would mean that a container widget that does not
-     * draw itself will not increase the semantic_layer number.
-     */
-    size_t semantic_layer = 0_uz;
-
-    /** The logical layer of the widget.
-     * The logical layer can be used to determine how far away
-     * from the window-widget (root) the current widget is.
-     *
-     * Logical layers start at 0 for the window-widget.
-     * Each child widget increases the logical layer by 1.
-     */
-    int logical_layer = 0;
+    constexpr static auto tag = Tag;
 
     /** The minimum size this widget is allowed to be.
      */
@@ -132,7 +95,7 @@ public:
      */
     [[nodiscard]] hitbox hitbox_test_from_parent(point2i position) const noexcept override
     {
-        return hitbox_test(_layout.from_parent * position);
+        return hitbox_test(layout.from_parent * position);
     }
 
     /** Call hitbox_test from a parent widget.
@@ -144,7 +107,7 @@ public:
      */
     [[nodiscard]] hitbox hitbox_test_from_parent(point2i position, hitbox sibling_hitbox) const noexcept override
     {
-        return std::max(sibling_hitbox, hitbox_test(_layout.from_parent * position));
+        return std::max(sibling_hitbox, hitbox_test(layout.from_parent * position));
     }
 
     /** Check if the widget will accept keyboard focus.
@@ -158,10 +121,10 @@ public:
 
     /** Reset the layout before constraining.
      */
-    void reset_layout(float dpi_scale) noexcept override
+    void reset_layout(float new_dpi_scale) noexcept override
     {
-        scale = dpi_scale;
-        _layout = {};
+        dpi_scale = new_dpi_scale;
+        layout = {};
     }
 
     /** Update the constraints of the widget.
@@ -193,14 +156,7 @@ public:
      */
     void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = context;
-    }
-
-    /** Get the current layout for this widget.
-     */
-    widget_layout const& layout() const noexcept
-    {
-        return _layout;
+        layout = context;
     }
 
     /** Draw the widget.
@@ -232,7 +188,7 @@ public:
      */
     void request_redraw() const noexcept override
     {
-        process_event({gui_event_type::window_redraw, layout().clipping_rectangle_on_window()});
+        process_event({gui_event_type::window_redraw, layout.clipping_rectangle_on_window()});
     }
 
     /** Handle command.
@@ -248,8 +204,9 @@ public:
      * @param reject_list The widgets that should ignore this command
      * @return True when the command was handled by this widget or recursed child.
      */
-    bool
-    handle_event_recursive(gui_event const& event, std::vector<widget_id> const& reject_list = std::vector<widget_id>{}) noexcept override;
+    bool handle_event_recursive(
+        gui_event const& event,
+        std::vector<widget_id> const& reject_list = std::vector<widget_id>{}) noexcept override;
 
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
@@ -306,8 +263,6 @@ public:
     [[nodiscard]] virtual color label_color() const noexcept;
 
 protected:
-    widget_layout _layout;
-
     decltype(mode)::callback_token _mode_cbt;
 
     /** Make an overlay rectangle.
@@ -321,7 +276,5 @@ protected:
      */
     [[nodiscard]] aarectanglei make_overlay_rectangle(aarectanglei requested_rectangle) const noexcept;
 };
-
-
 
 }} // namespace hi::v1

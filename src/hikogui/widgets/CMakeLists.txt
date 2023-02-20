@@ -52,8 +52,6 @@ target_sources(hikogui PRIVATE
     toolbar_widget.hpp
     widget_impl.cpp
     widget.hpp
-    widget_layout.hpp
-    widget_mode.hpp
     window_traffic_lights_widget_impl.cpp
     window_traffic_lights_widget.hpp
     window_widget_impl.cpp

@@ -22,7 +22,7 @@ namespace hi::inline v1 {
 
 void radio_button_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
         if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
@@ -59,7 +59,7 @@ void radio_button_widget::set_layout(widget_layout const& context) noexcept
 
 void radio_button_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         draw_radio_button(context);
         draw_radio_pip(context);
         draw_button(context);
@@ -69,7 +69,7 @@ void radio_button_widget::draw(draw_context const& context) noexcept
 void radio_button_widget::draw_radio_button(draw_context const& context) noexcept
 {
     context.draw_circle(
-        layout(),
+        layout,
         _button_circle * 1.02f,
         background_color(),
         focus_color(),
@@ -87,7 +87,7 @@ void radio_button_widget::draw_radio_pip(draw_context const& context) noexcept
     // draw pip
     auto float_value = _animated_value.current_value();
     if (float_value > 0.0) {
-        context.draw_circle(layout(), _pip_circle * 1.02f * float_value, accent_color());
+        context.draw_circle(layout, _pip_circle * 1.02f * float_value, accent_color());
     }
 }
 

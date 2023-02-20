@@ -406,7 +406,7 @@ bool gui_window::send_events_to_widget(hi::widget_id target_id, std::vector<gui_
     while (target_widget) {
         // Each widget will try to handle the first event it can.
         for (hilet& event : events) {
-            if (target_widget->handle_event(target_widget->layout().from_window * event)) {
+            if (target_widget->handle_event(target_widget->layout.from_window * event)) {
                 return true;
             }
         }

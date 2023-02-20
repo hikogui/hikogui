@@ -17,7 +17,7 @@ namespace hi::inline v1 {
 
 void toolbar_tab_button_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         hilet label_rectangle = aarectanglei{
             theme().margin<int>(), 0, context.width() - theme().margin<int>() * 2, context.height() - theme().margin<int>()};
         _on_label_shape = _off_label_shape = _other_label_shape =
@@ -28,7 +28,7 @@ void toolbar_tab_button_widget::set_layout(widget_layout const& context) noexcep
 
 void toolbar_tab_button_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         draw_toolbar_tab_button(context);
         draw_button(context);
     }
@@ -44,7 +44,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
     hilet offset = theme().margin<int>() + theme().border_width();
-    hilet outline_rectangle = aarectanglei{0, -offset, layout().width(), layout().height() + offset};
+    hilet outline_rectangle = aarectanglei{0, -offset, layout.width(), layout.height() + offset};
 
     // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
     hilet button_z = *focus ? translate_z(0.6f) : translate_z(0.0f);
@@ -59,7 +59,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
         0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
 
     context.draw_box(
-        layout(),
+        layout,
         button_z * narrow_cast<aarectangle>(outline_rectangle),
         button_color,
         *focus ? focus_color() : button_color,

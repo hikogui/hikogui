@@ -20,7 +20,7 @@ namespace hi::inline v1 {
 
 void toolbar_button_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         hilet label_rectangle =
             aarectanglei{theme().margin<int>(), 0, context.width() - theme().margin<int>() * 2, context.height()};
         _on_label_shape = _off_label_shape = _other_label_shape =
@@ -31,7 +31,7 @@ void toolbar_button_widget::set_layout(widget_layout const& context) noexcept
 
 void toolbar_button_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         draw_toolbar_button(context);
         draw_button(context);
     }
@@ -46,7 +46,7 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const& context) noe
 {
     hilet border_color = *focus ? focus_color() : color::transparent();
     context.draw_box(
-        layout(), layout().rectangle(), background_color(), border_color, theme().border_width(), border_side::inside);
+        layout, layout.rectangle(), background_color(), border_color, theme().border_width(), border_side::inside);
 }
 
 } // namespace hi::inline v1

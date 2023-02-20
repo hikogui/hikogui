@@ -48,7 +48,7 @@ audio_device_widget::audio_device_widget(widget_intf *parent, hi::audio_system& 
 
 void audio_device_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         hilet grid_rectangle = context.rectangle();
         _grid_shape = {_grid_constraints, grid_rectangle, tv<"audio_device.baseline", int>{}(scale)};
     }

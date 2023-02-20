@@ -5,6 +5,15 @@
 #pragma once
 
 #include "widget_id.hpp"
+#include "widget_mode.hpp"
+#include "widget_layout.hpp"
+#include "hitbox.hpp"
+#include "keyboard_focus_group.hpp"
+#include "gui_event.hpp"
+#include "../GFX/draw_context.hpp"
+#include "../geometry/module.hpp"
+#include "../layout/box_constraints.hpp"
+#include "../observer.hpp"
 #include "../generator.hpp"
 #include "../loop.hpp"
 
@@ -24,6 +33,64 @@ public:
      * @note This is a uint32_t equal to the operating system's accessibility identifier.
      */
     widget_id id = {};
+
+    /** The widget mode.
+     * The current visibility and interactivity of a widget.
+     */
+    observer<widget_mode> mode = widget_mode::enabled;
+
+    /** The window containing this widget is active.
+     */
+    observer<bool> active = false;
+
+    /** Mouse cursor is hovering over the widget.
+     */
+    observer<bool> hover = false;
+
+    /** The widget is being clicked by the mouse.
+     */
+    observer<bool> pressed = false;
+
+    /** The widget has keyboard focus.
+     */
+    observer<bool> focus = false;
+
+    /** The state of the widget is considered "on".
+     */
+    observer<bool> on = false;
+
+    /** The scale by which to size the widget and its components.
+     *
+     * This value is set by the window when it's dpi changes.
+     */
+    float dpi_scale = 1.0f;
+
+    /** The draw layer of the widget.
+     * The semantic layer is used mostly by the `draw()` function
+     * for selecting colors from the theme, to denote nesting widgets
+     * inside other widgets.
+     *
+     * Semantic layers start at 0 for the window-widget and for any pop-up
+     * widgets.
+     *
+     * The semantic layer is increased by one, whenever a user of the
+     * user-interface would understand the next layer to begin.
+     *
+     * In most cases it would mean that a container widget that does not
+     * draw itself will not increase the semantic_layer number.
+     */
+    size_t semantic_layer = 0_uz;
+
+    /** The logical layer of the widget.
+     * The logical layer can be used to determine how far away
+     * from the window-widget (root) the current widget is.
+     *
+     * Logical layers start at 0 for the window-widget.
+     * Each child widget increases the logical layer by 1.
+     */
+    int logical_layer = 0;
+
+    widget_layout layout;
 
     virtual ~widget_intf() {}
     widget_intf(widget_intf *parent) noexcept : parent(parent), id(narrow_cast<uint32_t>(++global_counter<"widget::id">)) {}

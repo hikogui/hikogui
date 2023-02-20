@@ -65,7 +65,7 @@ void draw(hi::draw_context const &context) noexcept override
     auto const blue = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const border_width = 2.0f
     auto const corners = hi::corner_radii{3.0f, 3.0f, 3.0f, 3.0f};
-    context.draw_box(_layout, polygon, red, blue, border_width, hi::border_side::inside, corners);
+    context.draw_box(layout, polygon, red, blue, border_width, hi::border_side::inside, corners);
 }
 ```
 
@@ -87,7 +87,7 @@ void draw(hi::draw_context const &context) noexcept override
     auto const polygon = hi::circle{point3{35.0f, 35.0f, 0.0f}, 25.0f};
     auto const red = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const border_width = 2.0f
-    context.draw_circle(_layout, polygon, line_width, red, hi::line_end_cap::round, hi::line_end_cap::round);
+    context.draw_circle(layout, polygon, line_width, red, hi::line_end_cap::round, hi::line_end_cap::round);
 }
 ```
 
@@ -113,7 +113,7 @@ void draw(hi::draw_context const &context) noexcept override
     auto const red = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const blue = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const line_width = 2.0f
-    context.draw_line(_layout, line, red, blue, border_width, hi::border_side::inside);
+    context.draw_line(layout, line, red, blue, border_width, hi::border_side::inside);
 }
 ```
 

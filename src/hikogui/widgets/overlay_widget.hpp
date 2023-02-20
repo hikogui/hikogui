@@ -35,9 +35,10 @@ namespace hi { inline namespace v1 {
  * so that when the overlay widget is drawn smaller than the requested rectangle
  * the content will behave correctly.
  */
-class overlay_widget final : public widget {
+template<fixed_string Name = "">
+class overlay_widget final : public widget<Name ^ "overlay"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "overlay">;
 
     ~overlay_widget();
 

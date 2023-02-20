@@ -57,7 +57,7 @@ static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::itera
         run += (*it)->character.grapheme();
     }
 
-    auto result = font.shape_run(attributes.language, script, run);
+    auto result = font.shape_run(attributes.language(), script, run);
     result.scale(style.size * dpi_scale);
     hi_axiom(result.advances.size() == run.size());
     hi_axiom(result.glyph_count.size() == run.size());

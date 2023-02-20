@@ -42,10 +42,10 @@ namespace hi { inline namespace v1 {
  * @tparam Axis the axis that the content may be scrolled. Allowed values are
  *              `axis::horizontal`, `axis::vertical` or `axis::both`.
  */
-template<axis Axis = axis::both>
-class scroll_widget final : public widget {
+template<axis Axis = axis::both, fixed_string Name = "">
+class scroll_widget final : public widget<Name ^ "scroll"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "scroll">;
     using horizontal_scroll_bar_type = scroll_bar_widget<axis::horizontal>;
     using vertical_scroll_bar_type = scroll_bar_widget<axis::vertical>;
 
@@ -126,7 +126,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             _grid.set_layout(context.shape, theme().baseline_adjustment());
         }
 
@@ -138,10 +138,10 @@ public:
                 // The grid cells are always ordered in row-major.
                 // This the vertical scroll bar is _grid[1] and the horizontal scroll bar is _grid[2].
                 if (not _vertical_scroll_bar->visible()) {
-                    shape.rectangle = aarectanglei{0, shape.y(), _layout.width(), shape.height()};
+                    shape.rectangle = aarectanglei{0, shape.y(), layout.width(), shape.height()};
                 }
                 if (not _horizontal_scroll_bar->visible()) {
-                    shape.rectangle = aarectanglei{shape.x(), 0, shape.width(), _layout.height()};
+                    shape.rectangle = aarectanglei{shape.x(), 0, shape.width(), layout.height()};
                 }
             }
 
@@ -167,8 +167,8 @@ public:
             r = _horizontal_scroll_bar->hitbox_test_from_parent(position, r);
             r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);
 
-            if (layout().contains(position)) {
-                r = std::max(r, hitbox{id, _layout.elevation});
+            if (layout.contains(position)) {
+                r = std::max(r, hitbox{id, layout.elevation});
             }
             return r;
 

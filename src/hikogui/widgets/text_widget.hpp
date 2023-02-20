@@ -57,9 +57,10 @@ concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, obs
  *
  * @ingroup widgets
  */
-class text_widget final : public widget {
+template<fixed_string Name = "">
+class text_widget final : public widget<Name ^ "text"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "text">;
     using delegate_type = text_delegate;
 
     std::shared_ptr<delegate_type> delegate;

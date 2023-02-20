@@ -39,9 +39,10 @@ concept label_widget_attribute =
  * Here is an example on how to create a label:
  * @snippet widgets/checkbox_example_impl.cpp Create a label
  */
-class label_widget final : public widget {
+template<fixed_string Name = "">
+class label_widget final : public widget<Name ^ "label"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "label">;
 
     /** The label to display.
      */

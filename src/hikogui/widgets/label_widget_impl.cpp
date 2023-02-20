@@ -89,7 +89,7 @@ label_widget::label_widget(widget_intf *parent) noexcept : super(parent)
 
 void label_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         _grid.set_layout(context.shape, theme().baseline_adjustment());
     }
 
@@ -100,7 +100,7 @@ void label_widget::set_layout(widget_layout const& context) noexcept
 
 void label_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         for (hilet& cell : _grid) {
             cell.value->draw(context);
         }

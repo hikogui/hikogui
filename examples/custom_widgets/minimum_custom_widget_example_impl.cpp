@@ -35,9 +35,9 @@ public:
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
     void set_layout(hi::widget_layout const& context) noexcept override
     {
-        // Update the `_layout` with the new context, in this case we want to do some
+        // Update the `layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
             // In this case we make two rectangles which are used in the `draw()` function.
             _left_rectangle = hi::aarectangle{
@@ -54,11 +54,11 @@ public:
     {
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
+        if (*mode > hi::widget_mode::invisible and overlaps(context, layout)) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
-            context.draw_box(_layout, _left_rectangle, theme().color(hi::semantic_color::indigo));
-            context.draw_box(_layout, _right_rectangle, theme().color(hi::semantic_color::blue));
+            context.draw_box(layout, _left_rectangle, theme().color(hi::semantic_color::indigo));
+            context.draw_box(layout, _right_rectangle, theme().color(hi::semantic_color::blue));
         }
     }
 

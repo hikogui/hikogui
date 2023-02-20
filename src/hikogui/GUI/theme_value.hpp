@@ -13,6 +13,7 @@
 #include "../text/text_theme.hpp"
 #include "../geometry/module.hpp"
 #include "../generator.hpp"
+#include "theme_value_index.hpp"
 #include <atomic>
 #include <map>
 #include <mutex>
@@ -20,7 +21,6 @@
 namespace hi { inline namespace v1 {
 
 namespace detail {
-    
 
 template<typename T>
 class theme_value_base {
@@ -45,23 +45,16 @@ public:
         return _mutex.unlock();
     }
 
-    value_type const& operator*() const noexcept
+    [[nodiscard]] value_type get(theme_value_index index) const noexcept
     {
         hi_axiom(_mutex.is_locked());
-        return _value;
+        return _values[index.intrinsic()];
     }
 
-    value_type& operator*() noexcept
+    [[nodiscard]] void set(theme_value_index index, value_type value) noexcept
     {
         hi_axiom(_mutex.is_locked());
-        return _value;
-    }
-
-    theme_value_base& operator=(value_type const& value) noexcept
-    {
-        hi_axiom(_mutex.is_locked());
-        _value = value;
-        return *this;
+        _values[index.intrinsic()] = value;
     }
 
     [[nodiscard]] static generator<theme_value_base&> get(std::string const& key) noexcept
@@ -77,7 +70,7 @@ public:
 
 private:
     mutable unfair_mutex _mutex;
-    value_type _value;
+    std::array<value_type, theme_value_index::array_size> _values;
 
 protected:
     inline static unfair_mutex _map_mutex;
@@ -100,15 +93,14 @@ public:
 
     void unlock() noexcept {}
 
-    value_type operator*() const noexcept
+    [[nodiscard]] value_type get(theme_value_index index) const noexcept
     {
-        return _value.load(std::memory_order::relaxed);
+        return std::atomic_ref(_values[index.intrinsic()]).load(std::memory_order::relaxed);
     }
 
-    theme_value_base& operator=(value_type const& value) noexcept
+    [[nodiscard]] void set(theme_value_index index, value_type value) noexcept
     {
-        _value.store(value, std::memory_order::relaxed);
-        return *this;
+        std::atomic_ref(_values[index.intrinsic()]).store(value, std::memory_order::relaxed);
     }
 
     [[nodiscard]] static generator<theme_value_base&> get(std::string const& key) noexcept
@@ -123,14 +115,12 @@ public:
     }
 
 private:
-    std::atomic<value_type> _value;
+    std::array<value_type, theme_value_index::array_size> _values;
 
 protected:
     inline static unfair_mutex _map_mutex;
     inline static std::map<std::string, theme_value_base *> _map;
 };
-
-
 
 template<fixed_string Tag, typename T>
 class tagged_theme_value : public theme_value_base<T> {
@@ -164,114 +154,61 @@ struct tv;
 
 template<fixed_string Tag, std::floating_point T>
 struct tv<Tag, T> {
-    [[nodiscard]] T operator()(float dpi_scale) const noexcept
-    {
-        hilet& value = detail::global_theme_value<Tag, float>;
-        hilet lock = std::scoped_lock(value);
-        return wide_cast<T>(*value * dpi_scale);
-    }
-
-    [[nodiscard]] T operator()(widget_impl const *widget) const noexcept
+    [[nodiscard]] T operator[](widget_intf const *widget) const noexcept
     {
         hi_axiom_not_null(widget);
-        return (*this)(widget->semantic_layer);
+        hilet& value = detail::global_theme_value<Tag, float>;
+        hilet lock = std::scoped_lock(value);
+        return wide_cast<T>(value.get(theme_value_index{*widget}) * widget->dpi_scale);
     }
 };
 
 template<fixed_string Tag, std::integral T>
 struct tv<Tag, T> {
-    [[nodiscard]] T operator()(float dpi_scale) const noexcept
+    [[nodiscard]] T operator[](widget_intf const *widget) const noexcept
     {
-        return narrow_cast<T>(std::ceil(tv<Tag, float>{}(dpi_scale)));
-    }
-
-    [[nodiscard]] T operator()(widget_impl const *widget) const noexcept
-    {
-        hi_axiom_not_null(widget);
-        return (*this)(widget->semantic_layer);
+        return narrow_cast<T>(std::ceil(tv<Tag, float>{}[widget]));
     }
 };
 
 template<fixed_string Tag>
 struct tv<Tag, extent2i> {
-    [[nodiscard]] extent2i operator()(float dpi_scale) const noexcept
+    [[nodiscard]] extent2i operator[](widget_intf const *widget) const noexcept
     {
-        hilet tmp = tv<Tag, float>{}(dpi_scale);
+        hilet tmp = tv<Tag, int>{}[widget];
         return extent2i{tmp, tmp};
-    }
-
-    [[nodiscard]] extent2i operator()(widget_impl const *widget) const noexcept
-    {
-        hi_axiom_not_null(widget);
-        return (*this)(widget->semantic_layer);
     }
 };
 
 template<fixed_string Tag>
 struct tv<Tag, marginsi> {
-    [[nodiscard]] marginsi operator()(float dpi_scale) const noexcept
+    [[nodiscard]] extent2i operator[](widget_intf const *widget) const noexcept
     {
-        hilet tmp = tv<Tag, float>{}(dpi_scale);
+        hilet tmp = tv<Tag, int>{}[widget];
         return marginsi{tmp};
-    }
-
-    template<derived_from<widget_impl> Widget> requires (not std::is_same_v<Widget, widget_impl>)
-    [[nodiscard]] marginsi operator()(Widget const *widget) const noexcept
-    {
-        constexpr auto prefix = Widget::tag + "." + Tag;
-
-        hi_axiom_not_null(widget);
-
-        if (widget->mode <= widget_mode::disabled) {
-            return tv<prefix + ":disabled", margins>{}(widget->dpi_scale);
-
-        } else if (not widget->active) {
-            return tv<prefix + ":passive", margins>{}(widget->dpi_scale);
-
-        } else if (widget->focus) {
-            if () {
-            } else {
-                if (widget->hover == widget_hover::pressed) {
-                    return tv<prefix + ":focus:pressed", margins>{}(widget->dpi_scale);
-
-                } else if (widget->hover = widget_hover::hover) {
-                    return tv<prefix + ":focus:hover", margins>{}(widget->dpi_scale);
-
-                } else {
-                    return tv<prefix + ":focus", margins>{}(widget->dpi_scale);
-                }
-            }
-        }
-
-
-        return (*this)(widget->semantic_layer);
     }
 };
 
 template<fixed_string Tag>
 struct tv<Tag, hi::color> {
-    [[nodiscard]] hi::color operator()(size_t depth = 0) const noexcept
+    [[nodiscard]] hi::color operator[](widget_intf const *widget) const noexcept
     {
-        hilet& value = detail::global_theme_value<Tag, std::vector<hi::color>>;
+        hi_axiom_not_null(widget);
+        hilet& value = detail::global_theme_value<Tag, hi::color>;
         hilet lock = std::scoped_lock(value);
-        hilet& colors = *value;
-        if (colors.empty()) {
-            return {};
-        } else {
-            return colors[depth % colors.size()];
-        }
+        return value.get(theme_value_index{*widget});
     }
 };
 
 template<fixed_string Tag>
 struct tv<Tag, text_theme> {
-    [[nodiscard]] text_theme operator()() const noexcept
+    [[nodiscard]] text_theme operator[](widget_intf const *widget) const noexcept
     {
-        hilet& value = detail::global_theme_value<Tag, text_theme>;
+        hi_axiom_not_null(widget);
+        hilet& value = detail::global_theme_value<Tag, hi::text_theme>;
         hilet lock = std::scoped_lock(value);
-        return *value;
+        return value.get(theme_value_index{*widget});
     }
 };
-
 
 }} // namespace hi::v1

@@ -23,9 +23,10 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class system_menu_widget final : public widget {
+template<fixed_string Name = "">
+class system_menu_widget final : public widget<Name ^ "system-menu"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "system-menu">;
 
     observer<icon> icon;
 

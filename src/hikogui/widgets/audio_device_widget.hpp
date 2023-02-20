@@ -25,9 +25,10 @@ namespace hi { inline namespace v1 {
 /** Audio device configuration widget.
  * @ingroup widgets
  */
-class audio_device_widget final : public widget {
+template<fixed_string Name = "">
+class audio_device_widget final : public widget<Name ^ "audio-device"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "audio-device">;
 
     /** The audio device this widget has selected and is configuring.
      */

@@ -81,6 +81,11 @@ struct fixed_string {
         return N;
     }
 
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return N == 0;
+    }
+
     template<size_t I>
     [[nodiscard]] constexpr friend char& get(fixed_string& a) noexcept
     {
@@ -182,15 +187,43 @@ struct fixed_string {
         return *this <=> fixed_string<O - 1>(rhs);
     }
 
-    template<size_t O>
-    [[nodiscard]] constexpr auto operator+(fixed_string<O> const& rhs) const noexcept
+    /** Append two strings.
+     */
+    template<size_t L, size_t R>
+    [[nodiscard]] constexpr friend auto operator+(fixed_string<L> const &lhs, fixed_string<R> const& rhs) noexcept
     {
-        auto r = fixed_string<N + O>{};
+        auto r = fixed_string<L + R>{};
         auto dst_i = 0_uz;
-        for (auto src_i = 0_uz; src_i != N; ++src_i, ++dst_i) {
+        for (auto src_i = 0_uz; src_i != L; ++src_i, ++dst_i) {
+            r[dst_i] = lhs[src_i];
+        }
+        for (auto src_i = 0_uz; src_i != R; ++src_i, ++dst_i) {
+            r[dst_i] = rhs[src_i];
+        }
+
+        return r;
+    }
+
+    /** Join two strings with a dot '.'.
+     *
+     * If one or both of the operands is empty, no '.' is added.
+     */
+    template<size_t L, size_t R>
+    [[nodiscard]] constexpr friend auto operator^(fixed_string<L> const& lhs, fixed_string<R> const& rhs) noexcept
+    {
+        auto has_dot = L != 0 and R != 0;
+        auto r = fixed_string<L + R + wide_cast<size_t>(has_dot)>{};
+
+        auto dst_i = 0_uz;
+        for (auto src_i = 0_uz; src_i != L; ++src_i, ++dst_i) {
             r[dst_i] = (*this)[src_i];
         }
-        for (auto src_i = 0_uz; src_i != O; ++src_i, ++dst_i) {
+
+        if (has_dot) {
+            r[dst_i++] = '.';
+        }
+
+        for (auto src_i = 0_uz; src_i != R; ++src_i, ++dst_i) {
             r[dst_i] = rhs[src_i];
         }
 

@@ -15,9 +15,10 @@ namespace hi { inline namespace v1 {
 /** A momentary button widget.
  * @ingroup widgets
  */
-class momentary_button_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class momentary_button_widget final : public abstract_button_widget<Name ^ "momentary-button"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name ^ "momentary-button">;
     using delegate_type = typename super::delegate_type;
 
     momentary_button_widget(

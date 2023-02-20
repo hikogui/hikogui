@@ -50,7 +50,7 @@ tab_widget::tab_widget(widget_intf *parent, std::shared_ptr<delegate_type> deleg
 
 void tab_widget::set_layout(widget_layout const& context) noexcept
 {
-    _layout = context;
+    layout = context;
 
     for (hilet& child : _children) {
         if (*child->mode > widget_mode::invisible) {

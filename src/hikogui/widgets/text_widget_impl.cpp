@@ -19,8 +19,8 @@ text_widget::text_widget(widget_intf *parent, std::shared_ptr<delegate_type> del
     _delegate_cbt = this->delegate->subscribe([&] {
         // On every text edit, immediately/synchronously update the shaped text.
         // This is needed for handling multiple edit commands before the next frame update.
-        if (_layout) {
-            auto new_layout = _layout;
+        if (layout) {
+            auto new_layout = layout;
             hilet old_constraints = _constraints_cache;
 
             // Constrain and layout according to the old layout.
@@ -113,7 +113,7 @@ text_widget::~text_widget()
 
 void text_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         hi_assert(context.shape.baseline);
 
         _shaped_text.layout(
@@ -191,7 +191,7 @@ void text_widget::draw(draw_context const& context) noexcept
             // The last drag mouse event was stored in window coordinate to compensate for scrolling, translate it
             // back to local coordinates before handling the mouse event again.
             auto new_mouse_event = _last_drag_mouse_event;
-            new_mouse_event.mouse().position = _layout.from_window * _last_drag_mouse_event.mouse().position;
+            new_mouse_event.mouse().position = layout.from_window * _last_drag_mouse_event.mouse().position;
 
             // When mouse is dragging a selection, start continues redraw and scroll parent views to display the selection.
             text_widget::handle_event(new_mouse_event);
@@ -201,14 +201,14 @@ void text_widget::draw(draw_context const& context) noexcept
         request_redraw();
     }
 
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-        context.draw_text(layout(), _shaped_text);
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+        context.draw_text(layout, _shaped_text);
 
-        context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(semantic_color::text_select));
+        context.draw_text_selection(layout, _shaped_text, _selection, theme().color(semantic_color::text_select));
 
         if (*_cursor_state == cursor_state_type::on or *_cursor_state == cursor_state_type::busy) {
             context.draw_text_cursors(
-                layout(),
+                layout,
                 _shaped_text,
                 _selection.cursor(),
                 _overwrite_mode,
@@ -847,7 +847,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
             // Normally mouse positions are kept in the local coordinate system, but scrolling
             // causes this coordinate system to shift, so translate it to the window coordinate system here.
             _last_drag_mouse_event = event;
-            _last_drag_mouse_event.mouse().position = _layout.to_window * event.mouse().position;
+            _last_drag_mouse_event.mouse().position = layout.to_window * event.mouse().position;
             ++global_counter<"text_widget:mouse_drag:redraw">;
             request_redraw();
             return true;
@@ -864,12 +864,12 @@ hitbox text_widget::hitbox_test(point2i position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 
-    if (layout().contains(position)) {
+    if (layout.contains(position)) {
         if (*mode >= widget_mode::partial) {
-            return hitbox{id, _layout.elevation, hitbox_type::text_edit};
+            return hitbox{id, layout.elevation, hitbox_type::text_edit};
 
         } else if (*mode >= widget_mode::select) {
-            return hitbox{id, _layout.elevation, hitbox_type::_default};
+            return hitbox{id, layout.elevation, hitbox_type::_default};
 
         } else {
             return hitbox{};

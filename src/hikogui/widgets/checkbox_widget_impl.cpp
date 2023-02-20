@@ -23,7 +23,7 @@ namespace hi::inline v1 {
 
 void checkbox_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
         if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
@@ -62,7 +62,7 @@ void checkbox_widget::set_layout(widget_layout const& context) noexcept
 
 void checkbox_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         draw_check_box(context);
         draw_check_mark(context);
         draw_button(context);
@@ -72,7 +72,7 @@ void checkbox_widget::draw(draw_context const& context) noexcept
 void checkbox_widget::draw_check_box(draw_context const& context) noexcept
 {
     context.draw_box(
-        layout(),
+        layout,
         _button_rectangle,
         background_color(),
         focus_color(),
@@ -87,14 +87,14 @@ void checkbox_widget::draw_check_mark(draw_context const& context) noexcept
     // Checkmark or tristate.
     if (state_ == hi::button_state::on) {
         context.draw_glyph(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), _check_glyph, accent_color());
+            layout, translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), _check_glyph, accent_color());
 
     } else if (state_ == hi::button_state::off) {
         ;
 
     } else {
         context.draw_glyph(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle), _minus_glyph, accent_color());
+            layout, translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle), _minus_glyph, accent_color());
     }
 }
 

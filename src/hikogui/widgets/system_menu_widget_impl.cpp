@@ -23,7 +23,7 @@ system_menu_widget::system_menu_widget(widget_intf *parent) noexcept : super(par
 
 void system_menu_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         hilet icon_height =
             context.height() < round_cast<int>(theme().large_size() * 1.2f) ? context.height() : theme().large_size();
         hilet icon_rectangle = aarectanglei{0, context.height() - icon_height, context.width(), icon_height};
@@ -38,7 +38,7 @@ void system_menu_widget::set_layout(widget_layout const& context) noexcept
 
 void system_menu_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         _icon_widget->draw(context);
     }
 }
@@ -47,10 +47,10 @@ hitbox system_menu_widget::hitbox_test(point2i position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 
-    if (*mode >= widget_mode::partial and layout().contains(position)) {
+    if (*mode >= widget_mode::partial and layout.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return {id, _layout.elevation, hitbox_type::application_icon};
+        return {id, layout.elevation, hitbox_type::application_icon};
     } else {
         return {};
     }

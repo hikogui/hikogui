@@ -941,10 +941,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             hi_axiom(loop::main().on_thread());
             // x-axis dpi value.
             dpi = narrow_cast<float>(LOWORD(wParam));
-            hilet scale = dpi / points_per_inch_v<float>;
-            apply(*widget, [&](auto& x) {
-                x.scale = scale;
-            });
 
             // Use the recommended rectangle to resize and reposition the window
             hilet new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));

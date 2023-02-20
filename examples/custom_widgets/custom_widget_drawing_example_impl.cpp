@@ -132,11 +132,11 @@ public:
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
     void set_layout(hi::widget_layout const& context) noexcept override
     {
-        // Update the `_layout` with the new context, in this case we want to do some
+        // Update the `layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             // Make a size scaled to the layout.
-            auto const max_size = hi::narrow_cast<hi::extent2>(_layout.size()) * 0.9f;
+            auto const max_size = hi::narrow_cast<hi::extent2>(layout.size()) * 0.9f;
             auto const max_rectangle = hi::aarectangle{hi::point2{max_size.width() * -0.5f, max_size.height() * -0.5f}, max_size};
 
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
@@ -250,9 +250,9 @@ public:
         using namespace std::chrono_literals;
 
         auto const clipping_rectangle =
-            *clip ? hi::aarectanglei{0, 0, _layout.width(), _layout.height() / 2} : _layout.rectangle();
+            *clip ? hi::aarectanglei{0, 0, layout.width(), layout.height() / 2} : layout.rectangle();
 
-        auto const translation = hi::translate3(std::floor(_layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(_layout.height())) * 0.5f, 0.0f);
+        auto const translation = hi::translate3(std::floor(layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(layout.height())) * 0.5f, 0.0f);
         auto const transform = translation * rotation(context);
 
         auto const circle_radius = hypot(shape_quad().bottom()) * 0.5f;
@@ -260,11 +260,11 @@ public:
 
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
+        if (*mode > hi::widget_mode::invisible and overlaps(context, layout)) {
             switch (*drawing) {
             case drawing_type::box:
                 context.draw_box(
-                    _layout,
+                    layout,
                     transform * shape_quad(),
                     clipping_rectangle,
                     fill_color(),
@@ -282,24 +282,24 @@ public:
                     auto const line2 = hi::line_segment{get<0>(quad), get<2>(quad)};
                     auto const line3 = hi::line_segment{get<3>(quad), get<2>(quad)};
                     auto const width = std::max(0.5f, *border_width);
-                    context.draw_line(_layout, transform * line1, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
-                    context.draw_line(_layout, transform * line2, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
-                    context.draw_line(_layout, transform * line3, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
+                    context.draw_line(layout, transform * line1, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
+                    context.draw_line(layout, transform * line2, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
+                    context.draw_line(layout, transform * line3, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
                 }
                 break;
 
             case drawing_type::circle:
                 context.draw_circle(
-                    _layout, translation * circle, clipping_rectangle, fill_color(), line_color(), *border_width, *border_side);
+                    layout, translation * circle, clipping_rectangle, fill_color(), line_color(), *border_width, *border_side);
                 break;
 
             case drawing_type::glyph:
                 // A full rectangle is visible.
-                context.draw_glyph(_layout, transform * shape_quad(), _glyph, clipping_rectangle, fill_color());
+                context.draw_glyph(layout, transform * shape_quad(), _glyph, clipping_rectangle, fill_color());
                 break;
 
             case drawing_type::image:
-                if (not context.draw_image(_layout, transform * shape_quad(), _image_backing, clipping_rectangle)) {
+                if (not context.draw_image(layout, transform * shape_quad(), _image_backing, clipping_rectangle)) {
                     // Image was not yet uploaded to the texture atlas, redraw until it does.
                     request_redraw();
                 }

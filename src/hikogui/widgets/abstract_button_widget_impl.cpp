@@ -78,8 +78,8 @@ void abstract_button_widget::draw_button(draw_context const& context) noexcept
 {
     hi_axiom(loop::main().on_thread());
 
-    if (*mode >= widget_mode::partial and layout().contains(position)) {
-        return {id, _layout.elevation, hitbox_type::button};
+    if (*mode >= widget_mode::partial and layout.contains(position)) {
+        return {id, layout.elevation, hitbox_type::button};
     } else {
         return {};
     }
@@ -117,7 +117,7 @@ bool abstract_button_widget::handle_event(gui_event const& event) noexcept
         if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
             _pressed = false;
 
-            if (layout().rectangle().contains(event.mouse().position)) {
+            if (layout.rectangle().contains(event.mouse().position)) {
                 handle_event(gui_event_type::gui_activate);
             }
             request_redraw();

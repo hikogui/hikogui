@@ -51,9 +51,9 @@ public:
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
     void set_layout(hi::widget_layout const& context) noexcept override
     {
-        // Update the `_layout` with the new context, in this case we want to do some
+        // Update the `layout` with the new context, in this case we want to do some
         // calculations when the size or location of the widget was changed.
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             auto view_port = context.rectangle_on_window();
             auto window_height = context.window_size.height();
 
@@ -80,11 +80,11 @@ public:
 
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
+        if (*mode > hi::widget_mode::invisible and overlaps(context, layout)) {
             // The 3D drawing will be done directly on the swap-chain before the GUI is drawn.
             // By making a hole in the GUI we can show the 3D drawing underneath it, otherwise
             // the solid-background color of the GUI would show instead.
-            context.draw_hole(_layout, _layout.rectangle());
+            context.draw_hole(layout, layout.rectangle());
         }
     }
 

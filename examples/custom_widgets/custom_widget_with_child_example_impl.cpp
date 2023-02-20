@@ -48,9 +48,9 @@ public:
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
     void set_layout(hi::widget_layout const& context) noexcept override
     {
-        // Update the `_layout` with the new context, in this case we want to do some
+        // Update the `layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             // The layout of the child widget are also calculated here, which only needs to be done
             // when the layout of the current widget changes.
             auto const label_rectangle =
@@ -71,14 +71,14 @@ public:
         if (*mode > hi::widget_mode::invisible) {
             // We only need to draw the widget when it is visible and when the visible area of
             // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-            if (overlaps(context, layout())) {
+            if (overlaps(context, layout)) {
                 // There may be stylistic reasons to draw into the margin, for example
                 // round objects need to be drawn slightly larger than square objects.
-                // The standard clipping rectangle is 2 pixels larger than the _layout.rectangle().
+                // The standard clipping rectangle is 2 pixels larger than the layout.rectangle().
                 // In this example we draw the border outside the rectangle.
                 context.draw_box(
-                    _layout,
-                    _layout.rectangle(),
+                    layout,
+                    layout.rectangle(),
                     background_color(),
                     foreground_color(),
                     theme().border_width(),

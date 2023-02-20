@@ -29,9 +29,10 @@ concept button_widget_attribute = label_widget_attribute<Context>;
  *
  * @ingroup widgets
  */
-class abstract_button_widget : public widget {
+template<fixed_string Tag>
+class abstract_button_widget : public widget<Tag> {
 public:
-    using super = widget;
+    using super = widget<Tag>;
     using delegate_type = button_delegate;
 
     /** The delegate that controls the button widget.

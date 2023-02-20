@@ -39,9 +39,10 @@ namespace hi { inline namespace v1 {
  *
  * @snippet widgets/checkbox_example_impl.cpp Create a checkbox
  */
-class checkbox_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class checkbox_widget final : public abstract_button_widget<Name ^ "checkbox"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name ^ "checkbox">;
     using delegate_type = typename super::delegate_type;
 
     /** Construct a checkbox widget.

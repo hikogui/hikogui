@@ -20,7 +20,7 @@ namespace hi::inline v1 {
 
 void momentary_button_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         hilet label_rectangle =
             aarectanglei{theme().margin<int>(), 0, context.width() - theme().margin<int>() * 2, context.height()};
         _on_label_shape = _off_label_shape = _other_label_shape =
@@ -31,7 +31,7 @@ void momentary_button_widget::set_layout(widget_layout const& context) noexcept
 
 void momentary_button_widget::draw(draw_context const &context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout)) {
         draw_label_button(context);
         draw_button(context);
     }
@@ -41,8 +41,8 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
 {
     // Move the border of the button in the middle of a pixel.
     context.draw_box(
-        layout(),
-        layout().rectangle(),
+        layout,
+        layout.rectangle(),
         background_color(),
         focus_color(),
         theme().border_width(),

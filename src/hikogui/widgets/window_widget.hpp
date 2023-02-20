@@ -22,9 +22,10 @@ class grid_widget;
  *
  * @ingroup widgets
  */
-class window_widget final : public widget {
+template<fixed_string Name = "">
+class window_widget final : public widget<Name ^ "window"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "window">;
 
     observer<label> title;
 

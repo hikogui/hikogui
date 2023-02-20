@@ -115,7 +115,7 @@ void window_widget::constructor_implementation() noexcept
 
 void window_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         hilet toolbar_height = _toolbar_constraints.preferred.height();
         hilet between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
 
@@ -152,55 +152,55 @@ hitbox window_widget::hitbox_test(point2i position) const noexcept
     r = _content->hitbox_test_from_parent(position, r);
 
     hilet is_on_l_edge = position.x() <= BORDER_WIDTH;
-    hilet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
+    hilet is_on_r_edge = position.x() >= (layout.width() - BORDER_WIDTH);
     hilet is_on_b_edge = position.y() <= BORDER_WIDTH;
-    hilet is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
+    hilet is_on_t_edge = position.y() >= (layout.height() - BORDER_WIDTH);
 
     // Corner resize has always priority.
     if (is_on_l_edge and is_on_b_edge) {
         if (_can_resize_width and _can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::bottom_left_resize_corner};
+            return {id, layout.elevation, hitbox_type::bottom_left_resize_corner};
         } else if (_can_resize_width) {
-            return {id, _layout.elevation, hitbox_type::left_resize_border};
+            return {id, layout.elevation, hitbox_type::left_resize_border};
         } else if (_can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::bottom_resize_border};
+            return {id, layout.elevation, hitbox_type::bottom_resize_border};
         }
     } else if (is_on_r_edge and is_on_b_edge) {
         if (_can_resize_width and _can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::bottom_right_resize_corner};
+            return {id, layout.elevation, hitbox_type::bottom_right_resize_corner};
         } else if (_can_resize_width) {
-            return {id, _layout.elevation, hitbox_type::right_resize_border};
+            return {id, layout.elevation, hitbox_type::right_resize_border};
         } else if (_can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::bottom_resize_border};
+            return {id, layout.elevation, hitbox_type::bottom_resize_border};
         }
     } else if (is_on_l_edge and is_on_t_edge) {
         if (_can_resize_width and _can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::top_left_resize_corner};
+            return {id, layout.elevation, hitbox_type::top_left_resize_corner};
         } else if (_can_resize_width) {
-            return {id, _layout.elevation, hitbox_type::left_resize_border};
+            return {id, layout.elevation, hitbox_type::left_resize_border};
         } else if (_can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::top_resize_border};
+            return {id, layout.elevation, hitbox_type::top_resize_border};
         }
     } else if (is_on_r_edge and is_on_t_edge) {
         if (_can_resize_width and _can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::top_right_resize_corner};
+            return {id, layout.elevation, hitbox_type::top_right_resize_corner};
         } else if (_can_resize_width) {
-            return {id, _layout.elevation, hitbox_type::right_resize_border};
+            return {id, layout.elevation, hitbox_type::right_resize_border};
         } else if (_can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::top_resize_border};
+            return {id, layout.elevation, hitbox_type::top_resize_border};
         }
     }
 
     // Border resize only has priority if there is no scroll-bar in the way.
     if (r.type != hitbox_type::scroll_bar) {
         if (is_on_l_edge and _can_resize_width) {
-            return {id, _layout.elevation, hitbox_type::left_resize_border};
+            return {id, layout.elevation, hitbox_type::left_resize_border};
         } else if (is_on_r_edge and _can_resize_width) {
-            return {id, _layout.elevation, hitbox_type::right_resize_border};
+            return {id, layout.elevation, hitbox_type::right_resize_border};
         } else if (is_on_b_edge and _can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::bottom_resize_border};
+            return {id, layout.elevation, hitbox_type::bottom_resize_border};
         } else if (is_on_t_edge and _can_resize_height) {
-            return {id, _layout.elevation, hitbox_type::top_resize_border};
+            return {id, layout.elevation, hitbox_type::top_resize_border};
         }
     }
 

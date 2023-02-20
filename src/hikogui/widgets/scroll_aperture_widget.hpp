@@ -19,9 +19,10 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class scroll_aperture_widget : public widget {
+template<fixed_string Name = "">
+class scroll_aperture_widget : public widget<Name ^ "scroll-aperture"> {
 public:
-    using super = widget;
+    using super = widget<Name ^ "scroll-aperture">;
 
     observer<int> content_width;
     observer<int> content_height;
@@ -109,7 +110,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             aperture_width = context.width() - _content_constraints.margins.left() - _content_constraints.margins.right();
             aperture_height = context.height() - _content_constraints.margins.bottom() - _content_constraints.margins.top();
 
@@ -158,8 +159,8 @@ public:
         if (*mode >= widget_mode::partial) {
             auto r = _content->hitbox_test_from_parent(position);
 
-            if (layout().contains(position)) {
-                r = std::max(r, hitbox{id, _layout.elevation});
+            if (layout.contains(position)) {
+                r = std::max(r, hitbox{id, layout.elevation});
             }
             return r;
 
@@ -190,8 +191,8 @@ public:
 
     void scroll_to_show(hi::aarectanglei to_show) noexcept override
     {
-        if (_layout) {
-            auto safe_rectangle = intersect(_layout.rectangle(), _layout.clipping_rectangle);
+        if (layout) {
+            auto safe_rectangle = intersect(layout.rectangle(), layout.clipping_rectangle);
             int delta_x = 0;
             int delta_y = 0;
 
@@ -220,7 +221,7 @@ public:
 
             // There may be recursive scroll view, and they all need to move until the rectangle is visible.
             if (parent) {
-                parent->scroll_to_show(_layout.to_parent * translate2i(delta_x, delta_y) * to_show);
+                parent->scroll_to_show(layout.to_parent * translate2i(delta_x, delta_y) * to_show);
             }
 
         } else {
