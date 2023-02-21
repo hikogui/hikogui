@@ -55,7 +55,7 @@ public:
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     checkbox_widget(
-        widget_intf *parent,
+        widget *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
@@ -75,7 +75,7 @@ public:
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     checkbox_widget(
-        widget_intf *parent,
+        widget *parent,
         different_from<std::shared_ptr<delegate_type>> auto&& value,
         button_widget_attribute auto&&...attributes) noexcept
         requires requires { make_default_toggle_button_delegate(hi_forward(value)); }
@@ -98,7 +98,7 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    checkbox_widget(widget_intf *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    checkbox_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)); }
         :
         checkbox_widget(
@@ -126,7 +126,7 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         button_widget_attribute... Attributes>
     checkbox_widget(
-        widget_intf *parent,
+        widget *parent,
         Value&& value,
         OnValue&& on_value,
         OffValue&& off_value,
@@ -145,11 +145,11 @@ public:
     {
         _label_constraints = super::update_constraints();
 
-        _button_size = theme<tag ^ "outer.size", extent2i>{}[this];
-        hilet extra_size = extent2i{theme<tag ^ "inner.margin", int>{}[this] + _button_size.width(), 0};
+        _button_size = theme<prefix ^ "outer.size", extent2i>{}(this);
+        hilet extra_size = extent2i{theme<prefix ^ "inner.margin", int>{}(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
-        constraints.margins = theme<tag ^ "outer.margin", marginsi>{}[this];
+        constraints.margins = theme<prefix ^ "outer.margin", marginsi>{}(this);
         constraints.alignment = *alignment;
         return constraints;
     }
@@ -165,9 +165,9 @@ public:
                 hi_not_implemented();
             }
 
-            hilet inner_margin = theme<tag ^ "inner.margin", int>{}[this];
-            hilet baseline_offset = theme<tag ^ "baseline", int>{}[this];
-            hilet icon_size = theme<tag ^ "icon.size", int>{}[this];
+            hilet inner_margin = theme<prefix ^ "inner.margin", int>{}(this);
+            hilet baseline_offset = theme<prefix ^ "cap-height", int>{}(this);
+            hilet icon_size = theme<prefix ^ "icon.size", int>{}(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
             if (alignment_ == horizontal_alignment::left) {
@@ -219,9 +219,9 @@ private:
         context.draw_box(
             layout,
             _button_rectangle,
-            theme<tag ^ "fill.color", color>{}[this],
-            theme<tag ^ "border.color", color>{}[this],
-            theme<tag ^ "border.width", float>{}[this],
+            theme<prefix ^ "fill.color", color>{}(this),
+            theme<prefix ^ "border.color", color>{}(this),
+            theme<prefix ^ "border.width", float>{}(this),
             border_side::inside);
     }
 
@@ -235,7 +235,7 @@ private:
                 layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle),
                 _check_glyph,
-                theme<tag ^ "icon.color", color>{}[this]);
+                theme<prefix ^ "icon.color", color>{}(this));
 
         } else if (state_ == hi::button_state::off) {
             ;
@@ -245,7 +245,7 @@ private:
                 layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle),
                 _minus_glyph,
-                theme<tag ^ "icon.color", color>{}[this]);
+                theme<prefix ^ "icon.color", color>{}(this));
         }
     }
 };

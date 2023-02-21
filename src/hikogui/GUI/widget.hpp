@@ -1,58 +1,89 @@
-// Copyright Take Vos 2019-2022.
+// Copyright Take Vos 2023.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file widgets/widget.hpp Defines widget.
- * @ingroup widgets
- */
-
 #pragma once
 
+#include "widget_id.hpp"
+#include "widget_mode.hpp"
+#include "widget_layout.hpp"
+#include "hitbox.hpp"
+#include "keyboard_focus_group.hpp"
+#include "gui_event.hpp"
 #include "../GFX/draw_context.hpp"
-#include "../GUI/hitbox.hpp"
-#include "../GUI/keyboard_focus_direction.hpp"
-#include "../GUI/keyboard_focus_group.hpp"
-#include "../GUI/gui_event.hpp"
-#include "../GUI/widget_intf.hpp"
-#include "../GUI/theme_value.hpp"
-#include "../layout/box_constraints.hpp"
 #include "../geometry/module.hpp"
+#include "../layout/box_constraints.hpp"
 #include "../observer.hpp"
-#include "../chrono.hpp"
 #include "../generator.hpp"
-#include "../cache.hpp"
-#include "../os_settings.hpp"
-#include "../tagged_id.hpp"
-#include <memory>
-#include <vector>
-#include <string>
-#include <ranges>
+#include "../loop.hpp"
 
 namespace hi { inline namespace v1 {
 class gui_window;
 class gfx_surface;
 
-/** An interactive graphical object as part of the user-interface.
- *
- * Rendering is done in three distinct phases:
- *  1. Updating Constraints: `widget::update_constraints()`
- *  2. Updating Layout: `widget::set_layout()`
- *  3. Drawing: `widget::draw()`
- *
- * @ingroup widgets
- */
-template<fixed_string Tag>
-class widget : public widget_intf {
+class widget {
 public:
-    using super = widget_intf;
-
-    /** The (custom)-name of the widget.
+    /** The numeric identifier of a widget.
      *
-     * This is of the format:
-     *  - "<name>.<widget-type>."
-     *  - "<widget-type>."
+     * @note This is a uint32_t equal to the operating system's accessibility identifier.
      */
-    constexpr static auto tag = Tag;
+    widget_id id = {};
+
+    /** Pointer to the parent widget.
+     * May be a nullptr only when this is the top level widget.
+     */
+    widget *parent = nullptr;
+
+    /** The window this widget is on.
+    */
+    gui_window *window = nullptr;
+
+    /** The surface this widget is drawn on.
+     */
+    gfx_surface *surface = nullptr;
+
+    /** The widget mode.
+     * The current visibility and interactivity of a widget.
+     */
+    observer<widget_mode> mode = widget_mode::enabled;
+
+    /** Mouse cursor is hovering over the widget.
+     */
+    observer<bool> hover = false;
+
+    /** The widget is being clicked by the mouse.
+     */
+    observer<bool> clicked = false;
+
+    /** The widget has keyboard focus.
+     */
+    observer<bool> focus = false;
+
+    /** The state of the widget is considered "on".
+     */
+    observer<bool> on = false;
+
+    /** The scale by which to size the widget and its components.
+     *
+     * This value is set by the window when it's dpi changes.
+     */
+    float dpi_scale = 1.0f;
+
+    /** The draw layer of the widget.
+     * The semantic layer is used mostly by the `draw()` function
+     * for selecting colors from the theme, to denote nesting widgets
+     * inside other widgets.
+     *
+     * Semantic layers start at 0 for the window-widget and for any pop-up
+     * widgets.
+     *
+     * The semantic layer is increased by one, whenever a user of the
+     * user-interface would understand the next layer to begin.
+     *
+     * In most cases it would mean that a container widget that does not
+     * draw itself will not increase the semantic_layer number.
+     */
+    size_t semantic_layer = 0_uz;
 
     /** The minimum size this widget is allowed to be.
      */
@@ -62,14 +93,15 @@ public:
      */
     observer<extent2i> maximum = extent2i::large();
 
-    /*! Constructor for creating sub views.
-     */
-    explicit widget(widget_intf *parent) noexcept : super(parent), , logical_layer(0), semantic_layer(0)
+    widget_layout layout;
+
+    virtual ~widget() {}
+    widget(widget *parent) noexcept :
+        parent(parent), id(narrow_cast<uint32_t>(++global_counter<"widget::id">))
     {
         hi_axiom(loop::main().on_thread());
 
         if (parent) {
-            logical_layer = parent->logical_layer + 1;
             semantic_layer = parent->semantic_layer + 1;
         }
 
@@ -79,15 +111,26 @@ public:
         });
     }
 
-    virtual ~widget(){};
+    widget(widget const&) = delete;
+    widget(widget&&) = delete;
+    widget& operator=(widget&&) = delete;
+    widget& operator=(widget const&) = delete;
 
     /** Get a list of child widgets.
      */
-    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
+    [[nodiscard]] virtual generator<widget const&> children(bool include_invisible) const noexcept
     {
         co_return;
     }
 
+    [[nodiscard]] generator<widget&> children(bool include_invisible) noexcept
+    {
+        for (auto& child : const_cast<widget const *>(this)->children(include_invisible)) {
+            co_yield const_cast<widget&>(child);
+        }
+    }
+
+    
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -95,7 +138,7 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
+    [[nodiscard]] virtual hitbox hitbox_test(point2i position) const noexcept
     {
         return {};
     }
@@ -106,7 +149,7 @@ public:
      *
      * @param position The coordinate of the mouse local to the parent widget.
      */
-    [[nodiscard]] hitbox hitbox_test_from_parent(point2i position) const noexcept override
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position) const noexcept
     {
         return hitbox_test(layout.from_parent * position);
     }
@@ -118,7 +161,7 @@ public:
      * @param position The coordinate of the mouse local to the parent widget.
      * @param sibling_hitbox The hitbox of a sibling to combine with the hitbox of this widget.
      */
-    [[nodiscard]] hitbox hitbox_test_from_parent(point2i position, hitbox sibling_hitbox) const noexcept override
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position, hitbox sibling_hitbox) const noexcept
     {
         return std::max(sibling_hitbox, hitbox_test(layout.from_parent * position));
     }
@@ -126,18 +169,21 @@ public:
     /** Check if the widget will accept keyboard focus.
      *
      */
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
-        hi_axiom(loop::main().on_thread());
         return false;
-    }
+}
 
-    /** Reset the layout before constraining.
+    /** Reset the layout.
+     *
+     * @param dpi_scale The dpi-scale to use from this point forward.
      */
-    void reset_layout(float new_dpi_scale) noexcept override
+    void reset_layout(gui_window *new_window, gfx_surface *new_surface, float new_dpi_scale) noexcept
     {
-        dpi_scale = new_dpi_scale;
         layout = {};
+        window = new_window;
+        surface = new_surface;
+        dpi_scale = new_dpi_scale;
     }
 
     /** Update the constraints of the widget.
@@ -151,7 +197,7 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    [[nodiscard]] box_constraints update_constraints() noexcept override
+    [[nodiscard]] virtual box_constraints update_constraints() noexcept
     {
         return {*minimum, *minimum, *maximum};
     }
@@ -167,7 +213,7 @@ public:
      *       matrices.
      * @param context The layout for this child.
      */
-    void set_layout(widget_layout const& context) noexcept override
+    virtual void set_layout(widget_layout const& context) noexcept
     {
         layout = context;
     }
@@ -186,9 +232,9 @@ public:
      *
      * @param context The context to where the widget will draw.
      */
-    void draw(draw_context const& context) noexcept override {}
+    virtual void draw(draw_context const& context) noexcept {};
 
-    bool process_event(gui_event const& event) const noexcept override
+ virtual bool process_event(gui_event const& event) const noexcept
     {
         if (parent != nullptr) {
             return parent->process_event(event);
@@ -199,7 +245,7 @@ public:
 
     /** Request the widget to be redrawn on the next frame.
      */
-    void request_redraw() const noexcept override
+    virtual void request_redraw() const noexcept
     {
         process_event({gui_event_type::window_redraw, layout.clipping_rectangle_on_window()});
     }
@@ -208,7 +254,7 @@ public:
      * If a widget does not fully handle a command it should pass the
      * command to the super class' `handle_event()`.
      */
-    bool handle_event(gui_event const& event) noexcept override
+    virtual bool handle_event(gui_event const& event) noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -276,7 +322,6 @@ public:
 
         return false;
     }
-
     /** Handle command recursive.
      * Handle a command and pass it to each child.
      *
@@ -284,26 +329,10 @@ public:
      * @param reject_list The widgets that should ignore this command
      * @return True when the command was handled by this widget or recursed child.
      */
-    bool handle_event_recursive(
+    virtual bool handle_event_recursive(
         gui_event const& event,
-        std::vector<widget_id> const& reject_list = std::vector<widget_id>{}) noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
+        std::vector<widget_id> const& reject_list = std::vector<widget_id>{}) noexcept = 0;
 
-        auto handled = false;
-
-        for (auto& child : children(false)) {
-            handled |= child.handle_event_recursive(event, reject_list);
-        }
-
-        if (!std::ranges::any_of(reject_list, [&](hilet& x) {
-                return x == id;
-            })) {
-            handled |= handle_event(event);
-        }
-
-        return handled;
-    }
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
      * that returns true from `accepts_keyboard_focus()`.
@@ -317,10 +346,10 @@ public:
                                        keyboard focus was found.
      * @retval nullptr When current_keyboard_widget is not found in this widget.
      */
-    [[nodiscard]] widget_id find_next_widget(
+    [[nodiscard]] virtual widget_id find_next_widget(
         widget_id current_keyboard_widget,
         keyboard_focus_group group,
-        keyboard_focus_direction direction) const noexcept override
+        keyboard_focus_direction direction) const noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -376,13 +405,52 @@ public:
 
         return std::nullopt;
     }
+
+    [[nodiscard]] widget_id find_first_widget(keyboard_focus_group group) const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+
+        for (auto& child : children(false)) {
+            if (child.accepts_keyboard_focus(group)) {
+                return child.id;
+            }
+        }
+        return std::nullopt;
+    }
+
+    [[nodiscard]] widget_id find_last_widget(keyboard_focus_group group) const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+
+        auto found = widget_id{};
+        for (auto& child : children(false)) {
+            if (child.accepts_keyboard_focus(group)) {
+                found = child.id;
+            }
+        }
+
+        return found;
+    }
+
+    [[nodiscard]] bool is_first(keyboard_focus_group group) const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+        return parent->find_first_widget(group) == id;
+    }
+
+    [[nodiscard]] bool is_last(keyboard_focus_group group) const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+        return parent->find_last_widget(group) == id;
+    }
+
     /** Scroll to show the given rectangle on the window.
      * This will call parents, until all parents have scrolled
      * the rectangle to be shown on the window.
      *
      * @param rectangle The rectangle in window coordinates.
      */
-    void scroll_to_show(hi::aarectanglei rectangle) noexcept override
+    virtual void scroll_to_show(hi::aarectanglei rectangle) noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -391,27 +459,26 @@ public:
         }
     }
 
-    [[nodiscard]] gui_window *window() const noexcept override
+    /** Get a list of parents of a given widget.
+     * The chain includes the given widget.
+     */
+    [[nodiscard]] std::vector<widget_id> parent_chain() const noexcept
     {
-        if (parent) {
-            return parent->window();
-        } else {
-            return nullptr;
-        }
-    }
+        hi_axiom(loop::main().on_thread());
 
-    [[nodiscard]] gfx_surface const *surface() const noexcept override
-    {
-        if (parent) {
-            return parent->surface();
-        } else {
-            return nullptr;
+        std::vector<widget_id> chain;
+
+        if (auto w = this) {
+            chain.push_back(w->id);
+            while (to_bool(w = w->parent)) {
+                chain.push_back(w->id);
+            }
         }
+
+        return chain;
     }
 
 protected:
-    decltype(mode)::callback_token _mode_cbt;
-
     /** Make an overlay rectangle.
      *
      * This function tries to create a rectangle for an overlay-widget that
@@ -431,6 +498,75 @@ protected:
         hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
         return layout.from_window * response_window_rectangle;
     }
+
+    /** Handle command recursive.
+     * Handle a command and pass it to each child.
+     *
+     * @param event The command to handle by this widget.
+     * @param reject_list The widgets that should ignore this command
+     * @return True when the command was handled by this widget or recursed child.
+     */
+    bool handle_event_recursive(
+        gui_event const& event,
+        std::vector<widget_id> const& reject_list = std::vector<widget_id>{}) noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+
+        auto handled = false;
+
+        for (auto& child : children(false)) {
+            handled |= child.handle_event_recursive(event, reject_list);
+        }
+
+        if (!std::ranges::any_of(reject_list, [&](hilet& x) {
+                return x == id;
+            })) {
+            handled |= handle_event(event);
+        }
+
+        return handled;
+    }
+
+private:
+    decltype(mode)::callback_token _mode_cbt;
 };
+
+inline widget *get_if(widget *start, widget_id id, bool include_invisible) noexcept
+{
+    hi_assert_not_null(start);
+
+    if (start->id == id) {
+        return start;
+    }
+    for (auto& child : start->children(include_invisible)) {
+        if (hilet r = get_if(&child, id, include_invisible); r != nullptr) {
+            return r;
+        }
+    }
+    return nullptr;
+}
+
+inline widget& get(widget& start, widget_id id, bool include_invisible)
+{
+    if (auto r = get_if(std::addressof(start), id, include_invisible); r != nullptr) {
+        return *r;
+    }
+    throw not_found_error("get widget by id");
+}
+
+template<std::invocable<widget&> F>
+inline void apply(widget& start, bool include_invisible, F const& f)
+{
+    for (auto& child : start.children(include_invisible)) {
+        apply(child, include_invisible, f);
+    }
+    f(start);
+}
+
+template<std::invocable<widget&> F>
+inline void apply(widget& start, F const& f)
+{
+    return apply(start, true, f);
+}
 
 }} // namespace hi::v1

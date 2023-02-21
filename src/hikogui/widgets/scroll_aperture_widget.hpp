@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/widget.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -20,9 +20,10 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  */
 template<fixed_string Name = "">
-class scroll_aperture_widget : public widget<Name ^ "scroll-aperture"> {
+class scroll_aperture_widget : public widget {
 public:
-    using super = widget<Name ^ "scroll-aperture">;
+    using super = widget;
+    constexpr static auto prefix = Name ^ "aperture";
 
     observer<int> content_width;
     observer<int> content_height;
@@ -31,7 +32,7 @@ public:
     observer<int> offset_x;
     observer<int> offset_y;
 
-    scroll_aperture_widget(widget_intf *parent) noexcept : super(parent)
+    scroll_aperture_widget(widget *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
@@ -92,7 +93,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_content;
     }
@@ -138,7 +139,7 @@ public:
                 -*offset_y + _content_constraints.margins.bottom(),
                 *content_width,
                 *content_height},
-            theme().baseline_adjustment()};
+            theme<prefix ^ "cap-height">{}(this)};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
@@ -174,8 +175,8 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (event == gui_event_type::mouse_wheel) {
-            hilet new_offset_x = *offset_x + narrow_cast<int>(event.mouse().wheel_delta.x() * theme().scale);
-            hilet new_offset_y = *offset_y + narrow_cast<int>(event.mouse().wheel_delta.y() * theme().scale);
+            hilet new_offset_x = *offset_x + narrow_cast<int>(event.mouse().wheel_delta.x() * dpi_scale);
+            hilet new_offset_y = *offset_y + narrow_cast<int>(event.mouse().wheel_delta.y() * dpi_scale);
             hilet max_offset_x = std::max(0, *content_width - *aperture_width);
             hilet max_offset_y = std::max(0, *content_height - *aperture_height);
 
@@ -196,11 +197,12 @@ public:
             int delta_x = 0;
             int delta_y = 0;
 
-            if (safe_rectangle.width() > theme().margin<int>() * 2 and safe_rectangle.height() > theme().margin<int>() * 2) {
+            hilet margin = theme<prefix ^ "margin", int>{}(this);
+            if (safe_rectangle.width() > margin * 2 and safe_rectangle.height() > margin * 2) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do
                 // with the margins that are needed here.
-                safe_rectangle = safe_rectangle - theme().margin<int>();
+                safe_rectangle = safe_rectangle - margin;
 
                 if (to_show.right() > safe_rectangle.right()) {
                     delta_x = to_show.right() - safe_rectangle.right();

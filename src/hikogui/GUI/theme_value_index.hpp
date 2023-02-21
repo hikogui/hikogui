@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include "widget_intf.hpp"
+#include "widget.hpp"
+#include "gui_window.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -33,7 +34,7 @@ public:
 
     constexpr theme_value_index(intrinsic_t, value_type value) noexcept : _v(value) {}
 
-    theme_value_index(widget_intf const& widget) noexcept
+    theme_value_index(widget const& widget) noexcept
     {
         // [1:0] : disabled = '00', : enabled = '01', : focus = '10', : pressed = '11'
         // [2:2] : inactive = '0', : active = '1'
@@ -44,7 +45,9 @@ public:
         tmp <<= 2;
         tmp |= wide_cast<value_type>(*widget.on);
         tmp <<= 1;
-        tmp |= wide_cast<value_type>(*widget.active);
+        if (widget.window) {
+            tmp |= wide_cast<value_type>(widget.window->active);
+        }
         tmp <<= 1;
         tmp |= [&] {
             if (*widget.mode <= widget_mode::disabled) {

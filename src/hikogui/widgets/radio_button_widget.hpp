@@ -55,7 +55,7 @@ public:
      *                   the first label is shown in on-state and the second for off-state.
      */
     radio_button_widget(
-        widget_intf *parent,
+        widget *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
@@ -80,11 +80,9 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    radio_button_widget(widget_intf *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires
-    {
-        make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
-    } :
+    radio_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+        requires requires { make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)); }
+        :
         radio_button_widget(
             parent,
             make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
@@ -93,9 +91,68 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _label_constraints = super::update_constraints();
+
+        // Make room for button and margin.
+        _button_size = theme<prefix ^ "outline.size", extent2i>{}(this);
+        hilet extra_size = extent2i{theme<prefix ^ "inner.margin", int>{}(this) + _button_size.width(), 0};
+
+        auto constraints = max(_label_constraints + extra_size, _button_size);
+        constraints.margins = theme<prefix ^ "margin", marginsi>{}(this);
+        constraints.alignment = *alignment;
+        return constraints;
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(layout, context)) {
+            auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
+
+            if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
+                _button_rectangle = align(context.rectangle(), _button_size, alignment_);
+            } else {
+                hi_not_implemented();
+            }
+
+            hilet inner_margin = theme<prefix ^ "inner.margin", int>{}(this);
+            hilet cap_height = theme<prefix ^ "cap-height", int>{}(this);
+
+            hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
+            if (alignment_ == horizontal_alignment::left) {
+                hilet label_left = _button_rectangle.right() + inner_margin;
+                hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
+                _on_label_shape = _off_label_shape = _other_label_shape =
+                    box_shape{_label_constraints, label_rectangle, cap_height};
+
+            } else if (alignment_ == horizontal_alignment::right) {
+                hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
+                _on_label_shape = _off_label_shape = _other_label_shape =
+                    box_shape{_label_constraints, label_rectangle, cap_height};
+
+            } else {
+                hi_not_implemented();
+            }
+
+            _button_circle = circle{narrow_cast<aarectangle>(_button_rectangle)};
+
+            _pip_circle = align(
+                narrow_cast<aarectangle>(_button_rectangle),
+                circle{theme<prefix ^ "pip.radius", float>{}(this)},
+                alignment::middle_center());
+        }
+        super::set_layout(context);
+    }
+
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+            draw_radio_button(context);
+            draw_radio_pip(context);
+            draw_button(context);
+        }
+    }
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
@@ -109,8 +166,30 @@ private:
     animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
 
-    void draw_radio_button(draw_context const& context) noexcept;
-    void draw_radio_pip(draw_context const& context) noexcept;
+    void draw_radio_button(draw_context const& context) noexcept
+    {
+        context.draw_circle(
+            layout,
+            _button_circle * 1.02f,
+            theme<prefix ^ "fill.color", color>{}(this),
+            theme<prefix ^ "outline.color", color>{}(this),
+            theme<prefix ^ "outline.width", int>{}(this),
+            border_side::inside);
+    }
+
+    void draw_radio_pip(draw_context const& context) noexcept
+    {
+        _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
+        if (_animated_value.is_animating()) {
+            request_redraw();
+        }
+
+        // draw pip
+        auto float_value = _animated_value.current_value();
+        if (float_value > 0.0) {
+            context.draw_circle(layout, _pip_circle * 1.02f * float_value, theme<prefix ^ pip.color, color>{}(this));
+        }
+    }
 };
 
 }} // namespace hi::v1

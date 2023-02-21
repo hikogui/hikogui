@@ -82,10 +82,10 @@ public:
 
     virtual ~text_field_widget();
 
-    text_field_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    text_field_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     text_field_widget(
-        widget_intf *parent,
+        widget *parent,
         std::shared_ptr<delegate_type> delegate,
         text_field_widget_attribute auto&&...attributes) noexcept :
         text_field_widget(parent, std::move(delegate))
@@ -100,7 +100,7 @@ public:
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `text_theme`.
      */
     text_field_widget(
-        widget_intf *parent,
+        widget *parent,
         different_from<std::shared_ptr<delegate_type>> auto&& value,
         text_field_widget_attribute auto&&...attributes) noexcept requires requires
     {
@@ -108,7 +108,7 @@ public:
     } : text_field_widget(parent, make_default_text_field_delegate(hi_forward(value)), hi_forward(attributes)...) {}
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override;
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;

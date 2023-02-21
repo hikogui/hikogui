@@ -21,9 +21,9 @@ class spacer_widget final : public widget<Name ^ "spacer"> {
 public:
     using super = widget<Name ^ "spacer">;
 
-    spacer_widget(widget_intf *parent) noexcept : super(parent) {}
+    spacer_widget(widget *parent) noexcept : super(parent) {}
 
-    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
     {
         co_return;
     }

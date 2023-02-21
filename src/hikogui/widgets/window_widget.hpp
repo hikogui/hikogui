@@ -55,7 +55,7 @@ public:
     [[nodiscard]] toolbar_widget<Name>& toolbar() noexcept;
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override;
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;

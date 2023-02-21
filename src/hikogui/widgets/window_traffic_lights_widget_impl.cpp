@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-window_traffic_lights_widget::window_traffic_lights_widget(widget_intf *parent) noexcept : super(parent) {}
+window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexcept : super(parent) {}
 
 [[nodiscard]] box_constraints window_traffic_lights_widget::update_constraints() noexcept
 {

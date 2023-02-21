@@ -10,6 +10,7 @@
 
 #include "selection_widget.hpp"
 #include "grid_widget.hpp"
+#include "../GUI/widget.hpp"
 #include "../audio/audio_system.hpp"
 #include "../audio/audio_device.hpp"
 #include "../audio/audio_direction.hpp"
@@ -26,9 +27,10 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  */
 template<fixed_string Name = "">
-class audio_device_widget final : public widget<Name ^ "audio-device"> {
+class audio_device_widget final : public widget {
 public:
-    using super = widget<Name ^ "audio-device">;
+    using super = widget;
+    constexpr static auto prefix = Name ^ "audio-device";
 
     /** The audio device this widget has selected and is configuring.
      */
@@ -38,7 +40,7 @@ public:
      */
     observer<audio_direction> direction = audio_direction::bidirectional;
 
-    audio_device_widget(widget_intf *parent, hi::audio_system& audio_system) noexcept :
+    audio_device_widget(widget *parent, hi::audio_system& audio_system) noexcept :
         super(parent), _audio_system(&audio_system)
     {
         _grid_widget = std::make_unique<grid_widget>(this);
@@ -48,7 +50,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_grid_widget;
     }
@@ -63,7 +65,7 @@ public:
     {
         if (compare_store(layout, context)) {
             hilet grid_rectangle = context.rectangle();
-            _grid_shape = {_grid_constraints, grid_rectangle, tv<"audio_device.baseline", int>{}(scale)};
+            _grid_shape = {_grid_constraints, grid_rectangle, theme<prefix ^ "cap-height", int>{}(this)};
         }
 
         _grid_widget->set_layout(context.transform(_grid_shape));

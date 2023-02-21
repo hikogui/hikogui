@@ -15,7 +15,7 @@ public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
     template<typename Label>
-    widget_with_child(hi::widget_intf *parent, Label&& label) noexcept : widget(parent)
+    widget_with_child(hi::widget *parent, Label&& label) noexcept : widget(parent)
     {
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
@@ -101,7 +101,7 @@ protected:
     //
     // The allocator argument should not be used by the function, it is used by the caller
     // to allocate the co-routine's frame on the stack.
-    [[nodiscard]] hi::generator<widget_intf const&> children(bool include_invisible) const noexcept override
+    [[nodiscard]] hi::generator<widget const&> children(bool include_invisible) const noexcept override
     {
         // This function is often written as a co-routine that yields a pointer to each of its children.
         co_yield *_label_widget;

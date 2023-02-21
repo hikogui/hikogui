@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
 #include "../animator.hpp"
@@ -29,11 +29,13 @@ concept button_widget_attribute = label_widget_attribute<Context>;
  *
  * @ingroup widgets
  */
-template<fixed_string Tag>
-class abstract_button_widget : public widget<Tag> {
+template<fixed_string Prefix>
+class abstract_button_widget : public widget {
 public:
-    using super = widget<Tag>;
+    using super = widget;
     using delegate_type = button_delegate;
+
+    constexpr static auto prefix = Prefix;
 
     /** The delegate that controls the button widget.
      */
@@ -55,10 +57,6 @@ public:
      */
     observer<hi::alignment> alignment;
 
-    /** The text style to button's label.
-     */
-    observer<hi::text_theme> text_theme = tv<"button.text.style", hi::text_theme>{}();
-
     notifier<void()> pressed;
 
     ~abstract_button_widget()
@@ -67,14 +65,15 @@ public:
         delegate->deinit(*this);
     }
 
-    abstract_button_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    abstract_button_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), delegate(std::move(delegate))
     {
         hi_assert_not_null(this->delegate);
 
-        _on_label_widget = std::make_unique<label_widget>(this, on_label, alignment, text_theme);
-        _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, text_theme);
-        _other_label_widget = std::make_unique<label_widget>(this, other_label, alignment, text_theme);
+        _on_label_widget = std::make_unique<label_widget<prefix ^ "on">>(this, on_label, alignment);
+        _off_label_widget = std::make_unique<label_widget<prefix ^ "off">>(this, off_label, alignment);
+        _other_label_widget = std::make_unique<label_widget<prefix ^ "other">>(this, other_label, alignment);
+
         _delegate_cbt = this->delegate->subscribe([&] {
             ++global_counter<"abstract_button_widget:delegate:relayout">;
             on = state() == button_state::on;
@@ -114,7 +113,7 @@ public:
         _other_label_widget->set_layout(context.transform(_other_label_shape));
     }
 
-    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_on_label_widget;
         co_yield *_off_label_widget;
@@ -185,15 +184,15 @@ public:
     }
     /// @endprivatesection
 protected:
-    std::unique_ptr<label_widget> _on_label_widget;
+    std::unique_ptr<label_widget<prefix ^ "on">> _on_label_widget;
     box_constraints _on_label_constraints;
     box_shape _on_label_shape;
 
-    std::unique_ptr<label_widget> _off_label_widget;
+    std::unique_ptr<label_widget<prefix ^ "off">> _off_label_widget;
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    std::unique_ptr<label_widget> _other_label_widget;
+    std::unique_ptr<label_widget<prefix ^ "other">> _other_label_widget;
     box_constraints _other_label_constraints;
     box_shape _other_label_shape;
 
@@ -226,10 +225,6 @@ protected:
 
         } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-            set_attributes<I>(hi_forward(rest)...);
-
-        } else if constexpr (forward_of<decltype(first), observer<hi::text_theme>>) {
-            text_theme = hi_forward(first);
             set_attributes<I>(hi_forward(rest)...);
 
         } else {

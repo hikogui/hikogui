@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/widget.hpp"
 #include "../GUI/gui_event.hpp"
 #include "../geometry/module.hpp"
 #include "../observer.hpp"
@@ -31,9 +31,10 @@ namespace hi { inline namespace v1 {
  * @tparam Axis which axis (horizontal or vertical) this scroll bar is used for.
  */
 template<axis Axis, fixed_string Name = "">
-class scroll_bar_widget final : public widget<Name ^ "scroll-bar"> {
+class scroll_bar_widget final : public widget {
 public:
-    using super = widget<Name ^ "scroll-bar">;
+    using super = widget;
+    constexpr static auto prefix = Name ^ "bar";
 
     static constexpr hi::axis axis = Axis;
 
@@ -42,7 +43,7 @@ public:
     observer<int> content;
 
     scroll_bar_widget(
-        widget_intf *parent,
+        widget *parent,
         forward_of<observer<int>> auto&& content,
         forward_of<observer<int>> auto&& aperture,
         forward_of<observer<int>> auto&& offset) noexcept :
@@ -71,16 +72,18 @@ public:
         }
 
         // The minimum size is twice the length of the slider, which is twice the theme().size()
+        hilet rail_length = theme<prefix ^ "rail.length", int>{}(this);
+        hilet rail_breadth = theme<prefix ^ "rail.breadth", int>{}(this);
         if constexpr (axis == axis::vertical) {
             return {
-                extent2i{theme().icon_size(), theme().size() * 4},
-                extent2i{theme().icon_size(), theme().size() * 4},
-                extent2i{theme().icon_size(), large_number_v<int>}};
+                extent2i{rail_breadth, rail_length},
+                extent2i{rail_breadth, rail_length},
+                extent2i{rail_breadth, large_number_v<int>}};
         } else {
             return {
-                extent2i{theme().size() * 4, theme().icon_size()},
-                extent2i{theme().size() * 4, theme().icon_size()},
-                extent2i{large_number_v<int>, theme().icon_size()}};
+                extent2i{rail_length, rail_breadth},
+                extent2i{rail_length, rail_breadth},
+                extent2i{large_number_v<int>, rail_breadth}};
         }
     }
 
@@ -119,8 +122,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout.contains(position) and visible() and
-            _slider_rectangle.contains(position)) {
+        if (*mode >= widget_mode::partial and layout.contains(position) and visible() and _slider_rectangle.contains(position)) {
             return {id, layout.elevation, hitbox_type::scroll_bar};
         } else {
             return {};
@@ -162,20 +164,6 @@ public:
         return false;
     }
 
-    [[nodiscard]] color background_color() const noexcept override
-    {
-        return theme().color(semantic_color::fill, semantic_layer);
-    }
-
-    [[nodiscard]] color foreground_color() const noexcept override
-    {
-        if (*hover) {
-            return theme().color(semantic_color::fill, semantic_layer + 2);
-        } else {
-            return theme().color(semantic_color::fill, semantic_layer + 1);
-        }
-    }
-
 private:
     aarectanglei _slider_rectangle;
 
@@ -213,7 +201,7 @@ private:
             }
         }();
 
-        return std::clamp(preferred_length, narrow_cast<int>(theme().size()) * 2, rail_length());
+        return std::clamp(preferred_length, theme<prefix ^ "slider.length", int>{}(this), rail_length());
     }
 
     /** The amount of travel that the slider can make.
@@ -269,7 +257,10 @@ private:
                                                       hi::corner_radii{narrow_cast<float>(_slider_rectangle.height() / 2)};
 
         context.draw_box(
-            layout, translate_z(0.1f) * narrow_cast<aarectangle>(_slider_rectangle), foreground_color(), corner_radii);
+            layout,
+            translate_z(0.1f) * narrow_cast<aarectangle>(_slider_rectangle),
+            theme<prefix ^ "slider.color", color>{}(this),
+            corner_radii);
     }
 };
 

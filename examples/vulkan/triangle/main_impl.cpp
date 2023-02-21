@@ -21,7 +21,7 @@ class triangle_widget : public hi::widget, public hi::gfx_surface_delegate_vulka
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    triangle_widget(hi::widget_intf *parent, hi::gfx_surface& surface) noexcept : widget(parent), _surface(surface)
+    triangle_widget(hi::widget *parent, hi::gfx_surface& surface) noexcept : widget(parent), _surface(surface)
     {
         _surface.add_delegate(this);
     }

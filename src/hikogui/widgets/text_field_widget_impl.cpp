@@ -7,7 +7,7 @@
 
 namespace hi::inline v1 {
 
-text_field_widget::text_field_widget(widget_intf *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+text_field_widget::text_field_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(parent), delegate(std::move(delegate)), _text()
 {
     hi_assert_not_null(this->delegate);
@@ -49,7 +49,7 @@ text_field_widget::~text_field_widget()
     delegate->deinit(*this);
 }
 
-[[nodiscard]] generator<widget_intf const&> text_field_widget::children(bool include_invisible) const noexcept
+[[nodiscard]] generator<widget const&> text_field_widget::children(bool include_invisible) const noexcept
 {
     co_yield *_scroll_widget;
 }

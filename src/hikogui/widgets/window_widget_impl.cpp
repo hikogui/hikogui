@@ -50,7 +50,7 @@ void window_widget::constructor_implementation() noexcept
     return _window->surface.get();
 }
 
-[[nodiscard]] generator<widget_intf const&> window_widget::children(bool include_invisible) const noexcept
+[[nodiscard]] generator<widget const&> window_widget::children(bool include_invisible) const noexcept
 {
     co_yield *_toolbar;
     co_yield *_content;

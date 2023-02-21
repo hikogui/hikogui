@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/widget.hpp"
 #include "../GUI/theme.hpp"
 #include "../geometry/module.hpp"
 #include "../layout/row_column_layout.hpp"
@@ -36,13 +36,14 @@ namespace hi { inline namespace v1 {
  * @tparam Axis the axis to lay out child widgets. Either `axis::horizontal` or
  * `axis::vertical`.
  */
-template<fixed_string Tag, axis Axis>
-class row_column_widget final : public widget<Tag> {
+template<fixed_string Prefix, axis Axis>
+class row_column_widget final : public widget {
 public:
     static_assert(Axis == axis::horizontal or Axis == axis::vertical);
 
-    using super = widget<Tag>;
-    static constexpr hi::axis axis = Axis;
+    using super = widget;
+    constexpr static hi::axis axis = Axis;
+    constexpr static auto prefix = Prefix;
 
     ~row_column_widget() {}
 
@@ -50,7 +51,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    row_column_widget(widget_intf *parent) noexcept : super(parent)
+    row_column_widget(widget *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
 
@@ -94,7 +95,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf const&> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
     {
         for (hilet& child : _children) {
             co_yield *child.value;
@@ -113,7 +114,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            _children.set_layout(context.shape, theme().baseline_adjustment());
+            _children.set_layout(context.shape, theme<prefix ^ "cap-height", int>{}(this));
 
             for (hilet& child : _children) {
                 child.value->set_layout(context.transform(child.shape, 0.0f));

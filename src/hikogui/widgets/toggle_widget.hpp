@@ -65,7 +65,7 @@ public:
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     toggle_widget(
-        widget_intf *parent,
+        widget *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
@@ -85,7 +85,7 @@ public:
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     template<different_from<std::shared_ptr<delegate_type>> Value, button_widget_attribute... Attributes>
-    toggle_widget(widget_intf *parent, Value&& value, Attributes&&...attributes) noexcept
+    toggle_widget(widget *parent, Value&& value, Attributes&&...attributes) noexcept
         requires requires
     {
         make_default_toggle_button_delegate(hi_forward(value));
@@ -106,7 +106,7 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    toggle_widget(widget_intf *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    toggle_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires
     {
         make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value));
@@ -136,7 +136,7 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         button_widget_attribute... Attributes>
     toggle_widget(
-        widget_intf *parent,
+        widget *parent,
         Value&& value,
         OnValue&& on_value,
         OffValue&& off_value,
