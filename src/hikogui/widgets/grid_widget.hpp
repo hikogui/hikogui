@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/module.hpp"
 #include "../layout/grid_layout.hpp"
+#include "../log.hpp"
 #include <memory>
 
 namespace hi { inline namespace v1 {
@@ -134,7 +135,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             for (hilet& cell : _grid) {
@@ -160,7 +161,7 @@ public:
 
     /// @endprivatesection
 private:
-    grid_layout<std::unique_ptr<widget_impl>> _grid;
+    grid_layout<std::unique_ptr<widget>> _grid;
 
     /* Add a widget to the grid.
      */
@@ -169,7 +170,7 @@ private:
         std::size_t first_row,
         std::size_t last_column,
         std::size_t last_row,
-        std::unique_ptr<widget_impl> child_widget) noexcept
+        std::unique_ptr<widget> child_widget) noexcept
     {
         hi_axiom(loop::main().on_thread());
         hi_axiom(first_column < last_column);
@@ -179,7 +180,7 @@ private:
             hi_log_fatal("cell ({},{}) of grid_widget is already in use", first_column, first_row);
         }
 
-        auto& ref = *widget;
+        auto& ref = *child_widget;
         _grid.add_cell(first_column, first_row, last_column, last_row, std::move(widget));
         hi_log_info("grid_widget::add_widget({}, {}, {}, {})", first_column, first_row, last_column, last_row);
 

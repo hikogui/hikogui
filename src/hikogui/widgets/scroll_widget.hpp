@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../GUI/widget.hpp"
+#include "../GUI/module.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
 #include "../geometry/module.hpp"
@@ -152,7 +152,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             for (hilet& cell : _grid) {

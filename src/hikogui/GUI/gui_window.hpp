@@ -10,12 +10,9 @@
 #include "gui_event.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
-#include "theme_file.hpp"
+#include "widget.hpp"
 #include "../GFX/subpixel_orientation.hpp"
 #include "../geometry/module.hpp"
-#include "../widgets/window_widget.hpp"
-#include "../widgets/grid_widget.hpp"
-#include "../widgets/toolbar_widget.hpp"
 #include "../chrono.hpp"
 #include "../label.hpp"
 #include "../animator.hpp"
@@ -86,7 +83,7 @@ public:
 
     /** The widget covering the complete window.
      */
-    std::unique_ptr<window_widget> widget;
+    std::unique_ptr<widget> widget;
 
     /** Notifier used when the window is closing.
      * It is expected that after notifying these callbacks the instance of this class is destroyed.
@@ -108,7 +105,7 @@ public:
      *
      * `init()` should not take locks on window::mutex.
      */
-    virtual void init();
+    virtual void init(std::unique_ptr<hi::widget> widget);
 
     void set_device(gfx_device *device) noexcept;
 
@@ -120,28 +117,6 @@ public:
      * This will update animations and redraw all widgets managed by this window.
      */
     virtual void render(utc_nanoseconds displayTimePoint);
-
-    /** Get a reference to the window's content widget.
-     * @see grid_widget
-     * @return A reference to a grid_widget.
-     */
-    [[nodiscard]] grid_widget& content() noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(widget);
-        return widget->content();
-    }
-
-    /** Get a reference to window's toolbar widget.
-     * @see toolbar_widget
-     * @return A reference to a toolbar_widget.
-     */
-    [[nodiscard]] toolbar_widget& toolbar() noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(widget);
-        return widget->toolbar();
-    }
 
     /** Set the mouse cursor icon.
      */

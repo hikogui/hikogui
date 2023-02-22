@@ -9,10 +9,10 @@
 #pragma once
 
 #include "text_field_delegate.hpp"
-#include "widget.hpp"
 #include "label_widget.hpp"
 #include "scroll_widget.hpp"
 #include "../label.hpp"
+#include "../GUI/module.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -213,7 +213,7 @@ public:
         _scroll_widget->set_layout(context.transform(_scroll_shape));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             draw_background_box(context);
@@ -333,7 +333,7 @@ private:
         }
     }
 
-    void draw_background_box(draw_context const& context) const noexcept
+    void draw_background_box(widget_draw_context const& context) const noexcept
     {
         hilet outline = narrow_cast<aarectangle>(_scroll_shape.rectangle);
 

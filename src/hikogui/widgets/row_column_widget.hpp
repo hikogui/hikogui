@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include "../GUI/widget.hpp"
-#include "../GUI/theme.hpp"
+#include "../GUI/module.hpp"
 #include "../geometry/module.hpp"
 #include "../layout/row_column_layout.hpp"
 #include <memory>
@@ -122,7 +121,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             for (hilet& child : _children) {

@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include "../GUI/widget.hpp"
-#include "../GUI/gui_event.hpp"
+#include "../GUI/module.hpp"
 #include "../geometry/module.hpp"
 #include "../observer.hpp"
 #include "../utility/module.hpp"
@@ -110,7 +109,7 @@ public:
         return *aperture < *content;
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout) and visible()) {
             draw_rails(context);
@@ -244,14 +243,14 @@ private:
         return _hidden_content != 0 ? narrow_cast<float>(slider_travel_range()) / _hidden_content : 0.0f;
     }
 
-    void draw_rails(draw_context const& context) noexcept
+    void draw_rails(widget_draw_context const& context) noexcept
     {
         hilet corner_radii =
             axis == axis::vertical ? hi::corner_radii{layout.width() * 0.5f} : hi::corner_radii{layout.height() * 0.5f};
         context.draw_box(layout, layout.rectangle(), background_color(), corner_radii);
     }
 
-    void draw_slider(draw_context const& context) noexcept
+    void draw_slider(widget_draw_context const& context) noexcept
     {
         hilet corner_radii = axis == axis::vertical ? hi::corner_radii{narrow_cast<float>(_slider_rectangle.width() / 2)} :
                                                       hi::corner_radii{narrow_cast<float>(_slider_rectangle.height() / 2)};

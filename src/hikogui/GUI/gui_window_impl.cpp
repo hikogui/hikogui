@@ -32,17 +32,17 @@ gui_window::~gui_window()
     }
 }
 
-void gui_window::init()
+void gui_window::init(std::unique_ptr<hi::widget> window_widget)
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
 
-    widget = std::make_unique<window_widget>(this, title);
+    widget = std::move(window_widget);
 
-    hilet scale = dpi / points_per_inch_v<float>;
+    hilet dpi_scale = dpi / points_per_inch_v<float>;
     apply(*widget, [&](auto& x) {
-        x.reset_layout(scale);
+        x.reset_layout(this, surface.get(), dpi_scale);
     });
 
     _widget_constraints = widget->update_constraints();
@@ -99,9 +99,9 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain) {
         hilet t2 = trace<"window::constrain">();
 
-        hilet scale = dpi / points_per_inch_v<float>;
+        hilet dpi_scale = dpi / points_per_inch_v<float>;
         apply(*widget, [&](auto& x) {
-            x.reset_layout(scale);
+            x.reset_layout(this, surface.get(), dpi_scale);
         });
 
         _widget_constraints = widget->update_constraints();
@@ -172,25 +172,19 @@ void gui_window::render(utc_nanoseconds display_time_point)
 #endif
 
     // Draw widgets if the _redraw_rectangle was set.
-    if (auto draw_context = surface->render_start(_redraw_rectangle)) {
+    if (auto gfx_draw_context = surface->render_start(_redraw_rectangle)) {
+        auto widget_draw_context = hi::widget_draw_context{*gfx_draw_context};
         _redraw_rectangle = aarectanglei{};
-        draw_context.display_time_point = display_time_point;
-        draw_context.subpixel_orientation = subpixel_orientation();
-        draw_context.background_color = widget->background_color();
-        draw_context.active = active;
-
-        if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
-            this->process_event({gui_event_type::window_redraw, aarectanglei{rectangle.size()}});
-        }
-        draw_context.saturation = _animated_active.current_value();
+        widget_draw_context.display_time_point = display_time_point;
+        widget_draw_context.gfx_context.subpixel_orientation = subpixel_orientation();
 
         {
             hilet t2 = trace<"window::draw">();
-            widget->draw(draw_context);
+            widget->draw(widget_draw_context);
         }
         {
             hilet t2 = trace<"window::submit">();
-            surface->render_finish(draw_context);
+            surface->render_finish(widget_draw_context.gfx_context);
         }
     }
 }

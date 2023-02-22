@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/module.hpp"
 #include "../GFX/paged_image.hpp"
 #include "../geometry/module.hpp"
 #include "../label.hpp"
@@ -80,7 +80,7 @@ public:
                 _icon_type = icon_type::pixmap;
                 _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
-                if (not(_pixmap_backing = paged_image{surface(), *pixmap})) {
+                if (_pixmap_backing = paged_image{surface, *pixmap}; not _pixmap_backing) {
                     // Could not get an image, retry.
                     _icon_has_modified = true;
                     ++global_counter<"icon_widget:no-backing-image:constrain">;
@@ -131,7 +131,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             switch (_icon_type) {

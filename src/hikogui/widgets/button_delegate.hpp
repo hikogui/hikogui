@@ -14,8 +14,7 @@
 #include <memory>
 
 namespace hi { inline namespace v1 {
-
-class abstract_button_widget;
+class widget;
 
 /** The state of a button.
  * @ingroup widget_delegates
@@ -50,17 +49,17 @@ public:
 
     virtual ~button_delegate() = default;
 
-    virtual void init(abstract_button_widget& sender) noexcept {}
+    virtual void init(widget& sender) noexcept {}
 
-    virtual void deinit(abstract_button_widget& sender) noexcept {}
+    virtual void deinit(widget& sender) noexcept {}
 
     /** Called when the button is pressed by the user.
      */
-    virtual void activate(abstract_button_widget& sender) noexcept {};
+    virtual void activate(widget& sender) noexcept {};
 
     /** Used by the widget to check the state of the button.
      */
-    [[nodiscard]] virtual button_state state(abstract_button_widget const& sender) const noexcept
+    [[nodiscard]] virtual button_state state(widget const& sender) const noexcept
     {
         return button_state::off;
     }
@@ -110,7 +109,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(abstract_button_widget const& sender) const noexcept override
+    [[nodiscard]] button_state state(widget const& sender) const noexcept override
     {
         if (*value == *on_value) {
             return button_state::on;
@@ -119,7 +118,7 @@ public:
         }
     }
 
-    void activate(abstract_button_widget& sender) noexcept override
+    void activate(widget& sender) noexcept override
     {
         value = *on_value;
     }
@@ -189,7 +188,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(abstract_button_widget const& sender) const noexcept override
+    [[nodiscard]] button_state state(widget const& sender) const noexcept override
     {
         if (*value == *on_value) {
             return button_state::on;
@@ -200,7 +199,7 @@ public:
         }
     }
 
-    void activate(abstract_button_widget& sender) noexcept override
+    void activate(widget& sender) noexcept override
     {
         if (*value == *off_value) {
             value = *on_value;

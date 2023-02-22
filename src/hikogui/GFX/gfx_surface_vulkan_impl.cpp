@@ -37,7 +37,7 @@ void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
     hilet lock = std::scoped_lock(gfx_system_mutex);
     super::set_device(device);
 
-    auto &device_ = down_cast<gfx_device_vulkan &>(*device);
+    auto& device_ = down_cast<gfx_device_vulkan&>(*device);
 
     _present_queue = &device_.get_present_queue(*this);
     _graphics_queue = &device_.get_graphics_queue(*this);
@@ -406,33 +406,31 @@ void gfx_surface_vulkan::update(extent2i new_size) noexcept
     build(new_size);
 }
 
-draw_context gfx_surface_vulkan::render_start(aarectanglei redraw_rectangle)
+std::optional<gfx_draw_context> gfx_surface_vulkan::render_start(aarectanglei redraw_rectangle)
 {
     // Extent the redraw_rectangle to the render-area-granularity to improve performance on tile based GPUs.
     redraw_rectangle = ceil(redraw_rectangle, _render_area_granularity);
 
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
-    auto r = draw_context{
-        *down_cast<gfx_device_vulkan *>(_device),
-        box_pipeline->vertexBufferData,
-        image_pipeline->vertexBufferData,
-        SDF_pipeline->vertexBufferData,
-        alpha_pipeline->vertexBufferData};
-
     // Bail out when the window is not yet ready to be rendered, or if there is nothing to render.
     if (state != gfx_surface_state::has_swapchain or not redraw_rectangle) {
-        return r;
+        return std::nullopt;
     }
 
     hilet optional_frame_buffer_index = acquire_next_image_from_swapchain();
-    if (!optional_frame_buffer_index) {
+    if (not optional_frame_buffer_index) {
         // No image is ready to be rendered, yet, possibly because our vertical sync function
         // is not working correctly.
-        return r;
+        return std::nullopt;
     }
 
-    // Setting the frame buffer index, also enabled the draw_context.
+    auto r = gfx_draw_context{};
+    r.device = _device;
+    r.box_vertices = std::addressof(box_pipeline->vertexBufferData);
+    r.image_vertices = std::addressof(image_pipeline->vertexBufferData);
+    r.sdf_vertices = std::addressof(SDF_pipeline->vertexBufferData);
+    r.alpha_vertices = std::addressof(alpha_pipeline->vertexBufferData);
     r.frame_buffer_index = narrow_cast<size_t>(*optional_frame_buffer_index);
 
     // Record which part of the image will be redrawn on the current swapchain image.
@@ -455,7 +453,7 @@ draw_context gfx_surface_vulkan::render_start(aarectanglei redraw_rectangle)
     return r;
 }
 
-void gfx_surface_vulkan::render_finish(draw_context const& context)
+void gfx_surface_vulkan::render_finish(gfx_draw_context const& context)
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -472,8 +470,9 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     }
 
     // Clamp the scissor rectangle to the size of the window.
-    hilet clamped_scissor_rectangle =
-        intersect(context.scissor_rectangle, aarectanglei{0, 0, narrow_cast<int>(swapchainImageExtent.width), narrow_cast<int>(swapchainImageExtent.height)});
+    hilet clamped_scissor_rectangle = intersect(
+        context.scissor_rectangle,
+        aarectanglei{0, 0, narrow_cast<int>(swapchainImageExtent.width), narrow_cast<int>(swapchainImageExtent.height)});
 
     hilet render_area = vk::Rect2D{
         vk::Offset2D(
@@ -508,7 +507,7 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
 
 void gfx_surface_vulkan::fill_command_buffer(
     swapchain_image_info const& current_image,
-    draw_context const& context,
+    gfx_draw_context const& context,
     vk::Rect2D render_area)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
@@ -518,17 +517,11 @@ void gfx_surface_vulkan::fill_command_buffer(
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    hilet background_color_f32x4 = static_cast<f32x4>(context.background_color);
-    // hilet background_color_f32x4 = f32x4{1.0f, 0.0f, 0.0f, 1.0f};
-    hilet background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
-
-    hilet colorClearValue = vk::ClearColorValue{background_color_array};
-    hilet sdfClearValue = vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 0.0f}};
+    hilet colorClearValue = vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 0.0f}};
     hilet depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
     hilet clearValues = std::array{
         vk::ClearValue{depthClearValue},
         vk::ClearValue{colorClearValue},
-        vk::ClearValue{sdfClearValue},
         vk::ClearValue{colorClearValue}};
 
     // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.

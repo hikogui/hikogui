@@ -11,7 +11,7 @@ namespace hi::inline v1::pipeline_SDF {
 
 pipeline_SDF::pipeline_SDF(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, gfx_draw_context const& context)
 {
     pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
 

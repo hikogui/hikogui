@@ -95,8 +95,8 @@ public:
 
     void update(extent2i new_size) noexcept override;
 
-    [[nodiscard]] draw_context render_start(aarectanglei redraw_rectangle) override;
-    void render_finish(draw_context const& context) override;
+    [[nodiscard]] std::optional<gfx_draw_context> render_start(aarectanglei redraw_rectangle) override;
+    void render_finish(gfx_draw_context const& context) override;
 
     void add_delegate(gfx_surface_delegate *delegate) noexcept override;
     void remove_delegate(gfx_surface_delegate *delegate) noexcept override;
@@ -131,7 +131,7 @@ private:
      * @param current_image Information about the swapchain-image to be rendered.
      * @param context The drawing context.
      */
-    void fill_command_buffer(swapchain_image_info const& current_image, draw_context const& context, vk::Rect2D render_area);
+    void fill_command_buffer(swapchain_image_info const& current_image, gfx_draw_context const& context, vk::Rect2D render_area);
 
     /** Submit the command buffer updated with fill command buffer.
      *

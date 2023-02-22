@@ -8,11 +8,13 @@
 
 #pragma once
 
-#include "widget.hpp"
 #include "toolbar_widget.hpp"
 #include "system_menu_widget.hpp"
 #include "grid_widget.hpp"
+#include "window_traffic_lights_widget.hpp"
+#include "../GUI/module.hpp"
 #include "../label.hpp"
+#include <memory>
 
 namespace hi { inline namespace v1 {
 
@@ -33,7 +35,6 @@ public:
     window_widget(forward_of<observer<label>> auto&& title) noexcept :
         super(nullptr), title(hi_forward(title))
     {
-        hi_assert_not_null(_window);
         _toolbar = std::make_unique<toolbar_widget<prefix>>(this);
 
         if (operating_system::current == operating_system::windows) {
@@ -166,7 +167,7 @@ public:
         _content->set_layout(context.transform(_content_shape));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             _toolbar->draw(context);
@@ -254,12 +255,12 @@ public:
 
     bool process_event(gui_event const& event) const noexcept override
     {
-        hi_assert_not_null(_window);
-        return _window->process_event(event);
+        hi_assert_not_null(window);
+        return window->process_event(event);
     }
     /// @endprivatesection
 private:
-    std::unique_ptr<grid_widget> _content;
+    std::unique_ptr<grid_widget<prefix>> _content;
     box_constraints _content_constraints;
     box_shape _content_shape;
 
@@ -271,7 +272,7 @@ private:
     mutable bool _can_resize_height;
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-    system_menu_widget *_system_menu = nullptr;
+    system_menu_widget<prefix> *_system_menu = nullptr;
 #endif
 };
 

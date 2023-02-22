@@ -70,7 +70,7 @@ public:
 
 private:
     mutable unfair_mutex _mutex;
-    std::array<value_type, theme_value_index::array_size> _values;
+    value_type _value;
 
 protected:
     inline static unfair_mutex _map_mutex;
@@ -122,6 +122,7 @@ protected:
     inline static std::map<std::string, theme_value_base *> _map;
 };
 
+template<>
 class theme_value_base<hi::color> {
 public:
     using value_type = hi::color;

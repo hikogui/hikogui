@@ -1,8 +1,8 @@
 How to draw
 ===========
 
-Drawing is done through the `hi::draw_context` object that is passed to
-`hi::widget::draw()` when drawing a frame. The `hi::draw_context` has
+Drawing is done through the `hi::widget_draw_context` object that is passed to
+`hi::widget::draw()` when drawing a frame. The `hi::widget_draw_context` has
 several `draw_*()` member functions that allow you to draw shapes,
 glyphs, text and images.
 
@@ -54,7 +54,7 @@ Drawing shapes
 In the example below we draw a rectangle with a border and rounded corners:
 
 ```cpp
-void draw(hi::draw_context const &context) noexcept override
+void draw(hi::widget_draw_context const &context) noexcept override
 {
     auto const polygon = hi::quad{
         point3{10.0f, 10.0f, 0.0f},
@@ -82,7 +82,7 @@ for anti-aliasing.
 In the example below we draw a circle with a border:
 
 ```cpp
-void draw(hi::draw_context const &context) noexcept override
+void draw(hi::widget_draw_context const &context) noexcept override
 {
     auto const polygon = hi::circle{point3{35.0f, 35.0f, 0.0f}, 25.0f};
     auto const red = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
@@ -91,8 +91,8 @@ void draw(hi::draw_context const &context) noexcept override
 }
 ```
 
-`hi::draw_context::draw_circle()` is a convenience-function for
-`hi::draw_context::draw_box()` A circle is a square with rounded corners
+`hi::widget_draw_context::draw_circle()` is a convenience-function for
+`hi::widget_draw_context::draw_box()` A circle is a square with rounded corners
 with the corner diameter set to the height/width of the square.
 
 When drawing circles among rectangular objects, it is recommended to
@@ -105,7 +105,7 @@ be the same size and aligned to the flat edges of the rectangles.
 In the example below we draw a line with rounded end points:
 
 ```cpp
-void draw(hi::draw_context const &context) noexcept override
+void draw(hi::widget_draw_context const &context) noexcept override
 {
     auto const line = hi::line{
         point3{10.0f, 10.0f, 0.0f},
@@ -117,8 +117,8 @@ void draw(hi::draw_context const &context) noexcept override
 }
 ```
 
-`hi::draw_context::draw_line()` is a convenience-function for
-`hi::draw_context::draw_box()` A line is a thin rectangle with rounded corners
+`hi::widget_draw_context::draw_line()` is a convenience-function for
+`hi::widget_draw_context::draw_box()` A line is a thin rectangle with rounded corners
 with the corner diameter set to the width of the line.
 
 When drawing horizontal or vertical lines, you may want to position the line so

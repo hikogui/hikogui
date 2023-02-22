@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/module.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -39,7 +39,7 @@ public:
         layout = context;
     }
 
-    void draw(draw_context const& context) noexcept override {}
+    void draw(widget_draw_context const& context) noexcept override {}
 
     [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
     {

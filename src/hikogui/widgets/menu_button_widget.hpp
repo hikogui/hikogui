@@ -129,7 +129,7 @@ public:
         super::set_layout(context);
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             draw_menu_button(context);
@@ -191,7 +191,7 @@ private:
     extent2i _short_cut_size;
     aarectanglei _short_cut_rectangle;
 
-    void draw_menu_button(draw_context const& context) noexcept
+    void draw_menu_button(widget_draw_context const& context) noexcept
     {
         hilet border_color = *focus ? focus_color() : color::transparent();
         context.draw_box(
@@ -203,7 +203,7 @@ private:
             border_side::inside);
     }
 
-    void draw_check_mark(draw_context const& context) noexcept
+    void draw_check_mark(widget_draw_context const& context) noexcept
     {
         auto state_ = state();
 

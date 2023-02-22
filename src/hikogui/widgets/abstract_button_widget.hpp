@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include "../GUI/widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
+#include "../GUI/module.hpp"
+#include "../utility/module.hpp"
 #include "../animator.hpp"
 #include "../i18n/translate.hpp"
 #include "../notifier.hpp"
@@ -184,15 +185,15 @@ public:
     }
     /// @endprivatesection
 protected:
-    std::unique_ptr<label_widget<prefix ^ "on">> _on_label_widget;
+    std::unique_ptr<label_widget<Prefix ^ "on">> _on_label_widget;
     box_constraints _on_label_constraints;
     box_shape _on_label_shape;
 
-    std::unique_ptr<label_widget<prefix ^ "off">> _off_label_widget;
+    std::unique_ptr<label_widget<Prefix ^ "off">> _off_label_widget;
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    std::unique_ptr<label_widget<prefix ^ "other">> _other_label_widget;
+    std::unique_ptr<label_widget<Prefix ^ "other">> _other_label_widget;
     box_constraints _other_label_constraints;
     box_shape _other_label_shape;
 
@@ -232,7 +233,7 @@ protected:
         }
     }
 
-    void draw_button(draw_context const& context) noexcept
+    void draw_button(widget_draw_context const& context) noexcept
     {
         _on_label_widget->draw(context);
         _off_label_widget->draw(context);

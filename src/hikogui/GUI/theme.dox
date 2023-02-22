@@ -1,13 +1,9 @@
 
-/** @file theme/module.hpp Defined the theme module.
- */
-
-#pragma once
-
 namespace hi {
 inline namespace v1 {
 
 /** @defgroup theme The theme system.
+@ingroup GUI
 
 Theme value names
 -----------------

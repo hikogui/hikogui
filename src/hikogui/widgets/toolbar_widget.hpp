@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "spacer_widget.hpp"
+#include "toolbar_tab_button_widget.hpp"
+#include "../GUI/module.hpp"
 #include "../layout/row_column_layout.hpp"
 #include "../geometry/module.hpp"
 #include <memory>
@@ -118,7 +120,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             if (overlaps(context, layout)) {
@@ -197,8 +199,10 @@ private:
     [[nodiscard]] bool tab_button_has_focus() const noexcept
     {
         for (hilet& cell : _children) {
-            if (auto const *const c = dynamic_cast<toolbar_tab_button_widget *>(cell.value.get())) {
-                if (*c->focus and c->state() == hi::button_state::on) {
+            hilet child = cell.value.get();
+            hi_assert_not_null(child);
+            if (child->is_tab_button()) {
+                if (*child->focus and child->state() == hi::button_state::on) {
                     return true;
                 }
             }

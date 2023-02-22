@@ -281,12 +281,12 @@ void theme_file::activate() const noexcept
     for (hilet & [ item_name, item_value ] : _items) {
         if (auto colors = std::get_if<std::vector<hi::color>>(&item_value)) {
             for (auto& theme_value : detail::theme_value_base<std::vector<hi::color>>::get(item_name)) {
-                theme_value = *colors;
+                hi_not_implemented();
             }
 
         } else if (auto size = std::get_if<float>(&item_value)) {
             for (auto& theme_value : detail::theme_value_base<float>::get(item_name)) {
-                theme_value = *size;
+                theme_value.set(*size);
             }
 
         } else if (auto text_styles = std::get_if<std::vector<text_style>>(&item_value)) {

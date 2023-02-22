@@ -189,12 +189,11 @@ void text_shaper::resolve_font_and_widths(float dpi_scale) noexcept
 }
 
 [[nodiscard]] text_shaper::text_shaper(
-    hi::font_book& font_book,
     hi::text const& text,
     float dpi_scale,
     hi::alignment alignment,
     unicode_bidi_class text_direction) noexcept :
-    _font_book(&font_book), _bidi_context(text_direction), _alignment(alignment)
+    _bidi_context(text_direction), _alignment(alignment)
 {
     // Copy the text to an internal vector of characters.
     _text.reserve(text.size());
@@ -343,7 +342,6 @@ void text_shaper::resolve_script() noexcept
     // Forward pass: fix all common and inherited with previous or first script.
     previous_script = first_script;
     for (auto i = 0_uz; i != _text.size(); ++i) {
-        hilet& c = _text[i];
         auto& script = scripts[i];
 
         if (script == unicode_script::Common or script == unicode_script::Inherited) {

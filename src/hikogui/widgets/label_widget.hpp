@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../GUI/widget.hpp"
+#include "../GUI/module.hpp"
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
 #include "../geometry/module.hpp"
@@ -149,7 +149,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             for (hilet& cell : _grid) {
@@ -174,7 +174,6 @@ private:
     float _inner_margin;
 
     decltype(label)::callback_token _label_cbt;
-    decltype(text_theme)::callback_token _text_theme_cbt;
     decltype(alignment)::callback_token _alignment_cbt;
 
     std::unique_ptr<icon_widget<prefix>> _icon_widget;
@@ -212,14 +211,6 @@ private:
             }
         });
         (*_alignment_cbt)(*alignment);
-
-        _text_theme_cbt = text_theme.subscribe([this](auto...) {
-            if (auto color = text_theme->color()) {
-                _icon_widget->color = *color;
-            } else {
-                _icon_widget->color = color::foreground();
-            }
-        });
     }
 };
 

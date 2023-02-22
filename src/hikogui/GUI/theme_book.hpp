@@ -5,7 +5,7 @@
 #pragma once
 
 #include "theme_mode.hpp"
-#include "theme.hpp"
+#include "theme_file.hpp"
 #include <limits>
 #include <vector>
 #include <memory>
@@ -35,10 +35,10 @@ public:
      * @param mode The mode of the theme to select.
      * @return A theme most closely matching the requested theme.
      */
-    [[nodiscard]] theme const &find(std::string name, theme_mode mode) const noexcept;
+    [[nodiscard]] theme_file const &find(std::string name, theme_mode mode) const noexcept;
 
 private:
-    std::vector<std::unique_ptr<theme>> themes;
+    std::vector<std::unique_ptr<theme_file>> themes;
 };
 
 } // namespace hi::inline v1

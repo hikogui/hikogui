@@ -168,7 +168,7 @@ With the center of the left bottom pixel having the coordinates (0.5, 0.5).
 
 The alignment of borders to pixels is the responsibility of the
 widget that draws itself. The widget has access to
-the `draw_context::draw_box_including_border()` function to position the border's
+the `widget_draw_context::draw_box_including_border()` function to position the border's
 edge to the edge of the given rectangle, if the rectangle is rounded to
 integer coordinates; the rectangle, border and pixel will share the same edge.
 

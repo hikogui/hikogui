@@ -11,12 +11,13 @@
 #include "../i18n/translate.hpp"
 #include "../unicode/gstring.hpp"
 #include "../label.hpp"
+#include "../GUI/module.hpp"
+#include "../utility/module.hpp"
 #include <string>
 #include <memory>
 #include <functional>
 
 namespace hi { inline namespace v1 {
-class text_widget;
 
 /** A delegate that controls the state of a text_widget.
  *
@@ -30,16 +31,19 @@ public:
 
     virtual ~text_delegate() = default;
 
-    virtual void init(text_widget& sender) noexcept {}
-    virtual void deinit(text_widget& sender) noexcept {}
+    virtual void init(widget& sender) noexcept {}
+
+    virtual void deinit(widget& sender) noexcept
+    {
+    }
 
     /** Read text as a string of graphemes.
      */
-    [[nodiscard]] virtual gstring read(text_widget& sender) noexcept = 0;
+    [[nodiscard]] virtual gstring read(widget& sender) noexcept = 0;
 
     /** Write text from a string of graphemes.
      */
-    virtual void write(text_widget& sender, gstring const& text) noexcept = 0;
+    virtual void write(widget& sender, gstring const& text) noexcept = 0;
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
@@ -83,12 +87,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    [[nodiscard]] gstring read(widget& sender) noexcept override
     {
         return to_gstring(std::string{*value});
     }
 
-    void write(text_widget& sender, gstring const& text) noexcept override
+    void write(widget& sender, gstring const& text) noexcept override
     {
         hi_no_default();
     }
@@ -119,12 +123,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    [[nodiscard]] gstring read(widget& sender) noexcept override
     {
         return to_gstring(*value);
     }
 
-    void write(text_widget& sender, gstring const& text) noexcept override
+    void write(widget& sender, gstring const& text) noexcept override
     {
         *value.copy() = to_string(text);
     }
@@ -155,12 +159,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    [[nodiscard]] gstring read(widget& sender) noexcept override
     {
         return *value;
     }
 
-    void write(text_widget& sender, gstring const& text) noexcept override
+    void write(widget& sender, gstring const& text) noexcept override
     {
         *value.copy() = text;
     }
@@ -191,12 +195,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    [[nodiscard]] gstring read(widget& sender) noexcept override
     {
         return to_gstring(value.read()());
     }
 
-    void write(text_widget& sender, gstring const& text) noexcept override
+    void write(widget& sender, gstring const& text) noexcept override
     {
         hi_no_default();
     }
@@ -227,12 +231,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    [[nodiscard]] gstring read(widget& sender) noexcept override
     {
         return to_gstring(*value.read());
     }
 
-    void write(text_widget& sender, gstring const& text) noexcept override
+    void write(widget& sender, gstring const& text) noexcept override
     {
         auto proxy = value.copy();
         auto *ptr = std::addressof(*proxy);

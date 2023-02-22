@@ -72,7 +72,7 @@ public:
     //
     // This draw() function only draws the GUI part of the widget, there is another draw() function
     // that will draw the 3D part.
-    void draw(hi::draw_context const& context) noexcept override
+    void draw(hi::widget_draw_context const& context) noexcept override
     {
         // We request a redraw for each frame, in case the 3D model changes on each frame.
         // In normal cases we should take into account if the 3D model actually changes before requesting a redraw.

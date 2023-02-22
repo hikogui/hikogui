@@ -145,7 +145,7 @@ public:
         super::set_layout(context);
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             draw_radio_button(context);
@@ -166,7 +166,7 @@ private:
     animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
 
-    void draw_radio_button(draw_context const& context) noexcept
+    void draw_radio_button(widget_draw_context const& context) noexcept
     {
         context.draw_circle(
             layout,
@@ -177,7 +177,7 @@ private:
             border_side::inside);
     }
 
-    void draw_radio_pip(draw_context const& context) noexcept
+    void draw_radio_pip(widget_draw_context const& context) noexcept
     {
         _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
         if (_animated_value.is_animating()) {

@@ -25,7 +25,7 @@ std::vector<vk::PipelineColorBlendAttachmentState> pipeline_alpha::getPipelineCo
          vk::ColorComponentFlagBits::eA}};
 }
 
-void pipeline_alpha::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+void pipeline_alpha::draw_in_command_buffer(vk::CommandBuffer commandBuffer, gfx_draw_context const& context)
 {
     pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
 

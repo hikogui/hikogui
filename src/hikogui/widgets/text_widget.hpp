@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include "widget.hpp"
 #include "text_delegate.hpp"
-#include "../GUI/gui_event.hpp"
+#include "../GUI/module.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../geometry/module.hpp"
@@ -18,6 +17,7 @@
 #include "../undo_stack.hpp"
 #include "../scoped_task.hpp"
 #include "../observer.hpp"
+#include "../when_any.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -162,10 +162,9 @@ public:
         // Create a new text_shaper with the new text.
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
+        // XXX use the theme-style and apply it to the _text_cache.
         _shaped_text = text_shaper{
-            font_book::global(),
             _text_cache,
-            theme<prefix ^ "style", text_theme>{}(this),
             dpi_scale,
             alignment_,
             os_settings::writing_direction()};
@@ -203,11 +202,12 @@ public:
             _shaped_text.layout(
                 narrow_cast<aarectangle>(context.rectangle()),
                 narrow_cast<float>(*context.shape.baseline),
-                context.sub_pixel_size);
+                context.sub_pixel_size,
+                dpi_scale);
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         using namespace std::literals::chrono_literals;
 
@@ -778,7 +778,7 @@ private:
     scoped_task<> _blink_cursor;
 
     observer<cursor_state_type> _cursor_state = cursor_state_type::none;
-    decltype(_cursor_state)::callback_token _cursor_state_cbt;
+    typename decltype(_cursor_state)::callback_token _cursor_state_cbt;
 
     /** After layout request scroll from the parent widgets.
      */
@@ -986,11 +986,11 @@ private:
         }
         replace_selection(gstring{c});
 
-        if (keyboard_mode == add_type::insert) {
+        if (mode == add_type::insert) {
             // The character was inserted, put the cursor back where it was.
             _selection = original_cursor;
 
-        } else if (keyboard_mode == add_type::dead) {
+        } else if (mode == add_type::dead) {
             _selection = original_cursor.before_neighbor(_text_cache.size());
             _has_dead_character = original_grapheme;
         }

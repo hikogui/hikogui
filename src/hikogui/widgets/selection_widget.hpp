@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../GUI/widget.hpp"
+#include "../GUI/module.hpp"
 #include "label_widget.hpp"
 #include "overlay_widget.hpp"
 #include "scroll_widget.hpp"
@@ -288,7 +288,7 @@ public:
         _current_label_widget->set_layout(context.transform(_current_label_shape));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             if (overlaps(context, layout)) {
@@ -506,7 +506,7 @@ private:
         }
     }
 
-    void draw_outline(draw_context const& context) noexcept
+    void draw_outline(widget_draw_context const& context) noexcept
     {
         context.draw_box(
             layout,
@@ -518,7 +518,7 @@ private:
             theme<prefix ^ "outline.radius", corner_radii>{}(this));
     }
 
-    void draw_left_box(draw_context const& context) noexcept
+    void draw_left_box(widget_draw_context const& context) noexcept
     {
         hilet radius = theme<prefix & "outline.radius", int>{}(this);
 
@@ -531,7 +531,7 @@ private:
             corner_radii);
     }
 
-    void draw_chevron(draw_context const& context) noexcept
+    void draw_chevron(widget_draw_context const& context) noexcept
     {
         context.draw_glyph(
             layout,

@@ -1,3 +1,38 @@
+
+#pragma once
+
+#include "abstract_button_widget.hpp"
+#include "audio_device_widget.hpp"
+#include "button_delegate.hpp"
+#include "checkbox_widget.hpp"
+#include "grid_widget.hpp"
+#include "icon_widget.hpp"
+#include "label_widget.hpp"
+#include "menu_button_widget.hpp"
+#include "momentary_button_widget.hpp"
+#include "overlay_widget.hpp"
+#include "radio_button_widget.hpp"
+#include "row_column_widget.hpp"
+#include "scroll_aperture_widget.hpp"
+#include "scroll_bar_widget.hpp"
+#include "scroll_widget.hpp"
+#include "selection_delegate.hpp"
+#include "selection_widget.hpp"
+#include "spacer_widget.hpp"
+#include "system_menu_widget.hpp"
+#include "tab_delegate.hpp"
+#include "tab_widget.hpp"
+#include "text_delegate.hpp"
+#include "text_field_delegate.hpp"
+#include "text_field_widget.hpp"
+#include "text_widget.hpp"
+#include "toggle_widget.hpp"
+#include "toolbar_button_widget.hpp"
+#include "toolbar_tab_button_widget.hpp"
+#include "toolbar_widget.hpp"
+#include "window_traffic_lights_widget.hpp"
+#include "window_widget.hpp"
+
 namespace hi {
 inline namespace v1 {
 /**
@@ -48,7 +83,7 @@ radio buttons to act as a set.
 
 ### Delegates
 Many widgets are controlled by a delegate, such as all the button widgets,
-the `text_widget`, `text_field_widget`, `selection_widget` and `tab_widget`. 
+the `text_widget`, `text_field_widget`, `selection_widget` and `tab_widget`.
 
 For these widgets you may use their delegate's base class to implement your own
 delegate and pass a `std::shared_ptr` to the delegate to the constructor of

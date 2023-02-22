@@ -32,7 +32,7 @@ namespace hi::inline v1 {
  *     }
  *     ```
  */
-template<int N>
+template<size_t N>
 struct fixed_string {
     using value_type = char;
 
@@ -204,6 +204,12 @@ struct fixed_string {
         return r;
     }
 
+    template<size_t R>
+    [[nodiscard]] constexpr auto operator+(char const (&rhs)[R]) const noexcept
+    {
+        return *this + fixed_string<R - 1>(rhs);
+    }
+
     /** Join two strings with a dot '.'.
      *
      * If one or both of the operands is empty, no '.' is added.
@@ -211,8 +217,8 @@ struct fixed_string {
     template<size_t R>
     [[nodiscard]] constexpr auto operator^(fixed_string<R> const& rhs) const noexcept
     {
-        auto has_dot = N != 0 and R != 0;
-        auto r = fixed_string<N + R + wide_cast<size_t>(has_dot)>{};
+        constexpr auto has_dot = N != 0 and R != 0 ? 1_uz : 0_uz;
+        auto r = fixed_string<N + R + has_dot>{};
 
         auto dst_i = 0_uz;
         for (auto src_i = 0_uz; src_i != N; ++src_i, ++dst_i) {
@@ -228,6 +234,12 @@ struct fixed_string {
         }
 
         return r;
+    }
+
+    template<size_t R>
+    [[nodiscard]] constexpr auto operator^(char const (&rhs)[R]) const noexcept
+    {
+        return *this ^ fixed_string<R - 1>(rhs);
     }
 };
 

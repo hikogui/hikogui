@@ -4,8 +4,7 @@
 
 #include "text_widget.hpp"
 #include "../file/path_location.hpp"
-#include "../GUI/theme_book.hpp"
-#include "../GUI/gui_window.hpp"
+#include "../GUI/module.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -18,22 +17,13 @@ protected:
     class window_widget_moc : public hi::widget {
     public:
         window_widget_moc() noexcept : hi::widget(nullptr) {}
-
-        [[nodiscard]] hi::theme const& theme() const noexcept override
-        {
-            return _theme;
-        }
-
-        hi::theme _theme;
     };
 
-    std::unique_ptr<hi::font_book> font_book;
     std::unique_ptr<hi::theme_book> theme_book;
-    hi::theme theme;
 
     observer<std::string> text;
     std::unique_ptr<window_widget_moc> window_widget;
-    std::unique_ptr<hi::text_widget> widget;
+    std::unique_ptr<hi::text_widget<>> widget;
 
 
     void SetUp() override
@@ -48,19 +38,17 @@ protected:
             fb.register_font_directory(path);
         }
         theme_book = std::make_unique<hi::theme_book>(fb, make_vector(get_paths(path_location::theme_dirs)));
-        theme = theme_book->find("default", theme_mode::light);
+        auto &theme = theme_book->find("default", theme_mode::light);
+        theme.activate();
 
-        window_widget = std::make_unique<window_widget_moc>();
-        window_widget->_theme = theme;
-
-        widget = std::make_unique<hi::text_widget>(window_widget.get(), text);
+        widget = std::make_unique<hi::text_widget<>>(nullptr, text);
         widget->mode = hi::widget_mode::enabled;
 
         auto constraints = widget->update_constraints();
         auto layout = widget_layout{};
         layout.shape.rectangle = aarectanglei{constraints.preferred};
         layout.shape.baseline = constraints.preferred.height() / 2;
-        // display_time_point is used to check for valid widget_layout. 
+        // display_time_point is used to check for valid widget_layout.
         layout.display_time_point = std::chrono::utc_clock::now();
         widget->set_layout(layout);
     }

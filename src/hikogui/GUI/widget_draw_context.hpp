@@ -4,11 +4,9 @@
 
 #pragma once
 
-#include "pipeline_box_vertex.hpp"
-#include "pipeline_image_vertex.hpp"
-#include "pipeline_SDF_vertex.hpp"
-#include "pipeline_alpha_vertex.hpp"
-#include "subpixel_orientation.hpp"
+#include "widget_layout.hpp"
+#include "../GFX/gfx_draw_context.hpp"
+#include "../GFX/subpixel_orientation.hpp"
 #include "../geometry/module.hpp"
 #include "../unicode/unicode_bidi_class.hpp"
 #include "../text/text_cursor.hpp"
@@ -16,13 +14,10 @@
 #include "../text/text_shaper.hpp"
 #include "../font/module.hpp"
 #include "../color/module.hpp"
-#include "../GUI/widget_layout.hpp"
 #include "../vector_span.hpp"
 #include "../utility/module.hpp"
 
 namespace hi { inline namespace v1 {
-class gfx_device;
-class gfx_device_vulkan;
 struct paged_image;
 
 /** The side where the border is drawn.
@@ -209,57 +204,21 @@ concept draw_quad_shape = std::same_as<Context, quad> or std::same_as<Context, r
 
 /** Draw context for drawing using the HikoGUI shaders.
  */
-class draw_context {
+class widget_draw_context {
 public:
-    gfx_device_vulkan& device;
-
-    /** The frame buffer index of the image we are currently rendering.
-     */
-    std::size_t frame_buffer_index;
-
-    /** This is the rectangle of the window that is being redrawn.
-     */
-    aarectanglei scissor_rectangle;
-
-    /** The background color to clear the window with.
-     */
-    color background_color;
-
-    /** The subpixel orientation for rendering glyphs.
-     */
-    hi::subpixel_orientation subpixel_orientation;
-
-    /** Window is active.
-     */
-    bool active;
-
-    /** The tone-mapper's saturation.
-     */
-    float saturation;
+    gfx_draw_context gfx_context;
 
     /** The time when the drawing will appear on the screen.
      */
     utc_nanoseconds display_time_point;
 
-    draw_context(draw_context const& rhs) noexcept = default;
-    draw_context(draw_context&& rhs) noexcept = default;
-    draw_context& operator=(draw_context const& rhs) noexcept = default;
-    draw_context& operator=(draw_context&& rhs) noexcept = default;
-    ~draw_context() = default;
+    widget_draw_context(widget_draw_context const& rhs) noexcept = default;
+    widget_draw_context(widget_draw_context&& rhs) noexcept = default;
+    widget_draw_context& operator=(widget_draw_context const& rhs) noexcept = default;
+    widget_draw_context& operator=(widget_draw_context&& rhs) noexcept = default;
+    ~widget_draw_context() = default;
 
-    draw_context(
-        gfx_device_vulkan& device,
-        vector_span<pipeline_box::vertex>& box_vertices,
-        vector_span<pipeline_image::vertex>& image_vertices,
-        vector_span<pipeline_SDF::vertex>& sdf_vertices,
-        vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept;
-
-    /** Check if the draw_context should be used for rendering.
-     */
-    operator bool() const noexcept
-    {
-        return frame_buffer_index != std::numeric_limits<size_t>::max();
-    }
+    widget_draw_context(gfx_draw_context const &gfx_context) noexcept;
 
     /** Draw a box.
      *
@@ -562,17 +521,12 @@ public:
      *               on the window
      * @return True if the widget needs to draw into the context.
      */
-    [[nodiscard]] friend bool overlaps(draw_context const& context, widget_layout const& layout) noexcept
+    [[nodiscard]] friend bool overlaps(widget_draw_context const& context, widget_layout const& layout) noexcept
     {
-        return overlaps(context.scissor_rectangle, layout.clipping_rectangle_on_window());
+        return overlaps(context.gfx_context.scissor_rectangle, layout.clipping_rectangle_on_window());
     }
 
 private:
-    vector_span<pipeline_box::vertex> *_box_vertices;
-    vector_span<pipeline_image::vertex> *_image_vertices;
-    vector_span<pipeline_SDF::vertex> *_sdf_vertices;
-    vector_span<pipeline_alpha::vertex> *_alpha_vertices;
-
     template<draw_quad_shape Shape>
     [[nodiscard]] constexpr static quad make_quad(Shape const& shape) noexcept
     {

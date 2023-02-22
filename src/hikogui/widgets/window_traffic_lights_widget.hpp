@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/module.hpp"
 #include "../font/module.hpp"
 #include <memory>
 #include <string>
@@ -34,12 +34,12 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        if (theme().operating_system == operating_system::windows) {
+        if (operating_system::current == operating_system::windows) {
             hilet theme_size = theme<prefix ^ "windows.size">{}(this);
             hilet size = extent2i{theme_size * 3, theme_size};
             return {size, size, size};
 
-        } else if (theme().operating_system == operating_system::macos) {
+        } else if (operating_system::current == operating_system::macos) {
             hilet theme_size = theme<prefix ^ "macos.size">{}(this);
             hilet margin = theme<prefix ^ "margin">{}(this);
             hilet spacing = theme<prefix ^ "spacing">{}(this);
@@ -55,12 +55,9 @@ public:
     {
         if (compare_store(layout, context)) {
             auto extent = context.size();
-            if (extent.height() > narrow_cast<int>(theme().large_size() * 1.2f)) {
-                extent = extent2i{extent.width(), theme().large_size()};
-            }
             auto y = context.height() - extent.height();
 
-            if (theme().operating_system == operating_system::windows) {
+            if (operating_system::current == operating_system::windows) {
                 closeRectangle =
                     aarectanglei{point2i(extent.width() * 2 / 3, y), extent2i{extent.width() * 1 / 3, extent.height()}};
 
@@ -69,7 +66,7 @@ public:
 
                 minimizeRectangle = aarectanglei{point2i(0, y), extent2i{extent.width() * 1 / 3, extent.height()}};
 
-            } else if (theme().operating_system == operating_system::macos) {
+            } else if (operating_system::current == operating_system::macos) {
                 hilet size = theme<prefix ^ "macos.size">{}(this);
                 hilet margin = theme<prefix ^ "margin">{}(this);
                 hilet spacing = theme<prefix ^ "spacing">{}(this);
@@ -88,18 +85,18 @@ public:
             closeWindowGlyph = find_glyph(hikogui_icon::CloseWindow);
             minimizeWindowGlyph = find_glyph(hikogui_icon::MinimizeWindow);
 
-            if (theme().operating_system == operating_system::windows) {
+            if (operating_system::current == operating_system::windows) {
                 maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMS);
                 restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMS);
 
-            } else if (theme().operating_system == operating_system::macos) {
+            } else if (operating_system::current == operating_system::macos) {
                 maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMacOS);
                 restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMacOS);
             } else {
                 hi_no_default();
             }
 
-            hilet glyph_size = theme().operating_system == operating_system::macos ?
+            hilet glyph_size = operating_system::current == operating_system::macos ?
                 theme<prefix ^ "macos.icon.size", int>{}(this) :
                 theme<prefix ^ "windows.icon.size", int>{}(this);
 
@@ -115,13 +112,13 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
-            if (theme().operating_system == operating_system::macos) {
+            if (operating_system::current == operating_system::macos) {
                 drawMacOS(context);
 
-            } else if (theme().operating_system == operating_system::windows) {
+            } else if (operating_system::current == operating_system::windows) {
                 drawWindows(context);
 
             } else {
@@ -221,10 +218,10 @@ private:
     aarectanglei minimizeRectangle;
     aarectanglei maximizeRectangle;
 
-    glyph_ids closeWindowGlyph;
-    glyph_ids minimizeWindowGlyph;
-    glyph_ids maximizeWindowGlyph;
-    glyph_ids restoreWindowGlyph;
+    font_book::font_glyph_type closeWindowGlyph;
+    font_book::font_glyph_type minimizeWindowGlyph;
+    font_book::font_glyph_type maximizeWindowGlyph;
+    font_book::font_glyph_type restoreWindowGlyph;
 
     aarectanglei closeWindowGlyphRectangle;
     aarectanglei minimizeWindowGlyphRectangle;
@@ -239,10 +236,8 @@ private:
     bool pressedMinimize = false;
     bool pressedMaximize = false;
 
-    void drawMacOS(draw_context const& context) noexcept
+    void drawMacOS(widget_draw_context const& context) noexcept
     {
-        auto context = drawContext;
-
         context.draw_box(
             layout,
             closeRectangle,
@@ -289,10 +284,8 @@ private:
         }
     }
 
-    void drawWindows(draw_context const& context) noexcept
+    void drawWindows(widget_draw_context const& context) noexcept
     {
-        auto context = drawContext;
-
         context.draw_box(layout, closeRectangle, theme<prefix & "windows.close.fill.color">{}(this));
         context.draw_box(layout, minimizeRectangle, theme<prefix & "windows.minimize.fill.color">{}(this));
         context.draw_box(layout, maximizeRectangle, theme<prefix & "windows.maximize.fill.color">{});

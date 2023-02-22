@@ -121,7 +121,7 @@ to draw outside the `scissor_rectangle`, but this will not be visible.
 The `display_time_point` includes the delays in the swap-chain for double or triple buffering and
 processing delays in the display device when supported by the operating system.
 
-The `draw_context::draw_*()` methods all accept the layout as the first argument, this allows the other arguments
+The `widget_draw_context::draw_*()` methods all accept the layout as the first argument, this allows the other arguments
 to the draw function to be in the local coordinate system. In certain cases, a widget may want to make a copy of the layout
 to temporarily change the clipping rectangle.
 
@@ -134,7 +134,7 @@ context-sensitive colors, which are based on the current theme's colors and may 
 state of the widget, like: keyboard focus, window active & mouse hover.
 
 ```cpp
-void draw(hi::draw_context const &context) noexcept override
+void draw(hi::widget_draw_context const &context) noexcept override
 {
     if (*mode > hi::widget_mode::invisible) {
         if (overlaps(context, layout)) {

@@ -216,7 +216,7 @@ public:
         }
     }
 
-    [[nodiscard]] hi::rotate3 rotation(hi::draw_context const& context) const noexcept
+    [[nodiscard]] hi::rotate3 rotation(hi::widget_draw_context const& context) const noexcept
     {
         float angle = 0.0f;
         if (*rotating) {
@@ -245,7 +245,7 @@ public:
     // The `draw()` function is called when all or part of the window requires redrawing.
     // This may happen when showing the window for the first time, when the operating-system
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
-    void draw(hi::draw_context const& context) noexcept override
+    void draw(hi::widget_draw_context const& context) noexcept override
     {
         using namespace std::chrono_literals;
 

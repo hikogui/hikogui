@@ -83,7 +83,6 @@ public:
      * @param script The script of the text.
      */
     [[nodiscard]] text_shaper(
-        hi::font_book& font_book,
         hi::text const& text,
         float dpi_scale,
         hi::alignment alignment,
@@ -407,8 +406,6 @@ public:
     [[nodiscard]] text_cursor move_end_document(text_cursor cursor) const noexcept;
 
 private:
-    font_book *_font_book = nullptr;
-
     /** A list of character in logical order.
      *
      * @note Graphemes are not allowed to be typographical-ligatures.
@@ -485,7 +482,7 @@ private:
     void resolve_script() noexcept;
 
     /** Resolve the fonts and widths of each character in the text.
-    * 
+    *
     * @pre `resolve_script()` has been called.
     */
     void resolve_font_and_widths(float dpi_scale) noexcept;

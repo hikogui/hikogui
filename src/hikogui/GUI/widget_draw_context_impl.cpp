@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "draw_context.hpp"
+#include "widget_draw_context.hpp"
 #include "../GFX/pipeline_box_device_shared.hpp"
 #include "../GFX/pipeline_image_device_shared.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
@@ -14,40 +14,25 @@
 
 namespace hi::inline v1 {
 
-draw_context::draw_context(
-    gfx_device_vulkan& device,
-    vector_span<pipeline_box::vertex>& box_vertices,
-    vector_span<pipeline_image::vertex>& image_vertices,
-    vector_span<pipeline_SDF::vertex>& sdf_vertices,
-    vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept :
-    device(device),
-    frame_buffer_index(std::numeric_limits<size_t>::max()),
-    scissor_rectangle(),
-    _box_vertices(&box_vertices),
-    _image_vertices(&image_vertices),
-    _sdf_vertices(&sdf_vertices),
-    _alpha_vertices(&alpha_vertices)
+widget_draw_context::widget_draw_context(gfx_draw_context const& gfx_context) noexcept :
+    gfx_context(gfx_context)
 {
-    _box_vertices->clear();
-    _image_vertices->clear();
-    _sdf_vertices->clear();
-    _alpha_vertices->clear();
 }
 
-void draw_context::_override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes)
+void widget_draw_context::_override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes)
     const noexcept
 {
-    if (_alpha_vertices->full()) {
+    if (gfx_context.alpha_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
         ++global_counter<"override_alpha::overflow">;
         return;
     }
 
     pipeline_alpha::device_shared::place_vertices(
-        *_alpha_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, attributes.fill_color.p0.a());
+        *gfx_context.alpha_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, attributes.fill_color.p0.a());
 }
 
-void draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
+void widget_draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
 {
     // clang-format off
     hilet border_radius = attributes.line_width * 0.5f;
@@ -62,14 +47,14 @@ void draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, d
         attributes.corner_radius;
     // clang-format on
 
-    if (_box_vertices->full()) {
+    if (gfx_context.box_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
         ++global_counter<"draw_box::overflow">;
         return;
     }
 
     pipeline_box::device_shared::place_vertices(
-        *_box_vertices,
+        *gfx_context.box_vertices,
         narrow_cast<aarectangle>(clipping_rectangle),
         box_,
         attributes.fill_color,
@@ -79,30 +64,30 @@ void draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, d
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept
+widget_draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept
 {
-    hi_assert_not_null(_image_vertices);
+    hi_assert_not_null(gfx_context.image_vertices);
 
     if (image.state != paged_image::state_type::uploaded) {
         return false;
     }
 
-    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).image_pipeline;
-    pipeline.place_vertices(*_image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
+    auto& pipeline = *down_cast<gfx_device_vulkan*>(gfx_context.device)->image_pipeline;
+    pipeline.place_vertices(*gfx_context.image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
     return true;
 }
 
-void draw_context::_draw_glyph(
+void widget_draw_context::_draw_glyph(
     aarectanglei const& clipping_rectangle,
     quad const& box,
     font const& font,
     glyph_id const& glyph,
     draw_attributes const& attributes) const noexcept
 {
-    hi_assert_not_null(_sdf_vertices);
-    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
+    hi_assert_not_null(gfx_context.sdf_vertices);
+    auto& pipeline = *down_cast<gfx_device_vulkan *>(gfx_context.device)->SDF_pipeline;
 
-    if (_sdf_vertices->full()) {
+    if (gfx_context.sdf_vertices->full()) {
         auto box_attributes = attributes;
         box_attributes.fill_color = hi::color{1.0f, 0.0f, 1.0f}; // Magenta.
         _draw_box(clipping_rectangle, box, box_attributes);
@@ -111,21 +96,21 @@ void draw_context::_draw_glyph(
     }
 
     hilet atlas_was_updated = pipeline.place_vertices(
-        *_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, font, glyph, attributes.fill_color);
+        *gfx_context.sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, font, glyph, attributes.fill_color);
 
     if (atlas_was_updated) {
         pipeline.prepare_atlas_for_rendering();
     }
 }
 
-void draw_context::_draw_text(
+void widget_draw_context::_draw_text(
     aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     draw_attributes const& attributes) const noexcept
 {
-    hi_assert_not_null(_sdf_vertices);
-    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
+    hi_assert_not_null(gfx_context.sdf_vertices);
+    auto& pipeline = *down_cast<gfx_device_vulkan*>(gfx_context.device)->SDF_pipeline;
 
     auto atlas_was_updated = false;
     for (hilet& c : text) {
@@ -142,7 +127,7 @@ void draw_context::_draw_text(
             hilet glyph = c.glyphs[i];
             hilet box = translate2{c.position} * c.glyph_rectangles[i];
 
-            if (_sdf_vertices->full()) {
+            if (gfx_context.sdf_vertices->full()) {
                 auto box_attributes = attributes;
                 box_attributes.fill_color = hi::color{1.0f, 0.0f, 1.0f}; // Magenta.
                 _draw_box(clipping_rectangle, box, box_attributes);
@@ -151,7 +136,7 @@ void draw_context::_draw_text(
             }
 
             atlas_was_updated |= pipeline.place_vertices(
-                *_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, font, glyph, color);
+                *gfx_context.sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, font, glyph, color);
         }
     }
 
@@ -161,7 +146,7 @@ error:
     }
 }
 
-void draw_context::_draw_text_selection(
+void widget_draw_context::_draw_text_selection(
     aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
@@ -180,7 +165,7 @@ void draw_context::_draw_text_selection(
     }
 }
 
-void draw_context::_draw_text_insertion_cursor_empty(
+void widget_draw_context::_draw_text_insertion_cursor_empty(
     aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
@@ -198,7 +183,7 @@ void draw_context::_draw_text_insertion_cursor_empty(
     _draw_box(clipping_rectangle, transform * shape_I, attributes);
 }
 
-void draw_context::_draw_text_insertion_cursor(
+void widget_draw_context::_draw_text_insertion_cursor(
     aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
@@ -248,7 +233,7 @@ void draw_context::_draw_text_insertion_cursor(
     }
 }
 
-void draw_context::_draw_text_overwrite_cursor(
+void widget_draw_context::_draw_text_overwrite_cursor(
     aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper::char_const_iterator it,
@@ -258,7 +243,7 @@ void draw_context::_draw_text_overwrite_cursor(
     _draw_box(clipping_rectangle, transform * box, attributes);
 }
 
-void draw_context::_draw_text_cursors(
+void widget_draw_context::_draw_text_cursors(
     aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,

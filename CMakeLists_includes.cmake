@@ -74,6 +74,34 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/geometry/transform.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/translate.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/vector.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_draw_context.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_event.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_type.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_variant.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_system.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_system_delegate.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/gui_system_win32.hpp>
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_window.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_window_size.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/gui_window_win32.hpp>
+    ${HIKOGUI_SOURCE_DIR}/GUI/hitbox.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_bindings.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_focus_direction.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_focus_group.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_state.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_virtual_key.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/mouse_buttons.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/mouse_cursor.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/theme_book.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/theme_file.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/theme_mode.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/theme_value.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/theme_value_index.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_id.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_layout.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/image/module.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap_span.hpp
@@ -124,6 +152,38 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/utility.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/win32_headers.hpp>
+    ${HIKOGUI_SOURCE_DIR}/widgets/abstract_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/audio_device_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/button_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/checkbox_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/grid_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/icon_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/label_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/menu_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/momentary_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/overlay_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/radio_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/row_column_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/scroll_aperture_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/scroll_bar_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/scroll_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/selection_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/selection_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/spacer_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/system_menu_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/tab_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/tab_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/text_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/text_field_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/text_field_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/text_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/toggle_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_tab_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp
     ${HIKOGUI_SOURCE_DIR}/terminate.hpp
 )

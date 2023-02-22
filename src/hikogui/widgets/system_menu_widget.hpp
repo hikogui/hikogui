@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/module.hpp"
 #include "icon_widget.hpp"
 #include "../label.hpp"
 #include <memory>
@@ -76,7 +76,7 @@ public:
         _icon_widget->set_layout(context.transform(_icon_shape));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             _icon_widget->draw(context);

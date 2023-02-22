@@ -60,7 +60,7 @@ public:
         super::set_layout(context);
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             draw_label_button(context);
@@ -71,7 +71,7 @@ public:
 private:
     box_constraints _label_constraints;
 
-    void draw_label_button(draw_context const& context) noexcept
+    void draw_label_button(widget_draw_context const& context) noexcept
     {
         // Move the border of the button in the middle of a pixel.
         context.draw_box(

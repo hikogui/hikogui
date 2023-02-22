@@ -21,7 +21,7 @@ theme_book::theme_book(hi::font_book const &font_book, std::vector<std::filesyst
             auto t = trace<"theme_scan">{};
 
             try {
-                themes.push_back(std::make_unique<theme>(font_book, theme_path));
+                themes.push_back(std::make_unique<theme_file>(font_book, theme_path));
             } catch (std::exception const &e) {
                 hi_log_error("Failed parsing theme at {}. \"{}\"", theme_path.string(), e.what());
             }
@@ -47,12 +47,12 @@ theme_book::theme_book(hi::font_book const &font_book, std::vector<std::filesyst
     return names;
 }
 
-[[nodiscard]] theme const &theme_book::find(std::string name, theme_mode mode) const noexcept
+[[nodiscard]] theme_file const& theme_book::find(std::string name, theme_mode mode) const noexcept
 {
-    theme *default_theme = nullptr;
-    theme *default_theme_and_mode = nullptr;
-    theme *matching_theme = nullptr;
-    theme *matching_theme_and_mode = nullptr;
+    theme_file *default_theme = nullptr;
+    theme_file *default_theme_and_mode = nullptr;
+    theme_file *matching_theme = nullptr;
+    theme_file *matching_theme_and_mode = nullptr;
 
     for (hilet &t : themes) {
         if (t->name == name and t->mode == mode) {

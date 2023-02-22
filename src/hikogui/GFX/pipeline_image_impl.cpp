@@ -10,7 +10,7 @@ namespace hi::inline v1::pipeline_image {
 
 pipeline_image::pipeline_image(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+void pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, gfx_draw_context const& context)
 {
     pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
 

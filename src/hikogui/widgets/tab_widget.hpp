@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/module.hpp"
 #include "grid_widget.hpp"
 #include "tab_delegate.hpp"
 
@@ -141,7 +141,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             for (hilet& child : _children) {

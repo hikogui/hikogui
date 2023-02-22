@@ -10,7 +10,7 @@
 #include "hitbox.hpp"
 #include "keyboard_focus_group.hpp"
 #include "gui_event.hpp"
-#include "../GFX/draw_context.hpp"
+#include "widget_draw_context.hpp"
 #include "../geometry/module.hpp"
 #include "../layout/box_constraints.hpp"
 #include "../observer.hpp"
@@ -35,7 +35,7 @@ public:
     widget *parent = nullptr;
 
     /** The window this widget is on.
-    */
+     */
     gui_window *window = nullptr;
 
     /** The surface this widget is drawn on.
@@ -96,8 +96,7 @@ public:
     widget_layout layout;
 
     virtual ~widget() {}
-    widget(widget *parent) noexcept :
-        parent(parent), id(narrow_cast<uint32_t>(++global_counter<"widget::id">))
+    widget(widget *parent) noexcept : parent(parent), id(narrow_cast<uint32_t>(++global_counter<"widget::id">))
     {
         hi_axiom(loop::main().on_thread());
 
@@ -130,7 +129,6 @@ public:
         }
     }
 
-    
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -172,7 +170,7 @@ public:
     [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
         return false;
-}
+    }
 
     /** Reset the layout.
      *
@@ -232,9 +230,9 @@ public:
      *
      * @param context The context to where the widget will draw.
      */
-    virtual void draw(draw_context const& context) noexcept {};
+    virtual void draw(widget_draw_context const& context) noexcept {};
 
- virtual bool process_event(gui_event const& event) const noexcept
+    virtual bool process_event(gui_event const& event) const noexcept
     {
         if (parent != nullptr) {
             return parent->process_event(event);
@@ -262,7 +260,7 @@ public:
             using enum hi::gui_event_type;
         case keyboard_enter:
             focus = true;
-            scroll_to_show();
+            scroll_to_show(layout.rectangle());
             ++global_counter<"widget:keyboard_enter:redraw">;
             request_redraw();
             return true;
@@ -322,6 +320,7 @@ public:
 
         return false;
     }
+
     /** Handle command recursive.
      * Handle a command and pass it to each child.
      *
@@ -329,9 +328,25 @@ public:
      * @param reject_list The widgets that should ignore this command
      * @return True when the command was handled by this widget or recursed child.
      */
-    virtual bool handle_event_recursive(
-        gui_event const& event,
-        std::vector<widget_id> const& reject_list = std::vector<widget_id>{}) noexcept = 0;
+    virtual bool
+    handle_event_recursive(gui_event const& event, std::vector<widget_id> const& reject_list = std::vector<widget_id>{}) noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+
+        auto handled = false;
+
+        for (auto& child : children(false)) {
+            handled |= child.handle_event_recursive(event, reject_list);
+        }
+
+        if (not std::ranges::any_of(reject_list, [&](hilet& x) {
+                return x == id;
+            })) {
+            handled |= handle_event(event);
+        }
+
+        return handled;
+    }
 
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
@@ -478,6 +493,16 @@ public:
         return chain;
     }
 
+    /** Check if this widget is a tab-button.
+     *
+     * Used by the toolbar to determine if it will draw a focus line underneath
+     * the toolbar.
+     */
+    [[nodiscard]] virtual bool is_tab_button() const noexcept
+    {
+        return false;
+    }
+
 protected:
     /** Make an overlay rectangle.
      *
@@ -494,37 +519,11 @@ protected:
 
         // Move the request_rectangle to window coordinates.
         hilet requested_window_rectangle = translate2i{layout.clipping_rectangle_on_window()} * requested_rectangle;
-        hilet window_bounds = aarectanglei{layout.window_size} - theme().margin<int>();
+        // We can't use theme<> here to get the margin, because of circular dependency.
+        hilet margin = narrow_cast<int>(std::ceil(5.0f * dpi_scale));
+        hilet window_bounds = aarectanglei{layout.window_size} - margin;
         hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
         return layout.from_window * response_window_rectangle;
-    }
-
-    /** Handle command recursive.
-     * Handle a command and pass it to each child.
-     *
-     * @param event The command to handle by this widget.
-     * @param reject_list The widgets that should ignore this command
-     * @return True when the command was handled by this widget or recursed child.
-     */
-    bool handle_event_recursive(
-        gui_event const& event,
-        std::vector<widget_id> const& reject_list = std::vector<widget_id>{}) noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
-
-        auto handled = false;
-
-        for (auto& child : children(false)) {
-            handled |= child.handle_event_recursive(event, reject_list);
-        }
-
-        if (!std::ranges::any_of(reject_list, [&](hilet& x) {
-                return x == id;
-            })) {
-            handled |= handle_event(event);
-        }
-
-        return handled;
     }
 
 private:

@@ -3,8 +3,6 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(hikogui PRIVATE
-    draw_context_impl.cpp
-    draw_context.hpp
     gfx_device_impl.cpp
     gfx_device.hpp
     gfx_device_vulkan_impl.cpp

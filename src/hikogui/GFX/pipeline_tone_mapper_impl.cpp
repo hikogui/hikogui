@@ -11,13 +11,13 @@ namespace hi::inline v1::pipeline_tone_mapper {
 
 pipeline_tone_mapper::pipeline_tone_mapper(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_tone_mapper::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+void pipeline_tone_mapper::draw_in_command_buffer(vk::CommandBuffer commandBuffer, gfx_draw_context const& context)
 {
     pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
 
     vulkan_device().tone_mapper_pipeline->drawInCommandBuffer(commandBuffer);
 
-    _push_constants.saturation = context.saturation;
+    _push_constants.saturation = 1.0f;
     commandBuffer.pushConstants(pipelineLayout, vk::ShaderStageFlagBits::eFragment, 0, sizeof(push_constants), &_push_constants);
 
     vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "tone mapping");

@@ -195,7 +195,7 @@ public:
         super::set_layout(context);
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             draw_check_box(context);
@@ -214,7 +214,7 @@ private:
     font_book::font_glyphs_type _minus_glyph;
     aarectanglei _minus_glyph_rectangle;
 
-    void draw_check_box(draw_context const& context) noexcept
+    void draw_check_box(widget_draw_context const& context) noexcept
     {
         context.draw_box(
             layout,
@@ -225,7 +225,7 @@ private:
             border_side::inside);
     }
 
-    void draw_check_mark(draw_context const& context) noexcept
+    void draw_check_mark(widget_draw_context const& context) noexcept
     {
         auto state_ = state();
 
