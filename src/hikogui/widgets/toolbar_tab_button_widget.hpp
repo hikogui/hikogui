@@ -84,11 +84,8 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    toolbar_tab_button_widget(widget *parent,
-        Value&& value,
-        OnValue&& on_value,
-        Attributes&&...attributes) noexcept
-        requires requires { make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)); }
+    toolbar_tab_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+        requires requires { make_default_radSio_button_delegate(hi_forward(value), hi_forward(on_value)); }
         :
         toolbar_tab_button_widget(
             parent,
@@ -110,15 +107,63 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
-    // @endprivatesection
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _label_constraints = super::update_constraints();
+
+        // On left side a check mark, on right side short-cut. Around the label extra margin.
+        hilet spacing = theme<prefix ^ "spacing", int>{}(this);
+        hilet extra_size = extent2i{spacing * 2, spacing};
+        return _label_constraints + extra_size;
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(layout, context)) {
+            hilet spacing = theme<prefix ^ "spacing", int>{}(this);
+            hilet label_rectangle = aarectanglei{spacing, 0, context.width() - spacing * 2, context.height() - spacing};
+            _on_label_shape = _off_label_shape = _other_label_shape =
+                box_shape{_label_constraints, label_rectangle, theme<prefix ^ "cap-height", int>{}(this)};
+        }
+        super::set_layout(context);
+    }
+
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+            draw_toolbar_tab_button(context);
+            draw_button(context);
+        }
+    }
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
+    }
+    /// @endprivatesection
 private:
     box_constraints _label_constraints;
 
-    void draw_toolbar_tab_button(draw_context const& context) noexcept;
+    void draw_toolbar_tab_button(draw_context const& context) noexcept
+    {
+        // Draw the outline of the button across the clipping rectangle to clip the
+        // bottom of the outline.
+        hilet offset = theme().margin<int>() + theme().border_width();
+        hilet outline_rectangle = aarectanglei{0, -offset, layout.width(), layout.height() + offset};
+
+        // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
+        hilet button_z = *focus ? translate_z(0.6f) : translate_z(0.0f);
+
+        hilet radius = theme<prefix ^ "outline.radius", int>{}(this);
+
+        context.draw_box(
+            layout,
+            button_z * narrow_cast<aarectangle>(outline_rectangle),
+            theme<prefix ^ "fill.color", color>{}(this),
+            theme<prefix ^ "outline.color", color>{}(this),
+            theme<prefix ^ "outline.width", int>{}(this),
+            border_side::inside,
+            hi::corner_radii(0.0f, 0.0f, radius, radius));
+    }
 };
 
 }} // namespace hi::v1

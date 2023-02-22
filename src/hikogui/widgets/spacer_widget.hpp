@@ -16,10 +16,9 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  *
  */
-template<fixed_string Name = "">
-class spacer_widget final : public widget<Name ^ "spacer"> {
+class spacer_widget final : public widget {
 public:
-    using super = widget<Name ^ "spacer">;
+    using super = widget;
 
     spacer_widget(widget *parent) noexcept : super(parent) {}
 

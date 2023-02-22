@@ -97,7 +97,7 @@ public:
 
         // Make room for button and margin.
         _button_size = theme<prefix ^ "outline.size", extent2i>{}(this);
-        hilet extra_size = extent2i{theme<prefix ^ "inner.margin", int>{}(this) + _button_size.width(), 0};
+        hilet extra_size = extent2i{theme<prefix ^ "spacing", int>{}(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
         constraints.margins = theme<prefix ^ "margin", marginsi>{}(this);
@@ -116,7 +116,7 @@ public:
                 hi_not_implemented();
             }
 
-            hilet inner_margin = theme<prefix ^ "inner.margin", int>{}(this);
+            hilet inner_margin = theme<prefix ^ "spacing", int>{}(this);
             hilet cap_height = theme<prefix ^ "cap-height", int>{}(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);

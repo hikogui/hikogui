@@ -143,7 +143,8 @@ struct draw_attributes {
             } else {
                 line_color = quad_color{attribute};
             }
-            hi_axiom(num_colors <= 2);
+            // XXX Handle 4 colors.
+            //hi_axiom(num_colors <= 2);
 
         } else if constexpr (std::is_same_v<T, line_end_cap>) {
             if (num_line_caps++ == 0) {

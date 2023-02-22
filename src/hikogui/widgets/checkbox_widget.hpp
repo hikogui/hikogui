@@ -146,7 +146,7 @@ public:
         _label_constraints = super::update_constraints();
 
         _button_size = theme<prefix ^ "outer.size", extent2i>{}(this);
-        hilet extra_size = extent2i{theme<prefix ^ "inner.margin", int>{}(this) + _button_size.width(), 0};
+        hilet extra_size = extent2i{theme<prefix ^ "spacing", int>{}(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
         constraints.margins = theme<prefix ^ "outer.margin", marginsi>{}(this);
@@ -165,7 +165,7 @@ public:
                 hi_not_implemented();
             }
 
-            hilet inner_margin = theme<prefix ^ "inner.margin", int>{}(this);
+            hilet inner_margin = theme<prefix ^ "spacing", int>{}(this);
             hilet baseline_offset = theme<prefix ^ "cap-height", int>{}(this);
             hilet icon_size = theme<prefix ^ "icon.size", int>{}(this);
 

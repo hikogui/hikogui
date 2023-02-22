@@ -214,7 +214,7 @@ public:
         _current_label_constraints = _current_label_widget->update_constraints();
         _overlay_constraints = _overlay_widget->update_constraints();
 
-        hilet inner_margin = theme<prefix ^ "inner.margin", int>{}(this);
+        hilet inner_margin = theme<prefix ^ "spacing", int>{}(this);
         hilet label_offset = theme<prefix ^ "label.offset", int>{}(this);
         hilet extra_size = extent2i{label_offset + inner_margin * 2, inner_margin * 2};
 
@@ -236,7 +236,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        hilet inner_margin = theme<prefix ^ "inner.margin", int>{}(this);
+        hilet inner_margin = theme<prefix ^ "spacing", int>{}(this);
         hilet label_offset = theme<prefix ^ "label.offset", int>{}(this);
         hilet cap_height = theme<prefix ^ "cap_height", int>{}(this);
         hilet chevron_size = theme<prefix ^ "chevron.size", int>{}(this);

@@ -38,15 +38,56 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _label_constraints = super::update_constraints();
+
+        // On left side a check mark, on right side short-cut. Around the label extra margin.
+        hilet spacing = theme<prefix ^ "spacing">{}(this);
+        hilet extra_size = extent2i{spacing * 2, spacing * 2};
+
+        auto constraints = _label_constraints + extra_size;
+        constraints.margins = 0;
+        return constraints;
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(layout, context)) {
+            hilet spacing = theme<prefix ^ "spacing", int>{}(this);
+            hilet label_rectangle = aarectanglei{spacing, 0, context.width() - spacing * 2, context.height()};
+            _on_label_shape = _off_label_shape = _other_label_shape =
+                box_shape{_label_constraints, label_rectangle, theme<prefix ^ "cap-height", int>{}(this)};
+        }
+        super::set_layout(context);
+    }
+
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+            draw_toolbar_button(context);
+            draw_button(context);
+        }
+    }
+
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
+    }
     // @endprivatesection
 private:
     box_constraints _label_constraints;
 
-    void draw_toolbar_button(draw_context const& context) noexcept;
+    void draw_toolbar_button(draw_context const& context) noexcept
+    {
+        context.draw_box(
+            layout,
+            layout.rectangle(),
+            theme<prefix ^ "fill.color", color>{}(this),
+            theme<prefix ^ "outline.color", color>{}(this),
+            theme<prefix ^ "outline.width", int>{}(this),
+            border_side::inside);
+    }
 };
 
 }} // namespace hi::v1

@@ -42,7 +42,7 @@ public:
         _label_constraints = super::update_constraints();
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet extra_size = theme<prefix ^ "inner.margin", extent2i>{}(this) * 2;
+        hilet extra_size = theme<prefix ^ "spacing", extent2i>{}(this) * 2;
 
         auto constraints = _label_constraints + extra_size;
         constraints.margins = theme<prefix ^ "margin", marginsi>{}(this);
@@ -52,7 +52,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            hilet inner_margin = theme<prefix ^ "inner.margin", int>{}(this);
+            hilet inner_margin = theme<prefix ^ "spacing", int>{}(this);
             hilet label_rectangle = aarectanglei{inner_margin, 0, context.width() - inner_margin * 2, context.height()};
             _on_label_shape = _off_label_shape = _other_label_shape =
                 box_shape{_label_constraints, label_rectangle, theme<prefix ^ "cap-height", int>{}(this)};
