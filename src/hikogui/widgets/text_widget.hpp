@@ -165,6 +165,7 @@ public:
         // XXX use the theme-style and apply it to the _text_cache.
         _shaped_text = text_shaper{
             _text_cache,
+            theme<prefix ^ "style", text_theme>{}(this),
             dpi_scale,
             alignment_,
             os_settings::writing_direction()};
@@ -766,7 +767,7 @@ private:
 
     enum class cursor_state_type { off, on, busy, none };
 
-    gstring _text_cache;
+    text _text_cache;
     text_shaper _shaped_text;
 
     mutable box_constraints _constraints_cache;

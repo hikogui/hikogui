@@ -245,13 +245,18 @@ public:
      * @param languages A list of languages to search for translations.
      * @return The translated and formatted message.
      */
-    [[nodiscard]] std::string operator()(std::vector<language *> const& languages = os_settings::languages()) const noexcept
+    [[nodiscard]] text operator()(std::vector<language *> const& languages = os_settings::languages()) const noexcept
     {
         if (_has_args) {
-            hilet fmt = ::hi::get_translation(_msg_id, _args->n(), languages);
-            return _args->format(fmt);
+            hilet[fmt, language_tag] = ::hi::get_translation(_msg_id, _args->n(), languages);
+            hilet msg = _args->format(fmt);
+            hilet default_attributes = character_attributes{language_tag.expand()};
+            return to_text_with_markup(msg, default_attributes);
+
         } else {
-            return std::string{::hi::get_translation(_msg_id, 0, languages)};
+            hilet[msg, language_tag] = ::hi::get_translation(_msg_id, 0, languages);
+            hilet default_attributes = character_attributes{language_tag.expand()};
+            return to_text_with_markup(msg, default_attributes);
         }
     }
 
@@ -262,14 +267,19 @@ public:
      * @param languages A list of languages to search for translations.
      * @return The translated and formatted message.
      */
-    [[nodiscard]] std::string
+    [[nodiscard]] text
     operator()(std::locale const& loc, std::vector<language *> const& languages = os_settings::languages()) const noexcept
     {
-        if (_args) {
-            hilet fmt = ::hi::get_translation(_msg_id, _args->n(), languages);
-            return _args->format(loc, fmt);
+        if (_has_args) {
+            hilet[fmt, language_tag] = ::hi::get_translation(_msg_id, _args->n(), languages);
+            hilet msg = _args->format(loc, fmt);
+            hilet default_attributes = character_attributes{language_tag.expand()};
+            return to_text_with_markup(msg, default_attributes);
+
         } else {
-            return std::string{::hi::get_translation(_msg_id, 0, languages)};
+            hilet[msg, language_tag] = ::hi::get_translation(_msg_id, 0, languages);
+            hilet default_attributes = character_attributes{language_tag.expand()};
+            return to_text_with_markup(msg, default_attributes);
         }
     }
 

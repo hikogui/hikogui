@@ -39,11 +39,11 @@ public:
 
     /** Read text as a string of graphemes.
      */
-    [[nodiscard]] virtual gstring read(widget& sender) noexcept = 0;
+    [[nodiscard]] virtual text read(widget& sender) noexcept = 0;
 
     /** Write text from a string of graphemes.
      */
-    virtual void write(widget& sender, gstring const& text) noexcept = 0;
+    virtual void write(widget& sender, text const& text) noexcept = 0;
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
@@ -65,86 +65,14 @@ protected:
 template<typename T>
 class default_text_delegate;
 
-/** A default text delegate specialization for `std::string`.
- *
- * @ingroup widget_delegates
- */
-template<>
-class default_text_delegate<char const *> : public text_delegate {
-public:
-    using value_type = char const *;
-
-    observer<value_type> value;
-
-    /** Construct a delegate.
-     *
-     * @param value A value or observer-value used as a representation of the state.
-     */
-    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
-    {
-        _value_cbt = this->value.subscribe([&](auto...) {
-            this->_notifier();
-        });
-    }
-
-    [[nodiscard]] gstring read(widget& sender) noexcept override
-    {
-        return to_gstring(std::string{*value});
-    }
-
-    void write(widget& sender, gstring const& text) noexcept override
-    {
-        hi_no_default();
-    }
-
-private:
-    typename decltype(value)::callback_token _value_cbt;
-};
-
-/** A default text delegate specialization for `std::string`.
- *
- * @ingroup widget_delegates
- */
-template<>
-class default_text_delegate<std::string> : public text_delegate {
-public:
-    using value_type = std::string;
-
-    observer<value_type> value;
-
-    /** Construct a delegate.
-     *
-     * @param value A value or observer-value used as a representation of the state.
-     */
-    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
-    {
-        _value_cbt = this->value.subscribe([&](auto...) {
-            this->_notifier();
-        });
-    }
-
-    [[nodiscard]] gstring read(widget& sender) noexcept override
-    {
-        return to_gstring(*value);
-    }
-
-    void write(widget& sender, gstring const& text) noexcept override
-    {
-        *value.copy() = to_string(text);
-    }
-
-private:
-    typename decltype(value)::callback_token _value_cbt;
-};
-
 /** A default text delegate specialization for `gstring`.
  *
  * @ingroup widget_delegates
  */
 template<>
-class default_text_delegate<gstring> : public text_delegate {
+class default_text_delegate<text> : public text_delegate {
 public:
-    using value_type = gstring;
+    using value_type = text;
 
     observer<value_type> value;
 
@@ -159,12 +87,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(widget& sender) noexcept override
+    [[nodiscard]] text read(widget& sender) noexcept override
     {
         return *value;
     }
 
-    void write(widget& sender, gstring const& text) noexcept override
+    void write(widget& sender, text const& text) noexcept override
     {
         *value.copy() = text;
     }
@@ -195,59 +123,14 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(widget& sender) noexcept override
+    [[nodiscard]] text read(widget& sender) noexcept override
     {
-        return to_gstring(value.read()());
+        return value.read()();
     }
 
-    void write(widget& sender, gstring const& text) noexcept override
+    void write(widget& sender, text const& text) noexcept override
     {
         hi_no_default();
-    }
-
-private:
-    typename decltype(value)::callback_token _value_cbt;
-};
-
-/** A default text delegate specialization for `text`.
- *
- * @ingroup widget_delegates
- */
-template<>
-class default_text_delegate<text_variant> : public text_delegate {
-public:
-    using value_type = text_variant;
-
-    observer<value_type> value;
-
-    /** Construct a delegate.
-     *
-     * @param value A value or observer-value used as a representation of the state.
-     */
-    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
-    {
-        _value_cbt = this->value.subscribe([&](auto...) {
-            this->_notifier();
-        });
-    }
-
-    [[nodiscard]] gstring read(widget& sender) noexcept override
-    {
-        return to_gstring(*value.read());
-    }
-
-    void write(widget& sender, gstring const& text) noexcept override
-    {
-        auto proxy = value.copy();
-        auto *ptr = std::addressof(*proxy);
-
-        if (auto *string_ptr = get_if<std::string>(ptr)) {
-            *string_ptr = to_string(text);
-        } else if (auto *gstring_ptr = get_if<gstring>(ptr)) {
-            *gstring_ptr = text;
-        } else {
-            hi_not_implemented();
-        }
     }
 
 private:

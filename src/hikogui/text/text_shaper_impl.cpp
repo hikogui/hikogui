@@ -172,16 +172,15 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
     }
 }
 
-void text_shaper::resolve_font_and_widths(float dpi_scale) noexcept
+void text_shaper::resolve_font_and_widths(hi::text_theme const &text_theme, float dpi_scale) noexcept
 {
     for (auto& c : _text) {
         hilet attributes = c.character.attributes();
 
-        hilet theme = attributes.theme();
-        c.style = theme(attributes.phrasing(), attributes.language(), attributes.region(), c.script);
+        c.style = text_theme(attributes.phrasing(), attributes.language(), attributes.region(), attributes.script());
         hilet& style_font = find_font(c.style.family_id, c.style.variant);
 
-        hilet [actual_font, glyphs] = find_glyph(style_font, c.character.grapheme());
+        hilet[actual_font, glyphs] = find_glyph(style_font, c.character.grapheme());
 
         c.font = actual_font;
         c.width = actual_font->get_advance(glyphs[0]) * c.style.size * dpi_scale;
@@ -190,6 +189,7 @@ void text_shaper::resolve_font_and_widths(float dpi_scale) noexcept
 
 [[nodiscard]] text_shaper::text_shaper(
     hi::text const& text,
+    hi::text_theme const& text_theme,
     float dpi_scale,
     hi::alignment alignment,
     unicode_bidi_class text_direction) noexcept :
@@ -201,8 +201,7 @@ void text_shaper::resolve_font_and_widths(float dpi_scale) noexcept
         _text.emplace_back(c == '\n' ? grapheme{unicode_PS} : c);
     }
 
-    resolve_script();
-    resolve_font_and_widths(dpi_scale);
+    resolve_font_and_widths(text_theme, dpi_scale);
 
     _text_direction = unicode_bidi_direction(
         _text.begin(),
@@ -281,79 +280,6 @@ void text_shaper::position_glyphs(aarectangle rectangle, extent2 sub_pixel_size,
     for (auto& line : _lines) {
         // Position the glyphs on each line. Possibly morph glyphs to handle ligatures and calculate the bounding rectangles.
         line.layout(_alignment.horizontal(), rectangle.left(), rectangle.right(), sub_pixel_size.width(), dpi_scale);
-    }
-}
-
-void text_shaper::resolve_script() noexcept
-{
-    // Find the first script in the text if no script is found use the text_shaper's default script.
-    hilet first_script = [&]() {
-        // First pass, find a character from the Unicode description with a specific script.
-        for (hilet& c : _text) {
-            hilet script = c.description->script();
-            if (script != unicode_script::Common or script == unicode_script::Zzzz or script == unicode_script::Inherited) {
-                return script;
-            }
-        }
-
-        // Second pass, find if the language or region is set manually.
-        for (hilet& c : _text) {
-            hilet attributes = c.character.attributes();
-            if (hilet language = attributes.language()) {
-                hilet tag = language_tag{language, attributes.region()}.expand();
-                if (hilet script = tag.script) {
-                    return static_cast<unicode_script>(script);
-                }
-            }
-        }
-        return unicode_script::Common;
-    }();
-
-    auto scripts = std::vector<unicode_script>(_text.size(), unicode_script::Common);
-
-    // Backward pass: fix start of words and open-brackets.
-    // After this pass unknown-script is no longer in the text.
-    // Close brackets will not be fixed, those will be fixed in the last forward pass.
-    auto word_script = unicode_script::Common;
-    auto previous_script = first_script;
-    for (auto i = _text.size(); i != 0; --i) {
-        hilet& c = _text[i - 1];
-        auto& script = scripts[i - 1];
-
-        if (_word_break_opportunities[i] != unicode_break_opportunity::no) {
-            word_script = unicode_script::Common;
-        }
-
-        script = c.description->script();
-        if (script == unicode_script::Common or script == unicode_script::Zzzz) {
-            hilet bracket_type = c.description->bidi_bracket_type();
-            // clang-format off
-            script =
-                bracket_type == unicode_bidi_bracket_type::o ? previous_script :
-                bracket_type == unicode_bidi_bracket_type::c ? unicode_script::Common :
-                word_script;
-            // clang-format on
-
-        } else if (script != unicode_script::Inherited) {
-            previous_script = word_script = script;
-        }
-    }
-
-    // Forward pass: fix all common and inherited with previous or first script.
-    previous_script = first_script;
-    for (auto i = 0_uz; i != _text.size(); ++i) {
-        auto& script = scripts[i];
-
-        if (script == unicode_script::Common or script == unicode_script::Inherited) {
-            script = previous_script;
-
-        } else {
-            previous_script = script;
-        }
-    }
-
-    for (auto i = 0_uz; i != _text.size(); ++i) {
-        _text[i].script = iso_15924{scripts[i]};
     }
 }
 

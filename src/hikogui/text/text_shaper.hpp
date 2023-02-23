@@ -84,6 +84,7 @@ public:
      */
     [[nodiscard]] text_shaper(
         hi::text const& text,
+        hi::text_theme const &text_theme,
         float dpi_scale,
         hi::alignment alignment,
         unicode_bidi_class text_direction) noexcept;
@@ -477,15 +478,11 @@ private:
      */
     void position_glyphs(aarectangle rectangle, extent2 sub_pixel_size, float dpi_scale) noexcept;
 
-    /** Resolve the script of each character in the text.
-     */
-    void resolve_script() noexcept;
-
     /** Resolve the fonts and widths of each character in the text.
     *
     * @pre `resolve_script()` has been called.
     */
-    void resolve_font_and_widths(float dpi_scale) noexcept;
+    void resolve_font_and_widths(hi::text_theme const &text_theme, float dpi_scale) noexcept;
 
     [[nodiscard]] std::pair<text_cursor, text_cursor>
     get_selection_from_break(text_cursor cursor, unicode_break_vector const& break_opportunities) const noexcept;

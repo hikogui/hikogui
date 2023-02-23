@@ -12,10 +12,11 @@
 #include <string_view>
 #include <vector>
 #include <unordered_map>
+#include <tuple>
 
 namespace hi::inline v1 {
 
-[[nodiscard]] std::string_view get_translation(
+[[nodiscard]] std::pair<std::string_view, language_tag> get_translation(
     std::string_view msgid,
     long long n = 0,
     std::vector<language *> const &languages = os_settings::languages()) noexcept;

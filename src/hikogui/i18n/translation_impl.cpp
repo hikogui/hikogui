@@ -39,7 +39,7 @@ namespace hi::inline v1 {
 
 std::unordered_map<translation_key, std::vector<std::string>> translations;
 
-[[nodiscard]] std::string_view
+[[nodiscard]] std::pair<std::string_view, language_tag>
 get_translation(std::string_view msgid, long long n, std::vector<language *> const &languages) noexcept
 {
     auto key = translation_key{msgid};
@@ -54,12 +54,12 @@ get_translation(std::string_view msgid, long long n, std::vector<language *> con
             hilet plurality = language->plurality(n, ssize(i->second));
             hilet &translation = i->second[plurality];
             if (translation.size() != 0) {
-                return translation;
+                return {translation, language->tag};
             }
         }
     }
     hi_log_debug("No translation found for '{}'", msgid);
-    return msgid;
+    return {msgid, language_tag{"en-Latn-US"}};
 }
 
 void add_translation(std::string_view msgid, language const &language, std::vector<std::string> const &plural_forms) noexcept

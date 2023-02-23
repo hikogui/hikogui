@@ -93,13 +93,6 @@ public:
      */
     unicode_bidi_class direction = unicode_bidi_class::unknown;
 
-    /** The script of this character.
-     * The script of the character is based on:
-     * - The actual script of this unicode character, or if `unicode_script::Common`;
-     * - The script of characters before/after this character in the same word, or if `unicode_script::Common`;
-     */
-    iso_15924 script = {};
-
     /** Set to true if this glyph is a white space at the end of a line.
      */
     bool is_trailing_white_space = false;
