@@ -147,13 +147,22 @@ public:
         return last_variant;
     }
 
+    /** Get the default-script for this language.
+     *
+     * This will expand the language-tag if necessary to get the script.
+     */
+    [[nodiscard]] iso_15924 default_script() const noexcept
+    {
+        return expand().script;
+    }
+
     /** The language direction for this language-tag.
      *
      * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left
      */
     [[nodiscard]] unicode_bidi_class writing_direction() const noexcept
     {
-        return expand().script.writing_direction();
+        return default_script().writing_direction();
     }
 
     [[nodiscard]] std::string to_string() const noexcept

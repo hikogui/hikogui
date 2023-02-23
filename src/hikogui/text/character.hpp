@@ -37,11 +37,11 @@ struct character {
 
     /**
      * [20: 0] 21-bit: grapheme.
-     * [63:21] 43-bit: attriutes.
+     * [60:21] 40-bit: attributes.
+     * [62:61] reserved
+     * [63:63] Sign-bit reserved for eof.
      */
     value_type _value;
-
-    constexpr static auto _eof = uint64_t{0x1f'ffff};
 
     constexpr character() noexcept = default;
     constexpr character(character const&) noexcept = default;
@@ -51,18 +51,9 @@ struct character {
     constexpr friend bool operator==(character const&, character const&) noexcept = default;
     constexpr friend auto operator<=>(character const&, character const&) noexcept = default;
 
-    constexpr character(hi::grapheme g, character_attributes attributes) noexcept : _value(0)
+    constexpr character(hi::grapheme g, character_attributes attributes) noexcept :
+        _value((attributes.intrinsic() << 21) | g.intrinsic())
     {
-        // [20: 0] 21-bit: grapheme.
-        // [33:21] 13-bit: text theme.
-        // [37:34]  4-bit: phrasing.
-        // [47:38] 10-bit: iso-3166 region-code.
-        // [63:48] 16-bit: iso-639 language.
-        auto tmp = value_type{};
-        tmp |= attributes.intrinsic();
-        tmp <<= 21;
-        tmp |= g.intrinsic();
-        _value = tmp;
     }
 
     constexpr character(char32_t code_point, character_attributes attributes) noexcept :
@@ -105,8 +96,6 @@ struct character {
         return _value;
     }
 
-    constexpr character(nullptr_t) noexcept : _value(0xff'ffff) {}
-
     constexpr character& operator=(hi::grapheme grapheme) noexcept
     {
         return set_grapheme(grapheme);
@@ -129,11 +118,20 @@ struct character {
 
     constexpr character& set_grapheme(hi::grapheme grapheme) noexcept
     {
-        hilet grapheme_value = wide_cast<value_type>(grapheme.intrinsic());
         _value >>= 21;
         _value <<= 21;
-        _value |= grapheme_value;
+        _value |= grapheme.intrinsic();
         return *this;
+    }
+
+    [[nodiscard]] size_t size() const noexcept
+    {
+        return grapheme().size();
+    }
+
+    [[nodiscard]] char32_t operator[](size_t i) const noexcept
+    {
+        return grapheme()[i];
     }
 
     [[nodiscard]] constexpr character_attributes attributes() const noexcept

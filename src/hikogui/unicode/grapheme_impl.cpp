@@ -15,8 +15,7 @@ grapheme::grapheme(composed_t, std::u32string_view code_points) noexcept
 {
     switch (code_points.size()) {
     case 0:
-        _value = 0x1f'ffff;
-        break;
+        hi_no_default();
 
     case 1:
         _value = truncate<value_type>(code_points[0]);
@@ -24,10 +23,9 @@ grapheme::grapheme(composed_t, std::u32string_view code_points) noexcept
 
     default:
         hilet index = detail::long_graphemes.insert(std::u32string{code_points});
-        if (index < 0x0e'ffff) {
+        if (index < 0x0f'0000) {
             _value = narrow_cast<value_type>(index + 0x11'0000);
         } else {
-            // Can't use index 0x1f'ffff as it means empty.
             [[unlikely]] hi_log_error_once("grapheme::error::too-many", "Too many long graphemes encoded, replacing with U+fffd");
             _value = 0x00'fffd;
         }

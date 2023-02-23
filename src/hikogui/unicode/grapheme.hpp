@@ -43,16 +43,11 @@ struct grapheme {
      *
      * This class will hold:
      * - A single code point between U+0000 to U+10ffff, or
-     * - An index + 0x110000 into the long_graphemes table, or
-     * - 0x1f'ffff meaning empty/eof.
+     * - An index + 0x110000 into the long_graphemes table, max 0x1fffff.
      *
      * Bits [31:21] are always '0'.
      */
     value_type _value;
-
-    constexpr static auto _table_first = value_type{0x11'0000};
-    constexpr static auto _table_last = value_type{0x1f'ffff};
-    constexpr static auto _eof = value_type{0x1f'ffff};
 
     constexpr grapheme() noexcept = default;
     constexpr grapheme(grapheme const&) noexcept = default;
@@ -60,16 +55,14 @@ struct grapheme {
     constexpr grapheme& operator=(grapheme const&) noexcept = default;
     constexpr grapheme& operator=(grapheme&&) noexcept = default;
 
-    constexpr grapheme(nullptr_t) noexcept : _value(_eof) {}
-
     constexpr grapheme(intrinsic_t, value_type value) : _value(value) {}
 
-    constexpr value_type &intrinsic() noexcept
+    constexpr value_type& intrinsic() noexcept
     {
         return _value;
     }
 
-    constexpr value_type const &intrinsic() const noexcept
+    constexpr value_type const& intrinsic() const noexcept
     {
         return _value;
     }
@@ -115,34 +108,6 @@ struct grapheme {
      */
     explicit grapheme(composed_t, std::u32string_view code_points) noexcept;
 
-    /** Create empty grapheme / end-of-file.
-     */
-    [[nodiscard]] static constexpr grapheme eof() noexcept
-    {
-        return grapheme{intrinsic_t{}, _eof};
-    }
-
-    /** Clear the grapheme.
-     */
-    constexpr void clear() noexcept
-    {
-        _value = _eof;
-    }
-
-    /** Check if the grapheme is empty.
-     */
-    [[nodiscard]] constexpr bool empty() const noexcept
-    {
-        return _value == _eof;
-    }
-
-    /** Check if the grapheme holds any code-points.
-     */
-    constexpr operator bool() const noexcept
-    {
-        return not empty();
-    }
-
     /** Check if the grapheme is valid.
      *
      * A grapheme is invalid in case:
@@ -154,18 +119,15 @@ struct grapheme {
 
     [[nodiscard]] std::u32string const& long_grapheme() const noexcept
     {
-        hi_assert(_value >= _table_first and _value < _table_last);
-        return detail::long_graphemes[_value - _table_first];
+        hi_assert(_value > 0x10'ffff and _value <= 0x1f'ffff);
+        return detail::long_graphemes[_value - 0x11'0000];
     }
 
     /** Return the number of code-points encoded in the grapheme.
      */
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        if (_value == _eof) {
-            return 0;
-
-        } else if (_value < _table_first) {
+        if (_value <= 0x10'ffff) {
             return 1;
 
         } else {
@@ -175,7 +137,7 @@ struct grapheme {
 
     /** Get the code-point at the given index.
      *
-     * @note It is undefined-behavior to index beyond the number of encoded code-points.
+     * @note It is undefined-behaviour to index beyond the number of encoded code-points.
      * @param i Index of code-point in the grapheme.
      * @return code-point at the given index.
      */
@@ -183,7 +145,7 @@ struct grapheme {
     {
         hi_assert_bounds(i, *this);
 
-        if (_value < _table_first) {
+        if (_value <= 0x10'ffff) {
             return truncate<char32_t>(_value);
         } else {
             return long_grapheme()[i];
@@ -192,7 +154,7 @@ struct grapheme {
 
     /** Get the code-point at the given index.
      *
-     * @note It is undefined-behavior to index beyond the number of encoded code-points.
+     * @note It is undefined-behaviour to index beyond the number of encoded code-points.
      * @tparam I Index of code-point in the grapheme.
      * @param rhs The grapheme to query.
      * @return code-point at the given index.
@@ -202,7 +164,7 @@ struct grapheme {
     {
         hi_assert_bounds(I, rhs);
 
-        if (rhs._value < _table_first) {
+        if (rhs._value <= 0x10'ffff) {
             return rhs._value;
         } else {
             return rhs.long_grapheme()[I];
@@ -213,7 +175,7 @@ struct grapheme {
      */
     [[nodiscard]] constexpr std::u32string composed() const noexcept
     {
-        if (_value < _table_first) {
+        if (_value <= 0x10'ffff) {
             return std::u32string{truncate<char32_t>(_value)};
         } else {
             return long_grapheme();
@@ -228,6 +190,17 @@ struct grapheme {
      */
     [[nodiscard]] friend constexpr bool operator==(grapheme const&, grapheme const&) noexcept = default;
 
+    [[nodiscard]] friend constexpr bool operator==(grapheme const& lhs, char32_t const& rhs) noexcept
+    {
+        return lhs._value == rhs;
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(grapheme const& lhs, char const& rhs) noexcept
+    {
+        hi_axiom(rhs <= 0x7f);
+        return lhs._value == rhs;
+    }
+
     /** Compare two graphemes lexicographically.
      */
     [[nodiscard]] friend constexpr std::strong_ordering operator<=>(grapheme const& lhs, grapheme const& rhs) noexcept
@@ -235,19 +208,9 @@ struct grapheme {
         return lhs.decomposed() <=> rhs.decomposed();
     }
 
-    [[nodiscard]] friend constexpr bool operator==(grapheme const& lhs, char32_t const& rhs) noexcept
-    {
-        return lhs == grapheme{rhs};
-    }
-
     [[nodiscard]] friend constexpr std::strong_ordering operator<=>(grapheme const& lhs, char32_t const& rhs) noexcept
     {
         return lhs <=> grapheme{rhs};
-    }
-
-    [[nodiscard]] friend constexpr bool operator==(grapheme const& lhs, char const& rhs) noexcept
-    {
-        return lhs == grapheme{rhs};
     }
 
     [[nodiscard]] friend constexpr std::strong_ordering operator<=>(grapheme const& lhs, char const& rhs) noexcept

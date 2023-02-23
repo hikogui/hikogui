@@ -42,12 +42,14 @@ void os_settings::gather() noexcept
         }
 
         auto writing_direction = language_tags.front().writing_direction();
+        auto default_script = language_tags.front().default_script();
 
         auto languages = language::make_languages(language_tags);
 
         auto language_changed = compare_store(_language_tags, language_tags);
         language_changed |= compare_store(_languages, languages);
         language_changed |= compare_store(_writing_direction, writing_direction);
+        language_changed |= compare_store(_default_script, default_script);
 
         if (language_changed) {
             setting_has_changed = true;

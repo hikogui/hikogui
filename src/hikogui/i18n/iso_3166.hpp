@@ -19,7 +19,7 @@ public:
     constexpr iso_3166& operator=(iso_3166 const&) noexcept = default;
     constexpr iso_3166& operator=(iso_3166&&) noexcept = default;
 
-    constexpr iso_3166() noexcept : _v(999) {}
+    constexpr iso_3166() noexcept : _v(0) {}
 
     constexpr iso_3166(uint16_t number) : _v(number)
     {
@@ -45,7 +45,7 @@ public:
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return _v == 999;
+        return _v == 0;
     }
 
     constexpr explicit operator bool() const noexcept

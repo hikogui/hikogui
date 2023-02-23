@@ -18,7 +18,7 @@ namespace hi::inline v1 {
  */
 class iso_15924 {
 public:
-    constexpr iso_15924() noexcept : _v(999) {}
+    constexpr iso_15924() noexcept : _v(0) {}
     constexpr iso_15924(iso_15924 const&) noexcept = default;
     constexpr iso_15924(iso_15924&&) noexcept = default;
     constexpr iso_15924& operator=(iso_15924 const&) noexcept = default;
@@ -26,9 +26,7 @@ public:
 
     constexpr iso_15924(uint16_t number) : _v(number)
     {
-        if (number > 999) {
-            throw parse_error(std::format("Invalid script number '{}'", number));
-        }
+        hi_check(number <= 999, "ISO-15924 number must be between 0 and 999, got {}", number);
     }
 
     iso_15924(unicode_script const& script) noexcept;
@@ -38,7 +36,7 @@ public:
 
     constexpr iso_15924(intrinsic_t, uint16_t v) noexcept : _v(v)
     {
-        hi_axiom(_v < 1000);
+        hi_axiom(_v <= 999);
     }
 
     [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
@@ -53,7 +51,7 @@ public:
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return _v == 999;
+        return _v == 0;
     }
 
     explicit operator bool() const noexcept

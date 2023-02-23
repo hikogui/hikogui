@@ -5,17 +5,21 @@
 #include "character.hpp"
 #include "character_attributes.hpp"
 #include "../unicode/gstring.hpp"
+#include "../unicode/unicode_description.hpp"
 #include "../i18n/language_tag.hpp"
 #include "../utility/module.hpp"
+#include "../os_settings.hpp"
 #include <string>
 #include <string_view>
 #include <algorithm>
+#include <iterator>
+#include <ranges>
 
 template<>
 class std::char_traits<hi::character> {
 public:
     using char_type = hi::character;
-    using int_type = uint64_t;
+    using int_type = int64_t;
     using off_type = size_t;
     using pos_type = size_t;
 
@@ -69,7 +73,7 @@ public:
     {
         auto ptr = s;
 
-        while (ptr++ == nullptr) {}
+        while (ptr++ != '\0') {}
         return std::distance(s, ptr);
     }
 
@@ -87,12 +91,16 @@ public:
 
     static constexpr char_type to_char_type(int_type c) noexcept
     {
-        return char_type{hi::intrinsic_t{}, c};
+        auto tmp = hi::char_cast<char_type::value_type>(c);
+        if (c < 0) {
+            tmp = 0;
+        }
+        return char_type{hi::intrinsic_t{}, tmp};
     }
 
     static constexpr int_type to_int_type(char_type c) noexcept
     {
-        return c.intrinsic();
+        return hi::char_cast<int_type>(c.intrinsic());
     }
 
     static constexpr bool eq_int_type(int_type c1, int_type c2) noexcept
@@ -102,13 +110,13 @@ public:
 
     static constexpr int_type eof() noexcept
     {
-        return 0xff'ffff;
+        return -1;
     }
 
     static constexpr int_type not_eof(int_type e) noexcept
     {
-        if (e == eof()) {
-            e = 0xfffd; // Return the REPLACEMENT_CHAR.
+        if (e < 0) {
+            e = 0;
         }
         return e;
     }
@@ -142,15 +150,6 @@ using text_view = std::basic_string_view<character>;
                             throw parse_error("Unknown markup phrasing command");
                         }
 
-                    } else if (capture.front() >= '0' and capture.front() <= '9') {
-                        // Get the text-theme.
-                        auto theme_id = from_string<uint16_t>(capture);
-                        if (theme_id < 1000) {
-                            attributes.set_theme(hi::text_theme{intrinsic_t{}, theme_id});
-                        } else {
-                            throw parse_error("Invalid markup text theme-id");
-                        }
-
                     } else if (capture.front() >= 'A' and capture.front() <= 'Z') {
                         auto language_tag = hi::language_tag{capture};
                         attributes.set_language(language_tag);
@@ -160,23 +159,26 @@ using text_view = std::basic_string_view<character>;
                     }
 
                 } catch (...) {
-                    // Fallback by dislaying the original text.
-                    r += character{grapheme{'['}, attributes};
+                    // Fallback by displaying the original text.
+                    r += character{'[', attributes};
                     for (hilet cap_c : capture) {
                         r += character{cap_c, attributes};
                     }
-                    r += character{grapheme{']'}, attributes};
+                    r += character{']', attributes};
                 }
 
                 capture.clear();
                 in_command = false;
 
             } else if (c == '[') {
-                r += character{grapheme{'['}, attributes};
+                r += character{'[', attributes};
                 in_command = false;
 
+            } else if (c.size() == 1 and c[0] <= 0x7f) {
+                capture += char_cast<char>(c[0]);
+
             } else {
-                capture += c;
+                throw parse_error("Unexpected non-ASCII character in markup command.");
             }
         } else if (c == '[') {
             in_command = true;
@@ -194,15 +196,151 @@ using text_view = std::basic_string_view<character>;
 }
 
 template<character_attribute... Attributes>
-[[nodiscard]] constexpr text to_text_with_markup(gstring_view str, Attributes const&... attributes) noexcept
+[[nodiscard]] constexpr text to_text_with_markup(gstring_view str, Attributes const&...attributes) noexcept
 {
     return to_text_with_markup(str, character_attributes{attributes...});
 }
 
 template<character_attribute... Attributes>
-[[nodiscard]] constexpr text to_text_with_markup(std::string_view str, Attributes const&... attributes) noexcept
+[[nodiscard]] constexpr text to_text_with_markup(std::string_view str, Attributes const&...attributes) noexcept
 {
     return to_text_with_markup(str, character_attributes{attributes...});
 }
+
+/** Fixup the iso_15924 script in text.
+ *
+ * Check the characters in text and make sure the script-attribute does not
+ * contradict the Unicode script table. And if the script-attribute for the
+ * character was not set, then determine the script.
+ */
+template<typename It, std::sentinel_for<It> ItEnd>
+inline void fixup_script(It first, ItEnd last) noexcept
+    requires(std::is_same_v<std::iter_value_t<It>, character>)
+{
+    // Overwrite the script of a character if it is specific in the Unicode
+    // script table.
+    auto last_language = iso_639{};
+    auto last_script = iso_15924{};
+    auto missing_script_count = 0_uz;
+    for (auto it = first; it != last; ++it) {
+        hilet code_point = (*it)[0];
+        auto attributes = it->attributes();
+        hilet language = attributes.language();
+        hilet script = attributes.script();
+
+        // Reset the last script when the language changes.
+        if (language != last_language) {
+            last_language = language;
+            last_script = {};
+        }
+
+        hilet new_script = [&] {
+            hilet& udb = unicode_description::find(code_point);
+            hilet udb_script = udb.script();
+
+            if (udb_script != unicode_script::Zzzz and udb_script != unicode_script::Common) {
+                // This character is defined in the Unicode database to have a
+                // specific script.
+                return iso_15924{udb_script};
+
+            } else if (not script and last_script) {
+                // This character did not have a script, but a previous character
+                // from the same language did have a script.
+                return last_script;
+
+            } else {
+                return script;
+            }
+        }();
+
+        // If the new script is different update the character.
+        if (script != new_script) {
+            attributes.set_script(new_script);
+            it->set_attributes(attributes);
+        }
+
+        // We found a script for the character, remember it.
+        if (new_script) {
+            last_script = new_script;
+        } else {
+            ++missing_script_count;
+        }
+    }
+
+    if (missing_script_count == 0) {
+        // Every character has a script assigned.
+        return;
+    }
+
+    // In the second iteration we search backwards for scripts and assign them.
+    // Since in this iteration we have to assign a script we don't care about
+    // the language. And we fallback to the operating system's default script.
+    last_script = os_settings::default_script();
+    for (auto rev_it = last; rev_it != first; --rev_it) {
+        hilet it = rev_it - 1;
+        auto attributes = it->attributes();
+        hilet script = attributes.script();
+
+        hilet new_script = script ? script : last_script;
+
+        // If the new script is different update the character.
+        if (script != new_script) {
+            attributes.set_script(script);
+            it->set_attributes(attributes);
+        }
+
+        // We found a script for the character, remember it.
+        if (new_script) {
+            last_script = new_script;
+        }
+    }
+}
+
+template<std::ranges::range R>
+inline void fixup_script(R& str) noexcept
+    requires(std::is_same_v<std::ranges::range_value_t<R>, character>)
+{
+    return fixup_script(std::ranges::begin(str), std::ranges::end(str));
+}
+
+/** Change the attributes on a piece of text.
+ */
+template<typename It, std::sentinel_for<It> ItEnd>
+inline void set_attributes(It first, ItEnd last, character_attributes attributes) noexcept
+    requires(std::is_same_v<std::iter_value_t<It>, character>)
+{
+    for (auto it = first; it != last; ++it) {
+        it->set_attributes(attributes);
+    }
+    fixup_script(first, last);
+}
+
+/** Change the attributes on a piece of text.
+ */
+template<typename It, std::sentinel_for<It> ItEnd, character_attribute... Args>
+inline void set_attributes(It first, ItEnd last, Args const &...args) noexcept
+    requires(std::is_same_v<std::iter_value_t<It>, character>)
+{
+    return set_attributes(first, last, character_attributes{args...})
+}
+
+/** Change the attributes on text.
+ */
+template<std::ranges::range R>
+inline void set_attributes(R& str, character_attributes attributes) noexcept
+    requires(std::is_same_v<std::ranges::range_value_t<R>, character>)
+{
+    return set_attributes(std::ranges::begin(str), std::ranges::end(str), attributes);
+}
+
+/** Change the attributes on text.
+ */
+template<std::ranges::range R, character_attribute... Args>
+inline void set_attributes(R& str, Args const &...args) noexcept
+    requires(std::is_same_v<std::ranges::range_value_t<R>, character>)
+{
+    return set_attributes(str, character_attributes{args...});
+}
+
 
 }} // namespace hi::v1

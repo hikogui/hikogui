@@ -1,17 +1,14 @@
 
 #pragma once
 
-#include "../i18n/iso_639.hpp"
-#include "../i18n/iso_3166.hpp"
 #include "../i18n/language_tag.hpp"
 #include "text_phrasing.hpp"
-#include "text_theme.hpp"
 
 namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept character_attribute = std::same_as<Context, iso_639> or std::same_as<Context, iso_3166> or
-    std::same_as<Context, language_tag> or std::same_as<Context, text_phrasing> or std::same_as<Context, text_theme>;
+    std::same_as<Context, iso_15924> or std::same_as<Context, language_tag> or std::same_as<Context, text_phrasing>;
 
 class character_attributes {
 public:
@@ -26,7 +23,8 @@ public:
 
     constexpr character_attributes(intrinsic_t, value_type value) noexcept : _value(value)
     {
-        hi_axiom(_value <= 0x0000'07ff'ffff'ffffULL);
+        // 40 bits.
+        hi_axiom(_value < (value_type{1} << 40));
     }
 
     [[nodiscard]] constexpr value_type const& intrinsic() const
@@ -34,7 +32,7 @@ public:
         return _value;
     }
 
-    [[nodiscard]] constexpr value_type & intrinsic()
+    [[nodiscard]] constexpr value_type& intrinsic()
     {
         return _value;
     }
@@ -67,6 +65,20 @@ public:
         return *this;
     }
 
+    [[nodiscard]] constexpr iso_15924 script() const noexcept
+    {
+        return iso_15924{intrinsic_t{}, (_value >> _script_shift) & _script_mask};
+    }
+
+    constexpr character_attributes& set_script(iso_15924 script) noexcept
+    {
+        hilet script_value = wide_cast<value_type>(script.intrinsic());
+        hi_axiom(script_value <= _script_mask);
+        _value &= ~(_script_mask << _script_shift);
+        _value |= script_value << _script_shift;
+        return *this;
+    }
+
     [[nodiscard]] constexpr iso_3166 region() const noexcept
     {
         return iso_3166{intrinsic_t{}, (_value >> _region_shift) & _region_mask};
@@ -83,21 +95,7 @@ public:
 
     constexpr character_attributes& set_language(hi::language_tag language_tag) noexcept
     {
-        return set_language(language_tag.language).set_region(language_tag.region);
-    }
-
-    [[nodiscard]] constexpr text_theme theme() const noexcept
-    {
-        return text_theme{intrinsic_t{}, (_value >> _text_theme_shift) & _text_theme_mask};
-    }
-
-    constexpr character_attributes& set_theme(hi::text_theme text_theme) noexcept
-    {
-        hilet text_theme_value = wide_cast<value_type>(text_theme.intrinsic());
-        hi_axiom(text_theme_value <= _text_theme_mask);
-        _value &= ~(_text_theme_mask << _text_theme_shift);
-        _value |= text_theme_value << _text_theme_shift;
-        return *this;
+        return set_language(language_tag.language).set_script(language_tag.script).set_region(language_tag.region);
     }
 
     template<character_attribute... Args>
@@ -113,6 +111,11 @@ public:
         set_language(arg);
     }
 
+    constexpr void add(iso_15924 const& arg) noexcept
+    {
+        set_script(arg);
+    }
+
     constexpr void add(iso_3166 const& arg) noexcept
     {
         set_region(arg);
@@ -123,11 +126,6 @@ public:
         set_phrasing(arg);
     }
 
-    constexpr void add(text_theme const& arg) noexcept
-    {
-        set_theme(arg);
-    }
-
     template<character_attribute First, character_attribute Second, character_attribute... Rest>
     constexpr void add(First const& first, Second const& second, Rest const&...rest) noexcept
     {
@@ -136,21 +134,21 @@ public:
     }
 
 private:
-    constexpr static auto _text_theme_mask = uint64_t{0x1fff};
-    constexpr static auto _text_theme_shift = 0U;
-    constexpr static auto _phrasing_mask = uint64_t{0xf};
-    constexpr static auto _phrasing_shift = 13U;
-    constexpr static auto _region_mask = uint64_t{0x3ff};
-    constexpr static auto _region_shift = 17U;
-    constexpr static auto _language_mask = uint64_t{0xffff};
-    constexpr static auto _language_shift = 27U;
+    constexpr static auto _phrasing_mask = value_type{0xf};
+    constexpr static auto _phrasing_shift = 36U;
+    constexpr static auto _region_mask = value_type{0x3ff};
+    constexpr static auto _region_shift = 26U;
+    constexpr static auto _script_mask = value_type{0x3ff};
+    constexpr static auto _script_shift = 16U;
+    constexpr static auto _language_mask = value_type{0xffff};
+    constexpr static auto _language_shift = 0U;
 
     /** The value.
      *
-     * [12:0] text-theme
-     * [16:13] phrasing
-     * [26:17] region.
-     * [42:27] language
+     * [15: 0] language
+     * [25:16] script
+     * [35:26] region
+     * [39:36] phrasing
      */
     value_type _value;
 };
