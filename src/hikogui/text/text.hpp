@@ -73,7 +73,7 @@ public:
     {
         auto ptr = s;
 
-        while (ptr++ != '\0') {}
+        while (*ptr++ != '\0') {}
         return std::distance(s, ptr);
     }
 
@@ -223,86 +223,137 @@ inline void fixup_script(R& str) noexcept
     return fixup_script(std::ranges::begin(str), std::ranges::end(str));
 }
 
-[[nodiscard]] constexpr text to_text_with_markup(gstring_view str, character_attributes default_attributes) noexcept
+[[nodiscard]] inline text to_text(gstring_view str, character_attributes default_attributes = character_attributes{}) noexcept
+{
+    auto r = text{};
+    r.reserve(str.size());
+    for (hilet c : str) {
+        r += character{c, default_attributes};
+    }
+    return r;
+}
+
+[[nodiscard]] inline text to_text(
+    std::string_view str,
+    char32_t new_line_char = U'\u2029',
+    character_attributes default_attributes = character_attributes{}) noexcept
+{
+    return to_text(to_gstring(str, new_line_char), default_attributes);
+}
+
+[[nodiscard]] inline text to_text_with_markup(gstring_view str, character_attributes default_attributes) noexcept
 {
     auto r = text{};
     auto attributes = default_attributes;
 
     auto in_command = false;
     auto capture = std::string{};
+
+    auto output_incomplete_command = [&] {
+        r += character{'[', attributes};
+        for (hilet cap_c : capture) {
+            r += character{cap_c, attributes};
+        }
+    };
+
     for (hilet c : str) {
         if (in_command) {
             if (c == ']') {
-                try {
-                    if (capture.empty()) {
-                        throw parse_error("Empty markup command.");
+                in_command = false;
 
-                    } else if (capture.size() == 1) {
-                        if (capture.front() == '.') {
-                            attributes = default_attributes;
-                        } else if (auto phrasing = to_text_phrasing(capture.front())) {
-                            attributes.set_phrasing(*phrasing);
-                        } else {
-                            throw parse_error("Unknown markup phrasing command");
-                        }
-
-                    } else if (
-                        (capture.front() >= 'a' and capture.front() <= 'z') or
-                        (capture.front() >= 'A' and capture.front() <= 'Z')) {
-                        attributes.set_language(hi::language_tag{capture}.expand());
-
-                    } else {
-                        throw parse_error("Unknown markup command.");
-                    }
-
-                } catch (...) {
-                    // Fallback by displaying the original text.
-                    r += character{'[', attributes};
-                    for (hilet cap_c : capture) {
-                        r += character{cap_c, attributes};
-                    }
+                auto output_bad_command = [&] {
+                    output_incomplete_command();
                     r += character{']', attributes};
+                };
+
+                if (capture.empty()) {
+                    output_bad_command();
+
+                } else if (capture.size() == 1) {
+                    if (capture.front() == '.') {
+                        attributes = default_attributes;
+                    } else if (auto phrasing = to_text_phrasing(capture.front())) {
+                        attributes.set_phrasing(*phrasing);
+                    } else {
+                        output_bad_command();
+                    }
+
+                } else if (is_alpha(capture.front())) {
+                    try {
+                        attributes.set_language(hi::language_tag{capture}.expand());
+                    } catch (...) {
+                        output_bad_command();
+                    }
+
+                } else {
+                    output_bad_command();
                 }
-
                 capture.clear();
-                in_command = false;
 
-            } else if (c == '[') {
-                r += character{'[', attributes};
+            } else if (c == '[' and capture.empty()) {
                 in_command = false;
+                r += character{'[', attributes};
 
             } else if (c.size() == 1 and c[0] <= 0x7f) {
                 capture += char_cast<char>(c[0]);
 
             } else {
-                throw parse_error("Unexpected non-ASCII character in markup command.");
+                in_command = false;
+                output_incomplete_command();
+                capture.clear();
             }
+
         } else if (c == '[') {
             in_command = true;
+
         } else {
             r += character{c, attributes};
         }
+    }
+
+    if (not capture.empty()) {
+        output_incomplete_command();
     }
 
     fixup_script(r);
     return r;
 }
 
-[[nodiscard]] constexpr text to_text_with_markup(std::string_view str, character_attributes default_attributes) noexcept
+[[nodiscard]] inline text to_text_with_markup(std::string_view str, character_attributes default_attributes) noexcept
 {
     return to_text_with_markup(to_gstring(str), default_attributes);
 }
 
 template<character_attribute... Attributes>
-[[nodiscard]] constexpr text to_text_with_markup(gstring_view str, Attributes const&...attributes) noexcept
+[[nodiscard]] inline text to_text_with_markup(gstring_view str, Attributes const&...attributes) noexcept
 {
     return to_text_with_markup(str, character_attributes{attributes...});
 }
 
 template<character_attribute... Attributes>
-[[nodiscard]] constexpr text to_text_with_markup(std::string_view str, Attributes const&...attributes) noexcept
+[[nodiscard]] inline text to_text_with_markup(std::string_view str, Attributes const&...attributes) noexcept
 {
     return to_text_with_markup(str, character_attributes{attributes...});
+}
+
+[[nodiscard]] constexpr gstring to_gstring(text_view str) noexcept
+{
+    auto r = gstring{};
+    r.reserve(str.size());
+    for (hilet c : str) {
+        r += c.grapheme();
+    }
+    return r;
+}
+
+[[nodiscard]] constexpr std::string to_string(text_view str) noexcept
+{
+    return to_string(to_gstring(str));
+}
+
+[[nodiscard]] constexpr std::wstring to_wstring(text_view str) noexcept
+{
+    return to_wstring(to_string(str));
 }
 
 /** Change the attributes on a piece of text.
@@ -323,7 +374,7 @@ template<typename It, std::sentinel_for<It> ItEnd, character_attribute... Args>
 inline void set_attributes(It first, ItEnd last, Args const&...args) noexcept
     requires(std::is_same_v<std::iter_value_t<It>, character>)
 {
-    return set_attributes(first, last, character_attributes{args...})
+    return set_attributes(first, last, character_attributes{args...});
 }
 
 /** Change the attributes on text.
@@ -343,5 +394,4 @@ inline void set_attributes(R& str, Args const&...args) noexcept
 {
     return set_attributes(str, character_attributes{args...});
 }
-
 }} // namespace hi::v1

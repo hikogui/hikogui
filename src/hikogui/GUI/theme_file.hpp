@@ -21,7 +21,6 @@
 #include <map>
 
 namespace hi { inline namespace v1 {
-class font_book;
 
 /** A theme_file loaded from a theme_file file.
  *
@@ -58,7 +57,7 @@ public:
 
     /** Open and parse a theme_file file.
      */
-    theme_file(hi::font_book const& font_book, std::filesystem::path const& url);
+    theme_file(std::filesystem::path const& url);
 
     /** Activate this theme_file.
      *
@@ -69,8 +68,8 @@ public:
 private:
     container_type _items;
 
-    void parse_data(hi::font_book const& font_book, datum const& data);
-    void parse(hi::font_book const& font_book, datum const& data);
+    void parse_data(datum const& data);
+    void parse(datum const& data);
 };
 
 }} // namespace hi::v1

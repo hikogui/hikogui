@@ -164,11 +164,7 @@ public:
 
         // XXX use the theme-style and apply it to the _text_cache.
         _shaped_text = text_shaper{
-            _text_cache,
-            theme<prefix ^ "style", text_theme>{}(this),
-            dpi_scale,
-            alignment_,
-            os_settings::writing_direction()};
+            _text_cache, theme<prefix ^ "style", text_theme>{}(this), dpi_scale, alignment_, os_settings::writing_direction()};
 
         hilet shaped_text_rectangle =
             narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));
@@ -177,7 +173,7 @@ public:
         hilet margins = theme<prefix ^ "margin", marginsi>{}(this);
         if (*mode == widget_mode::partial) {
             // In line-edit mode the text should not wrap.
-            return _constraints_cache = {
+            return _constraints_cache = box_constraints{
                        shaped_text_size, shaped_text_size, shaped_text_size, _shaped_text.resolved_alignment(), margins};
 
         } else {
@@ -186,7 +182,7 @@ public:
             hilet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
 
             hilet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
-            return _constraints_cache = {
+            return _constraints_cache = box_constraints{
                        extent2i{preferred_shaped_text_size.width(), height},
                        extent2i{preferred_shaped_text_size.width(), height},
                        extent2i{shaped_text_size.width(), height},
@@ -302,12 +298,12 @@ public:
         case text_edit_paste:
             if (*mode >= partial) {
                 reset_state("BDX");
-                replace_selection(to_gstring(event.clipboard_data(), U' '));
+                replace_selection(to_text(event.clipboard_data(), U' '));
                 return true;
 
             } else if (*mode >= enabled) {
                 reset_state("BDX");
-                replace_selection(to_gstring(event.clipboard_data()));
+                replace_selection(to_text(event.clipboard_data()));
                 return true;
             }
             break;
@@ -328,7 +324,7 @@ public:
                 reset_state("BDX");
                 process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, to_string(selected_text())));
                 if (*mode >= partial) {
-                    replace_selection(gstring{});
+                    replace_selection(text{});
                 }
                 return true;
             }
@@ -804,11 +800,11 @@ private:
     bool _overwrite_mode = false;
 
     /** The text has a dead character.
-     * The grapheme is empty when there is no dead character.
-     * On overwrite the original grapheme is stored in the _had_dead_character, so
+     * The optional is std::nullopt when there is no dead character.
+     * In overwrite-mode the original grapheme is stored in the _had_dead_character, so
      * that it can be restored.
      */
-    grapheme _has_dead_character = nullptr;
+    std::optional<character> _has_dead_character = std::nullopt;
 
     undo_stack<undo_type> _undo_stack = {1000};
 
@@ -955,7 +951,7 @@ private:
 
     /** This function replaces the current selection with replacement text.
      */
-    void replace_selection(gstring const& replacement) noexcept
+    void replace_selection(text const& replacement) noexcept
     {
         undo_push();
 
@@ -974,26 +970,26 @@ private:
      * @param c The character to add at the current position
      * @param mode The mode how to add a character.
      */
-    void add_character(grapheme c, add_type mode) noexcept
+    void add_character(grapheme c, add_type add_mode) noexcept
     {
         hilet original_cursor = _selection.cursor();
-        auto original_grapheme = grapheme{char32_t{0xffff}};
+        auto original_character = character{};
 
         if (_selection.empty() and _overwrite_mode and original_cursor.before()) {
-            original_grapheme = _text_cache[original_cursor.index()];
+            original_character = _text_cache[original_cursor.index()];
 
             hilet[first, last] = _shaped_text.select_char(original_cursor);
             _selection.drag_selection(last);
         }
         replace_selection(gstring{c});
 
-        if (mode == add_type::insert) {
+        if (add_mode == add_type::insert) {
             // The character was inserted, put the cursor back where it was.
             _selection = original_cursor;
 
-        } else if (mode == add_type::dead) {
+        } else if (add_mode == add_type::dead) {
             _selection = original_cursor.before_neighbor(_text_cache.size());
-            _has_dead_character = original_grapheme;
+            _has_dead_character = original_character;
         }
     }
 
@@ -1002,9 +998,9 @@ private:
         if (_has_dead_character) {
             hi_assert(_selection.cursor().before());
             hi_assert_bounds(_selection.cursor().index(), _text_cache);
-            if (_has_dead_character.valid()) {
+            if (_overwrite_mode) {
                 auto text = _text_cache;
-                text[_selection.cursor().index()] = _has_dead_character;
+                text[_selection.cursor().index()] = *_has_dead_character;
                 delegate->write(*this, text);
             } else {
                 auto text = _text_cache;
@@ -1012,7 +1008,7 @@ private:
                 delegate->write(*this, text);
             }
         }
-        _has_dead_character.clear();
+        _has_dead_character = std::nullopt;
     }
 
     void delete_character_next() noexcept

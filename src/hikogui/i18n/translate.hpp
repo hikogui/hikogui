@@ -9,6 +9,7 @@
 #include "../forward_value.hpp"
 #include "../utility/module.hpp"
 #include "../os_settings.hpp"
+#include "../text/text.hpp"
 #include <memory>
 #include <string>
 #include <string_view>

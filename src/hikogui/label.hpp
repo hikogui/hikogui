@@ -24,12 +24,11 @@ namespace hi::inline v1 {
  *
  * May be:
  *  - `std::monostate`
- *  - `std::string`
- *  - `hi::gstring`
+ *  - `hi::text`
  *  - `hi::translate` or `hi::tr`
  */
-class text_variant : public std::variant<std::monostate, std::string, gstring, translate> {
-    using std::variant<std::monostate, std::string, gstring, translate>::variant;
+class text_variant : public std::variant<std::monostate, hi::text, hi::translate> {
+    using std::variant<std::monostate, hi::text, hi::translate>::variant;
 
     /** Check if text contains a string.
      *
@@ -40,36 +39,34 @@ class text_variant : public std::variant<std::monostate, std::string, gstring, t
         return not std::holds_alternative<std::monostate>(rhs);
     }
 
-    /** Convert the text into a std::string.
+    /** Convert the text into a gstring.
      */
-    [[nodiscard]] constexpr friend std::string to_string(hi::text_variant const& rhs) noexcept
+    [[nodiscard]] constexpr friend text to_text(hi::text_variant const& rhs) noexcept
     {
         // clang-format off
         return std::visit(
             overloaded{
-                [](std::monostate const &) { return std::string{}; },
-                [](std::string const &x) { return x; },
-                [](gstring const &x) { return hi::to_string(x); },
-                [](translate const &x) { return x(); }
+                [](std::monostate const &) { return text{}; },
+                [](hi::text const &x) { return x; },
+                [](hi::translate const &x) { return x(); }
             },
             rhs);
         // clang-format on
     }
 
-    /** Convert the text into a gstring.
-     */
     [[nodiscard]] constexpr friend gstring to_gstring(hi::text_variant const& rhs) noexcept
     {
-        // clang-format off
-        return std::visit(
-            overloaded{
-                [](std::monostate const &) { return gstring{}; },
-                [](std::string const &x) { return to_gstring(std::string_view{x}); },
-                [](gstring const &x) { return x; },
-                [](translate const &x) { return to_gstring(std::string_view{x()}); }
-            },
-            rhs);
-        // clang-format on
+        return to_gstring(to_text(rhs));
+    }
+
+    [[nodiscard]] constexpr friend std::string to_string(hi::text_variant const& rhs) noexcept
+    {
+        return to_string(to_text(rhs));
+    }
+
+    [[nodiscard]] constexpr friend std::wstring to_wstring(hi::text_variant const& rhs) noexcept
+    {
+        return to_wstring(to_string(rhs));
     }
 };
 
@@ -81,8 +78,7 @@ class text_variant : public std::variant<std::monostate, std::string, gstring, t
  *  - `hi::hikogui_icon`
  *  - `hi::pixmap<hi::sfloat_rgba16>`
  */
-class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyphs_type, pixmap<sfloat_rgba16>>
-{
+class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyphs_type, pixmap<sfloat_rgba16>> {
     using std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyphs_type, pixmap<sfloat_rgba16>>::variant;
 
     /** Check if icon contains an image.

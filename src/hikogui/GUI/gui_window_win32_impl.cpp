@@ -378,8 +378,11 @@ void gui_window_win32::set_window_size(extent2i new_extent)
         SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
 }
 
-[[nodiscard]] std::optional<std::string> gui_window_win32::get_text_from_clipboard() const noexcept
+[[nodiscard]] std::optional<text> gui_window_win32::get_text_from_clipboard() const noexcept
 {
+    auto utf8_string = std::string{};
+    auto language = os_settings::default_language();
+
     if (not OpenClipboard(win32Window)) {
         // Another application could have the clipboard locked.
         hi_log_info("Could not open win32 clipboard '{}'", get_last_error_message());
@@ -393,13 +396,38 @@ void gui_window_win32::set_window_size(extent2i new_extent)
     UINT format = 0;
     while ((format = EnumClipboardFormats(format)) != 0) {
         switch (format) {
+        case CF_LOCALE:
+            {
+                hilet cb_data = GetClipboardData(CF_LOCALE);
+                if (cb_data == nullptr) {
+                    hi_log_error("Could not get clipboard locale-data: '{}'", get_last_error_message());
+                    return {};
+                }
+
+                auto const *const locale = static_cast<LCID *>(GlobalLock(cb_data));
+                if (locale == nullptr) {
+                    hi_log_error("Could not lock clipboard locale-data: '{}'", get_last_error_message());
+                    return {};
+                }
+
+                hilet defer_GlobalUnlock = defer([cb_data] {
+                    if (not GlobalUnlock(cb_data) and GetLastError() != ERROR_SUCCESS) {
+                        hi_log_error("Could not unlock clipboard locale-data: '{}'", get_last_error_message());
+                    }
+                });
+
+                if (not GetLocalInfoW(locale, 
+                language = hi::to_string(std::wstring_view(wstr_c));
+                hi_log_debug("get_text_from_clipboard '{}'", utf8_string);
+            }
+            break;
         case CF_TEXT:
         case CF_OEMTEXT:
         case CF_UNICODETEXT:
             {
                 hilet cb_data = GetClipboardData(CF_UNICODETEXT);
                 if (cb_data == nullptr) {
-                    hi_log_error("Could not get clipboard data: '{}'", get_last_error_message());
+                    hi_log_error("Could not get clipboard text-data: '{}'", get_last_error_message());
                     return {};
                 }
 
@@ -415,9 +443,8 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                     }
                 });
 
-                auto r = hi::to_string(std::wstring_view(wstr_c));
-                hi_log_debug("get_text_from_clipboard '{}'", r);
-                return {std::move(r)};
+                utf8_string = hi::to_string(std::wstring_view(wstr_c));
+                hi_log_debug("get_text_from_clipboard '{}'", utf8_string);
             }
             break;
 

@@ -48,7 +48,7 @@ static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::itera
     hilet char_it = *first;
     hilet& font = *char_it->font;
     hilet attributes = char_it->character.attributes();
-    hilet script = char_it->script;
+    hilet script = attributes.script();
     hilet style = char_it->style;
 
     auto run = gstring{};
@@ -102,9 +102,8 @@ static void advance_glyphs(text_shaper_line::column_vector& columns, float y, fl
 
         hilet same_font = start_char_it->font == char_it->font;
         hilet same_attributes = start_char_it->character.attributes() == char_it->character.attributes();
-        hilet same_script = start_char_it->script == char_it->script;
 
-        if (not(same_font and same_attributes and same_script)) {
+        if (not(same_font and same_attributes)) {
             advance_glyphs_run(p, run_start, it, dpi_scale);
             run_start = it;
         }

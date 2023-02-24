@@ -41,10 +41,6 @@ grapheme::grapheme(std::u32string_view code_points) noexcept : grapheme(composed
 
 [[nodiscard]] bool grapheme::valid() const noexcept
 {
-    if (empty()) {
-        return false;
-    }
-
     if (is_noncharacter(get<0>(*this))) {
         return false;
     }

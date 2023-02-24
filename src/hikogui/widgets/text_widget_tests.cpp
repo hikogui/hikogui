@@ -33,11 +33,12 @@ protected:
 
         // Cursor movement (including editing) requires the text to be shaped.
         // text shaping requires fonts and text styles.
-        auto &fb = font_book::global();
         for (auto const &path : get_paths(path_location::font_dirs)) {
-            fb.register_font_directory(path);
+            register_font_directory(path);
         }
-        theme_book = std::make_unique<hi::theme_book>(fb, make_vector(get_paths(path_location::theme_dirs)));
+
+
+        theme_book = std::make_unique<hi::theme_book>(make_vector(get_paths(path_location::theme_dirs)));
         auto &theme = theme_book->find("default", theme_mode::light);
         theme.activate();
 

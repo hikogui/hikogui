@@ -121,6 +121,11 @@ public:
         set_region(arg);
     }
 
+    constexpr void add(language_tag const &arg) noexcept
+    {
+        set_language(arg);
+    }
+
     constexpr void add(text_phrasing const& arg) noexcept
     {
         set_phrasing(arg);

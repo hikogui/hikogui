@@ -81,7 +81,7 @@ void font_book::create_family_name_fallback_chain() noexcept
     _family_name_fallback_chain["andale mono"] = "monospace";
 }
 
-font& font_book::register_font(std::filesystem::path const& path, bool post_process)
+font& font_book::register_font_file(std::filesystem::path const& path, bool post_process)
 {
     auto font = std::make_unique<true_type_font>(path);
     auto font_ptr = font.get();
@@ -108,7 +108,7 @@ void font_book::register_font_directory(std::filesystem::path const& path, bool 
         hilet t = trace<"font_scan">{};
 
         try {
-            register_font(font_path, false);
+            register_font_file(font_path, false);
 
         } catch (std::exception const& e) {
             hi_log_error("Failed parsing font at {}: \"{}\"", font_path.string(), e.what());

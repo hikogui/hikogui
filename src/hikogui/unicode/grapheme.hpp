@@ -71,7 +71,7 @@ struct grapheme {
      */
     constexpr grapheme(char32_t code_point) noexcept : _value(truncate<value_type>(code_point))
     {
-        hi_axiom(code_point < _table_first);
+        hi_axiom(code_point <= 0x10'ffff);
     }
 
     constexpr grapheme(char ascii_char) noexcept : _value(truncate<value_type>(ascii_char))
@@ -192,13 +192,13 @@ struct grapheme {
 
     [[nodiscard]] friend constexpr bool operator==(grapheme const& lhs, char32_t const& rhs) noexcept
     {
-        return lhs._value == rhs;
+        return lhs._value == char_cast<value_type>(rhs);
     }
 
     [[nodiscard]] friend constexpr bool operator==(grapheme const& lhs, char const& rhs) noexcept
     {
         hi_axiom(rhs <= 0x7f);
-        return lhs._value == rhs;
+        return lhs._value == char_cast<value_type>(rhs);
     }
 
     /** Compare two graphemes lexicographically.
@@ -218,12 +218,12 @@ struct grapheme {
         return lhs <=> grapheme{rhs};
     }
 
-    [[nodiscard]] friend std::string to_string(grapheme const& rhs) noexcept
+    [[nodiscard]] friend constexpr std::string to_string(grapheme const& rhs) noexcept
     {
         return hi::to_string(rhs.composed());
     }
 
-    [[nodiscard]] friend std::u32string to_u32string(grapheme const& rhs) noexcept
+    [[nodiscard]] friend constexpr std::u32string to_u32string(grapheme const& rhs) noexcept
     {
         return rhs.composed();
     }

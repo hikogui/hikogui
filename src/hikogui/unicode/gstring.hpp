@@ -109,8 +109,6 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr char_type to_char_type(int_type c) noexcept
     {
-        char_type r;
-
         auto tmp = hi::char_cast<char_type::value_type>(c);
         if (tmp > 0x1f'ffff) {
             tmp = 0;
@@ -181,7 +179,7 @@ using gstring = std::pmr::basic_string<grapheme>;
     return to_gstring(std::string_view{rhs}, new_line_char);
 }
 
-[[nodiscard]] inline std::string to_string(gstring_view rhs) noexcept
+[[nodiscard]] constexpr std::string to_string(gstring_view rhs) noexcept
 {
     auto r = std::string{};
     r.reserve(rhs.size());
@@ -191,7 +189,7 @@ using gstring = std::pmr::basic_string<grapheme>;
     return r;
 }
 
-[[nodiscard]] inline std::string to_string(gstring const &rhs) noexcept
+[[nodiscard]] constexpr std::string to_string(gstring const &rhs) noexcept
 {
     return to_string(gstring_view{rhs});
 }

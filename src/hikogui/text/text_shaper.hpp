@@ -21,7 +21,6 @@
 #include <tuple>
 
 namespace hi::inline v1 {
-class font_book;
 
 /** Text shaper.
  *
@@ -73,7 +72,6 @@ public:
      *  - middle, odd: y = 0 is the base-line of the middle line.
      *  - middle, even: y = 0 is half way between the base-lines of the middle two lines.
      *
-     * @param font_book The font_book instance to retrieve fonts from.
      * @param text The text as a vector of attributed graphemes.
      *             Use U+2029 as paragraph separator, and if needed U+2028 as line separator.
      * @param style The initial text-style to use to display the text.

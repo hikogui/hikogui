@@ -58,23 +58,13 @@ public:
      * @param path Location of font.
      * @param post_process Calculate font fallback
      */
-    font& register_font(std::filesystem::path const& path, bool post_process = true);
+    font& register_font_file(std::filesystem::path const& path, bool post_process = true);
 
     /** Register all fonts found in a directory.
      *
      * @see register_font()
      */
     void register_font_directory(std::filesystem::path const& path, bool post_process = true);
-
-    void register_elusive_icon_font(std::filesystem::path const& path)
-    {
-        _elusive_icon_font = &register_font(path, false);
-    }
-
-    void register_hikogui_icon_font(std::filesystem::path const& path)
-    {
-        _hikogui_icon_font = &register_font(path, false);
-    }
 
     /** Post process font_book
      * Should be called after a set of register_font() calls
@@ -85,7 +75,7 @@ public:
     /** Find font family id.
      * This function will always return a valid font_family_id by walking the fallback-chain.
      */
-    [[nodiscard]] font_family_id find_family(std::string const &family_name) const noexcept;
+    [[nodiscard]] font_family_id find_family(std::string const& family_name) const noexcept;
 
     /** Register font family id.
      * If the family already exists the existing family_id is returned.
@@ -119,7 +109,7 @@ public:
      * @param italic If the font to select should be italic or not.
      * @return a font id, possibly from a fallback font.
      */
-    [[nodiscard]] font const& find_font(std::string const &family_name, font_weight weight, bool italic) const noexcept;
+    [[nodiscard]] font const& find_font(std::string const& family_name, font_weight weight, bool italic) const noexcept;
 
     /** Find a glyph using the given code-point.
      * This function will find a glyph matching the grapheme in the selected font, or
@@ -141,23 +131,8 @@ public:
      */
     [[nodiscard]] font_glyph_type find_glyph(font const& font, char32_t code_point) const noexcept;
 
-    [[nodiscard]] font_glyph_type find_glyph(elusive_icon rhs) const noexcept
-    {
-        hi_assert_not_null(_elusive_icon_font);
-        return find_glyph(*_elusive_icon_font, to_underlying(rhs));
-    }
-
-    [[nodiscard]] font_glyph_type find_glyph(hikogui_icon rhs) const noexcept
-    {
-        hi_assert_not_null(_hikogui_icon_font);
-        return find_glyph(*_hikogui_icon_font, to_underlying(rhs));
-    }
-
 private:
     inline static std::unique_ptr<font_book> _global = nullptr;
-
-    font const *_elusive_icon_font = nullptr;
-    font const *_hikogui_icon_font = nullptr;
 
     /** Table of font_family_ids index using the family-name.
      */
@@ -188,8 +163,56 @@ private:
     void create_family_name_fallback_chain() noexcept;
 };
 
-[[nodiscard]] inline font const &find_font(font_family_id family_id, font_variant variant) noexcept
+/** Register a font.
+ * Duplicate registrations will be ignored.
+ *
+ * When a font file is registered the file will be temporarily opened to read and cache a set of properties:
+ *  - The English font Family from the 'name' table.
+ *  - The weight, width, slant & design-size from the 'fdsc' table.
+ *  - The character map 'cmap' table.
+ *
+ * @param path Location of font.
+ */
+font& register_font_file(std::filesystem::path const& path)
 {
+    return font_book::global().register_font_file(path);
+}
+
+void register_font_directory(std::filesystem::path const& path)
+{
+    return font_book::global().register_font_directory(path);
+}
+
+/** Find font family id.
+ * This function will always return a valid font_family_id by walking the fallback-chain.
+ */
+[[nodiscard]] font_family_id find_font_family(std::string const& family_name) noexcept
+{
+    return font_book::global().find_family(family_name);
+}
+
+/** Find a font closest to the variant.
+ * This function will always return a valid font_id.
+ *
+ * @param family_id a valid family id.
+ * @param variant The variant of the font to select.
+ * @return a valid font id.
+ */
+[[nodiscard]] inline font const& find_font(font_family_id family_id, font_variant variant = font_variant{}) noexcept
+{
+    return font_book::global().find_font(family_id, variant);
+}
+
+/** Find a font closest to the variant.
+ * This function will always return a valid font_id.
+ *
+ * @param family_name a font family name.
+ * @param variant The variant of the font to select.
+ * @return a valid font id.
+ */
+[[nodiscard]] inline font const& find_font(std::string const& family_name, font_variant variant = font_variant{}) noexcept
+{
+    hilet family_id = find_font_family(family_name);
     return font_book::global().find_font(family_id, variant);
 }
 
@@ -221,12 +244,14 @@ private:
 
 [[nodiscard]] inline auto find_glyph(elusive_icon rhs) noexcept
 {
-    return font_book::global().find_glyph(rhs);
+    hilet& font = find_font("Elusive", font_variant{});
+    return find_glyph(font, to_underlying(rhs));
 }
 
 [[nodiscard]] inline auto find_glyph(hikogui_icon rhs) noexcept
 {
-    return font_book::global().find_glyph(rhs);
+    hilet& font = find_font("HikoGUI", font_variant{});
+    return find_glyph(font, to_underlying(rhs));
 }
 
 } // namespace hi::inline v1

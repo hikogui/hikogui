@@ -87,7 +87,7 @@ namespace hi { inline namespace v1 {
     }
 }
 
-[[nodiscard]] static text_style parse_theme_text_style(hi::font_book const& font_book, datum const& data)
+[[nodiscard]] static text_style parse_theme_text_style(datum const& data)
 {
     hi_check(holds_alternative<datum::map_type>(data), "Expect a text-style to be an object, got '{}'", data);
 
@@ -121,7 +121,7 @@ namespace hi { inline namespace v1 {
 
         } else if (name == "family") {
             hi_check(holds_alternative<std::string>(value), "Expect the font-family name to be a string, got {}", value);
-            family_id = font_book.find_family(get<std::string>(value));
+            family_id = find_font_family(get<std::string>(value));
 
         } else if (name == "size") {
             hi_check(holds_alternative<long long>(value), "Expect the font-size to be a integer, got {}", value);
@@ -143,20 +143,20 @@ namespace hi { inline namespace v1 {
     return {phrasing_mask, language, script, country, family_id, variant, size, color};
 }
 
-[[nodiscard]] static std::vector<text_style> parse_theme_text_styles(hi::font_book const& font_book, datum const& data)
+[[nodiscard]] static std::vector<text_style> parse_theme_text_styles(datum const& data)
 {
     hi_assert(holds_alternative<datum::vector_type>(data));
 
     auto r = std::vector<text_style>{};
     for (auto& value : get<datum::vector_type>(data)) {
-        r.push_back(parse_theme_text_style(font_book, value));
+        r.push_back(parse_theme_text_style(value));
     }
     return r;
 }
 
 
 
-[[nodiscard]] static theme_file::value_type parse_theme_value(hi::font_book const& font_book, datum const& data)
+[[nodiscard]] static theme_file::value_type parse_theme_value(datum const& data)
 {
     if (holds_alternative<long long>(data) or holds_alternative<double>(data)) {
         // A size value.
@@ -177,7 +177,7 @@ namespace hi { inline namespace v1 {
     } else if (auto list_value = get_if<datum::vector_type>(&data)) {
         hi_check(not list_value->empty(), "Unexpected empty list as theme_file value.");
         if (holds_alternative<datum::map_type>(list_value->front())) {
-            return parse_theme_text_styles(font_book, data);
+            return parse_theme_text_styles(data);
         } else {
             return parse_theme_colors(data);
         }
@@ -226,18 +226,18 @@ void static order_by_specificity(theme_file::container_type& items)
     });
 }
 
-theme_file::theme_file(hi::font_book const& font_book, std::filesystem::path const& path)
+theme_file::theme_file(std::filesystem::path const& path)
 {
     try {
         hi_log_info("Parsing theme_file at {}", path.string());
         hilet data = parse_JSON(path);
-        parse(font_book, data);
+        parse(data);
     } catch (std::exception const& e) {
         throw io_error(std::format("{}: Could not load theme_file.\n{}", path.string(), e.what()));
     }
 }
 
-[[nodiscard]] void theme_file::parse_data(hi::font_book const& font_book, datum const& data)
+[[nodiscard]] void theme_file::parse_data(datum const& data)
 {
     hi_check(holds_alternative<datum::map_type>(data), "Expecting an object as the top level of a theme_file file.");
     for (hilet & [ item_name, item_value ] : get<datum::map_type>(data)) {
@@ -269,7 +269,7 @@ theme_file::theme_file(hi::font_book const& font_book, std::filesystem::path con
         } else {
             // All other names are for theme_file values.
             // Use insert here so that exceptions from parse_theme_value do not cause the item to be created.
-            _items.push_back({get<std::string>(item_name), parse_theme_value(font_book, item_value)});
+            _items.push_back({get<std::string>(item_name), parse_theme_value(item_value)});
         }
     }
 }
@@ -298,9 +298,9 @@ void theme_file::activate() const noexcept
     }
 }
 
-void theme_file::parse(hi::font_book const& font_book, datum const& data)
+void theme_file::parse(datum const& data)
 {
-    parse_data(font_book, data);
+    parse_data(data);
     resolve_theme_references(_items);
     order_by_specificity(_items);
 }

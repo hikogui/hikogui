@@ -12,7 +12,6 @@
 #include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
-class font_book;
 
 class text_shaper_char {
 public:

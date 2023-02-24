@@ -22,16 +22,14 @@ namespace hi::inline v1 {
         hi_log_fatal("Could not start the os_settings subsystem.");
     }
 
-    auto &font_book = font_book::global();
     for (auto path: get_paths(path_location::font_dirs)) {
-        font_book.register_font_directory(path);
+        register_font_directory(path);
     }
-    font_book.register_elusive_icon_font(URL{"resource:fonts/elusiveicons-webfont.ttf"});
-    font_book.register_hikogui_icon_font(URL{"resource:fonts/hikogui_icons.ttf"});
-    font_book.post_process();
+    register_font_file(URL{"resource:fonts/elusiveicons-webfont.ttf"});
+    register_font_file(URL{"resource:fonts/hikogui_icons.ttf"});
 
     auto theme_directories = make_vector(get_paths(path_location::theme_dirs));
-    auto theme_book = std::make_unique<hi::theme_book>(font_book, std::move(theme_directories));
+    auto theme_book = std::make_unique<hi::theme_book>(std::move(theme_directories));
 
     auto gfx_system = std::make_unique<hi::gfx_system_vulkan>();
 

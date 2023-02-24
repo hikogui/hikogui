@@ -227,7 +227,7 @@ struct theme<Tag, extent2i> {
 
 template<fixed_string Tag>
 struct theme<Tag, marginsi> {
-    [[nodiscard]] extent2i operator()(widget const *widget) const noexcept
+    [[nodiscard]] marginsi operator()(widget const *widget) const noexcept
     {
         hilet tmp = theme<Tag, int>{}(widget);
         return marginsi{tmp};
