@@ -416,7 +416,7 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                     }
                 });
 
-                if (not GetLocalInfoW(locale, 
+                if (not LCIDToLocaleName(locale, 
                 language = hi::to_string(std::wstring_view(wstr_c));
                 hi_log_debug("get_text_from_clipboard '{}'", utf8_string);
             }
