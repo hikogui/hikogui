@@ -189,6 +189,26 @@ using gstring = std::pmr::basic_string<grapheme>;
     return r;
 }
 
+[[nodiscard]] constexpr std::wstring to_wstring(gstring_view rhs) noexcept
+{
+    auto r = std::wstring{};
+    r.reserve(rhs.size());
+    for (hilet c : rhs) {
+        r += to_wstring(c);
+    }
+    return r;
+}
+
+[[nodiscard]] constexpr std::u32string to_u32string(gstring_view rhs) noexcept
+{
+    auto r = std::u32string{};
+    r.reserve(rhs.size());
+    for (hilet c : rhs) {
+        r += to_u32string(c);
+    }
+    return r;
+}
+
 [[nodiscard]] constexpr std::string to_string(gstring const &rhs) noexcept
 {
     return to_string(gstring_view{rhs});

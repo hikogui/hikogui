@@ -378,10 +378,10 @@ void gui_window_win32::set_window_size(extent2i new_extent)
         SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
 }
 
-[[nodiscard]] std::optional<text> gui_window_win32::get_text_from_clipboard() const noexcept
+[[nodiscard]] std::optional<hi::text> gui_window_win32::get_text_from_clipboard() const noexcept
 {
-    auto utf8_string = std::string{};
-    auto language = os_settings::default_language();
+    auto string = std::optional<std::string>{};
+    auto language_tag = os_settings::language_tag();
 
     if (not OpenClipboard(win32Window)) {
         // Another application could have the clipboard locked.
@@ -401,13 +401,13 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                 hilet cb_data = GetClipboardData(CF_LOCALE);
                 if (cb_data == nullptr) {
                     hi_log_error("Could not get clipboard locale-data: '{}'", get_last_error_message());
-                    return {};
+                    continue;
                 }
 
                 auto const *const locale = static_cast<LCID *>(GlobalLock(cb_data));
                 if (locale == nullptr) {
                     hi_log_error("Could not lock clipboard locale-data: '{}'", get_last_error_message());
-                    return {};
+                    continue;
                 }
 
                 hilet defer_GlobalUnlock = defer([cb_data] {
@@ -416,25 +416,52 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                     }
                 });
 
-                if (not LCIDToLocaleName(locale, 
-                language = hi::to_string(std::wstring_view(wstr_c));
-                hi_log_debug("get_text_from_clipboard '{}'", utf8_string);
+                // https://learn.microsoft.com/en-us/windows/win32/intl/locale-sname
+                // The locale name contains the language, script and region. Which
+                // is the complete set that is needed for the character-attributes.
+                auto locale_name = std::wstring(LOCALE_NAME_MAX_LENGTH, L'\0');
+                {
+                    hilet r = GetLocaleInfoW(
+                        *locale, LOCALE_SNAME, locale_name.data(), narrow_cast<int>(locale_name.size()));
+
+                    if (r == 0) {
+                        hi_log_error(
+                            "Could not get opentype language code from clipboard-locale: '{}'", get_last_error_message());
+                        continue;
+                    }
+                    locale_name.resize(narrow_cast<size_t>(r - 1));
+                }
+
+                // https://learn.microsoft.com/en-us/windows/win32/intl/locale-names
+                // Strip-off the optional sort order, "_<sort-order>".
+                if (auto i = locale_name.find(L'_'); i != locale_name.npos) {
+                    locale_name.resize(i);
+                }
+
+                // Strip-off the optional supplemental local, "-x-<custom>"
+                if (auto i = locale_name.find(L"-x-"); i != locale_name.npos) {
+                    locale_name.resize(i);
+                }
+
+                // What is left over here should be a IETF language-tag.
+                language_tag = hi::language_tag{to_string(locale_name)};
             }
             break;
+
         case CF_TEXT:
         case CF_OEMTEXT:
         case CF_UNICODETEXT:
-            {
+            if (not string) {
                 hilet cb_data = GetClipboardData(CF_UNICODETEXT);
                 if (cb_data == nullptr) {
                     hi_log_error("Could not get clipboard text-data: '{}'", get_last_error_message());
-                    return {};
+                    continue;
                 }
 
                 auto const *const wstr_c = static_cast<wchar_t const *>(GlobalLock(cb_data));
                 if (wstr_c == nullptr) {
                     hi_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
-                    return {};
+                    continue;
                 }
 
                 hilet defer_GlobalUnlock = defer([cb_data] {
@@ -443,8 +470,7 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                     }
                 });
 
-                utf8_string = hi::to_string(std::wstring_view(wstr_c));
-                hi_log_debug("get_text_from_clipboard '{}'", utf8_string);
+                string = hi::to_string(std::wstring_view(wstr_c));
             }
             break;
 
@@ -456,10 +482,16 @@ void gui_window_win32::set_window_size(extent2i new_extent)
         hi_log_error("Could not enumerator clipboard formats: '{}'", get_last_error_message());
     }
 
-    return {};
+    if (string) {
+        auto text = to_text(string, language_tag);
+        return text;
+
+    } else {
+        return std::nullopt;
+    }
 }
 
-void gui_window_win32::put_text_on_clipboard(std::string_view text) const noexcept
+void gui_window_win32::put_text_on_clipboard(hi::text text) const noexcept
 {
     if (not OpenClipboard(win32Window)) {
         // Another application could have the clipboard locked.

@@ -34,8 +34,8 @@ public:
     [[nodiscard]] hi::subpixel_orientation subpixel_orientation() const noexcept override;
     void open_system_menu() override;
     void set_window_size(extent2i extent) override;
-    [[nodiscard]] std::optional<std::string> get_text_from_clipboard() const noexcept override;
-    void put_text_on_clipboard(std::string_view str) const noexcept override;
+    [[nodiscard]] std::optional<hi::text> get_text_from_clipboard() const noexcept override;
+    void put_text_on_clipboard(hi::text str) const noexcept override;
 
 private:
     static constexpr UINT_PTR move_and_resize_timer_id = 2;

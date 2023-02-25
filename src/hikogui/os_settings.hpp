@@ -34,6 +34,16 @@ public:
         return _language_tags;
     }
 
+    /** Get the primary language_tag.
+     *
+     * @return The expanded primary language-tag; this includes the script and region.
+     */
+    [[nodiscard]] static language_tag language_tag() noexcept
+    {
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _language_tag.load(std::memory_order::relaxed);
+    }
+
     /** Get the configured languages.
      *
      * @note The list of languages include both the configured region-specific-languages and the generic-languages.
@@ -44,16 +54,6 @@ public:
         hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
         return _languages;
-    }
-
-    /** Get the default writing script.
-    *
-    * The default-script is extracted from the first language configured on the system.
-    */
-    [[nodiscard]] static iso_15924 default_script() noexcept
-    {
-        hi_axiom(_populated.load(std::memory_order::acquire));
-        return _default_script.load(std::memory_order::relaxed);
     }
 
     /** Get the configured writing direction.
@@ -277,10 +277,10 @@ private:
 
     static inline notifier_type _notifier;
 
-    static inline std::vector<language_tag> _language_tags = {};
+    static inline std::vector<hi::language_tag> _language_tags = {};
     static inline std::vector<language *> _languages = {};
     static inline std::atomic<hi::unicode_bidi_class> _writing_direction = hi::unicode_bidi_class::L;
-    static inline std::atomic<iso_15924> _default_script = iso_15924{"Latn"};
+    static inline std::atomic<hi::language_tag> _language_tag = hi::language_tag{"en-US"};
     static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
     static inline std::atomic<bool> _uniform_HDR = false;
     static inline std::atomic<hi::subpixel_orientation> _subpixel_orientation = hi::subpixel_orientation::unknown;
@@ -301,7 +301,7 @@ private:
     [[nodiscard]] static bool subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;
 
-    [[nodiscard]] static std::vector<language_tag> gather_languages();
+    [[nodiscard]] static std::vector<hi::language_tag> gather_languages();
     [[nodiscard]] static hi::theme_mode gather_theme_mode();
     [[nodiscard]] static hi::subpixel_orientation gather_subpixel_orientation();
     [[nodiscard]] static bool gather_uniform_HDR();

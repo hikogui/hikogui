@@ -195,7 +195,7 @@ inline void fixup_script(It first, ItEnd last) noexcept
     // In the second iteration we search backwards for scripts and assign them.
     // Since in this iteration we have to assign a script we don't care about
     // the language. And we fallback to the operating system's default script.
-    last_script = os_settings::default_script();
+    last_script = os_settings::language_tag().script;
     for (auto rev_it = last; rev_it != first; --rev_it) {
         hilet it = rev_it - 1;
         auto attributes = it->attributes();
@@ -233,12 +233,30 @@ inline void fixup_script(R& str) noexcept
     return r;
 }
 
+template<character_attribute... Args>
+[[nodiscard]] inline text to_text(gstring_view str, Args const&...args) noexcept
+{
+    return to_text(str, character_attributes{args...});
+}
+
 [[nodiscard]] inline text to_text(
     std::string_view str,
     char32_t new_line_char = U'\u2029',
     character_attributes default_attributes = character_attributes{}) noexcept
 {
     return to_text(to_gstring(str, new_line_char), default_attributes);
+}
+
+template<character_attribute... Args>
+[[nodiscard]] inline text to_text(std::string_view str, char32_t new_line_char, Args const&...args) noexcept
+{
+    return to_text(str, new_line_char, character_attributes{args...});
+}
+
+template<character_attribute... Args>
+[[nodiscard]] inline text to_text(std::string_view str, Args const&...args) noexcept
+{
+    return to_text(str, character_attributes{args...});
 }
 
 [[nodiscard]] inline text to_text_with_markup(gstring_view str, character_attributes default_attributes) noexcept
@@ -353,7 +371,12 @@ template<character_attribute... Attributes>
 
 [[nodiscard]] constexpr std::wstring to_wstring(text_view str) noexcept
 {
-    return to_wstring(to_string(str));
+    return to_wstring(to_gstring(str));
+}
+
+[[nodiscard]] constexpr std::u32string to_u32string(text_view str) noexcept
+{
+    return to_u32string(to_gstring(str));
 }
 
 /** Change the attributes on a piece of text.

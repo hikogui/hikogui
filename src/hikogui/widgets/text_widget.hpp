@@ -298,12 +298,12 @@ public:
         case text_edit_paste:
             if (*mode >= partial) {
                 reset_state("BDX");
-                replace_selection(to_text(event.clipboard_data(), U' '));
+                replace_selection(replace linefeeds event.clipboard_data());
                 return true;
 
             } else if (*mode >= enabled) {
                 reset_state("BDX");
-                replace_selection(to_text(event.clipboard_data()));
+                replace_selection(event.clipboard_data());
                 return true;
             }
             break;

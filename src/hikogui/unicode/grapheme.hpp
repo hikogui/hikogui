@@ -223,6 +223,11 @@ struct grapheme {
         return hi::to_string(rhs.composed());
     }
 
+    [[nodiscard]] friend constexpr std::wstring to_wstring(grapheme const& rhs) noexcept
+    {
+        return hi::to_wstring(rhs.composed());
+    }
+
     [[nodiscard]] friend constexpr std::u32string to_u32string(grapheme const& rhs) noexcept
     {
         return rhs.composed();
