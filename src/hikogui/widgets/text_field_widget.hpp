@@ -197,13 +197,13 @@ public:
                     _scroll_constraints.margins.bottom()};
 
             hilet scroll_rectangle = aarectanglei{point2i{0, context.height() - scroll_size.height()}, scroll_size};
-            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme<prefix / "cap-height">{}(this)};
+            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme<prefix / "cap-height", int>{}(this)};
 
             if (*_error_label_widget->mode > widget_mode::invisible) {
                 hilet error_label_rectangle =
                     aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
                 _error_label_shape =
-                    box_shape{_error_label_constraints, error_label_rectangle, theme<prefix / "cap-height">{}(this)};
+                    box_shape{_error_label_constraints, error_label_rectangle, theme<prefix / "cap-height", int>{}(this)};
             }
         }
 

@@ -32,6 +32,8 @@ public:
         hi::font const *font;
         hi::glyph_id glyph;
 
+        [[nodiscard]] constexpr friend bool operator==(font_glyph_type const&, font_glyph_type const&) noexcept = default;
+
         [[nodiscard]] glyph_metrics get_metrics() const noexcept
         {
             hi_axiom_not_null(font);

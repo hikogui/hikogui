@@ -248,11 +248,6 @@ protected:
      */
     animator<float> _animated_active = _animation_duration;
 
-    /** Let the operating system create the actual window.
-     * @pre title and extent must be set.
-     */
-    virtual void create_window(extent2i new_size) = 0;
-
 private:
     notifier<>::callback_token _setting_change_token;
     observer<std::string>::callback_token _selected_theme_token;

@@ -77,7 +77,7 @@ int hi_main(int argc, char *argv[])
         "Excepteur sint occaecat cupidatat non \xd7\x95\xd7\x99\xd7\xa7\xd7\x99\xd7\x9e\xd7\x93\xd7\x99\xd7\x94, "
         "sunt in culpa qui officia deserunt mollit anim id est laborum.");
 
-    auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
+    auto text = to_text(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
     auto& tw = widget.content().make_widget<text_widget<>>("A1", text, hi::alignment::top_justified());
     tw.mode = hi::widget_mode::enabled;

@@ -177,6 +177,9 @@ void gui_window_win32::create_window(extent2i new_size)
 gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<hi::widget> widget, label const& title) noexcept :
     gui_window(gui, std::move(widget), title), track_mouse_leave_event_parameters()
 {
+    // Delegate has been called, layout of widgets has been calculated for the
+    // minimum and maximum size of the window.
+    create_window(_widget_constraints.preferred);
 }
 
 gui_window_win32::~gui_window_win32()

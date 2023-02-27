@@ -76,7 +76,7 @@ public:
         _delegate_cbt = this->delegate->subscribe([&] {
             ++global_counter<"abstract_button_widget:delegate:redraw">;
             hi_assert_not_null(this->delegate);
-            state = this->delegate->state();
+            state = this->delegate->state(this);
             process_event({gui_event_type::window_redraw});
         });
         this->delegate->init(*this);

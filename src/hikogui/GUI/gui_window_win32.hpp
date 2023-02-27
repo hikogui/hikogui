@@ -23,7 +23,7 @@ public:
 
     ~gui_window_win32();
 
-    void create_window(extent2i new_size) override;
+    void create_window(extent2i new_size);
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
     void set_cursor(mouse_cursor cursor) noexcept override;

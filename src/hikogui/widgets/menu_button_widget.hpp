@@ -49,8 +49,8 @@ public:
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::middle_flush();
-        set_attributes<0>(hi_forward(attributes)...);
+        this->alignment = alignment::middle_flush();
+        this->set_attributes<0>(hi_forward(attributes)...);
     }
 
     /** Construct a menu button widget with a default button delegate.

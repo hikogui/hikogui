@@ -85,7 +85,7 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
     toolbar_tab_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires { make_default_radSio_button_delegate(hi_forward(value), hi_forward(on_value)); }
+        requires requires { make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)); }
         :
         toolbar_tab_button_widget(
             parent,

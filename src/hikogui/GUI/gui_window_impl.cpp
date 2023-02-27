@@ -29,7 +29,6 @@ gui_window::gui_window(gui_system& gui, std::unique_ptr<hi::widget> widget, labe
     });
 
     _widget_constraints = widget->update_constraints();
-    hilet new_size = _widget_constraints.preferred;
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -50,10 +49,6 @@ gui_window::gui_window(gui_system& gui, std::unique_ptr<hi::widget> widget, labe
             this->process_event({gui_event_type::window_reconstrain});
         },
         callback_flags::main);
-
-    // Delegate has been called, layout of widgets has been calculated for the
-    // minimum and maximum size of the window.
-    create_window(new_size);
 }
 
 gui_window::~gui_window()
