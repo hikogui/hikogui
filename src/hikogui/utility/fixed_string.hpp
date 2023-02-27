@@ -210,12 +210,12 @@ struct fixed_string {
         return *this + fixed_string<R - 1>(rhs);
     }
 
-    /** Join two strings with a dot '.'.
+    /** Join two strings with a slash '/'.
      *
-     * If one or both of the operands is empty, no '.' is added.
+     * If one or both of the operands is empty, no '/' is added.
      */
     template<size_t R>
-    [[nodiscard]] constexpr auto operator^(fixed_string<R> const& rhs) const noexcept
+    [[nodiscard]] constexpr auto operator/(fixed_string<R> const& rhs) const noexcept
     {
         constexpr auto has_dot = N != 0 and R != 0 ? 1_uz : 0_uz;
         auto r = fixed_string<N + R + has_dot>{};
@@ -226,7 +226,7 @@ struct fixed_string {
         }
 
         if (has_dot) {
-            r[dst_i++] = '.';
+            r[dst_i++] = '/';
         }
 
         for (auto src_i = 0_uz; src_i != R; ++src_i, ++dst_i) {
@@ -237,9 +237,9 @@ struct fixed_string {
     }
 
     template<size_t R>
-    [[nodiscard]] constexpr auto operator^(char const (&rhs)[R]) const noexcept
+    [[nodiscard]] constexpr auto operator/(char const (&rhs)[R]) const noexcept
     {
-        return *this ^ fixed_string<R - 1>(rhs);
+        return *this / fixed_string<R - 1>(rhs);
     }
 };
 
@@ -263,6 +263,28 @@ fixed_string(char const (&str)[N]) -> fixed_string<N - 1>;
 
 template<std::invocable F>
 fixed_string(F const& f) -> fixed_string<std::ranges::size(F{}())>;
+
+/** lhs / rhs
+*
+* This function is nessesary because of bug:
+* https://developercommunity.visualstudio.com/t/Failure-to-compile-complex-situation-wit/10291680
+*/
+template<std::size_t L, std::size_t R>
+[[deprecated("msvc-bug-10291680")]] [[nodiscard]] constexpr auto join_path(fixed_string<L> const &lhs, fixed_string<R> const &rhs) noexcept
+{
+    return lhs / rhs;
+}
+
+/** lhs / rhs
+ *
+ * This function is nessesary because of bug:
+ * https://developercommunity.visualstudio.com/t/Failure-to-compile-complex-situation-wit/10291680
+ */
+template<std::size_t L, std::size_t R>
+[[deprecated("msvc-bug-10291680")]] [[nodiscard]] constexpr auto join_path(fixed_string<L> const& lhs, char const (&rhs)[R]) noexcept
+{
+    return lhs / rhs;
+}
 
 #define hi_to_fixed_string(x) \
     ::hi::fixed_string \

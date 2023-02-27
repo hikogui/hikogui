@@ -36,6 +36,12 @@ class gui_window {
 public:
     gui_system& gui;
 
+    /** The widget covering the complete window.
+     */
+    std::unique_ptr<widget> widget;
+
+    label title;
+
     std::unique_ptr<gfx_surface> surface;
 
     /** The current rectangle of the window relative to the screen.
@@ -69,8 +75,6 @@ public:
      */
     bool active = false;
 
-    label title;
-
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
      * the source for the DPI value.
@@ -81,16 +85,12 @@ public:
      */
     extent2i widget_size;
 
-    /** The widget covering the complete window.
-     */
-    std::unique_ptr<widget> widget;
-
     /** Notifier used when the window is closing.
      * It is expected that after notifying these callbacks the instance of this class is destroyed.
      */
     notifier<void()> closing;
 
-    gui_window(gui_system& gui, label const& title) noexcept;
+    gui_window(gui_system& gui, std::unique_ptr<hi::widget> widget, label const& title) noexcept;
 
     virtual ~gui_window();
 
@@ -98,14 +98,6 @@ public:
     gui_window& operator=(gui_window const&) = delete;
     gui_window(gui_window&&) = delete;
     gui_window& operator=(gui_window&&) = delete;
-
-    /** 2 phase constructor.
-     * Must be called directly after the constructor on the same thread,
-     * before another thread can send messages to the window.
-     *
-     * `init()` should not take locks on window::mutex.
-     */
-    virtual void init(std::unique_ptr<hi::widget> widget);
 
     void set_device(gfx_device *device) noexcept;
 

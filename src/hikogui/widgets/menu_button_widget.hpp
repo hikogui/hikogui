@@ -28,10 +28,11 @@ namespace hi { inline namespace v1 {
  * a set, which is configured with a different `on_value`.
  */
 template<fixed_string Name = "">
-class menu_button_widget final : public abstract_button_widget<Name ^ "menu-button"> {
+class menu_button_widget final : public abstract_button_widget<Name / "menu-button"> {
 public:
-    using super = abstract_button_widget<Name ^ "menu-button">;
+    using super = abstract_button_widget<Name / "menu-button">;
     using delegate_type = typename super::delegate_type;
+    using super::prefix;
 
     /** Construct a menu button widget.
      *
@@ -84,13 +85,13 @@ public:
         _label_constraints = super::update_constraints();
 
         // Make room for button and margin.
-        _check_size = theme<prefix ^ "icon.size", extent2i>{}(this);
-        _short_cut_size = theme<prefix ^ "icon.size", extent2i>{}(this);
+        _check_size = theme<prefix / "icon.size", extent2i>{}(this);
+        _short_cut_size = theme<prefix / "icon.size", extent2i>{}(this);
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         hilet extra_size = extent2i{
-            theme<prefix ^ "margin", int>{}(this) * 4 + _check_size.width() + _short_cut_size.width(),
-            theme<prefix ^ "margin", int>{}(this) * 2};
+            theme<prefix / "margin", int>{}(this) * 4 + _check_size.width() + _short_cut_size.width(),
+            theme<prefix / "margin", int>{}(this) * 2};
 
         auto constraints = _label_constraints + extra_size;
         constraints.margins = 0;
@@ -99,30 +100,34 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(layout, context)) {
-            hilet inside_rectangle = context.rectangle() - theme().margin<int>();
+        if (compare_store(this->layout, context)) {
+            hilet spacing = theme<prefix / "spacing", int>{}(this);
+            hilet cap_height = theme<prefix / "cap_height", int>{}(this);
+
+            hilet inside_rectangle = context.rectangle() - spacing;
 
             if (os_settings::left_to_right()) {
                 _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left());
                 _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
                 hilet label_rectangle = aarectanglei{
-                    point2i{_check_rectangle.right() + theme().margin<int>(), 0},
-                    point2i{_short_cut_rectangle.left() - theme().margin<int>(), context.height()}};
-                _on_label_shape = _off_label_shape = _other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
+                    point2i{_check_rectangle.right() + spacing, 0},
+                    point2i{_short_cut_rectangle.left() - spacing, context.height()}};
+                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
+                    box_shape{_label_constraints, label_rectangle, cap_height};
 
             } else {
                 _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_left());
                 _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_right());
                 hilet label_rectangle = aarectanglei{
-                    point2i{_short_cut_rectangle.right() + theme().margin<int>(), 0},
-                    point2i{_check_rectangle.left() - theme().margin<int>(), context.height()}};
-                _on_label_shape = _off_label_shape = _other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
+                    point2i{_short_cut_rectangle.right() + spacing, 0},
+                    point2i{_check_rectangle.left() - spacing, context.height()}};
+                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
+                    box_shape{_label_constraints, label_rectangle, cap_height};
             }
 
             _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb = narrow_cast<aarectanglei>(_check_glyph.get_bounding_box() * theme().icon_size<float>());
+            hilet check_glyph_bb =
+                narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * theme<prefix / "icon.size", float>{}(this));
             _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
         }
 
@@ -131,16 +136,16 @@ public:
 
     void draw(widget_draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_menu_button(context);
             draw_check_mark(context);
-            draw_button(context);
+            this->draw_button(context);
         }
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::menu);
+        return *this->mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::menu);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -149,27 +154,27 @@ public:
 
         switch (event.type()) {
         case gui_menu_next:
-            if (*mode >= widget_mode::partial and not is_last(keyboard_focus_group::menu)) {
-                process_event(gui_event::window_set_keyboard_target(
+            if (*this->mode >= widget_mode::partial and not this->is_last(keyboard_focus_group::menu)) {
+                this->process_event(gui_event::window_set_keyboard_target(
                     nullptr, keyboard_focus_group::menu, keyboard_focus_direction::forward));
                 return true;
             }
             break;
 
         case gui_menu_prev:
-            if (*mode >= widget_mode::partial and not is_first(keyboard_focus_group::menu)) {
-                process_event(gui_event::window_set_keyboard_target(
+            if (*this->mode >= widget_mode::partial and not this->is_first(keyboard_focus_group::menu)) {
+                this->process_event(gui_event::window_set_keyboard_target(
                     nullptr, keyboard_focus_group::menu, keyboard_focus_direction::backward));
                 return true;
             }
             break;
 
         case gui_activate:
-            if (*mode >= widget_mode::partial) {
-                activate();
-                process_event(gui_event::window_set_keyboard_target(
+            if (*this->mode >= widget_mode::partial) {
+                this->activate();
+                this->process_event(gui_event::window_set_keyboard_target(
                     nullptr, keyboard_focus_group::normal, keyboard_focus_direction::forward));
-                process_event(gui_event::window_set_keyboard_target(
+                this->process_event(gui_event::window_set_keyboard_target(
                     nullptr, keyboard_focus_group::normal, keyboard_focus_direction::backward));
                 return true;
             }
@@ -184,7 +189,7 @@ public:
 private:
     box_constraints _label_constraints;
 
-    glyph_ids _check_glyph;
+    font_book::font_glyph_type _check_glyph;
     extent2i _check_size;
     aarectanglei _check_rectangle;
     aarectanglei _check_glyph_rectangle;
@@ -193,27 +198,24 @@ private:
 
     void draw_menu_button(widget_draw_context const& context) noexcept
     {
-        hilet border_color = *focus ? focus_color() : color::transparent();
         context.draw_box(
-            layout,
-            layout.rectangle(),
-            theme<prefix ^ "fill.color", color>{}(this),
-            theme<prefix ^ "outline.color", color>{}(this),
-            theme<prefix ^ "outline.width", int>{}(this),
+            this->layout,
+            this->layout.rectangle(),
+            theme<prefix / "fill.color", color>{}(this),
+            theme<prefix / "outline.color", color>{}(this),
+            theme<prefix / "outline.width", int>{}(this),
             border_side::inside);
     }
 
     void draw_check_mark(widget_draw_context const& context) noexcept
     {
-        auto state_ = state();
-
         // Checkmark or tristate.
-        if (state_ == hi::button_state::on) {
+        if (*this->state != hi::widget_state::off) {
             context.draw_glyph(
-                layout,
+                this->layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle),
                 _check_glyph,
-                theme<prefix ^ "accent.color", color>{}(this));
+                theme<prefix / "accent.color", color>{}(this));
         }
     }
 };

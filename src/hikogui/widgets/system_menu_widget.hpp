@@ -27,7 +27,7 @@ template<fixed_string Name = "">
 class system_menu_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "system-menu";
+    constexpr static auto prefix = Name / "system-menu";
 
     observer<icon> icon;
 
@@ -56,19 +56,19 @@ public:
 
         _icon_constraints = _icon_widget->update_constraints();
 
-        hilet size = theme<prefix ^ "size", extent2i>{}(this);
+        hilet size = theme<prefix / "size", extent2i>{}(this);
         return {size, size, size};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            hilet size = theme<prefix ^ "size", float>{}(this);
-            hilet margin = theme<prefix ^ "margin", float>{}(this);
+            hilet size = theme<prefix / "size", int>{}(this);
+            hilet margin = theme<prefix / "margin", int>{}(this);
 
             hilet icon_height = context.height() < round_cast<int>(size * 1.2f) ? context.height() : size;
             hilet icon_rectangle = aarectanglei{0, context.height() - icon_height, context.width(), icon_height};
-            _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme<prefix ^ "cap-height", int>{}(this)};
+            _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme<prefix / "cap-height", int>{}(this)};
             // Leave space for window resize handles on the left and top.
             _system_menu_rectangle = aarectanglei{margin, 0, context.width() - margin, context.height() - margin};
         }

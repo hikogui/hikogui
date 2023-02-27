@@ -41,7 +41,7 @@ template<fixed_string Name = "">
 class grid_widget : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "grid";
+    constexpr static auto prefix = Name / "grid";
 
     ~grid_widget() {};
 
@@ -127,7 +127,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            _grid.set_layout(context.shape, theme<prefix ^ "cap-height">{}(this));
+            _grid.set_layout(context.shape, theme<prefix / "cap-height", int>{}(this));
         }
 
         for (hilet& cell : _grid) {
@@ -181,7 +181,7 @@ private:
         }
 
         auto& ref = *child_widget;
-        _grid.add_cell(first_column, first_row, last_column, last_row, std::move(widget));
+        _grid.add_cell(first_column, first_row, last_column, last_row, std::move(child_widget));
         hi_log_info("grid_widget::add_widget({}, {}, {}, {})", first_column, first_row, last_column, last_row);
 
         ++global_counter<"grid_widget:add_widget:constrain">;

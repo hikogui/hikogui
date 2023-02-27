@@ -51,10 +51,10 @@ public:
 
     virtual ~gui_system();
 
-    gui_system(const gui_system &) = delete;
-    gui_system &operator=(const gui_system &) = delete;
-    gui_system(gui_system &&) = delete;
-    gui_system &operator=(gui_system &&) = delete;
+    gui_system(const gui_system&) = delete;
+    gui_system& operator=(const gui_system&) = delete;
+    gui_system(gui_system&&) = delete;
+    gui_system& operator=(gui_system&&) = delete;
 
     /** Initialize after construction.
      * Call this function directly after the constructor on the same thread.
@@ -80,21 +80,27 @@ public:
 
     std::shared_ptr<gui_window> add_window(std::shared_ptr<gui_window> window);
 
-    /** Create a new window.
+    /** Create a new window with an embedded widget.
+     *
+     * @tparam WidgetType The widget to construct in the window.
+     * @param label The label for the window. The label is also passed to the
+     *              widget.
      * @param args The arguments that are forwarded to the constructor of
-     *             `hi::gui_window_win32`.
-     * @return A reference to the new window.
+     *             the window's widget.
+     * @return A shared_ptr to the new window and a reference to the widget.
      */
-    template<typename... Args>
-    std::shared_ptr<gui_window> make_window(Args &&...args)
+    template<typename WidgetType, typename... Args>
+    std::pair<std::shared_ptr<gui_window>, WidgetType&> make_window(hi::label const& label, Args&&...args)
     {
         hi_axiom(loop::main().on_thread());
 
-        // XXX abstract away the _win32 part.
-        auto window = std::make_shared<gui_window_win32>(*this, std::forward<Args>(args)...);
-        window->init();
+        auto widget = std::make_unique<WidgetType>(label, std::forward<Args>(args)...);
+        auto widget_ptr = widget.get();
 
-        return add_window(std::move(window));
+        // XXX abstract away the _win32 part.
+        auto window = std::make_shared<gui_window_win32>(*this, std::move(widget), label);
+
+        return {add_window(std::move(window)), *widget_ptr};
     }
 
     /** Request all windows to constrain.

@@ -40,10 +40,11 @@ namespace hi { inline namespace v1 {
  * @snippet widgets/checkbox_example_impl.cpp Create a checkbox
  */
 template<fixed_string Name = "">
-class checkbox_widget final : public abstract_button_widget<Name ^ "checkbox"> {
+class checkbox_widget final : public abstract_button_widget<Name / "checkbox"> {
 public:
-    using super = abstract_button_widget<Name ^ "checkbox">;
+    using super = abstract_button_widget<Name / "checkbox">;
     using delegate_type = typename super::delegate_type;
+    constexpr static auto prefix = super::prefix;
 
     /** Construct a checkbox widget.
      *
@@ -145,19 +146,19 @@ public:
     {
         _label_constraints = super::update_constraints();
 
-        _button_size = theme<prefix ^ "outer.size", extent2i>{}(this);
-        hilet extra_size = extent2i{theme<prefix ^ "spacing", int>{}(this) + _button_size.width(), 0};
+        _button_size = theme<prefix / "outer.size", extent2i>{}(this);
+        hilet extra_size = extent2i{theme<prefix / "spacing", int>{}(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
-        constraints.margins = theme<prefix ^ "outer.margin", marginsi>{}(this);
-        constraints.alignment = *alignment;
+        constraints.margins = theme<prefix / "outer.margin", marginsi>{}(this);
+        constraints.alignment = *this->alignment;
         return constraints;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(layout, context)) {
-            auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
+        if (compare_store(this->layout, context)) {
+            auto alignment_ = os_settings::left_to_right() ? *this->alignment : mirror(*this->alignment);
 
             if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
                 _button_rectangle = align(context.rectangle(), _button_size, alignment_);
@@ -165,31 +166,31 @@ public:
                 hi_not_implemented();
             }
 
-            hilet inner_margin = theme<prefix ^ "spacing", int>{}(this);
-            hilet baseline_offset = theme<prefix ^ "cap-height", int>{}(this);
-            hilet icon_size = theme<prefix ^ "icon.size", int>{}(this);
+            hilet inner_margin = theme<prefix / "spacing", int>{}(this);
+            hilet baseline_offset = theme<prefix / "cap-height", int>{}(this);
+            hilet icon_size = theme<prefix / "icon.size", float>{}(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
             if (alignment_ == horizontal_alignment::left) {
                 hilet label_left = _button_rectangle.right() + inner_margin;
                 hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
-                _on_label_shape = _off_label_shape = _other_label_shape =
+                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape(_label_constraints, label_rectangle, baseline_offset);
 
             } else if (alignment_ == horizontal_alignment::right) {
                 hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
-                _on_label_shape = _off_label_shape = _other_label_shape =
+                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape(_label_constraints, label_rectangle, baseline_offset);
             } else {
                 hi_not_implemented();
             }
 
             _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb = narrow_cast<aarectanglei>(_check_glyph.get_bounding_box() * icon_size);
+            hilet check_glyph_bb = narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * icon_size);
             _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
 
             _minus_glyph = find_glyph(elusive_icon::Minus);
-            hilet minus_glyph_bb = narrow_cast<aarectanglei>(_minus_glyph.get_bounding_box() * icon_size);
+            hilet minus_glyph_bb = narrow_cast<aarectanglei>(_minus_glyph.get_bounding_rectangle() * icon_size);
             _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
         }
         super::set_layout(context);
@@ -197,10 +198,10 @@ public:
 
     void draw(widget_draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_check_box(context);
             draw_check_mark(context);
-            draw_button(context);
+            this->draw_button(context);
         }
     }
     /// @endprivatesection
@@ -209,43 +210,44 @@ private:
 
     extent2i _button_size;
     aarectanglei _button_rectangle;
-    font_book::font_glyphs_type _check_glyph;
+    font_book::font_glyph_type _check_glyph;
     aarectanglei _check_glyph_rectangle;
-    font_book::font_glyphs_type _minus_glyph;
+    font_book::font_glyph_type _minus_glyph;
     aarectanglei _minus_glyph_rectangle;
 
     void draw_check_box(widget_draw_context const& context) noexcept
     {
         context.draw_box(
-            layout,
+            this->layout,
             _button_rectangle,
-            theme<prefix ^ "fill.color", color>{}(this),
-            theme<prefix ^ "border.color", color>{}(this),
-            theme<prefix ^ "border.width", float>{}(this),
+            theme<prefix / "fill.color", color>{}(this),
+            theme<prefix / "border.color", color>{}(this),
+            theme<prefix / "border.width", float>{}(this),
             border_side::inside);
     }
 
     void draw_check_mark(widget_draw_context const& context) noexcept
     {
-        auto state_ = state();
-
-        // Checkmark or tristate.
-        if (state_ == hi::button_state::on) {
+        if (this->state == widget_state::on) {
+            // Checkmark
             context.draw_glyph(
-                layout,
+                this->layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle),
-                _check_glyph,
-                theme<prefix ^ "icon.color", color>{}(this));
+                *_check_glyph.font,
+                _check_glyph.glyph,
+                theme<prefix / "icon.color", color>{}(this));
 
-        } else if (state_ == hi::button_state::off) {
+        } else if (this->state == widget_state::off) {
             ;
 
         } else {
+            // Tri-state
             context.draw_glyph(
-                layout,
+                this->layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle),
-                _minus_glyph,
-                theme<prefix ^ "icon.color", color>{}(this));
+                *_minus_glyph.font,
+                _minus_glyph.glyph,
+                theme<prefix / "icon.color", color>{}(this));
         }
     }
 };

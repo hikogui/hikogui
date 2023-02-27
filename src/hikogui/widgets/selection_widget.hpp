@@ -45,7 +45,7 @@ template<fixed_string Name = "">
 class selection_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "selection";
+    constexpr static auto prefix = Name / "selection";
 
     using delegate_type = selection_delegate;
 
@@ -93,7 +93,7 @@ public:
 
         _current_label_widget = std::make_unique<label_widget<prefix>>(this, alignment);
         _current_label_widget->mode = widget_mode::invisible;
-        _off_label_widget = std::make_unique < label_widget<prefix ^ "off">(this, off_label, alignment);
+        _off_label_widget = std::make_unique<label_widget<prefix / "off">>(this, off_label, alignment);
 
         _overlay_widget = std::make_unique<overlay_widget<prefix>>(this);
         _overlay_widget->mode = widget_mode::invisible;
@@ -214,21 +214,21 @@ public:
         _current_label_constraints = _current_label_widget->update_constraints();
         _overlay_constraints = _overlay_widget->update_constraints();
 
-        hilet inner_margin = theme<prefix ^ "spacing", int>{}(this);
-        hilet label_offset = theme<prefix ^ "label.offset", int>{}(this);
+        hilet inner_margin = theme<prefix / "spacing", int>{}(this);
+        hilet label_offset = theme<prefix / "label.offset", int>{}(this);
         hilet extra_size = extent2i{label_offset + inner_margin * 2, inner_margin * 2};
 
         auto r = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
 
         // Make it so that the scroll widget can scroll vertically.
         // Set it to something small, this just fixes an issue when there are no menu items.
-        _scroll_widget->minimum.copy()->height() = 10.0f;
+        _scroll_widget->minimum.copy()->height() = 10;
 
         r.minimum.width() = std::max(r.minimum.width(), _overlay_constraints.minimum.width() + extra_size.width());
         r.preferred.width() = std::max(r.preferred.width(), _overlay_constraints.preferred.width() + extra_size.width());
         r.maximum.width() = std::max(r.maximum.width(), _overlay_constraints.maximum.width() + extra_size.width());
-        r.margins = theme<prefix ^ "margin", marginsi>{}(this);
-        r.padding = theme<prefix ^ "padding", marginsi>{}(this);
+        r.margins = theme<prefix / "margin", marginsi>{}(this);
+        r.padding = theme<prefix / "padding", marginsi>{}(this);
         r.alignment = resolve(*alignment, os_settings::left_to_right());
         hi_axiom(r.holds_invariant());
         return r;
@@ -236,10 +236,10 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        hilet inner_margin = theme<prefix ^ "spacing", int>{}(this);
-        hilet label_offset = theme<prefix ^ "label.offset", int>{}(this);
-        hilet cap_height = theme<prefix ^ "cap_height", int>{}(this);
-        hilet chevron_size = theme<prefix ^ "chevron.size", int>{}(this);
+        hilet inner_margin = theme<prefix / "spacing", int>{}(this);
+        hilet label_offset = theme<prefix / "label.offset", int>{}(this);
+        hilet cap_height = theme<prefix / "cap_height", int>{}(this);
+        hilet chevron_size = theme<prefix / "chevron.size", float>{}(this);
 
         if (compare_store(layout, context)) {
             if (os_settings::left_to_right()) {
@@ -265,8 +265,7 @@ public:
             }
 
             _chevron_glyph = find_glyph(elusive_icon::ChevronUp);
-            hilet chevron_glyph_bbox =
-                narrow_cast<aarectanglei>(_chevron_glyph.get_bounding_box() * chevron_size));
+            hilet chevron_glyph_bbox = narrow_cast<aarectanglei>(_chevron_glyph.get_bounding_rectangle() * chevron_size);
             _chevron_rectangle = align(_left_box_rectangle, chevron_glyph_bbox, alignment::middle_center());
         }
 
@@ -372,13 +371,13 @@ private:
     box_constraints _current_label_constraints;
     box_shape _current_label_shape;
 
-    std::unique_ptr < label_widget<prefix ^ "off"> _off_label_widget;
+    std::unique_ptr<label_widget<join_path(prefix, "off")>> _off_label_widget;
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
     aarectanglei _left_box_rectangle;
 
-    glyph_ids _chevron_glyph;
+    font_book::font_glyph_type _chevron_glyph;
     aarectanglei _chevron_rectangle;
 
     bool _selecting = false;
@@ -409,7 +408,7 @@ private:
         set_attributes(hi_forward(rest)...);
     }
 
-    [[nodiscard]] menu_button_widget const *get_first_menu_button() const noexcept
+    [[nodiscard]] menu_button_widget<prefix> const *get_first_menu_button() const noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -420,12 +419,12 @@ private:
         }
     }
 
-    [[nodiscard]] menu_button_widget const *get_selected_menu_button() const noexcept
+    [[nodiscard]] menu_button_widget<prefix> const *get_selected_menu_button() const noexcept
     {
         hi_axiom(loop::main().on_thread());
 
         for (hilet& button : _menu_button_widgets) {
-            if (button->state() == button_state::on) {
+            if (button->state == widget_state::on) {
                 return button;
             }
         }
@@ -479,10 +478,9 @@ private:
 
         decltype(selected) index = 0;
         for (hilet& label : options) {
-            auto menu_button =
-                &_column_widget->make_widget<menu_button_widget<prefix>>(selected, index, label, alignment);
+            auto menu_button = &_column_widget->make_widget<menu_button_widget<prefix>>(selected, index, label, alignment);
 
-            _menu_button_tokens.push_back(menu_button->pressed.subscribe(
+            _menu_button_tokens.push_back(menu_button->subscribe(
                 [this, index] {
                     hi_assert_not_null(delegate);
                     delegate->set_selected(*this, index);
@@ -511,23 +509,23 @@ private:
         context.draw_box(
             layout,
             layout.rectangle(),
-            theme<prefix ^ "fill.color", color>{}(this),
-            theme<prefix ^ "outline.color", color>{}(this),
-            theme<prefix ^ "outline.width", int>{}(this),
+            theme<prefix / "fill.color", color>{}(this),
+            theme<prefix / "outline.color", color>{}(this),
+            theme<prefix / "outline.width", int>{}(this),
             border_side::inside,
-            theme<prefix ^ "outline.radius", corner_radii>{}(this));
+            theme<prefix / "outline.radius", corner_radii>{}(this));
     }
 
     void draw_left_box(widget_draw_context const& context) noexcept
     {
-        hilet radius = theme<prefix & "outline.radius", int>{}(this);
+        hilet radius = theme<prefix / "outline.radius", float>{}(this);
 
         hilet corner_radii = os_settings::left_to_right() ? hi::corner_radii(radius, 0.0f, radius, 0.0f) :
                                                             hi::corner_radii(0.0f, radius, 0.0f, radius);
         context.draw_box(
             layout,
             translate_z(0.1f) * narrow_cast<aarectangle>(_left_box_rectangle),
-            theme<prefix ^ "outline.color", color>{}(this),
+            theme<prefix / "outline.color", color>{}(this),
             corner_radii);
     }
 
@@ -536,8 +534,9 @@ private:
         context.draw_glyph(
             layout,
             translate_z(0.2f) * narrow_cast<aarectangle>(_chevron_rectangle),
-            _chevron_glyph,
-            theme<prefix ^ "chevron.color", color>{}(this));
+            *_chevron_glyph.font,
+            _chevron_glyph.glyph,
+            theme<prefix / "chevron.color", color>{}(this));
     }
 };
 

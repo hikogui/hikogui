@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "widgets/module.hpp"
+#include "GUI/module.hpp"
 #include "image/module.hpp"
 #include "color/module.hpp"
 #include "geometry/module.hpp"

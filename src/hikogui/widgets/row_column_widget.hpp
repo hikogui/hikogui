@@ -113,7 +113,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            _children.set_layout(context.shape, theme<prefix ^ "cap-height", int>{}(this));
+            _children.set_layout(context.shape, theme<prefix / "cap-height", int>{}(this));
 
             for (hilet& child : _children) {
                 child.value->set_layout(context.transform(child.shape, 0.0f));
@@ -153,12 +153,12 @@ private:
  * @ingroup widgets
  */
 template<fixed_string Name = "">
-using row_widget = row_column_widget<Name ^ "row", axis::x>;
+using row_widget = row_column_widget<join_path(Name, "row"), axis::x>;
 
 /** Lays out children in a column.
  * @ingroup widgets
  */
 template<fixed_string Name = "">
-using column_widget = row_column_widget<Name ^ "column", axis::y>;
+using column_widget = row_column_widget<join_path(Name, "column"), axis::y>;
 
 }} // namespace hi::v1

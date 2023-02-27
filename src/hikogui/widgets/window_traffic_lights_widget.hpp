@@ -27,7 +27,7 @@ template<fixed_string Name = "">
 class window_traffic_lights_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "traffic-lights";
+    constexpr static auto prefix = Name / "traffic-lights";
 
     window_traffic_lights_widget(widget *parent) noexcept : super(parent) {}
 
@@ -35,14 +35,14 @@ public:
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         if (operating_system::current == operating_system::windows) {
-            hilet theme_size = theme<prefix ^ "windows.size">{}(this);
+            hilet theme_size = theme<prefix / "windows.size", int>{}(this);
             hilet size = extent2i{theme_size * 3, theme_size};
             return {size, size, size};
 
         } else if (operating_system::current == operating_system::macos) {
-            hilet theme_size = theme<prefix ^ "macos.size">{}(this);
-            hilet margin = theme<prefix ^ "margin">{}(this);
-            hilet spacing = theme<prefix ^ "spacing">{}(this);
+            hilet theme_size = theme<prefix / "macos.size", int>{}(this);
+            hilet margin = theme<prefix / "margin", int>{}(this);
+            hilet spacing = theme<prefix / "spacing", int>{}(this);
             hilet size = extent2i{theme_size * 3 + 2 * margin + 2 * spacing, theme_size + 2 * spacing};
             return {size, size, size};
 
@@ -67,9 +67,9 @@ public:
                 minimizeRectangle = aarectanglei{point2i(0, y), extent2i{extent.width() * 1 / 3, extent.height()}};
 
             } else if (operating_system::current == operating_system::macos) {
-                hilet size = theme<prefix ^ "macos.size">{}(this);
-                hilet margin = theme<prefix ^ "margin">{}(this);
-                hilet spacing = theme<prefix ^ "spacing">{}(this);
+                hilet size = theme<prefix / "macos.size", int>{}(this);
+                hilet margin = theme<prefix / "margin", int>{}(this);
+                hilet spacing = theme<prefix / "spacing", int>{}(this);
 
                 closeRectangle = aarectanglei{point2i(margin, (extent.height() - size) / 2), extent2i{size, size}};
 
@@ -97,13 +97,13 @@ public:
             }
 
             hilet glyph_size = operating_system::current == operating_system::macos ?
-                theme<prefix ^ "macos.icon.size", int>{}(this) :
-                theme<prefix ^ "windows.icon.size", int>{}(this);
+                theme<prefix / "macos.icon.size", float>{}(this) :
+                theme<prefix / "windows.icon.size", float>{}(this);
 
-            hilet closeWindowGlyphBB = narrow_cast<aarectanglei>(closeWindowGlyph.get_bounding_box() * glyph_size);
-            hilet minimizeWindowGlyphBB = narrow_cast<aarectanglei>(minimizeWindowGlyph.get_bounding_box() * glyph_size);
-            hilet maximizeWindowGlyphBB = narrow_cast<aarectanglei>(maximizeWindowGlyph.get_bounding_box() * glyph_size);
-            hilet restoreWindowGlyphBB = narrow_cast<aarectanglei>(restoreWindowGlyph.get_bounding_box() * glyph_size);
+            hilet closeWindowGlyphBB = narrow_cast<aarectanglei>(closeWindowGlyph.get_bounding_rectangle() * glyph_size);
+            hilet minimizeWindowGlyphBB = narrow_cast<aarectanglei>(minimizeWindowGlyph.get_bounding_rectangle() * glyph_size);
+            hilet maximizeWindowGlyphBB = narrow_cast<aarectanglei>(maximizeWindowGlyph.get_bounding_rectangle() * glyph_size);
+            hilet restoreWindowGlyphBB = narrow_cast<aarectanglei>(restoreWindowGlyph.get_bounding_rectangle() * glyph_size);
 
             closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
             minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
@@ -241,79 +241,79 @@ private:
         context.draw_box(
             layout,
             closeRectangle,
-            theme<prefix ^ "windows.close.fill.color", color>{}(this),
-            corner_radii{closeRectangle.height() / 2});
+            theme<prefix / "windows.close.fill.color", color>{}(this),
+            corner_radii{closeRectangle.height() / 2.0f});
 
         context.draw_box(
             layout,
             minimizeRectangle,
-            theme<prefix ^ "windows.minimize.fill.color", color>{}(this),
-            corner_radii{minimizeRectangle.height() / 2});
+            theme<prefix / "windows.minimize.fill.color", color>{}(this),
+            corner_radii{minimizeRectangle.height() / 2.0f});
 
         context.draw_box(
             layout,
             maximizeRectangle,
-            theme<prefix ^ "windows.maximize.fill.color", color>{}(this),
-            corner_radii{maximizeRectangle.height() / 2});
+            theme<prefix / "windows.maximize.fill.color", color>{}(this),
+            corner_radii{maximizeRectangle.height() / 2.0f});
 
         if (*hover) {
             context.draw_glyph(
                 layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(closeWindowGlyphRectangle),
                 closeWindowGlyph,
-                theme<prefix ^ "windows.close.icon.color", color>{}(this));
+                theme<prefix / "windows.close.icon.color", color>{}(this));
             context.draw_glyph(
                 layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(minimizeWindowGlyphRectangle),
                 minimizeWindowGlyph,
-                theme<prefix ^ "windows.minimize.icon.color", color>{}(this));
+                theme<prefix / "windows.minimize.icon.color", color>{}(this));
 
             if (layout.window_size_state == gui_window_size::maximized) {
                 context.draw_glyph(
                     layout,
                     translate_z(0.1f) * narrow_cast<aarectangle>(restoreWindowGlyphRectangle),
                     restoreWindowGlyph,
-                    theme<prefix ^ "windows.maximize.icon.color", color>{}(this));
+                    theme<prefix / "windows.maximize.icon.color", color>{}(this));
             } else {
                 context.draw_glyph(
                     layout,
                     translate_z(0.1f) * narrow_cast<aarectangle>(maximizeWindowGlyphRectangle),
                     maximizeWindowGlyph,
-                    theme<prefix ^ "windows.maximize.icon.color", color>{}(this));
+                    theme<prefix / "windows.maximize.icon.color", color>{}(this));
             }
         }
     }
 
     void drawWindows(widget_draw_context const& context) noexcept
     {
-        context.draw_box(layout, closeRectangle, theme<prefix & "windows.close.fill.color">{}(this));
-        context.draw_box(layout, minimizeRectangle, theme<prefix & "windows.minimize.fill.color">{}(this));
-        context.draw_box(layout, maximizeRectangle, theme<prefix & "windows.maximize.fill.color">{});
+        context.draw_box(layout, closeRectangle, theme<prefix / "windows.close.fill.color", color>{}(this));
+        context.draw_box(layout, minimizeRectangle, theme<prefix / "windows.minimize.fill.color", color>{}(this));
+        context.draw_box(layout, maximizeRectangle, theme<prefix / "windows.maximize.fill.color", color>{}(this));
 
         context.draw_glyph(
             layout,
             translate_z(0.1f) * narrow_cast<aarectangle>(closeWindowGlyphRectangle),
             closeWindowGlyph,
-            theme<prefix & "windows.close.icon.color">{});
+            theme<prefix / "windows.close.icon.color", color>{}(this));
 
         context.draw_glyph(
             layout,
             translate_z(0.1f) * narrow_cast<aarectangle>(minimizeWindowGlyphRectangle),
             minimizeWindowGlyph,
-            theme<prefix & "windows.minimize.icon.color">{});
+            theme<prefix / "windows.minimize.icon.color", color>{}(this));
 
         if (layout.window_size_state == gui_window_size::maximized) {
             context.draw_glyph(
                 layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(restoreWindowGlyphRectangle),
                 restoreWindowGlyph,
-                theme<prefix & "windows.maximize.icon.color">{});
+                theme<prefix / "windows.maximize.icon.color", color>{}(this));
         } else {
             context.draw_glyph(
                 layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(maximizeWindowGlyphRectangle),
                 maximizeWindowGlyph,
-                theme<prefix & "windows.maximize.icon.color">{});
+                theme<prefix / "windows.maximize.icon.color", color>{}(this));
         }
     }
 };

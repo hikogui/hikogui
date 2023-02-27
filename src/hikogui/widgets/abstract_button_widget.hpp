@@ -58,8 +58,6 @@ public:
      */
     observer<hi::alignment> alignment;
 
-    notifier<void()> pressed;
-
     ~abstract_button_widget()
     {
         hi_assert_not_null(delegate);
@@ -71,26 +69,17 @@ public:
     {
         hi_assert_not_null(this->delegate);
 
-        _on_label_widget = std::make_unique<label_widget<prefix ^ "on">>(this, on_label, alignment);
-        _off_label_widget = std::make_unique<label_widget<prefix ^ "off">>(this, off_label, alignment);
-        _other_label_widget = std::make_unique<label_widget<prefix ^ "other">>(this, other_label, alignment);
+        _on_label_widget = std::make_unique<label_widget<prefix / "on">>(this, on_label, alignment);
+        _off_label_widget = std::make_unique<label_widget<prefix / "off">>(this, off_label, alignment);
+        _other_label_widget = std::make_unique<label_widget<prefix / "other">>(this, other_label, alignment);
 
         _delegate_cbt = this->delegate->subscribe([&] {
-            ++global_counter<"abstract_button_widget:delegate:relayout">;
-            on = state() == button_state::on;
-            process_event({gui_event_type::window_relayout});
+            ++global_counter<"abstract_button_widget:delegate:redraw">;
+            hi_assert_not_null(this->delegate);
+            state = this->delegate->state();
+            process_event({gui_event_type::window_redraw});
         });
         this->delegate->init(*this);
-    }
-
-    /** Get the current state of the button.
-     * @return The state of the button: on / off / other.
-     */
-    [[nodiscard]] button_state state() const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(delegate);
-        return delegate->state(*this);
     }
 
     /// @privatesection
@@ -104,10 +93,9 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        auto state_ = state();
-        _on_label_widget->mode = state_ == button_state::on ? widget_mode::display : widget_mode::invisible;
-        _off_label_widget->mode = state_ == button_state::off ? widget_mode::display : widget_mode::invisible;
-        _other_label_widget->mode = state_ == button_state::other ? widget_mode::display : widget_mode::invisible;
+        _on_label_widget->mode = *state == widget_state::on ? widget_mode::display : widget_mode::invisible;
+        _off_label_widget->mode = *state == widget_state::off ? widget_mode::display : widget_mode::invisible;
+        _other_label_widget->mode = *state == widget_state::other ? widget_mode::display : widget_mode::invisible;
 
         _on_label_widget->set_layout(context.transform(_on_label_shape));
         _off_label_widget->set_layout(context.transform(_off_label_shape));
@@ -142,8 +130,7 @@ public:
     {
         hi_assert_not_null(delegate);
         delegate->activate(*this);
-
-        this->pressed();
+        this->_state_changed();
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -160,7 +147,7 @@ public:
 
         case gui_event_type::mouse_down:
             if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
-                pressed = true;
+                clicked = true;
                 request_redraw();
                 return true;
             }
@@ -168,7 +155,7 @@ public:
 
         case gui_event_type::mouse_up:
             if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
-                pressed = false;
+                clicked = false;
 
                 if (layout.rectangle().contains(event.mouse().position)) {
                     handle_event(gui_event_type::gui_activate);
@@ -185,15 +172,15 @@ public:
     }
     /// @endprivatesection
 protected:
-    std::unique_ptr<label_widget<Prefix ^ "on">> _on_label_widget;
+    std::unique_ptr<label_widget<join_path(prefix, "on")>> _on_label_widget;
     box_constraints _on_label_constraints;
     box_shape _on_label_shape;
 
-    std::unique_ptr<label_widget<Prefix ^ "off">> _off_label_widget;
+    std::unique_ptr<label_widget<join_path(prefix, "off")>> _off_label_widget;
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    std::unique_ptr<label_widget<Prefix ^ "other">> _other_label_widget;
+    std::unique_ptr<label_widget<join_path(prefix, "other")>> _other_label_widget;
     box_constraints _other_label_constraints;
     box_shape _other_label_shape;
 

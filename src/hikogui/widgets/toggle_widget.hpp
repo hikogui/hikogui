@@ -50,10 +50,11 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  */
 template<fixed_string Name = "">
-class toggle_widget final : public abstract_button_widget<Name ^ "toggle"> {
+class toggle_widget final : public abstract_button_widget<Name / "toggle"> {
 public:
-    using super = abstract_button_widget<Name ^ "toggle">;
+    using super = abstract_button_widget<Name / "toggle">;
     using delegate_type = typename super::delegate_type;
+    constexpr static auto prefix = super::prefix;
 
     /** Construct a toggle widget.
      *
@@ -67,8 +68,8 @@ public:
     toggle_widget(widget *parent, std::shared_ptr<delegate_type> delegate, button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::top_left();
-        set_attributes<0>(hi_forward(attributes)...);
+        this->alignment = alignment::top_left();
+        this->set_attributes<0>(hi_forward(attributes)...);
     }
 
     /** Construct a toggle widget with a default button delegate.
@@ -146,19 +147,19 @@ public:
         _label_constraints = super::update_constraints();
 
         // Make room for button and margin.
-        _button_size = {theme<prefix ^ "width", int>{}(this), theme<prefix ^ "height", int>{}(this)};
-        hilet extra_size = extent2i{theme<prefix ^ "spacing", int>{}(this) + _button_size.width(), 0};
+        _button_size = {theme<prefix / "width", int>{}(this), theme<prefix / "height", int>{}(this)};
+        hilet extra_size = extent2i{theme<prefix / "spacing", int>{}(this) + _button_size.width(), 0};
 
         auto r = max(_label_constraints + extra_size, _button_size);
-        r.margins = theme<prefix ^ "margin", marginsi>{}(this);
-        r.alignment = *alignment;
+        r.margins = theme<prefix / "margin", marginsi>{}(this);
+        r.alignment = *this->alignment;
         return r;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(layout, context)) {
-            auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
+        if (compare_store(this->layout, context)) {
+            auto alignment_ = os_settings::left_to_right() ? *this->alignment : mirror(*this->alignment);
 
             if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
                 _button_rectangle = align(context.rectangle(), _button_size, alignment_);
@@ -166,19 +167,19 @@ public:
                 hi_not_implemented();
             }
 
-            hilet spacing = theme<prefix ^ "spacing", int>{}(this);
-            hilet cap_height = theme<prefix ^ "cap_height", int>{}(this);
+            hilet spacing = theme<prefix / "spacing", int>{}(this);
+            hilet cap_height = theme<prefix / "cap_height", int>{}(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + spacing);
             if (alignment_ == horizontal_alignment::left) {
                 hilet label_left = _button_rectangle.right() + spacing;
                 hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
-                _on_label_shape = _off_label_shape = _other_label_shape =
+                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape{_label_constraints, label_rectangle, cap_height};
 
             } else if (alignment_ == horizontal_alignment::right) {
                 hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
-                _on_label_shape = _off_label_shape = _other_label_shape =
+                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape{_label_constraints, label_rectangle, cap_height};
 
             } else {
@@ -189,7 +190,7 @@ public:
                 narrow_cast<point2>(get<0>(_button_rectangle)),
                 extent2{narrow_cast<float>(_button_rectangle.height()), narrow_cast<float>(_button_rectangle.height())}};
 
-            hilet pip_radius = theme<prefix ^ "pip.radius">{}(this);
+            hilet pip_radius = theme<prefix / "pip.radius", float>{}(this);
             _pip_circle = align(button_square, circle{pip_radius}, alignment::middle_center());
 
             hilet pip_to_button_margin_x2 = _button_rectangle.height() - narrow_cast<int>(_pip_circle.diameter());
@@ -200,10 +201,10 @@ public:
 
     void draw(widget_draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_toggle_button(context);
             draw_toggle_pip(context);
-            draw_button(context);
+            this->draw_button(context);
         }
     }
     /// @endprivatesection
@@ -221,25 +222,25 @@ private:
     void draw_toggle_button(widget_draw_context const& context) noexcept
     {
         context.draw_box(
-            layout,
+            this->layout,
             _button_rectangle,
-            theme<prefix ^ "fill.color", color>{}(this),
-            theme<prefix ^ "outline.color", color>{}(this),
-            theme<prefix ^ "outline.width", int>{}(this),
+            theme<prefix / "fill.color", color>{}(this),
+            theme<prefix / "outline.color", color>{}(this),
+            theme<prefix / "outline.width", int>{}(this),
             border_side::inside,
             corner_radii{_button_rectangle.height() * 0.5f});
     }
 
     void draw_toggle_pip(widget_draw_context const& context) noexcept
     {
-        _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
+        _animated_value.update(this->state != widget_state::off ? 1.0f : 0.0f, context.display_time_point);
         if (_animated_value.is_animating()) {
-            request_redraw();
+            this->request_redraw();
         }
 
         hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
 
-        context.draw_circle(layout, positioned_pip_circle * 1.02f, theme<prefix ^ "pip.color", color>{}(this));
+        context.draw_circle(this->layout, positioned_pip_circle * 1.02f, theme<prefix / "pip.color", color>{}(this));
     }
 };
 

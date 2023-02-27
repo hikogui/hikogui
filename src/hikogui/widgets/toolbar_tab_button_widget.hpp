@@ -44,9 +44,9 @@ namespace hi { inline namespace v1 {
  *       observer between the toolbar tab button and the tab widget.
  */
 template<fixed_string Name = "">
-class toolbar_tab_button_widget final : public abstract_button_widget<Name ^ "toolbar-tab-button"> {
+class toolbar_tab_button_widget final : public abstract_button_widget<Name / "toolbar-tab-button"> {
 public:
-    using super = abstract_button_widget<Name ^ "toolbar-tab-button">;
+    using super = abstract_button_widget<Name / "toolbar-tab-button">;
     using delegate_type = typename super::delegate_type;
 
     /** Construct a toolbar tab button widget.
@@ -112,7 +112,7 @@ public:
         _label_constraints = super::update_constraints();
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet spacing = theme<super::prefix ^ "spacing", int>{}(this);
+        hilet spacing = theme<super::prefix / "spacing", int>{}(this);
         hilet extra_size = extent2i{spacing * 2, spacing};
         return _label_constraints + extra_size;
     }
@@ -120,10 +120,10 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            hilet spacing = theme<super::prefix ^ "spacing", int>{}(this);
+            hilet spacing = theme<super::prefix / "spacing", int>{}(this);
             hilet label_rectangle = aarectanglei{spacing, 0, context.width() - spacing * 2, context.height() - spacing};
             this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
-                box_shape{_label_constraints, label_rectangle, theme<super::prefix ^ "cap-height", int>{}(this)};
+                box_shape{_label_constraints, label_rectangle, theme<super::prefix / "cap-height", int>{}(this)};
         }
         super::set_layout(context);
     }
@@ -152,20 +152,20 @@ private:
     {
         // Draw the outline of the button across the clipping rectangle to clip the
         // bottom of the outline.
-        hilet offset = theme<super::prefix ^ "margin", int>{}(this) + theme<super::prefix ^ "outline.width", int>{}(this);
+        hilet offset = theme<super::prefix / "margin", int>{}(this) + theme<super::prefix / "outline.width", int>{}(this);
         hilet outline_rectangle = aarectanglei{0, -offset, this->layout.width(), this->layout.height() + offset};
 
         // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
         hilet button_z = *this->focus ? translate_z(0.6f) : translate_z(0.0f);
 
-        hilet radius = theme<super::prefix ^ "outline.radius", int>{}(this);
+        hilet radius = theme<super::prefix / "outline.radius", float>{}(this);
 
         context.draw_box(
             this->layout,
             button_z * narrow_cast<aarectangle>(outline_rectangle),
-            theme<super::prefix ^ "fill.color", color>{}(this),
-            theme<super::prefix ^ "outline.color", color>{}(this),
-            theme<super::prefix ^ "outline.width", int>{}(this),
+            theme<super::prefix / "fill.color", color>{}(this),
+            theme<super::prefix / "outline.color", color>{}(this),
+            theme<super::prefix / "outline.width", int>{}(this),
             border_side::inside,
             hi::corner_radii(0.0f, 0.0f, radius, radius));
     }

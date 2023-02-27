@@ -6,6 +6,7 @@
 
 #include "widget_id.hpp"
 #include "widget_mode.hpp"
+#include "widget_state.hpp"
 #include "widget_layout.hpp"
 #include "hitbox.hpp"
 #include "keyboard_focus_group.hpp"
@@ -23,6 +24,9 @@ class gfx_surface;
 
 class widget {
 public:
+    using callback_token = notifier<void()>::callback_token;
+    using awaiter_type = notifier<void()>::awaiter_type;
+
     /** The numeric identifier of a widget.
      *
      * @note This is a uint32_t equal to the operating system's accessibility identifier.
@@ -59,9 +63,9 @@ public:
      */
     observer<bool> focus = false;
 
-    /** The state of the widget is considered "on".
+    /** The state of the widget.
      */
-    observer<bool> on = false;
+    observer<widget_state> state = widget_state::off;
 
     /** The scale by which to size the widget and its components.
      *
@@ -503,7 +507,22 @@ public:
         return false;
     }
 
+    template<forward_of<void()> Callback>
+    [[nodiscard]] callback_token subscribe(Callback&& callback, callback_flags flags = callback_flags::synchronous) const noexcept
+    {
+        return _state_changed.subscribe(std::forward<Callback>(callback), flags);
+    }
+
+    [[nodiscard]] awaiter_type operator co_await() const noexcept
+    {
+        return _state_changed.operator co_await();
+    }
+
 protected:
+    /** Notifier which is called whenever the use modifies the state.
+     */
+    mutable notifier<void()> _state_changed;
+
     /** Make an overlay rectangle.
      *
      * This function tries to create a rectangle for an overlay-widget that

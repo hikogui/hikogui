@@ -13,13 +13,13 @@ using namespace hi;
 int hi_main(int argc, char *argv[])
 {
     auto gui = gui_system::make_unique();
-    auto window = gui->make_window(tr("Toggle example"));
-    window->content().make_widget<label_widget>("A1", tr("toggle:"));
+    auto [window, widget] = gui->make_window<window_widget<>>(tr("Toggle example"));
+    widget.content().make_widget<label_widget<>>("A1", tr("toggle:"));
 
     /// [Create a toggle]
     observer<int> value = 0;
 
-    auto& tb = window->content().make_widget<toggle_widget>("B1", value, 1, 2);
+    auto& tb = widget.content().make_widget<toggle_widget<>>("B1", value, 1, 2);
     tb.on_label = tr("on");
     tb.off_label = tr("off");
     tb.other_label = tr("other");

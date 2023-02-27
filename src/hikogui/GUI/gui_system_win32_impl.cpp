@@ -60,6 +60,7 @@ gui_system_win32::gui_system_win32(
         std::move(keyboard_bindings),
         std::move(delegate))
 {
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 }
 
 } // namespace hi::inline v1

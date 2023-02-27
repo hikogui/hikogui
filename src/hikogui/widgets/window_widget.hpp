@@ -28,7 +28,7 @@ template<fixed_string Name = "">
 class window_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "window";
+    constexpr static auto prefix = Name / "window";
 
     observer<label> title;
 
@@ -49,20 +49,14 @@ public:
             hi_no_default();
         }
 
-        _content = std::make_unique<grid_widget>(this);
+        _content = std::make_unique<grid_widget<prefix>>(this);
     }
-
-    /** The background color of the window.
-     * This function is used during rendering to use the optimized
-     * GPU clear function.
-     */
-    [[nodiscard]] color background_color() noexcept;
 
     /** Get a reference to the window's content widget.
      * @see grid_widget
      * @return A reference to a grid_widget.
      */
-    [[nodiscard]] grid_widget<Name>& content() noexcept
+    [[nodiscard]] grid_widget<prefix>& content() noexcept
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(_content);
@@ -73,7 +67,7 @@ public:
      * @see toolbar_widget
      * @return A reference to a toolbar_widget.
      */
-    [[nodiscard]] toolbar_widget<Name>& toolbar() noexcept
+    [[nodiscard]] toolbar_widget<prefix>& toolbar() noexcept
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(_toolbar);
@@ -156,12 +150,12 @@ public:
                 point2i{
                     context.width() - _toolbar_constraints.margins.right(),
                     context.height() - _toolbar_constraints.margins.top()}};
-            _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme<prefix ^ "cap-height">{}(this)};
+            _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme<prefix / "cap-height", int>{}(this)};
 
             hilet content_rectangle = aarectanglei{
                 point2i{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
                 point2i{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
-            _content_shape = box_shape{_content_constraints, content_rectangle, theme<prefix ^ "cap-height">{}(this)};
+            _content_shape = box_shape{_content_constraints, content_rectangle, theme<prefix / "cap-height", int>{}(this)};
         }
         _toolbar->set_layout(context.transform(_toolbar_shape));
         _content->set_layout(context.transform(_content_shape));

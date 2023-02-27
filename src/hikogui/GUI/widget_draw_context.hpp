@@ -358,6 +358,44 @@ public:
         return draw_glyph(layout, make_quad(box), font, glyph, draw_attributes{attributes...});
     }
 
+    /** Draw a glyph.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The size and position of the glyph.
+     * @param glyph The glyphs to draw.
+     * @param attributes The drawing attributes to use.
+     */
+    void draw_glyph(
+        widget_layout const& layout,
+        quad const& box,
+        font_book::font_glyph_type font_glyph,
+        draw_attributes const& attributes) const noexcept
+    {
+        return _draw_glyph(
+            layout.clipping_rectangle_on_window(attributes.clipping_rectangle),
+            layout.to_window3() * box,
+            *font_glyph.font,
+            font_glyph.glyph,
+            attributes);
+    }
+
+        /** Draw a glyph.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The size and position of the glyph.
+     * @param glyph The glyphs to draw.
+     * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
+     */
+    template<draw_quad_shape Shape, draw_attribute... Attributes>
+    void draw_glyph(
+        widget_layout const& layout,
+        Shape const& box,
+        font_book::font_glyph_type font_glyph,
+        Attributes const&...attributes) const noexcept
+    {
+        return draw_glyph(layout, make_quad(box), font_glyph, draw_attributes{attributes...});
+    }
+
     /** Draw shaped text.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.

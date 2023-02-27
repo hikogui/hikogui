@@ -35,12 +35,12 @@ public:
     theme_value_base& operator=(theme_value_base const&) = delete;
     theme_value_base& operator=(theme_value_base&&) = delete;
 
-    void lock() noexcept
+    void lock() const noexcept
     {
         return _mutex.lock();
     }
 
-    void unlock() noexcept
+    void unlock() const noexcept
     {
         return _mutex.unlock();
     }
@@ -89,9 +89,9 @@ public:
     theme_value_base& operator=(theme_value_base const&) = delete;
     theme_value_base& operator=(theme_value_base&&) = delete;
 
-    void lock() noexcept {}
+    void lock() const noexcept {}
 
-    void unlock() noexcept {}
+    void unlock() const noexcept {}
 
     [[nodiscard]] value_type get() const noexcept
     {
@@ -134,9 +134,9 @@ public:
     theme_value_base& operator=(theme_value_base const&) = delete;
     theme_value_base& operator=(theme_value_base&&) = delete;
 
-    void lock() noexcept {}
+    void lock() const noexcept {}
 
-    void unlock() noexcept {}
+    void unlock() const noexcept {}
 
     [[nodiscard]] value_type get(theme_value_index index) const noexcept
     {
@@ -238,7 +238,7 @@ template<fixed_string Tag>
 struct theme<Tag, corner_radii> {
     [[nodiscard]] corner_radii operator()(widget const *widget) const noexcept
     {
-        hilet tmp = theme<Tag, int>{}(widget);
+        hilet tmp = theme<Tag, float>{}(widget);
         return corner_radii{tmp};
     }
 };

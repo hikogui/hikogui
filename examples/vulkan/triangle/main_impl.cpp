@@ -4,10 +4,8 @@
 
 #include "hikogui/module.hpp"
 #include "hikogui/codec/png.hpp"
-#include "hikogui/GUI/gui_system.hpp"
 #include "hikogui/GFX/RenderDoc.hpp"
 #include "hikogui/GFX/gfx_surface_delegate_vulkan.hpp"
-#include "hikogui/widgets/widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
 #include "hikogui/task.hpp"
@@ -17,11 +15,15 @@
 #include <cassert>
 
 // Every widget must inherit from hi::widget.
+template<hi::fixed_string Name = "">
 class triangle_widget : public hi::widget, public hi::gfx_surface_delegate_vulkan {
 public:
+    using super = hi::widget;
+    constexpr static auto prefix = Name / "my-widget";
+
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    triangle_widget(hi::widget *parent, hi::gfx_surface& surface) noexcept : widget(parent), _surface(surface)
+    triangle_widget(hi::widget *parent, hi::gfx_surface& surface) noexcept : super(parent), _surface(surface)
     {
         _surface.add_delegate(this);
     }
@@ -42,7 +44,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return {{400, 300}, {640, 480}, {1024, 860}, hi::alignment{}, theme().margin()};
+        return {{400, 300}, {640, 480}, {1024, 860}, hi::alignment{}, hi::theme<prefix / "margin", hi::marginsi>{}(this)};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -183,11 +185,11 @@ hi::task<> main_window(hi::gui_system& gui)
     auto icon = hi::icon(hi::png::load(hi::URL{"resource:vulkan_triangle.png"}));
 
     // Create a window, when `window` gets out-of-scope the window is destroyed.
-    auto window = gui.make_window(hi::label{std::move(icon), hi::tr("Vulkan Triangle")});
+    auto [window, widget] = gui.make_window<hi::window_widget<>>(hi::label{std::move(icon), hi::tr("Vulkan Triangle")});
 
     // Create the vulkan triangle-widget as the content of the window. The content
     // of the window is a grid, we only use the cell "A1" for this widget.
-    window->content().make_widget<triangle_widget>("A1", *window->surface);
+    widget.content().make_widget<triangle_widget<>>("A1", *window->surface);
 
     // Wait until the window is "closing" because the operating system says so, or when
     // the X is pressed.

@@ -17,10 +17,11 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  */
 template<fixed_string Name = "">
-class toolbar_button_widget final : public abstract_button_widget<Name ^ "toolbar-button"> {
+class toolbar_button_widget final : public abstract_button_widget<Name / "toolbar-button"> {
 public:
-    using super = abstract_button_widget<Name ^ "toolbar-button">;
+    using super = abstract_button_widget<Name / "toolbar-button">;
     using delegate_type = typename super::delegate_type;
+    constexpr static auto prefix = super::prefix;
 
     toolbar_button_widget(
         widget *parent,
@@ -43,7 +44,7 @@ public:
         _label_constraints = super::update_constraints();
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet spacing = theme<prefix ^ "spacing">{}(this);
+        hilet spacing = theme<prefix / "spacing", int>{}(this);
         hilet extra_size = extent2i{spacing * 2, spacing * 2};
 
         auto constraints = _label_constraints + extra_size;
@@ -53,26 +54,26 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(layout, context)) {
-            hilet spacing = theme<prefix ^ "spacing", int>{}(this);
+        if (compare_store(this->layout, context)) {
+            hilet spacing = theme<prefix / "spacing", int>{}(this);
             hilet label_rectangle = aarectanglei{spacing, 0, context.width() - spacing * 2, context.height()};
-            _on_label_shape = _off_label_shape = _other_label_shape =
-                box_shape{_label_constraints, label_rectangle, theme<prefix ^ "cap-height", int>{}(this)};
+            this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
+                box_shape{_label_constraints, label_rectangle, theme<prefix / "cap-height", int>{}(this)};
         }
         super::set_layout(context);
     }
 
     void draw(widget_draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_toolbar_button(context);
-            draw_button(context);
+            this->draw_button(context);
         }
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
+        return *this->mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
     }
     // @endprivatesection
 private:
@@ -81,11 +82,11 @@ private:
     void draw_toolbar_button(widget_draw_context const& context) noexcept
     {
         context.draw_box(
-            layout,
-            layout.rectangle(),
-            theme<prefix ^ "fill.color", color>{}(this),
-            theme<prefix ^ "outline.color", color>{}(this),
-            theme<prefix ^ "outline.width", int>{}(this),
+            this->layout,
+            this->layout.rectangle(),
+            theme<prefix / "fill.color", color>{}(this),
+            theme<prefix / "outline.color", color>{}(this),
+            theme<prefix / "outline.width", int>{}(this),
             border_side::inside);
     }
 };

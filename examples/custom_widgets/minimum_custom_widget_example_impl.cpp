@@ -3,17 +3,19 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
 
 // Every widget must inherit from hi::widget.
+template<hi::fixed_string Name = "">
 class minimum_widget : public hi::widget {
 public:
+    using super = hi::widget;
+    constexpr static auto prefix = Name / "my-widget";
+
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    minimum_widget(hi::widget *parent) noexcept : widget(parent) {}
+    minimum_widget(hi::widget *parent) noexcept : super(parent) {}
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
@@ -26,7 +28,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return {{100, 50}, {200, 100}, {300, 100}, hi::alignment{}, theme().margin()};
+        return {{100, 50}, {200, 100}, {300, 100}, hi::alignment{}, hi::theme<prefix / "margin", hi::marginsi>{}(this)};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -57,8 +59,8 @@ public:
         if (*mode > hi::widget_mode::invisible and overlaps(context, layout)) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
-            context.draw_box(layout, _left_rectangle, theme().color(hi::semantic_color::indigo));
-            context.draw_box(layout, _right_rectangle, theme().color(hi::semantic_color::blue));
+            context.draw_box(layout, _left_rectangle, hi::theme<prefix / "indigo", hi::color>{}(this));
+            context.draw_box(layout, _right_rectangle, hi::theme<prefix / "blue", hi::color>{}(this));
         }
     }
 
@@ -70,8 +72,8 @@ private:
 int hi_main(int argc, char *argv[])
 {
     auto gui = hi::gui_system::make_unique();
-    auto window = gui->make_window(hi::tr("Minimum Custom Widget"));
-    window->content().make_widget<minimum_widget>("A1");
+    auto [window, widget] = gui->make_window<hi::window_widget<>>(hi::tr("Minimum Custom Widget"));
+    widget.content().make_widget<minimum_widget<>>("A1");
 
     auto close_cbt = window->closing.subscribe(
         [&] {

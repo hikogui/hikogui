@@ -46,7 +46,7 @@ template<axis Axis = axis::both, fixed_string Name = "">
 class scroll_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "scroll";
+    constexpr static auto prefix = Name / "scroll";
 
     using aperture_type = scroll_aperture_widget<prefix>;
     using horizontal_bar_type = scroll_bar_widget<axis::horizontal, prefix>;
@@ -130,7 +130,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            _grid.set_layout(context.shape, theme().baseline_adjustment());
+            _grid.set_layout(context.shape, theme<prefix / "cap-height", int>{}(this));
         }
 
         for (hilet& cell : _grid) {

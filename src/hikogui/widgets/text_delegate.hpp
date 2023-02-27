@@ -137,6 +137,49 @@ private:
     typename decltype(value)::callback_token _value_cbt;
 };
 
+/** A default text delegate specialization for `text`.
+ *
+ * @ingroup widget_delegates
+ */
+template<>
+class default_text_delegate<text_variant> : public text_delegate {
+public:
+    using value_type = text_variant;
+
+    observer<value_type> value;
+
+    /** Construct a delegate.
+     *
+     * @param value A value or observer-value used as a representation of the state.
+     */
+    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
+    {
+        _value_cbt = this->value.subscribe([&](auto...) {
+            this->_notifier();
+        });
+    }
+
+    [[nodiscard]] text read(widget& sender) noexcept override
+    {
+        return to_text(*value.read());
+    }
+
+    void write(widget& sender, hi::text const& text) noexcept override
+    {
+        auto proxy = value.copy();
+        auto *ptr = std::addressof(*proxy);
+
+        if (auto *text_ptr = get_if<hi::text>(ptr)) {
+            *text_ptr = text;
+        } else {
+            hi_not_implemented();
+        }
+    }
+
+private:
+    typename decltype(value)::callback_token _value_cbt;
+};
+
 /** Create a shared pointer to a default text delegate.
  *
  * @ingroup widget_delegates

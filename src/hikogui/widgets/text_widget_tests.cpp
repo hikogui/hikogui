@@ -21,7 +21,7 @@ protected:
 
     std::unique_ptr<hi::theme_book> theme_book;
 
-    observer<std::string> text;
+    observer<hi::text> text;
     std::unique_ptr<window_widget_moc> window_widget;
     std::unique_ptr<hi::text_widget<>> widget;
 
@@ -57,21 +57,21 @@ protected:
 
 TEST_F(text_widget_tests, add_character)
 {
-    text = std::string{"hllo"};
+    text = to_text(std::string{"hllo"});
 
     widget->handle_event(gui_event{gui_event_type::text_cursor_right_char});
     widget->handle_event(gui_event::keyboard_grapheme(grapheme{'e'}));
 
-    ASSERT_EQ(text, "hello");
+    ASSERT_EQ(text, to_text("hello"));
 }
 
 TEST_F(text_widget_tests, add_combining_character)
 {
-    text = std::string{"hllo"};
+    text = to_text(std::string{"hllo"});
 
     widget->handle_event(gui_event{gui_event_type::text_cursor_right_char});
     widget->handle_event(gui_event::keyboard_partial_grapheme(grapheme{'"'}));
     widget->handle_event(gui_event::keyboard_grapheme(grapheme{U'\u00EB'})); // e-umlaut
 
-    ASSERT_EQ(text, "h\u00EBllo");
+    ASSERT_EQ(text, to_text("h\u00EBllo"));
 }

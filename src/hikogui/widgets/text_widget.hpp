@@ -62,7 +62,7 @@ class text_widget final : public widget {
 public:
     using super = widget;
     using delegate_type = text_delegate;
-    constexpr static auto prefix = Name ^ "text";
+    constexpr static auto prefix = Name / "text";
 
     std::shared_ptr<delegate_type> delegate;
 
@@ -164,13 +164,13 @@ public:
 
         // XXX use the theme-style and apply it to the _text_cache.
         _shaped_text = text_shaper{
-            _text_cache, theme<prefix ^ "style", text_theme>{}(this), dpi_scale, alignment_, os_settings::writing_direction()};
+            _text_cache, theme<prefix / "style", text_theme>{}(this), dpi_scale, alignment_, os_settings::writing_direction()};
 
         hilet shaped_text_rectangle =
             narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));
         hilet shaped_text_size = shaped_text_rectangle.size();
 
-        hilet margins = theme<prefix ^ "margin", marginsi>{}(this);
+        hilet margins = theme<prefix / "margin", marginsi>{}(this);
         if (*mode == widget_mode::partial) {
             // In line-edit mode the text should not wrap.
             return _constraints_cache = box_constraints{
@@ -236,7 +236,7 @@ public:
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             context.draw_text(layout, _shaped_text);
 
-            context.draw_text_selection(layout, _shaped_text, _selection, theme<prefix ^ "selection.color", color>{}(this));
+            context.draw_text_selection(layout, _shaped_text, _selection, theme<prefix / "selection.color", color>{}(this));
 
             if (*_cursor_state == cursor_state_type::on or *_cursor_state == cursor_state_type::busy) {
                 context.draw_text_cursors(
@@ -245,10 +245,10 @@ public:
                     _selection.cursor(),
                     _overwrite_mode,
                     to_bool(_has_dead_character),
-                    theme<prefix ^ "primary-cursor.color", color>{}(this),
-                    theme<prefix ^ "secondary-cursor.color", color>{}(this),
-                    theme<prefix ^ "overwrite-cursor.color", color>{}(this),
-                    theme<prefix ^ "compose-cursor.color", color>{}(this));
+                    theme<prefix / "primary-cursor.color", color>{}(this),
+                    theme<prefix / "secondary-cursor.color", color>{}(this),
+                    theme<prefix / "overwrite-cursor.color", color>{}(this),
+                    theme<prefix / "compose-cursor.color", color>{}(this));
             }
         }
     }
@@ -296,14 +296,23 @@ public:
             break;
 
         case text_edit_paste:
-            if (*mode >= partial) {
-                reset_state("BDX");
-                replace_selection(replace linefeeds event.clipboard_data());
-                return true;
-
-            } else if (*mode >= enabled) {
+            if (*mode >= enabled) {
+                // Full text-edit mode, copy from the clipboard as-is.
                 reset_state("BDX");
                 replace_selection(event.clipboard_data());
+                return true;
+
+            } else if (*mode >= partial) {
+                // Line-edit mode, copy from the clipboard replacing
+                // paragraph-separators with spaces.
+                reset_state("BDX");
+                auto new_text = event.clipboard_data();
+                for (auto& c : new_text) {
+                    if (c == unicode_PS) {
+                        c = ' ';
+                    }
+                }
+                replace_selection(new_text);
                 return true;
             }
             break;
@@ -313,7 +322,7 @@ public:
                 reset_state("BDX");
                 if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
                     process_event(
-                        gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, to_string(selected_text_)));
+                        gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text_));
                 }
                 return true;
             }
@@ -322,7 +331,7 @@ public:
         case text_edit_cut:
             if (*mode >= select) {
                 reset_state("BDX");
-                process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, to_string(selected_text())));
+                process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text()));
                 if (*mode >= partial) {
                     replace_selection(text{});
                 }
@@ -757,13 +766,13 @@ private:
     enum class add_type { append, insert, dead };
 
     struct undo_type {
-        gstring text;
+        hi::text text;
         text_selection selection;
     };
 
     enum class cursor_state_type { off, on, busy, none };
 
-    text _text_cache;
+    hi::text _text_cache;
     text_shaper _shaped_text;
 
     mutable box_constraints _constraints_cache;
@@ -875,11 +884,11 @@ private:
         }
     }
 
-    [[nodiscard]] gstring_view selected_text() const noexcept
+    [[nodiscard]] text selected_text() const noexcept
     {
         hilet[first, last] = _selection.selection_indices();
 
-        return gstring_view{_text_cache}.substr(first, last - first);
+        return _text_cache.substr(first, last - first);
     }
 
     void undo_push() noexcept
@@ -981,7 +990,7 @@ private:
             hilet[first, last] = _shaped_text.select_char(original_cursor);
             _selection.drag_selection(last);
         }
-        replace_selection(gstring{c});
+        replace_selection(text{c});
 
         if (add_mode == add_type::insert) {
             // The character was inserted, put the cursor back where it was.
@@ -1021,7 +1030,7 @@ private:
             _selection.drag_selection(last);
         }
 
-        return replace_selection(gstring{});
+        return replace_selection(text{});
     }
 
     void delete_character_prev() noexcept
@@ -1034,7 +1043,7 @@ private:
             _selection.drag_selection(first);
         }
 
-        return replace_selection(gstring{});
+        return replace_selection(hi::text{});
     }
 
     void delete_word_next() noexcept
@@ -1047,7 +1056,7 @@ private:
             _selection.drag_selection(last);
         }
 
-        return replace_selection(gstring{});
+        return replace_selection(hi::text{});
     }
 
     void delete_word_prev() noexcept
@@ -1060,7 +1069,7 @@ private:
             _selection.drag_selection(first);
         }
 
-        return replace_selection(gstring{});
+        return replace_selection(text{});
     }
 };
 

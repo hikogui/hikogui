@@ -13,16 +13,16 @@ using namespace hi;
 
 task<void> checkbox_example(gui_system &gui)
 {
-    auto window = gui.make_window(tr("Checkbox example"));
+    auto [window, widget] = gui.make_window<window_widget<>>(tr("Checkbox example"));
 
     /// [Create a label]
-    window->content().make_widget<label_widget>("A1", tr("checkbox:"));
+    widget.content().make_widget<label_widget<>>("A1", tr("checkbox:"));
     /// [Create a label]
 
     /// [Create a checkbox]
     observer<int> value = 0;
 
-    auto &cb = window->content().make_widget<checkbox_widget>("B1", value, 1, 2);
+    auto& cb = widget.content().make_widget<checkbox_widget<>>("B1", value, 1, 2);
     cb.on_label = tr("on");
     cb.off_label = tr("off");
     cb.other_label = tr("other");

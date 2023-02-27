@@ -3,21 +3,23 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/log.hpp"
 #include "hikogui/loop.hpp"
 
 // Every widget must inherit from hi::widget.
+template<hi::fixed_string Name = "">
 class command_widget : public hi::widget {
 public:
+    using super = hi::widget;
+    constexpr static auto prefix = Name / "my-widget";
+
     // Using an observer allows reading, writing and monitoring of the value outside of the widget.
     hi::observer<bool> value;
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    command_widget(hi::widget *parent) noexcept : hi::widget(parent)
+    command_widget(hi::widget *parent) noexcept : super(parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
         _value_cbt = value.subscribe([&](auto...) {
@@ -30,7 +32,7 @@ public:
     [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
-        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, theme().margin()};
+        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, hi::theme<prefix / "margin", hi::marginsi>{}(this)};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -41,13 +43,6 @@ public:
     {
         // Update the `layout` with the new context.
         if (compare_store(layout, context)) {}
-    }
-
-    // It is common to override the context sensitive colors of the default widget.
-    // In this case the background color is 'teal' when the value of the widget is true.
-    [[nodiscard]] hi::color background_color() const noexcept override
-    {
-        return *value ? theme().color(hi::semantic_color::green) : widget::background_color();
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.
@@ -64,11 +59,11 @@ public:
             context.draw_box(
                 layout,
                 layout.rectangle(),
-                background_color(),
-                focus_color(),
-                theme().border_width(),
+                hi::theme<prefix / "fill.color", hi::color>{}(this),
+                hi::theme<prefix / "outline.color", hi::color>{}(this),
+                hi::theme<prefix / "outline.width", int>{}(this),
                 hi::border_side::inside,
-                theme().rounding_radius());
+                hi::theme<prefix / "outline.radius", hi::corner_radii>{}(this));
         }
     }
 
@@ -132,9 +127,9 @@ private:
 int hi_main(int argc, char *argv[])
 {
     auto gui = hi::gui_system::make_unique();
-    auto window = gui->make_window(hi::tr("Custom Widget Command"));
-    window->content().make_widget<command_widget>("A1");
-    window->content().make_widget<command_widget>("A2");
+    auto [window, widget] = gui->make_window<hi::window_widget<>>(hi::tr("Custom Widget Command"));
+    widget.content().make_widget<command_widget<>>("A1");
+    widget.content().make_widget<command_widget<>>("A2");
 
     auto close_cbt = window->closing.subscribe(
         [&] {

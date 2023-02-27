@@ -30,7 +30,7 @@ template<fixed_string Name = "">
 class audio_device_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "audio-device";
+    constexpr static auto prefix = Name / "audio-device";
 
     /** The audio device this widget has selected and is configuring.
      */
@@ -65,7 +65,7 @@ public:
     {
         if (compare_store(layout, context)) {
             hilet grid_rectangle = context.rectangle();
-            _grid_shape = {_grid_constraints, grid_rectangle, theme<prefix ^ "cap-height", int>{}(this)};
+            _grid_shape = {_grid_constraints, grid_rectangle, theme<prefix / "cap-height", int>{}(this)};
         }
 
         _grid_widget->set_layout(context.transform(_grid_shape));
@@ -104,13 +104,13 @@ private:
 
     /** The grid widget contains all the child widgets.
      */
-    std::unique_ptr<grid_widget> _grid_widget;
+    std::unique_ptr<grid_widget<prefix>> _grid_widget;
     box_constraints _grid_constraints;
     box_shape _grid_shape;
 
     /** The widget used to select the audio device.
      */
-    selection_widget *_device_selection_widget = nullptr;
+    selection_widget<prefix> *_device_selection_widget = nullptr;
 
     observer<std::vector<std::pair<std::string, label>>> _device_list;
 

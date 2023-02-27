@@ -31,6 +31,17 @@ public:
     struct font_glyph_type {
         hi::font const *font;
         hi::glyph_id glyph;
+
+        [[nodiscard]] glyph_metrics get_metrics() const noexcept
+        {
+            hi_axiom_not_null(font);
+            return font->get_metrics(glyph);
+        }
+
+        [[nodiscard]] aarectangle get_bounding_rectangle() const noexcept
+        {
+            return get_metrics().bounding_rectangle;
+        }
     };
 
     struct font_glyphs_type {
@@ -173,12 +184,12 @@ private:
  *
  * @param path Location of font.
  */
-font& register_font_file(std::filesystem::path const& path)
+inline font& register_font_file(std::filesystem::path const& path)
 {
     return font_book::global().register_font_file(path);
 }
 
-void register_font_directory(std::filesystem::path const& path)
+inline void register_font_directory(std::filesystem::path const& path)
 {
     return font_book::global().register_font_directory(path);
 }
@@ -186,7 +197,7 @@ void register_font_directory(std::filesystem::path const& path)
 /** Find font family id.
  * This function will always return a valid font_family_id by walking the fallback-chain.
  */
-[[nodiscard]] font_family_id find_font_family(std::string const& family_name) noexcept
+[[nodiscard]] inline font_family_id find_font_family(std::string const& family_name) noexcept
 {
     return font_book::global().find_family(family_name);
 }

@@ -64,7 +64,7 @@ class text_field_widget final : public widget {
 public:
     using delegate_type = text_field_delegate;
     using super = widget;
-    constexpr static auto prefix = Name ^ "text-field";
+    constexpr static auto prefix = Name / "text-field";
 
     std::shared_ptr<delegate_type> delegate;
 
@@ -98,7 +98,7 @@ public:
         _text_widget->mode = widget_mode::partial;
 
         // XXX The error-label should use the text_phrasing::error.
-        _error_label_widget = std::make_unique < label_widget<prefix ^ "error">(this, _error_label, alignment::top_left());
+        _error_label_widget = std::make_unique<label_widget<prefix / "error">>(this, _error_label, alignment::top_left());
 
         _continues_cbt = continues.subscribe([&](auto...) {
             ++global_counter<"text_field_widget:continues:constrain">;
@@ -167,7 +167,7 @@ public:
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
         auto size = box_size;
-        auto margins = theme<prefix ^ "margins", marginsi>{}(this);
+        auto margins = theme<prefix / "margins", marginsi>{}(this);
         if (_error_label->empty()) {
             _error_label_widget->mode = widget_mode::invisible;
             _error_label_constraints = _error_label_widget->update_constraints();
@@ -197,13 +197,13 @@ public:
                     _scroll_constraints.margins.bottom()};
 
             hilet scroll_rectangle = aarectanglei{point2i{0, context.height() - scroll_size.height()}, scroll_size};
-            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme<prefix ^ "cap-height">{}(this)};
+            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme<prefix / "cap-height">{}(this)};
 
             if (*_error_label_widget->mode > widget_mode::invisible) {
                 hilet error_label_rectangle =
                     aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
                 _error_label_shape =
-                    box_shape{_error_label_constraints, error_label_rectangle, theme<prefix ^ "cap-height">{}(this)};
+                    box_shape{_error_label_constraints, error_label_rectangle, theme<prefix / "cap-height">{}(this)};
             }
         }
 
@@ -278,7 +278,7 @@ private:
 
     /** The text widget inside the scroll widget.
      */
-    text_widget *_text_widget = nullptr;
+    text_widget<prefix> *_text_widget = nullptr;
 
     /** The text edited by the _text_widget.
      */
@@ -287,7 +287,7 @@ private:
     /** An error string to show to the user.
      */
     observer<label> _error_label;
-    std::unique_ptr<label_widget> _error_label_widget;
+    std::unique_ptr<label_widget<join_path(prefix, "error")>> _error_label_widget;
     box_constraints _error_label_constraints;
     box_shape _error_label_shape;
 
@@ -337,17 +337,17 @@ private:
     {
         hilet outline = narrow_cast<aarectangle>(_scroll_shape.rectangle);
 
-        hilet radius = theme<prefix ^ "outline.radius", float>{}(this);
+        hilet radius = theme<prefix / "outline.radius", float>{}(this);
         hilet corner_radii = hi::corner_radii(0.0f, 0.0f, radius, radius);
-        context.draw_box(layout, outline, theme<prefix ^ "fill.color", color>{}(this), corner_radii);
+        context.draw_box(layout, outline, theme<prefix / "fill.color", color>{}(this), corner_radii);
 
         // A text field has a line under the box, which changes color on error.
         hilet line = line_segment(get<0>(outline), get<1>(outline));
 
         hilet outline_color =
-            _error_label.empty() ? theme<prefix ^ "outline.color", color>{}(this) : theme<prefix ^ "error.color", color>{}(this);
+            _error_label.empty() ? theme<prefix / "outline.color", color>{}(this) : theme<prefix / "error.color", color>{}(this);
         context.draw_line(
-            layout, translate3{0.0f, 0.5f, 0.1f} * line, theme<prefix ^ "outline.width", int>{}(this), outline_color);
+            layout, translate3{0.0f, 0.5f, 0.1f} * line, theme<prefix / "outline.width", int>{}(this), outline_color);
     }
 };
 

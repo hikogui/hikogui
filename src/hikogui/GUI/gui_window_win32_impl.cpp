@@ -174,10 +174,9 @@ void gui_window_win32::create_window(extent2i new_size)
     surface = gui.gfx->make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(gui_system& gui, label const& title) noexcept :
-    gui_window(gui, title), track_mouse_leave_event_parameters()
+gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<hi::widget> widget, label const& title) noexcept :
+    gui_window(gui, std::move(widget), title), track_mouse_leave_event_parameters()
 {
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 }
 
 gui_window_win32::~gui_window_win32()
@@ -421,8 +420,7 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                 // is the complete set that is needed for the character-attributes.
                 auto locale_name = std::wstring(LOCALE_NAME_MAX_LENGTH, L'\0');
                 {
-                    hilet r = GetLocaleInfoW(
-                        *locale, LOCALE_SNAME, locale_name.data(), narrow_cast<int>(locale_name.size()));
+                    hilet r = GetLocaleInfoW(*locale, LOCALE_SNAME, locale_name.data(), narrow_cast<int>(locale_name.size()));
 
                     if (r == 0) {
                         hi_log_error(
@@ -470,7 +468,9 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                     }
                 });
 
-                string = hi::to_string(std::wstring_view(wstr_c));
+                string = to_string(unicode_NFC(
+                    hi::to_u32string(std::wstring_view(wstr_c)),
+                    unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_newline_to_PS));
             }
             break;
 
@@ -483,8 +483,7 @@ void gui_window_win32::set_window_size(extent2i new_extent)
     }
 
     if (string) {
-        auto text = to_text(string, language_tag);
-        return text;
+        return to_text(*string, language_tag);
 
     } else {
         return std::nullopt;

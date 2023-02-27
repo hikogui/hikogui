@@ -21,7 +21,7 @@
 namespace hi { inline namespace v1 {
 
 template<typename Context>
-concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer<hi::alignment>, observer<hi::color>>;
+concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer<hi::alignment>>;
 
 /** An simple GUI widget that displays an icon.
  * @ingroup widgets
@@ -33,15 +33,11 @@ template<fixed_string Name = "">
 class icon_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "icon";
+    constexpr static auto prefix = Name / "icon";
 
     /** The icon to be displayed.
      */
     observer<icon> icon = hi::icon{};
-
-    /** The color a non-color icon will be displayed with.
-     */
-    observer<color> color = color::foreground();
 
     /** Alignment of the icon inside the widget.
      */
@@ -59,8 +55,6 @@ public:
             icon = hi_forward(first);
         } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::color>>) {
-            color = hi_forward(first);
         } else {
             hi_static_no_default();
         }
@@ -87,20 +81,20 @@ public:
                     process_event({gui_event_type::window_reconstrain});
                 }
 
-            } else if (hilet g1 = std::get_if<font_book::font_glyphs_type>(&icon.read())) {
+            } else if (hilet g1 = std::get_if<font_book::font_glyph_type>(&icon.read())) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_bounding_box().size() * theme<prefix ^ "size", float>{}(this);
+                _icon_size = _glyph.get_bounding_rectangle().size() * theme<prefix / "size", float>{}(this);
 
             } else if (hilet g2 = std::get_if<elusive_icon>(&icon.read())) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_bounding_box().size() * theme<prefix ^ "size", float>{}(this);
+                _icon_size = _glyph.get_bounding_rectangle().size() * theme<prefix / "size", float>{}(this);
 
             } else if (hilet g3 = std::get_if<hikogui_icon>(&icon.read())) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_bounding_box().size() * theme<prefix ^ "size", float>{}(this);
+                _icon_size = _glyph.get_bounding_rectangle().size() * theme<prefix / "size", float>{}(this);
             }
         }
 
@@ -110,7 +104,7 @@ public:
             narrow_cast<extent2i>(_icon_size),
             narrow_cast<extent2i>(_icon_size),
             resolved_alignment,
-            theme<prefix ^ "margin", marginsi>{}(this)};
+            theme<prefix / "margin", marginsi>{}(this)};
         return icon_constraints.constrain(*minimum, *maximum);
     }
 
@@ -147,7 +141,7 @@ public:
 
             case icon_type::glyph:
                 {
-                    context.draw_glyph(layout, _icon_rectangle, _glyph, theme<prefix ^ "color">{}(this));
+                    context.draw_glyph(layout, _icon_rectangle, *_glyph.font, _glyph.glyph, theme<prefix / "color", color>{}(this));
                 }
                 break;
 
@@ -161,7 +155,7 @@ private:
     enum class icon_type { no, glyph, pixmap };
 
     icon_type _icon_type;
-    font_book::font_glyphs_type _glyph;
+    font_book::font_glyph_type _glyph;
     paged_image _pixmap_backing;
     decltype(icon)::callback_token _icon_cbt;
     std::atomic<bool> _icon_has_modified = true;

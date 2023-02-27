@@ -42,7 +42,7 @@ template<fixed_string Name = "">
 class label_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "label";
+    constexpr static auto prefix = Name / "label";
 
     /** The label to display.
      */
@@ -125,8 +125,8 @@ public:
 
         hilet icon_size =
             (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
-            theme<prefix ^ "icon.large.size", int>{}(this) :
-            theme<prefix ^ "icon.small.size", int>{}(this);
+            theme<prefix / "icon.large.size", int>{}(this) :
+            theme<prefix / "icon.small.size", int>{}(this);
 
         _icon_widget->minimum = extent2i{icon_size, icon_size};
         _icon_widget->maximum = extent2i{icon_size, icon_size};
@@ -141,7 +141,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            _grid.set_layout(context.shape, theme<prefix ^ "cap-height", int>{}(this));
+            _grid.set_layout(context.shape, theme<prefix / "cap-height", int>{}(this));
         }
 
         for (hilet& cell : _grid) {
@@ -194,7 +194,7 @@ private:
         set_attributes(hi_forward(rest)...);
     }
 
-    label_widget(widget *parent) noexcept
+    label_widget(widget *parent) noexcept : super(parent)
     {
         mode = widget_mode::select;
 

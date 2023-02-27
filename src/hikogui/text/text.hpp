@@ -241,7 +241,7 @@ template<character_attribute... Args>
 
 [[nodiscard]] inline text to_text(
     std::string_view str,
-    char32_t new_line_char = U'\u2029',
+    char32_t new_line_char = unicode_PS,
     character_attributes default_attributes = character_attributes{}) noexcept
 {
     return to_text(to_gstring(str, new_line_char), default_attributes);
@@ -256,7 +256,7 @@ template<character_attribute... Args>
 template<character_attribute... Args>
 [[nodiscard]] inline text to_text(std::string_view str, Args const&...args) noexcept
 {
-    return to_text(str, character_attributes{args...});
+    return to_text(str, unicode_PS, character_attributes{args...});
 }
 
 [[nodiscard]] inline text to_text_with_markup(gstring_view str, character_attributes default_attributes) noexcept

@@ -16,29 +16,12 @@
 
 namespace hi::inline v1 {
 
-gui_window::gui_window(gui_system& gui, label const& title) noexcept : gui(gui), title(title) {}
-
-gui_window::~gui_window()
-{
-    // Destroy the top-level widget, before Window-members that the widgets require from the window during their destruction.
-    widget = {};
-
-    try {
-        surface.reset();
-        hi_log_info("Window '{}' has been properly destructed.", title);
-
-    } catch (std::exception const& e) {
-        hi_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
-    }
-}
-
-void gui_window::init(std::unique_ptr<hi::widget> window_widget)
+gui_window::gui_window(gui_system& gui, std::unique_ptr<hi::widget> widget, label const& title) noexcept :
+    gui(gui), widget(std::move(widget)), title(title)
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
-
-    widget = std::move(window_widget);
 
     hilet dpi_scale = dpi / points_per_inch_v<float>;
     apply(*widget, [&](auto& x) {
@@ -51,7 +34,7 @@ void gui_window::init(std::unique_ptr<hi::widget> window_widget)
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
 
-    // For changes in setting on the OS we should reconstrain/layout/redraw the window
+    // For changes in setting on the OS we should constrain/layout/redraw the window
     // For example when the language or theme changes.
     _setting_change_token = os_settings::subscribe(
         [this] {
@@ -71,6 +54,20 @@ void gui_window::init(std::unique_ptr<hi::widget> window_widget)
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
     create_window(new_size);
+}
+
+gui_window::~gui_window()
+{
+    // Destroy the top-level widget, before Window-members that the widgets require from the window during their destruction.
+    widget = {};
+
+    try {
+        surface.reset();
+        hi_log_info("Window '{}' has been properly destructed.", title);
+
+    } catch (std::exception const& e) {
+        hi_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
+    }
 }
 
 void gui_window::set_device(gfx_device *device) noexcept

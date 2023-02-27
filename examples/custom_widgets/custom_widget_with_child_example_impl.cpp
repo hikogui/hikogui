@@ -3,23 +3,26 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/widget.hpp"
-#include "hikogui/widgets/label_widget.hpp"
+#include "hikogui/GUI/module.hpp"
+#include "hikogui/widgets/module.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
 
 // Every widget must inherit from hi::widget.
+template<hi::fixed_string Name = "">
 class widget_with_child : public hi::widget {
 public:
+    using super = hi::widget;
+    constexpr static auto prefix = Name / "my-widget";
+
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
     template<typename Label>
-    widget_with_child(hi::widget *parent, Label&& label) noexcept : widget(parent)
+    widget_with_child(hi::widget *parent, Label&& label) noexcept : super(parent)
     {
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
-        _label_widget = std::make_unique<hi::label_widget>(this, std::forward<Label>(label), hi::alignment::middle_center());
+        _label_widget = std::make_unique<hi::label_widget<prefix>>(this, std::forward<Label>(label), hi::alignment::middle_center());
     }
 
     // The set_constraints() function is called when the window is first initialized,
@@ -32,12 +35,12 @@ public:
         // We add the ability to resize the widget beyond the size of the label.
         auto r = hi::box_constraints{};
         r.minimum.width() = _label_constraints.minimum.width();
-        r.preferred.width() = _label_constraints.preferred.width() + theme().margin<int>();
+        r.preferred.width() = _label_constraints.preferred.width();
         r.maximum.width() = _label_constraints.maximum.width() + 100;
         r.minimum.height() = _label_constraints.minimum.height();
-        r.preferred.height() = _label_constraints.preferred.height() + theme().margin<int>();
+        r.preferred.height() = _label_constraints.preferred.height();
         r.maximum.height() = _label_constraints.maximum.height() + 50;
-        r.margins = theme().margin();
+        r.margins = _label_constraints.margins;
         r.alignment = _label_constraints.alignment;
         return r;
     }
@@ -55,7 +58,7 @@ public:
             // when the layout of the current widget changes.
             auto const label_rectangle =
                 align(context.rectangle(), _label_constraints.preferred, hi::alignment::middle_center());
-            _label_shape = hi::box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
+            _label_shape = hi::box_shape{_label_constraints, label_rectangle, hi::theme<prefix / "cap-height", int>{}(this)};
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.
@@ -79,11 +82,11 @@ public:
                 context.draw_box(
                     layout,
                     layout.rectangle(),
-                    background_color(),
-                    foreground_color(),
-                    theme().border_width(),
+                    hi::theme<prefix / "fill.color", hi::color>{}(this),
+                    hi::theme<prefix / "outline.color", hi::color>{}(this),
+                    hi::theme<prefix / "outline.width", int>{}(this),
                     hi::border_side::outside,
-                    theme().rounding_radius());
+                    hi::theme<prefix / "outline.radius", hi::corner_radii>{}(this));
             }
 
             // Child widget only need to be drawn when the parent is visible, but the child may have
@@ -109,7 +112,7 @@ protected:
 
 private:
     // Child widgets are owned by their parent.
-    std::unique_ptr<hi::label_widget> _label_widget;
+    std::unique_ptr<hi::label_widget<prefix>> _label_widget;
     hi::box_constraints _label_constraints;
     hi::box_shape _label_shape;
 };
@@ -117,8 +120,8 @@ private:
 int hi_main(int argc, char *argv[])
 {
     auto gui = hi::gui_system::make_unique();
-    auto window = gui->make_window(hi::tr("Widget with child"));
-    window->content().make_widget<widget_with_child>("A1", hi::tr("Widget with child"));
+    auto [window, widget] = gui->make_window<hi::window_widget<>>(hi::tr("Widget with child"));
+    widget.content().make_widget<widget_with_child<>>("A1", hi::tr("Widget with child"));
 
     auto close_cbt = window->closing.subscribe(
         [&] {

@@ -23,7 +23,7 @@ template<fixed_string Name = "">
 class scroll_aperture_widget : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "aperture";
+    constexpr static auto prefix = Name / "aperture";
 
     observer<int> content_width;
     observer<int> content_height;
@@ -139,7 +139,7 @@ public:
                 -*offset_y + _content_constraints.margins.bottom(),
                 *content_width,
                 *content_height},
-            theme<prefix ^ "cap-height">{}(this)};
+            theme<prefix / "cap-height", int>{}(this)};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
@@ -197,7 +197,7 @@ public:
             int delta_x = 0;
             int delta_y = 0;
 
-            hilet margin = theme<prefix ^ "margin", int>{}(this);
+            hilet margin = theme<prefix / "margin", int>{}(this);
             if (safe_rectangle.width() > margin * 2 and safe_rectangle.height() > margin * 2) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do

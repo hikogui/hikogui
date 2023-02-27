@@ -43,7 +43,7 @@ public:
         auto tmp = value_type{};
         tmp |= widget.semantic_layer % 4;
         tmp <<= 2;
-        tmp |= wide_cast<value_type>(*widget.on);
+        tmp |= wide_cast<value_type>(*widget.state != widget_state::off);
         tmp <<= 1;
         if (widget.window) {
             tmp |= wide_cast<value_type>(widget.window->active);

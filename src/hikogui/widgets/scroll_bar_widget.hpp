@@ -33,7 +33,7 @@ template<axis Axis, fixed_string Name = "">
 class scroll_bar_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name ^ "bar";
+    constexpr static auto prefix = Name / "bar";
 
     static constexpr hi::axis axis = Axis;
 
@@ -71,8 +71,8 @@ public:
         }
 
         // The minimum size is twice the length of the slider, which is twice the theme().size()
-        hilet rail_length = theme<prefix ^ "rail.length", int>{}(this);
-        hilet rail_breadth = theme<prefix ^ "rail.breadth", int>{}(this);
+        hilet rail_length = theme<prefix / "rail.length", int>{}(this);
+        hilet rail_breadth = theme<prefix / "rail.breadth", int>{}(this);
         if constexpr (axis == axis::vertical) {
             return {
                 extent2i{rail_breadth, rail_length},
@@ -200,7 +200,7 @@ private:
             }
         }();
 
-        return std::clamp(preferred_length, theme<prefix ^ "slider.length", int>{}(this), rail_length());
+        return std::clamp(preferred_length, theme<prefix / "slider.length", int>{}(this), rail_length());
     }
 
     /** The amount of travel that the slider can make.
@@ -247,7 +247,7 @@ private:
     {
         hilet corner_radii =
             axis == axis::vertical ? hi::corner_radii{layout.width() * 0.5f} : hi::corner_radii{layout.height() * 0.5f};
-        context.draw_box(layout, layout.rectangle(), background_color(), corner_radii);
+        context.draw_box(layout, layout.rectangle(), theme<prefix / "fill.color", color>{}(this), corner_radii);
     }
 
     void draw_slider(widget_draw_context const& context) noexcept
@@ -258,7 +258,7 @@ private:
         context.draw_box(
             layout,
             translate_z(0.1f) * narrow_cast<aarectangle>(_slider_rectangle),
-            theme<prefix ^ "slider.color", color>{}(this),
+            theme<prefix / "slider.color", color>{}(this),
             corner_radii);
     }
 };

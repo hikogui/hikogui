@@ -78,8 +78,8 @@ class text_variant : public std::variant<std::monostate, hi::text, hi::translate
  *  - `hi::hikogui_icon`
  *  - `hi::pixmap<hi::sfloat_rgba16>`
  */
-class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyphs_type, pixmap<sfloat_rgba16>> {
-    using std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyphs_type, pixmap<sfloat_rgba16>>::variant;
+class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyph_type, pixmap<sfloat_rgba16>> {
+    using std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyph_type, pixmap<sfloat_rgba16>>::variant;
 
     /** Check if icon contains an image.
      */

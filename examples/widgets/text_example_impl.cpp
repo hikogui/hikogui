@@ -16,7 +16,7 @@ using namespace hi;
 int hi_main(int argc, char *argv[])
 {
     auto gui = gui_system::make_unique();
-    auto window = gui->make_window(tr("Label example"));
+    auto [window, widget] = gui->make_window<hi::window_widget<>>(tr("Label example"));
 
     // Start the logger system, so logging is done asynchronously.
     hi::log::start_subsystem(hi::global_state_type::log_level_info);
@@ -79,7 +79,7 @@ int hi_main(int argc, char *argv[])
 
     auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
-    auto& tw = window->content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
+    auto& tw = widget.content().make_widget<text_widget<>>("A1", text, hi::alignment::top_justified());
     tw.mode = hi::widget_mode::enabled;
 
     auto close_cb = window->closing.subscribe(
