@@ -4,6 +4,7 @@
 
 #include "theme_file.hpp"
 #include "theme_value.hpp"
+#include "../font/font_book.hpp"
 #include "../codec/JSON.hpp"
 #include "../log.hpp"
 #include <algorithm>

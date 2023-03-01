@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file theme_value.hpp Global variables for themese.
+/** @file theme_value.hpp Global variables for themes.
  */
 
 #pragma once
@@ -14,7 +14,7 @@
 #include "../geometry/module.hpp"
 #include "../generator.hpp"
 #include "../log.hpp"
-#include "theme_value_index.hpp"
+#include "../pattern_match.hpp"
 #include <atomic>
 #include <map>
 #include <mutex>
@@ -104,7 +104,7 @@ template<>
 class theme_value_base<hi::color> {
 public:
     using value_type = hi::color;
-    using color_array_type = std::array<value_type, theme_value_index::array_size>;
+    using color_array_type = std::array<value_type, 32>;
 
     constexpr theme_value_base() noexcept = default;
     theme_value_base(theme_value_base const&) = delete;
@@ -112,14 +112,14 @@ public:
     theme_value_base& operator=(theme_value_base const&) = delete;
     theme_value_base& operator=(theme_value_base&&) = delete;
 
-    [[nodiscard]] value_type get(theme_value_index index) const noexcept
+    [[nodiscard]] value_type get(size_t index) const noexcept
     {
-        return _values[index.intrinsic()];
+        return _values[index];
     }
 
-    [[nodiscard]] void set(theme_value_index index, value_type value) noexcept
+    [[nodiscard]] void set(size_t index, value_type value) noexcept
     {
-        _values[index.intrinsic()] = value;
+        _values[index] = value;
     }
 
     [[nodiscard]] static generator<theme_value_base&> get(std::string const& key) noexcept
@@ -202,70 +202,5 @@ inline auto global_theme_value = tagged_theme_value<Tag, T>{};
  */
 template<fixed_string Tag, typename T>
 struct theme;
-
-template<fixed_string Tag, std::floating_point T>
-struct theme<Tag, T> {
-    [[nodiscard]] T operator()(widget const *widget) const noexcept
-    {
-        hi_axiom_not_null(widget);
-        hilet& value = detail::global_theme_value<Tag, float>;
-        return wide_cast<T>(value.get() * widget->dpi_scale);
-    }
-};
-
-template<fixed_string Tag, std::integral T>
-struct theme<Tag, T> {
-    [[nodiscard]] T operator()(widget const *widget) const noexcept
-    {
-        return narrow_cast<T>(std::ceil(theme<Tag, float>{}(widget)));
-    }
-};
-
-template<fixed_string Tag>
-struct theme<Tag, extent2i> {
-    [[nodiscard]] extent2i operator()(widget const *widget) const noexcept
-    {
-        hilet tmp = theme<Tag, int>{}(widget);
-        return extent2i{tmp, tmp};
-    }
-};
-
-template<fixed_string Tag>
-struct theme<Tag, marginsi> {
-    [[nodiscard]] marginsi operator()(widget const *widget) const noexcept
-    {
-        hilet tmp = theme<Tag, int>{}(widget);
-        return marginsi{tmp};
-    }
-};
-
-template<fixed_string Tag>
-struct theme<Tag, corner_radii> {
-    [[nodiscard]] corner_radii operator()(widget const *widget) const noexcept
-    {
-        hilet tmp = theme<Tag, float>{}(widget);
-        return corner_radii{tmp};
-    }
-};
-
-template<fixed_string Tag>
-struct theme<Tag, hi::color> {
-    [[nodiscard]] hi::color operator()(widget const *widget) const noexcept
-    {
-        hi_axiom_not_null(widget);
-        hilet& value = detail::global_theme_value<Tag, hi::color>;
-        return value.get(theme_value_index{*widget});
-    }
-};
-
-template<fixed_string Tag>
-struct theme<Tag, text_theme> {
-    [[nodiscard]] text_theme operator()(widget const *widget) const noexcept
-    {
-        hi_axiom_not_null(widget);
-        hilet& value = detail::global_theme_value<Tag, hi::text_theme>;
-        return value.get();
-    }
-};
 
 }} // namespace hi::v1

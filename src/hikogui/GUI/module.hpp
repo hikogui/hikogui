@@ -23,7 +23,6 @@
 #include "theme_file.hpp"
 #include "theme_mode.hpp"
 #include "theme_value.hpp"
-#include "theme_value_index.hpp"
 #include "widget.hpp"
 #include "widget_id.hpp"
 #include "widget_layout.hpp"
