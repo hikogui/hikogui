@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "../i18n/iso_639.hpp"
+#include "../i18n/module.hpp"
 #include "../unicode/grapheme.hpp"
 #include "../utility/module.hpp"
 #include "text_phrasing.hpp"

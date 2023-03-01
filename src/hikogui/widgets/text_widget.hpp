@@ -13,7 +13,6 @@
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../geometry/module.hpp"
-#include "../i18n/translate.hpp"
 #include "../undo_stack.hpp"
 #include "../scoped_task.hpp"
 #include "../observer.hpp"

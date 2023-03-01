@@ -6,7 +6,7 @@
 #include "character_attributes.hpp"
 #include "../unicode/gstring.hpp"
 #include "../unicode/unicode_description.hpp"
-#include "../i18n/language_tag.hpp"
+#include "../i18n/module.hpp"
 #include "../utility/module.hpp"
 #include "../os_settings.hpp"
 #include <string>

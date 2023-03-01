@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../i18n/language_tag.hpp"
+#include "../i18n/module.hpp"
 #include <string>
 #include <vector>
 #include <functional>

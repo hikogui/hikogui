@@ -6,7 +6,7 @@
 
 #include "otype_utilities.hpp"
 #include "../utility/module.hpp"
-#include "../i18n/language_tag.hpp"
+#include "../i18n/module.hpp"
 #include <span>
 #include <cstddef>
 
