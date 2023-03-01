@@ -6,7 +6,7 @@
 
 #include "i18n/language_tag.hpp"
 #include "i18n/language.hpp"
-#include "GUI/theme_mode.hpp"
+#include "theme/module.hpp"
 #include "GFX/subpixel_orientation.hpp"
 #include "geometry/module.hpp"
 #include "utility/module.hpp"

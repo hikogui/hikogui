@@ -1,4 +1,11 @@
 
+#pragma once
+
+#include "theme_value.hpp"
+#include "theme_mode.hpp"
+#include "theme_file.hpp"
+#include "theme_book.hpp"
+
 namespace hi {
 inline namespace v1 {
 

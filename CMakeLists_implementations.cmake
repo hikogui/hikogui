@@ -16,8 +16,8 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/gui_window_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_bindings_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/keyboard_virtual_key_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/GUI/theme_file_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GUI/widget_draw_context_impl.cpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_file_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/exception_win32_impl.cpp>
 )

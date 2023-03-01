@@ -12,7 +12,7 @@
 #include "keyboard_focus_group.hpp"
 #include "gui_event.hpp"
 #include "widget_draw_context.hpp"
-#include "theme_value.hpp"
+#include "../theme/module.hpp"
 #include "../geometry/module.hpp"
 #include "../layout/box_constraints.hpp"
 #include "../observer.hpp"
