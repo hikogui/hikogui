@@ -16,11 +16,9 @@ namespace hi::inline v1 {
 
 gui_system::gui_system(
     std::unique_ptr<gfx_system> gfx,
-    std::unique_ptr<hi::theme_book> theme_book,
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) noexcept :
     gfx(std::move(gfx)),
-    theme_book(std::move(theme_book)),
     keyboard_bindings(std::move(keyboard_bindings)),
     thread_id(current_thread_id()),
     _delegate(delegate)
@@ -29,14 +27,14 @@ gui_system::gui_system(
 
     _selected_theme_cbt = selected_theme.subscribe(
         [&](auto...) {
-            auto& theme = this->theme_book->find(*selected_theme, os_settings::theme_mode());
+            auto& theme = find_theme(*selected_theme, os_settings::theme_mode());
             theme.activate();
         },
         callback_flags::main);
 
     _os_settings_cbt = os_settings::subscribe(
         [&](auto...) {
-            auto& theme = this->theme_book->find(*selected_theme, os_settings::theme_mode());
+            auto& theme = find_theme(*selected_theme, os_settings::theme_mode());
             theme.activate();
         },
         callback_flags::main);

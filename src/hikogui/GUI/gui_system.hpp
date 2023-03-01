@@ -20,7 +20,6 @@
 namespace hi::inline v1 {
 class gfx_system;
 class vertical_sync;
-class theme_book;
 class keyboard_bindings;
 
 /** Graphics system
@@ -30,7 +29,6 @@ public:
     static inline os_handle instance;
 
     std::unique_ptr<gfx_system> gfx;
-    std::unique_ptr<hi::theme_book> theme_book;
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings;
 
     thread_id const thread_id;
@@ -55,23 +53,6 @@ public:
     gui_system& operator=(const gui_system&) = delete;
     gui_system(gui_system&&) = delete;
     gui_system& operator=(gui_system&&) = delete;
-
-    /** Initialize after construction.
-     * Call this function directly after the constructor on the same thread.
-     */
-    virtual void init() noexcept
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->init(*this);
-        }
-    }
-
-    virtual void deinit() noexcept
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
-    }
 
     void set_delegate(std::weak_ptr<gui_system_delegate> delegate) noexcept
     {
@@ -108,15 +89,14 @@ public:
     void request_reconstrain() noexcept;
 
 protected:
+    std::weak_ptr<gui_system_delegate> _delegate;
+
     gui_system(
         std::unique_ptr<gfx_system> gfx,
-        std::unique_ptr<hi::theme_book> theme_book,
         std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
 private:
-    std::weak_ptr<gui_system_delegate> _delegate;
-
     decltype(selected_theme)::callback_token _selected_theme_cbt;
     os_settings::callback_token _os_settings_cbt;
 };

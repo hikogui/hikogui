@@ -30,7 +30,6 @@ target_sources(hikogui PRIVATE
     mouse_cursor.hpp
     theme_file_impl.cpp
     theme_file.hpp
-    theme_book_impl.cpp
     theme_book.hpp
     theme_mode.hpp
     theme_value_index.hpp
