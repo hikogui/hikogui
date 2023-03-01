@@ -19,8 +19,6 @@ protected:
         window_widget_moc() noexcept : hi::widget(nullptr) {}
     };
 
-    std::unique_ptr<hi::theme_book> theme_book;
-
     observer<hi::text> text;
     std::unique_ptr<window_widget_moc> window_widget;
     std::unique_ptr<hi::text_widget<>> widget;
@@ -37,9 +35,10 @@ protected:
             register_font_directory(path);
         }
 
-
-        theme_book = std::make_unique<hi::theme_book>(make_vector(get_paths(path_location::theme_dirs)));
-        auto &theme = theme_book->find("default", theme_mode::light);
+        for (auto const &path: get_paths(path_location::theme_dirs)) {
+            register_theme_directory(path);
+        }
+        auto &theme = find_theme("default", theme_mode::light);
         theme.activate();
 
         widget = std::make_unique<hi::text_widget<>>(nullptr, text);

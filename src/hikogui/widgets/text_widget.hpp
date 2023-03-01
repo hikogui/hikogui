@@ -13,7 +13,6 @@
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../geometry/module.hpp"
-#include "../i18n/translate.hpp"
 #include "../undo_stack.hpp"
 #include "../scoped_task.hpp"
 #include "../observer.hpp"
@@ -208,7 +207,7 @@ public:
     {
         using namespace std::literals::chrono_literals;
 
-        // After potential reconstrain and relayout, updating the shaped-text, ask the parent window to scroll if needed.
+        // After potential constrain and layout, updating the shaped-text, ask the parent window to scroll if needed.
         if (std::exchange(_request_scroll, false)) {
             scroll_to_show_selection();
         }

@@ -9,7 +9,7 @@
 
 #include "utility/module.hpp"
 #include "strings.hpp"
-#include "i18n/translate.hpp"
+#include "l10n/module.hpp"
 #include "unicode/gstring.hpp"
 #include "image/module.hpp"
 #include "font/module.hpp"

@@ -12,6 +12,7 @@
 #include "keyboard_focus_group.hpp"
 #include "gui_event.hpp"
 #include "widget_draw_context.hpp"
+#include "../theme/module.hpp"
 #include "../geometry/module.hpp"
 #include "../layout/box_constraints.hpp"
 #include "../observer.hpp"
@@ -131,6 +132,41 @@ public:
         for (auto& child : const_cast<widget const *>(this)->children(include_invisible)) {
             co_yield const_cast<widget&>(child);
         }
+    }
+
+    /** Get an index to select a color from a color theme.
+     *
+     * The color theme index is based on the state of the widget:
+     *  - [1:0] disabled=0,enabled=1,hover=2,clicked=3
+     *  - [2:2] keyboard-focus
+     *  - [3:3] widget-state != off
+     *  - [5:4] semantic-layer modulo 4.
+     */
+    [[nodiscard]] uint8_t color_theme_index() const noexcept
+    {
+        auto r = [&] {
+            if (*mode == widget_mode::disabled) {
+                return uint8_t{0};
+            } else if (*clicked) {
+                return uint8_t{3};
+            } else if (*hover) {
+                return uint8_t{2};
+            } else {
+                return uint8_t{1};
+            }
+        }();
+
+        if (*focus) {
+            r |= 4;
+        }
+
+        if (*state != widget_state::off) {
+            r |= 8;
+        }
+
+        r |= (semantic_layer % 4) << 4;
+        hi_axiom(r <= 31);
+        return r;
     }
 
     /** Find the widget that is under the mouse cursor.
@@ -586,5 +622,70 @@ inline void apply(widget& start, F const& f)
 {
     return apply(start, true, f);
 }
+
+template<fixed_string Tag, std::floating_point T>
+struct theme<Tag, T> {
+    [[nodiscard]] T operator()(widget const *widget) const noexcept
+    {
+        hi_axiom_not_null(widget);
+        hilet& value = detail::global_theme_value<Tag, float>;
+        return wide_cast<T>(value.get() * widget->dpi_scale);
+    }
+};
+
+template<fixed_string Tag, std::integral T>
+struct theme<Tag, T> {
+    [[nodiscard]] T operator()(widget const *widget) const noexcept
+    {
+        return narrow_cast<T>(std::ceil(theme<Tag, float>{}(widget)));
+    }
+};
+
+template<fixed_string Tag>
+struct theme<Tag, extent2i> {
+    [[nodiscard]] extent2i operator()(widget const *widget) const noexcept
+    {
+        hilet tmp = theme<Tag, int>{}(widget);
+        return extent2i{tmp, tmp};
+    }
+};
+
+template<fixed_string Tag>
+struct theme<Tag, marginsi> {
+    [[nodiscard]] marginsi operator()(widget const *widget) const noexcept
+    {
+        hilet tmp = theme<Tag, int>{}(widget);
+        return marginsi{tmp};
+    }
+};
+
+template<fixed_string Tag>
+struct theme<Tag, corner_radii> {
+    [[nodiscard]] corner_radii operator()(widget const *widget) const noexcept
+    {
+        hilet tmp = theme<Tag, float>{}(widget);
+        return corner_radii{tmp};
+    }
+};
+
+template<fixed_string Tag>
+struct theme<Tag, hi::color> {
+    [[nodiscard]] hi::color operator()(widget const *widget) const noexcept
+    {
+        hi_axiom_not_null(widget);
+        hilet& value = detail::global_theme_value<Tag, hi::color>;
+        return value.get(widget->color_theme_index());
+    }
+};
+
+template<fixed_string Tag>
+struct theme<Tag, text_theme> {
+    [[nodiscard]] text_theme operator()(widget const *widget) const noexcept
+    {
+        hi_axiom_not_null(widget);
+        hilet& value = detail::global_theme_value<Tag, hi::text_theme>;
+        return value.get();
+    }
+};
 
 }} // namespace hi::v1

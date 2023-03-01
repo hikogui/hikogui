@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "language.hpp"
+#include "../i18n/module.hpp"
 #include "../formula/formula.hpp"
 #include "../utility/module.hpp"
 #include "../os_settings.hpp"

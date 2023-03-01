@@ -93,11 +93,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GUI/module.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/mouse_buttons.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/mouse_cursor.hpp
-    ${HIKOGUI_SOURCE_DIR}/GUI/theme_book.hpp
-    ${HIKOGUI_SOURCE_DIR}/GUI/theme_file.hpp
-    ${HIKOGUI_SOURCE_DIR}/GUI/theme_mode.hpp
-    ${HIKOGUI_SOURCE_DIR}/GUI/theme_value.hpp
-    ${HIKOGUI_SOURCE_DIR}/GUI/theme_value_index.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/widget.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/widget_id.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/widget_layout.hpp
@@ -115,6 +110,16 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/image/srgb_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/uint_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/unorm_a2bgr10_pack.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_639.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/language_tag.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/language.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/translation.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/float16_sse4_1.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/module.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_f16x8_sse2.hpp
@@ -130,6 +135,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd.hpp
     ${HIKOGUI_SOURCE_DIR}/text/character.hpp
     ${HIKOGUI_SOURCE_DIR}/text/text.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_book.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_file.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_mode.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_value.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/architecture.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast.hpp

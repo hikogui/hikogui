@@ -28,8 +28,8 @@ public:
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::middle_center();
-        set_attributes<0>(hi_forward(attributes)...);
+        this->alignment = alignment::middle_center();
+        this->set_attributes<0>(hi_forward(attributes)...);
     }
 
     momentary_button_widget(widget *parent, button_widget_attribute auto&&...attributes) noexcept :

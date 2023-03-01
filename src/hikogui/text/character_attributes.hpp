@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "../i18n/language_tag.hpp"
+#include "../i18n/module.hpp"
 #include "text_phrasing.hpp"
 
 namespace hi { inline namespace v1 {

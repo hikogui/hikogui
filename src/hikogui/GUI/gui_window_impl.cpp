@@ -5,7 +5,7 @@
 #include "gui_window.hpp"
 #include "gui_system.hpp"
 #include "keyboard_bindings.hpp"
-#include "theme_book.hpp"
+#include "../theme/module.hpp"
 #include "../os_settings.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../GFX/gfx_surface.hpp"

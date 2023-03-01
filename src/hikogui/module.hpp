@@ -13,6 +13,10 @@
 #include "char_maps/module.hpp"
 #include "font/module.hpp"
 #include "concurrency/module.hpp"
+#include "theme/module.hpp"
+#include "i18n/module.hpp"
+#include "l10n/module.hpp"
+#include "text/module.hpp"
 #include "utility/module.hpp"
 
 /** @file module.hpp

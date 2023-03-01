@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "../i18n/translate.hpp"
 #include "../unicode/gstring.hpp"
 #include "../label.hpp"
 #include "../GUI/module.hpp"

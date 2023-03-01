@@ -13,7 +13,6 @@
 #include "../GUI/module.hpp"
 #include "../utility/module.hpp"
 #include "../animator.hpp"
-#include "../i18n/translate.hpp"
 #include "../notifier.hpp"
 #include <memory>
 #include <string>

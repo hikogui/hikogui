@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "../i18n/iso_639.hpp"
-#include "../i18n/iso_15924.hpp"
-#include "../i18n/iso_3166.hpp"
+#include "../i18n/module.hpp"
 #include "../font/font_family_id.hpp"
 #include "../font/font_variant.hpp"
 #include "../color/color.hpp"

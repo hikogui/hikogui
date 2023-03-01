@@ -7,11 +7,10 @@
 
 #pragma once
 
-#include "../i18n/iso_639.hpp"
+#include "../i18n/module.hpp"
 #include "../unicode/grapheme.hpp"
 #include "../utility/module.hpp"
 #include "text_phrasing.hpp"
-#include "text_theme.hpp"
 #include "character_attributes.hpp"
 #include <cstdint>
 

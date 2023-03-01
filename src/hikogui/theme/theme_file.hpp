@@ -75,7 +75,7 @@ private:
 }} // namespace hi::v1
 
 template<typename CharT>
-struct std::formatter<hi::theme_file, CharT> : std::formatter<std::string, CharT> {
+struct std::formatter<hi::theme_file, CharT> : std::formatter<std::string_view, CharT> {
     auto format(hi::theme_file const& t, auto& fc)
     {
         return std::formatter<std::string_view, CharT>::format(std::format("{}:{}", t.name, t.mode), fc);

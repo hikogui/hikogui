@@ -151,8 +151,15 @@ public:
         hi_assert_not_null(_scroll_widget);
 
         if (*_text_widget->focus) {
-            // Update the optional error value from the string conversion when the text-widget has keyboard focus.
-            _error_label = delegate->validate(*this, to_string(*_text));
+            // Update the optional error value from the string conversion when
+            // the text-widget has keyboard focus.
+            if (auto error_label = delegate->validate(*this, *_text)) {
+                _error_label = *error_label;
+            } else {
+                // Error label is used by a widget and can not be an optional,
+                // we use an empty string to denote no-error.
+                _error_label = label{};
+            }
 
         } else {
             // When field is not focused, simply follow the observed_value.
@@ -272,7 +279,7 @@ private:
 
     /** The scroll widget embeds the text widget.
      */
-    std::unique_ptr<scroll_widget<axis::none>> _scroll_widget;
+    std::unique_ptr<scroll_widget<axis::none, prefix>> _scroll_widget;
     box_constraints _scroll_constraints;
     box_shape _scroll_shape;
 
@@ -282,7 +289,7 @@ private:
 
     /** The text edited by the _text_widget.
      */
-    observer<gstring> _text;
+    observer<hi::text> _text;
 
     /** An error string to show to the user.
      */
@@ -310,7 +317,7 @@ private:
     void revert(bool force) noexcept
     {
         hi_assert_not_null(delegate);
-        _text = to_gstring(delegate->text(*this), U' ');
+        _text = delegate->text(*this);
         _error_label = label{};
     }
 
@@ -320,15 +327,13 @@ private:
         hi_assert_not_null(delegate);
 
         if (*continues or force) {
-            auto text = to_string(*_text);
-
-            if (delegate->validate(*this, text).empty()) {
+            if (not delegate->validate(*this, *_text)) {
                 // text is valid.
-                delegate->set_text(*this, text);
+                delegate->set_text(*this, *_text);
             }
 
             // After commit get the canonical text to display from the delegate.
-            _text = to_gstring(delegate->text(*this), U' ');
+            _text = delegate->text(*this);
             _error_label = label{};
         }
     }
@@ -345,7 +350,7 @@ private:
         hilet line = line_segment(get<0>(outline), get<1>(outline));
 
         hilet outline_color =
-            _error_label.empty() ? theme<prefix / "outline.color", color>{}(this) : theme<prefix / "error.color", color>{}(this);
+            _error_label->empty() ? theme<prefix / "outline.color", color>{}(this) : theme<prefix / "error.color", color>{}(this);
         context.draw_line(
             layout, translate3{0.0f, 0.5f, 0.1f} * line, theme<prefix / "outline.width", int>{}(this), outline_color);
     }
