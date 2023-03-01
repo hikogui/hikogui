@@ -29,8 +29,8 @@ public:
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::middle_left();
-        set_attributes<0>(hi_forward(attributes)...);
+        this->alignment = alignment::middle_left();
+        this->set_attributes<0>(hi_forward(attributes)...);
     }
 
     toolbar_button_widget(widget *parent, button_widget_attribute auto&&...attributes) noexcept :

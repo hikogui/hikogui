@@ -14,7 +14,15 @@
 #include <algorithm>
 #include <iterator>
 #include <ranges>
+#include <concepts>
 
+/** Character-traits for `hi::character`.
+ *
+ * These character traits allow `std::basic_string` and `std::basic_string_view`
+ * to work with characters to form `hi::text` and `hi::text_view`.
+ *
+ * @ingroup text
+ */
 template<>
 class std::char_traits<hi::character> {
 public:
@@ -132,6 +140,8 @@ using text_view = std::basic_string_view<character>;
  * Check the characters in text and make sure the script-attribute does not
  * contradict the Unicode script table. And if the script-attribute for the
  * character was not set, then determine the script.
+ *
+ * @ingroup text
  */
 template<typename It, std::sentinel_for<It> ItEnd>
 inline void fixup_script(It first, ItEnd last) noexcept
@@ -216,6 +226,9 @@ inline void fixup_script(It first, ItEnd last) noexcept
     }
 }
 
+/**
+ * @ingroup text
+ */
 template<std::ranges::range R>
 inline void fixup_script(R& str) noexcept
     requires(std::is_same_v<std::ranges::range_value_t<R>, character>)
@@ -223,6 +236,9 @@ inline void fixup_script(R& str) noexcept
     return fixup_script(std::ranges::begin(str), std::ranges::end(str));
 }
 
+/**
+ * @ingroup text
+ */
 [[nodiscard]] inline text to_text(gstring_view str, character_attributes default_attributes = character_attributes{}) noexcept
 {
     auto r = text{};
@@ -233,12 +249,18 @@ inline void fixup_script(R& str) noexcept
     return r;
 }
 
+/**
+ * @ingroup text
+ */
 template<character_attribute... Args>
 [[nodiscard]] inline text to_text(gstring_view str, Args const&...args) noexcept
 {
     return to_text(str, character_attributes{args...});
 }
 
+/**
+ * @ingroup text
+ */
 [[nodiscard]] inline text to_text(
     std::string_view str,
     char32_t new_line_char = unicode_PS,
@@ -247,18 +269,27 @@ template<character_attribute... Args>
     return to_text(to_gstring(str, new_line_char), default_attributes);
 }
 
+/**
+ * @ingroup text
+ */
 template<character_attribute... Args>
 [[nodiscard]] inline text to_text(std::string_view str, char32_t new_line_char, Args const&...args) noexcept
 {
     return to_text(str, new_line_char, character_attributes{args...});
 }
 
+/**
+ * @ingroup text
+ */
 template<character_attribute... Args>
 [[nodiscard]] inline text to_text(std::string_view str, Args const&...args) noexcept
 {
     return to_text(str, unicode_PS, character_attributes{args...});
 }
 
+/**
+ * @ingroup text
+ */
 [[nodiscard]] inline text to_text_with_markup(gstring_view str, character_attributes default_attributes) noexcept
 {
     auto r = text{};
@@ -337,23 +368,35 @@ template<character_attribute... Args>
     return r;
 }
 
+/**
+ * @ingroup text
+ */
 [[nodiscard]] inline text to_text_with_markup(std::string_view str, character_attributes default_attributes) noexcept
 {
     return to_text_with_markup(to_gstring(str), default_attributes);
 }
 
+/**
+ * @ingroup text
+ */
 template<character_attribute... Attributes>
 [[nodiscard]] inline text to_text_with_markup(gstring_view str, Attributes const&...attributes) noexcept
 {
     return to_text_with_markup(str, character_attributes{attributes...});
 }
 
+/**
+ * @ingroup text
+ */
 template<character_attribute... Attributes>
 [[nodiscard]] inline text to_text_with_markup(std::string_view str, Attributes const&...attributes) noexcept
 {
     return to_text_with_markup(str, character_attributes{attributes...});
 }
 
+/**
+ * @ingroup text
+ */
 [[nodiscard]] constexpr gstring to_gstring(text_view str) noexcept
 {
     auto r = gstring{};
@@ -364,22 +407,32 @@ template<character_attribute... Attributes>
     return r;
 }
 
+/**
+ * @ingroup text
+ */
 [[nodiscard]] constexpr std::string to_string(text_view str) noexcept
 {
     return to_string(to_gstring(str));
 }
 
+/**
+ * @ingroup text
+ */
 [[nodiscard]] constexpr std::wstring to_wstring(text_view str) noexcept
 {
     return to_wstring(to_gstring(str));
 }
 
+/**
+ * @ingroup text
+ */
 [[nodiscard]] constexpr std::u32string to_u32string(text_view str) noexcept
 {
     return to_u32string(to_gstring(str));
 }
 
 /** Change the attributes on a piece of text.
+ * @ingroup text
  */
 template<typename It, std::sentinel_for<It> ItEnd>
 inline void set_attributes(It first, ItEnd last, character_attributes attributes) noexcept
@@ -392,6 +445,7 @@ inline void set_attributes(It first, ItEnd last, character_attributes attributes
 }
 
 /** Change the attributes on a piece of text.
+ * @ingroup text
  */
 template<typename It, std::sentinel_for<It> ItEnd, character_attribute... Args>
 inline void set_attributes(It first, ItEnd last, Args const&...args) noexcept
@@ -401,6 +455,7 @@ inline void set_attributes(It first, ItEnd last, Args const&...args) noexcept
 }
 
 /** Change the attributes on text.
+ * @ingroup text
  */
 template<std::ranges::range R>
 inline void set_attributes(R& str, character_attributes attributes) noexcept
@@ -410,6 +465,7 @@ inline void set_attributes(R& str, character_attributes attributes) noexcept
 }
 
 /** Change the attributes on text.
+ * @ingroup text
  */
 template<std::ranges::range R, character_attribute... Args>
 inline void set_attributes(R& str, Args const&...args) noexcept
@@ -417,4 +473,58 @@ inline void set_attributes(R& str, Args const&...args) noexcept
 {
     return set_attributes(str, character_attributes{args...});
 }
+
+/** Convert integer to string.
+ * This function bypasses std::locale.
+ *
+ * @ingroup text
+ * @param value The signed or unsigned integer value.
+ * @return The integer converted to a decimal string.
+ */
+[[nodiscard]] text to_text(std::integral auto const& value) noexcept
+{
+    return to_text(to_string(value));
+}
+
+/** Convert floating point to string.
+ * This function bypasses std::locale.
+ *
+ * @ingroup text
+ * @param value The signed or unsigned integer value.
+ * @return The integer converted to a decimal string.
+ */
+[[nodiscard]] text to_text(std::floating_point auto const& value) noexcept
+{
+    return to_text(to_string(value));
+}
+
+/** Convert a string to an integer.
+ * This function bypasses std::locale
+ *
+ * @ingroup text
+ * @tparam T The integer type.
+ * @param str The string is an integer.
+ * @param base The base radix of the string encoded integer.
+ * @return The integer converted from a string.
+ */
+template<std::integral T>
+[[nodiscard]] T from_text(text_view str, int base = 10)
+{
+    return from_string<T>(to_string(str), base);
+}
+
+/** Convert a string to an floating point.
+ * This function bypasses std::locale
+ *
+ * @ingroup text
+ * @tparam T The integer type.
+ * @param str The string is an integer.
+ * @return The integer converted from a string.
+ */
+template<std::floating_point T>
+[[nodiscard]] T from_text(text_view str)
+{
+    return from_string<T>(to_string(str));
+}
+
 }} // namespace hi::v1

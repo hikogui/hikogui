@@ -64,8 +64,8 @@ public:
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::top_center();
-        set_attributes<0>(hi_forward(attributes)...);
+        this->alignment = alignment::top_center();
+        this->set_attributes<0>(hi_forward(attributes)...);
     }
 
     /** Construct a toolbar tab button widget with a default button delegate.
