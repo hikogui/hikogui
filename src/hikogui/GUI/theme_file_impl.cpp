@@ -154,8 +154,6 @@ namespace hi { inline namespace v1 {
     return r;
 }
 
-
-
 [[nodiscard]] static theme_file::value_type parse_theme_value(datum const& data)
 {
     if (holds_alternative<long long>(data) or holds_alternative<double>(data)) {
@@ -262,8 +260,8 @@ theme_file::theme_file(std::filesystem::path const& path)
             } else if (item_value == "dark") {
                 mode = theme_mode::dark;
             } else {
-                throw parse_error(
-                    std::format("Expecting either 'dark' or 'light' as values for 'mode' in the theme_file file, got {}", item_value));
+                throw parse_error(std::format(
+                    "Expecting either 'dark' or 'light' as values for 'mode' in the theme_file file, got {}", item_value));
             }
 
         } else {
@@ -276,26 +274,36 @@ theme_file::theme_file(std::filesystem::path const& path)
 
 void theme_file::activate() const noexcept
 {
+    hi_log_info("Activating theme {}", *this);
+
+    detail::theme_value_base<hi::color>::reset();
+    detail::theme_value_base<float>::reset();
+    detail::theme_value_base<text_theme>::reset();
+
     // The items are sorted by least specific first.
     // That way more specific items will override the more specific theme_file values.
-    for (hilet & [ item_name, item_value ] : _items) {
-        if (auto colors = std::get_if<std::vector<hi::color>>(&item_value)) {
-            for (auto& theme_value : detail::theme_value_base<std::vector<hi::color>>::get(item_name)) {
-                hi_not_implemented();
-            }
+    //(hilet & [ item_name, item_value ] : _items) {
+    //if (auto colors = std::get_if<std::vector<hi::color>>(&item_value)) {
+    //    for (auto& theme_value : detail::theme_value_base<std::vector<hi::color>>::get(item_name)) {
+    //        hi_not_implemented();
+    //    }
+    //
+    //} else if (auto size = std::get_if<float>(&item_value)) {
+    //    for (auto& theme_value : detail::theme_value_base<float>::get(item_name)) {
+    //        theme_value.set(*size);
+    //    }
+    //
+    //} else if (auto text_styles = std::get_if<std::vector<text_style>>(&item_value)) {
+    //    hi_not_implemented();
+    //
+    //} else {
+    //    hi_no_default();
+    //}
+    //}
 
-        } else if (auto size = std::get_if<float>(&item_value)) {
-            for (auto& theme_value : detail::theme_value_base<float>::get(item_name)) {
-                theme_value.set(*size);
-            }
-
-        } else if (auto text_styles = std::get_if<std::vector<text_style>>(&item_value)) {
-            hi_not_implemented();
-
-        } else {
-            hi_no_default();
-        }
-    }
+    detail::theme_value_base<hi::color>::log();
+    detail::theme_value_base<float>::log();
+    detail::theme_value_base<text_theme>::log();
 }
 
 void theme_file::parse(datum const& data)

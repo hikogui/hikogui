@@ -177,7 +177,7 @@ void text_shaper::resolve_font_and_widths(hi::text_theme const &text_theme, floa
     for (auto& c : _text) {
         hilet attributes = c.character.attributes();
 
-        c.style = text_theme(attributes.phrasing(), attributes.language(), attributes.region(), attributes.script());
+        c.style = text_theme.find(attributes.phrasing(), attributes.language(), attributes.region(), attributes.script());
         hilet& style_font = find_font(c.style.family_id, c.style.variant);
 
         hilet[actual_font, glyphs] = find_glyph(style_font, c.character.grapheme());

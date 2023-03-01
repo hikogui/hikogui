@@ -13,6 +13,7 @@
 #include "../text/text_theme.hpp"
 #include "../geometry/module.hpp"
 #include "../generator.hpp"
+#include "../log.hpp"
 #include "theme_value_index.hpp"
 #include <atomic>
 #include <map>
@@ -25,8 +26,6 @@ namespace detail {
 template<typename T>
 class theme_value_base {
 public:
-    static_assert(not std::is_trivially_copyable_v<T>, "This should use the template specialization");
-
     using value_type = T;
 
     constexpr theme_value_base() noexcept = default;
@@ -35,87 +34,66 @@ public:
     theme_value_base& operator=(theme_value_base const&) = delete;
     theme_value_base& operator=(theme_value_base&&) = delete;
 
-    void lock() const noexcept
-    {
-        return _mutex.lock();
-    }
-
-    void unlock() const noexcept
-    {
-        return _mutex.unlock();
-    }
-
     [[nodiscard]] value_type get() const noexcept
     {
-        hi_axiom(_mutex.is_locked());
         return _value;
     }
 
     [[nodiscard]] void set(value_type value) noexcept
     {
-        hi_axiom(_mutex.is_locked());
         _value = value;
+        ++_count;
     }
 
-    [[nodiscard]] static generator<theme_value_base&> get(std::string const& key) noexcept
+    /** Find all the theme-values matching a key.
+     *
+     * @param key A key retrieved from the theme-config file.
+     * @return A generator listing every value matching the key.
+     */
+    [[nodiscard]] static generator<theme_value_base&> find(std::string const& key) noexcept
     {
         hilet lock = std::scoped_lock(_map_mutex);
 
-        for (hilet & [ item_key, item_value ] : _map) {
+        for (hilet & [ item_key, item_ptr ] : _map) {
             if (pattern_match(key, item_key)) {
-                co_yield *item_value;
+                co_yield *item_ptr;
             }
         }
     }
 
-private:
-    mutable unfair_mutex _mutex;
-    value_type _value;
-
-protected:
-    inline static unfair_mutex _map_mutex;
-    inline static std::map<std::string, theme_value_base *> _map;
-};
-
-template<trivially_copyable T>
-    requires std::atomic<T>::is_always_lock_free
-class theme_value_base<T> {
-public:
-    using value_type = T;
-
-    constexpr theme_value_base() noexcept = default;
-    theme_value_base(theme_value_base const&) = delete;
-    theme_value_base(theme_value_base&&) = delete;
-    theme_value_base& operator=(theme_value_base const&) = delete;
-    theme_value_base& operator=(theme_value_base&&) = delete;
-
-    void lock() const noexcept {}
-
-    void unlock() const noexcept {}
-
-    [[nodiscard]] value_type get() const noexcept
-    {
-        return std::atomic_ref(_value).load(std::memory_order::relaxed);
-    }
-
-    [[nodiscard]] void set(value_type value) noexcept
-    {
-        std::atomic_ref(_value).store(value, std::memory_order::relaxed);
-    }
-
-    [[nodiscard]] static generator<theme_value_base&> get(std::string const& key) noexcept
+    /** Log all the theme-values.
+     */
+    static void log() noexcept
     {
         hilet lock = std::scoped_lock(_map_mutex);
 
-        for (hilet & [ item_key, item_value ] : _map) {
-            if (pattern_match(key, item_key)) {
-                co_yield *item_value;
+        for (hilet & [ item_key, item_ptr ] : _map) {
+            if (item_ptr->_count == 0) {
+                hi_log_error(" * {} = unassigned", item_key);
+            } else {
+                hi_log_debug(" * {} = {}", item_key, item_ptr->_value);
             }
         }
     }
 
+    /** Reset all the theme-values.
+     */
+    static void reset() noexcept
+    {
+        hilet lock = std::scoped_lock(_map_mutex);
+
+        for (auto& [item_key, item_ptr] : _map) {
+            item_ptr->_value = value_type{};
+            item_ptr->_count = 0;
+        }
+    }
+
 private:
-    value_type _value;
+    value_type _value = value_type{};
+
+    /** The number of times a value has been assigned by the theme config file.
+     */
+    size_t _count = 0;
 
 protected:
     inline static unfair_mutex _map_mutex;
@@ -126,7 +104,7 @@ template<>
 class theme_value_base<hi::color> {
 public:
     using value_type = hi::color;
-    static_assert(std::atomic<value_type>::is_always_lock_free);
+    using color_array_type = std::array<value_type, theme_value_index::array_size>;
 
     constexpr theme_value_base() noexcept = default;
     theme_value_base(theme_value_base const&) = delete;
@@ -134,33 +112,61 @@ public:
     theme_value_base& operator=(theme_value_base const&) = delete;
     theme_value_base& operator=(theme_value_base&&) = delete;
 
-    void lock() const noexcept {}
-
-    void unlock() const noexcept {}
-
     [[nodiscard]] value_type get(theme_value_index index) const noexcept
     {
-        return std::atomic_ref(_values[index.intrinsic()]).load(std::memory_order::relaxed);
+        return _values[index.intrinsic()];
     }
 
     [[nodiscard]] void set(theme_value_index index, value_type value) noexcept
     {
-        std::atomic_ref(_values[index.intrinsic()]).store(value, std::memory_order::relaxed);
+        _values[index.intrinsic()] = value;
     }
 
     [[nodiscard]] static generator<theme_value_base&> get(std::string const& key) noexcept
     {
         hilet lock = std::scoped_lock(_map_mutex);
 
-        for (hilet & [ item_key, item_value ] : _map) {
+        for (hilet & [ item_key, item_ptr ] : _map) {
             if (pattern_match(key, item_key)) {
-                co_yield *item_value;
+                co_yield *item_ptr;
             }
         }
     }
 
+    /** Log all the theme-values.
+     */
+    static void log() noexcept
+    {
+        hilet lock = std::scoped_lock(_map_mutex);
+
+        for (hilet & [ item_key, item_ptr ] : _map) {
+            if (item_ptr->_count == 0) {
+                hi_log_error(" * {} = unassigned", item_key);
+            } else {
+                // Display each color separately.
+                hi_log_debug(" * {}", item_key);
+            }
+        }
+    }
+
+    /** Reset all the theme-values.
+     */
+    static void reset() noexcept
+    {
+        hilet lock = std::scoped_lock(_map_mutex);
+
+        for (auto& [item_key, item_ptr] : _map) {
+            item_ptr->_values = color_array_type{};
+            item_ptr->_count = 0;
+        }
+    }
+
 private:
-    std::array<value_type, theme_value_index::array_size> _values;
+    color_array_type _values = {};
+
+    /** The number of times a value has been assigned by the theme config file.
+     */
+    size_t _count = 0;
 
 protected:
     inline static unfair_mutex _map_mutex;
@@ -203,7 +209,6 @@ struct theme<Tag, T> {
     {
         hi_axiom_not_null(widget);
         hilet& value = detail::global_theme_value<Tag, float>;
-        hilet lock = std::scoped_lock(value);
         return wide_cast<T>(value.get() * widget->dpi_scale);
     }
 };
@@ -249,7 +254,6 @@ struct theme<Tag, hi::color> {
     {
         hi_axiom_not_null(widget);
         hilet& value = detail::global_theme_value<Tag, hi::color>;
-        hilet lock = std::scoped_lock(value);
         return value.get(theme_value_index{*widget});
     }
 };
@@ -260,7 +264,6 @@ struct theme<Tag, text_theme> {
     {
         hi_axiom_not_null(widget);
         hilet& value = detail::global_theme_value<Tag, hi::text_theme>;
-        hilet lock = std::scoped_lock(value);
         return value.get();
     }
 };
