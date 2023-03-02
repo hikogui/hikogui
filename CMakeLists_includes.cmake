@@ -116,7 +116,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/module.hpp
-    ${HIKOGUI_SOURCE_DIR}/l10n/language.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translation.hpp
@@ -139,6 +138,26 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/theme/theme_file.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_value.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/grapheme.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/gstring.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_bracket_type.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_class.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_opportunity.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_decomposition_type.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_description.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_east_asian_width.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_general_category.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_grapheme_cluster_break.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_identifier.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_line_break.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_normalization.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_plural.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_script.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_sentence_break.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_text_segmentation.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_word_break.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/architecture.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast.hpp

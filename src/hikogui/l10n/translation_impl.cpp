@@ -4,28 +4,25 @@
 
 #include "translation.hpp"
 #include "po_parser.hpp"
+#include "../unicode/module.hpp"
 #include "../log.hpp"
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
 struct translation_key {
     std::string msgid;
-    language const *language;
-
-    translation_key(std::string_view msgid, hi::language const *language = nullptr) noexcept : msgid(msgid), language(language) {}
+    language_tag language;
 
     [[nodiscard]] std::size_t hash() const noexcept
     {
-        return hash_mix(language, msgid);
+        return hash_mix(msgid, language);
     }
 
-    [[nodiscard]] friend bool operator==(translation_key const &lhs, translation_key const &rhs) noexcept
-    {
-        return lhs.language == rhs.language && lhs.msgid == rhs.msgid;
-    }
+    [[nodiscard]] constexpr friend bool operator==(translation_key const &, translation_key const &) noexcept = default;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 template<>
 struct std::hash<hi::translation_key> {
@@ -35,26 +32,26 @@ struct std::hash<hi::translation_key> {
     }
 };
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
 std::unordered_map<translation_key, std::vector<std::string>> translations;
 
 [[nodiscard]] std::pair<std::string_view, language_tag>
-get_translation(std::string_view msgid, long long n, std::vector<language *> const &languages) noexcept
+get_translation(std::string_view msgid, long long n, std::vector<language_tag> const &languages) noexcept
 {
-    auto key = translation_key{msgid};
+    // Update only the language in each iteration.
+    auto key = translation_key{std::string{msgid}, language_tag{}};
 
-    for (hilet *language : languages) {
-        hi_axiom_not_null(language);
-
+    for (hilet language : languages) {
         key.language = language;
 
         hilet i = translations.find(key);
         if (i != translations.cend()) {
-            hilet plurality = language->plurality(n, ssize(i->second));
+            hilet plurality = cardinal_plural(language, n, i->second.size());
             hilet &translation = i->second[plurality];
             if (translation.size() != 0) {
-                return {translation, language->tag};
+                return {translation, language};
             }
         }
     }
@@ -62,27 +59,18 @@ get_translation(std::string_view msgid, long long n, std::vector<language *> con
     return {msgid, language_tag{"en-Latn-US"}};
 }
 
-void add_translation(std::string_view msgid, language const &language, std::vector<std::string> const &plural_forms) noexcept
+void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept
 {
-    auto key = translation_key{msgid, &language};
+    auto key = translation_key{std::string{msgid}, language};
     translations[key] = plural_forms;
 }
 
-void add_translation(
-    std::string_view msgid,
-    language_tag const &language_tag,
-    std::vector<std::string> const &plural_forms) noexcept
-{
-    hilet &language = language::find_or_create(language_tag);
-    add_translation(msgid, language, plural_forms);
-}
-
-void add_translation(po_translations const &po_translations, language const &language) noexcept
+void add_translation(po_translations const &po_translations, language_tag language) noexcept
 {
     for (hilet &translation : po_translations.translations) {
-        auto msgid = ssize(translation.msgctxt) == 0 ? translation.msgid : translation.msgctxt + '|' + translation.msgid;
+        auto msgid = translation.msgctxt.empty() ? translation.msgid : translation.msgctxt + '|' + translation.msgid;
         add_translation(msgid, language, translation.msgstr);
     }
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

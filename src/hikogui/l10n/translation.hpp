@@ -14,21 +14,17 @@
 #include <unordered_map>
 #include <tuple>
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
 [[nodiscard]] std::pair<std::string_view, language_tag> get_translation(
     std::string_view msgid,
     long long n = 0,
-    std::vector<language *> const &languages = os_settings::languages()) noexcept;
+    std::vector<language_tag> const &languages = os_settings::language_tags()) noexcept;
 
-void add_translation(std::string_view msgid, language const &language, std::vector<std::string> const &plural_forms) noexcept;
-
-void add_translation(
-    std::string_view msgid,
-    std::string const &language_tag,
-    std::vector<std::string> const &plural_forms) noexcept;
+void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept;
 
 struct po_translations;
-void add_translation(po_translations const &translations, language const &language) noexcept;
+void add_translation(po_translations const &translations, language_tag const &language) noexcept;
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

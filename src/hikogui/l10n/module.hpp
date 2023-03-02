@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "language.hpp"
 #include "po_parser.hpp"
 #include "translate.hpp"
 #include "translation.hpp"

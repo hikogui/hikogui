@@ -229,3 +229,19 @@ struct std::formatter<hi::language_tag, CharT> : std::formatter<std::string_view
         return std::formatter<std::string_view, CharT>::format(t.to_string(), fc);
     }
 };
+
+// XXX C++23 should have this fixed?
+template<typename CharT>
+struct std::formatter<std::vector<hi::language_tag>, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(std::vector<hi::language_tag> const& t, auto& fc)
+    {
+        auto r = std::string{};
+        for (hilet language : t) {
+            if (not r.empty()) {
+                r += ", ";
+            }
+            r += std::format("{}", language);
+        }
+        return std::formatter<std::string_view, CharT>::format(r, fc);
+    }
+};

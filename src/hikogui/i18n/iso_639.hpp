@@ -18,7 +18,7 @@ namespace hi::inline v1 {
  *  3. ISO 639-3 (2007)
  *  4. ISO 639-5 (2008)
  *
- * This class compresses this 2 or 3 character language code inside 16 bits.
+ * This class compresses this 2 or 3 character language code inside 15 bits.
  */
 class iso_639 {
 public:
@@ -182,7 +182,7 @@ public:
 private:
     /**
      * Encoded as follows:
-     * - [15] Individual language, to determine if iso-639-2 or iso-639-3.
+     * - [15:15] reserved '0'
      * - [14:10] optional third letter
      * - [9:5] second letter
      * - [4:0] first letter

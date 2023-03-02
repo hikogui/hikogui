@@ -176,8 +176,9 @@ template<std::unsigned_integral T>
     // clang-format on
 
     hilet num_bits = std::bit_width(x);
-    hilet guess = guess_table(num_bits);
-    return guess += wide_cast(x >= pow10(num_digits));
+    hi_axiom_bounds(num_bits, guess_table);
+    hilet guess = guess_table[num_bits];
+    return guess + wide_cast<unsigned int>(x >= pow10(guess));
 }
 
 template<std::signed_integral T>

@@ -36,8 +36,8 @@ struct character {
 
     /**
      * [20: 0] 21-bit: grapheme.
-     * [60:21] 40-bit: attributes.
-     * [62:61] reserved
+     * [59:21] 39-bit: attributes.
+     * [62:60] reserved '0'
      * [63:63] Sign-bit reserved for eof.
      */
     value_type _value;

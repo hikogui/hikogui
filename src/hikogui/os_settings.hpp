@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "../i18n/module.hpp"
-#include "../l10n/module.hpp"
+#include "i18n/module.hpp"
 #include "theme/module.hpp"
 #include "GFX/subpixel_orientation.hpp"
 #include "geometry/module.hpp"
@@ -42,18 +41,6 @@ public:
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         return _language_tag.load(std::memory_order::relaxed);
-    }
-
-    /** Get the configured languages.
-     *
-     * @note The list of languages include both the configured region-specific-languages and the generic-languages.
-     * @return A list of languages in order of priority.
-     */
-    [[nodiscard]] static std::vector<language *> languages() noexcept
-    {
-        hi_axiom(_populated.load(std::memory_order::acquire));
-        hilet lock = std::scoped_lock(_mutex);
-        return _languages;
     }
 
     /** Get the configured writing direction.
@@ -278,7 +265,6 @@ private:
     static inline notifier_type _notifier;
 
     static inline std::vector<hi::language_tag> _language_tags = {};
-    static inline std::vector<language *> _languages = {};
     static inline std::atomic<hi::unicode_bidi_class> _writing_direction = hi::unicode_bidi_class::L;
     static inline std::atomic<hi::language_tag> _language_tag = hi::language_tag{"en-US"};
     static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;

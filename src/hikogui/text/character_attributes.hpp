@@ -140,20 +140,20 @@ public:
 
 private:
     constexpr static auto _phrasing_mask = value_type{0xf};
-    constexpr static auto _phrasing_shift = 36U;
+    constexpr static auto _phrasing_shift = 35U;
     constexpr static auto _region_mask = value_type{0x3ff};
-    constexpr static auto _region_shift = 26U;
+    constexpr static auto _region_shift = 25U;
     constexpr static auto _script_mask = value_type{0x3ff};
-    constexpr static auto _script_shift = 16U;
-    constexpr static auto _language_mask = value_type{0xffff};
+    constexpr static auto _script_shift = 15U;
+    constexpr static auto _language_mask = value_type{0x7fff};
     constexpr static auto _language_shift = 0U;
 
     /** The value.
      *
-     * [15: 0] language
-     * [25:16] script
-     * [35:26] region
-     * [39:36] phrasing
+     * [14: 0] language
+     * [24:15] script
+     * [34:25] region
+     * [38:35] phrasing
      */
     value_type _value;
 };

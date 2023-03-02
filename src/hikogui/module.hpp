@@ -16,6 +16,7 @@
 #include "theme/module.hpp"
 #include "i18n/module.hpp"
 #include "l10n/module.hpp"
+#include "unicode/module.hpp"
 #include "text/module.hpp"
 #include "utility/module.hpp"
 

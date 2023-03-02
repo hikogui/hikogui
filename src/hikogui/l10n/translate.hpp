@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "language.hpp"
 #include "translation.hpp"
 #include "../forward_value.hpp"
 #include "../utility/module.hpp"
@@ -246,7 +245,7 @@ public:
      * @param languages A list of languages to search for translations.
      * @return The translated and formatted message.
      */
-    [[nodiscard]] text operator()(std::vector<language *> const& languages = os_settings::languages()) const noexcept
+    [[nodiscard]] text operator()(std::vector<language_tag> const& languages = os_settings::language_tags()) const noexcept
     {
         if (_has_args) {
             hilet[fmt, language_tag] = ::hi::get_translation(_msg_id, _args->n(), languages);
@@ -269,7 +268,7 @@ public:
      * @return The translated and formatted message.
      */
     [[nodiscard]] text
-    operator()(std::locale const& loc, std::vector<language *> const& languages = os_settings::languages()) const noexcept
+    operator()(std::locale const& loc, std::vector<language_tag> const& languages = os_settings::language_tags()) const noexcept
     {
         if (_has_args) {
             hilet[fmt, language_tag] = ::hi::get_translation(_msg_id, _args->n(), languages);

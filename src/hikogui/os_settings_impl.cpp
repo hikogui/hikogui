@@ -45,16 +45,13 @@ void os_settings::gather() noexcept
         hilet writing_direction = language_tag.writing_direction();
         hilet default_script = language_tag.default_script();
 
-        hilet languages = language::make_languages(language_tags);
-
         auto language_changed = compare_store(_language_tags, language_tags);
         language_changed |= compare_store(_language_tag, language_tag);
-        language_changed |= compare_store(_languages, languages);
         language_changed |= compare_store(_writing_direction, writing_direction);
 
         if (language_changed) {
             setting_has_changed = true;
-            hi_log_info("OS language order has changed: {}", _languages);
+            hi_log_info("OS language order has changed: {}", _language_tags);
         }
     } catch (std::exception const& e) {
         hi_log_error("Failed to get OS language: {}", e.what());

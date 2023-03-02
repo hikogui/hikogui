@@ -10,36 +10,6 @@
 
 namespace hi::inline v1 {
 
-///** Return the plarity index.
-//*/
-// ssize_t plurality(long long n) const noexcept {
-//    // To protect against overflow make the number smaller,
-//    // But preserve trailing digits since language rules check for these.
-//    n = (n > 1000000) ? (n % 1000000) : n;
-//
-//    auto context = expression_evaluation_context{};
-//    context.set_local("n", n);
-//
-//    if (plural_expression) {
-//        hilet result = plural_expression->evaluate(context);
-//        if (result.is_bool()) {
-//            return to_bool(result) ? 1 : 0;
-//        } else if (result.is_integer()) {
-//            return static_cast<ssize_t>(result);
-//        } else {
-//            hi_log_error("Language {}: plurality expression with value {} results in non-bool or non-integer type but {}",
-//                name, n, result.type_name()
-//            );
-//            // Plural expression failure, use english rules.
-//            return (n == 1) ? 0 : 1;
-//        }
-//
-//    } else {
-//        // No plural expression available, use english rules.
-//        return (n == 1) ? 0 : 1;
-//    }
-//}
-
 [[nodiscard]] static parse_result<std::tuple<std::string, int, std::string>> parseLine(token_iterator token)
 {
     std::string name;

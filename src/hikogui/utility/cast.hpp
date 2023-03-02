@@ -110,7 +110,7 @@ template<typename Out>
 
 /** Cast a reference to a class to its derived class or itself.
  *
- * @note It is undefined behavior if the argument is not of type Out.
+ * @note It is undefined behaviour if the argument is not of type Out.
  * @param rhs A reference to an object that is of type `Out`.
  * @return A reference to the same object with a new type.
  */
