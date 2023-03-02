@@ -10,7 +10,7 @@
 #include "font_variant.hpp"
 #include "font_metrics.hpp"
 #include "font_char_map.hpp"
-#include "../unicode/gstring.hpp"
+#include "../unicode/module.hpp"
 #include "../i18n/module.hpp"
 #include "../graphic_path.hpp"
 #include "../utility/module.hpp"

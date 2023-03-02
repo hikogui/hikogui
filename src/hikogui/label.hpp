@@ -10,7 +10,7 @@
 #include "utility/module.hpp"
 #include "strings.hpp"
 #include "l10n/module.hpp"
-#include "unicode/gstring.hpp"
+#include "unicode/module.hpp"
 #include "image/module.hpp"
 #include "font/module.hpp"
 #include <string>

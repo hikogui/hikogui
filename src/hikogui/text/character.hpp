@@ -8,7 +8,7 @@
 #pragma once
 
 #include "../i18n/module.hpp"
-#include "../unicode/grapheme.hpp"
+#include "../unicode/module.hpp"
 #include "../utility/module.hpp"
 #include "text_phrasing.hpp"
 #include "character_attributes.hpp"

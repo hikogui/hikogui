@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../unicode/gstring.hpp"
+#include "../unicode/module.hpp"
 #include "../label.hpp"
 #include "../GUI/module.hpp"
 #include "../utility/module.hpp"

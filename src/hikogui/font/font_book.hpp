@@ -8,7 +8,7 @@
 #include "font_family_id.hpp"
 #include "elusive_icon.hpp"
 #include "hikogui_icon.hpp"
-#include "../unicode/grapheme.hpp"
+#include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 #include "../generator.hpp"

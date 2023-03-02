@@ -7,7 +7,7 @@
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
-#include "../unicode/unicode_bidi_class.hpp"
+#include "../unicode/module.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../utility/module.hpp"
 #include "../observer.hpp"

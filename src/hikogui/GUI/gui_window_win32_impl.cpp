@@ -8,15 +8,14 @@
 #include "gui_system.hpp"
 #include "keyboard_virtual_key.hpp"
 #include "../theme/module.hpp"
+#include "../unicode/module.hpp"
 #include "../GFX/gfx_system_vulkan.hpp"
-#include "../widgets/window_widget.hpp"
 #include "../log.hpp"
 #include "../strings.hpp"
 #include "../utility/module.hpp"
 #include "../os_settings.hpp"
 #include "../loop.hpp"
 #include "../defer.hpp"
-#include "../unicode/unicode_normalization.hpp"
 #include <new>
 
 namespace hi::inline v1 {

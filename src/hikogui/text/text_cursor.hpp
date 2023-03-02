@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../unicode/unicode_description.hpp"
+#include "../unicode/module.hpp"
 #include <tuple>
 #include <cstdlib>
 #include <algorithm>

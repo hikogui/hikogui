@@ -7,8 +7,7 @@
 #include "text_theme.hpp"
 #include "character.hpp"
 #include "../font/module.hpp"
-#include "../unicode/unicode_description.hpp"
-#include "../unicode/grapheme.hpp"
+#include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
