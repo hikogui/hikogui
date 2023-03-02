@@ -7,48 +7,6 @@
 
 namespace hi { inline namespace v1 {
 
-enum class plurality_value : uint8_t { zero = 0, one = 1, two = 2, few = 3, many = 4, other = 5 };
-
-enum class plurality_mask : uint8_t {
-    zero = 1 << to_underlying(plurality::zero),
-    one = 1 << to_underlying(plurality::one),
-    two = 1 << to_underlying(plurality::two),
-    few = 1 << to_underlying(plurality::few),
-    many = 1 << to_underlying(plurality::many),
-    other = 1 << to_underlying(plurality::other),
-};
-
-[[nodiscard]] constexpr plurality_mask operator|(plurality_mask const& lhs, plurality_mask const& rhs) noexcept
-{
-    return static_cast<plurality_mask>(to_underlying(lhs) | to_underlying(rhs));
-}
-
-struct plurality {
-    plurality_value value;
-    plurality_mask mask;
-
-    /** Get an index to select between translations.
-     *
-     * @param n The number of plural messages for this translation.
-     * @return The index into the plural message table for this translation.
-     *         If there are not enough messages, then the index to the last message
-     *         is returned.
-     */
-    [[nodiscard]] constexpr size_t index(size_t n) const noexcept
-    {
-        hi_assert(n != 0);
-
-        hilet value_as_mask = (1 << (to_underlying(value) + 1)) - 1;
-        // Get the index based on the number of '1' bits that are set from the
-        // plurality position to lsb.
-        hilet i = std::popcount(value_as_mask & to_underlying(mask)) - 1;
-        if (i < n) {
-            return i;
-        } else {
-            return n - 1;
-        }
-    }
-};
 
 /** Calculate the plurality of a value.
  *
@@ -59,69 +17,76 @@ using plurality_func_ptr = plurality (*)(long long i);
 
 // The following plurality rules are named by the first language in the alphabet
 // which has this plurality rule.
+// http://www.unicode.org/cldr/cldr-aux/charts/37/supplemental/language_plural_rules.html
 
-[[nodiscard]] plurality plurality_azerbijani(long long n) noexcept
+// clang-format off
+[[nodiscard]] plurality plurality_bambara(long long n) noexcept
 {
     return {plurality_value::other, plurality_mask::other};
 }
 
-[[nodiscard]] plurality plurality_manx(long long n) noexcept
+[[nodiscard]] plurality plurality_cebuano(long long n) noexcept
 {
-    hilet value = [&] {
-        if (n % 10 == 1 or n % 10 == 2 or n % 20 == 0) {
+    hilet value = [](auto op) {
+        if (
+            (op.v == 0 and op.i >= 1 and op.i <= 3) or
+            (op.v == 0 and op.i % 10 != 4 and op.i % 10 != 6 and op.i % 10 != 9) or
+            (op.v != 0 and op.f % 10 != 4 and op.f % 10 != 6 and op.f % 10 != 9)
+        ) {
             return plurality_value::one;
         } else {
             return plurality_value::other;
         }
-    }();
+    }(plurality_operand(n));
+
     return {value, plurality_mask::one | plurality_mask::other};
 }
 
 [[nodiscard]] plurality plurality_central_atlas_tamazight(long long n) noexcept
 {
-    hilet value = [&] {
-        if (n == 0 or n == 1 or (n >= 11 and n <= 99) {
+    hilet value = [](auto op) {
+        if (op.n == 0 or op.n == 1 or (op.n >= 11 and op.n <= 99) {
             return plurality_value::one;
         } else {
             return plurality_value::other;
         }
-    }();
+    }(plurality_operand(n));
     return {value, plurality_mask::one | plurality_mask::other};
 }
 
-[[nodiscard]] plurality plurality_macedonian(long long n) noexcept
+[[nodiscard]] plurality plurality_icelandic(long long n) noexcept
 {
-    hilet value = [&] {
-        if (n % 10 == 1 and n != 11) {
+    hilet value = [](auto op) {
+        if ((op.t == 0 and op.i % 10 == 1 and op.i % 100 != 11) or op.t != 0) {
             return plurality_value::one;
         } else {
             return plurality_value::other;
         }
-    }();
+    }(plurality_operand(n));
     return {value, plurality_mask::one | plurality_mask::other};
 }
 
 [[nodiscard]] plurality plurality_akan(long long n) noexcept
 {
-    hilet value = [&] {
-        if (n == 0 or n == 1) {
+    hilet value = [](auto op) {
+        if (op.n == 0 or op.n == 1) {
             return plurality_value::one;
         } else {
             return plurality_value::other;
         }
-    }();
+    }(plurality_operand(n));
     return {value, plurality_mask::one | plurality_mask::other};
 }
 
 [[nodiscard]] plurality plurality_afrikaans(long long n) noexcept
 {
-    hilet value = [&] {
-        if (n == 1) {
+    hilet value = [](auto op) {
+        if (op.n == 1) {
             return plurality_value::one;
         } else {
             return plurality_value::other;
         }
-    }();
+    }(plurality_operand(n));
     return {value, plurality_mask::one | plurality_mask::other};
 }
 
@@ -403,6 +368,7 @@ using plurality_func_ptr = plurality (*)(long long i);
         plurality_mask::zero | plurality_mask::one | plurality_mask::two | plurality_mask::few | plural_mask::many |
             plurality_mask::other};
 }
+// clang-format off
 
 [[nodiscard]] constexpr auto init_plurality_func_ptr() noexcept
 {
