@@ -18,22 +18,71 @@
 
 namespace hi { inline namespace v1 {
 
-enum class plurality_value : uint8_t { zero = 0, one = 1, two = 2, few = 3, many = 4, other = 5 };
+/** The plurality value of a cardinal or ordinal number.
+ */
+enum class plurality_value : uint8_t {
+    /** The number was zero, and this means something in the current language.
+     */
+    zero = 0,
 
+    /** The number was one, and this means something in the current language.
+     */
+    one = 1,
+
+    /** The number was two, and this means something in the current language.
+     */
+    two = 2,
+
+    /** The number is part of few, and this means something in the current language.
+     */
+    few = 3,
+
+    /** The number is part of many, and this means something in the current language.
+     */
+    many = 4,
+
+    /** Any other number, every language will have at least this.
+     */
+    other = 5
+};
+
+/** A mask of plurality values that this language supports.
+ */
 enum class plurality_mask : uint8_t {
+    /** The number was zero, and this means something in the current language.
+     */
     zero = 1 << to_underlying(plurality_value::zero),
+
+    /** The number was one, and this means something in the current language.
+     */
     one = 1 << to_underlying(plurality_value::one),
+
+    /** The number was two, and this means something in the current language.
+     */
     two = 1 << to_underlying(plurality_value::two),
+
+    /** The number is part of few, and this means something in the current language.
+     */
     few = 1 << to_underlying(plurality_value::few),
+
+    /** The number is part of many, and this means something in the current language.
+     */
     many = 1 << to_underlying(plurality_value::many),
+
+    /** Any other number, every language will have at least this.
+     */
     other = 1 << to_underlying(plurality_value::other),
 };
 
+/** Or plurality masks together.
+ */
 [[nodiscard]] constexpr plurality_mask operator|(plurality_mask const& lhs, plurality_mask const& rhs) noexcept
 {
     return static_cast<plurality_mask>(to_underlying(lhs) | to_underlying(rhs));
 }
 
+/** Plurality of a number.
+ */
 struct plurality {
     plurality_value value;
     plurality_mask mask;
@@ -69,6 +118,10 @@ struct plurality {
 
 namespace detail {
 
+/** The operand for the unicode-plural rules.
+ *
+ * This operand extracts information from a number.
+ */
 struct plural_operand {
     /** Absolute value.
      */
@@ -862,6 +915,12 @@ constexpr auto cardinal_plural_table = cardinal_plural_table_init();
 
 } // namespace detail
 
+/** Get plural information of a number in a given language.
+ *
+ * @param language The language.
+ * @param n The number to know the plurality for.
+ * @return plurality information.
+ */
 [[nodiscard]] constexpr plurality cardinal_plural(language_tag language, std::integral auto n) noexcept
 {
     if (language == language_tag{"pt-PT"}) {
@@ -875,9 +934,17 @@ constexpr auto cardinal_plural_table = cardinal_plural_table_init();
     return detail::cardinal_plural_table[language_index](detail::plural_operand(n));
 }
 
+/** Get an index into message plural-variants for a given number.
+ *
+ * @param language The language the messages are in.
+ * @param n The number to format in the message.
+ * @param size The number of message plural-variants. Must be larger than 0.
+ * @return An index into the plural-variants, if the number of variants is less than plurality suggest then zero is returned.
+ */
 [[nodiscard]] constexpr size_t cardinal_plural(language_tag language, std::integral auto n, size_t size) noexcept
 {
     return cardinal_plural(language, n).index(size);
 }
 
 }} // namespace hi::v1
+
