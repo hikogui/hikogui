@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GFX/RenderDoc.hpp"
 #include "hikogui/font/module.hpp"
 #include "hikogui/codec/png.hpp"
 #include "hikogui/file/URL.hpp"

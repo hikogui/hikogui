@@ -3,8 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GUI/module.hpp"
-#include "hikogui/widgets/module.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
 

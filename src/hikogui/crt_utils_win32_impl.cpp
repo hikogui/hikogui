@@ -5,7 +5,7 @@
 #include "utility/win32_headers.hpp"
 
 #include "crt_utils.hpp"
-#include "GUI/gui_system.hpp"
+#include "GUI/module.hpp"
 #include "utility/module.hpp"
 #include "console.hpp"
 #include "log.hpp"

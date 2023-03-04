@@ -8,7 +8,7 @@
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
 #include "../unicode/module.hpp"
-#include "../GFX/gfx_device.hpp"
+#include "../GFX/module.hpp"
 #include "../utility/module.hpp"
 #include "../observer.hpp"
 #include <span>

@@ -13,7 +13,7 @@
 #include "../geometry/module.hpp"
 #include "../unicode/module.hpp"
 #include "../font/module.hpp"
-#include "../GFX/subpixel_orientation.hpp"
+#include "../GFX/module.hpp"
 #include "../chrono.hpp"
 #include "../utility/module.hpp"
 

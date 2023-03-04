@@ -9,6 +9,7 @@
 #include "concurrency/module.hpp"
 #include "font/module.hpp"
 #include "geometry/module.hpp"
+#include "GFX/module.hpp"
 #include "GUI/module.hpp"
 #include "i18n/module.hpp"
 #include "image/module.hpp"
@@ -21,8 +22,8 @@
 #include "widgets/module.hpp"
 
 /** @file module.hpp
-* 
-* 
+*
+*
 * Dependencies:
 *  - utility: -
 *  - SIMD: utility
@@ -30,7 +31,7 @@
 *  - color: geometry, SIMD, utility
 *  - image: geometry, SIMD, color, utility
 *  - char_maps: utility
-* 
+*
 */
 
 /** @namespace hi The HikoGUI namespace.

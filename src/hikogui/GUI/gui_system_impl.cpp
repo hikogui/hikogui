@@ -6,7 +6,7 @@
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
 #include "../theme/module.hpp"
-#include "../GFX/gfx_system.hpp"
+#include "../GFX/module.hpp"
 #include "../font/module.hpp"
 #include "../log.hpp"
 #include "../loop.hpp"

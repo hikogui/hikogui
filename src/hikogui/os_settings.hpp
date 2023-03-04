@@ -6,7 +6,7 @@
 
 #include "i18n/module.hpp"
 #include "theme/module.hpp"
-#include "GFX/subpixel_orientation.hpp"
+#include "GFX/module.hpp"
 #include "geometry/module.hpp"
 #include "utility/module.hpp"
 #include "loop.hpp"

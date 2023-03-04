@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../GUI/module.hpp"
-#include "../GFX/paged_image.hpp"
+#include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
 #include "../label.hpp"
 #include <memory>

@@ -2,9 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+// import hikogui;
+// import hikogui.crt;
+
 #include "hikogui/module.hpp"
-#include "hikogui/GFX/RenderDoc.hpp"
-#include "hikogui/GFX/gfx_system.hpp"
+#include "hikogui/task.hpp"
+#include "hikogui/crt.hpp"
+#include "hikogui/loop.hpp"
+
 #include "hikogui/audio/audio_system.hpp"
 #include "hikogui/codec/png.hpp"
 #include "hikogui/log.hpp"

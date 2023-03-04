@@ -11,7 +11,6 @@
 #include "pipeline_SDF.hpp"
 #include "pipeline_alpha.hpp"
 #include "pipeline_tone_mapper.hpp"
-#include "../widgets/window_widget.hpp"
 #include "../trace.hpp"
 #include "../utility/module.hpp"
 #include <vector>

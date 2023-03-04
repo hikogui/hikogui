@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../GFX/gfx_surface_vulkan.hpp"
+#include "../GFX/module.hpp"
 #include "gui_window.hpp"
 #include <unordered_map>
 

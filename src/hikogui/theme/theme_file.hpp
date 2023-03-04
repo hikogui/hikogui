@@ -5,7 +5,7 @@
 #pragma once
 
 #include "theme_mode.hpp"
-#include "../text/text_style.hpp"
+#include "../text/module.hpp"
 #include "../utility/module.hpp"
 #include "../datum.hpp"
 #include "../color/module.hpp"

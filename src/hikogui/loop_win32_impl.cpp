@@ -42,7 +42,7 @@
 #include "trace.hpp"
 #include "utility/module.hpp"
 #include "log.hpp"
-#include "GUI/gui_window.hpp"
+#include "GUI/module.hpp"
 #include "net/network_event.hpp"
 #include "net/network_event_win32.hpp"
 #include <vector>

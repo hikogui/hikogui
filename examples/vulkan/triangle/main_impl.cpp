@@ -4,8 +4,6 @@
 
 #include "hikogui/module.hpp"
 #include "hikogui/codec/png.hpp"
-#include "hikogui/GFX/RenderDoc.hpp"
-#include "hikogui/GFX/gfx_surface_delegate_vulkan.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
 #include "hikogui/task.hpp"

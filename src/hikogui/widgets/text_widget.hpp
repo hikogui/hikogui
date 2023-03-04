@@ -10,8 +10,7 @@
 
 #include "text_delegate.hpp"
 #include "../GUI/module.hpp"
-#include "../text/text_selection.hpp"
-#include "../text/text_shaper.hpp"
+#include "../text/module.hpp"
 #include "../geometry/module.hpp"
 #include "../undo_stack.hpp"
 #include "../scoped_task.hpp"

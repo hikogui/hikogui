@@ -5,7 +5,7 @@
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
 #include "../theme/module.hpp"
-#include "../GFX/gfx_system_vulkan.hpp"
+#include "../GFX/module.hpp"
 #include "../font/module.hpp"
 #include "../file/path_location.hpp"
 #include "../file/URL.hpp"

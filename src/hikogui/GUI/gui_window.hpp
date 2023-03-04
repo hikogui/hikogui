@@ -11,7 +11,7 @@
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "widget.hpp"
-#include "../GFX/subpixel_orientation.hpp"
+#include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
 #include "../chrono.hpp"
 #include "../label.hpp"

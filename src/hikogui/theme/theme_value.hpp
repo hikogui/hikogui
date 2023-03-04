@@ -10,7 +10,7 @@
 #include "../concurrency/module.hpp"
 #include "../utility/module.hpp"
 #include "../color/module.hpp"
-#include "../text/text_theme.hpp"
+#include "../text/module.hpp"
 #include "../geometry/module.hpp"
 #include "../generator.hpp"
 #include "../log.hpp"

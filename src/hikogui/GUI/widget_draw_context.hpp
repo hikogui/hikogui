@@ -5,8 +5,7 @@
 #pragma once
 
 #include "widget_layout.hpp"
-#include "../GFX/gfx_draw_context.hpp"
-#include "../GFX/subpixel_orientation.hpp"
+#include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
 #include "../unicode/module.hpp"
 #include "../text/module.hpp"

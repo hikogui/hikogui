@@ -7,10 +7,7 @@
 #include "keyboard_bindings.hpp"
 #include "../theme/module.hpp"
 #include "../os_settings.hpp"
-#include "../GFX/gfx_device.hpp"
-#include "../GFX/gfx_surface.hpp"
-#include "../widgets/window_widget.hpp"
-#include "../widgets/grid_widget.hpp"
+#include "../GFX/module.hpp"
 #include "../trace.hpp"
 #include "../log.hpp"
 

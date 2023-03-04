@@ -9,7 +9,7 @@
 #include "keyboard_virtual_key.hpp"
 #include "../theme/module.hpp"
 #include "../unicode/module.hpp"
-#include "../GFX/gfx_system_vulkan.hpp"
+#include "../GFX/module.hpp"
 #include "../log.hpp"
 #include "../strings.hpp"
 #include "../utility/module.hpp"

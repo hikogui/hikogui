@@ -3,14 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "widget_draw_context.hpp"
-#include "../GFX/pipeline_box_device_shared.hpp"
-#include "../GFX/pipeline_image_device_shared.hpp"
-#include "../GFX/pipeline_SDF_device_shared.hpp"
-#include "../GFX/pipeline_alpha_device_shared.hpp"
-#include "../GFX/paged_image.hpp"
-#include "../GFX/gfx_device_vulkan.hpp"
-#include "../text/text_shaper.hpp"
-#include "../text/text_selection.hpp"
+#include "../GFX/module.hpp"
+#include "../text/module.hpp"
 
 namespace hi::inline v1 {
 

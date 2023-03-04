@@ -8,7 +8,6 @@ add_subdirectory(codec)
 add_subdirectory(file)
 add_subdirectory(formula)
 add_subdirectory(layout)
-add_subdirectory(GFX)
 add_subdirectory(random)
 add_subdirectory(skeleton)
 
