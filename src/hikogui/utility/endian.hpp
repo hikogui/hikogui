@@ -194,7 +194,7 @@ template<numeric T>
 }
 
 template<unsigned int NumBits, byte_like B>
-[[nodiscard]] constexpr auto load_bits_be(std::span<B> bytes, size_t bit_index) const noexcept
+[[nodiscard]] constexpr auto load_bits_be(std::span<B> bytes, size_t bit_index) noexcept
 {
     static_assert(NumBits <= sizeof(unsigned long long) * CHAR_BIT);
 
@@ -202,10 +202,12 @@ template<unsigned int NumBits, byte_like B>
     constexpr auto num_bytes = (num_bits + CHAR_BIT - 1) / CHAR_BIT;
 
     // Determine an unsigned type that can be used to read NumBits in a single `load_be()` on every bit offset.
-    typename value_type =
+    // clang-format off
+    using value_type =
         std::conditional_t<num_bytes < sizeof(unsigned short), unsigned short,
         std::conditional_t<num_bytes < sizeof(unsigned int), unsigned int,
         std::conditional_t<num_bytes < sizeof(unsigned long), unsigned long, unsigned long long>>>;
+    // clang-format on
 
     hilet byte_offset = bit_index / CHAR_BIT;
     hilet bit_offset = bit_index % CHAR_BIT;
@@ -235,9 +237,10 @@ template<unsigned int NumBits, byte_like B>
 }
 
 template<typename T, unsigned int NumBits, byte_like B>
-[[nodiscard]] constexpr T load_bits_be_into_value(std::span<B> bytes, size_t bit_index) const noexcept
+[[nodiscard]] constexpr T load_bits_be_into_value(std::span<B> bytes, size_t bit_index) noexcept
 {
     static_assert(NumBits <= sizeof(T) * CHAR_BIT);
+    // clang-format off
     static_assert(
         sizeof(T) == sizeof(unsigned char) or
         sizeof(T) == sizeof(unsigned short) or
@@ -246,11 +249,12 @@ template<typename T, unsigned int NumBits, byte_like B>
         sizeof(T) == sizeof(unsigned long long)
     );
 
-    typename value_type =
+    using value_type =
         std::conditional_t<sizeof(T) == sizeof(unsigned char), unsigned char,
         std::conditional_t<sizeof(T) == sizeof(unsigned short), unsigned short,
         std::conditional_t<sizeof(T) == sizeof(unsigned int), unsigned int,
         std::conditional_t<sizeof(T) == sizeof(unsigned long), unsigned long, unsigned long long>>>>;
+    // clang-format on
 
     return std::bit_cast<T>(char_cast<value_type>(load_bits_be<NumBits>(bytes, bit_index)));
 }

@@ -60,7 +60,14 @@ namespace hi { inline namespace v1 {
     auto lower_ = static_cast<value_type>(lower);
     auto upper_ = static_cast<value_type>(upper);
 
-    hi_axiom(lower_ <= upper_);
+#ifndef NDEBUG
+    if (not (lower_ < upper_)) {
+        hi_debug_abort("bound_check() lower is greater than upper.");
+    }
+#else
+    hi_assume(lower_ < upper_);
+#endif
+
     return index_ >= lower_ and index_ < upper_;
 }
 
@@ -125,7 +132,7 @@ concept bound_check_range_helper = requires(Context&& range) {
 #define hi_check_bounds(x, ...) \
     do { \
         if (not ::hi::bound_check(x, __VA_ARGS__)) { \
-            throw parse_error("assert bounds: " hi_stringify(x) " between " hi_stringify(__VA_ARGS__)); \
+            throw parse_error("assert bounds: " hi_stringify(x) " between " hi_for_each(hi_stringify, (__VA_ARGS__))); \
         } \
     } while (false)
 
@@ -218,7 +225,7 @@ concept bound_check_range_helper = requires(Context&& range) {
 #define hi_assert_bounds(x, ...) \
     do { \
         if (not ::hi::bound_check(x, __VA_ARGS__)) { \
-            hi_debug_abort("assert bounds: " hi_stringify(x) " between " hi_stringify(__VA_ARGS__)); \
+            hi_debug_abort("assert bounds: " hi_stringify(x) " between " hi_for_each(hi_stringify, (__VA_ARGS__))); \
         } \
     } while (false)
 

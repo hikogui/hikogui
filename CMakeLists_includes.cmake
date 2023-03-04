@@ -132,8 +132,20 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_simd_utility.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_sse2.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/module.hpp
     ${HIKOGUI_SOURCE_DIR}/text/character.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/character_attributes.hpp
+    #${HIKOGUI_SOURCE_DIR}/text/spell_check.hpp
     ${HIKOGUI_SOURCE_DIR}/text/text.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_cursor.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_decoration.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_phrasing.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_selection.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_shaper.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_shaper_char.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_shaper_line.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_style.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_theme.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_book.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_file.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_mode.hpp

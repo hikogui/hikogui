@@ -22,6 +22,9 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/l10n/po_parser_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translation_impl.cpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_shaper_char_impl.cpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_shaper_impl.cpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_shaper_line_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_file_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/grapheme_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/gstring_impl.cpp

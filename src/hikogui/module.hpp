@@ -4,21 +4,21 @@
 
 #pragma once
 
-#include "widgets/module.hpp"
-#include "GUI/module.hpp"
-#include "image/module.hpp"
-#include "color/module.hpp"
-#include "geometry/module.hpp"
-#include "SIMD/module.hpp"
 #include "char_maps/module.hpp"
-#include "font/module.hpp"
+#include "color/module.hpp"
 #include "concurrency/module.hpp"
-#include "theme/module.hpp"
+#include "font/module.hpp"
+#include "geometry/module.hpp"
+#include "GUI/module.hpp"
 #include "i18n/module.hpp"
+#include "image/module.hpp"
 #include "l10n/module.hpp"
-#include "unicode/module.hpp"
+#include "SIMD/module.hpp"
 #include "text/module.hpp"
+#include "theme/module.hpp"
+#include "unicode/module.hpp"
 #include "utility/module.hpp"
+#include "widgets/module.hpp"
 
 /** @file module.hpp
 * 

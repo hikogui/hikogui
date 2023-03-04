@@ -189,8 +189,8 @@ void text_shaper::resolve_font_and_widths(hi::text_theme const &text_theme, floa
     hi::text_theme const& text_theme,
     float dpi_scale,
     hi::alignment alignment,
-    unicode_bidi_class text_direction) noexcept :
-    _bidi_context(text_direction), _alignment(alignment)
+    bool left_to_right) noexcept :
+    _bidi_context(left_to_right ? unicode_bidi_class::L : unicode_bidi_class::R), _alignment(alignment)
 {
     // Copy the text to an internal vector of characters.
     _text.reserve(text.size());

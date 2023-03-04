@@ -11,7 +11,6 @@ add_subdirectory(layout)
 add_subdirectory(GFX)
 add_subdirectory(random)
 add_subdirectory(skeleton)
-add_subdirectory(text)
 
 configure_file(metadata_impl.cpp.in metadata_impl.cpp @ONLY)
 

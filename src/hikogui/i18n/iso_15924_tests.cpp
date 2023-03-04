@@ -21,12 +21,6 @@ TEST(iso_15925, from_code4)
     ASSERT_THROW(hi::iso_15924{"Foob"}, hi::parse_error);
 }
 
-TEST(iso_15925, from_unicode)
-{
-    ASSERT_EQ(hi::iso_15924{hi::unicode_script::Latin}.number(), 215);
-    ASSERT_EQ(hi::iso_15924{hi::unicode_script::Yi}.number(), 460);
-}
-
 TEST(iso_15925, to_code4)
 {
     ASSERT_EQ(hi::iso_15924{215}.code4(), "Latn");
@@ -38,9 +32,3 @@ TEST(iso_15925, to_code4_open_type)
     ASSERT_EQ(hi::iso_15924{215}.code4_open_type(), "latn");
     ASSERT_EQ(hi::iso_15924{460}.code4_open_type(), "yi  ");
 }
-
-//TEST(iso_15925, to_code4_unicode_script)
-//{
-//    ASSERT_EQ(hi::iso_15924{215}.unicode_script(), hi::unicode_script::Latin);
-//    ASSERT_EQ(hi::iso_15924{460}.unicode_script(), hi::unicode_script::Yi);
-//}

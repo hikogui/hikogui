@@ -5,6 +5,19 @@
 
 #pragma once
 
+#include "character.hpp"
+#include "character_attributes.hpp"
+//#include "spell_check.hpp"
+#include "text.hpp"
+#include "text_cursor.hpp"
+#include "text_decoration.hpp"
+#include "text_phrasing.hpp"
+#include "text_selection.hpp"
+#include "text_shaper.hpp"
+#include "text_shaper_char.hpp"
+#include "text_shaper_line.hpp"
+#include "text_style.hpp"
+#include "text_theme.hpp"
 
 namespace hi {
 inline namespace v1 {
@@ -97,7 +110,7 @@ When converting text back to string with markup the canonical output is as follo
    must be used when able, but not for the first character (no attributes changed).
 
 ### Phrasing
- 
+
   Command | Phrasing            | Description
  :------- |:------------------- |:----------------------------------------------------------------
   `r`     | regular             | Plain text

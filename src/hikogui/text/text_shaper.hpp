@@ -73,15 +73,14 @@ public:
      * @param style The initial text-style to use to display the text.
      * @param dpi_scale The scaling factor to use to scale a font's size to match the physical display.
      * @param alignment The alignment how to align the text.
-     * @param text_direction The default text direction when it can not be deduced from the text.
-     * @param script The script of the text.
+     * @param left_to_right The default text direction when it can not be deduced from the text.
      */
     [[nodiscard]] text_shaper(
         hi::text const& text,
         hi::text_theme const &text_theme,
         float dpi_scale,
         hi::alignment alignment,
-        unicode_bidi_class text_direction) noexcept;
+        bool left_to_right) noexcept;
 
     [[nodiscard]] bool empty() const noexcept
     {

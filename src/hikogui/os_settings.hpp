@@ -43,25 +43,14 @@ public:
         return _language_tag.load(std::memory_order::relaxed);
     }
 
-    /** Get the configured writing direction.
-     *
-     * The writing-direction is extracted from the first language/script configured on the system.
-     *
-     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
-     */
-    [[nodiscard]] static unicode_bidi_class writing_direction() noexcept
-    {
-        hi_axiom(_populated.load(std::memory_order::acquire));
-        return _writing_direction.load(std::memory_order::relaxed);
-    }
-
     /** Check if the configured writing direction is left-to-right.
      *
      * @retval true If the writing direction is left-to-right.
      */
     [[nodiscard]] static bool left_to_right() noexcept
     {
-        return writing_direction() == unicode_bidi_class::L;
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _left_to_right.load(std::memory_order::relaxed);
     }
 
     /** Check if the configured writing direction is right-to-left.
@@ -265,7 +254,7 @@ private:
     static inline notifier_type _notifier;
 
     static inline std::vector<hi::language_tag> _language_tags = {};
-    static inline std::atomic<hi::unicode_bidi_class> _writing_direction = hi::unicode_bidi_class::L;
+    static inline std::atomic<bool> _left_to_right = true;
     static inline std::atomic<hi::language_tag> _language_tag = hi::language_tag{"en-US"};
     static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
     static inline std::atomic<bool> _uniform_HDR = false;

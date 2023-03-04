@@ -163,7 +163,7 @@ public:
 
         // XXX use the theme-style and apply it to the _text_cache.
         _shaped_text = text_shaper{
-            _text_cache, theme<prefix / "style", text_theme>{}(this), dpi_scale, alignment_, os_settings::writing_direction()};
+            _text_cache, theme<prefix / "style", text_theme>{}(this), dpi_scale, alignment_, os_settings::left_to_right()};
 
         hilet shaped_text_rectangle =
             narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));

@@ -42,12 +42,12 @@ void os_settings::gather() noexcept
         }
 
         hilet language_tag = language_tags.front().expand();
-        hilet writing_direction = language_tag.writing_direction();
+        hilet left_to_right = language_tag.left_to_right();
         hilet default_script = language_tag.default_script();
 
         auto language_changed = compare_store(_language_tags, language_tags);
         language_changed |= compare_store(_language_tag, language_tag);
-        language_changed |= compare_store(_writing_direction, writing_direction);
+        language_changed |= compare_store(_left_to_right, left_to_right);
 
         if (language_changed) {
             setting_has_changed = true;

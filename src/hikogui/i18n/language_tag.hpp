@@ -158,11 +158,11 @@ public:
 
     /** The language direction for this language-tag.
      *
-     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left
+     * @return true if left-to-right language
      */
-    [[nodiscard]] unicode_bidi_class writing_direction() const noexcept
+    [[nodiscard]] bool left_to_right() const noexcept
     {
-        return default_script().writing_direction();
+        return default_script().left_to_right();
     }
 
     [[nodiscard]] std::string to_string() const noexcept

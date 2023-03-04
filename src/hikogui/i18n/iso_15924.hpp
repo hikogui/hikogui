@@ -5,8 +5,6 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../unicode/unicode_script.hpp"
-#include "../unicode/unicode_bidi_class.hpp"
 #include <string_view>
 #include <cstdint>
 #include <format>
@@ -24,19 +22,17 @@ public:
     constexpr iso_15924& operator=(iso_15924 const&) noexcept = default;
     constexpr iso_15924& operator=(iso_15924&&) noexcept = default;
 
-    constexpr iso_15924(uint16_t number) : _v(number)
+    constexpr iso_15924(std::integral auto number) : _v(0)
     {
-        hi_check(number <= 999, "ISO-15924 number must be between 0 and 999, got {}", number);
+        hi_check_bounds(number, 0, 1000);
+        _v = narrow_cast<uint16_t>(number);
     }
-
-    iso_15924(unicode_script const& script) noexcept;
-    explicit operator unicode_script() const noexcept;
 
     iso_15924(std::string_view code4);
 
     constexpr iso_15924(intrinsic_t, uint16_t v) noexcept : _v(v)
     {
-        hi_axiom(_v <= 999);
+        hi_axiom_bounds(_v, 0, 1000);
     }
 
     [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
@@ -74,9 +70,12 @@ public:
      */
     [[nodiscard]] std::string_view code4_open_type() const noexcept;
 
-    [[nodiscard]] unicode_bidi_class writing_direction() const noexcept;
+    /** Is this script written left-to-right.
+     */
+    [[nodiscard]] bool left_to_right() const noexcept;
 
     [[nodiscard]] constexpr friend bool operator==(iso_15924 const& lhs, iso_15924 const& rhs) noexcept = default;
+    [[nodiscard]] constexpr friend auto operator<=>(iso_15924 const& lhs, iso_15924 const& rhs) noexcept = default;
 
     /** Check if rhs matches with lhs.
      *
