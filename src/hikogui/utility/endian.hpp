@@ -87,6 +87,8 @@ template<std::floating_point T>
     }
 }
 
+/** Convert an integral from little-to-native endian.
+ */
 template<std::integral T>
 [[nodiscard]] constexpr T little_to_native(T x)
 {
@@ -97,6 +99,8 @@ template<std::integral T>
     }
 }
 
+/** Convert an integral from big-to-native endian.
+ */
 template<std::integral T>
 [[nodiscard]] constexpr T big_to_native(T x)
 {
@@ -107,6 +111,8 @@ template<std::integral T>
     }
 }
 
+/** Convert an integral from native-to-little endian.
+ */
 template<std::integral T>
 [[nodiscard]] constexpr T native_to_little(T x)
 {
@@ -117,6 +123,8 @@ template<std::integral T>
     }
 }
 
+/** Convert an integral from native-to-big endian.
+ */
 template<std::integral T>
 [[nodiscard]] constexpr T native_to_big(T x)
 {
@@ -127,6 +135,13 @@ template<std::integral T>
     }
 }
 
+/** Load a numeric value from memory.
+ *
+ * @tparam T The type of the integer or floating point value to load.
+ * @tparam Endian The endiances of the data.
+ * @param src A pointer to the numeric value.
+ * @return The numeric value after endian conversion.
+ */
 template<numeric T, std::endian Endian = std::endian::native>
 [[nodiscard]] constexpr T load(T const *src) noexcept
 {
@@ -137,6 +152,13 @@ template<numeric T, std::endian Endian = std::endian::native>
     return value;
 }
 
+/** Unaligned Load of a numeric value from a byte-like array.
+ *
+ * @tparam T The type of the integer or floating point value to load.
+ * @tparam Endian The endiances of the data.
+ * @param src A pointer to byte-like array.
+ * @return The numeric value after endian conversion.
+ */
 template<numeric T, std::endian Endian = std::endian::native, byte_like B>
 [[nodiscard]] constexpr T load(B const *src) noexcept
 {
@@ -147,6 +169,13 @@ template<numeric T, std::endian Endian = std::endian::native, byte_like B>
     return value;
 }
 
+/** Unaligned Load of a numeric value from a byte-like array.
+ *
+ * @tparam T The type of the integer or floating point value to load.
+ * @tparam Endian The endiances of the data.
+ * @param src A pointer to memory.
+ * @return The numeric value after endian conversion.
+ */
 template<numeric T, std::endian Endian = std::endian::native>
 [[nodiscard]] inline T load(void const *src) noexcept
 {
@@ -157,44 +186,87 @@ template<numeric T, std::endian Endian = std::endian::native>
     return value;
 }
 
+/** Load of a numeric value encoded in little-endian format.
+ *
+ * @tparam T The type of the integer or floating point value to load.
+ * @param src A pointer to the numeric value.
+ * @return The numeric value after endian conversion.
+ */
 template<numeric T>
 [[nodiscard]] constexpr T load_le(T const *src) noexcept
 {
     return load<T, std::endian::little>(src);
 }
 
+/** Unaligned load of a numeric value encoded in little-endian format.
+ *
+ * @tparam T The type of the integer or floating point value to load.
+ * @param src A pointer to a byte like memory.
+ * @return The numeric value after endian conversion.
+ */
 template<numeric T, byte_like B>
 [[nodiscard]] constexpr T load_le(B const *src) noexcept
 {
     return load<T, std::endian::little>(src);
 }
 
+/** Unaligned load of a numeric value encoded in little-endian format.
+ *
+ * @tparam T The type of the integer or floating point value to load.
+ * @param src A pointer to memory.
+ * @return The numeric value after endian conversion.
+ */
 template<numeric T>
 [[nodiscard]] inline T load_le(void const *src) noexcept
 {
     return load<T, std::endian::little>(src);
 }
 
+/** Load of a numeric value encoded in big-endian format.
+ *
+ * @tparam T The type of the integer or floating point value to load.
+ * @param src A pointer to a byte like memory.
+ * @return The numeric value after endian conversion.
+ */
 template<numeric T>
 [[nodiscard]] constexpr T load_be(T const *src) noexcept
 {
     return load<T, std::endian::big>(src);
 }
 
+/** Unaligned load of a numeric value encoded in byte-endian format.
+ *
+ * @tparam T The type of the integer or floating point value to load.
+ * @param src A pointer to a byte like buffer.
+ * @return The numeric value after endian conversion.
+ */
 template<numeric T, byte_like B>
 [[nodiscard]] constexpr T load_be(B const *src) noexcept
 {
     return load<T, std::endian::big>(src);
 }
 
+/** Unaligned load of a numeric value encoded in byte-endian format.
+ *
+ * @tparam T The type of the integer or floating point value to load.
+ * @param src A pointer to memory.
+ * @return The numeric value after endian conversion.
+ */
 template<numeric T>
 [[nodiscard]] inline T load_be(void const *src) noexcept
 {
     return load<T, std::endian::big>(src);
 }
 
+/** Unaligned load bits from a big-endian buffer at a bit-offset.
+ *
+ * @tparam NumBits the number of bits to read.
+ * @param src A byte-like buffer to load bits from.
+ * @param bit_index The bit offset into the buffer. 0 is the 7th bit of the 1st byte in @a src.
+ * @return The loaded bits in the least-signigicant-bits of an unsigned integer type that can hold the bits requested.
+ */
 template<unsigned int NumBits, byte_like B>
-[[nodiscard]] constexpr auto load_bits_be(std::span<B> bytes, size_t bit_index) noexcept
+[[nodiscard]] constexpr auto load_bits_be(B const *src, size_t bit_index) noexcept
 {
     static_assert(NumBits <= sizeof(unsigned long long) * CHAR_BIT);
 
@@ -213,7 +285,7 @@ template<unsigned int NumBits, byte_like B>
     hilet bit_offset = bit_index % CHAR_BIT;
 
     // load_be allows unaligned reads.
-    auto r = load_be<value_type>(std::addressof(bytes[byte_offset]));
+    auto r = load_be<value_type>(std::addressof(src[byte_offset]));
     r >>= bit_offset;
 
     if constexpr (num_bytes == sizeof(value_type)) {
@@ -228,7 +300,7 @@ template<unsigned int NumBits, byte_like B>
             r <<= bits_todo;
             hilet rest_mask = char_cast<value_type>((1 << bits_todo) - 1);
 
-            hilet rest = char_cast<value_type>(bytes[byte_offset + sizeof(value_type)]);
+            hilet rest = char_cast<value_type>(src[byte_offset + sizeof(value_type)]);
             r |= (rest & rest_mask);
         }
     }
@@ -236,8 +308,19 @@ template<unsigned int NumBits, byte_like B>
     return r;
 }
 
+/** Unaligned load bits from a big-endian buffer at a bit-offset.
+ *
+ * @tparam T A type which can be created using `std::bit_cast()`. With the same size of
+ *           char, short, int, long, or long long.
+ * @tparam NumBits the number of bits to read. Less than or equal to the number of bits in @a T.
+ * @param src A byte-like buffer to load bits from.
+ * @param bit_index The bit offset into the buffer. 0 is the 7th bit of the 1st byte in @a src.
+ * @return An object of type @a T constructed from the bits loaded from @a src.
+ *         Before construct @a T the bits are loaded into the lower bits of a unsigned
+ *         integer of the same size as @a T.
+ */
 template<typename T, unsigned int NumBits, byte_like B>
-[[nodiscard]] constexpr T load_bits_be_into_value(std::span<B> bytes, size_t bit_index) noexcept
+[[nodiscard]] constexpr T load_bits_be_into_value(B const *src, size_t bit_index) noexcept
 {
     static_assert(NumBits <= sizeof(T) * CHAR_BIT);
     // clang-format off
@@ -256,7 +339,7 @@ template<typename T, unsigned int NumBits, byte_like B>
         std::conditional_t<sizeof(T) == sizeof(unsigned long), unsigned long, unsigned long long>>>>;
     // clang-format on
 
-    return std::bit_cast<T>(char_cast<value_type>(load_bits_be<NumBits>(bytes, bit_index)));
+    return std::bit_cast<T>(char_cast<value_type>(load_bits_be<NumBits>(src, bit_index)));
 }
 
 

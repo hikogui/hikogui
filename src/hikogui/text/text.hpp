@@ -7,7 +7,6 @@
 #include "../unicode/module.hpp"
 #include "../i18n/module.hpp"
 #include "../utility/module.hpp"
-#include "../os_settings.hpp"
 #include <string>
 #include <string_view>
 #include <algorithm>
@@ -143,7 +142,7 @@ using text_view = std::basic_string_view<character>;
  * @ingroup text
  */
 template<typename It, std::sentinel_for<It> ItEnd>
-inline void fixup_script(It first, ItEnd last) noexcept
+inline void fixup_script(It first, ItEnd last, iso_15924 default_script) noexcept
     requires(std::is_same_v<std::iter_value_t<It>, character>)
 {
     // Overwrite the script of a character if it is specific in the Unicode
@@ -204,7 +203,7 @@ inline void fixup_script(It first, ItEnd last) noexcept
     // In the second iteration we search backwards for scripts and assign them.
     // Since in this iteration we have to assign a script we don't care about
     // the language. And we fallback to the operating system's default script.
-    last_script = os_settings::language_tag().script;
+    last_script = default_script
     for (auto rev_it = last; rev_it != first; --rev_it) {
         hilet it = rev_it - 1;
         auto attributes = it->attributes();
@@ -229,16 +228,16 @@ inline void fixup_script(It first, ItEnd last) noexcept
  * @ingroup text
  */
 template<std::ranges::range R>
-inline void fixup_script(R& str) noexcept
+inline void fixup_script(R& str, iso_15924 default_script) noexcept
     requires(std::is_same_v<std::ranges::range_value_t<R>, character>)
 {
-    return fixup_script(std::ranges::begin(str), std::ranges::end(str));
+    return fixup_script(std::ranges::begin(str), std::ranges::end(str), default_script);
 }
 
 /**
  * @ingroup text
  */
-[[nodiscard]] inline text to_text(gstring_view str, character_attributes default_attributes = character_attributes{}) noexcept
+[[nodiscard]] inline text to_text(gstring_view str, character_attributes default_attributes) noexcept
 {
     auto r = text{};
     r.reserve(str.size());
@@ -263,7 +262,7 @@ template<character_attribute... Args>
 [[nodiscard]] inline text to_text(
     std::string_view str,
     char32_t new_line_char = unicode_PS,
-    character_attributes default_attributes = character_attributes{}) noexcept
+    character_attributes default_attributes) noexcept
 {
     return to_text(to_gstring(str, new_line_char), default_attributes);
 }
@@ -363,7 +362,7 @@ template<character_attribute... Args>
         output_incomplete_command();
     }
 
-    fixup_script(r);
+    fixup_script(r, default_attributes.script());
     return r;
 }
 
