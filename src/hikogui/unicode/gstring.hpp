@@ -19,7 +19,7 @@ struct std::char_traits<hi::grapheme> {
     using pos_type = std::fpos<state_type>;
     using comparison_category = std::strong_ordering;
 
-    static constexpr void assign(char_type &r, char_type const &a) noexcept
+    static constexpr void assign(char_type& r, char_type const& a) noexcept
     {
         r = a;
     }
@@ -95,7 +95,7 @@ struct std::char_traits<hi::grapheme> {
         return i;
     }
 
-    static constexpr char_type const *find(const char_type *p, std::size_t count, const char_type &ch) noexcept
+    static constexpr char_type const *find(const char_type *p, std::size_t count, const char_type& ch) noexcept
     {
         hi_axiom_not_null(p);
 
@@ -151,36 +151,44 @@ using gstring = std::pmr::basic_string<grapheme>;
 
 /** Convert a UTF-32 string-view to a grapheme-string.
  *
- * Before conversion to gstring a string if first converted to NFC normalization.
- * This is the reason why this function allows you to select the new-line character.
- * By default '\n', '\r\n',
+ * Before conversion to `gstring` a string is first normalized using the Unicode
+ * normalization algorithm. By default it is normalized using NFC.
  *
  * @param rhs The UTF-32 string to convert.
- * @param new_line_char The new_line_character to use, default the PARAGRAPH_SEPARATOR.
+ * @param normalization_mask The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-[[nodiscard]] gstring to_gstring(std::u32string_view rhs, char32_t new_line_char = U'\u2029') noexcept;
+[[nodiscard]] gstring
+to_gstring(std::u32string_view rhs, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFD) noexcept;
 
 /** Convert a UTF-8 string to a grapheme-string.
-*
-* @param rhs The UTF-8 string to convert.
-* @param new_line_char The new_line_character to use, default the PARAGRAPH_SEPARATOR.
-* @return A grapheme-string.
+ *
+ * Before conversion to `gstring` a string is first normalized using the Unicode
+ * normalization algorithm. By default it is normalized using NFC.
+ *
+ * @param rhs The UTF-8 string to convert.
+ * @param normalization_mask The attributes used for normalizing the input string.
+ * @return A grapheme-string.
  */
-[[nodiscard]] inline gstring to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029') noexcept
+[[nodiscard]] inline gstring
+to_gstring(std::string_view rhs, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFD) noexcept
 {
-    return to_gstring(to_u32string(rhs), new_line_char);
+    return to_gstring(to_u32string(rhs), normalization_mask);
 }
 
 /** Convert a UTF-8 string to a grapheme-string.
  *
+ * Before conversion to `gstring` a string is first normalized using the Unicode
+ * normalization algorithm. By default it is normalized using NFC.
+ *
  * @param rhs The UTF-8 string to convert.
- * @param new_line_char The new_line_character to use, default the PARAGRAPH_SEPARATOR.
+ * @param normalization_mask The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-[[nodiscard]] inline gstring to_gstring(std::string const &rhs, char32_t new_line_char = U'\u2029') noexcept
+[[nodiscard]] inline gstring
+to_gstring(std::string const& rhs, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFD) noexcept
 {
-    return to_gstring(std::string_view{rhs}, new_line_char);
+    return to_gstring(std::string_view{rhs}, normalization_mask);
 }
 
 /** Convert a grapheme string to UTF-8.
@@ -192,7 +200,7 @@ using gstring = std::pmr::basic_string<grapheme>;
 {
     auto r = std::string{};
     r.reserve(rhs.size());
-    for (hilet c: rhs) {
+    for (hilet c : rhs) {
         r += to_string(c);
     }
     return r;
@@ -233,7 +241,7 @@ using gstring = std::pmr::basic_string<grapheme>;
  * @param rhs The grapheme string to convert to UTF-8
  * @return The resulting UTF-32 string, in NFC normalization.
  */
-[[nodiscard]] constexpr std::string to_string(gstring const &rhs) noexcept
+[[nodiscard]] constexpr std::string to_string(gstring const& rhs) noexcept
 {
     return to_string(gstring_view{rhs});
 }
@@ -242,19 +250,7 @@ using gstring = std::pmr::basic_string<grapheme>;
 
 template<>
 struct std::hash<hi::gstring> {
-    [[nodiscard]] std::size_t operator()(hi::gstring const &rhs) noexcept
-    {
-        auto r = std::hash<std::size_t>{}(rhs.size());
-        for (hilet c: rhs) {
-            r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
-        }
-        return r;
-    }
-};
-
-template<>
-struct std::hash<hi::pmr::gstring> {
-    [[nodiscard]] std::size_t operator()(hi::pmr::gstring const &rhs) noexcept
+    [[nodiscard]] std::size_t operator()(hi::gstring const& rhs) noexcept
     {
         auto r = std::hash<std::size_t>{}(rhs.size());
         for (hilet c : rhs) {
@@ -264,3 +260,14 @@ struct std::hash<hi::pmr::gstring> {
     }
 };
 
+template<>
+struct std::hash<hi::pmr::gstring> {
+    [[nodiscard]] std::size_t operator()(hi::pmr::gstring const& rhs) noexcept
+    {
+        auto r = std::hash<std::size_t>{}(rhs.size());
+        for (hilet c : rhs) {
+            r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
+        }
+        return r;
+    }
+};

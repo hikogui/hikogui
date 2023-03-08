@@ -91,22 +91,6 @@ enum class unicode_normalization_mask {
 };
 // clang-format on
 
-[[nodiscard]] constexpr unicode_normalization_mask decompose_newline_to(char32_t new_line_char) noexcept
-{
-    switch (new_line_char) {
-    case U'\n':
-        return unicode_normalization_mask::decompose_newline_to_LF;
-    case U'\r':
-        return unicode_normalization_mask::decompose_newline_to_CRLF;
-    case U'\u2029':
-        return unicode_normalization_mask::decompose_newline_to_PS;
-    case U' ':
-        return unicode_normalization_mask::decompose_newline_to_SP;
-    default:
-        hi_no_default();
-    }
-}
-
 [[nodiscard]] constexpr bool to_bool(unicode_normalization_mask const& rhs) noexcept
 {
     return to_bool(to_underlying(rhs));
@@ -137,8 +121,8 @@ operator&(unicode_normalization_mask const& lhs, unicode_decomposition_type cons
  * @param text to normalize, in-place.
  * @param normalization_mask Extra features for normalization.
  */
-std::u32string
-unicode_NFD(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFD) noexcept;
+[[nodiscard]] std::u32string
+unicode_decompose(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFD) noexcept;
 
 /** Convert text to Unicode-NFC normal form.
  *
@@ -148,24 +132,6 @@ unicode_NFD(std::u32string_view text, unicode_normalization_mask normalization_m
  * @param normalization_mask Extra features for normalization.
  */
 [[nodiscard]] std::u32string
-unicode_NFC(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFD) noexcept;
-
-/** Convert text to Unicode-NFKD normal form.
- * Code point 0x00'ffff is used internally, do not pass in text.
- *
- * @param text to normalize, in-place.
- * @param normalization_mask Extra features for normalization.
- */
-std::u32string
-unicode_NFKD(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFKD) noexcept;
-
-/** Convert text to Unicode-NFKC normal form.
- * Code point 0x00'ffff is used internally, do not pass in text.
- *
- * @param text to normalize, in-place.
- * @param normalization_mask Extra features for normalization.
- */
-std::u32string
-unicode_NFKC(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFKD) noexcept;
+unicode_normalize(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFD) noexcept;
 
 } // namespace hi::inline v1

@@ -11,7 +11,7 @@
 
 namespace hi::inline v1 {
 
-static void unicode_decompose(char32_t code_point, unicode_normalization_mask mask, std::u32string &r) noexcept
+static void _unicode_decompose(char32_t code_point, unicode_normalization_mask mask, std::u32string &r) noexcept
 {
     hilet &description = unicode_description::find(code_point);
 
@@ -53,10 +53,10 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
     }
 }
 
-static void unicode_decompose(std::u32string_view text, unicode_normalization_mask mask, std::u32string &r) noexcept
+static void _unicode_decompose(std::u32string_view text, unicode_normalization_mask mask, std::u32string &r) noexcept
 {
     for (hilet c : text) {
-        unicode_decompose(c, mask, r);
+        _unicode_decompose(c, mask, r);
     }
 }
 
@@ -64,7 +64,7 @@ static void unicode_decompose(std::u32string_view text, unicode_normalization_ma
  * @return The combined code-point, or U+ffff if first+second do not compose together.
  */
 [[nodiscard]] static char32_t
-unicode_compose(char32_t first, char32_t second, unicode_normalization_mask composition_mask) noexcept
+_unicode_compose(char32_t first, char32_t second, unicode_normalization_mask composition_mask) noexcept
 {
     if (to_bool(composition_mask & unicode_normalization_mask::compose_CRLF) and first == U'\r' and second == U'\n') {
         return U'\n';
@@ -74,7 +74,7 @@ unicode_compose(char32_t first, char32_t second, unicode_normalization_mask comp
     }
 }
 
-static void unicode_compose(unicode_normalization_mask composition_mask, std::u32string &text) noexcept
+static void _unicode_compose(unicode_normalization_mask composition_mask, std::u32string &text) noexcept
 {
     if (text.size() <= 1) {
         return;
@@ -103,7 +103,7 @@ static void unicode_compose(unicode_normalization_mask composition_mask, std::u3
                 bool blocking_pair = previous_combining_class != 0 && previous_combining_class >= second_combining_class;
                 bool second_is_starter = second_combining_class == 0;
 
-                hilet composed_code_point = unicode_compose(first_code_point, second_code_point, composition_mask);
+                hilet composed_code_point = _unicode_compose(first_code_point, second_code_point, composition_mask);
                 if (composed_code_point != U'\uffff' && !blocking_pair) {
                     // Found a composition.
                     first_code_point = composed_code_point;
@@ -133,7 +133,7 @@ static void unicode_compose(unicode_normalization_mask composition_mask, std::u3
     text.resize(j);
 }
 
-static void unicode_reorder(std::u32string &text) noexcept
+static void _unicode_reorder(std::u32string &text) noexcept
 {
     for_each_cluster(
         text.begin(),
@@ -148,7 +148,7 @@ static void unicode_reorder(std::u32string &text) noexcept
         });
 }
 
-static void unicode_clean(std::u32string &text) noexcept
+static void _unicode_clean(std::u32string &text) noexcept
 {
     // clean up the text by removing the upper bits.
     for (auto &codePoint : text) {
@@ -156,41 +156,22 @@ static void unicode_clean(std::u32string &text) noexcept
     }
 }
 
-std::u32string unicode_NFD(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
+[[nodiscard]] std::u32string unicode_decompose(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
 {
     auto r = std::u32string{};
-    unicode_decompose(text, normalization_mask, r);
-    unicode_reorder(r);
-    unicode_clean(r);
+    _unicode_decompose(text, normalization_mask, r);
+    _unicode_reorder(r);
+    _unicode_clean(r);
     return r;
 }
 
-[[nodiscard]] std::u32string unicode_NFC(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
+[[nodiscard]] std::u32string unicode_normalize(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
 {
     auto r = std::u32string{};
-    unicode_decompose(text, normalization_mask, r);
-    unicode_reorder(r);
-    unicode_compose(normalization_mask, r);
-    unicode_clean(r);
-    return r;
-}
-
-std::u32string unicode_NFKD(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
-{
-    auto r = std::u32string{};
-    unicode_decompose(text, normalization_mask, r);
-    unicode_reorder(r);
-    unicode_clean(r);
-    return r;
-}
-
-std::u32string unicode_NFKC(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
-{
-    auto r = std::u32string{};
-    unicode_decompose(text, normalization_mask, r);
-    unicode_reorder(r);
-    unicode_compose(normalization_mask, r);
-    unicode_clean(r);
+    _unicode_decompose(text, normalization_mask, r);
+    _unicode_reorder(r);
+    _unicode_compose(normalization_mask, r);
+    _unicode_clean(r);
     return r;
 }
 
