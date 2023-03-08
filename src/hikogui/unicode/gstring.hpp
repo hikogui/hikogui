@@ -149,10 +149,14 @@ namespace pmr {
 using gstring = std::pmr::basic_string<grapheme>;
 }
 
-/** Convert a UTF-32 string to a grapheme-string.
+/** Convert a UTF-32 string-view to a grapheme-string.
+ *
+ * Before conversion to gstring a string if first converted to NFC normalization.
+ * This is the reason why this function allows you to select the new-line character.
+ * By default '\n', '\r\n',
  *
  * @param rhs The UTF-32 string to convert.
- * @param new_line_char The new_line_character to use.
+ * @param new_line_char The new_line_character to use, default the PARAGRAPH_SEPARATOR.
  * @return A grapheme-string.
  */
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs, char32_t new_line_char = U'\u2029') noexcept;
@@ -160,7 +164,7 @@ using gstring = std::pmr::basic_string<grapheme>;
 /** Convert a UTF-8 string to a grapheme-string.
 *
 * @param rhs The UTF-8 string to convert.
-* @param new_line_char The new_line_character to use.
+* @param new_line_char The new_line_character to use, default the PARAGRAPH_SEPARATOR.
 * @return A grapheme-string.
  */
 [[nodiscard]] inline gstring to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029') noexcept
@@ -171,7 +175,7 @@ using gstring = std::pmr::basic_string<grapheme>;
 /** Convert a UTF-8 string to a grapheme-string.
  *
  * @param rhs The UTF-8 string to convert.
- * @param new_line_char The new_line_character to use.
+ * @param new_line_char The new_line_character to use, default the PARAGRAPH_SEPARATOR.
  * @return A grapheme-string.
  */
 [[nodiscard]] inline gstring to_gstring(std::string const &rhs, char32_t new_line_char = U'\u2029') noexcept
@@ -179,6 +183,11 @@ using gstring = std::pmr::basic_string<grapheme>;
     return to_gstring(std::string_view{rhs}, new_line_char);
 }
 
+/** Convert a grapheme string to UTF-8.
+ *
+ * @param rhs The grapheme string view to convert to UTF-8
+ * @return The resulting UTF-8 string, in NFC normalization.
+ */
 [[nodiscard]] constexpr std::string to_string(gstring_view rhs) noexcept
 {
     auto r = std::string{};
@@ -189,6 +198,11 @@ using gstring = std::pmr::basic_string<grapheme>;
     return r;
 }
 
+/** Convert a grapheme string to UTF-8.
+ *
+ * @param rhs The grapheme string view to convert to UTF-8
+ * @return The resulting wide-string, in NFC normalization.
+ */
 [[nodiscard]] constexpr std::wstring to_wstring(gstring_view rhs) noexcept
 {
     auto r = std::wstring{};
@@ -199,6 +213,11 @@ using gstring = std::pmr::basic_string<grapheme>;
     return r;
 }
 
+/** Convert a grapheme string to UTF-8.
+ *
+ * @param rhs The grapheme string view to convert to UTF-8
+ * @return The resulting UTF-32 string, in NFC normalization.
+ */
 [[nodiscard]] constexpr std::u32string to_u32string(gstring_view rhs) noexcept
 {
     auto r = std::u32string{};
@@ -209,6 +228,11 @@ using gstring = std::pmr::basic_string<grapheme>;
     return r;
 }
 
+/** Convert a grapheme string to UTF-8.
+ *
+ * @param rhs The grapheme string to convert to UTF-8
+ * @return The resulting UTF-32 string, in NFC normalization.
+ */
 [[nodiscard]] constexpr std::string to_string(gstring const &rhs) noexcept
 {
     return to_string(gstring_view{rhs});
