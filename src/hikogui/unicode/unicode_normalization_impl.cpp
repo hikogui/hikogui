@@ -15,18 +15,22 @@ static void _unicode_decompose(char32_t code_point, unicode_normalization_mask m
 {
     hilet &description = unicode_description::find(code_point);
 
-    if (to_bool(mask & unicode_normalization_mask::decompose_newline) and
-        (
-        code_point == U'\n' or // Line Feed, LF U+000A
-        code_point == U'\v' or // Vertical Tab, VT U+000B
-        code_point == U'\f' or // Form Feed, FF U+000C
-        code_point == U'\r' or // Carriage Return, LF U+000D
-        code_point == U'\x85' or // Next Line, LF U+0085
-        code_point == unicode_LS or // Line Separator, U+2028
-        code_point == unicode_PS) // Paragraph Separator, U+2029
-    ) {
+    auto is_newline = false;
+    is_newline |= code_point == unicode_LF and to_bool(mask & unicode_normalization_mask::LF_is_newline);
+    is_newline |= code_point == unicode_VT and to_bool(mask & unicode_normalization_mask::VT_is_newline);
+    is_newline |= code_point == unicode_FF and to_bool(mask & unicode_normalization_mask::FF_is_newline);
+    is_newline |= code_point == unicode_CR and to_bool(mask & unicode_normalization_mask::CR_is_newline);
+    is_newline |= code_point == unicode_NEL and to_bool(mask & unicode_normalization_mask::NEL_is_newline);
+    is_newline |= code_point == unicode_LS and to_bool(mask & unicode_normalization_mask::LS_is_newline);
+    is_newline |= code_point == unicode_PS and to_bool(mask & unicode_normalization_mask::PS_is_newline);
+
+    auto drop = false;
+    drop |= is_C(description) and to_bool(mask & unicode_normalization_mask::drop_control_characters);
+    drop |= code_point == unicode_CR and to_bool(mask & unicode_normalization_mask::drop_CR);
+
+    if (is_newline) {
         // Canonical combining class will be zero, so we can ignore it here.
-        hilet paragraph_type = mask & unicode_normalization_mask::decompose_newline;
+        hilet paragraph_type = mask & unicode_normalization_mask::decompose_newline_mask;
         if (paragraph_type == unicode_normalization_mask::decompose_newline_to_LF) {
             r += U'\n';
         } else if (paragraph_type == unicode_normalization_mask::decompose_newline_to_CRLF) {
@@ -38,13 +42,12 @@ static void _unicode_decompose(char32_t code_point, unicode_normalization_mask m
             r += U' ';
         }
 
-    } else if (to_bool(mask & unicode_normalization_mask::decompose_control) and is_C(description)) {
-        // Control characters are dropped. (no operation)
-        // This must come after checking for new-line which themselves are control characters.
+    } else if (drop) {
+        // This must come after checking for new-line which are explicitly converted.
 
     } else if (to_bool(mask & description.decomposition_type())) {
         for (hilet c : description.decompose()) {
-            unicode_decompose(c, mask, r);
+            _unicode_decompose(c, mask, r);
         }
 
     } else {

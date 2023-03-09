@@ -19,64 +19,85 @@ namespace hi::inline v1 {
 #endif
 
 // clang-format off
-enum class unicode_normalization_mask {
-    decompose_canonical = 1 << to_underlying(unicode_decomposition_type::canonical),
-    decompose_font = 1 << to_underlying(unicode_decomposition_type::font),
-    decompose_noBreak = 1 << to_underlying(unicode_decomposition_type::noBreak),
-    decompose_initial = 1 << to_underlying(unicode_decomposition_type::initial),
-    decompose_medial = 1 << to_underlying(unicode_decomposition_type::medial),
-    decompose_final = 1 << to_underlying(unicode_decomposition_type::_final),
-    decompose_isolated = 1 << to_underlying(unicode_decomposition_type::isolated),
-    decompose_circle = 1 << to_underlying(unicode_decomposition_type::circle),
-    decompose_super = 1 << to_underlying(unicode_decomposition_type::super),
-    decompose_sub = 1 << to_underlying(unicode_decomposition_type::sub),
-    decompose_fraction = 1 << to_underlying(unicode_decomposition_type::fraction),
-    decompose_vertical = 1 << to_underlying(unicode_decomposition_type::vertical),
-    decompose_wide = 1 << to_underlying(unicode_decomposition_type::wide),
-    decompose_narrow = 1 << to_underlying(unicode_decomposition_type::narrow),
-    decompose_small = 1 << to_underlying(unicode_decomposition_type::small),
-    decompose_square = 1 << to_underlying(unicode_decomposition_type::square),
-    decompose_compat = 1 << to_underlying(unicode_decomposition_type::compat),
+enum class unicode_normalization_mask: unsigned long long {
+    decompose_canonical = 1ULL << to_underlying(unicode_decomposition_type::canonical),
+    decompose_font = 1ULL << to_underlying(unicode_decomposition_type::font),
+    decompose_noBreak = 1ULL << to_underlying(unicode_decomposition_type::noBreak),
+    decompose_initial = 1ULL << to_underlying(unicode_decomposition_type::initial),
+    decompose_medial = 1ULL << to_underlying(unicode_decomposition_type::medial),
+    decompose_final = 1ULL << to_underlying(unicode_decomposition_type::_final),
+    decompose_isolated = 1ULL << to_underlying(unicode_decomposition_type::isolated),
+    decompose_circle = 1ULL << to_underlying(unicode_decomposition_type::circle),
+    decompose_super = 1ULL << to_underlying(unicode_decomposition_type::super),
+    decompose_sub = 1ULL << to_underlying(unicode_decomposition_type::sub),
+    decompose_fraction = 1ULL << to_underlying(unicode_decomposition_type::fraction),
+    decompose_vertical = 1ULL << to_underlying(unicode_decomposition_type::vertical),
+    decompose_wide = 1ULL << to_underlying(unicode_decomposition_type::wide),
+    decompose_narrow = 1ULL << to_underlying(unicode_decomposition_type::narrow),
+    decompose_small = 1ULL << to_underlying(unicode_decomposition_type::small),
+    decompose_square = 1ULL << to_underlying(unicode_decomposition_type::square),
+    decompose_compat = 1ULL << to_underlying(unicode_decomposition_type::compat),
 
     /** During decomposition remove control characters.
-     * This will also eliminate newline characters like CR, LF, CR+LF, NEL, VTAB & FF;
-     * these may be retained by using decompose_PS, decompose_LF or decompose_CRLF.
+    *
+    * This will also drop newline characters like CR, LF, CR+LF, NEL, VTAB & FF;
+     * these may be retained by using newline_to_ and _is_newline.
      */
-    decompose_control = 1 << 25,
+    drop_control = 1ULL << 25,
 
-    /** Compose CR+LF into a single LF.
+    /** Drop the LF character.
      */
-    compose_CRLF = 1 << 26,
+    drop_LF = 1ULL << 26,
+
+    /** Drop the VT character.
+     */
+    drop_VT = 1ULL << 26,
+
+    /** Drop the VT character.
+     */
+    drop_VT = 1ULL << 26,
+
+    /** Drop the CR character.
+     */
+    drop_CR = 1ULL << 26,
+
+    LF_is_newline = 1ULL << 27,
+    VT_is_newline = 1ULL << 28,
+    FF_is_newline = 1ULL << 29,
+    CR_is_newline = 1ULL << 30,
+    NEL_is_newline = 1ULL << 31,
+    LS_is_newline = 1ULL << 32,
+    PS_is_newline = 1ULL << 33,
 
     /** Decompose any newline character into PS (Paragraph Separator).
      *
-     * @note Mutually exclusive with decompose_LF, decompose_CRLF and decompoase_newline_to_SP.
+     * @note Mutually exclusive with decompose_LF, decompose_CRLF and decompose_newline_to_SP.
      */
-    decompose_newline_to_PS = 1 << 27,
+    newline_to_PS = 0ULL << 63,
 
     /** Decompose any newline character into LF (Line Feed).
      *
-     * @note Mutually exclusive with decompose_PS, decompose_CRLF and decompoase_newline_to_SP.
+     * @note Mutually exclusive with decompose_PS, decompose_CRLF and decompose_newline_to_SP.
      */
-    decompose_newline_to_LF = 1 << 28,
+    newline_to_LF = 1ULL << 63,
 
     /** Decompose any newline character into CR+LF (Carriage Return + Line Feed).
      *
-     * @note Mutually exclusive with decompose_PS, decompose_LF and decompoase_newline_to_SP.
+     * @note Mutually exclusive with decompose_PS, decompose_LF and decompose_newline_to_SP.
      */
-    decompose_newline_to_CRLF = 1 << 29,
+    newline_to_CRLF = 2ULL << 63,
 
     /** Decompose any newline character into SP (Space).
      *
      * @note Mutually exclusive with decompose_PS, decompose_newline_to_CRLF and decompose_LF.
      */
-    decompose_newline_to_SP = 1 << 30,
+    newline_to_SP = 3ULL << 63,
 
-    /** Mask for one of decompose_PS, decompose_LF or decompose_CRLF
+    /** Mask for one of the newline_to_*
      *
-     * @note Only one of decompose_PS, decompose_LF, decompose_CRLF can be used.
+     * @note Only one of newline_to_* may be used.
      */
-    decompose_newline = decompose_newline_to_PS | decompose_newline_to_LF | decompose_newline_to_CRLF | decompose_newline_to_SP,
+    newline_to_mask = newline_to_PS | newline_to_LF | newline_to_CRLF | newline_to_SP,
 
     /** Canonical decomposition and composition.
      */
