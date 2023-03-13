@@ -2,15 +2,17 @@
 
 #pragma once
 
-#include <array>
 #include <cstdint>
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
+namespace detail {
 
-#if defined(__INTELLISENSE__) or defined(_PREFAST_)
-constexpr auto ucd_index = std::array<uint16_t, 1>{ 0 };
-#else
-constexpr auto ucd_index = std::array<uint16_t, 34816>{    
+/** A index for finding unicode descriptions for a specific code-point.
+ *
+ * We use a C-style array here, since tools and compilers crash on std::array with arround a 100 initializers.
+ */
+constexpr uint16_t ucd_index[34816] = {    
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,    
     16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,    
     32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,    
@@ -2187,6 +2189,24 @@ constexpr auto ucd_index = std::array<uint16_t, 34816>{
     776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776,    
     776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776,    
     776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 776, 1245,};
-#endif
 
+} // namespace detail
+
+/** Get the index into the unicode database sub-tables.
+ *
+ *
+ * @param c The code-point to get a sub-table index for.
+ * @return A index into the unicode database sub-tables.
+ */
+[[nodiscard]] constexpr size_t ucd_get_index(char32_t c) noexcept
+{
+    hi_axiom(c <= 0x1f'ffff);
+
+    auto c_ = char_cast<size_t>(c);
+    c_ &= 0x1f;
+    c_ |= wide_cast<size_t>(detail::ucd_index[c_ >> 5]) << 5;
+    return c_;
 }
+
+}} // namespace hi::v1
+

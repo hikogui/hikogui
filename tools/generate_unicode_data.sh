@@ -8,8 +8,14 @@ then
     exit 2
 fi
 
+PYTHON3=python
+if [ -e /usr/local/bin/python3 ]
+then
+    PYTHON3=/usr/local/bin/python3
+fi
 
-python tools/generate_unicode_data.py \
+
+$PYTHON3 tools/generate_unicode_data.py \
     --compositions-template=tools/ucd/ucd_compositions.hpp.psp \
     --compositions-output=src/hikogui/unicode/ucd_compositions.hpp \
     --decompositions-template=tools/ucd/ucd_decompositions.hpp.psp \
@@ -18,6 +24,8 @@ python tools/generate_unicode_data.py \
     --index-output=src/hikogui/unicode/ucd_index.hpp \
     --descriptions-template=tools/ucd/ucd_descriptions.hpp.psp \
     --descriptions-output=src/hikogui/unicode/ucd_descriptions.hpp \
+    --normalize-template=tools/ucd/ucd_normalize.hpp.psp \
+    --normalize-output=src/hikogui/unicode/ucd_normalize.hpp \
     --bidi-brackets=${UCDDIR}/BidiBrackets.txt \
     --bidi-mirroring=${UCDDIR}/BidiMirroring.txt \
     --composition-exclusions=${UCDDIR}/CompositionExclusions.txt \

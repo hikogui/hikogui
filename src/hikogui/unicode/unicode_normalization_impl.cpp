@@ -11,35 +11,49 @@
 
 namespace hi::inline v1 {
 
-static void _unicode_decompose(char32_t code_point, unicode_normalization_mask mask, std::u32string &r) noexcept
+static void _unicode_decompose(char32_t code_point, unicode_normalization_config config, std::u32string &r) noexcept
 {
     hilet &description = unicode_description::find(code_point);
 
-    auto is_newline = false;
-    is_newline |= code_point == unicode_LF and to_bool(mask & unicode_normalization_mask::LF_is_newline);
-    is_newline |= code_point == unicode_VT and to_bool(mask & unicode_normalization_mask::VT_is_newline);
-    is_newline |= code_point == unicode_FF and to_bool(mask & unicode_normalization_mask::FF_is_newline);
-    is_newline |= code_point == unicode_CR and to_bool(mask & unicode_normalization_mask::CR_is_newline);
-    is_newline |= code_point == unicode_NEL and to_bool(mask & unicode_normalization_mask::NEL_is_newline);
-    is_newline |= code_point == unicode_LS and to_bool(mask & unicode_normalization_mask::LS_is_newline);
-    is_newline |= code_point == unicode_PS and to_bool(mask & unicode_normalization_mask::PS_is_newline);
+    auto is_line_separator = false;
+    is_line_separator |= code_point == unicode_LF and config.LF_is_line_separator;
+    is_line_separator |= code_point == unicode_VT and config.VT_is_line_separator;
+    is_line_separator |= code_point == unicode_FF and config.FF_is_line_separator;
+    is_line_separator |= code_point == unicode_CR and config.CR_is_line_separator;
+    is_line_separator |= code_point == unicode_NEL and config.NEL_is_line_separator;
+    is_line_separator |= code_point == unicode_LS and config.LS_is_line_separator;
+    is_line_separator |= code_point == unicode_PS and config.PS_is_line_separator;
+
+    auto is_paragraph_separator = false;
+    is_paragraph_separator |= code_point == unicode_LF and config.LF_is_paragraph_separator;
+    is_paragraph_separator |= code_point == unicode_VT and config.VT_is_paragraph_separator;
+    is_paragraph_separator |= code_point == unicode_FF and config.FF_is_paragraph_separator;
+    is_paragraph_separator |= code_point == unicode_CR and config.CR_is_paragraph_separator;
+    is_paragraph_separator |= code_point == unicode_NEL and config.NEL_is_paragraph_separator;
+    is_paragraph_separator |= code_point == unicode_LS and config.LS_is_paragraph_separator;
+    is_paragraph_separator |= code_point == unicode_PS and config.PS_is_paragraph_separator;
 
     auto drop = false;
-    drop |= is_C(description) and to_bool(mask & unicode_normalization_mask::drop_control_characters);
-    drop |= code_point == unicode_CR and to_bool(mask & unicode_normalization_mask::drop_CR);
+    drop |= code_point == unicode_LF and config.drop_LF;
+    drop |= code_point == unicode_VT and config.drop_VT;
+    drop |= code_point == unicode_FF and config.drop_FF;
+    drop |= code_point == unicode_CR and config.drop_CR;
+    drop |= code_point == unicode_NEL and config.drop_NEL;
+    drop |= code_point == unicode_LS and config.drop_LS;
+    drop |= code_point == unicode_PS and config.drop_PS;
+    drop |= ((code_point >= U'\u0000' and code_point <= U'\u001f') or code_point == U'\u007f')  and config.drop_C0;
+    drop |= code_point >= U'\u0080' and code_point <= U'\u009f' and config.drop_C1;
 
-    if (is_newline) {
-        // Canonical combining class will be zero, so we can ignore it here.
-        hilet paragraph_type = mask & unicode_normalization_mask::decompose_newline_mask;
-        if (paragraph_type == unicode_normalization_mask::decompose_newline_to_LF) {
-            r += U'\n';
-        } else if (paragraph_type == unicode_normalization_mask::decompose_newline_to_CRLF) {
-            r += U'\r';
-            r += U'\n';
-        } else if (paragraph_type == unicode_normalization_mask::decompose_newline_to_PS) {
-            r += unicode_PS;
-        } else if (paragraph_type == unicode_normalization_mask::decompose_newline_to_SP) {
-            r += U' ';
+    if (is_line_separator) {
+        r += config.line_separator_character;
+        if (config.line_separator_character == unicode_CR) {
+            r += unicode_LF;
+        }
+
+    } else if (is_paragraph_separator) {
+        r += config.paragraph_separator_character;
+        if (config.paragraph_separator_character == unicode_CR) {
+            r += unicode_LF;
         }
 
     } else if (drop) {
@@ -56,28 +70,14 @@ static void _unicode_decompose(char32_t code_point, unicode_normalization_mask m
     }
 }
 
-static void _unicode_decompose(std::u32string_view text, unicode_normalization_mask mask, std::u32string &r) noexcept
+static void _unicode_decompose(std::u32string_view text, unicode_normalization_config config, std::u32string &r) noexcept
 {
     for (hilet c : text) {
-        _unicode_decompose(c, mask, r);
+        _unicode_decompose(c, config, r);
     }
 }
 
-/**
- * @return The combined code-point, or U+ffff if first+second do not compose together.
- */
-[[nodiscard]] static char32_t
-_unicode_compose(char32_t first, char32_t second, unicode_normalization_mask composition_mask) noexcept
-{
-    if (to_bool(composition_mask & unicode_normalization_mask::compose_CRLF) and first == U'\r' and second == U'\n') {
-        return U'\n';
-
-    } else {
-        return unicode_description::find(first).compose(second);
-    }
-}
-
-static void _unicode_compose(unicode_normalization_mask composition_mask, std::u32string &text) noexcept
+static void _unicode_compose(std::u32string &text) noexcept
 {
     if (text.size() <= 1) {
         return;
@@ -106,7 +106,7 @@ static void _unicode_compose(unicode_normalization_mask composition_mask, std::u
                 bool blocking_pair = previous_combining_class != 0 && previous_combining_class >= second_combining_class;
                 bool second_is_starter = second_combining_class == 0;
 
-                hilet composed_code_point = _unicode_compose(first_code_point, second_code_point, composition_mask);
+                hilet composed_code_point =  unicode_description::find(first).compose(second);
                 if (composed_code_point != U'\uffff' && !blocking_pair) {
                     // Found a composition.
                     first_code_point = composed_code_point;
@@ -159,21 +159,21 @@ static void _unicode_clean(std::u32string &text) noexcept
     }
 }
 
-[[nodiscard]] std::u32string unicode_decompose(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
+[[nodiscard]] std::u32string unicode_decompose(std::u32string_view text, unicode_normalization_config config) noexcept
 {
     auto r = std::u32string{};
-    _unicode_decompose(text, normalization_mask, r);
+    _unicode_decompose(text, normalization_config, r);
     _unicode_reorder(r);
     _unicode_clean(r);
     return r;
 }
 
-[[nodiscard]] std::u32string unicode_normalize(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
+[[nodiscard]] std::u32string unicode_normalize(std::u32string_view text, unicode_normalization_config config) noexcept
 {
     auto r = std::u32string{};
-    _unicode_decompose(text, normalization_mask, r);
+    _unicode_decompose(text, normalization_config, r);
     _unicode_reorder(r);
-    _unicode_compose(normalization_mask, r);
+    _unicode_compose(r);
     _unicode_clean(r);
     return r;
 }

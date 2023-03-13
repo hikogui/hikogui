@@ -11,6 +11,8 @@ def parse_options():
     parser.add_argument("--index-template", dest="index_template_path", action="store", required=True)
     parser.add_argument("--descriptions-output", dest="descriptions_output_path", action="store", required=True)
     parser.add_argument("--descriptions-template", dest="descriptions_template_path", action="store", required=True)
+    parser.add_argument("--normalize-output", dest="normalize_output_path", action="store", required=True)
+    parser.add_argument("--normalize-template", dest="normalize_template_path", action="store", required=True)
 
     parser.add_argument("--bidi-brackets", dest="bidi_brackets_path", action="store", required=True)
     parser.add_argument("--bidi-mirroring", dest="bidi_mirroring_path", action="store", required=True)
@@ -51,6 +53,33 @@ def main():
     ucd.generate_output(options.decompositions_template_path, options.decompositions_output_path, decompositions=decompositions)
     ucd.generate_output(options.index_template_path, options.index_output_path, indices=indices)
     ucd.generate_output(options.descriptions_template_path, options.descriptions_output_path, chunks=chunks)
+
+    decomposition_mappings = []
+    decomposition_indices = []
+    decomposition_lengths = []
+    decomposition_type = []
+    ccc_table = []
+    for chunk in chunks:
+        for d in chunk.descriptions:
+            ccc_table.append(d.canonical_combining_class)
+           
+            if len(d.decomposition_mapping) == 0:
+                decomposition_indices.append(0) 
+                decomposition_lengths.append(0)
+
+            elif len(d.decomposition_mapping) == 1 and d.decomposition_mappings[0] == d.g_code_point:
+                decomposition_indices.append(0) 
+                decomposition_lengths.append(1)
+
+            else:
+                decomposition_indices.append(len(decomposition_mappings)) 
+                decomposition_lengths.append(len(d.decomposition_mapping) + 1)
+
+
+    ucd.generate_output(
+        options.normalize_template_path,
+        options.normalize_output_path,
+        ccc_table=ccc_table)
 
 if __name__ == "__main__":
     main()
