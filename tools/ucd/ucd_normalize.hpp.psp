@@ -3,8 +3,14 @@
 #pragma once
 
 #include "ucd_index.hpp"
+#include "../utility/module.hpp"
 #include <cstdint>
+#include <optional>
 
+// Windows.h defines small as a macro.
+#ifdef small
+#undef small
+#endif
 
 namespace hi {
 inline namespace v1 {
@@ -14,14 +20,177 @@ constexpr uint8_t ucd_canonical_combining_class[$len(ccc_table)$] = {\
 $for i, x in enumerate(ccc_table):
     $if i % 16 == 0:
 
-  \
+   \
     $end
-$" {:3},".format(x)$
+$"{:3},".format(x)$
 $end
 
 };
 
+constexpr uint8_t ucd_decomposition_code_point_bytes[$len(decomposition_code_point_bytes)$] = {\
+$for i, x in enumerate(decomposition_code_point_bytes):
+    $if i % 16 == 0:
+
+   \
+    $end
+$"{:3},".format(x)$
+$end
+
+};
+
+constexpr uint8_t ucd_decomposition_bytes[$len(decomposition_bytes)$] = {\
+$for i, x in enumerate(decomposition_bytes):
+    $if i % 16 == 0:
+
+   \
+    $end
+$"{:3},".format(x)$
+$end
+
+};
+
+
 } // namespace detail
+
+enum class unicode_decomposition_type : uint8_t {
+    /** Canonical decomposition.
+     */
+    canonical = 0,
+
+    /** \<font\> Font variant (for example, a blackletter form).
+     */
+    font = 1,
+
+    /** \<noBreak\> No - break version of a space or hyphen.
+     */
+    no_break = 2,
+
+    /** \<initial\> Arabic presentation forms.
+     */
+    initial = 3,
+
+    /** \<medial\> Arabic presentation forms.
+     */
+    medial = 4,
+
+    /** \<final\> Arabic presentation forms.
+     */
+    _final = 5,
+
+    /** \<isolated\> Arabic presentation forms.
+     */
+    isolated = 6,
+
+    /** \<circle\> Encircled form.
+     */
+    circle = 7,
+
+    /** \<super\> Super-, sub-script and Vulgar-fraction forms
+     */
+    super = 8,
+
+    /** \<sub\> Super-, sub-script and Vulgar-fraction forms
+     */
+    sub = 9,
+
+    /** \<fraction\> Super-, sub-script and Vulgar-fraction forms
+     */
+    fraction = 10,
+
+    /** \<vertical\> asian compatibility forms.
+     */
+    vertical = 11,
+
+    /** \<wide\> asian compatibility forms.
+     */
+    wide = 12,
+
+    /** \<narrow\> asian compatibility forms.
+     */
+    narrow = 13,
+
+    /** \<small\>asian compatibility forms.
+     */
+    small = 14,
+
+    /** \<square\> asian compatibility forms.
+     */
+    square = 15,
+
+    /** \<compat\> Otherwise unspecified compatibility character
+     */
+    compat = 16
+};
+
+struct ucd_decomposition_info {
+    constexpr static unsigned index_bit = $index_bit$;
+    constexpr static unsigned length_bit = $length_bit$;
+    constexpr static unsigned type_bit = $type_bit$;
+    constexpr static unsigned bit = index_bit + length_bit + type_bit;
+
+    using value_type = uint32_t;
+    static_assert(index_bit + length_bit + type_bit <= sizeof(value_type) * CHAR_BIT);
+
+    value_type value;
+
+    [[nodiscard]] constexpr size_t index() const noexcept
+    {
+        return value >> (length_bit + type_bit);
+    }
+
+    [[nodiscard]] constexpr size_t length() const noexcept
+    {
+        constexpr auto mask = (value_type{1} << length_bit) - 1;
+        return (value >> type_bit) & mask;
+    }
+
+    [[nodiscard]] constexpr unicode_decomposition_type type() const noexcept
+    {
+        constexpr auto mask = (value_type{1} << type_bit) - 1;
+        return static_cast<unicode_decomposition_type>(value & mask);
+    }
+
+    [[nodiscard]] constexpr bool should_decompose(size_t decomposition_mask) const noexcept
+    {
+        return to_bool((1_uz << to_underlying(type())) & decomposition_mask) and length() != 0;
+    }
+
+    [[nodiscard]] constexpr std::u32string decompose() const noexcept
+    {
+        auto r = std::u32string{};
+        hilet first = index() * 21;
+        hilet last = first + length() * 21;
+
+        for (auto i = first; i != last; i += 21) {
+            r += load_bits_be_into_value<char32_t, 21>(detail::ucd_decomposition_code_point_bytes, i);
+        }
+        return r;
+    }
+
+    /** Get the canonical equivalent of this code-point.
+     * The canonical equivalent is the code-point after NFC-normalization.
+     * This is equal to canonical decomposition to a single code-point.
+     *
+     * @return The canonical equivalent code-point or nullopt if there is not equivalent.
+     */
+    [[nodiscard]] constexpr std::optional<char32_t> canonical_equivalent() const noexcept
+    {
+        if (type() == unicode_decomposition_type::canonical and length() == 1) {
+            hilet bit_index = index() * 21;
+            return load_bits_be_into_value<char32_t, 21>(detail::ucd_decomposition_code_point_bytes, bit_index);
+        } else {
+            return std::nullopt;
+        }
+    }
+};
+
+[[nodiscard]] constexpr ucd_decomposition_info ucd_get_decomposition_info(char32_t c) noexcept
+{
+    hilet bit_index = ucd_get_index(c) * ucd_decomposition_info::bit;
+
+    return load_bits_be_into_value<ucd_decomposition_info, ucd_decomposition_info::bit>(
+        detail::ucd_decomposition_bytes, bit_index);
+}
 
 /** Get the Canonical Combining Class (CCC) for a code-point.
  */

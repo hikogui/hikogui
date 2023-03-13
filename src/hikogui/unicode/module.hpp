@@ -10,7 +10,6 @@
 #include "unicode_bidi_bracket_type.hpp"
 #include "unicode_bidi_class.hpp"
 #include "unicode_break_opportunity.hpp"
-#include "unicode_decomposition_type.hpp"
 #include "unicode_description.hpp"
 #include "unicode_east_asian_width.hpp"
 #include "unicode_general_category.hpp"

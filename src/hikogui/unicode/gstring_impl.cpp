@@ -9,11 +9,9 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] gstring to_gstring(std::u32string_view rhs, char32_t new_line_char) noexcept
+[[nodiscard]] gstring to_gstring(std::u32string_view rhs, unicode_normalization_config config) noexcept
 {
-    using enum unicode_normalization_mask;
-    
-    hilet normalizedString = unicode_NFKC(rhs, NFKD | compose_CRLF | decompose_newline_to(new_line_char) | decompose_control);
+    hilet normalizedString = unicode_normalize(rhs, config);
 
     auto r = gstring{};
     auto breakState = grapheme_break_state{};

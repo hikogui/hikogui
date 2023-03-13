@@ -12,7 +12,6 @@
 #include "unicode_word_break.hpp"
 #include "unicode_sentence_break.hpp"
 #include "unicode_east_asian_width.hpp"
-#include "unicode_decomposition_type.hpp"
 #include "unicode_script.hpp"
 #include "../utility/module.hpp"
 
@@ -52,9 +51,6 @@ public:
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirroring_glyph,
-        uint8_t canonical_combining_class,
-        unicode_decomposition_type decomposition_type,
-        uint32_t decomposition_index,
         uint16_t composition_index) noexcept :
         _general_category(to_underlying(general_category)),
         _grapheme_cluster_break(to_underlying(grapheme_cluster_break)),
@@ -66,9 +62,6 @@ public:
         _bidi_class(to_underlying(bidi_class)),
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph)),
-        _canonical_combining_class(truncate<uint32_t>(canonical_combining_class)),
-        _decomposition_type(to_underlying(decomposition_type)),
-        _decomposition_index(truncate<uint32_t>(decomposition_index)),
         _composition_index(truncate<uint16_t>(composition_index))
     {
         hi_assert(to_underlying(general_category) <= 0x1f);
@@ -81,9 +74,6 @@ public:
         hi_assert(to_underlying(bidi_class) <= 0x1f);
         hi_assert(to_underlying(bidi_bracket_type) <= 0x03);
         hi_assert(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
-        hi_assert(static_cast<uint32_t>(canonical_combining_class) <= 0xff);
-        hi_assert(to_underlying(decomposition_type) <= 0x1f);
-        hi_assert(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
         hi_assert(static_cast<uint32_t>(composition_index) <= 0x3fff);
     }
 
@@ -166,55 +156,12 @@ public:
         return truncate<char32_t>(_bidi_mirroring_glyph);
     }
 
-    /** This character has a canonical decomposition.
-     * @return When true you can decompose the character canonically.
-     */
-    [[nodiscard]] constexpr unicode_decomposition_type decomposition_type() const noexcept
-    {
-        return static_cast<unicode_decomposition_type>(_decomposition_type);
-    }
-
-    /** Get the combining class.
-     * The combing class describes how a code-point combines with other code-points.
-     * Specifically the value 0 means that the code-point is a starter character,
-     * and the numeric value of the combing class determines the order of the
-     * the code-points after a starter before trying to look up composition in the
-     * composition table.
-     *
-     * @return The numeric combining class of this code point.
-     */
-    [[nodiscard]] constexpr uint8_t canonical_combining_class() const noexcept
-    {
-        return truncate<uint8_t>(_canonical_combining_class);
-    }
-
-    /** Decompose this code-point.
-     *
-     * @return The decomposition of this code-point.
-     */
-    [[nodiscard]] std::u32string decompose() const noexcept;
-
     /** Compose this code-point with another.
      *
      * @param other The other code-point.
      * @return The composed code-point, or 0xffff if the composition was not found.
      */
     [[nodiscard]] char32_t compose(char32_t other) const noexcept;
-
-    /** Get the canonical equivalent of this code-point.
-     * The canonical equivalent is the code-point after NFC-normalization.
-     * This is equal to canonical decomposition to a single code-point.
-     *
-     * @return The canonical equivalent code-point or U+ffff if there is not equivalent.
-     */
-    [[nodiscard]] constexpr char32_t canonical_equivalent() const noexcept
-    {
-        if (decomposition_type() == unicode_decomposition_type::canonical and _decomposition_index <= 0x1f'ffff) {
-            return truncate<char32_t>(_decomposition_index);
-        } else {
-            return U'\uffff';
-        }
-    }
 
     /** Find a code-point in the global unicode_description table.
      * For any valid unicode code point this function will return a reference to
@@ -231,11 +178,6 @@ public:
     [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_general_category const& rhs) noexcept
     {
         return lhs.general_category() == rhs;
-    }
-
-    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_decomposition_type const& rhs) noexcept
-    {
-        return lhs.decomposition_type() == rhs;
     }
 
     [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_bidi_bracket_type const& rhs) noexcept
@@ -277,6 +219,11 @@ public:
         return is_C(rhs.general_category());
     }
 
+    [[nodiscard]] friend bool is_M(unicode_description const& rhs) noexcept
+    {
+        return is_M(rhs.general_category());
+    }
+
 private:
     // 1st qword
     uint64_t _general_category : 5;
@@ -288,15 +235,12 @@ private:
     uint64_t _bidi_class : 5;
     uint64_t _bidi_bracket_type : 2;
     uint64_t _bidi_mirroring_glyph : 16;
-    uint64_t _canonical_combining_class : 8;
-    uint64_t _word0_reserved : 6 = 0;
+    uint64_t _word0_reserved : 14 = 0;
 
     // 2nd qword
     uint64_t _script : 8;
-    uint64_t _decomposition_type : 5;
-    uint64_t _decomposition_index : 21;
     uint64_t _composition_index : 14;
-    uint64_t _word1_reserved : 16 = 0;
+    uint64_t _word1_reserved : 42 = 0;
 };
 
 static_assert(sizeof(unicode_description) == 16);

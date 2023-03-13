@@ -203,7 +203,7 @@ inline void fixup_script(It first, ItEnd last, iso_15924 default_script) noexcep
     // In the second iteration we search backwards for scripts and assign them.
     // Since in this iteration we have to assign a script we don't care about
     // the language. And we fallback to the operating system's default script.
-    last_script = default_script
+    last_script = default_script;
     for (auto rev_it = last; rev_it != first; --rev_it) {
         hilet it = rev_it - 1;
         auto attributes = it->attributes();
@@ -261,19 +261,29 @@ template<character_attribute... Args>
  */
 [[nodiscard]] inline text to_text(
     std::string_view str,
-    char32_t new_line_char = unicode_PS,
+    unicode_normalization_config config,
     character_attributes default_attributes) noexcept
 {
-    return to_text(to_gstring(str, new_line_char), default_attributes);
+    return to_text(to_gstring(str, config), default_attributes);
 }
 
 /**
  * @ingroup text
  */
-template<character_attribute... Args>
-[[nodiscard]] inline text to_text(std::string_view str, char32_t new_line_char, Args const&...args) noexcept
+[[nodiscard]] inline text
+to_text(std::string_view str, character_attributes default_attributes) noexcept
 {
-    return to_text(str, new_line_char, character_attributes{args...});
+    return to_text(to_gstring(str, unicode_normalization_config::NFC()), default_attributes);
+}
+
+
+/**
+ * @ingroup text
+ */
+template<character_attribute... Args>
+[[nodiscard]] inline text to_text(std::string_view str, unicode_normalization_config config, Args const&...args) noexcept
+{
+    return to_text(str, config, character_attributes{args...});
 }
 
 /**
@@ -282,7 +292,7 @@ template<character_attribute... Args>
 template<character_attribute... Args>
 [[nodiscard]] inline text to_text(std::string_view str, Args const&...args) noexcept
 {
-    return to_text(str, unicode_PS, character_attributes{args...});
+    return to_text(str, unicode_normalization_config::NFC(), character_attributes{args...});
 }
 
 /**

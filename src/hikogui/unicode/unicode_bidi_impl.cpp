@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "unicode_bidi.hpp"
+#include "unicode_normalization.hpp"
 #include "../stack.hpp"
 #include "../recursive_iterator.hpp"
 #include <algorithm>
@@ -515,9 +516,8 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
                     // If there is a canonical equivalent of the opening bracket, find it's mirrored glyph
                     // to compare with the closing bracket.
                     auto mirrored_glyph = it->description->bidi_mirroring_glyph();
-                    auto canonical_equivalent = it->description->canonical_equivalent();
-                    if (canonical_equivalent != U'\uffff') {
-                        hilet& canonical_equivalent_description = unicode_description::find(canonical_equivalent);
+                    if (hilet canonical_equivalent = ucd_get_decomposition_info(it->code_point).canonical_equivalent()) {
+                        hilet& canonical_equivalent_description = unicode_description::find(*canonical_equivalent);
                         hi_axiom(canonical_equivalent_description.bidi_bracket_type() == unicode_bidi_bracket_type::o);
                         mirrored_glyph = canonical_equivalent_description.bidi_mirroring_glyph();
                     }
@@ -527,12 +527,15 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
                 break;
 
             case unicode_bidi_bracket_type::c:
-                for (auto jt = stack.end() - 1; jt >= stack.begin(); --jt) {
-                    if (jt->mirrored_bracket == it->code_point ||
-                        jt->mirrored_bracket == it->description->canonical_equivalent()) {
-                        pairs.emplace_back(jt->it, it);
-                        stack.pop_back(jt);
-                        break;
+                {
+                    hilet canonical_equivalent = ucd_get_decomposition_info(it->code_point).canonical_equivalent();
+                    for (auto jt = stack.end() - 1; jt >= stack.begin(); --jt) {
+                        if (jt->mirrored_bracket == it->code_point or
+                            (canonical_equivalent and jt->mirrored_bracket == *canonical_equivalent)) {
+                            pairs.emplace_back(jt->it, it);
+                            stack.pop_back(jt);
+                            break;
+                        }
                     }
                 }
                 break;
@@ -1029,7 +1032,6 @@ static void unicode_bidi_P1_line(
 
     return {last, paragraph_direction};
 }
-
 
 [[nodiscard]] std::pair<unicode_bidi_char_info_iterator, std::vector<unicode_bidi_class>> unicode_bidi_P1(
     unicode_bidi_char_info_iterator first,

@@ -11,7 +11,6 @@
 #include "unicode_sentence_break.hpp"
 #include "unicode_east_asian_width.hpp"
 #include "unicode_script.hpp"
-#include "unicode_decomposition_type.hpp"
 #include "unicode_description.hpp"
 #include <array>
 #include <cstdint>
@@ -29,7 +28,6 @@ namespace hi::inline v1 {
 #define XSC unicode_script
 #define XBC unicode_bidi_class
 #define XBB unicode_bidi_bracket_type
-#define XDT unicode_decomposition_type
 
 $chunk_size = chunks[0].size
 
@@ -64,6 +62,5 @@ $end
 #undef XSC
 #undef XBC
 #undef XBB
-#undef XDT
 
 }

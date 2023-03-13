@@ -32,11 +32,11 @@ grapheme::grapheme(composed_t, std::u32string_view code_points) noexcept
     }
 }
 
-grapheme::grapheme(std::u32string_view code_points) noexcept : grapheme(composed_t{}, unicode_NFC(code_points)) {}
+grapheme::grapheme(std::u32string_view code_points) noexcept : grapheme(composed_t{}, unicode_normalize(code_points)) {}
 
 [[nodiscard]] std::u32string grapheme::decomposed() const noexcept
 {
-    return unicode_NFD(composed());
+    return unicode_decompose(composed());
 }
 
 [[nodiscard]] bool grapheme::valid() const noexcept
@@ -49,7 +49,7 @@ grapheme::grapheme(std::u32string_view code_points) noexcept : grapheme(composed
     if (is_C(description)) {
         return false;
     }
-    if (description.canonical_combining_class() != 0) {
+    if (is_M(description)) {
         return false;
     }
     return true;

@@ -5,7 +5,6 @@
 #include "ucd_index.hpp"
 #include "ucd_descriptions.hpp"
 #include "ucd_compositions.hpp"
-#include "ucd_decompositions.hpp"
 #include "unicode_description.hpp"
 #include "../utility/module.hpp"
 
@@ -13,52 +12,7 @@ namespace hi::inline v1 {
 
 [[nodiscard]] unicode_description const& unicode_description::find(char32_t code_point) noexcept
 {
-    hi_assert(code_point <= 0x10'ffff);
-
-    auto index = wide_cast<size_t>(ucd_index[code_point >> 5]);
-    index <<= 5;
-    index |= code_point & 0x1f;
-    return ucd_descriptions[index];
-}
-
-[[nodiscard]] std::u32string unicode_description::decompose() const noexcept
-{
-    constexpr uint64_t mask = 0x1f'ffff;
-    constexpr char32_t terminator = 0x1f'ffff;
-
-    auto r = std::u32string{};
-    if (_decomposition_index <= 0x10'ffff) {
-        r += truncate<char32_t>(_decomposition_index);
-        return r;
-
-    } else if (_decomposition_index < 0x1f'ffff) {
-        auto index = _decomposition_index - 0x11'0000;
-
-        uint64_t tmp = 0;
-        do {
-            hi_assert_bounds(index, ucd_decompositions);
-            tmp = ucd_decompositions[index++];
-
-            // Entry 0 [20:0]
-            // Entry 1 [41:21]
-            // Entry 2 [62:42]
-            for (auto i = 0_uz; i != 3; ++i) {
-                auto c = truncate<char32_t>(tmp & mask);
-                if (c == terminator) {
-                    return r;
-                }
-
-                r += c;
-                tmp >>= 21;
-            }
-
-            // Continue if 0[63] == '0'.
-        } while (tmp == 0);
-
-        return r;
-    } else {
-        hi_no_default();
-    }
+    return ucd_descriptions[ucd_get_index(code_point)];
 }
 
 [[nodiscard]] char32_t unicode_description::compose(char32_t other) const noexcept

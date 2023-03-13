@@ -35,7 +35,7 @@ def make_composition_table(descriptions):
 
     compositions = {}
     for result_cp, d in enumerate(descriptions):
-        if d.decomposition_type != "canonical" or len(d.decomposition_mapping) != 2 or d.composition_exclusion:
+        if d.decomposition_type is not None or len(d.decomposition_mapping) != 2 or d.composition_exclusion:
             continue
 
         first_cp = d.decomposition_mapping[0]
@@ -68,7 +68,7 @@ def make_composition_table(descriptions):
                 r.append(value)
                 value = result_cp
                 if last:
-                    r.append(value | 0xffffffffffe00000) 
+                    r.append(value | 0xffffffffffe00000)
 
             else:
                 value |= second_cp << 21

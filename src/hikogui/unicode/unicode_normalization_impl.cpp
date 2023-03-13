@@ -4,7 +4,7 @@
 
 #include "unicode_normalization.hpp"
 #include "unicode_description.hpp"
-#include "unicode_decomposition_type.hpp"
+#include "ucd_normalize.hpp"
 #include "../utility/module.hpp"
 #include <string>
 #include <algorithm>
@@ -44,6 +44,7 @@ static void _unicode_decompose(char32_t code_point, unicode_normalization_config
     drop |= ((code_point >= U'\u0000' and code_point <= U'\u001f') or code_point == U'\u007f')  and config.drop_C0;
     drop |= code_point >= U'\u0080' and code_point <= U'\u009f' and config.drop_C1;
 
+    hilet decomposition_info = ucd_get_decomposition_info(code_point);
     if (is_line_separator) {
         r += config.line_separator_character;
         if (config.line_separator_character == unicode_CR) {
@@ -59,13 +60,13 @@ static void _unicode_decompose(char32_t code_point, unicode_normalization_config
     } else if (drop) {
         // This must come after checking for new-line which are explicitly converted.
 
-    } else if (to_bool(mask & description.decomposition_type())) {
-        for (hilet c : description.decompose()) {
-            _unicode_decompose(c, mask, r);
+    } else if (decomposition_info.should_decompose(config.decomposition_mask)) {
+        for (hilet c : decomposition_info.decompose()) {
+            _unicode_decompose(c, config, r);
         }
 
     } else {
-        hilet ccc = description.canonical_combining_class();
+        hilet ccc = ucd_get_canonical_combining_class(code_point);
         r += code_point | (wide_cast<char32_t>(ccc) << 24);
     }
 }
@@ -106,7 +107,7 @@ static void _unicode_compose(std::u32string &text) noexcept
                 bool blocking_pair = previous_combining_class != 0 && previous_combining_class >= second_combining_class;
                 bool second_is_starter = second_combining_class == 0;
 
-                hilet composed_code_point =  unicode_description::find(first).compose(second);
+                hilet composed_code_point =  unicode_description::find(first_code_point).compose(second_code_point);
                 if (composed_code_point != U'\uffff' && !blocking_pair) {
                     // Found a composition.
                     first_code_point = composed_code_point;
@@ -162,7 +163,7 @@ static void _unicode_clean(std::u32string &text) noexcept
 [[nodiscard]] std::u32string unicode_decompose(std::u32string_view text, unicode_normalization_config config) noexcept
 {
     auto r = std::u32string{};
-    _unicode_decompose(text, normalization_config, r);
+    _unicode_decompose(text, config, r);
     _unicode_reorder(r);
     _unicode_clean(r);
     return r;
@@ -171,7 +172,7 @@ static void _unicode_clean(std::u32string &text) noexcept
 [[nodiscard]] std::u32string unicode_normalize(std::u32string_view text, unicode_normalization_config config) noexcept
 {
     auto r = std::u32string{};
-    _unicode_decompose(text, normalization_config, r);
+    _unicode_decompose(text, config, r);
     _unicode_reorder(r);
     _unicode_compose(r);
     _unicode_clean(r);

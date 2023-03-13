@@ -27,6 +27,62 @@ def parse_options():
     parser.add_argument("--word-break-property", dest="word_break_property_path", action="store", required=True)
     return parser.parse_args()
 
+def make_canonical_combining_class_table(chunks):
+    canonical_combining_classes = []
+    for chunk in chunks:
+        for d in chunk.descriptions:
+            canonical_combining_classes.append(d.canonical_combining_class)
+
+    return canonical_combining_classes
+
+def make_decomposition_bytes(chunks):
+    decomposition_code_points = []
+    decomposition_tuples = []
+
+    max_length = 0
+    max_index = 0
+    for chunk in chunks:
+        for d in chunk.descriptions:
+            if len(d.decomposition_mapping) == 0:
+                decomposition_tuples.append((0, 0, 0))
+
+            else:
+                index = len(decomposition_code_points)
+                length = len(d.decomposition_mapping)
+                type_ = d.decomposition_type_as_integer()
+                decomposition_tuples.append((index, length, type_))
+
+                decomposition_code_points += d.decomposition_mapping
+                max_length = max(max_length, length)
+                max_index = max(max_index, index)
+
+
+    index_bit = max_index.bit_length()
+    length_bit = max_length.bit_length()
+    type_bit = 5
+    tuple_bit = index_bit + length_bit + type_bit
+
+    decomposition_tuples_as_int = [ (((index << length_bit) | length) << type_bit) | _type for index, length, _type in decomposition_tuples]
+
+    decomposition_tuples_as_bytes = ucd.bits_as_bytes(decomposition_tuples_as_int, tuple_bit)
+    decomposition_code_points_as_bytes = ucd.bits_as_bytes(decomposition_code_points, 21)
+    return decomposition_tuples_as_bytes, decomposition_code_points_as_bytes, index_bit, length_bit, type_bit
+
+def generate_normalize_output(template_path, output_path, chunks):
+    ccc_table = make_canonical_combining_class_table(chunks)
+    decomposition_bytes, decomposition_code_point_bytes, index_bit, length_bit, type_bit = make_decomposition_bytes(chunks)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        ccc_table=ccc_table,
+        decomposition_bytes=decomposition_bytes,
+        decomposition_code_point_bytes=decomposition_code_point_bytes,
+        index_bit=index_bit,
+        length_bit=length_bit,
+        type_bit=type_bit
+    )
+
 def main():
     options = parse_options()
 
@@ -45,41 +101,14 @@ def main():
     ucd.add_hangul_decompositions(descriptions)
 
     compositions = ucd.make_composition_table(descriptions)
-    decompositions = ucd.make_decomposition_table(descriptions)
 
     indices, chunks = ucd.deduplicate_chunks(descriptions)
 
     ucd.generate_output(options.compositions_template_path, options.compositions_output_path, compositions=compositions)
-    ucd.generate_output(options.decompositions_template_path, options.decompositions_output_path, decompositions=decompositions)
     ucd.generate_output(options.index_template_path, options.index_output_path, indices=indices)
     ucd.generate_output(options.descriptions_template_path, options.descriptions_output_path, chunks=chunks)
 
-    decomposition_mappings = []
-    decomposition_indices = []
-    decomposition_lengths = []
-    decomposition_type = []
-    ccc_table = []
-    for chunk in chunks:
-        for d in chunk.descriptions:
-            ccc_table.append(d.canonical_combining_class)
-           
-            if len(d.decomposition_mapping) == 0:
-                decomposition_indices.append(0) 
-                decomposition_lengths.append(0)
-
-            elif len(d.decomposition_mapping) == 1 and d.decomposition_mappings[0] == d.g_code_point:
-                decomposition_indices.append(0) 
-                decomposition_lengths.append(1)
-
-            else:
-                decomposition_indices.append(len(decomposition_mappings)) 
-                decomposition_lengths.append(len(d.decomposition_mapping) + 1)
-
-
-    ucd.generate_output(
-        options.normalize_template_path,
-        options.normalize_output_path,
-        ccc_table=ccc_table)
+    generate_normalize_output(options.normalize_template_path, options.normalize_output_path, chunks)
 
 if __name__ == "__main__":
     main()

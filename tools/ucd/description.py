@@ -6,7 +6,7 @@ class description (object):
         # UnicodeData.txt
         self.bidi_class = "ON"
         self.canonical_combining_class = 0
-        self.decomposition_type = "none"
+        self.decomposition_type = None
         self.decomposition_mapping = []
         self.general_category = "Cn"
         self.line_break = "XX"
@@ -87,6 +87,28 @@ class description (object):
             self.extended_pictographic == other.extended_pictographic
         )
 
+    def decomposition_type_as_integer(self):
+        types = {
+            None: 0,
+            "font": 1,
+            "noBreak": 2,
+            "initial": 3,
+            "medial": 4,
+            "final": 5,
+            "isolated": 6,
+            "circle": 7,
+            "super": 8,
+            "sub": 9,
+            "fraction": 10,
+            "vertical": 11,
+            "wide": 12,
+            "narrow": 13,
+            "small": 14,
+            "square": 15,
+            "compat": 16
+        }
+        return types[self.decomposition_type]
+
     def instantiation(self):
         s = "XD{"
         s += "XGC::{}, ".format(self.general_category)
@@ -99,9 +121,6 @@ class description (object):
         s += "XBC::{}, ".format(self.bidi_class)
         s += "XBB::{}, ".format(self.bidi_paired_bracket_type)
         s += "0x{:x}, ".format(self.bidi_mirroring_glyph if self.bidi_mirroring_glyph is not None else 0xffff)
-        s += "{}, ".format(self.canonical_combining_class)
-        s += "XDT::{}, ".format(self.decomposition_type if self.decomposition_type != "final" else "_final")
-        s += "0x{:x}, ".format(self.g_decomposition_index)
         s += "0x{:x}, ".format(self.g_composition_index + 1 if self.g_composition_index is not None else 0)
         s += "}"
         return s

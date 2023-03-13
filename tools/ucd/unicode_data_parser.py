@@ -17,14 +17,14 @@ def parse_unicode_data(filename, descriptions):
         simple_title_case_mapping = int(columns[14], 16) if columns[14] else None
 
         if decomposition_type_mapping == "":
-            decomposition_type = "none"
+            decomposition_type = None
             decomposition_mapping = []
         elif decomposition_type_mapping[0] == "<":
             [t, m] = decomposition_type_mapping.split(">")
             decomposition_type = t[1:]
             decomposition_mapping = [int(x, 16) for x in m.strip().split(" ")]
         else:
-            decomposition_type = "canonical"
+            decomposition_type = None
             decomposition_mapping = [int(x, 16) for x in decomposition_type_mapping.split(" ")]
 
         if name.endswith("First>"):
