@@ -162,7 +162,7 @@ struct ucd_decomposition_info {
         hilet last = first + length() * 21;
 
         for (auto i = first; i != last; i += 21) {
-            r += load_bits_be_into_value<char32_t, 21>(detail::ucd_decomposition_code_point_bytes, i);
+            r += wide_cast<char32_t>(load_bits_be<21>(detail::ucd_decomposition_code_point_bytes, i));
         }
         return r;
     }
@@ -177,7 +177,7 @@ struct ucd_decomposition_info {
     {
         if (type() == unicode_decomposition_type::canonical and length() == 1) {
             hilet bit_index = index() * 21;
-            return load_bits_be_into_value<char32_t, 21>(detail::ucd_decomposition_code_point_bytes, bit_index);
+            return char_cast<char32_t>(load_bits_be<21>(detail::ucd_decomposition_code_point_bytes, bit_index));
         } else {
             return std::nullopt;
         }
@@ -188,8 +188,8 @@ struct ucd_decomposition_info {
 {
     hilet bit_index = ucd_get_index(c) * ucd_decomposition_info::bit;
 
-    return load_bits_be_into_value<ucd_decomposition_info, ucd_decomposition_info::bit>(
-        detail::ucd_decomposition_bytes, bit_index);
+    hilet info_as_intrinsic = load_bits_be<ucd_decomposition_info::bit>(detail::ucd_decomposition_bytes, bit_index);
+    return ucd_decomposition_info{narrow_cast<ucd_decomposition_info::value_type>(info_as_intrinsic)};
 }
 
 /** Get the Canonical Combining Class (CCC) for a code-point.

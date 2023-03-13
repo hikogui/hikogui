@@ -2203,10 +2203,12 @@ constexpr uint16_t ucd_index[34816] = {
 {
     hi_axiom(c <= 0x1f'ffff);
 
-    auto c_ = char_cast<size_t>(c);
-    c_ &= 0x1f;
-    c_ |= wide_cast<size_t>(detail::ucd_index[c_ >> 5]) << 5;
-    return c_;
+    hilet c_ = char_cast<size_t>(c);
+    auto index = c_ >> 5;
+    index = detail::ucd_index[index];
+    index <<= 5;
+    index |= c_ & 0x1f;
+    return index;
 }
 
 }} // namespace hi::v1

@@ -281,66 +281,35 @@ template<unsigned int NumBits, byte_like B>
         std::conditional_t<num_bytes < sizeof(unsigned long), unsigned long, unsigned long long>>>;
     // clang-format on
 
+    constexpr auto value_bits = sizeof(value_type) * CHAR_BIT;
+
     hilet byte_offset = bit_index / CHAR_BIT;
     hilet bit_offset = bit_index % CHAR_BIT;
 
     // load_be allows unaligned reads.
     auto r = load_be<value_type>(std::addressof(src[byte_offset]));
-    r >>= bit_offset;
+
+    // Align to most significant bit. In preparation for loading
+    // one more byte.
+    r <<= bit_offset;
 
     if constexpr (num_bytes == sizeof(value_type)) {
         // In this case it is possible we could not read the whole value in one go.
         // We may need to read one more byte.
 
-        auto bits_done = sizeof(value_type) * CHAR_BIT - bit_offset;
+        auto bits_done = value_bits - bit_offset;
         if (bits_done < num_bits) {
-            hilet bits_todo = num_bits - bits_done;
-            hi_axiom(bits_todo < CHAR_BIT);
-
-            r <<= bits_todo;
-            hilet rest_mask = char_cast<value_type>((1 << bits_todo) - 1);
-
-            hilet rest = char_cast<value_type>(src[byte_offset + sizeof(value_type)]);
-            r |= (rest & rest_mask);
+            auto rest = char_cast<value_type>(src[byte_offset + sizeof(value_type)]);
+            rest >>= CHAR_BIT - bit_offset;
+            r |= rest;
         }
     }
 
+    // Align number to least significant bit.
+    r >>= value_bits - num_bits;
     return r;
 }
 
-/** Unaligned load bits from a big-endian buffer at a bit-offset.
- *
- * @tparam T A type which can be created using `std::bit_cast()`. With the same size of
- *           char, short, int, long, or long long.
- * @tparam NumBits the number of bits to read. Less than or equal to the number of bits in @a T.
- * @param src A byte-like buffer to load bits from.
- * @param bit_index The bit offset into the buffer. 0 is the 7th bit of the 1st byte in @a src.
- * @return An object of type @a T constructed from the bits loaded from @a src.
- *         Before construct @a T the bits are loaded into the lower bits of a unsigned
- *         integer of the same size as @a T.
- */
-template<typename T, unsigned int NumBits, byte_like B>
-[[nodiscard]] constexpr T load_bits_be_into_value(B const *src, size_t bit_index) noexcept
-{
-    static_assert(NumBits <= sizeof(T) * CHAR_BIT);
-    // clang-format off
-    static_assert(
-        sizeof(T) == sizeof(unsigned char) or
-        sizeof(T) == sizeof(unsigned short) or
-        sizeof(T) == sizeof(unsigned int) or
-        sizeof(T) == sizeof(unsigned long) or
-        sizeof(T) == sizeof(unsigned long long)
-    );
-
-    using value_type =
-        std::conditional_t<sizeof(T) == sizeof(unsigned char), unsigned char,
-        std::conditional_t<sizeof(T) == sizeof(unsigned short), unsigned short,
-        std::conditional_t<sizeof(T) == sizeof(unsigned int), unsigned int,
-        std::conditional_t<sizeof(T) == sizeof(unsigned long), unsigned long, unsigned long long>>>>;
-    // clang-format on
-
-    return std::bit_cast<T>(char_cast<value_type>(load_bits_be<NumBits>(src, bit_index)));
-}
 
 
 template<std::endian Endian = std::endian::native, numeric T, byte_like B>

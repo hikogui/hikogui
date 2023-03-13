@@ -54,9 +54,6 @@ class description (object):
         # Index into the composition table.
         self.g_composition_index = None
 
-        # Index into the decomposition table.
-        self.g_decomposition_index = None
-
     def __eq__(self, other):
         return (
             self.bidi_class == other.bidi_class and
