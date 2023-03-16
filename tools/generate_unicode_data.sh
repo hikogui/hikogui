@@ -26,6 +26,8 @@ $PYTHON3 tools/generate_unicode_data.py \
     --descriptions-output=src/hikogui/unicode/ucd_descriptions.hpp \
     --normalize-template=tools/ucd/ucd_normalize.hpp.psp \
     --normalize-output=src/hikogui/unicode/ucd_normalize.hpp \
+    --ccc-template=tools/ucd/ucd_ccc.hpp.psp \
+    --ccc-output=src/hikogui/unicode/ucd_ccc.hpp \
     --bidi-brackets=${UCDDIR}/BidiBrackets.txt \
     --bidi-mirroring=${UCDDIR}/BidiMirroring.txt \
     --composition-exclusions=${UCDDIR}/CompositionExclusions.txt \

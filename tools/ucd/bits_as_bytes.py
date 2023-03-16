@@ -1,19 +1,15 @@
 
 
 
-def max_num_bits(src):
-    """Find the maximum number of bits needed to store any value in src.
-    """
-    return max(src).bit_length()
+def bits_as_bytes(src):
+    width = max(x.bit_length() for x in src)
 
-
-def bits_as_bytes(src, nr_bits):
-    total_bits = nr_bits * len(src)
+    total_bits = width * len(src)
     total_bytes = (total_bits + 7) // 8
 
     as_long = 0
     for x in src:
-        as_long <<= nr_bits
+        as_long <<= width
         as_long |= x
 
     # Align to the byte array.
@@ -25,4 +21,4 @@ def bits_as_bytes(src, nr_bits):
         dst[i] = as_long & 0xff
         as_long >>= 8
 
-    return dst
+    return dst, width

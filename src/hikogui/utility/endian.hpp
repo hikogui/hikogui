@@ -260,6 +260,14 @@ template<numeric T>
 
 /** Unaligned load bits from a big-endian buffer at a bit-offset.
  *
+ * To create the packed byte array from values.
+ *  - Shift each value into a bigint object.
+ *  - Shift by an aditional 0 to 7 bits to align the first value to the MSB of a byte.
+ *  - Shift by an aditional 128 bits for the over-read extension.
+ *  - Make a byte buffer with how many bits where added to the bigint.
+ *  - Reverse iterate over the bytes in the buffer and shift out bytes from the bigint.
+ *
+ * @note The src buffer should be extented by 128-bits to allow over-reading beyond the end of the data.
  * @tparam NumBits the number of bits to read.
  * @param src A byte-like buffer to load bits from.
  * @param bit_index The bit offset into the buffer. 0 is the 7th bit of the 1st byte in @a src.
