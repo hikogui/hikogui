@@ -1,5 +1,6 @@
 import ucd
 import argparse
+import sys
 
 def parse_options():
     parser = argparse.ArgumentParser(description='Build c++ source files from Unicode ucd text files.')
@@ -9,10 +10,8 @@ def parse_options():
     parser.add_argument("--index-template", dest="index_template_path", action="store", required=True)
     parser.add_argument("--descriptions-output", dest="descriptions_output_path", action="store", required=True)
     parser.add_argument("--descriptions-template", dest="descriptions_template_path", action="store", required=True)
-    parser.add_argument("--normalize-output", dest="normalize_output_path", action="store", required=True)
-    parser.add_argument("--normalize-template", dest="normalize_template_path", action="store", required=True)
-    parser.add_argument("--ccc-output", dest="ccc_output_path", action="store", required=True)
-    parser.add_argument("--ccc-template", dest="ccc_template_path", action="store", required=True)
+    parser.add_argument("--canonical_combining_classes-output", dest="canonical_combining_classes_output_path", action="store", required=True)
+    parser.add_argument("--canonical_combining_classes-template", dest="canonical_combining_classes_template_path", action="store", required=True)
     parser.add_argument("--decompositions-output", dest="decompositions_output_path", action="store", required=True)
     parser.add_argument("--decompositions-template", dest="decompositions_template_path", action="store", required=True)
 
@@ -29,117 +28,68 @@ def parse_options():
     parser.add_argument("--word-break-property", dest="word_break_property_path", action="store", required=True)
     return parser.parse_args()
 
-def make_canonical_combining_class_table(chunks):
-    canonical_combining_classes = []
-    for chunk in chunks:
-        for d in chunk.descriptions:
-            canonical_combining_classes.append(d.canonical_combining_class)
-
-    return canonical_combining_classes
-
-def make_decomposition_info_bytes(chunks):
-    decomposition_code_points = []
-    decomposition_tuples = []
-
-    max_length = 0
-    max_index = 0
-    for chunk in chunks:
-        for d in chunk.descriptions:
-            if len(d.decomposition_mapping) == 0:
-                decomposition_tuples.append((0, 0, 0))
-
-            else:
-                index = len(decomposition_code_points)
-                length = len(d.decomposition_mapping)
-                type_ = d.decomposition_type_as_integer()
-                decomposition_tuples.append((index, length, type_))
-
-                decomposition_code_points += d.decomposition_mapping
-                max_length = max(max_length, length)
-                max_index = max(max_index, index)
-
-
-    index_bit = max_index.bit_length()
-    length_bit = max_length.bit_length()
-    type_bit = 5
-    tuple_bit = index_bit + length_bit + type_bit
-
-    decomposition_tuples_as_int = [ (((index << length_bit) | length) << type_bit) | _type for index, length, _type in decomposition_tuples]
-
-    decomposition_tuples_as_bytes = ucd.bits_as_bytes(decomposition_tuples_as_int)
-    decomposition_code_points_as_bytes = ucd.bits_as_bytes(decomposition_code_points)
-    return decomposition_tuples_as_bytes, decomposition_code_points_as_bytes, index_bit, length_bit, type_bit
-
-def generate_normalize_output(template_path, output_path, chunks):
-    ccc_table = make_canonical_combining_class_table(chunks)
-    decomposition_info_bytes, decomposition_code_point_bytes, index_bit, length_bit, type_bit = make_decomposition_info_bytes(chunks)
-
-    ucd.generate_output(
-        template_path,
-        output_path,
-        ccc_table=ccc_table,
-        decomposition_info_bytes=decomposition_info_bytes,
-        decomposition_code_point_bytes=decomposition_code_point_bytes,
-        index_bit=index_bit,
-        length_bit=length_bit,
-        type_bit=type_bit
-    )
 
 def generate_canonical_combining_class(template_path, output_path, descriptions):
-    print("Processing canonical-combining-class:")
-    ccc_data = [x.canonical_combining_class for x in descriptions]
+    print("Processing canonical-combining-class:", file=sys.stderr, flush=True)
+    canonical_combining_classes = [x.canonical_combining_class for x in descriptions]
 
-    ccc_data, ccc_indices, ccc_chunk_size = ucd.deduplicate(ccc_data)
-    ccc_data_length = len(ccc_data)
-    ccc_indices_length = len(ccc_indices)
-    ccc_data_bytes, ccc_data_width = ucd.bits_as_bytes(ccc_data)
-    ccc_indices_bytes, ccc_indices_width = ucd.bits_as_bytes(ccc_indices)
+    canonical_combining_classes, indices, chunk_size = ucd.deduplicate(canonical_combining_classes)
+    canonical_combining_classes_bytes, canonical_combining_class_width = ucd.bits_as_bytes(canonical_combining_classes)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
 
     ucd.generate_output(
         template_path,
         output_path,
-        ccc_chunk_size=ccc_chunk_size,
-        ccc_indices_length=ccc_indices_length,
-        ccc_indices_width=ccc_indices_width,
-        ccc_indices_bytes=ccc_indices_bytes,
-        ccc_data_length=ccc_data_length,
-        ccc_data_width=ccc_data_width,
-        ccc_data_bytes=ccc_data_bytes
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        canonical_combining_class_width=canonical_combining_class_width,
+        canonical_combining_classes_bytes=canonical_combining_classes_bytes
     )
 
 def generate_decomposition(template_path, output_path, descriptions):
-    print("Processing decomposition:")
+    print("Processing decomposition:", file=sys.stderr, flush=True)
 
-    code_point_data = []
-    decomposition_data = []
+    code_points = []
+    decomposition_tuples = []
     for x in descriptions:
-        if len(d.decomposition_mapping) == 0:
-            decomposition_data.append((0, 0, 0))
+        if len(x.decomposition_mapping) == 0:
+            decomposition_tuples.append((0, 0, 0))
 
         else:
-            cp_index = len(decomposition_code_points)
-            length = len(d.decomposition_mapping)
-            type_ = d.decomposition_type_as_integer()
-            decomposition_data.append((cp_index, length, type_))
-            decomposition_code_points += d.decomposition_mapping
+            cp_index = len(code_points)
+            cp_size = len(x.decomposition_mapping)
+            type_ = x.decomposition_type_as_integer()
+            decomposition_tuples.append((cp_index, cp_size, type_))
+            code_points += x.decomposition_mapping
 
-    cp_index_width = max(x[0].bit_length() for x in decomposition_data)
-    length_width = max(x[1].bit_length() for x in decomposition_data)
-    type_width = max(x[2].bit_length() for x in decomposition_data)
+    cp_index_width = max(x[0].bit_length() for x in decomposition_tuples)
+    cp_size_width = max(x[1].bit_length() for x in decomposition_tuples)
+    type_width = max(x[2].bit_length() for x in decomposition_tuples)
 
-    code_point_bytes, code_point_width = bits_to_bytes(code_point_data)
-    decomposition_bytes, decomposition_width = bits_to_bytes(decomposition_data)
+    decompositions = [(((x[0] << cp_size_width) | x[1]) << type_width) | x[2] for x in decomposition_tuples]
+
+    decompositions, indices, chunk_size = ucd.deduplicate(decompositions)
+
+    code_points_bytes, code_point_width = ucd.bits_as_bytes(code_points)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+    decompositions_bytes, decomposition_width = ucd.bits_as_bytes(decompositions)
 
     ucd.generate_output(
         template_path,
         output_path,
+        chunk_size=chunk_size,
         cp_index_width=cp_index_width,
-        length_width=length_width,
+        cp_size_width=cp_size_width,
         type_width=type_width,
-        code_point_bytes=code_point_bytes,
+        indices_size=len(indices),
+        indices_bytes=indices_bytes,
+        index_width=index_width,
+        decompositions_bytes=decompositions_bytes,
+        decomposition_width=decomposition_width,
+        code_points_bytes=code_points_bytes,
         code_point_width=code_point_width,
-        decomposition_bytes=decomposition_bytes,
-        decomposition_width=decomposition_width
     )
 
 
@@ -168,10 +118,9 @@ def main():
     ucd.generate_output(options.index_template_path, options.index_output_path, indices=indices)
     ucd.generate_output(options.descriptions_template_path, options.descriptions_output_path, chunks=chunks)
 
-    generate_canonical_combining_class(options.ccc_template_path, options.ccc_output_path, descriptions)
-    generate_decomposition(options.decomposition_template_path, options.decomposition_output_path, descriptions)
+    generate_canonical_combining_class(options.canonical_combining_classes_template_path, options.canonical_combining_classes_output_path, descriptions)
+    generate_decomposition(options.decompositions_template_path, options.decompositions_output_path, descriptions)
 
-    generate_normalize_output(options.normalize_template_path, options.normalize_output_path, chunks)
 
 if __name__ == "__main__":
     main()

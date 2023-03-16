@@ -294,6 +294,13 @@ template<unsigned int NumBits, byte_like B>
     hilet byte_offset = bit_index / CHAR_BIT;
     hilet bit_offset = bit_index % CHAR_BIT;
 
+    // Optimization of reading a byte, aligned to a byte.
+    if constexpr (num_bits == CHAR_BIT) {
+        if (bit_offset == 0) {
+            return char_cast<value_type>(src[byte_offset]);
+        }
+    }
+
     // load_be allows unaligned reads.
     auto r = load_be<value_type>(std::addressof(src[byte_offset]));
 

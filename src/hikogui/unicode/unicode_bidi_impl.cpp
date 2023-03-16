@@ -516,7 +516,7 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
                     // If there is a canonical equivalent of the opening bracket, find it's mirrored glyph
                     // to compare with the closing bracket.
                     auto mirrored_glyph = it->description->bidi_mirroring_glyph();
-                    if (hilet canonical_equivalent = ucd_get_decomposition_info(it->code_point).canonical_equivalent()) {
+                    if (hilet canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent()) {
                         hilet& canonical_equivalent_description = unicode_description::find(*canonical_equivalent);
                         hi_axiom(canonical_equivalent_description.bidi_bracket_type() == unicode_bidi_bracket_type::o);
                         mirrored_glyph = canonical_equivalent_description.bidi_mirroring_glyph();
@@ -528,7 +528,7 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
 
             case unicode_bidi_bracket_type::c:
                 {
-                    hilet canonical_equivalent = ucd_get_decomposition_info(it->code_point).canonical_equivalent();
+                    hilet canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent();
                     for (auto jt = stack.end() - 1; jt >= stack.begin(); --jt) {
                         if (jt->mirrored_bracket == it->code_point or
                             (canonical_equivalent and jt->mirrored_bracket == *canonical_equivalent)) {

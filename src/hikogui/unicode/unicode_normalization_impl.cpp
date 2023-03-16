@@ -4,63 +4,50 @@
 
 #include "unicode_normalization.hpp"
 #include "unicode_description.hpp"
-#include "ucd_normalize.hpp"
 #include "../utility/module.hpp"
 #include <string>
 #include <algorithm>
 
 namespace hi::inline v1 {
 
-static void _unicode_decompose(char32_t code_point, unicode_normalization_config config, std::u32string &r) noexcept
+static void _unicode_decompose(char32_t code_point, unicode_normalization_config config, std::u32string& r) noexcept
 {
-    hilet &description = unicode_description::find(code_point);
-
-    auto is_line_separator = false;
-    is_line_separator |= code_point == unicode_LF and config.LF_is_line_separator;
-    is_line_separator |= code_point == unicode_VT and config.VT_is_line_separator;
-    is_line_separator |= code_point == unicode_FF and config.FF_is_line_separator;
-    is_line_separator |= code_point == unicode_CR and config.CR_is_line_separator;
-    is_line_separator |= code_point == unicode_NEL and config.NEL_is_line_separator;
-    is_line_separator |= code_point == unicode_LS and config.LS_is_line_separator;
-    is_line_separator |= code_point == unicode_PS and config.PS_is_line_separator;
-
-    auto is_paragraph_separator = false;
-    is_paragraph_separator |= code_point == unicode_LF and config.LF_is_paragraph_separator;
-    is_paragraph_separator |= code_point == unicode_VT and config.VT_is_paragraph_separator;
-    is_paragraph_separator |= code_point == unicode_FF and config.FF_is_paragraph_separator;
-    is_paragraph_separator |= code_point == unicode_CR and config.CR_is_paragraph_separator;
-    is_paragraph_separator |= code_point == unicode_NEL and config.NEL_is_paragraph_separator;
-    is_paragraph_separator |= code_point == unicode_LS and config.LS_is_paragraph_separator;
-    is_paragraph_separator |= code_point == unicode_PS and config.PS_is_paragraph_separator;
-
-    auto drop = false;
-    drop |= code_point == unicode_LF and config.drop_LF;
-    drop |= code_point == unicode_VT and config.drop_VT;
-    drop |= code_point == unicode_FF and config.drop_FF;
-    drop |= code_point == unicode_CR and config.drop_CR;
-    drop |= code_point == unicode_NEL and config.drop_NEL;
-    drop |= code_point == unicode_LS and config.drop_LS;
-    drop |= code_point == unicode_PS and config.drop_PS;
-    drop |= ((code_point >= U'\u0000' and code_point <= U'\u001f') or code_point == U'\u007f')  and config.drop_C0;
-    drop |= code_point >= U'\u0080' and code_point <= U'\u009f' and config.drop_C1;
-
-    hilet decomposition_info = ucd_get_decomposition_info(code_point);
-    if (is_line_separator) {
-        r += config.line_separator_character;
-        if (config.line_separator_character == unicode_CR) {
-            r += unicode_LF;
+    for (hilet c : config.line_separators) {
+        if (code_point == c) {
+            r += config.line_separator_character;
+            if (config.line_separator_character == unicode_CR) {
+                r += unicode_LF;
+            }
+            return;
         }
+    }
 
-    } else if (is_paragraph_separator) {
-        r += config.paragraph_separator_character;
-        if (config.paragraph_separator_character == unicode_CR) {
-            r += unicode_LF;
+    for (hilet c : config.paragraph_separators) {
+        if (code_point == c) {
+            r += config.paragraph_separator_character;
+            if (config.paragraph_separator_character == unicode_CR) {
+                r += unicode_LF;
+            }
+            return;
         }
+    }
 
-    } else if (drop) {
-        // This must come after checking for new-line which are explicitly converted.
+    for (hilet c : config.drop) {
+        if (code_point == c) {
+            return;
+        }
+    }
 
-    } else if (decomposition_info.should_decompose(config.decomposition_mask)) {
+    if (config.drop_C0 and ((code_point >= U'\u0000' and code_point <= U'\u001f') or code_point == U'\u007f')) {
+        return;
+    }
+
+    if (config.drop_C1 and code_point >= U'\u0080' and code_point <= U'\u009f') {
+        return;
+    }
+
+    hilet decomposition_info = ucd_get_decomposition(code_point);
+    if (decomposition_info.should_decompose(config.decomposition_mask)) {
         for (hilet c : decomposition_info.decompose()) {
             _unicode_decompose(c, config, r);
         }
@@ -71,14 +58,14 @@ static void _unicode_decompose(char32_t code_point, unicode_normalization_config
     }
 }
 
-static void _unicode_decompose(std::u32string_view text, unicode_normalization_config config, std::u32string &r) noexcept
+static void _unicode_decompose(std::u32string_view text, unicode_normalization_config config, std::u32string& r) noexcept
 {
     for (hilet c : text) {
         _unicode_decompose(c, config, r);
     }
 }
 
-static void _unicode_compose(std::u32string &text) noexcept
+static void _unicode_compose(std::u32string& text) noexcept
 {
     if (text.size() <= 1) {
         return;
@@ -107,7 +94,7 @@ static void _unicode_compose(std::u32string &text) noexcept
                 bool blocking_pair = previous_combining_class != 0 && previous_combining_class >= second_combining_class;
                 bool second_is_starter = second_combining_class == 0;
 
-                hilet composed_code_point =  unicode_description::find(first_code_point).compose(second_code_point);
+                hilet composed_code_point = unicode_description::find(first_code_point).compose(second_code_point);
                 if (composed_code_point != U'\uffff' && !blocking_pair) {
                     // Found a composition.
                     first_code_point = composed_code_point;
@@ -137,7 +124,7 @@ static void _unicode_compose(std::u32string &text) noexcept
     text.resize(j);
 }
 
-static void _unicode_reorder(std::u32string &text) noexcept
+static void _unicode_reorder(std::u32string& text) noexcept
 {
     for_each_cluster(
         text.begin(),
@@ -152,10 +139,10 @@ static void _unicode_reorder(std::u32string &text) noexcept
         });
 }
 
-static void _unicode_clean(std::u32string &text) noexcept
+static void _unicode_clean(std::u32string& text) noexcept
 {
     // clean up the text by removing the upper bits.
-    for (auto &codePoint : text) {
+    for (auto& codePoint : text) {
         codePoint &= 0x1f'ffff;
     }
 }

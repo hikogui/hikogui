@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "ucd_normalize.hpp"
+#include "ucd_decompositions.hpp"
+#include "ucd_canonical_combining_classes.hpp"
 #include "unicode_description.hpp"
 #include "../utility/module.hpp"
 #include "../algorithm.hpp"
@@ -27,49 +28,17 @@ struct unicode_normalization_config {
      */
     uint64_t drop_C1 : 1 = 0;
 
-    /** Drop the LF character.
+    /** Code-points to be treated as line-separators.
      */
-    uint64_t drop_LF : 1 = 0;
+    std::u32string line_separators;
 
-    /** Drop the VT character.
+    /** Code-points to be treated as line-separators.
      */
-    uint64_t drop_VT : 1 = 0;
+    std::u32string paragraph_separators;
 
-    /** Drop the FF character.
+    /** Code-points to be dropped.
      */
-    uint64_t drop_FF : 1 = 0;
-
-    /** Drop the CR character.
-     */
-    uint64_t drop_CR : 1 = 0;
-
-    /** Drop the NEL character.
-     */
-    uint64_t drop_NEL : 1 = 0;
-
-    /** Drop the LS
-     */
-    uint64_t drop_LS : 1 = 0;
-
-    /** Drop the PS character.
-     */
-    uint64_t drop_PS : 1 = 0;
-
-    uint64_t LF_is_line_separator : 1 = 0;
-    uint64_t VT_is_line_separator : 1 = 0;
-    uint64_t FF_is_line_separator : 1 = 0;
-    uint64_t CR_is_line_separator : 1 = 0;
-    uint64_t NEL_is_line_separator : 1 = 0;
-    uint64_t LS_is_line_separator : 1 = 0;
-    uint64_t PS_is_line_separator : 1 = 0;
-
-    uint64_t LF_is_paragraph_separator : 1 = 0;
-    uint64_t VT_is_paragraph_separator : 1 = 0;
-    uint64_t FF_is_paragraph_separator : 1 = 0;
-    uint64_t CR_is_paragraph_separator : 1 = 0;
-    uint64_t NEL_is_paragraph_separator : 1 = 0;
-    uint64_t LS_is_paragraph_separator : 1 = 0;
-    uint64_t PS_is_paragraph_separator : 1 = 0;
+    std::u32string drop;
 
     /** The code-point to output when a line separator was found.
      *
@@ -108,13 +77,9 @@ struct unicode_normalization_config {
         auto r = NFC();
         r.drop_C0 = 1;
         r.drop_C1 = 1;
-        r.drop_CR = 1;
-        r.LF_is_paragraph_separator = 1;
-        r.VT_is_paragraph_separator = 1;
-        r.FF_is_paragraph_separator = 1;
-        r.NEL_is_paragraph_separator = 1;
-        r.LS_is_paragraph_separator = 1;
-        r.PS_is_paragraph_separator = 1;
+        r.drop = U"\r";
+        r.paragraph_separators = U"\n\v\f\u0085\u2028\u2029";
+        r.paragraph_separator_character = U'\u2029';
         return r;
     }
 
@@ -125,13 +90,8 @@ struct unicode_normalization_config {
         auto r = NFC();
         r.drop_C0 = 1;
         r.drop_C1 = 1;
-        r.drop_CR = 1;
-        r.LF_is_paragraph_separator = 1;
-        r.VT_is_paragraph_separator = 1;
-        r.FF_is_paragraph_separator = 1;
-        r.NEL_is_paragraph_separator = 1;
-        r.LS_is_paragraph_separator = 1;
-        r.PS_is_paragraph_separator = 1;
+        r.drop = U"\r";
+        r.paragraph_separators = U"\n\v\f\u0085\u2028\u2029";
         r.paragraph_separator_character = U'\r';
         return r;
     }

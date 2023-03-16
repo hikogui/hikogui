@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "ucd_index.hpp"
 #include "../utility/module.hpp"
 #include <cstdint>
 #include <optional>
@@ -16,13 +15,17 @@ namespace hi {
 inline namespace v1 {
 namespace detail {
 
-/** A table of Unicode Canonical Combining Class for each code-point.
- *
- * This array should be indexed by the result of `hi::ucd_get_index()`.
- */
-constexpr uint8_t ucd_canonical_combining_class[$len(ccc_table)$] = {\
-$for i, x in enumerate(ccc_table):
-    $if i % 16 == 0:
+constexpr auto ucd_decompositions_chunk_size = $chunk_size$_uz;
+constexpr auto ucd_decompositions_code_point_width = $code_point_width$_uz;
+constexpr auto ucd_decompositions_index_width = $index_width$_uz;
+constexpr auto ucd_decompositions_index_size = $indices_size$_uz;
+constexpr auto ucd_decomposition_width = $decomposition_width$_uz;
+
+static_assert(std::has_single_bit(ucd_decompositions_chunk_size));
+
+constexpr uint8_t ucd_decompositions_indices_bytes[$len(indices_bytes)$] = {\
+$for i, x in enumerate(indices_bytes):
+    $if i % 32 == 0:
 
    \
     $end
@@ -31,15 +34,9 @@ $end
 
 };
 
-/** A table of sequences of code-points that form decompositions.
- *
- * The array of 21-bit code-points is tightly packed into this byte array.
- *
- * This array is accessed through `hi::decomposition_info`.
- */
-constexpr uint8_t ucd_decomposition_code_point_bytes[$len(decomposition_code_point_bytes)$] = {\
-$for i, x in enumerate(decomposition_code_point_bytes):
-    $if i % 16 == 0:
+constexpr uint8_t ucd_decompositions_bytes[$len(decompositions_bytes)$] = {\
+$for i, x in enumerate(decompositions_bytes):
+    $if i % 32 == 0:
 
    \
     $end
@@ -48,18 +45,9 @@ $end
 
 };
 
-/** A table of decomposition information for each code-point.
- *
- * The array of $index_bit + length_bit + type_bit$ bit `hi::decomposition_info` which
- * are tightly packed into a byte array. It should be indices by the result from
- * `hi::ucd_get_index() * $index_bit + length_bit + type_bit$`. And the value loaded using
- * `hi::load_bits_be()`
- *
- * This array is accessed through `hi::decomposition_info`.
- */
-constexpr uint8_t ucd_decomposition_info_bytes[$len(decomposition_info_bytes)$] = {\
-$for i, x in enumerate(decomposition_info_bytes):
-    $if i % 16 == 0:
+constexpr uint8_t ucd_decomposition_code_points_bytes[$len(code_points_bytes)$] = {\
+$for i, x in enumerate(code_points_bytes):
+    $if i % 32 == 0:
 
    \
     $end
@@ -67,7 +55,6 @@ $"{:3},".format(x)$
 $end
 
 };
-
 
 } // namespace detail
 
@@ -146,36 +133,35 @@ enum class unicode_decomposition_type : uint8_t {
 /** The decomposition info is used to determine how to decompose a code-point.
  */
 struct ucd_decomposition_info {
-    constexpr static unsigned index_bit = $index_bit$;
-    constexpr static unsigned length_bit = $length_bit$;
-    constexpr static unsigned type_bit = $type_bit$;
-    constexpr static unsigned bit = index_bit + length_bit + type_bit;
+    constexpr static unsigned cp_index_width = $cp_index_width$;
+    constexpr static unsigned cp_size_width = $cp_size_width$;
+    constexpr static unsigned type_width = $type_width$;
 
     using value_type = uint32_t;
-    static_assert(index_bit + length_bit + type_bit <= sizeof(value_type) * CHAR_BIT);
+    static_assert(cp_index_width + cp_size_width + type_width <= sizeof(value_type) * CHAR_BIT);
 
     value_type value;
 
     /** The code-point-index into the decomposition code-point table.
      */
-    [[nodiscard]] constexpr size_t index() const noexcept
+    [[nodiscard]] constexpr size_t cp_index() const noexcept
     {
-        return value >> (length_bit + type_bit);
+        return value >> (cp_size_width + type_width);
     }
 
     /** The number of code-points to extract from the decomposition code-point table.
      */
-    [[nodiscard]] constexpr size_t length() const noexcept
+    [[nodiscard]] constexpr size_t cp_size() const noexcept
     {
-        constexpr auto mask = (value_type{1} << length_bit) - 1;
-        return (value >> type_bit) & mask;
+        constexpr auto mask = (value_type{1} << cp_size_width) - 1;
+        return (value >> type_width) & mask;
     }
 
     /** Decomposition compatibility type for this code-point.
      */
     [[nodiscard]] constexpr unicode_decomposition_type type() const noexcept
     {
-        constexpr auto mask = (value_type{1} << type_bit) - 1;
+        constexpr auto mask = (value_type{1} << type_width) - 1;
         return static_cast<unicode_decomposition_type>(value & mask);
     }
 
@@ -186,7 +172,7 @@ struct ucd_decomposition_info {
      */
     [[nodiscard]] constexpr bool should_decompose(size_t decomposition_mask) const noexcept
     {
-        return to_bool((1_uz << to_underlying(type())) & decomposition_mask) and length() != 0;
+        return to_bool((1_uz << to_underlying(type())) & decomposition_mask) and cp_size() != 0;
     }
 
     /** Decompose the code-point.
@@ -198,11 +184,12 @@ struct ucd_decomposition_info {
     [[nodiscard]] constexpr std::u32string decompose() const noexcept
     {
         auto r = std::u32string{};
-        hilet first = index() * 21;
-        hilet last = first + length() * 21;
+        hilet first = cp_index() * detail::ucd_decompositions_code_point_width;
+        hilet last = first + cp_size() * detail::ucd_decompositions_code_point_width;
 
-        for (auto i = first; i != last; i += 21) {
-            r += wide_cast<char32_t>(load_bits_be<21>(detail::ucd_decomposition_code_point_bytes, i));
+        for (auto i = first; i != last; i += detail::ucd_decompositions_code_point_width) {
+            r += wide_cast<char32_t>(load_bits_be<detail::ucd_decompositions_code_point_width>(
+                detail::ucd_decomposition_code_points_bytes, i));
         }
         return r;
     }
@@ -215,9 +202,9 @@ struct ucd_decomposition_info {
      */
     [[nodiscard]] constexpr std::optional<char32_t> canonical_equivalent() const noexcept
     {
-        if (type() == unicode_decomposition_type::canonical and length() == 1) {
-            hilet bit_index = index() * 21;
-            return char_cast<char32_t>(load_bits_be<21>(detail::ucd_decomposition_code_point_bytes, bit_index));
+        if (type() == unicode_decomposition_type::canonical and cp_size() == 1) {
+            hilet offset = cp_index() * detail::ucd_decompositions_code_point_width;
+            return char_cast<char32_t>(load_bits_be<detail::ucd_decompositions_code_point_width>(detail::ucd_decomposition_code_points_bytes, offset));
         } else {
             return std::nullopt;
         }
@@ -226,19 +213,30 @@ struct ucd_decomposition_info {
 
 /** Get the decomposition info of a code-point.
  */
-[[nodiscard]] constexpr ucd_decomposition_info ucd_get_decomposition_info(char32_t c) noexcept
+[[nodiscard]] constexpr ucd_decomposition_info ucd_get_decomposition(char32_t code_point) noexcept
 {
-    hilet bit_index = ucd_get_index(c) * ucd_decomposition_info::bit;
+    constexpr auto max_chunk = detail::ucd_decompositions_index_size - 1;
+    constexpr auto max_code_point = max_chunk * detail::ucd_decompositions_chunk_size;
 
-    hilet info_as_intrinsic = load_bits_be<ucd_decomposition_info::bit>(detail::ucd_decomposition_info_bytes, bit_index);
-    return ucd_decomposition_info{narrow_cast<ucd_decomposition_info::value_type>(info_as_intrinsic)};
-}
+    if (code_point > max_code_point) {
+        code_point = char_cast<char32_t>(max_code_point);
+    }
 
-/** Get the Canonical Combining Class (CCC) for a code-point.
- */
-[[nodiscard]] constexpr uint8_t ucd_get_canonical_combining_class(char32_t c) noexcept
-{
-    return detail::ucd_canonical_combining_class[ucd_get_index(c)];
+    // The index in the chunk-index table based on the upper-bits of the code-point.
+    hilet chunk_index = load_bits_be<detail::ucd_decompositions_index_width>(
+        detail::ucd_decompositions_indices_bytes,
+        (code_point / detail::ucd_decompositions_chunk_size) * detail::ucd_decompositions_index_width);
+
+    // Add back in the lower-bits of the code-point.
+    hilet index =
+        (chunk_index * detail::ucd_decompositions_chunk_size) +
+        (code_point % detail::ucd_decompositions_chunk_size);
+
+    // Get the decomposition value from the decomposition table by index.
+    hilet value = load_bits_be<detail::ucd_decomposition_width>(
+        detail::ucd_decompositions_bytes, index * detail::ucd_decomposition_width);
+
+    return ucd_decomposition_info{narrow_cast<ucd_decomposition_info::value_type>(value)};
 }
 
 }} // namespace hi::v1
