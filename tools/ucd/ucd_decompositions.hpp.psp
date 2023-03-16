@@ -215,22 +215,22 @@ struct ucd_decomposition_info {
  */
 [[nodiscard]] constexpr ucd_decomposition_info ucd_get_decomposition(char32_t code_point) noexcept
 {
-    constexpr auto max_chunk = detail::ucd_decompositions_index_size - 1;
-    constexpr auto max_code_point = max_chunk * detail::ucd_decompositions_chunk_size;
+    constexpr auto max_code_point_hi = detail::ucd_decompositions_index_size - 1;
 
-    if (code_point > max_code_point) {
-        code_point = char_cast<char32_t>(max_code_point);
+    auto code_point_hi = code_point / detail::ucd_decompositions_chunk_size;
+    hilet code_point_lo = code_point % detail::ucd_decompositions_chunk_size;
+
+    if (code_point_hi > max_code_point_hi) {
+        code_point_hi = max_code_point_hi;
     }
 
     // The index in the chunk-index table based on the upper-bits of the code-point.
     hilet chunk_index = load_bits_be<detail::ucd_decompositions_index_width>(
         detail::ucd_decompositions_indices_bytes,
-        (code_point / detail::ucd_decompositions_chunk_size) * detail::ucd_decompositions_index_width);
+        code_point_hi * detail::ucd_decompositions_index_width);
 
     // Add back in the lower-bits of the code-point.
-    hilet index =
-        (chunk_index * detail::ucd_decompositions_chunk_size) +
-        (code_point % detail::ucd_decompositions_chunk_size);
+    hilet index = (chunk_index * detail::ucd_decompositions_chunk_size) + code_point_lo;
 
     // Get the decomposition value from the decomposition table by index.
     hilet value = load_bits_be<detail::ucd_decomposition_width>(
