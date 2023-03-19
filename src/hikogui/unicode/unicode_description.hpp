@@ -50,8 +50,7 @@ public:
         unicode_script script,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
-        char32_t bidi_mirroring_glyph,
-        uint16_t composition_index) noexcept :
+        char32_t bidi_mirroring_glyph) noexcept :
         _general_category(to_underlying(general_category)),
         _grapheme_cluster_break(to_underlying(grapheme_cluster_break)),
         _line_break_class(to_underlying(line_break_class)),
@@ -61,8 +60,7 @@ public:
         _script(to_underlying(script)),
         _bidi_class(to_underlying(bidi_class)),
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
-        _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph)),
-        _composition_index(truncate<uint16_t>(composition_index))
+        _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph))
     {
         hi_assert(to_underlying(general_category) <= 0x1f);
         hi_assert(to_underlying(grapheme_cluster_break) <= 0x0f);
@@ -74,7 +72,6 @@ public:
         hi_assert(to_underlying(bidi_class) <= 0x1f);
         hi_assert(to_underlying(bidi_bracket_type) <= 0x03);
         hi_assert(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
-        hi_assert(static_cast<uint32_t>(composition_index) <= 0x3fff);
     }
 
     /** The general category of this code-point.
@@ -156,13 +153,6 @@ public:
         return truncate<char32_t>(_bidi_mirroring_glyph);
     }
 
-    /** Compose this code-point with another.
-     *
-     * @param other The other code-point.
-     * @return The composed code-point, or 0xffff if the composition was not found.
-     */
-    [[nodiscard]] char32_t compose(char32_t other) const noexcept;
-
     /** Find a code-point in the global unicode_description table.
      * For any valid unicode code point this function will return a reference to
      * the unicode_description. It may return a unicode_description to the
@@ -235,14 +225,10 @@ private:
     uint64_t _bidi_class : 5;
     uint64_t _bidi_bracket_type : 2;
     uint64_t _bidi_mirroring_glyph : 16;
-    uint64_t _word0_reserved : 14 = 0;
-
-    // 2nd qword
     uint64_t _script : 8;
-    uint64_t _composition_index : 14;
-    uint64_t _word1_reserved : 42 = 0;
+    uint64_t _word0_reserved : 6 = 0;
 };
 
-static_assert(sizeof(unicode_description) == 16);
+static_assert(sizeof(unicode_description) == 8);
 
 } // namespace hi::inline v1

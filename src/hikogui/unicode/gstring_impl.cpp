@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] gstring to_gstring(std::u32string_view rhs, unicode_normalization_config config) noexcept
+[[nodiscard]] gstring to_gstring(std::u32string_view rhs, unicode_normalize_config config) noexcept
 {
     hilet normalizedString = unicode_normalize(rhs, config);
 

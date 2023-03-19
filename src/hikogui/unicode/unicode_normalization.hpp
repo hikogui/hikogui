@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ucd_decompositions.hpp"
+#include "ucd_compositions.hpp"
 #include "ucd_canonical_combining_classes.hpp"
 #include "unicode_description.hpp"
 #include "../utility/module.hpp"
@@ -15,7 +16,7 @@
 
 namespace hi::inline v1 {
 
-struct unicode_normalization_config {
+struct unicode_normalize_config {
     /** The types of decompositions, that should be used when decomposing.
      */
     uint64_t decomposition_mask : 17 = 0;
@@ -52,27 +53,27 @@ struct unicode_normalization_config {
      */
     char32_t paragraph_separator_character = unicode_PS;
 
-    constexpr unicode_normalization_config& add(unicode_decomposition_type type) noexcept
+    constexpr unicode_normalize_config& add(unicode_decomposition_type type) noexcept
     {
         decomposition_mask |= 1_uz << to_underlying(type);
         return *this;
     }
 
-    [[nodiscard]] constexpr static unicode_normalization_config NFD() noexcept
+    [[nodiscard]] constexpr static unicode_normalize_config NFD() noexcept
     {
-        auto r = unicode_normalization_config();
+        auto r = unicode_normalize_config();
         r.add(unicode_decomposition_type::canonical);
         return r;
     }
 
-    [[nodiscard]] constexpr static unicode_normalization_config NFC() noexcept
+    [[nodiscard]] constexpr static unicode_normalize_config NFC() noexcept
     {
         return NFD();
     }
 
     /** Use NFC normalization, convert all line-feed-like characters to PS.
      */
-    [[nodiscard]] constexpr static unicode_normalization_config NFC_PS_noctr() noexcept
+    [[nodiscard]] constexpr static unicode_normalize_config NFC_PS_noctr() noexcept
     {
         auto r = NFC();
         r.drop_C0 = 1;
@@ -85,7 +86,7 @@ struct unicode_normalization_config {
 
     /** Use NFC normalization, convert all line-feed-like characters to CR-LF.
      */
-    [[nodiscard]] constexpr static unicode_normalization_config NFC_CRLF_noctr() noexcept
+    [[nodiscard]] constexpr static unicode_normalize_config NFC_CRLF_noctr() noexcept
     {
         auto r = NFC();
         r.drop_C0 = 1;
@@ -96,9 +97,9 @@ struct unicode_normalization_config {
         return r;
     }
 
-    [[nodiscard]] constexpr static unicode_normalization_config NFKD() noexcept
+    [[nodiscard]] constexpr static unicode_normalize_config NFKD() noexcept
     {
-        auto r = unicode_normalization_config::NFD();
+        auto r = unicode_normalize_config::NFD();
         r.add(unicode_decomposition_type::canonical);
         r.add(unicode_decomposition_type::font);
         r.add(unicode_decomposition_type::no_break);
@@ -119,7 +120,7 @@ struct unicode_normalization_config {
         return r;
     }
 
-    [[nodiscard]] constexpr static unicode_normalization_config NFKC() noexcept
+    [[nodiscard]] constexpr static unicode_normalize_config NFKC() noexcept
     {
         return NFKD();
     }
@@ -127,7 +128,7 @@ struct unicode_normalization_config {
 
 namespace detail {
 
-constexpr void unicode_decompose(char32_t code_point, unicode_normalization_config config, std::u32string& r) noexcept
+constexpr void unicode_decompose(char32_t code_point, unicode_normalize_config config, std::u32string& r) noexcept
 {
     for (hilet c : config.line_separators) {
         if (code_point == c) {
@@ -175,7 +176,7 @@ constexpr void unicode_decompose(char32_t code_point, unicode_normalization_conf
     }
 }
 
-constexpr void unicode_decompose(std::u32string_view text, unicode_normalization_config config, std::u32string& r) noexcept
+constexpr void unicode_decompose(std::u32string_view text, unicode_normalize_config config, std::u32string& r) noexcept
 {
     for (hilet c : text) {
         unicode_decompose(c, config, r);
@@ -192,13 +193,13 @@ constexpr void unicode_compose(std::u32string& text) noexcept
     // When compositing characters, `j` will lag behind.
     auto i = 0_uz;
     auto j = 0_uz;
-    while (i < text.size()) {
+    while (i != text.size()) {
         hilet code_unit = text[i++];
-        hilet code_point = code_unit & 0x1f'ffff;
+        hilet code_point = code_unit & 0xff'ffff;
         hilet combining_class = code_unit >> 24;
         hilet first_is_starter = combining_class == 0;
 
-        if (code_point == 0x1f'ffff) {
+        if (code_unit == 0xffff'ffff) {
             // Snuffed out by compositing in this algorithm.
             // We continue going forward looking for code-points.
 
@@ -206,13 +207,13 @@ constexpr void unicode_compose(std::u32string& text) noexcept
             // Try composing.
             auto first_code_point = code_point;
             char32_t previous_combining_class = 0;
-            for (auto k = i; k < text.size(); k++) {
+            for (auto k = i; k != text.size(); ++k) {
                 hilet second_code_unit = text[k];
-                hilet second_code_point = second_code_unit & 0x1f'ffff;
+                hilet second_code_point = second_code_unit & 0xff'ffff;
                 hilet second_combining_class = second_code_unit >> 24;
 
-                bool blocking_pair = previous_combining_class != 0 and previous_combining_class >= second_combining_class;
-                bool second_is_starter = second_combining_class == 0;
+                hilet blocking_pair = previous_combining_class != 0 and previous_combining_class >= second_combining_class;
+                hilet second_is_starter = second_combining_class == 0;
 
                 hilet composed_code_point = ucd_get_composition(first_code_point, second_code_point);
                 if (composed_code_point and not blocking_pair) {
@@ -221,7 +222,7 @@ constexpr void unicode_compose(std::u32string& text) noexcept
                     // The canonical combined DecompositionOrder is always zero.
                     previous_combining_class = 0;
                     // Snuff out the code-unit.
-                    text[k] = 0x1f'ffff;
+                    text[k] = 0xffff'ffff;
 
                 } else if (second_is_starter) {
                     // End after failing to compose with the next start-character.
@@ -244,19 +245,28 @@ constexpr void unicode_compose(std::u32string& text) noexcept
     text.resize(j);
 }
 
-void unicode_reorder(std::u32string& text) noexcept
+constexpr void unicode_reorder(std::u32string& text) noexcept
 {
-    for_each_cluster(
-        text.begin(),
-        text.end(),
-        [](auto x) {
-            return (x >> 21) == 0;
-        },
-        [](auto s, auto e) {
-            std::stable_sort(s, e, [](auto a, auto b) {
-                return (a >> 21) < (b >> 21);
-            });
-        });
+    constexpr auto ccc_less = [](char32_t a, char32_t b) {
+        return (a >> 24) < (b >> 24);
+    };
+
+    hilet first = text.begin();
+    hilet last = text.end();
+
+    if (first == last) {
+        return;
+    }
+
+    auto cluster_it = first;
+    for (auto it = cluster_it + 1; it != last; ++it) {
+        if (*it <= 0xff'ffff) {
+            std::stable_sort(cluster_it, it, ccc_less);
+            cluster_it = it;
+        }
+    }
+
+    std::stable_sort(cluster_it, last, ccc_less);
 }
 
 constexpr void unicode_clean(std::u32string& text) noexcept
@@ -269,14 +279,13 @@ constexpr void unicode_clean(std::u32string& text) noexcept
 
 } // namespace detail
 
-/** Convert text to Unicode-NFD normal form.
- *
- * Code point 0x00'ffff is used internally, do not pass in text.
+/** Convert text to a Unicode decomposed normal form.
  *
  * @param text to normalize, in-place.
  * @param normalization_mask Extra features for normalization.
  */
-[[nodiscard]] constexpr std::u32string unicode_decompose(std::u32string_view text, unicode_normalization_config config) noexcept
+[[nodiscard]] constexpr std::u32string
+unicode_decompose(std::u32string_view text, unicode_normalize_config config = unicode_normalize_config::NFD()) noexcept
 {
     auto r = std::u32string{};
     detail::unicode_decompose(text, config, r);
@@ -285,14 +294,13 @@ constexpr void unicode_clean(std::u32string& text) noexcept
     return r;
 }
 
-/** Convert text to Unicode-NFC normal form.
- *
- * Code point 0x00'ffff is used internally, do not pass in text.
+/** Convert text to a Unicode composed normal form.
  *
  * @param text to normalize, in-place.
  * @param normalization_mask Extra features for normalization.
  */
-[[nodiscard]] constexpr std::u32string unicode_normalize(std::u32string_view text, unicode_normalization_config config) noexcept
+[[nodiscard]] constexpr std::u32string
+unicode_normalize(std::u32string_view text, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
     auto r = std::u32string{};
     detail::unicode_decompose(text, config, r);

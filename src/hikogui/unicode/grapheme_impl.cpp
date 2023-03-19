@@ -32,11 +32,14 @@ grapheme::grapheme(composed_t, std::u32string_view code_points) noexcept
     }
 }
 
-grapheme::grapheme(std::u32string_view code_points) noexcept : grapheme(composed_t{}, unicode_normalize(code_points)) {}
+grapheme::grapheme(std::u32string_view code_points) noexcept :
+    grapheme(composed_t{}, unicode_normalize(code_points, unicode_normalize_config::NFC()))
+{
+}
 
 [[nodiscard]] std::u32string grapheme::decomposed() const noexcept
 {
-    return unicode_decompose(composed());
+    return unicode_decompose(composed(), unicode_normalize_config::NFD());
 }
 
 [[nodiscard]] bool grapheme::valid() const noexcept

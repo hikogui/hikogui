@@ -471,7 +471,7 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                 });
 
                 string = to_string(
-                    unicode_normalize(hi::to_u32string(std::wstring_view(wstr_c)), unicode_normalization_config::NFC_PS_noctr()));
+                    unicode_normalize(hi::to_u32string(std::wstring_view(wstr_c)), unicode_normalize_config::NFC_PS_noctr()));
             }
             break;
 
@@ -508,7 +508,7 @@ void gui_window_win32::put_text_on_clipboard(hi::text text) const noexcept
         return;
     }
 
-    auto wtext = hi::to_wstring(unicode_normalize(to_u32string(text), unicode_normalization_config::NFC_CRLF_noctr()));
+    auto wtext = hi::to_wstring(unicode_normalize(to_u32string(text), unicode_normalize_config::NFC_CRLF_noctr()));
 
     auto wtext_handle = GlobalAlloc(GMEM_MOVEABLE, (wtext.size() + 1) * sizeof(wchar_t));
     if (wtext_handle == nullptr) {

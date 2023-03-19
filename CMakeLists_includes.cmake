@@ -193,7 +193,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/gstring.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_index.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_canonical_combining_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_compositions.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_decompositions.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_descriptions.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_index.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_bracket_type.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_class.hpp

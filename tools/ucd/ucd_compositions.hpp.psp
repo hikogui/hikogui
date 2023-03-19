@@ -63,11 +63,12 @@ $end
  *
  * @param cp1 The first code-point
  * @param cp2 The second code-point
- * @return The code-point forming the composition of the two given code-points, or std::nullopt if the two code-point don't composit.
+ * @return The code-point forming the composition of the two given code-points,
+ *         or std::nullopt if the two code-point don't composit.
  */
 [[nodiscard]] constexpr std::optional<char32_t> ucd_get_composition(char32_t cp1, char32_t cp2) noexcept
 {
-    constexpr auto max_code_point_hi = detail::ucd_compositions_index_size - 1;
+    constexpr auto max_code_point_hi = detail::ucd_compositions_indices_size - 1;
 
     auto code_point_hi = cp1 / detail::ucd_compositions_chunk_size;
     hilet code_point_lo = cp1 % detail::ucd_compositions_chunk_size;
@@ -97,19 +98,26 @@ $end
 
     hilet cp_index = value >> cp_size_width;
 
-    hilet first = cp_index * 2 * ucd_composition_code_point_width;
-    hilet last = first + cp_index * 2 * ucd_composition_code_point_width;
-    for (auto offset = first; offset != last; offset += ucd_composition_code_point_width) {
-        hilet second_cp = load_bits_be<detail::ucd_composition_code_point_width>(ucd_composition_code_points_bytes, offset);
-        offset += ucd_composition_code_point_width;
-        if (second_cp != cp2) {
-            continue;
-        }
+    auto offset = cp_index * 2_uz * detail::ucd_compositions_code_point_width;
+    for (auto i = 0_uz; i != cp_size; ++i, offset += detail::ucd_compositions_code_point_width) {
+        hilet second_cp = load_bits_be<detail::ucd_compositions_code_point_width>(
+            detail::ucd_composition_code_points_bytes, offset);
 
-        hilet result_cp = load_bits_be<detail::ucd_composition_code_point_width>(ucd_composition_code_points_bytes, offset);
-        return char_cast<char32_t>(result_cp);
+        if (second_cp == cp2) {
+            offset += cp_size * detail::ucd_compositions_code_point_width;
+
+            hilet result_cp = load_bits_be<detail::ucd_compositions_code_point_width>(
+                detail::ucd_composition_code_points_bytes, offset);
+
+            return char_cast<char32_t>(result_cp);
+
+        } else if (second_cp > cp2) {
+            // Early out, `load_bits_be` is kinda expensive and on average (mean)
+            // this list is about 15 entries in size.
+            return std::nullopt;
+        }
     }
-    
+
     return std::nullopt;
 }
 

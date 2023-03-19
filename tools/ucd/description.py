@@ -51,9 +51,6 @@ class description (object):
         self.emoji_component = False
         self.extended_pictographic = False
 
-        # Index into the composition table.
-        self.g_composition_index = None
-
     def __eq__(self, other):
         return (
             self.bidi_class == other.bidi_class and
@@ -117,8 +114,7 @@ class description (object):
         s += "XSC::{}, ".format(self.script)
         s += "XBC::{}, ".format(self.bidi_class)
         s += "XBB::{}, ".format(self.bidi_paired_bracket_type)
-        s += "0x{:x}, ".format(self.bidi_mirroring_glyph if self.bidi_mirroring_glyph is not None else 0xffff)
-        s += "0x{:x}, ".format(self.g_composition_index + 1 if self.g_composition_index is not None else 0)
+        s += "0x{:x} ".format(self.bidi_mirroring_glyph if self.bidi_mirroring_glyph is not None else 0xffff)
         s += "}"
         return s
 

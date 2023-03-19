@@ -160,7 +160,7 @@ using gstring = std::pmr::basic_string<grapheme>;
  * @return A grapheme-string.
  */
 [[nodiscard]] gstring
-to_gstring(std::u32string_view rhs, unicode_normalization_config config = unicode_normalization_config::NFC()) noexcept;
+to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept;
 
 /** Convert a UTF-8 string to a grapheme-string.
  *
@@ -172,7 +172,7 @@ to_gstring(std::u32string_view rhs, unicode_normalization_config config = unicod
  * @return A grapheme-string.
  */
 [[nodiscard]] inline gstring
-to_gstring(std::string_view rhs, unicode_normalization_config config = unicode_normalization_config::NFC()) noexcept
+to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
     return to_gstring(to_u32string(rhs), config);
 }
@@ -187,7 +187,7 @@ to_gstring(std::string_view rhs, unicode_normalization_config config = unicode_n
  * @return A grapheme-string.
  */
 [[nodiscard]] inline gstring
-to_gstring(std::string const& rhs, unicode_normalization_config config = unicode_normalization_config::NFC()) noexcept
+to_gstring(std::string const& rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
     return to_gstring(std::string_view{rhs}, config);
 }

@@ -132,22 +132,22 @@ TEST(unicode_normalization, unicode_NFC_colon)
 TEST(unicode_normalization, NFC)
 {
     for (hilet& test : parseNormalizationTests()) {
-        ASSERT_TRUE(unicode_normalize(test.c1) == test.c2) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c2) == test.c2) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c3) == test.c2) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c4) == test.c4) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c5) == test.c4) << test.comment;
+        ASSERT_EQ(unicode_normalize(test.c1), test.c2) << test.comment;
+        ASSERT_EQ(unicode_normalize(test.c2), test.c2) << test.comment;
+        ASSERT_EQ(unicode_normalize(test.c3), test.c2) << test.comment;
+        ASSERT_EQ(unicode_normalize(test.c4), test.c4) << test.comment;
+        ASSERT_EQ(unicode_normalize(test.c5), test.c4) << test.comment;
     }
 }
 
 TEST(unicode_normalization, NFKC)
 {
     for (hilet& test : parseNormalizationTests()) {
-        ASSERT_TRUE(unicode_normalize(test.c1, unicode_normalization_config::NFKC()) == test.c4) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c2, unicode_normalization_config::NFKC()) == test.c4) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c3, unicode_normalization_config::NFKC()) == test.c4) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c4, unicode_normalization_config::NFKC()) == test.c4) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c5, unicode_normalization_config::NFKC()) == test.c4) << test.comment;
+        ASSERT_TRUE(unicode_normalize(test.c1, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
+        ASSERT_TRUE(unicode_normalize(test.c2, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
+        ASSERT_TRUE(unicode_normalize(test.c3, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
+        ASSERT_TRUE(unicode_normalize(test.c4, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
+        ASSERT_TRUE(unicode_normalize(test.c5, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
     }
 }
 
@@ -165,11 +165,11 @@ TEST(unicode_normalization, NFD)
 TEST(unicode_normalization, NFKD)
 {
     for (hilet& test : parseNormalizationTests()) {
-        ASSERT_TRUE(unicode_decompose(test.c1, unicode_normalization_config::NFKD()) == test.c5) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c2, unicode_normalization_config::NFKD()) == test.c5) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c3, unicode_normalization_config::NFKD()) == test.c5) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c4, unicode_normalization_config::NFKD()) == test.c5) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c5, unicode_normalization_config::NFKD()) == test.c5) << test.comment;
+        ASSERT_TRUE(unicode_decompose(test.c1, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
+        ASSERT_TRUE(unicode_decompose(test.c2, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
+        ASSERT_TRUE(unicode_decompose(test.c3, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
+        ASSERT_TRUE(unicode_decompose(test.c4, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
+        ASSERT_TRUE(unicode_decompose(test.c5, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
     }
 }
 
@@ -200,8 +200,8 @@ TEST(unicode_normalization, Invariant)
 
             ASSERT_TRUE(unicode_decompose(str) == str) << "NFD code-point: " << static_cast<int>(i);
             ASSERT_TRUE(unicode_normalize(str) == str) << "NFC code-point: " << static_cast<int>(i);
-            ASSERT_TRUE(unicode_decompose(str, unicode_normalization_config::NFKD()) == str) << "NFKD code-point: " << static_cast<int>(i);
-            ASSERT_TRUE(unicode_normalize(str, unicode_normalization_config::NFKC()) == str) << "NFKC code-point: " << static_cast<int>(i);
+            ASSERT_TRUE(unicode_decompose(str, unicode_normalize_config::NFKD()) == str) << "NFKD code-point: " << static_cast<int>(i);
+            ASSERT_TRUE(unicode_normalize(str, unicode_normalize_config::NFKC()) == str) << "NFKC code-point: " << static_cast<int>(i);
         }
     }
 }

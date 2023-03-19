@@ -261,7 +261,7 @@ template<character_attribute... Args>
  */
 [[nodiscard]] inline text to_text(
     std::string_view str,
-    unicode_normalization_config config,
+    unicode_normalize_config config,
     character_attributes default_attributes) noexcept
 {
     return to_text(to_gstring(str, config), default_attributes);
@@ -273,7 +273,7 @@ template<character_attribute... Args>
 [[nodiscard]] inline text
 to_text(std::string_view str, character_attributes default_attributes) noexcept
 {
-    return to_text(to_gstring(str, unicode_normalization_config::NFC()), default_attributes);
+    return to_text(to_gstring(str, unicode_normalize_config::NFC()), default_attributes);
 }
 
 
@@ -281,7 +281,7 @@ to_text(std::string_view str, character_attributes default_attributes) noexcept
  * @ingroup text
  */
 template<character_attribute... Args>
-[[nodiscard]] inline text to_text(std::string_view str, unicode_normalization_config config, Args const&...args) noexcept
+[[nodiscard]] inline text to_text(std::string_view str, unicode_normalize_config config, Args const&...args) noexcept
 {
     return to_text(str, config, character_attributes{args...});
 }
@@ -292,7 +292,7 @@ template<character_attribute... Args>
 template<character_attribute... Args>
 [[nodiscard]] inline text to_text(std::string_view str, Args const&...args) noexcept
 {
-    return to_text(str, unicode_normalization_config::NFC(), character_attributes{args...});
+    return to_text(str, unicode_normalize_config::NFC(), character_attributes{args...});
 }
 
 /**

@@ -1,6 +1,7 @@
 import ucd
 import argparse
 import sys
+import statistics
 
 def parse_options():
     parser = argparse.ArgumentParser(description='Build c++ source files from Unicode ucd text files.')
@@ -125,11 +126,20 @@ def generate_composition(template_path, output_path, descriptions):
     composition_tuples = [(0, 0)] * 0x110000
     code_points = []
     for first_cp, pairs in compositions_info.items():
+        assert(len(pairs) > 0)
+        composition_tuples[first_cp] = (len(code_points) // 2, len(pairs))
         pairs.sort()
+
+        # First all the second_cp
         for pair in pairs:
-            composition_tuples[first_cp] = (len(code_points) // 2, len(pairs))
             code_points.append(pair[0])
+
+        # Next all the result_cp
+        for pair in pairs:
             code_points.append(pair[1])
+
+    mean_pairs = statistics.mean(x[1] for x in composition_tuples if x[1] > 0)
+    print("    Mean number of compositions for a start code-point: {}".format(mean_pairs), file=sys.stderr)
 
     cp_index_width = max(x[0].bit_length() for x in composition_tuples)
     cp_size_width = max(x[1].bit_length() for x in composition_tuples)

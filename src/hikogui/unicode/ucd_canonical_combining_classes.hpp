@@ -17,7 +17,7 @@ namespace detail {
 
 constexpr auto ucd_canonical_combining_classes_chunk_size = 32_uz;
 constexpr auto ucd_canonical_combining_classes_index_width = 8_uz;
-constexpr auto ucd_canonical_combining_classes_index_size = 3916_uz;
+constexpr auto ucd_canonical_combining_classes_indices_size = 3916_uz;
 constexpr auto ucd_canonical_combining_class_width = 8_uz;
 
 static_assert(std::has_single_bit(ucd_canonical_combining_classes_chunk_size));
@@ -289,7 +289,7 @@ constexpr uint8_t ucd_canonical_combining_classes_bytes[4240] = {
 
 [[nodiscard]] constexpr uint8_t ucd_get_canonical_combining_class(char32_t code_point) noexcept
 {
-    constexpr auto max_code_point_hi = detail::ucd_canonical_combining_classes_index_size - 1;
+    constexpr auto max_code_point_hi = detail::ucd_canonical_combining_classes_indices_size - 1;
 
     auto code_point_hi = code_point / detail::ucd_canonical_combining_classes_chunk_size;
     hilet code_point_lo = code_point % detail::ucd_canonical_combining_classes_chunk_size;

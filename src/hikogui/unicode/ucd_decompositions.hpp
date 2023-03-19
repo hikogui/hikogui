@@ -18,7 +18,7 @@ namespace detail {
 constexpr auto ucd_decompositions_chunk_size = 32_uz;
 constexpr auto ucd_decompositions_code_point_width = 18_uz;
 constexpr auto ucd_decompositions_index_width = 10_uz;
-constexpr auto ucd_decompositions_index_size = 6098_uz;
+constexpr auto ucd_decompositions_indices_size = 6098_uz;
 constexpr auto ucd_decomposition_width = 25_uz;
 
 static_assert(std::has_single_bit(ucd_decompositions_chunk_size));
@@ -4599,7 +4599,7 @@ struct ucd_decomposition_info {
  */
 [[nodiscard]] constexpr ucd_decomposition_info ucd_get_decomposition(char32_t code_point) noexcept
 {
-    constexpr auto max_code_point_hi = detail::ucd_decompositions_index_size - 1;
+    constexpr auto max_code_point_hi = detail::ucd_decompositions_indices_size - 1;
 
     auto code_point_hi = code_point / detail::ucd_decompositions_chunk_size;
     hilet code_point_lo = code_point % detail::ucd_decompositions_chunk_size;
