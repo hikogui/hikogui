@@ -82,7 +82,6 @@ def deduplicate(src):
             best_indices = indices
             best_chunk_size = chunk_size
 
-    print("    chunk-size={} #indices={} #data={} data-size={} bytes".format(best_chunk_size, len(best_indices), len(best_dst), best_size // 8), file=sys.stderr)
     return best_dst, best_indices, best_chunk_size
 
 

@@ -16,8 +16,6 @@ from .hangul_decompositions import add_hangul_decompositions
 from .description import initialize_descriptions
 from .chunk import deduplicate_chunks
 
-from .composition_table import make_composition_table
-
 from .deduplicate import deduplicate
 from .bits_as_bytes import bits_as_bytes
 from .output import generate_output
