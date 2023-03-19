@@ -125,6 +125,150 @@ struct unicode_normalization_config {
     }
 };
 
+namespace detail {
+
+constexpr void unicode_decompose(char32_t code_point, unicode_normalization_config config, std::u32string& r) noexcept
+{
+    for (hilet c : config.line_separators) {
+        if (code_point == c) {
+            r += config.line_separator_character;
+            if (config.line_separator_character == unicode_CR) {
+                r += unicode_LF;
+            }
+            return;
+        }
+    }
+
+    for (hilet c : config.paragraph_separators) {
+        if (code_point == c) {
+            r += config.paragraph_separator_character;
+            if (config.paragraph_separator_character == unicode_CR) {
+                r += unicode_LF;
+            }
+            return;
+        }
+    }
+
+    for (hilet c : config.drop) {
+        if (code_point == c) {
+            return;
+        }
+    }
+
+    if (config.drop_C0 and ((code_point >= U'\u0000' and code_point <= U'\u001f') or code_point == U'\u007f')) {
+        return;
+    }
+
+    if (config.drop_C1 and code_point >= U'\u0080' and code_point <= U'\u009f') {
+        return;
+    }
+
+    hilet decomposition_info = ucd_get_decomposition(code_point);
+    if (decomposition_info.should_decompose(config.decomposition_mask)) {
+        for (hilet c : decomposition_info.decompose()) {
+            unicode_decompose(c, config, r);
+        }
+
+    } else {
+        hilet ccc = ucd_get_canonical_combining_class(code_point);
+        r += code_point | (wide_cast<char32_t>(ccc) << 24);
+    }
+}
+
+constexpr void unicode_decompose(std::u32string_view text, unicode_normalization_config config, std::u32string& r) noexcept
+{
+    for (hilet c : text) {
+        unicode_decompose(c, config, r);
+    }
+}
+
+constexpr void unicode_compose(std::u32string& text) noexcept
+{
+    if (text.size() <= 1) {
+        return;
+    }
+
+    // This algorithm reads using `i`-index and writes using the `j`-index.
+    // When compositing characters, `j` will lag behind.
+    auto i = 0_uz;
+    auto j = 0_uz;
+    while (i < text.size()) {
+        hilet code_unit = text[i++];
+        hilet code_point = code_unit & 0x1f'ffff;
+        hilet combining_class = code_unit >> 24;
+        hilet first_is_starter = combining_class == 0;
+
+        if (code_point == 0x1f'ffff) {
+            // Snuffed out by compositing in this algorithm.
+            // We continue going forward looking for code-points.
+
+        } else if (first_is_starter) {
+            // Try composing.
+            auto first_code_point = code_point;
+            char32_t previous_combining_class = 0;
+            for (auto k = i; k < text.size(); k++) {
+                hilet second_code_unit = text[k];
+                hilet second_code_point = second_code_unit & 0x1f'ffff;
+                hilet second_combining_class = second_code_unit >> 24;
+
+                bool blocking_pair = previous_combining_class != 0 and previous_combining_class >= second_combining_class;
+                bool second_is_starter = second_combining_class == 0;
+
+                hilet composed_code_point = ucd_get_composition(first_code_point, second_code_point);
+                if (composed_code_point and not blocking_pair) {
+                    // Found a composition.
+                    first_code_point = *composed_code_point;
+                    // The canonical combined DecompositionOrder is always zero.
+                    previous_combining_class = 0;
+                    // Snuff out the code-unit.
+                    text[k] = 0x1f'ffff;
+
+                } else if (second_is_starter) {
+                    // End after failing to compose with the next start-character.
+                    break;
+
+                } else {
+                    // The start character is not composing with this composingC.
+                    previous_combining_class = second_combining_class;
+                }
+            }
+            // Add the new combined character to the text.
+            text[j++] = first_code_point;
+
+        } else {
+            // Unable to compose this character.
+            text[j++] = code_point;
+        }
+    }
+
+    text.resize(j);
+}
+
+void unicode_reorder(std::u32string& text) noexcept
+{
+    for_each_cluster(
+        text.begin(),
+        text.end(),
+        [](auto x) {
+            return (x >> 21) == 0;
+        },
+        [](auto s, auto e) {
+            std::stable_sort(s, e, [](auto a, auto b) {
+                return (a >> 21) < (b >> 21);
+            });
+        });
+}
+
+constexpr void unicode_clean(std::u32string& text) noexcept
+{
+    // clean up the text by removing the upper bits.
+    for (auto& codePoint : text) {
+        codePoint &= 0x1f'ffff;
+    }
+}
+
+} // namespace detail
+
 /** Convert text to Unicode-NFD normal form.
  *
  * Code point 0x00'ffff is used internally, do not pass in text.
@@ -132,8 +276,14 @@ struct unicode_normalization_config {
  * @param text to normalize, in-place.
  * @param normalization_mask Extra features for normalization.
  */
-[[nodiscard]] std::u32string
-unicode_decompose(std::u32string_view text, unicode_normalization_config config = unicode_normalization_config::NFD()) noexcept;
+[[nodiscard]] constexpr std::u32string unicode_decompose(std::u32string_view text, unicode_normalization_config config) noexcept
+{
+    auto r = std::u32string{};
+    detail::unicode_decompose(text, config, r);
+    detail::unicode_reorder(r);
+    detail::unicode_clean(r);
+    return r;
+}
 
 /** Convert text to Unicode-NFC normal form.
  *
@@ -142,7 +292,14 @@ unicode_decompose(std::u32string_view text, unicode_normalization_config config 
  * @param text to normalize, in-place.
  * @param normalization_mask Extra features for normalization.
  */
-[[nodiscard]] std::u32string
-unicode_normalize(std::u32string_view text, unicode_normalization_config config = unicode_normalization_config::NFC()) noexcept;
+[[nodiscard]] constexpr std::u32string unicode_normalize(std::u32string_view text, unicode_normalization_config config) noexcept
+{
+    auto r = std::u32string{};
+    detail::unicode_decompose(text, config, r);
+    detail::unicode_reorder(r);
+    detail::unicode_compose(r);
+    detail::unicode_clean(r);
+    return r;
+}
 
 } // namespace hi::inline v1
