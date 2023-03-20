@@ -4,6 +4,7 @@
 
 #include "unicode_bidi.hpp"
 #include "unicode_normalization.hpp"
+#include "unicode_general_category.hpp"
 #include "../stack.hpp"
 #include "../recursive_iterator.hpp"
 #include <algorithm>
@@ -1019,7 +1020,8 @@ static void unicode_bidi_P1_line(
 
     auto line_begin = first;
     for (auto it = first; it != last; ++it) {
-        if (context.enable_line_separator and it->description->general_category() == unicode_general_category::Zl) {
+        hilet general_category = ucd_get_general_category(it->code_point);
+        if (context.enable_line_separator and general_category == unicode_general_category::Zl) {
             hilet line_end = it + 1;
             unicode_bidi_P1_line(line_begin, line_end, paragraph_embedding_level, context);
             line_begin = line_end;

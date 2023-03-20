@@ -10,6 +10,8 @@ def parse_options():
     parser.add_argument("--descriptions-output", dest="descriptions_output_path", action="store", required=True)
     parser.add_argument("--descriptions-template", dest="descriptions_template_path", action="store", required=True)
 
+    parser.add_argument("--general-categories-output", dest="general_categories_output_path", action="store", required=True)
+    parser.add_argument("--general-categories-template", dest="general_categories_template_path", action="store", required=True)
     parser.add_argument("--grapheme-cluster-breaks-output", dest="grapheme_cluster_breaks_output_path", action="store", required=True)
     parser.add_argument("--grapheme-cluster-breaks-template", dest="grapheme_cluster_breaks_template_path", action="store", required=True)
     parser.add_argument("--line-break-classes-output", dest="line_break_classes_output_path", action="store", required=True)
@@ -39,17 +41,41 @@ def parse_options():
     return parser.parse_args()
 
 
+def generate_general_categories(template_path, output_path, descriptions):
+    print("Processing general_categories:", file=sys.stderr, flush=True)
+    general_categories = [x.general_category_as_integer() for x in descriptions]
 
+    general_categories, indices, chunk_size = ucd.deduplicate(general_categories)
+    general_categories_bytes, general_category_width = ucd.bits_as_bytes(general_categories)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+
+    print("    chunk-size={} #indices={}:{} #general_categories={}:{} total={} bytes".format(
+        chunk_size,
+        len(indices), index_width,
+        len(general_categories), general_category_width,
+        len(indices_bytes) + len(general_categories_bytes)),
+        file=sys.stderr)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        general_category_width=general_category_width,
+        general_categories_bytes=general_categories_bytes
+    )
 
 def generate_canonical_combining_classes(template_path, output_path, descriptions):
-    print("Processing canonical-combining-class:", file=sys.stderr, flush=True)
+    print("Processing canonical_combining_class:", file=sys.stderr, flush=True)
     canonical_combining_classes = [x.canonical_combining_class for x in descriptions]
 
     canonical_combining_classes, indices, chunk_size = ucd.deduplicate(canonical_combining_classes)
     canonical_combining_classes_bytes, canonical_combining_class_width = ucd.bits_as_bytes(canonical_combining_classes)
     indices_bytes, index_width = ucd.bits_as_bytes(indices)
 
-    print("    chunk-size={} #indices={}:{} #ccc={}:{} total={} bytes".format(
+    print("    chunk-size={} #indices={}:{} #canonical_combining_classes={}:{} total={} bytes".format(
         chunk_size,
         len(indices), index_width,
         len(canonical_combining_classes), canonical_combining_class_width,
@@ -310,6 +336,7 @@ def main():
     ucd.generate_output(options.index_template_path, options.index_output_path, indices=indices)
     ucd.generate_output(options.descriptions_template_path, options.descriptions_output_path, chunks=chunks)
 
+    generate_general_categories(options.general_categories_template_path, options.general_categories_output_path, descriptions)
     generate_grapheme_cluster_breaks(options.grapheme_cluster_breaks_template_path, options.grapheme_cluster_breaks_output_path, descriptions)
     generate_line_break_classes(options.line_break_classes_template_path, options.line_break_classes_output_path, descriptions)
     generate_word_break_properties(options.word_break_properties_template_path, options.word_break_properties_output_path, descriptions)

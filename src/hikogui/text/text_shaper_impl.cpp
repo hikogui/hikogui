@@ -214,7 +214,8 @@ void text_shaper::resolve_font_and_widths(hi::text_theme const& text_theme, floa
 
     _line_break_widths.reserve(text.size());
     for (hilet& c : _text) {
-        _line_break_widths.push_back(is_visible(c.description->general_category()) ? c.width : -c.width);
+        hilet general_category = ucd_get_general_category(c.character[0]);
+        _line_break_widths.push_back(is_visible(general_category) ? c.width : -c.width);
     }
 
     _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](hilet& c) {
@@ -305,12 +306,13 @@ text_shaper::get_line_metrics(text_shaper::char_const_iterator first, text_shape
     for (auto it = first; it != last; ++it) {
         // Only calculate line metrics based on visible characters.
         // For example a paragraph separator is seldom available in a font.
-        if (is_visible(it->description->general_category())) {
+        hilet general_category = ucd_get_general_category(it->character[0]);
+        if (is_visible(general_category)) {
             inplace_max(metrics, it->font->metrics);
         }
     }
 
-    hilet last_category = (first != last) ? (last - 1)->description->general_category() : unicode_general_category::Cn;
+    hilet last_category = (first != last) ? ucd_get_general_category((last - 1)->character[0]) : unicode_general_category::Cn;
     return {metrics, last_category};
 }
 
@@ -682,7 +684,8 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     cursor = move_left_char(cursor, overwrite_mode).before_neighbor(size());
     auto it = get_it(cursor);
     while (it != end()) {
-        if (*(it->description) != unicode_general_category::Zs and
+        hilet general_category = ucd_get_general_category(it->character[0]);
+        if (general_category != unicode_general_category::Zs and
             _word_break_opportunities[get_index(it)] != unicode_break_opportunity::no) {
             return get_before_cursor(it);
         }
@@ -696,7 +699,8 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     cursor = move_right_char(cursor, overwrite_mode).before_neighbor(size());
     auto it = get_it(cursor);
     while (it != end()) {
-        if (*(it->description) != unicode_general_category::Zs and
+        hilet general_category = ucd_get_general_category(it->character[0]);
+        if (general_category != unicode_general_category::Zs and
             _word_break_opportunities[get_index(it)] != unicode_break_opportunity::no) {
             return get_before_cursor(it);
         }
@@ -835,7 +839,8 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
     hilet first_index = [&]() {
         auto i = cursor.index();
         while (i > 0) {
-            if (_text[i - 1].description->general_category() == unicode_general_category::Zp) {
+            hilet general_category = ucd_get_general_category(_text[i - 1].character[0]);
+            if (general_category == unicode_general_category::Zp) {
                 return i;
             }
             --i;
@@ -845,7 +850,8 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
     hilet last_index = [&]() {
         auto i = cursor.index();
         while (i < _text.size()) {
-            if (_text[i].description->general_category() == unicode_general_category::Zp) {
+            hilet general_category = ucd_get_general_category(_text[i].character[0]);
+            if (general_category == unicode_general_category::Zp) {
                 return i;
             }
             ++i;

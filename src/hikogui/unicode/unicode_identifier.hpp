@@ -1,5 +1,6 @@
 
 #include "unicode_description.hpp"
+#include "unicode_general_category.hpp"
 
 #pragma once
 
@@ -107,8 +108,7 @@ inline namespace v1 {
         return true;
     }
 
-    hilet &description = unicode_description::find(c);
-    hilet category = description.general_category();
+    hilet category = ucd_get_general_category(c);
     return is_L(category) or category == unicode_general_category::Nl;
 }
 
@@ -130,8 +130,7 @@ inline namespace v1 {
         return true;
     }
 
-    hilet &description = unicode_description::find(c);
-    hilet category = description.general_category();
+    hilet category = ucd_get_general_category(c);
     // clang-format off
     return
         is_L(category) or

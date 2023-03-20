@@ -12,6 +12,7 @@
 #include "unicode_east_asian_width.hpp"
 #include "unicode_break_opportunity.hpp"
 #include "unicode_description.hpp"
+#include "unicode_general_category.hpp"
 #include "ucd_grapheme_cluster_breaks.hpp"
 #include "ucd_line_break_classes.hpp"
 #include "../utility/module.hpp"
@@ -88,7 +89,7 @@ unicode_LB1(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
         hilet code_point = code_point_func(*it);
         hilet &description = unicode_description::find(code_point);
         hilet break_class = ucd_get_line_break_class(code_point);
-        hilet general_category = description.general_category();
+        hilet general_category = ucd_get_general_category(code_point);
 
         hilet resolved_break_class = [&]() {
             switch (break_class) {

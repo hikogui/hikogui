@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "unicode_general_category.hpp"
 #include "unicode_bidi_class.hpp"
 #include "unicode_bidi_bracket_type.hpp"
 #include "unicode_east_asian_width.hpp"
@@ -37,36 +36,22 @@ public:
     constexpr unicode_description& operator=(unicode_description&&) noexcept = default;
 
     [[nodiscard]] constexpr unicode_description(
-        unicode_general_category general_category,
         unicode_east_asian_width east_asian_width,
         unicode_script script,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirroring_glyph) noexcept :
-        _general_category(to_underlying(general_category)),
         _east_asian_width(to_underlying(east_asian_width)),
         _script(to_underlying(script)),
         _bidi_class(to_underlying(bidi_class)),
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph))
     {
-        hi_assert(to_underlying(general_category) <= 0x1f);
         hi_assert(to_underlying(east_asian_width) <= 0x7);
         hi_assert(to_underlying(script) <= 0xff);
         hi_assert(to_underlying(bidi_class) <= 0x1f);
         hi_assert(to_underlying(bidi_bracket_type) <= 0x03);
         hi_assert(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
-    }
-
-    /** The general category of this code-point.
-     * This function is used to determine what kind of code-point this,
-     * this allows you to determine if the code-point is a letter, number, punctuation, white-space, etc.
-     *
-     * @return The general category of this code-point
-     */
-    [[nodiscard]] constexpr unicode_general_category general_category() const noexcept
-    {
-        return static_cast<unicode_general_category>(_general_category);
     }
 
     [[nodiscard]] constexpr unicode_east_asian_width east_asian_width() const noexcept
@@ -123,11 +108,6 @@ public:
      */
     [[nodiscard]] static unicode_description const& find(char32_t code_point) noexcept;
 
-    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_general_category const& rhs) noexcept
-    {
-        return lhs.general_category() == rhs;
-    }
-
     [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_bidi_bracket_type const& rhs) noexcept
     {
         return lhs.bidi_bracket_type() == rhs;
@@ -142,25 +122,14 @@ public:
         return lhs.east_asian_width() == rhs;
     }
 
-    [[nodiscard]] friend bool is_C(unicode_description const& rhs) noexcept
-    {
-        return is_C(rhs.general_category());
-    }
-
-    [[nodiscard]] friend bool is_M(unicode_description const& rhs) noexcept
-    {
-        return is_M(rhs.general_category());
-    }
-
 private:
     // 1st qword
-    uint64_t _general_category : 5;
     uint64_t _east_asian_width : 3;
     uint64_t _bidi_class : 5;
     uint64_t _bidi_bracket_type : 2;
     uint64_t _bidi_mirroring_glyph : 16;
     uint64_t _script : 8;
-    uint64_t _word0_reserved : 25 = 0;
+    uint64_t _word0_reserved : 30 = 0;
 };
 
 static_assert(sizeof(unicode_description) == 8);

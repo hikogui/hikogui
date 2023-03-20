@@ -108,8 +108,8 @@ void widget_draw_context::_draw_text(
 
     auto atlas_was_updated = false;
     for (hilet& c : text) {
-        hi_assert_not_null(c.description);
-        if (not is_visible(c.description->general_category())) {
+        hilet general_category = ucd_get_general_category(c.character[0]);
+        if (not is_visible(general_category)) {
             continue;
         }
 

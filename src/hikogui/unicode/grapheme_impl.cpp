@@ -5,6 +5,7 @@
 #include "grapheme.hpp"
 #include "unicode_normalization.hpp"
 #include "unicode_description.hpp"
+#include "unicode_general_category.hpp"
 #include "../log.hpp"
 #include "../utility/module.hpp"
 #include <mutex>
@@ -48,11 +49,11 @@ grapheme::grapheme(std::u32string_view code_points) noexcept :
         return false;
     }
 
-    hilet& description = unicode_description::find(get<0>(*this));
-    if (is_C(description)) {
+    hilet general_category = ucd_get_general_category(get<0>(*this));
+    if (is_C(general_category)) {
         return false;
     }
-    if (is_M(description)) {
+    if (is_M(general_category)) {
         return false;
     }
     return true;

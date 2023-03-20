@@ -20,6 +20,8 @@ $PYTHON3 tools/generate_unicode_data.py \
     --compositions-output=src/hikogui/unicode/ucd_compositions.hpp \
     --decompositions-template=tools/ucd/ucd_decompositions.hpp.psp \
     --decompositions-output=src/hikogui/unicode/ucd_decompositions.hpp \
+    --general-categories-template=tools/ucd/ucd_general_categories.hpp.psp \
+    --general-categories-output=src/hikogui/unicode/ucd_general_categories.hpp \
     --grapheme-cluster-breaks-template=tools/ucd/ucd_grapheme_cluster_breaks.hpp.psp \
     --grapheme-cluster-breaks-output=src/hikogui/unicode/ucd_grapheme_cluster_breaks.hpp \
     --line-break-classes-template=tools/ucd/ucd_line_break_classes.hpp.psp \

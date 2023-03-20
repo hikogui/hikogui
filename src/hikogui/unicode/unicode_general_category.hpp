@@ -5,42 +5,10 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "ucd_general_categories.hpp"
 #include <cstdint>
 
 namespace hi::inline v1 {
-
-enum class unicode_general_category : uint8_t {
-    Lu,
-    Ll,
-    Lt,
-    Lm,
-    Lo,
-    Mn,
-    Mc,
-    Me,
-    Nd,
-    Nl,
-    No,
-    Pc,
-    Pd,
-    Ps,
-    Pe,
-    Pi,
-    Pf,
-    Po,
-    Sm,
-    Sc,
-    Sk,
-    So,
-    Zs,
-    Zl,
-    Zp,
-    Cc,
-    Cf,
-    Cs,
-    Co,
-    Cn
-};
 
 [[nodiscard]] constexpr bool is_LC(unicode_general_category const &rhs) noexcept
 {

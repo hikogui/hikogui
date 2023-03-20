@@ -81,6 +81,41 @@ class description (object):
             self.extended_pictographic == other.extended_pictographic
         )
 
+    def general_category_as_integer(self):
+        table = {
+            "Lu": 0,
+            "Ll": 1,
+            "Lt": 2,
+            "Lm": 3,
+            "Lo": 4,
+            "Mn": 5,
+            "Mc": 6,
+            "Me": 7,
+            "Nd": 8,
+            "Nl": 9,
+            "No": 10,
+            "Pc": 11,
+            "Pd": 12,
+            "Ps": 13,
+            "Pe": 14,
+            "Pi": 15,
+            "Pf": 16,
+            "Po": 17,
+            "Sm": 18,
+            "Sc": 19,
+            "Sk": 20,
+            "So": 21,
+            "Zs": 22,
+            "Zl": 23,
+            "Zp": 24,
+            "Cc": 25,
+            "Cf": 26,
+            "Cs": 27,
+            "Co": 28,
+            "Cn": 29
+        }
+        return table[self.general_category]
+
     def grapheme_cluster_break_as_integer(self):
         table = {
             "Other": 0,
@@ -220,7 +255,6 @@ class description (object):
 
     def instantiation(self):
         s = "XD{"
-        s += "XGC::{}, ".format(self.general_category)
         s += "XEA::{}, ".format(self.east_asian_width)
         s += "XSC::{}, ".format(self.script)
         s += "XBC::{}, ".format(self.bidi_class)
