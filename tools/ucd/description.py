@@ -51,36 +51,6 @@ class description (object):
         self.emoji_component = False
         self.extended_pictographic = False
 
-    def __eq__(self, other):
-        return (
-            self.bidi_class == other.bidi_class and
-            self.canonical_combining_class == other.canonical_combining_class and
-            self.decomposition_type == other.decomposition_type and
-            self.decomposition_mapping == other.decomposition_mapping and
-            self.general_category == other.general_category and
-            self.line_break == other.line_break and
-            self.bidi_mirrored == other.bidi_mirrored and
-            self.upper_cast_mapping == other.upper_cast_mapping and
-            self.lower_cast_mapping == other.lower_cast_mapping and
-            self.title_cast_mapping == other.title_cast_mapping and
-            self.bidi_paired_bracket_type == other.bidi_paired_bracket_type and
-            self.bidi_paired_bracket == other.bidi_paired_bracket and
-            self.bidi_mirroring_glyph == other.bidi_mirroring_glyph and
-            self.composition_exclusion == other.composition_exclusion and
-            self.east_asian_width == other.east_asian_width and
-            self.grapheme_cluster_break == other.grapheme_cluster_break and
-            self.sentence_break == other.sentence_break and
-            self.word_break == other.word_break and
-            self.line_break == other.line_break and
-            self.script == other.script and
-            self.emoji == other.emoji and
-            self.emoji_presentation == other.emoji_presentation and
-            self.emoji_modifier == other.emoji_modifier and
-            self.emoji_modifier_base == other.emoji_modifier_base and
-            self.emoji_component == other.emoji_component and
-            self.extended_pictographic == other.extended_pictographic
-        )
-
     def general_category_as_integer(self):
         table = {
             "Lu": 0,
@@ -115,6 +85,226 @@ class description (object):
             "Cn": 29
         }
         return table[self.general_category]
+
+    def script_as_integer(self):
+        table = {
+            "Zzzz": 0,
+            "Common": 1,
+            "Latin": 2,
+            "Greek": 3,
+            "Cyrillic": 4,
+            "Armenian": 5,
+            "Hebrew": 6,
+            "Arabic": 7,
+            "Syriac": 8,
+            "Thaana": 9,
+            "Devanagari": 10,
+            "Bengali": 11,
+            "Gurmukhi": 12,
+            "Gujarati": 13,
+            "Oriya": 14,
+            "Tamil": 15,
+            "Telugu": 16,
+            "Kannada": 17,
+            "Malayalam": 18,
+            "Sinhala": 19,
+            "Thai": 20,
+            "Lao": 21,
+            "Tibetan": 22,
+            "Myanmar": 23,
+            "Georgian": 24,
+            "Hangul": 25,
+            "Ethiopic": 26,
+            "Cherokee": 27,
+            "Canadian_Aboriginal": 28,
+            "Ogham": 29,
+            "Runic": 30,
+            "Khmer": 31,
+            "Mongolian": 32,
+            "Hiragana": 33,
+            "Katakana": 34,
+            "Bopomofo": 35,
+            "Han": 36,
+            "Yi": 37,
+            "Old_Italic": 38,
+            "Gothic": 39,
+            "Deseret": 40,
+            "Inherited": 41,
+            "Tagalog": 42,
+            "Hanunoo": 43,
+            "Buhid": 44,
+            "Tagbanwa": 45,
+            "Limbu": 46,
+            "Tai_Le": 47,
+            "Linear_B": 48,
+            "Ugaritic": 49,
+            "Shavian": 50,
+            "Osmanya": 51,
+            "Cypriot": 52,
+            "Braille": 53,
+            "Buginese": 54,
+            "Coptic": 55,
+            "New_Tai_Lue": 56,
+            "Glagolitic": 57,
+            "Tifinagh": 58,
+            "Syloti_Nagri": 59,
+            "Old_Persian": 60,
+            "Kharoshthi": 61,
+            "Balinese": 62,
+            "Cuneiform": 63,
+            "Phoenician": 64,
+            "Phags_Pa": 65,
+            "Nko": 66,
+            "Sundanese": 67,
+            "Lepcha": 68,
+            "Ol_Chiki": 69,
+            "Vai": 70,
+            "Saurashtra": 71,
+            "Kayah_Li": 72,
+            "Rejang": 73,
+            "Lycian": 74,
+            "Carian": 75,
+            "Lydian": 76,
+            "Cham": 77,
+            "Tai_Tham": 78,
+            "Tai_Viet": 79,
+            "Avestan": 80,
+            "Egyptian_Hieroglyphs": 81,
+            "Samaritan": 82,
+            "Lisu": 83,
+            "Bamum": 84,
+            "Javanese": 85,
+            "Meetei_Mayek": 86,
+            "Imperial_Aramaic": 87,
+            "Old_South_Arabian": 88,
+            "Inscriptional_Parthian": 89,
+            "Inscriptional_Pahlavi": 90,
+            "Old_Turkic": 91,
+            "Kaithi": 92,
+            "Batak": 93,
+            "Brahmi": 94,
+            "Mandaic": 95,
+            "Chakma": 96,
+            "Meroitic_Cursive": 97,
+            "Meroitic_Hieroglyphs": 98,
+            "Miao": 99,
+            "Sharada": 100,
+            "Sora_Sompeng": 101,
+            "Takri": 102,
+            "Caucasian_Albanian": 103,
+            "Bassa_Vah": 104,
+            "Duployan": 105,
+            "Elbasan": 106,
+            "Grantha": 107,
+            "Pahawh_Hmong": 108,
+            "Khojki": 109,
+            "Linear_A": 110,
+            "Mahajani": 111,
+            "Manichaean": 112,
+            "Mende_Kikakui": 113,
+            "Modi": 114,
+            "Mro": 115,
+            "Old_North_Arabian": 116,
+            "Nabataean": 117,
+            "Palmyrene": 118,
+            "Pau_Cin_Hau": 119,
+            "Old_Permic": 120,
+            "Psalter_Pahlavi": 121,
+            "Siddham": 122,
+            "Khudawadi": 123,
+            "Tirhuta": 124,
+            "Warang_Citi": 125,
+            "Ahom": 126,
+            "Anatolian_Hieroglyphs": 127,
+            "Hatran": 128,
+            "Multani": 129,
+            "Old_Hungarian": 130,
+            "SignWriting": 131,
+            "Adlam": 132,
+            "Bhaiksuki": 133,
+            "Marchen": 134,
+            "Newa": 135,
+            "Osage": 136,
+            "Tangut": 137,
+            "Masaram_Gondi": 138,
+            "Nushu": 139,
+            "Soyombo": 140,
+            "Zanabazar_Square": 141,
+            "Dogra": 142,
+            "Gunjala_Gondi": 143,
+            "Makasar": 144,
+            "Medefaidrin": 145,
+            "Hanifi_Rohingya": 146,
+            "Sogdian": 147,
+            "Old_Sogdian": 148,
+            "Elymaic": 149,
+            "Nandinagari": 150,
+            "Nyiakeng_Puachue_Hmong": 151,
+            "Wancho": 152,
+            "Chorasmian": 153,
+            "Dives_Akuru": 154,
+            "Khitan_Small_Script": 155,
+            "Yezidi": 156,
+            "Cypro_Minoan": 157,
+            "Old_Uyghur": 158,
+            "Tangsa": 159,
+            "Toto": 160,
+            "Vithkuqi": 161,
+            "Afaka": 162,
+            "Arabic_Nastaliq": 163,
+            "Blissymbols": 164,
+            "Cirth": 165,
+            "Cyrillic_Old_Church_Slavonic": 166,
+            "Egyptian_Demotic": 167,
+            "Egyptian_Hieratic": 168,
+            "Han_Bopomofo": 169,
+            "Han_Simplified": 170,
+            "Han_Traditional": 171,
+            "Indus": 172,
+            "Jamo": 173,
+            "Japanese": 174,
+            "Japanese_Syllabaries": 175,
+            "Jurchen": 176,
+            "Kawi": 177,
+            "Khitan_Large_Script": 178,
+            "Khutsuri": 179,
+            "Korean": 180,
+            "Kpelle": 181,
+            "Latin_Fraktur": 182,
+            "Latin_Gaelic": 183,
+            "Leke": 184,
+            "Loma": 185,
+            "Mayan_Hieroglyphs": 186,
+            "Moon": 187,
+            "Nag_Mundari": 188,
+            "Naxi_Dongba": 189,
+            "Nakhi_Geba": 190,
+            "Proto_Cuneiform": 191,
+            "Proto_Elamite": 192,
+            "Book_Pahlavi": 193,
+            "Kligon": 194,
+            "Proto_Sinaitic": 195,
+            "Private_Use_aa": 196,
+            "Private_Use_bx": 197,
+            "Ranjana": 198,
+            "Rongorongo": 199,
+            "Sarati": 200,
+            "Shuishu": 201,
+            "Sunuwar": 202,
+            "Symbols": 203,
+            "Symbols_Emoji": 204,
+            "Syriac_Estrangelo": 205,
+            "Syriac_Western": 206,
+            "Syriac_Eastern": 207,
+            "Tengwar": 208,
+            "Unwritten_Documents": 209,
+            "Visible_Speech": 210,
+            "Woleai": 211,
+            "Mathematical_Notation": 212,
+            "Byzantine_Music": 213,
+            "Music": 214
+        }
+        return table[self.script]
 
     def east_asian_width_as_integer(self):
         table = {
@@ -301,11 +491,6 @@ class description (object):
         }
         return types[self.decomposition_type]
 
-    def instantiation(self):
-        s = "XD{"
-        s += "XSC::{}, ".format(self.script)
-        s += "}"
-        return s
 
 def initialize_descriptions():
     """Initialize a table with description for all 0x110000 code-points.

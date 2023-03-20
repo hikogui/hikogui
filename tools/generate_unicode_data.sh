@@ -22,6 +22,8 @@ $PYTHON3 tools/generate_unicode_data.py \
     --decompositions-output=src/hikogui/unicode/ucd_decompositions.hpp \
     --general-categories-template=tools/ucd/ucd_general_categories.hpp.psp \
     --general-categories-output=src/hikogui/unicode/ucd_general_categories.hpp \
+    --scripts-template=tools/ucd/ucd_scripts.hpp.psp \
+    --scripts-output=src/hikogui/unicode/ucd_scripts.hpp \
     --east-asian-widths-template=tools/ucd/ucd_east_asian_widths.hpp.psp \
     --east-asian-widths-output=src/hikogui/unicode/ucd_east_asian_widths.hpp \
     --bidi-classes-template=tools/ucd/ucd_bidi_classes.hpp.psp \

@@ -12,6 +12,8 @@ def parse_options():
 
     parser.add_argument("--general-categories-output", dest="general_categories_output_path", action="store", required=True)
     parser.add_argument("--general-categories-template", dest="general_categories_template_path", action="store", required=True)
+    parser.add_argument("--scripts-output", dest="scripts_output_path", action="store", required=True)
+    parser.add_argument("--scripts-template", dest="scripts_template_path", action="store", required=True)
     parser.add_argument("--bidi-classes-output", dest="bidi_classes_output_path", action="store", required=True)
     parser.add_argument("--bidi-classes-template", dest="bidi_classes_template_path", action="store", required=True)
     parser.add_argument("--bidi-paired-bracket-types-output", dest="bidi_paired_bracket_types_output_path", action="store", required=True)
@@ -73,6 +75,32 @@ def generate_general_categories(template_path, output_path, descriptions):
         indices_bytes=indices_bytes,
         general_category_width=general_category_width,
         general_categories_bytes=general_categories_bytes
+    )
+
+def generate_scripts(template_path, output_path, descriptions):
+    print("Processing scripts:", file=sys.stderr, flush=True)
+    scripts = [x.script_as_integer() for x in descriptions]
+
+    scripts, indices, chunk_size = ucd.deduplicate(scripts)
+    scripts_bytes, script_width = ucd.bits_as_bytes(scripts)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+
+    print("    chunk-size={} #indices={}:{} #scripts={}:{} total={} bytes".format(
+        chunk_size,
+        len(indices), index_width,
+        len(scripts), script_width,
+        len(indices_bytes) + len(scripts_bytes)),
+        file=sys.stderr)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        script_width=script_width,
+        scripts_bytes=scripts_bytes
     )
 
 def generate_bidi_classes(template_path, output_path, descriptions):
@@ -443,12 +471,8 @@ def main():
     ucd.parse_word_break_property(options.word_break_property_path, descriptions)
     ucd.add_hangul_decompositions(descriptions)
 
-    indices, chunks = ucd.deduplicate_chunks(descriptions)
-
-    ucd.generate_output(options.index_template_path, options.index_output_path, indices=indices)
-    ucd.generate_output(options.descriptions_template_path, options.descriptions_output_path, chunks=chunks)
-
     generate_general_categories(options.general_categories_template_path, options.general_categories_output_path, descriptions)
+    generate_scripts(options.scripts_template_path, options.scripts_output_path, descriptions)
     generate_bidi_classes(options.bidi_classes_template_path, options.bidi_classes_output_path, descriptions)
     generate_bidi_paired_bracket_types(options.bidi_paired_bracket_types_template_path, options.bidi_paired_bracket_types_output_path, descriptions)
     generate_bidi_mirroring_glyphs(options.bidi_mirroring_glyphs_template_path, options.bidi_mirroring_glyphs_output_path, descriptions)

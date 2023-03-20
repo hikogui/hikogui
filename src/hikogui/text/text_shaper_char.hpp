@@ -81,10 +81,6 @@ public:
      */
     size_t column_nr = std::numeric_limits<size_t>::max();
 
-    /** The unicode description of the grapheme.
-     */
-    unicode_description const *description = nullptr;
-
     /** The text direction for this glyph.
      *
      * This is needed to figure out where the location of the insert cursor is compared to the character.
@@ -105,8 +101,7 @@ public:
 
     [[nodiscard]] text_shaper_char(hi::character const& character) noexcept :
         character(character),
-        bidi_character(character),
-        description(&unicode_description::find(character.grapheme()[0]))
+        bidi_character(character)
     {
     }
 };

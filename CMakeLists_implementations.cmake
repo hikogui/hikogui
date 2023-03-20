@@ -52,7 +52,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/unicode/grapheme_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/gstring_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_description_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/exception_win32_impl.cpp>
 )

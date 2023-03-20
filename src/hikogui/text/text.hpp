@@ -163,8 +163,7 @@ inline void fixup_script(It first, ItEnd last, iso_15924 default_script) noexcep
         }
 
         hilet new_script = [&] {
-            hilet& udb = unicode_description::find(code_point);
-            hilet udb_script = udb.script();
+            hilet udb_script = ucd_get_script(code_point);
 
             if (udb_script != unicode_script::Zzzz and udb_script != unicode_script::Common) {
                 // This character is defined in the Unicode database to have a

@@ -163,6 +163,11 @@ constexpr uint8_t ucd_bidi_mirroring_glyphs_bytes[3728] = {
 
 } // namespace detail
 
+/** Get the bidi-mirroring-glyph for a code-point.
+ *
+ * @param code_point The code-point to query
+ * @return The mirroring glyph, or U+0000 when the mirroring glyph was not found.
+ */
 [[nodiscard]] constexpr char32_t ucd_get_bidi_mirroring_glyph(char32_t code_point) noexcept
 {
     constexpr auto max_code_point_hi = detail::ucd_bidi_mirroring_glyphs_indices_size - 1;
@@ -185,7 +190,6 @@ constexpr uint8_t ucd_bidi_mirroring_glyphs_bytes[3728] = {
     hilet value = load_bits_be<detail::ucd_bidi_mirroring_glyph_width>(
         detail::ucd_bidi_mirroring_glyphs_bytes, index * detail::ucd_bidi_mirroring_glyph_width);
 
-    hi_axiom(value != 0);
     return char_cast<char32_t>(value);
 }
 
