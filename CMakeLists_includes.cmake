@@ -191,12 +191,15 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/module.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/grapheme.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/gstring.hpp
-    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_index.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_canonical_combining_classes.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_compositions.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_decompositions.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_descriptions.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_grapheme_cluster_breaks.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_index.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_line_break_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_sentence_break_properties.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_word_break_properties.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_bracket_type.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_class.hpp
@@ -211,7 +214,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_plural.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_script.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_sentence_break.hpp
-    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_text_segmentation.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_word_break.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/architecture.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp

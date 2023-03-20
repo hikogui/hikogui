@@ -20,7 +20,6 @@
 #include "unicode_plural.hpp"
 #include "unicode_script.hpp"
 #include "unicode_sentence_break.hpp"
-#include "unicode_text_segmentation.hpp"
 #include "unicode_word_break.hpp"
 
 

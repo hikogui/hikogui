@@ -9,6 +9,7 @@
 
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_break_opportunity.hpp"
+#include "unicode_description.hpp"
 #include "ucd_word_break_properties.hpp"
 #include "../utility/module.hpp"
 #include <algorithm>
@@ -250,6 +251,59 @@ template<typename It, typename ItEnd, typename CodePointFunc>
     detail::unicode_word_break_WB4(r, infos);
     detail::unicode_word_break_WB5_WB999(r, infos);
     return r;
+}
+
+/** Wrap lines in text that are too wide.
+ * This algorithm may modify white-space in text and change them into line separators.
+ * Lines are separated using the U+2028 code-point, and paragraphs are separated by
+ * the U+2029 code-point.
+ *
+ * @param first The first iterator of a text to wrap
+ * @param last The one beyond the last iterator of a text to wrap
+ * @param max_width The maximum width of a line.
+ * @param get_width A function returning the width of an item pointed by the iterator.
+ *                  `float get_width(auto const &item)`
+ * @param get_code_point A function returning the code-point of an item pointed by the iterator.
+ *                       `char32_t get_code_point(auto const &item)`
+ * @param set_code_point A function changing the code-point of an item pointed by the iterator.
+ *                       `void set_code_point(auto &item, char32_t code_point)`
+ */
+void wrap_lines(auto first, auto last, float max_width, auto get_width, auto get_code_point, auto set_code_point) noexcept
+{
+    using enum unicode_general_category;
+
+    auto it_at_last_space = last;
+    float width_at_last_space = 0.0;
+    float current_width = 0.0;
+
+    for (auto it = first; it != last; ++it) {
+        hilet code_point = get_code_point(*it);
+        hilet description = unicode_description::find(code_point);
+        hilet general_category = description->general_category();
+
+        if (general_category == Zp || general_category == Zl) {
+            // Reset the line on existing line and paragraph separator.
+            it_at_last_space = last;
+            width_at_last_space = 0.0f;
+            current_width = 0.0;
+            continue;
+
+        } else if (general_category == Zs) {
+            // Remember the length of the line at the end of the word.
+            it_at_last_space = it;
+            width_at_last_space = current_width;
+        }
+
+        current_width += get_width(*it);
+        if (current_width >= max_width && it_at_last_space != last) {
+            // The line is too long, replace the last space with a line separator.
+            set_code_point(*it, U'\u2028');
+            it_at_last_space = last;
+            width_at_last_space = 0.0f;
+            current_width = 0.0;
+            continue;
+        }
+    }
 }
 
 } // namespace hi::inline v1
