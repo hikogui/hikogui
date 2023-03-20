@@ -2,14 +2,8 @@
 
 #pragma once
 
-#include "unicode_general_category.hpp"
 #include "unicode_bidi_bracket_type.hpp"
 #include "unicode_bidi_class.hpp"
-#include "unicode_grapheme_cluster_break.hpp"
-#include "unicode_line_break.hpp"
-#include "unicode_word_break.hpp"
-#include "unicode_sentence_break.hpp"
-#include "unicode_east_asian_width.hpp"
 #include "unicode_script.hpp"
 #include "unicode_description.hpp"
 #include <array>
@@ -19,12 +13,6 @@
 namespace hi::inline v1 {
 
 #define XD unicode_description
-#define XGC unicode_general_category
-#define XGB unicode_grapheme_cluster_break
-#define XLB unicode_line_break_class
-#define XWB unicode_word_break_property
-#define XSB unicode_sentence_break_property
-#define XEA unicode_east_asian_width
 #define XSC unicode_script
 #define XBC unicode_bidi_class
 #define XBB unicode_bidi_bracket_type
@@ -53,12 +41,6 @@ $end
 #endif
 
 #undef XD
-#undef XGC
-#undef XGB
-#undef XLB
-#undef XWB
-#undef XSB
-#undef XEA
 #undef XSC
 #undef XBC
 #undef XBB

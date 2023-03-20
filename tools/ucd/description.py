@@ -116,6 +116,17 @@ class description (object):
         }
         return table[self.general_category]
 
+    def east_asian_width_as_integer(self):
+        table = {
+            "A": 0,
+            "F": 1,
+            "H": 2,
+            "N": 3,
+            "Na": 4,
+            "W": 5
+        }
+        return table[self.east_asian_width]
+
     def grapheme_cluster_break_as_integer(self):
         table = {
             "Other": 0,
@@ -255,7 +266,6 @@ class description (object):
 
     def instantiation(self):
         s = "XD{"
-        s += "XEA::{}, ".format(self.east_asian_width)
         s += "XSC::{}, ".format(self.script)
         s += "XBC::{}, ".format(self.bidi_class)
         s += "XBB::{}, ".format(self.bidi_paired_bracket_type)

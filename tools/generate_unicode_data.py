@@ -12,6 +12,8 @@ def parse_options():
 
     parser.add_argument("--general-categories-output", dest="general_categories_output_path", action="store", required=True)
     parser.add_argument("--general-categories-template", dest="general_categories_template_path", action="store", required=True)
+    parser.add_argument("--east-asian-widths-output", dest="east_asian_widths_output_path", action="store", required=True)
+    parser.add_argument("--east-asian-widths-template", dest="east_asian_widths_template_path", action="store", required=True)
     parser.add_argument("--grapheme-cluster-breaks-output", dest="grapheme_cluster_breaks_output_path", action="store", required=True)
     parser.add_argument("--grapheme-cluster-breaks-template", dest="grapheme_cluster_breaks_template_path", action="store", required=True)
     parser.add_argument("--line-break-classes-output", dest="line_break_classes_output_path", action="store", required=True)
@@ -65,6 +67,32 @@ def generate_general_categories(template_path, output_path, descriptions):
         indices_bytes=indices_bytes,
         general_category_width=general_category_width,
         general_categories_bytes=general_categories_bytes
+    )
+
+def generate_east_asian_widths(template_path, output_path, descriptions):
+    print("Processing east_asian_widths:", file=sys.stderr, flush=True)
+    east_asian_widths = [x.east_asian_width_as_integer() for x in descriptions]
+
+    east_asian_widths, indices, chunk_size = ucd.deduplicate(east_asian_widths)
+    east_asian_widths_bytes, east_asian_width_width = ucd.bits_as_bytes(east_asian_widths)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+
+    print("    chunk-size={} #indices={}:{} #east_asian_widths={}:{} total={} bytes".format(
+        chunk_size,
+        len(indices), index_width,
+        len(east_asian_widths), east_asian_width_width,
+        len(indices_bytes) + len(east_asian_widths_bytes)),
+        file=sys.stderr)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        east_asian_width_width=east_asian_width_width,
+        east_asian_widths_bytes=east_asian_widths_bytes
     )
 
 def generate_canonical_combining_classes(template_path, output_path, descriptions):
@@ -337,6 +365,7 @@ def main():
     ucd.generate_output(options.descriptions_template_path, options.descriptions_output_path, chunks=chunks)
 
     generate_general_categories(options.general_categories_template_path, options.general_categories_output_path, descriptions)
+    generate_east_asian_widths(options.east_asian_widths_template_path, options.east_asian_widths_output_path, descriptions)
     generate_grapheme_cluster_breaks(options.grapheme_cluster_breaks_template_path, options.grapheme_cluster_breaks_output_path, descriptions)
     generate_line_break_classes(options.line_break_classes_template_path, options.line_break_classes_output_path, descriptions)
     generate_word_break_properties(options.word_break_properties_template_path, options.word_break_properties_output_path, descriptions)

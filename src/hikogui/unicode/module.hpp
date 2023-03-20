@@ -11,7 +11,6 @@
 #include "unicode_bidi_class.hpp"
 #include "unicode_break_opportunity.hpp"
 #include "unicode_description.hpp"
-#include "unicode_east_asian_width.hpp"
 #include "unicode_general_category.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_identifier.hpp"

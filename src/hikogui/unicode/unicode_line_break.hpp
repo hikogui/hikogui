@@ -9,12 +9,11 @@
 
 #include "unicode_general_category.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
-#include "unicode_east_asian_width.hpp"
 #include "unicode_break_opportunity.hpp"
-#include "unicode_description.hpp"
 #include "unicode_general_category.hpp"
 #include "ucd_grapheme_cluster_breaks.hpp"
 #include "ucd_line_break_classes.hpp"
+#include "ucd_east_asian_widths.hpp"
 #include "../utility/module.hpp"
 #include <cstdint>
 #include <vector>
@@ -87,9 +86,10 @@ unicode_LB1(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
 
     for (auto it = first; it != last; ++it) {
         hilet code_point = code_point_func(*it);
-        hilet &description = unicode_description::find(code_point);
+        hilet east_asian_width = ucd_get_east_asian_width(code_point);
         hilet break_class = ucd_get_line_break_class(code_point);
         hilet general_category = ucd_get_general_category(code_point);
+        hilet grapheme_cluster_break = ucd_get_grapheme_cluster_break(code_point);
 
         hilet resolved_break_class = [&]() {
             switch (break_class) {
@@ -107,13 +107,11 @@ unicode_LB1(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
             }
         }();
 
-        hilet grapheme_cluster_break = ucd_get_grapheme_cluster_break(code_point);
-
         r.emplace_back(
             resolved_break_class,
             general_category == unicode_general_category::Cn,
             grapheme_cluster_break == unicode_grapheme_cluster_break::extended_pictographic,
-            description.east_asian_width());
+            east_asian_width);
     }
 
     return r;

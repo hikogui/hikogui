@@ -6,7 +6,6 @@
 
 #include "unicode_bidi_class.hpp"
 #include "unicode_bidi_bracket_type.hpp"
-#include "unicode_east_asian_width.hpp"
 #include "unicode_script.hpp"
 #include "../utility/module.hpp"
 
@@ -36,27 +35,19 @@ public:
     constexpr unicode_description& operator=(unicode_description&&) noexcept = default;
 
     [[nodiscard]] constexpr unicode_description(
-        unicode_east_asian_width east_asian_width,
         unicode_script script,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirroring_glyph) noexcept :
-        _east_asian_width(to_underlying(east_asian_width)),
         _script(to_underlying(script)),
         _bidi_class(to_underlying(bidi_class)),
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph))
     {
-        hi_assert(to_underlying(east_asian_width) <= 0x7);
         hi_assert(to_underlying(script) <= 0xff);
         hi_assert(to_underlying(bidi_class) <= 0x1f);
         hi_assert(to_underlying(bidi_bracket_type) <= 0x03);
         hi_assert(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
-    }
-
-    [[nodiscard]] constexpr unicode_east_asian_width east_asian_width() const noexcept
-    {
-        return static_cast<unicode_east_asian_width>(_east_asian_width);
     }
 
     /** The bidi class of this code-point
@@ -117,21 +108,16 @@ public:
     {
         return lhs.bidi_class() == rhs;
     }
-    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_east_asian_width const& rhs) noexcept
-    {
-        return lhs.east_asian_width() == rhs;
-    }
 
 private:
     // 1st qword
-    uint64_t _east_asian_width : 3;
-    uint64_t _bidi_class : 5;
-    uint64_t _bidi_bracket_type : 2;
-    uint64_t _bidi_mirroring_glyph : 16;
-    uint64_t _script : 8;
-    uint64_t _word0_reserved : 30 = 0;
+    uint32_t _bidi_class : 5;
+    uint32_t _bidi_bracket_type : 2;
+    uint32_t _bidi_mirroring_glyph : 16;
+    uint32_t _script : 8;
+    uint32_t _word0_reserved : 1 = 0;
 };
 
-static_assert(sizeof(unicode_description) == 8);
+static_assert(sizeof(unicode_description) == 4);
 
 } // namespace hi::inline v1
