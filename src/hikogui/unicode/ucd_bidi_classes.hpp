@@ -6,11 +6,6 @@
 #include <cstdint>
 #include <optional>
 
-// Windows.h defines small as a macro.
-#ifdef small
-#undef small
-#endif
-
 namespace hi {
 inline namespace v1 {
 namespace detail {

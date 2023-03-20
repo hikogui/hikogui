@@ -6,7 +6,7 @@
 
 #include "ucd_bidi_classes.hpp"
 #include "ucd_bidi_paired_bracket_types.hpp"
-#include "unicode_description.hpp"
+#include "ucd_bidi_mirroring_glyphs.hpp"
 #include "../utility/module.hpp"
 
 namespace hi::inline v1 {
@@ -43,10 +43,6 @@ struct unicode_bidi_char_info {
      */
     std::size_t index;
 
-    /** Description of the code-point.
-     */
-    unicode_description const *description;
-
     /** The current code point.
      * The value may change during the execution of the bidi algorithm.
      */
@@ -71,11 +67,9 @@ struct unicode_bidi_char_info {
      */
     unicode_bidi_paired_bracket_type bracket_type;
 
-    [[nodiscard]] unicode_bidi_char_info(std::size_t index, char32_t code_point, unicode_description const *description) noexcept
+    [[nodiscard]] unicode_bidi_char_info(std::size_t index, char32_t code_point) noexcept
     {
-        hi_axiom_not_null(description);
         this->index = index;
-        this->description = description;
         this->code_point = code_point;
         this->embedding_level = 0;
         this->direction = this->bidi_class = ucd_get_bidi_class(code_point);
@@ -90,8 +84,8 @@ struct unicode_bidi_char_info {
         code_point(U'\ufffd'),
         direction(bidi_class),
         bidi_class(bidi_class),
-        embedding_level(0),
-        description(nullptr)
+        bracket_type(unicode_bidi_paired_bracket_type::n),
+        embedding_level(0)
     {
     }
 };
@@ -123,9 +117,9 @@ static void unicode_bidi_L4(
     for (auto it = first; it != last; ++it, ++output_it) {
         hilet text_direction = it->embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
         set_text_direction(*output_it, text_direction);
-        if (it->direction == unicode_bidi_class::R &&
+        if (it->direction == unicode_bidi_class::R and
             it->bracket_type != unicode_bidi_paired_bracket_type::n) {
-            set_code_point(*output_it, it->description->bidi_mirroring_glyph());
+            set_code_point(*output_it, ucd_get_bidi_mirroring_glyph(it->code_point));
         }
     }
 }
@@ -159,17 +153,17 @@ static void unicode_bidi_L4(
  *
  * @param first The first iterator
  * @param last The last iterator
- * @param get_description A function to get the unicode description of an item.
+ * @param get_code_point A function to get the character of an item.
  * @param set_code_point A function to set the character in an item.
  * @param set_text_direction A function to set the text direction in an item.
  * @param context The context/configuration to use for the bidi-algorithm.
  * @return Iterator pointing one beyond the last element, the writing direction for each paragraph.
  */
-template<typename It, typename GetDescription, typename SetCodePoint, typename SetTextDirection>
+template<typename It, typename GetCodePoint, typename SetCodePoint, typename SetTextDirection>
 std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
     It first,
     It last,
-    GetDescription get_description,
+    GetCodePoint get_code_point,
     SetCodePoint set_code_point,
     SetTextDirection set_text_direction,
     unicode_bidi_context const& context = {})
@@ -179,8 +173,7 @@ std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
 
     std::size_t index = 0;
     for (auto it = first; it != last; ++it) {
-        hilet[code_point, description_ptr] = get_description(*it);
-        proxy.emplace_back(index++, code_point, description_ptr);
+        proxy.emplace_back(index++, get_code_point(*it));
     }
 
     auto [proxy_last, paragraph_directions] = detail::unicode_bidi_P1(begin(proxy), end(proxy), context);
@@ -201,21 +194,20 @@ std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
  *
  * @param first The first iterator
  * @param last The last iterator
- * @param get_description A function to get the unicode description of an item.
+ * @param get_code_point A function to get the code-point of an item.
  * @param context The context/configuration to use for the bidi-algorithm.
  * @return Iterator pointing one beyond the last element, the writing direction for each paragraph.
  */
-template<typename It, typename GetDescription>
+template<typename It, typename GetCodePoint>
 [[nodiscard]] unicode_bidi_class
-unicode_bidi_direction(It first, It last, GetDescription get_description, unicode_bidi_context const& context = {})
+unicode_bidi_direction(It first, It last, GetCodePoint get_code_point, unicode_bidi_context const& context = {})
 {
     auto proxy = detail::unicode_bidi_char_info_vector{};
     proxy.reserve(std::distance(first, last));
 
     std::size_t index = 0;
     for (auto it = first; it != last; ++it) {
-        hilet[code_point, description_ptr] = get_description(*it);
-        proxy.emplace_back(index++, code_point, description_ptr);
+        proxy.emplace_back(index++, get_code_point(*it));
         if (proxy.back().direction == unicode_bidi_class::B) {
             // Break early when end-of-paragraph symbol is found.
             break;
@@ -232,14 +224,16 @@ unicode_bidi_direction(It first, It last, GetDescription get_description, unicod
  * @post Control characters between the first and last iterators are moved to the end.
  * @param first The first character.
  * @param last One beyond the last character.
- * @param description_func A function returning a `unicode_description const&` of the character.
+ * @param code_point_func A function returning the code-point of the character.
  * @return The iterator one beyond the last character that is valid.
  */
-template<typename It, typename EndIt, typename DescriptionFunc>
-It unicode_bidi_control_filter(It first, EndIt last, DescriptionFunc const& description_func)
+template<typename It, typename EndIt, typename CodePointFunc>
+It unicode_bidi_control_filter(It first, EndIt last, CodePointFunc const& code_point_func)
 {
     return std::remove_if(first, last, [&](hilet& item) {
-        return is_control(description_func(item).bidi_class());
+        hilet code_point = code_point_func(item);
+        hilet bidi_class = ucd_get_bidi_class(code_point);
+        return is_control(bidi_class);
     });
 }
 

@@ -298,7 +298,7 @@ TEST(unicode_bidi, bidi_character_test)
             first,
             last,
             [](hilet &x) {
-                return std::make_pair(x.code_point, &unicode_description::find(x.code_point));
+                return x.code_point;
             },
             [](auto &x, hilet &code_point) {
                 x.code_point = code_point;

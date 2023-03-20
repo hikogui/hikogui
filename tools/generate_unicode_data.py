@@ -16,6 +16,8 @@ def parse_options():
     parser.add_argument("--bidi-classes-template", dest="bidi_classes_template_path", action="store", required=True)
     parser.add_argument("--bidi-paired-bracket-types-output", dest="bidi_paired_bracket_types_output_path", action="store", required=True)
     parser.add_argument("--bidi-paired-bracket-types-template", dest="bidi_paired_bracket_types_template_path", action="store", required=True)
+    parser.add_argument("--bidi-mirroring-glyphs-output", dest="bidi_mirroring_glyphs_output_path", action="store", required=True)
+    parser.add_argument("--bidi-mirroring-glyphs-template", dest="bidi_mirroring_glyphs_template_path", action="store", required=True)
     parser.add_argument("--east-asian-widths-output", dest="east_asian_widths_output_path", action="store", required=True)
     parser.add_argument("--east-asian-widths-template", dest="east_asian_widths_template_path", action="store", required=True)
     parser.add_argument("--grapheme-cluster-breaks-output", dest="grapheme_cluster_breaks_output_path", action="store", required=True)
@@ -123,6 +125,32 @@ def generate_bidi_paired_bracket_types(template_path, output_path, descriptions)
         indices_bytes=indices_bytes,
         bidi_paired_bracket_type_width=bidi_paired_bracket_type_width,
         bidi_paired_bracket_types_bytes=bidi_paired_bracket_types_bytes
+    )
+
+def generate_bidi_mirroring_glyphs(template_path, output_path, descriptions):
+    print("Processing bidi_mirroring_glyphs:", file=sys.stderr, flush=True)
+    bidi_mirroring_glyphs = [x.bidi_mirroring_glyph or 0 for x in descriptions]
+
+    bidi_mirroring_glyphs, indices, chunk_size = ucd.deduplicate(bidi_mirroring_glyphs)
+    bidi_mirroring_glyphs_bytes, bidi_mirroring_glyph_width = ucd.bits_as_bytes(bidi_mirroring_glyphs)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+
+    print("    chunk-size={} #indices={}:{} #bidi_mirroring_glyphs={}:{} total={} bytes".format(
+        chunk_size,
+        len(indices), index_width,
+        len(bidi_mirroring_glyphs), bidi_mirroring_glyph_width,
+        len(indices_bytes) + len(bidi_mirroring_glyphs_bytes)),
+        file=sys.stderr)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        bidi_mirroring_glyph_width=bidi_mirroring_glyph_width,
+        bidi_mirroring_glyphs_bytes=bidi_mirroring_glyphs_bytes
     )
 
 def generate_east_asian_widths(template_path, output_path, descriptions):
@@ -423,6 +451,7 @@ def main():
     generate_general_categories(options.general_categories_template_path, options.general_categories_output_path, descriptions)
     generate_bidi_classes(options.bidi_classes_template_path, options.bidi_classes_output_path, descriptions)
     generate_bidi_paired_bracket_types(options.bidi_paired_bracket_types_template_path, options.bidi_paired_bracket_types_output_path, descriptions)
+    generate_bidi_mirroring_glyphs(options.bidi_mirroring_glyphs_template_path, options.bidi_mirroring_glyphs_output_path, descriptions)
     generate_east_asian_widths(options.east_asian_widths_template_path, options.east_asian_widths_output_path, descriptions)
     generate_grapheme_cluster_breaks(options.grapheme_cluster_breaks_template_path, options.grapheme_cluster_breaks_output_path, descriptions)
     generate_line_break_classes(options.line_break_classes_template_path, options.line_break_classes_output_path, descriptions)

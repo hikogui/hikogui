@@ -108,9 +108,9 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
         char_its.end(),
         [&](text_shaper::char_const_iterator it) {
             if (it != text.end()) {
-                return std::make_pair(get<0>(it->character.grapheme()), it->description);
+                return it->character[0];
             } else {
-                return std::make_pair(unicode_LS, &unicode_description::find(unicode_LS));
+                return unicode_LS;
             }
         },
         [&](text_shaper::char_iterator it, char32_t code_point) {
@@ -204,7 +204,7 @@ void text_shaper::resolve_font_and_widths(hi::text_theme const& text_theme, floa
         _text.begin(),
         _text.end(),
         [](text_shaper::char_const_reference it) {
-            return std::make_pair(it.character.grapheme()[0], it.description);
+            return it.character[0];
         },
         _bidi_context);
 

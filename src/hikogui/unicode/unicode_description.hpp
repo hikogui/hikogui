@@ -33,13 +33,10 @@ public:
     constexpr unicode_description& operator=(unicode_description&&) noexcept = default;
 
     [[nodiscard]] constexpr unicode_description(
-        unicode_script script,
-        char32_t bidi_mirroring_glyph) noexcept :
-        _script(to_underlying(script)),
-        _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph))
+        unicode_script script) noexcept :
+        _script(to_underlying(script))
     {
         hi_assert(to_underlying(script) <= 0xff);
-        hi_assert(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
     }
 
     /** Get the script of this character.
@@ -47,14 +44,6 @@ public:
     [[nodiscard]] constexpr unicode_script script() const noexcept
     {
         return static_cast<unicode_script>(_script);
-    }
-
-    /** Get the mirrored glyph.
-     * @return The mirrored glyph or U+ffff when there is no mirrored glyph.
-     */
-    [[nodiscard]] constexpr char32_t bidi_mirroring_glyph() const noexcept
-    {
-        return truncate<char32_t>(_bidi_mirroring_glyph);
     }
 
     /** Find a code-point in the global unicode_description table.
@@ -71,11 +60,9 @@ public:
 
 private:
     // 1st qword
-    uint32_t _bidi_mirroring_glyph : 16;
-    uint32_t _script : 8;
-    uint32_t _word0_reserved : 8 = 0;
+    uint8_t _script : 8;
 };
 
-static_assert(sizeof(unicode_description) == 4);
+static_assert(sizeof(unicode_description) == 1);
 
 } // namespace hi::inline v1

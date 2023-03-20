@@ -28,6 +28,8 @@ $PYTHON3 tools/generate_unicode_data.py \
     --bidi-classes-output=src/hikogui/unicode/ucd_bidi_classes.hpp \
     --bidi-paired-bracket-types-template=tools/ucd/ucd_bidi_paired_bracket_types.hpp.psp \
     --bidi-paired-bracket-types-output=src/hikogui/unicode/ucd_bidi_paired_bracket_types.hpp \
+    --bidi-mirroring-glyphs-template=tools/ucd/ucd_bidi_mirroring_glyphs.hpp.psp \
+    --bidi-mirroring-glyphs-output=src/hikogui/unicode/ucd_bidi_mirroring_glyphs.hpp \
     --grapheme-cluster-breaks-template=tools/ucd/ucd_grapheme_cluster_breaks.hpp.psp \
     --grapheme-cluster-breaks-output=src/hikogui/unicode/ucd_grapheme_cluster_breaks.hpp \
     --line-break-classes-template=tools/ucd/ucd_line_break_classes.hpp.psp \
