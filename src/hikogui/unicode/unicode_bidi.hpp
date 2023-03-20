@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "unicode_bidi_class.hpp"
+#include "ucd_bidi_classes.hpp"
+#include "ucd_bidi_paired_bracket_types.hpp"
 #include "unicode_description.hpp"
 #include "../utility/module.hpp"
 
@@ -23,7 +24,8 @@ struct unicode_bidi_context {
     constexpr unicode_bidi_context& operator=(unicode_bidi_context const&) noexcept = default;
     constexpr unicode_bidi_context& operator=(unicode_bidi_context&&) noexcept = default;
 
-    constexpr unicode_bidi_context(unicode_bidi_class text_direction) noexcept {
+    constexpr unicode_bidi_context(unicode_bidi_class text_direction) noexcept
+    {
         if (text_direction == unicode_bidi_class::L) {
             direction_mode = mode_type::auto_LTR;
         } else if (text_direction == unicode_bidi_class::R) {
@@ -65,6 +67,10 @@ struct unicode_bidi_char_info {
      */
     unicode_bidi_class bidi_class;
 
+    /** The type of bidi-paired-bracket.
+     */
+    unicode_bidi_paired_bracket_type bracket_type;
+
     [[nodiscard]] unicode_bidi_char_info(std::size_t index, char32_t code_point, unicode_description const *description) noexcept
     {
         hi_axiom_not_null(description);
@@ -73,6 +79,7 @@ struct unicode_bidi_char_info {
         this->code_point = code_point;
         this->embedding_level = 0;
         this->direction = this->bidi_class = ucd_get_bidi_class(code_point);
+        this->bracket_type = ucd_get_bidi_paired_bracket_type(code_point);
     }
 
     /** Constructor for testing to bypass normal initialization.
@@ -116,7 +123,8 @@ static void unicode_bidi_L4(
     for (auto it = first; it != last; ++it, ++output_it) {
         hilet text_direction = it->embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
         set_text_direction(*output_it, text_direction);
-        if (it->direction == unicode_bidi_class::R && it->description->bidi_bracket_type() != unicode_bidi_bracket_type::n) {
+        if (it->direction == unicode_bidi_class::R &&
+            it->bracket_type != unicode_bidi_paired_bracket_type::n) {
             set_code_point(*output_it, it->description->bidi_mirroring_glyph());
         }
     }

@@ -127,6 +127,15 @@ class description (object):
         }
         return table[self.east_asian_width]
 
+    def bidi_paired_bracket_type_as_integer(self):
+        table = {
+            "n": 0,
+            "o": 1,
+            "c": 2,
+            "m": 3
+        }
+        return table[self.bidi_paired_bracket_type]
+
     def bidi_class_as_integer(self):
         table = {
             "L": 1,
@@ -295,7 +304,6 @@ class description (object):
     def instantiation(self):
         s = "XD{"
         s += "XSC::{}, ".format(self.script)
-        s += "XBB::{}, ".format(self.bidi_paired_bracket_type)
         s += "0x{:x} ".format(self.bidi_mirroring_glyph if self.bidi_mirroring_glyph is not None else 0xffff)
         s += "}"
         return s

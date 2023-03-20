@@ -192,6 +192,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/grapheme.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/gstring.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_paired_bracket_types.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_canonical_combining_classes.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_compositions.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_decompositions.hpp
@@ -203,11 +204,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_sentence_break_properties.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_word_break_properties.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi.hpp
-    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_bracket_type.hpp
-    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_class.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_opportunity.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_description.hpp
-    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_general_category.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_grapheme_cluster_break.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_identifier.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_line_break.hpp

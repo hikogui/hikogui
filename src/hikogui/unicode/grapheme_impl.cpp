@@ -4,8 +4,7 @@
 
 #include "grapheme.hpp"
 #include "unicode_normalization.hpp"
-#include "unicode_description.hpp"
-#include "unicode_general_category.hpp"
+#include "ucd_general_categories.hpp"
 #include "../log.hpp"
 #include "../utility/module.hpp"
 #include <mutex>

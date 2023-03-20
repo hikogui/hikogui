@@ -7,10 +7,9 @@
 
 #pragma once
 
-#include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_break_opportunity.hpp"
-#include "unicode_description.hpp"
-#include "unicode_general_category.hpp"
+#include "ucd_general_categories.hpp"
+#include "ucd_grapheme_cluster_breaks.hpp"
 #include "ucd_word_break_properties.hpp"
 #include "../utility/module.hpp"
 #include <algorithm>
@@ -279,8 +278,7 @@ void wrap_lines(auto first, auto last, float max_width, auto get_width, auto get
 
     for (auto it = first; it != last; ++it) {
         hilet code_point = get_code_point(*it);
-        hilet description = unicode_description::find(code_point);
-        hilet general_category = description->general_category();
+        hilet general_category = ucd_get_general_category(code_point);
 
         if (general_category == Zp || general_category == Zl) {
             // Reset the line on existing line and paragraph separator.

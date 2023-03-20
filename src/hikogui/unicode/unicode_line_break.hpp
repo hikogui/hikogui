@@ -7,10 +7,8 @@
 
 #pragma once
 
-#include "unicode_general_category.hpp"
-#include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_break_opportunity.hpp"
-#include "unicode_general_category.hpp"
+#include "ucd_general_categories.hpp"
 #include "ucd_grapheme_cluster_breaks.hpp"
 #include "ucd_line_break_classes.hpp"
 #include "ucd_east_asian_widths.hpp"

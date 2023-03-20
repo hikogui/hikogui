@@ -4,7 +4,7 @@
 
 #include "unicode_bidi.hpp"
 #include "unicode_normalization.hpp"
-#include "unicode_general_category.hpp"
+#include "ucd_general_categories.hpp"
 #include "../stack.hpp"
 #include "../recursive_iterator.hpp"
 #include <algorithm>
@@ -508,8 +508,8 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
 
     for (auto it = begin(isolated_run_sequence); it != end(isolated_run_sequence); ++it) {
         if (it->direction == ON) {
-            switch (it->description->bidi_bracket_type()) {
-            case unicode_bidi_bracket_type::o:
+            switch (it->bracket_type) {
+            case unicode_bidi_paired_bracket_type::o:
                 if (stack.full()) {
                     goto stop_processing;
 
@@ -518,8 +518,9 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
                     // to compare with the closing bracket.
                     auto mirrored_glyph = it->description->bidi_mirroring_glyph();
                     if (hilet canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent()) {
+                        hi_axiom(ucd_get_bidi_paired_bracket_type(*canonical_equivalent) == unicode_bidi_paired_bracket_type::o);
+
                         hilet& canonical_equivalent_description = unicode_description::find(*canonical_equivalent);
-                        hi_axiom(canonical_equivalent_description.bidi_bracket_type() == unicode_bidi_bracket_type::o);
                         mirrored_glyph = canonical_equivalent_description.bidi_mirroring_glyph();
                     }
 
@@ -527,7 +528,7 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
                 }
                 break;
 
-            case unicode_bidi_bracket_type::c:
+            case unicode_bidi_paired_bracket_type::c:
                 {
                     hilet canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent();
                     for (auto jt = stack.end() - 1; jt >= stack.begin(); --jt) {

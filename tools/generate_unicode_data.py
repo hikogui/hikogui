@@ -14,6 +14,8 @@ def parse_options():
     parser.add_argument("--general-categories-template", dest="general_categories_template_path", action="store", required=True)
     parser.add_argument("--bidi-classes-output", dest="bidi_classes_output_path", action="store", required=True)
     parser.add_argument("--bidi-classes-template", dest="bidi_classes_template_path", action="store", required=True)
+    parser.add_argument("--bidi-paired-bracket-types-output", dest="bidi_paired_bracket_types_output_path", action="store", required=True)
+    parser.add_argument("--bidi-paired-bracket-types-template", dest="bidi_paired_bracket_types_template_path", action="store", required=True)
     parser.add_argument("--east-asian-widths-output", dest="east_asian_widths_output_path", action="store", required=True)
     parser.add_argument("--east-asian-widths-template", dest="east_asian_widths_template_path", action="store", required=True)
     parser.add_argument("--grapheme-cluster-breaks-output", dest="grapheme_cluster_breaks_output_path", action="store", required=True)
@@ -95,6 +97,32 @@ def generate_bidi_classes(template_path, output_path, descriptions):
         indices_bytes=indices_bytes,
         bidi_class_width=bidi_class_width,
         bidi_classes_bytes=bidi_classes_bytes
+    )
+
+def generate_bidi_paired_bracket_types(template_path, output_path, descriptions):
+    print("Processing bidi_paired_bracket_types:", file=sys.stderr, flush=True)
+    bidi_paired_bracket_types = [x.bidi_paired_bracket_type_as_integer() for x in descriptions]
+
+    bidi_paired_bracket_types, indices, chunk_size = ucd.deduplicate(bidi_paired_bracket_types)
+    bidi_paired_bracket_types_bytes, bidi_paired_bracket_type_width = ucd.bits_as_bytes(bidi_paired_bracket_types)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+
+    print("    chunk-size={} #indices={}:{} #bidi_paired_bracket_types={}:{} total={} bytes".format(
+        chunk_size,
+        len(indices), index_width,
+        len(bidi_paired_bracket_types), bidi_paired_bracket_type_width,
+        len(indices_bytes) + len(bidi_paired_bracket_types_bytes)),
+        file=sys.stderr)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        bidi_paired_bracket_type_width=bidi_paired_bracket_type_width,
+        bidi_paired_bracket_types_bytes=bidi_paired_bracket_types_bytes
     )
 
 def generate_east_asian_widths(template_path, output_path, descriptions):
@@ -394,6 +422,7 @@ def main():
 
     generate_general_categories(options.general_categories_template_path, options.general_categories_output_path, descriptions)
     generate_bidi_classes(options.bidi_classes_template_path, options.bidi_classes_output_path, descriptions)
+    generate_bidi_paired_bracket_types(options.bidi_paired_bracket_types_template_path, options.bidi_paired_bracket_types_output_path, descriptions)
     generate_east_asian_widths(options.east_asian_widths_template_path, options.east_asian_widths_output_path, descriptions)
     generate_grapheme_cluster_breaks(options.grapheme_cluster_breaks_template_path, options.grapheme_cluster_breaks_output_path, descriptions)
     generate_line_break_classes(options.line_break_classes_template_path, options.line_break_classes_output_path, descriptions)

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "unicode_bidi_bracket_type.hpp"
 #include "unicode_script.hpp"
 #include "../utility/module.hpp"
 
@@ -35,14 +34,11 @@ public:
 
     [[nodiscard]] constexpr unicode_description(
         unicode_script script,
-        unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirroring_glyph) noexcept :
         _script(to_underlying(script)),
-        _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph))
     {
         hi_assert(to_underlying(script) <= 0xff);
-        hi_assert(to_underlying(bidi_bracket_type) <= 0x03);
         hi_assert(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
     }
 
@@ -51,17 +47,6 @@ public:
     [[nodiscard]] constexpr unicode_script script() const noexcept
     {
         return static_cast<unicode_script>(_script);
-    }
-
-    /** Get the bidi bracket type.
-     * This function is used by the bidirectional algorithm for mirroring characters
-     * when needing to reverse the writing direction.
-     *
-     * @return n = no-mirror, o = open-bracket, c = close-bracket, m = bidi-mirrored.
-     */
-    [[nodiscard]] constexpr unicode_bidi_bracket_type bidi_bracket_type() const noexcept
-    {
-        return static_cast<unicode_bidi_bracket_type>(_bidi_bracket_type);
     }
 
     /** Get the mirrored glyph.
@@ -84,17 +69,11 @@ public:
      */
     [[nodiscard]] static unicode_description const& find(char32_t code_point) noexcept;
 
-    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_bidi_bracket_type const& rhs) noexcept
-    {
-        return lhs.bidi_bracket_type() == rhs;
-    }
-
 private:
     // 1st qword
-    uint32_t _bidi_bracket_type : 2;
     uint32_t _bidi_mirroring_glyph : 16;
     uint32_t _script : 8;
-    uint32_t _word0_reserved : 6 = 0;
+    uint32_t _word0_reserved : 8 = 0;
 };
 
 static_assert(sizeof(unicode_description) == 4);
