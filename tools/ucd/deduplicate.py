@@ -62,7 +62,7 @@ def deduplicate(src):
     @return deduplicated data, index_table.
     """
 
-    best_size = None
+    best_score = None
     best_dst = None
     best_indices = None
     best_chunk_size = None
@@ -71,13 +71,16 @@ def deduplicate(src):
 
         dst, indices = deduplicate_by_chunk_size(src, chunk_size)
         dst_width = max(x.bit_length() for x in dst)
-        indices_width = max(x.bit_length() for x in indices)
+        index_width = max(x.bit_length() for x in indices)
 
         dst_size = len(dst) * dst_width
-        indices_size = len(indices) * indices_width
+        indices_size = len(indices) * index_width
         size = dst_size + indices_size
-        if best_size is None or size < best_size:
-            best_size = size
+
+        # Index width of 8 is much more performant, give it a better score.
+        score = int(size * 0.9) if index_width == 8 else size
+        if best_score is None or score < best_score:
+            best_score = score
             best_dst = dst
             best_indices = indices
             best_chunk_size = chunk_size
