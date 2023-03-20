@@ -9,11 +9,6 @@
 #include "../recursive_iterator.hpp"
 #include <algorithm>
 
-hi_warning_push();
-// C26438: Avoid 'goto' (es.76)
-// The bidi algorithm is described by the Unicode standard in terms of goto.
-hi_warning_ignore_msvc(26438);
-
 namespace hi::inline v1::detail {
 
 [[nodiscard]] static unicode_bidi_class unicode_bidi_P2(
@@ -206,6 +201,34 @@ static void unicode_bidi_X1(
         hilet next_odd_embedding_level = next_odd(current_embedding_level);
         hilet next_even_embedding_level = next_even(current_embedding_level);
 
+        auto RLI_implementation = [&] {
+            it->embedding_level = current_embedding_level;
+            if (current_override_status != unknown) {
+                it->direction = current_override_status;
+            }
+
+            if (next_odd_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
+                ++valid_isolate_count;
+                stack.emplace_back(next_odd_embedding_level, unknown, true);
+            } else {
+                ++overflow_isolate_count;
+            }
+        };
+
+        auto LRI_implementation = [&] {
+            it->embedding_level = current_embedding_level;
+            if (current_override_status != unknown) {
+                it->direction = current_override_status;
+            }
+
+            if (next_even_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
+                ++valid_isolate_count;
+                stack.emplace_back(next_even_embedding_level, unknown, true);
+            } else {
+                ++overflow_isolate_count;
+            }
+        };
+
         switch (it->direction) {
         case RLE: // X2. Explicit embeddings
             if (next_odd_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
@@ -240,33 +263,11 @@ static void unicode_bidi_X1(
             break;
 
         case RLI: // X5a. Isolates
-RLI:
-            it->embedding_level = current_embedding_level;
-            if (current_override_status != unknown) {
-                it->direction = current_override_status;
-            }
-
-            if (next_odd_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
-                ++valid_isolate_count;
-                stack.emplace_back(next_odd_embedding_level, unknown, true);
-            } else {
-                ++overflow_isolate_count;
-            }
+            RLI_implementation();
             break;
 
         case LRI: // X5b. Isolates
-LRI:
-            it->embedding_level = current_embedding_level;
-            if (current_override_status != unknown) {
-                it->direction = current_override_status;
-            }
-
-            if (next_even_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
-                ++valid_isolate_count;
-                stack.emplace_back(next_even_embedding_level, unknown, true);
-            } else {
-                ++overflow_isolate_count;
-            }
+            LRI_implementation();
             break;
 
         case FSI:
@@ -276,9 +277,9 @@ LRI:
                 hilet sub_paragraph_bidi_class = unicode_bidi_P2(it + 1, last, sub_context, true);
                 hilet sub_paragraph_embedding_level = unicode_bidi_P3(sub_paragraph_bidi_class);
                 if (sub_paragraph_embedding_level == 0) {
-                    goto LRI;
+                    LRI_implementation();
                 } else {
-                    goto RLI;
+                    RLI_implementation();
                 }
             }
             break;
@@ -511,7 +512,9 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
             switch (it->bracket_type) {
             case unicode_bidi_paired_bracket_type::o:
                 if (stack.full()) {
-                    goto stop_processing;
+                    // Stop processing
+                    std::sort(pairs.begin(), pairs.end());
+                    return pairs;
 
                 } else {
                     // If there is a canonical equivalent of the opening bracket, find it's mirrored glyph
@@ -546,8 +549,7 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
         }
     }
 
-stop_processing:
-    std::sort(begin(pairs), end(pairs));
+    std::sort(pairs.begin(), pairs.end());
     return pairs;
 }
 
@@ -1069,5 +1071,3 @@ static void unicode_bidi_P1_line(
 }
 
 } // namespace hi::inline v1::detail
-
-hi_warning_pop();
