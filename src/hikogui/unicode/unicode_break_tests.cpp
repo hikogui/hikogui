@@ -5,7 +5,7 @@
 #include "unicode_word_break.hpp"
 #include "unicode_sentence_break.hpp"
 #include "unicode_line_break.hpp"
-#include "unicode_text_segmentation.hpp"
+#include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_description.hpp"
 #include "../file/file_view.hpp"
 #include "../strings.hpp"
