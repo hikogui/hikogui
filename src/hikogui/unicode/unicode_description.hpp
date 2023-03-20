@@ -7,10 +7,6 @@
 #include "unicode_general_category.hpp"
 #include "unicode_bidi_class.hpp"
 #include "unicode_bidi_bracket_type.hpp"
-#include "unicode_grapheme_cluster_break.hpp"
-#include "unicode_line_break.hpp"
-#include "unicode_word_break.hpp"
-#include "unicode_sentence_break.hpp"
 #include "unicode_east_asian_width.hpp"
 #include "unicode_script.hpp"
 #include "../utility/module.hpp"
@@ -42,18 +38,12 @@ public:
 
     [[nodiscard]] constexpr unicode_description(
         unicode_general_category general_category,
-        unicode_line_break_class line_break_class,
-        unicode_word_break_property word_break_property,
-        unicode_sentence_break_property sentence_break_property,
         unicode_east_asian_width east_asian_width,
         unicode_script script,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirroring_glyph) noexcept :
         _general_category(to_underlying(general_category)),
-        _line_break_class(to_underlying(line_break_class)),
-        _word_break_property(to_underlying(word_break_property)),
-        _sentence_break_property(to_underlying(sentence_break_property)),
         _east_asian_width(to_underlying(east_asian_width)),
         _script(to_underlying(script)),
         _bidi_class(to_underlying(bidi_class)),
@@ -61,9 +51,6 @@ public:
         _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph))
     {
         hi_assert(to_underlying(general_category) <= 0x1f);
-        hi_assert(to_underlying(line_break_class) <= 0x3f);
-        hi_assert(to_underlying(word_break_property) <= 0x1f);
-        hi_assert(to_underlying(sentence_break_property) <= 0xf);
         hi_assert(to_underlying(east_asian_width) <= 0x7);
         hi_assert(to_underlying(script) <= 0xff);
         hi_assert(to_underlying(bidi_class) <= 0x1f);
@@ -80,21 +67,6 @@ public:
     [[nodiscard]] constexpr unicode_general_category general_category() const noexcept
     {
         return static_cast<unicode_general_category>(_general_category);
-    }
-
-    [[nodiscard]] constexpr unicode_line_break_class line_break_class() const noexcept
-    {
-        return static_cast<unicode_line_break_class>(_line_break_class);
-    }
-
-    [[nodiscard]] constexpr unicode_word_break_property word_break_property() const noexcept
-    {
-        return static_cast<unicode_word_break_property>(_word_break_property);
-    }
-
-    [[nodiscard]] constexpr unicode_sentence_break_property sentence_break_property() const noexcept
-    {
-        return static_cast<unicode_sentence_break_property>(_sentence_break_property);
     }
 
     [[nodiscard]] constexpr unicode_east_asian_width east_asian_width() const noexcept
@@ -170,21 +142,6 @@ public:
         return lhs.east_asian_width() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_sentence_break_property const& rhs) noexcept
-    {
-        return lhs.sentence_break_property() == rhs;
-    }
-
-    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_line_break_class const& rhs) noexcept
-    {
-        return lhs.line_break_class() == rhs;
-    }
-
-    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_word_break_property const& rhs) noexcept
-    {
-        return lhs.word_break_property() == rhs;
-    }
-
     [[nodiscard]] friend bool is_C(unicode_description const& rhs) noexcept
     {
         return is_C(rhs.general_category());
@@ -198,15 +155,12 @@ public:
 private:
     // 1st qword
     uint64_t _general_category : 5;
-    uint64_t _line_break_class : 6;
-    uint64_t _word_break_property : 5;
-    uint64_t _sentence_break_property : 4;
     uint64_t _east_asian_width : 3;
     uint64_t _bidi_class : 5;
     uint64_t _bidi_bracket_type : 2;
     uint64_t _bidi_mirroring_glyph : 16;
     uint64_t _script : 8;
-    uint64_t _word0_reserved : 10 = 0;
+    uint64_t _word0_reserved : 25 = 0;
 };
 
 static_assert(sizeof(unicode_description) == 8);

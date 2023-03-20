@@ -22,6 +22,12 @@ $PYTHON3 tools/generate_unicode_data.py \
     --decompositions-output=src/hikogui/unicode/ucd_decompositions.hpp \
     --grapheme-cluster-breaks-template=tools/ucd/ucd_grapheme_cluster_breaks.hpp.psp \
     --grapheme-cluster-breaks-output=src/hikogui/unicode/ucd_grapheme_cluster_breaks.hpp \
+    --line-break-classes-template=tools/ucd/ucd_line_break_classes.hpp.psp \
+    --line-break-classes-output=src/hikogui/unicode/ucd_line_break_classes.hpp \
+    --word-break-properties-template=tools/ucd/ucd_word_break_properties.hpp.psp \
+    --word-break-properties-output=src/hikogui/unicode/ucd_word_break_properties.hpp \
+    --sentence-break-properties-template=tools/ucd/ucd_sentence_break_properties.hpp.psp \
+    --sentence-break-properties-output=src/hikogui/unicode/ucd_sentence_break_properties.hpp \
     --canonical-combining-classes-template=tools/ucd/ucd_canonical_combining_classes.hpp.psp \
     --canonical-combining-classes-output=src/hikogui/unicode/ucd_canonical_combining_classes.hpp \
     --index-template=tools/ucd/ucd_index.hpp.psp \

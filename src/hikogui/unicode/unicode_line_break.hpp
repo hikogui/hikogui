@@ -11,83 +11,16 @@
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_east_asian_width.hpp"
 #include "unicode_break_opportunity.hpp"
+#include "unicode_description.hpp"
+#include "ucd_grapheme_cluster_breaks.hpp"
+#include "ucd_line_break_classes.hpp"
 #include "../utility/module.hpp"
 #include <cstdint>
 #include <vector>
 #include <algorithm>
 #include <numeric>
 
-// Windows.h adds a "IN" macro that is used in this enum.
-#ifdef IN
-#undef IN
-#endif
-
 namespace hi::inline v1 {
-
-/** Unicode line break class.
- *
- * See "AUX14: Unicode line break algorithm"
- * http://unicode.org/reports/tr14/
- *
- */
-enum class unicode_line_break_class : uint8_t {
-    BK, // Mandatory Break NL, PARAGRAPH SEPARATOR Cause a line break (after)
-    CR, // Carriage Return CR Cause a line break (after), except between CR and LF
-    LF, // Line Feed LF Cause a line break (after)
-    CM, // Combining Mark Combining marks, control codes Prohibit a line break between the character and the preceding character
-    NL, // Next Line NEL Cause a line break (after)
-    SG, // Surrogate Surrogates Do not occur in well-formed text
-    WJ, // Word Joiner WJ Prohibit line breaks before and after
-    ZW, // Zero Width Space ZWSP Provide a break opportunity
-    GL, // Non-breaking (Glue) CGJ, NBSP, ZWNBSP Prohibit line breaks before and after
-    SP, // Space SPACE Enable indirect line breaks
-    ZWJ, // Zero Width Joiner Zero Width Joiner Prohibit line breaks within joiner sequences Break Opportunities
-
-    B2, // Break Opportunity Before and After Em dash Provide a line break opportunity before and after the character
-    BA, // Break After Spaces, hyphens Generally provide a line break opportunity after the character
-    BB, // Break Before Punctuation used in dictionaries Generally provide a line break opportunity before the character
-    HY, // Hyphen HYPHEN-MINUS Provide a line break opportunity after the character, except in numeric context
-    CB, // Contingent Break Opportunity Inline objects Provide a line break opportunity contingent on additional information
-        // Characters Prohibiting Certain Breaks
-
-    CL, // Close Punctuation Prohibit line breaks before
-    CP, // Close Parenthesis ')', ']' Prohibit line breaks before
-    EX, // Exclamation/Interrogation '!', '?', etc. Prohibit line breaks before
-    IN, // Inseparable Leaders Allow only indirect line breaks between pairs
-    NS, // Nonstarter. Allow only indirect line breaks before
-    OP, // Open Punctuation '(', '[', '{', etc. Prohibit line breaks after
-    QU, // Quotation Quotation marks Act like they are both opening and closing Numeric Context
-
-    IS, // Infix Numeric Separator . , Prevent breaks after any and before numeric
-    NU, // Numeric Digits Form numeric expressions for line breaking purposes
-    PO, // Postfix Numeric. Do not break following a numeric expression
-    PR, // Prefix Numeric. Do not break in front of a numeric expression
-    SY, // Symbols Allowing Break After / Prevent a break before, and allow a break after XX Characters
-
-    AI, // Ambiguous (Alphabetic or Ideographic) Characters with Ambiguous East Asian Width Act like AL when the resolved EAW
-        // is N; XXwise, act as ID
-    AL, // Alphabetic Alphabets and regular symbols Are alphabetic characters or symbols that are used with alphabetic
-        // characters
-    CJ, // Conditional Japanese Starter Small kana Treat as NS or ID for strict or normal breaking.
-    EB, // Emoji Base All emoji allowing modifiers Do not break from following Emoji Modifier
-    EM, // Emoji Modifier Skin tone modifiers Do not break from preceding Emoji Base
-    H2, // Hangul LV Syllable Hangul Form Korean syllable blocks
-    H3, // Hangul LVT Syllable Hangul Form Korean syllable blocks
-    HL, // Hebrew Letter Hebrew Do not break around a following hyphen; otherwise act as Alphabetic
-    ID, // Ideographic Ideographs Break before or after, except in some numeric context
-    JL, // Hangul
-    L, // Jamo Conjoining jamo Form Korean syllable blocks
-    JV, // Hangul
-    V, // Jamo Conjoining jamo Form Korean syllable blocks
-    JT, // Hangul
-    T, // Jamo Conjoining jamo Form Korean syllable blocks
-    RI, // Regional Indicator REGIONAL INDICATOR SYMBOL LETTER A..Z Keep pairs together.For pairs, break before and after XX
-        // classes
-    SA, // Complex Context Dependent(South East Asian) South East Asian :Thai,Lao,Khmer Provide a line break opportunity
-        // contingent on additional, language - specific context analysis
-    XX, // Unknown Most unassigned, private - use Have as yet unknown line breaking behavior or unassigned code positions
-};
-
 namespace detail {
 
 /** Combined unicode_line_break_class and unicode_line_break_opportunity.
@@ -144,16 +77,17 @@ using unicode_line_break_info_vector = std::vector<unicode_line_break_info>;
 using unicode_line_break_info_iterator = unicode_line_break_info_vector::iterator;
 using unicode_line_break_info_const_iterator = unicode_line_break_info_vector::const_iterator;
 
-template<typename It, typename ItEnd, typename DescriptionFunc>
+template<typename It, typename ItEnd, typename CodePointFunc>
 [[nodiscard]] constexpr std::vector<unicode_line_break_info>
-unicode_LB1(It first, ItEnd last, DescriptionFunc const& description_func) noexcept
+unicode_LB1(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
 {
     auto r = std::vector<unicode_line_break_info>{};
     r.reserve(std::distance(first, last));
 
     for (auto it = first; it != last; ++it) {
-        hilet& description = description_func(*it);
-        hilet break_class = description.line_break_class();
+        hilet code_point = code_point_func(*it);
+        hilet &description = unicode_description::find(code_point);
+        hilet break_class = ucd_get_line_break_class(code_point);
         hilet general_category = description.general_category();
 
         hilet resolved_break_class = [&]() {
@@ -172,10 +106,12 @@ unicode_LB1(It first, ItEnd last, DescriptionFunc const& description_func) noexc
             }
         }();
 
+        hilet grapheme_cluster_break = ucd_get_grapheme_cluster_break(code_point);
+
         r.emplace_back(
             resolved_break_class,
             general_category == unicode_general_category::Cn,
-            description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic,
+            grapheme_cluster_break == unicode_grapheme_cluster_break::extended_pictographic,
             description.east_asian_width());
     }
 
@@ -688,17 +624,17 @@ unicode_LB_width(unicode_break_vector const& opportunities, std::vector<float> c
  *
  * @param first An iterator to the first character.
  * @param last An iterator to the last character.
- * @param description_func A function to get a reference to unicode_description from a character.
+ * @param code_point_func A function to get the code-point of a character.
  * @return A list of unicode_break_opportunity.
  */
-template<typename It, typename ItEnd, typename DescriptionFunc>
+template<typename It, typename ItEnd, typename CodePointFunc>
 [[nodiscard]] inline unicode_break_vector
-unicode_line_break(It first, ItEnd last, DescriptionFunc const& description_func) noexcept
+unicode_line_break(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
 {
     auto size = narrow_cast<size_t>(std::distance(first, last));
     auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
 
-    auto infos = detail::unicode_LB1(first, last, description_func);
+    auto infos = detail::unicode_LB1(first, last, code_point_func);
     detail::unicode_LB2_3(r);
     detail::unicode_LB4_8a(r, infos);
     detail::unicode_LB9(r, infos);

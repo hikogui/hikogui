@@ -169,7 +169,7 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
     }
 }
 
-void text_shaper::resolve_font_and_widths(hi::text_theme const &text_theme, float dpi_scale) noexcept
+void text_shaper::resolve_font_and_widths(hi::text_theme const& text_theme, float dpi_scale) noexcept
 {
     for (auto& c : _text) {
         hilet attributes = c.character.attributes();
@@ -208,9 +208,8 @@ void text_shaper::resolve_font_and_widths(hi::text_theme const &text_theme, floa
         },
         _bidi_context);
 
-    _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
-        hi_axiom(c.description != nullptr);
-        return *c.description;
+    _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](hilet& c) {
+        return c.character[0];
     });
 
     _line_break_widths.reserve(text.size());
@@ -218,14 +217,12 @@ void text_shaper::resolve_font_and_widths(hi::text_theme const &text_theme, floa
         _line_break_widths.push_back(is_visible(c.description->general_category()) ? c.width : -c.width);
     }
 
-    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
-        hi_axiom(c.description != nullptr);
-        return *c.description;
+    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](hilet& c) {
+        return c.character[0];
     });
 
-    _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
-        hi_axiom(c.description != nullptr);
-        return *c.description;
+    _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [](hilet& c) {
+        return c.character[0];
     });
 }
 

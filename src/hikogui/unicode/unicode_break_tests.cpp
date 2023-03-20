@@ -91,7 +91,7 @@ TEST(unicode_break, word_break)
     for (hilet& test : parse_tests("WordBreakTest.txt")) {
         hilet result =
             hi::unicode_word_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
-                return hi::unicode_description::find(code_point);
+                return code_point;
             });
 
         ASSERT_EQ(test.expected, result) << test.comment;
@@ -103,7 +103,7 @@ TEST(unicode_break, sentence_break)
     for (hilet& test : parse_tests("SentenceBreakTest.txt")) {
         hilet result =
             hi::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
-                return hi::unicode_description::find(code_point);
+                return code_point;
             });
 
         ASSERT_EQ(test.expected, result) << test.comment;
@@ -115,7 +115,7 @@ TEST(unicode_break, line_break)
     for (hilet& test : parse_tests("LineBreakTest.txt")) {
         auto result =
             hi::unicode_line_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
-                return hi::unicode_description::find(code_point);
+                return code_point;
             });
 
         // The algorithm produces mandatory-break in the result, but LineBreakTest.txt only has break/no-break.

@@ -12,6 +12,12 @@ def parse_options():
 
     parser.add_argument("--grapheme-cluster-breaks-output", dest="grapheme_cluster_breaks_output_path", action="store", required=True)
     parser.add_argument("--grapheme-cluster-breaks-template", dest="grapheme_cluster_breaks_template_path", action="store", required=True)
+    parser.add_argument("--line-break-classes-output", dest="line_break_classes_output_path", action="store", required=True)
+    parser.add_argument("--line-break-classes-template", dest="line_break_classes_template_path", action="store", required=True)
+    parser.add_argument("--word-break-properties-output", dest="word_break_properties_output_path", action="store", required=True)
+    parser.add_argument("--word-break-properties-template", dest="word_break_properties_template_path", action="store", required=True)
+    parser.add_argument("--sentence-break-properties-output", dest="sentence_break_properties_output_path", action="store", required=True)
+    parser.add_argument("--sentence-break-properties-template", dest="sentence_break_properties_template_path", action="store", required=True)
     parser.add_argument("--canonical-combining-classes-output", dest="canonical_combining_classes_output_path", action="store", required=True)
     parser.add_argument("--canonical-combining-classes-template", dest="canonical_combining_classes_template_path", action="store", required=True)
     parser.add_argument("--decompositions-output", dest="decompositions_output_path", action="store", required=True)
@@ -25,7 +31,7 @@ def parse_options():
     parser.add_argument("--east-asian-width", dest="east_asian_width_path", action="store", required=True)
     parser.add_argument("--emoji-data", dest="emoji_data_path", action="store", required=True)
     parser.add_argument("--grapheme-break-property", dest="grapheme_break_property_path", action="store", required=True)
-    parser.add_argument("--line-break", dest="line_break_path", action="store", required=True)
+    parser.add_argument("--line-break", dest="line_break_class_path", action="store", required=True)
     parser.add_argument("--scripts", dest="scripts_path", action="store", required=True)
     parser.add_argument("--sentence-break-property", dest="sentence_break_property_path", action="store", required=True)
     parser.add_argument("--unicode-data", dest="unicode_data_path", action="store", required=True)
@@ -35,7 +41,7 @@ def parse_options():
 
 
 
-def generate_canonical_combining_class(template_path, output_path, descriptions):
+def generate_canonical_combining_classes(template_path, output_path, descriptions):
     print("Processing canonical-combining-class:", file=sys.stderr, flush=True)
     canonical_combining_classes = [x.canonical_combining_class for x in descriptions]
 
@@ -61,7 +67,7 @@ def generate_canonical_combining_class(template_path, output_path, descriptions)
         canonical_combining_classes_bytes=canonical_combining_classes_bytes
     )
 
-def generate_grapheme_cluster_break(template_path, output_path, descriptions):
+def generate_grapheme_cluster_breaks(template_path, output_path, descriptions):
     print("Processing grapheme_cluster_break:", file=sys.stderr, flush=True)
     grapheme_cluster_breaks = [x.grapheme_cluster_break_as_integer() for x in descriptions]
 
@@ -87,7 +93,85 @@ def generate_grapheme_cluster_break(template_path, output_path, descriptions):
         grapheme_cluster_breaks_bytes=grapheme_cluster_breaks_bytes
     )
 
-def generate_decomposition(template_path, output_path, descriptions):
+def generate_line_break_classes(template_path, output_path, descriptions):
+    print("Processing line_break_class:", file=sys.stderr, flush=True)
+    line_break_classes = [x.line_break_class_as_integer() for x in descriptions]
+
+    line_break_classes, indices, chunk_size = ucd.deduplicate(line_break_classes)
+    line_break_classes_bytes, line_break_class_width = ucd.bits_as_bytes(line_break_classes)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+
+    print("    chunk-size={} #indices={}:{} #line_break_classes={}:{} total={} bytes".format(
+        chunk_size,
+        len(indices), index_width,
+        len(line_break_classes), line_break_class_width,
+        len(indices_bytes) + len(line_break_classes_bytes)),
+        file=sys.stderr)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        line_break_class_width=line_break_class_width,
+        line_break_classes_bytes=line_break_classes_bytes
+    )
+
+def generate_word_break_properties(template_path, output_path, descriptions):
+    print("Processing word_break_property:", file=sys.stderr, flush=True)
+    word_break_properties = [x.word_break_property_as_integer() for x in descriptions]
+
+    word_break_properties, indices, chunk_size = ucd.deduplicate(word_break_properties)
+    word_break_properties_bytes, word_break_property_width = ucd.bits_as_bytes(word_break_properties)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+
+    print("    chunk-size={} #indices={}:{} #word_break_properties={}:{} total={} bytes".format(
+        chunk_size,
+        len(indices), index_width,
+        len(word_break_properties), word_break_property_width,
+        len(indices_bytes) + len(word_break_properties_bytes)),
+        file=sys.stderr)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        word_break_property_width=word_break_property_width,
+        word_break_properties_bytes=word_break_properties_bytes
+    )
+
+def generate_sentence_break_properties(template_path, output_path, descriptions):
+    print("Processing sentence_break_property:", file=sys.stderr, flush=True)
+    sentence_break_properties = [x.sentence_break_property_as_integer() for x in descriptions]
+
+    sentence_break_properties, indices, chunk_size = ucd.deduplicate(sentence_break_properties)
+    sentence_break_properties_bytes, sentence_break_property_width = ucd.bits_as_bytes(sentence_break_properties)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+
+    print("    chunk-size={} #indices={}:{} #sentence_break_properties={}:{} total={} bytes".format(
+        chunk_size,
+        len(indices), index_width,
+        len(sentence_break_properties), sentence_break_property_width,
+        len(indices_bytes) + len(sentence_break_properties_bytes)),
+        file=sys.stderr)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        sentence_break_property_width=sentence_break_property_width,
+        sentence_break_properties_bytes=sentence_break_properties_bytes
+    )
+
+def generate_decompositions(template_path, output_path, descriptions):
     print("Processing decomposition:", file=sys.stderr, flush=True)
 
     code_points = []
@@ -139,7 +223,7 @@ def generate_decomposition(template_path, output_path, descriptions):
         code_point_width=code_point_width,
     )
 
-def generate_composition(template_path, output_path, descriptions):
+def generate_compositions(template_path, output_path, descriptions):
     print("Processing compositions:", file=sys.stderr, flush=True)
     compositions_info = {}
     for result_cp, d in enumerate(descriptions):
@@ -214,7 +298,7 @@ def main():
     ucd.parse_east_asian_width(options.east_asian_width_path, descriptions)
     ucd.parse_emoji_data(options.emoji_data_path, descriptions)
     ucd.parse_grapheme_break_property(options.grapheme_break_property_path, descriptions)
-    ucd.parse_line_break(options.line_break_path, descriptions)
+    ucd.parse_line_break(options.line_break_class_path, descriptions)
     ucd.parse_scripts(options.scripts_path, descriptions)
     ucd.parse_sentence_break_property(options.sentence_break_property_path, descriptions)
     ucd.parse_unicode_data(options.unicode_data_path, descriptions)
@@ -226,10 +310,13 @@ def main():
     ucd.generate_output(options.index_template_path, options.index_output_path, indices=indices)
     ucd.generate_output(options.descriptions_template_path, options.descriptions_output_path, chunks=chunks)
 
-    generate_grapheme_cluster_break(options.grapheme_cluster_breaks_template_path, options.grapheme_cluster_breaks_output_path, descriptions)
-    generate_canonical_combining_class(options.canonical_combining_classes_template_path, options.canonical_combining_classes_output_path, descriptions)
-    generate_decomposition(options.decompositions_template_path, options.decompositions_output_path, descriptions)
-    generate_composition(options.compositions_template_path, options.compositions_output_path, descriptions)
+    generate_grapheme_cluster_breaks(options.grapheme_cluster_breaks_template_path, options.grapheme_cluster_breaks_output_path, descriptions)
+    generate_line_break_classes(options.line_break_classes_template_path, options.line_break_classes_output_path, descriptions)
+    generate_word_break_properties(options.word_break_properties_template_path, options.word_break_properties_output_path, descriptions)
+    generate_sentence_break_properties(options.sentence_break_properties_template_path, options.sentence_break_properties_output_path, descriptions)
+    generate_canonical_combining_classes(options.canonical_combining_classes_template_path, options.canonical_combining_classes_output_path, descriptions)
+    generate_decompositions(options.decompositions_template_path, options.decompositions_output_path, descriptions)
+    generate_compositions(options.compositions_template_path, options.compositions_output_path, descriptions)
 
 
 if __name__ == "__main__":

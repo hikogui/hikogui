@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gstring.hpp"
-#include "unicode_text_segmentation.hpp"
+#include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_normalization.hpp"
 #include "../strings.hpp"
 
@@ -11,14 +11,14 @@ namespace hi::inline v1 {
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs, unicode_normalize_config config) noexcept
 {
-    hilet normalizedString = unicode_normalize(rhs, config);
+    hilet normalized_string = unicode_normalize(rhs, config);
 
     auto r = gstring{};
-    auto breakState = grapheme_break_state{};
+    auto break_state = detail::grapheme_break_state{};
     auto cluster = std::u32string{};
 
-    for (hilet codePoint : normalizedString) {
-        if (breaks_grapheme(codePoint, breakState)) {
+    for (hilet code_point : normalized_string) {
+        if (detail::breaks_grapheme(code_point, break_state)) {
             if (cluster.size() > 0) {
                 r += grapheme(composed_t{}, cluster);
                 hi_axiom(r.back().valid());
@@ -26,7 +26,7 @@ namespace hi::inline v1 {
             cluster.clear();
         }
 
-        cluster += codePoint;
+        cluster += code_point;
     }
     if (ssize(cluster) != 0) {
         r += grapheme(composed_t{}, cluster);

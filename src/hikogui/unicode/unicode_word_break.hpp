@@ -9,33 +9,12 @@
 
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_break_opportunity.hpp"
+#include "ucd_word_break_properties.hpp"
 #include "../utility/module.hpp"
 #include <algorithm>
 #include <vector>
 
 namespace hi::inline v1 {
-
-enum class unicode_word_break_property : uint8_t {
-    Other,
-    CR,
-    LF,
-    Newline,
-    Extend,
-    ZWJ,
-    Regional_Indicator,
-    Format,
-    Katakana,
-    Hebrew_Letter,
-    ALetter,
-    Single_Quote,
-    Double_Quote,
-    MidNumLet,
-    MidLetter,
-    MidNum,
-    Numeric,
-    ExtendNumLet,
-    WSegSpace
-};
 
 namespace detail {
 
@@ -248,12 +227,11 @@ unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_b
  *
  * @param first An iterator to the first character.
  * @param last An iterator to the last character.
- * @param description_func A function to get a reference to unicode_description from a character.
+ * @param code_point_func A function to code-point from a character.
  * @return A list of unicode_break_opportunity.
  */
-template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline unicode_break_vector
-unicode_word_break(It first, ItEnd last, DescriptionFunc const& description_func) noexcept
+template<typename It, typename ItEnd, typename CodePointFunc>
+[[nodiscard]] inline unicode_break_vector unicode_word_break(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
 {
     auto size = narrow_cast<size_t>(std::distance(first, last));
     auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
@@ -261,10 +239,11 @@ unicode_word_break(It first, ItEnd last, DescriptionFunc const& description_func
     auto infos = std::vector<detail::unicode_word_break_info>{};
     infos.reserve(size);
     std::transform(first, last, std::back_inserter(infos), [&](hilet& item) {
-        hilet& description = description_func(item);
+        hilet code_point = code_point_func(item);
+        hilet word_break_property = ucd_get_word_break_property(code_point);
+        hilet grapheme_cluster_break = ucd_get_grapheme_cluster_break(code_point);
         return detail::unicode_word_break_info{
-            description.word_break_property(),
-            description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic};
+            word_break_property, grapheme_cluster_break == unicode_grapheme_cluster_break::extended_pictographic};
     });
 
     detail::unicode_word_break_WB1_WB3d(r, infos);

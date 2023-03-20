@@ -82,7 +82,7 @@ class description (object):
         )
 
     def grapheme_cluster_break_as_integer(self):
-        gcbs = {
+        table = {
             "Other": 0,
             "CR": 1,
             "LF": 2,
@@ -99,7 +99,102 @@ class description (object):
             "LVT": 13,
             "Extended_Pictographic": 14
         }
-        return gcbs[self.grapheme_cluster_break]
+        return table["Extended_Pictographic" if self.extended_pictographic else self.grapheme_cluster_break]
+
+    def line_break_class_as_integer(self):
+        table = {
+            "BK": 0,
+            "CR": 1,
+            "LF": 2,
+            "CM": 3,
+            "NL": 4,
+            "SG": 5,
+            "WJ": 6,
+            "ZW": 7,
+            "GL": 8,
+            "SP": 9,
+            "ZWJ" : 10,
+            "B2": 11,
+            "BA": 12,
+            "BB": 13,
+            "HY": 14,
+            "CB": 15,
+            "CL": 16,
+            "CP": 17,
+            "EX": 18,
+            "IN": 19,
+            "NS": 20,
+            "OP": 21,
+            "QU": 22,
+            "IS": 23,
+            "NU": 24,
+            "PO": 25,
+            "PR": 26,
+            "SY": 27,
+            "AI": 28,
+            "AL": 29,
+            "CJ": 30,
+            "EB": 31,
+            "EM": 32,
+            "H2": 33,
+            "H3": 34,
+            "HL": 35,
+            "ID": 36,
+            "JL": 37,
+            "L": 38,
+            "JV": 39,
+            "V": 40,
+            "JT": 41,
+            "T": 42,
+            "RI": 43,
+            "SA": 44,
+            "XX": 45
+        }
+        return table[self.line_break]
+
+    def word_break_property_as_integer(self):
+        table = {
+            "Other": 0,
+            "CR": 1,
+            "LF": 2,
+            "Newline": 3,
+            "Extend": 4,
+            "ZWJ": 5,
+            "Regional_Indicator": 6,
+            "Format": 7,
+            "Katakana": 8,
+            "Hebrew_Letter": 9,
+            "ALetter": 10,
+            "Single_Quote": 11,
+            "Double_Quote": 12,
+            "MidNumLet": 13,
+            "MidLetter": 14,
+            "MidNum": 15,
+            "Numeric": 16,
+            "ExtendNumLet": 17,
+            "WSegSpace": 18
+        }
+        return table[self.word_break]
+
+    def sentence_break_property_as_integer(self):
+        table = {
+            "Other": 0,
+            "CR": 1,
+            "LF": 2,
+            "Extend": 3,
+            "Sep": 4,
+            "Format": 5,
+            "Sp": 6,
+            "Lower": 7,
+            "Upper": 8,
+            "OLetter": 9,
+            "Numeric": 10,
+            "ATerm": 11,
+            "SContinue": 12,
+            "STerm": 13,
+            "Close": 14
+        }
+        return table[self.sentence_break]
 
     def decomposition_type_as_integer(self):
         types = {
@@ -126,9 +221,6 @@ class description (object):
     def instantiation(self):
         s = "XD{"
         s += "XGC::{}, ".format(self.general_category)
-        s += "XLB::{}, ".format(self.line_break)
-        s += "XWB::{}, ".format(self.word_break)
-        s += "XSB::{}, ".format(self.sentence_break)
         s += "XEA::{}, ".format(self.east_asian_width)
         s += "XSC::{}, ".format(self.script)
         s += "XBC::{}, ".format(self.bidi_class)

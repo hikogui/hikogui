@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "unicode_grapheme_cluster_break.hpp"
 #include <cstdint>
 #include <optional>
 
@@ -48,7 +47,25 @@ $end
 
 } // namespace detail
 
-[[nodiscard]] constexpr grapheme_cluster_break ucd_get_grapheme_cluster_break(char32_t code_point) noexcept
+enum class unicode_grapheme_cluster_break : uint8_t {
+    other = 0,
+    CR = 1,
+    LF = 2,
+    control = 3,
+    extend = 4,
+    ZWJ = 5,
+    regional_indicator = 6,
+    prepend = 7,
+    spacing_mark = 8,
+    L = 9,
+    V = 10,
+    T = 11,
+    LV = 12,
+    LVT = 13,
+    extended_pictographic = 14
+};
+
+[[nodiscard]] constexpr unicode_grapheme_cluster_break ucd_get_grapheme_cluster_break(char32_t code_point) noexcept
 {
     constexpr auto max_code_point_hi = detail::ucd_grapheme_cluster_breaks_indices_size - 1;
 
@@ -70,7 +87,7 @@ $end
     hilet value = load_bits_be<detail::ucd_grapheme_cluster_break_width>(
         detail::ucd_grapheme_cluster_breaks_bytes, index * detail::ucd_grapheme_cluster_break_width);
 
-    return narrow_cast<grapheme_cluster_break>(value);
+    return static_cast<unicode_grapheme_cluster_break>(value);
 }
 
 }} // namespace hi::v1
