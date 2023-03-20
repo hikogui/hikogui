@@ -81,6 +81,26 @@ class description (object):
             self.extended_pictographic == other.extended_pictographic
         )
 
+    def grapheme_cluster_break_as_integer(self):
+        gcbs = {
+            "Other": 0,
+            "CR": 1,
+            "LF": 2,
+            "Control": 3,
+            "Extend": 4,
+            "ZWJ": 5,
+            "Regional_Indicator": 6,
+            "Prepend": 7,
+            "SpacingMark": 8,
+            "L": 9,
+            "V": 10,
+            "T": 11,
+            "LV": 12,
+            "LVT": 13,
+            "Extended_Pictographic": 14
+        }
+        return gcbs[self.grapheme_cluster_break]
+
     def decomposition_type_as_integer(self):
         types = {
             None: 0,
@@ -106,7 +126,6 @@ class description (object):
     def instantiation(self):
         s = "XD{"
         s += "XGC::{}, ".format(self.general_category)
-        s += "XGB::{}, ".format(self.grapheme_cluster_break if not self.extended_pictographic else "Extended_Pictographic")
         s += "XLB::{}, ".format(self.line_break)
         s += "XWB::{}, ".format(self.word_break)
         s += "XSB::{}, ".format(self.sentence_break)

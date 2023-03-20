@@ -9,8 +9,11 @@ def parse_options():
     parser.add_argument("--index-template", dest="index_template_path", action="store", required=True)
     parser.add_argument("--descriptions-output", dest="descriptions_output_path", action="store", required=True)
     parser.add_argument("--descriptions-template", dest="descriptions_template_path", action="store", required=True)
-    parser.add_argument("--canonical_combining_classes-output", dest="canonical_combining_classes_output_path", action="store", required=True)
-    parser.add_argument("--canonical_combining_classes-template", dest="canonical_combining_classes_template_path", action="store", required=True)
+
+    parser.add_argument("--grapheme-cluster-breaks-output", dest="grapheme_cluster_breaks_output_path", action="store", required=True)
+    parser.add_argument("--grapheme-cluster-breaks-template", dest="grapheme_cluster_breaks_template_path", action="store", required=True)
+    parser.add_argument("--canonical-combining-classes-output", dest="canonical_combining_classes_output_path", action="store", required=True)
+    parser.add_argument("--canonical-combining-classes-template", dest="canonical_combining_classes_template_path", action="store", required=True)
     parser.add_argument("--decompositions-output", dest="decompositions_output_path", action="store", required=True)
     parser.add_argument("--decompositions-template", dest="decompositions_template_path", action="store", required=True)
     parser.add_argument("--compositions-output", dest="compositions_output_path", action="store", required=True)
@@ -56,6 +59,32 @@ def generate_canonical_combining_class(template_path, output_path, descriptions)
         indices_bytes=indices_bytes,
         canonical_combining_class_width=canonical_combining_class_width,
         canonical_combining_classes_bytes=canonical_combining_classes_bytes
+    )
+
+def generate_grapheme_cluster_break(template_path, output_path, descriptions):
+    print("Processing grapheme_cluster_break:", file=sys.stderr, flush=True)
+    grapheme_cluster_breaks = [x.grapheme_cluster_break_as_integer() for x in descriptions]
+
+    grapheme_cluster_breaks, indices, chunk_size = ucd.deduplicate(grapheme_cluster_breaks)
+    grapheme_cluster_breaks_bytes, grapheme_cluster_break_width = ucd.bits_as_bytes(grapheme_cluster_breaks)
+    indices_bytes, index_width = ucd.bits_as_bytes(indices)
+
+    print("    chunk-size={} #indices={}:{} #grapheme_cluster_breaks={}:{} total={} bytes".format(
+        chunk_size,
+        len(indices), index_width,
+        len(grapheme_cluster_breaks), grapheme_cluster_break_width,
+        len(indices_bytes) + len(grapheme_cluster_breaks_bytes)),
+        file=sys.stderr)
+
+    ucd.generate_output(
+        template_path,
+        output_path,
+        chunk_size=chunk_size,
+        indices_size=len(indices),
+        index_width=index_width,
+        indices_bytes=indices_bytes,
+        grapheme_cluster_break_width=grapheme_cluster_break_width,
+        grapheme_cluster_breaks_bytes=grapheme_cluster_breaks_bytes
     )
 
 def generate_decomposition(template_path, output_path, descriptions):
@@ -197,6 +226,7 @@ def main():
     ucd.generate_output(options.index_template_path, options.index_output_path, indices=indices)
     ucd.generate_output(options.descriptions_template_path, options.descriptions_output_path, chunks=chunks)
 
+    generate_grapheme_cluster_break(options.grapheme_cluster_breaks_template_path, options.grapheme_cluster_breaks_output_path, descriptions)
     generate_canonical_combining_class(options.canonical_combining_classes_template_path, options.canonical_combining_classes_output_path, descriptions)
     generate_decomposition(options.decompositions_template_path, options.decompositions_output_path, descriptions)
     generate_composition(options.compositions_template_path, options.compositions_output_path, descriptions)
