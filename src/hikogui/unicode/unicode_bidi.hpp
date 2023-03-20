@@ -72,8 +72,7 @@ struct unicode_bidi_char_info {
         this->description = description;
         this->code_point = code_point;
         this->embedding_level = 0;
-        this->direction = description->bidi_class();
-        this->bidi_class = description->bidi_class();
+        this->direction = this->bidi_class = ucd_get_bidi_class(code_point);
     }
 
     /** Constructor for testing to bypass normal initialization.

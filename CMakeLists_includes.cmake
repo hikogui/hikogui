@@ -191,10 +191,12 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/module.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/grapheme.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/gstring.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_classes.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_canonical_combining_classes.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_compositions.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_decompositions.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_descriptions.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_east_asian_widths.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_grapheme_cluster_breaks.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_index.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_line_break_classes.hpp
@@ -205,7 +207,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_class.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_opportunity.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_description.hpp
-    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_east_asian_width.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_general_category.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_grapheme_cluster_break.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_identifier.hpp

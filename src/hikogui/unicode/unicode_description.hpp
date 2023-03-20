@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "unicode_bidi_class.hpp"
 #include "unicode_bidi_bracket_type.hpp"
 #include "unicode_script.hpp"
 #include "../utility/module.hpp"
@@ -36,29 +35,15 @@ public:
 
     [[nodiscard]] constexpr unicode_description(
         unicode_script script,
-        unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirroring_glyph) noexcept :
         _script(to_underlying(script)),
-        _bidi_class(to_underlying(bidi_class)),
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph))
     {
         hi_assert(to_underlying(script) <= 0xff);
-        hi_assert(to_underlying(bidi_class) <= 0x1f);
         hi_assert(to_underlying(bidi_bracket_type) <= 0x03);
         hi_assert(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
-    }
-
-    /** The bidi class of this code-point
-     * This function is used by the bidirectional algorithm to figure out if the code-point
-     * represents a character that is written left-to-right or right-to-left.
-     *
-     * @return the bidi class of this code-point.
-     */
-    [[nodiscard]] constexpr unicode_bidi_class bidi_class() const noexcept
-    {
-        return static_cast<unicode_bidi_class>(_bidi_class);
     }
 
     /** Get the script of this character.
@@ -104,18 +89,12 @@ public:
         return lhs.bidi_bracket_type() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_bidi_class const& rhs) noexcept
-    {
-        return lhs.bidi_class() == rhs;
-    }
-
 private:
     // 1st qword
-    uint32_t _bidi_class : 5;
     uint32_t _bidi_bracket_type : 2;
     uint32_t _bidi_mirroring_glyph : 16;
     uint32_t _script : 8;
-    uint32_t _word0_reserved : 1 = 0;
+    uint32_t _word0_reserved : 6 = 0;
 };
 
 static_assert(sizeof(unicode_description) == 4);

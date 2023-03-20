@@ -635,14 +635,14 @@ static void unicode_bidi_N0(unicode_bidi_isolated_run_sequence& isolated_run_seq
         pair.close->direction = pair_direction;
 
         for (auto it = pair.open + 1; it != pair.close; ++it) {
-            if (it->description->bidi_class() != NSM) {
+            if (it->bidi_class != NSM) {
                 break;
             }
             it->direction = pair_direction;
         }
 
         for (auto it = pair.close + 1; it != end(isolated_run_sequence); ++it) {
-            if (it->description->bidi_class() != NSM) {
+            if (it->bidi_class != NSM) {
                 break;
             }
             it->direction = pair_direction;

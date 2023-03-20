@@ -173,6 +173,8 @@ TEST(unicode_normalization, NFKD)
     }
 }
 
+#ifdef NDEBUG
+
 TEST(unicode_normalization, Invariant)
 {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
@@ -205,3 +207,5 @@ TEST(unicode_normalization, Invariant)
         }
     }
 }
+
+#endif

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "unicode_bidi_bracket_type.hpp"
-#include "unicode_bidi_class.hpp"
 #include "unicode_script.hpp"
 #include "unicode_description.hpp"
 #include <array>
@@ -14,7 +13,6 @@ namespace hi::inline v1 {
 
 #define XD unicode_description
 #define XSC unicode_script
-#define XBC unicode_bidi_class
 #define XBB unicode_bidi_bracket_type
 
 $chunk_size = chunks[0].size
@@ -42,7 +40,6 @@ $end
 
 #undef XD
 #undef XSC
-#undef XBC
 #undef XBB
 
 }

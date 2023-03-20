@@ -127,6 +127,34 @@ class description (object):
         }
         return table[self.east_asian_width]
 
+    def bidi_class_as_integer(self):
+        table = {
+            "L": 1,
+            "R": 2,
+            "AL": 3,
+            "EN": 4,
+            "ES": 5,
+            "ET": 6,
+            "AN": 7,
+            "CS": 8,
+            "NSM": 9,
+            "BN": 10,
+            "B": 11,
+            "S": 12,
+            "WS": 13,
+            "ON": 14,
+            "LRE": 15,
+            "LRO": 16,
+            "RLE": 17,
+            "RLO": 18,
+            "PDF": 19,
+            "LRI": 20,
+            "RLI": 21,
+            "FSI": 22,
+            "PDI": 23
+        }
+        return table[self.bidi_class]
+
     def grapheme_cluster_break_as_integer(self):
         table = {
             "Other": 0,
@@ -267,7 +295,6 @@ class description (object):
     def instantiation(self):
         s = "XD{"
         s += "XSC::{}, ".format(self.script)
-        s += "XBC::{}, ".format(self.bidi_class)
         s += "XBB::{}, ".format(self.bidi_paired_bracket_type)
         s += "0x{:x} ".format(self.bidi_mirroring_glyph if self.bidi_mirroring_glyph is not None else 0xffff)
         s += "}"
