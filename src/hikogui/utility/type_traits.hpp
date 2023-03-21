@@ -319,7 +319,7 @@ struct common_integer<L,R> {
         std::conditional_t<(sizeof(L) < sizeof(short)), short,
         std::conditional_t<(sizeof(L) < sizeof(int)), int,
         std::conditional_t<(sizeof(L) < sizeof(long)), long, long long>>>;
-        
+
     using type = common_integer<_left_type, R>::type;
 };
 

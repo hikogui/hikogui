@@ -119,7 +119,8 @@ public:
                 case U'\u0085':
                 case U'\u2028':
                 case U'\u2029':
-                    ++line_nr; [[fallthrough]]
+                    ++line_nr;
+                    [[fallthrough]];
                 case '\r':
                     column_nr = 0;
                     break;

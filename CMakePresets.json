@@ -43,6 +43,7 @@
             "hidden": true,
             "inherits": "x64-windows",
             "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-cl",
                 "CMAKE_CXX_COMPILER": "clang-cl"
             },
             "vendor": {
@@ -101,7 +102,8 @@
             "displayName": "MSVC-x64-Debug (ASAN)",
             "inherits": "vc17-x64-windows-static-dbg",
             "cacheVariables": {
-                "HI_ENABLE_ASAN": "ON"
+                "HI_ENABLE_ASAN": "ON",
+                "HI_ENABLE_PCH": "OFF"
             }
         },
         {
