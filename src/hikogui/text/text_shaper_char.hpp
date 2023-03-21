@@ -85,7 +85,7 @@ public:
      *
      * This is needed to figure out where the location of the insert cursor is compared to the character.
      */
-    unicode_bidi_class direction = unicode_bidi_class::unknown;
+    unicode_bidi_class direction = unicode_bidi_class::L;
 
     /** Set to true if this glyph is a white space at the end of a line.
      */

@@ -43,12 +43,9 @@ $end
 } // namespace detail
 
 enum class unicode_east_asian_width : uint8_t {
-    A = 0,
-    F = 1,
-    H = 2,
-    N = 3,
-    Na = 4,
-    W = 5
+$for name, value in sorted(east_asian_width_enum.items(), key=lambda x: x[1]):
+    $name$ = $value$,
+$end
 };
 
 

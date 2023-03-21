@@ -51,18 +51,9 @@ constexpr uint8_t ucd_bidi_paired_bracket_types_bytes[464] = {
 } // namespace detail
 
 enum class unicode_bidi_paired_bracket_type : uint8_t {
-    /** Not mirrored
-    */
     n = 0,
-    /** Open bracket
-    */
     o = 1,
-    /** Close bracket
-    */
     c = 2,
-    /** Mirror but not bracket
-    */
-    m = 3
 };
 
 [[nodiscard]] constexpr unicode_bidi_paired_bracket_type ucd_get_bidi_paired_bracket_type(char32_t code_point) noexcept

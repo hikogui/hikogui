@@ -61,73 +61,13 @@ $end
 /** The decomposition type determines if a code-point should be decomposed canonically or for a compatibility.
  */
 enum class unicode_decomposition_type : uint8_t {
-    /** Canonical decomposition.
-     */
-    canonical = 0,
-
-    /** \<font\> Font variant (for example, a blackletter form).
-     */
-    font = 1,
-
-    /** \<noBreak\> No - break version of a space or hyphen.
-     */
-    no_break = 2,
-
-    /** \<initial\> Arabic presentation forms.
-     */
-    initial = 3,
-
-    /** \<medial\> Arabic presentation forms.
-     */
-    medial = 4,
-
-    /** \<final\> Arabic presentation forms.
-     */
-    _final = 5,
-
-    /** \<isolated\> Arabic presentation forms.
-     */
-    isolated = 6,
-
-    /** \<circle\> Encircled form.
-     */
-    circle = 7,
-
-    /** \<super\> Super-, sub-script and Vulgar-fraction forms
-     */
-    super = 8,
-
-    /** \<sub\> Super-, sub-script and Vulgar-fraction forms
-     */
-    sub = 9,
-
-    /** \<fraction\> Super-, sub-script and Vulgar-fraction forms
-     */
-    fraction = 10,
-
-    /** \<vertical\> asian compatibility forms.
-     */
-    vertical = 11,
-
-    /** \<wide\> asian compatibility forms.
-     */
-    wide = 12,
-
-    /** \<narrow\> asian compatibility forms.
-     */
-    narrow = 13,
-
-    /** \<small\>asian compatibility forms.
-     */
-    small = 14,
-
-    /** \<square\> asian compatibility forms.
-     */
-    square = 15,
-
-    /** \<compat\> Otherwise unspecified compatibility character
-     */
-    compat = 16
+$for name, value in sorted(decomposition_type_enum.items(), key=lambda x: x[1]):
+    $if name == "final":
+        _final = $value$,
+    $else:
+        $name$ = $value$,
+    $end
+$end
 };
 
 /** The decomposition info is used to determine how to decompose a code-point.

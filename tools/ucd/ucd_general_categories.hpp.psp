@@ -48,54 +48,27 @@ $end
 } // namespace detail
 
 enum class unicode_general_category : uint8_t {
-    Lu = 0,
-    Ll = 1,
-    Lt = 2,
-    Lm = 3,
-    Lo = 4,
-    Mn = 5,
-    Mc = 6,
-    Me = 7,
-    Nd = 8,
-    Nl = 9,
-    No = 10,
-    Pc = 11,
-    Pd = 12,
-    Ps = 13,
-    Pe = 14,
-    Pi = 15,
-    Pf = 16,
-    Po = 17,
-    Sm = 18,
-    Sc = 19,
-    Sk = 20,
-    So = 21,
-    Zs = 22,
-    Zl = 23,
-    Zp = 24,
-    Cc = 25,
-    Cf = 26,
-    Cs = 27,
-    Co = 28,
-    Cn = 29
+$for name, value in sorted(general_category_enum.items(), key=lambda x: x[1]):
+    $name$ = $value$,
+$end
 };
 
 [[nodiscard]] constexpr bool is_LC(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
-    return rhs >= Lu and rhs <= Lt;
+    return rhs == Lu or rhs == Ll or rhs == Lt;
 }
 
 [[nodiscard]] constexpr bool is_L(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
-    return rhs >= Lu and rhs <= Lo;
+    return rhs == Lu or rhs == Ll or rhs == Lt or rhs == Lm or rhs == Lo;
 }
 
 [[nodiscard]] constexpr bool is_M(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
-    return rhs >= Mn and rhs <= Me;
+    return rhs == Mn or rhs == Mc or rhs == Me;
 }
 
 [[nodiscard]] constexpr bool is_Mn_or_Mc(unicode_general_category const &rhs) noexcept
@@ -107,25 +80,25 @@ enum class unicode_general_category : uint8_t {
 [[nodiscard]] constexpr bool is_N(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
-    return rhs >= Nd and rhs <= No;
+    return rhs == Nd or rhs == Nl or rhs == No;
 }
 
 [[nodiscard]] constexpr bool is_P(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
-    return rhs >= Pc and rhs <= Po;
+    return rhs == Pc or rhs == Pd or rhs == Ps or rhs == Pe or rhs == Pi or rhs == Pf or rhs == Po;
 }
 
 [[nodiscard]] constexpr bool is_S(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
-    return rhs >= Sm and rhs <= So;
+    return rhs == Sm or rhs == Sc or rhs == Sk or rhs == So;
 }
 
 [[nodiscard]] constexpr bool is_Z(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
-    return rhs >= Zs and rhs <= Zp;
+    return rhs == Zs or rhs == Zl or rhs == Zp;
 }
 
 [[nodiscard]] constexpr bool is_Zp_or_Zl(unicode_general_category const &rhs) noexcept
@@ -137,13 +110,13 @@ enum class unicode_general_category : uint8_t {
 [[nodiscard]] constexpr bool is_C(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
-    return rhs >= Cc and rhs <= Cn;
+    return rhs == Cc or rhs == Cf or rhs == Cs or rhs == Co or rhs == Cn;
 }
 
 [[nodiscard]] constexpr bool is_visible(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
-    return rhs < Zs or rhs == Co;
+    return is_L(rhs) or is_M(rhs) or is_N(rhs) or is_P(rhs) or is_S(rhs) or rhs == Co;
 }
 
 [[nodiscard]] constexpr bool is_noncharacter(char32_t rhs) noexcept

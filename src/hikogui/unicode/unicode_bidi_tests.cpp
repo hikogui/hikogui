@@ -54,7 +54,7 @@ struct unicode_bidi_test {
             r.push_back(unicode_bidi_class::R);
         }
         if (test_for_auto) {
-            r.push_back(unicode_bidi_class::unknown);
+            r.push_back(unicode_bidi_class::ON);
         }
 
         return r;
@@ -231,11 +231,11 @@ struct unicode_bidi_character_test {
 
     r.paragraph_direction = paragraph_direction == 0 ? unicode_bidi_class::L :
         paragraph_direction == 1                     ? unicode_bidi_class::R :
-                                                       unicode_bidi_class::unknown;
+                                                       unicode_bidi_class::ON;
 
     r.resolved_paragraph_direction = resolved_paragraph_direction == 0 ? unicode_bidi_class::L :
         resolved_paragraph_direction == 1                              ? unicode_bidi_class::R :
-                                                                         unicode_bidi_class::unknown;
+                                                                         unicode_bidi_class::ON;
 
     std::transform(begin(int_resolved_levels), end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](hilet &x) {
         if (x == "x") {

@@ -244,7 +244,7 @@ template<typename It, typename ItEnd, typename CodePointFunc>
         hilet word_break_property = ucd_get_word_break_property(code_point);
         hilet grapheme_cluster_break = ucd_get_grapheme_cluster_break(code_point);
         return detail::unicode_word_break_info{
-            word_break_property, grapheme_cluster_break == unicode_grapheme_cluster_break::extended_pictographic};
+            word_break_property, grapheme_cluster_break == unicode_grapheme_cluster_break::Extended_Pictographic};
     });
 
     detail::unicode_word_break_WB1_WB3d(r, infos);

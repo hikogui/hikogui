@@ -7,12 +7,12 @@
 
 TEST(ucd_scripts, to_unicode_script)
 {
-    ASSERT_EQ(hi::to_unicode_script(hi::iso_15924(215)), hi::unicode_script::Latin);
-    ASSERT_EQ(hi::to_unicode_script(hi::iso_15924(460)), hi::unicode_script::Yi);
+    ASSERT_EQ(hi::iso_15924(215), hi::unicode_script::Latin);
+    ASSERT_EQ(hi::iso_15924(460), hi::unicode_script::Yi);
 }
 
 TEST(ucd_scripts, to_iso_15924)
 {
-    ASSERT_EQ(hi::to_iso_15924(hi::unicode_script::Latin).number(), hi::iso_15924(215));
-    ASSERT_EQ(hi::to_iso_15924(hi::unicode_script::Yi).number(), hi::iso_15924(460));
+    ASSERT_EQ(hi::unicode_script::Latin, hi::iso_15924(215));
+    ASSERT_EQ(hi::unicode_script::Yi, hi::iso_15924(460));
 }

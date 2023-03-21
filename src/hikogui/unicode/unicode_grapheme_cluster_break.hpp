@@ -12,14 +12,14 @@ namespace hi { inline namespace v1 {
 namespace detail {
 
 struct grapheme_break_state {
-    unicode_grapheme_cluster_break previous = unicode_grapheme_cluster_break::other;
+    unicode_grapheme_cluster_break previous = unicode_grapheme_cluster_break::Other;
     int RI_count = 0;
     bool first_character = true;
     bool in_extended_pictograph = false;
 
     constexpr void reset() noexcept
     {
-        previous = unicode_grapheme_cluster_break::other;
+        previous = unicode_grapheme_cluster_break::Other;
         RI_count = 0;
         first_character = true;
         in_extended_pictograph = false;
@@ -59,8 +59,8 @@ struct grapheme_break_state {
 
     // GB3, GB4, GB5: Do not break between a CR and LF. Otherwise, break before and after controls.
     hilet GB3 = (lhs == CR) && (rhs == LF);
-    hilet GB4 = (lhs == control) || (lhs == CR) || (lhs == LF);
-    hilet GB5 = (rhs == control) || (rhs == CR) || (rhs == LF);
+    hilet GB4 = (lhs == Control) || (lhs == CR) || (lhs == LF);
+    hilet GB5 = (rhs == Control) || (rhs == CR) || (rhs == LF);
     if (break_state == break_state::unknown) {
         if (GB3) {
             break_state = break_state::dont_break;
@@ -78,37 +78,37 @@ struct grapheme_break_state {
     }
 
     // GB9: Do not break before extending characters or ZWJ.
-    hilet GB9 = ((rhs == extend) || (rhs == ZWJ));
+    hilet GB9 = ((rhs == Extend) || (rhs == ZWJ));
 
     // GB9a, GB9b: Do not break before SpacingMarks, or after Prepend characters.
     // Both rules only apply to extended grapheme clusters.
-    hilet GB9a = (rhs == spacing_mark);
-    hilet GB9b = (lhs == prepend);
+    hilet GB9a = (rhs == SpacingMark);
+    hilet GB9b = (lhs == Prepend);
     if ((break_state == break_state::unknown) & (GB9 || GB9a || GB9b)) {
         break_state = break_state::dont_break;
     }
 
     // GB11: Do not break within emoji modifier sequences or emoji zwj sequences.
-    hilet GB11 = state.in_extended_pictograph && (lhs == ZWJ) && (rhs == extended_pictographic);
+    hilet GB11 = state.in_extended_pictograph && (lhs == ZWJ) && (rhs == Extended_Pictographic);
     if ((break_state == break_state::unknown) && GB11) {
         break_state = break_state::dont_break;
     }
 
-    if (rhs == extended_pictographic) {
+    if (rhs == Extended_Pictographic) {
         state.in_extended_pictograph = true;
-    } else if (!((rhs == extend) || (rhs == ZWJ))) {
+    } else if (!((rhs == Extend) || (rhs == ZWJ))) {
         state.in_extended_pictograph = false;
     }
 
     // GB12, GB13: Do not break within emoji flag sequences.
     // That is, do not break between regional indicator (RI) symbols,
     // if there is an odd number of RI characters before the break point.
-    hilet GB12_13 = (lhs == regional_indicator) && (rhs == regional_indicator) && ((state.RI_count % 2) == 1);
+    hilet GB12_13 = (lhs == Regional_Indicator) && (rhs == Regional_Indicator) && ((state.RI_count % 2) == 1);
     if ((break_state == break_state::unknown) && (GB12_13)) {
         break_state = break_state::dont_break;
     }
 
-    if (rhs == regional_indicator) {
+    if (rhs == Regional_Indicator) {
         state.RI_count++;
     } else {
         state.RI_count = 0;

@@ -184,7 +184,7 @@ struct unicode_bidi_isolated_run_sequence {
     unicode_bidi_class eos;
 
     constexpr unicode_bidi_isolated_run_sequence(unicode_bidi_level_run const& rhs) noexcept :
-        runs({rhs}), sos(unicode_bidi_class::unknown), eos(unicode_bidi_class::unknown)
+        runs({rhs}), sos(unicode_bidi_class::ON), eos(unicode_bidi_class::ON)
     {
     }
 
@@ -292,7 +292,7 @@ constexpr void unicode_bidi_X1(
     long long valid_isolate_count = 0;
 
     // X1.
-    auto stack = hi::stack<unicode_bidi_stack_element, max_depth + 2>{{paragraph_embedding_level, unknown, false}};
+    auto stack = hi::stack<unicode_bidi_stack_element, max_depth + 2>{{paragraph_embedding_level, ON, false}};
 
     for (auto it = first; it != last; ++it) {
         hilet current_embedding_level = stack.back().embedding_level;
@@ -302,13 +302,13 @@ constexpr void unicode_bidi_X1(
 
         auto RLI_implementation = [&] {
             it->embedding_level = current_embedding_level;
-            if (current_override_status != unknown) {
+            if (current_override_status != ON) {
                 it->direction = current_override_status;
             }
 
             if (next_odd_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
                 ++valid_isolate_count;
-                stack.emplace_back(next_odd_embedding_level, unknown, true);
+                stack.emplace_back(next_odd_embedding_level, ON, true);
             } else {
                 ++overflow_isolate_count;
             }
@@ -316,13 +316,13 @@ constexpr void unicode_bidi_X1(
 
         auto LRI_implementation = [&] {
             it->embedding_level = current_embedding_level;
-            if (current_override_status != unknown) {
+            if (current_override_status != ON) {
                 it->direction = current_override_status;
             }
 
             if (next_even_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
                 ++valid_isolate_count;
-                stack.emplace_back(next_even_embedding_level, unknown, true);
+                stack.emplace_back(next_even_embedding_level, ON, true);
             } else {
                 ++overflow_isolate_count;
             }
@@ -331,7 +331,7 @@ constexpr void unicode_bidi_X1(
         switch (it->direction) {
         case RLE: // X2. Explicit embeddings
             if (next_odd_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
-                stack.emplace_back(next_odd_embedding_level, unknown, false);
+                stack.emplace_back(next_odd_embedding_level, ON, false);
             } else if (overflow_isolate_count == 0) {
                 ++overflow_embedding_count;
             }
@@ -339,7 +339,7 @@ constexpr void unicode_bidi_X1(
 
         case LRE: // X3. Explicit embeddings
             if (next_even_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
-                stack.emplace_back(next_even_embedding_level, unknown, false);
+                stack.emplace_back(next_even_embedding_level, ON, false);
             } else if (overflow_isolate_count == 0) {
                 ++overflow_embedding_count;
             }
@@ -399,7 +399,7 @@ constexpr void unicode_bidi_X1(
             }
 
             it->embedding_level = stack.back().embedding_level;
-            if (stack.back().override_status != unknown) {
+            if (stack.back().override_status != ON) {
                 it->direction = stack.back().override_status;
             }
             break;
@@ -426,7 +426,7 @@ constexpr void unicode_bidi_X1(
 
         default: // X6
             it->embedding_level = current_embedding_level;
-            if (current_override_status != unknown) {
+            if (current_override_status != ON) {
                 it->direction = current_override_status;
             }
         }

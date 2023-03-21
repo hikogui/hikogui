@@ -108,7 +108,7 @@ unicode_LB1(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
         r.emplace_back(
             resolved_break_class,
             general_category == unicode_general_category::Cn,
-            grapheme_cluster_break == unicode_grapheme_cluster_break::extended_pictographic,
+            grapheme_cluster_break == unicode_grapheme_cluster_break::Extended_Pictographic,
             east_asian_width);
     }
 

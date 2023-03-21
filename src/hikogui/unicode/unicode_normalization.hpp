@@ -102,7 +102,7 @@ struct unicode_normalize_config {
         auto r = unicode_normalize_config::NFD();
         r.add(unicode_decomposition_type::canonical);
         r.add(unicode_decomposition_type::font);
-        r.add(unicode_decomposition_type::no_break);
+        r.add(unicode_decomposition_type::noBreak);
         r.add(unicode_decomposition_type::initial);
         r.add(unicode_decomposition_type::medial);
         r.add(unicode_decomposition_type::_final);

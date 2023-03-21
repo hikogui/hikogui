@@ -168,7 +168,7 @@ inline void fixup_script(It first, ItEnd last, iso_15924 default_script) noexcep
             if (udb_script != unicode_script::Zzzz and udb_script != unicode_script::Common) {
                 // This character is defined in the Unicode database to have a
                 // specific script.
-                return to_iso_15924(udb_script);
+                return udb_script;
 
             } else if (not script and last_script) {
                 // This character did not have a script, but a previous character
