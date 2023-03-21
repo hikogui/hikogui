@@ -6,6 +6,7 @@
 
 #include "grapheme.hpp"
 #include "unicode_normalization.hpp"
+#include "unicode_grapheme_cluster_break.hpp"
 #include "../utility/module.hpp"
 #include "../strings.hpp"
 #include <vector>
@@ -159,8 +160,32 @@ using gstring = std::pmr::basic_string<grapheme>;
  * @param config The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-[[nodiscard]] gstring
-to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept;
+[[nodiscard]] constexpr gstring
+to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
+{
+    hilet normalized_string = unicode_normalize(rhs, config);
+
+    auto r = gstring{};
+    auto break_state = detail::grapheme_break_state{};
+    auto cluster = std::u32string{};
+
+    for (hilet code_point : normalized_string) {
+        if (detail::breaks_grapheme(code_point, break_state)) {
+            if (cluster.size() > 0) {
+                r += grapheme(composed_t{}, cluster);
+                hi_axiom(r.back().valid());
+            }
+            cluster.clear();
+        }
+
+        cluster += code_point;
+    }
+    if (ssize(cluster) != 0) {
+        r += grapheme(composed_t{}, cluster);
+        hi_assert(r.back().valid());
+    }
+    return r;
+}
 
 /** Convert a UTF-8 string to a grapheme-string.
  *
@@ -171,7 +196,7 @@ to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_no
  * @param config The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-[[nodiscard]] inline gstring
+[[nodiscard]] constexpr gstring
 to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
     return to_gstring(to_u32string(rhs), config);
@@ -186,7 +211,7 @@ to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_norma
  * @param config The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-[[nodiscard]] inline gstring
+[[nodiscard]] constexpr gstring
 to_gstring(std::string const& rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
     return to_gstring(std::string_view{rhs}, config);

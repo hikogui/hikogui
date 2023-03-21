@@ -7,6 +7,9 @@
 #include "../utility/module.hpp"
 #include "../strings.hpp"
 #include "../stable_set.hpp"
+#include "../log.hpp"
+#include "unicode_normalization.hpp"
+#include "ucd_general_categories.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -98,15 +101,45 @@ struct grapheme {
 
     /** Encode a grapheme from a list of code-points.
      *
-     * @param code_points The non-normalized list of code-points.
+     * @param code_points The NFC/NKFC normalized and composed code-point of this grapheme.
      */
-    explicit grapheme(std::u32string_view code_points) noexcept;
+    constexpr grapheme(composed_t, std::u32string_view code_points) noexcept
+    {
+        switch (code_points.size()) {
+        case 0:
+            hi_no_default();
+
+        case 1:
+            _value = truncate<value_type>(code_points[0]);
+            break;
+
+        default:
+            hilet index = detail::long_graphemes.insert(std::u32string{code_points});
+            if (index < 0x0f'0000) {
+                _value = narrow_cast<value_type>(index + 0x11'0000);
+            } else {
+                [[unlikely]] hi_log_error_once(
+                    "grapheme::error::too-many", "Too many long graphemes encoded, replacing with U+fffd");
+                _value = 0x00'fffd;
+            }
+        }
+    }
 
     /** Encode a grapheme from a list of code-points.
      *
-     * @param code_points The NFC/NKFC normalized and composed code-point of this grapheme.
+     * @param code_points The non-normalized list of code-points.
      */
-    explicit grapheme(composed_t, std::u32string_view code_points) noexcept;
+    constexpr explicit grapheme(std::u32string_view code_points) noexcept :
+        grapheme(composed_t{}, unicode_normalize(code_points, unicode_normalize_config::NFC()))
+    {
+    }
+
+    /** Get a list of code-point normalized to NFD.
+     */
+    [[nodiscard]] constexpr std::u32string decomposed() const noexcept
+    {
+        return unicode_decompose(composed(), unicode_normalize_config::NFD());
+    }
 
     /** Check if the grapheme is valid.
      *
@@ -115,7 +148,21 @@ struct grapheme {
      * - The first code-point is part of general category 'C'.
      * - The first code-point is a combining character; canonical combining class != 0.
      */
-    [[nodiscard]] bool valid() const noexcept;
+    [[nodiscard]] constexpr bool valid() const noexcept
+    {
+        if (is_noncharacter(get<0>(*this))) {
+            return false;
+        }
+
+        hilet general_category = ucd_get_general_category(get<0>(*this));
+        if (is_C(general_category)) {
+            return false;
+        }
+        if (is_M(general_category)) {
+            return false;
+        }
+        return true;
+    }
 
     [[nodiscard]] std::u32string const& long_grapheme() const noexcept
     {
@@ -181,10 +228,6 @@ struct grapheme {
             return long_grapheme();
         }
     }
-
-    /** Get a list of code-point normalized to NFD.
-     */
-    [[nodiscard]] std::u32string decomposed() const noexcept;
 
     /** Compare equivalence of two graphemes.
      */
