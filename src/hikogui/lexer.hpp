@@ -1,8 +1,9 @@
 
 #pragma once
 
-namespace hi {
-inline namespace v1 {
+#include "utility/module.hpp"
+
+namespace hi { inline namespace v1 {
 
 struct lexer_config {
     /** A zero starts in octal number.
@@ -12,19 +13,36 @@ struct lexer_config {
      */
     bool zero_starts_octal = false;
 
-    /** The character used to seperate groups of numbers.
+    /** The character used to separate groups of numbers.
      *
      * This character is the character that will be ignored by a language
-     * if it apears in a integer or floating point literal.
+     * if it appears in a integer or floating point literal.
      *
      * For C and C++ this is the quote character, some other languages use
-     * an underscore. If the language does not support group separator set this to no_capture.
+     * an underscore. If the language does not support group separator set this to '\0'.
      */
-    char number_group_separator = no_capture;
+    char number_group_separator = '\0';
 
     /** Escaping quotes within a string may be done using quote doubling.
      */
     bool escape_by_quote_doubling = false;
+
+    /** The language has a literal color.
+     *
+     * This is a hash '#' followed by a hexadecimal number.
+     */
+    bool has_color_literal = false;
+
+    bool has_double_quote_string_literal = true;
+    bool has_single_quote_string_literal = true;
+    bool has_back_quote_string_literal = false;
+
+    bool double_slash_line_comment = true;
+    bool hash_line_comment = false;
+    bool semicoloon_line_comment = false;
+
+    bool c_block_comment = true;
+    bool sgml_block_comment = false;
 };
 
 namespace detail {
@@ -32,15 +50,12 @@ namespace detail {
 template<lexer_config Config>
 class lexer {
 public:
-    enun class token_type: uint8_t {
+    enun class token : uint8_t {
         none
     };
 
-    constexpr static auto zero_starts_octal = Config.zero_starts_octal;
-    constexpr static auto number_group_separator = Config.number_group_separator;
-
 private:
-    enum class state_type: uint8_t {
+    enum class state_type : uint8_t {
         idle,
         zero,
         bin_integer,
@@ -51,13 +66,15 @@ private:
         _size
     };
 
-    struct clear_tag{};
-    struct no_read_tag{};
-    struct no_capture_tag{};
+    struct clear_tag {};
+    struct any_tag {};
+    struct no_read_tag {};
+    struct no_capture_tag {};
 
     constexpr static char no_capture = no_capture_tag{};
     constexpr static auto no_read = no_read_tag{};
     constexpr static auto clear = clear_tag{};
+    constexpr static auto any = any_tag{};
 
     constexpr static auto idle = state_type::idle;
     constexpr static auto zero = state_type::zero;
@@ -71,9 +88,9 @@ private:
         state_type next_state = state_type::_size;
 
         /** The token to emit.
-         * If this is token_type::none then no token is emitted.
+         * If this is token::none then no token is emitted.
          */
-        token_type emit_token = token_type::none;
+        token emit_token = token::none;
 
         /** The char to capture.
          * If this is nul, then nothing is captured.
@@ -82,179 +99,278 @@ private:
 
         /** Clear the capture buffer.
          */
-        uint8_t clear: 1 = 0;
+        uint8_t clear : 1 = 0;
 
         /** Read a character, and advance the iterator.
          */
-        uint8_t read: 1 = 0;
+        uint8_t read : 1 = 0;
     };
 
     /** A array of commands, one for each state and character.
      * The array is in state-major order.
      */
-    using transition_table_type = std::array<command_type,to_underlying(state_type::_size) * 128>;
+    using transition_table_type = std::array<command_type, to_underlying(state_type::_size) * 128>;
 
     transition_table_type _transition_table;
 
 public:
-
     constexpr lexer() noexcept : _transition_table()
     {
         add_literal_numbers();
-        add_literal_string(
-            '\'', token_type::sqstring_literal, sqstring_literal, sqstring_literal_quote, sqstring_literal_escape, sqstring_literal_escape_finish);
-        add_literal_string(
-            '"', token_type::dqstring_literal, dqstring_literal, dqstring_literal_quote, dqstring_literal_escape, dqstring_literal_escape_finish);
-        add_literal_string(
-            '`', token_type::btstring_literal, btstring_literal, btstring_literal_quote, btstring_literal_escape, btstring_literal_escape_finish);
-        add_line_comment();
-        add_block_comment();
+        if constexpr (Config.has_single_quote_string_literal) {
+            add_literal_string(
+                '\'',
+                token::sqstring_literal,
+                state::sqstring_literal,
+                state::sqstring_literal_quote,
+                state::sqstring_literal_escape);
+        }
+        if constexpr (Config.has_double_quote_string_literal) {
+            add_literal_string(
+                '"',
+                token::dqstring_literal,
+                state::dqstring_literal,
+                state::dqstring_literal_quote,
+                state::dqstring_literal_escape);
+        }
+        if constexpr (Config.has_back_quote_string_literal) {
+            add_literal_string(
+                '`',
+                token::btstring_literal,
+                state::btstring_literal,
+                state::btstring_literal_quote,
+                state::btstring_literal_escape);
+        }
+        if constexpr (Config.has_literal_color) {
+            add_literal_color();
+        }
+        add_comments();
+        add_operators();
+        add_separators();
+        add_identifier();
     }
 
     constexpr void add_literal_numbers() noexcept
     {
-        add(idle, "0", zero);
-        add(idle, "123456789", dec_integer);
+        add(state::idle, "0", state::zero);
+        add(state::idle, "123456789", state::dec_integer);
 
-        add(zero, idle, token_type::integer_literal, no_read);
-        add(zero, "bB", bin_integer);
-        add(zero, "oO", oct_integer);
-        add(zero, "dD", dec_integer);
-        add(zero, "xX", hex_integer);
-        if constexpr (zero_starts_octal) {
-            add(zero, "01234567", oct_integer);
+        add(state::zero, any, idle, no_read, token::integer_literal);
+        add(state::zero, "bB", state::bin_integer);
+        add(state::zero, "oO", state::oct_integer);
+        add(state::zero, "dD", state::dec_integer);
+        add(state::zero, "xX", state::hex_integer);
+
+        if constexpr (Config.zero_starts_octal) {
+            add(state::zero, "01234567", state::oct_integer);
         } else {
-            add(zero, "0123456789", dec_integer);
+            add(state::zero, "0123456789", state::dec_integer);
         }
 
-        if constexpr (number_group_separator != no_capture) {
+        if constexpr (Config.number_group_separator != '\0') {
             // Don't capture number-group-separators.
-            add(zero, number_group_separator, zero_starts_octal ? oct_integer : dec_integer, no_capture);
-            add(bin_integer, number_group_separator, bin_integer, no_capture);
-            add(oct_integer, number_group_separator, oct_integer, no_capture);
-            add(dec_integer, number_group_separator, dec_integer, no_capture);
-            add(hex_integer, number_group_separator, hex_integer, no_capture);
-            add(dec_float, number_group_separator, dec_integer, no_capture);
-            add(hex_float, number_group_separator, dec_integer, no_capture);
-            add(dec_exponent, number_group_separator, dec_integer, no_capture);
-            add(hex_exponent, number_group_separator, dec_integer, no_capture);
+            if constexpr (Config.zero_starts_octal) {
+                add(state::zero, Config.number_group_separator, state::oct_integer, no_capture);
+            } else {
+                add(state::zero, Config.number_group_separator, state::dec_integer, no_capture)
+            }
+            add(state::bin_integer, Config.number_group_separator, state::bin_integer, no_capture);
+            add(state::oct_integer, Config.number_group_separator, state::oct_integer, no_capture);
+            add(state::dec_integer, Config.number_group_separator, state::dec_integer, no_capture);
+            add(state::hex_integer, Config.number_group_separator, state::hex_integer, no_capture);
+            add(state::dec_float, Config.number_group_separator, state::dec_integer, no_capture);
+            add(state::hex_float, Config.number_group_separator, state::dec_integer, no_capture);
+            add(state::dec_exponent, Config.number_group_separator, state::dec_integer, no_capture);
+            add(state::hex_exponent, Config.number_group_separator, state::dec_integer, no_capture);
         }
 
         // binary-integer
-        add(bin_integer, idle, token_type::integer_literal, no_read);
-        add(bin_integer, "01", bin_integer);
+        add(state::bin_integer, any, state::idle, no_read, token::integer_literal);
+        add(state::bin_integer, "01", state::bin_integer);
 
         // octal-integer
-        add(oct_integer, idle, token_type::integer_literal, no_read);
-        add(oct_integer, "01234567", oct_integer);
+        add(state::oct_integer, any, state::idle, no_read, token::integer_literal);
+        add(state::oct_integer, "01234567", state::oct_integer);
 
         // decimal-integer
-        add(dec_integer, idle, token_type::integer_literal, no_read);
-        add(dec_integer, "0123456789", dec_integer);
-        add(dec_integer, ".", dec_float);
-        add(dec_integer, "eE", dec_sign_exponent);
+        add(state::dec_integer, any, state::idle, no_read, token::integer_literal);
+        add(state::dec_integer, "0123456789", state::dec_integer);
+        add(state::dec_integer, ".", state::dec_float);
+        add(state::dec_integer, "eE", state::dec_sign_exponent);
 
         // hexadecimal-integer
-        add(hex_integer, idle, token_type::integer_literal, no_read);
-        add(hex_integer, "0123456789abcdefABCDEF", hex_integer);
-        add(hex_integer, ".", hex_float);
-        add(hex_integer, "pP", hex_sign_exponent);
+        add(state::hex_integer, any, state::idle, no_read, token::integer_literal);
+        add(state::hex_integer, "0123456789abcdefABCDEF", state::hex_integer);
+        add(state::hex_integer, ".", state::hex_float);
+        add(state::hex_integer, "pP", state::hex_sign_exponent);
 
         // decimal-float
-        add(dec_float, idle, token_type::float_literal, no_read);
-        add(dec_float, "0123456789", dec_float);
-        add(dec_float, "eE", dec_sign_exponent);
-        add(dec_sign_exponent, idle, token_type::error_missing_exponent_number, no_read);
-        add(dec_sign_exponent, "0123456789", dec_exponent);
-        add(dec_sign_exponent, "+-", dec_exponent);
-        add(dec_exponent, idle, token_type::float_literal, no_read);
-        add(dec_exponent, "0123456789", dec_exponent);
+        add(state::dec_float, any, state::idle, no_read, token::float_literal);
+        add(state::dec_float, "0123456789", state::dec_float);
+        add(state::dec_float, "eE", state::dec_sign_exponent);
+        add(state::dec_sign_exponent, any, state::idle, no_read, token::error_missing_exponent_number);
+        add(state::dec_sign_exponent, "0123456789", state::dec_exponent);
+        add(state::dec_sign_exponent, "+-", state::dec_exponent);
+        add(state::dec_exponent, any, state::idle, no_read, token::float_literal);
+        add(state::dec_exponent, "0123456789", state::dec_exponent);
 
         // hexadecimal-float
-        add(hex_float, idle, token_type::float_literal, no_read);
-        add(hex_float, "0123456789abcdefABCDEF", hex_float);
-        add(hex_float, "pP", hex_sign_exponent);
-        add(hex_sign_exponent, idle, token_type::error_missing_exponent_number, no_read);
-        add(hex_sign_exponent, "0123456789abcdefABCDEF", hex_exponent);
-        add(hex_sign_exponent, "+-", hex_exponent);
-        add(hex_exponent, idle, token_type::float_literal, no_read);
-        add(hex_exponent, "0123456789abcdefABCDEF", hex_exponent);
+        add(state::hex_float, any, state::idle, no_read, token::float_literal);
+        add(state::hex_float, "0123456789abcdefABCDEF", state::hex_float);
+        add(state::hex_float, "pP", state::hex_sign_exponent);
+        add(state::hex_sign_exponent, any, state::idle, no_read, token::error_missing_exponent_number);
+        add(state::hex_sign_exponent, "0123456789abcdefABCDEF", state::hex_exponent);
+        add(state::hex_sign_exponent, "+-", state::hex_exponent);
+        add(state::hex_exponent, any, state::idle, no_read, token::float_literal);
+        add(state::hex_exponent, "0123456789abcdefABCDEF", state::hex_exponent);
     }
 
     constexpr void add_literal_string(
         char c,
-        token_type token,
-        state_type literal,
-        state_type literal_quote,
-        state_type literal_escape,
-        state_type literal_escape_finish) noexcept
+        token string_token,
+        state_type string_literal,
+        state_type string_literal_quote,
+        state_type string_literal_escape) noexcept
     {
-        add(idle, c, literal, no_capture);
-        add(literal, literal);
-        if (escape_by_quote_doubling) {
-            add(literal, '"', literal_quote, no_capture);
-            add(literal_quote, idle, token_type::string_literal, no_capture);
-            add(literal_quote, '"', literal)
+        add(state::idle, c, state::string_literal, no_capture);
+        add(state::string_literal, any, state::string_literal);
+
+        if constexpr (Config.escape_by_quote_doubling) {
+            add(state::string_literal, c, state::string_literal_quote, no_capture);
+            add(state::string_literal_quote, any, state::idle, no_capture, token::string_literal);
+            add(state::string_literal_quote, c, state::string_literal);
+
         } else {
-            add(literal, '"', idle, token_type::string_literal, no_capture);
+            add(state::string_literal, c, state::idle, no_capture, token::string_literal);
+
+            // Make sure that any escaped character sequence stays inside the
+            // string literal.
+            add(state::string_literal, '\\', state::string_literal_escape);
+            add(state::string_literal_escape, any, state::idle, string_literal);
         }
-        add(literal, '\\', literal_escape, no_capture);
-        add(literal_escape, literal_escape_finish, '\\', no_read);
-        add(literal_escape, '"', literal);
-        add(literal_escape, '\'', literal);
-        add(literal_escape, '?', literal);
-        add(literal_escape, 'a', literal, '\a');
-        add(literal_escape, 'b', literal, '\b');
-        add(literal_escape, 'f', literal, '\f');
-        add(literal_escape, 'n', literal, '\n');
-        add(literal_escape, 'r', literal, '\r');
-        add(literal_escape, 't', literal, '\t');
-        add(literal_escape, 'v', literal, '\v');
-        add(literal_escape_finish, literal);
     }
 
-    constexpr void add_comment() noexcept
+    constexpr void add_literal_color() noexcept
     {
-        add(idle, '/', slash, no_read, no_capture);
-        add(slash, slash_finish, token_type::op, no_read);
-        add(slash_finish, idle, token_type::op);
+        add(state::idle, '#', state::literal_color);
+        add(state::literal_color, any, state::idle, no_read, token::color_literal);
+        add(state::literal_color, "0123456789abcdefABCDEF", state::literal_color);
+    }
 
-        if (cpp_comment) {
-            add(slash, '/', line_comment, no_capture);
+    constexpr void add_operators() noexcept
+    {
+        // When the operator starts with an equal sign, then it may be one of the following operators:
+        //  - "=": assignment
+        //  - "==": equal
+        //  - "===": identical
+        add(state::idle, '=', state::found_eq);
+        add(state::found_eq, any, state::idle, no_read, state::_operator);
+        add(state::found_eq, '=' state::found_eq_eq);
+        add(state::found_eq_eq, any, state::idle, no_read, state::_operator);
+        add(state::found_eq_eq, '=', state::idle, state::_operator);
+
+        // Any other mathematical symbol continues a multi-character operator.
+        add(state::idle, ":.+-*/%~&|^!<>?@$", state::_operator);
+
+        // add_comments() will add the singular slash
+        // Treat it as if a mathematical symbol was read and continue a multi-character operator.
+        add(state::found_slash, any, state::found_operator, no_read, no_capture);
+
+        // Read the multi-character operator until a non mathematical symbol.
+        add(state::_operator, any, state::idle, no_read, token::_operator);
+        add(state::_operator, ":.,+-*/%~&|^!<>?@$", state::_operator);
+
+        // An equal sign ends a multi-character operator as a inplace-assignment or comparison.
+        add(state::_operator, '=', state::idle, token::_operator);
+
+        // Add_comments() will add the singular less-than.
+        // There are few special operators that start with less than
+        //  - "<=" less than or equal
+        //  - "<=>" spaceship operator
+        add(state::found_lt, any, state::idle, no_read, token::_operator);
+        add(state::found_lt, ":.,+-*/%~&|^!<>?@$", state::_operator);
+        add(state::found_lt, "=", state::found_lt_eq);
+        add(state::found_lt_eq, any, state::idle, no_read, token::_operator);
+        add(state::found_lt_eq, ">", state::idle, token::_operator);
+    }
+
+    constexpr void add_comments() noexcept
+    {
+        if constexpr (Config.double_slash_line_comment or Config.c_block_comment) {
+            // Add an indirection when starting comment with '/'.
+            add(state::idle, '/', state::comment_found_slash, no_capture);
+            add(state::comment_found_slash, any, state::found_slash, no_read, '/');
+        } else {
+            add(state::idle, '/', state::found_slash);
         }
 
-        if (c_comment) {
-            add(slash, '*', slash_star_block_comment, no_capture);
-            add(slash_star_block_comment, slash_star_block_comment);
-            add(slash_star_block_comment, '*', slash_star_star, no_capture);
-            add(slash_star_star, slash_start_block_comment, '*', no_read);
-            add(slash_star_star, '/', idle, no_capture);
+        if constexpr (Config.sgml_block_comment) {
+            // Add an indirection when starting comment with '<'.
+            add(state::idle, '<', state::comment_found_lt, no_capture);
+            add(state::comment_found_less_than, any, state::found_lt, no_read, '<');
+        } else {
+            add(state::idle, '<', state::found_lt);
         }
 
-        if (sgml_comment) {
-            add(slash, '<', slash_star_block_comment, no_capture);
-            add(slash_star_block_comment, slash_star_block_comment);
-            add(slash_star_block_comment, '*', slash_star_star, no_capture);
-            add(slash_star_star, slash_start_block_comment, '*', no_read);
-            add(slash_star_star, '/', idle, no_capture);
+        if constexpr (Config.double_slash_line_comment) {
+            add(state::comment_found_slash, '/', state::line_comment, no_capture);
         }
 
-        if (semicolon_starts_comment) {
-            add(idle, ';', line_comment, no_capture);
+        if constexpr (Config.semicolon_line_comment) {
+            add(state::idle, ';', state::line_comment, no_capture);
+        } else {
+            add(state::idle, ';', state::found_semicolon);
         }
 
-        if (hash_starts_comment) {
-            add(idle, '#', line_comment, no_capture);
+        if constexpr (Config.hash_line_comment) {
+            add(state::idle, '#', state::line_comment, no_capture);
+        } else {
+            add(state::idle, '#', state::found_hash);
         }
 
-        add(line_comment, line_comment);
-        add(line_comment, "\n\f\v", idle, token_type::comment, no_read);
+        if constexpr (Config.c_block_comment) {
+            add(state::comment_found_slash, '*', state::block_comment, no_capture);
+        }
+
+        if constexpr (Config.sgml_comment) {
+            add(state::comment_found_lt, '!', state::comment_found_lt_bang, no_capture);
+            add(state::comment_found_lt_bang, '-', state::comment_found_lt_dash, no_capture);
+            add(state::comment_found_lt_bang_dash, '-', state::block_comment, no_capture);
+        }
+
+        add(state::line_comment, any, state::line_comment);
+        add(state::line_comment, "\n\f\v", state::idle, no_read, token::line_comment);
+
+        add(state::block_comment, any, state::block_comment);
+
+        if constexpr (Config.c_block_comment) {
+            add(state::block_comment, '*', block_comment_found_star, no_capture);
+            add(state::block_comment_found_star, any state::block_comment, no_read, '/');
+            add(state::block_comment_found_star, '/', state::idle, no_capture, token::block_comment);
+        }
+
+        if constexpr (Config.sgml_block_comment) {
+            add(state::block_comment, '-', block_comment_found_dash, no_capture);
+            add(state::block_comment_found_dash, any, state::block_comment, no_read, '-');
+            add(state::block_comment_found_dash, '-', state::block_comment_found_dash_dash, no_capture);
+            add(state::block_comment_found_dash_dash, any, state::block_comment_found_dash_dash_fin0, no_read, '-');
+            add(state::block_comment_found_dash_dash, '>', state::idle, no_capture, token::block_comment);
+            add(state::block_comment_found_dash_dash_fin0, any, state::block_comment, no_read, '-');
+        }
+    }
+
+    constexpr void add_separators() noexcept
+    {
+        add(state::idle, ",()[]{}", state::idle, token::separator);
+        if constexpr (not Config.semicolon_line_comment) {
+            add(state::idle, ';', state::idle, token::separator);
+        }
     }
 
     constexpr void add_identifier() noexcept
     {
         add(idle, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", identifier);
-        add(identifier, identifier, token_type::identigier, no_read);
+        add(identifier, identifier, token::identifier, no_read);
         add(identifier, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789", identifier);
     }
 
@@ -264,10 +380,10 @@ public:
         return to_underlying(from) * 128 + index;
     }
 
-    constexpr command_type &add(state_type from, char c, state_type to) noexcept
+    constexpr command_type& add(state_type from, char c, state_type to) noexcept
     {
         hilet i = make_index(from, c);
-        auto &command = transition_table[i];
+        auto& command = transition_table[i];
         command.next_state = to;
         command.char_to_capture = c;
         command.read = 1;
@@ -290,23 +406,23 @@ public:
      * @param args The rest of the attribute-arguments.
      */
     template<typename First, typename... Args>
-    constexpr command_type &add(state_type from, char c, state_type to, First first, Args const &...args) noexcept
+    constexpr command_type& add(state_type from, char c, state_type to, First first, Args const&...args) noexcept
     {
-        auto &command = add(from, c, to, args...);
-        if constexpr (std::is_same_v<First, token_type>) {
+        auto& command = add(from, c, to, args...);
+        if constexpr (std::is_same_v<First, token>) {
             command.reset = 1;
             command.emit_token = first;
 
-        } else if constexpr (std::is_same_v<First, no_read_tag) {
+        } else if constexpr (std::is_same_v<First, no_read_tag>) {
             command.read = 0;
 
-        } else if constexpr (std::is_same_v<First, no_capture_tag) {
+        } else if constexpr (std::is_same_v<First, no_capture_tag>) {
             command.char_to_capture = no_capture;
 
-        } else if constexpr (std::is_same_v<First, reset_tag) {
+        } else if constexpr (std::is_same_v<First, reset_tag>) {
             command.reset = 1;
 
-        } else if constexpr (std::is_same_v<First, char) {
+        } else if constexpr (std::is_same_v<First, char>) {
             command.char_to_capture = first;
 
         } else {
@@ -317,7 +433,7 @@ public:
     }
 
     template<size_t N, typename... Args>
-    constexpr void add(state_type from, char (&str)[N], state_type to, Args const &...args) noexcept
+    constexpr void add(state_type from, char (&str)[N], state_type to, Args const&...args) noexcept
     {
         for (auto i = 0_uz; i != N; ++i) {
             add(from, str[i], to, args...);
@@ -325,7 +441,7 @@ public:
     }
 
     template<typename... Args>
-    constexpr void add(state_type from, state_type to, Args const &...args) noexcept
+    constexpr void add(state_type from, state_type to, Args const&...args) noexcept
     {
         for (char c = 0; c != 127; ++c) {
             add(from, c, to, args...);
@@ -333,10 +449,9 @@ public:
     }
 };
 
-} // detail
+} // namespace detail
 
 template<lexer_config Config>
 constexpr auto lexer = detail::lexer<Config>();
 
-}}
-
+}} // namespace hi::v1
