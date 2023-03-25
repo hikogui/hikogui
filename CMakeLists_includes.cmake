@@ -270,4 +270,5 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp
     ${HIKOGUI_SOURCE_DIR}/terminate.hpp
+    ${HIKOGUI_SOURCE_DIR}/lexer.hpp
 )
