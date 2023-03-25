@@ -55,7 +55,7 @@ public:
     };
 
 private:
-    enum class state_type : uint8_t {
+    enum class state : uint8_t {
         idle,
         zero,
         bin_integer,
@@ -68,16 +68,13 @@ private:
 
     struct clear_tag {};
     struct any_tag {};
-    struct no_read_tag {};
-    struct no_capture_tag {};
+    struct advance_tag {};
+    struct capture_tag {};
 
-    constexpr static char no_capture = no_capture_tag{};
-    constexpr static auto no_read = no_read_tag{};
+    constexpr static char capture = capture_tag{};
+    constexpr static auto read = read_tag{};
     constexpr static auto clear = clear_tag{};
     constexpr static auto any = any_tag{};
-
-    constexpr static auto idle = state_type::idle;
-    constexpr static auto zero = state_type::zero;
 
     /** This is the command to execute for a given state and given character.
      */
@@ -95,7 +92,7 @@ private:
         /** The char to capture.
          * If this is nul, then nothing is captured.
          */
-        char char_to_capture = no_capture;
+        char char_to_capture = '\0';
 
         /** Clear the capture buffer.
          */
@@ -103,7 +100,7 @@ private:
 
         /** Read a character, and advance the iterator.
          */
-        uint8_t read : 1 = 0;
+        uint8_t advance : 1 = 0;
     };
 
     /** A array of commands, one for each state and character.
@@ -152,76 +149,76 @@ public:
 
     constexpr void add_literal_numbers() noexcept
     {
-        add(state::idle, "0+=", state::zero);
-        add(state::idle, "123456789+=", state::dec_integer);
+        add(state::idle, "0", state::zero, advance, capture);
+        add(state::idle, "123456789", state::dec_integer, advance, capture);
 
-        add(state::zero, "", state::idle, token::integer_literal);
-        add(state::zero, "bB+=", state::bin_integer);
-        add(state::zero, "oO+=", state::oct_integer);
-        add(state::zero, "dD+=", state::dec_integer);
-        add(state::zero, "xX+=", state::hex_integer);
+        add(state::zero, any, state::idle, token::integer_literal);
+        add(state::zero, "bB", state::bin_integer, advance, capture);
+        add(state::zero, "oO", state::oct_integer, advance, capture);
+        add(state::zero, "dD", state::dec_integer, advance, capture);
+        add(state::zero, "xX", state::hex_integer, advance, capture);
 
         if constexpr (Config.zero_starts_octal) {
-            add(state::zero, "01234567+=", state::oct_integer);
+            add(state::zero, "01234567", state::oct_integer, advance, capture);
         } else {
-            add(state::zero, "0123456789+=", state::dec_integer);
+            add(state::zero, "0123456789", state::dec_integer, advance, capture);
         }
 
-        if constexpr (Config.quote_separates_digits != '\0') {
+        if constexpr (Config.digit_separator != '\0') {
             if constexpr (Config.zero_starts_octal) {
-                add(state::zero, "'+", state::oct_integer);
+                add(state::zero, digit_separator, state::oct_integer, advance);
             } else {
-                add(state::zero, "'+", state::dec_integer);
+                add(state::zero, , state::dec_integer, advance);
             }
-            add(state::bin_integer, "'+", state::bin_integer);
-            add(state::oct_integer, "'+", state::oct_integer);
-            add(state::dec_integer, "'+", state::dec_integer);
-            add(state::hex_integer, "'+", state::hex_integer);
-            add(state::dec_float, "'+", state::dec_integer);
-            add(state::hex_float, "'+", state::dec_integer);
-            add(state::dec_exponent, "'+", state::dec_integer);
-            add(state::hex_exponent, "'+", state::dec_integer);
+            add(state::bin_integer, digit_separator, state::bin_integer, advance);
+            add(state::oct_integer, digit_separator, state::oct_integer, advance);
+            add(state::dec_integer, digit_separator, state::dec_integer, advance);
+            add(state::hex_integer, digit_separator, state::hex_integer, advance);
+            add(state::dec_float, digit_separator, state::dec_integer, advance);
+            add(state::hex_float, digit_separator, state::dec_integer, advance);
+            add(state::dec_exponent, digit_separator, state::dec_integer, advance);
+            add(state::hex_exponent, digit_separator, state::dec_integer, advance);
         }
 
         // binary-integer
-        add(state::bin_integer, "", state::idle, token::integer_literal);
-        add(state::bin_integer, "01+=", state::bin_integer);
+        add(state::bin_integer, any, state::idle, token::integer_literal);
+        add(state::bin_integer, "01", state::bin_integer, advance, capture);
 
         // octal-integer
-        add(state::oct_integer, "", state::idle, token::integer_literal);
-        add(state::oct_integer, "01234567+=", state::oct_integer);
+        add(state::oct_integer, any, state::idle, token::integer_literal);
+        add(state::oct_integer, "01234567", state::oct_integer, advance, capture);
 
         // decimal-integer
-        add(state::dec_integer, "", state::idle, token::integer_literal);
-        add(state::dec_integer, "0123456789+=", state::dec_integer);
-        add(state::dec_integer, ".+=", state::dec_float);
-        add(state::dec_integer, "eE+=", state::dec_sign_exponent);
+        add(state::dec_integer, any, state::idle, token::integer_literal);
+        add(state::dec_integer, "0123456789", state::dec_integer, advance, capture);
+        add(state::dec_integer, ".", state::dec_float, advance, capture);
+        add(state::dec_integer, "eE", state::dec_sign_exponent, advance, capture);
 
         // hexadecimal-integer
-        add(state::hex_integer, "", state::idle, token::integer_literal);
-        add(state::hex_integer, "0123456789abcdefABCDEF+=", state::hex_integer);
-        add(state::hex_integer, ".+=", state::hex_float);
-        add(state::hex_integer, "pP+=", state::hex_sign_exponent);
+        add(state::hex_integer, any, state::idle, token::integer_literal);
+        add(state::hex_integer, "0123456789abcdefABCDEF", state::hex_integer, advance, capture);
+        add(state::hex_integer, ".", state::hex_float, advance, capture);
+        add(state::hex_integer, "pP", state::hex_sign_exponent, advance, capture);
 
         // decimal-float
-        add(state::dec_float, "", state::idle, token::float_literal);
-        add(state::dec_float, "0123456789+=", state::dec_float);
-        add(state::dec_float, "eE+=", state::dec_sign_exponent);
-        add(state::dec_sign_exponent, "", state::idle, token::error_missing_exponent_number);
-        add(state::dec_sign_exponent, "0123456789+=", state::dec_exponent);
-        add(state::dec_sign_exponent, "+-", "+=", state::dec_exponent);
-        add(state::dec_exponent, "", state::idle, token::float_literal);
-        add(state::dec_exponent, "0123456789+=", state::dec_exponent);
+        add(state::dec_float, any, state::idle, token::float_literal);
+        add(state::dec_float, "0123456789", state::dec_float, advance, capture);
+        add(state::dec_float, "eE", state::dec_sign_exponent, advance, capture);
+        add(state::dec_sign_exponent, any, state::idle, advance, capture, token::error_missing_exponent_number);
+        add(state::dec_sign_exponent, "0123456789", state::dec_exponent, advance, capture);
+        add(state::dec_sign_exponent, "+-", state::dec_exponent, advance, capture);
+        add(state::dec_exponent, any, state::idle, token::float_literal);
+        add(state::dec_exponent, "0123456789", state::dec_exponent, advance, capture);
 
         // hexadecimal-float
-        add(state::hex_float, "", state::idle, token::float_literal);
-        add(state::hex_float, "0123456789abcdefABCDEF+=", state::hex_float);
-        add(state::hex_float, "pP+=", state::hex_sign_exponent);
-        add(state::hex_sign_exponent, "", state::idle, token::error_missing_exponent_number);
-        add(state::hex_sign_exponent, "0123456789abcdefABCDEF+=", state::hex_exponent);
-        add(state::hex_sign_exponent, "+-", "+=", state::hex_exponent);
-        add(state::hex_exponent, "", state::idle, token::float_literal);
-        add(state::hex_exponent, "0123456789abcdefABCDEF+=", state::hex_exponent);
+        add(state::hex_float, any, state::idle, token::float_literal);
+        add(state::hex_float, "0123456789abcdefABCDEF", state::hex_float, advance, capture);
+        add(state::hex_float, "pP", state::hex_sign_exponent, advance, capture);
+        add(state::hex_sign_exponent, any, state::idle, advance, capture, token::error_missing_exponent_number);
+        add(state::hex_sign_exponent, "0123456789abcdefABCDEF", state::hex_exponent, advance, capture);
+        add(state::hex_sign_exponent, "+-", state::hex_exponent, advance, capture);
+        add(state::hex_exponent, any, state::idle, advance, capture, token::float_literal);
+        add(state::hex_exponent, "0123456789abcdefABCDEF", state::hex_exponent, advance, capture);
     }
 
     constexpr void add_literal_string(
@@ -231,32 +228,32 @@ public:
         state_type string_literal_quote,
         state_type string_literal_escape) noexcept
     {
-        add(state::idle, c, "+", state::string_literal);
-        add(state::string_literal, "+=", state::string_literal);
+        add(state::idle, c, state::string_literal, advance);
+        add(state::string_literal, any, state::string_literal, advance, capture);
 
         if constexpr (Config.escape_by_quote_doubling) {
             // Don't catpure the first quote.
-            add(state::string_literal, c, "+", state::string_literal_quote);
+            add(state::string_literal, c, state::string_literal_quote, advance);
             // If quote is not doubled, this is the end of the string.
-            add(state::string_literal_quote, "", state::idle, token::string_literal);
+            add(state::string_literal_quote, any, state::idle, token::string_literal);
             // Capture one quote of a doubled quote.
-            add(state::string_literal_quote, c, "+=", state::string_literal);
+            add(state::string_literal_quote, c, state::string_literal, advance, capture);
 
         } else {
             // Quote ends the string.
-            add(state::string_literal, c, "+", state::idle, token::string_literal);
+            add(state::string_literal, c, state::idle, advance, token::string_literal);
 
             // Make sure that any escaped character sequence stays inside the string literal.
-            add(state::string_literal, "\\", "+=", state::string_literal_escape);
-            add(state::string_literal_escape, "+=", state::idle, string_literal);
+            add(state::string_literal, "\\", state::string_literal_escape, advance, capture);
+            add(state::string_literal_escape, state::idle, string_literal, advance, capture);
         }
     }
 
     constexpr void add_literal_color() noexcept
     {
-        add(state::idle, "#+=", state::literal_color);
+        add(state::idle, "#+=", state::literal_color, advance, capture);
         add(state::literal_color, "", state::idle, token::color_literal);
-        add(state::literal_color, "0123456789abcdefABCDEF+=", state::literal_color);
+        add(state::literal_color, "0123456789abcdefABCDEF+=", state::literal_color, advance, capture);
     }
 
     constexpr void add_operators() noexcept
@@ -265,14 +262,14 @@ public:
         //  - "=": assignment
         //  - "==": equal
         //  - "===": identical
-        add(state::idle, "=", "+=", state::found_eq);
+        add(state::idle, "=", "+=", state::found_eq, advance, capture);
         add(state::found_eq, "", state::idle, state::_operator);
-        add(state::found_eq, "=", "+=", state::found_eq_eq);
+        add(state::found_eq, "=", "+=", state::found_eq_eq, advance, capture);
         add(state::found_eq_eq, "", state::idle, state::_operator);
-        add(state::found_eq_eq, "=", "+=", state::idle, state::_operator);
+        add(state::found_eq_eq, "=", "+=", state::idle, state::_operator, advance, capture);
 
         // Any other mathematical symbol continues a multi-character operator.
-        add(state::idle, ":.+-*/%~&|^!<>?@$", "+=", state::_operator);
+        add(state::idle, ":.+-*/%~&|^!<>?@$", "+=", state::_operator, advance, capture);
 
         // add_comments() will add the singular slash
         // Treat it as if a mathematical symbol was read and continue a multi-character operator.
@@ -280,18 +277,18 @@ public:
 
         // Read the multi-character operator until a non mathematical symbol.
         add(state::_operator, "", state::idle, token::_operator);
-        add(state::_operator, ":.,+-*/%~&|^!<>?@$", "+=", state::_operator);
+        add(state::_operator, ":.,+-*/%~&|^!<>?@$", "+=", state::_operator, advance, capture);
 
         // An equal sign ends a multi-character operator as a inplace-assignment or comparison.
-        add(state::_operator, "=", "+=", state::idle, token::_operator);
+        add(state::_operator, "=", "+=", state::idle, token::_operator, advance, capture);
 
         // Add_comments() will add the singular less-than.
         // There are few special operators that start with less than
         //  - "<=" less than or equal
         //  - "<=>" spaceship operator
         add(state::found_lt, "", state::idle, token::_operator);
-        add(state::found_lt, ":.,+-*/%~&|^!<>?@$", "+=", state::_operator);
-        add(state::found_lt, "=", state::found_lt_eq, "+=");
+        add(state::found_lt, ":.,+-*/%~&|^!<>?@$", "+=", state::_operator, advance, capture);
+        add(state::found_lt, "=", state::found_lt_eq, "+=", advance, capture);
         add(state::found_lt_eq, "", state::idle, token::_operator);
         add(state::found_lt_eq, ">+=", state::idle, token::_operator);
     }
@@ -303,7 +300,7 @@ public:
             add(state::idle, "/+", state::comment_found_slash);
             add(state::comment_found_slash, "=/", state::found_slash);
         } else {
-            add(state::idle, "/+=", state::found_slash);
+            add(state::idle, "/+=", state::found_slash, advance, capture);
         }
 
         if constexpr (Config.sgml_block_comment) {
@@ -311,7 +308,7 @@ public:
             add(state::idle, "<+", state::comment_found_lt);
             add(state::comment_found_less_than, "=<", state::found_lt);
         } else {
-            add(state::idle, "<+=", state::found_lt);
+            add(state::idle, "<+=", state::found_lt, advance, capture);
         }
 
         if constexpr (Config.double_slash_line_comment) {
