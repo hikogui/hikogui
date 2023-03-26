@@ -10,12 +10,10 @@ inline namespace v1 {
  * you can look ahead beyond the current position of the iterator. This
  * is useful when writing a parser. 
  */
-template<size_t LookaheadCount, typename Iterator>
+template<size_t LookaheadCount, typename It, std::sentinel_for<It> ItEnd>
 class lookahead_iterator {
 public:
     constexpr static size_t max_size = LookaheadCount + 1;
-
-    using iterator = Iterator;
 
     using value_type = iterator_type::value_type;
     using reference = iterator_type::reference;
@@ -29,10 +27,10 @@ public:
     constexpr lookahead_iterator&operator=(lookahead_iterator const &) noexcept = delete;
     constexpr lookahead_iterator&operator=(lookahead_iterator &&) noexcept = default;
 
-    constexpr explicit lookahead_iterator(forward_of<Iterator> auto &&it) noexcept : _it(hi_forward(it)), _size(0)
+    constexpr explicit lookahead_iterator(It first, ItEnd last) noexcept : _it(first), _last(last), _size(0)
     {
-        for (; _it != std::default_sentinel and _size != max_size; ++_it, ++_size) {
-            _cache[i] = std::move(*it);
+        while (_size != max_size and first != last) {
+            add_one_to_lookead();
         }
     }
 
@@ -59,9 +57,9 @@ public:
         return not empty();
     }
 
-    [[nodiscard]] constexpr bool operator==(std::default_sentinel_t const &) const noexcept
+    [[nodiscard]] constexpr bool operator==(std::default_sentinel_t) const noexcept
     {
-        return _size == 0;
+        return empty();
     }
   
     /** Get a reference to an item at or beyond the iterator.
@@ -69,7 +67,7 @@ public:
      * @param i Index to lookahead, 0 means the current iterator, larger than zero is lookahead.
      * @return A reference to the item.
      */
-    [[nodiscard]] const_reference operator[](size_t i) const noexcept
+    [[nodiscard]] constexpr const_reference operator[](size_t i) const noexcept
     {
         hi_axiom(i < _size);
         return _cache[i];
@@ -81,7 +79,7 @@ public:
      * @throws std::out_of_range when index beyond the lookahead buffer.
      * @return A reference to the item.
      */
-    [[nodiscard]] const_reference at(size_t i) const
+    [[nodiscard]] constexpr const_reference at(size_t i) const
     {
         if (i < _size) {
             return _cache[i];
@@ -96,7 +94,7 @@ public:
      * @retval std::nullopt When the index points beyond the lookahead buffer.
      * @return A reference to the item.
      */
-    [[nodiscard]] std::optional<value_type> next(size_t i = 1) const noexcept
+    [[nodiscard]] constexpr std::optional<value_type> next(size_t i = 1) const noexcept
     {
         if (i < _size) {
             return _cache[i];
@@ -107,7 +105,7 @@ public:
 
     /** Get a reference to the value at the iterator.
      */
-    const_reference operator*() const noexcept
+    constexpr const_reference operator*() const noexcept
     {
         hi_axiom(_size != 0);
         return _cache[i];
@@ -115,7 +113,7 @@ public:
 
     /** Get a pointer to the value at the iterator.
      */
-    const_pointer operator->() const noexcept
+    constexpr const_pointer operator->() const noexcept
     {
         hi_axiom(_size != 0);
         return _cache->data();
@@ -123,7 +121,7 @@ public:
 
     /** Increment the iterator.
      */
-    lookahead_iterator &operator++() noexcept
+    constexpr lookahead_iterator &operator++() noexcept
     {
         hi_axiom(_size != 0);
         std::move(_cache.begin() + 1, _cache.begin() + _size, _cache.begin());
@@ -137,15 +135,36 @@ public:
     }
 
 private:
-    iterator _it = {};
+    It _it;
+    ItEnd _last;
     size_t _size = 0;
-    std::array<value_type, max_size> _cache = {};
+
+    /** This is the place where the _lookahead starts.
+     */
+    size_t _head = 0;
+    std::array<value_type, max_size> _lookahead = {};
+
+    constexpr bool add_one_to_lookahead() noexcept
+    {
+        if (_size == max_size or _it == _last) {
+            return false;
+        }
+
+
+        return true;
+    }
 };
 
-template<size_t LookaheadCount, typename Iterator>
-auto make_lookahead_iterator(Iterator &&it) noexcept
+template<size_t LookaheadCount, typename It, std::sentinel_for<It> ItEnd>
+auto make_lookahead_iterator(It first, ItEnd last) noexcept
 {
-    return lookahead_iterator<LookaheadCount, std::decay_t<Iterator>>{hi_forward(it)};
+    return lookahead_iterator<LookaheadCount, It, ItEnd>{first, last};
+}
+
+template<size_t LookaheadCount, std::ranges::range Range>
+auto make_lookahead_iterator(Range const &range) noexcept
+{
+    return make_lookahead_iterator<LookaheadCount>(std::ranges::begin(range), std::ranges::end(range));
 }
 
 }}
