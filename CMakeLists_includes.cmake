@@ -200,6 +200,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_east_asian_widths.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_general_categories.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_grapheme_cluster_breaks.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_lexical_classes.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_line_break_classes.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_scripts.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_sentence_break_properties.hpp
@@ -208,7 +209,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_opportunity.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_description.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_grapheme_cluster_break.hpp
-    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_identifier.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_line_break.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_normalization.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_plural.hpp

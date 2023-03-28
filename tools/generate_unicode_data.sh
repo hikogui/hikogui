@@ -22,6 +22,8 @@ $PYTHON3 tools/generate_unicode_data.py \
     --decompositions-output=src/hikogui/unicode/ucd_decompositions.hpp \
     --general-categories-template=tools/ucd/ucd_general_categories.hpp.psp \
     --general-categories-output=src/hikogui/unicode/ucd_general_categories.hpp \
+    --lexical-classes-template=tools/ucd/ucd_lexical_classes.hpp.psp \
+    --lexical-classes-output=src/hikogui/unicode/ucd_lexical_classes.hpp \
     --scripts-template=tools/ucd/ucd_scripts.hpp.psp \
     --scripts-output=src/hikogui/unicode/ucd_scripts.hpp \
     --east-asian-widths-template=tools/ucd/ucd_east_asian_widths.hpp.psp \
@@ -53,6 +55,7 @@ $PYTHON3 tools/generate_unicode_data.py \
     --emoji-data=${UCDDIR}/emoji-data.txt \
     --grapheme-break-property=${UCDDIR}/GraphemeBreakProperty.txt \
     --line-break=${UCDDIR}/LineBreak.txt \
+    --prop-list=${UCDDIR}/PropList.txt \
     --scripts=${UCDDIR}/Scripts.txt \
     --sentence-break-property=${UCDDIR}/SentenceBreakProperty.txt \
     --unicode-data=${UCDDIR}/UnicodeData.txt \
