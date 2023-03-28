@@ -318,7 +318,7 @@ public:
     public:
         constexpr iterator(lexer const *lexer, It first, ItEnd last) noexcept : _lexer(lexer), _it(first), _last(last)
         {
-            _code_point = read_code_point();
+            _cp = read_code_point(_it, _last, _offset);
             parse_token();
         }
 
@@ -330,7 +330,6 @@ public:
         constexpr iterator& operator++() noexcept
         {
             hi_axiom(not _finished);
-            _code_point = read_code_point();
             parse_token();
             return *this;
         }
@@ -344,9 +343,9 @@ public:
         lexer const *_lexer;
         It _it;
         ItEnd _last;
-        size_t _code_point_offset = 0;
+        size_t _cp_offset = 0;
         size_t _offset = 0;
-        char32_t _code_point = 0;
+        char32_t _cp = 0;
         lexer_token_type _token;
         lexer_state_type _state = lexer_state_type::idle;
         bool _finished = false;
@@ -380,7 +379,7 @@ public:
 
         /** Advances the iterator by a code-point.
          */
-        [[nodiscard]] constexpr static char32_t read_code_point(It &it, ItEnd &last, size_t &offset) noexcept
+        [[nodiscard]] constexpr static char32_t read_code_point(It &it, ItEnd const &last, size_t &offset) noexcept
         {
             if (it == last) {
                 // End-of-file reached.
@@ -424,7 +423,7 @@ public:
         }
 
         [[nodiscard]] constexpr static lexer_token_type _parse_token(
-            lexer_type const &lexer,
+            lexer const &lexer,
             lexer_state_type &state,
             It &it,
             ItEnd const &last,
