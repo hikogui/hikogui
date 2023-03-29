@@ -3,6 +3,7 @@
 
 #include "utility/module.hpp"
 #include "unicode/module.hpp"
+#include "char_maps/module.hpp"
 #include <ranges>
 #include <iterator>
 #include <cstdint>
@@ -109,11 +110,34 @@ constexpr auto lexer_token_kind_metadata = enum_metadata{
 // clang-format on
 
 struct lexer_token_type {
-    lexer_token_kind kind;
-    std::string capture;
-    size_t offset;
+    std::vector<char> capture = {};
+    size_t line_nr = 0;
+    size_t column_nr = 0;
+    lexer_token_kind kind = lexer_token_kind::none;
 
+    constexpr lexer_token_type() noexcept = default;
+    constexpr lexer_token_type(lexer_token_type const&) noexcept = default;
+    constexpr lexer_token_type(lexer_token_type&&) noexcept = default;
+    constexpr lexer_token_type& operator=(lexer_token_type const&) noexcept = default;
+    constexpr lexer_token_type& operator=(lexer_token_type&&) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(lexer_token_type const&, lexer_token_type const&) noexcept = default;
+
+    constexpr lexer_token_type(lexer_token_kind kind, std::string_view capture, size_t column_nr) noexcept :
+        kind(kind), capture(), line_nr(0), column_nr(column_nr)
+    {
+        std::copy(capture.begin(), capture.end(), std::back_inserter(this->capture));
+    }
+
+    constexpr lexer_token_type(lexer_token_kind kind, std::string_view capture, size_t line_nr, size_t column_nr) noexcept :
+        kind(kind), capture(), line_nr(line_nr), column_nr(column_nr)
+    {
+        std::copy(capture.begin(), capture.end(), std::back_inserter(this->capture));
+    }
+
+    constexpr operator std::string_view () const noexcept
+    {
+        return std::string_view{capture.data(), capture.size()};
+    }
 
     inline friend std::ostream& operator<<(std::ostream& lhs, hi::lexer_token_type const& rhs)
     {
@@ -255,6 +279,14 @@ struct lexer_command_type {
     /** This entry has been assigned.
      */
     uint8_t assigned : 1 = 0;
+
+    /** Advance line_nr.
+     */
+    uint8_t advance_line : 1 = 0;
+
+    /** Advance column_nr for a tab.
+     */
+    uint8_t advance_tab : 1 = 0;
 };
 
 template<lexer_config Config>
@@ -320,8 +352,8 @@ public:
         constexpr iterator(lexer const *lexer, It first, ItEnd last) noexcept :
             _lexer(lexer), _first(first), _last(last), _it(first)
         {
-            _cp = read_code_point(_it, _last);
-            parse_token();
+            _cp = advance();
+            _token.kind = parse_token();
         }
 
         [[nodiscard]] constexpr lexer_token_type const& operator*() const noexcept
@@ -331,14 +363,14 @@ public:
 
         constexpr iterator& operator++() noexcept
         {
-            hi_axiom(not _finished);
-            parse_token();
+            hi_axiom(*this != std::default_sentinel);
+            _token.kind = parse_token();
             return *this;
         }
 
         [[nodiscard]] constexpr bool operator==(std::default_sentinel_t) const noexcept
         {
-            return _finished;
+            return _token.kind == lexer_token_kind::none;
         }
 
     private:
@@ -349,170 +381,109 @@ public:
         char32_t _cp = 0;
         lexer_token_type _token;
         lexer_state_type _state = lexer_state_type::idle;
-        bool _finished = false;
+        size_t _line_nr = 0;
+        size_t _column_nr = 0;
 
-        [[nodiscard]] constexpr static size_t code_point_size(char32_t code_point) noexcept
+        /** Clear the capture buffer..
+         *
+         * @param code_point The code-point with extra information.
+         */
+        constexpr void clear() noexcept
         {
-            hi_axiom(code_point < 0x7fff'ffff);
-            return (code_point >> 29) + 1;
+            _token.capture.clear();
+        }
+
+        /** Write a code point into the capture buffer.
+         *
+         * @param code_point The code-point.
+         */
+        constexpr void capture(char code_point) noexcept
+        {
+            _token.capture.push_back(code_point);
         }
 
         /** Write a code point into the capture.
          *
-         * @param capture The UTF-8 string being captured.
-         * @param code_point The code-point with extra information.
+         * @param code_point The code-point.
          */
-        constexpr static void write_code_point(std::string& capture, char32_t code_point) noexcept
+        constexpr void capture(char32_t code_point) noexcept
         {
             hi_axiom(code_point < 0x7fff'ffff);
 
-            auto num_cu = narrow_cast<uint8_t>(code_point >> 29);
-
-            int8_t leading_ones = 0x80;
-            leading_ones >>= num_cu;
-            if (num_cu == 0) {
-                leading_ones = 0;
-            }
-
-            auto shift = num_cu * 6;
-
-            auto cu = truncate<uint8_t>(code_point >> shift);
-            cu |= truncate<uint8_t>(leading_ones);
-            capture += char_cast<char>(cu);
-
-            while (shift) {
-                shift -= 6;
-
-                cu = truncate<uint8_t>(code_point >> shift);
-                cu &= 0b00'111111;
-                cu |= 0b10'000000;
-                capture += char_cast<char>(cu);
-            }
+            auto out_it = std::back_inserter(_token.capture);
+            char_map<"utf-8">{}.write(code_point, out_it);
         }
 
-        [[nodiscard]] hi_no_inline constexpr static char32_t _read_code_point(It& it, ItEnd last, char8_t cu) noexcept
+        constexpr void advance_counters() noexcept
         {
-            // 0: ASCII character, but actually 1 code-unit (not-reached)
-            // 1: unpaired continuation code-point. (invalid code-point)
-            // 2: 2 code-unit
-            // 3: 3 code-unit
-            // 4: 4 code-unit
-            // 5-8: legacy UTF-8 larger than U+10FFFF. (invalid code-point)
-            auto num_cu = std::countl_one(char_cast<uint8_t>(cu));
-            hi_axiom(num_cu != 0);
-            if (num_cu == 1 or num_cu > 4) {
-                // REPLACEMENT_CHAR with only 1 code-unit consumed.
-                return 0xfffd;
+            if (_cp == '\n' or _cp == '\v' or _cp == '\f' or _cp == '\x85' or _cp == U'\u2028' or _cp == U'\u2029') {
+                ++_line_nr;
+            } else if (_cp == '\t') {
+                _column_nr /= 8;
+                ++_column_nr;
+                _column_nr *= 8;
+            } else {
+                ++_column_nr;
             }
-
-            hilet num_cu_shift = (wide_cast<char32_t>(num_cu - 1) << 29);
-
-            // Strip off the leading bits.
-            cu <<= num_cu;
-            cu >>= num_cu;
-            auto cp = char_cast<char32_t>(cu);
-
-            bool error = false;
-            while (--num_cu) {
-                if (it == last) {
-                    // End-of-file reached.
-                    return 0xffff'ffff;
-                }
-
-                // If the code-unit is not a continuation unit invalid code-point is generated.
-                cu = char_cast<char8_t>(*it);
-                if ((cu & 0b11'000000) != 0b10'000000) {
-                    // Error, but continue consuming.
-                    error = true;
-                }
-
-                cu &= 0b00'111111;
-                ++it;
-
-                cp <<= 6;
-                cp |= cu;
-            }
-            if (error) {
-                cp = 0xfffd;
-            }
-            return cp | num_cu_shift;
         }
 
         /** Advances the iterator by a code-point.
          *
-         * The information is encoded as follows:
-         * - [31] '1' end-of-file
-         * - [30:29] Number of UTF-8 code-units -1: 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4
-         * - [28:21] 8 leading bits '0' so no mask needed.
-         * - [20:0] code-point
-         *
-         * For ASCII code-point this means the encoded length value is zero
-         * and you can use a ASCII code-point directly as an ASCII value.
-         *
-         * @return A code-point with extra information.
+         * @return A code-point, or -1 at end of file.
          */
-        [[nodiscard]] constexpr static char32_t read_code_point(It& it, ItEnd last) noexcept
+        [[nodiscard]] constexpr char32_t advance() noexcept
         {
-            if (it == last) {
+            if (_it == _last) {
                 return 0xffff'ffff;
             }
 
-            auto cu = char_cast<char8_t>(*it);
-            ++it;
-
-            if (cu <= 0x7f) {
-                return cu;
-            }
-
-            return _read_code_point(it, last, cu);
+            hilet[code_point, valid] = char_map<"utf-8">{}.read(_it, _last);
+            return code_point;
         }
 
-        [[nodiscard]] constexpr static lexer_token_kind
-        _parse_token_unicode_identifier(lexer_state_type& state, std::string& capture, It& it, ItEnd last, char32_t& cp) noexcept
+        [[nodiscard]] constexpr lexer_token_kind parse_token_unicode_identifier() noexcept
         {
-            switch (ucd_get_lexical_class(cp)) {
+            switch (ucd_get_lexical_class(_cp & 0x1f'ffff)) {
             case unicode_lexical_class::id_start:
             case unicode_lexical_class::id_continue:
-                write_code_point(capture, cp);
-                cp = read_code_point(it, last);
+                capture(_cp);
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::none;
 
             default:
-                state = lexer_state_type::idle;
+                _state = lexer_state_type::idle;
                 return lexer_token_kind::identifier;
             }
         }
 
-        [[nodiscard]] constexpr static lexer_token_kind _parse_token_unicode_line_comment(
-            lexer_state_type& state,
-            std::string& capture,
-            It& it,
-            ItEnd last,
-            char32_t& cp) noexcept
+        [[nodiscard]] constexpr lexer_token_kind parse_token_unicode_line_comment() noexcept
         {
-            hilet cp_ = cp & 0x1f'ffff;
+            hilet cp_ = _cp & 0x1f'ffff;
             if (cp_ == U'\u0085' or cp_ == U'\u2028' or cp_ == U'\u2029') {
-                state = lexer_state_type::idle;
-                cp = read_code_point(it, last);
+                _state = lexer_state_type::idle;
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::line_comment;
 
             } else {
-                write_code_point(capture, cp);
-                cp = read_code_point(it, last);
+                capture(_cp);
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::none;
             }
         }
 
-        [[nodiscard]] constexpr static lexer_token_kind
-        _parse_token_unicode_white_space(lexer_state_type& state, std::string& capture, It& it, ItEnd last, char32_t& cp) noexcept
+        [[nodiscard]] constexpr lexer_token_kind parse_token_unicode_white_space() noexcept
         {
-            if (ucd_get_lexical_class(cp & 0x1f'ffff) == unicode_lexical_class::white_space) {
-                write_code_point(capture, cp);
-                cp = read_code_point(it, last);
+            if (ucd_get_lexical_class(_cp & 0x1f'ffff) == unicode_lexical_class::white_space) {
+                capture(_cp);
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::none;
 
             } else {
-                state = lexer_state_type::idle;
+                _state = lexer_state_type::idle;
                 if constexpr (Config.white_space_is_token) {
                     return lexer_token_kind::white_space;
                 } else {
@@ -521,90 +492,107 @@ public:
             }
         }
 
-        [[nodiscard]] constexpr static lexer_token_kind
-        _parse_token_unicode_idle(lexer_state_type& state, std::string& capture, It& it, ItEnd last, char32_t& cp) noexcept
+        [[nodiscard]] constexpr lexer_token_kind parse_token_unicode_idle() noexcept
         {
-            switch (ucd_get_lexical_class(cp & 0x1f'ffff)) {
+            switch (ucd_get_lexical_class(_cp & 0x1f'ffff)) {
             case unicode_lexical_class::id_start:
-                state = lexer_state_type::identifier;
-                write_code_point(capture, cp);
-                cp = read_code_point(it, last);
+                _state = lexer_state_type::identifier;
+                capture(_cp);
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::none;
 
             case unicode_lexical_class::white_space:
                 if constexpr (Config.white_space_is_token) {
-                    state = lexer_state_type::white_space;
-                    write_code_point(capture, cp);
+                    _state = lexer_state_type::white_space;
+                    capture(_cp);
                 } else {
-                    state = lexer_state_type::idle;
+                    _state = lexer_state_type::idle;
                 }
-                cp = read_code_point(it, last);
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::none;
 
             case unicode_lexical_class::syntax:
-                state = lexer_state_type::idle;
-                write_code_point(capture, cp);
-                cp = read_code_point(it, last);
+                _state = lexer_state_type::idle;
+                capture(_cp);
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::other;
 
             default:
-                write_code_point(capture, cp);
-                cp = read_code_point(it, last);
+                capture(_cp);
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::error_unexepected_character;
             }
         }
 
-        [[nodiscard]] hi_no_inline constexpr static lexer_token_kind
-        _parse_token_unicode(lexer_state_type& state, std::string& capture, It& it, ItEnd last, char32_t& cp) noexcept
+        [[nodiscard]] hi_no_inline constexpr lexer_token_kind parse_token_unicode() noexcept
         {
             // Unicode by-pass.
-            switch (state) {
+            switch (_state) {
             case lexer_state_type::idle:
-                return _parse_token_unicode_idle(state, capture, it, last, cp);
+                return parse_token_unicode_idle();
 
             case lexer_state_type::white_space:
-                return _parse_token_unicode_white_space(state, capture, it, last, cp);
+                return parse_token_unicode_white_space();
 
             case lexer_state_type::line_comment:
-                return _parse_token_unicode_line_comment(state, capture, it, last, cp);
+                return parse_token_unicode_line_comment();
 
             case lexer_state_type::identifier:
-                return _parse_token_unicode_identifier(state, capture, it, last, cp);
+                return parse_token_unicode_identifier();
 
             case lexer_state_type::dqstring_literal:
             case lexer_state_type::sqstring_literal:
             case lexer_state_type::bqstring_literal:
             case lexer_state_type::block_comment:
-                write_code_point(capture, cp);
-                cp = read_code_point(it, last);
+                capture(_cp);
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::none;
 
             default:
-                state = lexer_state_type::idle;
-                write_code_point(capture, cp);
-                cp = read_code_point(it, last);
+                _state = lexer_state_type::idle;
+                capture(_cp);
+                advance_counters();
+                _cp = advance();
                 return lexer_token_kind::error_unexepected_character;
             }
         }
 
-        [[nodiscard]] constexpr static lexer_token_kind
-        _parse_token(lexer const& lexer, lexer_state_type& state, std::string& capture, It& it, ItEnd last, char32_t& cp) noexcept
+        [[nodiscard]] constexpr lexer_token_kind parse_token() noexcept
         {
-            while (cp <= 0x7fff'ffff) {
-                if (cp <= 0x7f) {
-                    hilet command = lexer.get_command(state, char_cast<char>(cp));
-                    state = command.next_state;
+            _token.line_nr = _line_nr;
+            _token.column_nr = _column_nr;
+            clear();
+
+            while (_cp <= 0x7fff'ffff) {
+                if (_cp <= 0x7f) {
+                    hilet command = _lexer->get_command(_state, char_cast<char>(_cp));
+                    _state = command.next_state;
 
                     if (command.clear) {
-                        capture.clear();
+                        clear();
                     }
 
                     if (command.char_to_capture != '\0') {
-                        capture += command.char_to_capture;
+                        capture(command.char_to_capture);
                     }
 
                     if (command.advance) {
-                        cp = read_code_point(it, last);
+                        if (command.advance_line) {
+                            ++_line_nr;
+                            _column_nr = 0;
+                        } else if (command.advance_tab) {
+                            _column_nr /= 8;
+                            ++_column_nr;
+                            _column_nr *= 8;
+                        } else {
+                            ++_column_nr;
+                        }
+                        _cp = advance();
                     }
 
                     if (command.emit_token != lexer_token_kind::none) {
@@ -612,7 +600,7 @@ public:
                     }
 
                 } else {
-                    auto emit_token = _parse_token_unicode(state, capture, it, last, cp);
+                    auto emit_token = parse_token_unicode();
                     if (emit_token != lexer_token_kind::none) {
                         return emit_token;
                     }
@@ -620,16 +608,16 @@ public:
             }
 
             // Handle trailing state changes at end-of-file.
-            while (state != lexer_state_type::idle) {
-                hilet command = lexer.get_command(state, '\0');
-                state = command.next_state;
+            while (_state != lexer_state_type::idle) {
+                hilet command = _lexer->get_command(_state, '\0');
+                _state = command.next_state;
 
                 if (command.clear) {
-                    capture.clear();
+                    clear();
                 }
 
                 if (command.char_to_capture != '\0') {
-                    capture += command.char_to_capture;
+                    capture(command.char_to_capture);
                 }
 
                 hi_axiom(not command.advance);
@@ -642,34 +630,6 @@ public:
             // We have finished parsing and there was no token captured.
             // For example when the end of file only contains white-space.
             return lexer_token_kind::none;
-        }
-
-        constexpr void parse_token() noexcept
-        {
-            // The indirection to _parse_token() is so that we can copy all the state of the parser into
-            // local variables so that the optimizer is better able to replace memory access with register
-            // access in the tight loops inside _parse_token().
-            auto state = _state;
-            auto it = _it;
-            auto cp = _cp;
-
-            if (cp > 0x7fff'ffff) {
-                _finished = true;
-                return;
-            }
-
-            // Prepare the token's storage.
-            // We can back-calculate the offset of the start of the code-point.
-            _token.offset = narrow_cast<size_t>(std::distance(_first, _it) - code_point_size(cp));
-            _token.capture.clear();
-
-            hi_axiom_not_null(_lexer);
-            _token.kind = _parse_token(*_lexer, state, _token.capture, it, _last, cp);
-            _finished = _token.kind == lexer_token_kind::none;
-
-            _state = state;
-            _it = it;
-            _cp = cp;
         }
     };
 
@@ -992,6 +952,8 @@ private:
         command.next_state = to;
         command.char_to_capture = '\0';
         command.advance = 0;
+        command.advance_line = 0;
+        command.advance_tab = 0;
         command.clear = 0;
         command.emit_token = lexer_token_kind::none;
         return command;
@@ -1021,6 +983,11 @@ private:
 
         } else if constexpr (std::is_same_v<First, lexer_advance_tag>) {
             command.advance = 1;
+            if (c == '\n' or c == '\v' or c == '\f') {
+                command.advance_line = 1;
+            } else if (c == '\t') {
+                command.advance_tab = 1;
+            }
 
         } else if constexpr (std::is_same_v<First, lexer_clear_tag>) {
             command.clear = 1;
@@ -1093,6 +1060,6 @@ struct std::formatter<hi::lexer_token_type, CharT> : std::formatter<std::string,
     auto format(hi::lexer_token_type const& t, auto& fc)
     {
         return std::formatter<std::string, CharT>::format(
-            std::format("{} \"{}\" {}", hi::lexer_token_kind_metadata[t.kind], t.capture, t.offset), fc);
+            std::format("{} \"{}\" {}:{}", hi::lexer_token_kind_metadata[t.kind], static_cast<std::string_view>(t), t.line_nr, t.column_nr), fc);
     }
 };
