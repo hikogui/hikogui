@@ -42,7 +42,7 @@ struct lexer_config {
 
     uint16_t has_c_block_comment : 1 = 0;
     uint16_t has_sgml_block_comment : 1 = 0;
-    uint16_t white_space_is_token : 1 = 0;
+    uint16_t filter_white_space : 1 = 0;
 
     /** The equal '=' character is used for INI-like assignment.S
      *
@@ -52,7 +52,7 @@ struct lexer_config {
      *   a string token.
      * - Any other character will resolved as normal.
      */
-    uint16_t equal_is_ini_asignment : 1 = 0;
+    uint16_t equal_is_ini_assignment : 1 = 0;
 
     /** The colon ':' character is used for INI-like assignment.
      *
@@ -63,7 +63,7 @@ struct lexer_config {
      * - Any other character will resolved as normal.
      *
      */
-    uint16_t colon_is_ini_asignment : 1 = 0;
+    uint16_t colon_is_ini_assignment : 1 = 0;
 
     /** The character used to separate groups of numbers.
      *
@@ -78,6 +78,7 @@ struct lexer_config {
     [[nodiscard]] constexpr static lexer_config c_style() noexcept
     {
         auto r = lexer_config{};
+        r.filter_white_space = 1;
         r.zero_starts_octal = 1;
         r.digit_separator = '\'';
         r.has_double_quote_string_literal = 1;
@@ -90,6 +91,13 @@ struct lexer_config {
     [[nodiscard]] constexpr static lexer_config ini_style() noexcept
     {
         auto r = lexer_config{};
+        r.filter_white_space = 1;
+        r.digit_separator = '_';
+        r.has_double_quote_string_literal = 1;
+        r.has_single_quote_string_literal = 1;
+        r.has_semicolon_line_comment = 1;
+        r.has_color_literal = 1;
+        r.equal_is_ini_assignment = 1;
         return r;
     }
 };
@@ -102,15 +110,17 @@ enum class lexer_token_kind : uint8_t {
     error_incomplete_string,
     error_incomplete_comment,
     error_after_lt_bang,
-    integer_literal,
-    float_literal,
-    sqstring_literal,
-    dqstring_literal,
-    bqstring_literal,
-    line_comment,
-    block_comment,
-    white_space,
-    identifier,
+    integer,
+    real,
+    sstr,
+    dstr,
+    bstr,
+    istr,
+    color,
+    lcomment,
+    bcomment,
+    ws,
+    id,
     other
 };
 
@@ -123,15 +133,17 @@ constexpr auto lexer_token_kind_metadata = enum_metadata{
     lexer_token_kind::error_incomplete_string, "error:incomplete string",
     lexer_token_kind::error_incomplete_comment, "error:incomplete comment",
     lexer_token_kind::error_after_lt_bang, "error:after_lt_bang",
-    lexer_token_kind::integer_literal, "integer",
-    lexer_token_kind::float_literal, "float",
-    lexer_token_kind::sqstring_literal, "single-quote string",
-    lexer_token_kind::dqstring_literal, "double-quote string",
-    lexer_token_kind::bqstring_literal, "back-quote string",
-    lexer_token_kind::line_comment, "line comment",
-    lexer_token_kind::block_comment, "block comment",
-    lexer_token_kind::white_space, "white_space",
-    lexer_token_kind::identifier, "identifier",
+    lexer_token_kind::integer, "integer",
+    lexer_token_kind::real, "read",
+    lexer_token_kind::sstr, "single-quote string",
+    lexer_token_kind::dstr, "double-quote string",
+    lexer_token_kind::bstr, "back-quote string",
+    lexer_token_kind::istr, "ini string",
+    lexer_token_kind::color, "color",
+    lexer_token_kind::lcomment, "line comment",
+    lexer_token_kind::bcomment, "block comment",
+    lexer_token_kind::ws, "ws",
+    lexer_token_kind::id, "id",
     lexer_token_kind::other, "other"
 };
 // clang-format on
@@ -177,7 +189,7 @@ struct lexer_token_type {
         return kind == lexer_token_kind::other and capture.size() == 1 and capture.front() == rhs;
     }
 
-    constexpr operator std::string_view () const noexcept
+    constexpr operator std::string_view() const noexcept
     {
         return std::string_view{capture.data(), capture.size()};
     }
@@ -221,13 +233,16 @@ enum class lexer_state_type : uint8_t {
     block_comment_found_dash,
     block_comment_found_dash_dash,
     block_comment_found_dash_dash_fin0,
-    found_slash,
-    found_lt,
+    found_colon,
+    found_dot,
+    found_eq,
     found_hash,
+    found_lt,
     found_lt_bang,
     found_lt_bang_dash,
     found_lt_eq,
-    found_dot,
+    found_slash,
+    ini_string,
     white_space,
     identifier,
 
@@ -341,11 +356,15 @@ public:
         add(lexer_state_type::idle, '<', lexer_state_type::found_lt, lexer_advance, lexer_capture);
         add(lexer_state_type::idle, '#', lexer_state_type::found_hash, lexer_advance, lexer_capture);
         add(lexer_state_type::idle, '.', lexer_state_type::found_dot, lexer_advance, lexer_capture);
+        add(lexer_state_type::idle, '=', lexer_state_type::found_eq, lexer_advance, lexer_capture);
+        add(lexer_state_type::idle, ':', lexer_state_type::found_colon, lexer_advance, lexer_capture);
 
         add(lexer_state_type::found_slash, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
         add(lexer_state_type::found_lt, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
         add(lexer_state_type::found_hash, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
         add(lexer_state_type::found_dot, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
+        add(lexer_state_type::found_eq, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
+        add(lexer_state_type::found_colon, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
 
         // Adds the starters "\"'`"
         add_string_literals();
@@ -357,9 +376,10 @@ public:
         add_comments();
         add_white_space();
         add_identifier();
+        add_ini_assignment();
 
         add(lexer_state_type::idle,
-            "~!@$%^&*()-+=[]{}\\|:,>?",
+            "~!@$%^&*()-+[]{}\\|,>?",
             lexer_state_type::idle,
             lexer_token_kind::other,
             lexer_capture,
@@ -396,7 +416,9 @@ public:
             _lexer(lexer), _first(first), _last(last), _it(first)
         {
             _cp = advance();
-            _token.kind = parse_token();
+            do {
+                _token.kind = parse_token();
+            } while (Config.filter_white_space and _token.kind == lexer_token_kind::ws);
         }
 
         [[nodiscard]] constexpr lexer_token_type const& operator*() const noexcept
@@ -407,7 +429,9 @@ public:
         constexpr iterator& operator++() noexcept
         {
             hi_axiom(*this != std::default_sentinel);
-            _token.kind = parse_token();
+            do {
+                _token.kind = parse_token();
+            } while (Config.filter_white_space and _token.kind == lexer_token_kind::ws);
             return *this;
         }
 
@@ -496,7 +520,7 @@ public:
 
             default:
                 _state = lexer_state_type::idle;
-                return lexer_token_kind::identifier;
+                return lexer_token_kind::id;
             }
         }
 
@@ -507,7 +531,7 @@ public:
                 _state = lexer_state_type::idle;
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::line_comment;
+                return lexer_token_kind::lcomment;
 
             } else {
                 capture(_cp);
@@ -527,11 +551,7 @@ public:
 
             } else {
                 _state = lexer_state_type::idle;
-                if constexpr (Config.white_space_is_token) {
-                    return lexer_token_kind::white_space;
-                } else {
-                    return lexer_token_kind::none;
-                }
+                return lexer_token_kind::ws;
             }
         }
 
@@ -546,12 +566,8 @@ public:
                 return lexer_token_kind::none;
 
             case unicode_lexical_class::white_space:
-                if constexpr (Config.white_space_is_token) {
-                    _state = lexer_state_type::white_space;
-                    capture(_cp);
-                } else {
-                    _state = lexer_state_type::idle;
-                }
+                _state = lexer_state_type::white_space;
+                capture(_cp);
                 advance_counters();
                 _cp = advance();
                 return lexer_token_kind::none;
@@ -596,13 +612,57 @@ public:
                 _cp = advance();
                 return lexer_token_kind::none;
 
+            case lexer_state_type::ini_string:
+                // Line-feeds will terminate an ini-string.
+                if (_cp == U'\u0085' or _cp == U'\u2028' or _cp == U'\u2029') {
+                    return lexer_token_kind::istr;
+                } else {
+                    capture(_cp);
+                    advance_counters();
+                    _cp = advance();
+                    return lexer_token_kind::none;
+                }
+
             default:
-                _state = lexer_state_type::idle;
-                capture(_cp);
-                advance_counters();
-                _cp = advance();
-                return lexer_token_kind::error_unexepected_character;
+                // Most tokens are terminated when a non-ascii code-point is found.
+                // Terminate these tokens as if we reached end-of-file.
+                while (_state != lexer_state_type::idle) {
+                    if (auto token_kind = process_command(); token_kind != lexer_token_kind::none) {
+                        return token_kind;
+                    }
+                }
+                return lexer_token_kind::none;
             }
+        }
+
+        [[nodiscard]] constexpr lexer_token_kind process_command(char c = '\0') noexcept
+        {
+            hilet command = _lexer->get_command(_state, c);
+            _state = command.next_state;
+
+            if (command.clear) {
+                clear();
+            }
+
+            if (command.char_to_capture != '\0') {
+                capture(command.char_to_capture);
+            }
+
+            if (command.advance) {
+                if (command.advance_line) {
+                    ++_line_nr;
+                    _column_nr = 0;
+                } else if (command.advance_tab) {
+                    _column_nr /= 8;
+                    ++_column_nr;
+                    _column_nr *= 8;
+                } else {
+                    ++_column_nr;
+                }
+                _cp = advance();
+            }
+
+            return command.emit_token;
         }
 
         [[nodiscard]] constexpr lexer_token_kind parse_token() noexcept
@@ -613,33 +673,8 @@ public:
 
             while (_cp <= 0x7fff'ffff) {
                 if (_cp <= 0x7f) {
-                    hilet command = _lexer->get_command(_state, char_cast<char>(_cp));
-                    _state = command.next_state;
-
-                    if (command.clear) {
-                        clear();
-                    }
-
-                    if (command.char_to_capture != '\0') {
-                        capture(command.char_to_capture);
-                    }
-
-                    if (command.advance) {
-                        if (command.advance_line) {
-                            ++_line_nr;
-                            _column_nr = 0;
-                        } else if (command.advance_tab) {
-                            _column_nr /= 8;
-                            ++_column_nr;
-                            _column_nr *= 8;
-                        } else {
-                            ++_column_nr;
-                        }
-                        _cp = advance();
-                    }
-
-                    if (command.emit_token != lexer_token_kind::none) {
-                        return command.emit_token;
+                    if (auto token_kind = process_command(char_cast<char>(_cp)); token_kind != lexer_token_kind::none) {
+                        return token_kind;
                     }
 
                 } else {
@@ -652,21 +687,8 @@ public:
 
             // Handle trailing state changes at end-of-file.
             while (_state != lexer_state_type::idle) {
-                hilet command = _lexer->get_command(_state, '\0');
-                _state = command.next_state;
-
-                if (command.clear) {
-                    clear();
-                }
-
-                if (command.char_to_capture != '\0') {
-                    capture(command.char_to_capture);
-                }
-
-                hi_axiom(not command.advance);
-
-                if (command.emit_token != lexer_token_kind::none) {
-                    return command.emit_token;
+                if (auto token_kind = process_command(); token_kind != lexer_token_kind::none) {
+                    return token_kind;
                 }
             }
 
@@ -735,7 +757,7 @@ private:
         if constexpr (Config.has_single_quote_string_literal) {
             add_string_literal(
                 '\'',
-                lexer_token_kind::sqstring_literal,
+                lexer_token_kind::sstr,
                 lexer_state_type::sqstring_literal,
                 lexer_state_type::sqstring_literal_quote,
                 lexer_state_type::sqstring_literal_escape);
@@ -746,7 +768,7 @@ private:
         if constexpr (Config.has_double_quote_string_literal) {
             add_string_literal(
                 '"',
-                lexer_token_kind::dqstring_literal,
+                lexer_token_kind::dstr,
                 lexer_state_type::dqstring_literal,
                 lexer_state_type::dqstring_literal_quote,
                 lexer_state_type::dqstring_literal_escape);
@@ -757,7 +779,7 @@ private:
         if constexpr (Config.has_back_quote_string_literal) {
             add_string_literal(
                 '`',
-                lexer_token_kind::btstring_literal,
+                lexer_token_kind::bstr,
                 lexer_state_type::btstring_literal,
                 lexer_state_type::btstring_literal_quote,
                 lexer_state_type::btstring_literal_escape);
@@ -771,7 +793,7 @@ private:
         add(lexer_state_type::idle, "0", lexer_state_type::zero, lexer_advance, lexer_capture);
         add(lexer_state_type::idle, "123456789", lexer_state_type::dec_integer, lexer_advance, lexer_capture);
 
-        add(lexer_state_type::zero, lexer_any, lexer_state_type::idle, lexer_token_kind::integer_literal);
+        add(lexer_state_type::zero, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
         add(lexer_state_type::zero, "bB", lexer_state_type::bin_integer, lexer_advance, lexer_capture);
         add(lexer_state_type::zero, "oO", lexer_state_type::oct_integer, lexer_advance, lexer_capture);
         add(lexer_state_type::zero, "dD", lexer_state_type::dec_integer, lexer_advance, lexer_capture);
@@ -785,30 +807,30 @@ private:
         }
 
         // binary-integer
-        add(lexer_state_type::bin_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer_literal);
+        add(lexer_state_type::bin_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
         add(lexer_state_type::bin_integer, "01", lexer_state_type::bin_integer, lexer_advance, lexer_capture);
         add(lexer_state_type::bin_integer, "23456789", lexer_state_type::idle, lexer_token_kind::error_invalid_digit);
 
         // octal-integer
-        add(lexer_state_type::oct_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer_literal);
+        add(lexer_state_type::oct_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
         add(lexer_state_type::oct_integer, "01234567", lexer_state_type::oct_integer, lexer_advance, lexer_capture);
         add(lexer_state_type::oct_integer, "89", lexer_state_type::idle, lexer_token_kind::error_invalid_digit);
 
         // decimal-integer
-        add(lexer_state_type::dec_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer_literal);
+        add(lexer_state_type::dec_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
         add(lexer_state_type::dec_integer, "0123456789", lexer_state_type::dec_integer, lexer_advance, lexer_capture);
         add(lexer_state_type::dec_integer, ".", lexer_state_type::dec_float, lexer_advance, lexer_capture);
         add(lexer_state_type::dec_integer, "eE", lexer_state_type::dec_sign_exponent, lexer_advance, lexer_capture);
 
         // hexadecimal-integer
-        add(lexer_state_type::hex_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer_literal);
+        add(lexer_state_type::hex_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
         add(lexer_state_type::hex_integer, "0123456789abcdefABCDEF", lexer_state_type::hex_integer, lexer_advance, lexer_capture);
         add(lexer_state_type::hex_integer, ".", lexer_state_type::hex_float, lexer_advance, lexer_capture);
         add(lexer_state_type::hex_integer, "pP", lexer_state_type::hex_sign_exponent, lexer_advance, lexer_capture);
 
         // decimal-float
         add(lexer_state_type::found_dot, "0123456789eE", lexer_state_type::dec_float);
-        add(lexer_state_type::dec_float, lexer_any, lexer_state_type::idle, lexer_token_kind::float_literal);
+        add(lexer_state_type::dec_float, lexer_any, lexer_state_type::idle, lexer_token_kind::real);
         add(lexer_state_type::dec_float, "0123456789", lexer_state_type::dec_float, lexer_advance, lexer_capture);
         add(lexer_state_type::dec_float, "eE", lexer_state_type::dec_sign_exponent, lexer_advance, lexer_capture);
         add(lexer_state_type::dec_sign_exponent, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_exponent);
@@ -816,11 +838,11 @@ private:
         add(lexer_state_type::dec_sign_exponent, "+-", lexer_state_type::dec_exponent, lexer_advance, lexer_capture);
         add(lexer_state_type::dec_exponent, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_exponent);
         add(lexer_state_type::dec_exponent, "0123456789", lexer_state_type::dec_exponent_more, lexer_advance, lexer_capture);
-        add(lexer_state_type::dec_exponent_more, lexer_any, lexer_state_type::idle, lexer_token_kind::float_literal);
+        add(lexer_state_type::dec_exponent_more, lexer_any, lexer_state_type::idle, lexer_token_kind::real);
         add(lexer_state_type::dec_exponent_more, "0123456789", lexer_state_type::dec_exponent_more, lexer_advance, lexer_capture);
 
         // hexadecimal-float
-        add(lexer_state_type::hex_float, lexer_any, lexer_state_type::idle, lexer_token_kind::float_literal);
+        add(lexer_state_type::hex_float, lexer_any, lexer_state_type::idle, lexer_token_kind::real);
         add(lexer_state_type::hex_float, "0123456789abcdefABCDEF", lexer_state_type::hex_float, lexer_advance, lexer_capture);
         add(lexer_state_type::hex_float, "pP", lexer_state_type::hex_sign_exponent, lexer_advance, lexer_capture);
         add(lexer_state_type::hex_sign_exponent, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_exponent);
@@ -836,7 +858,7 @@ private:
             lexer_state_type::hex_exponent_more,
             lexer_advance,
             lexer_capture);
-        add(lexer_state_type::hex_exponent_more, lexer_any, lexer_state_type::idle, lexer_token_kind::float_literal);
+        add(lexer_state_type::hex_exponent_more, lexer_any, lexer_state_type::idle, lexer_token_kind::real);
         add(lexer_state_type::hex_exponent_more,
             "0123456789abcdefABCDEF",
             lexer_state_type::hex_exponent_more,
@@ -869,13 +891,42 @@ private:
                 lexer_clear,
                 lexer_capture,
                 lexer_advance);
-            add(lexer_state_type::color_literal, lexer_any, lexer_state_type::idle, lexer_token_kind::color_literal);
+            add(lexer_state_type::color_literal, lexer_any, lexer_state_type::idle, lexer_token_kind::color);
             add(lexer_state_type::color_literal,
                 "0123456789abcdefABCDEF",
                 lexer_state_type::color_literal,
                 lexer_advance,
                 lexer_capture);
         }
+    }
+
+    constexpr void add_ini_assignment() noexcept
+    {
+        if constexpr (Config.equal_is_ini_assignment) {
+            // Ignore white-space
+            add(lexer_state_type::found_eq, " \t", lexer_state_type::found_eq, lexer_advance);
+            add(lexer_state_type::found_eq,
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
+                lexer_state_type::ini_string,
+                lexer_token_kind::other);
+        }
+
+        if constexpr (Config.colon_is_ini_assignment) {
+            // Ignore white-space
+            add(lexer_state_type::found_colon, " \t", lexer_state_type::found_colon, lexer_advance);
+            add(lexer_state_type::found_colon,
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
+                lexer_state_type::ini_string,
+                lexer_token_kind::other);
+        }
+
+        add(lexer_state_type::ini_string, lexer_any, lexer_state_type::idle, lexer_token_kind::istr);
+        add(lexer_state_type::ini_string,
+            lexer_excluding("\n\v\f\r\0"),
+            lexer_state_type::ini_string,
+            lexer_advance,
+            lexer_capture);
+        add(lexer_state_type::ini_string, '\r', lexer_state_type::ini_string, lexer_advance);
     }
 
     constexpr void add_comments() noexcept
@@ -911,7 +962,7 @@ private:
             add(lexer_state_type::found_lt_bang_dash, '-', lexer_state_type::block_comment, lexer_advance);
         }
 
-        add(lexer_state_type::line_comment, lexer_any, lexer_state_type::idle, lexer_token_kind::line_comment);
+        add(lexer_state_type::line_comment, lexer_any, lexer_state_type::idle, lexer_token_kind::lcomment);
         add(lexer_state_type::line_comment,
             lexer_excluding("\r\n\f\v\0"),
             lexer_state_type::line_comment,
@@ -919,7 +970,7 @@ private:
             lexer_capture);
 
         add(lexer_state_type::line_comment, '\r', lexer_state_type::line_comment, lexer_advance);
-        add(lexer_state_type::line_comment, "\n\f\v", lexer_state_type::idle, lexer_advance, lexer_token_kind::line_comment);
+        add(lexer_state_type::line_comment, "\n\f\v", lexer_state_type::idle, lexer_advance, lexer_token_kind::lcomment);
 
         add(lexer_state_type::block_comment, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_comment);
 
@@ -937,7 +988,7 @@ private:
                 '/',
                 lexer_state_type::idle,
                 lexer_advance,
-                lexer_token_kind::block_comment);
+                lexer_token_kind::bcomment);
 
         } else if constexpr (Config.has_sgml_block_comment) {
             add(lexer_state_type::block_comment,
@@ -957,21 +1008,17 @@ private:
                 '>',
                 lexer_state_type::idle,
                 lexer_advance,
-                lexer_token_kind::block_comment);
+                lexer_token_kind::bcomment);
         }
     }
 
     constexpr void add_white_space() noexcept
     {
-        if constexpr (Config.white_space_is_token) {
-            add(lexer_state_type::idle, '\r', lexer_state_type::idle, lexer_advance);
-            add(lexer_state_type::idle, " \n\t\v\f", lexer_state_type::white_space, lexer_advance, lexer_capture);
-            add(lexer_state_type::white_space, lexer_any, lexer_state_type::idle, lexer_token_kind::white_space);
-            add(lexer_state_type::white_space, '\r', lexer_state_type::white_space, lexer_advance);
-            add(lexer_state_type::white_space, " \n\t\v\f", lexer_state_type::whitesspace, lexer_advance, lexer_capture);
-        } else {
-            add(lexer_state_type::idle, " \r\n\t\v\f", lexer_state_type::idle, lexer_advance);
-        }
+        add(lexer_state_type::idle, '\r', lexer_state_type::white_space, lexer_advance);
+        add(lexer_state_type::idle, " \n\t\v\f", lexer_state_type::white_space, lexer_advance, lexer_capture);
+        add(lexer_state_type::white_space, lexer_any, lexer_state_type::idle, lexer_token_kind::ws);
+        add(lexer_state_type::white_space, '\r', lexer_state_type::white_space, lexer_advance);
+        add(lexer_state_type::white_space, " \n\t\v\f", lexer_state_type::white_space, lexer_advance, lexer_capture);
     }
 
     constexpr void add_identifier() noexcept
@@ -981,7 +1028,7 @@ private:
             lexer_state_type::identifier,
             lexer_advance,
             lexer_capture);
-        add(lexer_state_type::identifier, lexer_any, lexer_state_type::idle, lexer_token_kind::identifier);
+        add(lexer_state_type::identifier, lexer_any, lexer_state_type::idle, lexer_token_kind::id);
         add(lexer_state_type::identifier,
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789",
             lexer_state_type::identifier,
@@ -1103,6 +1150,12 @@ struct std::formatter<hi::lexer_token_type, CharT> : std::formatter<std::string,
     auto format(hi::lexer_token_type const& t, auto& fc)
     {
         return std::formatter<std::string, CharT>::format(
-            std::format("{} \"{}\" {}:{}", hi::lexer_token_kind_metadata[t.kind], static_cast<std::string_view>(t), t.line_nr, t.column_nr), fc);
+            std::format(
+                "{} \"{}\" {}:{}",
+                hi::lexer_token_kind_metadata[t.kind],
+                static_cast<std::string_view>(t),
+                t.line_nr,
+                t.column_nr),
+            fc);
     }
 };
