@@ -44,6 +44,27 @@ struct lexer_config {
     uint16_t has_sgml_block_comment : 1 = 0;
     uint16_t white_space_is_token : 1 = 0;
 
+    /** The equal '=' character is used for INI-like assignment.S
+     *
+     * After the equal sign '=':
+     * - Skip over any non-linefeed whitespace.
+     * - If the next character is a annex 31 starter, then the rest of the line is treated as
+     *   a string token.
+     * - Any other character will resolved as normal.
+     */
+    uint16_t equal_is_ini_asignment : 1 = 0;
+
+    /** The colon ':' character is used for INI-like assignment.
+     *
+     * After the colon ':':
+     * - Skip over any non-linefeed whitespace.
+     * - If the next character is a annex 31 starter, then the rest of the line is treated as
+     *   a string token.
+     * - Any other character will resolved as normal.
+     *
+     */
+    uint16_t colon_is_ini_asignment : 1 = 0;
+
     /** The character used to separate groups of numbers.
      *
      * This character is the character that will be ignored by a language
@@ -63,6 +84,12 @@ struct lexer_config {
         r.has_single_quote_string_literal = 1;
         r.has_double_slash_line_comment = 1;
         r.has_c_block_comment = 1;
+        return r;
+    }
+
+    [[nodiscard]] constexpr static lexer_config ini_style() noexcept
+    {
+        auto r = lexer_config{};
         return r;
     }
 };
@@ -120,7 +147,6 @@ struct lexer_token_type {
     constexpr lexer_token_type(lexer_token_type&&) noexcept = default;
     constexpr lexer_token_type& operator=(lexer_token_type const&) noexcept = default;
     constexpr lexer_token_type& operator=(lexer_token_type&&) noexcept = default;
-    [[nodiscard]] constexpr friend bool operator==(lexer_token_type const&, lexer_token_type const&) noexcept = default;
 
     constexpr lexer_token_type(lexer_token_kind kind, std::string_view capture, size_t column_nr) noexcept :
         kind(kind), capture(), line_nr(0), column_nr(column_nr)
@@ -132,6 +158,23 @@ struct lexer_token_type {
         kind(kind), capture(), line_nr(line_nr), column_nr(column_nr)
     {
         std::copy(capture.begin(), capture.end(), std::back_inserter(this->capture));
+    }
+
+    [[nodiscard]] constexpr friend bool operator==(lexer_token_type const&, lexer_token_type const&) noexcept = default;
+
+    [[nodiscard]] constexpr bool operator==(lexer_token_kind rhs) const noexcept
+    {
+        return kind == rhs;
+    }
+
+    [[nodiscard]] constexpr bool operator==(std::string_view rhs) const noexcept
+    {
+        return static_cast<std::string_view>(*this) == rhs;
+    }
+
+    [[nodiscard]] constexpr bool operator==(char rhs) const noexcept
+    {
+        return kind == lexer_token_kind::other and capture.size() == 1 and capture.front() == rhs;
     }
 
     constexpr operator std::string_view () const noexcept
