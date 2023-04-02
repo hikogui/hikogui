@@ -88,6 +88,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/int_overflow_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/jsonpath_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/lean_vector_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/lookahead_iterator_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/lexer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/group_ptr_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/notifier_tests.cpp

@@ -1,5 +1,13 @@
+// Copyright Take Vos 2023.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
 
+#include "utility/module.hpp"
+#include <iterator>
+#include <bit>
+#include <optional>
 
 namespace hi {
 inline namespace v1 {
@@ -8,18 +16,18 @@ inline namespace v1 {
  *
  * This iterator adapter takes a forward input iterator and adapts it so that
  * you can look ahead beyond the current position of the iterator. This
- * is useful when writing a parser. 
+ * is useful when writing a parser.
  */
-template<size_t LookaheadCount, typename It, std::sentinel_for<It> ItEnd>
+template<size_t LookaheadCount, typename It, std::sentinel_for<It> ItEnd = std::default_sentinel_t>
 class lookahead_iterator {
 public:
-    constexpr static size_t max_size = LookaheadCount + 1;
+    static_assert(std::has_single_bit(LookaheadCount), "LookaheadCount must be a power of two.");
 
-    using value_type = iterator_type::value_type;
-    using reference = iterator_type::reference;
-    using const_reference = iterator_type::const_reference;
-    using pointer = iterator_type::pointer;
-    using const_pointer = iterator_type::const_pointer;
+    constexpr static size_t max_size = LookaheadCount;
+
+    using value_type = std::iterator_traits<It>::value_type;
+    using reference = value_type const &;
+    using pointer = value_type const *;
 
     constexpr lookahead_iterator() noexcept = default;
     constexpr lookahead_iterator(lookahead_iterator const &) noexcept = delete;
@@ -30,7 +38,7 @@ public:
     constexpr explicit lookahead_iterator(It first, ItEnd last) noexcept : _it(first), _last(last), _size(0)
     {
         while (_size != max_size and first != last) {
-            add_one_to_lookead();
+            add_one_to_lookahead();
         }
     }
 
@@ -61,16 +69,16 @@ public:
     {
         return empty();
     }
-  
+
     /** Get a reference to an item at or beyond the iterator.
      *
      * @param i Index to lookahead, 0 means the current iterator, larger than zero is lookahead.
      * @return A reference to the item.
      */
-    [[nodiscard]] constexpr const_reference operator[](size_t i) const noexcept
+    [[nodiscard]] constexpr reference operator[](size_t i) const noexcept
     {
         hi_axiom(i < _size);
-        return _cache[i];
+        return _lookahead[(_tail + i) % max_size];
     }
 
     /** Get a reference to an item at or beyond the iterator.
@@ -79,10 +87,10 @@ public:
      * @throws std::out_of_range when index beyond the lookahead buffer.
      * @return A reference to the item.
      */
-    [[nodiscard]] constexpr const_reference at(size_t i) const
+    [[nodiscard]] constexpr reference at(size_t i) const
     {
         if (i < _size) {
-            return _cache[i];
+            return (*this)[i];
         } else {
             throw std::out_of_range("lookahead_iterator::at()");
         }
@@ -97,7 +105,7 @@ public:
     [[nodiscard]] constexpr std::optional<value_type> next(size_t i = 1) const noexcept
     {
         if (i < _size) {
-            return _cache[i];
+            return (*this)[i];
         } else {
             return std::nullopt;
         }
@@ -105,18 +113,18 @@ public:
 
     /** Get a reference to the value at the iterator.
      */
-    constexpr const_reference operator*() const noexcept
+    constexpr reference operator*() const noexcept
     {
         hi_axiom(_size != 0);
-        return _cache[i];
+        return (*this)[0];
     }
 
     /** Get a pointer to the value at the iterator.
      */
-    constexpr const_pointer operator->() const noexcept
+    constexpr pointer operator->() const noexcept
     {
         hi_axiom(_size != 0);
-        return _cache->data();
+        return std::addressof((*this)[0]);
     }
 
     /** Increment the iterator.
@@ -124,12 +132,9 @@ public:
     constexpr lookahead_iterator &operator++() noexcept
     {
         hi_axiom(_size != 0);
-        std::move(_cache.begin() + 1, _cache.begin() + _size, _cache.begin());
         --_size;
-
-        if (_it != std:default_sentinel) {
-            _cache[_size++] = std::move(*_it++);
-        }
+        ++_tail;
+        add_one_to_lookahead();
 
         return *this;
     }
@@ -138,25 +143,24 @@ private:
     It _it;
     ItEnd _last;
     size_t _size = 0;
+    size_t _tail = 0;
 
-    /** This is the place where the _lookahead starts.
-     */
-    size_t _head = 0;
     std::array<value_type, max_size> _lookahead = {};
 
-    constexpr bool add_one_to_lookahead() noexcept
+    constexpr void add_one_to_lookahead() noexcept
     {
-        if (_size == max_size or _it == _last) {
-            return false;
+        hi_axiom(_size < max_size);
+
+        if (_it != _last) {
+            _lookahead[(_tail + _size) % max_size] = *_it;
+            ++_it;
+            ++_size;
         }
-
-
-        return true;
     }
 };
 
-template<size_t LookaheadCount, typename It, std::sentinel_for<It> ItEnd>
-auto make_lookahead_iterator(It first, ItEnd last) noexcept
+template<size_t LookaheadCount, typename It, std::sentinel_for<It> ItEnd = std::default_sentinel_t>
+auto make_lookahead_iterator(It first, ItEnd last = std::default_sentinel) noexcept
 {
     return lookahead_iterator<LookaheadCount, It, ItEnd>{first, last};
 }
