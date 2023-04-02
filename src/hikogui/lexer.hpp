@@ -193,6 +193,18 @@ struct lexer_token_type {
     {
         return std::string_view{capture.data(), capture.size()};
     }
+   
+    template<std::integral T> 
+    constexpr operator T() const noexcept
+    {
+        return from_string<T>(static_cast<std::string_view>(*this));
+    }
+
+    template<std::floating_point T> 
+    operator T() const noexcept
+    {
+        return from_string<T>(static_cast<std::string_view>(*this));
+    }
 
     inline friend std::ostream& operator<<(std::ostream& lhs, hi::lexer_token_type const& rhs)
     {
@@ -347,6 +359,8 @@ struct lexer_command_type {
     uint8_t advance_tab : 1 = 0;
 };
 
+/** A configurable lexical analyzer with unicode Annex #31 support.
+ */
 template<lexer_config Config>
 class lexer {
 public:
