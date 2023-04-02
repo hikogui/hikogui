@@ -2,6 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file lookahead_iterator.hpp Functions to create a lookahead_iterator from a forward iterator.
+*/
+
 #pragma once
 
 #include "utility/module.hpp"
@@ -159,12 +162,26 @@ private:
     }
 };
 
+/** Create a lookahead_iterator from a forward iterator.
+*
+* @tparam LookaheadCount Number of items to lookahead, including the iterator itself. Must be a power-of-two.
+* @param first A forward iterator.
+* @param last A sentinel or end-iterator.
+* @return A lookahead iterator.
+*/
 template<size_t LookaheadCount, typename It, std::sentinel_for<It> ItEnd = std::default_sentinel_t>
 auto make_lookahead_iterator(It first, ItEnd last = std::default_sentinel) noexcept
 {
     return lookahead_iterator<LookaheadCount, It, ItEnd>{first, last};
 }
 
+/** Create a lookahead_iterator from a forward iterator.
+ *
+ * @tparam LookaheadCount Number of items to lookahead, including the iterator itself. Must be a power-of-two.
+ * @param first A forward iterator.
+ * @param last A sentinel or end-iterator.
+ * @return A lookahead iterator.
+ */
 template<size_t LookaheadCount, std::ranges::range Range>
 auto make_lookahead_iterator(Range const &range) noexcept
 {
