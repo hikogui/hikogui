@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "token.hpp"
 #include "../utility/module.hpp"
 #include "../unicode/module.hpp"
 #include "../char_maps/module.hpp"
@@ -46,6 +47,7 @@ struct lexer_config {
     uint16_t has_c_block_comment : 1 = 0;
     uint16_t has_sgml_block_comment : 1 = 0;
     uint16_t filter_white_space : 1 = 0;
+    uint16_t filter_comment : 1 = 0;
 
     /** The equal '=' character is used for INI-like assignment.S
      *
@@ -105,283 +107,176 @@ struct lexer_config {
     }
 };
 
-enum class lexer_token_kind : uint8_t {
-    none,
-    error_unexepected_character,
-    error_invalid_digit,
-    error_incomplete_exponent,
-    error_incomplete_string,
-    error_incomplete_comment,
-    error_after_lt_bang,
-    integer,
-    real,
-    sstr,
-    dstr,
-    bstr,
-    istr,
-    color,
-    lcomment,
-    bcomment,
-    ws,
-    id,
-    other
-};
-
-// clang-format off
-constexpr auto lexer_token_kind_metadata = enum_metadata{
-    lexer_token_kind::none, "none",
-    lexer_token_kind::error_unexepected_character, "error:unexpected character",
-    lexer_token_kind::error_invalid_digit, "error:invalid digit",
-    lexer_token_kind::error_incomplete_exponent, "error:incomplete exponent",
-    lexer_token_kind::error_incomplete_string, "error:incomplete string",
-    lexer_token_kind::error_incomplete_comment, "error:incomplete comment",
-    lexer_token_kind::error_after_lt_bang, "error:after_lt_bang",
-    lexer_token_kind::integer, "integer",
-    lexer_token_kind::real, "read",
-    lexer_token_kind::sstr, "single-quote string",
-    lexer_token_kind::dstr, "double-quote string",
-    lexer_token_kind::bstr, "back-quote string",
-    lexer_token_kind::istr, "ini string",
-    lexer_token_kind::color, "color",
-    lexer_token_kind::lcomment, "line comment",
-    lexer_token_kind::bcomment, "block comment",
-    lexer_token_kind::ws, "ws",
-    lexer_token_kind::id, "id",
-    lexer_token_kind::other, "other"
-};
-// clang-format on
-
-struct lexer_token_type {
-    std::vector<char> capture = {};
-    size_t line_nr = 0;
-    size_t column_nr = 0;
-    lexer_token_kind kind = lexer_token_kind::none;
-
-    constexpr lexer_token_type() noexcept = default;
-    constexpr lexer_token_type(lexer_token_type const&) noexcept = default;
-    constexpr lexer_token_type(lexer_token_type&&) noexcept = default;
-    constexpr lexer_token_type& operator=(lexer_token_type const&) noexcept = default;
-    constexpr lexer_token_type& operator=(lexer_token_type&&) noexcept = default;
-
-    constexpr lexer_token_type(lexer_token_kind kind, std::string_view capture, size_t column_nr) noexcept :
-        kind(kind), capture(), line_nr(0), column_nr(column_nr)
-    {
-        std::copy(capture.begin(), capture.end(), std::back_inserter(this->capture));
-    }
-
-    constexpr lexer_token_type(lexer_token_kind kind, std::string_view capture, size_t line_nr, size_t column_nr) noexcept :
-        kind(kind), capture(), line_nr(line_nr), column_nr(column_nr)
-    {
-        std::copy(capture.begin(), capture.end(), std::back_inserter(this->capture));
-    }
-
-    [[nodiscard]] constexpr friend bool operator==(lexer_token_type const&, lexer_token_type const&) noexcept = default;
-
-    [[nodiscard]] constexpr bool operator==(lexer_token_kind rhs) const noexcept
-    {
-        return kind == rhs;
-    }
-
-    [[nodiscard]] constexpr bool operator==(std::string_view rhs) const noexcept
-    {
-        return static_cast<std::string_view>(*this) == rhs;
-    }
-
-    [[nodiscard]] constexpr bool operator==(char rhs) const noexcept
-    {
-        return kind == lexer_token_kind::other and capture.size() == 1 and capture.front() == rhs;
-    }
-
-    constexpr operator std::string_view() const noexcept
-    {
-        return std::string_view{capture.data(), capture.size()};
-    }
-   
-    template<std::integral T> 
-    constexpr operator T() const noexcept
-    {
-        return from_string<T>(static_cast<std::string_view>(*this));
-    }
-
-    template<std::floating_point T> 
-    operator T() const noexcept
-    {
-        return from_string<T>(static_cast<std::string_view>(*this));
-    }
-
-    inline friend std::ostream& operator<<(std::ostream& lhs, hi::lexer_token_type const& rhs)
-    {
-        return lhs << std::format("{}", rhs);
-    }
-};
-
 namespace detail {
-
-enum class lexer_state_type : uint8_t {
-    idle,
-    zero,
-    bin_integer,
-    oct_integer,
-    dec_integer,
-    hex_integer,
-    dec_float,
-    hex_float,
-    dec_sign_exponent,
-    hex_sign_exponent,
-    dec_exponent,
-    hex_exponent,
-    dec_exponent_more,
-    hex_exponent_more,
-    color_literal,
-    sqstring_literal,
-    sqstring_literal_quote,
-    sqstring_literal_escape,
-    dqstring_literal,
-    dqstring_literal_quote,
-    dqstring_literal_escape,
-    bqstring_literal,
-    bqstring_literal_quote,
-    bqstring_literal_escape,
-    line_comment,
-    block_comment,
-    block_comment_found_star,
-    block_comment_found_dash,
-    block_comment_found_dash_dash,
-    block_comment_found_dash_dash_fin0,
-    found_colon,
-    found_dot,
-    found_eq,
-    found_hash,
-    found_lt,
-    found_lt_bang,
-    found_lt_bang_dash,
-    found_lt_eq,
-    found_slash,
-    ini_string,
-    white_space,
-    identifier,
-
-    _size
-};
-
-struct lexer_clear_tag {};
-struct lexer_any_tag {};
-struct lexer_advance_tag {};
-struct lexer_capture_tag {};
-
-class lexer_excluding_tag {
-public:
-    constexpr lexer_excluding_tag(std::string exclusions) noexcept : _exclusions(std::move(exclusions)) {}
-
-    [[nodiscard]] constexpr bool contains(char c) const noexcept
-    {
-        return _exclusions.find(c) != _exclusions.npos;
-    }
-
-private:
-    std::string _exclusions;
-};
-
-/** Capture a character in the lexer_capture buffer.
- */
-constexpr auto lexer_capture = lexer_capture_tag{};
-
-/** Advance the input iterator.
- */
-constexpr auto lexer_advance = lexer_advance_tag{};
-
-/** Clear the capture buffer.
- */
-constexpr auto lexer_clear = lexer_clear_tag{};
-
-/** Match any character.
- */
-constexpr auto lexer_any = lexer_any_tag{};
-
-template<size_t N>
-[[nodiscard]] constexpr lexer_excluding_tag lexer_excluding(char const (&exclusions)[N]) noexcept
-{
-    return lexer_excluding_tag{std::string(exclusions, N - 1)};
-}
-
-template<typename First, typename... Args>
-[[nodiscard]] constexpr static bool _has_lexer_advance_tag_argument() noexcept
-{
-    if constexpr (std::is_same_v<First, lexer_advance_tag>) {
-        return true;
-    } else if constexpr (sizeof...(Args) == 0) {
-        return false;
-    } else {
-        return _has_lexer_advance_tag_argument<Args...>();
-    }
-}
-
-template<typename... Args>
-[[nodiscard]] constexpr static bool has_lexer_advance_tag_argument() noexcept
-{
-    if constexpr (sizeof...(Args) == 0) {
-        return false;
-    } else {
-        return _has_lexer_advance_tag_argument<Args...>();
-    }
-}
-
-/** This is the command to execute for a given state and given character.
- */
-struct lexer_command_type {
-    /** The state to switch to.
-     */
-    lexer_state_type next_state = lexer_state_type::idle;
-
-    /** The token to emit.
-     */
-    lexer_token_kind emit_token = lexer_token_kind::none;
-
-    /** The char to lexer_capture.
-     */
-    char char_to_capture = '\0';
-
-    /** Clear the lexer_capture buffer.
-     */
-    uint8_t clear : 1 = 0;
-
-    /** Advance the iterator.
-     */
-    uint8_t advance : 1 = 0;
-
-    /** This entry has been assigned.
-     */
-    uint8_t assigned : 1 = 0;
-
-    /** Advance line_nr.
-     */
-    uint8_t advance_line : 1 = 0;
-
-    /** Advance column_nr for a tab.
-     */
-    uint8_t advance_tab : 1 = 0;
-};
 
 /** A configurable lexical analyzer with unicode Annex #31 support.
  */
 template<lexer_config Config>
 class lexer {
+private:
+    enum class state_type : uint8_t {
+        idle,
+        zero,
+        bin_integer,
+        oct_integer,
+        dec_integer,
+        hex_integer,
+        dec_float,
+        hex_float,
+        dec_sign_exponent,
+        hex_sign_exponent,
+        dec_exponent,
+        hex_exponent,
+        dec_exponent_more,
+        hex_exponent_more,
+        color_literal,
+        sqstring_literal,
+        sqstring_literal_quote,
+        sqstring_literal_escape,
+        dqstring_literal,
+        dqstring_literal_quote,
+        dqstring_literal_escape,
+        bqstring_literal,
+        bqstring_literal_quote,
+        bqstring_literal_escape,
+        line_comment,
+        block_comment,
+        block_comment_found_star,
+        block_comment_found_dash,
+        block_comment_found_dash_dash,
+        block_comment_found_dash_dash_fin0,
+        found_colon,
+        found_dot,
+        found_eq,
+        found_hash,
+        found_lt,
+        found_lt_bang,
+        found_lt_bang_dash,
+        found_lt_eq,
+        found_slash,
+        ini_string,
+        white_space,
+        identifier,
+
+        _size
+    };
+
+    /** This is the command to execute for a given state and given character.
+     */
+    struct command_type {
+        /** The state to switch to.
+         */
+        state_type next_state = state_type::idle;
+
+        /** The token to emit.
+         */
+        token::kind_type emit_token = token::none;
+
+        /** The char to capture.
+         */
+        char char_to_capture = '\0';
+
+        /** Clear the capture buffer.
+         */
+        uint8_t clear : 1 = 0;
+
+        /** Advance the iterator.
+         */
+        uint8_t advance : 1 = 0;
+
+        /** This entry has been assigned.
+         */
+        uint8_t assigned : 1 = 0;
+
+        /** Advance line_nr.
+         */
+        uint8_t advance_line : 1 = 0;
+
+        /** Advance column_nr for a tab.
+         */
+        uint8_t advance_tab : 1 = 0;
+    };
+
+    struct clear_tag {};
+    struct any_tag {};
+    struct advance_tag {};
+    struct capture_tag {};
+
+    class excluding_tag {
+    public:
+        constexpr excluding_tag(std::string exclusions) noexcept : _exclusions(std::move(exclusions)) {}
+
+        [[nodiscard]] constexpr bool contains(char c) const noexcept
+        {
+            return _exclusions.find(c) != _exclusions.npos;
+        }
+
+    private:
+        std::string _exclusions;
+    };
+
+    /** Capture a character in the capture buffer.
+     */
+    constexpr static auto capture = capture_tag{};
+
+    /** Advance the input iterator.
+     */
+    constexpr static auto advance = advance_tag{};
+
+    /** Clear the capture buffer.
+     */
+    constexpr static auto clear = clear_tag{};
+
+    /** Match any character.
+     */
+    constexpr static auto any = any_tag{};
+
+    template<size_t N>
+    [[nodiscard]] constexpr excluding_tag excluding(char const (&exclusions)[N]) noexcept
+    {
+        return excluding_tag{std::string(exclusions, N - 1)};
+    }
+
+    template<typename First, typename... Args>
+    [[nodiscard]] constexpr static bool _has_advance_tag_argument() noexcept
+    {
+        if constexpr (std::is_same_v<First, advance_tag>) {
+            return true;
+        } else if constexpr (sizeof...(Args) == 0) {
+            return false;
+        } else {
+            return _has_advance_tag_argument<Args...>();
+        }
+    }
+
+    template<typename... Args>
+    [[nodiscard]] constexpr static bool has_advance_tag_argument() noexcept
+    {
+        if constexpr (sizeof...(Args) == 0) {
+            return false;
+        } else {
+            return _has_advance_tag_argument<Args...>();
+        }
+    }
+
 public:
     constexpr lexer() noexcept : _transition_table()
     {
-        add(lexer_state_type::idle, '/', lexer_state_type::found_slash, lexer_advance, lexer_capture);
-        add(lexer_state_type::idle, '<', lexer_state_type::found_lt, lexer_advance, lexer_capture);
-        add(lexer_state_type::idle, '#', lexer_state_type::found_hash, lexer_advance, lexer_capture);
-        add(lexer_state_type::idle, '.', lexer_state_type::found_dot, lexer_advance, lexer_capture);
-        add(lexer_state_type::idle, '=', lexer_state_type::found_eq, lexer_advance, lexer_capture);
-        add(lexer_state_type::idle, ':', lexer_state_type::found_colon, lexer_advance, lexer_capture);
+        using enum state_type;
 
-        add(lexer_state_type::found_slash, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
-        add(lexer_state_type::found_lt, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
-        add(lexer_state_type::found_hash, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
-        add(lexer_state_type::found_dot, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
-        add(lexer_state_type::found_eq, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
-        add(lexer_state_type::found_colon, lexer_any, lexer_state_type::idle, lexer_token_kind::other);
+        add(idle, '/', found_slash, advance, capture);
+        add(idle, '<', found_lt, advance, capture);
+        add(idle, '#', found_hash, advance, capture);
+        add(idle, '.', found_dot, advance, capture);
+        add(idle, '=', found_eq, advance, capture);
+        add(idle, ':', found_colon, advance, capture);
+
+        add(found_slash, any, idle, token::other);
+        add(found_lt, any, idle, token::other);
+        add(found_hash, any, idle, token::other);
+        add(found_dot, any, idle, token::other);
+        add(found_eq, any, idle, token::other);
+        add(found_colon, any, idle, token::other);
 
         // Adds the starters "\"'`"
         add_string_literals();
@@ -395,33 +290,28 @@ public:
         add_identifier();
         add_ini_assignment();
 
-        add(lexer_state_type::idle,
-            "~!@$%^&*()-+[]{}\\|,>?",
-            lexer_state_type::idle,
-            lexer_token_kind::other,
-            lexer_capture,
-            lexer_advance);
+        add(idle, "~!@$%^&*()-+[]{}\\|,>?", idle, token::other, capture, advance);
 
         // All unused entries of the idle state are unexpected characters.
         for (uint8_t i = 0; i != 128; ++i) {
-            auto& command = get_command(lexer_state_type::idle, char_cast<char>(i));
+            auto& command = get_command(idle, char_cast<char>(i));
             if (not command.assigned) {
                 command.assigned = 1;
                 command.advance = 1;
                 // If there are actual null characters in the string then nothing gets captured.
                 command.char_to_capture = char_cast<char>(i);
-                command.emit_token = lexer_token_kind::error_unexepected_character;
-                command.next_state = lexer_state_type::idle;
+                command.emit_token = token::error_unexepected_character;
+                command.next_state = idle;
             }
         }
     }
 
-    [[nodiscard]] constexpr lexer_command_type& get_command(lexer_state_type from, char c) noexcept
+    [[nodiscard]] constexpr command_type& get_command(state_type from, char c) noexcept
     {
         return _transition_table[to_underlying(from) * 128_uz + char_cast<size_t>(c)];
     }
 
-    [[nodiscard]] constexpr lexer_command_type const& get_command(lexer_state_type from, char c) const noexcept
+    [[nodiscard]] constexpr command_type const& get_command(state_type from, char c) const noexcept
     {
         return _transition_table[to_underlying(from) * 128_uz + char_cast<size_t>(c)];
     }
@@ -435,10 +325,10 @@ public:
             _cp = advance();
             do {
                 _token.kind = parse_token();
-            } while (Config.filter_white_space and _token.kind == lexer_token_kind::ws);
+            } while (Config.filter_white_space and _token.kind == token::ws);
         }
 
-        [[nodiscard]] constexpr lexer_token_type const& operator*() const noexcept
+        [[nodiscard]] constexpr token const& operator*() const noexcept
         {
             return _token;
         }
@@ -448,13 +338,13 @@ public:
             hi_axiom(*this != std::default_sentinel);
             do {
                 _token.kind = parse_token();
-            } while (Config.filter_white_space and _token.kind == lexer_token_kind::ws);
+            } while (Config.filter_white_space and _token.kind == token::ws);
             return *this;
         }
 
         [[nodiscard]] constexpr bool operator==(std::default_sentinel_t) const noexcept
         {
-            return _token.kind == lexer_token_kind::none;
+            return _token.kind == token::none;
         }
 
     private:
@@ -463,8 +353,8 @@ public:
         ItEnd _last;
         It _it;
         char32_t _cp = 0;
-        lexer_token_type _token;
-        lexer_state_type _state = lexer_state_type::idle;
+        token _token;
+        state_type _state = state_type::idle;
         size_t _line_nr = 0;
         size_t _column_nr = 0;
 
@@ -525,7 +415,7 @@ public:
             return code_point;
         }
 
-        [[nodiscard]] constexpr lexer_token_kind parse_token_unicode_identifier() noexcept
+        [[nodiscard]] constexpr token::kind_type parse_token_unicode_identifier() noexcept
         {
             switch (ucd_get_lexical_class(_cp & 0x1f'ffff)) {
             case unicode_lexical_class::id_start:
@@ -533,126 +423,128 @@ public:
                 capture(_cp);
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::none;
+                return token::none;
 
             default:
-                _state = lexer_state_type::idle;
-                return lexer_token_kind::id;
+                _state = state_type::idle;
+                return token::id;
             }
         }
 
-        [[nodiscard]] constexpr lexer_token_kind parse_token_unicode_line_comment() noexcept
+        [[nodiscard]] constexpr token::kind_type parse_token_unicode_line_comment() noexcept
         {
             hilet cp_ = _cp & 0x1f'ffff;
             if (cp_ == U'\u0085' or cp_ == U'\u2028' or cp_ == U'\u2029') {
-                _state = lexer_state_type::idle;
+                _state = state_type::idle;
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::lcomment;
+                return token::lcomment;
 
             } else {
                 capture(_cp);
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::none;
+                return token::none;
             }
         }
 
-        [[nodiscard]] constexpr lexer_token_kind parse_token_unicode_white_space() noexcept
+        [[nodiscard]] constexpr token::kind_type parse_token_unicode_white_space() noexcept
         {
             if (ucd_get_lexical_class(_cp & 0x1f'ffff) == unicode_lexical_class::white_space) {
                 capture(_cp);
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::none;
+                return token::none;
 
             } else {
-                _state = lexer_state_type::idle;
-                return lexer_token_kind::ws;
+                _state = state_type::idle;
+                return token::ws;
             }
         }
 
-        [[nodiscard]] constexpr lexer_token_kind parse_token_unicode_idle() noexcept
+        [[nodiscard]] constexpr token::kind_type parse_token_unicode_idle() noexcept
         {
             switch (ucd_get_lexical_class(_cp & 0x1f'ffff)) {
             case unicode_lexical_class::id_start:
-                _state = lexer_state_type::identifier;
+                _state = state_type::identifier;
                 capture(_cp);
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::none;
+                return token::none;
 
             case unicode_lexical_class::white_space:
-                _state = lexer_state_type::white_space;
+                _state = state_type::white_space;
                 capture(_cp);
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::none;
+                return token::none;
 
             case unicode_lexical_class::syntax:
-                _state = lexer_state_type::idle;
+                _state = state_type::idle;
                 capture(_cp);
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::other;
+                return token::other;
 
             default:
                 capture(_cp);
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::error_unexepected_character;
+                return token::error_unexepected_character;
             }
         }
 
-        [[nodiscard]] hi_no_inline constexpr lexer_token_kind parse_token_unicode() noexcept
+        [[nodiscard]] hi_no_inline constexpr token::kind_type parse_token_unicode() noexcept
         {
+            using enum state_type;
+
             // Unicode by-pass.
             switch (_state) {
-            case lexer_state_type::idle:
+            case idle:
                 return parse_token_unicode_idle();
 
-            case lexer_state_type::white_space:
+            case white_space:
                 return parse_token_unicode_white_space();
 
-            case lexer_state_type::line_comment:
+            case line_comment:
                 return parse_token_unicode_line_comment();
 
-            case lexer_state_type::identifier:
+            case identifier:
                 return parse_token_unicode_identifier();
 
-            case lexer_state_type::dqstring_literal:
-            case lexer_state_type::sqstring_literal:
-            case lexer_state_type::bqstring_literal:
-            case lexer_state_type::block_comment:
+            case dqstring_literal:
+            case sqstring_literal:
+            case bqstring_literal:
+            case block_comment:
                 capture(_cp);
                 advance_counters();
                 _cp = advance();
-                return lexer_token_kind::none;
+                return token::none;
 
-            case lexer_state_type::ini_string:
+            case ini_string:
                 // Line-feeds will terminate an ini-string.
                 if (_cp == U'\u0085' or _cp == U'\u2028' or _cp == U'\u2029') {
-                    return lexer_token_kind::istr;
+                    return token::istr;
                 } else {
                     capture(_cp);
                     advance_counters();
                     _cp = advance();
-                    return lexer_token_kind::none;
+                    return token::none;
                 }
 
             default:
                 // Most tokens are terminated when a non-ascii code-point is found.
                 // Terminate these tokens as if we reached end-of-file.
-                while (_state != lexer_state_type::idle) {
-                    if (auto token_kind = process_command(); token_kind != lexer_token_kind::none) {
+                while (_state != idle) {
+                    if (auto token_kind = process_command(); token_kind != token::none) {
                         return token_kind;
                     }
                 }
-                return lexer_token_kind::none;
+                return token::none;
             }
         }
 
-        [[nodiscard]] constexpr lexer_token_kind process_command(char c = '\0') noexcept
+        [[nodiscard]] constexpr token::kind_type process_command(char c = '\0') noexcept
         {
             hilet command = _lexer->get_command(_state, c);
             _state = command.next_state;
@@ -682,7 +574,7 @@ public:
             return command.emit_token;
         }
 
-        [[nodiscard]] constexpr lexer_token_kind parse_token() noexcept
+        [[nodiscard]] constexpr token::kind_type parse_token() noexcept
         {
             _token.line_nr = _line_nr;
             _token.column_nr = _column_nr;
@@ -690,28 +582,28 @@ public:
 
             while (_cp <= 0x7fff'ffff) {
                 if (_cp <= 0x7f) {
-                    if (auto token_kind = process_command(char_cast<char>(_cp)); token_kind != lexer_token_kind::none) {
+                    if (auto token_kind = process_command(char_cast<char>(_cp)); token_kind != token::none) {
                         return token_kind;
                     }
 
                 } else {
                     auto emit_token = parse_token_unicode();
-                    if (emit_token != lexer_token_kind::none) {
+                    if (emit_token != token::none) {
                         return emit_token;
                     }
                 }
             }
 
             // Handle trailing state changes at end-of-file.
-            while (_state != lexer_state_type::idle) {
-                if (auto token_kind = process_command(); token_kind != lexer_token_kind::none) {
+            while (_state != state_type::idle) {
+                if (auto token_kind = process_command(); token_kind != token::none) {
                     return token_kind;
                 }
             }
 
             // We have finished parsing and there was no token captured.
             // For example when the end of file only contains white-space.
-            return lexer_token_kind::none;
+            return token::none;
         }
     };
 
@@ -730,330 +622,264 @@ private:
     /** A array of commands, one for each state and character.
      * The array is in state-major order.
      */
-    using transition_table_type = std::array<lexer_command_type, to_underlying(lexer_state_type::_size) * 128>;
+    using transition_table_type = std::array<command_type, to_underlying(state_type::_size) * 128>;
 
     transition_table_type _transition_table;
 
     constexpr void add_string_literal(
         char c,
-        lexer_token_kind string_token,
-        lexer_state_type string_literal,
-        lexer_state_type string_literal_quote,
-        lexer_state_type string_literal_escape) noexcept
+        token::kind_type string_token,
+        state_type string_literal,
+        state_type string_literal_quote,
+        state_type string_literal_escape) noexcept
     {
-        add(lexer_state_type::idle, c, string_literal, lexer_advance);
-        add(string_literal, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_string);
+        using enum state_type;
+
+        add(idle, c, string_literal, advance);
+        add(string_literal, any, idle, token::error_incomplete_string);
         for (uint8_t i = 1; i != 128; ++i) {
             if (char_cast<char>(i) != c and char_cast<char>(i) != '\\') {
-                add(string_literal, char_cast<char>(i), string_literal, lexer_advance, lexer_capture);
+                add(string_literal, char_cast<char>(i), string_literal, advance, capture);
             }
         }
 
         if constexpr (Config.escape_by_quote_doubling) {
             // Don't capture the first quote.
-            add(string_literal, c, string_literal_quote, lexer_advance);
+            add(string_literal, c, string_literal_quote, advance);
             // If quote is not doubled, this is the end of the string.
-            add(string_literal_quote, lexer_any, lexer_state_type::idle, string_token);
+            add(string_literal_quote, any, idle, string_token);
             // Capture one quote of a doubled quote.
-            add(string_literal_quote, c, string_literal, lexer_advance, lexer_capture);
+            add(string_literal_quote, c, string_literal, advance, capture);
         } else {
             // Quote ends the string.
-            add(string_literal, c, lexer_state_type::idle, lexer_advance, string_token);
+            add(string_literal, c, idle, advance, string_token);
         }
 
-        // Make sure that lexer_any escaped character sequence stays inside the string literal.
-        add(string_literal, '\\', string_literal_escape, lexer_advance, lexer_capture);
-        add(string_literal_escape, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_string);
+        // Make sure that any escaped character sequence stays inside the string literal.
+        add(string_literal, '\\', string_literal_escape, advance, capture);
+        add(string_literal_escape, any, idle, token::error_incomplete_string);
         for (uint8_t i = 1; i != 128; ++i) {
-            add(string_literal_escape, char_cast<char>(i), string_literal, lexer_advance, lexer_capture);
+            add(string_literal_escape, char_cast<char>(i), string_literal, advance, capture);
         }
     }
 
     constexpr void add_string_literals() noexcept
     {
+        using enum state_type;
+
         if constexpr (Config.has_single_quote_string_literal) {
-            add_string_literal(
-                '\'',
-                lexer_token_kind::sstr,
-                lexer_state_type::sqstring_literal,
-                lexer_state_type::sqstring_literal_quote,
-                lexer_state_type::sqstring_literal_escape);
+            add_string_literal('\'', token::sstr, sqstring_literal, sqstring_literal_quote, sqstring_literal_escape);
         } else {
-            add(lexer_state_type::idle, '\'', lexer_state_type::idle, lexer_token_kind::other, lexer_advance, lexer_capture);
+            add(idle, '\'', idle, token::other, advance, capture);
         }
 
         if constexpr (Config.has_double_quote_string_literal) {
-            add_string_literal(
-                '"',
-                lexer_token_kind::dstr,
-                lexer_state_type::dqstring_literal,
-                lexer_state_type::dqstring_literal_quote,
-                lexer_state_type::dqstring_literal_escape);
+            add_string_literal('"', token::dstr, dqstring_literal, dqstring_literal_quote, dqstring_literal_escape);
         } else {
-            add(lexer_state_type::idle, '"', lexer_state_type::idle, lexer_token_kind::other, lexer_advance, lexer_capture);
+            add(idle, '"', idle, token::other, advance, capture);
         }
 
         if constexpr (Config.has_back_quote_string_literal) {
-            add_string_literal(
-                '`',
-                lexer_token_kind::bstr,
-                lexer_state_type::btstring_literal,
-                lexer_state_type::btstring_literal_quote,
-                lexer_state_type::btstring_literal_escape);
+            add_string_literal('`', token::bstr, bqstring_literal, bqstring_literal_quote, bqstring_literal_escape);
         } else {
-            add(lexer_state_type::idle, '`', lexer_state_type::idle, lexer_token_kind::other, lexer_advance, lexer_capture);
+            add(idle, '`', idle, token::other, advance, capture);
         }
     }
 
     constexpr void add_number_literals() noexcept
     {
-        add(lexer_state_type::idle, "0", lexer_state_type::zero, lexer_advance, lexer_capture);
-        add(lexer_state_type::idle, "123456789", lexer_state_type::dec_integer, lexer_advance, lexer_capture);
+        using enum state_type;
 
-        add(lexer_state_type::zero, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
-        add(lexer_state_type::zero, "bB", lexer_state_type::bin_integer, lexer_advance, lexer_capture);
-        add(lexer_state_type::zero, "oO", lexer_state_type::oct_integer, lexer_advance, lexer_capture);
-        add(lexer_state_type::zero, "dD", lexer_state_type::dec_integer, lexer_advance, lexer_capture);
-        add(lexer_state_type::zero, "xX", lexer_state_type::hex_integer, lexer_advance, lexer_capture);
+        add(idle, "0", zero, advance, capture);
+        add(idle, "123456789", dec_integer, advance, capture);
+
+        add(zero, any, idle, token::integer);
+        add(zero, "bB", bin_integer, advance, capture);
+        add(zero, "oO", oct_integer, advance, capture);
+        add(zero, "dD", dec_integer, advance, capture);
+        add(zero, "xX", hex_integer, advance, capture);
 
         if constexpr (Config.zero_starts_octal) {
-            add(lexer_state_type::zero, "01234567", lexer_state_type::oct_integer, lexer_advance, lexer_capture);
-            add(lexer_state_type::zero, "89", lexer_state_type::idle, lexer_token_kind::error_invalid_digit);
+            add(zero, "01234567", oct_integer, advance, capture);
+            add(zero, "89", idle, token::error_invalid_digit);
         } else {
-            add(lexer_state_type::zero, "0123456789", lexer_state_type::dec_integer, lexer_advance, lexer_capture);
+            add(zero, "0123456789", dec_integer, advance, capture);
         }
 
         // binary-integer
-        add(lexer_state_type::bin_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
-        add(lexer_state_type::bin_integer, "01", lexer_state_type::bin_integer, lexer_advance, lexer_capture);
-        add(lexer_state_type::bin_integer, "23456789", lexer_state_type::idle, lexer_token_kind::error_invalid_digit);
+        add(bin_integer, any, idle, token::integer);
+        add(bin_integer, "01", bin_integer, advance, capture);
+        add(bin_integer, "23456789", idle, token::error_invalid_digit);
 
         // octal-integer
-        add(lexer_state_type::oct_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
-        add(lexer_state_type::oct_integer, "01234567", lexer_state_type::oct_integer, lexer_advance, lexer_capture);
-        add(lexer_state_type::oct_integer, "89", lexer_state_type::idle, lexer_token_kind::error_invalid_digit);
+        add(oct_integer, any, idle, token::integer);
+        add(oct_integer, "01234567", oct_integer, advance, capture);
+        add(oct_integer, "89", idle, token::error_invalid_digit);
 
         // decimal-integer
-        add(lexer_state_type::dec_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
-        add(lexer_state_type::dec_integer, "0123456789", lexer_state_type::dec_integer, lexer_advance, lexer_capture);
-        add(lexer_state_type::dec_integer, ".", lexer_state_type::dec_float, lexer_advance, lexer_capture);
-        add(lexer_state_type::dec_integer, "eE", lexer_state_type::dec_sign_exponent, lexer_advance, lexer_capture);
+        add(dec_integer, any, idle, token::integer);
+        add(dec_integer, "0123456789", dec_integer, advance, capture);
+        add(dec_integer, ".", dec_float, advance, capture);
+        add(dec_integer, "eE", dec_sign_exponent, advance, capture);
 
         // hexadecimal-integer
-        add(lexer_state_type::hex_integer, lexer_any, lexer_state_type::idle, lexer_token_kind::integer);
-        add(lexer_state_type::hex_integer, "0123456789abcdefABCDEF", lexer_state_type::hex_integer, lexer_advance, lexer_capture);
-        add(lexer_state_type::hex_integer, ".", lexer_state_type::hex_float, lexer_advance, lexer_capture);
-        add(lexer_state_type::hex_integer, "pP", lexer_state_type::hex_sign_exponent, lexer_advance, lexer_capture);
+        add(hex_integer, any, idle, token::integer);
+        add(hex_integer, "0123456789abcdefABCDEF", hex_integer, advance, capture);
+        add(hex_integer, ".", hex_float, advance, capture);
+        add(hex_integer, "pP", hex_sign_exponent, advance, capture);
 
         // decimal-float
-        add(lexer_state_type::found_dot, "0123456789eE", lexer_state_type::dec_float);
-        add(lexer_state_type::dec_float, lexer_any, lexer_state_type::idle, lexer_token_kind::real);
-        add(lexer_state_type::dec_float, "0123456789", lexer_state_type::dec_float, lexer_advance, lexer_capture);
-        add(lexer_state_type::dec_float, "eE", lexer_state_type::dec_sign_exponent, lexer_advance, lexer_capture);
-        add(lexer_state_type::dec_sign_exponent, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_exponent);
-        add(lexer_state_type::dec_sign_exponent, "0123456789", lexer_state_type::dec_exponent_more, lexer_advance, lexer_capture);
-        add(lexer_state_type::dec_sign_exponent, "+-", lexer_state_type::dec_exponent, lexer_advance, lexer_capture);
-        add(lexer_state_type::dec_exponent, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_exponent);
-        add(lexer_state_type::dec_exponent, "0123456789", lexer_state_type::dec_exponent_more, lexer_advance, lexer_capture);
-        add(lexer_state_type::dec_exponent_more, lexer_any, lexer_state_type::idle, lexer_token_kind::real);
-        add(lexer_state_type::dec_exponent_more, "0123456789", lexer_state_type::dec_exponent_more, lexer_advance, lexer_capture);
+        add(found_dot, "0123456789eE", dec_float);
+        add(dec_float, any, idle, token::real);
+        add(dec_float, "0123456789", dec_float, advance, capture);
+        add(dec_float, "eE", dec_sign_exponent, advance, capture);
+        add(dec_sign_exponent, any, idle, token::error_incomplete_exponent);
+        add(dec_sign_exponent, "0123456789", dec_exponent_more, advance, capture);
+        add(dec_sign_exponent, "+-", dec_exponent, advance, capture);
+        add(dec_exponent, any, idle, token::error_incomplete_exponent);
+        add(dec_exponent, "0123456789", dec_exponent_more, advance, capture);
+        add(dec_exponent_more, any, idle, token::real);
+        add(dec_exponent_more, "0123456789", dec_exponent_more, advance, capture);
 
         // hexadecimal-float
-        add(lexer_state_type::hex_float, lexer_any, lexer_state_type::idle, lexer_token_kind::real);
-        add(lexer_state_type::hex_float, "0123456789abcdefABCDEF", lexer_state_type::hex_float, lexer_advance, lexer_capture);
-        add(lexer_state_type::hex_float, "pP", lexer_state_type::hex_sign_exponent, lexer_advance, lexer_capture);
-        add(lexer_state_type::hex_sign_exponent, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_exponent);
-        add(lexer_state_type::hex_sign_exponent,
-            "0123456789abcdefABCDEF",
-            lexer_state_type::hex_exponent_more,
-            lexer_advance,
-            lexer_capture);
-        add(lexer_state_type::hex_sign_exponent, "+-", lexer_state_type::hex_exponent, lexer_advance, lexer_capture);
-        add(lexer_state_type::hex_exponent, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_exponent);
-        add(lexer_state_type::hex_exponent,
-            "0123456789abcdefABCDEF",
-            lexer_state_type::hex_exponent_more,
-            lexer_advance,
-            lexer_capture);
-        add(lexer_state_type::hex_exponent_more, lexer_any, lexer_state_type::idle, lexer_token_kind::real);
-        add(lexer_state_type::hex_exponent_more,
-            "0123456789abcdefABCDEF",
-            lexer_state_type::hex_exponent_more,
-            lexer_advance,
-            lexer_capture);
+        add(hex_float, any, idle, token::real);
+        add(hex_float, "0123456789abcdefABCDEF", hex_float, advance, capture);
+        add(hex_float, "pP", hex_sign_exponent, advance, capture);
+        add(hex_sign_exponent, any, idle, token::error_incomplete_exponent);
+        add(hex_sign_exponent, "0123456789abcdefABCDEF", hex_exponent_more, advance, capture);
+        add(hex_sign_exponent, "+-", hex_exponent, advance, capture);
+        add(hex_exponent, any, idle, token::error_incomplete_exponent);
+        add(hex_exponent, "0123456789abcdefABCDEF", hex_exponent_more, advance, capture);
+        add(hex_exponent_more, any, idle, token::real);
+        add(hex_exponent_more, "0123456789abcdefABCDEF", hex_exponent_more, advance, capture);
 
         if constexpr (Config.digit_separator != '\0') {
             if constexpr (Config.zero_starts_octal) {
-                add(lexer_state_type::zero, Config.digit_separator, lexer_state_type::oct_integer, lexer_advance);
+                add(zero, Config.digit_separator, oct_integer, advance);
             } else {
-                add(lexer_state_type::zero, Config.digit_separator, lexer_state_type::dec_integer, lexer_advance);
+                add(zero, Config.digit_separator, dec_integer, advance);
             }
-            add(lexer_state_type::bin_integer, Config.digit_separator, lexer_state_type::bin_integer, lexer_advance);
-            add(lexer_state_type::oct_integer, Config.digit_separator, lexer_state_type::oct_integer, lexer_advance);
-            add(lexer_state_type::dec_integer, Config.digit_separator, lexer_state_type::dec_integer, lexer_advance);
-            add(lexer_state_type::hex_integer, Config.digit_separator, lexer_state_type::hex_integer, lexer_advance);
-            add(lexer_state_type::dec_float, Config.digit_separator, lexer_state_type::dec_integer, lexer_advance);
-            add(lexer_state_type::hex_float, Config.digit_separator, lexer_state_type::dec_integer, lexer_advance);
-            add(lexer_state_type::dec_exponent, Config.digit_separator, lexer_state_type::dec_integer, lexer_advance);
-            add(lexer_state_type::hex_exponent, Config.digit_separator, lexer_state_type::dec_integer, lexer_advance);
+            add(bin_integer, Config.digit_separator, bin_integer, advance);
+            add(oct_integer, Config.digit_separator, oct_integer, advance);
+            add(dec_integer, Config.digit_separator, dec_integer, advance);
+            add(hex_integer, Config.digit_separator, hex_integer, advance);
+            add(dec_float, Config.digit_separator, dec_integer, advance);
+            add(hex_float, Config.digit_separator, dec_integer, advance);
+            add(dec_exponent, Config.digit_separator, dec_integer, advance);
+            add(hex_exponent, Config.digit_separator, dec_integer, advance);
         }
     }
 
     constexpr void add_color_literal() noexcept
     {
+        using enum state_type;
+
         if constexpr (Config.has_color_literal) {
-            add(lexer_state_type::found_hash,
-                "0123456789abcdefABCDEF",
-                lexer_state_type::color_literal,
-                lexer_clear,
-                lexer_capture,
-                lexer_advance);
-            add(lexer_state_type::color_literal, lexer_any, lexer_state_type::idle, lexer_token_kind::color);
-            add(lexer_state_type::color_literal,
-                "0123456789abcdefABCDEF",
-                lexer_state_type::color_literal,
-                lexer_advance,
-                lexer_capture);
+            add(found_hash, "0123456789abcdefABCDEF", color_literal, clear, capture, advance);
+            add(color_literal, any, idle, token::color);
+            add(color_literal, "0123456789abcdefABCDEF", color_literal, advance, capture);
         }
     }
 
     constexpr void add_ini_assignment() noexcept
     {
+        using enum state_type;
+
         if constexpr (Config.equal_is_ini_assignment) {
             // Ignore white-space
-            add(lexer_state_type::found_eq, " \t", lexer_state_type::found_eq, lexer_advance);
-            add(lexer_state_type::found_eq,
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
-                lexer_state_type::ini_string,
-                lexer_token_kind::other);
+            add(found_eq, " \t", found_eq, advance);
+            add(found_eq, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", ini_string, token::other);
         }
 
         if constexpr (Config.colon_is_ini_assignment) {
             // Ignore white-space
-            add(lexer_state_type::found_colon, " \t", lexer_state_type::found_colon, lexer_advance);
-            add(lexer_state_type::found_colon,
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
-                lexer_state_type::ini_string,
-                lexer_token_kind::other);
+            add(found_colon, " \t", found_colon, advance);
+            add(found_colon, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", ini_string, token::other);
         }
 
-        add(lexer_state_type::ini_string, lexer_any, lexer_state_type::idle, lexer_token_kind::istr);
-        add(lexer_state_type::ini_string,
-            lexer_excluding("\n\v\f\r\0"),
-            lexer_state_type::ini_string,
-            lexer_advance,
-            lexer_capture);
-        add(lexer_state_type::ini_string, '\r', lexer_state_type::ini_string, lexer_advance);
+        add(ini_string, any, idle, token::istr);
+        add(ini_string, excluding("\n\v\f\r\0"), ini_string, advance, capture);
+        add(ini_string, '\r', ini_string, advance);
     }
 
     constexpr void add_comments() noexcept
     {
+        using enum state_type;
+
         if constexpr (Config.has_double_slash_line_comment) {
-            add(lexer_state_type::found_slash, '/', lexer_state_type::line_comment, lexer_clear, lexer_advance);
+            add(found_slash, '/', line_comment, clear, advance);
         }
 
         if constexpr (Config.has_semicolon_line_comment) {
-            add(lexer_state_type::idle, ';', lexer_state_type::line_comment, lexer_advance);
+            add(idle, ';', line_comment, advance);
         } else {
-            add(lexer_state_type::idle, ';', lexer_state_type::idle, lexer_token_kind::other, lexer_capture, lexer_advance);
+            add(idle, ';', idle, token::other, capture, advance);
         }
 
         if constexpr (Config.has_hash_line_comment) {
-            add(lexer_state_type::found_hash,
-                lexer_excluding("\0"),
-                lexer_state_type::line_comment,
-                lexer_clear,
-                lexer_advance,
-                lexer_capture);
+            add(found_hash, excluding("\0"), line_comment, clear, advance, capture);
         }
 
         if constexpr (Config.has_c_block_comment) {
-            add(lexer_state_type::found_slash, '*', lexer_state_type::block_comment, lexer_advance, lexer_clear);
+            add(found_slash, '*', block_comment, advance, clear);
         }
 
         if constexpr (Config.has_sgml_block_comment) {
-            add(lexer_state_type::found_lt, '!', lexer_state_type::found_lt_bang, lexer_advance);
-            add(lexer_state_type::found_lt_bang, lexer_any, lexer_state_type::idle, lexer_token_kind::error_after_lt_bang);
-            add(lexer_state_type::found_lt_bang, '-', lexer_state_type::found_lt_bang_dash, lexer_advance);
-            add(lexer_state_type::found_lt_bang_dash, lexer_any, lexer_state_type::idle, lexer_token_kind::error_after_lt_bang);
-            add(lexer_state_type::found_lt_bang_dash, '-', lexer_state_type::block_comment, lexer_advance);
+            add(found_lt, '!', found_lt_bang, advance);
+            add(found_lt_bang, any, idle, token::error_after_lt_bang);
+            add(found_lt_bang, '-', found_lt_bang_dash, advance);
+            add(found_lt_bang_dash, any, idle, token::error_after_lt_bang);
+            add(found_lt_bang_dash, '-', block_comment, advance);
         }
 
-        add(lexer_state_type::line_comment, lexer_any, lexer_state_type::idle, lexer_token_kind::lcomment);
-        add(lexer_state_type::line_comment,
-            lexer_excluding("\r\n\f\v\0"),
-            lexer_state_type::line_comment,
-            lexer_advance,
-            lexer_capture);
+        add(line_comment, any, idle, token::lcomment);
+        add(line_comment, excluding("\r\n\f\v\0"), line_comment, advance, capture);
 
-        add(lexer_state_type::line_comment, '\r', lexer_state_type::line_comment, lexer_advance);
-        add(lexer_state_type::line_comment, "\n\f\v", lexer_state_type::idle, lexer_advance, lexer_token_kind::lcomment);
+        add(line_comment, '\r', line_comment, advance);
+        add(line_comment, "\n\f\v", idle, advance, token::lcomment);
 
-        add(lexer_state_type::block_comment, lexer_any, lexer_state_type::idle, lexer_token_kind::error_incomplete_comment);
+        add(block_comment, any, idle, token::error_incomplete_comment);
 
         static_assert(Config.has_c_block_comment == 0 or Config.has_sgml_block_comment == 0);
 
         if constexpr (Config.has_c_block_comment) {
-            add(lexer_state_type::block_comment,
-                lexer_excluding("*\0"),
-                lexer_state_type::block_comment,
-                lexer_advance,
-                lexer_capture);
-            add(lexer_state_type::block_comment, '*', lexer_state_type::block_comment_found_star, lexer_advance);
-            add(lexer_state_type::block_comment_found_star, lexer_any, lexer_state_type::block_comment, '*');
-            add(lexer_state_type::block_comment_found_star,
-                '/',
-                lexer_state_type::idle,
-                lexer_advance,
-                lexer_token_kind::bcomment);
+            add(block_comment, excluding("*\0"), block_comment, advance, capture);
+            add(block_comment, '*', block_comment_found_star, advance);
+            add(block_comment_found_star, any, block_comment, '*');
+            add(block_comment_found_star, '/', idle, advance, token::bcomment);
 
         } else if constexpr (Config.has_sgml_block_comment) {
-            add(lexer_state_type::block_comment,
-                lexer_excluding("-\0"),
-                lexer_state_type::block_comment,
-                lexer_advance,
-                lexer_capture);
-            add(lexer_state_type::block_comment, '-', lexer_state_type::block_comment_found_dash, lexer_advance);
-            add(lexer_state_type::block_comment_found_dash, lexer_any, lexer_state_type::block_comment, '-');
-            add(lexer_state_type::block_comment_found_dash, '-', lexer_state_type::block_comment_found_dash_dash, lexer_advance);
-            add(lexer_state_type::block_comment_found_dash_dash,
-                lexer_any,
-                lexer_state_type::block_comment_found_dash_dash_fin0,
-                '-');
-            add(lexer_state_type::block_comment_found_dash_dash_fin0, lexer_any, lexer_state_type::block_comment, '-');
-            add(lexer_state_type::block_comment_found_dash_dash,
-                '>',
-                lexer_state_type::idle,
-                lexer_advance,
-                lexer_token_kind::bcomment);
+            add(block_comment, excluding("-\0"), block_comment, advance, capture);
+            add(block_comment, '-', block_comment_found_dash, advance);
+            add(block_comment_found_dash, any, block_comment, '-');
+            add(block_comment_found_dash, '-', block_comment_found_dash_dash, advance);
+            add(block_comment_found_dash_dash, any, block_comment_found_dash_dash_fin0, '-');
+            add(block_comment_found_dash_dash_fin0, any, block_comment, '-');
+            add(block_comment_found_dash_dash, '>', idle, advance, token::bcomment);
         }
     }
 
     constexpr void add_white_space() noexcept
     {
-        add(lexer_state_type::idle, '\r', lexer_state_type::white_space, lexer_advance);
-        add(lexer_state_type::idle, " \n\t\v\f", lexer_state_type::white_space, lexer_advance, lexer_capture);
-        add(lexer_state_type::white_space, lexer_any, lexer_state_type::idle, lexer_token_kind::ws);
-        add(lexer_state_type::white_space, '\r', lexer_state_type::white_space, lexer_advance);
-        add(lexer_state_type::white_space, " \n\t\v\f", lexer_state_type::white_space, lexer_advance, lexer_capture);
+        using enum state_type;
+
+        add(idle, '\r', white_space, advance);
+        add(idle, " \n\t\v\f", white_space, advance, capture);
+        add(white_space, any, idle, token::ws);
+        add(white_space, '\r', white_space, advance);
+        add(white_space, " \n\t\v\f", white_space, advance, capture);
     }
 
     constexpr void add_identifier() noexcept
     {
-        add(lexer_state_type::idle,
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
-            lexer_state_type::identifier,
-            lexer_advance,
-            lexer_capture);
-        add(lexer_state_type::identifier, lexer_any, lexer_state_type::idle, lexer_token_kind::id);
-        add(lexer_state_type::identifier,
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789",
-            lexer_state_type::identifier,
-            lexer_advance,
-            lexer_capture);
+        using enum state_type;
+
+        add(idle, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", identifier, advance, capture);
+        add(identifier, any, idle, token::id);
+        add(identifier, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789", identifier, advance, capture);
     }
 
-    constexpr lexer_command_type& _add(lexer_state_type from, char c, lexer_state_type to) noexcept
+    constexpr command_type& _add(state_type from, char c, state_type to) noexcept
     {
         auto& command = get_command(from, c);
         command.next_state = to;
@@ -1062,7 +888,7 @@ private:
         command.advance_line = 0;
         command.advance_tab = 0;
         command.clear = 0;
-        command.emit_token = lexer_token_kind::none;
+        command.emit_token = token::none;
         return command;
     }
 
@@ -1081,14 +907,13 @@ private:
      * @param args The rest of the attribute-arguments.
      */
     template<typename First, typename... Args>
-    constexpr lexer_command_type&
-    _add(lexer_state_type from, char c, lexer_state_type to, First first, Args const&...args) noexcept
+    constexpr command_type& _add(state_type from, char c, state_type to, First first, Args const&...args) noexcept
     {
         auto& command = _add(from, c, to, args...);
-        if constexpr (std::is_same_v<First, lexer_token_kind>) {
+        if constexpr (std::is_same_v<First, token::kind_type>) {
             command.emit_token = first;
 
-        } else if constexpr (std::is_same_v<First, lexer_advance_tag>) {
+        } else if constexpr (std::is_same_v<First, advance_tag>) {
             command.advance = 1;
             if (c == '\n' or c == '\v' or c == '\f') {
                 command.advance_line = 1;
@@ -1096,10 +921,10 @@ private:
                 command.advance_tab = 1;
             }
 
-        } else if constexpr (std::is_same_v<First, lexer_clear_tag>) {
+        } else if constexpr (std::is_same_v<First, clear_tag>) {
             command.clear = 1;
 
-        } else if constexpr (std::is_same_v<First, lexer_capture_tag>) {
+        } else if constexpr (std::is_same_v<First, capture_tag>) {
             command.char_to_capture = c;
 
         } else if constexpr (std::is_same_v<First, char>) {
@@ -1113,7 +938,7 @@ private:
     }
 
     template<typename... Args>
-    constexpr void add(lexer_state_type from, char c, lexer_state_type to, Args const&...args) noexcept
+    constexpr void add(state_type from, char c, state_type to, Args const&...args) noexcept
     {
         auto& command = _add(from, c, to, args...);
         hi_assert(not command.assigned, "Overwriting an already assigned state:char combination.");
@@ -1121,7 +946,7 @@ private:
     }
 
     template<typename... Args>
-    constexpr void add(lexer_state_type from, std::string_view str, lexer_state_type to, Args const&...args) noexcept
+    constexpr void add(state_type from, std::string_view str, state_type to, Args const&...args) noexcept
     {
         for (auto c : str) {
             auto& command = _add(from, c, to, args...);
@@ -1131,19 +956,18 @@ private:
     }
 
     template<typename... Args>
-    constexpr void add(lexer_state_type from, lexer_any_tag, lexer_state_type to, Args const&...args) noexcept
+    constexpr void add(state_type from, any_tag, state_type to, Args const&...args) noexcept
     {
-        static_assert(not has_lexer_advance_tag_argument<Args...>(), "lexer_any should not advance");
+        static_assert(not has_advance_tag_argument<Args...>(), "any should not advance");
 
         for (uint8_t c = 0; c != 128; ++c) {
             hilet& command = _add(from, char_cast<char>(c), to, args...);
-            hi_assert(not command.assigned, "lexer_any should be added first to a state");
+            hi_assert(not command.assigned, "any should be added first to a state");
         }
     }
 
     template<typename... Args>
-    constexpr void
-    add(lexer_state_type from, lexer_excluding_tag const& exclusions, lexer_state_type to, Args const&...args) noexcept
+    constexpr void add(state_type from, excluding_tag const& exclusions, state_type to, Args const&...args) noexcept
     {
         for (uint8_t c = 0; c != 128; ++c) {
             if (not exclusions.contains(char_cast<char>(c))) {
@@ -1161,18 +985,3 @@ template<lexer_config Config>
 constexpr auto lexer = detail::lexer<Config>();
 
 }} // namespace hi::v1
-
-template<typename CharT>
-struct std::formatter<hi::lexer_token_type, CharT> : std::formatter<std::string, CharT> {
-    auto format(hi::lexer_token_type const& t, auto& fc)
-    {
-        return std::formatter<std::string, CharT>::format(
-            std::format(
-                "{} \"{}\" {}:{}",
-                hi::lexer_token_kind_metadata[t.kind],
-                static_cast<std::string_view>(t),
-                t.line_nr,
-                t.column_nr),
-            fc);
-    }
-};
