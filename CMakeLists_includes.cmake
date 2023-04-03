@@ -170,6 +170,9 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_simd_utility.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_sse2.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lexer.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lookahead_iterator.hpp
     ${HIKOGUI_SOURCE_DIR}/text/module.hpp
     ${HIKOGUI_SOURCE_DIR}/text/character.hpp
     ${HIKOGUI_SOURCE_DIR}/text/character_attributes.hpp
@@ -270,6 +273,4 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp
     ${HIKOGUI_SOURCE_DIR}/terminate.hpp
-    ${HIKOGUI_SOURCE_DIR}/lexer.hpp
-    ${HIKOGUI_SOURCE_DIR}/lookahead_iterator.hpp
 )

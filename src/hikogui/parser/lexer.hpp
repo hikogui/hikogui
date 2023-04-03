@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "unicode/module.hpp"
-#include "char_maps/module.hpp"
+#include "../utility/module.hpp"
+#include "../unicode/module.hpp"
+#include "../char_maps/module.hpp"
 #include <ranges>
 #include <iterator>
 #include <cstdint>

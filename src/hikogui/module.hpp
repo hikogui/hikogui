@@ -20,6 +20,7 @@
 #include "unicode/module.hpp"
 #include "utility/module.hpp"
 #include "widgets/module.hpp"
+#include "parser/module.hpp"
 
 /** @file module.hpp
 *
