@@ -98,9 +98,13 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<theme_declaration>
+[[nodiscard]] constexpr std::optional<theme_value>
 parse_theme_value(It& it, ItEnd last, std::filesystem::path const& path)
 {
+    if (auto colors = parse_theme_
+    if (auto lengths = parse_theme_lengths(it, last, path)) {
+        return theme_value{*lengths};
+    }
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
