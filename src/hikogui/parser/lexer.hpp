@@ -70,6 +70,8 @@ struct lexer_config {
      */
     uint16_t colon_is_ini_assignment : 1 = 0;
 
+    uint16_t minus_in_identifier : 1 = 0;
+
     /** The character used to separate groups of numbers.
      *
      * This character is the character that will be ignored by a language
@@ -426,8 +428,16 @@ public:
                 return token::none;
 
             default:
-                _state = state_type::idle;
-                return token::id;
+                if (Config.minus_in_identifier and _cp == '-') {
+                    capture(_cp);
+                    advance_counters();
+                    _cp = advance();
+                    return token::none;
+
+                } else {
+                    _state = state_type::idle;
+                    return token::id;
+                }
             }
         }
 
@@ -877,6 +887,9 @@ private:
         add(idle, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", identifier, advance, capture);
         add(identifier, any, idle, token::id);
         add(identifier, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789", identifier, advance, capture);
+        if constexpr (Config.minus_in_identifier) {
+            add(identifier, '-', identifier, advance, capture);
+        }
     }
 
     constexpr command_type& _add(state_type from, char c, state_type to) noexcept
