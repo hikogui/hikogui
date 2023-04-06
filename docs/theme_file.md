@@ -1,7 +1,12 @@
 Theme file format
 =================
 
+HikoGUI theme files are based upon CSS (Cascading Style Sheets).
+The sele
 
+
+Syntax
+------
 
 ```
 
@@ -10,6 +15,10 @@ stylesheet := ( at_rule | ruleset | comment )*
 at_rule := theme-name | theme-mode
 theme-name := '@' "name" ':' string ';'
 theme-mode := '@' "mode" ':' string ';'
+
+font-theme := '@' "font-theme" id '{' declaration* sub-font-theme* '}'
+sub-font-theme := sub-font-filter ( ',' sub-font-filter )? '{' declaration* '}'
+sub-font-filter := "lang" '(' id ')' | "phrasing" '(' id ')'
 
 ruleset := selector '{' ( declaration | comment )* '}'
 
@@ -79,6 +88,10 @@ Properties
    spacing-horizontal       | Length              |
    color                    | Color               |
    background-color         | Color               |
+   border-width             | Length              |
+   border-color             | Color               |
+   border-radius            | Length, 4 x Length  |
+   font-theme               | Font-theme id       |
 
 Types
 -----
