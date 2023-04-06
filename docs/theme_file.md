@@ -4,14 +4,16 @@ Theme file format
 
 
 ```
+Line comments start with "//" and block comments are surrounded by "/*" and "*/".
+Both comments and white-space are ignored in the grammar below.
 
-stylesheet := ( at_rule | ruleset | comment )*
+stylesheet := ( at_rule | ruleset )*
 
 at_rule := theme-name | theme-mode
 theme-name := '@' "name" ':' string ';'
 theme-mode := '@' "mode" ':' string ';'
 
-ruleset := selector '{' ( declaration | comment )* '}'
+ruleset := selector '{' declaration* '}'
 
 selector := pattern ( ',' pattern )* ( ':' state )*
 pattern := element ( '>'? element )*
@@ -21,18 +23,13 @@ state := "disabled" | "enabled" | "hover" | "active" | "no-focus" | "focus" | "o
 
 declaration := id ':' value ';'
 
-comment := line_comment | block_comment
-line_comment := '/' '/' [^\n]* '\n'
-block_comment := '/' '*' .* '*' '/'
-
-value := length | length2 | length4 | color | color-layers
+value := length | lengths | color | color-layers
 
 color := hex_color | int_color | float_color | pct_color
 color-layers := "color-layers" '(' color ( ',' color )* ')'
 
 length := px-length | pt-length
-length2 := length length
-length4 := length length length length
+lengths := length length length*
 
 px-length := number "px"
 pt-length := number "pt"?
