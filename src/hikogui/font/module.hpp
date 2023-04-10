@@ -11,6 +11,7 @@
 #include "font_metrics.hpp"
 #include "font_variant.hpp"
 #include "font_weight.hpp"
+#include "font_style.hpp"
 #include "glyph_atlas_info.hpp"
 #include "glyph_id.hpp"
 #include "glyph_metrics.hpp"

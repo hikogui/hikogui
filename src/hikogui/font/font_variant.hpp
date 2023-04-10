@@ -5,6 +5,7 @@
 #pragma once
 
 #include "font_weight.hpp"
+#include "font_style.hpp"
 
 namespace hi::inline v1 {
 
@@ -26,13 +27,13 @@ public:
         return max() / 2;
     }
 
-    constexpr font_variant(font_weight weight, bool italic) noexcept :
-        value(narrow_cast<uint8_t>(static_cast<int>(weight) + (italic ? half() : 0)))
+    constexpr font_variant(font_weight weight, font_style style) noexcept :
+        value(narrow_cast<uint8_t>(static_cast<int>(weight) + (style == font_style::italic ? half() : 0)))
     {
     }
-    constexpr font_variant() noexcept : font_variant(font_weight::Regular, false) {}
-    constexpr font_variant(font_weight weight) noexcept : font_variant(weight, false) {}
-    constexpr font_variant(bool italic) noexcept : font_variant(font_weight::Regular, italic) {}
+    constexpr font_variant() noexcept : font_variant(font_weight::Regular, font_style::normal) {}
+    constexpr font_variant(font_weight weight) noexcept : font_variant(weight, font_style::normal) {}
+    constexpr font_variant(font_style style) noexcept : font_variant(font_weight::Regular, style) {}
 
     [[nodiscard]] size_t hash() const noexcept
     {
@@ -45,22 +46,22 @@ public:
         return static_cast<font_weight>(value % half());
     }
 
-    [[nodiscard]] constexpr bool italic() const noexcept
+    [[nodiscard]] constexpr font_style style() const noexcept
     {
         hi_axiom(value < max());
-        return value >= half();
+        return static_cast<font_style>(value >= half());
     }
 
-    constexpr font_variant &set_weight(font_weight rhs) noexcept
+    constexpr font_variant& set_weight(font_weight rhs) noexcept
     {
-        value = narrow_cast<uint8_t>(static_cast<int>(rhs) + (italic() ? half() : 0));
+        value = narrow_cast<uint8_t>(static_cast<int>(rhs) + (style() == font_style::italic ? half() : 0));
         hi_axiom(value < max());
         return *this;
     }
 
-    constexpr font_variant &set_italic(bool rhs) noexcept
+    constexpr font_variant& set_style(font_style rhs) noexcept
     {
-        value = narrow_cast<uint8_t>(static_cast<int>(weight()) + (rhs ? half() : 0));
+        value = narrow_cast<uint8_t>(static_cast<int>(weight()) + (rhs == font_style::italic ? half() : 0));
         hi_axiom(value < max());
         return *this;
     }
@@ -78,16 +79,16 @@ public:
     {
         hi_axiom(i >= 0 && i < max());
         hilet w = font_weight_alterative(weight(), i % half());
-        hilet it = italic() == (i < half());
-        return {w, it};
+        hilet it = (style() == font_style::italic) == (i < half());
+        return {w, static_cast<font_style>(it)};
     }
 
-    [[nodiscard]] friend std::string to_string(font_variant const &rhs) noexcept
+    [[nodiscard]] friend std::string to_string(font_variant const& rhs) noexcept
     {
-        return std::format("{}", rhs.weight(), rhs.italic() ? "/italic" : "");
+        return std::format("{}", rhs.weight(), rhs.style() == font_style::italic ? "/italic" : "");
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, font_variant const &rhs)
+    friend std::ostream& operator<<(std::ostream& lhs, font_variant const& rhs)
     {
         return lhs << to_string(rhs);
     }
@@ -97,7 +98,7 @@ public:
 
 template<>
 struct std::hash<hi::font_variant> {
-    [[nodiscard]] size_t operator()(hi::font_variant const &rhs) const noexcept
+    [[nodiscard]] size_t operator()(hi::font_variant const& rhs) const noexcept
     {
         return rhs.hash();
     }

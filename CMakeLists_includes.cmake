@@ -32,6 +32,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/font/font_char_map.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_family_id.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_metrics.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_style.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_variant.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_weight.hpp
     ${HIKOGUI_SOURCE_DIR}/font/glyph_atlas_info.hpp

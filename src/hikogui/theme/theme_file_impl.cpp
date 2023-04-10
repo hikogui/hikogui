@@ -99,7 +99,7 @@ namespace hi { inline namespace v1 {
     auto family_id = font_family_id{};
     auto size = 10;
     auto weight = font_weight::Regular;
-    auto italic = false;
+    auto style = font_style::normal;
     auto color = hi::color{};
     for (hilet & [ name, value ] : get<datum::map_type>(data)) {
         hi_check(holds_alternative<std::string>(name), "Expect the keys of a text-style to be integers, got {}", name);
@@ -133,14 +133,14 @@ namespace hi { inline namespace v1 {
 
         } else if (name == "italic") {
             hi_check(holds_alternative<bool>(value), "Expect italic to be a boolean, got {}", value);
-            italic = get<bool>(value);
+            style = get<bool>(value) ? font_style::italic : font_style::normal;
 
         } else if (name == "color") {
             color = parse_theme_color(value);
         }
     }
 
-    auto variant = font_variant{weight, italic};
+    auto variant = font_variant{weight, style};
     return {phrasing_mask, language, script, country, family_id, variant, size, color};
 }
 

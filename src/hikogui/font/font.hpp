@@ -43,7 +43,7 @@ public:
 
     bool monospace = false;
     bool serif = false;
-    bool italic = false;
+    font_style style = font_style::normal;
     bool condensed = false;
     font_weight weight = font_weight::Regular;
     float optical_size = 12.0;
@@ -208,7 +208,7 @@ public:
 
     [[nodiscard]] font_variant font_variant() const noexcept
     {
-        return {weight, italic};
+        return {weight, style};
     }
 
     [[nodiscard]] friend std::string to_string(font const& rhs) noexcept
@@ -219,7 +219,7 @@ public:
             rhs.sub_family_name,
             rhs.monospace ? 'M' : '_',
             rhs.serif ? 'S' : '_',
-            rhs.italic ? 'I' : '_',
+            rhs.style == font_style::italic ? 'I' : '_',
             rhs.condensed ? 'C' : '_',
             to_char(rhs.weight),
             rhs.optical_size,

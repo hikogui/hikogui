@@ -109,20 +109,20 @@ public:
      *
      * @param family_id a valid family id.
      * @param weight The weight of the font to select.
-     * @param italic If the font to select should be italic or not.
+     * @param style If the font to select should be italic or not.
      * @return a valid font id.
      */
-    [[nodiscard]] font const& find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept;
+    [[nodiscard]] font const& find_font(font_family_id family_id, font_weight weight, font_style style) const noexcept;
 
     /** Find a font closest to the variant.
      * This function will always return a valid font_id.
      *
      * @param family_name A name of a font family, which may be invalid.
      * @param weight The weight of the font to select.
-     * @param italic If the font to select should be italic or not.
+     * @param style If the font to select should be italic or not.
      * @return a font id, possibly from a fallback font.
      */
-    [[nodiscard]] font const& find_font(std::string const& family_name, font_weight weight, bool italic) const noexcept;
+    [[nodiscard]] font const& find_font(std::string const& family_name, font_weight weight, font_style style) const noexcept;
 
     /** Find a glyph using the given code-point.
      * This function will find a glyph matching the grapheme in the selected font, or
@@ -167,7 +167,7 @@ private:
      */
     mutable std::unordered_map<std::string, font_family_id> _family_name_cache;
 
-    [[nodiscard]] std::vector<hi::font *> make_fallback_chain(font_weight weight, bool italic) noexcept;
+    [[nodiscard]] std::vector<hi::font *> make_fallback_chain(font_weight weight, font_style style) noexcept;
 
     /** Generate fallback font family names.
      */

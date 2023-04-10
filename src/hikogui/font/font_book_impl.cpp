@@ -120,12 +120,12 @@ void font_book::register_font_directory(std::filesystem::path const& path, bool 
     }
 }
 
-[[nodiscard]] std::vector<hi::font *> font_book::make_fallback_chain(font_weight weight, bool italic) noexcept
+[[nodiscard]] std::vector<hi::font *> font_book::make_fallback_chain(font_weight weight, font_style style) noexcept
 {
     auto r = _font_ptrs;
 
-    std::stable_partition(begin(r), end(r), [weight, italic](hilet& item) {
-        return (item->italic == italic) and almost_equal(item->weight, weight);
+    std::stable_partition(begin(r), end(r), [weight, style](hilet& item) {
+        return (item->style == style) and almost_equal(item->weight, weight);
     });
 
     auto char_mask = std::bitset<0x11'0000>{};
@@ -150,9 +150,9 @@ void font_book::post_process() noexcept
         return lhs->char_map.count() > rhs->char_map.count();
     });
 
-    hilet regular_fallback_chain = make_fallback_chain(font_weight::Regular, false);
-    hilet bold_fallback_chain = make_fallback_chain(font_weight::Bold, false);
-    hilet italic_fallback_chain = make_fallback_chain(font_weight::Regular, true);
+    hilet regular_fallback_chain = make_fallback_chain(font_weight::Regular, font_style::normal);
+    hilet bold_fallback_chain = make_fallback_chain(font_weight::Bold, font_style::normal);
+    hilet italic_fallback_chain = make_fallback_chain(font_weight::Regular, font_style::italic);
 
     hi_log_info(
         "Post processing fonts number={}, regular-fallback={}, bold-fallback={}, italic-fallback={}",
@@ -171,7 +171,7 @@ void font_book::post_process() noexcept
             if (
                 (fallback != font) and
                 (fallback->family_name == font->family_name) and
-                (fallback->italic == font->italic) and
+                (fallback->style == font->style) and
                 almost_equal(fallback->weight, font->weight)
             ) {
                 fallback_chain.push_back(fallback);
@@ -181,7 +181,7 @@ void font_book::post_process() noexcept
 
         if (almost_equal(font->weight, font_weight::Bold)) {
             std::copy(begin(bold_fallback_chain), end(bold_fallback_chain), std::back_inserter(fallback_chain));
-        } else if (font->italic == true) {
+        } else if (font->style == font_style::italic) {
             std::copy(begin(italic_fallback_chain), end(italic_fallback_chain), std::back_inserter(fallback_chain));
         } else {
             std::copy(begin(regular_fallback_chain), end(regular_fallback_chain), std::back_inserter(fallback_chain));
@@ -258,14 +258,15 @@ void font_book::post_process() noexcept
     hi_no_default();
 }
 
-[[nodiscard]] font const& font_book::find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept
+[[nodiscard]] font const& font_book::find_font(font_family_id family_id, font_weight weight, font_style style) const noexcept
 {
-    return find_font(family_id, font_variant(weight, italic));
+    return find_font(family_id, font_variant(weight, style));
 }
 
-[[nodiscard]] font const& font_book::find_font(std::string const &family_name, font_weight weight, bool italic) const noexcept
+[[nodiscard]] font const&
+font_book::find_font(std::string const& family_name, font_weight weight, font_style style) const noexcept
 {
-    return find_font(find_family(family_name), weight, italic);
+    return find_font(find_family(family_name), weight, style);
 }
 
 [[nodiscard]] font_book::font_glyphs_type font_book::find_glyph(hi::font const& font, grapheme g) const noexcept

@@ -131,7 +131,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
         condensed = os2.condensed;
         serif = os2.serif;
         monospace = os2.monospace;
-        italic = os2.italic;
+        style = os2.italic ? font_style::italic : font_style::normal;
         OS2_x_height = os2.x_height;
         OS2_cap_height = os2.cap_height;
     }
@@ -143,9 +143,12 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     // Only use the OS/2 data as a last resort.
     // clang-format off
     auto name_lower = to_lower(family_name + " " + sub_family_name);
-    if (name_lower.find("italic") != std::string::npos or
-        name_lower.find("oblique") != std::string::npos) {
-        italic = true;
+    if (name_lower.find("italic") != std::string::npos) {
+        style = font_style::italic;
+    }
+
+    if (name_lower.find("oblique") != std::string::npos) {
+        style = font_style::oblique;
     }
 
     if (name_lower.find("condensed") != std::string::npos) {
