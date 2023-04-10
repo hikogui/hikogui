@@ -25,9 +25,9 @@ basic-color-name := "black" | "silver" | "gray" | "white" | "maroon" | "red"
                   | "purple" | "fuchsia" | "green" | "line" | "olive" | "yellow"
                   | "navy" | "blue" | "teal" | "aqua" | "indigo" | "orange"
                   | "pink"
-gray-color-name := "gray-0" | "gray-10" | "gray-20" | "gray-30" | "gray-40"
-                 | "gray-50" | "gray-60" | "gray-70" | "gray-80" | "gray-90"
-                 | "gray-100"
+gray-color-name := "background" | "gray1" | "gray2" | "gray3" | "gray4"
+                 | "gray5" | "gray6" | "gray7" | "gray8" | "gray9"
+                 | "foreground"
 
 variable-def := '@' "let" variable-name ':' value ';'
 variable-name := id
@@ -55,7 +55,7 @@ property-declaration := "font-weight" ':' font-weight ( '!' "important" )? ';'
 property := id
 macro-invocation := '@' macro-name ';'
 
-value := length | lengths | color | color-layers | variable-value | string
+value := length | lengths | color | variable-value | string
 
 variable-value := '@' variable-name
 
@@ -66,11 +66,11 @@ color-component := number '%' | float | int
 alpha-component := number '%' | float
 rgb-color := "rgb" '(' color-component ','? color-component ','? color-component ( [,/]? alpha-component )? ')'
 
-color-layers := "color-layers" '(' color ( ',' color )* ')'
-
-length := px-length | pt-length | em-length
+length := px-length | pt-length | cm-length | in-length | em-length
 em-length := number "em"
 px-length := number "px"
+cm-length := number "cm"
+in-length := number "in"
 pt-length := number "pt"?
 
 lengths := length length length*
@@ -113,6 +113,7 @@ Selectors
   `:focus`         | The widget has keyboard-focus
   `:on`            | The widget's value is "on"
   `:off`           | The widget's value is "off"
+  `:layer()`       | The widget's layer modulo 4.
   `:lang()`        | The text is in/from a specific language, script or region.
   `:phrasing()`    | The text is from a set of phrasings.
 
@@ -149,22 +150,28 @@ This selector applies to text of a specific phrasing. The argument of the
 Properties
 ----------
 
-
    Name                        | Types              
  :---------------------------- |:-------------------
-   margin                      | length, 4 x length (t r b l)
+   width                       | length
+   height                      | length
+   margin                      | length, (v h) (t h b) (t r b l)
    margin-left                 | length             
    margin-right                | length             
    margin-top                  | length             
-   margin-bottom               | length             
-   spacing                     | length, 2 x length (v h)
+   margin-bottom               | length
+   spacing                     | length, (v h)
    spacing-vertical            | length             
    spacing-horizontal          | length             
-   color                       | color, color-layers              
-   background-color            | color, color-layers      
+   color                       | color
+   caret-color                 | color, (primary, secondary)
+   caret-color-primary         | color
+   caret-color-secondary       | color
+   selection-color             | color
+   fill-color                  | color
+   background-color            | color      
    border-width                | length             
-   border-color                | color, color-layers              
-   border-radius               | length, 4 x length (tl, tr, bl, br)
+   border-color                | color              
+   border-radius               | length, (tl, tr, bl, br)
    border-top-left-radius      | length             
    border-top-right-radius     | length             
    border-bottom-left-radius   | length             
@@ -173,15 +180,16 @@ Properties
    font-type                   | font-type
    font-weight                 | font-weight
    font-size                   | length
-   font-x-height               |   N/A (automatically calculated)
-   font-cap-height             |   N/A (automatically calculated)
+   font-x-height               | [auto]
+   font-cap-height             | [auto]
+   font-line-height            | [auto]
 
 Types
 -----
 
 ### Length
 
-#### points (pt)
+#### points (pt, cm, in)
 
 You define a length in points using the `pt` suffix or just a number without
 a suffix. Lengths in points will scale based on the DPI of the display.
@@ -192,6 +200,8 @@ a suffix. Lengths in points will scale based on the DPI of the display.
     height: 300pt;
 }
 ```
+
+Length suffixed with `cm` or `in` are directly converted into `pt`.
 
 #### pixels (px)
 

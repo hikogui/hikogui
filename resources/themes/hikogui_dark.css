@@ -1,0 +1,93 @@
+
+@name: "default";
+@mode: dark;
+
+@color blue : rgb(10, 132, 255);
+@color green : rgb(48, 209, 88);
+@color indigo : rgb(94, 92, 230);
+@color orange : rgb(255, 159, 10);
+@color pink : rgb(255, 55, 95);
+@color purple : rgb(191, 90, 242);
+@color red : rgb(255, 69, 58);
+@color teal : rgb(100, 210, 255);
+@color yellow : rgb(255, 214, 10);
+@color foreground : rgb(119, 119, 121);
+@color gray9 : rgb(252, 252, 254);
+@color gray8 : rgb(198, 198, 200);
+@color gray7 : rgb(171, 171, 173);
+@color gray6 : rgb(144, 144, 147);
+@color gray5 : rgb(119, 119, 121);
+@color gray4 : rgb(94, 94, 97);
+@color gray3 : rgb(71, 71, 73);
+@color gray2 : rgb(48, 48, 51);
+@color gray1 : rgb(27, 27, 30);
+@color background : rgb(3, 3, 8);
+
+* {
+    width: 15pt;
+    height: 15pt;
+    margin: 5pt;
+    spacing: 5pt;
+    font-family: "Arial";
+    font-weight: normal;
+    font-size: 10pt;
+    color: foreground;
+    fill-color: foreground;
+    caret-color: foreground yellow;
+    selection-color: blue;
+    border-width: 1pt;
+    border-color: foreground;
+    background-color: background;
+}
+
+*:layer(1) {
+    background-color: gray1;
+}
+
+*:layer(2) {
+    background-color: gray2;
+}
+
+*:layer(3) {
+    background-color: gray3;
+}
+
+*:disabled {
+    border-color: gray5;
+}
+
+*:hover {
+    background-color: gray1;
+}
+
+*:hover:layer(2) {
+    background-color: gray2;
+}
+
+*:hover:layer(3) {
+    background-color: gray3;
+}
+
+*:hover:layer(4) {
+    background-color: gray4;
+}
+
+*:active {
+    background-color: gray5;
+}
+
+*:focus {
+    border-color: blue;
+}
+
+*:on {
+    fill-color: blue;
+}
+
+*:phrasing(s) {
+    font-weight: bold;
+}
+
+*:phrasing(e) {
+    font-style: italic;
+}
