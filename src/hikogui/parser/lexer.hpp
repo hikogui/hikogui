@@ -95,6 +95,18 @@ struct lexer_config {
         return r;
     }
 
+    [[nodiscard]] constexpr static lexer_config css_style() noexcept
+    {
+        auto r = lexer_config{};
+        r.filter_white_space = 1;
+        r.filter_comment = 1;
+        r.has_double_quote_string_literal = 1;
+        r.has_double_slash_line_comment = 1;
+        r.has_c_block_comment = 1;
+        r.minus_in_identifier = 1;
+        return r;
+    }
+
     [[nodiscard]] constexpr static lexer_config ini_style() noexcept
     {
         auto r = lexer_config{};
@@ -321,6 +333,12 @@ public:
     template<typename It, std::sentinel_for<It> ItEnd>
     struct iterator {
     public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = token;
+        using reference = value_type const &;
+        using pointer = value_type const *;
+        using difference_type = std::ptrdiff_t;
+
         constexpr iterator(lexer const *lexer, It first, ItEnd last) noexcept :
             _lexer(lexer), _first(first), _last(last), _it(first)
         {
@@ -330,9 +348,14 @@ public:
             } while (Config.filter_white_space and _token.kind == token::ws);
         }
 
-        [[nodiscard]] constexpr token const& operator*() const noexcept
+        [[nodiscard]] constexpr reference operator*() const noexcept
         {
             return _token;
+        }
+
+        [[nodiscard]] constexpr pointer operator&() const noexcept
+        {
+            return std::addressof(_token);
         }
 
         constexpr iterator& operator++() noexcept
@@ -342,6 +365,11 @@ public:
                 _token.kind = parse_token();
             } while (Config.filter_white_space and _token.kind == token::ws);
             return *this;
+        }
+
+        constexpr void operator++(int) noexcept
+        {
+            ++(*this);
         }
 
         [[nodiscard]] constexpr bool operator==(std::default_sentinel_t) const noexcept
@@ -616,6 +644,11 @@ public:
             return token::none;
         }
     };
+
+    static_assert(std::movable<iterator<std::string::iterator, std::string::iterator>>);
+    static_assert(std::is_same_v<std::iterator_traits<iterator<std::string::iterator, std::string::iterator>>::value_type, token>);
+    static_assert(std::input_or_output_iterator<iterator<std::string::iterator, std::string::iterator>>);
+    static_assert(std::weakly_incrementable<iterator<std::string::iterator, std::string::iterator>>);
 
     template<typename It, std::sentinel_for<It> ItEnd>
     [[nodiscard]] constexpr iterator<It, ItEnd> parse(It first, ItEnd last) const noexcept

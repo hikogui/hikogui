@@ -98,7 +98,7 @@ namespace hi { inline namespace v1 {
     auto phrasing_mask = hi::text_phrasing_mask{};
     auto family_id = font_family_id{};
     auto size = 10;
-    auto weight = font_weight::Regular;
+    auto weight = font_weight::regular;
     auto style = font_style::normal;
     auto color = hi::color{};
     for (hilet & [ name, value ] : get<datum::map_type>(data)) {

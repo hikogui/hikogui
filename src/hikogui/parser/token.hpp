@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../color/module.hpp"
 #include <format>
 #include <filesystem>
 #include <iterator>
@@ -123,16 +124,27 @@ struct token {
         return std::string_view{capture.data(), capture.size()};
     }
 
+    constexpr operator std::string() const noexcept
+    {
+        return std::string{capture.data(), capture.size()};
+    }
+
     template<std::integral T>
-    constexpr operator T() const noexcept
+    constexpr operator T() const
     {
         return from_string<T>(static_cast<std::string_view>(*this));
     }
 
     template<std::floating_point T>
-    operator T() const noexcept
+    operator T() const
     {
         return from_string<T>(static_cast<std::string_view>(*this));
+    }
+
+    operator color() const
+    {
+        hi_axiom(kind == kind_type::color);
+        return color_from_sRGB(static_cast<std::string_view>(*this));
     }
 
     inline friend std::ostream& operator<<(std::ostream& lhs, token const& rhs)

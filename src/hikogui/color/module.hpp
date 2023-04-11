@@ -9,7 +9,6 @@
 #include "quad_color.hpp"
 #include "Rec2020.hpp"
 #include "Rec2100.hpp"
-#include "semantic_color.hpp"
 #include "sRGB.hpp"
 
 namespace hi { inline namespace v1 {

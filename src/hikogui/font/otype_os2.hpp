@@ -71,7 +71,7 @@ namespace hi { inline namespace v1 {
     };
 
     struct return_type {
-        font_weight weight = font_weight::Medium;
+        font_weight weight = font_weight::medium;
         bool condensed = false;
         bool serif = false;
         bool monospace = false;
@@ -109,34 +109,34 @@ namespace hi { inline namespace v1 {
     // The table below uses the integer value as an indication of boldness.
     switch (header.panose.weight) {
     case 2:
-        r.weight = font_weight::Thin;
+        r.weight = font_weight::thin;
         break;
     case 3:
-        r.weight = font_weight::ExtraLight;
+        r.weight = font_weight::extra_light;
         break;
     case 4:
-        r.weight = font_weight::Light;
+        r.weight = font_weight::light;
         break;
     case 5:
-        r.weight = font_weight::Regular;
+        r.weight = font_weight::regular;
         break;
     case 6:
-        r.weight = font_weight::Medium;
+        r.weight = font_weight::medium;
         break;
     case 7:
-        r.weight = font_weight::SemiBold;
+        r.weight = font_weight::semi_bold;
         break;
     case 8:
-        r.weight = font_weight::Bold;
+        r.weight = font_weight::bold;
         break;
     case 9:
-        r.weight = font_weight::ExtraBold;
+        r.weight = font_weight::extra_bold;
         break;
     case 10:
-        r.weight = font_weight::Black;
+        r.weight = font_weight::black;
         break;
     case 11:
-        r.weight = font_weight::ExtraBlack;
+        r.weight = font_weight::extra_black;
         break;
     default:
         break;

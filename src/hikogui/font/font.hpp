@@ -45,7 +45,7 @@ public:
     bool serif = false;
     font_style style = font_style::normal;
     bool condensed = false;
-    font_weight weight = font_weight::Regular;
+    font_weight weight = font_weight::regular;
     float optical_size = 12.0;
 
     /** A optimized character map.

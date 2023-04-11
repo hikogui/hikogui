@@ -8,8 +8,11 @@
 #include "../parser/module.hpp"
 #include "../color/module.hpp"
 #include "../font/module.hpp"
+#include <string>
+#include <vector>
 
-namespace hi { inline namespace v1 { namespace detail {
+namespace hi { inline namespace v1 {
+namespace detail {
 
 struct theme_length {
     enum class length_type { px, pt, em };
@@ -43,88 +46,7 @@ struct theme_length {
     }
 };
 
-struct theme_color {
-    enum class color_type {
-        none,
-        custom,
-        black,
-        silver,
-        gray,
-        white,
-        maroon,
-        red,
-        purple,
-        fuchsia,
-        green,
-        line,
-        olive,
-        yellow,
-        navy,
-        blue,
-        teal,
-        aqua,
-        indigo,
-        orange,
-        pink,
-        background,
-        gray1,
-        gray2,
-        gray3,
-        gray4,
-        gray5,
-        gray6,
-        gray7,
-        gray8,
-        gray9,
-        foreground
-    };
-
-    // clang-format off
-    constexpr static auto color_type_metadata = enum_metadata{
-        color_type::none, "x-none",
-        color_type::custom,  "x-custom",
-        color_type::black, "black",
-        color_type::silver, "silver",
-        color_type::gray, "gray",
-        color_type::white, "white",
-        color_type::maroon, "maroon",
-        color_type::red, "red",
-        color_type::purple, "purple",
-        color_type::fuchsia, "fuchsia",
-        color_type::green, "green",
-        color_type::line, "line",
-        color_type::olive, "olive",
-        color_type::yellow, "yellow",
-        color_type::navy, "navy",
-        color_type::blue, "blue",
-        color_type::teal, "teal",
-        color_type::aqua, "aqua",
-        color_type::indigo, "indigo",
-        color_type::orange, "orange",
-        color_type::pink, "pink",
-        color_type::background, "background",
-        color_type::gray1, "gray1",
-        color_type::gray2, "gray2",
-        color_type::gray3, "gray3",
-        color_type::gray4, "gray4",
-        color_type::gray5, "gray5",
-        color_type::gray6, "gray6",
-        color_type::gray7, "gray7",
-        color_type::gray8, "gray8",
-        color_type::gray9, "gray9",
-        color_type::foreground, "foreground",
-    };
-    // clang-format on
-
-    color value;
-    color_type type;
-
-    constexpr theme_color(color value) noexcept : value(value), type(color_type::custom) {}
-    constexpr theme_color(color_type type) noexcept : value(), type(type) {}
-    constexpr theme_color(std::string_view name) noexcept : value(), type(color_type_metadata.at(name, color_type::none)) {}
-};
-
-struct theme_value : std::variant<theme_length, theme_color, font_family_id, font_weight, font_style> {};
+struct theme_value : std::variant<theme_length, hi::color, font_family_id, font_weight, font_style> {};
 
 struct theme_pattern {
     std::vector<std::string> path;
@@ -137,6 +59,13 @@ struct theme_selector : std::vector<theme_pattern> {};
 struct theme_declaration {
     std::string name;
     theme_value value;
+
+    constexpr theme_declaration(std::string name, theme_value value) noexcept : name(std::move(name)), value(value) {}
+    constexpr theme_declaration(std::string name, theme_length length) noexcept : name(std::move(name)), value({length}) {}
+    constexpr theme_declaration(std::string name, hi::color color) noexcept : name(std::move(name)), value({color}) {}
+    constexpr theme_declaration(std::string name, font_family_id id) noexcept : name(std::move(name)), value({id}) {}
+    constexpr theme_declaration(std::string name, font_style style) noexcept : name(std::move(name)), value({style}) {}
+    constexpr theme_declaration(std::string name, font_weight weight) noexcept : name(std::move(name)), value({weight}) {}
 };
 
 struct theme_rule_set {
@@ -144,15 +73,49 @@ struct theme_rule_set {
     std::vector<theme_declaration> declarations;
 };
 
+} // namespace detail
+
 struct theme_style_sheet {
     std::string name;
     std::string mode;
 
-    std::vector<theme_rule_set> rule_sets;
+    std::vector<std::pair<std::string, color>> colors;
+    std::vector<detail::theme_rule_set> rule_sets;
+};
+
+namespace detail {
+
+struct parse_theme_context {
+    std::filesystem::path path;
+    std::vector<std::pair<std::string, color>> colors;
+
+    constexpr void set_color(std::string const& name, hi::color color) noexcept
+    {
+        auto it = std::lower_bound(colors.begin(), colors.end(), name, [](hilet& item, hilet& value) {
+            return item.first < value;
+        });
+        if (it != colors.end() and it->first == name) {
+            it->second = color;
+        } else {
+            colors.emplace(it, name, color);
+        }
+    }
+
+    constexpr std::optional<color> get_color(std::string const& name) const noexcept
+    {
+        auto it = std::lower_bound(colors.begin(), colors.end(), name, [](hilet& item, hilet& value) {
+            return item.first < value;
+        });
+        if (it != colors.end() and it->first == name) {
+            return it->second;
+        } else {
+            return std::nullopt;
+        }
+    }
 };
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<theme_selector> parse_theme_pattern(It& it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::optional<theme_pattern> parse_theme_pattern(It& it, ItEnd last, parse_theme_context& context)
 {
     // pattern := ( id | '*' ) ( '>'? ( id | '*' ) )*  ( ':' id )*
     auto r = theme_pattern{};
@@ -161,13 +124,13 @@ template<typename It, std::sentinel_for<It> ItEnd>
         r.path.push_back("*");
         ++it;
     } else if (it != last and *it == token::id) {
-        r.path.push_back(static_cast<std::string_view>(*it));
+        r.path.push_back(static_cast<std::string>(*it));
         ++it;
     } else {
         return std::nullopt;
     }
 
-    auto id_child = false;
+    auto is_child = false;
     while (it != last and *it != ',' and *it != '{' and *it != ':') {
         if (*it == '>') {
             is_child = true;
@@ -181,24 +144,25 @@ template<typename It, std::sentinel_for<It> ItEnd>
 
         } else if (*it == token::id) {
             r.is_child.push_back(is_child);
-            r.path.push_back(static_cast<std::string_view>(*it));
+            r.path.push_back(static_cast<std::string>(*it));
             is_child = false;
             ++it;
 
         } else {
             throw parse_error(std::format(
-                "{} Expecting element, '*', '>', ',' or '{' while parsing selector.", token_location(it, last, path)));
+                "{} Expecting element, '*', '>', ',' or '{{' while parsing selector.", token_location(it, last, context.path)));
         }
     }
 
     while (it != last and *it == ':') {
         ++it;
-        if (*it == node::id) {
-            r.state.push_back(static_cast<std::string_view>(*it));
+        if (*it == token::id) {
+            r.states.push_back(static_cast<std::string>(*it));
             ++it;
 
         } else {
-            throw parse_error(std::format("{} Expecting state-id after ':' in selector.", token_location(it, last, path)));
+            throw parse_error(
+                std::format("{} Expecting state-id after ':' in selector.", token_location(it, last, context.path)));
         }
     }
 
@@ -206,13 +170,13 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<theme_selector> parse_theme_selector(It& it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::optional<theme_selector> parse_theme_selector(It& it, ItEnd last, parse_theme_context& context)
 {
     // selector := pattern (',' pattern)*
     auto r = theme_selector{};
 
-    if (auto pattern = parse_theme_pattern(it, last, path)) {
-        r.push_back(pattern);
+    if (auto pattern = parse_theme_pattern(it, last, context)) {
+        r.push_back(*pattern);
     } else {
         return std::nullopt;
     }
@@ -220,10 +184,10 @@ template<typename It, std::sentinel_for<It> ItEnd>
     while (it != last and *it == ',') {
         ++it;
 
-        if (auto pattern = parse_theme_pattern(it, last, path)) {
-            r.push_back(pattern);
+        if (auto pattern = parse_theme_pattern(it, last, context)) {
+            r.push_back(*pattern);
         } else {
-            throw parse_error(std::format("{} Missing pattern after ',' in selector.", token_location(it, last, path)));
+            throw parse_error(std::format("{} Missing pattern after ',' in selector.", token_location(it, last, context.path)));
         }
     }
 
@@ -231,12 +195,12 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<float> parse_theme_color_component(It& it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::optional<float> parse_theme_color_component(It& it, ItEnd last, parse_theme_context& context)
 {
     auto r = 0.0f;
 
     if (it.size() >= 2 and (it[0] == token::integer or it[0] == token::real) and it[1] == '%') {
-        r = static_cast<float>(it[0]) * 0.01;
+        r = static_cast<float>(it[0]) * 0.01f;
         it += 2;
     } else if (it != last and *it == token::real) {
         r = static_cast<float>(*it);
@@ -252,12 +216,12 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<float> parse_theme_alpha_component(It& it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::optional<float> parse_theme_alpha_component(It& it, ItEnd last, parse_theme_context& context)
 {
     auto r = 0.0f;
 
     if (it.size() >= 2 and (it[0] == token::integer or it[0] == token::real) and it[1] == '%') {
-        r = static_cast<float>(it[0]) * 0.01;
+        r = static_cast<float>(it[0]) * 0.01f;
         it += 2;
     } else if (it != last and *it == token::real) {
         r = static_cast<float>(*it);
@@ -270,10 +234,10 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<theme_color> parse_theme_color(It& it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::optional<color> parse_theme_color(It& it, ItEnd last, parse_theme_context& context)
 {
     if (it != last and *it == token::color) {
-        return theme_color{static_cast<color>(*it)};
+        return static_cast<color>(*it);
 
     } else if (it != last and *it == token::id and *it == "rgb") {
         // rgb-color := "rgb" '(' color-component ','? color-component ','? color-component ( [,/]? alpha-component )? ')'
@@ -284,35 +248,37 @@ template<typename It, std::sentinel_for<It> ItEnd>
         if (it != last and *it == '(') {
             ++it;
         } else {
-            throw parse_error(std::format("{} Expect '(' after \"color-layers\" keyword.", token_location(it, last, path)));
+            throw parse_error(
+                std::format("{} Expect '(' after \"color-layers\" keyword.", token_location(it, last, context.path)));
         }
 
-        auto rgba = color{};
+        auto r = color{};
 
-        if (auto component = parse_theme_color_component(it, last, path)) {
-            rgba.r() = *component;
+        if (auto component = parse_theme_color_component(it, last, context)) {
+            r.r() = *component;
         } else {
-            throw parse_error(std::format("{} Expect a red-color-component after '('.", token_location(it, last, path)));
+            throw parse_error(std::format("{} Expect a red-color-component after '('.", token_location(it, last, context.path)));
         }
 
         if (it != last and *it == ',') {
             ++it;
         }
 
-        if (auto component = parse_theme_color_component(it, last, path)) {
-            rgba.g() = *component;
+        if (auto component = parse_theme_color_component(it, last, context)) {
+            r.g() = *component;
         } else {
-            throw parse_error(std::format("{} Expect a green-color-component after '('.", token_location(it, last, path)));
+            throw parse_error(
+                std::format("{} Expect a green-color-component after '('.", token_location(it, last, context.path)));
         }
 
         if (it != last and *it == ',') {
             ++it;
         }
 
-        if (auto component = parse_theme_color_component(it, last, path)) {
-            rgba.b() = *component;
+        if (auto component = parse_theme_color_component(it, last, context)) {
+            r.b() = *component;
         } else {
-            throw parse_error(std::format("{} Expect a blue-color-component after '('.", token_location(it, last, path)));
+            throw parse_error(std::format("{} Expect a blue-color-component after '('.", token_location(it, last, context.path)));
         }
 
         if (it != last and (*it == ',' or *it == '/')) {
@@ -320,25 +286,29 @@ template<typename It, std::sentinel_for<It> ItEnd>
         }
 
         // Alpha is optional.
-        if (auto component = parse_theme_alpha_component(it, last, path)) {
-            rgba.a() = *component;
+        if (auto component = parse_theme_alpha_component(it, last, context)) {
+            r.a() = *component;
         }
 
         if (it != last and *it == ')') {
             ++it;
         } else {
-            throw parse_error(std::format("{} Expect ')' after colors.", token_location(it, last, path)));
+            throw parse_error(std::format("{} Expect ')' after colors.", token_location(it, last, context.path)));
         }
 
-        return theme_color{rgba};
+        return r;
 
     } else if (it != last and *it == token::id) {
-        // A color name.
-        if (auto r = theme_color{static_cast<std::string_view>(*it)}; not r.empty()) {
-            ++it;
-            return r;
+        // A color name is looked up from @color declarations
+        hilet name = static_cast<std::string>(*it);
+        ++it;
+
+        if (auto color = context.get_color(name)) {
+            return *color;
+
         } else {
-            return std::nullopt;
+            throw parse_error(
+                std::format("{} Color name \"{}\" was not declared with @color.", token_location(it, last, context.path), name));
         }
 
     } else {
@@ -347,11 +317,11 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::vector<color> parse_theme_colors(It& it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::vector<color> parse_theme_colors(It& it, ItEnd last, parse_theme_context& context)
 {
     auto r = std::vector<color>{};
 
-    if (auto color = parse_theme_color(it, last, path)) {
+    if (auto color = parse_theme_color(it, last, context)) {
         r.push_back(*color);
     } else {
         return r;
@@ -362,10 +332,10 @@ template<typename It, std::sentinel_for<It> ItEnd>
     }
 
     while (it != last and *it != ';') {
-        if (auto color = parse_theme_color(it, last, path)) {
+        if (auto color = parse_theme_color(it, last, context)) {
             r.push_back(*color);
         } else {
-            throw parse_error(std::format("{} Expect a sequence of colors.", token_location(it, last, path)));
+            throw parse_error(std::format("{} Expect a sequence of colors.", token_location(it, last, context.path)));
         }
 
         if (it != last and *it == ',') {
@@ -377,7 +347,7 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<theme_length> parse_theme_length(It& it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::optional<theme_length> parse_theme_length(It& it, ItEnd last, parse_theme_context& context)
 {
     if (it.size() >= 2 and (it[0] == token::integer or it[0] == token::real) and it[1] == token::id) {
         if (it[1] == "pt") {
@@ -392,7 +362,8 @@ template<typename It, std::sentinel_for<It> ItEnd>
             return theme_length::em(static_cast<float>(it[0]));
         } else {
             throw parse_error(std::format(
-                "{} Expected either \"pt\", \"cm\", \"in\", \"em\" or \"px\" after number", token_location(it, last, path)));
+                "{} Expected either \"pt\", \"cm\", \"in\", \"em\" or \"px\" after number",
+                token_location(it, last, context.path)));
         }
 
     } else if (it != last and (*it == token::integer or *it == token::real)) {
@@ -405,11 +376,11 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::vector<theme_length> parse_theme_lengths(It& it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::vector<theme_length> parse_theme_lengths(It& it, ItEnd last, parse_theme_context& context)
 {
     auto r = std::vector<theme_length>{};
 
-    if (auto length = parse_theme_length(it, last, path)) {
+    if (auto length = parse_theme_length(it, last, context)) {
         r.push_back(*length);
     } else {
         return r;
@@ -420,10 +391,10 @@ template<typename It, std::sentinel_for<It> ItEnd>
     }
 
     while (it != last and *it != ';') {
-        if (auto length = parse_theme_length(it, last, path)) {
+        if (auto length = parse_theme_length(it, last, context)) {
             r.push_back(*length);
         } else {
-            throw parse_error(std::format("{} Expect a sequence of lengths.", token_location(it, last, path)));
+            throw parse_error(std::format("{} Expect a sequence of lengths.", token_location(it, last, context.path)));
         }
 
         if (it != last and *it == ',') {
@@ -435,12 +406,12 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<theme_value> parse_theme_value(It& it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::optional<theme_value> parse_theme_value(It& it, ItEnd last, parse_theme_context& context)
 {
-    if (auto color = parse_theme_color(it, last, path)) {
+    if (auto color = parse_theme_color(it, last, context)) {
         return theme_value{*color};
 
-    } else if (auto length = parse_theme_length(it, last, path)) {
+    } else if (auto length = parse_theme_length(it, last, context)) {
         return theme_value{*length};
 
     } else {
@@ -449,12 +420,97 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::vector<theme_declaration> parse_theme_margin_declarations(
-    It & it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::vector<theme_declaration>
+parse_theme_font_family_declaration(It& it, ItEnd last, parse_theme_context& context)
 {
     auto r = std::vector<theme_declaration>{};
 
-    if (auto lengths = parse_theme_lengths(it, last, path); not lengths.empty()) {
+    if (it != last and (*it == token::id or *it == token::dstr)) {
+        auto family_name = static_cast<std::string>(*it);
+        if (auto family_id = find_font_family(family_name)) {
+            r.emplace_back("font-family", family_id);
+        } else {
+            throw parse_error(std::format(
+                "{} Could not find font-family \"{}\" in the font-book.", token_location(it, last, context.path), family_name));
+        }
+
+    } else {
+        throw parse_error(
+            std::format("{} Expecting a string or name in font-family declaration.", token_location(it, last, context.path)));
+    }
+
+    ++it;
+    return r;
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::vector<theme_declaration>
+parse_theme_font_style_declaration(It& it, ItEnd last, parse_theme_context& context)
+{
+    auto r = std::vector<theme_declaration>{};
+
+    if (it != last and *it == token::id and *it == "normal") {
+        r.emplace_back("font-style", font_style::normal);
+    } else if (it != last and *it == token::id and *it == "italic") {
+        r.emplace_back("font-style", font_style::italic);
+    } else if (it != last and *it == token::id and *it == "oblique") {
+        r.emplace_back("font-style", font_style::oblique);
+    } else {
+        throw parse_error(std::format(
+            "{} Expecting normal, italic or oblique as value of a font-style declaration.",
+            token_location(it, last, context.path)));
+    }
+
+    ++it;
+    return r;
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::vector<theme_declaration>
+parse_theme_font_weight_declaration(It& it, ItEnd last, parse_theme_context& context)
+{
+    auto r = std::vector<theme_declaration>{};
+
+    if (it != last and *it == token::id and *it == "thin") {
+        r.emplace_back("font-weight", font_weight::thin);
+    } else if (it != last and *it == token::id and *it == "extra-light") {
+        r.emplace_back("font-weight", font_weight::extra_light);
+    } else if (it != last and *it == token::id and *it == "light") {
+        r.emplace_back("font-weight", font_weight::light);
+    } else if (it != last and *it == token::id and (*it == "regular" or *it == "normal")) {
+        r.emplace_back("font-weight", font_weight::regular);
+    } else if (it != last and *it == token::id and *it == "medium") {
+        r.emplace_back("font-weight", font_weight::medium);
+    } else if (it != last and *it == token::id and *it == "semi-bold") {
+        r.emplace_back("font-weight", font_weight::semi_bold);
+    } else if (it != last and *it == token::id and *it == "bold") {
+        r.emplace_back("font-weight", font_weight::bold);
+    } else if (it != last and *it == token::id and *it == "extra-bold") {
+        r.emplace_back("font-weight", font_weight::extra_bold);
+    } else if (it != last and *it == token::id and *it == "black") {
+        r.emplace_back("font-weight", font_weight::black);
+    } else if (it != last and *it == token::id and *it == "extra-black") {
+        r.emplace_back("font-weight", font_weight::extra_black);
+
+    } else if (it != last and *it == token::integer) {
+        r.emplace_back("font-weight", font_weight_from_int(static_cast<int>(*it)));
+
+    } else {
+        throw parse_error(std::format(
+            "{} Expecting a integer or  value of a font-weight declaration.", token_location(it, last, context.path)));
+    }
+
+    ++it;
+    return r;
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::vector<theme_declaration>
+parse_theme_margin_declarations(It& it, ItEnd last, parse_theme_context& context)
+{
+    auto r = std::vector<theme_declaration>{};
+
+    if (auto lengths = parse_theme_lengths(it, last, context); not lengths.empty()) {
         if (lengths.size() == 1) {
             r.emplace_back("margin-top", lengths[0]);
             r.emplace_back("margin-right", lengths[0]);
@@ -478,24 +534,24 @@ template<typename It, std::sentinel_for<It> ItEnd>
         } else {
             throw parse_error(std::format(
                 "{} Expect 1 to 4 length values when parsing \"margin\" declaration, got {}.",
-                token_location(it, last, path),
+                token_location(it, last, context.path),
                 lengths.size()));
         }
     } else {
         throw parse_error(std::format(
-            "{} Expect 1 to 4 length values when parsing \"margin\" declaration.", token_location(it, last, path)));
+            "{} Expect 1 to 4 length values when parsing \"margin\" declaration.", token_location(it, last, context.path)));
     }
 
     return r;
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::vector<theme_declaration> parse_theme_spacing_declarations(
-    It & it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::vector<theme_declaration>
+parse_theme_spacing_declarations(It& it, ItEnd last, parse_theme_context& context)
 {
     auto r = std::vector<theme_declaration>{};
 
-    if (auto lengths = parse_theme_lengths(it, last, path); not lengths.empty()) {
+    if (auto lengths = parse_theme_lengths(it, last, context); not lengths.empty()) {
         if (lengths.size() == 1) {
             r.emplace_back("spacing-vertical", lengths[0]);
             r.emplace_back("spacing-horizontal", lengths[0]);
@@ -505,24 +561,24 @@ template<typename It, std::sentinel_for<It> ItEnd>
         } else {
             throw parse_error(std::format(
                 "{} Expect 1 or 2 length values when parsing \"spacing\" declaration, got {}.",
-                token_location(it, last, path),
+                token_location(it, last, context.path),
                 lengths.size()));
         }
     } else {
         throw parse_error(std::format(
-            "{} Expect 1 or 2 length values when parsing \"spacing\" declaration.", token_location(it, last, path)));
+            "{} Expect 1 or 2 length values when parsing \"spacing\" declaration.", token_location(it, last, context.path)));
     }
 
     return r;
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::vector<theme_declaration> parse_theme_border_radius_declarations(
-    It & it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::vector<theme_declaration>
+parse_theme_border_radius_declarations(It& it, ItEnd last, parse_theme_context& context)
 {
     auto r = std::vector<theme_declaration>{};
 
-    if (auto lengths = parse_theme_lengths(it, last, path); not lengths.empty()) {
+    if (auto lengths = parse_theme_lengths(it, last, context); not lengths.empty()) {
         if (lengths.size() == 1) {
             r.emplace_back("border-top-left-radius", lengths[0]);
             r.emplace_back("border-top-right-radius", lengths[0]);
@@ -541,46 +597,46 @@ template<typename It, std::sentinel_for<It> ItEnd>
         } else {
             throw parse_error(std::format(
                 "{} Expect 1, 2 or 4 length values when parsing \"border-radius\" declaration, got {}.",
-                token_location(it, last, path),
+                token_location(it, last, context.path),
                 lengths.size()));
         }
     } else {
         throw parse_error(std::format(
-            "{} Expect 1, 2 or 4 length values when parsing \"border-radius\" declaration.", token_location(it, last, path)));
+            "{} Expect 1, 2 or 4 length values when parsing \"border-radius\" declaration.",
+            token_location(it, last, context.path)));
     }
 
     return r;
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::vector<theme_declaration> parse_theme_caret_color_declarations(
-    It & it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::vector<theme_declaration>
+parse_theme_caret_color_declarations(It& it, ItEnd last, parse_theme_context& context)
 {
     auto r = std::vector<theme_declaration>{};
 
-    if (auto colors = parse_theme_colors(it, last, path); not colors.empty()) {
+    if (auto colors = parse_theme_colors(it, last, context); not colors.empty()) {
         if (colors.size() == 1) {
             r.emplace_back("caret-color-primary", colors[0]);
             r.emplace_back("caret-color-secondary", colors[0]);
-        } else if (lengths.size() == 2) {
+        } else if (colors.size() == 2) {
             r.emplace_back("caret-color-primary", colors[0]);
             r.emplace_back("caret-color-secondary", colors[1]);
         } else {
             throw parse_error(std::format(
                 "{} Expect 1 or 2 color values when parsing \"caret-color\" declaration, got {}.",
-                token_location(it, last, path),
-                lengths.size()));
+                token_location(it, last, context.path),
+                colors.size()));
         }
     } else {
         throw parse_error(std::format(
-            "{} Expect 1 or 2 color values when parsing \"caret-color\" declaration.", token_location(it, last, path)));
+            "{} Expect 1 or 2 color values when parsing \"caret-color\" declaration.", token_location(it, last, context.path)));
     }
 
     return r;
 }
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::vector<theme_declaration> parse_theme_declaration(
-    It & it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::vector<theme_declaration> parse_theme_declaration(It& it, ItEnd last, parse_theme_context& context)
 {
     // declaration := id ':' value ';'
     auto r = std::vector<theme_declaration>{};
@@ -590,65 +646,63 @@ template<typename It, std::sentinel_for<It> ItEnd>
         name = static_cast<std::string_view>(*it);
         ++it;
     } else {
-        return std::nullopt;
+        return r;
     }
 
     if (it != last and *it == ':') {
         ++it;
     } else {
-        throw parse_error(std::format("{} Missing ':' while parsing declaration.", token_location(it, last, path)));
+        throw parse_error(std::format("{} Missing ':' while parsing declaration.", token_location(it, last, context.path)));
     }
 
     if (name == "margin") {
-        r = parse_theme_margin_declarations(it, last, path);
+        r = parse_theme_margin_declarations(it, last, context);
 
     } else if (name == "spacing") {
-        r = parse_theme_spacing_declarations(it, last, path);
+        r = parse_theme_spacing_declarations(it, last, context);
 
     } else if (name == "border-radius") {
-        r = parse_theme_border_radius_declarations(it, last, path);
+        r = parse_theme_border_radius_declarations(it, last, context);
 
     } else if (name == "caret-color") {
-        r = parse_theme_caret_color_declarations(it, last, path);
+        r = parse_theme_caret_color_declarations(it, last, context);
 
     } else if (name == "font-family") {
-        r = parse_theme_font_family(it, last, path);
+        r = parse_theme_font_family_declaration(it, last, context);
 
-    } else if (name == "font-type") {
-        r = parse_theme_font_type(it, last, path);
+    } else if (name == "font-style") {
+        r = parse_theme_font_style_declaration(it, last, context);
 
     } else if (name == "font-weight") {
-        r = parse_theme_font_weight(it, last, path);
+        r = parse_theme_font_weight_declaration(it, last, context);
 
     } else {
         // Other names.
-        if (auto value = parse_theme_value(it, last, path)) {
-            r.emplace_back(name, value);
+        if (auto value = parse_theme_value(it, last, context)) {
+            r.emplace_back(name, *value);
 
         } else {
             throw parse_error(
-                std::format("{} Missing value after ':' while parsing declaration.", token_location(it, last, path)));
+                std::format("{} Missing value after ':' while parsing declaration.", token_location(it, last, context.path)));
         }
     }
 
-    if (it != last and *it == ';') {
-        ++it;
-    } else {
+    if (it == last or *it != ';') {
         throw parse_error(
-            std::format("{} Missing ';' after value while parsing declaration.", token_location(it, last, path)));
+            std::format("{} Missing ';' after value while parsing declaration.", token_location(it, last, context.path)));
     }
 
+    ++it;
     return r;
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<theme_rule_set> parse_theme_rule_set(
-    It & it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr std::optional<theme_rule_set> parse_theme_rule_set(It& it, ItEnd last, parse_theme_context& context)
 {
     // rule_set := selector '{' declaration* '}'
     auto r = theme_rule_set{};
 
-    if (auto selector = parse_theme_selector(it, last, path)) {
+    if (auto selector = parse_theme_selector(it, last, context)) {
         r.selector = *selector;
     } else {
         return std::nullopt;
@@ -657,67 +711,142 @@ template<typename It, std::sentinel_for<It> ItEnd>
     if (it != last and *it == '{') {
         ++it;
     } else {
-        throw parse_error(std::format("{} Missing '{{' while parsing rule-set.", token_location(it, last, path)));
+        throw parse_error(std::format("{} Missing '{{' while parsing rule-set.", token_location(it, last, context.path)));
     }
 
     while (it != last and *it != '}') {
-        if (auto declaration = parse_theme_declaration(it, last, path)) {
-            r.declarations.push_back(*declaration);
+        if (auto declaration = parse_theme_declaration(it, last, context); not declaration.empty()) {
+            // A single declaration such as "margin" will generate multiple declarations:
+            // "margin-left", "margin-right", "margin-top", "margin-bottom".
+            r.declarations.insert(r.declarations.end(), declaration.begin(), declaration.end());
         } else {
-            throw parse_error(std::format("{} Missing declaration while parsing rule-set.", token_location(it, last, path)));
+            throw parse_error(
+                std::format("{} Missing declaration while parsing rule-set.", token_location(it, last, context.path)));
         }
     }
 
     if (it != last and *it == '}') {
         ++it;
     } else {
-        throw parse_error(std::format("{} Missing '}}' while parsing rule-set.", token_location(it, last, path)));
+        throw parse_error(std::format("{} Missing '}}' while parsing rule-set.", token_location(it, last, context.path)));
     }
 
     return r;
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<theme_stylesheet> parse_theme_stylesheet(
-    It & it, ItEnd last, std::filesystem::path const& path)
+[[nodiscard]] constexpr bool parse_theme_color_at_rule(It& it, ItEnd last, parse_theme_context& context)
+{
+    if (it.size() >= 2 and it[0] == '@' and it[1] == token::id and it[1] == "color") {
+        it += 2;
+
+        if (it == last and *it != token::id) {
+            throw parse_error(std::format("{} Expect name while parsing @color.", token_location(it, last, context.path)));
+        }
+
+        hilet name = static_cast<std::string>(*it);
+        ++it;
+
+        if (color::find(name) == nullptr) {
+            throw parse_error(std::format(
+                "{} Undefined color-name \"{}\" while parsing @color declaration.",
+                token_location(it, last, context.path),
+                name));
+        }
+
+        if (it == last or *it != ':') {
+            throw parse_error(std::format(
+                "{} Missing ':' after color-name of @color {} declaration.", token_location(it, last, context.path), name));
+        }
+        ++it;
+
+        if (auto color = parse_theme_color(it, last, context)) {
+            context.set_color(name, *color);
+        } else {
+            throw parse_error(
+                std::format("{} Missing color-value in @color {} declaration.", token_location(it, last, context.path), name));
+        }
+
+        if (it == last or *it != ';') {
+            throw parse_error(
+                std::format("{} Missing ';' after @color {} declaration.", token_location(it, last, context.path), name));
+        }
+        ++it;
+        return true;
+
+    } else {
+        return false;
+    }
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr bool parse_theme_let_at_rule(It& it, ItEnd last, parse_theme_context& context)
+{
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr bool parse_theme_macro_at_rule(It& it, ItEnd last, parse_theme_context& context)
+{
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr bool parse_theme_at_rule(It& it, ItEnd last, parse_theme_context& context)
+{
+    if (parse_theme_color_at_rule(it, last, context)) {
+        return true;
+    } else if (parse_theme_let_at_rule(it, last, context)) {
+        return true;
+    } else if (parse_theme_macro_at_rule(it, last, context)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::optional<theme_style_sheet> parse_theme_stylesheet(It& it, ItEnd last, parse_theme_context& context)
 {
     // stylesheet := ( at_rule | rule_set )*
-    auto r = theme_stylesheet{};
+    auto r = theme_style_sheet{};
 
     while (it != last) {
-        if (auto at_rule = parse_theme_at_rule(it, last, path)) {
-            r.add(*at_rule);
-        } else if (auto rule_set = parse_theme_rule_set(it, last, path)) {
-            r.add(*rule_set);
+        if (parse_theme_at_rule(it, last, context)) {
+            // At rules only update the context.
+        } else if (auto rule_set = parse_theme_rule_set(it, last, context)) {
+            r.rule_sets.push_back(*rule_set);
         }
     }
 
     return r;
 }
 
-}
+} // namespace detail
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr theme parse_theme(It first, ItEnd last, std::filesystem::path const &path)
+[[nodiscard]] constexpr theme_style_sheet parse_theme(It first, ItEnd last, std::filesystem::path const& path)
 {
-    auto it = make_lookahead_iterator<4>(first, last);
-    if (auto stylesheet = detail::parse_theme_stylesheet(it, std::default_sentinel, path)) {
-        return stylesheet->make_theme();
+    auto lexer_it = lexer<lexer_config::css_style()>.parse(first, last);
+    auto lookahead_it = make_lookahead_iterator<4>(lexer_it, std::default_sentinel);
+
+    auto context = detail::parse_theme_context{};
+    context.path = path;
+    if (auto stylesheet = detail::parse_theme_stylesheet(lookahead_it, std::default_sentinel, context)) {
+        stylesheet->colors = std::move(context.colors);
+        return *stylesheet;
     } else {
-        throw parse_error(std::format("{} Could not parse theme file.", token_location(it, std::default_sentinel, path));
+        throw parse_error(
+            std::format("{} Could not parse theme file.", token_location(lookahead_it, std::default_sentinel, path)));
     }
 }
 
-[[nodiscard]] constexpr theme parse_theme(std::string_view str, std::filesystem::path const &path)
+[[nodiscard]] constexpr theme_style_sheet parse_theme(std::string_view str, std::filesystem::path const& path)
 {
     return parse_theme(str.begin(), str.end(), path);
 }
 
-[[nodiscard]] inline theme parse_theme(std::filesystem::path const &path)
+[[nodiscard]] inline theme_style_sheet parse_theme(std::filesystem::path const& path)
 {
     auto view = file_view{path};
     return parse_theme(as_string_view(view), path);
 }
-
-
-}} // namespace hi::v1::detail
+}} // namespace hi::v1

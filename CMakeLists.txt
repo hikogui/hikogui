@@ -421,7 +421,7 @@ add_shader_target(hikogui_shaders
 )
 
 set(hikogui_resource_files
-    resources/themes/hikogui_dark.theme.json
+    resources/themes/hikogui_dark.css
     resources/themes/hikogui_light.theme.json
     resources/fonts/elusiveicons-webfont.ttf
     resources/fonts/hikogui_icons.ttf

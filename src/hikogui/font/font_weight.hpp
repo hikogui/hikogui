@@ -14,43 +14,32 @@
 namespace hi::inline v1 {
 
 enum class font_weight {
-    Thin, ///< 100: Thin / Hairline
-    ExtraLight, ///< 200: Ultra-light / Extra-light
-    Light, ///< 300: Light
-    Regular, ///< 400: Normal / Regular
-    Medium, ///< 500: Medium
-    SemiBold, ///< 600: Semi-bold / Demi-bold
-    Bold, ///< 700: Bold
-    ExtraBold, ///< 800: Extra-bold / Ultra-bold
-    Black, ///< 900: Heavy / Black
-    ExtraBlack, ///< 950: Extra-black / Ultra-black
+    thin, ///< 100: Thin / Hairline
+    extra_light, ///< 200: Ultra-light / Extra-light
+    light, ///< 300: Light
+    regular, ///< 400: Normal / Regular
+    medium, ///< 500: Medium
+    semi_bold, ///< 600: Semi-bold / Demi-bold
+    bold, ///< 700: Bold
+    extra_bold, ///< 800: Extra-bold / Ultra-bold
+    black, ///< 900: Heavy / Black
+    extra_black, ///< 950: Extra-black / Ultra-black
 };
 
-inline hilet font_weight_from_string_table = std::unordered_map<std::string, font_weight>{
-    {"thin", font_weight::Thin},
-    {"hairline", font_weight::Thin},
-    {"ultra-light", font_weight::ExtraLight},
-    {"ultra light", font_weight::ExtraLight},
-    {"extra-light", font_weight::ExtraLight},
-    {"extra light", font_weight::ExtraLight},
-    {"light", font_weight::Light},
-    {"normal", font_weight::Regular},
-    {"regular", font_weight::Regular},
-    {"medium", font_weight::Medium},
-    {"semi-bold", font_weight::SemiBold},
-    {"semi bold", font_weight::SemiBold},
-    {"demi-bold", font_weight::SemiBold},
-    {"demi bold", font_weight::SemiBold},
-    {"bold", font_weight::Bold},
-    {"extra-bold", font_weight::ExtraBold},
-    {"extra bold", font_weight::ExtraBold},
-    {"ultra-bold", font_weight::ExtraBold},
-    {"ultra bold", font_weight::ExtraBold},
-    {"heavy", font_weight::Black},
-    {"black", font_weight::Black},
-    {"extra-black", font_weight::ExtraBlack},
-    {"ultra-black", font_weight::ExtraBlack},
+// clang-format off
+constexpr auto font_weight_metadata = enum_metadata{
+    font_weight::thin, "thin",
+    font_weight::extra_light, "extra-light",
+    font_weight::light, "light",
+    font_weight::regular, "regular",
+    font_weight::medium, "medium",
+    font_weight::semi_bold, "semi-bold",
+    font_weight::bold, "bold",
+    font_weight::extra_bold, "extra-bold",
+    font_weight::black, "black",
+    font_weight::extra_black, "extra-black",
 };
+// clang-format on
 
 /** Convert a font weight value between 50 and 1000 to a font weight.
  */
@@ -62,38 +51,26 @@ inline hilet font_weight_from_string_table = std::unordered_map<std::string, fon
     return static_cast<font_weight>(((rhs + 50) / 100) - 1);
 }
 
-[[nodiscard]] inline font_weight font_weight_from_string(std::string_view rhs)
+[[nodiscard]] constexpr font_weight font_weight_from_string(std::string_view rhs)
 {
-    hilet i = font_weight_from_string_table.find(to_lower(rhs));
-    if (i == font_weight_from_string_table.end()) {
+    try {
+        return font_weight_metadata.at(rhs);
+    } catch (...) {
         throw parse_error(std::format("Unknown font-weight {}", rhs));
     }
-    return i->second;
 }
 
-[[nodiscard]] constexpr char const *to_const_string(font_weight const &x) noexcept
+[[nodiscard]] constexpr std::string_view to_string_view(font_weight const& x) noexcept
 {
-    switch (x) {
-    case font_weight::Thin: return "Thin";
-    case font_weight::ExtraLight: return "ExtraLight";
-    case font_weight::Light: return "Light";
-    case font_weight::Regular: return "Regular";
-    case font_weight::Medium: return "Medium";
-    case font_weight::SemiBold: return "SemiBold";
-    case font_weight::Bold: return "Bold";
-    case font_weight::ExtraBold: return "ExtraBold";
-    case font_weight::Black: return "Black";
-    case font_weight::ExtraBlack: return "ExtraBlack";
-    default: hi_no_default();
-    }
+    return font_weight_metadata[x];
 }
 
-[[nodiscard]] inline std::string to_string(font_weight const &x) noexcept
+[[nodiscard]] constexpr std::string to_string(font_weight const& x) noexcept
 {
-    return to_const_string(x);
+    return std::string{to_string_view(x)};
 }
 
-[[nodiscard]] inline char to_char(font_weight const &x) noexcept
+[[nodiscard]] constexpr char to_char(font_weight const &x) noexcept
 {
     hilet x_ = static_cast<int>(x);
     hi_axiom(x_ >= 0 && x_ <= 9);
@@ -111,15 +88,15 @@ inline std::ostream &operator<<(std::ostream &lhs, font_weight const &rhs)
     return lhs << to_string(rhs);
 }
 
-inline bool almost_equal(font_weight const &lhs, font_weight const &rhs) noexcept
+constexpr bool almost_equal(font_weight const &lhs, font_weight const &rhs) noexcept
 {
     // Check only if it is bold or not.
-    return (lhs > font_weight::Medium) == (rhs > font_weight::Medium);
+    return (lhs > font_weight::medium) == (rhs > font_weight::medium);
 }
 
 [[nodiscard]] constexpr auto font_weight_alternative_table_generator() noexcept
 {
-    std::array<font_weight, 100> r = {font_weight::Regular};
+    std::array<font_weight, 100> r = {font_weight::regular};
 
     for (auto w = 0_uz; w < 10_uz; ++w) {
         auto min_w = w;
@@ -157,9 +134,9 @@ constexpr auto font_weight_alternative_table = font_weight_alternative_table_gen
 } // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<hi::font_weight, CharT> : std::formatter<char const *, CharT> {
+struct std::formatter<hi::font_weight, CharT> : std::formatter<std::string_view, CharT> {
     auto format(hi::font_weight const &t, auto &fc)
     {
-        return std::formatter<char const *, CharT>::format(hi::to_const_string(t), fc);
+        return std::formatter<std::string_view, CharT>::format(hi::to_string_view(t), fc);
     }
 };

@@ -5,6 +5,7 @@
 #include "theme_mode.hpp"
 #include "theme_file.hpp"
 #include "theme_book.hpp"
+#include "theme_parser.hpp"
 
 namespace hi {
 inline namespace v1 {

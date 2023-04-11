@@ -8,10 +8,12 @@
 
 #pragma once
 
-#include "semantic_color.hpp"
 #include "../SIMD/module.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
+#include <string>
+#include <map>
 
 namespace hi { inline namespace v1 {
 
@@ -66,64 +68,44 @@ public:
 
     [[nodiscard]] constexpr color(float r, float g, float b, float a = 1.0f) noexcept : color(f32x4{r, g, b, a}) {}
 
-    [[nodiscard]] constexpr explicit color(hi::semantic_color semantic_color, float alpha = 1.0f) noexcept : _v()
-    {
-        _v.x() = float16::from_uint16_t(0xf900 + static_cast<uint8_t>(semantic_color));
-        _v.y() = float16::from_uint16_t(0x0000);
-        _v.z() = float16::from_uint16_t(0x0000);
-        _v.w() = float16(1.0f);
-    }
+    /** Find a color by name.
+     *
+     * @param name The name of the color to find.
+     * @return A pointer to a writable named-color. Or nullptr when not found.
+     */
+    [[nodiscard]] static inline color *find(std::string const& name) noexcept;
 
-    [[nodiscard]] constexpr bool is_semantic() const noexcept
-    {
-        return (_v.x().get() & 0xf900) == 0xf900;
-    }
-
-    constexpr explicit operator semantic_color() const noexcept
-    {
-        hi_axiom(is_semantic());
-        return static_cast<semantic_color>(_v.x().get() & 0xff);
-    }
-
-    // clang-format off
-    [[nodiscard]] static constexpr color blue() noexcept { return color{semantic_color::blue}; }
-    [[nodiscard]] static constexpr color green() noexcept { return color{semantic_color::green}; }
-    [[nodiscard]] static constexpr color indigo() noexcept { return color{semantic_color::indigo}; }
-    [[nodiscard]] static constexpr color orange() noexcept { return color{semantic_color::orange}; }
-    [[nodiscard]] static constexpr color pink() noexcept { return color{semantic_color::pink}; }
-    [[nodiscard]] static constexpr color purple() noexcept { return color{semantic_color::purple}; }
-    [[nodiscard]] static constexpr color red() noexcept { return color{semantic_color::red}; }
-    [[nodiscard]] static constexpr color teal() noexcept { return color{semantic_color::teal}; }
-    [[nodiscard]] static constexpr color yellow() noexcept { return color{semantic_color::yellow}; }
-    [[nodiscard]] static constexpr color gray() noexcept { return color{semantic_color::gray}; }
-    [[nodiscard]] static constexpr color gray2() noexcept { return color{semantic_color::gray2}; }
-    [[nodiscard]] static constexpr color gray3() noexcept { return color{semantic_color::gray3}; }
-    [[nodiscard]] static constexpr color gray4() noexcept { return color{semantic_color::gray4}; }
-    [[nodiscard]] static constexpr color gray5() noexcept { return color{semantic_color::gray5}; }
-    [[nodiscard]] static constexpr color gray6() noexcept { return color{semantic_color::gray6}; }
-    [[nodiscard]] static constexpr color foreground() noexcept { return color{semantic_color::foreground}; }
-    [[nodiscard]] static constexpr color border() noexcept { return color{semantic_color::border}; }
-    [[nodiscard]] static constexpr color fill() noexcept { return color{semantic_color::fill}; }
-    [[nodiscard]] static constexpr color accent() noexcept { return color{semantic_color::accent}; }
-    [[nodiscard]] static constexpr color text_select() noexcept { return color{semantic_color::text_select}; }
-    [[nodiscard]] static constexpr color primary_cursor() noexcept { return color{semantic_color::primary_cursor}; }
-    [[nodiscard]] static constexpr color secondary_cursor() noexcept { return color{semantic_color::secondary_cursor}; }
-    // clang-format on
-
-    [[nodiscard]] static constexpr color transparent() noexcept
-    {
-        return {0.0f, 0.0f, 0.0f, 0.0f};
-    }
-
-    [[nodiscard]] static constexpr color white() noexcept
-    {
-        return {1.0f, 1.0f, 1.0f, 1.0f};
-    }
-
-    [[nodiscard]] static constexpr color black() noexcept
-    {
-        return {0.0f, 0.0f, 0.0f, 1.0f};
-    }
+    [[nodiscard]] static inline color black() noexcept;
+    [[nodiscard]] static inline color silver() noexcept;
+    [[nodiscard]] static inline color gray() noexcept;
+    [[nodiscard]] static inline color white() noexcept;
+    [[nodiscard]] static inline color maroon() noexcept;
+    [[nodiscard]] static inline color red() noexcept;
+    [[nodiscard]] static inline color purple() noexcept;
+    [[nodiscard]] static inline color fuchsia() noexcept;
+    [[nodiscard]] static inline color green() noexcept;
+    [[nodiscard]] static inline color line() noexcept;
+    [[nodiscard]] static inline color olive() noexcept;
+    [[nodiscard]] static inline color yellow() noexcept;
+    [[nodiscard]] static inline color navy() noexcept;
+    [[nodiscard]] static inline color blue() noexcept;
+    [[nodiscard]] static inline color teal() noexcept;
+    [[nodiscard]] static inline color aqua() noexcept;
+    [[nodiscard]] static inline color indigo() noexcept;
+    [[nodiscard]] static inline color orange() noexcept;
+    [[nodiscard]] static inline color pink() noexcept;
+    [[nodiscard]] static inline color background() noexcept;
+    [[nodiscard]] static inline color gray1() noexcept;
+    [[nodiscard]] static inline color gray2() noexcept;
+    [[nodiscard]] static inline color gray3() noexcept;
+    [[nodiscard]] static inline color gray4() noexcept;
+    [[nodiscard]] static inline color gray5() noexcept;
+    [[nodiscard]] static inline color gray6() noexcept;
+    [[nodiscard]] static inline color gray7() noexcept;
+    [[nodiscard]] static inline color gray8() noexcept;
+    [[nodiscard]] static inline color gray9() noexcept;
+    [[nodiscard]] static inline color foreground() noexcept;
+    [[nodiscard]] static inline color transparent() noexcept;
 
     [[nodiscard]] size_t hash() const noexcept
     {
@@ -227,6 +209,148 @@ public:
 private:
     f16x4 _v = {};
 };
+
+namespace detail {
+
+class named_color_base {
+public:
+    named_color_base(std::string name, hi::color color) noexcept : _color(color)
+    {
+        hilet lock = std::scoped_lock(_map_mutex);
+        _map[name] = this;
+    }
+
+    named_color_base(named_color_base const&) = delete;
+    named_color_base(named_color_base&&) = delete;
+    named_color_base& operator=(named_color_base const&) = delete;
+    named_color_base& operator=(named_color_base&&) = delete;
+
+    hi::color const& operator*() const noexcept
+    {
+        return _color;
+    }
+
+    hi::color& operator*() noexcept
+    {
+        return _color;
+    }
+
+    operator hi::color() const noexcept
+    {
+        return _color;
+    }
+
+    inline static named_color_base *find(std::string const& name) noexcept
+    {
+        hilet lock = std::scoped_lock(_map_mutex);
+        hilet it = _map.find(name);
+        if (it != _map.end()) {
+            return it->second;
+        } else {
+            return nullptr;
+        }
+    }
+
+private:
+    inline static std::map<std::string, named_color_base *> _map;
+    inline static unfair_mutex _map_mutex;
+
+protected:
+    color _color;
+};
+
+template<fixed_string Tag>
+class named_color_type : public named_color_base {
+public:
+    named_color_type() noexcept : named_color_base(Tag, hi::color{}) {}
+    named_color_type(hi::color color) noexcept : named_color_base(Tag, color) {}
+
+    named_color_type& operator=(hi::color color) noexcept
+    {
+        _color = color;
+    }
+};
+
+} // namespace detail
+
+template<fixed_string Tag>
+constinit auto named_color = detail::named_color_type<Tag>{};
+
+[[nodiscard]] inline color *color::find(std::string const& name) noexcept
+{
+    if (auto named_color_ptr = detail::named_color_base::find(name)) {
+        return std::addressof(**named_color_ptr);
+    } else {
+        return nullptr;
+    }
+}
+
+// clang-format off
+
+template<> inline auto named_color<"black"> = detail::named_color_type<"black">{color{}};
+template<> inline auto named_color<"silver"> = detail::named_color_type<"silver">{color{}};
+template<> inline auto named_color<"gray"> = detail::named_color_type<"gray">{color{}};
+template<> inline auto named_color<"white"> = detail::named_color_type<"white">{color{}};
+template<> inline auto named_color<"maroon"> = detail::named_color_type<"maroon">{color{}};
+template<> inline auto named_color<"red"> = detail::named_color_type<"red">{color{}};
+template<> inline auto named_color<"purple"> = detail::named_color_type<"purple">{color{}};
+template<> inline auto named_color<"fuchsia"> = detail::named_color_type<"fuchsia">{color{}};
+template<> inline auto named_color<"green"> = detail::named_color_type<"green">{color{}};
+template<> inline auto named_color<"line"> = detail::named_color_type<"line">{color{}};
+template<> inline auto named_color<"olive"> = detail::named_color_type<"olive">{color{}};
+template<> inline auto named_color<"yellow"> = detail::named_color_type<"yellow">{color{}};
+template<> inline auto named_color<"navy"> = detail::named_color_type<"navy">{color{}};
+template<> inline auto named_color<"blue"> = detail::named_color_type<"blue">{color{}};
+template<> inline auto named_color<"teal"> = detail::named_color_type<"teal">{color{}};
+template<> inline auto named_color<"aqua"> = detail::named_color_type<"aqua">{color{}};
+template<> inline auto named_color<"indigo"> = detail::named_color_type<"indigo">{color{}};
+template<> inline auto named_color<"orange"> = detail::named_color_type<"orange">{color{}};
+template<> inline auto named_color<"pink"> = detail::named_color_type<"pink">{color{}};
+template<> inline auto named_color<"background"> = detail::named_color_type<"background">{color{}};
+template<> inline auto named_color<"gray1"> = detail::named_color_type<"gray1">{color{}};
+template<> inline auto named_color<"gray2"> = detail::named_color_type<"gray2">{color{}};
+template<> inline auto named_color<"gray3"> = detail::named_color_type<"gray3">{color{}};
+template<> inline auto named_color<"gray4"> = detail::named_color_type<"gray4">{color{}};
+template<> inline auto named_color<"gray5"> = detail::named_color_type<"gray5">{color{}};
+template<> inline auto named_color<"gray6"> = detail::named_color_type<"gray6">{color{}};
+template<> inline auto named_color<"gray7"> = detail::named_color_type<"gray7">{color{}};
+template<> inline auto named_color<"gray8"> = detail::named_color_type<"gray8">{color{}};
+template<> inline auto named_color<"gray9"> = detail::named_color_type<"gray9">{color{}};
+template<> inline auto named_color<"foreground"> = detail::named_color_type<"foreground">{color{}};
+template<> inline auto named_color<"transparent"> = detail::named_color_type<"transparent">{color{}};
+
+[[nodiscard]] inline color color::black() noexcept { return named_color<"black">; }
+[[nodiscard]] inline color color::silver() noexcept { return named_color<"silver">; }
+[[nodiscard]] inline color color::gray() noexcept { return named_color<"gray">; }
+[[nodiscard]] inline color color::white() noexcept { return named_color<"white">; }
+[[nodiscard]] inline color color::maroon() noexcept { return named_color<"maroon">; }
+[[nodiscard]] inline color color::red() noexcept { return named_color<"red">; }
+[[nodiscard]] inline color color::purple() noexcept { return named_color<"purple">; }
+[[nodiscard]] inline color color::fuchsia() noexcept { return named_color<"fuchsia">; }
+[[nodiscard]] inline color color::green() noexcept { return named_color<"green">; }
+[[nodiscard]] inline color color::line() noexcept { return named_color<"line">; }
+[[nodiscard]] inline color color::olive() noexcept { return named_color<"olive">; }
+[[nodiscard]] inline color color::yellow() noexcept { return named_color<"yellow">; }
+[[nodiscard]] inline color color::navy() noexcept { return named_color<"navy">; }
+[[nodiscard]] inline color color::blue() noexcept { return named_color<"blue">; }
+[[nodiscard]] inline color color::teal() noexcept { return named_color<"teal">; }
+[[nodiscard]] inline color color::aqua() noexcept { return named_color<"aqua">; }
+[[nodiscard]] inline color color::indigo() noexcept { return named_color<"indigo">; }
+[[nodiscard]] inline color color::orange() noexcept { return named_color<"orange">; }
+[[nodiscard]] inline color color::pink() noexcept { return named_color<"pink">; }
+[[nodiscard]] inline color color::background() noexcept { return named_color<"background">; }
+[[nodiscard]] inline color color::gray1() noexcept { return named_color<"gray1">; }
+[[nodiscard]] inline color color::gray2() noexcept { return named_color<"gray2">; }
+[[nodiscard]] inline color color::gray3() noexcept { return named_color<"gray3">; }
+[[nodiscard]] inline color color::gray4() noexcept { return named_color<"gray4">; }
+[[nodiscard]] inline color color::gray5() noexcept { return named_color<"gray5">; }
+[[nodiscard]] inline color color::gray6() noexcept { return named_color<"gray6">; }
+[[nodiscard]] inline color color::gray7() noexcept { return named_color<"gray7">; }
+[[nodiscard]] inline color color::gray8() noexcept { return named_color<"gray8">; }
+[[nodiscard]] inline color color::gray9() noexcept { return named_color<"gray9">; }
+[[nodiscard]] inline color color::foreground() noexcept { return named_color<"foreground">; }
+[[nodiscard]] inline color color::transparent() noexcept { return named_color<"transparent">; }
+// clang-format on
 
 }} // namespace hi::v1
 

@@ -31,9 +31,9 @@ public:
         value(narrow_cast<uint8_t>(static_cast<int>(weight) + (style == font_style::italic ? half() : 0)))
     {
     }
-    constexpr font_variant() noexcept : font_variant(font_weight::Regular, font_style::normal) {}
+    constexpr font_variant() noexcept : font_variant(font_weight::regular, font_style::normal) {}
     constexpr font_variant(font_weight weight) noexcept : font_variant(weight, font_style::normal) {}
-    constexpr font_variant(font_style style) noexcept : font_variant(font_weight::Regular, style) {}
+    constexpr font_variant(font_style style) noexcept : font_variant(font_weight::regular, style) {}
 
     [[nodiscard]] size_t hash() const noexcept
     {

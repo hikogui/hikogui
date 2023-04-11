@@ -11,6 +11,7 @@
 #include <iterator>
 #include <bit>
 #include <optional>
+#include <string>
 
 namespace hi {
 inline namespace v1 {
@@ -31,6 +32,8 @@ public:
     using value_type = std::iterator_traits<It>::value_type;
     using reference = value_type const &;
     using pointer = value_type const *;
+    using difference_type = std::ptrdiff_t;
+    using iterator_category = std::forward_iterator_tag;
 
     constexpr lookahead_iterator() noexcept = default;
     constexpr lookahead_iterator(lookahead_iterator const &) noexcept = delete;
@@ -142,6 +145,19 @@ public:
         return *this;
     }
 
+    constexpr lookahead_iterator &operator+=(size_t n) noexcept
+    {
+        for (auto i = 0_uz; i != n; ++i) {
+            ++(*this);
+        }
+        return *this;
+    }
+
+    constexpr void operator++(int) noexcept
+    {
+        ++(*this);
+    }
+
 private:
     It _it;
     ItEnd _last;
@@ -161,6 +177,11 @@ private:
         }
     }
 };
+
+static_assert(std::movable<lookahead_iterator<2, std::string::iterator, std::string::iterator>>);
+static_assert(std::is_same_v<std::iterator_traits<lookahead_iterator<2, std::string::iterator, std::string::iterator>>::value_type, char>);
+static_assert(std::input_or_output_iterator<lookahead_iterator<2, std::string::iterator, std::string::iterator>>);
+static_assert(std::weakly_incrementable<lookahead_iterator<2, std::string::iterator, std::string::iterator>>);
 
 /** Create a lookahead_iterator from a forward iterator.
 *

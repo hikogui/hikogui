@@ -48,7 +48,7 @@ template<typename It, std::sentinal_for<It> ItEnd>
     for (auto it = first + 1; it != last; ++it) {
         auto language = it->attributes().language_tag();
         if (language != run_language) {
-            r += check_spelling(to_gstring(text), 
+            //r += check_spelling(to_gstring(text),
         }
     }
 

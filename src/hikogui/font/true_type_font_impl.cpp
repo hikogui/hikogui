@@ -169,30 +169,30 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
 
     if (name_lower.find("regular") != std::string::npos or
         name_lower.find("medium") != std::string::npos) {
-        weight = font_weight::Regular;
+        weight = font_weight::regular;
     } else if (
         name_lower.find("extra light") != std::string::npos or
         name_lower.find("extra-light") != std::string::npos or
         name_lower.find("extralight") != std::string::npos) {
-        weight = font_weight::ExtraLight;
+        weight = font_weight::extra_light;
     } else if (
         name_lower.find("extra black") != std::string::npos or
         name_lower.find("extra-black") != std::string::npos or
         name_lower.find("extrablack") != std::string::npos) {
-        weight = font_weight::ExtraBlack;
+        weight = font_weight::extra_black;
     } else if (
         name_lower.find("extra bold") != std::string::npos or
         name_lower.find("extra-bold") != std::string::npos or
         name_lower.find("extrabold") != std::string::npos) {
-        weight = font_weight::ExtraBold;
+        weight = font_weight::extra_bold;
     } else if (name_lower.find("thin") != std::string::npos) {
-        weight = font_weight::Thin;
+        weight = font_weight::thin;
     } else if (name_lower.find("light") != std::string::npos) {
-        weight = font_weight::Light;
+        weight = font_weight::light;
     } else if (name_lower.find("bold") != std::string::npos) {
-        weight = font_weight::Bold;
+        weight = font_weight::bold;
     } else if (name_lower.find("black") != std::string::npos) {
-        weight = font_weight::Black;
+        weight = font_weight::black;
     }
     // clang-format on
 

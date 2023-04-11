@@ -150,9 +150,9 @@ void font_book::post_process() noexcept
         return lhs->char_map.count() > rhs->char_map.count();
     });
 
-    hilet regular_fallback_chain = make_fallback_chain(font_weight::Regular, font_style::normal);
-    hilet bold_fallback_chain = make_fallback_chain(font_weight::Bold, font_style::normal);
-    hilet italic_fallback_chain = make_fallback_chain(font_weight::Regular, font_style::italic);
+    hilet regular_fallback_chain = make_fallback_chain(font_weight::regular, font_style::normal);
+    hilet bold_fallback_chain = make_fallback_chain(font_weight::bold, font_style::normal);
+    hilet italic_fallback_chain = make_fallback_chain(font_weight::regular, font_style::italic);
 
     hi_log_info(
         "Post processing fonts number={}, regular-fallback={}, bold-fallback={}, italic-fallback={}",
@@ -179,7 +179,7 @@ void font_book::post_process() noexcept
             // clang-format on
         }
 
-        if (almost_equal(font->weight, font_weight::Bold)) {
+        if (almost_equal(font->weight, font_weight::bold)) {
             std::copy(begin(bold_fallback_chain), end(bold_fallback_chain), std::back_inserter(fallback_chain));
         } else if (font->style == font_style::italic) {
             std::copy(begin(italic_fallback_chain), end(italic_fallback_chain), std::back_inserter(fallback_chain));
