@@ -63,6 +63,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/rcu_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_parser_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/enum_metadata_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string_tests.cpp

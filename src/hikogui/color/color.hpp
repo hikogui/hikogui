@@ -206,6 +206,11 @@ public:
         return rhs;
     }
 
+    friend std::ostream &operator<<(std::ostream &lhs, color const &rhs)
+    {
+        return lhs << std::format("rgb({} {} {} {})", rhs.r(), rhs.g(), rhs.b(), rhs.a());
+    }
+
 private:
     f16x4 _v = {};
 };
@@ -274,7 +279,7 @@ public:
 } // namespace detail
 
 template<fixed_string Tag>
-constinit auto named_color = detail::named_color_type<Tag>{};
+inline auto named_color = detail::named_color_type<Tag>{};
 
 [[nodiscard]] inline color *color::find(std::string const& name) noexcept
 {
@@ -361,3 +366,5 @@ struct std::hash<hi::color> {
         return rhs.hash();
     }
 };
+
+

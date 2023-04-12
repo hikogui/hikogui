@@ -100,6 +100,7 @@ struct lexer_config {
         auto r = lexer_config{};
         r.filter_white_space = 1;
         r.filter_comment = 1;
+        r.has_color_literal = 1;
         r.has_double_quote_string_literal = 1;
         r.has_double_slash_line_comment = 1;
         r.has_c_block_comment = 1;

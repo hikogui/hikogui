@@ -8,6 +8,7 @@
 #include "../parser/module.hpp"
 #include "../color/module.hpp"
 #include "../font/module.hpp"
+#include "theme_mode.hpp"
 #include <string>
 #include <vector>
 
@@ -52,6 +53,25 @@ struct theme_pattern {
     std::vector<std::string> path;
     std::vector<bool> is_child;
     std::vector<std::string> states;
+
+    [[nodiscard]] constexpr std::string get_path_as_string() const noexcept
+    {
+        hi_assert(not path.empty());
+        auto r = path[0];
+
+        hi_assert(path.size() == is_child.size() + 1);
+
+        for (auto i = 0_uz; i != is_child.size(); ++i) {
+            if (is_child[i]) {
+                r += ">";
+            } else {
+                r += " ";
+            }
+            r += path[i + 1];
+        }
+
+        return r;
+    }
 };
 
 struct theme_selector : std::vector<theme_pattern> {};
@@ -71,16 +91,49 @@ struct theme_declaration {
 struct theme_rule_set {
     theme_selector selector;
     std::vector<theme_declaration> declarations;
+
+    [[nodiscard]] constexpr size_t size() const noexcept
+    {
+        return declarations.size();
+    }
+
+    [[nodiscard]] constexpr theme_declaration const& operator[](size_t i) const noexcept
+    {
+        return declarations[i];
+    }
+
+    [[nodiscard]] constexpr std::string get_selector_as_string() const noexcept
+    {
+        hi_assert(not selector.empty());
+
+        auto r = selector[0].get_path_as_string();
+        for (auto i = 1_uz; i != selector.size(); ++i) {
+            r += ',';
+            r += selector[i].get_path_as_string();
+        }
+
+        return r;
+    }
 };
 
 } // namespace detail
 
 struct theme_style_sheet {
     std::string name;
-    std::string mode;
+    theme_mode mode;
 
     std::vector<std::pair<std::string, color>> colors;
     std::vector<detail::theme_rule_set> rule_sets;
+
+    [[nodiscard]] constexpr size_t size() const noexcept
+    {
+        return rule_sets.size();
+    }
+
+    [[nodiscard]] detail::theme_rule_set const& operator[](size_t i) const noexcept
+    {
+        return rule_sets[i];
+    }
 };
 
 namespace detail {
@@ -261,16 +314,16 @@ template<typename It, std::sentinel_for<It> ItEnd>
     auto r = 0.0f;
 
     if (it.size() >= 2 and (it[0] == token::integer or it[0] == token::real) and it[1] == '%') {
-        r = static_cast<float>(it[0]) * 0.01f;
+        r = sRGB_gamma_to_linear(static_cast<float>(it[0]) * 0.01f);
         it += 2;
     } else if (it != last and *it == token::real) {
         r = static_cast<float>(*it);
         ++it;
     } else if (it.size() >= 2 and it[0] == '-' and it[1] == token::real) {
         r = -static_cast<float>(it[1]);
-        ++it;
+        it += 2;
     } else if (it != last and *it == token::integer) {
-        r = sRGB_gamma_to_linear(static_cast<float>(*it) * 255.0f);
+        r = sRGB_gamma_to_linear(static_cast<float>(*it) / 255.0f);
         ++it;
     } else {
         return std::nullopt;
@@ -301,7 +354,18 @@ template<typename It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr std::optional<color> parse_theme_color(It& it, ItEnd last, parse_theme_context& context)
 {
     if (it != last and *it == token::color) {
-        return static_cast<color>(*it);
+        try {
+            auto r = static_cast<color>(*it);
+            ++it;
+            return r;
+
+        } catch (std::exception const& e) {
+            throw parse_error(std::format(
+                "{} Invalid color literal '{}': {}",
+                token_location(it, last, context.path),
+                static_cast<std::string>(*it),
+                e.what()));
+        }
 
     } else if (it != last and *it == token::id and *it == "rgb") {
         // rgb-color := "rgb" '(' color-component ','? color-component ','? color-component ( [,/]? alpha-component )? ')'
@@ -309,14 +373,14 @@ template<typename It, std::sentinel_for<It> ItEnd>
         // alpha-component := float | number '%'
         ++it;
 
-        if (it != last and *it == '(') {
-            ++it;
-        } else {
+        if (it == last or *it != '(') {
             throw parse_error(
                 std::format("{} Expect '(' after \"color-layers\" keyword.", token_location(it, last, context.path)));
         }
+        ++it;
 
         auto r = color{};
+        r.a() = 1.0;
 
         if (auto component = parse_theme_color_component(it, last, context)) {
             r.r() = *component;
@@ -332,7 +396,7 @@ template<typename It, std::sentinel_for<It> ItEnd>
             r.g() = *component;
         } else {
             throw parse_error(
-                std::format("{} Expect a green-color-component after '('.", token_location(it, last, context.path)));
+                std::format("{} Expect a green-color-component after red-color-component.", token_location(it, last, context.path)));
         }
 
         if (it != last and *it == ',') {
@@ -342,7 +406,7 @@ template<typename It, std::sentinel_for<It> ItEnd>
         if (auto component = parse_theme_color_component(it, last, context)) {
             r.b() = *component;
         } else {
-            throw parse_error(std::format("{} Expect a blue-color-component after '('.", token_location(it, last, context.path)));
+            throw parse_error(std::format("{} Expect a blue-color-component after red-color-component.", token_location(it, last, context.path)));
         }
 
         if (it != last and (*it == ',' or *it == '/')) {
@@ -354,12 +418,10 @@ template<typename It, std::sentinel_for<It> ItEnd>
             r.a() = *component;
         }
 
-        if (it != last and *it == ')') {
-            ++it;
-        } else {
-            throw parse_error(std::format("{} Expect ')' after colors.", token_location(it, last, context.path)));
+        if (it == last or *it != ')') {
+            throw parse_error(std::format("{} Expect ')' after colors-components.", token_location(it, last, context.path)));
         }
-
+        ++it;
         return r;
 
     } else if (it != last and *it == token::id) {
@@ -414,25 +476,32 @@ template<typename It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr std::optional<theme_length> parse_theme_length(It& it, ItEnd last, parse_theme_context& context)
 {
     if (it.size() >= 2 and (it[0] == token::integer or it[0] == token::real) and it[1] == token::id) {
-        if (it[1] == "pt") {
-            return theme_length::pt(static_cast<float>(it[0]));
-        } else if (it[1] == "cm") {
-            return theme_length::cm(static_cast<float>(it[0]));
-        } else if (it[1] == "in") {
-            return theme_length::in(static_cast<float>(it[0]));
-        } else if (it[1] == "px") {
-            return theme_length::px(static_cast<float>(it[0]));
-        } else if (it[1] == "em") {
-            return theme_length::em(static_cast<float>(it[0]));
-        } else {
-            throw parse_error(std::format(
-                "{} Expected either \"pt\", \"cm\", \"in\", \"em\" or \"px\" after number",
-                token_location(it, last, context.path)));
-        }
+        hilet r = [&] {
+            if (it[1] == "pt") {
+                return theme_length::pt(static_cast<float>(it[0]));
+            } else if (it[1] == "cm") {
+                return theme_length::cm(static_cast<float>(it[0]));
+            } else if (it[1] == "in") {
+                return theme_length::in(static_cast<float>(it[0]));
+            } else if (it[1] == "px") {
+                return theme_length::px(static_cast<float>(it[0]));
+            } else if (it[1] == "em") {
+                return theme_length::em(static_cast<float>(it[0]));
+            } else {
+                throw parse_error(std::format(
+                    "{} Expected either \"pt\", \"cm\", \"in\", \"em\" or \"px\" after number",
+                    token_location(it, last, context.path)));
+            }
+        }();
+
+        it += 2;
+        return r;
 
     } else if (it != last and (*it == token::integer or *it == token::real)) {
         // Implicitly a number without suffix is in `pt`.
-        return theme_length::pt(static_cast<float>(*it));
+        hilet r = theme_length::pt(static_cast<float>(*it));
+        ++it;
+        return r;
 
     } else {
         return std::nullopt;
@@ -787,14 +856,14 @@ parse_theme_declaration(It& it, ItEnd last, parse_theme_context& context)
             r.emplace_back(name, *value);
 
         } else {
-            throw parse_error(
-                std::format("{} Missing value after ':' while parsing declaration.", token_location(it, last, context.path)));
+            throw parse_error(std::format(
+                "{} Missing value after ':' while parsing {} declaration.", token_location(it, last, context.path), name));
         }
     }
 
     if (it == last or *it != ';') {
-        throw parse_error(
-            std::format("{} Missing ';' after value while parsing declaration.", token_location(it, last, context.path)));
+        throw parse_error(std::format(
+            "{} Missing ';' after value while parsing {} declaration.", token_location(it, last, context.path), name));
     }
 
     ++it;
@@ -978,17 +1047,52 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr bool parse_theme_at_rule(It& it, ItEnd last, parse_theme_context& context)
+[[nodiscard]] constexpr std::optional<std::string> parse_theme_name_at_rule(It& it, ItEnd last, parse_theme_context& context)
 {
-    if (parse_theme_color_at_rule(it, last, context)) {
-        return true;
-    } else if (parse_theme_let_at_rule(it, last, context)) {
-        return true;
-    } else if (parse_theme_macro_at_rule(it, last, context)) {
-        return true;
-    } else {
-        return false;
+    if (it.size() < 2 or it[0] != '@' or it[1] != token::id or it[1] != "name") {
+        return std::nullopt;
     }
+    it += 2;
+
+    if (it == last or *it != token::dstr) {
+        throw parse_error(std::format("{} Expect string after @name.", token_location(it, last, context.path)));
+    }
+    auto r = static_cast<std::string>(*it);
+    ++it;
+
+    if (it == last or *it != ';') {
+        throw parse_error(std::format("{} Expect ';' after @name \"{}\".", token_location(it, last, context.path), r));
+    }
+    ++it;
+
+    return {std::move(r)};
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::optional<theme_mode> parse_theme_mode_at_rule(It& it, ItEnd last, parse_theme_context& context)
+{
+    if (it.size() < 2 or it[0] != '@' or it[1] != token::id or it[1] != "mode") {
+        return std::nullopt;
+    }
+    it += 2;
+
+    hilet r = [&] {
+        if (it != last and *it == token::id and *it == "light") {
+            return theme_mode::light;
+        } else if (it != last and *it == token::id and *it == "dark") {
+            return theme_mode::dark;
+        } else {
+            throw parse_error(std::format("{} Expect light or dark after @mode.", token_location(it, last, context.path)));
+        }
+    }();
+    ++it;
+
+    if (it == last or *it != ';') {
+        throw parse_error(std::format("{} Expect ';' after @name \"{}\".", token_location(it, last, context.path), r));
+    }
+    ++it;
+
+    return r;
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
@@ -997,12 +1101,36 @@ template<typename It, std::sentinel_for<It> ItEnd>
     // stylesheet := ( at_rule | rule_set )*
     auto r = theme_style_sheet{};
 
+    bool has_name = false;
+    bool has_mode = false;
     while (it != last) {
-        if (parse_theme_at_rule(it, last, context)) {
-            // At rules only update the context.
+        if (auto name = parse_theme_name_at_rule(it, last, context)) {
+            r.name = std::move(*name);
+            has_name = true;
+        } else if (auto mode = parse_theme_mode_at_rule(it, last, context)) {
+            r.mode = *mode;
+            has_mode = true;
+        } else if (parse_theme_color_at_rule(it, last, context)) {
+            // colors are directly added to the context.
+        } else if (parse_theme_let_at_rule(it, last, context)) {
+            // lets are directly added to the context.
+        } else if (parse_theme_macro_at_rule(it, last, context)) {
+            // macros are directly added to the context.
         } else if (auto rule_set = parse_theme_rule_set(it, last, context)) {
             r.rule_sets.push_back(*rule_set);
+        } else {
+            throw parse_error(std::format("{} Found unexpected token.", token_location(it, last, context.path)));
         }
+    }
+
+    if (not has_name) {
+        throw parse_error(
+            std::format("{} Did not find required @name in the style sheet.", token_location(it, last, context.path)));
+    }
+
+    if (not has_mode) {
+        throw parse_error(
+            std::format("{} Did not find required @mode in the style sheet.", token_location(it, last, context.path)));
     }
 
     return r;
@@ -1037,4 +1165,5 @@ template<typename It, std::sentinel_for<It> ItEnd>
     auto view = file_view{path};
     return parse_theme(as_string_view(view), path);
 }
+
 }} // namespace hi::v1

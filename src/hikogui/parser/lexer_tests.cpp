@@ -183,6 +183,17 @@ TEST(lexer, float_literal)
     ASSERT_EQ(it, std::default_sentinel);
 }
 
+TEST(lexer, float_literal_start_with_zero)
+{
+    constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
+
+    auto it = c_lexer.parse("0.42");
+    ASSERT_EQ(*it, hi::token(hi::token::real, "0.42", 0));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
+}
+
+
 TEST(lexer, float_literal_only_fractional)
 {
     constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
