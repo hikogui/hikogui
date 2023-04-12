@@ -119,11 +119,6 @@ struct token {
         return kind == kind_type::other and capture.size() == 1 and capture.front() == rhs;
     }
 
-    constexpr operator std::string_view() const noexcept
-    {
-        return std::string_view{capture.data(), capture.size()};
-    }
-
     constexpr operator std::string() const noexcept
     {
         return std::string{capture.data(), capture.size()};
@@ -150,6 +145,12 @@ struct token {
     inline friend std::ostream& operator<<(std::ostream& lhs, token const& rhs)
     {
         return lhs << std::format("{}", rhs);
+    }
+
+private:
+    constexpr operator std::string_view() const noexcept
+    {
+        return std::string_view{capture.data(), capture.size()};
     }
 };
 
@@ -180,7 +181,7 @@ struct std::formatter<hi::token, CharT> : std::formatter<std::string, CharT> {
             std::format(
                 "{} \"{}\" {}:{}",
                 hi::token::kind_type_metadata[t.kind],
-                static_cast<std::string_view>(t),
+                static_cast<std::string>(t),
                 t.line_nr,
                 t.column_nr),
             fc);
