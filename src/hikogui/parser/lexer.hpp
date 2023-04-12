@@ -738,6 +738,7 @@ private:
         add(idle, "123456789", dec_integer, advance, capture);
 
         add(zero, any, idle, token::integer);
+        add(zero, ".", dec_float, advance, capture);
         add(zero, "bB", bin_integer, advance, capture);
         add(zero, "oO", oct_integer, advance, capture);
         add(zero, "dD", dec_integer, advance, capture);
