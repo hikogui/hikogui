@@ -84,7 +84,7 @@ public:
     [[nodiscard]] static inline color purple() noexcept;
     [[nodiscard]] static inline color fuchsia() noexcept;
     [[nodiscard]] static inline color green() noexcept;
-    [[nodiscard]] static inline color line() noexcept;
+    [[nodiscard]] static inline color lime() noexcept;
     [[nodiscard]] static inline color olive() noexcept;
     [[nodiscard]] static inline color yellow() noexcept;
     [[nodiscard]] static inline color navy() noexcept;
@@ -287,37 +287,37 @@ constinit auto named_color = detail::named_color_type<Tag>{};
 
 // clang-format off
 
-template<> inline auto named_color<"black"> = detail::named_color_type<"black">{color{}};
-template<> inline auto named_color<"silver"> = detail::named_color_type<"silver">{color{}};
-template<> inline auto named_color<"gray"> = detail::named_color_type<"gray">{color{}};
-template<> inline auto named_color<"white"> = detail::named_color_type<"white">{color{}};
-template<> inline auto named_color<"maroon"> = detail::named_color_type<"maroon">{color{}};
-template<> inline auto named_color<"red"> = detail::named_color_type<"red">{color{}};
-template<> inline auto named_color<"purple"> = detail::named_color_type<"purple">{color{}};
-template<> inline auto named_color<"fuchsia"> = detail::named_color_type<"fuchsia">{color{}};
-template<> inline auto named_color<"green"> = detail::named_color_type<"green">{color{}};
-template<> inline auto named_color<"line"> = detail::named_color_type<"line">{color{}};
-template<> inline auto named_color<"olive"> = detail::named_color_type<"olive">{color{}};
-template<> inline auto named_color<"yellow"> = detail::named_color_type<"yellow">{color{}};
-template<> inline auto named_color<"navy"> = detail::named_color_type<"navy">{color{}};
-template<> inline auto named_color<"blue"> = detail::named_color_type<"blue">{color{}};
-template<> inline auto named_color<"teal"> = detail::named_color_type<"teal">{color{}};
-template<> inline auto named_color<"aqua"> = detail::named_color_type<"aqua">{color{}};
-template<> inline auto named_color<"indigo"> = detail::named_color_type<"indigo">{color{}};
-template<> inline auto named_color<"orange"> = detail::named_color_type<"orange">{color{}};
-template<> inline auto named_color<"pink"> = detail::named_color_type<"pink">{color{}};
-template<> inline auto named_color<"background"> = detail::named_color_type<"background">{color{}};
-template<> inline auto named_color<"gray1"> = detail::named_color_type<"gray1">{color{}};
-template<> inline auto named_color<"gray2"> = detail::named_color_type<"gray2">{color{}};
-template<> inline auto named_color<"gray3"> = detail::named_color_type<"gray3">{color{}};
-template<> inline auto named_color<"gray4"> = detail::named_color_type<"gray4">{color{}};
-template<> inline auto named_color<"gray5"> = detail::named_color_type<"gray5">{color{}};
-template<> inline auto named_color<"gray6"> = detail::named_color_type<"gray6">{color{}};
-template<> inline auto named_color<"gray7"> = detail::named_color_type<"gray7">{color{}};
-template<> inline auto named_color<"gray8"> = detail::named_color_type<"gray8">{color{}};
-template<> inline auto named_color<"gray9"> = detail::named_color_type<"gray9">{color{}};
-template<> inline auto named_color<"foreground"> = detail::named_color_type<"foreground">{color{}};
-template<> inline auto named_color<"transparent"> = detail::named_color_type<"transparent">{color{}};
+template<> inline auto named_color<"black"> = detail::named_color_type<"black">{color{0, 0, 0}};
+template<> inline auto named_color<"silver"> = detail::named_color_type<"silver">{color{192, 192, 192}};
+template<> inline auto named_color<"gray"> = detail::named_color_type<"gray">{color{128, 128, 128}};
+template<> inline auto named_color<"white"> = detail::named_color_type<"white">{color{255, 255, 255}};
+template<> inline auto named_color<"maroon"> = detail::named_color_type<"maroon">{color{128, 0, 0}};
+template<> inline auto named_color<"red"> = detail::named_color_type<"red">{color{255, 0, 0}};
+template<> inline auto named_color<"purple"> = detail::named_color_type<"purple">{color{128, 0, 128}};
+template<> inline auto named_color<"fuchsia"> = detail::named_color_type<"fuchsia">{color{255, 0, 255}};
+template<> inline auto named_color<"green"> = detail::named_color_type<"green">{color{0, 128, 0}};
+template<> inline auto named_color<"lime"> = detail::named_color_type<"lime">{color{0, 255, 0}};
+template<> inline auto named_color<"olive"> = detail::named_color_type<"olive">{color{128, 128, 0}};
+template<> inline auto named_color<"yellow"> = detail::named_color_type<"yellow">{color{255, 255, 0}};
+template<> inline auto named_color<"navy"> = detail::named_color_type<"navy">{color{0, 0, 128}};
+template<> inline auto named_color<"blue"> = detail::named_color_type<"blue">{color{0, 0, 255}};
+template<> inline auto named_color<"teal"> = detail::named_color_type<"teal">{color{0, 128, 128}};
+template<> inline auto named_color<"aqua"> = detail::named_color_type<"aqua">{color{0, 255, 255}};
+template<> inline auto named_color<"indigo"> = detail::named_color_type<"indigo">{color{75, 0, 130}};
+template<> inline auto named_color<"orange"> = detail::named_color_type<"orange">{color{255, 165, 0}};
+template<> inline auto named_color<"pink"> = detail::named_color_type<"pink">{color{255, 192, 203}};
+template<> inline auto named_color<"background"> = detail::named_color_type<"background">{color{0, 0, 0}};
+template<> inline auto named_color<"gray1"> = detail::named_color_type<"gray1">{color{26, 26, 26}};
+template<> inline auto named_color<"gray2"> = detail::named_color_type<"gray2">{color{51, 51, 51}};
+template<> inline auto named_color<"gray3"> = detail::named_color_type<"gray3">{color{77, 77, 77}};
+template<> inline auto named_color<"gray4"> = detail::named_color_type<"gray4">{color{102, 102, 102}};
+template<> inline auto named_color<"gray5"> = detail::named_color_type<"gray5">{color{127, 127, 127}};
+template<> inline auto named_color<"gray6"> = detail::named_color_type<"gray6">{color{153, 153, 153}};
+template<> inline auto named_color<"gray7"> = detail::named_color_type<"gray7">{color{179, 179, 179}};
+template<> inline auto named_color<"gray8"> = detail::named_color_type<"gray8">{color{204, 204, 204}};
+template<> inline auto named_color<"gray9"> = detail::named_color_type<"gray9">{color{229, 229, 229}};
+template<> inline auto named_color<"foreground"> = detail::named_color_type<"foreground">{color{255, 255, 255}};
+template<> inline auto named_color<"transparent"> = detail::named_color_type<"transparent">{color{0, 0, 0, 0}};
 
 [[nodiscard]] inline color color::black() noexcept { return named_color<"black">; }
 [[nodiscard]] inline color color::silver() noexcept { return named_color<"silver">; }
@@ -328,7 +328,7 @@ template<> inline auto named_color<"transparent"> = detail::named_color_type<"tr
 [[nodiscard]] inline color color::purple() noexcept { return named_color<"purple">; }
 [[nodiscard]] inline color color::fuchsia() noexcept { return named_color<"fuchsia">; }
 [[nodiscard]] inline color color::green() noexcept { return named_color<"green">; }
-[[nodiscard]] inline color color::line() noexcept { return named_color<"line">; }
+[[nodiscard]] inline color color::lime() noexcept { return named_color<"lime">; }
 [[nodiscard]] inline color color::olive() noexcept { return named_color<"olive">; }
 [[nodiscard]] inline color color::yellow() noexcept { return named_color<"yellow">; }
 [[nodiscard]] inline color color::navy() noexcept { return named_color<"navy">; }
