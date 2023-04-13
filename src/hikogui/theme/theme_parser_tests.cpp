@@ -415,7 +415,7 @@ TEST(theme_parser, margin_4)
         "@mode light;\n"
         "\n"
         "foo {\n"
-        "    margin : 10 20pt 30 40;\n"
+        "    margin:10em 20px 30 40;\n"
         "}\n"};
     auto style_sheet = hi::parse_theme(css, std::filesystem::path{"theme.css"});
 
@@ -432,8 +432,8 @@ TEST(theme_parser, margin_4)
     ASSERT_EQ(rule_set[2].name, "margin-bottom");
     ASSERT_EQ(rule_set[3].name, "margin-left");
 
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::points>(rule_set[1].value), hi::points{20});
+    ASSERT_EQ(std::get<hi::em_quads>(rule_set[0].value), hi::em_quads{10});
+    ASSERT_EQ(std::get<hi::pixels>(rule_set[1].value), hi::pixels{20});
     ASSERT_EQ(std::get<hi::points>(rule_set[2].value), hi::points{30});
     ASSERT_EQ(std::get<hi::points>(rule_set[3].value), hi::points{40});
 }

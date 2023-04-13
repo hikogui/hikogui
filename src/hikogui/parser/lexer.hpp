@@ -135,8 +135,16 @@ private:
         bin_integer,
         oct_integer,
         dec_integer,
+        dec_integer_found_e,
+        dec_integer_found_E,
+        dec_integer_found_e_id,
+        dec_integer_found_E_id,
         hex_integer,
         dec_float,
+        dec_float_found_e,
+        dec_float_found_E,
+        dec_float_found_e_id,
+        dec_float_found_E_id,
         hex_float,
         dec_sign_exponent,
         hex_sign_exponent,
@@ -574,12 +582,7 @@ public:
             default:
                 // Most tokens are terminated when a non-ascii code-point is found.
                 // Terminate these tokens as if we reached end-of-file.
-                while (_state != idle) {
-                    if (auto token_kind = process_command(); token_kind != token::none) {
-                        return token_kind;
-                    }
-                }
-                return token::none;
+                return process_command();
             }
         }
 
@@ -765,7 +768,14 @@ private:
         add(dec_integer, any, idle, token::integer);
         add(dec_integer, "0123456789", dec_integer, advance, capture);
         add(dec_integer, ".", dec_float, advance, capture);
-        add(dec_integer, "eE", dec_sign_exponent, advance, capture);
+        add(dec_integer, "e", dec_integer_found_e, advance);
+        add(dec_integer, "E", dec_integer_found_E, advance);
+        add(dec_integer_found_e, any, dec_integer_found_e_id, token::integer);
+        add(dec_integer_found_E, any, dec_integer_found_E_id, token::integer);
+        add(dec_integer_found_e_id, any, identifier, 'e');
+        add(dec_integer_found_E_id, any, identifier, 'E');
+        add(dec_integer_found_e, "+-0123456789", dec_sign_exponent, 'e');
+        add(dec_integer_found_E, "+-0123456789", dec_sign_exponent, 'E');
 
         // hexadecimal-integer
         add(hex_integer, any, idle, token::integer);
@@ -777,7 +787,15 @@ private:
         add(found_dot, "0123456789eE", dec_float);
         add(dec_float, any, idle, token::real);
         add(dec_float, "0123456789", dec_float, advance, capture);
-        add(dec_float, "eE", dec_sign_exponent, advance, capture);
+        add(dec_float, "e", dec_float_found_e, advance);
+        add(dec_float, "E", dec_float_found_E, advance);
+        add(dec_float_found_e, any, dec_float_found_e_id, token::real);
+        add(dec_float_found_E, any, dec_float_found_E_id, token::real);
+        add(dec_float_found_e_id, any, identifier, 'e');
+        add(dec_float_found_E_id, any, identifier, 'E');
+        add(dec_float_found_e, "+-0123456789", dec_sign_exponent, 'e');
+        add(dec_float_found_E, "+-0123456789", dec_sign_exponent, 'E');
+
         add(dec_sign_exponent, any, idle, token::error_incomplete_exponent);
         add(dec_sign_exponent, "0123456789", dec_exponent_more, advance, capture);
         add(dec_sign_exponent, "+-", dec_exponent, advance, capture);

@@ -70,13 +70,6 @@ struct theme_selector : std::vector<theme_pattern> {};
 struct theme_declaration {
     std::string name;
     theme_value value;
-
-    constexpr theme_declaration(std::string name, theme_value value) noexcept : name(std::move(name)), value(value) {}
-    //constexpr theme_declaration(std::string name, theme_length length) noexcept : name(std::move(name)), value(length) {}
-    //constexpr theme_declaration(std::string name, hi::color color) noexcept : name(std::move(name)), value({color}) {}
-    //constexpr theme_declaration(std::string name, font_family_id id) noexcept : name(std::move(name)), value({id}) {}
-    //constexpr theme_declaration(std::string name, font_style style) noexcept : name(std::move(name)), value({style}) {}
-    //constexpr theme_declaration(std::string name, font_weight weight) noexcept : name(std::move(name)), value({weight}) {}
 };
 
 struct theme_rule_set {

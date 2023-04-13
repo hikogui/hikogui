@@ -15,6 +15,45 @@ TEST(lexer, integer_literal)
     ASSERT_EQ(it, std::default_sentinel);
 }
 
+TEST(lexer, integer_literal_e)
+{
+    constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
+
+    auto it = c_lexer.parse("42e");
+    ASSERT_EQ(*it, hi::token(hi::token::integer, "42", 0));
+    ++it;
+    // Do to 'e' maybe being exponent the column-nr was advanced already.
+    ASSERT_EQ(*it, hi::token(hi::token::id, "e", 3));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
+}
+
+TEST(lexer, integer_literal_em)
+{
+    constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
+
+    auto it = c_lexer.parse("42em");
+    ASSERT_EQ(*it, hi::token(hi::token::integer, "42", 0));
+    ++it;
+    // Do to 'e' maybe being exponent the column-nr was advanced already.
+    ASSERT_EQ(*it, hi::token(hi::token::id, "em", 3));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
+}
+
+TEST(lexer, integer_literal_E_a31)
+{
+    constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
+
+    auto it = c_lexer.parse("42Eö");
+    ASSERT_EQ(*it, hi::token(hi::token::integer, "42", 0));
+    ++it;
+    // Do to 'e' maybe being exponent the column-nr was advanced already.
+    ASSERT_EQ(*it, hi::token(hi::token::id, "Eö", 3));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
+}
+
 TEST(lexer, integer_literal_sigma)
 {
     constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
@@ -264,15 +303,46 @@ TEST(lexer, float_literal_fractional_and_exponent)
     ASSERT_EQ(it, std::default_sentinel);
 }
 
-TEST(lexer, float_literal_incomplete_exponent1)
+TEST(lexer, float_literal_e)
 {
     constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
 
-    auto it = c_lexer.parse("4e");
-    ASSERT_EQ(*it, hi::token(hi::token::error_incomplete_exponent, "4e", 0));
+    auto it = c_lexer.parse("4.2e");
+    ASSERT_EQ(*it, hi::token(hi::token::real, "4.2", 0));
+    ++it;
+    // Do to 'e' maybe being exponent the column-nr was advanced already.
+    ASSERT_EQ(*it, hi::token(hi::token::id, "e", 4));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
 }
 
-TEST(lexer, float_literal_incomplete_exponent2)
+TEST(lexer, float_literal_em)
+{
+    constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
+
+    auto it = c_lexer.parse("4.2em");
+    ASSERT_EQ(*it, hi::token(hi::token::real, "4.2", 0));
+    ++it;
+    // Do to 'e' maybe being exponent the column-nr was advanced already.
+    ASSERT_EQ(*it, hi::token(hi::token::id, "em", 4));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
+}
+
+TEST(lexer, float_literal_E_a31)
+{
+    constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
+
+    auto it = c_lexer.parse("4.2Eö");
+    ASSERT_EQ(*it, hi::token(hi::token::real, "4.2", 0));
+    ++it;
+    // Do to 'e' maybe being exponent the column-nr was advanced already.
+    ASSERT_EQ(*it, hi::token(hi::token::id, "Eö", 4));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
+}
+
+TEST(lexer, float_literal_incomplete_exponent)
 {
     constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
 
