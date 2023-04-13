@@ -71,6 +71,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/utility/math_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/exceptions_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/units_tests.cpp
     $<$<PLATFORM_ID:Darwin>:${HIKOGUI_SOURCE_DIR}/utility/debugger_macos.mm>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp

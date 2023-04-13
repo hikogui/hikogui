@@ -239,6 +239,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/numbers.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/test.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/units.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/utility.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/win32_headers.hpp>
     ${HIKOGUI_SOURCE_DIR}/widgets/abstract_button_widget.hpp

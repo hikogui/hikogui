@@ -15,39 +15,30 @@
 namespace hi { inline namespace v1 {
 namespace detail {
 
-struct theme_length {
-    enum class length_type { px, pt, em };
-
-    float value;
-    length_type type;
-
-    [[nodiscard]] constexpr static theme_length pt(float x)
-    {
-        return theme_length{x, length_type::pt};
-    }
-
-    [[nodiscard]] constexpr static theme_length in(float x)
-    {
-        return pt(x * 72.0f);
-    }
-
-    [[nodiscard]] constexpr static theme_length cm(float x)
-    {
-        return pt(x * 28.3464567f);
-    }
-
-    [[nodiscard]] constexpr static theme_length px(float x)
-    {
-        return theme_length{x, length_type::px};
-    }
-
-    [[nodiscard]] constexpr static theme_length em(float x)
-    {
-        return theme_length{x, length_type::em};
-    }
+struct theme_length : std::variant<hi::pixels, hi::points, hi::em_quads> {
+    using super = std::variant<hi::pixels, hi::points, hi::em_quads>;
+    using super::super;
 };
 
-struct theme_value : std::variant<theme_length, hi::color, font_family_id, font_weight, font_style> {};
+struct theme_value : std::variant<hi::pixels, hi::points, hi::em_quads, hi::color, font_family_id, font_weight, font_style> {
+    using super = std::variant<hi::pixels, hi::points, hi::em_quads, hi::color, font_family_id, font_weight, font_style>;
+    using super::super;
+
+    constexpr theme_value(theme_length length) noexcept :
+        super([&] {
+            if (auto pixels_ptr = std::get_if<hi::pixels>(&length)) {
+                return super{*pixels_ptr};
+            } else if (auto points_ptr = std::get_if<hi::points>(&length)) {
+                return super{*points_ptr};
+            } else if (auto em_quads_ptr = std::get_if<hi::em_quads>(&length)) {
+                return super{*em_quads_ptr};
+            } else {
+                hi_no_default();
+            }
+        }())
+    {
+    }
+};
 
 struct theme_pattern {
     std::vector<std::string> path;
@@ -81,11 +72,11 @@ struct theme_declaration {
     theme_value value;
 
     constexpr theme_declaration(std::string name, theme_value value) noexcept : name(std::move(name)), value(value) {}
-    constexpr theme_declaration(std::string name, theme_length length) noexcept : name(std::move(name)), value({length}) {}
-    constexpr theme_declaration(std::string name, hi::color color) noexcept : name(std::move(name)), value({color}) {}
-    constexpr theme_declaration(std::string name, font_family_id id) noexcept : name(std::move(name)), value({id}) {}
-    constexpr theme_declaration(std::string name, font_style style) noexcept : name(std::move(name)), value({style}) {}
-    constexpr theme_declaration(std::string name, font_weight weight) noexcept : name(std::move(name)), value({weight}) {}
+    //constexpr theme_declaration(std::string name, theme_length length) noexcept : name(std::move(name)), value(length) {}
+    //constexpr theme_declaration(std::string name, hi::color color) noexcept : name(std::move(name)), value({color}) {}
+    //constexpr theme_declaration(std::string name, font_family_id id) noexcept : name(std::move(name)), value({id}) {}
+    //constexpr theme_declaration(std::string name, font_style style) noexcept : name(std::move(name)), value({style}) {}
+    //constexpr theme_declaration(std::string name, font_weight weight) noexcept : name(std::move(name)), value({weight}) {}
 };
 
 struct theme_rule_set {
@@ -395,8 +386,8 @@ template<typename It, std::sentinel_for<It> ItEnd>
         if (auto component = parse_theme_color_component(it, last, context)) {
             r.g() = *component;
         } else {
-            throw parse_error(
-                std::format("{} Expect a green-color-component after red-color-component.", token_location(it, last, context.path)));
+            throw parse_error(std::format(
+                "{} Expect a green-color-component after red-color-component.", token_location(it, last, context.path)));
         }
 
         if (it != last and *it == ',') {
@@ -406,7 +397,8 @@ template<typename It, std::sentinel_for<It> ItEnd>
         if (auto component = parse_theme_color_component(it, last, context)) {
             r.b() = *component;
         } else {
-            throw parse_error(std::format("{} Expect a blue-color-component after red-color-component.", token_location(it, last, context.path)));
+            throw parse_error(std::format(
+                "{} Expect a blue-color-component after red-color-component.", token_location(it, last, context.path)));
         }
 
         if (it != last and (*it == ',' or *it == '/')) {
@@ -476,17 +468,23 @@ template<typename It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr std::optional<theme_length> parse_theme_length(It& it, ItEnd last, parse_theme_context& context)
 {
     if (it.size() >= 2 and (it[0] == token::integer or it[0] == token::real) and it[1] == token::id) {
-        hilet r = [&] {
+        hilet r = [&]() -> theme_length {
             if (it[1] == "pt") {
-                return theme_length::pt(static_cast<float>(it[0]));
+                return points{static_cast<double>(it[0])};
+            } else if (it[1] == "mm") {
+                return points{millimeters{static_cast<double>(it[0])}};
             } else if (it[1] == "cm") {
-                return theme_length::cm(static_cast<float>(it[0]));
+                return points{centimeters{static_cast<double>(it[0])}};
+            } else if (it[1] == "dm") {
+                return points{decimeters{static_cast<double>(it[0])}};
+            } else if (it[1] == "m") {
+                return points{meters{static_cast<double>(it[0])}};
             } else if (it[1] == "in") {
-                return theme_length::in(static_cast<float>(it[0]));
+                return points{inches{static_cast<double>(it[0])}};
             } else if (it[1] == "px") {
-                return theme_length::px(static_cast<float>(it[0]));
+                return pixels(static_cast<double>(it[0]));
             } else if (it[1] == "em") {
-                return theme_length::em(static_cast<float>(it[0]));
+                return em_quads(static_cast<double>(it[0]));
             } else {
                 throw parse_error(std::format(
                     "{} Expected either \"pt\", \"cm\", \"in\", \"em\" or \"px\" after number",
@@ -499,7 +497,7 @@ template<typename It, std::sentinel_for<It> ItEnd>
 
     } else if (it != last and (*it == token::integer or *it == token::real)) {
         // Implicitly a number without suffix is in `pt`.
-        hilet r = theme_length::pt(static_cast<float>(*it));
+        hilet r = theme_length{points{static_cast<float>(*it)}};
         ++it;
         return r;
 
@@ -677,8 +675,8 @@ parse_theme_margin_declarations(It& it, ItEnd last, parse_theme_context& context
         } else if (lengths.size() == 3) {
             r.emplace_back("margin-top", lengths[0]);
             r.emplace_back("margin-right", lengths[1]);
-            r.emplace_back("margin-bottom", lengths[0]);
-            r.emplace_back("margin-left", lengths[2]);
+            r.emplace_back("margin-bottom", lengths[2]);
+            r.emplace_back("margin-left", lengths[1]);
         } else if (lengths.size() == 4) {
             r.emplace_back("margin-top", lengths[0]);
             r.emplace_back("margin-right", lengths[1]);
