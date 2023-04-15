@@ -654,12 +654,24 @@ public:
     static_assert(std::input_or_output_iterator<iterator<std::string::iterator, std::string::iterator>>);
     static_assert(std::weakly_incrementable<iterator<std::string::iterator, std::string::iterator>>);
 
+    /** Parse a range of UTF-8 characters.
+     *
+     * @param first An iterator pointing to the first UTF-8 code-unit.
+     * @param last An iterator pointing beyond the last UTF-8 code-unit to parse, or a sentinel.
+     * @return A forward iterator returning tokens, can be compared to the `std::default_iterator`
+     */
     template<typename It, std::sentinel_for<It> ItEnd>
     [[nodiscard]] constexpr iterator<It, ItEnd> parse(It first, ItEnd last) const noexcept
     {
         return iterator<It, ItEnd>{this, first, last};
     }
 
+    /** Parse a string of UTF-8 characters.
+     *
+     * @param str A view of a UTF-8 character string.
+     * @return A forward iterator returning tokens, can be compared to the `std::default_iterator`
+     */
+    template<typename It, std::sentinel_for<It> ItEnd>
     [[nodiscard]] constexpr auto parse(std::string_view str) const noexcept
     {
         return parse(str.begin(), str.end());
