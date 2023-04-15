@@ -55,13 +55,6 @@ std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
     // Add a nullptr to the end of the argument list.
     argv[argc] = nullptr;
 
-    // Initialize tzdata base.
-    try {
-        detail::log_message_base::zone = std::chrono::get_tzdb().current_zone();
-    } catch (std::runtime_error const &e) {
-        hi_log_error("Could not get current time zone: \"{}\"", e.what());
-    }
-
     // Make sure the console is in a valid state to write text to it.
     hi::console_start();
     hi::time_stamp_count::start_subsystem();

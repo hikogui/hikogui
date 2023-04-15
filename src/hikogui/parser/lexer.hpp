@@ -671,7 +671,6 @@ public:
      * @param str A view of a UTF-8 character string.
      * @return A forward iterator returning tokens, can be compared to the `std::default_iterator`
      */
-    template<typename It, std::sentinel_for<It> ItEnd>
     [[nodiscard]] constexpr auto parse(std::string_view str) const noexcept
     {
         return parse(str.begin(), str.end());

@@ -72,7 +72,6 @@ target_sources(hikogui PRIVATE
 	loop.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32_impl.cpp>
     group_ptr.hpp
-    meta.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/metadata_impl.cpp
     metadata.hpp
     notifier.hpp

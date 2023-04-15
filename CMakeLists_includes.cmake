@@ -192,7 +192,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/theme/theme_file.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_value.hpp
-    ${HIKOGUI_SOURCE_DIR}/theme/theme_parser.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/style_sheet.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/style_sheet_parser.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/module.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/grapheme.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/gstring.hpp
@@ -238,6 +239,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/module.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/numbers.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/test.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/time_zone.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/units.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/utility.hpp

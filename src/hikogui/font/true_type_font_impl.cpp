@@ -296,7 +296,7 @@ void true_type_font::shape_run_kern(font::shape_run_result_type& shape_result) c
     auto r = shape_run_basic(run);
 
     // Glyphs should be morphed only once.
-    auto morphed = false;
+    //auto morphed = false;
     // Glyphs should be positioned only once.
     auto positioned = false;
 

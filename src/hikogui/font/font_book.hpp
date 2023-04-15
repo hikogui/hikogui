@@ -151,10 +151,6 @@ private:
      */
     std::unordered_map<std::string, font_family_id> _family_names;
 
-    /** A list of family name -> fallback family name
-     */
-    std::unordered_map<std::string, std::string> _family_name_fallback_chain;
-
     /** Different fonts; variants of a family.
      */
     std::vector<std::array<font const *, font_variant::max()>> _font_variants;
@@ -162,18 +158,7 @@ private:
     std::vector<std::unique_ptr<font>> _fonts;
     std::vector<hi::font *> _font_ptrs;
 
-    /** Same as family_name, but will also have resolved font families from the fallback_chain.
-     * Must be cleared when a new font family is registered.
-     */
-    mutable std::unordered_map<std::string, font_family_id> _family_name_cache;
-
     [[nodiscard]] std::vector<hi::font *> make_fallback_chain(font_weight weight, font_style style) noexcept;
-
-    /** Generate fallback font family names.
-     */
-    [[nodiscard]] generator<std::string> generate_family_names(std::string_view name) const noexcept;
-
-    void create_family_name_fallback_chain() noexcept;
 };
 
 /** Register a font.
@@ -194,6 +179,15 @@ inline font& register_font_file(std::filesystem::path const& path)
 inline void register_font_directory(std::filesystem::path const& path)
 {
     return font_book::global().register_font_directory(path);
+}
+
+template<typename Range>
+inline void register_font_directories(Range &&range) noexcept
+{
+    for (auto const &path: range) {
+        font_book::global().register_font_directory(path, false);
+    }
+    font_book::global().post_process();
 }
 
 /** Find font family id.

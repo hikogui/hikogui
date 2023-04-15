@@ -23,63 +23,7 @@ font_book& font_book::global() noexcept
 
 font_book::~font_book() {}
 
-font_book::font_book()
-{
-    create_family_name_fallback_chain();
-}
-
-void font_book::create_family_name_fallback_chain() noexcept
-{
-    _family_name_fallback_chain["fallback"] = "sans-serif";
-
-    // Serif web-fonts
-    _family_name_fallback_chain["serif"] = "times new roman";
-    _family_name_fallback_chain["times new roman"] = "times";
-    _family_name_fallback_chain["times"] = "noto serif";
-    _family_name_fallback_chain["noto serif"] = "noto";
-
-    _family_name_fallback_chain["georgia"] = "serif";
-
-    _family_name_fallback_chain["palatino"] = "palatino linotype";
-    _family_name_fallback_chain["palatino linotype"] = "book antiqua";
-    _family_name_fallback_chain["book antiqua"] = "serif";
-
-    // Sans-serif web-fonts
-    _family_name_fallback_chain["sans-serif"] = "arial";
-    _family_name_fallback_chain["arial"] = "helvetica";
-    _family_name_fallback_chain["helvetica"] = "noto sans";
-
-    _family_name_fallback_chain["gadget"] = "sans-sarif";
-
-    _family_name_fallback_chain["comic sans"] = "comic sans ms";
-    _family_name_fallback_chain["comic sans ms"] = "cursive";
-    _family_name_fallback_chain["cursive"] = "sans-serif";
-
-    _family_name_fallback_chain["impact"] = "charcoal";
-    _family_name_fallback_chain["charcoal"] = "sans-serif";
-
-    _family_name_fallback_chain["lucida"] = "lucida sans";
-    _family_name_fallback_chain["lucida sans"] = "lucida sans unicode";
-    _family_name_fallback_chain["lucida sans unicode"] = "lucida grande";
-    _family_name_fallback_chain["lucida grande"] = "sans-serif";
-
-    _family_name_fallback_chain["verdana"] = "geneva";
-    _family_name_fallback_chain["tahoma"] = "geneva";
-    _family_name_fallback_chain["geneva"] = "sans-serif";
-
-    _family_name_fallback_chain["trebuchet"] = "trebuchet ms";
-    _family_name_fallback_chain["trebuchet ms"] = "helvetica";
-    _family_name_fallback_chain["helvetic"] = "sans-serif";
-
-    // Monospace web-fonts.
-    _family_name_fallback_chain["monospace"] = "courier";
-    _family_name_fallback_chain["courier"] = "courier new";
-
-    _family_name_fallback_chain["consolas"] = "lucida console";
-    _family_name_fallback_chain["lucida console"] = "monaco";
-    _family_name_fallback_chain["monaco"] = "andale mono";
-    _family_name_fallback_chain["andale mono"] = "monospace";
-}
+font_book::font_book() {}
 
 font& font_book::register_font_file(std::filesystem::path const& path, bool post_process)
 {
@@ -142,9 +86,6 @@ void font_book::register_font_directory(std::filesystem::path const& path, bool 
 
 void font_book::post_process() noexcept
 {
-    // Reset caches and fallback chains.
-    _family_name_cache = _family_names;
-
     // Sort the list of fonts based on the amount of unicode code points it supports.
     std::sort(begin(_font_ptrs), end(_font_ptrs), [](hilet& lhs, hilet& rhs) {
         return lhs->char_map.count() > rhs->char_map.count();
@@ -195,53 +136,25 @@ void font_book::post_process() noexcept
 {
     auto name = to_lower(family_name);
 
-    auto i = _family_names.find(name);
-    if (i == _family_names.end()) {
+    auto it = _family_names.find(name);
+    if (it == _family_names.end()) {
         hilet family_id = font_family_id(_font_variants.size());
         _font_variants.emplace_back();
         _family_names[name] = family_id;
-
-        // If a new family is added, then the cache which includes fallbacks is no longer valid.
-        _family_name_cache.clear();
         return family_id;
     } else {
-        return i->second;
-    }
-}
-
-[[nodiscard]] generator<std::string> font_book::generate_family_names(std::string_view name) const noexcept
-{
-    auto name_ = to_lower(name);
-
-    // Lets try the first name first.
-    co_yield name_;
-
-    // Find the start of the chain.
-    auto it = _family_name_fallback_chain.find(name_);
-    if (it == _family_name_fallback_chain.end()) {
-        it = _family_name_fallback_chain.find("fallback");
-    }
-
-    // Walk trough the chain.
-    for (; it != _family_name_fallback_chain.end(); it = _family_name_fallback_chain.find(it->second)) {
-        co_yield it->second;
-    }
-}
-
-[[nodiscard]] font_family_id font_book::find_family(std::string const &family_name) const noexcept
-{
-    if (hilet it = _family_name_cache.find(family_name); it != _family_name_cache.end()) {
         return it->second;
     }
+}
 
-    for (auto name : generate_family_names(family_name)) {
-        if (hilet it = _family_names.find(name); it != _family_names.end()) {
-            _family_name_cache[family_name] = it->second;
-            return it->second;
-        }
+[[nodiscard]] font_family_id font_book::find_family(std::string const& family_name) const noexcept
+{
+    auto it = _family_names.find(to_lower(family_name));
+    if (it == _family_names.end()) {
+        return std::nullopt;
+    } else {
+        return it->second;
     }
-
-    hi_log_fatal("font_book::find_family() was unable to find a fallback font for '{}'.", family_name);
 }
 
 [[nodiscard]] font const& font_book::find_font(font_family_id family_id, font_variant variant) const noexcept
