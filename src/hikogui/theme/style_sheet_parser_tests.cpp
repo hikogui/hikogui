@@ -784,3 +784,146 @@ TEST(style_sheet_parser, spacing_2)
     ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::points{10});
     ASSERT_EQ(std::get<hi::points>(rule_set[1].value), hi::points{20});
 }
+
+TEST(style_sheet_parser, state_disabled)
+{
+    auto css = std::string{
+        "@name \"default\";\n"
+        "@mode light;\n"
+        "\n"
+        "foo:disabled {\n"
+        "}\n"};
+    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
+
+    ASSERT_EQ(style_sheet.name, "default");
+    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
+    ASSERT_EQ(style_sheet.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::disabled);
+    ASSERT_EQ(style_sheet[0].selector[0].state_mask, hi::theme_state_mask::mouse);
+}
+
+TEST(style_sheet_parser, state_enabled)
+{
+    auto css = std::string{
+        "@name \"default\";\n"
+        "@mode light;\n"
+        "\n"
+        "foo:enabled {\n"
+        "}\n"};
+    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
+
+    ASSERT_EQ(style_sheet.name, "default");
+    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
+    ASSERT_EQ(style_sheet.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::enabled);
+    ASSERT_EQ(style_sheet[0].selector[0].state_mask, hi::theme_state_mask::mouse);
+}
+
+TEST(style_sheet_parser, state_hover_and_focus)
+{
+    auto css = std::string{
+        "@name \"default\";\n"
+        "@mode light;\n"
+        "\n"
+        "foo:hover:focus {\n"
+        "}\n"};
+    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
+
+    ASSERT_EQ(style_sheet.name, "default");
+    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
+    ASSERT_EQ(style_sheet.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::hover | hi::theme_state::focus);
+    ASSERT_EQ(style_sheet[0].selector[0].state_mask, hi::theme_state_mask::mouse | hi::theme_state_mask::focus);
+}
+
+TEST(style_sheet_parser, state_active_and_layer)
+{
+    auto css = std::string{
+        "@name \"default\";\n"
+        "@mode light;\n"
+        "\n"
+        "foo:active:layer(2) {\n"
+        "}\n"};
+    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
+
+    ASSERT_EQ(style_sheet.name, "default");
+    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
+    ASSERT_EQ(style_sheet.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::active | hi::theme_state::layer_2);
+    ASSERT_EQ(style_sheet[0].selector[0].state_mask, hi::theme_state_mask::mouse | hi::theme_state_mask::layers);
+}
+
+TEST(style_sheet_parser, state_no_focus_and_layer_and_on)
+{
+    auto css = std::string{
+        "@name \"default\";\n"
+        "@mode light;\n"
+        "\n"
+        "foo:no-focus:layer(1):on {\n"
+        "}\n"};
+    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
+
+    ASSERT_EQ(style_sheet.name, "default");
+    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
+    ASSERT_EQ(style_sheet.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::no_focus | hi::theme_state::layer_1 | hi::theme_state::on);
+    ASSERT_EQ(
+        style_sheet[0].selector[0].state_mask,
+        hi::theme_state_mask::focus | hi::theme_state_mask::layers | hi::theme_state_mask::value);
+}
+
+TEST(style_sheet_parser, state_lang)
+{
+    auto css = std::string{
+        "@name \"default\";\n"
+        "@mode light;\n"
+        "\n"
+        "foo:lang(en-US) {\n"
+        "}\n"};
+    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
+
+    ASSERT_EQ(style_sheet.name, "default");
+    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
+    ASSERT_EQ(style_sheet.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector[0].language, hi::language_tag{"en-US"});
+}
+
+TEST(style_sheet_parser, state_lang_star)
+{
+    auto css = std::string{
+        "@name \"default\";\n"
+        "@mode light;\n"
+        "\n"
+        "foo:lang(*-US) {\n"
+        "}\n"};
+    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
+
+    ASSERT_EQ(style_sheet.name, "default");
+    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
+    ASSERT_EQ(style_sheet.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector[0].language, hi::language_tag{"*-US"});
+}
+
+TEST(style_sheet_parser, state_phrasing)
+{
+    auto css = std::string{
+        "@name \"default\";\n"
+        "@mode light;\n"
+        "\n"
+        "foo:phrasing(se) {\n"
+        "}\n"};
+    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
+
+    ASSERT_EQ(style_sheet.name, "default");
+    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
+    ASSERT_EQ(style_sheet.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector.size(), 1);
+    ASSERT_EQ(style_sheet[0].selector[0].phrasing_mask, hi::text_phrasing_mask::strong | hi::text_phrasing_mask::emphesis);
+}
