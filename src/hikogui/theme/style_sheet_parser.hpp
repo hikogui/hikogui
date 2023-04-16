@@ -105,6 +105,177 @@ private:
 };
 
 template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::optional<hi::language_tag>
+parse_style_sheet_theme_state_lang(It& it, ItEnd last, style_sheet_parser_context& context)
+{
+    if (*it == token::id and *it == "lang") {
+        ++it;
+
+        if (it == last or *it != '(') {
+            throw parse_error(std::format("{} Missing '(' after ':lang'.", token_location(it, last, context.path)));
+        }
+        ++it;
+
+        auto language_tag_string = std::string{};
+        while (it != last and *it != ')') {
+            if (*it == '*') {
+                language_tag_string += '*';
+                ++it;
+            } else if (*it == '-') {
+                language_tag_string += '-';
+                ++it;
+            } else if (*it == token::id) {
+                language_tag_string += static_cast<std::string>(*it);
+                ++it;
+            } else {
+                throw parse_error(std::format(
+                    "{} Unexpected token while parsing argument of ':lang()'.", token_location(it, last, context.path)));
+            }
+        }
+
+        auto r = [&] {
+            try {
+                return language_tag{language_tag_string};
+            } catch (std::exception const& e) {
+                throw parse_error(std::format(
+                    "{} Invalid language-tag '{}' while parsing argument of ':lang()'. {}",
+                    token_location(it, last, context.path),
+                    language_tag_string, e.what()));
+            }
+        }();
+
+        if (it == last or *it != ')') {
+            throw parse_error(std::format("{} Missing ')' at end of ':lang'.", token_location(it, last, context.path)));
+        }
+        ++it;
+
+        return r;
+    } else {
+        return std::nullopt;
+    }
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::optional<hi::text_phrasing_mask>
+parse_style_sheet_theme_state_phrasing(It& it, ItEnd last, style_sheet_parser_context& context)
+{
+    if (*it == token::id and *it == "phrasing") {
+        ++it;
+
+        if (it == last or *it != '(') {
+            throw parse_error(std::format("{} Missing '(' after ':phrasing'.", token_location(it, last, context.path)));
+        }
+        ++it;
+
+        if (it == last or *it != token::id) {
+            throw parse_error(std::format("{} Missing integer after ':phrasing('.", token_location(it, last, context.path)));
+        }
+
+        hilet phrasing_mask = [&] {
+            try {
+                return to_text_phrasing_mask(static_cast<std::string>(*it));
+            } catch (std::exception const& e) {
+                throw parse_error(std::format(
+                    "{} Could not convert argument '{}' of ':phrasing()' to integer. {}",
+                    token_location(it, last, context.path),
+                    static_cast<std::string>(*it),
+                    e.what()));
+            }
+        }();
+        ++it;
+
+        if (it == last or *it != ')') {
+            throw parse_error(std::format("{} Missing ')' at end of ':phrasing'.", token_location(it, last, context.path)));
+        }
+        ++it;
+
+        return phrasing_mask;
+    } else {
+        return std::nullopt;
+    }
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::optional<std::pair<theme_state, theme_state_mask>>
+parse_style_sheet_theme_state(It& it, ItEnd last, style_sheet_parser_context& context)
+{
+    if (*it == token::id and *it == "disabled") {
+        ++it;
+        return std::pair{theme_state::disabled, theme_state_mask::mouse};
+    } else if (*it == token::id and *it == "enabled") {
+        ++it;
+        return std::pair{theme_state::enabled, theme_state_mask::mouse};
+    } else if (*it == token::id and *it == "hover") {
+        ++it;
+        return std::pair{theme_state::hover, theme_state_mask::mouse};
+    } else if (*it == token::id and *it == "active") {
+        ++it;
+        return std::pair{theme_state::active, theme_state_mask::mouse};
+    } else if (*it == token::id and *it == "no-focus") {
+        ++it;
+        return std::pair{theme_state::no_focus, theme_state_mask::focus};
+    } else if (*it == token::id and *it == "focus") {
+        ++it;
+        return std::pair{theme_state::focus, theme_state_mask::focus};
+    } else if (*it == token::id and *it == "off") {
+        ++it;
+        return std::pair{theme_state::off, theme_state_mask::value};
+    } else if (*it == token::id and *it == "on") {
+        ++it;
+        return std::pair{theme_state::on, theme_state_mask::value};
+    } else if (*it == token::id and *it == "layer") {
+        ++it;
+
+        if (it == last or *it != '(') {
+            throw parse_error(std::format("{} Missing '(' after ':layer'.", token_location(it, last, context.path)));
+        }
+        ++it;
+
+        if (it == last or *it != token::integer) {
+            throw parse_error(std::format("{} Missing integer after ':layer('.", token_location(it, last, context.path)));
+        }
+
+        hilet layer_nr = [&] {
+            try {
+                return static_cast<uint8_t>(*it);
+            } catch (std::exception const& e) {
+                throw parse_error(std::format(
+                    "{} Could not convert argument of ':layer()' to integer. {}",
+                    token_location(it, last, context.path),
+                    e.what()));
+            }
+        }();
+        ++it;
+
+        hilet layer_state = [&] {
+            switch (layer_nr) {
+            case 0:
+                return theme_state::layer_0;
+            case 1:
+                return theme_state::layer_1;
+            case 2:
+                return theme_state::layer_2;
+            case 3:
+                return theme_state::layer_3;
+            default:
+                throw parse_error(std::format(
+                    "{} Expect ':layer()' value of 0, 1, 2 or 3, got {}.", token_location(it, last, context.path), layer_nr));
+            }
+        }();
+
+        if (it == last or *it != ')') {
+            throw parse_error(std::format("{} Missing ')' at end of ':layer'.", token_location(it, last, context.path)));
+        }
+        ++it;
+
+        return std::pair{layer_state, theme_state_mask::layers};
+
+    } else {
+        return std::nullopt;
+    }
+}
+
+template<typename It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr std::optional<style_sheet_pattern>
 parse_style_sheet_pattern(It& it, ItEnd last, style_sheet_parser_context& context)
 {
@@ -147,9 +318,16 @@ parse_style_sheet_pattern(It& it, ItEnd last, style_sheet_parser_context& contex
 
     while (it != last and *it == ':') {
         ++it;
-        if (*it == token::id) {
-            r.states.push_back(static_cast<std::string>(*it));
-            ++it;
+
+        if (auto state_and_mask = parse_style_sheet_theme_state(it, last, context)) {
+            r.state |= state_and_mask->first;
+            r.state_mask |= state_and_mask->second;
+
+        } else if (auto language_tag = parse_style_sheet_theme_state_lang(it, last, context)) {
+            r.language = *language_tag;
+
+        } else if (auto phrasing_mask = parse_style_sheet_theme_state_phrasing(it, last, context)) {
+            r.phrasing_mask = *phrasing_mask;
 
         } else {
             throw parse_error(
@@ -872,6 +1050,36 @@ parse_style_sheet_declaration(It& it, ItEnd last, style_sheet_parser_context& co
                     "{} Missing value after ':' while parsing {} declaration.", token_location(it, last, context.path), name));
             }
         }();
+
+        hilet value_mask = style_sheet_declaration_name_value_mask_metadata[id];
+        if (std::holds_alternative<hi::points>(value) and not to_bool(value_mask & style_sheet_value_mask::points)) {
+            throw parse_error(std::format(
+                "{} Incorrect value type 'length:pt' for declaration of '{}'", token_location(it, last, context.path), name));
+        } else if (std::holds_alternative<hi::pixels>(value) and not to_bool(value_mask & style_sheet_value_mask::pixels)) {
+            throw parse_error(std::format(
+                "{} Incorrect value type 'length:px' for declaration of '{}'", token_location(it, last, context.path), name));
+        } else if (std::holds_alternative<hi::em_quads>(value) and not to_bool(value_mask & style_sheet_value_mask::em_quads)) {
+            throw parse_error(std::format(
+                "{} Incorrect value type 'length:em' for declaration of '{}'", token_location(it, last, context.path), name));
+        } else if (std::holds_alternative<hi::color>(value) and not to_bool(value_mask & style_sheet_value_mask::color)) {
+            throw parse_error(std::format(
+                "{} Incorrect value type 'color' for declaration of '{}'", token_location(it, last, context.path), name));
+        } else if (
+            std::holds_alternative<hi::font_family_id>(value) and
+            not to_bool(value_mask & style_sheet_value_mask::font_family_id)) {
+            throw parse_error(std::format(
+                "{} Incorrect value type 'font family id' for declaration of '{}'",
+                token_location(it, last, context.path),
+                name));
+        } else if (
+            std::holds_alternative<hi::font_weight>(value) and not to_bool(value_mask & style_sheet_value_mask::font_weight)) {
+            throw parse_error(std::format(
+                "{} Incorrect value type 'font weight' for declaration of '{}'", token_location(it, last, context.path), name));
+        } else if (
+            std::holds_alternative<hi::font_style>(value) and not to_bool(value_mask & style_sheet_value_mask::font_style)) {
+            throw parse_error(std::format(
+                "{} Incorrect value type 'font style' for declaration of '{}'", token_location(it, last, context.path), name));
+        }
 
         r.emplace_back(id, std::move(value));
     }

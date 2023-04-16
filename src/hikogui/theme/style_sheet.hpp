@@ -7,6 +7,10 @@
 #include "../utility/module.hpp"
 #include "../color/module.hpp"
 #include "../font/module.hpp"
+#include "../text/module.hpp"
+#include "../i18n/module.hpp"
+#include "theme_mode.hpp"
+#include "theme_state.hpp"
 #include <string>
 #include <vector>
 #include <variant>
@@ -17,6 +21,36 @@ struct style_sheet_length : std::variant<hi::pixels, hi::points, hi::em_quads> {
     using super = std::variant<hi::pixels, hi::points, hi::em_quads>;
     using super::super;
 };
+
+enum class style_sheet_value_mask {
+    pixels = 0b0000'0001,
+    points = 0b0000'0010,
+    em_quads = 0b0000'0100,
+    color = 0b0000'1000,
+    font_family_id = 0b0001'0000,
+    font_weight = 0b0010'0000,
+    font_style = 0b0100'0000,
+
+    length = pixels | points | em_quads,
+    font_size = pixels | points,
+};
+
+[[nodiscard]] constexpr style_sheet_value_mask
+operator|(style_sheet_value_mask const& lhs, style_sheet_value_mask const& rhs) noexcept
+{
+    return static_cast<style_sheet_value_mask>(to_underlying(lhs) | to_underlying(rhs));
+}
+
+[[nodiscard]] constexpr style_sheet_value_mask
+operator&(style_sheet_value_mask const& lhs, style_sheet_value_mask const& rhs) noexcept
+{
+    return static_cast<style_sheet_value_mask>(to_underlying(lhs) & to_underlying(rhs));
+}
+
+[[nodiscard]] constexpr bool to_bool(style_sheet_value_mask const& rhs) noexcept
+{
+    return static_cast<bool>(to_underlying(rhs));
+}
 
 struct style_sheet_value :
     std::variant<hi::pixels, hi::points, hi::em_quads, hi::color, font_family_id, font_weight, font_style> {
@@ -42,7 +76,11 @@ struct style_sheet_value :
 struct style_sheet_pattern {
     std::vector<std::string> path;
     std::vector<bool> is_child;
-    std::vector<std::string> states;
+
+    theme_state state = {};
+    theme_state_mask state_mask = {};
+    text_phrasing_mask phrasing_mask = {};
+    language_tag language = {};
 
     [[nodiscard]] constexpr std::string get_path_as_string() const noexcept
     {
@@ -119,6 +157,35 @@ constexpr auto style_sheet_declaration_name_metadata = enum_metadata{
     style_sheet_declaration_name::spacing_horizontal, "spacing-horizontal",
     style_sheet_declaration_name::spacing_vertical, "spacing-vertical",
     style_sheet_declaration_name::width, "width",
+};
+// clang-format on
+
+// clang-format off
+constexpr auto style_sheet_declaration_name_value_mask_metadata = enum_metadata{
+    style_sheet_declaration_name::background_color, style_sheet_value_mask::color,
+    style_sheet_declaration_name::border_bottom_left_radius, style_sheet_value_mask::length,
+    style_sheet_declaration_name::border_bottom_right_radius, style_sheet_value_mask::length,
+    style_sheet_declaration_name::border_color, style_sheet_value_mask::color,
+    style_sheet_declaration_name::border_top_left_radius, style_sheet_value_mask::length,
+    style_sheet_declaration_name::border_top_right_radius, style_sheet_value_mask::length,
+    style_sheet_declaration_name::border_width, style_sheet_value_mask::length,
+    style_sheet_declaration_name::caret_color_primary, style_sheet_value_mask::color,
+    style_sheet_declaration_name::caret_color_secondary, style_sheet_value_mask::color,
+    style_sheet_declaration_name::fill_color, style_sheet_value_mask::color,
+    style_sheet_declaration_name::font_color, style_sheet_value_mask::color,
+    style_sheet_declaration_name::font_family, style_sheet_value_mask::font_family_id,
+    style_sheet_declaration_name::font_size, style_sheet_value_mask::font_size,
+    style_sheet_declaration_name::font_style, style_sheet_value_mask::font_style,
+    style_sheet_declaration_name::font_weight, style_sheet_value_mask::font_weight,
+    style_sheet_declaration_name::height, style_sheet_value_mask::length,
+    style_sheet_declaration_name::margin_bottom, style_sheet_value_mask::length,
+    style_sheet_declaration_name::margin_left, style_sheet_value_mask::length,
+    style_sheet_declaration_name::margin_right, style_sheet_value_mask::length,
+    style_sheet_declaration_name::margin_top, style_sheet_value_mask::length,
+    style_sheet_declaration_name::selection_color, style_sheet_value_mask::color,
+    style_sheet_declaration_name::spacing_horizontal, style_sheet_value_mask::length,
+    style_sheet_declaration_name::spacing_vertical, style_sheet_value_mask::length,
+    style_sheet_declaration_name::width, style_sheet_value_mask::length,
 };
 // clang-format on
 

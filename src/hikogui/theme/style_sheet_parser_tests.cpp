@@ -197,6 +197,18 @@ TEST(style_sheet_parser, width_px)
     ASSERT_EQ(std::get<hi::pixels>(rule_set[0].value), hi::pixels{100});
 }
 
+TEST(style_sheet_parser, width_incorrect_type)
+{
+    auto css = std::string{
+        "@name \"default\";\n"
+        "@mode light;\n"
+        "\n"
+        "foo {\n"
+        "    width : rgb(0, 0, 0);\n"
+        "}\n"};
+    ASSERT_THROW((void)hi::parse_style_sheet(css, std::filesystem::path{"theme.css"}), hi::parse_error);
+}
+
 TEST(style_sheet_parser, invalid_declaration_name_underscore)
 {
     auto css = std::string{

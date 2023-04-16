@@ -5,6 +5,7 @@
 #include "theme_mode.hpp"
 #include "theme_file.hpp"
 #include "theme_book.hpp"
+#include "theme_state.hpp"
 #include "style_sheet_parser.hpp"
 #include "style_sheet.hpp"
 
