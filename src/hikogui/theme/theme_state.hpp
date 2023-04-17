@@ -28,6 +28,8 @@ enum class theme_state : uint8_t {
 };
 // clang-format on
 
+constexpr auto theme_state_size = 64_uz;
+
 [[nodiscard]] constexpr theme_state operator|(theme_state const &lhs, theme_state const &rhs) noexcept
 {
     return static_cast<theme_state>(to_underlying(lhs) | to_underlying(rhs));

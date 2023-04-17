@@ -11,15 +11,52 @@ Syntax
 Line comments start with "//" and block comments are surrounded by "/*" and "*/".
 Both comments and white-space are ignored in the grammar below.
 
-stylesheet := ( at_rule | ruleset )*
+stylesheet := theme-name theme-mode ( at_rule | ruleset )*
 
-at_rule := theme-name | theme-mode | color-def | variable-def | macro-def
 theme-name := '@' "name" ':' string ';'
+theme-mode := '@' "mode" ':' ("dark | "light") ';'
 
-theme-mode := '@' "mode" ':' theme-mode-name ';'
-theme-mode-name := "dark" | "light";
-
+at_rule := color-def | variable-def | macro-def
 color-def := '@' "color" color-name ':' color-value ';'
+variable-def := '@' "let" variable-name ':' value ';'
+macro-def := '@' "macro" macro-name '{' declaration* '}'
+
+ruleset := selector '{' declaration* '}'
+
+selector := pattern ( ',' pattern )* state*
+pattern := element ( '>'? element )*
+element := id | '*'
+
+state := mouse-state | keyboard-state | widget-value | text-language | text-phrasing
+mouse-state := ":disabled" | ":enabled" | ":hover" | ":active"
+keyboard-state := ":no-focus" | ":focus"
+widget-value := ":on" | ":off"
+text-language := ":lang" '(' language-tag ')'
+text-phrasing := ":phrasing" '(' phrasing-mask ')'
+
+phrasing-mask := [acehkmqrstuxESW]+
+
+language-tag := (language | '*') ('-' script)? ('-' region)?
+language := [a-z][a-z][a-z]?
+script := [A-Z][a-z][a-z][a-z]
+region := [A-Z][A-Z][A-Z]?
+
+declaration := property-declaration | macro
+property-declaration := property ':' value ( '!' "important" )? ';'
+macro := '@' macro-name ';'
+
+value := length | color | font-family | font-style | font-weight | lengths | colors | variable 
+
+lengths := length length+
+colors := color color+
+variable := '@' variable-name
+
+color := color-name | color-value
+color-value := hex-color | rgb-color
+hex-color := '#' [0-9a-fA-F]{6,8}
+color-component := number '%' | float | int
+alpha-component := number '%' | float
+rgb-color := "rgb" '(' color-component ','? color-component ','? color-component ( [,/]? alpha-component )? ')'
 color-name := basic-color-name | gray-color-name
 basic-color-name := "black" | "silver" | "gray" | "white" | "maroon" | "red"
                   | "purple" | "fuchsia" | "green" | "line" | "olive" | "yellow"
@@ -29,54 +66,10 @@ gray-color-name := "background" | "gray1" | "gray2" | "gray3" | "gray4"
                  | "gray5" | "gray6" | "gray7" | "gray8" | "gray9"
                  | "foreground"
 
-variable-def := '@' "let" variable-name ':' value ';'
-variable-name := id
+length := number ("pt" | "px" | "mm" | "cm" | "dm" | "m" | "in" | "em")?
 
-macro-def := '@' "macro" macro-name '{' declaration* '}'
-macro-name := id
-
-ruleset := selector '{' declaration* '}'
-
-selector := pattern ( ',' pattern )* state*
-pattern := element ( '>'? element )*
-element := id | '*'
-
-state := mouse-state | keyboard-state | widget-value | text-language | text-phrasing
-mouse-state := ':' "disabled" | ':' "enabled" | ':' "hover" | ':' "active"
-keyboard-state := ':' "no-focus" | ':' "focus"
-widget-value := ':' "on" | ':' "off"
-text-language := ':' "lang" '(' id ')'
-text-phrasing := ':' "phrasing" '(' id ')'
-
-declaration := property-declaration | macro-invocation
-property-declaration := "font-weight" ':' font-weight ( '!' "important" )? ';'
-                      | "font-style" ':' font-style ( '!' "important" )? ';'
-                      | property ':' value ( '!' "important" )? ';'
-property := id
-macro-invocation := '@' macro-name ';'
-
-value := length | lengths | color | variable-value | string
-
-variable-value := '@' variable-name
-
-color := color-name | color-value
-color-value := hex-color | rgb-color
-hex-color := '#' [0-9a-fA-F]{6,8}
-color-component := number '%' | float | int
-alpha-component := number '%' | float
-rgb-color := "rgb" '(' color-component ','? color-component ','? color-component ( [,/]? alpha-component )? ')'
-
-length := px-length | pt-length | cm-length | in-length | em-length
-em-length := number "em"
-px-length := number "px"
-cm-length := number "cm"
-in-length := number "in"
-pt-length := number "pt"?
-
-lengths := length length length*
-
+font-family := string | "serif" | "sans-serif" | "monospace" | "cursive" | "fantasy"
 font-style := "normal" | "italic" | "oblique"
-
 font-weight := font-weight-number | font-weight-name
 font-weight-number := 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950
 font-weight-name := "thin" | "extra-light" | "light" | "regular" | "normal"
@@ -84,6 +77,10 @@ font-weight-name := "thin" | "extra-light" | "light" | "regular" | "normal"
                   | "extra-black"
                  
 number := float | int
+variable-name := id
+macro-name := id
+property := id
+
 ```
 
 Header

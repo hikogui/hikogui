@@ -316,25 +316,6 @@ parse_style_sheet_pattern(It& it, ItEnd last, style_sheet_parser_context& contex
         }
     }
 
-    while (it != last and *it == ':') {
-        ++it;
-
-        if (auto state_and_mask = parse_style_sheet_theme_state(it, last, context)) {
-            r.state |= state_and_mask->first;
-            r.state_mask |= state_and_mask->second;
-
-        } else if (auto language_tag = parse_style_sheet_theme_state_lang(it, last, context)) {
-            r.language = *language_tag;
-
-        } else if (auto phrasing_mask = parse_style_sheet_theme_state_phrasing(it, last, context)) {
-            r.phrasing_mask = *phrasing_mask;
-
-        } else {
-            throw parse_error(
-                std::format("{} Expecting state-id after ':' in selector.", token_location(it, last, context.path)));
-        }
-    }
-
     return r;
 }
 
@@ -1105,13 +1086,32 @@ template<typename It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr std::optional<style_sheet_rule_set>
 parse_style_sheet_rule_set(It& it, ItEnd last, style_sheet_parser_context& context)
 {
-    // rule_set := selector '{' declaration* '}'
+    // rule_set := selector (':' state)* '{' declaration* '}'
     auto r = style_sheet_rule_set{};
 
     if (auto selector = parse_style_sheet_selector(it, last, context)) {
         r.selector = *selector;
     } else {
         return std::nullopt;
+    }
+
+    while (it != last and *it == ':') {
+        ++it;
+
+        if (auto state_and_mask = parse_style_sheet_theme_state(it, last, context)) {
+            r.state |= state_and_mask->first;
+            r.state_mask |= state_and_mask->second;
+
+        } else if (auto language_tag = parse_style_sheet_theme_state_lang(it, last, context)) {
+            r.language = *language_tag;
+
+        } else if (auto phrasing_mask = parse_style_sheet_theme_state_phrasing(it, last, context)) {
+            r.phrasing_mask = *phrasing_mask;
+
+        } else {
+            throw parse_error(
+                std::format("{} Expecting state-id after ':' in selector.", token_location(it, last, context.path)));
+        }
     }
 
     if (it != last and *it == '{') {
@@ -1336,16 +1336,22 @@ template<typename It, std::sentinel_for<It> ItEnd>
     // stylesheet := ( at_rule | rule_set )*
     auto r = style_sheet{};
 
-    bool has_name = false;
-    bool has_mode = false;
+    if (auto name = parse_style_sheet_name_at_rule(it, last, context)) {
+        r.name = std::move(*name);
+    } else {
+        throw parse_error(
+            std::format("{} Did not find required @name as first declaration.", token_location(it, last, context.path)));
+    } 
+
+    if (auto mode = parse_style_sheet_mode_at_rule(it, last, context)) {
+        r.mode = *mode;
+    } else {
+        throw parse_error(
+            std::format("{} Did not find required @mode declaration after @name in the style sheet.", token_location(it, last, context.path)));
+    }
+
     while (it != last) {
-        if (auto name = parse_style_sheet_name_at_rule(it, last, context)) {
-            r.name = std::move(*name);
-            has_name = true;
-        } else if (auto mode = parse_style_sheet_mode_at_rule(it, last, context)) {
-            r.mode = *mode;
-            has_mode = true;
-        } else if (parse_style_sheet_color_at_rule(it, last, context)) {
+        if (parse_style_sheet_color_at_rule(it, last, context)) {
             // colors are directly added to the context.
         } else if (parse_style_sheet_let_at_rule(it, last, context)) {
             // lets are directly added to the context.
@@ -1356,16 +1362,6 @@ template<typename It, std::sentinel_for<It> ItEnd>
         } else {
             throw parse_error(std::format("{} Found unexpected token.", token_location(it, last, context.path)));
         }
-    }
-
-    if (not has_name) {
-        throw parse_error(
-            std::format("{} Did not find required @name in the style sheet.", token_location(it, last, context.path)));
-    }
-
-    if (not has_mode) {
-        throw parse_error(
-            std::format("{} Did not find required @mode in the style sheet.", token_location(it, last, context.path)));
     }
 
     return r;

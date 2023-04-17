@@ -11,16 +11,14 @@
 #include "../i18n/module.hpp"
 #include "theme_mode.hpp"
 #include "theme_state.hpp"
+#include "theme_length.hpp"
+#include "theme_model.hpp"
 #include <string>
 #include <vector>
 #include <variant>
 
 namespace hi { inline namespace v1 {
 
-struct style_sheet_length : std::variant<hi::pixels, hi::points, hi::em_quads> {
-    using super = std::variant<hi::pixels, hi::points, hi::em_quads>;
-    using super::super;
-};
 
 enum class style_sheet_value_mask {
     pixels = 0b0000'0001,
@@ -57,7 +55,7 @@ struct style_sheet_value :
     using super = std::variant<hi::pixels, hi::points, hi::em_quads, hi::color, font_family_id, font_weight, font_style>;
     using super::super;
 
-    constexpr style_sheet_value(style_sheet_length length) noexcept :
+    constexpr style_sheet_value(theme_length length) noexcept :
         super([&] {
             if (auto pixels_ptr = std::get_if<hi::pixels>(&length)) {
                 return super{*pixels_ptr};
@@ -76,11 +74,6 @@ struct style_sheet_value :
 struct style_sheet_pattern {
     std::vector<std::string> path;
     std::vector<bool> is_child;
-
-    theme_state state = {};
-    theme_state_mask state_mask = {};
-    text_phrasing_mask phrasing_mask = {};
-    language_tag language = {};
 
     [[nodiscard]] constexpr std::string get_path_as_string() const noexcept
     {
@@ -197,6 +190,11 @@ struct style_sheet_declaration {
 
 struct style_sheet_rule_set {
     style_sheet_selector selector;
+    theme_state state = {};
+    theme_state_mask state_mask = {};
+    text_phrasing_mask phrasing_mask = {};
+    language_tag language = {};
+
     std::vector<style_sheet_declaration> declarations;
 
     [[nodiscard]] constexpr size_t size() const noexcept

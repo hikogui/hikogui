@@ -798,9 +798,8 @@ TEST(style_sheet_parser, state_disabled)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::disabled);
-    ASSERT_EQ(style_sheet[0].selector[0].state_mask, hi::theme_state_mask::mouse);
+    ASSERT_EQ(style_sheet[0].state, hi::theme_state::disabled);
+    ASSERT_EQ(style_sheet[0].state_mask, hi::theme_state_mask::mouse);
 }
 
 TEST(style_sheet_parser, state_enabled)
@@ -816,9 +815,8 @@ TEST(style_sheet_parser, state_enabled)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::enabled);
-    ASSERT_EQ(style_sheet[0].selector[0].state_mask, hi::theme_state_mask::mouse);
+    ASSERT_EQ(style_sheet[0].state, hi::theme_state::enabled);
+    ASSERT_EQ(style_sheet[0].state_mask, hi::theme_state_mask::mouse);
 }
 
 TEST(style_sheet_parser, state_hover_and_focus)
@@ -834,9 +832,8 @@ TEST(style_sheet_parser, state_hover_and_focus)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::hover | hi::theme_state::focus);
-    ASSERT_EQ(style_sheet[0].selector[0].state_mask, hi::theme_state_mask::mouse | hi::theme_state_mask::focus);
+    ASSERT_EQ(style_sheet[0].state, hi::theme_state::hover | hi::theme_state::focus);
+    ASSERT_EQ(style_sheet[0].state_mask, hi::theme_state_mask::mouse | hi::theme_state_mask::focus);
 }
 
 TEST(style_sheet_parser, state_active_and_layer)
@@ -852,9 +849,8 @@ TEST(style_sheet_parser, state_active_and_layer)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::active | hi::theme_state::layer_2);
-    ASSERT_EQ(style_sheet[0].selector[0].state_mask, hi::theme_state_mask::mouse | hi::theme_state_mask::layers);
+    ASSERT_EQ(style_sheet[0].state, hi::theme_state::active | hi::theme_state::layer_2);
+    ASSERT_EQ(style_sheet[0].state_mask, hi::theme_state_mask::mouse | hi::theme_state_mask::layers);
 }
 
 TEST(style_sheet_parser, state_no_focus_and_layer_and_on)
@@ -870,11 +866,9 @@ TEST(style_sheet_parser, state_no_focus_and_layer_and_on)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector[0].state, hi::theme_state::no_focus | hi::theme_state::layer_1 | hi::theme_state::on);
+    ASSERT_EQ(style_sheet[0].state, hi::theme_state::no_focus | hi::theme_state::layer_1 | hi::theme_state::on);
     ASSERT_EQ(
-        style_sheet[0].selector[0].state_mask,
-        hi::theme_state_mask::focus | hi::theme_state_mask::layers | hi::theme_state_mask::value);
+        style_sheet[0].state_mask, hi::theme_state_mask::focus | hi::theme_state_mask::layers | hi::theme_state_mask::value);
 }
 
 TEST(style_sheet_parser, state_lang)
@@ -890,8 +884,7 @@ TEST(style_sheet_parser, state_lang)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector[0].language, hi::language_tag{"en-US"});
+    ASSERT_EQ(style_sheet[0].language, hi::language_tag{"en-US"});
 }
 
 TEST(style_sheet_parser, state_lang_star)
@@ -907,8 +900,7 @@ TEST(style_sheet_parser, state_lang_star)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector[0].language, hi::language_tag{"*-US"});
+    ASSERT_EQ(style_sheet[0].language, hi::language_tag{"*-US"});
 }
 
 TEST(style_sheet_parser, state_phrasing)
@@ -924,6 +916,5 @@ TEST(style_sheet_parser, state_phrasing)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector.size(), 1);
-    ASSERT_EQ(style_sheet[0].selector[0].phrasing_mask, hi::text_phrasing_mask::strong | hi::text_phrasing_mask::emphesis);
+    ASSERT_EQ(style_sheet[0].phrasing_mask, hi::text_phrasing_mask::strong | hi::text_phrasing_mask::emphesis);
 }
