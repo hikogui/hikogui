@@ -30,7 +30,6 @@ enum class style_sheet_value_mask {
     font_style = 0b0100'0000,
 
     length = pixels | points | em_quads,
-    font_size = pixels | points,
 };
 
 [[nodiscard]] constexpr style_sheet_value_mask
@@ -167,7 +166,7 @@ constexpr auto style_sheet_declaration_name_value_mask_metadata = enum_metadata{
     style_sheet_declaration_name::fill_color, style_sheet_value_mask::color,
     style_sheet_declaration_name::font_color, style_sheet_value_mask::color,
     style_sheet_declaration_name::font_family, style_sheet_value_mask::font_family_id,
-    style_sheet_declaration_name::font_size, style_sheet_value_mask::font_size,
+    style_sheet_declaration_name::font_size, style_sheet_value_mask::points,
     style_sheet_declaration_name::font_style, style_sheet_value_mask::font_style,
     style_sheet_declaration_name::font_weight, style_sheet_value_mask::font_weight,
     style_sheet_declaration_name::height, style_sheet_value_mask::length,
