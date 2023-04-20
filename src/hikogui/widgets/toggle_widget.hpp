@@ -148,7 +148,7 @@ public:
 
         // Make room for button and margin.
         _button_size = {theme<prefix / "width", int>{}(this), theme<prefix / "height", int>{}(this)};
-        hilet extra_size = extent2i{theme<prefix / "spacing", int>{}(this) + _button_size.width(), 0};
+        hilet extra_size = extent2i{theme<prefix>.int_spacing_horizontal(this) + _button_size.width(), 0};
 
         auto r = max(_label_constraints + extra_size, _button_size);
         r.margins = theme<prefix / "margin", marginsi>{}(this);
@@ -167,8 +167,8 @@ public:
                 hi_not_implemented();
             }
 
-            hilet spacing = theme<prefix / "spacing", int>{}(this);
-            hilet cap_height = theme<prefix / "cap_height", int>{}(this);
+            hilet spacing = theme<prefix>.int_spacing_horizontal(this);
+            hilet cap_height = theme<prefix>.int_cap_height(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + spacing);
             if (alignment_ == horizontal_alignment::left) {
@@ -224,9 +224,9 @@ private:
         context.draw_box(
             this->layout,
             _button_rectangle,
-            theme<prefix / "fill.color", color>{}(this),
-            theme<prefix / "outline.color", color>{}(this),
-            theme<prefix / "outline.width", int>{}(this),
+            theme<prefix>.background_color(this),
+            theme<prefix>.border_color(this),
+            theme<prefix>.border_width(this),
             border_side::inside,
             corner_radii{_button_rectangle.height() * 0.5f});
     }

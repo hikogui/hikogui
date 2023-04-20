@@ -24,10 +24,8 @@ struct theme_length : std::variant<pixels, points, em_quads> {
             return pixels{std::get<em_quads>(*this).count() * em_to_px_scale};
         default:
             hi_no_default();
-            return 0;
         }
     }
 };
-
 
 }}

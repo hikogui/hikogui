@@ -32,7 +32,7 @@ public:
     [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
-        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, hi::theme<prefix / "margin", hi::marginsi>{}(this)};
+        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, hi::theme<prefix>.int_margins(this)};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -59,11 +59,11 @@ public:
             context.draw_box(
                 layout,
                 layout.rectangle(),
-                hi::theme<prefix / "fill.color", hi::color>{}(this),
-                hi::theme<prefix / "outline.color", hi::color>{}(this),
-                hi::theme<prefix / "outline.width", int>{}(this),
+                hi::theme<prefix>.background_color(this),
+                hi::theme<prefix>.border_color(this),
+                hi::theme<prefix>.border_width(this),
                 hi::border_side::inside,
-                hi::theme<prefix / "outline.radius", hi::corner_radii>{}(this));
+                hi::theme<prefix>.border_radius(this));
         }
     }
 

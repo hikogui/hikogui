@@ -85,13 +85,14 @@ public:
         _label_constraints = super::update_constraints();
 
         // Make room for button and margin.
-        _check_size = theme<prefix / "icon.size", extent2i>{}(this);
-        _short_cut_size = theme<prefix / "icon.size", extent2i>{}(this);
+        _short_cut_size = _check_size =
+            extent2i{theme<prefix / "icon">.int_cap_height(this), theme<prefix / "icon">.int_cap_height(this)};
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         hilet extra_size = extent2i{
-            theme<prefix / "margin", int>{}(this) * 4 + _check_size.width() + _short_cut_size.width(),
-            theme<prefix / "margin", int>{}(this) * 2};
+            theme<prefix>.int_margin_left(this) + _check_size.width() + theme<prefix>.int_horizontal_spacing(this) +
+                theme<prefix>.int_horizontal_spacing(this) + _short_cur_size.width() + theme<prefix>.int_margin_right(this),
+            theme<prefix>.int_margin_top(this) + theme<prefix>.int_margin_bottom(this)};
 
         auto constraints = _label_constraints + extra_size;
         constraints.margins = 0;
@@ -101,8 +102,8 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            hilet spacing = theme<prefix / "spacing", int>{}(this);
-            hilet cap_height = theme<prefix / "cap_height", int>{}(this);
+            hilet spacing = theme<prefix>.int_horizontal_spacing(this);
+            hilet cap_height = theme<prefix>.int_cap_height(this);
 
             hilet inside_rectangle = context.rectangle() - spacing;
 
@@ -127,7 +128,7 @@ public:
 
             _check_glyph = find_glyph(elusive_icon::Ok);
             hilet check_glyph_bb =
-                narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * theme<prefix / "icon.size", float>{}(this));
+                narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * theme<prefix / "icon">.size(this));
             _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
         }
 
@@ -201,9 +202,9 @@ private:
         context.draw_box(
             this->layout,
             this->layout.rectangle(),
-            theme<prefix / "fill.color", color>{}(this),
-            theme<prefix / "outline.color", color>{}(this),
-            theme<prefix / "outline.width", int>{}(this),
+            theme<prefix>.background_color(this),
+            theme<prefix>.border_color(this),
+            theme<prefix>.border_width(this),
             border_side::inside);
     }
 
@@ -215,7 +216,7 @@ private:
                 this->layout,
                 translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle),
                 _check_glyph,
-                theme<prefix / "accent.color", color>{}(this));
+                theme<prefix>.fill_color(this));
         }
     }
 };

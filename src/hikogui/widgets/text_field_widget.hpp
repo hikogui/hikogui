@@ -204,13 +204,13 @@ public:
                     _scroll_constraints.margins.bottom()};
 
             hilet scroll_rectangle = aarectanglei{point2i{0, context.height() - scroll_size.height()}, scroll_size};
-            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme<prefix / "cap-height", int>{}(this)};
+            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme<prefix>.int_cap_height(this)};
 
             if (*_error_label_widget->mode > widget_mode::invisible) {
                 hilet error_label_rectangle =
                     aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
                 _error_label_shape =
-                    box_shape{_error_label_constraints, error_label_rectangle, theme<prefix / "cap-height", int>{}(this)};
+                    box_shape{_error_label_constraints, error_label_rectangle, theme<prefix>.int_cap_height(this)};
             }
         }
 
@@ -344,15 +344,15 @@ private:
 
         hilet radius = theme<prefix / "outline.radius", float>{}(this);
         hilet corner_radii = hi::corner_radii(0.0f, 0.0f, radius, radius);
-        context.draw_box(layout, outline, theme<prefix / "fill.color", color>{}(this), corner_radii);
+        context.draw_box(layout, outline, theme<prefix>.background_color(this), corner_radii);
 
         // A text field has a line under the box, which changes color on error.
         hilet line = line_segment(get<0>(outline), get<1>(outline));
 
         hilet outline_color =
-            _error_label->empty() ? theme<prefix / "outline.color", color>{}(this) : theme<prefix / "error.color", color>{}(this);
+            _error_label->empty() ? theme<prefix>.background_color(this) : theme<prefix / "error.color", color>{}(this);
         context.draw_line(
-            layout, translate3{0.0f, 0.5f, 0.1f} * line, theme<prefix / "outline.width", int>{}(this), outline_color);
+            layout, translate3{0.0f, 0.5f, 0.1f} * line, theme<prefix>.border_width(this), outline_color);
     }
 };
 

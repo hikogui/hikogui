@@ -84,17 +84,17 @@ public:
             } else if (hilet g1 = std::get_if<font_book::font_glyph_type>(&icon.read())) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_bounding_rectangle().size() * theme<prefix / "size", float>{}(this);
+                _icon_size = _glyph.get_bounding_rectangle().size() * theme<prefix>.size(this);
 
             } else if (hilet g2 = std::get_if<elusive_icon>(&icon.read())) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_bounding_rectangle().size() * theme<prefix / "size", float>{}(this);
+                _icon_size = _glyph.get_bounding_rectangle().size() * theme<prefix>.size(this);
 
             } else if (hilet g3 = std::get_if<hikogui_icon>(&icon.read())) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_bounding_rectangle().size() * theme<prefix / "size", float>{}(this);
+                _icon_size = _glyph.get_bounding_rectangle().size() * theme<prefix>.size(this);
             }
         }
 
@@ -104,7 +104,7 @@ public:
             narrow_cast<extent2i>(_icon_size),
             narrow_cast<extent2i>(_icon_size),
             resolved_alignment,
-            theme<prefix / "margin", marginsi>{}(this)};
+            theme<prefix>.int_margins(this)};
         return icon_constraints.constrain(*minimum, *maximum);
     }
 
@@ -141,7 +141,7 @@ public:
 
             case icon_type::glyph:
                 {
-                    context.draw_glyph(layout, _icon_rectangle, *_glyph.font, _glyph.glyph, theme<prefix / "color", color>{}(this));
+                    context.draw_glyph(layout, _icon_rectangle, *_glyph.font, _glyph.glyph, theme<prefix>.fill_color(this));
                 }
                 break;
 

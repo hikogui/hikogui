@@ -5,18 +5,29 @@
 #pragma once
 
 #include "theme_length.hpp"
+#include "theme_state.hpp"
 #include "../geometry/module.hpp"
 #include "../color/module.hpp"
 #include "../text/module.hpp"
+#include "../concurrency/module.hpp"
+#include <mutex>
 #include <array>
+#include <map>
+#include <tuple>
 
 namespace hi { inline namespace v1 {
-namespace detail {
 
 class theme_model_length {
-    constexpr theme_model_length(theme_length length) noexcept
+public:
+    constexpr theme_model_length() noexcept = default;
+    constexpr theme_model_length(theme_model_length const&) = delete;
+    constexpr theme_model_length(theme_model_length&&) = delete;
+    constexpr theme_model_length& operator=(theme_model_length const&) = delete;
+    constexpr theme_model_length& operator=(theme_model_length&&) = delete;
+
+    constexpr theme_model_length& operator=(theme_length length) noexcept
     {
-        switch (length.index() == 0) {
+        switch (length.index()) {
         case 0:
             // Round up so that resulting pixel values are integral.
             _v = std::ceil(narrow_cast<float>(std::get<pixels>(length).count()));
@@ -33,6 +44,8 @@ class theme_model_length {
         default:
             hi_no_default();
         }
+
+        return *this;
     }
 
     [[nodiscard]] constexpr float operator()(float scale) const noexcept
@@ -51,7 +64,7 @@ private:
      * The lengths are stored as float values: negative values are in points,
      * positive values are in pixels.
      */
-    float _v;
+    float _v = 0.0f;
 };
 
 /** All the data of a theme for a specific widget-component at a specific state.
@@ -60,6 +73,12 @@ private:
  * positive values are in pixels.
  */
 struct theme_sub_model {
+    constexpr theme_sub_model() noexcept = default;
+    constexpr theme_sub_model(theme_sub_model const&) = delete;
+    constexpr theme_sub_model(theme_sub_model&&) = delete;
+    constexpr theme_sub_model& operator=(theme_sub_model const&) = delete;
+    constexpr theme_sub_model& operator=(theme_sub_model&&) = delete;
+
     text_theme text_style;
     color background_color;
     color fill_color;
@@ -88,8 +107,6 @@ struct theme_sub_model {
     theme_model_length font_line_height;
 };
 
-} // namespace detail
-
 template<typename Context>
 concept theme_delegate = requires(Context const& c) { c.state_and_scale(); };
 
@@ -103,17 +120,17 @@ public:
         _map[std::string{tag}] = this;
     }
 
-    [[nodiscard]] detail::theme_sub_model& operator[](theme_state state) noexcept
+    [[nodiscard]] theme_sub_model& operator[](theme_state state) noexcept
     {
         return _sub_model_by_state[to_underlying(state)];
     }
 
-    [[nodiscard]] detail::theme_sub_model const& operator[](theme_state state) const noexcept
+    [[nodiscard]] theme_sub_model const& operator[](theme_state state) const noexcept
     {
         return _sub_model_by_state[to_underlying(state)];
     }
 
-    [[nodiscard]] detail::theme_sub_model const& get_model(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] theme_sub_model const& get_model(theme_delegate auto const *delegate) const noexcept
     {
         hi_axiom_not_null(delegate);
 
@@ -121,8 +138,7 @@ public:
         return (*this)[state];
     }
 
-    [[nodiscard]] std::pair<detail::theme_sub_model const&, float scale>
-    get_model_and_scale(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] std::pair<theme_sub_model const&, float> get_model_and_scale(theme_delegate auto const *delegate) const noexcept
     {
         hi_axiom_not_null(delegate);
 
@@ -281,7 +297,7 @@ public:
         return r;
     }
 
-    [[nodiscard] static theme_model_base &model_by_key(std::string const &key) noexcept
+    [[nodiscard]] static theme_model_base& model_by_key(std::string const& key) noexcept
     {
         hilet lock = std::scoped_lock(_map_mutex);
         auto it = _map.find(key);
@@ -293,21 +309,20 @@ public:
         return *ptr;
     }
 
-
 private:
     // Theoretically it possible for global variable initialization to be
     // done from multiple threads. Practically this may happen when loading
     // libraries at run-time.
     inline static unfair_mutex _map_mutex;
-    inline static std::map<std::string, tagged_theme_model_base *> _map;
+    inline static std::map<std::string, theme_model_base *> _map;
 
-    std::array<detail::theme_sub_model, theme_state_size> _sub_model_by_state;
+    std::array<theme_sub_model, theme_state_size> _sub_model_by_state;
 };
 
 template<fixed_string Tag>
-class theme_sub_model final : public theme_model_base {
+class theme_model final : public theme_model_base {
 public:
-    theme_sub_model() noexcept : theme_model_base(Tag) {}
+    theme_model() noexcept : theme_model_base(Tag) {}
 };
 
 /** A tagged global variable to a theme model for a widget's component.
@@ -325,5 +340,26 @@ public:
  */
 template<fixed_string Tag>
 inline auto theme = theme_model<Tag>{};
+
+/** Get a list of all the keys registered at program startup.
+ *
+ * Keys are automatically registered when using `theme<>` in your program.
+ *
+ * @return A list of keys.
+ */
+[[nodiscard]] inline std::vector<std::string> theme_model_keys() noexcept
+{
+    return theme_model_base::model_keys();
+}
+
+/** Get a theme-model by key.
+ *
+ * @param key The key of the model to get.
+ * @return A theme's model for the key.
+ */
+[[nodiscard]] inline theme_model_base& theme_model_by_key(std::string const& key) noexcept
+{
+    return theme_model_base::model_by_key(key);
+}
 
 }} // namespace hi::v1

@@ -146,11 +146,11 @@ public:
     {
         _label_constraints = super::update_constraints();
 
-        _button_size = theme<prefix / "outer.size", extent2i>{}(this);
-        hilet extra_size = extent2i{theme<prefix / "spacing", int>{}(this) + _button_size.width(), 0};
+        _button_size = theme<prefix>.int_size(this);
+        hilet extra_size = extent2i{theme<prefix>.int_horizontal_spacing(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
-        constraints.margins = theme<prefix / "outer.margin", marginsi>{}(this);
+        constraints.margins = theme<prefix>.int_margins(this);
         constraints.alignment = *this->alignment;
         return constraints;
     }
@@ -166,9 +166,9 @@ public:
                 hi_not_implemented();
             }
 
-            hilet inner_margin = theme<prefix / "spacing", int>{}(this);
-            hilet baseline_offset = theme<prefix / "cap-height", int>{}(this);
-            hilet icon_size = theme<prefix / "icon.size", float>{}(this);
+            hilet inner_margin = theme<prefix>.int_horizontal_spacing(this);
+            hilet baseline_offset = theme<prefix>.int_cap_height(this);
+            hilet icon_size = theme<prefix / "icon">.size(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
             if (alignment_ == horizontal_alignment::left) {
@@ -220,9 +220,9 @@ private:
         context.draw_box(
             this->layout,
             _button_rectangle,
-            theme<prefix / "fill.color", color>{}(this),
-            theme<prefix / "border.color", color>{}(this),
-            theme<prefix / "border.width", float>{}(this),
+            theme<prefix>.background_color(this),
+            theme<prefix>.border_color(this),
+            theme<prefix>.border_width(this),
             border_side::inside);
     }
 
@@ -235,7 +235,7 @@ private:
                 translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle),
                 *_check_glyph.font,
                 _check_glyph.glyph,
-                theme<prefix / "icon.color", color>{}(this));
+                theme<prefix / "icon">.fill_color(this));
 
         } else if (this->state == widget_state::off) {
             ;
@@ -247,7 +247,7 @@ private:
                 translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle),
                 *_minus_glyph.font,
                 _minus_glyph.glyph,
-                theme<prefix / "icon.color", color>{}(this));
+                theme<prefix / "icon">.fill_color(this));
         }
     }
 };

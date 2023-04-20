@@ -118,7 +118,7 @@ public:
             // Start scrolling with the preferred size as minimum, so
             // that widgets in the content don't get unnecessarily squeezed.
             content_width = *aperture_width < _content_constraints.preferred.width() ? _content_constraints.preferred.width() :
-                                                                                        *aperture_width;
+                                                                                       *aperture_width;
             content_height = *aperture_height < _content_constraints.preferred.height() ?
                 _content_constraints.preferred.height() :
                 *aperture_height;
@@ -139,7 +139,7 @@ public:
                 -*offset_y + _content_constraints.margins.bottom(),
                 *content_width,
                 *content_height},
-            theme<prefix / "cap-height", int>{}(this)};
+            theme<prefix>.int_cap_height(this)};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
@@ -197,7 +197,11 @@ public:
             int delta_x = 0;
             int delta_y = 0;
 
-            hilet margin = theme<prefix / "margin", int>{}(this);
+            hilet margin = std::max(
+                theme<prefix>.int_margin_left(this),
+                theme<prefix>.int_margin_right(this),
+                theme<prefix>.int_margin_top(this),
+                theme<prefix>.int_margin_bottom(this));
             if (safe_rectangle.width() > margin * 2 and safe_rectangle.height() > margin * 2) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do

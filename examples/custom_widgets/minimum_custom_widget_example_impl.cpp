@@ -28,7 +28,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return {{100, 50}, {200, 100}, {300, 100}, hi::alignment{}, hi::theme<prefix / "margin", hi::marginsi>{}(this)};
+        return {{100, 50}, {200, 100}, {300, 100}, hi::alignment{}, hi::theme<prefix>.int_margins(this)};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -59,8 +59,8 @@ public:
         if (*mode > hi::widget_mode::invisible and overlaps(context, layout)) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
-            context.draw_box(layout, _left_rectangle, hi::theme<prefix / "indigo", hi::color>{}(this));
-            context.draw_box(layout, _right_rectangle, hi::theme<prefix / "blue", hi::color>{}(this));
+            context.draw_box(layout, _left_rectangle, color::indigo());
+            context.draw_box(layout, _right_rectangle, color::blue());
         }
     }
 

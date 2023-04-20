@@ -56,7 +56,7 @@ public:
             // when the layout of the current widget changes.
             auto const label_rectangle =
                 align(context.rectangle(), _label_constraints.preferred, hi::alignment::middle_center());
-            _label_shape = hi::box_shape{_label_constraints, label_rectangle, hi::theme<prefix / "cap-height", int>{}(this)};
+            _label_shape = hi::box_shape{_label_constraints, label_rectangle, hi::theme<prefix>.int_cap_height(this)};
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.
@@ -80,11 +80,11 @@ public:
                 context.draw_box(
                     layout,
                     layout.rectangle(),
-                    hi::theme<prefix / "fill.color", hi::color>{}(this),
-                    hi::theme<prefix / "outline.color", hi::color>{}(this),
-                    hi::theme<prefix / "outline.width", int>{}(this),
+                    hi::theme<prefix>.background_color(this),
+                    hi::theme<prefix>.border_color(this),
+                    hi::theme<prefix>.border_width(this),
                     hi::border_side::outside,
-                    hi::theme<prefix / "outline.radius", hi::corner_radii>{}(this));
+                    hi::theme<prefix>.border_radius(this));
             }
 
             // Child widget only need to be drawn when the parent is visible, but the child may have

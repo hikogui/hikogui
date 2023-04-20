@@ -247,7 +247,7 @@ private:
     {
         hilet corner_radii =
             axis == axis::vertical ? hi::corner_radii{layout.width() * 0.5f} : hi::corner_radii{layout.height() * 0.5f};
-        context.draw_box(layout, layout.rectangle(), theme<prefix / "fill.color", color>{}(this), corner_radii);
+        context.draw_box(layout, layout.rectangle(), theme<prefix>.background_color(this), corner_radii);
     }
 
     void draw_slider(widget_draw_context const& context) noexcept

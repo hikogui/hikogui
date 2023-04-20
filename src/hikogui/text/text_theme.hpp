@@ -15,6 +15,8 @@ namespace hi::inline v1 {
 
 class text_theme : public std::vector<text_style> {
 public:
+    using std::vector<text_style>::vector;
+
     [[nodiscard]] text_style const &
     find(text_phrasing phrasing, iso_639 language, iso_3166 region, iso_15924 script) const noexcept
     {

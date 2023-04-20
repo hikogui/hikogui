@@ -107,7 +107,7 @@ public:
         if (compare_store(layout, context)) {
             auto shape = context.shape;
             shape.rectangle = aarectanglei{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
-            _children.set_layout(shape, theme<prefix / "cap-height", int>{}(this));
+            _children.set_layout(shape, theme<prefix>.int_cap_height(this));
         }
 
         hilet overhang = context.redraw_overhang;
@@ -124,17 +124,17 @@ public:
     {
         if (*mode > widget_mode::invisible) {
             if (overlaps(context, layout)) {
-                context.draw_box(layout, layout.rectangle(), theme<prefix / "fill.color", color>{}(this));
+                context.draw_box(layout, layout.rectangle(), theme<prefix>.background_color(this));
 
                 if (tab_button_has_focus()) {
                     // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
                     // line depending if that specific button is in focus or not.
                     hilet focus_rectangle =
-                        aarectanglei{0, 0, layout.rectangle().width(), theme<prefix / "outline.width", int>{}(this)};
+                        aarectanglei{0, 0, layout.rectangle().width(), theme<prefix>.border_width(this)};
                     context.draw_box(
                         layout,
                         translate3{0.0f, 0.0f, 1.5f} * narrow_cast<aarectangle>(focus_rectangle),
-                        theme<prefix / "outline.color", color>{}(this));
+                        theme<prefix>.background_color(this));
                 }
             }
 

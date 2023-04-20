@@ -113,7 +113,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            _children.set_layout(context.shape, theme<prefix / "cap-height", int>{}(this));
+            _children.set_layout(context.shape, theme<prefix>.int_cap_height(this));
 
             for (hilet& child : _children) {
                 child.value->set_layout(context.transform(child.shape, 0.0f));

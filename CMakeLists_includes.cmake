@@ -191,8 +191,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/theme/theme_book.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_file.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_mode.hpp
-    ${HIKOGUI_SOURCE_DIR}/theme/theme_value.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/theme_state.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_model.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/style_sheet.hpp
     ${HIKOGUI_SOURCE_DIR}/theme/style_sheet_parser.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/module.hpp

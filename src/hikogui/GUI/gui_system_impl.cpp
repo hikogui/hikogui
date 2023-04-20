@@ -27,15 +27,15 @@ gui_system::gui_system(
 
     _selected_theme_cbt = selected_theme.subscribe(
         [&](auto...) {
-            auto& theme = find_theme(*selected_theme, os_settings::theme_mode());
-            theme.activate();
+            auto& t = find_theme(*selected_theme, os_settings::theme_mode());
+            t.activate();
         },
         callback_flags::main);
 
     _os_settings_cbt = os_settings::subscribe(
         [&](auto...) {
-            auto& theme = find_theme(*selected_theme, os_settings::theme_mode());
-            theme.activate();
+            auto& t = find_theme(*selected_theme, os_settings::theme_mode());
+            t.activate();
         },
         callback_flags::main);
 

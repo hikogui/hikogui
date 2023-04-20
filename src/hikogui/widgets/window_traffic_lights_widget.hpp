@@ -42,7 +42,7 @@ public:
         } else if (operating_system::current == operating_system::macos) {
             hilet theme_size = theme<prefix / "macos.size", int>{}(this);
             hilet margin = theme<prefix / "margin", int>{}(this);
-            hilet spacing = theme<prefix / "spacing", int>{}(this);
+            hilet spacing = theme<prefix>.int_spacing_horizontal(this);
             hilet size = extent2i{theme_size * 3 + 2 * margin + 2 * spacing, theme_size + 2 * spacing};
             return {size, size, size};
 
@@ -69,7 +69,7 @@ public:
             } else if (operating_system::current == operating_system::macos) {
                 hilet size = theme<prefix / "macos.size", int>{}(this);
                 hilet margin = theme<prefix / "margin", int>{}(this);
-                hilet spacing = theme<prefix / "spacing", int>{}(this);
+                hilet spacing = theme<prefix>.int_spacing_horizontal(this);
 
                 closeRectangle = aarectanglei{point2i(margin, (extent.height() - size) / 2), extent2i{size, size}};
 

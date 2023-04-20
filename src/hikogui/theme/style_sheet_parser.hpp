@@ -7,6 +7,7 @@
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
 #include "theme_mode.hpp"
+#include "theme_length.hpp"
 #include "style_sheet.hpp"
 #include <string>
 #include <vector>
@@ -513,11 +514,11 @@ template<typename It, std::sentinel_for<It> ItEnd>
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::optional<style_sheet_length>
+[[nodiscard]] constexpr std::optional<theme_length>
 parse_style_sheet_length(It& it, ItEnd last, style_sheet_parser_context& context)
 {
     if (it.size() >= 2 and (it[0] == token::integer or it[0] == token::real) and it[1] == token::id) {
-        hilet r = [&]() -> style_sheet_length {
+        hilet r = [&]() -> theme_length {
             if (it[1] == "pt") {
                 return points{static_cast<double>(it[0])};
             } else if (it[1] == "mm") {
@@ -546,7 +547,7 @@ parse_style_sheet_length(It& it, ItEnd last, style_sheet_parser_context& context
 
     } else if (it != last and (*it == token::integer or *it == token::real)) {
         // Implicitly a number without suffix is in `pt`.
-        hilet r = style_sheet_length{points{static_cast<float>(*it)}};
+        hilet r = theme_length{points{static_cast<float>(*it)}};
         ++it;
         return r;
 
@@ -556,10 +557,10 @@ parse_style_sheet_length(It& it, ItEnd last, style_sheet_parser_context& context
 }
 
 template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::vector<style_sheet_length>
+[[nodiscard]] constexpr std::vector<theme_length>
 parse_style_sheet_lengths(It& it, ItEnd last, style_sheet_parser_context& context)
 {
-    auto r = std::vector<style_sheet_length>{};
+    auto r = std::vector<theme_length>{};
 
     if (auto length = parse_style_sheet_length(it, last, context)) {
         r.push_back(*length);

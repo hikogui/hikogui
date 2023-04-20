@@ -214,7 +214,7 @@ public:
         _current_label_constraints = _current_label_widget->update_constraints();
         _overlay_constraints = _overlay_widget->update_constraints();
 
-        hilet inner_margin = theme<prefix / "spacing", int>{}(this);
+        hilet inner_margin = theme<prefix>.int_horizontal_spacing(this);
         hilet label_offset = theme<prefix / "label.offset", int>{}(this);
         hilet extra_size = extent2i{label_offset + inner_margin * 2, inner_margin * 2};
 
@@ -227,7 +227,7 @@ public:
         r.minimum.width() = std::max(r.minimum.width(), _overlay_constraints.minimum.width() + extra_size.width());
         r.preferred.width() = std::max(r.preferred.width(), _overlay_constraints.preferred.width() + extra_size.width());
         r.maximum.width() = std::max(r.maximum.width(), _overlay_constraints.maximum.width() + extra_size.width());
-        r.margins = theme<prefix / "margin", marginsi>{}(this);
+        r.margins = theme<prefix>.int_margins(this);
         r.padding = theme<prefix / "padding", marginsi>{}(this);
         r.alignment = resolve(*alignment, os_settings::left_to_right());
         hi_axiom(r.holds_invariant());
@@ -236,9 +236,9 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        hilet inner_margin = theme<prefix / "spacing", int>{}(this);
+        hilet inner_margin = theme<prefix>.int_spacing_horizontal(this);
         hilet label_offset = theme<prefix / "label.offset", int>{}(this);
-        hilet cap_height = theme<prefix / "cap_height", int>{}(this);
+        hilet cap_height = theme<prefix>.int_cap_height(this);
         hilet chevron_size = theme<prefix / "chevron.size", float>{}(this);
 
         if (compare_store(layout, context)) {
@@ -509,9 +509,9 @@ private:
         context.draw_box(
             layout,
             layout.rectangle(),
-            theme<prefix / "fill.color", color>{}(this),
-            theme<prefix / "outline.color", color>{}(this),
-            theme<prefix / "outline.width", int>{}(this),
+            theme<prefix>.background_color(this),
+            theme<prefix>.border_color(this),
+            theme<prefix>.border_width(this),
             border_side::inside,
             theme<prefix / "outline.radius", corner_radii>{}(this));
     }
@@ -525,7 +525,7 @@ private:
         context.draw_box(
             layout,
             translate_z(0.1f) * narrow_cast<aarectangle>(_left_box_rectangle),
-            theme<prefix / "outline.color", color>{}(this),
+            theme<prefix>.background_color(this),
             corner_radii);
     }
 

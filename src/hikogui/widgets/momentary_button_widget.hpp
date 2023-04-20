@@ -43,20 +43,20 @@ public:
         _label_constraints = super::update_constraints();
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet extra_size = theme<prefix / "spacing", extent2i>{}(this) * 2;
+        hilet extra_size = theme<prefix>{}.int_spacing_horizontal(this) * 2;
 
         auto constraints = _label_constraints + extra_size;
-        constraints.margins = theme<prefix / "margin", marginsi>{}(this);
+        constraints.margins = theme<prefix>.int_margins(this);
         return constraints;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            hilet inner_margin = theme<prefix / "spacing", int>{}(this);
+            hilet inner_margin = theme<prefix>.int_horizontal_spacing(this);
             hilet label_rectangle = aarectanglei{inner_margin, 0, context.width() - inner_margin * 2, context.height()};
             this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
-                box_shape{_label_constraints, label_rectangle, theme<prefix / "cap-height", int>{}(this)};
+                box_shape{_label_constraints, label_rectangle, theme<prefix>.int_cap_height(this)};
         }
         super::set_layout(context);
     }
@@ -78,11 +78,11 @@ private:
         context.draw_box(
             this->layout,
             this->layout.rectangle(),
-            theme<prefix / "fill.color", color>{}(this),
-            theme<prefix / "outline.color", color>{}(this),
-            theme<prefix / "outline.width", int>{}(this),
+            theme<prefix>.background_color(this),
+            theme<prefix>.border_color(this),
+            theme<prefix>.border_width(this),
             border_side::inside,
-            theme<prefix / "outline.radius", corner_radii>{}(this));
+            theme<prefix>.border_radius(this));
     }
 };
 

@@ -97,11 +97,11 @@ public:
         _label_constraints = super::update_constraints();
 
         // Make room for button and margin.
-        _button_size = theme<prefix / "outline.size", extent2i>{}(this);
-        hilet extra_size = extent2i{theme<prefix / "spacing", int>{}(this) + _button_size.width(), 0};
+        _button_size = theme<prefix>.int_size(this);
+        hilet extra_size = extent2i{theme<prefix>.int_horizontal_spacing(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
-        constraints.margins = theme<prefix / "margin", marginsi>{}(this);
+        constraints.margins = theme<prefix>.int_margins(this);
         constraints.alignment = *this->alignment;
         return constraints;
     }
@@ -117,8 +117,8 @@ public:
                 hi_not_implemented();
             }
 
-            hilet inner_margin = theme<prefix / "spacing", int>{}(this);
-            hilet cap_height = theme<prefix / "cap-height", int>{}(this);
+            hilet inner_margin = theme<prefix>.int_horizontal_spacing(this);
+            hilet cap_height = theme<prefix>.int_cap_height(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
             if (alignment_ == horizontal_alignment::left) {
@@ -140,7 +140,7 @@ public:
 
             _pip_circle = align(
                 narrow_cast<aarectangle>(_button_rectangle),
-                circle{theme<prefix / "pip.radius", float>{}(this)},
+                circle{theme<prefix / "pip">.width(this)},
                 alignment::middle_center());
         }
         super::set_layout(context);
@@ -172,9 +172,9 @@ private:
         context.draw_circle(
             this->layout,
             _button_circle * 1.02f,
-            theme<prefix / "fill.color", color>{}(this),
-            theme<prefix / "outline.color", color>{}(this),
-            theme<prefix / "outline.width", int>{}(this),
+            theme<prefix>.background_clor(this),
+            theme<prefix>.border_color(this),
+            theme<prefix>.border_width(this),
             border_side::inside);
     }
 
@@ -188,7 +188,7 @@ private:
         // draw pip
         auto float_value = _animated_value.current_value();
         if (float_value > 0.0) {
-            context.draw_circle(this->layout, _pip_circle * 1.02f * float_value, theme<prefix / "pip.color", color>{}(this));
+            context.draw_circle(this->layout, _pip_circle * 1.02f * float_value, theme<prefix>.fill_color(this));
         }
     }
 };

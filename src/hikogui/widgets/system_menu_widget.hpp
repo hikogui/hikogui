@@ -68,7 +68,7 @@ public:
 
             hilet icon_height = context.height() < round_cast<int>(size * 1.2f) ? context.height() : size;
             hilet icon_rectangle = aarectanglei{0, context.height() - icon_height, context.width(), icon_height};
-            _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme<prefix / "cap-height", int>{}(this)};
+            _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme<prefix>.int_cap_height(this)};
             // Leave space for window resize handles on the left and top.
             _system_menu_rectangle = aarectanglei{margin, 0, context.width() - margin, context.height() - margin};
         }
