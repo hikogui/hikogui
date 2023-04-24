@@ -49,7 +49,7 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
-    auto &window = *std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
+    auto& window = *std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
     hi_axiom(loop::main().on_thread());
 
     // WM_CLOSE and WM_DESTROY will re-enter and run the destructor for `window`.
@@ -138,14 +138,7 @@ void gui_window_win32::create_window(extent2i new_size)
     DwmExtendFrameIntoClientArea(win32Window, &m);
 
     // Force WM_NCCALCSIZE to be send to the window.
-    SetWindowPos(
-        win32Window,
-        nullptr,
-        0,
-        0,
-        0,
-        0,
-        SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+    SetWindowPos(win32Window, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     if (!firstWindowHasBeenOpened) {
         hilet win32_window_ = win32Window;
@@ -559,19 +552,23 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 
 [[nodiscard]] keyboard_modifiers gui_window_win32::get_keyboard_modifiers() noexcept
 {
+    // Documentation of GetAsyncKeyState() says that the held key is in the most-significant-bit.
+    // Make sure it is signed, so that we can do a less-than 0 check. It looks like this function
+    // was designed to be used this way.
+    static_assert(std::is_signed_v<decltype(GetAsyncKeyState(VK_SHIFT))>);
+
     auto r = keyboard_modifiers::none;
 
-    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_SHIFT)) & 0x8000) != 0) {
+    if (GetAsyncKeyState(VK_SHIFT) < 0) {
         r |= keyboard_modifiers::shift;
     }
-    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_CONTROL)) & 0x8000) != 0) {
+    if (GetAsyncKeyState(VK_CONTROL) < 0) {
         r |= keyboard_modifiers::control;
     }
-    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_MENU)) & 0x8000) != 0) {
+    if (GetAsyncKeyState(VK_MENU) < 0) {
         r |= keyboard_modifiers::alt;
     }
-    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_LWIN)) & 0x8000) != 0 ||
-        (narrow_cast<uint16_t>(GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0) {
+    if (GetAsyncKeyState(VK_LWIN) < 0 or GetAsyncKeyState(VK_RWIN) < 0) {
         r |= keyboard_modifiers::super;
     }
 
@@ -689,7 +686,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_SIZING:
         {
-            hilet &rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
+            hilet& rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
             if (rect_ptr.right < rect_ptr.left or rect_ptr.bottom < rect_ptr.top) {
                 hi_log_error(
                     "Invalid RECT received on WM_SIZING: left={}, right={}, bottom={}, top={}",
@@ -706,7 +703,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_MOVING:
         {
-            hilet &rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
+            hilet& rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
             if (rect_ptr.right < rect_ptr.left or rect_ptr.bottom < rect_ptr.top) {
                 hi_log_error(
                     "Invalid RECT received on WM_MOVING: left={}, right={}, bottom={}, top={}",
