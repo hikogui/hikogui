@@ -107,7 +107,7 @@ public:
         if (compare_store(layout, context)) {
             auto shape = context.shape;
             shape.rectangle = aarectanglei{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
-            _children.set_layout(shape, theme<prefix>.int_cap_height(this));
+            _children.set_layout(shape, theme<prefix>.cap_height(this));
         }
 
         hilet overhang = context.redraw_overhang;

@@ -126,7 +126,7 @@ public:
         hilet icon_size =
             (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
             theme<prefix>.size(this) :
-            extent2{theme<prefix>.cap_height(this), theme<prefix>.cap_height(this)};
+            extent2i{theme<prefix>.cap_height(this), theme<prefix>.cap_height(this)};
 
         _icon_widget->minimum = extent2i{icon_size, icon_size};
         _icon_widget->maximum = extent2i{icon_size, icon_size};
@@ -141,7 +141,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            _grid.set_layout(context.shape, theme<prefix>.int_cap_height(this));
+            _grid.set_layout(context.shape, theme<prefix>.cap_height(this));
         }
 
         for (hilet& cell : _grid) {

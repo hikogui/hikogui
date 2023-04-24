@@ -38,8 +38,7 @@ public:
         _icon_widget = std::make_unique<icon_widget<prefix>>(this, icon);
     }
 
-    system_menu_widget(widget *parent, forward_of<observer<hi::icon>> auto&& icon) noexcept :
-        system_menu_widget(parent)
+    system_menu_widget(widget *parent, forward_of<observer<hi::icon>> auto&& icon) noexcept : system_menu_widget(parent)
     {
         this->icon = hi_forward(icon);
     }
@@ -56,21 +55,22 @@ public:
 
         _icon_constraints = _icon_widget->update_constraints();
 
-        hilet size = theme<prefix / "size", extent2i>{}(this);
+        hilet size = theme<prefix>.size(this);
         return {size, size, size};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            hilet size = theme<prefix / "size", int>{}(this);
-            hilet margin = theme<prefix / "margin", int>{}(this);
+            hilet size = theme<prefix>.size(this);
+            hilet margin = theme<prefix>.maring(this);
 
-            hilet icon_height = context.height() < round_cast<int>(size * 1.2f) ? context.height() : size;
+            hilet icon_height = context.height() < round_cast<int>(size.height() * 1.2f) ? context.height() : size.height();
             hilet icon_rectangle = aarectanglei{0, context.height() - icon_height, context.width(), icon_height};
-            _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme<prefix>.int_cap_height(this)};
+            _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme<prefix>.cap_height(this)};
             // Leave space for window resize handles on the left and top.
-            _system_menu_rectangle = aarectanglei{margin, 0, context.width() - margin, context.height() - margin};
+            _system_menu_rectangle =
+                aarectanglei{margin.left(), 0, context.width() - margin.right(), context.height() - margin.top()};
         }
 
         _icon_widget->set_layout(context.transform(_icon_shape));

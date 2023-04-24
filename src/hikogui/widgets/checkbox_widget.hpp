@@ -146,11 +146,11 @@ public:
     {
         _label_constraints = super::update_constraints();
 
-        _button_size = theme<prefix>.int_size(this);
-        hilet extra_size = extent2i{theme<prefix>.int_horizontal_spacing(this) + _button_size.width(), 0};
+        _button_size = theme<prefix>.size(this);
+        hilet extra_size = extent2i{theme<prefix>.horizontal_spacing(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
-        constraints.margins = theme<prefix>.int_margins(this);
+        constraints.margins = theme<prefix>.margin(this);
         constraints.alignment = *this->alignment;
         return constraints;
     }
@@ -166,8 +166,8 @@ public:
                 hi_not_implemented();
             }
 
-            hilet inner_margin = theme<prefix>.int_horizontal_spacing(this);
-            hilet baseline_offset = theme<prefix>.int_cap_height(this);
+            hilet inner_margin = theme<prefix>.horizontal_spacing(this);
+            hilet baseline_offset = theme<prefix>.cap_height(this);
             hilet icon_size = theme<prefix / "icon">.size(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);

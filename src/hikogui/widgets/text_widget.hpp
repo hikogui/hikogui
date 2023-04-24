@@ -162,13 +162,13 @@ public:
 
         // XXX use the theme-style and apply it to the _text_cache.
         _shaped_text = text_shaper{
-            _text_cache, theme<prefix / "style", text_theme>{}(this), dpi_scale, alignment_, os_settings::left_to_right()};
+            _text_cache, theme<prefix>.text(this), dpi_scale, alignment_, os_settings::left_to_right()};
 
         hilet shaped_text_rectangle =
             narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));
         hilet shaped_text_size = shaped_text_rectangle.size();
 
-        hilet margins = theme<prefix / "margin", marginsi>{}(this);
+        hilet margins = theme<prefix>.margin(this);
         if (*mode == widget_mode::partial) {
             // In line-edit mode the text should not wrap.
             return _constraints_cache = box_constraints{
@@ -234,7 +234,7 @@ public:
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             context.draw_text(layout, _shaped_text);
 
-            context.draw_text_selection(layout, _shaped_text, _selection, theme<prefix / "selection.color", color>{}(this));
+            context.draw_text_selection(layout, _shaped_text, _selection, theme<prefix>.selection_color(this));
 
             if (*_cursor_state == cursor_state_type::on or *_cursor_state == cursor_state_type::busy) {
                 context.draw_text_cursors(
@@ -243,10 +243,10 @@ public:
                     _selection.cursor(),
                     _overwrite_mode,
                     to_bool(_has_dead_character),
-                    theme<prefix / "primary-cursor.color", color>{}(this),
-                    theme<prefix / "secondary-cursor.color", color>{}(this),
-                    theme<prefix / "overwrite-cursor.color", color>{}(this),
-                    theme<prefix / "compose-cursor.color", color>{}(this));
+                    theme<prefix>.caret_primary_color(this),
+                    theme<prefix>.caret_secondary_color(this),
+                    theme<prefix>.caret_overwrite_color(this),
+                    theme<prefix>.caret_compose_color(this));
             }
         }
     }

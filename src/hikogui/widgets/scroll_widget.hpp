@@ -130,7 +130,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            _grid.set_layout(context.shape, theme<prefix>.int_cap_height(this));
+            _grid.set_layout(context.shape, theme<prefix>.cap_height(this));
         }
 
         for (hilet& cell : _grid) {

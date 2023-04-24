@@ -65,7 +65,7 @@ public:
     {
         if (compare_store(layout, context)) {
             hilet grid_rectangle = context.rectangle();
-            _grid_shape = {_grid_constraints, grid_rectangle, theme<prefix>.int_cap_height(this)};
+            _grid_shape = {_grid_constraints, grid_rectangle, theme<prefix>.cap_height(this)};
         }
 
         _grid_widget->set_layout(context.transform(_grid_shape));

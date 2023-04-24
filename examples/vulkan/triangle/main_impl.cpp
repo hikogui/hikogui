@@ -42,7 +42,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return {{400, 300}, {640, 480}, {1024, 860}, hi::alignment{}, hi::theme<prefix>.int_margins(this)};
+        return {{400, 300}, {640, 480}, {1024, 860}, hi::alignment{}, hi::theme<prefix>.margin(this)};
     }
 
     // The `set_layout()` function is called when the window has resized, or when

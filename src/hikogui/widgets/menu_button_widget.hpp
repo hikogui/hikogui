@@ -86,13 +86,13 @@ public:
 
         // Make room for button and margin.
         _short_cut_size = _check_size =
-            extent2i{theme<prefix / "icon">.int_cap_height(this), theme<prefix / "icon">.int_cap_height(this)};
+            extent2i{theme<prefix / "icon">.cap_height(this), theme<prefix / "icon">.cap_height(this)};
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         hilet extra_size = extent2i{
-            theme<prefix>.int_margin_left(this) + _check_size.width() + theme<prefix>.int_horizontal_spacing(this) +
-                theme<prefix>.int_horizontal_spacing(this) + _short_cur_size.width() + theme<prefix>.int_margin_right(this),
-            theme<prefix>.int_margin_top(this) + theme<prefix>.int_margin_bottom(this)};
+            theme<prefix>.margin_left(this) + _check_size.width() + theme<prefix>.horizontal_spacing(this) +
+                theme<prefix>.horizontal_spacing(this) + _short_cur_size.width() + theme<prefix>.margin_right(this),
+            theme<prefix>.margin_top(this) + theme<prefix>.margin_bottom(this)};
 
         auto constraints = _label_constraints + extra_size;
         constraints.margins = 0;
@@ -102,8 +102,8 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            hilet spacing = theme<prefix>.int_horizontal_spacing(this);
-            hilet cap_height = theme<prefix>.int_cap_height(this);
+            hilet spacing = theme<prefix>.horizontal_spacing(this);
+            hilet cap_height = theme<prefix>.cap_height(this);
 
             hilet inside_rectangle = context.rectangle() - spacing;
 

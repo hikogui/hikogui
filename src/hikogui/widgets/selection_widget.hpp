@@ -214,7 +214,7 @@ public:
         _current_label_constraints = _current_label_widget->update_constraints();
         _overlay_constraints = _overlay_widget->update_constraints();
 
-        hilet inner_margin = theme<prefix>.int_horizontal_spacing(this);
+        hilet inner_margin = theme<prefix>.horizontal_spacing(this);
         hilet label_offset = theme<prefix / "label.offset", int>{}(this);
         hilet extra_size = extent2i{label_offset + inner_margin * 2, inner_margin * 2};
 

@@ -32,7 +32,7 @@ public:
     [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
-        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, hi::theme<prefix>.int_margins(this)};
+        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, hi::theme<prefix>.margin(this)};
     }
 
     // The `set_layout()` function is called when the window has resized, or when

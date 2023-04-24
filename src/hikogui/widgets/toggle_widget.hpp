@@ -147,11 +147,11 @@ public:
         _label_constraints = super::update_constraints();
 
         // Make room for button and margin.
-        _button_size = {theme<prefix / "width", int>{}(this), theme<prefix / "height", int>{}(this)};
-        hilet extra_size = extent2i{theme<prefix>.int_spacing_horizontal(this) + _button_size.width(), 0};
+        _button_size = theme<prefix>.size(this);
+        hilet extra_size = extent2i{theme<prefix>.spacing_horizontal(this) + _button_size.width(), 0};
 
         auto r = max(_label_constraints + extra_size, _button_size);
-        r.margins = theme<prefix / "margin", marginsi>{}(this);
+        r.margins = theme<prefix>.margin(this);
         r.alignment = *this->alignment;
         return r;
     }
@@ -167,8 +167,8 @@ public:
                 hi_not_implemented();
             }
 
-            hilet spacing = theme<prefix>.int_spacing_horizontal(this);
-            hilet cap_height = theme<prefix>.int_cap_height(this);
+            hilet spacing = theme<prefix>.spacing_horizontal(this);
+            hilet cap_height = theme<prefix>.cap_height(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + spacing);
             if (alignment_ == horizontal_alignment::left) {
@@ -240,7 +240,7 @@ private:
 
         hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
 
-        context.draw_circle(this->layout, positioned_pip_circle * 1.02f, theme<prefix / "pip.color", color>{}(this));
+        context.draw_circle(this->layout, positioned_pip_circle * 1.02f, theme<prefix>.fill_color(this));
     }
 };
 

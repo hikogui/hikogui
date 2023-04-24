@@ -101,10 +101,10 @@ public:
         hilet resolved_alignment = resolve(*alignment, os_settings::left_to_right());
         hilet icon_constraints = box_constraints{
             extent2i{0, 0},
-            narrow_cast<extent2i>(_icon_size),
-            narrow_cast<extent2i>(_icon_size),
+            _icon_size,
+            _icon_size,
             resolved_alignment,
-            theme<prefix>.int_margins(this)};
+            theme<prefix>.margin(this)};
         return icon_constraints.constrain(*minimum, *maximum);
     }
 

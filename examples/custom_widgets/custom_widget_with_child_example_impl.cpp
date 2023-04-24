@@ -56,7 +56,7 @@ public:
             // when the layout of the current widget changes.
             auto const label_rectangle =
                 align(context.rectangle(), _label_constraints.preferred, hi::alignment::middle_center());
-            _label_shape = hi::box_shape{_label_constraints, label_rectangle, hi::theme<prefix>.int_cap_height(this)};
+            _label_shape = hi::box_shape{_label_constraints, label_rectangle, hi::theme<prefix>.cap_height(this)};
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.

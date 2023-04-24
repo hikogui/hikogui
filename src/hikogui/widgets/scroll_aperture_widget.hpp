@@ -139,7 +139,7 @@ public:
                 -*offset_y + _content_constraints.margins.bottom(),
                 *content_width,
                 *content_height},
-            theme<prefix>.int_cap_height(this)};
+            theme<prefix>.cap_height(this)};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
@@ -198,10 +198,10 @@ public:
             int delta_y = 0;
 
             hilet margin = std::max(
-                theme<prefix>.int_margin_left(this),
-                theme<prefix>.int_margin_right(this),
-                theme<prefix>.int_margin_top(this),
-                theme<prefix>.int_margin_bottom(this));
+                theme<prefix>.margin_left(this),
+                theme<prefix>.margin_right(this),
+                theme<prefix>.margin_top(this),
+                theme<prefix>.margin_bottom(this));
             if (safe_rectangle.width() > margin * 2 and safe_rectangle.height() > margin * 2) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do

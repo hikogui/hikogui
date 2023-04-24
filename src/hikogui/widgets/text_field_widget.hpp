@@ -174,7 +174,7 @@ public:
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
         auto size = box_size;
-        auto margins = theme<prefix / "margins", marginsi>{}(this);
+        auto margins = theme<prefix>.margin(this);
         if (_error_label->empty()) {
             _error_label_widget->mode = widget_mode::invisible;
             _error_label_constraints = _error_label_widget->update_constraints();
@@ -204,13 +204,12 @@ public:
                     _scroll_constraints.margins.bottom()};
 
             hilet scroll_rectangle = aarectanglei{point2i{0, context.height() - scroll_size.height()}, scroll_size};
-            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme<prefix>.int_cap_height(this)};
+            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme<prefix>.cap_height(this)};
 
             if (*_error_label_widget->mode > widget_mode::invisible) {
                 hilet error_label_rectangle =
                     aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
-                _error_label_shape =
-                    box_shape{_error_label_constraints, error_label_rectangle, theme<prefix>.int_cap_height(this)};
+                _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme<prefix>.cap_height(this)};
             }
         }
 
@@ -342,17 +341,13 @@ private:
     {
         hilet outline = narrow_cast<aarectangle>(_scroll_shape.rectangle);
 
-        hilet radius = theme<prefix / "outline.radius", float>{}(this);
-        hilet corner_radii = hi::corner_radii(0.0f, 0.0f, radius, radius);
-        context.draw_box(layout, outline, theme<prefix>.background_color(this), corner_radii);
+        context.draw_box(layout, outline, theme<prefix>.background_color(this), theme<prefix>.corner_radius(this));
 
         // A text field has a line under the box, which changes color on error.
         hilet line = line_segment(get<0>(outline), get<1>(outline));
 
-        hilet outline_color =
-            _error_label->empty() ? theme<prefix>.background_color(this) : theme<prefix / "error.color", color>{}(this);
-        context.draw_line(
-            layout, translate3{0.0f, 0.5f, 0.1f} * line, theme<prefix>.border_width(this), outline_color);
+        hilet outline_color = _error_label->empty() ? theme<prefix>.border_color(this) : color::red();
+        context.draw_line(layout, translate3{0.0f, 0.5f, 0.1f} * line, theme<prefix>.border_width(this), outline_color);
     }
 };
 

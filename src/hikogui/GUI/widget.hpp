@@ -574,9 +574,8 @@ protected:
 
         // Move the request_rectangle to window coordinates.
         hilet requested_window_rectangle = translate2i{layout.clipping_rectangle_on_window()} * requested_rectangle;
-        // We can't use theme<> here to get the margin, because of circular dependency.
-        hilet margin = narrow_cast<int>(std::ceil(5.0f * dpi_scale));
-        hilet window_bounds = aarectanglei{layout.window_size} - margin;
+
+        hilet window_bounds = aarectanglei{layout.window_size} - theme<prefix>.margin(this);
         hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
         return layout.from_window * response_window_rectangle;
     }

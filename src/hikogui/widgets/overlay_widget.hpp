@@ -102,10 +102,10 @@ public:
         layout = context;
 
         // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
-        layout.clipping_rectangle = context.rectangle() + theme<prefix>.int_border_width(this);
+        layout.clipping_rectangle = context.rectangle() + theme<prefix>.border_width(this);
 
         hilet content_rectangle = context.rectangle();
-        _content_shape = box_shape{_content_constraints, content_rectangle, theme<prefix>.int_cap_height(this)};
+        _content_shape = box_shape{_content_constraints, content_rectangle, theme<prefix>.cap_height(this)};
 
         // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
         _content->set_layout(layout.transform(_content_shape, 1.0f, context.rectangle()));
