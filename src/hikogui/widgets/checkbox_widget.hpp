@@ -235,7 +235,7 @@ private:
                 translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle),
                 *_check_glyph.font,
                 _check_glyph.glyph,
-                theme<prefix / "icon">.fill_color(this));
+                theme<prefix>.fill_color(this));
 
         } else if (this->state == widget_state::off) {
             ;
@@ -247,7 +247,7 @@ private:
                 translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle),
                 *_minus_glyph.font,
                 _minus_glyph.glyph,
-                theme<prefix / "icon">.fill_color(this));
+                theme<prefix>.fill_color(this));
         }
     }
 };

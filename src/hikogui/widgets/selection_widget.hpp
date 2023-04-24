@@ -214,59 +214,69 @@ public:
         _current_label_constraints = _current_label_widget->update_constraints();
         _overlay_constraints = _overlay_widget->update_constraints();
 
-        hilet inner_margin = theme<prefix>.horizontal_spacing(this);
-        hilet label_offset = theme<prefix / "label.offset", int>{}(this);
-        hilet extra_size = extent2i{label_offset + inner_margin * 2, inner_margin * 2};
-
-        auto r = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
+        // The theme's width is used for the little chevron/icon element.
+        // The labels' margins are included in the size of the widget.
+        auto r = max(_off_label_constraints, _current_label_constraints);
+        r.minimum.width() += theme<prefix>.width() + r.margins.left() + r.margins.right();
+        r.minimum.height() += r.margins.bottom() + r.margins.top();
+        r.preferred.width() += theme<prefix>.width() + r.margins.left() + r.margins.right();
+        r.preferred.height() += r.margins.bottom() + r.margins.top();
+        r.maximum.width() += theme<prefix>.width() + r.margins.left() + r.margins.right();
+        r.maximum.height() += r.margins.bottom() + r.margins.top();
 
         // Make it so that the scroll widget can scroll vertically.
         // Set it to something small, this just fixes an issue when there are no menu items.
         _scroll_widget->minimum.copy()->height() = 10;
 
-        r.minimum.width() = std::max(r.minimum.width(), _overlay_constraints.minimum.width() + extra_size.width());
-        r.preferred.width() = std::max(r.preferred.width(), _overlay_constraints.preferred.width() + extra_size.width());
-        r.maximum.width() = std::max(r.maximum.width(), _overlay_constraints.maximum.width() + extra_size.width());
-        r.margins = theme<prefix>.int_margins(this);
-        r.padding = theme<prefix / "padding", marginsi>{}(this);
+        // Increase the width to match the popup's width.
+        inplace_max(r.minimum.width(), _overlay_constraints.minimum.width() + theme<prefix>.width());
+        inplace_max(r.preferred.width(), _overlay_constraints.preferred.width() + theme<prefix>.width());
+        inplace_max(r.maximum.width(), _overlay_constraints.maximum.width() + theme<prefix>.width());
+
         r.alignment = resolve(*alignment, os_settings::left_to_right());
+        r.margins = theme<prefix>.margin(this);
         hi_axiom(r.holds_invariant());
         return r;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        hilet inner_margin = theme<prefix>.int_spacing_horizontal(this);
-        hilet label_offset = theme<prefix / "label.offset", int>{}(this);
-        hilet cap_height = theme<prefix>.int_cap_height(this);
-        hilet chevron_size = theme<prefix / "chevron.size", float>{}(this);
+        hilet label_margins = max(_off_label_constraints.margins, _current_label_constraints.margins);
+        hilet chevron_box_width = theme<prefix>.width(this);
+        hilet cap_height = theme<prefix>.cap_height(this);
 
         if (compare_store(layout, context)) {
             if (os_settings::left_to_right()) {
-                _left_box_rectangle = aarectanglei{0, 0, label_offset, context.height()};
+                _chevron_box_rectangle = aarectanglei{0, 0, chevron_box_width, context.height()};
 
-                // The unknown_label is located to the right of the selection box icon.
+                // The label is located to the right of the selection box icon.
                 hilet option_rectangle = aarectanglei{
-                    _left_box_rectangle.right() + inner_margin,
-                    0,
-                    context.width() - _left_box_rectangle.width() - inner_margin * 2,
-                    context.height()};
+                    chevron_box_width + label_margins.left(),
+                    label_margins.bottom(),
+                    context.width() - chevron_box_width - label_margins.left() - label_margins.right(),
+                    context.height() - label_margins.bottom() - label_margins.top()};
+
                 _off_label_shape = box_shape{_off_label_constraints, option_rectangle, cap_height};
                 _current_label_shape = box_shape{_off_label_constraints, option_rectangle, cap_height};
 
             } else {
-                _left_box_rectangle = aarectanglei{context.width() - label_offset, 0, label_offset, context.height()};
+                _chevron_box_rectangle = aarectanglei{context.width() - label_offset, 0, label_offset, context.height()};
 
-                // The unknown_label is located to the left of the selection box icon.
+                // The label is located to the left of the selection box icon.
                 hilet option_rectangle = aarectanglei{
-                    inner_margin, 0, context.width() - _left_box_rectangle.width() - inner_margin * 2, context.height()};
+                    label_margins.left(),
+                    label_margins.bottom(),
+                    context.width() - _chevron_box_rectangle.width() - label_margins.left() - label_margins.right(),
+                    context.height() - label_margins.bottom() - label_margins.top()};
+
                 _off_label_shape = box_shape{_off_label_constraints, option_rectangle, cap_height};
                 _current_label_shape = box_shape{_off_label_constraints, option_rectangle, cap_height};
             }
 
             _chevron_glyph = find_glyph(elusive_icon::ChevronUp);
-            hilet chevron_glyph_bbox = narrow_cast<aarectanglei>(_chevron_glyph.get_bounding_rectangle() * chevron_size);
-            _chevron_rectangle = align(_left_box_rectangle, chevron_glyph_bbox, alignment::middle_center());
+            hilet chevron_glyph_bbox =
+                narrow_cast<aarectanglei>(_chevron_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
+            _chevron_rectangle = align(_chevron_box_rectangle, chevron_glyph_bbox, alignment::middle_center());
         }
 
         // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
@@ -292,7 +302,7 @@ public:
         if (*mode > widget_mode::invisible) {
             if (overlaps(context, layout)) {
                 draw_outline(context);
-                draw_left_box(context);
+                draw_chevron_box(context);
                 draw_chevron(context);
 
                 _off_label_widget->draw(context);
@@ -375,7 +385,7 @@ private:
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    aarectanglei _left_box_rectangle;
+    aarectanglei _chevron_box_rectangle;
 
     font_book::font_glyph_type _chevron_glyph;
     aarectanglei _chevron_rectangle;
@@ -513,20 +523,26 @@ private:
             theme<prefix>.border_color(this),
             theme<prefix>.border_width(this),
             border_side::inside,
-            theme<prefix / "outline.radius", corner_radii>{}(this));
+            theme<prefix>.corner_radius(this));
     }
 
-    void draw_left_box(widget_draw_context const& context) noexcept
+    void draw_chevron_box(widget_draw_context const& context) noexcept
     {
-        hilet radius = theme<prefix / "outline.radius", float>{}(this);
+        auto corner_radius = theme<prefix>.corner_radius(this);
 
-        hilet corner_radii = os_settings::left_to_right() ? hi::corner_radii(radius, 0.0f, radius, 0.0f) :
-                                                            hi::corner_radii(0.0f, radius, 0.0f, radius);
+        if (os_settings::left_to_right()) {
+            corner_radius.bottom_right() = 0.0f;
+            corner_radius.top_right() = 0.0f;
+        } else {
+            corner_radius.bottom_left() = 0.0f;
+            corner_radius.top_left() = 0.0f;
+        }
+
         context.draw_box(
             layout,
-            translate_z(0.1f) * narrow_cast<aarectangle>(_left_box_rectangle),
-            theme<prefix>.background_color(this),
-            corner_radii);
+            translate_z(0.1f) * narrow_cast<aarectangle>(_chevron_box_rectangle),
+            theme<prefix>.border_color(this),
+            corner_radius);
     }
 
     void draw_chevron(widget_draw_context const& context) noexcept
@@ -536,7 +552,7 @@ private:
             translate_z(0.2f) * narrow_cast<aarectangle>(_chevron_rectangle),
             *_chevron_glyph.font,
             _chevron_glyph.glyph,
-            theme<prefix / "chevron.color", color>{}(this));
+            theme<prefix>.fill_color(this));
     }
 };
 

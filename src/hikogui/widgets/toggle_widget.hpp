@@ -190,8 +190,10 @@ public:
                 narrow_cast<point2>(get<0>(_button_rectangle)),
                 extent2{narrow_cast<float>(_button_rectangle.height()), narrow_cast<float>(_button_rectangle.height())}};
 
-            hilet pip_radius = theme<prefix / "pip.radius", float>{}(this);
-            _pip_circle = align(button_square, circle{pip_radius}, alignment::middle_center());
+            hilet pip_size = theme<prefix / "pip">.size(this);
+            hi_axiom(pip_size.width() == pip_size.height());
+
+            _pip_circle = align(button_square, circle{pip_size.width() / 2}, alignment::middle_center());
 
             hilet pip_to_button_margin_x2 = _button_rectangle.height() - narrow_cast<int>(_pip_circle.diameter());
             _pip_move_range = _button_rectangle.width() - narrow_cast<int>(_pip_circle.diameter()) - pip_to_button_margin_x2;

@@ -165,7 +165,7 @@ private:
             this->layout,
             button_z * narrow_cast<aarectangle>(outline_rectangle),
             theme<super::prefix>.background_color(this),
-            theme<super::prefix>.border_color{}(this),
+            theme<super::prefix>.border_color(this),
             theme<super::prefix>.border_width(this),
             border_side::inside,
             theme<super::prefix>.border_radius(this));

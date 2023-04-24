@@ -98,6 +98,8 @@ public:
 
         // Make room for button and margin.
         _button_size = theme<prefix>.size(this);
+        hi_axiom(button_size.width() == button_size.height());
+
         hilet extra_size = extent2i{theme<prefix>.horizontal_spacing(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
@@ -138,10 +140,11 @@ public:
 
             _button_circle = circle{narrow_cast<aarectangle>(_button_rectangle)};
 
-            _pip_circle = align(
-                narrow_cast<aarectangle>(_button_rectangle),
-                circle{theme<prefix / "pip">.width(this)},
-                alignment::middle_center());
+            _pip_size = theme<prefix / "pip">.size(this);
+            hi_axiom(_pip_size.width() == _pip_size.height());
+
+            _pip_circle =
+                align(narrow_cast<aarectangle>(_button_rectangle), circle{_pip_size.width() / 2}, alignment::middle_center());
         }
         super::set_layout(context);
     }
@@ -187,8 +190,13 @@ private:
 
         // draw pip
         auto float_value = _animated_value.current_value();
-        if (float_value > 0.0) {
-            context.draw_circle(this->layout, _pip_circle * 1.02f * float_value, theme<prefix>.fill_color(this));
+        if (float_value > 0.0f) {
+            context.draw_circle(
+                this->layout,
+                _pip_circle * 1.02f * float_value,
+                theme<prefix / "pip">.background_color(this),
+                theme<prefix / "pip">.border_color(this),
+                theme<prefix / "pip">.border_width(this));
         }
     }
 };

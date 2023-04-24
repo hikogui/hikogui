@@ -63,7 +63,7 @@ public:
     {
         if (compare_store(layout, context)) {
             hilet size = theme<prefix>.size(this);
-            hilet margin = theme<prefix>.maring(this);
+            hilet margin = theme<prefix>.margin(this);
 
             hilet icon_height = context.height() < round_cast<int>(size.height() * 1.2f) ? context.height() : size.height();
             hilet icon_rectangle = aarectanglei{0, context.height() - icon_height, context.width(), icon_height};

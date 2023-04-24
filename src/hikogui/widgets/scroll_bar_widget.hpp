@@ -33,7 +33,7 @@ template<axis Axis, fixed_string Name = "">
 class scroll_bar_widget final : public widget {
 public:
     using super = widget;
-    constexpr static auto prefix = Name / "bar";
+    constexpr static auto prefix = Name / (Axis == axis::horizontal ? "hbar" : "vbar");
 
     static constexpr hi::axis axis = Axis;
 
@@ -70,19 +70,22 @@ public:
             return {};
         }
 
-        // The minimum size is twice the length of the slider, which is twice the theme().size()
-        hilet rail_length = theme<prefix / "rail.length", int>{}(this);
-        hilet rail_breadth = theme<prefix / "rail.breadth", int>{}(this);
+        // The theme's width and height are the size of the slider.
+        // The scroll-bars and therefor the scroll-view and scroll-aperture
+        // can never be smaller than the length of the slider of both bars.
+        // Unless those bars are disabled by default.
+        hi_axiom(theme<prefix>.width(this) >= theme<prefix / "slider">.width(this);
+        hi_axiom(theme<prefix>.height(this) >= theme<prefix / "slider">.height(this);
         if constexpr (axis == axis::vertical) {
             return {
-                extent2i{rail_breadth, rail_length},
-                extent2i{rail_breadth, rail_length},
-                extent2i{rail_breadth, large_number_v<int>}};
+                extent2i{theme<prefix>.width(this), theme<prefix>.height(this)},
+                extent2i{theme<prefix>.width(this), theme<prefix>.height(this)},
+                extent2i{theme<prefix>.width(this), large_number_v<int>}};
         } else {
             return {
-                extent2i{rail_length, rail_breadth},
-                extent2i{rail_length, rail_breadth},
-                extent2i{large_number_v<int>, rail_breadth}};
+                extent2i{theme<prefix>.width(this), theme<prefix>.height(this)},
+                extent2i{theme<prefix>.width(this), theme<prefix>.height(this)},
+                extent2i{large_number_v<int>, theme<prefix>.height(this)}};
         }
     }
 
@@ -98,9 +101,16 @@ public:
         // Calculate the position of the slider.
         hilet slider_offset = narrow_cast<int>(std::round(*offset * travel_vs_hidden_content_ratio()));
         if constexpr (axis == axis::vertical) {
-            _slider_rectangle = aarectanglei{0, slider_offset, context.width(), slider_length()};
+            hilet slider_width = theme<prefix / "slider">.width();
+            hilet x = (context.width() - slider_width) / 2;
+
+            _slider_rectangle = aarectanglei{x, slider_offset, slider_width, slider_length()};
+
         } else {
-            _slider_rectangle = aarectanglei{slider_offset, 0, slider_length(), context.height()};
+            hilet slider_height = theme < prefix / "slider".height();
+            hilet y = (context.height() - slider_height) / 2;
+
+            _slider_rectangle = aarectanglei{slider_offset, y, slider_length(), slider_height};
         }
     }
 
@@ -192,15 +202,16 @@ private:
     {
         hi_axiom(loop::main().on_thread());
 
-        hilet preferred_length = [&] {
-            if (*content == 0) {
-                return rail_length();
-            } else {
-                return *aperture * rail_length() / *content;
-            }
-        }();
+        // The minimum length of a slider.
+        auto length = axis == axis::vertical ? theme<prefix / "slider">.height(this) : theme<prefix / "slider">.width(this);
+        hi_axiom(length <= rail_length());
 
-        return std::clamp(preferred_length, theme<prefix / "slider.length", int>{}(this), rail_length());
+        // Increase the length of a slider based on the content to aperture ratio.
+        if (*content != 0 and *aperture <= *content) {
+            inplace_max(length, *aperture * rail_length() / *content);
+        }
+
+        return length;
     }
 
     /** The amount of travel that the slider can make.
@@ -245,21 +256,24 @@ private:
 
     void draw_rails(widget_draw_context const& context) noexcept
     {
-        hilet corner_radii =
-            axis == axis::vertical ? hi::corner_radii{layout.width() * 0.5f} : hi::corner_radii{layout.height() * 0.5f};
-        context.draw_box(layout, layout.rectangle(), theme<prefix>.background_color(this), corner_radii);
+        context.draw_box(
+            layout,
+            layout.rectangle(),
+            theme<prefix>.background_color(this),
+            theme<prefix>.border_color(this),
+            theme<prefix>.border_width(this),
+            theme<prefix>.corner_radius(this));
     }
 
     void draw_slider(widget_draw_context const& context) noexcept
     {
-        hilet corner_radii = axis == axis::vertical ? hi::corner_radii{narrow_cast<float>(_slider_rectangle.width() / 2)} :
-                                                      hi::corner_radii{narrow_cast<float>(_slider_rectangle.height() / 2)};
-
         context.draw_box(
             layout,
             translate_z(0.1f) * narrow_cast<aarectangle>(_slider_rectangle),
-            theme<prefix / "slider.color", color>{}(this),
-            corner_radii);
+            theme<prefix / "slider">.background_color(this),
+            theme<prefix / "slider">.border_color(this),
+            theme<prefix / "slider">.border_width(this),
+            theme<prefix / "slider">.corner_radius(this));
     }
 };
 

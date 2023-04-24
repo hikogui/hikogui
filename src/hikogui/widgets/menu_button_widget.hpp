@@ -86,7 +86,7 @@ public:
 
         // Make room for button and margin.
         _short_cut_size = _check_size =
-            extent2i{theme<prefix / "icon">.cap_height(this), theme<prefix / "icon">.cap_height(this)};
+            extent2i{theme<prefix>.line_height(this), theme<prefix>.line_height(this)};
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         hilet extra_size = extent2i{
@@ -128,7 +128,7 @@ public:
 
             _check_glyph = find_glyph(elusive_icon::Ok);
             hilet check_glyph_bb =
-                narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * theme<prefix / "icon">.size(this));
+                narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
             _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
         }
 
