@@ -610,19 +610,23 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 
 [[nodiscard]] keyboard_modifiers gui_window_win32::get_keyboard_modifiers() noexcept
 {
+    // Documentation of GetAsyncKeyState() says that the held key is in the most-significant-bit.
+    // Make sure it is signed, so that we can do a less-than 0 check. It looks like this function
+    // was designed to be used this way.
+    static_assert(std::is_signed_v<decltype(GetAsyncKeyState(VK_SHIFT))>);
+
     auto r = keyboard_modifiers::none;
 
-    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_SHIFT)) & 0x8000) != 0) {
+    if (GetAsyncKeyState(VK_SHIFT) < 0) {
         r |= keyboard_modifiers::shift;
     }
-    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_CONTROL)) & 0x8000) != 0) {
+    if (GetAsyncKeyState(VK_CONTROL) < 0) {
         r |= keyboard_modifiers::control;
     }
-    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_MENU)) & 0x8000) != 0) {
+    if (GetAsyncKeyState(VK_MENU) < 0) {
         r |= keyboard_modifiers::alt;
     }
-    if ((narrow_cast<uint16_t>(GetAsyncKeyState(VK_LWIN)) & 0x8000) != 0 ||
-        (narrow_cast<uint16_t>(GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0) {
+    if (GetAsyncKeyState(VK_LWIN) < 0 or GetAsyncKeyState(VK_RWIN) < 0) {
         r |= keyboard_modifiers::super;
     }
 
