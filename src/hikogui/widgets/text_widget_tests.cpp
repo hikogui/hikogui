@@ -38,8 +38,7 @@ protected:
         for (auto const &path: get_paths(path_location::theme_dirs)) {
             register_theme_directory(path);
         }
-        auto &theme = find_theme("default", theme_mode::light);
-        theme.activate();
+        load_theme("default", theme_mode::light);
 
         widget = std::make_unique<hi::text_widget<>>(nullptr, text);
         widget->mode = hi::widget_mode::enabled;

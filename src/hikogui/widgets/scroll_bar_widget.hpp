@@ -74,8 +74,8 @@ public:
         // The scroll-bars and therefor the scroll-view and scroll-aperture
         // can never be smaller than the length of the slider of both bars.
         // Unless those bars are disabled by default.
-        hi_axiom(theme<prefix>.width(this) >= theme<prefix / "slider">.width(this);
-        hi_axiom(theme<prefix>.height(this) >= theme<prefix / "slider">.height(this);
+        hi_axiom(theme<prefix>.width(this) >= theme<prefix / "slider">.width(this));
+        hi_axiom(theme<prefix>.height(this) >= theme<prefix / "slider">.height(this));
         if constexpr (axis == axis::vertical) {
             return {
                 extent2i{theme<prefix>.width(this), theme<prefix>.height(this)},

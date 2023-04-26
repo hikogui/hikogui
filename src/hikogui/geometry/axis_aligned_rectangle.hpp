@@ -11,6 +11,7 @@
 #include "alignment.hpp"
 #include "extent.hpp"
 #include "point.hpp"
+#include "margins.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
@@ -421,6 +422,22 @@ public:
     [[nodiscard]] friend constexpr axis_aligned_rectangle operator-(axis_aligned_rectangle const& lhs, value_type rhs) noexcept
     {
         return lhs + -rhs;
+    }
+
+    /** Shrink the rectangle by each margin.
+     * @param lhs The original rectangle.
+     * @param rhs How much should be added on each side of the rectangle,
+     *            this value may be zero or negative.
+     * @return A new rectangle shrank on each side.
+     */
+    [[nodiscard]] friend constexpr axis_aligned_rectangle operator-(axis_aligned_rectangle const& lhs, geo::margins<value_type> rhs) noexcept
+    {
+        auto lhs_ = static_cast<simd<value_type, 4>>(lhs);
+        auto rhs_ = static_cast<simd<value_type, 4>>(rhs);
+
+        // The left and bottom margin moves p0 of lhs in positive directions.
+        // the right and top margin moves p3 of lhs in negative directions. 
+        return axis_aligned_rectangle{lhs_ + neg<0b1100>(rhs_)};
     }
 
     [[nodiscard]] friend constexpr axis_aligned_rectangle round(axis_aligned_rectangle const& rhs) noexcept

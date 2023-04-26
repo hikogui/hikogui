@@ -68,12 +68,6 @@ public:
      */
     observer<widget_state> state = widget_state::off;
 
-    /** The scale by which to size the widget and its components.
-     *
-     * This value is set by the window when it's dpi changes.
-     */
-    float dpi_scale = 1.0f;
-
     /** The draw layer of the widget.
      * The semantic layer is used mostly by the `draw()` function
      * for selecting colors from the theme, to denote nesting widgets
@@ -134,41 +128,6 @@ public:
         }
     }
 
-    /** Get an index to select a color from a color theme.
-     *
-     * The color theme index is based on the state of the widget:
-     *  - [1:0] disabled=0,enabled=1,hover=2,clicked=3
-     *  - [2:2] keyboard-focus
-     *  - [3:3] widget-state != off
-     *  - [5:4] semantic-layer modulo 4.
-     */
-    [[nodiscard]] uint8_t color_theme_index() const noexcept
-    {
-        auto r = [&] {
-            if (*mode == widget_mode::disabled) {
-                return uint8_t{0};
-            } else if (*clicked) {
-                return uint8_t{3};
-            } else if (*hover) {
-                return uint8_t{2};
-            } else {
-                return uint8_t{1};
-            }
-        }();
-
-        if (*focus) {
-            r |= 4;
-        }
-
-        if (*state != widget_state::off) {
-            r |= 8;
-        }
-
-        r |= (semantic_layer % 4) << 4;
-        hi_axiom(r <= 31);
-        return r;
-    }
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -214,14 +173,14 @@ public:
 
     /** Reset the layout.
      *
-     * @param dpi_scale The dpi-scale to use from this point forward.
+     * @param new_scale The scaling factor from this point forward.
      */
-    void reset_layout(gui_window *new_window, gfx_surface *new_surface, float new_dpi_scale) noexcept
+    void reset_layout(gui_window *new_window, gfx_surface *new_surface, float new_scale) noexcept
     {
         layout = {};
         window = new_window;
         surface = new_surface;
-        dpi_scale = new_dpi_scale;
+        _scale = narrow_cast<int>(std::round(new_scale * -4.0));
     }
 
     /** Update the constraints of the widget.
@@ -271,6 +230,31 @@ public:
      * @param context The context to where the widget will draw.
      */
     virtual void draw(widget_draw_context const& context) noexcept {};
+
+    [[nodiscard]] virtual sub_theme_selector_type sub_theme_selector() const noexcept
+    {
+        auto s = theme_state{};
+        if (*mode == widget_mode::disabled) {
+            s |= theme_state::disabled;
+        } else if (*clicked) {
+            s |= theme_state::active;
+        } else if (*hover) {
+            s |= theme_state::hover;
+        } else {
+            s |= theme_state::enabled;
+        }
+
+        if (*focus) {
+            s |= theme_state::focus;
+        }
+
+        if (*state != widget_state::off) {
+            s |= theme_state::on;
+        }
+
+        s |= static_cast<theme_state>((semantic_layer % 4) * to_underlying(theme_state::layer_1));
+        return sub_theme_selector_type{s, _scale};
+    }
 
     virtual bool process_event(gui_event const& event) const noexcept
     {
@@ -555,6 +539,15 @@ public:
     }
 
 protected:
+    /** The scale by which to size the widget and its components.
+     *
+     * This value is set by the window when its dpi changes.
+     *
+     * For performance reasons the scale is the result of `actual-scale * -4`.
+     * This handles scale increments of 25%. 100% scale is -4.
+     */
+    int _scale = -4;
+
     /** Notifier which is called whenever the use modifies the state.
      */
     mutable notifier<void()> _state_changed;
@@ -575,7 +568,7 @@ protected:
         // Move the request_rectangle to window coordinates.
         hilet requested_window_rectangle = translate2i{layout.clipping_rectangle_on_window()} * requested_rectangle;
 
-        hilet window_bounds = aarectanglei{layout.window_size} - theme<prefix>.margin(this);
+        hilet window_bounds = aarectanglei{layout.window_size} - theme<"window">.margin(this);
         hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
         return layout.from_window * response_window_rectangle;
     }

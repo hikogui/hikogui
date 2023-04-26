@@ -22,14 +22,14 @@ namespace hi { inline namespace v1 {
 
 enum class style_sheet_value_mask {
     pixels = 0b0000'0001,
-    points = 0b0000'0010,
+    dips = 0b0000'0010,
     em_quads = 0b0000'0100,
     color = 0b0000'1000,
     font_family_id = 0b0001'0000,
     font_weight = 0b0010'0000,
     font_style = 0b0100'0000,
 
-    length = pixels | points | em_quads,
+    length = pixels | dips | em_quads,
 };
 
 [[nodiscard]] constexpr style_sheet_value_mask
@@ -50,16 +50,16 @@ operator&(style_sheet_value_mask const& lhs, style_sheet_value_mask const& rhs) 
 }
 
 struct style_sheet_value :
-    std::variant<hi::pixels, hi::points, hi::em_quads, hi::color, font_family_id, font_weight, font_style> {
-    using super = std::variant<hi::pixels, hi::points, hi::em_quads, hi::color, font_family_id, font_weight, font_style>;
+    std::variant<hi::pixels, hi::dips, hi::em_quads, hi::color, font_family_id, font_weight, font_style> {
+    using super = std::variant<hi::pixels, hi::dips, hi::em_quads, hi::color, font_family_id, font_weight, font_style>;
     using super::super;
 
     constexpr style_sheet_value(theme_length length) noexcept :
         super([&] {
             if (auto pixels_ptr = std::get_if<hi::pixels>(&length)) {
                 return super{*pixels_ptr};
-            } else if (auto points_ptr = std::get_if<hi::points>(&length)) {
-                return super{*points_ptr};
+            } else if (auto dips_ptr = std::get_if<hi::dips>(&length)) {
+                return super{*dips_ptr};
             } else if (auto em_quads_ptr = std::get_if<hi::em_quads>(&length)) {
                 return super{*em_quads_ptr};
             } else {
@@ -166,7 +166,7 @@ constexpr auto style_sheet_declaration_name_value_mask_metadata = enum_metadata{
     style_sheet_declaration_name::fill_color, style_sheet_value_mask::color,
     style_sheet_declaration_name::font_color, style_sheet_value_mask::color,
     style_sheet_declaration_name::font_family, style_sheet_value_mask::font_family_id,
-    style_sheet_declaration_name::font_size, style_sheet_value_mask::points,
+    style_sheet_declaration_name::font_size, style_sheet_value_mask::dips,
     style_sheet_declaration_name::font_style, style_sheet_value_mask::font_style,
     style_sheet_declaration_name::font_weight, style_sheet_value_mask::font_weight,
     style_sheet_declaration_name::height, style_sheet_value_mask::length,
@@ -235,6 +235,12 @@ struct style_sheet {
     [[nodiscard]] style_sheet_rule_set const& operator[](size_t i) const noexcept
     {
         return rule_sets[i];
+    }
+
+    /** Activate style sheet as the current theme.
+    */
+    void activate() const noexcept
+    {
     }
 };
 

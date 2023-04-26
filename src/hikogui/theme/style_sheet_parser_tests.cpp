@@ -79,7 +79,7 @@ TEST(style_sheet_parser, width)
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::points{100});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::dips{100});
 }
 
 TEST(style_sheet_parser, width_pt)
@@ -102,7 +102,7 @@ TEST(style_sheet_parser, width_pt)
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::points{100});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{100});
 }
 
 TEST(style_sheet_parser, width_in)
@@ -125,7 +125,7 @@ TEST(style_sheet_parser, width_in)
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::inches{2});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::inches{2});
 }
 
 TEST(style_sheet_parser, width_mm_important)
@@ -148,7 +148,7 @@ TEST(style_sheet_parser, width_mm_important)
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_TRUE(rule_set[0].important);
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::millimeters{20});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::millimeters{20});
 }
 
 TEST(style_sheet_parser, width_cm)
@@ -171,7 +171,7 @@ TEST(style_sheet_parser, width_cm)
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::centimeters{2});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::centimeters{2});
 }
 
 TEST(style_sheet_parser, width_px)
@@ -616,10 +616,10 @@ TEST(style_sheet_parser, margin_1)
     ASSERT_FALSE(rule_set[2].important);
     ASSERT_FALSE(rule_set[3].important);
 
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::points>(rule_set[1].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::points>(rule_set[2].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::points>(rule_set[3].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::points{10});
 }
 
 TEST(style_sheet_parser, margin_2)
@@ -651,10 +651,10 @@ TEST(style_sheet_parser, margin_2)
     ASSERT_FALSE(rule_set[2].important);
     ASSERT_FALSE(rule_set[3].important);
 
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::points>(rule_set[1].value), hi::points{20});
-    ASSERT_EQ(std::get<hi::points>(rule_set[2].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::points>(rule_set[3].value), hi::points{20});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{20});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::points{20});
 }
 
 TEST(style_sheet_parser, margin_3_important)
@@ -686,10 +686,10 @@ TEST(style_sheet_parser, margin_3_important)
     ASSERT_TRUE(rule_set[2].important);
     ASSERT_TRUE(rule_set[3].important);
 
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::points>(rule_set[1].value), hi::points{20});
-    ASSERT_EQ(std::get<hi::points>(rule_set[2].value), hi::points{30});
-    ASSERT_EQ(std::get<hi::points>(rule_set[3].value), hi::points{20});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{20});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::points{30});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::points{20});
 }
 
 TEST(style_sheet_parser, margin_4)
@@ -723,8 +723,8 @@ TEST(style_sheet_parser, margin_4)
 
     ASSERT_EQ(std::get<hi::em_quads>(rule_set[0].value), hi::em_quads{10});
     ASSERT_EQ(std::get<hi::pixels>(rule_set[1].value), hi::pixels{20});
-    ASSERT_EQ(std::get<hi::points>(rule_set[2].value), hi::points{30});
-    ASSERT_EQ(std::get<hi::points>(rule_set[3].value), hi::points{40});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::points{30});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::points{40});
 }
 
 TEST(style_sheet_parser, spacing_1)
@@ -752,8 +752,8 @@ TEST(style_sheet_parser, spacing_1)
     ASSERT_FALSE(rule_set[0].important);
     ASSERT_FALSE(rule_set[1].important);
 
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::points>(rule_set[1].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{10});
 }
 
 TEST(style_sheet_parser, spacing_2)
@@ -781,8 +781,8 @@ TEST(style_sheet_parser, spacing_2)
     ASSERT_FALSE(rule_set[0].important);
     ASSERT_FALSE(rule_set[1].important);
 
-    ASSERT_EQ(std::get<hi::points>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::points>(rule_set[1].value), hi::points{20});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{20});
 }
 
 TEST(style_sheet_parser, state_disabled)

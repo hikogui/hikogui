@@ -20,7 +20,7 @@ template<typename T>
 class corner_radii {
 public:
     using value_type = T;
-    using array_type = numeric_array<value_type>;
+    using array_type = simd<value_type, 4>;
 
     constexpr corner_radii(corner_radii const &) noexcept = default;
     constexpr corner_radii(corner_radii &&) noexcept = default;

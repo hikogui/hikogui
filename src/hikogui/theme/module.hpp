@@ -1,12 +1,13 @@
 
 #pragma once
 
-#include "theme_mode.hpp"
-#include "theme_file.hpp"
-#include "theme_book.hpp"
-#include "theme_state.hpp"
-#include "style_sheet_parser.hpp"
 #include "style_sheet.hpp"
+#include "style_sheet_parser.hpp"
+#include "theme_book.hpp"
+#include "theme_length.hpp"
+#include "theme_mode.hpp"
+#include "theme_model.hpp"
+#include "theme_state.hpp"
 
 namespace hi {
 inline namespace v1 {

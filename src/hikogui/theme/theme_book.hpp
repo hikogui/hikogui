@@ -5,7 +5,8 @@
 #pragma once
 
 #include "theme_mode.hpp"
-#include "theme_file.hpp"
+#include "style_sheet.hpp"
+#include "style_sheet_parser.hpp"
 #include "../log.hpp"
 #include "../trace.hpp"
 #include "../file/glob.hpp"
@@ -22,7 +23,7 @@ namespace detail {
  */
 class theme_book {
 public:
-    static theme_book& global() noexcept;
+    [[nodiscard]] inline static theme_book& global() noexcept;
 
     ~theme_book() = default;
     theme_book(theme_book const&) = delete;
@@ -33,30 +34,44 @@ public:
 
     void register_theme_directory(std::filesystem::path const& path) noexcept
     {
-        hilet theme_directory_glob = path / "**" / "*.theme.json";
-        for (hilet& theme_path : glob(theme_directory_glob)) {
-            auto t = trace<"theme:load">{};
+        theme_dirs.push_back(path);
+        refresh();
+    }
 
-            try {
-                themes.push_back(std::make_unique<theme_file>(theme_path));
-            } catch (std::exception const& e) {
-                hi_log_error("Failed parsing theme at {}. \"{}\"", theme_path.string(), e.what());
+    /** Refresh the list of themes from the theme directories.
+     */
+    void refresh()
+    {
+        theme_files.clear();
+
+        for (hilet& theme_dir : theme_dirs) {
+            hilet theme_dir_glob = theme_dir / "**" / "*.css";
+            for (hilet& path : glob(theme_dir_glob)) {
+                try {
+                    auto style_sheet = hi::parse_style_sheet(path);
+                    hi_log_info("Found theme {}:{} at '{}'.", style_sheet.name, style_sheet.mode, path.generic_string());
+
+                    theme_files.emplace_back(style_sheet.name, style_sheet.mode, path);
+
+                } catch (std::exception const& e) {
+                    hi_log_error("Unable to load theme from file '{}': {}", path.generic_string(), e.what());
+                }
             }
         }
     }
 
     /** Get a list of theme names.
-    *
-    * This list of names is sorted and does not contain duplicates, ready
-    * to be displayed to the user.
-    *
-    */
+     *
+     * This list of names is sorted and does not contain duplicates, ready
+     * to be displayed to the user.
+     *
+     */
     [[nodiscard]] std::vector<std::string> names() const noexcept
     {
         auto names = std::vector<std::string>{};
 
-        for (hilet& t : themes) {
-            names.push_back(t->name);
+        for (hilet& theme_file : theme_files) {
+            names.push_back(theme_file.name);
         }
 
         std::sort(names.begin(), names.end());
@@ -71,44 +86,38 @@ public:
      * @param mode The mode of the theme to select.
      * @return A theme most closely matching the requested theme.
      */
-    [[nodiscard]] theme_file const& find(std::string name, theme_mode mode) const noexcept
+    [[nodiscard]] std::optional<std::filesystem::path> find(std::string name, theme_mode mode) const noexcept
     {
-        if (themes.empty()) {
-            hi_log_fatal("No themes where loaded in the theme_book.");
+        // First find the exact match.
+        auto it = find_if(theme_files.begin(), theme_files.end(), [&](hilet& entry) {
+            return entry.name == name and entry.mode == mode;
+        });
+
+        if (it != theme_files.end()) {
+            return it->path;
         }
 
-        theme_file *default_theme = nullptr;
-        theme_file *default_theme_and_mode = nullptr;
-        theme_file *matching_theme = nullptr;
-        theme_file *matching_theme_and_mode = nullptr;
+        // Next find the theme for different modes..
+        it = find_if(theme_files.begin(), theme_files.end(), [&](hilet& entry) {
+            return entry.name == name;
+        });
 
-        for (hilet& t : themes) {
-            if (t->name == name and t->mode == mode) {
-                matching_theme_and_mode = t.get();
-            } else if (t->name == name) {
-                matching_theme = t.get();
-            } else if (t->name == "default" and t->mode == mode) {
-                default_theme_and_mode = t.get();
-            } else if (t->name == "default") {
-                default_theme = t.get();
-            }
+        if (it != theme_files.end()) {
+            return it->path;
         }
 
-        if (matching_theme_and_mode) {
-            return *matching_theme_and_mode;
-        } else if (matching_theme) {
-            return *matching_theme;
-        } else if (default_theme_and_mode) {
-            return *default_theme_and_mode;
-        } else if (default_theme) {
-            return *default_theme;
-        } else  {
-            return *themes.front();
-        }
+        return std::nullopt;
     }
 
 private:
-    std::vector<std::unique_ptr<theme_file>> themes;
+    struct theme_file_entry {
+        std::string name;
+        hi::theme_mode mode;
+        std::filesystem::path path;
+    };
+
+    std::vector<std::filesystem::path> theme_dirs;
+    std::vector<theme_file_entry> theme_files;
 };
 
 [[nodiscard]] inline theme_book& theme_book::global() noexcept
@@ -124,7 +133,7 @@ inline void register_theme_directory(std::filesystem::path const& path) noexcept
     return detail::theme_book::global().register_theme_directory(path);
 }
 
-    /** Get a list of theme names.
+/** Get a list of theme names.
  *
  * This list of names is sorted and does not contain duplicates, ready
  * to be displayed to the user.
@@ -139,11 +148,25 @@ inline void register_theme_directory(std::filesystem::path const& path) noexcept
  *
  * @param name The name of the theme to select.
  * @param mode The mode of the theme to select.
- * @return A theme most closely matching the requested theme.
+ * @return true if the theme was loaded and activated successfully.
  */
-[[nodiscard]] inline theme_file const& find_theme(std::string name, theme_mode mode) noexcept
+inline bool load_theme(std::string name, theme_mode mode) noexcept
 {
-    return detail::theme_book::global().find(name, mode);
+    if (hilet path = detail::theme_book::global().find(name, mode)) {
+        try {
+            parse_style_sheet(*path).activate();
+            hi_log_info("Theme {} at '{}' activated successfully.", name, path->generic_string());
+            return true;
+
+        } catch (std::exception const& e) {
+            hi_log_error("Unable to load theme {} from file '{}': {}", name, path->generic_string(), e.what());
+            return false;
+        }
+
+    } else {
+        hi_log_error("Unable to find a theme matching {}:{}", name, mode);
+        return false;
+    }
 }
 
 }} // namespace hi::v1

@@ -288,7 +288,7 @@ public:
      * The floating point number is transformed into a vector laying on the x-axis,
      * then transformed, then extracting the hypot from it.
      */
-    [[nodiscard]] constexpr corner_radii operator*(corner_radii const& rhs) const noexcept
+    [[nodiscard]] constexpr corner_radii<float> operator*(corner_radii<float> const& rhs) const noexcept
     {
         return {*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }

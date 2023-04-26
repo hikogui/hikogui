@@ -151,7 +151,6 @@ template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio
     return lhs_.count() / rhs_.count();
 }
 
-
 //[[nodiscard]] constexpr unit operator*(unit const& lhs, value_type const& rhs) noexcept
 //{
 //    return unit{lhs.count() * rhs};
@@ -167,7 +166,6 @@ template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio
 //    return unit{lhs.count() / rhs};
 //}
 
-
 struct si_length_tag {};
 struct px_length_tag {};
 struct em_length_tag {};
@@ -178,13 +176,27 @@ using centimeters = unit<si_length_tag, double, std::centi>;
 using decimeters = unit<si_length_tag, double, std::deci>;
 using millimeters = unit<si_length_tag, double, std::milli>;
 
+/** Points: 1/72 inch.
+ */
 using points = unit<si_length_tag, double, std::ratio<254, 720'000>::type>;
+
+/** Inch: 254 mm.
+ */
 using inches = unit<si_length_tag, double, std::ratio<254, 10'000>::type>;
 using feet = unit<si_length_tag, double, std::ratio<3'048, 10'000>::type>;
 using yards = unit<si_length_tag, double, std::ratio<9'144, 10'000>::type>;
 using miles = unit<si_length_tag, double, std::ratio<16'093'440, 10'000>::type>;
 
+/** Device Independent Pixels: 1/96 inch.
+ */
+using dips = unit<si_length_tag, double, std::ratio<254, 960'000>::type>;
+
+/** A physical pixel on a display.
+ */
 using pixels = unit<px_length_tag, double>;
+
+/** Em-quad: A font's line-height.
+ */
 using em_quads = unit<em_length_tag, double>;
 
 }} // namespace hi::v1

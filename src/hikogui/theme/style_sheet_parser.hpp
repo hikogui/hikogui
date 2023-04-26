@@ -519,18 +519,20 @@ parse_style_sheet_length(It& it, ItEnd last, style_sheet_parser_context& context
 {
     if (it.size() >= 2 and (it[0] == token::integer or it[0] == token::real) and it[1] == token::id) {
         hilet r = [&]() -> theme_length {
-            if (it[1] == "pt") {
-                return points{static_cast<double>(it[0])};
+            if (it[1] == "dp") {
+                return dips{static_cast<double>(it[0])};
+            } else if (it[1] == "pt") {
+                return dips{points{static_cast<double>(it[0])}};
             } else if (it[1] == "mm") {
-                return points{millimeters{static_cast<double>(it[0])}};
+                return dips{millimeters{static_cast<double>(it[0])}};
             } else if (it[1] == "cm") {
-                return points{centimeters{static_cast<double>(it[0])}};
+                return dips{centimeters{static_cast<double>(it[0])}};
             } else if (it[1] == "dm") {
-                return points{decimeters{static_cast<double>(it[0])}};
+                return dips{decimeters{static_cast<double>(it[0])}};
             } else if (it[1] == "m") {
-                return points{meters{static_cast<double>(it[0])}};
+                return dips{meters{static_cast<double>(it[0])}};
             } else if (it[1] == "in") {
-                return points{inches{static_cast<double>(it[0])}};
+                return dips{inches{static_cast<double>(it[0])}};
             } else if (it[1] == "px") {
                 return pixels(static_cast<double>(it[0]));
             } else if (it[1] == "em") {
@@ -546,8 +548,8 @@ parse_style_sheet_length(It& it, ItEnd last, style_sheet_parser_context& context
         return r;
 
     } else if (it != last and (*it == token::integer or *it == token::real)) {
-        // Implicitly a number without suffix is in `pt`.
-        hilet r = theme_length{points{static_cast<float>(*it)}};
+        // Implicitly a number without suffix is in `dp`.
+        hilet r = theme_length{dips{static_cast<float>(*it)}};
         ++it;
         return r;
 
@@ -1034,7 +1036,7 @@ parse_style_sheet_declaration(It& it, ItEnd last, style_sheet_parser_context& co
         }();
 
         hilet value_mask = style_sheet_declaration_name_value_mask_metadata[id];
-        if (std::holds_alternative<hi::points>(value) and not to_bool(value_mask & style_sheet_value_mask::points)) {
+        if (std::holds_alternative<hi::dips>(value) and not to_bool(value_mask & style_sheet_value_mask::dips)) {
             throw parse_error(std::format(
                 "{} Incorrect value type 'length:pt' for declaration of '{}'", token_location(it, last, context.path), name));
         } else if (std::holds_alternative<hi::pixels>(value) and not to_bool(value_mask & style_sheet_value_mask::pixels)) {
@@ -1394,8 +1396,7 @@ template<typename It, std::sentinel_for<It> ItEnd>
 
 [[nodiscard]] inline style_sheet parse_style_sheet(std::filesystem::path const& path)
 {
-    auto view = file_view{path};
-    return parse_style_sheet(as_string_view(view), path);
+    return parse_style_sheet(as_string_view(file_view{path}), path);
 }
 
 }} // namespace hi::v1
