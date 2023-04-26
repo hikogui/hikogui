@@ -20,7 +20,7 @@ TEST(theme_model, pixel_length)
 
     // Pixels aren't scaled
     auto d = delegate_type{};
-    ASSERT_FLOAT_EQ(hi::theme<"pixel-length-test">.width(&d), 42.0);
+    ASSERT_EQ(hi::theme<"pixel-length-test">.width(&d), 42);
 }
 
 TEST(theme_model, dip_length)
@@ -38,5 +38,5 @@ TEST(theme_model, dip_length)
 
     // Device independent pixels are scaled.
     auto d = delegate_type{};
-    ASSERT_FLOAT_EQ(hi::theme<"dip-length-test">.width(&d), 84.0);
+    ASSERT_EQ(hi::theme<"dip-length-test">.width(&d), 84);
 }

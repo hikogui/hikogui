@@ -115,7 +115,7 @@ struct theme_sub_model {
     constexpr theme_sub_model& operator=(theme_sub_model const&) = delete;
     constexpr theme_sub_model& operator=(theme_sub_model&&) = delete;
 
-    hi::text_theme text;
+    hi::text_theme text_theme;
     color background_color;
     color fill_color;
     color caret_primary_color;
@@ -193,6 +193,31 @@ public:
         hi_axiom(selector.scale < 0, "scale must be negative so that negative points are converted to positive pixels");
 
         return {(*this)[selector.state], selector.scale};
+    }
+
+    /** Get the text theme for this widget's model.
+    *
+    * This function copies the text-theme of the model and scales the
+    * text-size. This should be moved into the text-shaper to reduce the amount
+    * of copies and allocations being done.
+    */
+    [[nodiscard]] hi::text_theme text_theme(theme_delegate auto const *delegate) const noexcept
+    {
+        hilet[model, scale] = get_model_and_scale(delegate);
+        auto r = model.text_theme;
+
+        // Scale the text-theme.
+        for (auto &style: r) {
+            // The original size in the model is in `round(DIPs * -4.0)`.
+            // scale is in `round(scale * -4.0)`
+            hi_axiom(style.size < 0);
+            style.size *= scale;
+            hi_axiom(style.size >= 0);
+            style.size += 8;
+            style.size >>= 4;
+        }
+
+        return r;
     }
 
     [[nodiscard]] color background_color(theme_delegate auto const *delegate) const noexcept
