@@ -71,14 +71,12 @@ public:
      * @param text The text as a vector of attributed graphemes.
      *             Use U+2029 as paragraph separator, and if needed U+2028 as line separator.
      * @param style The initial text-style to use to display the text.
-     * @param dpi_scale The scaling factor to use to scale a font's size to match the physical display.
      * @param alignment The alignment how to align the text.
      * @param left_to_right The default text direction when it can not be deduced from the text.
      */
     [[nodiscard]] text_shaper(
         hi::text const& text,
         hi::text_theme const &text_theme,
-        float dpi_scale,
         hi::alignment alignment,
         bool left_to_right) noexcept;
 
@@ -164,7 +162,6 @@ public:
         aarectangle rectangle,
         float baseline,
         extent2 sub_pixel_size,
-        float dpi_scale,
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
 
@@ -469,13 +466,13 @@ private:
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
      * @post Glyphs in _text are positioned inside the given rectangle.
      */
-    void position_glyphs(aarectangle rectangle, extent2 sub_pixel_size, float dpi_scale) noexcept;
+    void position_glyphs(aarectangle rectangle, extent2 sub_pixel_size) noexcept;
 
     /** Resolve the fonts and widths of each character in the text.
     *
     * @pre `resolve_script()` has been called.
     */
-    void resolve_font_and_widths(hi::text_theme const &text_theme, float dpi_scale) noexcept;
+    void resolve_font_and_widths(hi::text_theme const &text_theme) noexcept;
 
     [[nodiscard]] std::pair<text_cursor, text_cursor>
     get_selection_from_break(text_cursor cursor, unicode_break_vector const& break_opportunities) const noexcept;

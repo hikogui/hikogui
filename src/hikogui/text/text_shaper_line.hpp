@@ -111,7 +111,7 @@ public:
         return columns[index];
     }
 
-    void layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width, float dpi_scale) noexcept;
+    void layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept;
 
     /** Get the character nearest to position.
     * 

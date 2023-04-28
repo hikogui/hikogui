@@ -42,7 +42,7 @@ text_shaper_line::text_shaper_line(
     }
 }
 
-static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::iterator first, text_shaper_line::column_vector::iterator last, float dpi_scale) noexcept
+static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::iterator first, text_shaper_line::column_vector::iterator last) noexcept
 {
     hi_axiom(first != last);
 
@@ -59,7 +59,7 @@ static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::itera
     }
 
     auto result = font.shape_run(attributes.language(), script, run);
-    result.scale(style.size * dpi_scale);
+    result.scale(style.size);
     hi_axiom(result.advances.size() == run.size());
     hi_axiom(result.glyph_count.size() == run.size());
 
@@ -88,7 +88,7 @@ static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::itera
 
 /**
  */
-static void advance_glyphs(text_shaper_line::column_vector& columns, float y, float dpi_scale) noexcept
+static void advance_glyphs(text_shaper_line::column_vector& columns, float y) noexcept
 {
     if (columns.empty()) {
         return;
@@ -105,11 +105,11 @@ static void advance_glyphs(text_shaper_line::column_vector& columns, float y, fl
         hilet same_attributes = start_char_it->character.attributes() == char_it->character.attributes();
 
         if (not(same_font and same_attributes)) {
-            advance_glyphs_run(p, run_start, it, dpi_scale);
+            advance_glyphs_run(p, run_start, it);
             run_start = it;
         }
     }
-    advance_glyphs_run(p, run_start, columns.end(), dpi_scale);
+    advance_glyphs_run(p, run_start, columns.end());
 }
 
 [[nodiscard]] static std::pair<float, size_t>
@@ -243,10 +243,10 @@ create_bounding_rectangles(text_shaper_line::column_vector& columns, float y, fl
     }
 }
 
-void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width, float dpi_scale) noexcept
+void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept
 {
     // Reset the position and advance the glyphs.
-    advance_glyphs(columns, y, dpi_scale);
+    advance_glyphs(columns, y);
 
     // Calculate the precise width of the line.
     hilet[visible_width, num_internal_white_space] = calculate_precise_width(columns, paragraph_direction);

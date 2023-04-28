@@ -169,7 +169,7 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
     }
 }
 
-void text_shaper::resolve_font_and_widths(hi::text_theme const& text_theme, float dpi_scale) noexcept
+void text_shaper::resolve_font_and_widths(hi::text_theme const& text_theme) noexcept
 {
     for (auto& c : _text) {
         hilet attributes = c.character.attributes();
@@ -180,14 +180,13 @@ void text_shaper::resolve_font_and_widths(hi::text_theme const& text_theme, floa
         hilet[actual_font, glyphs] = find_glyph(style_font, c.character.grapheme());
 
         c.font = actual_font;
-        c.width = actual_font->get_advance(glyphs[0]) * c.style.size * dpi_scale;
+        c.width = actual_font->get_advance(glyphs[0]) * c.style.size;
     }
 }
 
 [[nodiscard]] text_shaper::text_shaper(
     hi::text const& text,
     hi::text_theme const& text_theme,
-    float dpi_scale,
     hi::alignment alignment,
     bool left_to_right) noexcept :
     _bidi_context(left_to_right ? unicode_bidi_class::L : unicode_bidi_class::R), _alignment(alignment)
@@ -198,7 +197,7 @@ void text_shaper::resolve_font_and_widths(hi::text_theme const& text_theme, floa
         _text.emplace_back(c == '\n' ? grapheme{unicode_PS} : c);
     }
 
-    resolve_font_and_widths(text_theme, dpi_scale);
+    resolve_font_and_widths(text_theme);
 
     _text_direction = unicode_bidi_direction(
         _text.begin(),
@@ -266,7 +265,7 @@ void text_shaper::resolve_font_and_widths(hi::text_theme const& text_theme, floa
     return r;
 }
 
-void text_shaper::position_glyphs(aarectangle rectangle, extent2 sub_pixel_size, float dpi_scale) noexcept
+void text_shaper::position_glyphs(aarectangle rectangle, extent2 sub_pixel_size) noexcept
 {
     hi_assert(not _lines.empty());
 
@@ -274,7 +273,7 @@ void text_shaper::position_glyphs(aarectangle rectangle, extent2 sub_pixel_size,
     bidi_algorithm(_lines, _text, _bidi_context);
     for (auto& line : _lines) {
         // Position the glyphs on each line. Possibly morph glyphs to handle ligatures and calculate the bounding rectangles.
-        line.layout(_alignment.horizontal(), rectangle.left(), rectangle.right(), sub_pixel_size.width(), dpi_scale);
+        line.layout(_alignment.horizontal(), rectangle.left(), rectangle.right(), sub_pixel_size.width());
     }
 }
 
@@ -350,7 +349,7 @@ text_shaper::get_line_metrics(text_shaper::char_const_iterator first, text_shape
 }
 
 [[nodiscard]] static generator<std::pair<std::vector<size_t>, float>>
-get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths, float dpi_scale) noexcept
+get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths) noexcept
 {
     struct entry_type {
         size_t min_height;
@@ -361,8 +360,8 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
 
     auto stack = std::vector<entry_type>{};
 
-    hilet a4_one_column = 172.0f * 2.83465f * dpi_scale;
-    hilet a4_two_column = 88.0f * 2.83465f * dpi_scale;
+    hilet a4_one_column = 172.0f * 2.83465f;
+    hilet a4_two_column = 88.0f * 2.83465f;
 
     // Max-width first.
     auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
@@ -428,14 +427,13 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     aarectangle rectangle,
     float baseline,
     extent2 sub_pixel_size,
-    float dpi_scale,
     float line_spacing,
     float paragraph_spacing) noexcept
 {
     _rectangle = rectangle;
     _lines = make_lines(rectangle, baseline, sub_pixel_size, line_spacing, paragraph_spacing);
     hi_assert(not _lines.empty());
-    position_glyphs(rectangle, sub_pixel_size, dpi_scale);
+    position_glyphs(rectangle, sub_pixel_size);
 }
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::get_it(size_t index) const noexcept
