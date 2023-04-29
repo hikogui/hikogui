@@ -57,6 +57,12 @@ public:
         return *this;
     }
 
+    constexpr operator hi::dips() const noexcept
+    {
+        hi_axiom(_v < 0);
+        return hi::dips{-wide_cast<double>(_v)};
+    }
+
     /** Get the length in points.
      *
      * @param scale The scale which is multiplied with points to get pixels.
@@ -97,7 +103,7 @@ public:
 
 private:
     /**
-     * The lengths are stored as int values: negative values are in points,
+     * The lengths are stored as int values: negative values are in dips,
      * positive values are in pixels.
      */
     int _v = 0;
@@ -143,6 +149,52 @@ struct theme_sub_model {
     theme_model_length font_x_height;
     theme_model_length font_cap_height;
     theme_model_length font_line_height;
+
+    uint64_t text_theme_assigned : 1 = 0;
+    uint64_t background_color_assigned : 1 = 0;
+    uint64_t fill_color_assigned : 1 = 0;
+    uint64_t caret_primary_color_assigned : 1 = 0;
+    uint64_t caret_secondary_color_assigned : 1 = 0;
+    uint64_t caret_overwrite_color_assigned : 1 = 0;
+    uint64_t caret_compose_color_assigned : 1 = 0;
+    uint64_t selection_color_assigned : 1 = 0;
+    uint64_t border_color_assigned : 1 = 0;
+    uint64_t border_bottom_left_radius_assigned : 1 = 0;
+    uint64_t border_bottom_right_radius_assigned : 1 = 0;
+    uint64_t border_top_left_radius_assigned : 1 = 0;
+    uint64_t border_top_right_radius_assigned : 1 = 0;
+    uint64_t border_width_assigned : 1 = 0;
+    uint64_t width_assigned : 1 = 0;
+    uint64_t height_assigned : 1 = 0;
+    uint64_t margin_bottom_assigned : 1 = 0;
+    uint64_t margin_left_assigned : 1 = 0;
+    uint64_t margin_top_assigned : 1 = 0;
+    uint64_t margin_right_assigned : 1 = 0;
+    uint64_t spacing_vertical_assigned : 1 = 0;
+    uint64_t spacing_horizontal_assigned : 1 = 0;
+
+    uint64_t text_theme_important : 1 = 0;
+    uint64_t background_color_important : 1 = 0;
+    uint64_t fill_color_important : 1 = 0;
+    uint64_t caret_primary_color_important : 1 = 0;
+    uint64_t caret_secondary_color_important : 1 = 0;
+    uint64_t caret_overwrite_color_important : 1 = 0;
+    uint64_t caret_compose_color_important : 1 = 0;
+    uint64_t selection_color_important : 1 = 0;
+    uint64_t border_color_important : 1 = 0;
+    uint64_t border_bottom_left_radius_important : 1 = 0;
+    uint64_t border_bottom_right_radius_important : 1 = 0;
+    uint64_t border_top_left_radius_important : 1 = 0;
+    uint64_t border_top_right_radius_important : 1 = 0;
+    uint64_t border_width_important : 1 = 0;
+    uint64_t width_important : 1 = 0;
+    uint64_t height_important : 1 = 0;
+    uint64_t margin_bottom_important : 1 = 0;
+    uint64_t margin_left_important : 1 = 0;
+    uint64_t margin_top_important : 1 = 0;
+    uint64_t margin_right_important : 1 = 0;
+    uint64_t spacing_vertical_important : 1 = 0;
+    uint64_t spacing_horizontal_important : 1 = 0;
 };
 
 struct sub_theme_selector_type {

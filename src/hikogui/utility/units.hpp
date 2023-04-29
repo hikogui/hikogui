@@ -54,6 +54,16 @@ public:
         return _value;
     }
 
+    [[nodiscard]] constexpr unit operator*(value_type const& rhs) const noexcept
+    {
+        return unit{count() * rhs};
+    }
+    
+    [[nodiscard]] constexpr unit operator/(value_type const& rhs) const noexcept
+    {
+        return unit{count() / rhs};
+    }
+
     [[nodiscard]] constexpr unit& operator+=(unit const& rhs) noexcept
     {
         _value += rhs.count();
@@ -68,13 +78,13 @@ public:
 
     [[nodiscard]] constexpr unit& operator*=(value_type const& rhs) noexcept
     {
-        _value -= rhs;
+        _value *= rhs;
         return *this;
     }
 
     [[nodiscard]] constexpr unit& operator/=(value_type const& rhs) noexcept
     {
-        _value -= rhs;
+        _value /= rhs;
         return *this;
     }
 
@@ -151,20 +161,6 @@ template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio
     return lhs_.count() / rhs_.count();
 }
 
-//[[nodiscard]] constexpr unit operator*(unit const& lhs, value_type const& rhs) noexcept
-//{
-//    return unit{lhs.count() * rhs};
-//}
-//
-//[[nodiscard]] constexpr unit operator*(value_type const& lhs, unit const& rhs) noexcept
-//{
-//    return unit{lhs * rhs.count()};
-//}
-//
-//[[nodiscard]] constexpr unit operator/(unit const& lhs, value_type const& rhs) noexcept
-//{
-//    return unit{lhs.count() / rhs};
-//}
 
 struct si_length_tag {};
 struct px_length_tag {};

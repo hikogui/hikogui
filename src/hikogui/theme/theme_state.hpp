@@ -30,6 +30,11 @@ enum class theme_state : uint8_t {
 
 constexpr auto theme_state_size = 64_uz;
 
+constexpr theme_state &operator++(theme_state &rhs) noexcept
+{
+    return rhs = static_cast<theme_state>(to_underlying(rhs) + 1);
+}
+
 [[nodiscard]] constexpr theme_state operator|(theme_state const &lhs, theme_state const &rhs) noexcept
 {
     return static_cast<theme_state>(to_underlying(lhs) | to_underlying(rhs));
@@ -58,5 +63,11 @@ constexpr theme_state_mask& operator|=(theme_state_mask& lhs, theme_state_mask c
 {
     return lhs = lhs | rhs;
 }
+
+constexpr theme_state operator&(theme_state const &lhs, theme_state_mask const &rhs) noexcept
+{
+    return static_cast<theme_state>(to_underlying(lhs) & to_underlying(rhs));
+}
+
 
 }}

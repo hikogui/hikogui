@@ -936,14 +936,28 @@ parse_style_sheet_caret_color_declarations(It& it, ItEnd last, style_sheet_parse
 
     if (auto colors = parse_style_sheet_colors(it, last, context); not colors.empty()) {
         if (colors.size() == 1) {
-            r.emplace_back(style_sheet_declaration_name::caret_color_primary, colors[0]);
-            r.emplace_back(style_sheet_declaration_name::caret_color_secondary, colors[0]);
+            r.emplace_back(style_sheet_declaration_name::caret_primary_color, colors[0]);
+            r.emplace_back(style_sheet_declaration_name::caret_secondary_color, colors[0]);
+            r.emplace_back(style_sheet_declaration_name::caret_overwrite_color, colors[0]);
+            r.emplace_back(style_sheet_declaration_name::caret_compose_color, colors[0]);
         } else if (colors.size() == 2) {
-            r.emplace_back(style_sheet_declaration_name::caret_color_primary, colors[0]);
-            r.emplace_back(style_sheet_declaration_name::caret_color_secondary, colors[1]);
+            r.emplace_back(style_sheet_declaration_name::caret_primary_color, colors[0]);
+            r.emplace_back(style_sheet_declaration_name::caret_secondary_color, colors[1]);
+            r.emplace_back(style_sheet_declaration_name::caret_overwrite_color, colors[0]);
+            r.emplace_back(style_sheet_declaration_name::caret_compose_color, colors[1]);
+        } else if (colors.size() == 3) {
+            r.emplace_back(style_sheet_declaration_name::caret_primary_color, colors[0]);
+            r.emplace_back(style_sheet_declaration_name::caret_secondary_color, colors[1]);
+            r.emplace_back(style_sheet_declaration_name::caret_overwrite_color, colors[2]);
+            r.emplace_back(style_sheet_declaration_name::caret_compose_color, colors[1]);
+        } else if (colors.size() == 4) {
+            r.emplace_back(style_sheet_declaration_name::caret_primary_color, colors[0]);
+            r.emplace_back(style_sheet_declaration_name::caret_secondary_color, colors[1]);
+            r.emplace_back(style_sheet_declaration_name::caret_overwrite_color, colors[2]);
+            r.emplace_back(style_sheet_declaration_name::caret_compose_color, colors[3]);
         } else {
             throw parse_error(std::format(
-                "{} Expect 1 or 2 color values when parsing \"caret-color\" declaration, got {}.",
+                "{} Expect 1 to 4 color values when parsing \"caret-color\" declaration, got {}.",
                 token_location(it, last, context.path),
                 colors.size()));
         }

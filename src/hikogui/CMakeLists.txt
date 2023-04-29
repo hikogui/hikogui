@@ -5,7 +5,6 @@
 
 add_subdirectory(audio)
 add_subdirectory(codec)
-add_subdirectory(file)
 add_subdirectory(formula)
 add_subdirectory(layout)
 add_subdirectory(random)

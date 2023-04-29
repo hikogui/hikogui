@@ -68,6 +68,10 @@ public:
 
     [[nodiscard]] constexpr color(float r, float g, float b, float a = 1.0f) noexcept : color(f32x4{r, g, b, a}) {}
 
+    /** List color names.
+    */
+    [[nodiscard]] static inline std::vector<std::string> list() noexcept;
+
     /** Find a color by name.
      *
      * @param name The name of the color to find.
@@ -245,7 +249,19 @@ public:
         return _color;
     }
 
-    inline static named_color_base *find(std::string const& name) noexcept
+    [[nodiscard]] static std::vector<std::string> list() noexcept
+    {
+        auto r = std::vector<std::string>{};
+
+        hilet lock = std::scoped_lock(_map_mutex);
+        for (auto &item: _map) {
+            r.push_back(item.first);
+        }
+
+        return r;
+    }
+
+    [[nodiscard]] static named_color_base *find(std::string const& name) noexcept
     {
         hilet lock = std::scoped_lock(_map_mutex);
         hilet it = _map.find(name);
@@ -280,6 +296,11 @@ public:
 
 template<fixed_string Tag>
 inline auto named_color = detail::named_color_type<Tag>{};
+
+[[nodiscard]] inline std::vector<std::string> color::list() noexcept
+{
+    return detail::named_color_base::list();
+}
 
 [[nodiscard]] inline color *color::find(std::string const& name) noexcept
 {
