@@ -270,8 +270,78 @@ struct style_sheet_rule_set {
     }
 
 private:
+    void _activate_model_font_color(int phase, theme_sub_model& sub_model, style_sheet_value value) const noexcept
+    {
+        if (phase != 0) {
+            return;
+        }
+
+        auto& text_style =
+            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
+        hi_axiom(std::is_alternative<hi::color>(value));
+        text_style.color = std::get<hi::color>(value);
+    }
+
+    void _activate_model_font_family(int phase, theme_sub_model& sub_model, style_sheet_value value) const noexcept
+    {
+        if (phase != 0) {
+            return;
+        }
+
+        auto& text_style =
+            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
+        hi_axiom(std::is_alternative<hi::font_family_id>(value));
+        text_style.font_family = std::get<hi::font_family_id>(value);
+    }
+
+    void _activate_model_font_style(int phase, theme_sub_model& sub_model, style_sheet_value value) const noexcept
+    {
+        if (phase != 0) {
+            return;
+        }
+
+        auto& text_style =
+            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
+        hi_axiom(std::is_alternative<hi::font_style>(value));
+        text_style.font_style = std::get<hi::font_style>(value);
+    }
+
+    void _activate_model_font_size(int phase, theme_sub_model& sub_model, style_sheet_value value) const noexcept
+    {
+        if (phase != 0) {
+            return;
+        }
+
+        auto& text_style =
+            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
+        hi_axiom(std::is_alternative<hi::dips>(value));
+        text_style.font_size = std::get<hi::dips>(value);
+
+        if (language == language_tag{} and phrasing_mask == phrasing_mask{}) {
+            sub_model.font_line_height = std::get<hi::dips>(value);
+            // The following values are estimates.
+            // Hopefully good enough for calculating baselines and such.
+            // We could not get proper sizes anyway since there may be multiple
+            // fonts defined in the test_theme.
+            sub_model.font_cap_height = std::get<hi::dips>(value) * 0.7;
+            sub_model.font_x_height = std::get<hi::dips>(value) * 0.48;
+        }
+    }
+
+    void _activate_model_font_weight(int phase, theme_sub_model& sub_model, style_sheet_value value) const noexcept
+    {
+        if (phase != 0) {
+            return;
+        }
+
+        auto& text_style =
+            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
+        hi_axiom(std::is_alternative<hi::font_weight>(value));
+        text_style.font_weight = std::get<hi::font_weight>(value);
+    }
+
     template<style_sheet_declaration_name Name>
-    void _activate_model_color(theme_sub_model& sub_model, style_sheet_value value, bool important) const noexcept
+    void _activate_model_color(int phase, theme_sub_model& sub_model, style_sheet_value value, bool important) const noexcept
     {
         hi_no_default();
     }
@@ -285,8 +355,12 @@ private:
 #define HI_X_COLOR_VALUE(NAME) \
     template<> \
     hi_no_inline void _activate_model_color<style_sheet_declaration_name::NAME>( \
-        theme_sub_model & sub_model, style_sheet_value value, bool important) const noexcept \
+        int phase, theme_sub_model& sub_model, style_sheet_value value, bool important) const noexcept \
     { \
+        if (phase != 1) { \
+            return; \
+        } \
+\
         if (not sub_model.NAME##_important or important) { \
             sub_model.NAME = std::get<hi::color>(value); \
         } \
@@ -355,34 +429,39 @@ private:
 
         switch (name) {
         case background_color:
-            return _activate_model_color<background_color>(sub_model, value, important);
+            return _activate_model_color<background_color>(phase, sub_model, value, important);
         case border_bottom_left_radius:
-            return _activate_model_length<border_bottom_left_radius>(phase, sub_model, value, important);
+            return _activate_model_length<border_bottom_left_radius>(phase, phase, sub_model, value, important);
         case border_bottom_right_radius:
-            return _activate_model_length<border_bottom_right_radius>(phase, sub_model, value, important);
+            return _activate_model_length<border_bottom_right_radius>(phase, phase, sub_model, value, important);
         case border_color:
-            return _activate_model_color<border_color>(sub_model, value, important);
+            return _activate_model_color<border_color>(phase, sub_model, value, important);
         case border_top_left_radius:
-            return _activate_model_length<border_top_left_radius>(phase, sub_model, value, important);
+            return _activate_model_length<border_top_left_radius>(phase, phase, sub_model, value, important);
         case border_top_right_radius:
-            return _activate_model_length<border_top_right_radius>(phase, sub_model, value, important);
+            return _activate_model_length<border_top_right_radius>(phase, phase, sub_model, value, important);
         case border_width:
             return _activate_model_length<border_width>(phase, sub_model, value, important);
         case caret_primary_color:
-            return _activate_model_color<caret_primary_color>(sub_model, value, important);
+            return _activate_model_color<caret_primary_color>(phase, sub_model, value, important);
         case caret_secondary_color:
-            return _activate_model_color<caret_secondary_color>(sub_model, value, important);
+            return _activate_model_color<caret_secondary_color>(phase, sub_model, value, important);
         case caret_overwrite_color:
-            return _activate_model_color<caret_overwrite_color>(sub_model, value, important);
+            return _activate_model_color<caret_overwrite_color>(phase, sub_model, value, important);
         case caret_compose_color:
-            return _activate_model_color<caret_compose_color>(sub_model, value, important);
+            return _activate_model_color<caret_compose_color>(phase, sub_model, value, important);
         case fill_color:
-            return _activate_model_color<fill_color>(sub_model, value, important);
+            return _activate_model_color<fill_color>(phase, sub_model, value, important);
         case font_color:
+            return _activate_font_color(phase, sub_model, value);
         case font_family:
+            return _activate_font_family(phase, sub_model, value);
         case font_size:
+            return _activate_font_size(phase, sub_model, value);
         case font_style:
+            return _activate_font_style(phase, sub_model, value);
         case font_weight:
+            return _activate_font_weight(phase, sub_model, value);
         case height:
             return _activate_model_length<height>(phase, sub_model, value, important);
         case margin_bottom:
@@ -394,7 +473,7 @@ private:
         case margin_top:
             return _activate_model_length<margin_top>(phase, sub_model, value, important);
         case selection_color:
-            return _activate_model_color<selection_color>(sub_model, value, important);
+            return _activate_model_color<selection_color>(phase, sub_model, value, important);
         case spacing_horizontal:
             return _activate_model_length<spacing_horizontal>(phase, sub_model, value, important);
         case spacing_vertical:
@@ -458,7 +537,7 @@ private:
     void _activate(int phase) const noexcept
     {
         for (hilet& model_path : theme_model_keys()) {
-            auto &model = theme_model_by_key(model_path);
+            auto& model = theme_model_by_key(model_path);
 
             for (hilet& rule_set : rule_sets) {
                 rule_set.activate_model(phase, model_path, model);
