@@ -336,7 +336,7 @@ template<character_attribute... Args>
 
                 } else if (is_alpha(capture.front())) {
                     try {
-                        attributes.set_language(hi::language_tag{capture}.expand());
+                        attributes.set_language_tag(hi::language_tag{capture}.expand());
                     } catch (...) {
                         output_bad_command();
                     }

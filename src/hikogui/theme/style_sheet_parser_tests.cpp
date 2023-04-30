@@ -884,7 +884,7 @@ TEST(style_sheet_parser, state_lang)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].language, hi::language_tag{"en-US"});
+    ASSERT_EQ(style_sheet[0].language_mask, hi::language_tag{"en-US"});
 }
 
 TEST(style_sheet_parser, state_lang_star)
@@ -900,7 +900,7 @@ TEST(style_sheet_parser, state_lang_star)
     ASSERT_EQ(style_sheet.name, "default");
     ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
     ASSERT_EQ(style_sheet.size(), 1);
-    ASSERT_EQ(style_sheet[0].language, hi::language_tag{"*-US"});
+    ASSERT_EQ(style_sheet[0].language_mask, hi::language_tag{"*-US"});
 }
 
 TEST(style_sheet_parser, state_phrasing)

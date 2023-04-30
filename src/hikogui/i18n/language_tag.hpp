@@ -182,9 +182,9 @@ public:
 
     /** Check if two language_tags match for their non-empty fields.
      */
-    [[nodiscard]] constexpr friend bool match(language_tag const& lhs, language_tag const& rhs) noexcept
+    [[nodiscard]] constexpr friend bool matches(language_tag const& lhs, language_tag const& rhs) noexcept
     {
-        if (lhs.language != rhs.language) {
+        if (lhs.language and rhs.language and lhs.language != rhs.language) {
             return false;
         }
         if (lhs.script and rhs.script and lhs.script != rhs.script) {

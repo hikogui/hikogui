@@ -93,7 +93,12 @@ public:
         return *this;
     }
 
-    constexpr character_attributes& set_language(hi::language_tag language_tag) noexcept
+    constexpr hi::language_tag language_tag() const noexcept
+    {
+        return {language(), script(), region()};
+    }
+
+    constexpr character_attributes& set_language_tag(hi::language_tag language_tag) noexcept
     {
         return set_language(language_tag.language).set_script(language_tag.script).set_region(language_tag.region);
     }
@@ -121,9 +126,9 @@ public:
         set_region(arg);
     }
 
-    constexpr void add(language_tag const &arg) noexcept
+    constexpr void add(hi::language_tag const &arg) noexcept
     {
-        set_language(arg);
+        set_language_tag(arg);
     }
 
     constexpr void add(text_phrasing const& arg) noexcept

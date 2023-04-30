@@ -221,7 +221,7 @@ struct style_sheet_rule_set {
     theme_state state = {};
     theme_state_mask state_mask = {};
     text_phrasing_mask phrasing_mask = {};
-    language_tag language = {};
+    language_tag language_mask = {};
 
     std::vector<style_sheet_declaration> declarations;
 
@@ -276,9 +276,8 @@ private:
             return;
         }
 
-        auto& text_style =
-            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
-        hi_axiom(std::is_alternative<hi::color>(value));
+        auto& text_style = sub_model.text_theme.find_or_add(phrasing_mask, language_mask);
+        hi_axiom(std::holds_alternative<hi::color>(value));
         text_style.color = std::get<hi::color>(value);
     }
 
@@ -288,10 +287,9 @@ private:
             return;
         }
 
-        auto& text_style =
-            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
-        hi_axiom(std::is_alternative<hi::font_family_id>(value));
-        text_style.font_family = std::get<hi::font_family_id>(value);
+        auto& text_style = sub_model.text_theme.find_or_add(phrasing_mask, language_mask);
+        hi_axiom(std::holds_alternative<hi::font_family_id>(value));
+        text_style.family_id = std::get<hi::font_family_id>(value);
     }
 
     void _activate_model_font_style(int phase, theme_sub_model& sub_model, style_sheet_value value) const noexcept
@@ -300,10 +298,9 @@ private:
             return;
         }
 
-        auto& text_style =
-            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
-        hi_axiom(std::is_alternative<hi::font_style>(value));
-        text_style.font_style = std::get<hi::font_style>(value);
+        auto& text_style = sub_model.text_theme.find_or_add(phrasing_mask, language_mask);
+        hi_axiom(std::holds_alternative<hi::font_style>(value));
+        text_style.variant.set_style(std::get<hi::font_style>(value));
     }
 
     void _activate_model_font_size(int phase, theme_sub_model& sub_model, style_sheet_value value) const noexcept
@@ -312,12 +309,13 @@ private:
             return;
         }
 
-        auto& text_style =
-            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
-        hi_axiom(std::is_alternative<hi::dips>(value));
-        text_style.font_size = std::get<hi::dips>(value);
+        auto& text_style = sub_model.text_theme.find_or_add(phrasing_mask, language_mask);
+        hi_axiom(std::holds_alternative<hi::dips>(value));
 
-        if (language == language_tag{} and phrasing_mask == phrasing_mask{}) {
+        // When retrieving the text-style it will be scaled by the UI-scale.
+        text_style.size = round_cast<int>(std::get<hi::dips>(value).count() * -4.0);
+
+        if (not language_mask and not to_bool(phrasing_mask)) {
             sub_model.font_line_height = std::get<hi::dips>(value);
             // The following values are estimates.
             // Hopefully good enough for calculating baselines and such.
@@ -334,10 +332,9 @@ private:
             return;
         }
 
-        auto& text_style =
-            sub_model.text_theme.find_or_add(phrasing_mask, language.language(), language.region(), language.script());
-        hi_axiom(std::is_alternative<hi::font_weight>(value));
-        text_style.font_weight = std::get<hi::font_weight>(value);
+        auto& text_style = sub_model.text_theme.find_or_add(phrasing_mask, language_mask);
+        hi_axiom(std::holds_alternative<hi::font_weight>(value));
+        text_style.variant.set_weight(std::get<hi::font_weight>(value));
     }
 
     template<style_sheet_declaration_name Name>
@@ -431,15 +428,15 @@ private:
         case background_color:
             return _activate_model_color<background_color>(phase, sub_model, value, important);
         case border_bottom_left_radius:
-            return _activate_model_length<border_bottom_left_radius>(phase, phase, sub_model, value, important);
+            return _activate_model_length<border_bottom_left_radius>(phase, sub_model, value, important);
         case border_bottom_right_radius:
-            return _activate_model_length<border_bottom_right_radius>(phase, phase, sub_model, value, important);
+            return _activate_model_length<border_bottom_right_radius>(phase, sub_model, value, important);
         case border_color:
             return _activate_model_color<border_color>(phase, sub_model, value, important);
         case border_top_left_radius:
-            return _activate_model_length<border_top_left_radius>(phase, phase, sub_model, value, important);
+            return _activate_model_length<border_top_left_radius>(phase, sub_model, value, important);
         case border_top_right_radius:
-            return _activate_model_length<border_top_right_radius>(phase, phase, sub_model, value, important);
+            return _activate_model_length<border_top_right_radius>(phase, sub_model, value, important);
         case border_width:
             return _activate_model_length<border_width>(phase, sub_model, value, important);
         case caret_primary_color:
@@ -453,15 +450,15 @@ private:
         case fill_color:
             return _activate_model_color<fill_color>(phase, sub_model, value, important);
         case font_color:
-            return _activate_font_color(phase, sub_model, value);
+            return _activate_model_font_color(phase, sub_model, value);
         case font_family:
-            return _activate_font_family(phase, sub_model, value);
+            return _activate_model_font_family(phase, sub_model, value);
         case font_size:
-            return _activate_font_size(phase, sub_model, value);
+            return _activate_model_font_size(phase, sub_model, value);
         case font_style:
-            return _activate_font_style(phase, sub_model, value);
+            return _activate_model_font_style(phase, sub_model, value);
         case font_weight:
-            return _activate_font_weight(phase, sub_model, value);
+            return _activate_model_font_weight(phase, sub_model, value);
         case height:
             return _activate_model_length<height>(phase, sub_model, value, important);
         case margin_bottom:

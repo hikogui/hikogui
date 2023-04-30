@@ -1120,7 +1120,7 @@ parse_style_sheet_rule_set(It& it, ItEnd last, style_sheet_parser_context& conte
             r.state_mask |= state_and_mask->second;
 
         } else if (auto language_tag = parse_style_sheet_theme_state_lang(it, last, context)) {
-            r.language = *language_tag;
+            r.language_mask = *language_tag;
 
         } else if (auto phrasing_mask = parse_style_sheet_theme_state_phrasing(it, last, context)) {
             r.phrasing_mask = *phrasing_mask;

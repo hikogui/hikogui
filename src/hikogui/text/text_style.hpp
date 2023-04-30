@@ -14,9 +14,7 @@ namespace hi { inline namespace v1 {
 
 struct text_style {
     text_phrasing_mask phrasing_mask = {};
-    iso_639 language = {};
-    iso_15924 script = {};
-    iso_3166 country = {};
+    language_tag language_mask = {};
     font_family_id family_id = {};
     font_variant variant = {};
     int size = {};
@@ -31,17 +29,13 @@ struct text_style {
 
     constexpr text_style(
         text_phrasing_mask phrasing_mask,
-        iso_639 language,
-        iso_15924 script,
-        iso_3166 country,
+        language_tag language_mask,
         font_family_id family_id,
         font_variant variant,
         int size,
         hi::color color) :
         phrasing_mask(phrasing_mask),
-        language(language),
-        script(script),
-        country(country),
+        language_mask(language_mask),
         family_id(family_id),
         variant(variant),
         size(size),
@@ -50,10 +44,9 @@ struct text_style {
     }
 
     [[nodiscard]] constexpr friend bool
-    matches(text_style const& lhs, text_phrasing phrasing, iso_639 language, iso_3166 country, iso_15924 script) noexcept
+    matches(text_style const& lhs, text_phrasing phrasing, language_tag language) noexcept
     {
-        return matches(lhs.phrasing_mask, phrasing) and matches(lhs.language, language) and
-            matches(lhs.country, country) and matches(lhs.script, script);
+        return matches(lhs.phrasing_mask, phrasing) and matches(lhs.language_mask, language);
     }
 };
 

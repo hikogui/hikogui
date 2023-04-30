@@ -11,17 +11,17 @@
 #include <algorithm>
 #include <cstdint>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 class text_theme : public std::vector<text_style> {
 public:
     using std::vector<text_style>::vector;
 
     [[nodiscard]] text_style const&
-    find(text_phrasing phrasing, iso_639 language, iso_3166 region, iso_15924 script) const noexcept
+    find(text_phrasing phrasing, language_tag language) const noexcept
     {
         for (hilet& style : *this) {
-            if (matches(style, phrasing, language, region, script)) {
+            if (matches(style, phrasing, language)) {
                 return style;
             }
         }
@@ -36,26 +36,22 @@ public:
      * for the phrasing and language, if not found it will create a new entry.
      *
      * @param phrasing_mask A mask of phrasing values.
-     * @param language The language set for this style, or empty for wildcard.
-     * @param region The region set for this style, or empty for wildcard.
-     * @param script The script set for this style, or empty for wildcard.
+     * @param language_mask A mask of the language.
      */
     [[nodiscard]] text_style&
-    find_or_add(text_phrasing_mask phrasing_mask, iso_639 language, iso_3166 region, iso_15924 script) noexcept
+    find_or_add(text_phrasing_mask phrasing_mask, language_tag language_mask) noexcept
     {
         for (auto& style : *this) {
-            if (style.phrasing_mask == phrasing_mask and style.language == language and style.region == region and
-                style.script == script) {
+            if (style.phrasing_mask == phrasing_mask and style.language_mask == language_mask) {
                 return style;
             }
         }
-        auto& style = *this.emplace_back();
+
+        auto& style = emplace_back();
         style.phrasing_mask = phrasing_mask;
-        style.language = language;
-        style.region = region;
-        style.script = script;
+        style.language_mask = language_mask;
         return style;
-    };
+    }
 
     /** Sort the list of text-styles.
      *
@@ -66,8 +62,9 @@ public:
     {
         hi_not_implemented();
     }
+};
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
 
 template<typename CharT>
 struct std::formatter<hi::text_theme, CharT> : std::formatter<std::string_view, CharT> {
