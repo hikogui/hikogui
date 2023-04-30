@@ -98,7 +98,7 @@ public:
 
         // Make room for button and margin.
         _button_size = theme<prefix>.size(this);
-        hi_axiom(button_size.width() == button_size.height());
+        hi_axiom(_button_size.width() == _button_size.height());
 
         hilet extra_size = extent2i{theme<prefix>.horizontal_spacing(this) + _button_size.width(), 0};
 
@@ -140,11 +140,11 @@ public:
 
             _button_circle = circle{narrow_cast<aarectangle>(_button_rectangle)};
 
-            _pip_size = theme<prefix / "pip">.size(this);
-            hi_axiom(_pip_size.width() == _pip_size.height());
+            hilet pip_size = theme<prefix / "pip">.size(this);
+            hi_axiom(pip_size.width() == pip_size.height());
 
             _pip_circle =
-                align(narrow_cast<aarectangle>(_button_rectangle), circle{_pip_size.width() / 2}, alignment::middle_center());
+                align(narrow_cast<aarectangle>(_button_rectangle), circle{pip_size.width() / 2}, alignment::middle_center());
         }
         super::set_layout(context);
     }

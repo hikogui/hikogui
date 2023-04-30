@@ -91,7 +91,7 @@ public:
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         hilet extra_size = extent2i{
             theme<prefix>.margin_left(this) + _check_size.width() + theme<prefix>.horizontal_spacing(this) +
-                theme<prefix>.horizontal_spacing(this) + _short_cur_size.width() + theme<prefix>.margin_right(this),
+                theme<prefix>.horizontal_spacing(this) + _short_cut_size.width() + theme<prefix>.margin_right(this),
             theme<prefix>.margin_top(this) + theme<prefix>.margin_bottom(this)};
 
         auto constraints = _label_constraints + extra_size;

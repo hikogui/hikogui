@@ -43,7 +43,7 @@ public:
         _label_constraints = super::update_constraints();
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet extra_size = theme<prefix>{}.spacing_horizontal(this) * 2;
+        hilet extra_size = theme<prefix>.spacing_horizontal(this) * 2;
 
         auto constraints = _label_constraints + extra_size;
         constraints.margins = theme<prefix>.margin(this);

@@ -107,7 +107,7 @@ public:
             _slider_rectangle = aarectanglei{x, slider_offset, slider_width, slider_length()};
 
         } else {
-            hilet slider_height = theme < prefix / "slider".height();
+            hilet slider_height = theme<prefix / "slider">.height();
             hilet y = (context.height() - slider_height) / 2;
 
             _slider_rectangle = aarectanglei{slider_offset, y, slider_length(), slider_height};

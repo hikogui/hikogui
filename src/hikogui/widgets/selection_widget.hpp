@@ -257,10 +257,11 @@ public:
                     context.height() - label_margins.bottom() - label_margins.top()};
 
                 _off_label_shape = box_shape{_off_label_constraints, option_rectangle, cap_height};
-                _current_label_shape = box_shape{_off_label_constraints, option_rectangle, cap_height};
+                _current_label_shape = box_shape{_current_label_constraints, option_rectangle, cap_height};
 
             } else {
-                _chevron_box_rectangle = aarectanglei{context.width() - label_offset, 0, label_offset, context.height()};
+                _chevron_box_rectangle =
+                    aarectanglei{context.width() - chevron_box_width, 0, chevron_box_width, context.height()};
 
                 // The label is located to the left of the selection box icon.
                 hilet option_rectangle = aarectanglei{
@@ -270,7 +271,7 @@ public:
                     context.height() - label_margins.bottom() - label_margins.top()};
 
                 _off_label_shape = box_shape{_off_label_constraints, option_rectangle, cap_height};
-                _current_label_shape = box_shape{_off_label_constraints, option_rectangle, cap_height};
+                _current_label_shape = box_shape{_current_label_constraints, option_rectangle, cap_height};
             }
 
             _chevron_glyph = find_glyph(elusive_icon::ChevronUp);
@@ -284,9 +285,9 @@ public:
         // The overlay should start on the same left edge as the selection box and the same width.
         // The height of the overlay should be the maximum height, which will show all the options.
         hilet overlay_width = std::clamp(
-            context.width() - label_offset, _overlay_constraints.minimum.width(), _overlay_constraints.maximum.width());
+            context.width() - chevron_box_width, _overlay_constraints.minimum.width(), _overlay_constraints.maximum.width());
         hilet overlay_height = _overlay_constraints.preferred.height();
-        hilet overlay_x = os_settings::left_to_right() ? label_offset : context.width() - label_offset - overlay_width;
+        hilet overlay_x = os_settings::left_to_right() ? chevron_box_width : context.width() - chevron_box_width - overlay_width;
         hilet overlay_y = (context.height() - overlay_height) / 2;
         hilet overlay_rectangle_request = aarectanglei{overlay_x, overlay_y, overlay_width, overlay_height};
         hilet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
