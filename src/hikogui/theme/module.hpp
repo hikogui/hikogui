@@ -22,7 +22,7 @@ Theme value names
  ( ( name '/' )? widget '/' ) ( component '/' )? value ( ':' color-state )*
 ```
 
-### Color states
+### Theme states
 
 
   State            | Description
@@ -30,20 +30,22 @@ Theme value names
   :disabled        | The widget is disabled.
   :enabled         | The widget is enabled.
   :hover           | The mouse hovers over the widget.
-  :clicked         | The widget is being clicked by the mouse.
-    (none)         | The color is set for each of these states.
-
-  State            | Description
- :---------------- |:----------------------------------------------------------------------
-  :no-focus        | The widget has no keyboard focus
-  :focus           | The widget has keyboard focus
-    (none)         | The color is set for both focus and non-focus.
-
-  State            | Description
- :---------------- |:----------------------------------------------------------------------
-  :off             | The widget's value is "off"
-  :on              | The widget's value is "on"
-    (none)         |
+  :active          | The widget is being clicked by the mouse.
+    (none)         | The model is set for every widget-state.
+                   |
+  :no-focus        | The widget has no keyboard focus.
+  :focus           | The widget has keyboard focus.
+    (none)         | The model is used for both focus and non-focus.
+                   |
+  :off             | The widget's value is "off".
+  :on              | The widget's value is "on".
+    (none)         | The model is used for both values.
+                   |
+  :layer(0)        | For widgets that are on layer % 4 = 0.
+  :layer(1)        | For widgets that are on layer % 4 = 1.
+  :layer(2)        | For widgets that are on layer % 4 = 2.
+  :layer(3)        | For widgets that are on layer % 4 = 3.
+    (none)         | The model is used for all layers.
 
 
 
