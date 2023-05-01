@@ -11,7 +11,7 @@
 #include "toolbar_widget.hpp"
 #include "system_menu_widget.hpp"
 #include "grid_widget.hpp"
-#include "window_traffic_lights_widget.hpp"
+//#include "window_traffic_lights_widget.hpp"
 #include "../GUI/module.hpp"
 #include "../label.hpp"
 #include <memory>
@@ -42,9 +42,9 @@ public:
             _system_menu = &_toolbar->make_widget<system_menu_widget<prefix>>();
             this->_system_menu->icon = this->title.get<"icon">();
 #endif
-            _toolbar->make_widget<window_traffic_lights_widget<prefix>, horizontal_alignment::right>();
+            //_toolbar->make_widget<window_traffic_lights_widget<prefix>, horizontal_alignment::right>();
         } else if (operating_system::current == operating_system::macos) {
-            _toolbar->make_widget<window_traffic_lights_widget<prefix>>();
+            //_toolbar->make_widget<window_traffic_lights_widget<prefix>>();
         } else {
             hi_no_default();
         }

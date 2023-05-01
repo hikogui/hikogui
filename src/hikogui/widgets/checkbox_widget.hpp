@@ -55,10 +55,8 @@ public:
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
-    checkbox_widget(
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        button_widget_attribute auto&&...attributes) noexcept :
+    checkbox_widget(widget *parent, std::shared_ptr<delegate_type> delegate, button_widget_attribute auto&&...attributes) noexcept
+        :
         super(parent, std::move(delegate))
     {
         this->alignment = alignment::top_left();
@@ -126,12 +124,7 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         button_widget_attribute... Attributes>
-    checkbox_widget(
-        widget *parent,
-        Value&& value,
-        OnValue&& on_value,
-        OffValue&& off_value,
-        Attributes&&...attributes) noexcept
+    checkbox_widget(widget *parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
         requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)); }
         :
         checkbox_widget(
@@ -147,7 +140,7 @@ public:
         _label_constraints = super::update_constraints();
 
         _button_size = theme<prefix>.size(this);
-        hilet extra_size = extent2i{theme<prefix>.horizontal_spacing(this) + _button_size.width(), 0};
+        hilet extra_size = extent2i{theme<prefix>.spacing_horizontal(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
         constraints.margins = theme<prefix>.margin(this);
@@ -166,9 +159,8 @@ public:
                 hi_not_implemented();
             }
 
-            hilet inner_margin = theme<prefix>.horizontal_spacing(this);
+            hilet inner_margin = theme<prefix>.spacing_horizontal(this);
             hilet baseline_offset = theme<prefix>.cap_height(this);
-            hilet icon_size = theme<prefix / "icon">.size(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
             if (alignment_ == horizontal_alignment::left) {
@@ -186,11 +178,13 @@ public:
             }
 
             _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb = narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * icon_size);
+            hilet check_glyph_bb =
+                narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
             _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
 
             _minus_glyph = find_glyph(elusive_icon::Minus);
-            hilet minus_glyph_bb = narrow_cast<aarectanglei>(_minus_glyph.get_bounding_rectangle() * icon_size);
+            hilet minus_glyph_bb =
+                narrow_cast<aarectanglei>(_minus_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
             _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
         }
         super::set_layout(context);

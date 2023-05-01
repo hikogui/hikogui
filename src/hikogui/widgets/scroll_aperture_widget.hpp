@@ -197,11 +197,11 @@ public:
             int delta_x = 0;
             int delta_y = 0;
 
-            hilet margin = std::max(
+            hilet margin = std::max({
                 theme<prefix>.margin_left(this),
                 theme<prefix>.margin_right(this),
                 theme<prefix>.margin_top(this),
-                theme<prefix>.margin_bottom(this));
+                theme<prefix>.margin_bottom(this)});
             if (safe_rectangle.width() > margin * 2 and safe_rectangle.height() > margin * 2) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do

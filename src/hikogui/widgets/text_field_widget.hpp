@@ -341,7 +341,7 @@ private:
     {
         hilet outline = narrow_cast<aarectangle>(_scroll_shape.rectangle);
 
-        context.draw_box(layout, outline, theme<prefix>.background_color(this), theme<prefix>.corner_radius(this));
+        context.draw_box(layout, outline, theme<prefix>.background_color(this), theme<prefix>.border_radius(this));
 
         // A text field has a line under the box, which changes color on error.
         hilet line = line_segment(get<0>(outline), get<1>(outline));

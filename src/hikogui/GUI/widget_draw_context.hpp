@@ -34,8 +34,9 @@ enum class border_side {
 };
 
 template<typename Context>
-concept draw_attribute = std::same_as<Context, quad_color> or std::same_as<Context, color> or
-    std::same_as<Context, border_side> or std::same_as<Context, line_end_cap> or std::same_as<Context, corner_radii> or
+concept draw_attribute =
+    std::same_as<Context, quad_color> or std::same_as<Context, color> or std::same_as<Context, border_side> or
+    std::same_as<Context, line_end_cap> or std::same_as<Context, corner_radii> or std::same_as<Context, corner_radiii> or
     std::same_as<Context, aarectanglei> or std::same_as<Context, float> or std::same_as<Context, int>;
 
 /** The draw attributes used to draw shaped into the draw context.
@@ -67,7 +68,7 @@ struct draw_attributes {
 
     /** The radii of each corner of a quad.
      */
-    hi::corner_radii corner_radius = {};
+    hi::corner_radii border_radius = {};
 
     /** The rectangle used the clip the shape when drawing.
      *
@@ -101,8 +102,8 @@ struct draw_attributes {
      *  - The second `hi::line_end_cap` is used to override the `end_line_cap`.
      *  - By default the `border_side` is set to `border_side::on`
      *  - A `hi::border_side` argument is used to set the `border_side`.
-     *  - By default the `corner_radius` are set to (0, 0, 0, 0).
-     *  - A `hi::corner_radii` argument is used to set the `corner_radius`.
+     *  - By default the `border_radius` are set to (0, 0, 0, 0).
+     *  - A `hi::corner_radii` argument is used to set the `border_radius`.
      *  - By default the `clipping_rectangle` is set to a rectangle encompassing the whole window.
      *  - A `hi::aarectangle` argument is used to set the `clipping_rectangle`.
      *  - By default the `line_width` is set to 0.
@@ -136,7 +137,7 @@ struct draw_attributes {
                 line_color = quad_color{attribute};
             }
             // XXX Handle 4 colors.
-            //hi_axiom(num_colors <= 2);
+            // hi_axiom(num_colors <= 2);
 
         } else if constexpr (std::is_same_v<T, line_end_cap>) {
             if (num_line_caps++ == 0) {
@@ -154,8 +155,8 @@ struct draw_attributes {
             _has_border_side = true;
 #endif
 
-        } else if constexpr (std::is_same_v<T, corner_radii>) {
-            corner_radius = attribute;
+        } else if constexpr (std::is_same_v<T, corner_radii> or std::is_same_v<T, corner_radiii>) {
+            border_radius = narrow_cast<corner_radii>(attribute);
 #ifndef NDEBUG
             hi_assert(not _has_corner_radii);
             _has_corner_radii = true;
@@ -215,7 +216,7 @@ public:
     widget_draw_context& operator=(widget_draw_context&& rhs) noexcept = default;
     ~widget_draw_context() = default;
 
-    widget_draw_context(gfx_draw_context const &gfx_context) noexcept;
+    widget_draw_context(gfx_draw_context const& gfx_context) noexcept;
 
     /** Draw a box.
      *
@@ -253,7 +254,7 @@ public:
 
         auto box_attributes = attributes;
         box_attributes.line_width = 0.0f;
-        box_attributes.corner_radius =
+        box_attributes.border_radius =
             make_corner_radii(attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
         return draw_box(layout, box, box_attributes);
     }
@@ -279,7 +280,7 @@ public:
     void draw_circle(widget_layout const& layout, hi::circle const& circle, draw_attributes const& attributes) const noexcept
     {
         auto box_attributes = attributes;
-        box_attributes.corner_radius = make_corner_radii(circle);
+        box_attributes.border_radius = make_corner_radii(circle);
         return draw_box(layout, make_rectangle(circle), box_attributes);
     }
 
@@ -334,11 +335,19 @@ public:
      * @param glyph The glyphs to draw.
      * @param attributes The drawing attributes to use.
      */
-    void draw_glyph(widget_layout const& layout, quad const& box, hi::font const &font, glyph_id glyph, draw_attributes const& attributes)
-        const noexcept
+    void draw_glyph(
+        widget_layout const& layout,
+        quad const& box,
+        hi::font const& font,
+        glyph_id glyph,
+        draw_attributes const& attributes) const noexcept
     {
         return _draw_glyph(
-            layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, font, glyph, attributes);
+            layout.clipping_rectangle_on_window(attributes.clipping_rectangle),
+            layout.to_window3() * box,
+            font,
+            glyph,
+            attributes);
     }
 
     /** Draw a glyph.
@@ -349,8 +358,12 @@ public:
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_quad_shape Shape, draw_attribute... Attributes>
-    void draw_glyph(widget_layout const& layout, Shape const& box, hi::font const &font, glyph_id glyph, Attributes const&...attributes)
-        const noexcept
+    void draw_glyph(
+        widget_layout const& layout,
+        Shape const& box,
+        hi::font const& font,
+        glyph_id glyph,
+        Attributes const&...attributes) const noexcept
     {
         return draw_glyph(layout, make_quad(box), font, glyph, draw_attributes{attributes...});
     }
@@ -376,7 +389,7 @@ public:
             attributes);
     }
 
-        /** Draw a glyph.
+    /** Draw a glyph.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param box The size and position of the glyph.
@@ -674,11 +687,12 @@ private:
     void _draw_glyph(
         aarectanglei const& clipping_rectangle,
         quad const& box,
-        hi::font const &font,
+        hi::font const& font,
         glyph_id const& glyph,
         draw_attributes const& attributes) const noexcept;
 
-    [[nodiscard]] bool _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;
+    [[nodiscard]] bool
+    _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;
 };
 
 }} // namespace hi::v1

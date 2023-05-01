@@ -146,9 +146,9 @@ struct theme_sub_model {
     theme_model_length spacing_vertical;
     theme_model_length spacing_horizontal;
 
-    theme_model_length font_x_height;
-    theme_model_length font_cap_height;
-    theme_model_length font_line_height;
+    theme_model_length x_height;
+    theme_model_length cap_height;
+    theme_model_length line_height;
 
     uint64_t text_theme_assigned : 1 = 0;
     uint64_t background_color_assigned : 1 = 0;
@@ -409,22 +409,22 @@ public:
         return model.spacing_horizontal(scale);
     }
 
-    [[nodiscard]] int font_x_height(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] int x_height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.font_x_height(scale);
+        return model.x_height(scale);
     }
 
-    [[nodiscard]] int font_cap_height(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] int cap_height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.font_cap_height(scale);
+        return model.cap_height(scale);
     }
 
-    [[nodiscard]] int font_line_height(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] int line_height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.font_line_height(scale);
+        return model.line_height(scale);
     }
 
     [[nodiscard]] static std::vector<std::string> model_keys() noexcept

@@ -101,13 +101,13 @@ public:
         // Calculate the position of the slider.
         hilet slider_offset = narrow_cast<int>(std::round(*offset * travel_vs_hidden_content_ratio()));
         if constexpr (axis == axis::vertical) {
-            hilet slider_width = theme<prefix / "slider">.width();
+            hilet slider_width = theme<prefix / "slider">.width(this);
             hilet x = (context.width() - slider_width) / 2;
 
             _slider_rectangle = aarectanglei{x, slider_offset, slider_width, slider_length()};
 
         } else {
-            hilet slider_height = theme<prefix / "slider">.height();
+            hilet slider_height = theme<prefix / "slider">.height(this);
             hilet y = (context.height() - slider_height) / 2;
 
             _slider_rectangle = aarectanglei{slider_offset, y, slider_length(), slider_height};
@@ -262,7 +262,7 @@ private:
             theme<prefix>.background_color(this),
             theme<prefix>.border_color(this),
             theme<prefix>.border_width(this),
-            theme<prefix>.corner_radius(this));
+            theme<prefix>.border_radius(this));
     }
 
     void draw_slider(widget_draw_context const& context) noexcept
@@ -273,7 +273,7 @@ private:
             theme<prefix / "slider">.background_color(this),
             theme<prefix / "slider">.border_color(this),
             theme<prefix / "slider">.border_width(this),
-            theme<prefix / "slider">.corner_radius(this));
+            theme<prefix / "slider">.border_radius(this));
     }
 };
 

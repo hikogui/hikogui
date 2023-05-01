@@ -29,16 +29,16 @@ void widget_draw_context::_override_alpha(aarectanglei const& clipping_rectangle
 void widget_draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
 {
     // clang-format off
-    hilet border_radius = attributes.line_width * 0.5f;
+    hilet border_offset = attributes.line_width * 0.5f;
     hilet box_ =
-        attributes.border_side == hi::border_side::inside ? box - border_radius :
-        attributes.border_side == hi::border_side::outside ? box + border_radius :
+        attributes.border_side == hi::border_side::inside ? box - border_offset :
+        attributes.border_side == hi::border_side::outside ? box + border_offset :
         box;
 
-    hilet corner_radius =
-        attributes.border_side == hi::border_side::inside ? attributes.corner_radius - border_radius :
-        attributes.border_side == hi::border_side::outside ? attributes.corner_radius + border_radius :
-        attributes.corner_radius;
+    hilet border_radius =
+        attributes.border_side == hi::border_side::inside ? attributes.border_radius - border_offset :
+        attributes.border_side == hi::border_side::outside ? attributes.border_radius + border_offset :
+        attributes.border_radius;
     // clang-format on
 
     if (gfx_context.box_vertices->full()) {
@@ -54,7 +54,7 @@ void widget_draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad
         attributes.fill_color,
         attributes.line_color,
         attributes.line_width,
-        corner_radius);
+        border_radius);
 }
 
 [[nodiscard]] bool

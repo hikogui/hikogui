@@ -42,10 +42,13 @@ public:
     {
         _label_constraints = super::update_constraints();
 
-        // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet extra_size = theme<prefix>.spacing_horizontal(this) * 2;
-
-        auto constraints = _label_constraints + extra_size;
+        auto constraints = _label_constraints;
+        constraints.minimum.width() += _label_constraints.margins.left() + _label_constraints.margins.right();
+        constraints.preferred.width() += _label_constraints.margins.left() + _label_constraints.margins.right();
+        constraints.maximum.width() += _label_constraints.margins.left() + _label_constraints.margins.right();
+        constraints.minimum.height() += _label_constraints.margins.bottom() + _label_constraints.margins.top();
+        constraints.preferred.height() += _label_constraints.margins.bottom() + _label_constraints.margins.top();
+        constraints.maximum.height() += _label_constraints.margins.bottom() + _label_constraints.margins.top();
         constraints.margins = theme<prefix>.margin(this);
         return constraints;
     }
@@ -53,8 +56,8 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            hilet inner_margin = theme<prefix>.horizontal_spacing(this);
-            hilet label_rectangle = aarectanglei{inner_margin, 0, context.width() - inner_margin * 2, context.height()};
+            hilet label_rectangle = aarectanglei{context.size()} - _label_constraints.margins;
+
             this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                 box_shape{_label_constraints, label_rectangle, theme<prefix>.cap_height(this)};
         }

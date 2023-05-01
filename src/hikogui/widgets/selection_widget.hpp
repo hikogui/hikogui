@@ -217,11 +217,11 @@ public:
         // The theme's width is used for the little chevron/icon element.
         // The labels' margins are included in the size of the widget.
         auto r = max(_off_label_constraints, _current_label_constraints);
-        r.minimum.width() += theme<prefix>.width() + r.margins.left() + r.margins.right();
+        r.minimum.width() += theme<prefix>.width(this) + r.margins.left() + r.margins.right();
         r.minimum.height() += r.margins.bottom() + r.margins.top();
-        r.preferred.width() += theme<prefix>.width() + r.margins.left() + r.margins.right();
+        r.preferred.width() += theme<prefix>.width(this) + r.margins.left() + r.margins.right();
         r.preferred.height() += r.margins.bottom() + r.margins.top();
-        r.maximum.width() += theme<prefix>.width() + r.margins.left() + r.margins.right();
+        r.maximum.width() += theme<prefix>.width(this) + r.margins.left() + r.margins.right();
         r.maximum.height() += r.margins.bottom() + r.margins.top();
 
         // Make it so that the scroll widget can scroll vertically.
@@ -229,9 +229,9 @@ public:
         _scroll_widget->minimum.copy()->height() = 10;
 
         // Increase the width to match the popup's width.
-        inplace_max(r.minimum.width(), _overlay_constraints.minimum.width() + theme<prefix>.width());
-        inplace_max(r.preferred.width(), _overlay_constraints.preferred.width() + theme<prefix>.width());
-        inplace_max(r.maximum.width(), _overlay_constraints.maximum.width() + theme<prefix>.width());
+        inplace_max(r.minimum.width(), _overlay_constraints.minimum.width() + theme<prefix>.width(this));
+        inplace_max(r.preferred.width(), _overlay_constraints.preferred.width() + theme<prefix>.width(this));
+        inplace_max(r.maximum.width(), _overlay_constraints.maximum.width() + theme<prefix>.width(this));
 
         r.alignment = resolve(*alignment, os_settings::left_to_right());
         r.margins = theme<prefix>.margin(this);
@@ -524,26 +524,26 @@ private:
             theme<prefix>.border_color(this),
             theme<prefix>.border_width(this),
             border_side::inside,
-            theme<prefix>.corner_radius(this));
+            theme<prefix>.border_radius(this));
     }
 
     void draw_chevron_box(widget_draw_context const& context) noexcept
     {
-        auto corner_radius = theme<prefix>.corner_radius(this);
+        auto border_radius = theme<prefix>.border_radius(this);
 
         if (os_settings::left_to_right()) {
-            corner_radius.bottom_right() = 0.0f;
-            corner_radius.top_right() = 0.0f;
+            border_radius.right_bottom() = 0;
+            border_radius.right_top() = 0;
         } else {
-            corner_radius.bottom_left() = 0.0f;
-            corner_radius.top_left() = 0.0f;
+            border_radius.left_bottom() = 0;
+            border_radius.left_top() = 0;
         }
 
         context.draw_box(
             layout,
             translate_z(0.1f) * narrow_cast<aarectangle>(_chevron_box_rectangle),
             theme<prefix>.border_color(this),
-            corner_radius);
+            border_radius);
     }
 
     void draw_chevron(widget_draw_context const& context) noexcept

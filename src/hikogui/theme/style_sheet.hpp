@@ -316,13 +316,13 @@ private:
         text_style.size = round_cast<int>(std::get<hi::dips>(value).count() * -4.0);
 
         if (not language_mask and not to_bool(phrasing_mask)) {
-            sub_model.font_line_height = std::get<hi::dips>(value);
+            sub_model.line_height = std::get<hi::dips>(value);
             // The following values are estimates.
             // Hopefully good enough for calculating baselines and such.
             // We could not get proper sizes anyway since there may be multiple
             // fonts defined in the test_theme.
-            sub_model.font_cap_height = std::get<hi::dips>(value) * 0.7;
-            sub_model.font_x_height = std::get<hi::dips>(value) * 0.48;
+            sub_model.cap_height = std::get<hi::dips>(value) * 0.7;
+            sub_model.x_height = std::get<hi::dips>(value) * 0.48;
         }
     }
 
@@ -390,7 +390,7 @@ private:
             } else if (hilet px_ptr = std::get_if<hi::pixels>(&value)) { \
                 sub_model.NAME = *px_ptr; \
             } else if (hilet em_ptr = std::get_if<hi::em_quads>(&value)) { \
-                sub_model.NAME = static_cast<hi::dips>(sub_model.font_line_height) * em_ptr->count(); \
+                sub_model.NAME = static_cast<hi::dips>(sub_model.line_height) * em_ptr->count(); \
             } else { \
                 hi_no_default(); \
             } \

@@ -198,6 +198,12 @@ template<std::integral Out, arithmetic In>
 template<typename Out, typename In>
 [[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept;
 
+template<typename Out, std::same_as<Out> In>
+[[nodiscard]] constexpr Out narrow_cast(In const &rhs) noexcept
+{
+    return rhs;
+}
+
 /** Cast numeric values without loss of precision.
  *
  * @note It is undefined behavior to cast a value which will cause a loss of precision.
@@ -207,7 +213,7 @@ template<typename Out, typename In>
  * @return The value casted to a different type without loss of precision.
  */
 template<arithmetic Out, arithmetic In>
-[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept requires (not std::same_as<In, Out>)
 {
     if constexpr (type_in_range_v<Out, In>) {
         return static_cast<Out>(rhs);

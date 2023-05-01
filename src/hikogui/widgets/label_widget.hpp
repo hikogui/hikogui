@@ -126,10 +126,10 @@ public:
         hilet icon_size =
             (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
             theme<prefix>.size(this) :
-            extent2i{theme<prefix>.cap_height(this), theme<prefix>.cap_height(this)};
+            extent2i{theme<prefix>.line_height(this), theme<prefix>.line_height(this)};
 
-        _icon_widget->minimum = extent2i{icon_size, icon_size};
-        _icon_widget->maximum = extent2i{icon_size, icon_size};
+        _icon_widget->minimum = icon_size;
+        _icon_widget->maximum = icon_size;
 
         for (auto& cell : _grid) {
             cell.set_constraints(cell.value->update_constraints());

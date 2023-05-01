@@ -30,7 +30,7 @@
 #include "toolbar_button_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"
 #include "toolbar_widget.hpp"
-#include "window_traffic_lights_widget.hpp"
+//#include "window_traffic_lights_widget.hpp"
 #include "window_widget.hpp"
 
 namespace hi {
