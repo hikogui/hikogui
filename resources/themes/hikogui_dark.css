@@ -1,6 +1,6 @@
 
-@name: "default";
-@mode: dark;
+@name "default";
+@mode dark;
 
 @color blue : rgb(10, 132, 255);
 @color green : rgb(48, 209, 88);
@@ -31,7 +31,7 @@
     font-family: "Arial";
     font-weight: normal;
     font-size: 10pt;
-    color: foreground;
+    font-color: foreground;
     fill-color: foreground;
     caret-color: foreground yellow;
     selection-color: blue;
@@ -60,15 +60,15 @@
     background-color: gray1;
 }
 
-*:hover:layer(2) {
+*:hover:layer(1) {
     background-color: gray2;
 }
 
-*:hover:layer(3) {
+*:hover:layer(2) {
     background-color: gray3;
 }
 
-*:hover:layer(4) {
+*:hover:layer(3) {
     background-color: gray4;
 }
 

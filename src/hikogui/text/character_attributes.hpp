@@ -23,8 +23,13 @@ public:
 
     constexpr character_attributes(intrinsic_t, value_type value) noexcept : _value(value)
     {
-        // 40 bits.
-        hi_axiom(_value < (value_type{1} << 40));
+        // language 15 bits
+        // script   10 bits
+        // region   10 bits
+        // phrasing  4 bits
+        //          --
+        // total    39 bits.
+        hi_axiom(_value < (value_type{1} << 39));
     }
 
     [[nodiscard]] constexpr value_type const& intrinsic() const
@@ -160,7 +165,7 @@ private:
      * [34:25] region
      * [38:35] phrasing
      */
-    value_type _value;
+    value_type _value = {};
 };
 
 }} // namespace hi::v1

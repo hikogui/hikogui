@@ -154,8 +154,9 @@ inline bool load_theme(std::string name, theme_mode mode) noexcept
 {
     if (hilet path = detail::theme_book::global().find(name, mode)) {
         try {
-            parse_style_sheet(*path).activate();
-            hi_log_info("Theme {} at '{}' activated successfully.", name, path->generic_string());
+            auto style_sheet = parse_style_sheet(*path);
+            style_sheet.activate();
+            hi_log_info("Theme {}:{} at '{}' activated successfully.", style_sheet.name, style_sheet.mode, path->generic_string());
             return true;
 
         } catch (std::exception const& e) {

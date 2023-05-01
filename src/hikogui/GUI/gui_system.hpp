@@ -78,8 +78,12 @@ public:
         auto widget = std::make_unique<WidgetType>(label, std::forward<Args>(args)...);
         auto widget_ptr = widget.get();
 
-        // XXX abstract away the _win32 part.
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         auto window = std::make_shared<gui_window_win32>(*this, std::move(widget), label);
+#else
+#error "Not implemented"
+#endif
+        widget_ptr->set_window(*window);
 
         return {add_window(std::move(window)), *widget_ptr};
     }

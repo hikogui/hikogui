@@ -161,6 +161,7 @@ public:
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
         // XXX use the theme-style and apply it to the _text_cache.
+        auto &debug = theme<prefix>;
         _shaped_text = text_shaper{_text_cache, theme<prefix>.text_theme(this), alignment_, os_settings::left_to_right()};
 
         hilet shaped_text_rectangle =

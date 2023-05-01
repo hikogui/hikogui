@@ -21,11 +21,11 @@ gui_window::gui_window(gui_system& gui, std::unique_ptr<hi::widget> widget, labe
     hi_axiom(loop::main().on_thread());
 
     hilet dpi_scale = dpi / points_per_inch_v<float>;
-    apply(*widget, [&](auto& x) {
-        x.reset_layout(this, surface.get(), dpi_scale);
+    apply(*this->widget, [&](auto& x) {
+        x.reset_layout(surface.get(), dpi_scale);
     });
 
-    _widget_constraints = widget->update_constraints();
+    _widget_constraints = this->widget->update_constraints();
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -90,7 +90,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         hilet dpi_scale = dpi / points_per_inch_v<float>;
         apply(*widget, [&](auto& x) {
-            x.reset_layout(this, surface.get(), dpi_scale);
+            x.reset_layout(surface.get(), dpi_scale);
         });
 
         _widget_constraints = widget->update_constraints();

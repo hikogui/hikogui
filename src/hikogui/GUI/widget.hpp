@@ -39,10 +39,6 @@ public:
      */
     widget *parent = nullptr;
 
-    /** The window this widget is on.
-     */
-    gui_window *window = nullptr;
-
     /** The surface this widget is drawn on.
      */
     gfx_surface *surface = nullptr;
@@ -175,10 +171,9 @@ public:
      *
      * @param new_scale The scaling factor from this point forward.
      */
-    void reset_layout(gui_window *new_window, gfx_surface *new_surface, float new_scale) noexcept
+    void reset_layout(gfx_surface *new_surface, float new_scale) noexcept
     {
         layout = {};
-        window = new_window;
         surface = new_surface;
         _scale = narrow_cast<int>(std::round(new_scale * -4.0));
     }

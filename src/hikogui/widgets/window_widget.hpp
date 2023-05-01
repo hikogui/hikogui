@@ -11,7 +11,7 @@
 #include "toolbar_widget.hpp"
 #include "system_menu_widget.hpp"
 #include "grid_widget.hpp"
-//#include "window_traffic_lights_widget.hpp"
+// #include "window_traffic_lights_widget.hpp"
 #include "../GUI/module.hpp"
 #include "../label.hpp"
 #include <memory>
@@ -32,8 +32,7 @@ public:
 
     observer<label> title;
 
-    window_widget(forward_of<observer<label>> auto&& title) noexcept :
-        super(nullptr), title(hi_forward(title))
+    window_widget(forward_of<observer<label>> auto&& title) noexcept : super(nullptr), title(hi_forward(title))
     {
         _toolbar = std::make_unique<toolbar_widget<prefix>>(this);
 
@@ -50,6 +49,11 @@ public:
         }
 
         _content = std::make_unique<grid_widget<prefix>>(this);
+    }
+
+    void set_window(gui_window& window) noexcept
+    {
+        _window = std::addressof(window);
     }
 
     /** Get a reference to the window's content widget.
@@ -249,11 +253,31 @@ public:
 
     bool process_event(gui_event const& event) const noexcept override
     {
-        hi_assert_not_null(window);
-        return window->process_event(event);
+        if (_window == nullptr) {
+            // Widgets may start sending messages such as request_reconstrain
+            // before a window is assigned. Capture the messages for replay.
+            _events_before_window.push_back(event);
+            return true;
+
+        } else {
+            if (not _events_before_window.empty()) {
+                for (hilet& e : _events_before_window) {
+                    _window->process_event(e);
+                }
+                _events_before_window.clear();
+                _events_before_window.shrink_to_fit();
+            }
+            return _window->process_event(event);
+        }
     }
     /// @endprivatesection
 private:
+    /** The window this widget is on.
+     */
+    gui_window *_window = nullptr;
+
+    mutable std::vector<gui_event> _events_before_window = {};
+
     std::unique_ptr<grid_widget<prefix>> _content;
     box_constraints _content_constraints;
     box_shape _content_shape;
