@@ -844,23 +844,31 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
 
-        } else if (auto g = grapheme{c}; g.valid()) {
-            process_event(gui_event::keyboard_grapheme(g));
+        } else {
+            hilet gc = ucd_get_general_category(c);
+            if (not is_C(gc) and not is_M(gc)) {
+                // Only pass code-points that are non-control and non-mark.
+                process_event(gui_event::keyboard_grapheme(grapheme{c}));
+            }
         }
         break;
 
     case WM_DEADCHAR:
         if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
-            if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event::keyboard_partial_grapheme(g));
+            hilet gc = ucd_get_general_category(c);
+            if (not is_C(gc) and not is_M(gc)) {
+                // Only pass code-points that are non-control and non-mark.
+                process_event(gui_event::keyboard_partial_grapheme(grapheme{c}));
             }
         }
         break;
 
     case WM_CHAR:
         if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
-            if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event::keyboard_grapheme(g));
+            hilet gc = ucd_get_general_category(c);
+            if (not is_C(gc) and not is_M(gc)) {
+                // Only pass code-points that are non-control and non-mark.
+                process_event(gui_event::keyboard_grapheme(grapheme{c}));
             }
         }
         break;

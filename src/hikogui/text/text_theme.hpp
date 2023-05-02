@@ -17,8 +17,7 @@ class text_theme : public std::vector<text_style> {
 public:
     using std::vector<text_style>::vector;
 
-    [[nodiscard]] text_style const&
-    find(text_phrasing phrasing, language_tag language) const noexcept
+    [[nodiscard]] text_style const& find(text_phrasing phrasing, language_tag language) const noexcept
     {
         for (hilet& style : *this) {
             if (matches(style, phrasing, language)) {
@@ -38,8 +37,7 @@ public:
      * @param phrasing_mask A mask of phrasing values.
      * @param language_mask A mask of the language.
      */
-    [[nodiscard]] text_style&
-    find_or_add(text_phrasing_mask phrasing_mask, language_tag language_mask) noexcept
+    [[nodiscard]] text_style& find_or_add(text_phrasing_mask phrasing_mask, language_tag language_mask) noexcept
     {
         for (auto& style : *this) {
             if (style.phrasing_mask == phrasing_mask and style.language_mask == language_mask) {
@@ -47,20 +45,20 @@ public:
             }
         }
 
-        auto& style = emplace_back();
-        style.phrasing_mask = phrasing_mask;
-        style.language_mask = language_mask;
-        return style;
-    }
-
-    /** Sort the list of text-styles.
-     *
-     * Sort the styles from specific to generic, so that find can do a simple
-     * forward search for the best match.
-     */
-    void sort() noexcept
-    {
-        hi_not_implemented();
+        // Styles with filters are added before, so that the last style in the
+        // CSS file is found first. And the style without filters is the last one.
+        auto it = [&]{
+            if (empty()) {
+                return insert(cbegin(), text_style{});
+            } else {
+                auto non_filter_style = back();
+                return insert(cbegin(), std::move(non_filter_style));
+            }
+        }();
+        
+        it->phrasing_mask = phrasing_mask;
+        it->language_mask = language_mask;
+        return *it;
     }
 };
 

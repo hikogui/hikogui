@@ -141,29 +141,6 @@ struct grapheme {
         return unicode_decompose(composed(), unicode_normalize_config::NFD());
     }
 
-    /** Check if the grapheme is valid.
-     *
-     * A grapheme is invalid in case:
-     * - The grapheme is empty.
-     * - The first code-point is part of general category 'C'.
-     * - The first code-point is a combining character; canonical combining class != 0.
-     */
-    [[nodiscard]] constexpr bool valid() const noexcept
-    {
-        if (is_noncharacter(get<0>(*this))) {
-            return false;
-        }
-
-        hilet general_category = ucd_get_general_category(get<0>(*this));
-        if (is_C(general_category)) {
-            return false;
-        }
-        if (is_M(general_category)) {
-            return false;
-        }
-        return true;
-    }
-
     [[nodiscard]] std::u32string const& long_grapheme() const noexcept
     {
         hi_assert(_value > 0x10'ffff and _value <= 0x1f'ffff);

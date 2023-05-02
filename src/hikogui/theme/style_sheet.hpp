@@ -89,7 +89,9 @@ struct style_sheet_pattern {
     {
         hi_assert(not path.empty());
 
-        auto r = path.front();
+        auto r = std::string{};
+        r += "/**/";
+        r += path.front();
 
         hi_assert(path.size() == is_child.size() + 1);
 
@@ -506,12 +508,21 @@ struct style_sheet {
     {
         // First activate the font-styles, so that the size of the font can be
         // used to calculate the size of the other lengths.
+        _clear();
         _activate_colors();
         _activate(0);
         _activate(1);
     }
 
 private:
+    void _clear() const noexcept
+    {
+        for (hilet& model_path : theme_model_keys()) {
+            auto& model = theme_model_by_key(model_path);
+            model.clear();
+        }
+    }
+
     void _activate_colors() const noexcept
     {
         for (hilet& color_name : color::list()) {

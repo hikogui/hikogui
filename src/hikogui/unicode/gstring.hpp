@@ -173,7 +173,6 @@ to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_no
         if (detail::breaks_grapheme(code_point, break_state)) {
             if (cluster.size() > 0) {
                 r += grapheme(composed_t{}, cluster);
-                hi_axiom(r.back().valid());
             }
             cluster.clear();
         }
@@ -182,7 +181,6 @@ to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_no
     }
     if (ssize(cluster) != 0) {
         r += grapheme(composed_t{}, cluster);
-        hi_assert(r.back().valid());
     }
     return r;
 }

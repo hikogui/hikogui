@@ -380,7 +380,7 @@ template<character_attribute... Args>
  */
 [[nodiscard]] inline text to_text_with_markup(std::string_view str, character_attributes default_attributes) noexcept
 {
-    return to_text_with_markup(to_gstring(str), default_attributes);
+    return to_text_with_markup(to_gstring(str, unicode_normalize_config::NFC_PS_noctr()), default_attributes);
 }
 
 /**

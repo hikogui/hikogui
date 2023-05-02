@@ -40,14 +40,14 @@ public:
         case 0:
             // Add precision when scaling with 0.25 intervals.
             _v = narrow_cast<int>(std::round(std::get<pixels>(length).count() * 16.0));
-            hi_axiom(_v > 0);
+            hi_axiom(_v >= 0);
             break;
 
         case 1:
             // Make the value negative to indicate that it needs to be scaled.
             // Also add a bit of precision when scaling with 0.25 intervals.
             _v = narrow_cast<int>(std::round(std::get<dips>(length).count() * -4.0));
-            hi_axiom(_v < 0);
+            hi_axiom(_v <= 0);
             break;
 
         default:
@@ -195,6 +195,85 @@ struct theme_sub_model {
     uint64_t margin_right_important : 1 = 0;
     uint64_t spacing_vertical_important : 1 = 0;
     uint64_t spacing_horizontal_important : 1 = 0;
+
+    void clear() noexcept
+    {
+        text_theme.clear();
+
+        background_color = {};
+        fill_color = {};
+        caret_primary_color = {};
+        caret_secondary_color = {};
+        caret_overwrite_color = {};
+        caret_compose_color = {};
+        selection_color = {};
+        border_color = {};
+
+        border_bottom_left_radius = dips{0};
+        border_bottom_right_radius = dips{0};
+        border_top_left_radius = dips{0};
+        border_top_right_radius = dips{0};
+        border_width = dips{0};
+
+        width = dips{0};
+        height = dips{0};
+        margin_bottom = dips{0};
+        margin_left = dips{0};
+        margin_top = dips{0};
+        margin_right = dips{0};
+        spacing_vertical = dips{0};
+        spacing_horizontal = dips{0};
+
+        x_height = dips{0};
+        cap_height = dips{0};
+        line_height = dips{0};
+
+        text_theme_assigned = 0;
+        background_color_assigned = 0;
+        fill_color_assigned = 0;
+        caret_primary_color_assigned = 0;
+        caret_secondary_color_assigned = 0;
+        caret_overwrite_color_assigned = 0;
+        caret_compose_color_assigned = 0;
+        selection_color_assigned = 0;
+        border_color_assigned = 0;
+        border_bottom_left_radius_assigned = 0;
+        border_bottom_right_radius_assigned = 0;
+        border_top_left_radius_assigned = 0;
+        border_top_right_radius_assigned = 0;
+        border_width_assigned = 0;
+        width_assigned = 0;
+        height_assigned = 0;
+        margin_bottom_assigned = 0;
+        margin_left_assigned = 0;
+        margin_top_assigned = 0;
+        margin_right_assigned = 0;
+        spacing_vertical_assigned = 0;
+        spacing_horizontal_assigned = 0;
+
+        text_theme_important = 0;
+        background_color_important = 0;
+        fill_color_important = 0;
+        caret_primary_color_important = 0;
+        caret_secondary_color_important = 0;
+        caret_overwrite_color_important = 0;
+        caret_compose_color_important = 0;
+        selection_color_important = 0;
+        border_color_important = 0;
+        border_bottom_left_radius_important = 0;
+        border_bottom_right_radius_important = 0;
+        border_top_left_radius_important = 0;
+        border_top_right_radius_important = 0;
+        border_width_important = 0;
+        width_important = 0;
+        height_important = 0;
+        margin_bottom_important = 0;
+        margin_left_important = 0;
+        margin_top_important = 0;
+        margin_right_important = 0;
+        spacing_vertical_important = 0;
+        spacing_horizontal_important = 0;
+    }
 };
 
 struct sub_theme_selector_type {
@@ -216,7 +295,17 @@ public:
     theme_model_base(std::string_view tag) noexcept
     {
         hilet lock = std::scoped_lock(_map_mutex);
-        _map[std::string{tag}] = this;
+
+        hi_assert(not tag.empty());
+        hi_assert(tag.front() != '/');
+        _map[std::format("/{}", tag)] = this;
+    }
+
+    void clear() noexcept
+    {
+        for (auto &sub_model: _sub_model_by_state) {
+            sub_model.clear();
+        }
     }
 
     [[nodiscard]] theme_sub_model& operator[](theme_state state) noexcept
