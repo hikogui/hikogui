@@ -37,6 +37,12 @@ TEST(units, add_inch_to_point)
     ASSERT_EQ(hi::inches{2.0} + hi::points{3.0}, hi::points{147.0});
 }
 
+TEST(units, add_inch_to_dip)
+{
+    static_assert(hi::inches{2.0} + hi::dips{3.0} == hi::dips{195.0});
+    ASSERT_EQ(hi::inches{2.0} + hi::dips{3.0}, hi::dips{195.0});
+}
+
 TEST(units, compare_inch_to_point)
 {
     static_assert(hi::inches{2.0} == hi::points{144.0});

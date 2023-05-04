@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include "../utility/module.hpp"
+#include "../generator.hpp"
+
 namespace hi {
 inline namespace v1 {
 
@@ -31,5 +34,23 @@ enum class font_style {
      */
     oblique = 1
 };
+
+// clang-format off
+constexpr auto font_style_metadata = enum_metadata{
+    font_style::normal, "normal",
+    font_style::italic, "italic",
+};
+// clang-format on
+
+[[nodiscard]] inline generator<font_style> alternatives(font_style const &start) noexcept
+{
+    if (start == font_style::normal) {
+        co_yield font_style::normal;
+        co_yield font_style::italic;
+    } else {
+        co_yield font_style::italic;
+        co_yield font_style::normal;
+    }
+}
 
 }}

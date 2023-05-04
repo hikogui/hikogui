@@ -75,7 +75,7 @@ TEST(style_sheet_parser, width)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
@@ -98,7 +98,7 @@ TEST(style_sheet_parser, width_pt)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
@@ -121,7 +121,7 @@ TEST(style_sheet_parser, width_in)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
@@ -144,7 +144,7 @@ TEST(style_sheet_parser, width_mm_important)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_TRUE(rule_set[0].important);
@@ -167,7 +167,7 @@ TEST(style_sheet_parser, width_cm)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
@@ -190,7 +190,7 @@ TEST(style_sheet_parser, width_px)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
@@ -237,7 +237,7 @@ TEST(style_sheet_parser, font_weight_integer)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::font_weight);
     ASSERT_FALSE(rule_set[0].important);
@@ -260,7 +260,7 @@ TEST(style_sheet_parser, font_weight_identifier)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::font_weight);
     ASSERT_FALSE(rule_set[0].important);
@@ -283,7 +283,7 @@ TEST(style_sheet_parser, font_style_normal)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::font_style);
     ASSERT_FALSE(rule_set[0].important);
@@ -306,7 +306,7 @@ TEST(style_sheet_parser, font_style_italic)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::font_style);
     ASSERT_FALSE(rule_set[0].important);
@@ -329,7 +329,7 @@ TEST(style_sheet_parser, font_style_oblique_important)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::font_style);
     ASSERT_TRUE(rule_set[0].important);
@@ -354,7 +354,7 @@ TEST(style_sheet_parser, font_family_string)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::font_family);
     ASSERT_FALSE(rule_set[0].important);
@@ -379,7 +379,7 @@ TEST(style_sheet_parser, font_family_id)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::font_family);
     ASSERT_FALSE(rule_set[0].important);
@@ -416,7 +416,7 @@ TEST(style_sheet_parser, width_em)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::width);
     ASSERT_FALSE(rule_set[0].important);
@@ -439,7 +439,7 @@ TEST(style_sheet_parser, background_color_hex6)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
 
     auto& declaration = rule_set[0];
@@ -466,7 +466,7 @@ TEST(style_sheet_parser, background_color_hex8)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
 
     auto& declaration = rule_set[0];
@@ -493,7 +493,7 @@ TEST(style_sheet_parser, background_color_rgb_int)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
 
     auto& declaration = rule_set[0];
@@ -520,7 +520,7 @@ TEST(style_sheet_parser, background_color_rgba_int)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
 
     auto& declaration = rule_set[0];
@@ -549,7 +549,7 @@ TEST(style_sheet_parser, background_color_rgb_float)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
 
     auto& declaration = rule_set[0];
@@ -576,7 +576,7 @@ TEST(style_sheet_parser, background_color_rgba_float)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 1);
 
     auto& declaration = rule_set[0];
@@ -603,7 +603,7 @@ TEST(style_sheet_parser, margin_1)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 4);
 
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::margin_top);
@@ -616,10 +616,10 @@ TEST(style_sheet_parser, margin_1)
     ASSERT_FALSE(rule_set[2].important);
     ASSERT_FALSE(rule_set[3].important);
 
-    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::dips{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::dips{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::dips{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::dips{10});
 }
 
 TEST(style_sheet_parser, margin_2)
@@ -638,7 +638,7 @@ TEST(style_sheet_parser, margin_2)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 4);
 
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::margin_top);
@@ -651,9 +651,9 @@ TEST(style_sheet_parser, margin_2)
     ASSERT_FALSE(rule_set[2].important);
     ASSERT_FALSE(rule_set[3].important);
 
-    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::dips{10});
     ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{20});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::dips{10});
     ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::points{20});
 }
 
@@ -673,7 +673,7 @@ TEST(style_sheet_parser, margin_3_important)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 4);
 
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::margin_top);
@@ -686,9 +686,9 @@ TEST(style_sheet_parser, margin_3_important)
     ASSERT_TRUE(rule_set[2].important);
     ASSERT_TRUE(rule_set[3].important);
 
-    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::dips{10});
     ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{20});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::points{30});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::dips{30});
     ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::points{20});
 }
 
@@ -708,7 +708,7 @@ TEST(style_sheet_parser, margin_4)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 4);
 
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::margin_top);
@@ -723,8 +723,8 @@ TEST(style_sheet_parser, margin_4)
 
     ASSERT_EQ(std::get<hi::em_quads>(rule_set[0].value), hi::em_quads{10});
     ASSERT_EQ(std::get<hi::pixels>(rule_set[1].value), hi::pixels{20});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::points{30});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::points{40});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[2].value), hi::dips{30});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::dips{40});
 }
 
 TEST(style_sheet_parser, spacing_1)
@@ -743,7 +743,7 @@ TEST(style_sheet_parser, spacing_1)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 2);
 
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::spacing_vertical);
@@ -752,8 +752,8 @@ TEST(style_sheet_parser, spacing_1)
     ASSERT_FALSE(rule_set[0].important);
     ASSERT_FALSE(rule_set[1].important);
 
-    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::dips{10});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::dips{10});
 }
 
 TEST(style_sheet_parser, spacing_2)
@@ -772,7 +772,7 @@ TEST(style_sheet_parser, spacing_2)
     ASSERT_EQ(style_sheet.size(), 1);
 
     auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "foo");
+    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
     ASSERT_EQ(rule_set.size(), 2);
 
     ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::spacing_vertical);
@@ -782,7 +782,7 @@ TEST(style_sheet_parser, spacing_2)
     ASSERT_FALSE(rule_set[1].important);
 
     ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::points{20});
+    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::dips{20});
 }
 
 TEST(style_sheet_parser, state_disabled)

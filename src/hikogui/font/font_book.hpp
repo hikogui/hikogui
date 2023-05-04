@@ -107,22 +107,12 @@ public:
     /** Find a font closest to the variant.
      * This function will always return a valid font_id.
      *
-     * @param family_id a valid family id.
-     * @param weight The weight of the font to select.
-     * @param style If the font to select should be italic or not.
-     * @return a valid font id.
-     */
-    [[nodiscard]] font const& find_font(font_family_id family_id, font_weight weight, font_style style) const noexcept;
-
-    /** Find a font closest to the variant.
-     * This function will always return a valid font_id.
-     *
      * @param family_name A name of a font family, which may be invalid.
      * @param weight The weight of the font to select.
      * @param style If the font to select should be italic or not.
-     * @return a font id, possibly from a fallback font.
+     * @return A pointer to a font, or nullptr when the family was not found.
      */
-    [[nodiscard]] font const& find_font(std::string const& family_name, font_weight weight, font_style style) const noexcept;
+    [[nodiscard]] font const *find_font(std::string const& family_name, font_variant variant) const noexcept;
 
     /** Find a glyph using the given code-point.
      * This function will find a glyph matching the grapheme in the selected font, or
@@ -153,7 +143,7 @@ private:
 
     /** Different fonts; variants of a family.
      */
-    std::vector<std::array<font const *, font_variant::max()>> _font_variants;
+    std::vector<std::array<font const *, font_variant::size()>> _font_variants;
 
     std::vector<std::unique_ptr<font>> _fonts;
     std::vector<hi::font *> _font_ptrs;
@@ -182,9 +172,9 @@ inline void register_font_directory(std::filesystem::path const& path)
 }
 
 template<typename Range>
-inline void register_font_directories(Range &&range) noexcept
+inline void register_font_directories(Range&& range) noexcept
 {
-    for (auto const &path: range) {
+    for (auto const& path : range) {
         font_book::global().register_font_directory(path, false);
     }
     font_book::global().post_process();
@@ -215,12 +205,11 @@ inline void register_font_directories(Range &&range) noexcept
  *
  * @param family_name a font family name.
  * @param variant The variant of the font to select.
- * @return a valid font id.
+ * @return A pointer to the loaded font.
  */
-[[nodiscard]] inline font const& find_font(std::string const& family_name, font_variant variant = font_variant{}) noexcept
+[[nodiscard]] inline font const *find_font(std::string const& family_name, font_variant variant = font_variant{}) noexcept
 {
-    hilet family_id = find_font_family(family_name);
-    return font_book::global().find_font(family_id, variant);
+    return font_book::global().find_font(family_name, variant);
 }
 
 /** Find a glyph using the given code-point.
@@ -251,14 +240,16 @@ inline void register_font_directories(Range &&range) noexcept
 
 [[nodiscard]] inline auto find_glyph(elusive_icon rhs) noexcept
 {
-    hilet& font = find_font("Elusive", font_variant{});
-    return find_glyph(font, to_underlying(rhs));
+    hilet *font = find_font("elusiveicons", font_variant{font_weight::medium, font_style::normal});
+    hi_assert_not_null(font, "Could not find Elusive icon font");
+    return find_glyph(*font, to_underlying(rhs));
 }
 
 [[nodiscard]] inline auto find_glyph(hikogui_icon rhs) noexcept
 {
-    hilet& font = find_font("HikoGUI", font_variant{});
-    return find_glyph(font, to_underlying(rhs));
+    hilet *font = find_font("Hikogui Icons", font_variant{font_weight::regular, font_style::normal});
+    hi_assert_not_null(font, "Could not find HikoGUI icon font");
+    return find_glyph(*font, to_underlying(rhs));
 }
 
 } // namespace hi::inline v1

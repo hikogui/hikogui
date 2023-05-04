@@ -161,25 +161,25 @@ void font_book::post_process() noexcept
 {
     hi_assert(family_id);
     hi_assert_bounds(*family_id, _font_variants);
+
     hilet& variants = _font_variants[*family_id];
-    for (auto i = 0; i < 16; i++) {
-        if (auto font = variants[variant.alternative(i)]) {
+    for (auto alternative_variant : alternatives(variant)) {
+        if (auto font = variants[alternative_variant]) {
             return *font;
         }
     }
+
     // If a family exists, there must be at least one font variant available.
     hi_no_default();
 }
 
-[[nodiscard]] font const& font_book::find_font(font_family_id family_id, font_weight weight, font_style style) const noexcept
+[[nodiscard]] font const *font_book::find_font(std::string const& family_name, font_variant variant) const noexcept
 {
-    return find_font(family_id, font_variant(weight, style));
-}
-
-[[nodiscard]] font const&
-font_book::find_font(std::string const& family_name, font_weight weight, font_style style) const noexcept
-{
-    return find_font(find_family(family_name), weight, style);
+    if (hilet family_id = find_family(family_name)) {
+        return &find_font(family_id, variant);
+    } else {
+        return nullptr;
+    }
 }
 
 [[nodiscard]] font_book::font_glyphs_type font_book::find_glyph(hi::font const& font, grapheme g) const noexcept

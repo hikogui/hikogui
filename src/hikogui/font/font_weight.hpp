@@ -6,6 +6,7 @@
 
 #include "../utility/module.hpp"
 #include "../strings.hpp"
+#include "../generator.hpp"
 #include <string>
 #include <unordered_map>
 #include <ostream>
@@ -25,6 +26,18 @@ enum class font_weight {
     black, ///< 900: Heavy / Black
     extra_black, ///< 950: Extra-black / Ultra-black
 };
+
+constexpr font_weight& operator++(font_weight& rhs) noexcept
+{
+    hi_axiom(rhs < font_weight::extra_black);
+    return rhs = static_cast<font_weight>(to_underlying(rhs) + 1);
+}
+
+constexpr font_weight& operator--(font_weight& rhs) noexcept
+{
+    hi_axiom(rhs > font_weight::thin);
+    return rhs = static_cast<font_weight>(to_underlying(rhs) - 1);
+}
 
 // clang-format off
 constexpr auto font_weight_metadata = enum_metadata{
@@ -70,72 +83,64 @@ constexpr auto font_weight_metadata = enum_metadata{
     return std::string{to_string_view(x)};
 }
 
-[[nodiscard]] constexpr char to_char(font_weight const &x) noexcept
+[[nodiscard]] constexpr char to_char(font_weight const& x) noexcept
 {
     hilet x_ = static_cast<int>(x);
     hi_axiom(x_ >= 0 && x_ <= 9);
     return char_cast<char>('0' + x_);
 }
 
-[[nodiscard]] constexpr int to_int(font_weight const &x) noexcept
+[[nodiscard]] constexpr int to_int(font_weight const& x) noexcept
 {
     hilet x_ = (static_cast<int>(x) + 1) * 100;
     return (x_ == 1000) ? 950 : x_;
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, font_weight const &rhs)
+inline std::ostream& operator<<(std::ostream& lhs, font_weight const& rhs)
 {
     return lhs << to_string(rhs);
 }
 
-constexpr bool almost_equal(font_weight const &lhs, font_weight const &rhs) noexcept
+constexpr bool almost_equal(font_weight const& lhs, font_weight const& rhs) noexcept
 {
     // Check only if it is bold or not.
     return (lhs > font_weight::medium) == (rhs > font_weight::medium);
 }
 
-[[nodiscard]] constexpr auto font_weight_alternative_table_generator() noexcept
+/** Generate alternatives for the font_weight.
+ *
+ * @param start The starting font-weight.
+ * @return Generated font weights, starting at start, then zig-zag toward thin and extra-black.
+ */
+[[nodiscard]] inline generator<font_weight> alternatives(font_weight start) noexcept
 {
-    std::array<font_weight, 100> r = {font_weight::regular};
+    co_yield start;
 
-    for (auto w = 0_uz; w < 10_uz; ++w) {
-        auto min_w = w;
-        auto max_w = w;
-        auto new_w = w;
-        auto forward = false;
-
-        for (auto i = 0_uz; i < 10_uz; ++i) {
-            r[w * 10_uz + i] = static_cast<font_weight>(new_w);
-
+    auto min = start;
+    auto max = start;
+    auto forward = false;
+    while (min > font_weight::thin and max < font_weight::extra_black) {
+        if ((forward and max == font_weight::extra_black) or (not forward and min == font_weight::thin)) {
             // Change direction to not overflow.
-            if ((forward and max_w == 9_uz) or (not forward and min_w == 0_uz)) {
-                forward = not forward;
-            }
-
-            new_w = forward ? ++max_w : --min_w;
-
-            // Change direction to zig-zag.
             forward = not forward;
         }
+
+        if (forward) {
+            co_yield ++max;
+        } else {
+            co_yield --min;
+        }
+
+        // Zig-zag through each weight.
+        forward = not forward;
     }
-    return r;
-}
-
-constexpr auto font_weight_alternative_table = font_weight_alternative_table_generator();
-
-[[nodiscard]] constexpr font_weight font_weight_alterative(font_weight weight, int i) noexcept
-{
-    hi_axiom(i >= 0 && i < 10);
-    auto w = static_cast<int>(weight);
-    hi_axiom(w >= 0 && w < 10);
-    return font_weight_alternative_table[(w * 10) + i];
 }
 
 } // namespace hi::inline v1
 
 template<typename CharT>
 struct std::formatter<hi::font_weight, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::font_weight const &t, auto &fc)
+    auto format(hi::font_weight const& t, auto& fc)
     {
         return std::formatter<std::string_view, CharT>::format(hi::to_string_view(t), fc);
     }

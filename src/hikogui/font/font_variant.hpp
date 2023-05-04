@@ -15,72 +15,68 @@ namespace hi::inline v1 {
  * monospace, serif, condensed, expanded & optical-size are all part of the font family.
  */
 class font_variant {
-    uint8_t value;
-
 public:
-    constexpr static int max()
+    [[nodiscard]] constexpr static size_t size() noexcept
     {
-        return 20;
-    }
-    constexpr static int half()
-    {
-        return max() / 2;
+        return font_weight_metadata.size() * font_style_metadata.size();
     }
 
     constexpr font_variant(font_weight weight, font_style style) noexcept :
-        value(narrow_cast<uint8_t>(static_cast<int>(weight) + (style == font_style::italic ? half() : 0)))
+        _value(narrow_cast<uint8_t>((to_underlying(weight) << 1) | to_underlying(style)))
     {
     }
+
     constexpr font_variant() noexcept : font_variant(font_weight::regular, font_style::normal) {}
     constexpr font_variant(font_weight weight) noexcept : font_variant(weight, font_style::normal) {}
     constexpr font_variant(font_style style) noexcept : font_variant(font_weight::regular, style) {}
 
+    [[nodiscard]] constexpr operator size_t() const noexcept
+    {
+        return to_underlying(style()) + to_underlying(weight()) * font_style_metadata.size();
+    }
+
     [[nodiscard]] size_t hash() const noexcept
     {
-        return std::hash<uint8_t>{}(value);
+        return std::hash<uint8_t>{}(_value);
     }
 
     constexpr font_weight weight() const noexcept
     {
-        hi_axiom(value < max());
-        return static_cast<font_weight>(value % half());
+        return static_cast<font_weight>(_value >> 1);
     }
 
     [[nodiscard]] constexpr font_style style() const noexcept
     {
-        hi_axiom(value < max());
-        return static_cast<font_style>(value >= half());
+        return static_cast<font_style>(_value & 1);
     }
 
     constexpr font_variant& set_weight(font_weight rhs) noexcept
     {
-        value = narrow_cast<uint8_t>(static_cast<int>(rhs) + (style() == font_style::italic ? half() : 0));
-        hi_axiom(value < max());
+        _value &= 1;
+        _value |= to_underlying(rhs) << 1;
         return *this;
     }
 
     constexpr font_variant& set_style(font_style rhs) noexcept
     {
-        value = narrow_cast<uint8_t>(static_cast<int>(weight()) + (rhs == font_style::italic ? half() : 0));
-        hi_axiom(value < max());
+        _value &= 0x1e;
+        _value |= to_underlying(rhs);
         return *this;
     }
 
-    constexpr operator int() const noexcept
-    {
-        hi_axiom(value < max());
-        return value;
-    }
-
     /** Get an alternative font variant.
-     * @param i 0 is current value, 1 is best alternative, 15 is worst alternative.
+     *
+     * @param start The start of the alternative search for a font_variant.
+     * @return Generated font-variants starting with @a start then zig-zag
+     *         through weights, followed by zig-zag through styles.
      */
-    constexpr font_variant alternative(int i) const noexcept
+    [[nodiscard]] friend generator<font_variant> alternatives(font_variant const& start) noexcept
     {
-        hi_axiom(i >= 0 && i < max());
-        hilet w = font_weight_alterative(weight(), i % half());
-        hilet it = (style() == font_style::italic) == (i < half());
-        return {w, static_cast<font_style>(it)};
+        for (hilet s : alternatives(start.style())) {
+            for (hilet w : alternatives(start.weight())) {
+                co_yield font_variant{w, s};
+            }
+        }
     }
 
     [[nodiscard]] friend std::string to_string(font_variant const& rhs) noexcept
@@ -92,6 +88,14 @@ public:
     {
         return lhs << to_string(rhs);
     }
+
+private:
+    /** The weight and style compressed in a single value.
+    *
+    * - [0:0] 2 different font-styles
+    * - [5:1] 10 different font-weights.
+    */
+    uint8_t _value;
 };
 
 } // namespace hi::inline v1

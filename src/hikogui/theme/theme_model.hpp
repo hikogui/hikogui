@@ -529,16 +529,18 @@ public:
         return r;
     }
 
-    [[nodiscard]] static theme_model_base& model_by_key(std::string const& key) noexcept
+    [[nodiscard]] static theme_model_base& model_by_key(std::string const& key)
     {
         hilet lock = std::scoped_lock(_map_mutex);
-        auto it = _map.find(key);
 
-        hi_assert(it != _map.end());
-        auto *ptr = it->second;
+        if (hilet it = _map.find(key); it != _map.end()) {
+            auto * const ptr = it->second;
 
-        hi_assert_not_null(ptr);
-        return *ptr;
+            hi_axiom_not_null(ptr);
+            return *ptr;
+        } else {
+            throw std::out_of_range(std::format("Could not find '{}'", key));
+        }
     }
 
 private:
@@ -588,8 +590,9 @@ inline auto theme = theme_model<Tag>{};
  *
  * @param key The key of the model to get.
  * @return A theme's model for the key.
+ * @throw std::out_of_range
  */
-[[nodiscard]] inline theme_model_base& theme_model_by_key(std::string const& key) noexcept
+[[nodiscard]] inline theme_model_base& theme_model_by_key(std::string const& key)
 {
     return theme_model_base::model_by_key(key);
 }

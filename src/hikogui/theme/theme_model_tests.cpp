@@ -15,7 +15,7 @@ TEST(theme_model, pixel_length)
         }
     };
 
-    auto &m = hi::theme_model_by_key("pixel-length-test");
+    auto &m = hi::theme_model_by_key("/pixel-length-test");
     m[hi::theme_state::enabled].width = hi::pixels{42};
 
     // Pixels aren't scaled
@@ -33,7 +33,7 @@ TEST(theme_model, dip_length)
         }
     };
 
-    auto& m = hi::theme_model_by_key("dip-length-test");
+    auto& m = hi::theme_model_by_key("/dip-length-test");
     m[hi::theme_state::enabled].width = hi::dips{42};
 
     // Device independent pixels are scaled.
