@@ -8,51 +8,77 @@
 
 #pragma once
 
-namespace hi {
-inline namespace v1 {
+namespace hi { inline namespace v1 {
+namespace geo {
 
 /** The 4 radii of the corners of a quad or rectangle.
- * 
+ *
  * @ingroup geometry
  */
+template<typename T>
 class corner_radii {
 public:
-    constexpr corner_radii(corner_radii const &) noexcept = default;
-    constexpr corner_radii(corner_radii &&) noexcept = default;
-    constexpr corner_radii &operator=(corner_radii const &) noexcept = default;
-    constexpr corner_radii &operator=(corner_radii &&) noexcept = default;
+    using value_type = T;
+    using array_type = simd<value_type, 4>;
 
-    [[nodiscard]] constexpr corner_radii() noexcept : corner_radii(-std::numeric_limits<float>::infinity()) {}
-    [[nodiscard]] constexpr corner_radii(float radius) noexcept : _v(radius, radius, radius, radius) {}
-    [[nodiscard]] constexpr corner_radii(float lb, float rb, float lt, float rt) noexcept : _v(lb, rb, lt, rt) {}
+    constexpr corner_radii(corner_radii const&) noexcept = default;
+    constexpr corner_radii(corner_radii&&) noexcept = default;
+    constexpr corner_radii& operator=(corner_radii const&) noexcept = default;
+    constexpr corner_radii& operator=(corner_radii&&) noexcept = default;
+
+    [[nodiscard]] constexpr corner_radii() noexcept : corner_radii(-std::numeric_limits<value_type>::lowest()) {}
+    [[nodiscard]] constexpr corner_radii(value_type radius) noexcept : _v(radius, radius, radius, radius) {}
+    [[nodiscard]] constexpr corner_radii(value_type lb, value_type rb, value_type lt, value_type rt) noexcept : _v(lb, rb, lt, rt)
+    {
+    }
 
     /** Construct a corner_radii from a simd.
      *
      * @param v The 4 radii, x=left-bottom, y=right-bottom, z=left-top, w=right-top.
      */
-    [[nodiscard]] constexpr explicit corner_radii(f32x4 v) noexcept : _v(v) {}
+    [[nodiscard]] constexpr explicit corner_radii(array_type v) noexcept : _v(v) {}
 
-    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
+    [[nodiscard]] constexpr explicit operator array_type() const noexcept
     {
         return _v;
     }
 
-    [[nodiscard]] constexpr float left_bottom() const noexcept
+    [[nodiscard]] constexpr value_type left_bottom() const noexcept
     {
         return _v.x();
     }
 
-    [[nodiscard]] constexpr float right_bottom() const noexcept
+    [[nodiscard]] constexpr value_type right_bottom() const noexcept
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr float left_top() const noexcept
+    [[nodiscard]] constexpr value_type left_top() const noexcept
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr float right_top() const noexcept
+    [[nodiscard]] constexpr value_type right_top() const noexcept
+    {
+        return _v.w();
+    }
+
+    [[nodiscard]] constexpr value_type& left_bottom() noexcept
+    {
+        return _v.x();
+    }
+
+    [[nodiscard]] constexpr value_type& right_bottom() noexcept
+    {
+        return _v.y();
+    }
+
+    [[nodiscard]] constexpr value_type& left_top() noexcept
+    {
+        return _v.z();
+    }
+
+    [[nodiscard]] constexpr value_type& right_top() noexcept
     {
         return _v.w();
     }
@@ -63,7 +89,7 @@ public:
      * @return The corner radius.
      */
     template<int I>
-    [[nodiscard]] constexpr friend float get(corner_radii const &rhs) noexcept
+    [[nodiscard]] constexpr friend float get(corner_radii const& rhs) noexcept
     {
         return get<I>(rhs._v);
     }
@@ -78,19 +104,33 @@ public:
         return _v[i];
     }
 
-    [[nodiscard]] constexpr friend corner_radii operator+(corner_radii const &lhs, float rhs) noexcept
+    [[nodiscard]] constexpr friend corner_radii operator+(corner_radii const& lhs, value_type rhs) noexcept
     {
-        return corner_radii{f32x4{lhs} + rhs};
+        return corner_radii{array_type{lhs} + rhs};
     }
 
-    [[nodiscard]] constexpr friend corner_radii operator-(corner_radii const &lhs, float rhs) noexcept
+    [[nodiscard]] constexpr friend corner_radii operator-(corner_radii const& lhs, value_type rhs) noexcept
     {
-        return corner_radii{f32x4{lhs} - rhs};
+        return corner_radii{array_type{lhs} - rhs};
     }
 
 private:
-    f32x4 _v;
+    array_type _v;
 };
 
-}} // namespace hi::inline v1
+} // namespace geo
 
+using corner_radii = geo::corner_radii<float>;
+using corner_radiii = geo::corner_radii<int>;
+
+template<>
+[[nodiscard]] constexpr corner_radii narrow_cast(corner_radiii const& rhs) noexcept
+{
+    return {
+        narrow_cast<float>(rhs.left_bottom()),
+        narrow_cast<float>(rhs.right_bottom()),
+        narrow_cast<float>(rhs.left_top()),
+        narrow_cast<float>(rhs.right_top())};
+}
+
+}} // namespace hi::v1

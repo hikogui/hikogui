@@ -244,6 +244,10 @@ elseif (MSVC)
     # The hikogui generic tokenizer uses large constexpr tables.
     target_compile_options(hikogui PUBLIC "-constexpr:steps100000000")
 
+    # C1128 number of sections exceed object file format limit: compile with /bigobj
+    # HikoGUI is big now, hopefully can be fixed when going modular.
+    target_compile_options(hikogui PUBLIC "-bigobj")
+
     # C4068: unknown pragma.
     # Ignore unknown pragmas, needed for other compilers.
     target_compile_options(hikogui PUBLIC -wd4068)
@@ -417,7 +421,7 @@ add_shader_target(hikogui_shaders
 )
 
 set(hikogui_resource_files
-    resources/themes/hikogui_dark.theme.json
+    resources/themes/hikogui_dark.css
     resources/themes/hikogui_light.theme.json
     resources/fonts/elusiveicons-webfont.ttf
     resources/fonts/hikogui_icons.ttf

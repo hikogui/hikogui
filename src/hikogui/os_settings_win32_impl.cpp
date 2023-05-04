@@ -24,10 +24,10 @@ namespace hi::inline v1 {
 {
     hilet strings = registry_read_current_user_multi_string("Control Panel\\International\\User Profile", "Languages");
 
-    auto r = std::vector<language_tag>{};
+    auto r = std::vector<hi::language_tag>{};
     r.reserve(strings.size());
     for (hilet& string : strings) {
-        r.push_back(language_tag{string});
+        r.push_back(hi::language_tag{string});
     }
     return r;
 }

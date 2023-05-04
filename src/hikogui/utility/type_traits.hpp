@@ -319,7 +319,7 @@ struct common_integer<L,R> {
         std::conditional_t<(sizeof(L) < sizeof(short)), short,
         std::conditional_t<(sizeof(L) < sizeof(int)), int,
         std::conditional_t<(sizeof(L) < sizeof(long)), long, long long>>>;
-        
+
     using type = common_integer<_left_type, R>::type;
 };
 
@@ -484,7 +484,7 @@ template<typename T> struct smart_pointer_traits<T *> {constexpr static bool val
         } \
     }()
 
-/** All values of numeric type `In` can be represented without loss of precision by numeric type `Out`.
+/** All values of numeric type `In` can be represented without loss of range by numeric type `Out`.
  */
 template<typename Out, typename In>
 constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeric_limits<In>::digits and

@@ -2,13 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+// import hikogui;
+// import hikogui.crt;
+
 #include "hikogui/module.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/text_widget.hpp"
-#include "hikogui/widgets/radio_button_widget.hpp"
-#include "hikogui/GFX/RenderDoc.hpp"
+#include "hikogui/task.hpp"
 #include "hikogui/crt.hpp"
-#include "hikogui/log.hpp"
 #include "hikogui/loop.hpp"
 
 using namespace hi;
@@ -16,7 +15,7 @@ using namespace hi;
 int hi_main(int argc, char *argv[])
 {
     auto gui = gui_system::make_unique();
-    auto window = gui->make_window(tr("Label example"));
+    auto [window, widget] = gui->make_window<hi::window_widget<>>(tr("Label example"));
 
     // Start the logger system, so logging is done asynchronously.
     hi::log::start_subsystem(hi::global_state_type::log_level_info);
@@ -77,9 +76,9 @@ int hi_main(int argc, char *argv[])
         "Excepteur sint occaecat cupidatat non \xd7\x95\xd7\x99\xd7\xa7\xd7\x99\xd7\x9e\xd7\x93\xd7\x99\xd7\x94, "
         "sunt in culpa qui officia deserunt mollit anim id est laborum.");
 
-    auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
+    auto text = to_text(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
-    auto& tw = window->content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
+    auto& tw = widget.content().make_widget<text_widget<>>("A1", text, hi::alignment::top_justified());
     tw.mode = hi::widget_mode::enabled;
 
     auto close_cb = window->closing.subscribe(

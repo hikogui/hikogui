@@ -50,38 +50,38 @@ public:
      *
      * @param str The string to be parsed.
      */
-    glob_pattern(std::u32string_view str) : _tokens(parse(str)) {}
+    constexpr glob_pattern(std::u32string_view str) : _tokens(parse(str)) {}
 
     /** Parse a string to a glob-pattern.
      *
      * @param str The string to be parsed.
      */
-    glob_pattern(std::u32string const& str) : glob_pattern(std::u32string_view{str}) {}
+    constexpr glob_pattern(std::u32string const& str) : glob_pattern(std::u32string_view{str}) {}
 
     /** Parse a string to a glob-pattern.
      *
      * @param str The string to be parsed.
      */
-    glob_pattern(char32_t const *str) : glob_pattern(std::u32string_view{str}) {}
+    constexpr glob_pattern(char32_t const *str) : glob_pattern(std::u32string_view{str}) {}
 
     /** Parse a string to a glob-pattern.
      *
      * @param str The string to be parsed.
      */
-    glob_pattern(std::string_view str) : glob_pattern(hi::to_u32string(str)) {}
+    constexpr glob_pattern(std::string_view str) : glob_pattern(hi::to_u32string(str)) {}
 
     /** Parse a string to a glob-pattern.
      *
      * @param str The string to be parsed.
      */
-    glob_pattern(std::string const& str) : glob_pattern(std::string_view{str}) {}
+    constexpr glob_pattern(std::string const& str) : glob_pattern(std::string_view{str}) {}
 
     /** Parse a string to a glob-pattern.
      *
      * @param str The string to be parsed.
      */
 
-    glob_pattern(char const *str) : glob_pattern(std::string_view{str}) {}
+    constexpr glob_pattern(char const *str) : glob_pattern(std::string_view{str}) {}
 
     /** Parse a path to a glob-pattern.
      *

@@ -15,10 +15,12 @@ namespace hi { inline namespace v1 {
 /** A momentary button widget.
  * @ingroup widgets
  */
-class momentary_button_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class momentary_button_widget final : public abstract_button_widget<Name / "momentary-button"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name / "momentary-button">;
     using delegate_type = typename super::delegate_type;
+    constexpr static auto prefix = super::prefix;
 
     momentary_button_widget(
         widget *parent,
@@ -26,8 +28,8 @@ public:
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::middle_center();
-        set_attributes<0>(hi_forward(attributes)...);
+        this->alignment = alignment::middle_center();
+        this->set_attributes<0>(hi_forward(attributes)...);
     }
 
     momentary_button_widget(widget *parent, button_widget_attribute auto&&...attributes) noexcept :
@@ -36,14 +38,55 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _label_constraints = super::update_constraints();
+
+        auto constraints = _label_constraints;
+        constraints.minimum.width() += _label_constraints.margins.left() + _label_constraints.margins.right();
+        constraints.preferred.width() += _label_constraints.margins.left() + _label_constraints.margins.right();
+        constraints.maximum.width() += _label_constraints.margins.left() + _label_constraints.margins.right();
+        constraints.minimum.height() += _label_constraints.margins.bottom() + _label_constraints.margins.top();
+        constraints.preferred.height() += _label_constraints.margins.bottom() + _label_constraints.margins.top();
+        constraints.maximum.height() += _label_constraints.margins.bottom() + _label_constraints.margins.top();
+        constraints.margins = theme<prefix>.margin(this);
+        return constraints;
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(this->layout, context)) {
+            hilet label_rectangle = aarectanglei{context.size()} - _label_constraints.margins;
+
+            this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
+                box_shape{_label_constraints, label_rectangle, theme<prefix>.cap_height(this)};
+        }
+        super::set_layout(context);
+    }
+
+    void draw(widget_draw_context const& context) noexcept override
+    {
+        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
+            draw_label_button(context);
+            this->draw_button(context);
+        }
+    }
     /// @endprivatesection
 private:
     box_constraints _label_constraints;
 
-    void draw_label_button(draw_context const& context) noexcept;
+    void draw_label_button(widget_draw_context const& context) noexcept
+    {
+        // Move the border of the button in the middle of a pixel.
+        context.draw_box(
+            this->layout,
+            this->layout.rectangle(),
+            theme<prefix>.background_color(this),
+            theme<prefix>.border_color(this),
+            theme<prefix>.border_width(this),
+            border_side::inside,
+            theme<prefix>.border_radius(this));
+    }
 };
 
 }} // namespace hi::v1

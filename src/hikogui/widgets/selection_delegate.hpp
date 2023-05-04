@@ -14,7 +14,6 @@
 #include <vector>
 
 namespace hi { inline namespace v1 {
-class selection_widget;
 
 /** A delegate that controls the state of a selection_widget.
  *
@@ -28,22 +27,22 @@ public:
 
     virtual ~selection_delegate() = default;
 
-    virtual void init(selection_widget& sender) noexcept {}
+    virtual void init(widget& sender) noexcept {}
 
-    virtual void deinit(selection_widget& sender) noexcept {}
+    virtual void deinit(widget& sender) noexcept {}
 
     /** Called when an option is selected by the user.
      *
      * @param sender The widget that called this function.
      * @param index The index of the option selected, -1 if no option is selected.
      */
-    virtual void set_selected(selection_widget& sender, ssize_t index) noexcept {};
+    virtual void set_selected(widget& sender, ssize_t index) noexcept {};
 
     /** Retrieve the label of an option.
      *
      * @param sender The widget that called this function.
      */
-    virtual std::pair<std::vector<label>, ssize_t> options_and_selected(selection_widget const& sender) const noexcept
+    virtual std::pair<std::vector<label>, ssize_t> options_and_selected(widget const& sender) const noexcept
     {
         return {{}, -1};
     }
@@ -107,7 +106,7 @@ public:
     {
     }
 
-    void set_selected(selection_widget& sender, ptrdiff_t index) noexcept override
+    void set_selected(widget& sender, ptrdiff_t index) noexcept override
     {
         if (index == -1 || index >= std::ssize(*options)) {
             value = *off_value;
@@ -116,7 +115,7 @@ public:
         }
     }
 
-    std::pair<std::vector<label>, ptrdiff_t> options_and_selected(selection_widget const& sender) const noexcept override
+    std::pair<std::vector<label>, ptrdiff_t> options_and_selected(widget const& sender) const noexcept override
     {
         auto labels = std::vector<label>{};
         labels.reserve(options->size());

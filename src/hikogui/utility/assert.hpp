@@ -36,6 +36,14 @@ namespace hi { inline namespace v1 {
     return index_ < upper_;
 }
 
+[[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto index, std::signed_integral auto upper) noexcept
+{
+    if (upper <= 0) {
+        return false;
+    }
+    return bound_check(index, static_cast<std::make_unsigned_t<decltype(upper)>>(upper));
+}
+
 /** Check if an index is between the lower (inclusive) and upper (exclusive).
  *
  * @note It is undefined behavior when @a upper is lower than @a lower.
@@ -52,7 +60,14 @@ namespace hi { inline namespace v1 {
     auto lower_ = static_cast<value_type>(lower);
     auto upper_ = static_cast<value_type>(upper);
 
-    hi_axiom(lower_ <= upper_);
+#ifndef NDEBUG
+    if (not (lower_ < upper_)) {
+        hi_debug_abort("bound_check() lower is greater than upper.");
+    }
+#else
+    hi_assume(lower_ < upper_);
+#endif
+
     return index_ >= lower_ and index_ < upper_;
 }
 
@@ -83,10 +98,10 @@ concept bound_check_range_helper = requires(Context&& range) {
 }
 
 /** Check if the expression is valid, or throw a parse_error.
-* 
+*
 * This function is used to check if an expression is correct during the
 * parsing of data.
-* 
+*
 * @param expression The expression to check.
 * @param message The message to set in the parse_error.
 * @param ... Optional format parameters for the message.
@@ -117,7 +132,7 @@ concept bound_check_range_helper = requires(Context&& range) {
 #define hi_check_bounds(x, ...) \
     do { \
         if (not ::hi::bound_check(x, __VA_ARGS__)) { \
-            throw parse_error("assert bounds: " hi_stringify(x) " between " hi_stringify(__VA_ARGS__)); \
+            throw parse_error("assert bounds: " hi_stringify(x) " between " hi_for_each(hi_stringify, (__VA_ARGS__))); \
         } \
     } while (false)
 
@@ -210,7 +225,7 @@ concept bound_check_range_helper = requires(Context&& range) {
 #define hi_assert_bounds(x, ...) \
     do { \
         if (not ::hi::bound_check(x, __VA_ARGS__)) { \
-            hi_debug_abort("assert bounds: " hi_stringify(x) " between " hi_stringify(__VA_ARGS__)); \
+            hi_debug_abort("assert bounds: " hi_stringify(x) " between " hi_for_each(hi_stringify, (__VA_ARGS__))); \
         } \
     } while (false)
 

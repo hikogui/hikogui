@@ -43,9 +43,10 @@ namespace hi { inline namespace v1 {
  *       `radio_button_widget` this is accomplished by sharing a delegate or a
  *       observer between the toolbar tab button and the tab widget.
  */
-class toolbar_tab_button_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class toolbar_tab_button_widget final : public abstract_button_widget<Name / "toolbar-tab-button"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name / "toolbar-tab-button">;
     using delegate_type = typename super::delegate_type;
 
     /** Construct a toolbar tab button widget.
@@ -53,7 +54,7 @@ public:
      * @param parent The parent widget that owns this radio button widget.
      * @param delegate The delegate to use to manage the state of the tab button widget.
      * @param attributes Different attributes used to configure the label's on the toolbar tab button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment` or `text_theme`. If one label is
      *                   passed it will be shown in all states. If two labels are passed
      *                   the first label is shown in on-state and the second for off-state.
      */
@@ -63,8 +64,8 @@ public:
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::top_center();
-        set_attributes<0>(hi_forward(attributes)...);
+        this->alignment = alignment::top_center();
+        this->set_attributes<0>(hi_forward(attributes)...);
     }
 
     /** Construct a toolbar tab button widget with a default button delegate.
@@ -75,7 +76,7 @@ public:
      * @param on_value An optional on-value. This value is used to determine which
      *             value yields an 'on' state.
      * @param attributes Different attributes used to configure the label's on the toolbar tab button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment` or `text_theme`. If one label is
      *                   passed it will be shown in all states. If two labels are passed
      *                   the first label is shown in on-state and the second for off-state.
      */
@@ -83,11 +84,7 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    toolbar_tab_button_widget(
-        widget *parent,
-        Value&& value,
-        OnValue&& on_value,
-        Attributes&&...attributes) noexcept
+    toolbar_tab_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires { make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)); }
         :
         toolbar_tab_button_widget(
@@ -102,23 +99,77 @@ public:
         // A toolbar tab button draws a focus line across the whole toolbar
         // which is beyond it's own clipping rectangle. The parent is the toolbar
         // so it will include everything that needs to be redrawn.
-        if (parent != nullptr) {
-            parent->request_redraw();
+        if (this->parent != nullptr) {
+            this->parent->request_redraw();
         } else {
             super::request_redraw();
         }
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
-    // @endprivatesection
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _label_constraints = super::update_constraints();
+
+        // On left side a check mark, on right side short-cut. Around the label extra margin.
+        hilet extra_size =
+            extent2i{theme<super::prefix>.spacing_horizontal(this) * 2, theme<super::prefix>.spacing_vertical(this)};
+        return _label_constraints + extra_size;
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(this->layout, context)) {
+            hilet label_rectangle = aarectanglei{
+                theme<super::prefix>.spacing_horizontal(this),
+                0,
+                context.width() - theme<super::prefix>.spacing_horizontal(this) * 2,
+                context.height() - theme<super::prefix>.spacing_vertical(this)};
+            this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
+                box_shape{_label_constraints, label_rectangle, theme<super::prefix>.cap_height(this)};
+        }
+        super::set_layout(context);
+    }
+
+    void draw(widget_draw_context const& context) noexcept override
+    {
+        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
+            draw_toolbar_tab_button(context);
+            this->draw_button(context);
+        }
+    }
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        return *this->mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
+    }
+
+    [[nodiscard]] bool is_tab_button() const noexcept override
+    {
+        return true;
+    }
+    /// @endprivatesection
 private:
     box_constraints _label_constraints;
 
-    void draw_toolbar_tab_button(draw_context const& context) noexcept;
+    void draw_toolbar_tab_button(widget_draw_context const& context) noexcept
+    {
+        // Draw the outline of the button across the clipping rectangle to clip the
+        // bottom of the outline.
+        hilet offset = theme<super::prefix>.margin_bottom(this) + theme<super::prefix>.border_width(this);
+        hilet outline_rectangle = aarectanglei{0, -offset, this->layout.width(), this->layout.height() + offset};
+
+        // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
+        hilet button_z = *this->focus ? translate_z(0.6f) : translate_z(0.0f);
+
+        context.draw_box(
+            this->layout,
+            button_z * narrow_cast<aarectangle>(outline_rectangle),
+            theme<super::prefix>.background_color(this),
+            theme<super::prefix>.border_color(this),
+            theme<super::prefix>.border_width(this),
+            border_side::inside,
+            theme<super::prefix>.border_radius(this));
+    }
 };
 
 }} // namespace hi::v1

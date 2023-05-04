@@ -5,6 +5,8 @@
 #pragma once
 
 #include "grapheme.hpp"
+#include "unicode_normalization.hpp"
+#include "unicode_grapheme_cluster_break.hpp"
 #include "../utility/module.hpp"
 #include "../strings.hpp"
 #include <vector>
@@ -13,13 +15,13 @@
 template<>
 struct std::char_traits<hi::grapheme> {
     using char_type = hi::grapheme;
-    using int_type = hi::grapheme::value_type;
+    using int_type = int32_t;
     using off_type = std::streamoff;
     using state_type = std::mbstate_t;
     using pos_type = std::fpos<state_type>;
     using comparison_category = std::strong_ordering;
 
-    static constexpr void assign(char_type &r, char_type const &a) noexcept
+    static constexpr void assign(char_type& r, char_type const& a) noexcept
     {
         r = a;
     }
@@ -89,13 +91,13 @@ struct std::char_traits<hi::grapheme> {
         hi_axiom_not_null(s);
 
         std::size_t i = 0;
-        while (not s[i].empty()) {
+        while (s[i] != '\0') {
             ++i;
         }
         return i;
     }
 
-    static constexpr char_type const *find(const char_type *p, std::size_t count, const char_type &ch) noexcept
+    static constexpr char_type const *find(const char_type *p, std::size_t count, const char_type& ch) noexcept
     {
         hi_axiom_not_null(p);
 
@@ -109,14 +111,16 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr char_type to_char_type(int_type c) noexcept
     {
-        char_type r;
-        r._value = c;
-        return r;
+        auto tmp = hi::char_cast<char_type::value_type>(c);
+        if (tmp > 0x1f'ffff) {
+            tmp = 0;
+        }
+        return char_type{hi::intrinsic_t{}, tmp};
     }
 
     static constexpr int_type to_int_type(char_type c) noexcept
     {
-        return c._value;
+        return hi::char_cast<int_type>(c.intrinsic());
     }
 
     static constexpr bool eq_int_type(int_type c1, int_type c2) noexcept
@@ -126,14 +130,15 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr int_type eof() noexcept
     {
-        // An empty grapheme has all 21 bits to '1'.
-        return 0x1f'ffff;
+        return -1;
     }
 
     static constexpr int_type not_eof(int_type e) noexcept
     {
-        // When e is eof return the replacement character.
-        return e == eof() ? 0xfffd : e;
+        if (e < 0) {
+            e = 0;
+        }
+        return e;
     }
 };
 
@@ -146,47 +151,121 @@ namespace pmr {
 using gstring = std::pmr::basic_string<grapheme>;
 }
 
-/** Convert a UTF-32 string to a grapheme-string.
+/** Convert a UTF-32 string-view to a grapheme-string.
+ *
+ * Before conversion to `gstring` a string is first normalized using the Unicode
+ * normalization algorithm. By default it is normalized using NFC.
  *
  * @param rhs The UTF-32 string to convert.
- * @param new_line_char The new_line_character to use.
+ * @param config The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-[[nodiscard]] gstring to_gstring(std::u32string_view rhs, char32_t new_line_char = U'\u2029') noexcept;
-
-/** Convert a UTF-8 string to a grapheme-string.
-* 
-* @param rhs The UTF-8 string to convert.
-* @param new_line_char The new_line_character to use.
-* @return A grapheme-string.
- */
-[[nodiscard]] inline gstring to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029') noexcept
+[[nodiscard]] constexpr gstring
+to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
-    return to_gstring(to_u32string(rhs), new_line_char);
+    hilet normalized_string = unicode_normalize(rhs, config);
+
+    auto r = gstring{};
+    auto break_state = detail::grapheme_break_state{};
+    auto cluster = std::u32string{};
+
+    for (hilet code_point : normalized_string) {
+        if (detail::breaks_grapheme(code_point, break_state)) {
+            if (cluster.size() > 0) {
+                r += grapheme(composed_t{}, cluster);
+            }
+            cluster.clear();
+        }
+
+        cluster += code_point;
+    }
+    if (ssize(cluster) != 0) {
+        r += grapheme(composed_t{}, cluster);
+    }
+    return r;
 }
 
 /** Convert a UTF-8 string to a grapheme-string.
  *
+ * Before conversion to `gstring` a string is first normalized using the Unicode
+ * normalization algorithm. By default it is normalized using NFC.
+ *
  * @param rhs The UTF-8 string to convert.
- * @param new_line_char The new_line_character to use.
+ * @param config The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-[[nodiscard]] inline gstring to_gstring(std::string const &rhs, char32_t new_line_char = U'\u2029') noexcept
+[[nodiscard]] constexpr gstring
+to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
-    return to_gstring(std::string_view{rhs}, new_line_char);
+    return to_gstring(to_u32string(rhs), config);
 }
 
-[[nodiscard]] inline std::string to_string(gstring_view rhs) noexcept
+/** Convert a UTF-8 string to a grapheme-string.
+ *
+ * Before conversion to `gstring` a string is first normalized using the Unicode
+ * normalization algorithm. By default it is normalized using NFC.
+ *
+ * @param rhs The UTF-8 string to convert.
+ * @param config The attributes used for normalizing the input string.
+ * @return A grapheme-string.
+ */
+[[nodiscard]] constexpr gstring
+to_gstring(std::string const& rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
+{
+    return to_gstring(std::string_view{rhs}, config);
+}
+
+/** Convert a grapheme string to UTF-8.
+ *
+ * @param rhs The grapheme string view to convert to UTF-8
+ * @return The resulting UTF-8 string, in NFC normalization.
+ */
+[[nodiscard]] constexpr std::string to_string(gstring_view rhs) noexcept
 {
     auto r = std::string{};
     r.reserve(rhs.size());
-    for (hilet c: rhs) {
+    for (hilet c : rhs) {
         r += to_string(c);
     }
     return r;
 }
 
-[[nodiscard]] inline std::string to_string(gstring const &rhs) noexcept
+/** Convert a grapheme string to UTF-8.
+ *
+ * @param rhs The grapheme string view to convert to UTF-8
+ * @return The resulting wide-string, in NFC normalization.
+ */
+[[nodiscard]] constexpr std::wstring to_wstring(gstring_view rhs) noexcept
+{
+    auto r = std::wstring{};
+    r.reserve(rhs.size());
+    for (hilet c : rhs) {
+        r += to_wstring(c);
+    }
+    return r;
+}
+
+/** Convert a grapheme string to UTF-8.
+ *
+ * @param rhs The grapheme string view to convert to UTF-8
+ * @return The resulting UTF-32 string, in NFC normalization.
+ */
+[[nodiscard]] constexpr std::u32string to_u32string(gstring_view rhs) noexcept
+{
+    auto r = std::u32string{};
+    r.reserve(rhs.size());
+    for (hilet c : rhs) {
+        r += to_u32string(c);
+    }
+    return r;
+}
+
+/** Convert a grapheme string to UTF-8.
+ *
+ * @param rhs The grapheme string to convert to UTF-8
+ * @return The resulting UTF-32 string, in NFC normalization.
+ */
+[[nodiscard]] constexpr std::string to_string(gstring const& rhs) noexcept
 {
     return to_string(gstring_view{rhs});
 }
@@ -195,19 +274,7 @@ using gstring = std::pmr::basic_string<grapheme>;
 
 template<>
 struct std::hash<hi::gstring> {
-    [[nodiscard]] std::size_t operator()(hi::gstring const &rhs) noexcept
-    {
-        auto r = std::hash<std::size_t>{}(rhs.size());
-        for (hilet c: rhs) {
-            r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
-        }
-        return r;
-    }
-};
-
-template<>
-struct std::hash<hi::pmr::gstring> {
-    [[nodiscard]] std::size_t operator()(hi::pmr::gstring const &rhs) noexcept
+    [[nodiscard]] std::size_t operator()(hi::gstring const& rhs) noexcept
     {
         auto r = std::hash<std::size_t>{}(rhs.size());
         for (hilet c : rhs) {
@@ -217,3 +284,14 @@ struct std::hash<hi::pmr::gstring> {
     }
 };
 
+template<>
+struct std::hash<hi::pmr::gstring> {
+    [[nodiscard]] std::size_t operator()(hi::pmr::gstring const& rhs) noexcept
+    {
+        auto r = std::hash<std::size_t>{}(rhs.size());
+        for (hilet c : rhs) {
+            r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
+        }
+        return r;
+    }
+};

@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
-#include "../GUI/theme.hpp"
+#include "../GUI/module.hpp"
 #include "../geometry/module.hpp"
 #include "../layout/row_column_layout.hpp"
 #include <memory>
@@ -36,13 +35,14 @@ namespace hi { inline namespace v1 {
  * @tparam Axis the axis to lay out child widgets. Either `axis::horizontal` or
  * `axis::vertical`.
  */
-template<axis Axis>
+template<fixed_string Prefix, axis Axis>
 class row_column_widget final : public widget {
 public:
     static_assert(Axis == axis::horizontal or Axis == axis::vertical);
 
     using super = widget;
-    static constexpr hi::axis axis = Axis;
+    constexpr static hi::axis axis = Axis;
+    constexpr static auto prefix = Prefix;
 
     ~row_column_widget() {}
 
@@ -94,7 +94,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
     {
         for (hilet& child : _children) {
             co_yield *child.value;
@@ -103,8 +103,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         for (auto& child : _children) {
             child.set_constraints(child.value->update_constraints());
         }
@@ -114,8 +112,8 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            _children.set_layout(context.shape, theme().baseline_adjustment());
+        if (compare_store(layout, context)) {
+            _children.set_layout(context.shape, theme<prefix>.cap_height(this));
 
             for (hilet& child : _children) {
                 child.value->set_layout(context.transform(child.shape, 0.0f));
@@ -123,7 +121,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             for (hilet& child : _children) {
@@ -154,11 +152,13 @@ private:
 /** Lays out children in a row.
  * @ingroup widgets
  */
-using row_widget = row_column_widget<axis::x>;
+template<fixed_string Name = "">
+using row_widget = row_column_widget<join_path(Name, "row"), axis::x>;
 
 /** Lays out children in a column.
  * @ingroup widgets
  */
-using column_widget = row_column_widget<axis::y>;
+template<fixed_string Name = "">
+using column_widget = row_column_widget<join_path(Name, "column"), axis::y>;
 
 }} // namespace hi::v1

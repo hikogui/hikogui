@@ -4,10 +4,6 @@
 
 #include "hikogui/module.hpp"
 #include "hikogui/codec/png.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/GFX/RenderDoc.hpp"
-#include "hikogui/GFX/gfx_surface_delegate_vulkan.hpp"
-#include "hikogui/widgets/widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
 #include "hikogui/task.hpp"
@@ -17,11 +13,16 @@
 #include <cassert>
 
 // Every widget must inherit from hi::widget.
+template<hi::fixed_string Name = "">
 class triangle_widget : public hi::widget, public hi::gfx_surface_delegate_vulkan {
 public:
+    using super = hi::widget;
+    constexpr static auto prefix = Name / "my-widget";
+
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    triangle_widget(hi::widget *parent, hi::gfx_surface &surface) noexcept : widget(parent), _surface(surface) {
+    triangle_widget(hi::widget *parent, hi::gfx_surface& surface) noexcept : super(parent), _surface(surface)
+    {
         _surface.add_delegate(this);
     }
 
@@ -34,10 +35,6 @@ public:
     // or when a widget wants to change its constraints.
     [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
-        // Almost all widgets will reset the `_layout` variable here so that it will
-        // trigger the calculations in `set_layout()` as well.
-        _layout = {};
-
         // Certain expensive calculations, such as loading of images and shaping of text
         // can be done in this function.
 
@@ -45,7 +42,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return {{400, 300}, {640, 480}, {1024, 860}, hi::alignment{}, theme().margin()};
+        return {{400, 300}, {640, 480}, {1024, 860}, hi::alignment{}, hi::theme<prefix>.margin(this)};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -54,9 +51,9 @@ public:
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
     void set_layout(hi::widget_layout const& context) noexcept override
     {
-        // Update the `_layout` with the new context, in this case we want to do some
+        // Update the `layout` with the new context, in this case we want to do some
         // calculations when the size or location of the widget was changed.
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             auto view_port = context.rectangle_on_window();
             auto window_height = context.window_size.height();
 
@@ -75,7 +72,7 @@ public:
     //
     // This draw() function only draws the GUI part of the widget, there is another draw() function
     // that will draw the 3D part.
-    void draw(hi::draw_context const& context) noexcept override
+    void draw(hi::widget_draw_context const& context) noexcept override
     {
         // We request a redraw for each frame, in case the 3D model changes on each frame.
         // In normal cases we should take into account if the 3D model actually changes before requesting a redraw.
@@ -83,11 +80,11 @@ public:
 
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
+        if (*mode > hi::widget_mode::invisible and overlaps(context, layout)) {
             // The 3D drawing will be done directly on the swap-chain before the GUI is drawn.
             // By making a hole in the GUI we can show the 3D drawing underneath it, otherwise
             // the solid-background color of the GUI would show instead.
-            context.draw_hole(_layout, _layout.rectangle());
+            context.draw_hole(layout, layout.rectangle());
         }
     }
 
@@ -186,11 +183,11 @@ hi::task<> main_window(hi::gui_system& gui)
     auto icon = hi::icon(hi::png::load(hi::URL{"resource:vulkan_triangle.png"}));
 
     // Create a window, when `window` gets out-of-scope the window is destroyed.
-    auto window = gui.make_window(hi::label{std::move(icon), hi::tr("Vulkan Triangle")});
+    auto [window, widget] = gui.make_window<hi::window_widget<>>(hi::label{std::move(icon), hi::tr("Vulkan Triangle")});
 
     // Create the vulkan triangle-widget as the content of the window. The content
     // of the window is a grid, we only use the cell "A1" for this widget.
-    window->content().make_widget<triangle_widget>("A1", *window->surface);
+    widget.content().make_widget<triangle_widget<>>("A1", *window->surface);
 
     // Wait until the window is "closing" because the operating system says so, or when
     // the X is pressed.

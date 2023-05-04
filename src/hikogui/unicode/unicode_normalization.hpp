@@ -4,7 +4,10 @@
 
 #pragma once
 
-#include "unicode_decomposition_type.hpp"
+#include "ucd_decompositions.hpp"
+#include "ucd_compositions.hpp"
+#include "ucd_canonical_combining_classes.hpp"
+#include "unicode_description.hpp"
 #include "../utility/module.hpp"
 #include "../algorithm.hpp"
 #include <cstdint>
@@ -13,159 +16,298 @@
 
 namespace hi::inline v1 {
 
-// Windows.h defines small as a macro.
-#ifdef small
-#undef small
-#endif
-
-// clang-format off
-enum class unicode_normalization_mask {
-    decompose_canonical = 1 << to_underlying(unicode_decomposition_type::canonical),
-    decompose_font = 1 << to_underlying(unicode_decomposition_type::font),
-    decompose_noBreak = 1 << to_underlying(unicode_decomposition_type::noBreak),
-    decompose_initial = 1 << to_underlying(unicode_decomposition_type::initial),
-    decompose_medial = 1 << to_underlying(unicode_decomposition_type::medial),
-    decompose_final = 1 << to_underlying(unicode_decomposition_type::_final),
-    decompose_isolated = 1 << to_underlying(unicode_decomposition_type::isolated),
-    decompose_circle = 1 << to_underlying(unicode_decomposition_type::circle),
-    decompose_super = 1 << to_underlying(unicode_decomposition_type::super),
-    decompose_sub = 1 << to_underlying(unicode_decomposition_type::sub),
-    decompose_fraction = 1 << to_underlying(unicode_decomposition_type::fraction),
-    decompose_vertical = 1 << to_underlying(unicode_decomposition_type::vertical),
-    decompose_wide = 1 << to_underlying(unicode_decomposition_type::wide),
-    decompose_narrow = 1 << to_underlying(unicode_decomposition_type::narrow),
-    decompose_small = 1 << to_underlying(unicode_decomposition_type::small),
-    decompose_square = 1 << to_underlying(unicode_decomposition_type::square),
-    decompose_compat = 1 << to_underlying(unicode_decomposition_type::compat),
-
-    /** During decomposition remove control characters.
-     * This will also eliminate newline characters like CR, LF, CR+LF, NEL, VTAB & FF;
-     * these may be retained by using decompose_PS, decompose_LF or decompose_CRLF.
+struct unicode_normalize_config {
+    /** The types of decompositions, that should be used when decomposing.
      */
-    decompose_control = 1 << 25,
+    uint64_t decomposition_mask : 17 = 0;
 
-    /** Compose CR+LF into a single LF.
+    /** Drop the C0 control characters.
      */
-    compose_CRLF = 1 << 26,
+    uint64_t drop_C0 : 1 = 0;
 
-    /** Decompose any newline character into PS (Paragraph Separator).
+    /** Drop the C1 control characters.
+     */
+    uint64_t drop_C1 : 1 = 0;
+
+    /** Code-points to be treated as line-separators.
+     */
+    std::u32string line_separators;
+
+    /** Code-points to be treated as line-separators.
+     */
+    std::u32string paragraph_separators;
+
+    /** Code-points to be dropped.
+     */
+    std::u32string drop;
+
+    /** The code-point to output when a line separator was found.
      *
-     * @note Mutually exclusive with decompose_LF, decompose_CRLF and decompoase_newline_to_SP.
+     * If this value is the carriage return CR, then the decomposition algorithm will also emit a line-feed LF code-point.
      */
-    decompose_newline_to_PS = 1 << 27,
+    char32_t line_separator_character = unicode_LS;
 
-    /** Decompose any newline character into LF (Line Feed).
+    /** The code-points to output when a paragraph separator was found.
      *
-     * @note Mutually exclusive with decompose_PS, decompose_CRLF and decompoase_newline_to_SP.
+     * If this value is the carriage return CR, then the decomposition algorithm will also emit a line-feed LF code-point.
      */
-    decompose_newline_to_LF = 1 << 28,
+    char32_t paragraph_separator_character = unicode_PS;
 
-    /** Decompose any newline character into CR+LF (Carriage Return + Line Feed).
-     *
-     * @note Mutually exclusive with decompose_PS, decompose_LF and decompoase_newline_to_SP.
-     */
-    decompose_newline_to_CRLF = 1 << 29,
+    constexpr unicode_normalize_config& add(unicode_decomposition_type type) noexcept
+    {
+        decomposition_mask |= 1_uz << to_underlying(type);
+        return *this;
+    }
 
-    /** Decompose any newline character into SP (Space).
-     *
-     * @note Mutually exclusive with decompose_PS, decompose_newline_to_CRLF and decompose_LF.
-     */
-    decompose_newline_to_SP = 1 << 30,
+    [[nodiscard]] constexpr static unicode_normalize_config NFD() noexcept
+    {
+        auto r = unicode_normalize_config();
+        r.add(unicode_decomposition_type::canonical);
+        return r;
+    }
 
-    /** Mask for one of decompose_PS, decompose_LF or decompose_CRLF
-     *
-     * @note Only one of decompose_PS, decompose_LF, decompose_CRLF can be used.
-     */
-    decompose_newline = decompose_newline_to_PS | decompose_newline_to_LF | decompose_newline_to_CRLF | decompose_newline_to_SP,
+    [[nodiscard]] constexpr static unicode_normalize_config NFC() noexcept
+    {
+        return NFD();
+    }
 
-    /** Canonical decomposition and composition.
+    /** Use NFC normalization, convert all line-feed-like characters to PS.
      */
-    NFD = decompose_canonical,
+    [[nodiscard]] constexpr static unicode_normalize_config NFC_PS_noctr() noexcept
+    {
+        auto r = NFC();
+        r.drop_C0 = 1;
+        r.drop_C1 = 1;
+        r.drop = U"\r";
+        r.paragraph_separators = U"\n\v\f\u0085\u2028\u2029";
+        r.paragraph_separator_character = U'\u2029';
+        return r;
+    }
 
-    /** Compatible decomposition and composition.
+    /** Use NFC normalization, convert all line-feed-like characters to CR-LF.
      */
-    NFKD =
-        NFD | decompose_font | decompose_noBreak | decompose_initial | decompose_medial | decompose_final | decompose_isolated |
-        decompose_circle | decompose_super | decompose_sub | decompose_fraction | decompose_vertical | decompose_wide |
-        decompose_narrow | decompose_small | decompose_square | decompose_compat,
+    [[nodiscard]] constexpr static unicode_normalize_config NFC_CRLF_noctr() noexcept
+    {
+        auto r = NFC();
+        r.drop_C0 = 1;
+        r.drop_C1 = 1;
+        r.drop = U"\r";
+        r.paragraph_separators = U"\n\v\f\u0085\u2028\u2029";
+        r.paragraph_separator_character = U'\r';
+        return r;
+    }
+
+    [[nodiscard]] constexpr static unicode_normalize_config NFKD() noexcept
+    {
+        auto r = unicode_normalize_config::NFD();
+        r.add(unicode_decomposition_type::canonical);
+        r.add(unicode_decomposition_type::font);
+        r.add(unicode_decomposition_type::noBreak);
+        r.add(unicode_decomposition_type::initial);
+        r.add(unicode_decomposition_type::medial);
+        r.add(unicode_decomposition_type::_final);
+        r.add(unicode_decomposition_type::isolated);
+        r.add(unicode_decomposition_type::circle);
+        r.add(unicode_decomposition_type::super);
+        r.add(unicode_decomposition_type::sub);
+        r.add(unicode_decomposition_type::fraction);
+        r.add(unicode_decomposition_type::vertical);
+        r.add(unicode_decomposition_type::wide);
+        r.add(unicode_decomposition_type::narrow);
+        r.add(unicode_decomposition_type::small);
+        r.add(unicode_decomposition_type::square);
+        r.add(unicode_decomposition_type::compat);
+        return r;
+    }
+
+    [[nodiscard]] constexpr static unicode_normalize_config NFKC() noexcept
+    {
+        return NFKD();
+    }
 };
-// clang-format on
 
-[[nodiscard]] constexpr unicode_normalization_mask decompose_newline_to(char32_t new_line_char) noexcept
+namespace detail {
+
+constexpr void unicode_decompose(char32_t code_point, unicode_normalize_config config, std::u32string& r) noexcept
 {
-    switch (new_line_char) {
-    case U'\n':
-        return unicode_normalization_mask::decompose_newline_to_LF;
-    case U'\r':
-        return unicode_normalization_mask::decompose_newline_to_CRLF;
-    case U'\u2029':
-        return unicode_normalization_mask::decompose_newline_to_PS;
-    case U' ':
-        return unicode_normalization_mask::decompose_newline_to_SP;
-    default:
-        hi_no_default();
+    for (hilet c : config.line_separators) {
+        if (code_point == c) {
+            r += config.line_separator_character;
+            if (config.line_separator_character == unicode_CR) {
+                r += unicode_LF;
+            }
+            return;
+        }
+    }
+
+    for (hilet c : config.paragraph_separators) {
+        if (code_point == c) {
+            r += config.paragraph_separator_character;
+            if (config.paragraph_separator_character == unicode_CR) {
+                r += unicode_LF;
+            }
+            return;
+        }
+    }
+
+    for (hilet c : config.drop) {
+        if (code_point == c) {
+            return;
+        }
+    }
+
+    if (config.drop_C0 and ((code_point >= U'\u0000' and code_point <= U'\u001f') or code_point == U'\u007f')) {
+        return;
+    }
+
+    if (config.drop_C1 and code_point >= U'\u0080' and code_point <= U'\u009f') {
+        return;
+    }
+
+    hilet decomposition_info = ucd_get_decomposition(code_point);
+    if (decomposition_info.should_decompose(config.decomposition_mask)) {
+        for (hilet c : decomposition_info.decompose()) {
+            unicode_decompose(c, config, r);
+        }
+
+    } else {
+        hilet ccc = ucd_get_canonical_combining_class(code_point);
+        r += code_point | (wide_cast<char32_t>(ccc) << 24);
     }
 }
 
-[[nodiscard]] constexpr bool to_bool(unicode_normalization_mask const& rhs) noexcept
+constexpr void unicode_decompose(std::u32string_view text, unicode_normalize_config config, std::u32string& r) noexcept
 {
-    return to_bool(to_underlying(rhs));
+    for (hilet c : text) {
+        unicode_decompose(c, config, r);
+    }
 }
 
-[[nodiscard]] constexpr unicode_normalization_mask
-operator|(unicode_normalization_mask const& lhs, unicode_normalization_mask const& rhs) noexcept
+constexpr void unicode_compose(std::u32string& text) noexcept
 {
-    return static_cast<unicode_normalization_mask>(to_underlying(lhs) | to_underlying(rhs));
+    if (text.size() <= 1) {
+        return;
+    }
+
+    // This algorithm reads using `i`-index and writes using the `j`-index.
+    // When compositing characters, `j` will lag behind.
+    auto i = 0_uz;
+    auto j = 0_uz;
+    while (i != text.size()) {
+        hilet code_unit = text[i++];
+        hilet code_point = code_unit & 0xff'ffff;
+        hilet combining_class = code_unit >> 24;
+        hilet first_is_starter = combining_class == 0;
+
+        if (code_unit == 0xffff'ffff) {
+            // Snuffed out by compositing in this algorithm.
+            // We continue going forward looking for code-points.
+
+        } else if (first_is_starter) {
+            // Try composing.
+            auto first_code_point = code_point;
+            char32_t previous_combining_class = 0;
+            for (auto k = i; k != text.size(); ++k) {
+                hilet second_code_unit = text[k];
+                hilet second_code_point = second_code_unit & 0xff'ffff;
+                hilet second_combining_class = second_code_unit >> 24;
+
+                hilet blocking_pair = previous_combining_class != 0 and previous_combining_class >= second_combining_class;
+                hilet second_is_starter = second_combining_class == 0;
+
+                hilet composed_code_point = ucd_get_composition(first_code_point, second_code_point);
+                if (composed_code_point and not blocking_pair) {
+                    // Found a composition.
+                    first_code_point = *composed_code_point;
+                    // The canonical combined DecompositionOrder is always zero.
+                    previous_combining_class = 0;
+                    // Snuff out the code-unit.
+                    text[k] = 0xffff'ffff;
+
+                } else if (second_is_starter) {
+                    // End after failing to compose with the next start-character.
+                    break;
+
+                } else {
+                    // The start character is not composing with this composingC.
+                    previous_combining_class = second_combining_class;
+                }
+            }
+            // Add the new combined character to the text.
+            text[j++] = first_code_point;
+
+        } else {
+            // Unable to compose this character.
+            text[j++] = code_point;
+        }
+    }
+
+    text.resize(j);
 }
 
-[[nodiscard]] constexpr unicode_normalization_mask
-operator&(unicode_normalization_mask const& lhs, unicode_normalization_mask const& rhs) noexcept
+constexpr void unicode_reorder(std::u32string& text) noexcept
 {
-    return static_cast<unicode_normalization_mask>(to_underlying(lhs) & to_underlying(rhs));
+    constexpr auto ccc_less = [](char32_t a, char32_t b) {
+        return (a >> 24) < (b >> 24);
+    };
+
+    hilet first = text.begin();
+    hilet last = text.end();
+
+    if (first == last) {
+        return;
+    }
+
+    auto cluster_it = first;
+    for (auto it = cluster_it + 1; it != last; ++it) {
+        if (*it <= 0xff'ffff) {
+            std::stable_sort(cluster_it, it, ccc_less);
+            cluster_it = it;
+        }
+    }
+
+    std::stable_sort(cluster_it, last, ccc_less);
 }
 
-[[nodiscard]] constexpr unicode_normalization_mask
-operator&(unicode_normalization_mask const& lhs, unicode_decomposition_type const& rhs) noexcept
+constexpr void unicode_clean(std::u32string& text) noexcept
 {
-    return static_cast<unicode_normalization_mask>(to_underlying(lhs) & (1 << to_underlying(rhs)));
+    // clean up the text by removing the upper bits.
+    for (auto& codePoint : text) {
+        codePoint &= 0x1f'ffff;
+    }
 }
 
-/** Convert text to Unicode-NFD normal form.
- *
- * Code point 0x00'ffff is used internally, do not pass in text.
+} // namespace detail
+
+/** Convert text to a Unicode decomposed normal form.
  *
  * @param text to normalize, in-place.
  * @param normalization_mask Extra features for normalization.
  */
-std::u32string
-unicode_NFD(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFD) noexcept;
+[[nodiscard]] constexpr std::u32string
+unicode_decompose(std::u32string_view text, unicode_normalize_config config = unicode_normalize_config::NFD()) noexcept
+{
+    auto r = std::u32string{};
+    detail::unicode_decompose(text, config, r);
+    detail::unicode_reorder(r);
+    detail::unicode_clean(r);
+    return r;
+}
 
-/** Convert text to Unicode-NFC normal form.
- *
- * Code point 0x00'ffff is used internally, do not pass in text.
+/** Convert text to a Unicode composed normal form.
  *
  * @param text to normalize, in-place.
  * @param normalization_mask Extra features for normalization.
  */
-[[nodiscard]] std::u32string
-unicode_NFC(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFD) noexcept;
-
-/** Convert text to Unicode-NFKD normal form.
- * Code point 0x00'ffff is used internally, do not pass in text.
- *
- * @param text to normalize, in-place.
- * @param normalization_mask Extra features for normalization.
- */
-std::u32string
-unicode_NFKD(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFKD) noexcept;
-
-/** Convert text to Unicode-NFKC normal form.
- * Code point 0x00'ffff is used internally, do not pass in text.
- *
- * @param text to normalize, in-place.
- * @param normalization_mask Extra features for normalization.
- */
-std::u32string
-unicode_NFKC(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFKD) noexcept;
+[[nodiscard]] constexpr std::u32string
+unicode_normalize(std::u32string_view text, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
+{
+    auto r = std::u32string{};
+    detail::unicode_decompose(text, config, r);
+    detail::unicode_reorder(r);
+    detail::unicode_compose(r);
+    detail::unicode_clean(r);
+    return r;
+}
 
 } // namespace hi::inline v1

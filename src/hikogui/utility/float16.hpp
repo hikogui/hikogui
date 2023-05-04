@@ -200,6 +200,14 @@ struct std::hash<hi::float16> {
     }
 };
 
+template<typename CharT>
+struct std::formatter<hi::float16, CharT> : std::formatter<float, CharT> {
+    constexpr auto format(hi::float16 const& t, auto& fc)
+    {
+        return std::formatter<float, CharT>::format(static_cast<float>(t), fc);
+    }
+};
+
 template<>
 struct std::numeric_limits<hi::float16> {
     using value_type = hi::float16;

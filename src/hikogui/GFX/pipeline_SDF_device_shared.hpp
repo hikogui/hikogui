@@ -45,7 +45,6 @@ struct device_shared {
     static constexpr float atlasTextureCoordinateMultiplier = 1.0f / atlasImageWidth;
     static constexpr float drawfontSize = 28.0f;
     static constexpr float drawBorder = sdf_r8::max_distance;
-    static constexpr float scaledDrawBorder = drawBorder / drawfontSize;
 
     gfx_device_vulkan const &device;
 
@@ -102,17 +101,14 @@ struct device_shared {
      */
     void prepare_atlas_for_rendering();
 
-    /** Get the bounding box, including draw border of a glyph.
-     */
-    aarectangle get_bounding_box(glyph_ids const &glyphs) const noexcept;
-
     /** Place vertices for a single glyph.
      *
      * @param vertices The list of vertices to add to.
      * @param clipping_rectangle The rectangle to clip the glyph.
      * @param box The rectangle of the glyph in window coordinates. The box's size must be the size
      *            of the glyph's bounding box times @a glyph_size.
-     * @param glyphs The font-id, composed-glyphs to render
+     * @param font The font to render the glyph from.
+     * @param glyph The glyph to render.
      * @param colors The color of each corner of the glyph.
      * @return True is atlas was updated.
      */
@@ -120,7 +116,8 @@ struct device_shared {
         vector_span<vertex> &vertices,
         aarectangle const &clipping_rectangle,
         quad const &box,
-        glyph_ids const &glyphs,
+        hi::font const &font,
+        glyph_id const &glyph,
         quad_color colors) noexcept;
 
 private:
@@ -129,20 +126,20 @@ private:
     void addAtlasImage();
     void buildAtlas();
     void teardownAtlas(gfx_device_vulkan const*vulkanDevice);
-    void add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info &info) noexcept;
+    void add_glyph_to_atlas(hi::font const &font, glyph_id glyph, glyph_atlas_info &info) noexcept;
 
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    hi_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(glyph_ids const &glyph) noexcept
+    hi_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(hi::font const &font, glyph_id glyph) noexcept
     {
-        auto &info = glyph.atlas_info();
+        auto &info = font.atlas_info(glyph);
 
         if (info) [[likely]] {
             return {&info, false};
 
         } else {
-            add_glyph_to_atlas(glyph, info);
+            add_glyph_to_atlas(font, glyph, info);
             return {&info, true};
         }
     }

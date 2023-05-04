@@ -147,13 +147,22 @@ public:
         return last_variant;
     }
 
+    /** Get the default-script for this language.
+     *
+     * This will expand the language-tag if necessary to get the script.
+     */
+    [[nodiscard]] iso_15924 default_script() const noexcept
+    {
+        return expand().script;
+    }
+
     /** The language direction for this language-tag.
      *
-     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left
+     * @return true if left-to-right language
      */
-    [[nodiscard]] unicode_bidi_class writing_direction() const noexcept
+    [[nodiscard]] bool left_to_right() const noexcept
     {
-        return expand().script.writing_direction();
+        return default_script().left_to_right();
     }
 
     [[nodiscard]] std::string to_string() const noexcept
@@ -173,9 +182,9 @@ public:
 
     /** Check if two language_tags match for their non-empty fields.
      */
-    [[nodiscard]] constexpr friend bool match(language_tag const& lhs, language_tag const& rhs) noexcept
+    [[nodiscard]] constexpr friend bool matches(language_tag const& lhs, language_tag const& rhs) noexcept
     {
-        if (lhs.language != rhs.language) {
+        if (lhs.language and rhs.language and lhs.language != rhs.language) {
             return false;
         }
         if (lhs.script and rhs.script and lhs.script != rhs.script) {
@@ -218,5 +227,21 @@ struct std::formatter<hi::language_tag, CharT> : std::formatter<std::string_view
     auto format(hi::language_tag const& t, auto& fc)
     {
         return std::formatter<std::string_view, CharT>::format(t.to_string(), fc);
+    }
+};
+
+// XXX C++23 should have this fixed?
+template<typename CharT>
+struct std::formatter<std::vector<hi::language_tag>, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(std::vector<hi::language_tag> const& t, auto& fc)
+    {
+        auto r = std::string{};
+        for (hilet language : t) {
+            if (not r.empty()) {
+                r += ", ";
+            }
+            r += std::format("{}", language);
+        }
+        return std::formatter<std::string_view, CharT>::format(r, fc);
     }
 };

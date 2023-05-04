@@ -6,7 +6,7 @@
 
 #include "otype_utilities.hpp"
 #include "../utility/module.hpp"
-#include "../i18n/language_tag.hpp"
+#include "../i18n/module.hpp"
 #include <span>
 #include <cstddef>
 
@@ -152,7 +152,7 @@ otype_name_search(std::span<std::byte const> bytes, uint16_t name_id, language_t
         hilet name_language = detail::otype_name_get_language(
             storage_bytes, language_tag_table, platform_id, platform_specific_id, *entry.language_id);
 
-        if (not match(name_language, language)) {
+        if (not matches(name_language, language)) {
             continue;
         }
 

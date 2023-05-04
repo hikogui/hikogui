@@ -31,7 +31,7 @@ Currently, the constrain attributes are:
 To calculate the constraints of a widget, potentially expensive calculations may need to be performed,
 such as loading glyph metrics and doing initial text shaping to determine the size of a label.
 It is recommended to store these calculations in member variables of your custom widget.
-Note: In the example below, `_layout` is reset so that calculations that depend on these member variables
+Note: In the example below, `layout` is reset so that calculations that depend on these member variables
 are triggered inside `set_layout()`.
 
 Therefor it is recommended to not request a reconstrain, unless the widget is expecting it's constraints
@@ -44,8 +44,6 @@ taken from the theme. The label widget itself is based on `theme().size()` and t
 ```cpp
 hi::box_constraints const &set_constraints(set_constraints_context const &context) noexcept override
 {
-    _layout = {};
-
     auto const label_constraints = _label_widget->set_constraints(context);
     _constraints.minimum = label_constraints.minimum;
     _constraints.preferred = label_constraints.preferred + theme().margin();
@@ -83,7 +81,7 @@ layout MUST be at least the size of the `minimum` constraint. Otherwise, it is p
 for calculations to underflow. Breaching the `maximum` constraint is less problematic for
 these calculations and is allowed and expected to happen.
 
-In the example below, the `_layout` of the widget is updated by the `context` argument.
+In the example below, the `layout` of the widget is updated by the `context` argument.
 If the size was changed during the update, then a new `_label_rectangle` is calculated,
 in the widget's local coordinate system.
 
@@ -94,7 +92,7 @@ passed to the child is calculated by transforming the context by the `_label_rec
 ```cpp
 void set_layout(hi::widget_layout const &layout) noexcept override
 {
-    if (compare_store(_layout, context)) {
+    if (compare_store(layout, context)) {
         _label_rectangle = align(layout.rectangle(), _label_widget->update_constraints().preferred, hi::alignment::middle_center);
     }
 
@@ -123,7 +121,7 @@ to draw outside the `scissor_rectangle`, but this will not be visible.
 The `display_time_point` includes the delays in the swap-chain for double or triple buffering and
 processing delays in the display device when supported by the operating system.
 
-The `draw_context::draw_*()` methods all accept the layout as the first argument, this allows the other arguments
+The `widget_draw_context::draw_*()` methods all accept the layout as the first argument, this allows the other arguments
 to the draw function to be in the local coordinate system. In certain cases, a widget may want to make a copy of the layout
 to temporarily change the clipping rectangle.
 
@@ -136,13 +134,13 @@ context-sensitive colors, which are based on the current theme's colors and may 
 state of the widget, like: keyboard focus, window active & mouse hover.
 
 ```cpp
-void draw(hi::draw_context const &context) noexcept override
+void draw(hi::widget_draw_context const &context) noexcept override
 {
     if (*mode > hi::widget_mode::invisible) {
-        if (overlaps(context, layout())) {
+        if (overlaps(context, layout)) {
             context.draw_box(
-                _layout,
-                _layout.rectangle(),
+                layout,
+                layout.rectangle(),
                 background_color(),
                 foreground_color(),
                 theme().border_width(),
@@ -170,7 +168,7 @@ The default `hitbox_test()` returns an empty `hitbox`, this means that the mouse
 hitting the widget, or the widget does not receive any mouse events at this time.
 
 To handle situations where your widget is scrolled outside a scroll view's aperture you should always use
-the `layout().constrains(position)` test which also checks the clipping rectangle.
+the `layout.constrains(position)` test which also checks the clipping rectangle.
 
 You can call `widget::hitbox_test_from_parent()` on any of the widget's children that can be interacted with.
 The `hitbox_test_from_parent()` will adjust the given position to the local coordinate system of the child widget.
@@ -179,7 +177,7 @@ You can also use this function to combine the `hitbox` results from several chil
 ```cpp
 [[nodiscard]] hi::hitbox hitbox_test(hi::point3 position) const noexcept override
 {
-    if (*mode >= hi::widget_mode::partial and layout().contains(position)) {
+    if (*mode >= hi::widget_mode::partial and layout.contains(position)) {
         return {id, position, hi::hitbox::Type::Button};
     } else {
         return {};
@@ -365,7 +363,7 @@ The example function below yields the pointer to both children stored as member 
 stored in a vector.
 
 ```cpp
-[[nodiscard]] hi::generator<widget const &> children(bool include_invisible) const noexcept override
+[[nodiscard]] hi::generator<widget const&> children(bool include_invisible) const noexcept override
 {
     co_yield _label_widget.get();
     co_yield _checkbox_widget.get();

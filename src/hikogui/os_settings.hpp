@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "i18n/language_tag.hpp"
-#include "i18n/language.hpp"
-#include "GUI/theme_mode.hpp"
-#include "GFX/subpixel_orientation.hpp"
+#include "i18n/module.hpp"
+#include "theme/module.hpp"
+#include "GFX/module.hpp"
 #include "geometry/module.hpp"
 #include "utility/module.hpp"
 #include "loop.hpp"
@@ -34,28 +33,14 @@ public:
         return _language_tags;
     }
 
-    /** Get the configured languages.
+    /** Get the primary language_tag.
      *
-     * @note The list of languages include both the configured region-specific-languages and the generic-languages.
-     * @return A list of languages in order of priority.
+     * @return The expanded primary language-tag; this includes the script and region.
      */
-    [[nodiscard]] static std::vector<language *> languages() noexcept
+    [[nodiscard]] static language_tag language_tag() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
-        hilet lock = std::scoped_lock(_mutex);
-        return _languages;
-    }
-
-    /** Get the configured writing direction.
-     *
-     * The writing-direction is extracted from the first language/script configured on the system.
-     *
-     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
-     */
-    [[nodiscard]] static unicode_bidi_class writing_direction() noexcept
-    {
-        hi_axiom(_populated.load(std::memory_order::acquire));
-        return _writing_direction.load(std::memory_order::relaxed);
+        return _language_tag.load(std::memory_order::relaxed);
     }
 
     /** Check if the configured writing direction is left-to-right.
@@ -64,7 +49,8 @@ public:
      */
     [[nodiscard]] static bool left_to_right() noexcept
     {
-        return writing_direction() == unicode_bidi_class::L;
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _left_to_right.load(std::memory_order::relaxed);
     }
 
     /** Check if the configured writing direction is right-to-left.
@@ -267,9 +253,9 @@ private:
 
     static inline notifier_type _notifier;
 
-    static inline std::vector<language_tag> _language_tags = {};
-    static inline std::vector<language *> _languages = {};
-    static inline std::atomic<hi::unicode_bidi_class> _writing_direction = hi::unicode_bidi_class::L;
+    static inline std::vector<hi::language_tag> _language_tags = {};
+    static inline std::atomic<bool> _left_to_right = true;
+    static inline std::atomic<hi::language_tag> _language_tag = hi::language_tag{"en-US"};
     static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
     static inline std::atomic<bool> _uniform_HDR = false;
     static inline std::atomic<hi::subpixel_orientation> _subpixel_orientation = hi::subpixel_orientation::unknown;
@@ -290,7 +276,7 @@ private:
     [[nodiscard]] static bool subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;
 
-    [[nodiscard]] static std::vector<language_tag> gather_languages();
+    [[nodiscard]] static std::vector<hi::language_tag> gather_languages();
     [[nodiscard]] static hi::theme_mode gather_theme_mode();
     [[nodiscard]] static hi::subpixel_orientation gather_subpixel_orientation();
     [[nodiscard]] static bool gather_uniform_HDR();

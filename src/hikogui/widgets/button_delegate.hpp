@@ -10,34 +10,12 @@
 
 #include "../notifier.hpp"
 #include "../observer.hpp"
+#include "../GUI/module.hpp"
 #include <type_traits>
 #include <memory>
 
 namespace hi { inline namespace v1 {
-
-class abstract_button_widget;
-
-/** The state of a button.
- * @ingroup widget_delegates
- */
-enum class button_state {
-    /** The 'off' state of a button.
-     */
-    off,
-
-    /** The 'on' state of a button.
-     */
-    on,
-
-    /** The other state of a button.
-     *
-     * For checkboxes the 'other' state is when the value it represents is
-     * neither 'on' or 'off'. Examples off this is when the checkbox is a parent
-     * in a tree structure, where 'other' represents that its children have
-     * different values.
-     */
-    other
-};
+class widget;
 
 /** A button delegate controls the state of a button widget.
  * @ingroup widget_delegates
@@ -50,19 +28,19 @@ public:
 
     virtual ~button_delegate() = default;
 
-    virtual void init(abstract_button_widget& sender) noexcept {}
+    virtual void init(widget& sender) noexcept {}
 
-    virtual void deinit(abstract_button_widget& sender) noexcept {}
+    virtual void deinit(widget& sender) noexcept {}
 
     /** Called when the button is pressed by the user.
      */
-    virtual void activate(abstract_button_widget& sender) noexcept {};
+    virtual void activate(widget& sender) noexcept {};
 
     /** Used by the widget to check the state of the button.
      */
-    [[nodiscard]] virtual button_state state(abstract_button_widget const& sender) const noexcept
+    [[nodiscard]] virtual widget_state state(widget const& sender) const noexcept
     {
-        return button_state::off;
+        return widget_state::off;
     }
 
     /** Subscribe a callback for notifying the widget of a data change.
@@ -110,16 +88,16 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(abstract_button_widget const& sender) const noexcept override
+    [[nodiscard]] widget_state state(widget const& sender) const noexcept override
     {
         if (*value == *on_value) {
-            return button_state::on;
+            return widget_state::on;
         } else {
-            return button_state::off;
+            return widget_state::off;
         }
     }
 
-    void activate(abstract_button_widget& sender) noexcept override
+    void activate(widget& sender) noexcept override
     {
         value = *on_value;
     }
@@ -189,18 +167,18 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(abstract_button_widget const& sender) const noexcept override
+    [[nodiscard]] widget_state state(widget const& sender) const noexcept override
     {
         if (*value == *on_value) {
-            return button_state::on;
+            return widget_state::on;
         } else if (*value == *off_value) {
-            return button_state::off;
+            return widget_state::off;
         } else {
-            return button_state::other;
+            return widget_state::other;
         }
     }
 
-    void activate(abstract_button_widget& sender) noexcept override
+    void activate(widget& sender) noexcept override
     {
         if (*value == *off_value) {
             value = *on_value;

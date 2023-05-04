@@ -7,20 +7,16 @@
 #include "text_shaper_char.hpp"
 #include "text_shaper_line.hpp"
 #include "text_cursor.hpp"
-#include "text_style.hpp"
+#include "text_theme.hpp"
+#include "text.hpp"
 #include "../layout/box_constraints.hpp"
 #include "../font/module.hpp"
 #include "../geometry/module.hpp"
-#include "../unicode/unicode_description.hpp"
-#include "../unicode/unicode_break_opportunity.hpp"
-#include "../unicode/unicode_bidi.hpp"
-#include "../unicode/grapheme.hpp"
-#include "../unicode/gstring.hpp"
+#include "../unicode/module.hpp"
 #include <vector>
 #include <tuple>
 
 namespace hi::inline v1 {
-class font_book;
 
 /** Text shaper.
  *
@@ -72,32 +68,17 @@ public:
      *  - middle, odd: y = 0 is the base-line of the middle line.
      *  - middle, even: y = 0 is half way between the base-lines of the middle two lines.
      *
-     * @param font_book The font_book instance to retrieve fonts from.
      * @param text The text as a vector of attributed graphemes.
      *             Use U+2029 as paragraph separator, and if needed U+2028 as line separator.
      * @param style The initial text-style to use to display the text.
-     * @param dpi_scale The scaling factor to use to scale a font's size to match the physical display.
      * @param alignment The alignment how to align the text.
-     * @param text_direction The default text direction when it can not be deduced from the text.
-     * @param script The script of the text.
+     * @param left_to_right The default text direction when it can not be deduced from the text.
      */
     [[nodiscard]] text_shaper(
-        hi::font_book& font_book,
-        gstring const& text,
-        text_style const& style,
-        float dpi_scale,
+        hi::text const& text,
+        hi::text_theme const &text_theme,
         hi::alignment alignment,
-        unicode_bidi_class text_direction,
-        unicode_script script = unicode_script::Common) noexcept;
-
-    [[nodiscard]] text_shaper(
-        hi::font_book& font_book,
-        std::string_view text,
-        text_style const& style,
-        float dpi_scale,
-        hi::alignment alignment,
-        unicode_bidi_class text_direction,
-        unicode_script script = unicode_script::Common) noexcept;
+        bool left_to_right) noexcept;
 
     [[nodiscard]] bool empty() const noexcept
     {
@@ -416,12 +397,6 @@ public:
     [[nodiscard]] text_cursor move_end_document(text_cursor cursor) const noexcept;
 
 private:
-    font_book *_font_book = nullptr;
-
-    /** The scaling factor to use to scale a font's size to match the physical pixels on the display.
-     */
-    float _dpi_scale;
-
     /** A list of character in logical order.
      *
      * @note Graphemes are not allowed to be typographical-ligatures.
@@ -455,10 +430,6 @@ private:
     /** Direction of the text as a whole.
      */
     unicode_bidi_class _text_direction;
-
-    /** The default script of the text.
-     */
-    unicode_script _script;
 
     /** A list of lines top-to-bottom order.
      *
@@ -497,9 +468,11 @@ private:
      */
     void position_glyphs(aarectangle rectangle, extent2 sub_pixel_size) noexcept;
 
-    /** Resolve the script of each character in text.
-     */
-    void resolve_script() noexcept;
+    /** Resolve the fonts and widths of each character in the text.
+    *
+    * @pre `resolve_script()` has been called.
+    */
+    void resolve_font_and_widths(hi::text_theme const &text_theme) noexcept;
 
     [[nodiscard]] std::pair<text_cursor, text_cursor>
     get_selection_from_break(text_cursor cursor, unicode_break_vector const& break_opportunities) const noexcept;

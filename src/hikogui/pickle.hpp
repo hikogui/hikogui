@@ -74,7 +74,7 @@ struct pickle<T> {
 
     [[nodiscard]] T decode(datum rhs) const
     {
-        if (auto *i = get_if<long long>(rhs)) {
+        if (auto *i = get_if<long long>(&rhs)) {
             if (*i < std::numeric_limits<T>::lowest() or *i > std::numeric_limits<T>::max()) {
                 throw parse_error(std::format("Encoded value is to out of range, got {}", rhs));
             }
@@ -94,10 +94,10 @@ struct pickle<T> {
 
     [[nodiscard]] T decode(datum rhs) const
     {
-        if (auto *f = get_if<double>(rhs)) {
+        if (auto *f = get_if<double>(&rhs)) {
             return static_cast<T>(*f);
 
-        } else if (auto *i = get_if<long long>(rhs)) {
+        } else if (auto *i = get_if<long long>(&rhs)) {
             return static_cast<T>(*i);
 
         } else {
@@ -115,7 +115,7 @@ struct pickle<bool> {
 
     [[nodiscard]] bool decode(datum rhs) const
     {
-        if (auto *b = get_if<bool>(rhs)) {
+        if (auto *b = get_if<bool>(&rhs)) {
             return *b;
 
         } else {
@@ -133,7 +133,7 @@ struct pickle<std::string> {
 
     [[nodiscard]] std::string decode(datum rhs) const
     {
-        if (auto *b = get_if<std::string>(rhs)) {
+        if (auto *b = get_if<std::string>(&rhs)) {
             return *b;
 
         } else {

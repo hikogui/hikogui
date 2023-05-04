@@ -406,7 +406,7 @@ public:
         }
 
         for (hilet& item : items) {
-            if (auto *s = get_if<std::string>(item.first)) {
+            if (auto *s = get_if<std::string>(&item.first)) {
                 add(*s);
             } else {
                 throw operation_error("BON8 object keys must be strings");
@@ -423,19 +423,19 @@ public:
 
 void BON8_encoder::add(datum const& value)
 {
-    if (auto s = get_if<std::string>(value)) {
+    if (auto s = get_if<std::string>(&value)) {
         add(*s);
-    } else if (auto b = get_if<bool>(value)) {
+    } else if (auto b = get_if<bool>(&value)) {
         add(*b);
     } else if (holds_alternative<nullptr_t>(value)) {
         add(nullptr);
-    } else if (auto i = get_if<long long>(value)) {
+    } else if (auto i = get_if<long long>(&value)) {
         add(*i);
-    } else if (auto f = get_if<double>(value)) {
+    } else if (auto f = get_if<double>(&value)) {
         add(*f);
-    } else if (auto v = get_if<datum::vector_type>(value)) {
+    } else if (auto v = get_if<datum::vector_type>(&value)) {
         add(*v);
-    } else if (auto m = get_if<datum::map_type>(value)) {
+    } else if (auto m = get_if<datum::map_type>(&value)) {
         add(*m);
     } else {
         throw operation_error("Datum value can not be encoded to BON8");

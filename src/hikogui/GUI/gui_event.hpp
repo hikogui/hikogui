@@ -17,7 +17,8 @@
 #include "keyboard_focus_group.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "mouse_buttons.hpp"
-#include "../unicode/grapheme.hpp"
+#include "../text/module.hpp"
+#include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
 #include "../chrono.hpp"
 #include <chrono>
@@ -201,7 +202,7 @@ public:
      * @param type Either `gui_event_type::text_edit_paste` or `gui_event_type::window_set_clipboard`.
      * @param text The clipboard data in text form.
      */
-    [[nodiscard]] static gui_event make_clipboard_event(gui_event_type type, std::string_view text) noexcept
+    [[nodiscard]] static gui_event make_clipboard_event(gui_event_type type, hi::text text) noexcept
     {
         auto r = gui_event{type};
         r.clipboard_data() = text;
@@ -243,7 +244,7 @@ public:
                 _data = aarectanglei{};
                 break;
             case gui_event_variant::clipboard_data:
-                _data = std::string{};
+                _data = hi::text{};
             default:;
             }
         }
@@ -333,16 +334,16 @@ public:
         return std::get<keyboard_target_data>(_data);
     }
 
-    [[nodiscard]] std::string& clipboard_data() noexcept
+    [[nodiscard]] hi::text& clipboard_data() noexcept
     {
         hi_assert(variant() == gui_event_variant::clipboard_data);
-        return std::get<std::string>(_data);
+        return std::get<hi::text>(_data);
     }
 
-    [[nodiscard]] std::string const& clipboard_data() const noexcept
+    [[nodiscard]] hi::text const& clipboard_data() const noexcept
     {
         hi_assert(variant() == gui_event_variant::clipboard_data);
-        return std::get<std::string>(_data);
+        return std::get<hi::text>(_data);
     }
 
     [[nodiscard]] constexpr bool operator==(gui_event_type event_type) const noexcept
@@ -406,7 +407,7 @@ public:
 
 private:
     using data_type =
-        std::variant<mouse_event_data, keyboard_virtual_key, keyboard_target_data, hi::grapheme, aarectanglei, std::string>;
+        std::variant<mouse_event_data, keyboard_virtual_key, keyboard_target_data, hi::grapheme, aarectanglei, hi::text>;
 
     gui_event_type _type;
     data_type _data;

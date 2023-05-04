@@ -7,27 +7,10 @@
 
 #pragma once
 
+#include "ucd_sentence_break_properties.hpp"
 #include <tuple>
 
 namespace hi::inline v1 {
-
-enum class unicode_sentence_break_property : uint8_t {
-    Other,
-    CR,
-    LF,
-    Extend,
-    Sep,
-    Format,
-    Sp,
-    Lower,
-    Upper,
-    OLetter,
-    Numeric,
-    ATerm,
-    SContinue,
-    STerm,
-    Close
-};
 
 namespace detail {
 
@@ -259,11 +242,12 @@ private:
 *
 * @param first An iterator to the first character.
 * @param last An iterator to the last character.
-* @param description_func A function to get a reference to unicode_description from a character.
+* @param code_point_func A function to get a code-point from an dereferenced iterator.
 * @return A list of unicode_break_opportunity before each character.
  */
-template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline unicode_break_vector unicode_sentence_break(It first, ItEnd last, DescriptionFunc const &description_func) noexcept
+template<typename It, typename ItEnd, typename CodePointFunc>
+[[nodiscard]] inline unicode_break_vector
+unicode_sentence_break(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
 {
     auto size = narrow_cast<size_t>(std::distance(first, last));
     auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
@@ -271,8 +255,8 @@ template<typename It, typename ItEnd, typename DescriptionFunc>
     auto infos = std::vector<detail::unicode_sentence_break_info>{};
     infos.reserve(size);
     std::transform(first, last, std::back_inserter(infos), [&] (hilet &item) {
-        hilet &description = description_func(item);
-        return detail::unicode_sentence_break_info{description.sentence_break_property()};
+        hilet code_point = code_point_func(item);
+        return detail::unicode_sentence_break_info{ucd_get_sentence_break_property(code_point)};
         });
 
     detail::unicode_sentence_break_SB1_SB4(r, infos);

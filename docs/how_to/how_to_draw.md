@@ -1,8 +1,8 @@
 How to draw
 ===========
 
-Drawing is done through the `hi::draw_context` object that is passed to
-`hi::widget::draw()` when drawing a frame. The `hi::draw_context` has
+Drawing is done through the `hi::widget_draw_context` object that is passed to
+`hi::widget::draw()` when drawing a frame. The `hi::widget_draw_context` has
 several `draw_*()` member functions that allow you to draw shapes,
 glyphs, text and images.
 
@@ -54,7 +54,7 @@ Drawing shapes
 In the example below we draw a rectangle with a border and rounded corners:
 
 ```cpp
-void draw(hi::draw_context const &context) noexcept override
+void draw(hi::widget_draw_context const &context) noexcept override
 {
     auto const polygon = hi::quad{
         point3{10.0f, 10.0f, 0.0f},
@@ -65,7 +65,7 @@ void draw(hi::draw_context const &context) noexcept override
     auto const blue = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const border_width = 2.0f
     auto const corners = hi::corner_radii{3.0f, 3.0f, 3.0f, 3.0f};
-    context.draw_box(_layout, polygon, red, blue, border_width, hi::border_side::inside, corners);
+    context.draw_box(layout, polygon, red, blue, border_width, hi::border_side::inside, corners);
 }
 ```
 
@@ -82,17 +82,17 @@ for anti-aliasing.
 In the example below we draw a circle with a border:
 
 ```cpp
-void draw(hi::draw_context const &context) noexcept override
+void draw(hi::widget_draw_context const &context) noexcept override
 {
     auto const polygon = hi::circle{point3{35.0f, 35.0f, 0.0f}, 25.0f};
     auto const red = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const border_width = 2.0f
-    context.draw_circle(_layout, polygon, line_width, red, hi::line_end_cap::round, hi::line_end_cap::round);
+    context.draw_circle(layout, polygon, line_width, red, hi::line_end_cap::round, hi::line_end_cap::round);
 }
 ```
 
-`hi::draw_context::draw_circle()` is a convenience-function for
-`hi::draw_context::draw_box()` A circle is a square with rounded corners
+`hi::widget_draw_context::draw_circle()` is a convenience-function for
+`hi::widget_draw_context::draw_box()` A circle is a square with rounded corners
 with the corner diameter set to the height/width of the square.
 
 When drawing circles among rectangular objects, it is recommended to
@@ -105,7 +105,7 @@ be the same size and aligned to the flat edges of the rectangles.
 In the example below we draw a line with rounded end points:
 
 ```cpp
-void draw(hi::draw_context const &context) noexcept override
+void draw(hi::widget_draw_context const &context) noexcept override
 {
     auto const line = hi::line{
         point3{10.0f, 10.0f, 0.0f},
@@ -113,12 +113,12 @@ void draw(hi::draw_context const &context) noexcept override
     auto const red = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const blue = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const line_width = 2.0f
-    context.draw_line(_layout, line, red, blue, border_width, hi::border_side::inside);
+    context.draw_line(layout, line, red, blue, border_width, hi::border_side::inside);
 }
 ```
 
-`hi::draw_context::draw_line()` is a convenience-function for
-`hi::draw_context::draw_box()` A line is a thin rectangle with rounded corners
+`hi::widget_draw_context::draw_line()` is a convenience-function for
+`hi::widget_draw_context::draw_box()` A line is a thin rectangle with rounded corners
 with the corner diameter set to the width of the line.
 
 When drawing horizontal or vertical lines, you may want to position the line so
@@ -152,7 +152,6 @@ a width and a height and then upload the image at a later time.
 ```cpp
 hi::box_constraints const &set_constraints(set_constraints_context const &context) noexcept override
 {
-    _layout = {};
     if (_image_was_modified.exchange(false)) {
         if (not (_image_backing = hi::paged_image{window.surface.get(), _image})) {
             // Could not get an image, retry.

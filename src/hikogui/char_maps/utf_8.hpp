@@ -33,65 +33,64 @@ struct char_map<"utf-8"> {
         return std::endian::native;
     }
 
-    template<typename It, typename EndIt>
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read_fallback(It& it, EndIt last) const noexcept
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read_fallback(char const cu) const noexcept
     {
-        hilet[code_point, valid] = fallback_encoder_type{}.read(it, last);
+        hilet str = std::string_view(&cu, 1_uz);
+        auto first = str.begin();
+        hilet[code_point, valid] = fallback_encoder_type{}.read(first, str.end());
         return {code_point, false};
     }
 
     template<typename It, typename EndIt>
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It& it, EndIt last) const noexcept
+    [[nodiscard]] hi_no_inline constexpr std::pair<char32_t, bool> read(It& it, EndIt last, char8_t first_cu) const noexcept
     {
-        hi_axiom(it != last);
-
-        auto cu = *it++;
-        if (not to_bool(cu & 0x80)) [[likely]] {
-            // ASCII character.
-            return {char_cast<char32_t>(cu), true};
-
-        } else if (it == last or (cu & 0xc0) == 0x80) [[unlikely]] {
+        if (it == last or (first_cu & 0xc0) == 0x80) {
             // A non-ASCII character at the end of string.
             // or an unexpected continuation code-unit should be treated as CP-1252.
-            --it;
-            return read_fallback(it, last);
+            return read_fallback(char_cast<char>(first_cu));
 
         } else {
-            hilet length = narrow_cast<uint8_t>(std::countl_one(char_cast<uint8_t>(cu)));
+            hilet length = narrow_cast<uint8_t>(std::countl_one(char_cast<uint8_t>(first_cu)));
             hi_axiom(length >= 2);
 
             // First part of the code-point.
-            auto cp = char_cast<char32_t>(cu & (0x7f >> length));
+            auto cu = first_cu;
+            cu <<= length;
+            cu >>= length;
+            auto cp = char_cast<char32_t>(cu);
 
             // Read the first continuation code-unit which is always here.
-            cu = *it++;
+            cu = char_cast<char8_t>(*it);
+
             cp <<= 6;
             cp |= cu & 0x3f;
-            if ((cu & 0xc0) != 0x80) [[unlikely]] {
+            if ((cu & 0xc0) != 0x80) {
                 // If the second code-unit is not a UTF-8 continuation character, treat the first
                 // code-unit as if it was CP-1252.
-                it -= 2;
-                return read_fallback(it, last);
+                return read_fallback(char_cast<char>(first_cu));
             }
 
-            // After we read the first two code-units how many more to do.
-            auto todo = length - 2;
-            if (todo > std::distance(it, last)) [[unlikely]] {
-                // If there is a start and a continuation code-unit in a row we consider this to be UTF-8 encoded.
-                // So at this point any errors are replaced with 0xfffd.
-                it = last;
-                return {0xfffd, false};
-            }
+            // If there are a start and a continuation code-unit in a sequence we consider this to be properly UTF-8 encoded.
+            // So from this point any errors are replaced with 0xfffd.
+            ++it;
 
-            while (todo--) {
-                cu = *it++;
-                cp <<= 6;
-                cp |= cu & 0x3f;
-                if ((cu & 0xc0) != 0x80) [[unlikely]] {
-                    // Unexpected end of sequence.
-                    --it;
+            for (uint8_t actual_length = 2; actual_length != length; ++actual_length) {
+                if (it == last) {
+                    // End-of-file
                     return {0xfffd, false};
                 }
+
+                cu = char_cast<char8_t>(*it);
+                if ((cu & 0b11'000000) != 0b10'000000) {
+                    // Unexpected end of sequence.
+                    return {0xfffd, false};
+                }
+
+                ++it;
+
+                // Shift in the next 6 bits.
+                cp <<= 6;
+                cp |= cu & 0b00'111111;
             }
 
             auto valid = true;
@@ -101,10 +100,26 @@ struct char_map<"utf-8"> {
             valid &= cp < 0xd800 or cp >= 0xe000;
             // Not overlong encoded.
             valid &= length == narrow_cast<uint8_t>((cp > 0x7f) + (cp > 0x7ff) + (cp > 0xffff) + 1);
-            if (not valid) [[unlikely]] {
+            if (not valid) {
                 return {0xfffd, false};
             }
             return {cp, true};
+        }
+    }
+
+    template<typename It, typename EndIt>
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It& it, EndIt last) const noexcept
+    {
+        hi_axiom(it != last);
+
+        auto cu = char_cast<char8_t>(*it);
+        ++it;
+        if (not to_bool(cu & 0x80)) [[likely]] {
+            // ASCII character.
+            return {char_cast<char32_t>(cu), true};
+
+        } else {
+            return read(it, last, cu);
         }
     }
 
@@ -122,17 +137,38 @@ struct char_map<"utf-8"> {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
-        hilet length = truncate<uint8_t>((code_point > 0x7f) + (code_point > 0x7ff) + (code_point > 0xffff));
-        if (auto i = length) {
-            do {
-                dst[i] = truncate<char8_t>((code_point & 0x3f) | 0x80);
-                code_point >>= 6;
-            } while (--i);
+        hilet num_cu = truncate<uint8_t>((code_point > 0x7f) + (code_point > 0x7ff) + (code_point > 0xffff));
 
-            code_point |= 0x780 >> length;
+        auto leading_ones = char_cast<int8_t>(uint8_t{0x80});
+        leading_ones >>= num_cu;
+        if (num_cu == 0) {
+            leading_ones = 0;
         }
-        dst[0] = truncate<char8_t>(code_point);
-        dst += length + 1_uz;
+
+        auto shift = num_cu * 6;
+
+        auto cu = truncate<uint8_t>(code_point >> shift);
+        cu |= truncate<uint8_t>(leading_ones);
+
+        // We can't cast `cu` to `dst` since it is not possible to get the
+        // value_type of an output-iterator, specifically the
+        // std::back_insert_iterator.
+        *dst = cu;
+        ++dst;
+
+        while (shift) {
+            shift -= 6;
+
+            cu = truncate<uint8_t>(code_point >> shift);
+            cu &= 0b00'111111;
+            cu |= 0b10'000000;
+
+            // We can't cast `cu` to `dst` since it is not possible to get the
+            // value_type of an output-iterator, specifically the
+            // std::back_insert_iterator.
+            *dst = cu;
+            ++dst;
+        }
     }
 
 #if defined(HI_HAS_SSE2)

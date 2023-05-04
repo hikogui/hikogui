@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/module.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -19,9 +19,11 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
+template<fixed_string Name = "">
 class scroll_aperture_widget : public widget {
 public:
     using super = widget;
+    constexpr static auto prefix = Name / "aperture";
 
     observer<int> content_width;
     observer<int> content_height;
@@ -91,14 +93,13 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
     {
         co_yield *_content;
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
         _content_constraints = _content->update_constraints();
 
         // The aperture can scroll so its minimum width and height are zero.
@@ -110,14 +111,14 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             aperture_width = context.width() - _content_constraints.margins.left() - _content_constraints.margins.right();
             aperture_height = context.height() - _content_constraints.margins.bottom() - _content_constraints.margins.top();
 
             // Start scrolling with the preferred size as minimum, so
             // that widgets in the content don't get unnecessarily squeezed.
             content_width = *aperture_width < _content_constraints.preferred.width() ? _content_constraints.preferred.width() :
-                                                                                        *aperture_width;
+                                                                                       *aperture_width;
             content_height = *aperture_height < _content_constraints.preferred.height() ?
                 _content_constraints.preferred.height() :
                 *aperture_height;
@@ -138,14 +139,14 @@ public:
                 -*offset_y + _content_constraints.margins.bottom(),
                 *content_width,
                 *content_height},
-            theme().baseline_adjustment()};
+            theme<prefix>.cap_height(this)};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
         _content->set_layout(context.transform(_content_shape, 1.0f, context.rectangle()));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(widget_draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             _content->draw(context);
@@ -159,8 +160,8 @@ public:
         if (*mode >= widget_mode::partial) {
             auto r = _content->hitbox_test_from_parent(position);
 
-            if (layout().contains(position)) {
-                r = std::max(r, hitbox{id, _layout.elevation});
+            if (layout.contains(position)) {
+                r = std::max(r, hitbox{id, layout.elevation});
             }
             return r;
 
@@ -174,8 +175,8 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (event == gui_event_type::mouse_wheel) {
-            hilet new_offset_x = *offset_x + narrow_cast<int>(event.mouse().wheel_delta.x() * theme().scale);
-            hilet new_offset_y = *offset_y + narrow_cast<int>(event.mouse().wheel_delta.y() * theme().scale);
+            hilet new_offset_x = *offset_x + narrow_cast<int>(event.mouse().wheel_delta.x() * _scale / -4);
+            hilet new_offset_y = *offset_y + narrow_cast<int>(event.mouse().wheel_delta.y() * _scale / -4);
             hilet max_offset_x = std::max(0, *content_width - *aperture_width);
             hilet max_offset_y = std::max(0, *content_height - *aperture_height);
 
@@ -191,16 +192,21 @@ public:
 
     void scroll_to_show(hi::aarectanglei to_show) noexcept override
     {
-        if (_layout) {
-            auto safe_rectangle = intersect(_layout.rectangle(), _layout.clipping_rectangle);
+        if (layout) {
+            auto safe_rectangle = intersect(layout.rectangle(), layout.clipping_rectangle);
             int delta_x = 0;
             int delta_y = 0;
 
-            if (safe_rectangle.width() > theme().margin<int>() * 2 and safe_rectangle.height() > theme().margin<int>() * 2) {
+            hilet margin = std::max({
+                theme<prefix>.margin_left(this),
+                theme<prefix>.margin_right(this),
+                theme<prefix>.margin_top(this),
+                theme<prefix>.margin_bottom(this)});
+            if (safe_rectangle.width() > margin * 2 and safe_rectangle.height() > margin * 2) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do
                 // with the margins that are needed here.
-                safe_rectangle = safe_rectangle - theme().margin<int>();
+                safe_rectangle = safe_rectangle - margin;
 
                 if (to_show.right() > safe_rectangle.right()) {
                     delta_x = to_show.right() - safe_rectangle.right();
@@ -221,7 +227,7 @@ public:
 
             // There may be recursive scroll view, and they all need to move until the rectangle is visible.
             if (parent) {
-                parent->scroll_to_show(_layout.to_parent * translate2i(delta_x, delta_y) * to_show);
+                parent->scroll_to_show(layout.to_parent * translate2i(delta_x, delta_y) * to_show);
             }
 
         } else {

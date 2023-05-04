@@ -7,8 +7,8 @@
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
-#include "../unicode/unicode_bidi_class.hpp"
-#include "../GFX/gfx_device.hpp"
+#include "../unicode/module.hpp"
+#include "../GFX/module.hpp"
 #include "../utility/module.hpp"
 #include "../observer.hpp"
 #include <span>
@@ -20,7 +20,6 @@
 namespace hi::inline v1 {
 class gfx_system;
 class vertical_sync;
-class theme_book;
 class keyboard_bindings;
 
 /** Graphics system
@@ -30,7 +29,6 @@ public:
     static inline os_handle instance;
 
     std::unique_ptr<gfx_system> gfx;
-    std::unique_ptr<hi::theme_book> theme_book;
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings;
 
     thread_id const thread_id;
@@ -51,27 +49,10 @@ public:
 
     virtual ~gui_system();
 
-    gui_system(const gui_system &) = delete;
-    gui_system &operator=(const gui_system &) = delete;
-    gui_system(gui_system &&) = delete;
-    gui_system &operator=(gui_system &&) = delete;
-
-    /** Initialize after construction.
-     * Call this function directly after the constructor on the same thread.
-     */
-    virtual void init() noexcept
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->init(*this);
-        }
-    }
-
-    virtual void deinit() noexcept
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
-    }
+    gui_system(const gui_system&) = delete;
+    gui_system& operator=(const gui_system&) = delete;
+    gui_system(gui_system&&) = delete;
+    gui_system& operator=(gui_system&&) = delete;
 
     void set_delegate(std::weak_ptr<gui_system_delegate> delegate) noexcept
     {
@@ -80,21 +61,31 @@ public:
 
     std::shared_ptr<gui_window> add_window(std::shared_ptr<gui_window> window);
 
-    /** Create a new window.
+    /** Create a new window with an embedded widget.
+     *
+     * @tparam WidgetType The widget to construct in the window.
+     * @param label The label for the window. The label is also passed to the
+     *              widget.
      * @param args The arguments that are forwarded to the constructor of
-     *             `hi::gui_window_win32`.
-     * @return A reference to the new window.
+     *             the window's widget.
+     * @return A shared_ptr to the new window and a reference to the widget.
      */
-    template<typename... Args>
-    std::shared_ptr<gui_window> make_window(Args &&...args)
+    template<typename WidgetType, typename... Args>
+    std::pair<std::shared_ptr<gui_window>, WidgetType&> make_window(hi::label const& label, Args&&...args)
     {
         hi_axiom(loop::main().on_thread());
 
-        // XXX abstract away the _win32 part.
-        auto window = std::make_shared<gui_window_win32>(*this, std::forward<Args>(args)...);
-        window->init();
+        auto widget = std::make_unique<WidgetType>(label, std::forward<Args>(args)...);
+        auto widget_ptr = widget.get();
 
-        return add_window(std::move(window));
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
+        auto window = std::make_shared<gui_window_win32>(*this, std::move(widget), label);
+#else
+#error "Not implemented"
+#endif
+        widget_ptr->set_window(*window);
+
+        return {add_window(std::move(window)), *widget_ptr};
     }
 
     /** Request all windows to constrain.
@@ -102,19 +93,16 @@ public:
     void request_reconstrain() noexcept;
 
 protected:
+    std::weak_ptr<gui_system_delegate> _delegate;
+
     gui_system(
         std::unique_ptr<gfx_system> gfx,
-        std::unique_ptr<hi::theme_book> theme_book,
         std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
 private:
-    std::weak_ptr<gui_system_delegate> _delegate;
-
-    /** The theme of the system.
-     * Should never be nullptr in reality.
-     */
-    hi::theme const *_theme = nullptr;
+    decltype(selected_theme)::callback_token _selected_theme_cbt;
+    os_settings::callback_token _os_settings_cbt;
 };
 
 } // namespace hi::inline v1

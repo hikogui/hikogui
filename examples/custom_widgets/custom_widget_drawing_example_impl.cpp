@@ -3,15 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GFX/RenderDoc.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/widget.hpp"
-#include "hikogui/widgets/grid_widget.hpp"
-#include "hikogui/widgets/row_column_widget.hpp"
-#include "hikogui/widgets/toggle_widget.hpp"
-#include "hikogui/widgets/momentary_button_widget.hpp"
-#include "hikogui/widgets/selection_widget.hpp"
-#include "hikogui/widgets/radio_button_widget.hpp"
 #include "hikogui/font/module.hpp"
 #include "hikogui/codec/png.hpp"
 #include "hikogui/file/URL.hpp"
@@ -64,8 +55,12 @@ auto border_width_list = std::vector<std::pair<float, hi::label>>{
 };
 
 // Every widget must inherit from hi::widget.
+template<hi::fixed_string Name = "">
 class drawing_widget : public hi::widget {
 public:
+    using super = hi::widget;
+    constexpr static auto prefix = Name / "my-widget";
+
     constexpr static auto blue = hi::color(0.05f, 0.05f, 0.50f);
     constexpr static auto red = hi::color(0.50f, 0.05f, 0.05f);
     constexpr static auto cyan = hi::color(0.05f, 0.50f, 0.50f);
@@ -86,8 +81,7 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    drawing_widget(hi::widget *parent) noexcept :
-        widget(parent), _image(hi::URL("resource:mars3.png"))
+    drawing_widget(hi::widget *parent) noexcept : super(parent), _image(hi::URL("resource:mars3.png"))
     {
         // clang-format off
         _drawing_cbt = this->drawing.subscribe([&](auto...){ request_redraw(); });
@@ -107,12 +101,8 @@ public:
     {
         this->_glyph = find_glyph(hi::elusive_icon::Briefcase);
 
-        // Almost all widgets will reset the `_layout` variable here so that it will
-        // trigger the calculations in `set_layout()` as well.
-        _layout = {};
-
         if (_image_was_modified.exchange(false)) {
-            if (not(_image_backing = hi::paged_image{surface(), _image})) {
+            if (not(_image_backing = hi::paged_image{surface, _image})) {
                 // Could not get an image, retry.
                 _image_was_modified = true;
                 ++hi::global_counter<"drawing_widget:no-backing-image:constrain">;
@@ -127,7 +117,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return {{100, 100}, {150, 150}, {400, 400}, hi::alignment{}, theme().margin()};
+        return {{100, 100}, {150, 150}, {400, 400}, hi::alignment{}, hi::theme<prefix>.margin(this)};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -136,16 +126,16 @@ public:
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
     void set_layout(hi::widget_layout const& context) noexcept override
     {
-        // Update the `_layout` with the new context, in this case we want to do some
+        // Update the `layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
-        if (compare_store(_layout, context)) {
+        if (compare_store(layout, context)) {
             // Make a size scaled to the layout.
-            auto const max_size = hi::narrow_cast<hi::extent2>(_layout.size()) * 0.9f;
+            auto const max_size = hi::narrow_cast<hi::extent2>(layout.size()) * 0.9f;
             auto const max_rectangle = hi::aarectangle{hi::point2{max_size.width() * -0.5f, max_size.height() * -0.5f}, max_size};
 
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
             // In this case we make two rectangles which are used in the `draw()` function.
-            auto const glyph_size = _glyph.get_bounding_box().size();
+            auto const glyph_size = _glyph.get_bounding_rectangle().size();
             auto const glyph_scale = hi::scale2::uniform(glyph_size, max_size);
             auto const new_glyph_size = glyph_scale * glyph_size;
             _glyph_rectangle = align(max_rectangle, new_glyph_size, hi::alignment::middle_center());
@@ -220,7 +210,7 @@ public:
         }
     }
 
-    [[nodiscard]] hi::rotate3 rotation(hi::draw_context const& context) const noexcept
+    [[nodiscard]] hi::rotate3 rotation(hi::widget_draw_context const& context) const noexcept
     {
         float angle = 0.0f;
         if (*rotating) {
@@ -249,14 +239,14 @@ public:
     // The `draw()` function is called when all or part of the window requires redrawing.
     // This may happen when showing the window for the first time, when the operating-system
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
-    void draw(hi::draw_context const& context) noexcept override
+    void draw(hi::widget_draw_context const& context) noexcept override
     {
         using namespace std::chrono_literals;
 
-        auto const clipping_rectangle =
-            *clip ? hi::aarectanglei{0, 0, _layout.width(), _layout.height() / 2} : _layout.rectangle();
+        auto const clipping_rectangle = *clip ? hi::aarectanglei{0, 0, layout.width(), layout.height() / 2} : layout.rectangle();
 
-        auto const translation = hi::translate3(std::floor(_layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(_layout.height())) * 0.5f, 0.0f);
+        auto const translation =
+            hi::translate3(std::floor(layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(layout.height())) * 0.5f, 0.0f);
         auto const transform = translation * rotation(context);
 
         auto const circle_radius = hypot(shape_quad().bottom()) * 0.5f;
@@ -264,11 +254,11 @@ public:
 
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
+        if (*mode > hi::widget_mode::invisible and overlaps(context, layout)) {
             switch (*drawing) {
             case drawing_type::box:
                 context.draw_box(
-                    _layout,
+                    layout,
                     transform * shape_quad(),
                     clipping_rectangle,
                     fill_color(),
@@ -286,24 +276,24 @@ public:
                     auto const line2 = hi::line_segment{get<0>(quad), get<2>(quad)};
                     auto const line3 = hi::line_segment{get<3>(quad), get<2>(quad)};
                     auto const width = std::max(0.5f, *border_width);
-                    context.draw_line(_layout, transform * line1, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
-                    context.draw_line(_layout, transform * line2, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
-                    context.draw_line(_layout, transform * line3, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
+                    context.draw_line(layout, transform * line1, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
+                    context.draw_line(layout, transform * line2, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
+                    context.draw_line(layout, transform * line3, clipping_rectangle, width, fill_color(), end_cap(), end_cap());
                 }
                 break;
 
             case drawing_type::circle:
                 context.draw_circle(
-                    _layout, translation * circle, clipping_rectangle, fill_color(), line_color(), *border_width, *border_side);
+                    layout, translation * circle, clipping_rectangle, fill_color(), line_color(), *border_width, *border_side);
                 break;
 
             case drawing_type::glyph:
                 // A full rectangle is visible.
-                context.draw_glyph(_layout, transform * shape_quad(), _glyph, clipping_rectangle, fill_color());
+                context.draw_glyph(layout, transform * shape_quad(), *_glyph.font, _glyph.glyph, clipping_rectangle, fill_color());
                 break;
 
             case drawing_type::image:
-                if (not context.draw_image(_layout, transform * shape_quad(), _image_backing, clipping_rectangle)) {
+                if (not context.draw_image(layout, transform * shape_quad(), _image_backing, clipping_rectangle)) {
                     // Image was not yet uploaded to the texture atlas, redraw until it does.
                     request_redraw();
                 }
@@ -316,7 +306,7 @@ public:
     }
 
 private:
-    hi::glyph_ids _glyph;
+    hi::font_book::font_glyph_type _glyph;
     hi::aarectangle _glyph_rectangle;
     std::atomic<bool> _image_was_modified = true;
     hi::png _image;
@@ -348,9 +338,9 @@ int hi_main(int argc, char *argv[])
     auto render_doc = hi::RenderDoc();
 
     auto gui = hi::gui_system::make_unique();
-    auto window = gui->make_window(hi::tr("Drawing Custom Widget"));
+    auto [window, widget] = gui->make_window<hi::window_widget<>>(hi::tr("Drawing Custom Widget"));
 
-    auto& custom_widget = window->content().make_widget<drawing_widget>("A1:D1");
+    auto& custom_widget = widget.content().make_widget<drawing_widget<>>("A1:D1");
     custom_widget.drawing = drawing;
     custom_widget.shape = shape;
     custom_widget.rotating = rotating;
@@ -360,31 +350,33 @@ int hi_main(int argc, char *argv[])
     custom_widget.border_width = border_width;
     custom_widget.rounded = rounded;
 
-    window->content().make_widget<hi::label_widget>("A2", hi::tr("Drawing type:"));
-    window->content().make_widget<hi::selection_widget>("B2:D2", drawing, drawing_list);
+    widget.content().make_widget<hi::label_widget<"drawing">>("A2", hi::tr("Drawing type:"));
+    widget.content().make_widget<hi::selection_widget<"drawing">>("B2:D2", drawing, drawing_list);
 
-    window->content().make_widget<hi::label_widget>("A3", hi::tr("Shape:"));
-    window->content().make_widget<hi::selection_widget>("B3:D3", shape, shape_list);
+    widget.content().make_widget<hi::label_widget<"shape">>("A3", hi::tr("Shape:"));
+    widget.content().make_widget<hi::selection_widget<"shape">>("B3:D3", shape, shape_list);
 
-    window->content().make_widget<hi::label_widget>("A4", hi::tr("Gradient:"));
-    window->content().make_widget<hi::selection_widget>("B4:D4", gradient, gradient_list);
+    widget.content().make_widget<hi::label_widget<"gradient">>("A4", hi::tr("Gradient:"));
+    widget.content().make_widget<hi::selection_widget<"gradient">>("B4:D4", gradient, gradient_list);
 
-    window->content().make_widget<hi::label_widget>("A5", hi::tr("Border side:"));
-    window->content().make_widget<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::tr("on"));
-    window->content().make_widget<hi::radio_button_widget>("C5", border_side, hi::border_side::inside, hi::tr("inside"));
-    window->content().make_widget<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::tr("outside"));
+    widget.content().make_widget<hi::label_widget<"side">>("A5", hi::tr("Border side:"));
+    widget.content().make_widget<hi::radio_button_widget<"side-on">>("B5", border_side, hi::border_side::on, hi::tr("on"));
+    widget.content().make_widget<hi::radio_button_widget<"side-inside">>(
+        "C5", border_side, hi::border_side::inside, hi::tr("inside"));
+    widget.content().make_widget<hi::radio_button_widget<"side-outside">>(
+        "D5", border_side, hi::border_side::outside, hi::tr("outside"));
 
-    window->content().make_widget<hi::label_widget>("A6", hi::tr("Border width:"));
-    window->content().make_widget<hi::selection_widget>("B6:D6", border_width, border_width_list);
+    widget.content().make_widget<hi::label_widget<"border-width">>("A6", hi::tr("Border width:"));
+    widget.content().make_widget<hi::selection_widget<"border-width">>("B6:D6", border_width, border_width_list);
 
-    window->content().make_widget<hi::label_widget>("A7", hi::tr("Rotate:"));
-    window->content().make_widget<hi::toggle_widget>("B7:D7", rotating);
+    widget.content().make_widget<hi::label_widget<"rotate">>("A7", hi::tr("Rotate:"));
+    widget.content().make_widget<hi::toggle_widget<"rotate">>("B7:D7", rotating);
 
-    window->content().make_widget<hi::label_widget>("A8", hi::tr("Clip:"));
-    window->content().make_widget<hi::toggle_widget>("B8:D8", clip);
+    widget.content().make_widget<hi::label_widget<"clip">>("A8", hi::tr("Clip:"));
+    widget.content().make_widget<hi::toggle_widget<"clip">>("B8:D8", clip);
 
-    window->content().make_widget<hi::label_widget>("A9", hi::tr("Rounded:"));
-    window->content().make_widget<hi::toggle_widget>("B9:D9", rounded);
+    widget.content().make_widget<hi::label_widget<"rounded">>("A9", hi::tr("Rounded:"));
+    widget.content().make_widget<hi::toggle_widget<"rounded">>("B9:D9", rounded);
 
     auto close_cbt = window->closing.subscribe(
         [&] {

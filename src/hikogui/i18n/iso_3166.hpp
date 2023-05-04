@@ -19,7 +19,7 @@ public:
     constexpr iso_3166& operator=(iso_3166 const&) noexcept = default;
     constexpr iso_3166& operator=(iso_3166&&) noexcept = default;
 
-    constexpr iso_3166() noexcept : _v(999) {}
+    constexpr iso_3166() noexcept : _v(0) {}
 
     constexpr iso_3166(uint16_t number) : _v(number)
     {
@@ -28,9 +28,24 @@ public:
 
     iso_3166(std::string_view str);
 
+    constexpr iso_3166(intrinsic_t, uint16_t v) noexcept : _v(v)
+    {
+        hi_axiom(_v < 1000);
+    }
+
+    [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
+    {
+        return _v;
+    }
+
+    [[nodiscard]] constexpr uint16_t& intrinsic() noexcept
+    {
+        return _v;
+    }
+
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return _v == 999;
+        return _v == 0;
     }
 
     constexpr explicit operator bool() const noexcept
@@ -48,6 +63,17 @@ public:
 
     [[nodiscard]] constexpr friend bool operator==(iso_3166 const& lhs, iso_3166 const& rhs) noexcept = default;
     [[nodiscard]] constexpr friend auto operator<=>(iso_3166 const& lhs, iso_3166 const& rhs) noexcept = default;
+
+    /** Check if rhs matches with lhs.
+     *
+     * @param lhs The country or wild-card.
+     * @param rhs The country.
+     * @return True when lhs is a wild-card or when lhs and rhs are equal.
+     */
+    [[nodiscard]] constexpr friend bool matches(iso_3166 const& lhs, iso_3166 const& rhs) noexcept
+    {
+        return lhs.empty() or lhs == rhs;
+    }
 
 private:
     uint16_t _v;

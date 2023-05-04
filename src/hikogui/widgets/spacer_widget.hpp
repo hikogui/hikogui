@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "../GUI/module.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -22,15 +22,13 @@ public:
 
     spacer_widget(widget *parent) noexcept : super(parent) {}
 
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
     {
         co_return;
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         auto r = box_constraints{};
         r.maximum = extent2i::large();
         return r;
@@ -38,10 +36,10 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = context;
+        layout = context;
     }
 
-    void draw(draw_context const& context) noexcept override {}
+    void draw(widget_draw_context const& context) noexcept override {}
 
     [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
     {

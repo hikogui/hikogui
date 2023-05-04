@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "draw_context.hpp"
+#include "gfx_draw_context.hpp"
 #include "gfx_surface_state.hpp"
 #include "gfx_system_globals.hpp"
 
@@ -56,8 +56,9 @@ public:
      */
     virtual void update(extent2i new_size) noexcept = 0;
 
-    [[nodiscard]] virtual draw_context render_start(aarectanglei redraw_rectangle) = 0;
-    virtual void render_finish(draw_context const &context) = 0;
+
+    [[nodiscard]] virtual std::optional<gfx_draw_context> render_start(aarectanglei redraw_rectangle) = 0;
+    virtual void render_finish(gfx_draw_context const& context) = 0;
 
     /** Add a delegate to handle extra rendering.
     * 

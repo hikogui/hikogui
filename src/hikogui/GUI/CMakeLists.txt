@@ -28,10 +28,8 @@ target_sources(hikogui PRIVATE
     keyboard_focus_group.hpp
     mouse_buttons.hpp
     mouse_cursor.hpp
-    theme_impl.cpp
-    theme.hpp
-    theme_book_impl.cpp
-    theme_book.hpp
-    theme_mode.hpp
+    widget.hpp
+    widget_mode.hpp
+    widget_layout.hpp
 )
 

@@ -4,10 +4,7 @@
 
 #include "text_shaper.hpp"
 #include "../font/module.hpp"
-#include "../unicode/unicode_line_break.hpp"
-#include "../unicode/unicode_bidi.hpp"
-#include "../unicode/unicode_word_break.hpp"
-#include "../unicode/unicode_sentence_break.hpp"
+#include "../unicode/module.hpp"
 #include "../log.hpp"
 #include "../generator.hpp"
 #include <numeric>
@@ -111,14 +108,14 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
         char_its.end(),
         [&](text_shaper::char_const_iterator it) {
             if (it != text.end()) {
-                return std::make_pair(it->grapheme[0], it->description);
+                return it->character[0];
             } else {
-                return std::make_pair(unicode_LS, &unicode_description::find(unicode_LS));
+                return unicode_LS;
             }
         },
         [&](text_shaper::char_iterator it, char32_t code_point) {
             hi_axiom(it != text.end());
-            it->replace_glyph(code_point);
+            it->bidi_character.set_grapheme(grapheme{code_point});
         },
         [&](text_shaper::char_iterator it, unicode_bidi_class direction) {
             if (it != text.end()) {
@@ -172,68 +169,61 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
     }
 }
 
-[[nodiscard]] text_shaper::text_shaper(
-    hi::font_book& font_book,
-    gstring const& text,
-    text_style const& style,
-    float dpi_scale,
-    hi::alignment alignment,
-    unicode_bidi_class text_direction,
-    unicode_script script) noexcept :
-    _font_book(&font_book), _bidi_context(text_direction), _dpi_scale(dpi_scale), _alignment(alignment), _script(script)
+void text_shaper::resolve_font_and_widths(hi::text_theme const& text_theme) noexcept
 {
-    hilet& font = font_book.find_font(style->family_id, style->variant);
-    _initial_line_metrics = (style->size * dpi_scale) * font.metrics;
+    for (auto& c : _text) {
+        hilet attributes = c.character.attributes();
 
+        c.style = text_theme.find(attributes.phrasing(), attributes.language_tag());
+        hilet& style_font = find_font(c.style.family_id, c.style.variant);
+
+        hilet[actual_font, glyphs] = find_glyph(style_font, c.character.grapheme());
+
+        c.font = actual_font;
+        c.width = actual_font->get_advance(glyphs[0]) * c.style.size;
+    }
+}
+
+[[nodiscard]] text_shaper::text_shaper(
+    hi::text const& text,
+    hi::text_theme const& text_theme,
+    hi::alignment alignment,
+    bool left_to_right) noexcept :
+    _bidi_context(left_to_right ? unicode_bidi_class::L : unicode_bidi_class::R), _alignment(alignment)
+{
+    // Copy the text to an internal vector of characters.
     _text.reserve(text.size());
     for (hilet& c : text) {
-        hilet clean_c = c == '\n' ? grapheme{unicode_PS} : c;
-
-        auto& tmp = _text.emplace_back(clean_c, style, dpi_scale);
-        tmp.initialize_glyph(font_book, font);
+        _text.emplace_back(c == '\n' ? grapheme{unicode_PS} : c);
     }
+
+    resolve_font_and_widths(text_theme);
 
     _text_direction = unicode_bidi_direction(
         _text.begin(),
         _text.end(),
         [](text_shaper::char_const_reference it) {
-            return std::make_pair(it.grapheme[0], it.description);
+            return it.character[0];
         },
         _bidi_context);
 
-    _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
-        hi_axiom(c.description != nullptr);
-        return *c.description;
+    _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](hilet& c) {
+        return c.character[0];
     });
 
     _line_break_widths.reserve(text.size());
     for (hilet& c : _text) {
-        _line_break_widths.push_back(is_visible(c.description->general_category()) ? c.width : -c.width);
+        hilet general_category = ucd_get_general_category(c.character[0]);
+        _line_break_widths.push_back(is_visible(general_category) ? c.width : -c.width);
     }
 
-    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
-        hi_axiom(c.description != nullptr);
-        return *c.description;
+    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](hilet& c) {
+        return c.character[0];
     });
 
-    _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
-        hi_axiom(c.description != nullptr);
-        return *c.description;
+    _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [](hilet& c) {
+        return c.character[0];
     });
-
-    resolve_script();
-}
-
-[[nodiscard]] text_shaper::text_shaper(
-    font_book& font_book,
-    std::string_view text,
-    text_style const& style,
-    float dpi_scale,
-    hi::alignment alignment,
-    unicode_bidi_class text_direction,
-    unicode_script script) noexcept :
-    text_shaper(font_book, to_gstring(text), style, dpi_scale, alignment, text_direction, script)
-{
 }
 
 [[nodiscard]] text_shaper::line_vector text_shaper::make_lines(
@@ -287,59 +277,6 @@ void text_shaper::position_glyphs(aarectangle rectangle, extent2 sub_pixel_size)
     }
 }
 
-void text_shaper::resolve_script() noexcept
-{
-    // Find the first script in the text if no script is found use the text_shaper's default script.
-    auto first_script = _script;
-    for (auto& c : _text) {
-        hilet script = c.description->script();
-        if (script != unicode_script::Common or script == unicode_script::Zzzz or script == unicode_script::Inherited) {
-            first_script = script;
-            break;
-        }
-    }
-
-    // Backward pass: fix start of words and open-brackets.
-    // After this pass unknown-script is no longer in the text.
-    // Close brackets will not be fixed, those will be fixed in the last forward pass.
-    auto word_script = unicode_script::Common;
-    auto previous_script = first_script;
-    for (auto i = std::ssize(_text) - 1; i >= 0; --i) {
-        auto& c = _text[i];
-
-        if (_word_break_opportunities[i + 1] != unicode_break_opportunity::no) {
-            word_script = unicode_script::Common;
-        }
-
-        c.script = c.description->script();
-        if (c.script == unicode_script::Common or c.script == unicode_script::Zzzz) {
-            hilet bracket_type = c.description->bidi_bracket_type();
-            // clang-format off
-            c.script =
-                bracket_type == unicode_bidi_bracket_type::o ? previous_script :
-                bracket_type == unicode_bidi_bracket_type::c ? unicode_script::Common :
-                word_script;
-            // clang-format on
-
-        } else if (c.script != unicode_script::Inherited) {
-            previous_script = word_script = c.script;
-        }
-    }
-
-    // Forward pass: fix all common and inherited with previous or first script.
-    previous_script = first_script;
-    for (auto i = 0_uz; i != _text.size(); ++i) {
-        auto& c = _text[i];
-
-        if (c.script == unicode_script::Common or c.script == unicode_script::Inherited) {
-            c.script = previous_script;
-
-        } else {
-            previous_script = c.script;
-        }
-    }
-}
-
 [[nodiscard]] aarectangle
 text_shaper::bounding_rectangle(float maximum_line_width, float line_spacing, float paragraph_spacing) noexcept
 {
@@ -368,12 +305,13 @@ text_shaper::get_line_metrics(text_shaper::char_const_iterator first, text_shape
     for (auto it = first; it != last; ++it) {
         // Only calculate line metrics based on visible characters.
         // For example a paragraph separator is seldom available in a font.
-        if (is_visible(it->description->general_category())) {
-            inplace_max(metrics, it->font_metrics());
+        hilet general_category = ucd_get_general_category(it->character[0]);
+        if (is_visible(general_category)) {
+            inplace_max(metrics, it->font->metrics);
         }
     }
 
-    hilet last_category = (first != last) ? (last - 1)->description->general_category() : unicode_general_category::Cn;
+    hilet last_category = (first != last) ? ucd_get_general_category((last - 1)->character[0]) : unicode_general_category::Cn;
     return {metrics, last_category};
 }
 
@@ -411,7 +349,7 @@ text_shaper::get_line_metrics(text_shaper::char_const_iterator first, text_shape
 }
 
 [[nodiscard]] static generator<std::pair<std::vector<size_t>, float>>
-get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths, float dpi_scale) noexcept
+get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths) noexcept
 {
     struct entry_type {
         size_t min_height;
@@ -422,8 +360,8 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
 
     auto stack = std::vector<entry_type>{};
 
-    hilet a4_one_column = 172.0f * 2.83465f * dpi_scale;
-    hilet a4_two_column = 88.0f * 2.83465f * dpi_scale;
+    hilet a4_one_column = 172.0f * 2.83465f;
+    hilet a4_two_column = 88.0f * 2.83465f;
 
     // Max-width first.
     auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
@@ -744,7 +682,8 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     cursor = move_left_char(cursor, overwrite_mode).before_neighbor(size());
     auto it = get_it(cursor);
     while (it != end()) {
-        if (*(it->description) != unicode_general_category::Zs and
+        hilet general_category = ucd_get_general_category(it->character[0]);
+        if (general_category != unicode_general_category::Zs and
             _word_break_opportunities[get_index(it)] != unicode_break_opportunity::no) {
             return get_before_cursor(it);
         }
@@ -758,7 +697,8 @@ get_widths(unicode_break_vector const& opportunities, std::vector<float> const& 
     cursor = move_right_char(cursor, overwrite_mode).before_neighbor(size());
     auto it = get_it(cursor);
     while (it != end()) {
-        if (*(it->description) != unicode_general_category::Zs and
+        hilet general_category = ucd_get_general_category(it->character[0]);
+        if (general_category != unicode_general_category::Zs and
             _word_break_opportunities[get_index(it)] != unicode_break_opportunity::no) {
             return get_before_cursor(it);
         }
@@ -897,7 +837,8 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
     hilet first_index = [&]() {
         auto i = cursor.index();
         while (i > 0) {
-            if (_text[i - 1].description->general_category() == unicode_general_category::Zp) {
+            hilet general_category = ucd_get_general_category(_text[i - 1].character[0]);
+            if (general_category == unicode_general_category::Zp) {
                 return i;
             }
             --i;
@@ -907,7 +848,8 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
     hilet last_index = [&]() {
         auto i = cursor.index();
         while (i < _text.size()) {
-            if (_text[i].description->general_category() == unicode_general_category::Zp) {
+            hilet general_category = ucd_get_general_category(_text[i].character[0]);
+            if (general_category == unicode_general_category::Zp) {
                 return i;
             }
             ++i;

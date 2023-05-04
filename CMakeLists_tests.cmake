@@ -33,6 +33,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/file/URI_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/file/URL_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/font/font_char_map_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_weight_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/identity_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/matrix_tests.cpp
@@ -49,16 +50,22 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/image/pixmap_span_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/layout/spreadsheet_address_tests.cpp
     #${HIKOGUI_SOURCE_DIR}/random/dither_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lookahead_iterator_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lexer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/seed_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/xorshift128p_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_normalization_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_scripts_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/rcu_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/theme/style_sheet_parser_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_model_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/enum_metadata_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string_tests.cpp
@@ -66,8 +73,10 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/utility/math_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/exceptions_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/units_tests.cpp
     $<$<PLATFORM_ID:Darwin>:${HIKOGUI_SOURCE_DIR}/utility/debugger_macos.mm>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
+    ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/algorithm_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/bezier_curve_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/bigint_tests.cpp
@@ -179,9 +188,9 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
         target_compile_options(hikogui_x64v3_tests PRIVATE -arch:AVX2 -DHI_X86_64_MAX_LEVEL=3)
         target_compile_options(hikogui_x64v4_tests PRIVATE -arch:AVX512 -DHI_X86_64_MAX_LEVEL=4)
     else()
-        message(WARNING "Unknown compiler to generate architecture depended tests.") 
+        message(WARNING "Unknown compiler to generate architecture depended tests.")
     endif()
-     
+
     # Only execute the tests that will run on the current host.
     if(HOST_IS_X86_64_1)
         gtest_discover_tests(hikogui_x64v1_tests DISCOVERY_MODE PRE_TEST)
@@ -197,5 +206,5 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
     endif()
 
 else()
-    message(WARNING "Unknown CPU to generate architecture depended tests.") 
+    message(WARNING "Unknown CPU to generate architecture depended tests.")
 endif()

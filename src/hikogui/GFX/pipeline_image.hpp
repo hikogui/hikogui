@@ -27,7 +27,7 @@ public:
     pipeline_image(pipeline_image &&) = delete;
     pipeline_image &operator=(pipeline_image &&) = delete;
 
-    void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
+    void draw_in_command_buffer(vk::CommandBuffer commandBuffer, gfx_draw_context const& context) override;
 
 protected:
     push_constants pushConstants;

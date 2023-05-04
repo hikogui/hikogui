@@ -123,9 +123,11 @@ void device_shared::prepare_atlas_for_rendering()
  *  |                     |
  *  O---------------------+
  */
-void device_shared::add_glyph_to_atlas(glyph_ids const& glyph, glyph_atlas_info& info) noexcept
+void device_shared::add_glyph_to_atlas(hi::font const &font, glyph_id glyph, glyph_atlas_info& info) noexcept
 {
-    hilet[glyph_path, glyph_bounding_box] = glyph.get_path_and_bounding_box();
+    hilet glyph_metrics = font.get_metrics(glyph);
+    hilet glyph_path = font.get_path(glyph);
+    hilet glyph_bounding_box = glyph_metrics.bounding_rectangle;
 
     hilet draw_scale = scale2{drawfontSize, drawfontSize};
     hilet draw_bounding_box = draw_scale * glyph_bounding_box;
@@ -152,20 +154,15 @@ void device_shared::add_glyph_to_atlas(glyph_ids const& glyph, glyph_atlas_info&
     uploadStagingPixmapToAtlas(info);
 }
 
-aarectangle device_shared::get_bounding_box(glyph_ids const& glyphs) const noexcept
-{
-    // Adjust bounding box by adding a border based on 1EM.
-    return glyphs.get_bounding_box() + scaledDrawBorder;
-}
-
 bool device_shared::place_vertices(
     vector_span<vertex>& vertices,
     aarectangle const& clipping_rectangle,
     quad const& box,
-    glyph_ids const& glyphs,
+    hi::font const& font,
+    glyph_id const& glyph,
     quad_color colors) noexcept
 {
-    hilet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(glyphs);
+    hilet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(font, glyph);
 
     hilet box_with_border = scale_from_center(box, atlas_rect->border_scale);
 

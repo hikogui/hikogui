@@ -5,51 +5,32 @@
 #include "gui_window.hpp"
 #include "gui_system.hpp"
 #include "keyboard_bindings.hpp"
-#include "theme_book.hpp"
+#include "../theme/module.hpp"
 #include "../os_settings.hpp"
-#include "../GFX/gfx_device.hpp"
-#include "../GFX/gfx_surface.hpp"
-#include "../widgets/window_widget.hpp"
-#include "../widgets/grid_widget.hpp"
+#include "../GFX/module.hpp"
 #include "../trace.hpp"
 #include "../log.hpp"
 
 namespace hi::inline v1 {
 
-gui_window::gui_window(gui_system& gui, label const& title) noexcept : gui(gui), title(title) {}
-
-gui_window::~gui_window()
-{
-    // Destroy the top-level widget, before Window-members that the widgets require from the window during their destruction.
-    widget = {};
-
-    try {
-        surface.reset();
-        hi_log_info("Window '{}' has been properly destructed.", title);
-
-    } catch (std::exception const& e) {
-        hi_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
-    }
-}
-
-void gui_window::init()
+gui_window::gui_window(gui_system& gui, std::unique_ptr<hi::widget> widget, label const& title) noexcept :
+    gui(gui), widget(std::move(widget)), title(title)
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
 
-    widget = std::make_unique<window_widget>(this, title);
+    hilet dpi_scale = dpi / points_per_inch_v<float>;
+    apply(*this->widget, [&](auto& x) {
+        x.reset_layout(surface.get(), dpi_scale);
+    });
 
-    // Execute a constraint check to determine initial window size.
-    theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
-
-    _widget_constraints = widget->update_constraints();
-    hilet new_size = _widget_constraints.preferred;
+    _widget_constraints = this->widget->update_constraints();
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
 
-    // For changes in setting on the OS we should reconstrain/layout/redraw the window
+    // For changes in setting on the OS we should constrain/layout/redraw the window
     // For example when the language or theme changes.
     _setting_change_token = os_settings::subscribe(
         [this] {
@@ -65,10 +46,20 @@ void gui_window::init()
             this->process_event({gui_event_type::window_reconstrain});
         },
         callback_flags::main);
+}
 
-    // Delegate has been called, layout of widgets has been calculated for the
-    // minimum and maximum size of the window.
-    create_window(new_size);
+gui_window::~gui_window()
+{
+    // Destroy the top-level widget, before Window-members that the widgets require from the window during their destruction.
+    widget = {};
+
+    try {
+        surface.reset();
+        hi_log_info("Window '{}' has been properly destructed.", title);
+
+    } catch (std::exception const& e) {
+        hi_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
+    }
 }
 
 void gui_window::set_device(gfx_device *device) noexcept
@@ -97,7 +88,10 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain) {
         hilet t2 = trace<"window::constrain">();
 
-        theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
+        hilet dpi_scale = dpi / points_per_inch_v<float>;
+        apply(*widget, [&](auto& x) {
+            x.reset_layout(surface.get(), dpi_scale);
+        });
 
         _widget_constraints = widget->update_constraints();
     }
@@ -167,25 +161,19 @@ void gui_window::render(utc_nanoseconds display_time_point)
 #endif
 
     // Draw widgets if the _redraw_rectangle was set.
-    if (auto draw_context = surface->render_start(_redraw_rectangle)) {
+    if (auto gfx_draw_context = surface->render_start(_redraw_rectangle)) {
+        auto widget_draw_context = hi::widget_draw_context{*gfx_draw_context};
         _redraw_rectangle = aarectanglei{};
-        draw_context.display_time_point = display_time_point;
-        draw_context.subpixel_orientation = subpixel_orientation();
-        draw_context.background_color = widget->background_color();
-        draw_context.active = active;
-
-        if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
-            this->process_event({gui_event_type::window_redraw, aarectanglei{rectangle.size()}});
-        }
-        draw_context.saturation = _animated_active.current_value();
+        widget_draw_context.display_time_point = display_time_point;
+        widget_draw_context.gfx_context.subpixel_orientation = subpixel_orientation();
 
         {
             hilet t2 = trace<"window::draw">();
-            widget->draw(draw_context);
+            widget->draw(widget_draw_context);
         }
         {
             hilet t2 = trace<"window::submit">();
-            surface->render_finish(draw_context);
+            surface->render_finish(widget_draw_context.gfx_context);
         }
     }
 }
@@ -401,7 +389,7 @@ bool gui_window::send_events_to_widget(hi::widget_id target_id, std::vector<gui_
     while (target_widget) {
         // Each widget will try to handle the first event it can.
         for (hilet& event : events) {
-            if (target_widget->handle_event(target_widget->layout().from_window * event)) {
+            if (target_widget->handle_event(target_widget->layout.from_window * event)) {
                 return true;
             }
         }

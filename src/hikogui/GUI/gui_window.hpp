@@ -10,12 +10,9 @@
 #include "gui_event.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
-#include "theme.hpp"
-#include "../GFX/subpixel_orientation.hpp"
+#include "widget.hpp"
+#include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
-#include "../widgets/window_widget.hpp"
-#include "../widgets/grid_widget.hpp"
-#include "../widgets/toolbar_widget.hpp"
 #include "../chrono.hpp"
 #include "../label.hpp"
 #include "../animator.hpp"
@@ -38,6 +35,12 @@ class keyboard_bindings;
 class gui_window {
 public:
     gui_system& gui;
+
+    /** The widget covering the complete window.
+     */
+    std::unique_ptr<widget> widget;
+
+    label title;
 
     std::unique_ptr<gfx_surface> surface;
 
@@ -72,33 +75,22 @@ public:
      */
     bool active = false;
 
-    label title;
-
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
      * the source for the DPI value.
      */
     float dpi = 72.0;
 
-    /** Theme to use to draw the widgets on this window.
-     * The sizes and colors of the theme have already been adjusted to the window's state and dpi.
-     */
-    hi::theme theme = {};
-
     /** The size of the widget.
      */
     extent2i widget_size;
-
-    /** The widget covering the complete window.
-     */
-    std::unique_ptr<window_widget> widget;
 
     /** Notifier used when the window is closing.
      * It is expected that after notifying these callbacks the instance of this class is destroyed.
      */
     notifier<void()> closing;
 
-    gui_window(gui_system& gui, label const& title) noexcept;
+    gui_window(gui_system& gui, std::unique_ptr<hi::widget> widget, label const& title) noexcept;
 
     virtual ~gui_window();
 
@@ -106,14 +98,6 @@ public:
     gui_window& operator=(gui_window const&) = delete;
     gui_window(gui_window&&) = delete;
     gui_window& operator=(gui_window&&) = delete;
-
-    /** 2 phase constructor.
-     * Must be called directly after the constructor on the same thread,
-     * before another thread can send messages to the window.
-     *
-     * `init()` should not take locks on window::mutex.
-     */
-    virtual void init();
 
     void set_device(gfx_device *device) noexcept;
 
@@ -125,28 +109,6 @@ public:
      * This will update animations and redraw all widgets managed by this window.
      */
     virtual void render(utc_nanoseconds displayTimePoint);
-
-    /** Get a reference to the window's content widget.
-     * @see grid_widget
-     * @return A reference to a grid_widget.
-     */
-    [[nodiscard]] grid_widget& content() noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(widget);
-        return widget->content();
-    }
-
-    /** Get a reference to window's toolbar widget.
-     * @see toolbar_widget
-     * @return A reference to a toolbar_widget.
-     */
-    [[nodiscard]] toolbar_widget& toolbar() noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(widget);
-        return widget->toolbar();
-    }
 
     /** Set the mouse cursor icon.
      */
@@ -226,14 +188,14 @@ public:
      * @retval empty When the clipboard is locked by another application, on error, if the data on the clipboard can not
      *               be converted to text or if the clipboard is empty.
      */
-    [[nodiscard]] virtual std::optional<std::string> get_text_from_clipboard() const noexcept = 0;
+    [[nodiscard]] virtual std::optional<hi::text> get_text_from_clipboard() const noexcept = 0;
 
     /** Put text on the clipboard.
      *
      * @note This is part of the window as some operating systems need to know from which window the text was posted.
      * @param text The text to place on the clipboard.
      */
-    virtual void put_text_on_clipboard(std::string_view text) const noexcept = 0;
+    virtual void put_text_on_clipboard(hi::text text) const noexcept = 0;
 
     [[nodiscard]] translate2i window_to_screen() const noexcept
     {
@@ -285,11 +247,6 @@ protected:
     /** The animated version of the `active` flag.
      */
     animator<float> _animated_active = _animation_duration;
-
-    /** Let the operating system create the actual window.
-     * @pre title and extent must be set.
-     */
-    virtual void create_window(extent2i new_size) = 0;
 
 private:
     notifier<>::callback_token _setting_change_token;

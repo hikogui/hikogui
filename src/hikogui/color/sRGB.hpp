@@ -136,9 +136,13 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
  * @param a Alpha value, between 0.0 and 1.0. not-premultiplied
  * @return A linear color.
  */
-[[nodiscard]] inline color color_from_sRGB(float r, float g, float b, float a) noexcept
+[[nodiscard]] inline color color_from_sRGB(
+    std::floating_point auto r,
+    std::floating_point auto g,
+    std::floating_point auto b,
+    std::floating_point auto a) noexcept
 {
-    return color{sRGB_gamma_to_linear(r), sRGB_gamma_to_linear(g), sRGB_gamma_to_linear(b), a};
+    return color{sRGB_gamma_to_linear(r), sRGB_gamma_to_linear(g), sRGB_gamma_to_linear(b), narrow_cast<float>(a)};
 }
 
 /** Convert gama corrected sRGB color to the linear color.
@@ -150,8 +154,16 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
  * @param a Alpha value, between 0 and 255. not-premultiplied
  * @return A linear color.
  */
-[[nodiscard]] inline color color_from_sRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
+[[nodiscard]] inline color color_from_sRGB(
+    std::integral auto r,
+    std::integral auto g,
+    std::integral auto b,
+    std::integral auto a) noexcept
 {
+    hi_axiom_bounds(r, 0, 256);
+    hi_axiom_bounds(g, 0, 256);
+    hi_axiom_bounds(b, 0, 256);
+    hi_axiom_bounds(a, 0, 256);
     return color_from_sRGB(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 }
 
@@ -162,19 +174,19 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
     if (tmp.starts_with("#")) {
         tmp = tmp.substr(1);
     }
-    if (ssize(tmp) != 6 && ssize(tmp) != 8) {
+    if (tmp.size() != 6 && tmp.size() != 8) {
         throw parse_error(std::format("Expecting 6 or 8 hex-digit sRGB color string, got {}.", str));
     }
-    if (ssize(tmp) == 6) {
+    if (tmp.size() == 6) {
         tmp += "ff";
     }
 
-    auto packed = from_string<uint32_t>(tmp);
+    hilet packed = from_string<uint32_t>(tmp, 16);
 
-    uint8_t const r = truncate<uint8_t>(packed >> 24);
-    uint8_t const g = truncate<uint8_t>(packed >> 16);
-    uint8_t const b = truncate<uint8_t>(packed >> 8);
-    uint8_t const a = truncate<uint8_t>(packed);
+    hilet r = truncate<uint8_t>(packed >> 24);
+    hilet g = truncate<uint8_t>(packed >> 16);
+    hilet b = truncate<uint8_t>(packed >> 8);
+    hilet a = truncate<uint8_t>(packed);
     return color_from_sRGB(r, g, b, a);
 }
 

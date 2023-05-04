@@ -8,7 +8,6 @@
 #include "time_stamp_utc.hpp"
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
-#include "meta.hpp"
 #include "delayed_format.hpp"
 #include "format_check.hpp"
 #include "utility/module.hpp"
@@ -34,9 +33,6 @@ public:
 
     [[nodiscard]] virtual std::string format() const noexcept = 0;
     [[nodiscard]] virtual std::unique_ptr<log_message_base> make_unique_copy() const noexcept = 0;
-
-public:
-    static inline std::chrono::time_zone const *zone = nullptr;
 };
 
 template<global_state_type Level, fixed_string SourcePath, int SourceLine, fixed_string Fmt, typename... Values>
@@ -70,7 +66,7 @@ public:
     {
         hilet utc_time_point = time_stamp_utc::make(_time_stamp);
         hilet sys_time_point = std::chrono::clock_cast<std::chrono::system_clock>(utc_time_point);
-        hilet local_time_point = zone->to_local(sys_time_point);
+        hilet local_time_point = cached_current_zone().to_local(sys_time_point);
 
         hilet cpu_id = _time_stamp.cpu_id();
         hilet thread_id = _time_stamp.thread_id();

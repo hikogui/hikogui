@@ -4,62 +4,43 @@
 
 #pragma once
 
-#include "text_style.hpp"
+#include "text_theme.hpp"
+#include "character.hpp"
 #include "../font/module.hpp"
-#include "../unicode/unicode_description.hpp"
-#include "../unicode/grapheme.hpp"
+#include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
-class font_book;
 
 class text_shaper_char {
 public:
-    /** The grapheme.
+    /** The original character.
      */
-    hi::grapheme grapheme;
+    hi::character character = {};
 
-    /** The style of how to display the grapheme.
+    /** The character after replacing bidi mirror glyphs.
      */
-    hi::text_style style;
+    hi::character bidi_character = {};
 
-    /** The scale to resize the font's size to match the physical display.
+    /** The resolved style.
      */
-    float dpi_scale = 1.0f;
+    hi::text_style style = {};
 
-    /** The glyph representing one or more graphemes.
-     * The glyph will change during shaping of the text:
-     *  1. The initial glyph, used for determining the width of the grapheme
-     *     and the folding algorithm.
-     *  2. The glyph representing a bracket may be replaced with a mirrored bracket
-     *     by the bidi-algorithm.
-     *  3. The glyph may be replaced by the font using the glyph-morphing algorithms
-     *     for better continuation of cursive text and merging of graphemes into
-     *     a ligature.
+    /** The font resolved for this character.
      */
-    hi::glyph_ids glyph;
+    hi::font const *font = nullptr;
 
-    /** The glyph metrics of the currently glyph.
-     *
-     * The metrics are scaled by `scale`.
+    /** The width of the grapheme before glyph-morphing and positioning.
      */
-    hi::glyph_metrics metrics;
-
-    /** The line number where this character is located, counting from top to bottom line.
-     */
-    size_t line_nr;
-
-    /** The column number where the character is located on the line, counting from left to right in display order.
-     */
-    size_t column_nr;
+    float width = 0.0f;
 
     /** Position of the character.
-     *
-     * For a non-ligature this is the origin of the glyph, where the actual glyph
-     * is located at `position + metrics.bounding_rectangle`.
-     * For ligatures the position is moved based on the advance of each character within the ligature.
      */
-    point2 position;
+    point2 position = {};
+
+    /** Advance after glyph-morphing and positioning.
+     */
+    float advance = 0.0f;
 
     /** The rectangle for this character.
      *
@@ -70,8 +51,7 @@ public:
      *
      * The attributes of the rectangle are:
      *  - left side is equal to the position.x
-     *  - The width is the advance of the character within the ligature.
-     *    Or if the glyph is not a ligature the width is the same as the advance.
+     *  - The width is the advance of the grapheme within the ligature.
      *  - The bottom is at the descender
      *  - The top is at the ascender
      *
@@ -81,36 +61,31 @@ public:
      * character will contain the ligature-glyph, and the rest of
      * the characters of the ligature will have empty glyphs.
      */
-    aarectangle rectangle;
+    aarectangle rectangle = {};
 
-    /** The unicode description of the grapheme.
+    /** The glyph representing this grapheme.
+     *
+     * It is possible for this grapheme not to have any glyphs when the glyphs where merged during the morphing process.
      */
-    unicode_description const *description;
+    lean_vector<hi::glyph_id> glyphs = {};
+
+    /** The position of each of the glyphs.
+     */
+    lean_vector<hi::aarectangle> glyph_rectangles = {};
+
+    /** The line number where this character is located, counting from top to bottom line.
+     */
+    size_t line_nr = std::numeric_limits<size_t>::max();
+
+    /** The column number where the character is located on the line, counting from left to right in display order.
+     */
+    size_t column_nr = std::numeric_limits<size_t>::max();
 
     /** The text direction for this glyph.
      *
      * This is needed to figure out where the location of the insert cursor is compared to the character.
      */
-    unicode_bidi_class direction;
-
-    /** The script of this character.
-     * The script of the character is based on:
-     * - The actual script of this unicode character, or if `unicode_script::Common`;
-     * - The script of characters before/after this character in the same word, or if `unicode_script::Common`;
-     * - The script passed during construction of the text_shaper.
-     */
-    unicode_script script;
-
-    /** The scale of the glyph for displaying on the screen.
-     */
-    float scale = 1.0f;
-
-    /** The width used for this grapheme when folding lines.
-     *
-     * This width is based on the initial glyph's advance after converting the grapheme
-     * using the text-style into a glyph. This width excludes kerning and glyph-morphing.
-     */
-    float width = 0.0f;
+    unicode_bidi_class direction = unicode_bidi_class::L;
 
     /** Set to true if this glyph is a white space at the end of a line.
      */
@@ -124,53 +99,11 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(hi::grapheme const &grapheme, text_style const &style, float dpi_scale) noexcept;
-
-    /** Initialize the glyph based on the grapheme.
-     *
-     * @note The glyph is only initialized when `glyph_is_initial == false`.
-     * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
-     */
-    void initialize_glyph(hi::font_book const &font_book, hi::font const &font) noexcept;
-
-    /** Initialize the glyph based on the grapheme.
-     *
-     * @note The glyph is only initialized when `glyph_is_initial == false`.
-     * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
-     */
-    void initialize_glyph(hi::font_book &font_book) noexcept;
-
-    /** Called by the bidi-algorithm to mirror glyphs.
-     *
-     * The glyph is replaced with a glyph from the same font using the given code-point.
-     *
-     * @pre `glyph.num_grapheme == 1`.
-     * @post `glyph` and `metrics` are modified. `glyph_is_initial` is set to false.
-     * @note The `width` remains based on the original glyph.
-     */
-    void replace_glyph(char32_t code_point) noexcept;
-
-    /** Get the scaled font metrics for this character.
-     */
-    [[nodiscard]] hi::font_metrics font_metrics() const noexcept
+    [[nodiscard]] text_shaper_char(hi::character const& character) noexcept :
+        character(character),
+        bidi_character(character)
     {
-        return scale * glyph.font().metrics;
     }
-
-    [[nodiscard]] friend bool operator==(text_shaper_char const &lhs, char32_t const &rhs) noexcept
-    {
-        return lhs.grapheme == rhs;
-    }
-
-    [[nodiscard]] friend bool operator==(text_shaper_char const &lhs, char const &rhs) noexcept
-    {
-        return lhs.grapheme == rhs;
-    }
-
-private:
-    /** Load metrics based on the loaded glyph.
-     */
-    void set_glyph(hi::glyph_ids &&new_glyph) noexcept;
 };
 
 } // namespace hi::inline v1

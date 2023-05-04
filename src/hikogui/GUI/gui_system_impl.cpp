@@ -5,8 +5,8 @@
 #include "gui_system.hpp"
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
-#include "theme_book.hpp"
-#include "../GFX/gfx_system.hpp"
+#include "../theme/module.hpp"
+#include "../GFX/module.hpp"
 #include "../font/module.hpp"
 #include "../log.hpp"
 #include "../loop.hpp"
@@ -16,16 +16,28 @@ namespace hi::inline v1 {
 
 gui_system::gui_system(
     std::unique_ptr<gfx_system> gfx,
-    std::unique_ptr<hi::theme_book> theme_book,
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) noexcept :
     gfx(std::move(gfx)),
-    theme_book(std::move(theme_book)),
     keyboard_bindings(std::move(keyboard_bindings)),
     thread_id(current_thread_id()),
     _delegate(delegate)
 {
     this->gfx->init();
+
+    _selected_theme_cbt = selected_theme.subscribe(
+        [&](auto...) {
+            load_theme(*selected_theme, os_settings::theme_mode());
+        },
+        callback_flags::main);
+
+    _os_settings_cbt = os_settings::subscribe(
+        [&](auto...) {
+            load_theme(*selected_theme, os_settings::theme_mode());
+        },
+        callback_flags::main);
+
+    (*_os_settings_cbt)();
 }
 
 gui_system::~gui_system()

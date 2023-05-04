@@ -49,28 +49,27 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class toggle_widget final : public abstract_button_widget {
+template<fixed_string Name = "">
+class toggle_widget final : public abstract_button_widget<Name / "toggle"> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<Name / "toggle">;
     using delegate_type = typename super::delegate_type;
+    constexpr static auto prefix = super::prefix;
 
     /** Construct a toggle widget.
      *
      * @param parent The parent widget that owns this toggle widget.
      * @param delegate The delegate to use to manage the state of the toggle button.
      * @param attributes Different attributes used to configure the label's on the toggle button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment`. If one label is
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
-    toggle_widget(
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        button_widget_attribute auto&&...attributes) noexcept :
+    toggle_widget(widget *parent, std::shared_ptr<delegate_type> delegate, button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        alignment = alignment::top_left();
-        set_attributes<0>(hi_forward(attributes)...);
+        this->alignment = alignment::top_left();
+        this->set_attributes<0>(hi_forward(attributes)...);
     }
 
     /** Construct a toggle widget with a default button delegate.
@@ -79,15 +78,16 @@ public:
      * @param parent The parent widget that owns this toggle widget.
      * @param value The value or `observer` value which represents the state of the toggle.
      * @param attributes Different attributes used to configure the label's on the toggle button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment`. If one label is
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     template<different_from<std::shared_ptr<delegate_type>> Value, button_widget_attribute... Attributes>
-    toggle_widget(widget *parent, Value&& value, Attributes&&...attributes) noexcept requires requires
+    toggle_widget(widget *parent, Value&& value, Attributes&&...attributes) noexcept
+        requires requires { make_default_toggle_button_delegate(hi_forward(value)); }
+        : toggle_widget(parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...)
     {
-        make_default_toggle_button_delegate(hi_forward(value));
-    } : toggle_widget(parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...) {}
+    }
 
     /** Construct a toggle widget with a default button delegate.
      *
@@ -96,7 +96,7 @@ public:
      * @param value The value or `observer` value which represents the state of the toggle.
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
      * @param attributes Different attributes used to configure the label's on the toggle button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment`. If one label is
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
@@ -105,10 +105,8 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
     toggle_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires
-    {
-        make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value));
-    } :
+        requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)); }
+        :
         toggle_widget(
             parent,
             make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)),
@@ -124,7 +122,7 @@ public:
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
      * @param off_value The off-value. This value is used to determine which value yields an 'off' state.
      * @param attributes Different attributes used to configure the label's on the toggle button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment`. If one label is
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
@@ -133,15 +131,9 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         button_widget_attribute... Attributes>
-    toggle_widget(
-        widget *parent,
-        Value&& value,
-        OnValue&& on_value,
-        OffValue&& off_value,
-        Attributes&&...attributes) noexcept requires requires
-    {
-        make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value));
-    } :
+    toggle_widget(widget *parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
+        requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)); }
+        :
         toggle_widget(
             parent,
             make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
@@ -150,9 +142,73 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _label_constraints = super::update_constraints();
+
+        // Make room for button and margin.
+        _button_size = theme<prefix>.size(this);
+        hilet extra_size = extent2i{theme<prefix>.spacing_horizontal(this) + _button_size.width(), 0};
+
+        auto r = max(_label_constraints + extra_size, _button_size);
+        r.margins = theme<prefix>.margin(this);
+        r.alignment = *this->alignment;
+        return r;
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(this->layout, context)) {
+            auto alignment_ = os_settings::left_to_right() ? *this->alignment : mirror(*this->alignment);
+
+            if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
+                _button_rectangle = align(context.rectangle(), _button_size, alignment_);
+            } else {
+                hi_not_implemented();
+            }
+
+            hilet spacing = theme<prefix>.spacing_horizontal(this);
+            hilet cap_height = theme<prefix>.cap_height(this);
+
+            hilet label_width = context.width() - (_button_rectangle.width() + spacing);
+            if (alignment_ == horizontal_alignment::left) {
+                hilet label_left = _button_rectangle.right() + spacing;
+                hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
+                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
+                    box_shape{_label_constraints, label_rectangle, cap_height};
+
+            } else if (alignment_ == horizontal_alignment::right) {
+                hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
+                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
+                    box_shape{_label_constraints, label_rectangle, cap_height};
+
+            } else {
+                hi_not_implemented();
+            }
+
+            hilet button_square = aarectangle{
+                narrow_cast<point2>(get<0>(_button_rectangle)),
+                extent2{narrow_cast<float>(_button_rectangle.height()), narrow_cast<float>(_button_rectangle.height())}};
+
+            hilet pip_size = theme<prefix / "pip">.size(this);
+            hi_axiom(pip_size.width() == pip_size.height());
+
+            _pip_circle = align(button_square, circle{narrow_cast<float>(pip_size.width() / 2)}, alignment::middle_center());
+
+            hilet pip_to_button_margin_x2 = _button_rectangle.height() - narrow_cast<int>(_pip_circle.diameter());
+            _pip_move_range = _button_rectangle.width() - narrow_cast<int>(_pip_circle.diameter()) - pip_to_button_margin_x2;
+        }
+        super::set_layout(context);
+    }
+
+    void draw(widget_draw_context const& context) noexcept override
+    {
+        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
+            draw_toggle_button(context);
+            draw_toggle_pip(context);
+            this->draw_button(context);
+        }
+    }
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
@@ -165,8 +221,29 @@ private:
     circle _pip_circle;
     int _pip_move_range;
 
-    void draw_toggle_button(draw_context const& context) noexcept;
-    void draw_toggle_pip(draw_context const& context) noexcept;
+    void draw_toggle_button(widget_draw_context const& context) noexcept
+    {
+        context.draw_box(
+            this->layout,
+            _button_rectangle,
+            theme<prefix>.background_color(this),
+            theme<prefix>.border_color(this),
+            theme<prefix>.border_width(this),
+            border_side::inside,
+            corner_radii{_button_rectangle.height() * 0.5f});
+    }
+
+    void draw_toggle_pip(widget_draw_context const& context) noexcept
+    {
+        _animated_value.update(this->state != widget_state::off ? 1.0f : 0.0f, context.display_time_point);
+        if (_animated_value.is_animating()) {
+            this->request_redraw();
+        }
+
+        hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
+
+        context.draw_circle(this->layout, positioned_pip_circle * 1.02f, theme<prefix>.fill_color(this));
+    }
 };
 
 }} // namespace hi::v1

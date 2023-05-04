@@ -15,7 +15,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/color/quad_color.hpp
     ${HIKOGUI_SOURCE_DIR}/color/Rec2020.hpp
     ${HIKOGUI_SOURCE_DIR}/color/Rec2100.hpp
-    ${HIKOGUI_SOURCE_DIR}/color/semantic_color.hpp
     ${HIKOGUI_SOURCE_DIR}/color/sRGB.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/global_state.hpp
@@ -26,18 +25,26 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/concurrency/subsystem.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/thread.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/file.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/file_view.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_win32.hpp>
+    ${HIKOGUI_SOURCE_DIR}/file/glob.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/path_location.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/resource_view.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/URI.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/URL.hpp
     ${HIKOGUI_SOURCE_DIR}/font/elusive_icon.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_book.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_char_map.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_family_id.hpp
-    ${HIKOGUI_SOURCE_DIR}/font/font_grapheme_id.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_metrics.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_style.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_variant.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_weight.hpp
     ${HIKOGUI_SOURCE_DIR}/font/glyph_atlas_info.hpp
     ${HIKOGUI_SOURCE_DIR}/font/glyph_id.hpp
-    ${HIKOGUI_SOURCE_DIR}/font/glyph_ids.hpp
     ${HIKOGUI_SOURCE_DIR}/font/glyph_metrics.hpp
     ${HIKOGUI_SOURCE_DIR}/font/hikogui_icon.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_cmap.hpp
@@ -76,6 +83,67 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/geometry/transform.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/translate.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/vector.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_draw_context.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_queue_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_delegate_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_globals.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/paged_image.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha_device_shared.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha_push_constants.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha_vertex.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_box.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_box_device_shared.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_box_push_constants.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_box_vertex.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image_device_shared.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image_push_constants.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image_texture_map.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image_vertex.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF_device_shared.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF_push_constants.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF_texture_map.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF_vertex.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_tone_mapper.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_tone_mapper_device_shared.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_tone_mapper_push_constants.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/RenderDoc.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/renderdoc_app.h
+    ${HIKOGUI_SOURCE_DIR}/GFX/subpixel_orientation.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_draw_context.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_event.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_type.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_variant.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_system.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_system_delegate.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/gui_system_win32.hpp>
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_window.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/gui_window_size.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/gui_window_win32.hpp>
+    ${HIKOGUI_SOURCE_DIR}/GUI/hitbox.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_bindings.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_focus_direction.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_focus_group.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_state.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_virtual_key.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/mouse_buttons.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/mouse_cursor.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_id.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_layout.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/image/module.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap_span.hpp
@@ -89,6 +157,15 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/image/srgb_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/uint_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/unorm_a2bgr10_pack.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_639.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/language_tag.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/translation.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/float16_sse4_1.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/module.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_f16x8_sse2.hpp
@@ -102,6 +179,56 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_simd_utility.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_sse2.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/token.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lexer.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lookahead_iterator.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/character.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/character_attributes.hpp
+    #${HIKOGUI_SOURCE_DIR}/text/spell_check.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_cursor.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_decoration.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_phrasing.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_selection.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_shaper.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_shaper_char.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_shaper_line.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_style.hpp
+    ${HIKOGUI_SOURCE_DIR}/text/text_theme.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_book.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_mode.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_state.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/theme_model.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/style_sheet.hpp
+    ${HIKOGUI_SOURCE_DIR}/theme/style_sheet_parser.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/grapheme.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/gstring.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_paired_bracket_types.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_mirroring_glyphs.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_canonical_combining_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_compositions.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_decompositions.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_east_asian_widths.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_general_categories.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_grapheme_cluster_breaks.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_lexical_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_line_break_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_scripts.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_sentence_break_properties.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_word_break_properties.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_opportunity.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_description.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_grapheme_cluster_break.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_line_break.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_normalization.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_plural.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_sentence_break.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_word_break.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/architecture.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast.hpp
@@ -121,9 +248,43 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/module.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/numbers.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/test.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/time_zone.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/units.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/utility.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/win32_headers.hpp>
+    ${HIKOGUI_SOURCE_DIR}/widgets/abstract_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/audio_device_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/button_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/checkbox_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/grid_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/icon_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/label_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/menu_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/momentary_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/overlay_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/radio_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/row_column_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/scroll_aperture_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/scroll_bar_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/scroll_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/selection_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/selection_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/spacer_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/system_menu_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/tab_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/tab_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/text_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/text_field_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/text_field_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/text_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/toggle_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_tab_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_widget.hpp
+    #${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp
     ${HIKOGUI_SOURCE_DIR}/terminate.hpp
 )

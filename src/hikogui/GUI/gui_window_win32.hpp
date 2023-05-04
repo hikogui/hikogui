@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../GFX/gfx_surface_vulkan.hpp"
+#include "../GFX/module.hpp"
 #include "gui_window.hpp"
 #include <unordered_map>
 
@@ -19,11 +19,11 @@ public:
 
     HWND win32Window = nullptr;
 
-    gui_window_win32(gui_system& gui, label const& title) noexcept;
+    gui_window_win32(gui_system& gui, std::unique_ptr<hi::widget> widget, label const& title) noexcept;
 
     ~gui_window_win32();
 
-    void create_window(extent2i new_size) override;
+    void create_window(extent2i new_size);
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
     void set_cursor(mouse_cursor cursor) noexcept override;
@@ -34,8 +34,8 @@ public:
     [[nodiscard]] hi::subpixel_orientation subpixel_orientation() const noexcept override;
     void open_system_menu() override;
     void set_window_size(extent2i extent) override;
-    [[nodiscard]] std::optional<std::string> get_text_from_clipboard() const noexcept override;
-    void put_text_on_clipboard(std::string_view str) const noexcept override;
+    [[nodiscard]] std::optional<hi::text> get_text_from_clipboard() const noexcept override;
+    void put_text_on_clipboard(hi::text str) const noexcept override;
 
 private:
     static constexpr UINT_PTR move_and_resize_timer_id = 2;

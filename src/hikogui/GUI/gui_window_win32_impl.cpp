@@ -7,16 +7,15 @@
 #include "gui_window_win32.hpp"
 #include "gui_system.hpp"
 #include "keyboard_virtual_key.hpp"
-#include "theme_book.hpp"
-#include "../GFX/gfx_system_vulkan.hpp"
-#include "../widgets/window_widget.hpp"
+#include "../theme/module.hpp"
+#include "../unicode/module.hpp"
+#include "../GFX/module.hpp"
 #include "../log.hpp"
 #include "../strings.hpp"
 #include "../utility/module.hpp"
 #include "../os_settings.hpp"
 #include "../loop.hpp"
 #include "../defer.hpp"
-#include "../unicode/unicode_normalization.hpp"
 #include <new>
 
 namespace hi::inline v1 {
@@ -174,10 +173,12 @@ void gui_window_win32::create_window(extent2i new_size)
     surface = gui.gfx->make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(gui_system& gui, label const& title) noexcept :
-    gui_window(gui, title), track_mouse_leave_event_parameters()
+gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<hi::widget> widget, label const& title) noexcept :
+    gui_window(gui, std::move(widget), title), track_mouse_leave_event_parameters()
 {
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    // Delegate has been called, layout of widgets has been calculated for the
+    // minimum and maximum size of the window.
+    create_window(_widget_constraints.preferred);
 }
 
 gui_window_win32::~gui_window_win32()
@@ -378,8 +379,11 @@ void gui_window_win32::set_window_size(extent2i new_extent)
         SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
 }
 
-[[nodiscard]] std::optional<std::string> gui_window_win32::get_text_from_clipboard() const noexcept
+[[nodiscard]] std::optional<hi::text> gui_window_win32::get_text_from_clipboard() const noexcept
 {
+    auto string = std::optional<std::string>{};
+    auto language_tag = os_settings::language_tag();
+
     if (not OpenClipboard(win32Window)) {
         // Another application could have the clipboard locked.
         hi_log_info("Could not open win32 clipboard '{}'", get_last_error_message());
@@ -393,20 +397,71 @@ void gui_window_win32::set_window_size(extent2i new_extent)
     UINT format = 0;
     while ((format = EnumClipboardFormats(format)) != 0) {
         switch (format) {
+        case CF_LOCALE:
+            {
+                hilet cb_data = GetClipboardData(CF_LOCALE);
+                if (cb_data == nullptr) {
+                    hi_log_error("Could not get clipboard locale-data: '{}'", get_last_error_message());
+                    continue;
+                }
+
+                auto const *const locale = static_cast<LCID *>(GlobalLock(cb_data));
+                if (locale == nullptr) {
+                    hi_log_error("Could not lock clipboard locale-data: '{}'", get_last_error_message());
+                    continue;
+                }
+
+                hilet defer_GlobalUnlock = defer([cb_data] {
+                    if (not GlobalUnlock(cb_data) and GetLastError() != ERROR_SUCCESS) {
+                        hi_log_error("Could not unlock clipboard locale-data: '{}'", get_last_error_message());
+                    }
+                });
+
+                // https://learn.microsoft.com/en-us/windows/win32/intl/locale-sname
+                // The locale name contains the language, script and region. Which
+                // is the complete set that is needed for the character-attributes.
+                auto locale_name = std::wstring(LOCALE_NAME_MAX_LENGTH, L'\0');
+                {
+                    hilet r = GetLocaleInfoW(*locale, LOCALE_SNAME, locale_name.data(), narrow_cast<int>(locale_name.size()));
+
+                    if (r == 0) {
+                        hi_log_error(
+                            "Could not get opentype language code from clipboard-locale: '{}'", get_last_error_message());
+                        continue;
+                    }
+                    locale_name.resize(narrow_cast<size_t>(r - 1));
+                }
+
+                // https://learn.microsoft.com/en-us/windows/win32/intl/locale-names
+                // Strip-off the optional sort order, "_<sort-order>".
+                if (auto i = locale_name.find(L'_'); i != locale_name.npos) {
+                    locale_name.resize(i);
+                }
+
+                // Strip-off the optional supplemental local, "-x-<custom>"
+                if (auto i = locale_name.find(L"-x-"); i != locale_name.npos) {
+                    locale_name.resize(i);
+                }
+
+                // What is left over here should be a IETF language-tag.
+                language_tag = hi::language_tag{to_string(locale_name)};
+            }
+            break;
+
         case CF_TEXT:
         case CF_OEMTEXT:
         case CF_UNICODETEXT:
-            {
+            if (not string) {
                 hilet cb_data = GetClipboardData(CF_UNICODETEXT);
                 if (cb_data == nullptr) {
-                    hi_log_error("Could not get clipboard data: '{}'", get_last_error_message());
-                    return {};
+                    hi_log_error("Could not get clipboard text-data: '{}'", get_last_error_message());
+                    continue;
                 }
 
                 auto const *const wstr_c = static_cast<wchar_t const *>(GlobalLock(cb_data));
                 if (wstr_c == nullptr) {
                     hi_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
-                    return {};
+                    continue;
                 }
 
                 hilet defer_GlobalUnlock = defer([cb_data] {
@@ -415,9 +470,8 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                     }
                 });
 
-                auto r = hi::to_string(std::wstring_view(wstr_c));
-                hi_log_debug("get_text_from_clipboard '{}'", r);
-                return {std::move(r)};
+                string = to_string(
+                    unicode_normalize(hi::to_u32string(std::wstring_view(wstr_c)), unicode_normalize_config::NFC_PS_noctr()));
             }
             break;
 
@@ -429,10 +483,15 @@ void gui_window_win32::set_window_size(extent2i new_extent)
         hi_log_error("Could not enumerator clipboard formats: '{}'", get_last_error_message());
     }
 
-    return {};
+    if (string) {
+        return to_text(*string, language_tag);
+
+    } else {
+        return std::nullopt;
+    }
 }
 
-void gui_window_win32::put_text_on_clipboard(std::string_view text) const noexcept
+void gui_window_win32::put_text_on_clipboard(hi::text text) const noexcept
 {
     if (not OpenClipboard(win32Window)) {
         // Another application could have the clipboard locked.
@@ -449,8 +508,7 @@ void gui_window_win32::put_text_on_clipboard(std::string_view text) const noexce
         return;
     }
 
-    auto wtext = hi::to_wstring(
-        unicode_NFC(to_u32string(text), unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_newline_to_CRLF));
+    auto wtext = hi::to_wstring(unicode_normalize(to_u32string(text), unicode_normalize_config::NFC_CRLF_noctr()));
 
     auto wtext_handle = GlobalAlloc(GMEM_MOVEABLE, (wtext.size() + 1) * sizeof(wchar_t));
     if (wtext_handle == nullptr) {
@@ -786,23 +844,31 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
 
-        } else if (auto g = grapheme{c}; g.valid()) {
-            process_event(gui_event::keyboard_grapheme(g));
+        } else {
+            hilet gc = ucd_get_general_category(c);
+            if (not is_C(gc) and not is_M(gc)) {
+                // Only pass code-points that are non-control and non-mark.
+                process_event(gui_event::keyboard_grapheme(grapheme{c}));
+            }
         }
         break;
 
     case WM_DEADCHAR:
         if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
-            if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event::keyboard_partial_grapheme(g));
+            hilet gc = ucd_get_general_category(c);
+            if (not is_C(gc) and not is_M(gc)) {
+                // Only pass code-points that are non-control and non-mark.
+                process_event(gui_event::keyboard_partial_grapheme(grapheme{c}));
             }
         }
         break;
 
     case WM_CHAR:
         if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
-            if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event::keyboard_grapheme(g));
+            hilet gc = ucd_get_general_category(c);
+            if (not is_C(gc) and not is_M(gc)) {
+                // Only pass code-points that are non-control and non-mark.
+                process_event(gui_event::keyboard_grapheme(grapheme{c}));
             }
         }
         break;

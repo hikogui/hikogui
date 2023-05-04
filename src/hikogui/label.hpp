@@ -9,8 +9,8 @@
 
 #include "utility/module.hpp"
 #include "strings.hpp"
-#include "i18n/translate.hpp"
-#include "unicode/gstring.hpp"
+#include "l10n/module.hpp"
+#include "unicode/module.hpp"
 #include "image/module.hpp"
 #include "font/module.hpp"
 #include <string>
@@ -24,52 +24,49 @@ namespace hi::inline v1 {
  *
  * May be:
  *  - `std::monostate`
- *  - `std::string`
- *  - `hi::gstring`
+ *  - `hi::text`
  *  - `hi::translate` or `hi::tr`
  */
-class text : public std::variant<std::monostate, std::string, gstring, translate> {
-    using std::variant<std::monostate, std::string, gstring, translate>::variant;
+class text_variant : public std::variant<std::monostate, hi::text, hi::translate> {
+    using std::variant<std::monostate, hi::text, hi::translate>::variant;
 
     /** Check if text contains a string.
      *
      * @note `to_bool()` returns true on an zero length string.
      */
-    [[nodiscard]] constexpr friend bool to_bool(text const& rhs) noexcept
+    [[nodiscard]] constexpr friend bool to_bool(text_variant const& rhs) noexcept
     {
         return not std::holds_alternative<std::monostate>(rhs);
     }
 
-    /** Convert the text into a std::string.
+    /** Convert the text into a gstring.
      */
-    [[nodiscard]] constexpr friend std::string to_string(hi::text const& rhs) noexcept
+    [[nodiscard]] constexpr friend text to_text(hi::text_variant const& rhs) noexcept
     {
         // clang-format off
         return std::visit(
             overloaded{
-                [](std::monostate const &) { return std::string{}; },
-                [](std::string const &x) { return x; },
-                [](gstring const &x) { return hi::to_string(x); },
-                [](translate const &x) { return x(); }
+                [](std::monostate const &) { return text{}; },
+                [](hi::text const &x) { return x; },
+                [](hi::translate const &x) { return x(); }
             },
             rhs);
         // clang-format on
     }
 
-    /** Convert the text into a gstring.
-     */
-    [[nodiscard]] constexpr friend gstring to_gstring(hi::text const& rhs) noexcept
+    [[nodiscard]] constexpr friend gstring to_gstring(hi::text_variant const& rhs) noexcept
     {
-        // clang-format off
-        return std::visit(
-            overloaded{
-                [](std::monostate const &) { return gstring{}; },
-                [](std::string const &x) { return to_gstring(std::string_view{x}); },
-                [](gstring const &x) { return x; },
-                [](translate const &x) { return to_gstring(std::string_view{x()}); }
-            },
-            rhs);
-        // clang-format on
+        return to_gstring(to_text(rhs));
+    }
+
+    [[nodiscard]] constexpr friend std::string to_string(hi::text_variant const& rhs) noexcept
+    {
+        return to_string(to_text(rhs));
+    }
+
+    [[nodiscard]] constexpr friend std::wstring to_wstring(hi::text_variant const& rhs) noexcept
+    {
+        return to_wstring(to_string(rhs));
     }
 };
 
@@ -79,12 +76,10 @@ class text : public std::variant<std::monostate, std::string, gstring, translate
  *  - `std::monostate`
  *  - `hi::elusive_icon`
  *  - `hi::hikogui_icon`
- *  - `hi::glyph_ids`
  *  - `hi::pixmap<hi::sfloat_rgba16>`
  */
-class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixmap<sfloat_rgba16>>
-{
-    using std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixmap<sfloat_rgba16>>::variant;
+class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyph_type, pixmap<sfloat_rgba16>> {
+    using std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyph_type, pixmap<sfloat_rgba16>>::variant;
 
     /** Check if icon contains an image.
      */
@@ -97,8 +92,8 @@ class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, gly
 } // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<hi::text, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::text const& t, auto& fc)
+struct std::formatter<hi::text_variant, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::text_variant const& t, auto& fc)
     {
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
@@ -125,13 +120,13 @@ public:
     /** Localizable text.
      * The text in this field is not yet translated nor formatted.
      */
-    hi::text text;
+    hi::text_variant text;
 
     /** Construct a new label from an icon and text.
      * @param icon The icon.
      * @param text The text.
      */
-    constexpr label(std::convertible_to<hi::icon> auto&& icon, std::convertible_to<hi::text> auto&& text) noexcept :
+    constexpr label(std::convertible_to<hi::icon> auto&& icon, std::convertible_to<hi::text_variant> auto&& text) noexcept :
         icon(hi_forward(icon)), text(hi_forward(text))
     {
     }
@@ -139,7 +134,7 @@ public:
     /** Construct a new label from text.
      * @param text The text.
      */
-    constexpr label(std::convertible_to<hi::text> auto&& text) noexcept : icon(), text(hi_forward(text)) {}
+    constexpr label(std::convertible_to<hi::text_variant> auto&& text) noexcept : icon(), text(hi_forward(text)) {}
 
     /** Construct a new label from an icon.
      * @param icon The icon.
@@ -194,9 +189,9 @@ struct selector<label> {
 } // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<hi::label, CharT> : std::formatter<hi::text, CharT> {
+struct std::formatter<hi::label, CharT> : std::formatter<hi::text_variant, CharT> {
     auto format(hi::label const& t, auto& fc)
     {
-        return std::formatter<hi::text, CharT>::format(t.text, fc);
+        return std::formatter<hi::text_variant, CharT>::format(t.text, fc);
     }
 };
