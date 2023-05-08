@@ -30,7 +30,8 @@
             "hidden": true,
             "inherits": "x64-windows",
             "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "cl"
+                "CMAKE_CXX_COMPILER": "cl",
+                "CMAKE_C_COMPILER": "cl"
             },
             "vendor": {
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -43,7 +44,8 @@
             "hidden": true,
             "inherits": "x64-windows",
             "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "clang-cl"
+                "CMAKE_CXX_COMPILER": "clang-cl",
+                "CMAKE_C_COMPILER": "clang-cl"
             },
             "vendor": {
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
