@@ -20,7 +20,7 @@ gui_window::gui_window(gui_system& gui, std::unique_ptr<hi::widget> widget, labe
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
 
-    hilet dpi_scale = dpi / points_per_inch_v<float>;
+    hilet dpi_scale = dpi / dips{inches{1.0}}.count();
     apply(*this->widget, [&](auto& x) {
         x.reset_layout(surface.get(), dpi_scale);
     });
@@ -88,7 +88,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain) {
         hilet t2 = trace<"window::constrain">();
 
-        hilet dpi_scale = dpi / points_per_inch_v<float>;
+        hilet dpi_scale = dpi / dips{inches{1.0}}.count();
         apply(*widget, [&](auto& x) {
             x.reset_layout(surface.get(), dpi_scale);
         });

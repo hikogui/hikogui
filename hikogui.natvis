@@ -55,6 +55,23 @@
             </ArrayItems>
         </Expand>
     </Type>
+    <Type Name="hi::v1::character">
+        <DisplayString>{static_cast&lt;char32_t&gt;(_value &amp; 0x1ffff)}</DisplayString>
+    </Type>
+    <Type Name="std::basic_string&lt;hi::v1::character,std::char_traits&lt;hi::v1::character&gt;,std::allocator&lt;hi::v1::character&gt;&gt;&gt;">
+        <DisplayString Condition="_Mypair._Myval2._Myres &lt; _Mypair._Myval2._BUF_SIZE">{_Mypair._Myval2._Bx._Buf,[_Mypair._Myval2._Mysize]}</DisplayString>
+        <DisplayString Condition="_Mypair._Myval2._Myres &gt;= _Mypair._Myval2._BUF_SIZE">{_Mypair._Myval2._Bx._Ptr,[_Mypair._Myval2._Mysize]}</DisplayString>
+        <Expand>
+            <Item Name="[size]" ExcludeView="simple">_Mypair._Myval2._Mysize</Item>
+            <Item Name="[capacity]" ExcludeView="simple">_Mypair._Myval2._Myres</Item>
+            <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
+            <ArrayItems>
+                <Size>_Mypair._Myval2._Mysize</Size>
+                <ValuePointer Condition="_Mypair._Myval2._Myres &lt; _Mypair._Myval2._BUF_SIZE">_Mypair._Myval2._Bx._Buf</ValuePointer>
+                <ValuePointer Condition="_Mypair._Myval2._Myres &gt;= _Mypair._Myval2._BUF_SIZE">_Mypair._Myval2._Bx._Ptr</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
     <Type Name="hi::v1::unicode_mask::entry_type">
         <DisplayString>{(_value &amp; 0x7ff) == 0 ? 0 : _value >> 11} - {(_value &amp; 0x7ff) == 0 ? 0 : (_value >> 11) + (_value &amp; 0x7ff)}</DisplayString>
         <Expand>

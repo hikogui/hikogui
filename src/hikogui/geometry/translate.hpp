@@ -189,6 +189,18 @@ public:
     }
 
     template<int E>
+    [[nodiscard]] constexpr translate operator+(vector<value_type, E> const& rhs) const noexcept
+    {
+        return translate{_v + static_cast<array_type>(rhs)};
+    }
+
+    template<int E>
+    constexpr translate &operator+=(vector<value_type, E> const& rhs) noexcept
+    {
+        return *this = *this + rhs;
+    }
+
+    template<int E>
     [[nodiscard]] constexpr vector<value_type, E> operator*(vector<value_type, E> const& rhs) const noexcept
     {
         // Vectors are not translated.
@@ -203,24 +215,11 @@ public:
         return point<value_type, std::max(D, E)>{_v + static_cast<array_type>(rhs)};
     }
 
-    constexpr friend point<value_type, 2>& operator*=(point<value_type, 2>& lhs, translate const& rhs) noexcept
-        requires(D == 2)
-    {
-        return lhs = rhs * lhs;
-    }
-
     [[nodiscard]] constexpr axis_aligned_rectangle<value_type>
     operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept
         requires(D == 2)
     {
         return axis_aligned_rectangle<value_type>{*this * get<0>(rhs), *this * get<3>(rhs)};
-    }
-
-    constexpr friend axis_aligned_rectangle<value_type>&
-    operator*=(axis_aligned_rectangle<value_type>& lhs, translate const& rhs) noexcept
-        requires(D == 2)
-    {
-        return lhs = rhs * lhs;
     }
 
     [[nodiscard]] constexpr rectangle operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept

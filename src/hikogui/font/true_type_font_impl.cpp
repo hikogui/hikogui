@@ -234,24 +234,36 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     auto r = font::shape_run_result_type{};
     r.reserve(run.size());
 
-    auto x = 0.0f;
     for (hilet grapheme : run) {
         hilet glyphs = find_glyph(grapheme);
-        auto grapheme_advance = 0.0f;
-        for (hilet glyph_id : glyphs) {
-            hilet glyph_metrics = get_metrics(glyph_id);
-            hilet glyph_bounding_rectangle = translate2{x, 0.0f} * glyph_metrics.bounding_rectangle;
-            hilet glyph_position = point2{x, 0.0f};
 
-            x += glyph_metrics.advance;
-            grapheme_advance += glyph_metrics.advance;
+        // At this point ligature substitution has not been done. So we should
+        // have at least one glyph per grapheme.
+        hi_axiom(not glyphs.empty());
+        hilet base_glyph_id = glyphs.front();
+        hilet base_glyph_metrics = get_metrics(base_glyph_id);
+
+        r.advances.push_back(base_glyph_metrics.advance);
+        r.glyph_count.push_back(glyphs.size());
+
+        // Store information of the base-glyph
+        r.glyphs.push_back(base_glyph_id);
+        r.glyph_positions.push_back(point2{});
+        r.glyph_rectangles.push_back(base_glyph_metrics.bounding_rectangle);
+
+        // Position the mark-glyphs.
+        auto glyph_position = point2{base_glyph_metrics.advance, 0.0f};
+        for (auto i = 1_uz; i != glyphs.size(); ++i) {
+            hilet glyph_id = glyphs[i];
+
+            hilet glyph_metrics = get_metrics(glyph_id);
 
             r.glyphs.push_back(glyph_id);
             r.glyph_positions.push_back(glyph_position);
-            r.glyph_rectangles.push_back(glyph_bounding_rectangle);
+            r.glyph_rectangles.push_back(glyph_metrics.bounding_rectangle);
+
+            glyph_position.x() += glyph_metrics.advance;
         }
-        r.advances.push_back(grapheme_advance);
-        r.glyph_count.push_back(glyphs.size());
     }
     return r;
 }
@@ -260,34 +272,22 @@ void true_type_font::shape_run_kern(font::shape_run_result_type& shape_result) c
 {
     hilet num_graphemes = shape_result.advances.size();
 
-    auto total_kerning = translate2{};
-    auto prev_glyph_id = hi::glyph_id{};
+    auto prev_base_glyph_id = hi::glyph_id{};
     auto glyph_index = 0_uz;
-    for (auto i = 0_uz; i != num_graphemes; ++i) {
-        hilet num_glyphs_in_grapheme = shape_result.glyph_count[i];
-        for (auto j = 0_uz; j != num_glyphs_in_grapheme; ++j, ++glyph_index) {
-            hi_axiom_bounds(glyph_index, shape_result.glyphs);
-            auto glyph_id = shape_result.glyphs[glyph_index];
+    for (auto grapheme_index = 0_uz; grapheme_index != num_graphemes; ++grapheme_index) {
+        // Kerning is done between base-glyphs of consecutive graphemes.
+        // Marks should be handled by the Unicode mark positioning algorithm.
+        // Or by the more stateful GPOS table.
+        hilet base_glyph_id = shape_result.glyphs[glyph_index];
 
-            if (prev_glyph_id) {
-                auto kerning = otype_kern_find(_kern_table_bytes, prev_glyph_id, glyph_id, _em_scale);
-                if (kerning.y() != 0.0f) {
-                    throw parse_error("'kern' table contains vertical kerning.");
-                }
-                total_kerning.x() += kerning.x();
-            }
+        if (prev_base_glyph_id) {
+            hilet kerning = otype_kern_find(_kern_table_bytes, prev_base_glyph_id, base_glyph_id, _em_scale);
 
-            hi_axiom_bounds(glyph_index, shape_result.glyph_rectangles);
-            shape_result.glyph_rectangles[glyph_index] *= total_kerning;
-
-            hi_axiom_bounds(glyph_index, shape_result.glyph_positions);
-            shape_result.glyph_positions[glyph_index] *= total_kerning;
-
-            prev_glyph_id = glyph_id;
+            hi_axiom(grapheme_index != 0);
+            shape_result.advances[grapheme_index - 1] += kerning.x();
         }
 
-        hi_axiom_bounds(i, shape_result.advances);
-        shape_result.advances[i] += total_kerning.x();
+        glyph_index += shape_result.glyph_count[grapheme_index];
     }
 }
 
@@ -296,7 +296,7 @@ void true_type_font::shape_run_kern(font::shape_run_result_type& shape_result) c
     auto r = shape_run_basic(run);
 
     // Glyphs should be morphed only once.
-    //auto morphed = false;
+    // auto morphed = false;
     // Glyphs should be positioned only once.
     auto positioned = false;
 

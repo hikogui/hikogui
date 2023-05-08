@@ -25,7 +25,7 @@ text_shaper_line::text_shaper_line(
         // For example a paragraph separator is seldom available in a font.
         auto general_category = ucd_get_general_category(it->character[0]);
         if (is_visible(general_category)) {
-            this->metrics = max(metrics, it->font->metrics);
+            this->metrics = max(metrics, it->style.size * it->font->metrics);
             last_visible_it = it;
         }
     }
@@ -59,7 +59,8 @@ static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::itera
     }
 
     auto result = font.shape_run(attributes.language(), script, run);
-    result.scale(style.size);
+    result.scale_and_offset(style.size);
+
     hi_axiom(result.advances.size() == run.size());
     hi_axiom(result.glyph_count.size() == run.size());
 
@@ -82,7 +83,7 @@ static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::itera
             c.glyph_rectangles.push_back(result.glyph_rectangles[glyph_index]);
         }
 
-        p += vector2{c.advance, 0.0f};
+        p.x() += result.advances[grapheme_index];
     }
 }
 

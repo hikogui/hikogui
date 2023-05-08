@@ -11,7 +11,7 @@
 @color red : rgb(255, 69, 58);
 @color teal : rgb(100, 210, 255);
 @color yellow : rgb(255, 214, 10);
-@color foreground : rgb(119, 119, 121);
+@color foreground : rgb(253, 253, 255);
 @color gray9 : rgb(252, 252, 254);
 @color gray8 : rgb(198, 198, 200);
 @color gray7 : rgb(171, 171, 173);
@@ -35,7 +35,7 @@
     fill-color: foreground;
     caret-color: foreground yellow;
     selection-color: blue;
-    border-width: 1pt;
+    border-width: 1;
     border-color: foreground;
     background-color: background;
 }

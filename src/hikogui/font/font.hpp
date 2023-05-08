@@ -124,7 +124,7 @@ public:
     [[nodiscard]] virtual glyph_metrics get_metrics(hi::glyph_id glyph_id) const = 0;
 
     struct shape_run_result_type {
-        /** Position of each grapheme.
+        /** The horizontal advance of each grapheme.
          */
         std::vector<float> advances;
 
@@ -140,14 +140,13 @@ public:
          */
         std::vector<glyph_id> glyphs;
 
-        /** Position of each glyph.
+        /** Position of each glyph, relative to the grapheme
+         *
+         * There is exactly one position for each glyph.
          */
         std::vector<point2> glyph_positions;
 
-        /** The bounding rectangle for each glyph.
-         *
-         * The coordinates are in EM units and start at zero
-         * at the left-most / first grapheme.
+        /** The bounding rectangle for each glyph, relative to glyph_position.
          *
          * There is exactly one bounding rectangle for each glyph.
          */
@@ -162,17 +161,23 @@ public:
             glyph_rectangles.reserve(count);
         }
 
-        void scale(float s) noexcept
+        /** Scale and position the result of the run.
+        *
+        * @param s The font-size to scale by
+        * @param x The horizontal position, calculated after scaling
+        */
+        void scale_and_offset(float s) noexcept
         {
-            auto M = scale2{s};
+            auto S = scale2{s};
+
             for (auto& tmp : advances) {
                 tmp = s * tmp;
             }
             for (auto& tmp : glyph_positions) {
-                tmp = M * tmp;
+                tmp = S * tmp;
             }
             for (auto& tmp : glyph_rectangles) {
-                tmp = M * tmp;
+                tmp = S * tmp;
             }
         }
     };
