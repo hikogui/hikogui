@@ -200,7 +200,7 @@ public:
         }
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         using namespace std::literals::chrono_literals;
 

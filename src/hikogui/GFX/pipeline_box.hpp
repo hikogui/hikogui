@@ -17,7 +17,7 @@ namespace hi::inline v1::pipeline_box {
  */
 class pipeline_box : public pipeline_vulkan {
 public:
-    vector_span<vertex> vertexBufferData;
+    std::span<vertex> vertexBufferData;
 
     pipeline_box(gfx_surface const &surface);
     ~pipeline_box(){};

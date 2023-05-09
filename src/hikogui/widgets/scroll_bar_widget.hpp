@@ -119,7 +119,7 @@ public:
         return *aperture < *content;
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout) and visible()) {
             draw_rails(context);
@@ -254,7 +254,7 @@ private:
         return _hidden_content != 0 ? narrow_cast<float>(slider_travel_range()) / _hidden_content : 0.0f;
     }
 
-    void draw_rails(widget_draw_context const& context) noexcept
+    void draw_rails(widget_draw_context& context) noexcept
     {
         context.draw_box(
             layout,
@@ -265,7 +265,7 @@ private:
             theme<prefix>.border_radius(this));
     }
 
-    void draw_slider(widget_draw_context const& context) noexcept
+    void draw_slider(widget_draw_context& context) noexcept
     {
         context.draw_box(
             layout,

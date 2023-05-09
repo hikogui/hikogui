@@ -162,7 +162,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
     // Draw widgets if the _redraw_rectangle was set.
     if (auto gfx_draw_context = surface->render_start(_redraw_rectangle)) {
-        auto widget_draw_context = hi::widget_draw_context{*gfx_draw_context};
+        auto widget_draw_context = hi::widget_draw_context(std::move(*gfx_draw_context));
         _redraw_rectangle = aarectanglei{};
         widget_draw_context.display_time_point = display_time_point;
         widget_draw_context.gfx_context.subpixel_orientation = subpixel_orientation();

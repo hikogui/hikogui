@@ -112,7 +112,7 @@ public:
         }
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             if (operating_system::current == operating_system::macos) {
@@ -236,7 +236,7 @@ private:
     bool pressedMinimize = false;
     bool pressedMaximize = false;
 
-    void drawMacOS(widget_draw_context const& context) noexcept
+    void drawMacOS(widget_draw_context& context) noexcept
     {
         context.draw_box(
             layout,
@@ -284,7 +284,7 @@ private:
         }
     }
 
-    void drawWindows(widget_draw_context const& context) noexcept
+    void drawWindows(widget_draw_context& context) noexcept
     {
         context.draw_box(layout, closeRectangle, theme<prefix / "windows.close.fill.color", color>{}(this));
         context.draw_box(layout, minimizeRectangle, theme<prefix / "windows.minimize.fill.color", color>{}(this));

@@ -224,7 +224,7 @@ public:
      *
      * @param context The context to where the widget will draw.
      */
-    virtual void draw(widget_draw_context const& context) noexcept {};
+    virtual void draw(widget_draw_context& context) noexcept {};
 
     [[nodiscard]] virtual sub_theme_selector_type sub_theme_selector() const noexcept
     {

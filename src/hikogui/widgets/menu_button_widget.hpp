@@ -135,7 +135,7 @@ public:
         super::set_layout(context);
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_menu_button(context);
@@ -197,7 +197,7 @@ private:
     extent2i _short_cut_size;
     aarectanglei _short_cut_rectangle;
 
-    void draw_menu_button(widget_draw_context const& context) noexcept
+    void draw_menu_button(widget_draw_context& context) noexcept
     {
         context.draw_box(
             this->layout,
@@ -208,7 +208,7 @@ private:
             border_side::inside);
     }
 
-    void draw_check_mark(widget_draw_context const& context) noexcept
+    void draw_check_mark(widget_draw_context& context) noexcept
     {
         // Checkmark or tristate.
         if (*this->state != hi::widget_state::off) {

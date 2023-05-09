@@ -146,7 +146,7 @@ public:
         _content->set_layout(context.transform(_content_shape, 1.0f, context.rectangle()));
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             _content->draw(context);

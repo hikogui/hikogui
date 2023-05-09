@@ -71,7 +71,7 @@ public:
         _grid_widget->set_layout(context.transform(_grid_shape));
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             _grid_widget->draw(context);

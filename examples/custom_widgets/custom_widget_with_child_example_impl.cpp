@@ -20,7 +20,8 @@ public:
     {
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
-        _label_widget = std::make_unique<hi::label_widget<prefix>>(this, std::forward<Label>(label), hi::alignment::middle_center());
+        _label_widget =
+            std::make_unique<hi::label_widget<prefix>>(this, std::forward<Label>(label), hi::alignment::middle_center());
     }
 
     // The set_constraints() function is called when the window is first initialized,
@@ -54,8 +55,7 @@ public:
         if (compare_store(layout, context)) {
             // The layout of the child widget are also calculated here, which only needs to be done
             // when the layout of the current widget changes.
-            auto const label_rectangle =
-                align(context.rectangle(), _label_constraints.preferred, hi::alignment::middle_center());
+            auto const label_rectangle = align(context.rectangle(), _label_constraints.preferred, hi::alignment::middle_center());
             _label_shape = hi::box_shape{_label_constraints, label_rectangle, hi::theme<prefix>.cap_height(this)};
         }
 
@@ -67,7 +67,7 @@ public:
     // The `draw()` function is called when all or part of the window requires redrawing.
     // This may happen when showing the window for the first time, when the operating-system
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
-    void draw(hi::widget_draw_context const& context) noexcept override
+    void draw(hi::widget_draw_context& context) noexcept override
     {
         if (*mode > hi::widget_mode::invisible) {
             // We only need to draw the widget when it is visible and when the visible area of

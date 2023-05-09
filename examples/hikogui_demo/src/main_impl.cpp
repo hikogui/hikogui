@@ -171,7 +171,7 @@ hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::aud
 
     auto& column = widget.content().make_widget<column_widget<>>("A1");
     column.make_widget<toggle_widget<>>(preferences.toggle_value);
-    hilet& hello_world_button = column.make_widget<momentary_button_widget<>>(tr("Hello world AV"));
+    hilet& hello_world_button = column.make_widget<momentary_button_widget<>>(tr("Hello [e]world[.] AV"));
 
     hilet& vma_dump_button = column.make_widget<momentary_button_widget<>>(tr("vma\ncalculate stats"));
 

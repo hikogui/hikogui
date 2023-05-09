@@ -11,19 +11,19 @@ namespace hi::inline v1::pipeline_SDF {
 
 pipeline_SDF::pipeline_SDF(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, gfx_draw_context const& context)
+void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer command_buffer, gfx_draw_context const& context)
 {
-    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
+    pipeline_vulkan::draw_in_command_buffer(command_buffer, context);
 
-    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
+    vulkan_device().flushAllocation(vertexBufferAllocation, 0, context.sdf_vertices.size() * sizeof(vertex));
 
-    std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
-    std::vector<vk::DeviceSize> tmpOffsets = {0};
-    hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
+    std::vector<vk::Buffer> tmp_vertex_buffers = {vertexBuffer};
+    std::vector<vk::DeviceSize> tmp_offsets = {0};
+    hi_axiom(tmp_vertex_buffers.size() == tmp_offsets.size());
 
-    vulkan_device().SDF_pipeline->drawInCommandBuffer(commandBuffer);
+    vulkan_device().SDF_pipeline->drawInCommandBuffer(command_buffer);
 
-    commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
+    command_buffer.bindVertexBuffers(0, tmp_vertex_buffers, tmp_offsets);
 
     pushConstants.window_extent = extent2{narrow_cast<float>(extent.width), narrow_cast<float>(extent.height)};
     pushConstants.viewport_scale = scale2{narrow_cast<float>(2.0f / extent.width), narrow_cast<float>(2.0f / extent.height)};
@@ -54,18 +54,19 @@ void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, gfx_d
     default: hi_no_default();
     }
 
-    commandBuffer.pushConstants(
+    command_buffer.pushConstants(
         pipelineLayout,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
         0,
         sizeof(push_constants),
         &pushConstants);
 
-    hilet numberOfRectangles = vertexBufferData.size() / 4;
-    hilet numberOfTriangles = numberOfRectangles * 2;
-    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw glyphs");
-    commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
-    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
+    hilet number_of_rectangles = context.sdf_vertices.size() / 4;
+    hilet number_of_triangles = number_of_rectangles * 2;
+
+    vulkan_device().cmdBeginDebugUtilsLabelEXT(command_buffer, "draw glyphs");
+    command_buffer.drawIndexed(narrow_cast<uint32_t>(number_of_triangles * 3), 1, 0, 0, 0);
+    vulkan_device().cmdEndDebugUtilsLabelEXT(command_buffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_SDF::createShaderStages() const

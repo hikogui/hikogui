@@ -63,7 +63,7 @@ public:
         super::set_layout(context);
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_toolbar_button(context);
@@ -79,7 +79,7 @@ public:
 private:
     box_constraints _label_constraints;
 
-    void draw_toolbar_button(widget_draw_context const& context) noexcept
+    void draw_toolbar_button(widget_draw_context& context) noexcept
     {
         context.draw_box(
             this->layout,

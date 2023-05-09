@@ -298,7 +298,7 @@ public:
         _current_label_widget->set_layout(context.transform(_current_label_shape));
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             if (overlaps(context, layout)) {
@@ -515,7 +515,7 @@ private:
         }
     }
 
-    void draw_outline(widget_draw_context const& context) noexcept
+    void draw_outline(widget_draw_context& context) noexcept
     {
         context.draw_box(
             layout,
@@ -527,7 +527,7 @@ private:
             theme<prefix>.border_radius(this));
     }
 
-    void draw_chevron_box(widget_draw_context const& context) noexcept
+    void draw_chevron_box(widget_draw_context& context) noexcept
     {
         auto border_radius = theme<prefix>.border_radius(this);
 
@@ -546,7 +546,7 @@ private:
             border_radius);
     }
 
-    void draw_chevron(widget_draw_context const& context) noexcept
+    void draw_chevron(widget_draw_context& context) noexcept
     {
         context.draw_glyph(
             layout,

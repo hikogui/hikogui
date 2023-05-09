@@ -171,5 +171,6 @@ using unfair_mutex = unfair_mutex_impl<true>;
 #else
 using unfair_mutex = unfair_mutex_impl<false>;
 #endif
+using unfair_mutex_without_deadlock_detector = unfair_mutex_impl<false>;
 
 }} // namespace hi::v1

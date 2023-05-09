@@ -219,7 +219,7 @@ protected:
         }
     }
 
-    void draw_button(widget_draw_context const& context) noexcept
+    void draw_button(widget_draw_context& context) noexcept
     {
         _on_label_widget->draw(context);
         _off_label_widget->draw(context);

@@ -210,13 +210,13 @@ public:
      */
     utc_nanoseconds display_time_point;
 
-    widget_draw_context(widget_draw_context const& rhs) noexcept = default;
+    widget_draw_context(widget_draw_context& rhs) noexcept = delete;
     widget_draw_context(widget_draw_context&& rhs) noexcept = default;
-    widget_draw_context& operator=(widget_draw_context const& rhs) noexcept = default;
+    widget_draw_context& operator=(widget_draw_context& rhs) noexcept = delete;
     widget_draw_context& operator=(widget_draw_context&& rhs) noexcept = default;
     ~widget_draw_context() = default;
 
-    widget_draw_context(gfx_draw_context const& gfx_context) noexcept;
+    widget_draw_context(gfx_draw_context&& gfx_context) noexcept : gfx_context(std::move(gfx_context)) {}
 
     /** Draw a box.
      *
@@ -224,7 +224,7 @@ public:
      * @param box The four points of the box to draw.
      * @param attributes The drawing attributes to use.
      */
-    void draw_box(widget_layout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
+    void draw_box(widget_layout const& layout, quad const& box, draw_attributes const& attributes) noexcept
     {
         return _draw_box(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, attributes);
@@ -237,7 +237,7 @@ public:
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_quad_shape Shape, draw_attribute... Attributes>
-    void draw_box(widget_layout const& layout, Shape const& shape, Attributes const&...attributes) const noexcept
+    void draw_box(widget_layout const& layout, Shape const& shape, Attributes const&...attributes) noexcept
     {
         return draw_box(layout, make_quad(shape), draw_attributes{attributes...});
     }
@@ -248,7 +248,7 @@ public:
      * @param line The line segment to draw.
      * @param attributes The drawing attributes to use.
      */
-    void draw_line(widget_layout const& layout, line_segment const& line, draw_attributes const& attributes) const noexcept
+    void draw_line(widget_layout const& layout, line_segment const& line, draw_attributes const& attributes) noexcept
     {
         hilet box = make_rectangle(line, attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
 
@@ -266,7 +266,7 @@ public:
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_attribute... Attributes>
-    void draw_line(widget_layout const& layout, line_segment const& line, Attributes const&...attributes) const noexcept
+    void draw_line(widget_layout const& layout, line_segment const& line, Attributes const&...attributes) noexcept
     {
         return draw_line(layout, line, draw_attributes{attributes...});
     }
@@ -277,7 +277,7 @@ public:
      * @param circle The circle to draw.
      * @param attributes The drawing attributes to use.
      */
-    void draw_circle(widget_layout const& layout, hi::circle const& circle, draw_attributes const& attributes) const noexcept
+    void draw_circle(widget_layout const& layout, hi::circle const& circle, draw_attributes const& attributes) noexcept
     {
         auto box_attributes = attributes;
         box_attributes.border_radius = make_corner_radii(circle);
@@ -291,7 +291,7 @@ public:
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_attribute... Attributes>
-    void draw_circle(widget_layout const& layout, hi::circle const& circle, Attributes const&...attributes) const noexcept
+    void draw_circle(widget_layout const& layout, hi::circle const& circle, Attributes const&...attributes) noexcept
     {
         return draw_circle(layout, circle, draw_attributes{attributes...});
     }
@@ -306,7 +306,7 @@ public:
      *         Widgets may want to request a redraw if the image is not ready.
      */
     [[nodiscard]] bool
-    draw_image(widget_layout const& layout, quad const& box, paged_image& image, draw_attributes const& attributes) const noexcept
+    draw_image(widget_layout const& layout, quad const& box, paged_image& image, draw_attributes const& attributes) noexcept
     {
         return _draw_image(layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, image);
     }
@@ -323,7 +323,7 @@ public:
     template<draw_attribute... Attributes>
     [[nodiscard]] bool
     draw_image(widget_layout const& layout, draw_quad_shape auto const& box, paged_image& image, Attributes const&...attributes)
-        const noexcept
+        noexcept
     {
         return draw_image(layout, make_quad(box), image, draw_attributes{attributes...});
     }
@@ -340,7 +340,7 @@ public:
         quad const& box,
         hi::font const& font,
         glyph_id glyph,
-        draw_attributes const& attributes) const noexcept
+        draw_attributes const& attributes) noexcept
     {
         return _draw_glyph(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle),
@@ -363,7 +363,7 @@ public:
         Shape const& box,
         hi::font const& font,
         glyph_id glyph,
-        Attributes const&...attributes) const noexcept
+        Attributes const&...attributes) noexcept
     {
         return draw_glyph(layout, make_quad(box), font, glyph, draw_attributes{attributes...});
     }
@@ -379,7 +379,7 @@ public:
         widget_layout const& layout,
         quad const& box,
         font_book::font_glyph_type font_glyph,
-        draw_attributes const& attributes) const noexcept
+        draw_attributes const& attributes) noexcept
     {
         return _draw_glyph(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle),
@@ -401,7 +401,7 @@ public:
         widget_layout const& layout,
         Shape const& box,
         font_book::font_glyph_type font_glyph,
-        Attributes const&...attributes) const noexcept
+        Attributes const&...attributes) noexcept
     {
         return draw_glyph(layout, make_quad(box), font_glyph, draw_attributes{attributes...});
     }
@@ -415,7 +415,7 @@ public:
      */
     void
     draw_text(widget_layout const& layout, matrix3 const& transform, text_shaper const& text, draw_attributes const& attributes)
-        const noexcept
+        noexcept
     {
         return _draw_text(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle),
@@ -433,7 +433,7 @@ public:
      */
     template<draw_attribute... Attributes>
     void draw_text(widget_layout const& layout, matrix3 const& transform, text_shaper const& text, Attributes const&...attributes)
-        const noexcept
+        noexcept
     {
         return draw_text(layout, transform, text, draw_attributes{attributes...});
     }
@@ -445,7 +445,7 @@ public:
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_attribute... Attributes>
-    void draw_text(widget_layout const& layout, text_shaper const& text, Attributes const&...attributes) const noexcept
+    void draw_text(widget_layout const& layout, text_shaper const& text, Attributes const&...attributes) noexcept
     {
         return draw_text(layout, geo::identity{}, text, draw_attributes{attributes...});
     }
@@ -461,7 +461,7 @@ public:
         widget_layout const& layout,
         text_shaper const& text,
         text_selection const& selection,
-        draw_attributes const& attributes) const noexcept
+        draw_attributes const& attributes) noexcept
     {
         return _draw_text_selection(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3(), text, selection, attributes);
@@ -479,7 +479,7 @@ public:
         widget_layout const& layout,
         text_shaper const& text,
         text_selection const& selection,
-        Attributes const&...attributes) const noexcept
+        Attributes const&...attributes) noexcept
     {
         return draw_text_selection(layout, text, selection, draw_attributes{attributes...});
     }
@@ -499,7 +499,7 @@ public:
         text_cursor cursor,
         bool overwrite_mode,
         bool dead_character_mode,
-        draw_attributes const& attributes) const noexcept
+        draw_attributes const& attributes) noexcept
     {
         return _draw_text_cursors(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle),
@@ -527,7 +527,7 @@ public:
         text_cursor cursor,
         bool overwrite_mode,
         bool dead_character_mode,
-        Attributes const&...attributes) const noexcept
+        Attributes const&...attributes) noexcept
     {
         return draw_text_cursors(layout, text, cursor, overwrite_mode, dead_character_mode, draw_attributes{attributes...});
     }
@@ -541,7 +541,7 @@ public:
      * @param box The box in local coordinates of the widget.
      * @param attributes The drawing attributes to use.
      */
-    void draw_hole(widget_layout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
+    void draw_hole(widget_layout const& layout, quad const& box, draw_attributes const& attributes) noexcept
     {
         return _override_alpha(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, attributes);
@@ -557,7 +557,7 @@ public:
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
     template<draw_quad_shape Shape, draw_attribute... Attributes>
-    void draw_hole(widget_layout const& layout, Shape const& box, Attributes const&...attributes) const noexcept
+    void draw_hole(widget_layout const& layout, Shape const& box, Attributes const&...attributes) noexcept
     {
         return draw_hole(layout, make_quad(box), draw_attributes{attributes...});
     }
@@ -638,28 +638,28 @@ private:
         return corner_radii{f32x4{circle}.wwww()};
     }
 
-    void _override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
+    void _override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) noexcept;
 
-    void _draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
+    void _draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) noexcept;
 
     void _draw_text(
         aarectanglei const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
-        draw_attributes const& attributes) const noexcept;
+        draw_attributes const& attributes) noexcept;
 
     void _draw_text_selection(
         aarectanglei const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         text_selection const& selection,
-        draw_attributes const& attributes) const noexcept;
+        draw_attributes const& attributes) noexcept;
 
     void _draw_text_insertion_cursor_empty(
         aarectanglei const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
-        draw_attributes const& attributes) const noexcept;
+        draw_attributes const& attributes) noexcept;
 
     void _draw_text_insertion_cursor(
         aarectanglei const& clipping_rectangle,
@@ -667,13 +667,13 @@ private:
         text_shaper const& text,
         text_cursor cursor,
         bool show_flag,
-        draw_attributes const& attributes) const noexcept;
+        draw_attributes const& attributes) noexcept;
 
     void _draw_text_overwrite_cursor(
         aarectanglei const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper::char_const_iterator it,
-        draw_attributes const& attributes) const noexcept;
+        draw_attributes const& attributes) noexcept;
 
     void _draw_text_cursors(
         aarectanglei const& clipping_rectangle,
@@ -682,17 +682,17 @@ private:
         text_cursor cursor,
         bool overwrite_mode,
         bool dead_character_mode,
-        draw_attributes const& attributes) const noexcept;
+        draw_attributes const& attributes) noexcept;
 
     void _draw_glyph(
         aarectanglei const& clipping_rectangle,
         quad const& box,
         hi::font const& font,
         glyph_id const& glyph,
-        draw_attributes const& attributes) const noexcept;
+        draw_attributes const& attributes) noexcept;
 
     [[nodiscard]] bool
-    _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;
+    _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) noexcept;
 };
 
 }} // namespace hi::v1

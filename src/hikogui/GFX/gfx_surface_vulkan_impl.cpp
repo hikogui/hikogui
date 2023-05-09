@@ -424,21 +424,13 @@ std::optional<gfx_draw_context> gfx_surface_vulkan::render_start(aarectanglei re
         return std::nullopt;
     }
 
-    auto r = gfx_draw_context{};
-    r.device = _device;
-    r.box_vertices = std::addressof(box_pipeline->vertexBufferData);
-    r.image_vertices = std::addressof(image_pipeline->vertexBufferData);
-    r.sdf_vertices = std::addressof(SDF_pipeline->vertexBufferData);
-    r.alpha_vertices = std::addressof(alpha_pipeline->vertexBufferData);
-    r.frame_buffer_index = narrow_cast<size_t>(*optional_frame_buffer_index);
-
     // Record which part of the image will be redrawn on the current swapchain image.
-    auto& current_image = swapchain_image_infos.at(r.frame_buffer_index);
+    auto& current_image = swapchain_image_infos.at(*optional_frame_buffer_index);
     current_image.redraw_rectangle = redraw_rectangle;
 
     // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
     // We need to do this so that old redraws are also executed in the current swapchain image.
-    r.scissor_rectangle = std::accumulate(
+    hilet scissor_rectangle = std::accumulate(
         swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectanglei{}, [](hilet& sum, hilet& item) {
             return sum | item.redraw_rectangle;
         });
@@ -449,7 +441,14 @@ std::optional<gfx_draw_context> gfx_surface_vulkan::render_start(aarectanglei re
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     vulkan_device().resetFences({renderFinishedFence});
 
-    return r;
+    return gfx_draw_context{
+        *device(),
+        box_pipeline->vertexBufferData,
+        image_pipeline->vertexBufferData,
+        SDF_pipeline->vertexBufferData,
+        alpha_pipeline->vertexBufferData,
+        *optional_frame_buffer_index,
+        scissor_rectangle};
 }
 
 void gfx_surface_vulkan::render_finish(gfx_draw_context const& context)

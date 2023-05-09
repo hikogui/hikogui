@@ -142,130 +142,136 @@ private:
     value_type *_max;
 
 public:
-    vector_span() noexcept : _begin(nullptr), _end(nullptr), _max(nullptr) {}
+    constexpr vector_span() noexcept : _begin(nullptr), _end(nullptr), _max(nullptr) {}
 
-    vector_span(value_type *buffer, ssize_t nr_elements) noexcept : _begin(buffer), _end(buffer), _max(buffer + nr_elements)
+    constexpr vector_span(value_type *buffer, ssize_t nr_elements) noexcept :
+        _begin(buffer), _end(buffer), _max(buffer + nr_elements)
     {
         hi_axiom(nr_elements >= 0);
     }
 
-    vector_span(std::span<value_type> span) noexcept : _begin(span.data()), _end(span.data()), _max(span.data() + span.size()) {}
+    constexpr vector_span(std::span<value_type> span) noexcept :
+        _begin(span.data()), _end(span.data()), _max(span.data() + span.size())
+    {
+    }
 
-    vector_span(vector_span const &other) = default;
-    vector_span(vector_span &&other) = default;
-    vector_span &operator=(vector_span const &other) = default;
-    vector_span &operator=(vector_span &&other) = default;
+    constexpr vector_span(vector_span const& other) = default;
+    constexpr vector_span(vector_span&& other) = default;
+    constexpr vector_span& operator=(vector_span const& other) = default;
+    constexpr vector_span& operator=(vector_span&& other) = default;
     ~vector_span() = default;
 
-    [[nodiscard]] iterator begin() noexcept
-    {
-        return _begin;
-    }
-    [[nodiscard]] const_iterator begin() const noexcept
-    {
-        return _begin;
-    }
-    [[nodiscard]] const_iterator cbegin() const noexcept
+    [[nodiscard]] constexpr iterator begin() noexcept
     {
         return _begin;
     }
 
-    [[nodiscard]] iterator end() noexcept
+    [[nodiscard]] constexpr const_iterator begin() const noexcept
     {
-        return _end;
+        return _begin;
     }
-    [[nodiscard]] const_iterator end() const noexcept
+
+    [[nodiscard]] constexpr const_iterator cbegin() const noexcept
     {
-        return _end;
+        return _begin;
     }
-    [[nodiscard]] const_iterator cend() const noexcept
+
+    [[nodiscard]] constexpr iterator end() noexcept
     {
         return _end;
     }
 
-    [[nodiscard]] std::size_t size() const noexcept
+    [[nodiscard]] constexpr const_iterator end() const noexcept
+    {
+        return _end;
+    }
+
+    [[nodiscard]] constexpr const_iterator cend() const noexcept
+    {
+        return _end;
+    }
+
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         return std::distance(_begin, _end);
     }
 
-    [[nodiscard]] value_type &operator[](std::size_t i) noexcept
+    [[nodiscard]] constexpr value_type& operator[](std::size_t i) noexcept
     {
-        hi_assert_bounds(i, *this);
-        return *std::launder(_begin + i);
+        hi_axiom_bounds(i, *this);
+        return _begin[i];
     }
-    [[nodiscard]] value_type const &operator[](std::size_t i) const noexcept
+    [[nodiscard]] constexpr value_type const& operator[](std::size_t i) const noexcept
     {
-        hi_assert_bounds(i, *this);
-        return *std::launder(_begin + i);
-    }
-
-    value_type &front() noexcept
-    {
-        hi_axiom(_end != _begin);
-        return *std::launder(_begin);
-    }
-    value_type const &front() const noexcept
-    {
-        hi_axiom(_end != _begin);
-        return *std::launder(_begin);
-    }
-    value_type &back() noexcept
-    {
-        hi_axiom(_end != _begin);
-        return *std::launder(_end - 1);
-    }
-    value_type const &back() const noexcept
-    {
-        hi_axiom(_end != _begin);
-        return *std::launder(_end - 1);
+        hi_axiom_bounds(i, *this);
+        return _begin[i];
     }
 
-    [[nodiscard]] bool empty() const noexcept
+    constexpr value_type& front() noexcept
+    {
+        hi_axiom(_end != _begin);
+        return *_begin;
+    }
+
+    constexpr value_type const& front() const noexcept
+    {
+        hi_axiom(_end != _begin);
+        return *_begin;
+    }
+
+    constexpr value_type& back() noexcept
+    {
+        hi_axiom(_end != _begin);
+        return *(_end - 1);
+    }
+
+    constexpr value_type const& back() const noexcept
+    {
+        hi_axiom(_end != _begin);
+        return *(_end - 1);
+    }
+
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
         return _begin == _end;
     }
 
-    [[nodiscard]] bool full() const noexcept
+    [[nodiscard]] constexpr bool full() const noexcept
     {
         return _end == _max;
     }
 
-    void clear() noexcept
+    constexpr void clear() noexcept
     {
-        for (auto i = _begin; i != _end; ++i) {
-            std::destroy_at(std::launder(i));
+        for (auto ptr = _begin; ptr != _end; ++ptr) {
+            std::destroy_at(ptr);
         }
         _end = _begin;
     }
 
-    void push_back(value_type const &rhs) noexcept
+    constexpr void push_back(value_type const& rhs) noexcept
     {
         hi_axiom(_end != _max);
-        // Since we throw away the pointer, we have to std::launder all access to this object.
-        [[maybe_unused]] value_type *ptr = new (_end) value_type(rhs);
-        ++_end;
+        std::construct_at(_end++, rhs);
     }
 
-    void push_back(value_type &&rhs) noexcept
+    constexpr void push_back(value_type&& rhs) noexcept
     {
         hi_axiom(_end != _max);
-        // Since we throw away the pointer, we have to std::launder all access to this object.
-        [[maybe_unused]] value_type *ptr = new (_end) value_type(std::move(rhs));
-        ++_end;
+        std::construct_at(_end++, std::move(rhs));
     }
 
     template<typename... Args>
-    void emplace_back(Args &&...args) noexcept
+    constexpr void emplace_back(Args&&...args) noexcept
     {
         hi_axiom(_end != _max);
         std::construct_at(_end++, std::forward<Args>(args)...);
     }
 
-    void pop_back() noexcept
+    constexpr void pop_back() noexcept
     {
         hi_axiom(_end != _begin);
-        --_end;
-        std::destroy_at(std::launder(_end));
+        std::destroy_at(--_end);
     }
 };
 

@@ -8,25 +8,20 @@
 
 namespace hi::inline v1 {
 
-widget_draw_context::widget_draw_context(gfx_draw_context const& gfx_context) noexcept :
-    gfx_context(gfx_context)
-{
-}
-
 void widget_draw_context::_override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes)
-    const noexcept
+    noexcept
 {
-    if (gfx_context.alpha_vertices->full()) {
+    if (gfx_context.alpha_vertices.full()) {
         // Too many boxes where added, just don't draw them anymore.
         ++global_counter<"override_alpha::overflow">;
         return;
     }
 
     pipeline_alpha::device_shared::place_vertices(
-        *gfx_context.alpha_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, attributes.fill_color.p0.a());
+        gfx_context.alpha_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, attributes.fill_color.p0.a());
 }
 
-void widget_draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
+void widget_draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) noexcept
 {
     // clang-format off
     hilet border_offset = attributes.line_width * 0.5f;
@@ -41,14 +36,14 @@ void widget_draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad
         attributes.border_radius;
     // clang-format on
 
-    if (gfx_context.box_vertices->full()) {
+    if (gfx_context.box_vertices.full()) {
         // Too many boxes where added, just don't draw them anymore.
         ++global_counter<"draw_box::overflow">;
         return;
     }
 
     pipeline_box::device_shared::place_vertices(
-        *gfx_context.box_vertices,
+        gfx_context.box_vertices,
         narrow_cast<aarectangle>(clipping_rectangle),
         box_,
         attributes.fill_color,
@@ -58,16 +53,14 @@ void widget_draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad
 }
 
 [[nodiscard]] bool
-widget_draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept
+widget_draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) noexcept
 {
-    hi_assert_not_null(gfx_context.image_vertices);
-
     if (image.state != paged_image::state_type::uploaded) {
         return false;
     }
 
     auto& pipeline = *down_cast<gfx_device_vulkan*>(gfx_context.device)->image_pipeline;
-    pipeline.place_vertices(*gfx_context.image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
+    pipeline.place_vertices(gfx_context.image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
     return true;
 }
 
@@ -76,12 +69,11 @@ void widget_draw_context::_draw_glyph(
     quad const& box,
     font const& font,
     glyph_id const& glyph,
-    draw_attributes const& attributes) const noexcept
+    draw_attributes const& attributes) noexcept
 {
-    hi_assert_not_null(gfx_context.sdf_vertices);
     auto& pipeline = *down_cast<gfx_device_vulkan *>(gfx_context.device)->SDF_pipeline;
 
-    if (gfx_context.sdf_vertices->full()) {
+    if (gfx_context.sdf_vertices.full()) {
         auto box_attributes = attributes;
         box_attributes.fill_color = hi::color{1.0f, 0.0f, 1.0f}; // Magenta.
         _draw_box(clipping_rectangle, box, box_attributes);
@@ -90,7 +82,7 @@ void widget_draw_context::_draw_glyph(
     }
 
     hilet atlas_was_updated = pipeline.place_vertices(
-        *gfx_context.sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, font, glyph, attributes.fill_color);
+        gfx_context.sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, font, glyph, attributes.fill_color);
 
     if (atlas_was_updated) {
         pipeline.prepare_atlas_for_rendering();
@@ -101,9 +93,8 @@ void widget_draw_context::_draw_text(
     aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
-    draw_attributes const& attributes) const noexcept
+    draw_attributes const& attributes) noexcept
 {
-    hi_assert_not_null(gfx_context.sdf_vertices);
     auto& pipeline = *down_cast<gfx_device_vulkan*>(gfx_context.device)->SDF_pipeline;
 
     auto atlas_was_updated = false;
@@ -121,7 +112,7 @@ void widget_draw_context::_draw_text(
             hilet glyph = c.glyphs[i];
             hilet box = translate2{c.position} * c.glyph_rectangles[i];
 
-            if (gfx_context.sdf_vertices->full()) {
+            if (gfx_context.sdf_vertices.full()) {
                 auto box_attributes = attributes;
                 box_attributes.fill_color = hi::color{1.0f, 0.0f, 1.0f}; // Magenta.
                 _draw_box(clipping_rectangle, box, box_attributes);
@@ -130,7 +121,7 @@ void widget_draw_context::_draw_text(
             }
 
             atlas_was_updated |= pipeline.place_vertices(
-                *gfx_context.sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, font, glyph, color);
+                gfx_context.sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, font, glyph, color);
         }
     }
 
@@ -145,7 +136,7 @@ void widget_draw_context::_draw_text_selection(
     matrix3 const& transform,
     text_shaper const& text,
     text_selection const& selection,
-    draw_attributes const& attributes) const noexcept
+    draw_attributes const& attributes) noexcept
 {
     hilet[first, last] = selection.selection_indices();
     hilet first_ = text.begin() + first;
@@ -163,7 +154,7 @@ void widget_draw_context::_draw_text_insertion_cursor_empty(
     aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
-    draw_attributes const& attributes) const noexcept
+    draw_attributes const& attributes) noexcept
 {
     hilet maximum_left = std::round(text.rectangle().left() - 0.5f);
     hilet maximum_right = std::round(text.rectangle().right() - 0.5f);
@@ -183,7 +174,7 @@ void widget_draw_context::_draw_text_insertion_cursor(
     text_shaper const& text,
     text_cursor cursor,
     bool show_flag,
-    draw_attributes const& attributes) const noexcept
+    draw_attributes const& attributes) noexcept
 {
     hilet maximum_left = std::round(text.rectangle().left() - 0.5f);
     hilet maximum_right = std::round(text.rectangle().right() - 0.5f);
@@ -231,7 +222,7 @@ void widget_draw_context::_draw_text_overwrite_cursor(
     aarectanglei const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper::char_const_iterator it,
-    draw_attributes const& attributes) const noexcept
+    draw_attributes const& attributes) noexcept
 {
     hilet box = ceil(it->rectangle) + 0.5f;
     _draw_box(clipping_rectangle, transform * box, attributes);
@@ -244,7 +235,7 @@ void widget_draw_context::_draw_text_cursors(
     text_cursor primary_cursor,
     bool overwrite_mode,
     bool dead_character_mode,
-    draw_attributes const& attributes) const noexcept
+    draw_attributes const& attributes) noexcept
 {
     hi_axiom(attributes.line_width == 0.0f);
 

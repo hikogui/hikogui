@@ -273,8 +273,13 @@ public:
     }
 
 private:
+    // The map is protected with a mutex because global variable initialization
+    // may be deferred and run on a different threads. However we can not
+    // use the deadlock detector as it will use a thread_local variable.
+    // The initialization order of static global variables and thread_local
+    // variables are undetermined.
     inline static std::map<std::string, named_color_base *> _map;
-    inline static unfair_mutex _map_mutex;
+    inline static unfair_mutex_without_deadlock_detector _map_mutex;
 
 protected:
     color _color;

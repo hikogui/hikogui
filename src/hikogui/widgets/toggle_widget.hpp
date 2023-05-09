@@ -201,7 +201,7 @@ public:
         super::set_layout(context);
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_toggle_button(context);
@@ -221,7 +221,7 @@ private:
     circle _pip_circle;
     int _pip_move_range;
 
-    void draw_toggle_button(widget_draw_context const& context) noexcept
+    void draw_toggle_button(widget_draw_context& context) noexcept
     {
         context.draw_box(
             this->layout,
@@ -233,7 +233,7 @@ private:
             corner_radii{_button_rectangle.height() * 0.5f});
     }
 
-    void draw_toggle_pip(widget_draw_context const& context) noexcept
+    void draw_toggle_pip(widget_draw_context& context) noexcept
     {
         _animated_value.update(this->state != widget_state::off ? 1.0f : 0.0f, context.display_time_point);
         if (_animated_value.is_animating()) {

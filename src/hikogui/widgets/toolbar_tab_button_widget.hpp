@@ -131,7 +131,7 @@ public:
         super::set_layout(context);
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_toolbar_tab_button(context);
@@ -151,7 +151,7 @@ public:
 private:
     box_constraints _label_constraints;
 
-    void draw_toolbar_tab_button(widget_draw_context const& context) noexcept
+    void draw_toolbar_tab_button(widget_draw_context& context) noexcept
     {
         // Draw the outline of the button across the clipping rectangle to clip the
         // bottom of the outline.

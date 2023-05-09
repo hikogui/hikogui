@@ -10,35 +10,35 @@ namespace hi::inline v1::pipeline_box {
 
 pipeline_box::pipeline_box(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_box::draw_in_command_buffer(vk::CommandBuffer commandBuffer, gfx_draw_context const& context)
+void pipeline_box::draw_in_command_buffer(vk::CommandBuffer command_buffer, gfx_draw_context const& context)
 {
-    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
+    pipeline_vulkan::draw_in_command_buffer(command_buffer, context);
 
-    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
+    vulkan_device().flushAllocation(vertexBufferAllocation, 0, context.box_vertices.size() * sizeof(vertex));
 
-    std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
-    std::vector<vk::DeviceSize> tmpOffsets = {0};
-    hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
+    std::vector<vk::Buffer> tmp_vertex_buffers = {vertexBuffer};
+    std::vector<vk::DeviceSize> tmp_offsets = {0};
+    hi_axiom(tmp_vertex_buffers.size() == tmp_offsets.size());
 
-    vulkan_device().box_pipeline->drawInCommandBuffer(commandBuffer);
+    vulkan_device().box_pipeline->drawInCommandBuffer(command_buffer);
 
-    commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
+    command_buffer.bindVertexBuffers(0, tmp_vertex_buffers, tmp_offsets);
 
     pushConstants.windowExtent = extent2{narrow_cast<float>(extent.width), narrow_cast<float>(extent.height)};
     pushConstants.viewportScale = scale2{2.0f / extent.width, 2.0f / extent.height};
-    commandBuffer.pushConstants(
+    command_buffer.pushConstants(
         pipelineLayout,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
         0,
         sizeof(push_constants),
         &pushConstants);
 
-    hilet numberOfRectangles = vertexBufferData.size() / 4;
-    hilet numberOfTriangles = numberOfRectangles * 2;
+    hilet number_of_rectangles = context.box_vertices.size() / 4;
+    hilet number_of_triangles = number_of_rectangles * 2;
 
-    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw boxes");
-    commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
-    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
+    vulkan_device().cmdBeginDebugUtilsLabelEXT(command_buffer, "draw boxes");
+    command_buffer.drawIndexed(narrow_cast<uint32_t>(number_of_triangles * 3), 1, 0, 0, 0);
+    vulkan_device().cmdEndDebugUtilsLabelEXT(command_buffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_box::createShaderStages() const

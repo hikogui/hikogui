@@ -544,11 +544,13 @@ public:
     }
 
 private:
-    // Theoretically it possible for global variable initialization to be
-    // done from multiple threads. Practically this may happen when loading
-    // libraries at run-time.
-    inline static unfair_mutex _map_mutex;
+    // The map is protected with a mutex because global variable initialization
+    // may be deferred and run on a different threads. However we can not
+    // use the deadlock detector as it will use a thread_local variable.
+    // The initialization order of static global variables and thread_local
+    // variables are undetermined.
     inline static std::map<std::string, theme_model_base *> _map;
+    inline static unfair_mutex_without_deadlock_detector _map_mutex;
 
     std::array<theme_sub_model, theme_state_size> _sub_model_by_state;
 };

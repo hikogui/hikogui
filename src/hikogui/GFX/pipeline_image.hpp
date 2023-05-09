@@ -17,7 +17,7 @@ namespace hi::inline v1::pipeline_image {
  */
 class pipeline_image : public pipeline_vulkan {
 public:
-    vector_span<vertex> vertexBufferData;
+    std::span<vertex> vertexBufferData;
 
     pipeline_image(gfx_surface const &surface);
     ~pipeline_image(){};

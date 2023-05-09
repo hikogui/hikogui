@@ -190,7 +190,7 @@ public:
         super::set_layout(context);
     }
 
-    void draw(widget_draw_context const& context) noexcept override
+    void draw(widget_draw_context& context) noexcept override
     {
         if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_check_box(context);
@@ -209,7 +209,7 @@ private:
     font_book::font_glyph_type _minus_glyph;
     aarectanglei _minus_glyph_rectangle;
 
-    void draw_check_box(widget_draw_context const& context) noexcept
+    void draw_check_box(widget_draw_context& context) noexcept
     {
         context.draw_box(
             this->layout,
@@ -220,7 +220,7 @@ private:
             border_side::inside);
     }
 
-    void draw_check_mark(widget_draw_context const& context) noexcept
+    void draw_check_mark(widget_draw_context& context) noexcept
     {
         if (this->state == widget_state::on) {
             // Checkmark
