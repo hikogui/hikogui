@@ -8,9 +8,13 @@
 
 #pragma once
 
-#include "abstract_button_widget.hpp"
+#include "../GUI/module.hpp"
+#include "toggle_delegate.hpp"
 
 namespace hi { inline namespace v1 {
+
+template<typename Context>
+concept toggle_widget_attribute = label_widget_attribute<Context>;
 
 /** A GUI widget that permits the user to make a binary choice.
  *
@@ -23,23 +27,18 @@ namespace hi { inline namespace v1 {
  *    Or becomes part of a record together with other information to be stored
  *    together in a database of some sort.
  *
- * A toggle is a button with three different states with different visual
+ * A toggle is a button with two different states with different visual
  * representation:
  *  - **on**: The switch is thrown to the right and is highlighted, and the
  *    `toggle_widget::on_label` is shown.
  *  - **off**: The switch is thrown to the left and is not highlighted, and the
  *    `toggle_widget::off_label` is shown.
- *  - **other**: The switch is thrown to the left and is not highlighted, and
- *    the `toggle_widget::other_label` is shown.
  *
  * @image html toggle_widget.gif
  *
  * Each time a user activates the toggle-button it toggles between the 'on' and
  * 'off' states. If the toggle is in the 'other' state an activation will switch
  * it to the 'off' state.
- *
- * A toggle cannot itself switch state to 'other', this state may be caused by
- * external factors.
  *
  * In the following example we create a toggle widget on the window which
  * observes `value`. When the value is 1 the toggle is 'on', when the value is 2
@@ -50,11 +49,31 @@ namespace hi { inline namespace v1 {
  * @ingroup widgets
  */
 template<fixed_string Name = "">
-class toggle_widget final : public abstract_button_widget<Name / "toggle"> {
+class toggle_widget final : public widget {
 public:
-    using super = abstract_button_widget<Name / "toggle">;
-    using delegate_type = typename super::delegate_type;
-    constexpr static auto prefix = super::prefix;
+    using super = widget;
+    using delegate_type = toggle_delegate;
+    constexpr static auto prefix = Name / "toggle";
+
+    /** The delegate that controls the button widget.
+     */
+    std::shared_ptr<delegate_type> delegate;
+
+    /** The label to show when the button is in the 'on' state.
+     */
+    observer<label> on_label = tr("on");
+
+    /** The label to show when the button is in the 'off' state.
+     */
+    observer<label> off_label = tr("off");
+
+    /** The label to show when the button is in the 'other' state.
+     */
+    observer<label> other_label = tr("other");
+
+    /** The alignment of the button and on/off/other label.
+     */
+    observer<hi::alignment> alignment = alignment::top_left();
 
     /** Construct a toggle widget.
      *
@@ -65,11 +84,23 @@ public:
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
-    toggle_widget(widget *parent, std::shared_ptr<delegate_type> delegate, button_widget_attribute auto&&...attributes) noexcept :
-        super(parent, std::move(delegate))
+    toggle_widget(widget *parent, std::shared_ptr<delegate_type> delegate, toggle_widget_attribute auto&&...attributes) noexcept :
+        super(parent), delegate(std::move(delegate))
     {
-        this->alignment = alignment::top_left();
+        hi_assert_not_null(this->delegate);
         this->set_attributes<0>(hi_forward(attributes)...);
+
+        _on_label_widget = std::make_unique<label_widget<prefix / "on">>(this, on_label, alignment);
+        _off_label_widget = std::make_unique<label_widget<prefix / "off">>(this, off_label, alignment);
+        _other_label_widget = std::make_unique<label_widget<prefix / "other">>(this, other_label, alignment);
+
+        _delegate_cbt = this->delegate->subscribe([&] {
+            ++global_counter<"toggle_widget:delegate:redraw">;
+            hi_assert_not_null(this->delegate);
+            state = this->delegate->state(this);
+            process_event({gui_event_type::window_redraw});
+        });
+        this->delegate->init(*this);
     }
 
     /** Construct a toggle widget with a default button delegate.
@@ -82,10 +113,10 @@ public:
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
-    template<different_from<std::shared_ptr<delegate_type>> Value, button_widget_attribute... Attributes>
+    template<different_from<std::shared_ptr<delegate_type>> Value, toggle_widget_attribute... Attributes>
     toggle_widget(widget *parent, Value&& value, Attributes&&...attributes) noexcept
-        requires requires { make_default_toggle_button_delegate(hi_forward(value)); }
-        : toggle_widget(parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...)
+        requires requires { make_default_toggle_delegate(hi_forward(value)); }
+        : toggle_widget(parent, make_default_toggle_delegate(hi_forward(value)), hi_forward(attributes)...)
     {
     }
 
@@ -103,13 +134,13 @@ public:
     template<
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
-        button_widget_attribute... Attributes>
+        toggle_widget_attribute... Attributes>
     toggle_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)); }
+        requires requires { make_default_toggle_delegate(hi_forward(value), hi_forward(on_value)); }
         :
         toggle_widget(
             parent,
-            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)),
+            make_default_toggle_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(attributes)...)
     {
     }
@@ -130,13 +161,13 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         forward_of<observer<observer_decay_t<Value>>> OffValue,
-        button_widget_attribute... Attributes>
+        toggle_widget_attribute... Attributes>
     toggle_widget(widget *parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
-        requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)); }
+        requires requires { make_default_toggle_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)); }
         :
         toggle_widget(
             parent,
-            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
+            make_default_toggle_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
             hi_forward(attributes)...)
     {
     }
@@ -144,7 +175,10 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _label_constraints = super::update_constraints();
+        _on_label_constraints = _on_label_widget->update_constraints();
+        _off_label_constraints = _off_label_widget->update_constraints();
+        _other_label_constraints = _other_label_widget->update_constraints();
+        _label_constraints = max(_on_label_constraints, _off_label_constraints, _other_label_constraints);
 
         // Make room for button and margin.
         _button_size = theme<prefix>.size(this);
@@ -197,8 +231,15 @@ public:
 
             hilet pip_to_button_margin_x2 = _button_rectangle.height() - narrow_cast<int>(_pip_circle.diameter());
             _pip_move_range = _button_rectangle.width() - narrow_cast<int>(_pip_circle.diameter()) - pip_to_button_margin_x2;
+
+            _on_label_widget->mode = *state == widget_state::on ? widget_mode::display : widget_mode::invisible;
+            _off_label_widget->mode = *state == widget_state::off ? widget_mode::display : widget_mode::invisible;
+            _other_label_widget->mode = *state == widget_state::other ? widget_mode::display : widget_mode::invisible;
+
+            _on_label_widget->set_layout(context.transform(_on_label_shape));
+            _off_label_widget->set_layout(context.transform(_off_label_shape));
+            _other_label_widget->set_layout(context.transform(_other_label_shape));
         }
-        super::set_layout(context);
     }
 
     void draw(widget_draw_context& context) noexcept override
@@ -206,12 +247,98 @@ public:
         if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
             draw_toggle_button(context);
             draw_toggle_pip(context);
-            this->draw_button(context);
+
+            _on_label_widget->draw(context);
+            _off_label_widget->draw(context);
+            _other_label_widget->draw(context);
         }
+    }
+
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
+    {
+        co_yield *_on_label_widget;
+        co_yield *_off_label_widget;
+        co_yield *_other_label_widget;
+    }
+
+    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept final
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (*mode >= widget_mode::partial and layout.contains(position)) {
+            return {id, layout.elevation, hitbox_type::button};
+        } else {
+            return {};
+        }
+    }
+
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+    }
+
+    void activate() noexcept
+    {
+        hi_assert_not_null(delegate);
+        delegate->activate(*this);
+        this->_state_changed();
+    }
+
+    bool handle_event(gui_event const& event) noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+
+        switch (event.type()) {
+        case gui_event_type::gui_activate:
+            if (*mode >= widget_mode::partial) {
+                activate();
+                return true;
+            }
+            break;
+
+        case gui_event_type::mouse_down:
+            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
+                clicked = true;
+                request_redraw();
+                return true;
+            }
+            break;
+
+        case gui_event_type::mouse_up:
+            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
+                clicked = false;
+
+                if (layout.rectangle().contains(event.mouse().position)) {
+                    handle_event(gui_event_type::gui_activate);
+                }
+                request_redraw();
+                return true;
+            }
+            break;
+
+        default:;
+        }
+
+        return super::handle_event(event);
     }
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
+
+    std::unique_ptr<label_widget<join_path(prefix, "on")>> _on_label_widget;
+    box_constraints _on_label_constraints;
+    box_shape _on_label_shape;
+
+    std::unique_ptr<label_widget<join_path(prefix, "off")>> _off_label_widget;
+    box_constraints _off_label_constraints;
+    box_shape _off_label_shape;
+
+    std::unique_ptr<label_widget<join_path(prefix, "other")>> _other_label_widget;
+    box_constraints _other_label_constraints;
+    box_shape _other_label_shape;
+
+    notifier<>::callback_token _delegate_cbt;
 
     box_constraints _label_constraints;
 
@@ -243,6 +370,39 @@ private:
         hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
 
         context.draw_circle(this->layout, positioned_pip_circle * 1.02f, theme<prefix>.fill_color(this));
+    }
+
+    template<size_t LabelCount>
+    void set_attributes() noexcept
+    {
+    }
+
+    template<size_t LabelCount>
+    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+            if constexpr (LabelCount == 0) {
+                on_label = first;
+                off_label = first;
+                other_label = hi_forward(first);
+            } else if constexpr (LabelCount == 1) {
+                other_label.reset();
+                off_label.reset();
+                off_label = hi_forward(first);
+            } else if constexpr (LabelCount == 2) {
+                other_label = hi_forward(first);
+            } else {
+                hi_static_no_default();
+            }
+            set_attributes<LabelCount + 1>(hi_forward(rest)...);
+
+        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+            set_attributes<LabelCount>(hi_forward(rest)...);
+
+        } else {
+            hi_static_no_default();
+        }
     }
 };
 

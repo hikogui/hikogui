@@ -9,6 +9,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
+#include "checkbox_delegate.hpp"
 #include "../log.hpp"
 
 namespace hi { inline namespace v1 {
@@ -77,8 +78,8 @@ public:
         widget *parent,
         different_from<std::shared_ptr<delegate_type>> auto&& value,
         button_widget_attribute auto&&...attributes) noexcept
-        requires requires { make_default_toggle_button_delegate(hi_forward(value)); }
-        : checkbox_widget(parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...)
+        requires requires { make_default_checkbox_delegate(hi_forward(value)); }
+        : checkbox_widget(parent, make_default_checkbox_delegate(hi_forward(value)), hi_forward(attributes)...)
     {
     }
 
@@ -98,11 +99,11 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
     checkbox_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)); }
+        requires requires { make_default_checkbox_delegate(hi_forward(value), hi_forward(on_value)); }
         :
         checkbox_widget(
             parent,
-            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)),
+            make_default_checkbox_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(attributes)...)
     {
     }
@@ -125,11 +126,11 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         button_widget_attribute... Attributes>
     checkbox_widget(widget *parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
-        requires requires { make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)); }
+        requires requires { make_default_checkbox_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)); }
         :
         checkbox_widget(
             parent,
-            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
+            make_default_checkbox_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
             hi_forward(attributes)...)
     {
     }

@@ -3,23 +3,15 @@
 #pragma once
 
 #include "subpixel_orientation.hpp"
+#include "pipeline_box_vertex.hpp"
+#include "pipeline_image_vertex.hpp"
+#include "pipeline_SDF_vertex.hpp"
+#include "pipeline_alpha_vertex.hpp"
 #include "../geometry/module.hpp"
 #include "../vector_span.hpp"
 #include <cstdlib>
 
 namespace hi { inline namespace v1 {
-namespace pipeline_box {
-struct vertex;
-}
-namespace pipeline_image {
-struct vertex;
-}
-namespace pipeline_SDF {
-struct vertex;
-}
-namespace pipeline_alpha {
-struct vertex;
-}
 class gfx_device;
 
 struct gfx_draw_context {

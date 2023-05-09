@@ -26,6 +26,7 @@
 #include "text_field_delegate.hpp"
 #include "text_field_widget.hpp"
 #include "text_widget.hpp"
+#include "toggle_delegate.hpp"
 #include "toggle_widget.hpp"
 #include "toolbar_button_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"

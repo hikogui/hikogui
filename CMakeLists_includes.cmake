@@ -256,6 +256,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/abstract_button_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/audio_device_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/button_delegate.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/checkbox_delegate.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/checkbox_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/grid_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/icon_widget.hpp
@@ -279,6 +280,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/text_field_delegate.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/text_field_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/text_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/toggle_delegate.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/toggle_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_button_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_tab_button_widget.hpp
