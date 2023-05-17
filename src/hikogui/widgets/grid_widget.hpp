@@ -137,6 +137,7 @@ public:
 
     void draw(widget_draw_context& context) noexcept override
     {
+        // Don't check for overlap, since children can have overlays.
         if (*mode > widget_mode::invisible) {
             for (hilet& cell : _grid) {
                 cell.value->draw(context);

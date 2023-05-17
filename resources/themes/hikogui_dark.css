@@ -91,3 +91,16 @@
 *:phrasing(e) {
     font-style: italic;
 }
+
+toggle {
+    width: 20dp;
+    height: 10dp;
+    border-radius: 5dp;
+}
+
+toggle > pip {
+    width: 8dp;
+    height: 8dp;
+    border-radius: 4dp;
+}
+

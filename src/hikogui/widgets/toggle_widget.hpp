@@ -55,6 +55,8 @@ public:
     using delegate_type = toggle_delegate;
     constexpr static auto prefix = Name / "toggle";
 
+    enum class cell_type { toggle, label };
+
     /** The delegate that controls the button widget.
      */
     std::shared_ptr<delegate_type> delegate;
@@ -94,10 +96,18 @@ public:
         _off_label_widget = std::make_unique<label_widget<prefix / "off">>(this, off_label, alignment);
         _other_label_widget = std::make_unique<label_widget<prefix / "other">>(this, other_label, alignment);
 
+        _grid.add_cell(0, 0, cell_type::toggle);
+        _grid.add_cell(1, 0, cell_type::label);
+
         _delegate_cbt = this->delegate->subscribe([&] {
             ++global_counter<"toggle_widget:delegate:redraw">;
             hi_assert_not_null(this->delegate);
             state = this->delegate->state(this);
+
+            _on_label_widget->mode = *state == widget_state::on ? widget_mode::display : widget_mode::invisible;
+            _off_label_widget->mode = *state == widget_state::off ? widget_mode::display : widget_mode::invisible;
+            _other_label_widget->mode = *state == widget_state::other ? widget_mode::display : widget_mode::invisible;
+
             process_event({gui_event_type::window_redraw});
         });
         this->delegate->init(*this);
@@ -137,11 +147,7 @@ public:
         toggle_widget_attribute... Attributes>
     toggle_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires { make_default_toggle_delegate(hi_forward(value), hi_forward(on_value)); }
-        :
-        toggle_widget(
-            parent,
-            make_default_toggle_delegate(hi_forward(value), hi_forward(on_value)),
-            hi_forward(attributes)...)
+        : toggle_widget(parent, make_default_toggle_delegate(hi_forward(value), hi_forward(on_value)), hi_forward(attributes)...)
     {
     }
 
@@ -175,82 +181,72 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _on_label_constraints = _on_label_widget->update_constraints();
-        _off_label_constraints = _off_label_widget->update_constraints();
-        _other_label_constraints = _other_label_widget->update_constraints();
-        _label_constraints = max(_on_label_constraints, _off_label_constraints, _other_label_constraints);
+        for (auto& cell : _grid) {
+            if (cell.value == cell_type::toggle) {
+                cell.set_constraints(
+                    box_constraints{
+                        theme<prefix>.size(this),
+                        theme<prefix>.size(this),
+                        theme<prefix>.size(this),
+                        *alignment,
+                        theme<prefix>.margin(this)});
 
-        // Make room for button and margin.
-        _button_size = theme<prefix>.size(this);
-        hilet extra_size = extent2i{theme<prefix>.spacing_horizontal(this) + _button_size.width(), 0};
+            } else if (cell.value == cell_type::label) {
+                cell.set_constraints(
+                    max(_on_label_widget->update_constraints(),
+                        _off_label_widget->update_constraints(),
+                        _other_label_widget->update_constraints()));
 
-        auto r = max(_label_constraints + extra_size, _button_size);
-        r.margins = theme<prefix>.margin(this);
-        r.alignment = *this->alignment;
-        return r;
+            } else {
+                hi_no_default();
+            }
+        }
+
+        return _grid.constraints(os_settings::left_to_right());
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            auto alignment_ = os_settings::left_to_right() ? *this->alignment : mirror(*this->alignment);
+            _grid.set_layout(context.shape, theme<prefix>.cap_height(this));
+        }
 
-            if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
-                _button_rectangle = align(context.rectangle(), _button_size, alignment_);
-            } else {
-                hi_not_implemented();
-            }
+        for (hilet& cell : _grid) {
+            if (cell.value == cell_type::toggle) {
+                // The distance between bottom of the 'pip' and bottom of the 'toggle'
+                // is equal to the distance between the left of the 'pip' and
+                // the left of the 'toggle'.
+                _pip_edge_distance = (cell.shape.height() - theme<prefix / "pip">.height(this)) / 2;
+                _pip_move_range = cell.shape.width() - _pip_edge_distance * 2 - theme<prefix / "pip">.width(this);
 
-            hilet spacing = theme<prefix>.spacing_horizontal(this);
-            hilet cap_height = theme<prefix>.cap_height(this);
-
-            hilet label_width = context.width() - (_button_rectangle.width() + spacing);
-            if (alignment_ == horizontal_alignment::left) {
-                hilet label_left = _button_rectangle.right() + spacing;
-                hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
-                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, cap_height};
-
-            } else if (alignment_ == horizontal_alignment::right) {
-                hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
-                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, cap_height};
+            } else if (cell.value == cell_type::label) {
+                _on_label_widget->set_layout(context.transform(cell.shape, 0.0f));
+                _off_label_widget->set_layout(context.transform(cell.shape, 0.0f));
+                _other_label_widget->set_layout(context.transform(cell.shape, 0.0f));
 
             } else {
-                hi_not_implemented();
+                hi_no_default();
             }
-
-            hilet button_square = aarectangle{
-                narrow_cast<point2>(get<0>(_button_rectangle)),
-                extent2{narrow_cast<float>(_button_rectangle.height()), narrow_cast<float>(_button_rectangle.height())}};
-
-            hilet pip_size = theme<prefix / "pip">.size(this);
-            hi_axiom(pip_size.width() == pip_size.height());
-
-            _pip_circle = align(button_square, circle{narrow_cast<float>(pip_size.width() / 2)}, alignment::middle_center());
-
-            hilet pip_to_button_margin_x2 = _button_rectangle.height() - narrow_cast<int>(_pip_circle.diameter());
-            _pip_move_range = _button_rectangle.width() - narrow_cast<int>(_pip_circle.diameter()) - pip_to_button_margin_x2;
-
-            _on_label_widget->mode = *state == widget_state::on ? widget_mode::display : widget_mode::invisible;
-            _off_label_widget->mode = *state == widget_state::off ? widget_mode::display : widget_mode::invisible;
-            _other_label_widget->mode = *state == widget_state::other ? widget_mode::display : widget_mode::invisible;
-
-            _on_label_widget->set_layout(context.transform(_on_label_shape));
-            _off_label_widget->set_layout(context.transform(_off_label_shape));
-            _other_label_widget->set_layout(context.transform(_other_label_shape));
         }
     }
 
     void draw(widget_draw_context& context) noexcept override
     {
         if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
-            draw_toggle_button(context);
-            draw_toggle_pip(context);
+            for (hilet& cell : _grid) {
+                if (cell.value == cell_type::toggle) {
+                    draw_toggle_button(context, cell.shape);
+                    draw_toggle_pip(context, cell.shape);
 
-            _on_label_widget->draw(context);
-            _off_label_widget->draw(context);
-            _other_label_widget->draw(context);
+                } else if (cell.value == cell_type::label) {
+                    _on_label_widget->draw(context);
+                    _off_label_widget->draw(context);
+                    _other_label_widget->draw(context);
+
+                } else {
+                    hi_no_default();
+                }
+            }
         }
     }
 
@@ -326,50 +322,57 @@ public:
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
+    grid_layout<cell_type> _grid;
+
     std::unique_ptr<label_widget<join_path(prefix, "on")>> _on_label_widget;
-    box_constraints _on_label_constraints;
-    box_shape _on_label_shape;
-
     std::unique_ptr<label_widget<join_path(prefix, "off")>> _off_label_widget;
-    box_constraints _off_label_constraints;
-    box_shape _off_label_shape;
-
     std::unique_ptr<label_widget<join_path(prefix, "other")>> _other_label_widget;
-    box_constraints _other_label_constraints;
-    box_shape _other_label_shape;
 
     notifier<>::callback_token _delegate_cbt;
 
-    box_constraints _label_constraints;
-
-    extent2i _button_size;
-    aarectanglei _button_rectangle;
     animator<float> _animated_value = _animation_duration;
-    circle _pip_circle;
     int _pip_move_range;
+    int _pip_edge_distance;
 
-    void draw_toggle_button(widget_draw_context& context) noexcept
+    void draw_toggle_button(widget_draw_context& context, box_shape const& shape) noexcept
     {
         context.draw_box(
             this->layout,
-            _button_rectangle,
+            shape.rectangle,
             theme<prefix>.background_color(this),
             theme<prefix>.border_color(this),
             theme<prefix>.border_width(this),
-            border_side::inside,
-            corner_radii{_button_rectangle.height() * 0.5f});
+            border_side::outside,
+            theme<prefix>.border_radius(this));
     }
 
-    void draw_toggle_pip(widget_draw_context& context) noexcept
+    void draw_toggle_pip(widget_draw_context& context, box_shape const& shape) noexcept
     {
         _animated_value.update(this->state != widget_state::off ? 1.0f : 0.0f, context.display_time_point);
         if (_animated_value.is_animating()) {
             this->request_redraw();
         }
 
-        hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
+        hilet move_offset = [&] {
+            if (os_settings::left_to_right()) {
+                return _pip_move_range * _animated_value.current_value();
+            } else {
+                return _pip_move_range * (1.0f - _animated_value.current_value());
+            }
+        }();
 
-        context.draw_circle(this->layout, positioned_pip_circle * 1.02f, theme<prefix>.fill_color(this));
+        hilet pip_rectangle = aarectanglei{point2i{_pip_edge_distance, _pip_edge_distance}, theme<prefix / "pip">.size(this)};
+        hilet pip_rectangle_ =
+            translate3{move_offset + shape.x(), 0.0f + shape.y(), 0.1f} * narrow_cast<aarectangle>(pip_rectangle);
+
+        context.draw_box(
+            this->layout,
+            pip_rectangle,
+            theme<prefix / "pip">.background_color(this),
+            theme<prefix / "pip">.border_color(this),
+            theme<prefix / "pip">.border_width(this),
+            border_side::inside,
+            theme<prefix / "pip">.border_radius(this));
     }
 
     template<size_t LabelCount>
@@ -378,7 +381,7 @@ private:
     }
 
     template<size_t LabelCount>
-    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    void set_attributes(toggle_widget_attribute auto&& first, toggle_widget_attribute auto&&...rest) noexcept
     {
         if constexpr (forward_of<decltype(first), observer<hi::label>>) {
             if constexpr (LabelCount == 0) {
