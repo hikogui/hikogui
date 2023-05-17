@@ -257,7 +257,7 @@ public:
         co_yield *_other_label_widget;
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept final
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
     {
         hi_axiom(loop::main().on_thread());
 
@@ -324,15 +324,15 @@ private:
 
     grid_layout<cell_type> _grid;
 
-    std::unique_ptr<label_widget<join_path(prefix, "on")>> _on_label_widget;
-    std::unique_ptr<label_widget<join_path(prefix, "off")>> _off_label_widget;
-    std::unique_ptr<label_widget<join_path(prefix, "other")>> _other_label_widget;
+    std::unique_ptr<label_widget<prefix / "on">> _on_label_widget;
+    std::unique_ptr<label_widget<prefix / "off">> _off_label_widget;
+    std::unique_ptr<label_widget<prefix / "other">> _other_label_widget;
 
     notifier<>::callback_token _delegate_cbt;
 
     animator<float> _animated_value = _animation_duration;
-    int _pip_move_range;
-    int _pip_edge_distance;
+    float _pip_move_range;
+    float _pip_edge_distance;
 
     void draw_toggle_button(widget_draw_context& context, box_shape const& shape) noexcept
     {
@@ -361,7 +361,7 @@ private:
             }
         }();
 
-        hilet pip_rectangle = aarectanglei{point2i{_pip_edge_distance, _pip_edge_distance}, theme<prefix / "pip">.size(this)};
+        hilet pip_rectangle = aarectangle{point2{_pip_edge_distance, _pip_edge_distance}, theme<prefix / "pip">.size(this)};
         hilet pip_rectangle_ =
             translate3{move_offset + shape.x(), 0.0f + shape.y(), 0.1f} * narrow_cast<aarectangle>(pip_rectangle);
 

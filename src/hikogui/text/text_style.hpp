@@ -17,7 +17,7 @@ struct text_style {
     language_tag language_mask = {};
     font_family_id family_id = {};
     font_variant variant = {};
-    int size = {};
+    float size = 0.0f;
     hi::color color = {};
 
     constexpr text_style() noexcept = default;
@@ -32,7 +32,7 @@ struct text_style {
         language_tag language_mask,
         font_family_id family_id,
         font_variant variant,
-        int size,
+        float size,
         hi::color color) :
         phrasing_mask(phrasing_mask),
         language_mask(language_mask),

@@ -315,7 +315,7 @@ private:
         hi_axiom(std::holds_alternative<hi::dips>(value));
 
         // When retrieving the text-style it will be scaled by the UI-scale.
-        text_style.size = round_cast<int>(std::get<hi::dips>(value).count() * -4.0);
+        text_style.size = -narrow_cast<float>(std::get<hi::dips>(value).count());
 
         if (not language_mask and not to_bool(phrasing_mask)) {
             sub_model.line_height = std::get<hi::dips>(value);

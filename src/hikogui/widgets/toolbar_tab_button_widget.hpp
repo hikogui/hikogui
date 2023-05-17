@@ -113,16 +113,16 @@ public:
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         hilet extra_size =
-            extent2i{theme<super::prefix>.spacing_horizontal(this) * 2, theme<super::prefix>.spacing_vertical(this)};
+            extent2{theme<super::prefix>.spacing_horizontal(this) * 2, theme<super::prefix>.spacing_vertical(this)};
         return _label_constraints + extra_size;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            hilet label_rectangle = aarectanglei{
+            hilet label_rectangle = aarectangle{
                 theme<super::prefix>.spacing_horizontal(this),
-                0,
+                0.0f,
                 context.width() - theme<super::prefix>.spacing_horizontal(this) * 2,
                 context.height() - theme<super::prefix>.spacing_vertical(this)};
             this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
@@ -156,7 +156,7 @@ private:
         // Draw the outline of the button across the clipping rectangle to clip the
         // bottom of the outline.
         hilet offset = theme<super::prefix>.margin_bottom(this) + theme<super::prefix>.border_width(this);
-        hilet outline_rectangle = aarectanglei{0, -offset, this->layout.width(), this->layout.height() + offset};
+        hilet outline_rectangle = aarectangle{0.0f, -offset, this->layout.width(), this->layout.height() + offset};
 
         // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
         hilet button_z = *this->focus ? translate_z(0.6f) : translate_z(0.0f);

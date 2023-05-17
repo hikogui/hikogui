@@ -264,28 +264,6 @@ fixed_string(char const (&str)[N]) -> fixed_string<N - 1>;
 template<std::invocable F>
 fixed_string(F const& f) -> fixed_string<std::ranges::size(F{}())>;
 
-/** lhs / rhs
-*
-* This function is nessesary because of bug:
-* https://developercommunity.visualstudio.com/t/Failure-to-compile-complex-situation-wit/10291680
-*/
-template<std::size_t L, std::size_t R>
-[[deprecated("msvc-bug-10291680")]] [[nodiscard]] constexpr auto join_path(fixed_string<L> const &lhs, fixed_string<R> const &rhs) noexcept
-{
-    return lhs / rhs;
-}
-
-/** lhs / rhs
- *
- * This function is nessesary because of bug:
- * https://developercommunity.visualstudio.com/t/Failure-to-compile-complex-situation-wit/10291680
- */
-template<std::size_t L, std::size_t R>
-[[deprecated("msvc-bug-10291680")]] [[nodiscard]] constexpr auto join_path(fixed_string<L> const& lhs, char const (&rhs)[R]) noexcept
-{
-    return lhs / rhs;
-}
-
 #define hi_to_fixed_string(x) \
     ::hi::fixed_string \
     { \

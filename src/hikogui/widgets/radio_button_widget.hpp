@@ -100,7 +100,7 @@ public:
         _button_size = theme<prefix>.size(this);
         hi_axiom(_button_size.width() == _button_size.height());
 
-        hilet extra_size = extent2i{theme<prefix>.spacing_horizontal(this) + _button_size.width(), 0};
+        hilet extra_size = extent2{theme<prefix>.spacing_horizontal(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
         constraints.margins = theme<prefix>.margin(this);
@@ -125,12 +125,12 @@ public:
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
             if (alignment_ == horizontal_alignment::left) {
                 hilet label_left = _button_rectangle.right() + inner_margin;
-                hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
+                hilet label_rectangle = aarectangle{label_left, 0, label_width, context.height()};
                 this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape{_label_constraints, label_rectangle, cap_height};
 
             } else if (alignment_ == horizontal_alignment::right) {
-                hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
+                hilet label_rectangle = aarectangle{0, 0, label_width, context.height()};
                 this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape{_label_constraints, label_rectangle, cap_height};
 
@@ -163,8 +163,8 @@ private:
 
     box_constraints _label_constraints;
 
-    extent2i _button_size;
-    aarectanglei _button_rectangle;
+    extent2 _button_size;
+    aarectangle _button_rectangle;
     circle _button_circle;
 
     animator<float> _animated_value = _animation_duration;

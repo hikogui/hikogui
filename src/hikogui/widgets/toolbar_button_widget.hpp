@@ -45,7 +45,7 @@ public:
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         hilet spacing = theme<prefix>.spacing_horizontal(this);
-        hilet extra_size = extent2i{spacing * 2, spacing * 2};
+        hilet extra_size = extent2{spacing * 2, spacing * 2};
 
         auto constraints = _label_constraints + extra_size;
         constraints.margins = 0;
@@ -56,7 +56,7 @@ public:
     {
         if (compare_store(this->layout, context)) {
             hilet spacing = theme<prefix>.spacing_horizontal(this);
-            hilet label_rectangle = aarectanglei{spacing, 0, context.width() - spacing * 2, context.height()};
+            hilet label_rectangle = aarectangle{spacing, 0, context.width() - spacing * 2, context.height()};
             this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                 box_shape{_label_constraints, label_rectangle, theme<prefix>.cap_height(this)};
         }

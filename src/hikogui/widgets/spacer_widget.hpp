@@ -30,7 +30,7 @@ public:
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         auto r = box_constraints{};
-        r.maximum = extent2i::large();
+        r.maximum = extent2::large();
         return r;
     }
 
@@ -41,7 +41,7 @@ public:
 
     void draw(widget_draw_context& context) noexcept override {}
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         return hitbox{};
     }

@@ -126,7 +126,7 @@ public:
         hilet icon_size =
             (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
             theme<prefix>.size(this) :
-            extent2i{theme<prefix>.line_height(this), theme<prefix>.line_height(this)};
+            extent2{theme<prefix>.line_height(this), theme<prefix>.line_height(this)};
 
         _icon_widget->minimum = icon_size;
         _icon_widget->maximum = icon_size;
@@ -158,7 +158,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 

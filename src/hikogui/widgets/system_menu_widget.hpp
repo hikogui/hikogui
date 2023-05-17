@@ -66,11 +66,11 @@ public:
             hilet margin = theme<prefix>.margin(this);
 
             hilet icon_height = context.height() < round_cast<int>(size.height() * 1.2f) ? context.height() : size.height();
-            hilet icon_rectangle = aarectanglei{0, context.height() - icon_height, context.width(), icon_height};
+            hilet icon_rectangle = aarectangle{0, context.height() - icon_height, context.width(), icon_height};
             _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme<prefix>.cap_height(this)};
             // Leave space for window resize handles on the left and top.
             _system_menu_rectangle =
-                aarectanglei{margin.left(), 0, context.width() - margin.right(), context.height() - margin.top()};
+                aarectangle{margin.left(), 0.0f, context.width() - margin.right(), context.height() - margin.top()};
         }
 
         _icon_widget->set_layout(context.transform(_icon_shape));
@@ -83,7 +83,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
@@ -101,7 +101,7 @@ private:
     box_constraints _icon_constraints;
     box_shape _icon_shape;
 
-    aarectanglei _system_menu_rectangle;
+    aarectangle _system_menu_rectangle;
 };
 
 }} // namespace hi::v1

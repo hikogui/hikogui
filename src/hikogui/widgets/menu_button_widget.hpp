@@ -86,10 +86,10 @@ public:
 
         // Make room for button and margin.
         _short_cut_size = _check_size =
-            extent2i{theme<prefix>.line_height(this), theme<prefix>.line_height(this)};
+            extent2{theme<prefix>.line_height(this), theme<prefix>.line_height(this)};
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet extra_size = extent2i{
+        hilet extra_size = extent2{
             theme<prefix>.margin_left(this) + _check_size.width() + theme<prefix>.spacing_horizontal(this) +
                 theme<prefix>.spacing_horizontal(this) + _short_cut_size.width() + theme<prefix>.margin_right(this),
             theme<prefix>.margin_top(this) + theme<prefix>.margin_bottom(this)};
@@ -110,25 +110,25 @@ public:
             if (os_settings::left_to_right()) {
                 _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left());
                 _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
-                hilet label_rectangle = aarectanglei{
-                    point2i{_check_rectangle.right() + spacing, 0},
-                    point2i{_short_cut_rectangle.left() - spacing, context.height()}};
+                hilet label_rectangle = aarectangle{
+                    point2{_check_rectangle.right() + spacing, 0},
+                    point2{_short_cut_rectangle.left() - spacing, context.height()}};
                 this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape{_label_constraints, label_rectangle, cap_height};
 
             } else {
                 _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_left());
                 _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_right());
-                hilet label_rectangle = aarectanglei{
-                    point2i{_short_cut_rectangle.right() + spacing, 0},
-                    point2i{_check_rectangle.left() - spacing, context.height()}};
+                hilet label_rectangle = aarectangle{
+                    point2{_short_cut_rectangle.right() + spacing, 0},
+                    point2{_check_rectangle.left() - spacing, context.height()}};
                 this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape{_label_constraints, label_rectangle, cap_height};
             }
 
             _check_glyph = find_glyph(elusive_icon::Ok);
             hilet check_glyph_bb =
-                narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
+                narrow_cast<aarectangle>(_check_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
             _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
         }
 
@@ -191,11 +191,11 @@ private:
     box_constraints _label_constraints;
 
     font_book::font_glyph_type _check_glyph;
-    extent2i _check_size;
-    aarectanglei _check_rectangle;
-    aarectanglei _check_glyph_rectangle;
-    extent2i _short_cut_size;
-    aarectanglei _short_cut_rectangle;
+    extent2 _check_size;
+    aarectangle _check_rectangle;
+    aarectangle _check_glyph_rectangle;
+    extent2 _short_cut_size;
+    aarectangle _short_cut_rectangle;
 
     void draw_menu_button(widget_draw_context& context) noexcept
     {

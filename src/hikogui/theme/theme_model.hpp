@@ -38,16 +38,14 @@ public:
     {
         switch (length.index()) {
         case 0:
-            // Add precision when scaling with 0.25 intervals.
-            _v = narrow_cast<int>(std::round(std::get<pixels>(length).count() * 16.0));
-            hi_axiom(_v >= 0);
+            _v = narrow_cast<float>(std::get<pixels>(length).count());
+            hi_axiom(_v >= 0.0f);
             break;
 
         case 1:
             // Make the value negative to indicate that it needs to be scaled.
-            // Also add a bit of precision when scaling with 0.25 intervals.
-            _v = narrow_cast<int>(std::round(std::get<dips>(length).count() * -4.0));
-            hi_axiom(_v <= 0);
+            _v = -narrow_cast<float>(std::get<dips>(length).count());
+            hi_axiom(_v <= 0.0f);
             break;
 
         default:
@@ -59,8 +57,8 @@ public:
 
     constexpr operator hi::dips() const noexcept
     {
-        hi_axiom(_v < 0);
-        return hi::dips{-wide_cast<double>(_v)};
+        hi_axiom(_v < 0.0f);
+        return hi::dips{-_v};
     }
 
     /** Get the length in points.
@@ -69,24 +67,18 @@ public:
      *              The value should be `round(scale * -4.0)` so that
      *              scaling can be done in 25% intervals.
      */
-    [[nodiscard]] constexpr int operator()(int scale) const noexcept
+    [[nodiscard]] constexpr float operator()(float scale) const noexcept
     {
-        hi_axiom(scale < 0);
+        hi_axiom(scale < 0.0f);
 
         // MSVC: A conditional jump (predicted by default) over the multiply
         //       instruction.
         // clang: A conditional move of 1 into scale before the multiply.
         auto r = _v;
-        if (r < 0) [[likely]] {
+        if (r < 0.0f) [[likely]] {
             r *= scale;
         }
 
-        // Round.
-        r += 8;
-
-        // MSVC: Even with `[[assume(r >= 0)]]` wont generate a SRA for r /= 16.
-        // clang: Needs `[[assume(r >= 0)]]` to generate a SRA for r /= 16.
-        r >>= 4;
         return r;
 
         // When changing the logic to the following, MSVC will use the
@@ -106,7 +98,7 @@ private:
      * The lengths are stored as int values: negative values are in dips,
      * positive values are in pixels.
      */
-    int _v = 0;
+    float _v = 0;
 };
 
 /** All the data of a theme for a specific widget-component at a specific state.
@@ -278,7 +270,7 @@ struct theme_sub_model {
 
 struct sub_theme_selector_type {
     theme_state state;
-    int scale;
+    float scale;
 };
 
 template<typename Context>
@@ -326,12 +318,12 @@ public:
         return (*this)[selector.state];
     }
 
-    [[nodiscard]] std::pair<theme_sub_model const&, int> get_model_and_scale(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] std::pair<theme_sub_model const&, float> get_model_and_scale(theme_delegate auto const *delegate) const noexcept
     {
         hi_axiom_not_null(delegate);
 
         hilet selector = delegate->sub_theme_selector();
-        hi_axiom(selector.scale < 0, "scale must be negative so that negative points are converted to positive pixels");
+        hi_axiom(selector.scale < 0.0f, "scale must be negative so that negative points are converted to positive pixels");
 
         return {(*this)[selector.state], selector.scale};
     }
@@ -349,13 +341,9 @@ public:
 
         // Scale the text-theme.
         for (auto &style: r) {
-            // The original size in the model is in `round(DIPs * -4.0)`.
-            // scale is in `round(scale * -4.0)`
-            hi_axiom(style.size < 0);
+            hi_axiom(style.size < 0.0f);
             style.size *= scale;
-            hi_axiom(style.size >= 0);
-            style.size += 8;
-            style.size >>= 4;
+            hi_axiom(style.size >= 0.0f);
         }
 
         return r;
@@ -401,31 +389,31 @@ public:
         return get_model(delegate).border_color;
     }
 
-    [[nodiscard]] int border_bottom_left_radius(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float border_bottom_left_radius(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.border_bottom_left_radius(scale);
     }
 
-    [[nodiscard]] int border_bottom_right_radius(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float border_bottom_right_radius(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.border_bottom_right_radius(scale);
     }
 
-    [[nodiscard]] int border_top_left_radius(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float border_top_left_radius(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.border_top_left_radius(scale);
     }
 
-    [[nodiscard]] int border_top_right_radius(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float border_top_right_radius(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.border_top_right_radius(scale);
     }
 
-    [[nodiscard]] corner_radiii border_radius(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] corner_radii border_radius(theme_delegate auto const *delegate) const noexcept
     {
         return {
             border_bottom_left_radius(delegate),
@@ -434,83 +422,83 @@ public:
             border_top_right_radius(delegate)};
     }
 
-    [[nodiscard]] int border_width(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float border_width(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.border_width(scale);
     }
 
-    [[nodiscard]] int width(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float width(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.width(scale);
     }
 
-    [[nodiscard]] int height(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.height(scale);
     }
 
-    [[nodiscard]] extent2i size(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] extent2 size(theme_delegate auto const *delegate) const noexcept
     {
         return {width(delegate), height(delegate)};
     }
 
-    [[nodiscard]] int margin_bottom(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float margin_bottom(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.margin_bottom(scale);
     }
 
-    [[nodiscard]] int margin_left(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float margin_left(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.margin_left(scale);
     }
 
-    [[nodiscard]] int margin_top(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float margin_top(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.margin_top(scale);
     }
 
-    [[nodiscard]] int margin_right(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float margin_right(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.margin_right(scale);
     }
 
-    [[nodiscard]] marginsi margin(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] margins margin(theme_delegate auto const *delegate) const noexcept
     {
         return {margin_left(delegate), margin_bottom(delegate), margin_right(delegate), margin_top(delegate)};
     }
 
-    [[nodiscard]] int spacing_vertical(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float spacing_vertical(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.spacing_vertical(scale);
     }
 
-    [[nodiscard]] int spacing_horizontal(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float spacing_horizontal(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.spacing_horizontal(scale);
     }
 
-    [[nodiscard]] int x_height(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float x_height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.x_height(scale);
     }
 
-    [[nodiscard]] int cap_height(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float cap_height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.cap_height(scale);
     }
 
-    [[nodiscard]] int line_height(theme_delegate auto const *delegate) const noexcept
+    [[nodiscard]] float line_height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return model.line_height(scale);

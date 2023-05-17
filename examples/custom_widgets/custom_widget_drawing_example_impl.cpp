@@ -243,10 +243,10 @@ public:
     {
         using namespace std::chrono_literals;
 
-        auto const clipping_rectangle = *clip ? hi::aarectanglei{0, 0, layout.width(), layout.height() / 2} : layout.rectangle();
+        auto const clipping_rectangle = *clip ? hi::aarectangle{0.0f, 0.0f, layout.width(), layout.height() / 2.0f} : layout.rectangle();
 
         auto const translation =
-            hi::translate3(std::floor(layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(layout.height())) * 0.5f, 0.0f);
+            hi::translate3(std::floor(layout.width() * 0.5f), std::floor(layout.height() * 0.5f), 0.0f);
         auto const transform = translation * rotation(context);
 
         auto const circle_radius = hypot(shape_quad().bottom()) * 0.5f;

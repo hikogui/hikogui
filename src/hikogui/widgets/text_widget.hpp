@@ -93,7 +93,7 @@ public:
 
                 // Constrain and layout according to the old layout.
                 hilet new_constraints = update_constraints();
-                new_layout.shape.rectangle = aarectanglei{
+                new_layout.shape.rectangle = aarectangle{
                     new_layout.shape.x(),
                     new_layout.shape.y(),
                     std::max(new_layout.shape.width(), new_constraints.minimum.width()),
@@ -160,11 +160,9 @@ public:
         // Create a new text_shaper with the new text.
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
-        auto &debug = theme<prefix>;
         _shaped_text = text_shaper{_text_cache, theme<prefix>.text_theme(this), alignment_, os_settings::left_to_right()};
 
-        hilet shaped_text_rectangle =
-            narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));
+        hilet shaped_text_rectangle =ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
         hilet shaped_text_size = shaped_text_rectangle.size();
 
         hilet margins = theme<prefix>.margin(this);
@@ -175,14 +173,14 @@ public:
 
         } else {
             // Allow the text to be 550.0f pixels wide.
-            hilet preferred_shaped_text_rectangle = narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(550.0f)));
+            hilet preferred_shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(550.0f));
             hilet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
 
             hilet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
             return _constraints_cache = box_constraints{
-                       extent2i{preferred_shaped_text_size.width(), height},
-                       extent2i{preferred_shaped_text_size.width(), height},
-                       extent2i{shaped_text_size.width(), height},
+                       extent2{preferred_shaped_text_size.width(), height},
+                       extent2{preferred_shaped_text_size.width(), height},
+                       extent2{shaped_text_size.width(), height},
                        _shaped_text.resolved_alignment(),
                        margins};
         }
@@ -727,7 +725,7 @@ public:
         return super::handle_event(event);
     }
 
-    hitbox hitbox_test(point2i position) const noexcept override
+    hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
@@ -832,7 +830,7 @@ private:
             hilet cursor = _selection.cursor();
             hilet char_it = _shaped_text.begin() + cursor.index();
             if (char_it < _shaped_text.end()) {
-                scroll_to_show(narrow_cast<aarectanglei>(char_it->rectangle));
+                scroll_to_show(char_it->rectangle);
             }
         }
     }

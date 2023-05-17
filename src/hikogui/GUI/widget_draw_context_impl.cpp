@@ -8,7 +8,7 @@
 
 namespace hi::inline v1 {
 
-void widget_draw_context::_override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes)
+void widget_draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes)
     noexcept
 {
     if (gfx_context.alpha_vertices.full()) {
@@ -21,7 +21,7 @@ void widget_draw_context::_override_alpha(aarectanglei const& clipping_rectangle
         gfx_context.alpha_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, attributes.fill_color.p0.a());
 }
 
-void widget_draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) noexcept
+void widget_draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) noexcept
 {
     // clang-format off
     hilet border_offset = attributes.line_width * 0.5f;
@@ -53,7 +53,7 @@ void widget_draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad
 }
 
 [[nodiscard]] bool
-widget_draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) noexcept
+widget_draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image const& image) noexcept
 {
     if (image.state != paged_image::state_type::uploaded) {
         return false;
@@ -65,7 +65,7 @@ widget_draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad co
 }
 
 void widget_draw_context::_draw_glyph(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     quad const& box,
     font const& font,
     glyph_id const& glyph,
@@ -90,7 +90,7 @@ void widget_draw_context::_draw_glyph(
 }
 
 void widget_draw_context::_draw_text(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     draw_attributes const& attributes) noexcept
@@ -132,7 +132,7 @@ error:
 }
 
 void widget_draw_context::_draw_text_selection(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_selection const& selection,
@@ -151,7 +151,7 @@ void widget_draw_context::_draw_text_selection(
 }
 
 void widget_draw_context::_draw_text_insertion_cursor_empty(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     draw_attributes const& attributes) noexcept
@@ -169,7 +169,7 @@ void widget_draw_context::_draw_text_insertion_cursor_empty(
 }
 
 void widget_draw_context::_draw_text_insertion_cursor(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_cursor cursor,
@@ -219,7 +219,7 @@ void widget_draw_context::_draw_text_insertion_cursor(
 }
 
 void widget_draw_context::_draw_text_overwrite_cursor(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper::char_const_iterator it,
     draw_attributes const& attributes) noexcept
@@ -229,7 +229,7 @@ void widget_draw_context::_draw_text_overwrite_cursor(
 }
 
 void widget_draw_context::_draw_text_cursors(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_cursor primary_cursor,

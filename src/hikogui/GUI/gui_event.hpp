@@ -34,7 +34,7 @@ struct mouse_event_data {
      *
      * @note The event system will convert these in widget-local coordinates.
      */
-    point2i position = {};
+    point2 position = {};
 
     /** The position the last time a button was pressed.
      *
@@ -42,13 +42,13 @@ struct mouse_event_data {
      *
      * @note The event system will convert these in widget-local coordinates.
      */
-    point2i down_position = {};
+    point2 down_position = {};
 
     /** Change in wheel rotation, in points (pt).
      *
      * Some mice have two dimensional mouse wheels.
      */
-    vector2i wheel_delta = {};
+    vector2 wheel_delta = {};
 
     /** Buttons which have caused this event.
      */
@@ -129,7 +129,7 @@ public:
      * @param type The type of the rectangle event.
      * @param rectangle The rectangle for this event.
      */
-    gui_event(gui_event_type type, aarectanglei rectangle) noexcept :
+    gui_event(gui_event_type type, aarectangle rectangle) noexcept :
         gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
     {
         hi_assert(variant() == gui_event_variant::rectangle);
@@ -164,7 +164,7 @@ public:
      *
      * @param position The position where the mouse entered.
      */
-    [[nodiscard]] static gui_event make_mouse_enter(point2i position) noexcept
+    [[nodiscard]] static gui_event make_mouse_enter(point2 position) noexcept
     {
         auto r = gui_event{gui_event_type::mouse_enter};
         r.mouse().position = position;
@@ -241,7 +241,7 @@ public:
                 _data = keyboard_target_data{};
                 break;
             case gui_event_variant::rectangle:
-                _data = aarectanglei{};
+                _data = aarectangle{};
                 break;
             case gui_event_variant::clipboard_data:
                 _data = hi::text{};
@@ -310,16 +310,16 @@ public:
         return std::get<hi::grapheme>(_data);
     }
 
-    [[nodiscard]] aarectanglei& rectangle() noexcept
+    [[nodiscard]] aarectangle& rectangle() noexcept
     {
         hi_assert(variant() == gui_event_variant::rectangle);
-        return std::get<aarectanglei>(_data);
+        return std::get<aarectangle>(_data);
     }
 
-    [[nodiscard]] aarectanglei const& rectangle() const noexcept
+    [[nodiscard]] aarectangle const& rectangle() const noexcept
     {
         hi_assert(variant() == gui_event_variant::rectangle);
-        return std::get<aarectanglei>(_data);
+        return std::get<aarectangle>(_data);
     }
 
     [[nodiscard]] keyboard_target_data& keyboard_target() noexcept
@@ -373,7 +373,7 @@ public:
 
     /** Check if this event is for a left-button-up event while the mouse pointer is in the given area.
      */
-    [[nodiscard]] constexpr bool is_left_button_up(aarectanglei active_area) const noexcept
+    [[nodiscard]] constexpr bool is_left_button_up(aarectangle active_area) const noexcept
     {
         using enum gui_event_type;
         return type() == mouse_up and mouse().cause.left_button and active_area.contains(mouse().position);
@@ -381,10 +381,10 @@ public:
 
     /** Get the location of the mouse relative to the start of a drag.
      */
-    [[nodiscard]] constexpr vector2i drag_delta() const noexcept
+    [[nodiscard]] constexpr vector2 drag_delta() const noexcept
     {
         using enum gui_event_type;
-        return type() == mouse_drag ? mouse().position - mouse().down_position : vector2i{};
+        return type() == mouse_drag ? mouse().position - mouse().down_position : vector2{};
     }
 
     /** Transform a gui-event to another coordinate system.
@@ -395,7 +395,7 @@ public:
      * @param rhs The event to transform.
      * @return The transformed event.
      */
-    [[nodiscard]] constexpr friend gui_event operator*(translate2i const& transform, gui_event const& rhs) noexcept
+    [[nodiscard]] constexpr friend gui_event operator*(translate2 const& transform, gui_event const& rhs) noexcept
     {
         auto r = rhs;
         if (rhs == gui_event_variant::mouse) {
@@ -407,7 +407,7 @@ public:
 
 private:
     using data_type =
-        std::variant<mouse_event_data, keyboard_virtual_key, keyboard_target_data, hi::grapheme, aarectanglei, hi::text>;
+        std::variant<mouse_event_data, keyboard_virtual_key, keyboard_target_data, hi::grapheme, aarectangle, hi::text>;
 
     gui_event_type _type;
     data_type _data;

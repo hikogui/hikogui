@@ -247,10 +247,10 @@ public:
 
         if (compare_store(layout, context)) {
             if (os_settings::left_to_right()) {
-                _chevron_box_rectangle = aarectanglei{0, 0, chevron_box_width, context.height()};
+                _chevron_box_rectangle = aarectangle{0.0f, 0.0f, chevron_box_width, context.height()};
 
                 // The label is located to the right of the selection box icon.
-                hilet option_rectangle = aarectanglei{
+                hilet option_rectangle = aarectangle{
                     chevron_box_width + label_margins.left(),
                     label_margins.bottom(),
                     context.width() - chevron_box_width - label_margins.left() - label_margins.right(),
@@ -261,10 +261,10 @@ public:
 
             } else {
                 _chevron_box_rectangle =
-                    aarectanglei{context.width() - chevron_box_width, 0, chevron_box_width, context.height()};
+                    aarectangle{context.width() - chevron_box_width, 0.0f, chevron_box_width, context.height()};
 
                 // The label is located to the left of the selection box icon.
-                hilet option_rectangle = aarectanglei{
+                hilet option_rectangle = aarectangle{
                     label_margins.left(),
                     label_margins.bottom(),
                     context.width() - _chevron_box_rectangle.width() - label_margins.left() - label_margins.right(),
@@ -275,8 +275,7 @@ public:
             }
 
             _chevron_glyph = find_glyph(elusive_icon::ChevronUp);
-            hilet chevron_glyph_bbox =
-                narrow_cast<aarectanglei>(_chevron_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
+            hilet chevron_glyph_bbox =_chevron_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this);
             _chevron_rectangle = align(_chevron_box_rectangle, chevron_glyph_bbox, alignment::middle_center());
         }
 
@@ -289,7 +288,7 @@ public:
         hilet overlay_height = _overlay_constraints.preferred.height();
         hilet overlay_x = os_settings::left_to_right() ? chevron_box_width : context.width() - chevron_box_width - overlay_width;
         hilet overlay_y = (context.height() - overlay_height) / 2;
-        hilet overlay_rectangle_request = aarectanglei{overlay_x, overlay_y, overlay_width, overlay_height};
+        hilet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
         hilet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
         _overlay_shape = box_shape{_overlay_constraints, overlay_rectangle, cap_height};
         _overlay_widget->set_layout(context.transform(_overlay_shape, 20.0f));
@@ -351,7 +350,7 @@ public:
         return super::handle_event(event);
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
@@ -382,14 +381,14 @@ private:
     box_constraints _current_label_constraints;
     box_shape _current_label_shape;
 
-    std::unique_ptr<label_widget<join_path(prefix, "off")>> _off_label_widget;
+    std::unique_ptr<label_widget<prefix / "off">> _off_label_widget;
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    aarectanglei _chevron_box_rectangle;
+    aarectangle _chevron_box_rectangle;
 
     font_book::font_glyph_type _chevron_glyph;
-    aarectanglei _chevron_rectangle;
+    aarectangle _chevron_rectangle;
 
     bool _selecting = false;
     bool _has_options = false;

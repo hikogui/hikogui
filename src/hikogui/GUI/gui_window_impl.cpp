@@ -20,7 +20,7 @@ gui_window::gui_window(gui_system& gui, std::unique_ptr<hi::widget> widget, labe
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
 
-    hilet dpi_scale = dpi / dips{inches{1.0}}.count();
+    hilet dpi_scale = dpi / narrow_cast<float>(dips{inches{1.0}}.count());
     apply(*this->widget, [&](auto& x) {
         x.reset_layout(surface.get(), dpi_scale);
     });
@@ -88,7 +88,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain) {
         hilet t2 = trace<"window::constrain">();
 
-        hilet dpi_scale = dpi / dips{inches{1.0}}.count();
+        hilet dpi_scale = dpi / narrow_cast<float>(dips{inches{1.0}}.count());
         apply(*widget, [&](auto& x) {
             x.reset_layout(surface.get(), dpi_scale);
         });
@@ -152,7 +152,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         widget->set_layout(widget_layout{widget_layout_size, _size_state, subpixel_orientation(), display_time_point});
 
         // After layout do a complete redraw.
-        _redraw_rectangle = aarectanglei{widget_size};
+        _redraw_rectangle = aarectangle{widget_size};
     }
 
 #if 0
@@ -163,7 +163,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     // Draw widgets if the _redraw_rectangle was set.
     if (auto gfx_draw_context = surface->render_start(_redraw_rectangle)) {
         auto widget_draw_context = hi::widget_draw_context(std::move(*gfx_draw_context));
-        _redraw_rectangle = aarectanglei{};
+        _redraw_rectangle = aarectangle{};
         widget_draw_context.display_time_point = display_time_point;
         widget_draw_context.gfx_context.subpixel_orientation = subpixel_orientation();
 
@@ -178,7 +178,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     }
 }
 
-void gui_window::update_mouse_target(widget_id new_target_id, point2i position) noexcept
+void gui_window::update_mouse_target(widget_id new_target_id, point2 position) noexcept
 {
     hi_axiom(loop::main().on_thread());
 

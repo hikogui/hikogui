@@ -104,7 +104,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int minimum() const noexcept
+    [[nodiscard]] constexpr float minimum() const noexcept
     {
         if constexpr (Axis == axis::x) {
             return _constraints.minimum.width();
@@ -116,7 +116,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int preferred() const noexcept
+    [[nodiscard]] constexpr float preferred() const noexcept
     {
         if constexpr (Axis == axis::x) {
             return _constraints.preferred.width();
@@ -128,7 +128,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int maximum() const noexcept
+    [[nodiscard]] constexpr float maximum() const noexcept
     {
         if constexpr (Axis == axis::x) {
             return _constraints.maximum.width();
@@ -140,7 +140,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int margin_before(bool forward) const noexcept
+    [[nodiscard]] constexpr float margin_before(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
@@ -160,7 +160,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int margin_after(bool forward) const noexcept
+    [[nodiscard]] constexpr float margin_after(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
@@ -180,7 +180,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int padding_before(bool forward) const noexcept
+    [[nodiscard]] constexpr float padding_before(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
@@ -200,7 +200,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr int padding_after(bool forward) const noexcept
+    [[nodiscard]] constexpr float padding_after(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
@@ -236,31 +236,31 @@ public:
     struct constraint_type {
         /** The minimum width/height of the cells.
          */
-        int minimum = 0;
+        float minimum = 0.0f;
 
         /** The preferred width/height of the cells.
          */
-        int preferred = 0;
+        float preferred = 0.0f;
 
         /** The maximum width/height of the cells.
          */
-        int maximum = std::numeric_limits<int>::max();
+        float maximum = std::numeric_limits<float>::max();
 
         /** The left/top margin of the cells.
          */
-        int margin_before = 0;
+        float margin_before = 0.0f;
 
         /** The right/bottom margin of the cells.
          */
-        int margin_after = 0;
+        float margin_after = 0.0f;
 
         /** The left/top padding of the cells.
          */
-        int padding_before = 0;
+        float padding_before = 0.0f;
 
         /** The right/bottom padding of the cells.
          */
-        int padding_after = 0;
+        float padding_after = 0.0f;
 
         /** The alignment of the cells.
          */
@@ -274,19 +274,19 @@ public:
          *
          * @note This field is valid after layout.
          */
-        int position = 0;
+        float position = 0.0f;
 
         /** Size of the cell.
          *
          * @note This field is valid after layout.
          */
-        int extent = 0;
+        float extent = 0.0f;
 
         /** The before-position within this cell where to align to.
          *
          * @note This field is valid after layout.
          */
-        std::optional<int> guideline = 0;
+        std::optional<float> guideline = 0.0f;
     };
     using constraint_vector = std::vector<constraint_type>;
     using iterator = constraint_vector::iterator;
@@ -325,27 +325,27 @@ public:
         construct_fixup();
     }
 
-    [[nodiscard]] constexpr int margin_before() const noexcept
+    [[nodiscard]] constexpr float margin_before() const noexcept
     {
         return empty() ? 0 : _forward ? front().margin_before : back().margin_before;
     }
 
-    [[nodiscard]] constexpr int margin_after() const noexcept
+    [[nodiscard]] constexpr float margin_after() const noexcept
     {
         return empty() ? 0 : _forward ? back().margin_after : front().margin_after;
     }
 
-    [[nodiscard]] constexpr int padding_before() const noexcept
+    [[nodiscard]] constexpr float padding_before() const noexcept
     {
         return empty() ? 0 : _forward ? front().padding_before : back().padding_before;
     }
 
-    [[nodiscard]] constexpr int padding_after() const noexcept
+    [[nodiscard]] constexpr float padding_after() const noexcept
     {
         return empty() ? 0 : _forward ? back().padding_after : front().padding_after;
     }
 
-    [[nodiscard]] constexpr std::tuple<int, int, int> update_constraints() const noexcept
+    [[nodiscard]] constexpr std::tuple<float, float, float> update_constraints() const noexcept
     {
         return constraints(begin(), end());
     }
@@ -357,22 +357,22 @@ public:
      * @param cell The reference to the cell in the grid.
      * @return The minimum, preferred and maximum size.
      */
-    [[nodiscard]] constexpr std::tuple<int, int, int> constraints(cell_type const& cell) const noexcept
+    [[nodiscard]] constexpr std::tuple<float, float, float> constraints(cell_type const& cell) const noexcept
     {
         return constraints(cell.first<axis>(), cell.last<axis>());
     }
 
-    [[nodiscard]] constexpr int position(cell_type const& cell) const noexcept
+    [[nodiscard]] constexpr float position(cell_type const& cell) const noexcept
     {
         return position(cell.first<axis>(), cell.last<axis>());
     }
 
-    [[nodiscard]] constexpr int extent(cell_type const& cell) const noexcept
+    [[nodiscard]] constexpr float extent(cell_type const& cell) const noexcept
     {
         return extent(cell.first<axis>(), cell.last<axis>());
     }
 
-    [[nodiscard]] constexpr std::optional<int> guideline(cell_type const& cell) const noexcept
+    [[nodiscard]] constexpr std::optional<float> guideline(cell_type const& cell) const noexcept
     {
         if (cell.span<axis>() == 1) {
             return guideline(cell.first<axis>());
@@ -403,7 +403,8 @@ public:
      * @param external_guideline The position of the guideline external from the grid.
      * @param guideline_width The width of the guideline.
      */
-    constexpr void layout(int new_position, int new_extent, std::optional<int> external_guideline, int guideline_width) noexcept
+    constexpr void
+    layout(float new_position, float new_extent, std::optional<float> external_guideline, float guideline_width) noexcept
     {
         // Start with the extent of each constraint equal to the preferred extent.
         for (auto& constraint : _constraints) {
@@ -431,8 +432,9 @@ public:
                 return item.beyond_maximum;
             });
             if (count) {
+                hilet count_ = narrow_cast<float>(count);
                 hilet todo = new_extent - total_extent;
-                hilet per_extent = narrow_cast<int>((todo + count - 1) / count);
+                hilet per_extent = std::floor((todo + count_ - 1.0f) / count_);
                 for (auto& constraint : _constraints) {
                     if (constraint.beyond_maximum) {
                         constraint.extent += per_extent;
@@ -630,17 +632,18 @@ private:
      * @param count The number of cells between first/last that can be shrunk, from previous iteration.
      * @return Number of pixels of the cells and inner-margins, number of cells in the range that can shrink more.
      */
-    [[nodiscard]] constexpr std::pair<int, size_t>
-    layout_shrink(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
+    [[nodiscard]] constexpr std::pair<float, size_t>
+    layout_shrink(const_iterator first, const_iterator last, float extra = 0.0f, size_t count = 1) noexcept
     {
         hilet first_ = begin() + std::distance(cbegin(), first);
         hilet last_ = begin() + std::distance(cbegin(), last);
 
         hi_axiom(extra >= 0);
 
-        hilet extra_per = narrow_cast<int>((extra + count - 1) / count);
+        hilet count_ = narrow_cast<float>(count);
+        hilet extra_per = std::floor((extra + count_ - 1.0f) / count_);
 
-        auto new_extent = 0;
+        auto new_extent = 0.0f;
         auto new_count = 0_uz;
         for (auto it = first_; it != last_; ++it) {
             it->extent = it->extent - std::max(extra_per, it->extent - it->minimum);
@@ -674,17 +677,18 @@ private:
      * @param count The number of cells between first/last that can be expanded, from previous iteration.
      * @return Number of pixels of the cells and inner-margins, number of cells in the range that can expand more.
      */
-    [[nodiscard]] constexpr std::pair<int, size_t>
-    layout_expand(const_iterator first, const_iterator last, int extra = 0, size_t count = 1) noexcept
+    [[nodiscard]] constexpr std::pair<float, size_t>
+    layout_expand(const_iterator first, const_iterator last, float extra = 0.0f, size_t count = 1) noexcept
     {
         hilet first_ = begin() + std::distance(cbegin(), first);
         hilet last_ = begin() + std::distance(cbegin(), last);
 
-        hi_axiom(extra >= 0);
+        hi_axiom(extra >= 0.0f);
 
-        hilet extra_per = narrow_cast<int>((extra + count - 1) / count);
+        hilet count_ = narrow_cast<float>(count);
+        hilet extra_per = std::floor((extra + count_ - 1) / count_);
 
-        auto new_extent = 0;
+        auto new_extent = 0.0f;
         auto new_count = 0_uz;
         for (auto it = first_; it != last_; ++it) {
             it->extent = it->extent + std::min(extra_per, it->maximum - it->extent);
@@ -702,7 +706,7 @@ private:
         return {new_extent, new_count};
     }
 
-    constexpr void layout_position(auto first, auto last, int start_position, int guideline_width) noexcept
+    constexpr void layout_position(auto first, auto last, float start_position, float guideline_width) noexcept
     {
         auto position = start_position;
         for (auto it = first; it != last; ++it) {
@@ -749,26 +753,26 @@ private:
      */
     constexpr void construct_span_cell(cell_type const& cell) noexcept
     {
-        auto num_cells = narrow_cast<int>(cell.span<axis>());
+        hilet num_cells = narrow_cast<float>(cell.span<axis>());
 
         if (cell.span<axis>() > 1) {
             hilet[span_minimum, span_preferred, span_maximum] = constraints(cell);
             if (hilet extra = cell.minimum<axis>() - span_minimum; extra > 0) {
-                hilet extra_per_cell = (extra + num_cells - 1) / num_cells;
+                hilet extra_per_cell = std::floor((extra + num_cells - 1.0f) / num_cells);
                 for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
                     _constraints[i].minimum += extra_per_cell;
                 }
             }
 
             if (hilet extra = cell.preferred<axis>() - span_preferred; extra > 0) {
-                hilet extra_per_cell = (extra + num_cells - 1) / num_cells;
+                hilet extra_per_cell = std::floor((extra + num_cells - 1.0f) / num_cells);
                 for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
                     _constraints[i].preferred += extra_per_cell;
                 }
             }
 
             if (hilet extra = cell.maximum<axis>() - span_preferred; extra < 0) {
-                hilet extra_per_cell = (extra + num_cells) / num_cells;
+                hilet extra_per_cell = std::floor((extra + num_cells) / num_cells);
                 for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
                     // The maximum could become too low here, fixup() will fix this.
                     _constraints[i].maximum += extra_per_cell;
@@ -796,7 +800,7 @@ private:
             // Fix the padding, so that it doesn't overlap.
             if (it->padding_before + it->padding_after > it->minimum) {
                 hilet padding_diff = it->padding_after - it->padding_before;
-                hilet middle = std::clamp(it->minimum / 2 + padding_diff, 0, it->minimum);
+                hilet middle = std::clamp(std::floor(it->minimum / 2.0f) + padding_diff, 0.0f, it->minimum);
                 it->padding_after = middle;
                 it->padding_before = it->minimum - middle;
             }
@@ -811,12 +815,12 @@ private:
      * @param last The iterator beyond the last cell.
      * @return The minimum, preferred and maximum size.
      */
-    [[nodiscard]] constexpr std::tuple<int, int, int> constraints(const_iterator first, const_iterator last) const noexcept
+    [[nodiscard]] constexpr std::tuple<float, float, float> constraints(const_iterator first, const_iterator last) const noexcept
     {
-        auto r_minimum = 0;
-        auto r_preferred = 0;
-        auto r_maximum = 0;
-        auto r_margin = 0;
+        auto r_minimum = 0.0f;
+        auto r_preferred = 0.0f;
+        auto r_maximum = 0.0f;
+        auto r_margin = 0.0f;
 
         if (first != last) {
             r_minimum = first->minimum;
@@ -840,7 +844,7 @@ private:
      * @param last The index beyond the last cell.
      * @return The minimum, preferred and maximum size.
      */
-    [[nodiscard]] constexpr std::tuple<int, int, int> constraints(size_t first, size_t last) const noexcept
+    [[nodiscard]] constexpr std::tuple<float, float, float> constraints(size_t first, size_t last) const noexcept
     {
         hi_axiom(first <= last);
         hi_axiom(last <= size());
@@ -854,7 +858,7 @@ private:
      * @param last The iterator beyond the last cell.
      * @return The current size of the span, including internal margins.
      */
-    [[nodiscard]] constexpr int position(const_iterator first, const_iterator last) const noexcept
+    [[nodiscard]] constexpr float position(const_iterator first, const_iterator last) const noexcept
     {
         hi_axiom(first != last);
         if (_forward) {
@@ -871,7 +875,7 @@ private:
      * @param last The index beyond the last cell.
      * @return The current size of the span, including internal margins.
      */
-    [[nodiscard]] constexpr int position(size_t first, size_t last) const noexcept
+    [[nodiscard]] constexpr float position(size_t first, size_t last) const noexcept
     {
         hi_axiom(first < last);
         hi_axiom(last <= size());
@@ -885,9 +889,9 @@ private:
      * @param last The iterator beyond the last cell.
      * @return The current size of the span, including internal margins.
      */
-    [[nodiscard]] constexpr int extent(const_iterator first, const_iterator last) const noexcept
+    [[nodiscard]] constexpr float extent(const_iterator first, const_iterator last) const noexcept
     {
-        auto r = 0;
+        auto r = 0.0f;
         if (first != last) {
             r = first->extent;
             for (auto it = first + 1; it != last; ++it) {
@@ -905,19 +909,19 @@ private:
      * @param last The index beyond the last cell.
      * @return The current size of the span, including internal margins.
      */
-    [[nodiscard]] constexpr int extent(size_t first, size_t last) const noexcept
+    [[nodiscard]] constexpr float extent(size_t first, size_t last) const noexcept
     {
         hi_axiom(first <= last);
         hi_axiom(last <= size());
         return extent(cbegin() + first, cbegin() + last);
     }
 
-    [[nodiscard]] constexpr std::optional<int> guideline(const_iterator it) const noexcept
+    [[nodiscard]] constexpr std::optional<float> guideline(const_iterator it) const noexcept
     {
         return it->guideline;
     }
 
-    [[nodiscard]] constexpr std::optional<int> guideline(size_t i) const noexcept
+    [[nodiscard]] constexpr std::optional<float> guideline(size_t i) const noexcept
     {
         return guideline(cbegin() + i);
     }
@@ -1129,10 +1133,10 @@ public:
      * @param shape The shape of the box to place the grid in.
      * @param baseline_adjustment How much the baseline needs to be adjusted when aligned to the top.
      */
-    constexpr void set_layout(box_shape const& shape, int baseline_adjustment) noexcept
+    constexpr void set_layout(box_shape const& shape, float baseline_adjustment) noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
-        _column_constraints.layout(shape.x(), shape.width(), shape.centerline, 0);
+        _column_constraints.layout(shape.x(), shape.width(), shape.centerline, 0.0f);
         _row_constraints.layout(shape.y(), shape.height(), shape.baseline, baseline_adjustment);
 
         // Assign the shape for each cell.

@@ -75,7 +75,7 @@ public:
     }
 
     // Override this function when your widget needs to be controllable by mouse interaction.
-    [[nodiscard]] hi::hitbox hitbox_test(hi::point2i position) const noexcept override
+    [[nodiscard]] hi::hitbox hitbox_test(hi::point2 position) const noexcept override
     {
         // Check if the (mouse) position is within the visual-area of the widget.
         // The hit_rectangle is the layout.rectangle() intersected with the layout.clipping_rectangle.

@@ -20,7 +20,7 @@ struct gfx_draw_context {
     vector_span<pipeline_image::vertex> image_vertices;
     vector_span<pipeline_SDF::vertex> sdf_vertices;
     vector_span<pipeline_alpha::vertex> alpha_vertices;
-    aarectanglei scissor_rectangle = {};
+    aarectangle scissor_rectangle = {};
     size_t frame_buffer_index = 0;
     hi::subpixel_orientation subpixel_orientation = hi::subpixel_orientation::unknown;
 
@@ -36,7 +36,7 @@ struct gfx_draw_context {
         std::span<pipeline_SDF::vertex> sdf_vertices,
         std::span<pipeline_alpha::vertex> alpha_vertices,
         size_t frame_buffer_index,
-        aarectanglei scissor_rectangle) noexcept :
+        aarectangle scissor_rectangle) noexcept :
         device(std::addressof(device)),
         box_vertices(box_vertices),
         image_vertices(image_vertices),

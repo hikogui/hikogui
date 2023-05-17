@@ -121,13 +121,13 @@ public:
         }
     }
 
-    void scroll_to_show(hi::aarectanglei rectangle) noexcept override
+    void scroll_to_show(hi::aarectangle rectangle) noexcept override
     {
         // An overlay is in an absolute position on the window,
         // so do not forward the scroll_to_show message to its parent.
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 

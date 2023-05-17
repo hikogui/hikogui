@@ -141,10 +141,10 @@ public:
                 // The grid cells are always ordered in row-major.
                 // This the vertical scroll bar is _grid[1] and the horizontal scroll bar is _grid[2].
                 if (not _vertical_bar->visible()) {
-                    shape.rectangle = aarectanglei{0, shape.y(), layout.width(), shape.height()};
+                    shape.rectangle = aarectangle{0, shape.y(), layout.width(), shape.height()};
                 }
                 if (not _horizontal_bar->visible()) {
-                    shape.rectangle = aarectanglei{shape.x(), 0, shape.width(), layout.height()};
+                    shape.rectangle = aarectangle{shape.x(), 0, shape.width(), layout.height()};
                 }
             }
 
@@ -161,7 +161,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 

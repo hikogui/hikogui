@@ -40,7 +40,7 @@ public:
      *
      * Widgets are allowed to draw inside their margins, in most cases this will just be a border.
      */
-    static constexpr int redraw_overhang = 2;
+    static constexpr float redraw_overhang = 2;
 
     /** Shape of the widget.
      * Since a widget_layout is always in local coordinates, the `left` and `bottom` values are zero.
@@ -49,23 +49,23 @@ public:
 
     /** This matrix transforms local coordinates to the coordinates of the parent widget.
      */
-    translate2i to_parent = {};
+    translate2 to_parent = {};
 
     /** This matrix transforms parent widget's coordinates to local coordinates.
      */
-    translate2i from_parent = {};
+    translate2 from_parent = {};
 
     /** This matrix transforms local coordinates to window coordinates.
      */
-    translate2i to_window = {};
+    translate2 to_window = {};
 
     /** This matrix transforms window coordinates to local coordinates.
      */
-    translate2i from_window = {};
+    translate2 from_window = {};
 
     /** Size of the window.
      */
-    extent2i window_size = {};
+    extent2 window_size = {};
 
     /** The elevation of the widget above the window.
      */
@@ -83,7 +83,7 @@ public:
      *
      * @note widget's coordinate system.
      */
-    aarectanglei clipping_rectangle = {};
+    aarectangle clipping_rectangle = {};
 
     /** The size of a sub-pixel.
      *
@@ -123,26 +123,26 @@ public:
      * @param mouse_position The mouse position in local coordinates.
      * @return True if the mouse position is on the widget and is not clipped.
      */
-    [[nodiscard]] constexpr bool contains(point3i mouse_position) const noexcept
+    [[nodiscard]] constexpr bool contains(point3 mouse_position) const noexcept
     {
         return rectangle().contains(mouse_position) and clipping_rectangle.contains(mouse_position);
     }
 
-    [[nodiscard]] constexpr aarectanglei rectangle() const noexcept
+    [[nodiscard]] constexpr aarectangle rectangle() const noexcept
     {
         return shape.rectangle;
     }
 
     /** Get the rectangle in window coordinate system.
      */
-    [[nodiscard]] constexpr aarectanglei rectangle_on_window() const noexcept
+    [[nodiscard]] constexpr aarectangle rectangle_on_window() const noexcept
     {
         return to_window * rectangle();
     }
 
     /** Get the clipping rectangle in window coordinate system.
      */
-    [[nodiscard]] constexpr aarectanglei clipping_rectangle_on_window() const noexcept
+    [[nodiscard]] constexpr aarectangle clipping_rectangle_on_window() const noexcept
     {
         return to_window * clipping_rectangle;
     }
@@ -152,22 +152,22 @@ public:
      * @param narrow_clipping_rectangle A clipping rectangle in local coordinate
      *        system that will be intersected with the layout's clipping rectangle.
      */
-    [[nodiscard]] constexpr aarectanglei clipping_rectangle_on_window(aarectanglei narrow_clipping_rectangle) const noexcept
+    [[nodiscard]] constexpr aarectangle clipping_rectangle_on_window(aarectangle narrow_clipping_rectangle) const noexcept
     {
         return to_window * intersect(clipping_rectangle, narrow_clipping_rectangle);
     }
 
-    [[nodiscard]] constexpr int width() const noexcept
+    [[nodiscard]] constexpr float width() const noexcept
     {
         return shape.width();
     }
 
-    [[nodiscard]] constexpr int height() const noexcept
+    [[nodiscard]] constexpr float height() const noexcept
     {
         return shape.height();
     }
 
-    [[nodiscard]] constexpr extent2i size() const noexcept
+    [[nodiscard]] constexpr extent2 size() const noexcept
     {
         return shape.size();
     }
@@ -175,7 +175,7 @@ public:
     /** Construct a widget_layout from inside the window.
      */
     constexpr widget_layout(
-        extent2i window_size,
+        extent2 window_size,
         gui_window_size window_size_state,
         hi::subpixel_orientation subpixel_orientation,
         utc_nanoseconds display_time_point) noexcept :
@@ -200,10 +200,10 @@ public:
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout
-    transform(box_shape const& child_shape, float child_elevation, aarectanglei new_clipping_rectangle) const noexcept
+    transform(box_shape const& child_shape, float child_elevation, aarectangle new_clipping_rectangle) const noexcept
     {
         widget_layout r = *this;
-        r.shape.rectangle = aarectanglei{child_shape.size()};
+        r.shape.rectangle = aarectangle{child_shape.size()};
 
         if (child_shape.baseline) {
             r.shape.baseline = *child_shape.baseline - child_shape.y();
@@ -221,7 +221,7 @@ public:
             *r.shape.centerline -= child_shape.x();
         }
 
-        r.to_parent = translate2i{child_shape.x(), child_shape.y()};
+        r.to_parent = translate2{child_shape.x(), child_shape.y()};
         r.from_parent = ~r.to_parent;
         r.to_window = r.to_parent * this->to_window;
         r.from_window = r.from_parent * this->from_window;
@@ -246,7 +246,7 @@ public:
      * @param new_clipping_rectangle The new clipping rectangle.
      * @return A new context that is clipped..
      */
-    [[nodiscard]] constexpr widget_layout override_clip(aarectanglei new_clipping_rectangle) const noexcept
+    [[nodiscard]] constexpr widget_layout override_clip(aarectangle new_clipping_rectangle) const noexcept
     {
         auto r = *this;
         r.clipping_rectangle = new_clipping_rectangle;

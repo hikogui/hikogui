@@ -45,7 +45,7 @@ protected:
 
         auto constraints = widget->update_constraints();
         auto layout = widget_layout{};
-        layout.shape.rectangle = aarectanglei{constraints.preferred};
+        layout.shape.rectangle = aarectangle{constraints.preferred};
         layout.shape.baseline = constraints.preferred.height() / 2;
         // display_time_point is used to check for valid widget_layout.
         layout.display_time_point = std::chrono::utc_clock::now();

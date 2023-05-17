@@ -36,8 +36,8 @@ enum class border_side {
 template<typename Context>
 concept draw_attribute =
     std::same_as<Context, quad_color> or std::same_as<Context, color> or std::same_as<Context, border_side> or
-    std::same_as<Context, line_end_cap> or std::same_as<Context, corner_radii> or std::same_as<Context, corner_radiii> or
-    std::same_as<Context, aarectanglei> or std::same_as<Context, float> or std::same_as<Context, int>;
+    std::same_as<Context, line_end_cap> or std::same_as<Context, corner_radii> or
+    std::same_as<Context, aarectangle> or std::same_as<Context, float>;
 
 /** The draw attributes used to draw shaped into the draw context.
  */
@@ -75,7 +75,7 @@ struct draw_attributes {
      * This rectangle is used for limiting drawing outside of a widget's rectangle.
      * But it may also be used to cut shapes for special effects.
      */
-    aarectanglei clipping_rectangle = aarectanglei::large();
+    aarectangle clipping_rectangle = aarectangle::large();
 
     /** The shape of the beginning of a line.
      */
@@ -155,22 +155,22 @@ struct draw_attributes {
             _has_border_side = true;
 #endif
 
-        } else if constexpr (std::is_same_v<T, corner_radii> or std::is_same_v<T, corner_radiii>) {
-            border_radius = narrow_cast<corner_radii>(attribute);
+        } else if constexpr (std::is_same_v<T, corner_radii>) {
+            border_radius = attribute;
 #ifndef NDEBUG
             hi_assert(not _has_corner_radii);
             _has_corner_radii = true;
 #endif
 
-        } else if constexpr (std::is_same_v<T, aarectanglei>) {
+        } else if constexpr (std::is_same_v<T, aarectangle>) {
             clipping_rectangle = attribute;
 #ifndef NDEBUG
             hi_assert(not _has_clipping_rectangle);
             _has_clipping_rectangle = true;
 #endif
 
-        } else if constexpr (std::is_same_v<T, float> or std::is_same_v<T, int>) {
-            line_width = narrow_cast<float>(attribute);
+        } else if constexpr (std::is_same_v<T, float>) {
+            line_width = attribute;
 #ifndef NDEBUG
             hi_assert(not _has_line_width);
             _has_line_width = true;
@@ -197,8 +197,7 @@ private:
 };
 
 template<typename Context>
-concept draw_quad_shape = std::same_as<Context, quad> or std::same_as<Context, rectangle> or std::same_as<Context, aarectangle> or
-    std::same_as<Context, aarectanglei>;
+concept draw_quad_shape = std::same_as<Context, quad> or std::same_as<Context, rectangle> or std::same_as<Context, aarectangle>;
 
 /** Draw context for drawing using the HikoGUI shaders.
  */
@@ -578,7 +577,7 @@ private:
     template<draw_quad_shape Shape>
     [[nodiscard]] constexpr static quad make_quad(Shape const& shape) noexcept
     {
-        if constexpr (std::is_same_v<Shape, aarectanglei>) {
+        if constexpr (std::is_same_v<Shape, aarectangle>) {
             return narrow_cast<aarectangle>(shape);
         } else {
             return shape;
@@ -638,31 +637,31 @@ private:
         return corner_radii{f32x4{circle}.wwww()};
     }
 
-    void _override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) noexcept;
+    void _override_alpha(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) noexcept;
 
-    void _draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) noexcept;
+    void _draw_box(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) noexcept;
 
     void _draw_text(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         draw_attributes const& attributes) noexcept;
 
     void _draw_text_selection(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         text_selection const& selection,
         draw_attributes const& attributes) noexcept;
 
     void _draw_text_insertion_cursor_empty(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         draw_attributes const& attributes) noexcept;
 
     void _draw_text_insertion_cursor(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         text_cursor cursor,
@@ -670,13 +669,13 @@ private:
         draw_attributes const& attributes) noexcept;
 
     void _draw_text_overwrite_cursor(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper::char_const_iterator it,
         draw_attributes const& attributes) noexcept;
 
     void _draw_text_cursors(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         text_cursor cursor,
@@ -685,14 +684,14 @@ private:
         draw_attributes const& attributes) noexcept;
 
     void _draw_glyph(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         quad const& box,
         hi::font const& font,
         glyph_id const& glyph,
         draw_attributes const& attributes) noexcept;
 
     [[nodiscard]] bool
-    _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) noexcept;
+    _draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image const& image) noexcept;
 };
 
 }} // namespace hi::v1

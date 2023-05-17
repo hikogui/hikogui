@@ -106,7 +106,7 @@ public:
         // Clip directly around the toolbar, so that tab buttons looks proper.
         if (compare_store(layout, context)) {
             auto shape = context.shape;
-            shape.rectangle = aarectanglei{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
+            shape.rectangle = aarectangle{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
             _children.set_layout(shape, theme<prefix>.cap_height(this));
         }
 
@@ -114,7 +114,7 @@ public:
 
         for (hilet& child : _children) {
             hilet child_clipping_rectangle =
-                aarectanglei{child.shape.x() - overhang, 0, child.shape.width() + overhang * 2, context.height() + overhang * 2};
+                aarectangle{child.shape.x() - overhang, 0.0f, child.shape.width() + overhang * 2.0f, context.height() + overhang * 2.0f};
 
             child.value->set_layout(context.transform(child.shape, 1.0f, child_clipping_rectangle));
         }
@@ -130,7 +130,7 @@ public:
                     // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
                     // line depending if that specific button is in focus or not.
                     hilet focus_rectangle =
-                        aarectanglei{0, 0, layout.rectangle().width(), theme<prefix>.border_width(this)};
+                        aarectangle{0.0f, 0.0f, layout.rectangle().width(), theme<prefix>.border_width(this)};
                     context.draw_box(
                         layout,
                         translate3{0.0f, 0.0f, 1.5f} * narrow_cast<aarectangle>(focus_rectangle),
@@ -145,7 +145,7 @@ public:
         }
     }
 
-    hitbox hitbox_test(point2i position) const noexcept override
+    hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
@@ -166,7 +166,7 @@ public:
     /// @endprivatesection
 private:
     mutable row_layout<std::unique_ptr<widget>> _children;
-    mutable int _child_height_adjustment = 0;
+    mutable float _child_height_adjustment = 0;
     size_t _spacer_index = 0;
 
     void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept;

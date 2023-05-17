@@ -148,17 +148,17 @@ public:
             hilet toolbar_height = _toolbar_constraints.preferred.height();
             hilet between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
 
-            hilet toolbar_rectangle = aarectanglei{
-                point2i{
+            hilet toolbar_rectangle = aarectangle{
+                point2{
                     _toolbar_constraints.margins.left(), context.height() - toolbar_height - _toolbar_constraints.margins.top()},
-                point2i{
+                point2{
                     context.width() - _toolbar_constraints.margins.right(),
                     context.height() - _toolbar_constraints.margins.top()}};
             _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme<prefix>.cap_height(this)};
 
-            hilet content_rectangle = aarectanglei{
-                point2i{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
-                point2i{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
+            hilet content_rectangle = aarectangle{
+                point2{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
+                point2{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
             _content_shape = box_shape{_content_constraints, content_rectangle, theme<prefix>.cap_height(this)};
         }
         _toolbar->set_layout(context.transform(_toolbar_shape));
@@ -173,7 +173,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         constexpr float BORDER_WIDTH = 10.0f;
 

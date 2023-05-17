@@ -56,7 +56,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            hilet label_rectangle = aarectanglei{context.size()} - _label_constraints.margins;
+            hilet label_rectangle = aarectangle{context.size()} - _label_constraints.margins;
 
             this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                 box_shape{_label_constraints, label_rectangle, theme<prefix>.cap_height(this)};

@@ -364,14 +364,6 @@ private:
 
 using point2 = geo::point<float, 2>;
 using point3 = geo::point<float, 3>;
-using point2i = geo::point<int, 2>;
-using point3i = geo::point<int, 3>;
-
-template<>
-[[nodiscard]] constexpr point2 narrow_cast(point2i const& rhs) noexcept
-{
-    return {narrow_cast<float>(rhs.x()), narrow_cast<float>(rhs.y())};
-}
 
 } // namespace hi::inline v1
 

@@ -169,7 +169,7 @@ public:
         _scroll_constraints = _scroll_widget->update_constraints();
 
         hilet scroll_width = 100;
-        hilet box_size = extent2i{
+        hilet box_size = extent2{
             _scroll_constraints.margins.left() + scroll_width + _scroll_constraints.margins.right(),
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
@@ -198,17 +198,17 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(layout, context)) {
-            hilet scroll_size = extent2i{
+            hilet scroll_size = extent2{
                 context.width(),
                 _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() +
                     _scroll_constraints.margins.bottom()};
 
-            hilet scroll_rectangle = aarectanglei{point2i{0, context.height() - scroll_size.height()}, scroll_size};
+            hilet scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
             _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme<prefix>.cap_height(this)};
 
             if (*_error_label_widget->mode > widget_mode::invisible) {
                 hilet error_label_rectangle =
-                    aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
+                    aarectangle{0.0f, 0.0f, context.rectangle().width(), _error_label_constraints.preferred.height()};
                 _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme<prefix>.cap_height(this)};
             }
         }
@@ -252,7 +252,7 @@ public:
         return super::handle_event(event);
     }
 
-    hitbox hitbox_test(point2i position) const noexcept override
+    hitbox hitbox_test(point2 position) const noexcept override
     {
         if (*mode >= widget_mode::partial) {
             auto r = hitbox{};
@@ -293,7 +293,7 @@ private:
     /** An error string to show to the user.
      */
     observer<label> _error_label;
-    std::unique_ptr<label_widget<join_path(prefix, "error")>> _error_label_widget;
+    std::unique_ptr<label_widget<prefix / "error">> _error_label_widget;
     box_constraints _error_label_constraints;
     box_shape _error_label_shape;
 

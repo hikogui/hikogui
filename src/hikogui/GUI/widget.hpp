@@ -82,11 +82,11 @@ public:
 
     /** The minimum size this widget is allowed to be.
      */
-    observer<extent2i> minimum = extent2i{};
+    observer<extent2> minimum = extent2{};
 
     /** The maximum size this widget is allowed to be.
      */
-    observer<extent2i> maximum = extent2i::large();
+    observer<extent2> maximum = extent2::large();
 
     widget_layout layout;
 
@@ -131,7 +131,7 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point2i position) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test(point2 position) const noexcept
     {
         return {};
     }
@@ -142,7 +142,7 @@ public:
      *
      * @param position The coordinate of the mouse local to the parent widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position) const noexcept
     {
         return hitbox_test(layout.from_parent * position);
     }
@@ -154,7 +154,7 @@ public:
      * @param position The coordinate of the mouse local to the parent widget.
      * @param sibling_hitbox The hitbox of a sibling to combine with the hitbox of this widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position, hitbox sibling_hitbox) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position, hitbox sibling_hitbox) const noexcept
     {
         return std::max(sibling_hitbox, hitbox_test(layout.from_parent * position));
     }
@@ -175,7 +175,7 @@ public:
     {
         layout = {};
         surface = new_surface;
-        _scale = narrow_cast<int>(std::round(new_scale * -4.0));
+        _scale = -new_scale;
     }
 
     /** Update the constraints of the widget.
@@ -484,7 +484,7 @@ public:
      *
      * @param rectangle The rectangle in window coordinates.
      */
-    virtual void scroll_to_show(hi::aarectanglei rectangle) noexcept
+    virtual void scroll_to_show(hi::aarectangle rectangle) noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -538,10 +538,9 @@ protected:
      *
      * This value is set by the window when its dpi changes.
      *
-     * For performance reasons the scale is the result of `actual-scale * -4`.
-     * This handles scale increments of 25%. 100% scale is -4.
+     * For performance reasons the scale is the result of `actual_scale * -1.0`.
      */
-    int _scale = -4;
+    float _scale = -1;
 
     /** Notifier which is called whenever the use modifies the state.
      */
@@ -556,14 +555,14 @@ protected:
      * @param requested_rectangle A rectangle in the local coordinate system.
      * @return A rectangle that fits the window's constraints in the local coordinate system.
      */
-    [[nodiscard]] aarectanglei make_overlay_rectangle(aarectanglei requested_rectangle) const noexcept
+    [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept
     {
         hi_axiom(loop::main().on_thread());
 
         // Move the request_rectangle to window coordinates.
-        hilet requested_window_rectangle = translate2i{layout.clipping_rectangle_on_window()} * requested_rectangle;
+        hilet requested_window_rectangle = translate2{layout.clipping_rectangle_on_window()} * requested_rectangle;
 
-        hilet window_bounds = aarectanglei{layout.window_size} - theme<"window">.margin(this);
+        hilet window_bounds = aarectangle{layout.window_size} - theme<"window">.margin(this);
         hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
         return layout.from_window * response_window_rectangle;
     }

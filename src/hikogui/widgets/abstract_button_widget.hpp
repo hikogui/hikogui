@@ -108,7 +108,7 @@ public:
         co_yield *_other_label_widget;
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept final
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
     {
         hi_axiom(loop::main().on_thread());
 
@@ -171,15 +171,15 @@ public:
     }
     /// @endprivatesection
 protected:
-    std::unique_ptr<label_widget<join_path(prefix, "on")>> _on_label_widget;
+    std::unique_ptr<label_widget<prefix / "on">> _on_label_widget;
     box_constraints _on_label_constraints;
     box_shape _on_label_shape;
 
-    std::unique_ptr<label_widget<join_path(prefix, "off")>> _off_label_widget;
+    std::unique_ptr<label_widget<prefix / "off">> _off_label_widget;
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    std::unique_ptr<label_widget<join_path(prefix, "other")>> _other_label_widget;
+    std::unique_ptr<label_widget<prefix / "other">> _other_label_widget;
     box_constraints _other_label_constraints;
     box_shape _other_label_shape;
 

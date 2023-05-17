@@ -179,7 +179,7 @@ public:
         _label_constraints = max(_on_label_constraints, _off_label_constraints, _other_label_constraints);
 
         _button_size = theme<prefix>.size(this);
-        hilet extra_size = extent2i{theme<prefix>.spacing_horizontal(this) + _button_size.width(), 0};
+        hilet extra_size = extent2{theme<prefix>.spacing_horizontal(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
         constraints.margins = theme<prefix>.margin(this);
@@ -204,12 +204,12 @@ public:
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
             if (alignment_ == horizontal_alignment::left) {
                 hilet label_left = _button_rectangle.right() + inner_margin;
-                hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
+                hilet label_rectangle = aarectangle{label_left, 0, label_width, context.height()};
                 this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape(_label_constraints, label_rectangle, baseline_offset);
 
             } else if (alignment_ == horizontal_alignment::right) {
-                hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
+                hilet label_rectangle = aarectangle{0, 0, label_width, context.height()};
                 this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape(_label_constraints, label_rectangle, baseline_offset);
             } else {
@@ -217,13 +217,11 @@ public:
             }
 
             _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb =
-                narrow_cast<aarectanglei>(_check_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
+            hilet check_glyph_bb = _check_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this);
             _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
 
             _minus_glyph = find_glyph(elusive_icon::Minus);
-            hilet minus_glyph_bb =
-                narrow_cast<aarectanglei>(_minus_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
+            hilet minus_glyph_bb = _minus_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this);
             _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
         }
 
@@ -255,7 +253,7 @@ public:
         co_yield *_other_label_widget;
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept final
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
     {
         hi_axiom(loop::main().on_thread());
 
@@ -318,15 +316,15 @@ public:
     }
     /// @endprivatesection
 private:
-    std::unique_ptr<label_widget<join_path(prefix, "on")>> _on_label_widget;
+    std::unique_ptr<label_widget<prefix / "on">> _on_label_widget;
     box_constraints _on_label_constraints;
     box_shape _on_label_shape;
 
-    std::unique_ptr<label_widget<join_path(prefix, "off")>> _off_label_widget;
+    std::unique_ptr<label_widget<prefix / "off">> _off_label_widget;
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    std::unique_ptr<label_widget<join_path(prefix, "other")>> _other_label_widget;
+    std::unique_ptr<label_widget<prefix / "other">> _other_label_widget;
     box_constraints _other_label_constraints;
     box_shape _other_label_shape;
 
@@ -334,12 +332,12 @@ private:
 
     box_constraints _label_constraints;
 
-    extent2i _button_size;
-    aarectanglei _button_rectangle;
+    extent2 _button_size;
+    aarectangle _button_rectangle;
     font_book::font_glyph_type _check_glyph;
-    aarectanglei _check_glyph_rectangle;
+    aarectangle _check_glyph_rectangle;
     font_book::font_glyph_type _minus_glyph;
-    aarectanglei _minus_glyph_rectangle;
+    aarectangle _minus_glyph_rectangle;
 
     void draw_check_box(widget_draw_context& context) noexcept
     {

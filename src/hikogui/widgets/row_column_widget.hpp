@@ -130,7 +130,7 @@ public:
         }
     }
 
-    hitbox hitbox_test(point2i position) const noexcept override
+    hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
@@ -153,12 +153,12 @@ private:
  * @ingroup widgets
  */
 template<fixed_string Name = "">
-using row_widget = row_column_widget<join_path(Name, "row"), axis::x>;
+using row_widget = row_column_widget<Name / "row", axis::x>;
 
 /** Lays out children in a column.
  * @ingroup widgets
  */
 template<fixed_string Name = "">
-using column_widget = row_column_widget<join_path(Name, "column"), axis::y>;
+using column_widget = row_column_widget<Name / "column", axis::y>;
 
 }} // namespace hi::v1
