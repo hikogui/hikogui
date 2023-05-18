@@ -154,8 +154,8 @@ public:
                 // The distance the slider has to move relative to the slider position at the
                 // start of the drag.
                 hilet slider_movement =
-                    narrow_cast<int>(axis == axis::vertical ? event.drag_delta().y() : event.drag_delta().x());
-                hilet content_movement = narrow_cast<int>(std::round(slider_movement * hidden_content_vs_travel_ratio()));
+                    axis == axis::vertical ? event.drag_delta().y() : event.drag_delta().x();
+                hilet content_movement = slider_movement * hidden_content_vs_travel_ratio();
                 hilet new_offset = _offset_before_drag + content_movement;
                 offset = clamp_offset(new_offset);
                 return true;

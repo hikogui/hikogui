@@ -219,11 +219,11 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     }
 
     if (state == gui_window_size::normal) {
-        hilet left = narrow_cast<int>(_restore_rectangle.left());
-        hilet top = narrow_cast<int>(_restore_rectangle.top());
-        hilet width = narrow_cast<int>(_restore_rectangle.width());
-        hilet height = narrow_cast<int>(_restore_rectangle.height());
-        hilet inv_top = narrow_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
+        hilet left = floor_cast<int>(_restore_rectangle.left());
+        hilet top = ceil_cast<int>(_restore_rectangle.top());
+        hilet width = ceil_cast<int>(_restore_rectangle.width());
+        hilet height = ceil_cast<int>(_restore_rectangle.height());
+        hilet inv_top = ceil_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
         SetWindowPos(win32Window, HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::normal;
 
@@ -259,11 +259,11 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
             return;
         }
 
-        hilet left = narrow_cast<int>(fullscreen.left());
-        hilet top = narrow_cast<int>(fullscreen.top());
-        hilet width = narrow_cast<int>(fullscreen.width());
-        hilet height = narrow_cast<int>(fullscreen.height());
-        hilet inv_top = narrow_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
+        hilet left = floor_cast<int>(fullscreen.left());
+        hilet top = ceil_cast<int>(fullscreen.top());
+        hilet width = ceil_cast<int>(fullscreen.width());
+        hilet height = ceil_cast<int>(fullscreen.height());
+        hilet inv_top = ceil_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
         SetWindowPos(win32Window, HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::fullscreen;
     }
@@ -356,7 +356,7 @@ void gui_window_win32::open_system_menu()
     // Open the system menu window and wait.
     hilet system_menu = GetSystemMenu(win32Window, false);
     hilet cmd =
-        TrackPopupMenu(system_menu, TPM_RETURNCMD, narrow_cast<int>(left), narrow_cast<int>(inv_top), 0, win32Window, NULL);
+        TrackPopupMenu(system_menu, TPM_RETURNCMD, floor_cast<int>(left), floor_cast<int>(inv_top), 0, win32Window, NULL);
     if (cmd > 0) {
         SendMessage(win32Window, WM_SYSCOMMAND, narrow_cast<WPARAM>(cmd), LPARAM{0});
     }
@@ -371,8 +371,8 @@ void gui_window_win32::set_window_size(extent2 new_extent)
         hi_log_error("Could not get the window's rectangle on the screen.");
     }
 
-    hilet new_width = narrow_cast<int>(std::ceil(new_extent.width()));
-    hilet new_height = narrow_cast<int>(std::ceil(new_extent.height()));
+    hilet new_width = ceil_cast<int>(new_extent.width());
+    hilet new_height = ceil_cast<int>(new_extent.height());
     hilet new_x = os_settings::left_to_right() ? original_rect.left : original_rect.right - new_width;
     hilet new_y = original_rect.top;
 

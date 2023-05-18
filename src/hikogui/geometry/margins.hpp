@@ -115,23 +115,5 @@ private:
 } // namespace geo
 
 using margins = geo::margins<float>;
-using marginsi = geo::margins<int>;
-
-template<>
-[[nodiscard]] constexpr marginsi narrow_cast(margins const& rhs) noexcept
-{
-    return {
-        narrow_cast<int>(rhs.left()), narrow_cast<int>(rhs.bottom()), narrow_cast<int>(rhs.right()), narrow_cast<int>(rhs.top())};
-}
-
-template<>
-[[nodiscard]] constexpr margins narrow_cast(marginsi const& rhs) noexcept
-{
-    return {
-        narrow_cast<float>(rhs.left()),
-        narrow_cast<float>(rhs.bottom()),
-        narrow_cast<float>(rhs.right()),
-        narrow_cast<float>(rhs.top())};
-}
 
 }} // namespace hi::v1

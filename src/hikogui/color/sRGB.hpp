@@ -78,8 +78,8 @@ namespace detail {
     std::array<uint8_t, 65536> r{};
 
     for (int i = 0; i != 65536; ++i) {
-        r[i] = narrow_cast<uint8_t>(
-            std::floor(std::clamp(sRGB_linear_to_gamma(float16::from_uint16_t(narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f));
+        r[i] = floor_cast<uint8_t>(
+            std::clamp(sRGB_linear_to_gamma(float16::from_uint16_t(narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f);
     }
 
     return r;
@@ -154,11 +154,8 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
  * @param a Alpha value, between 0 and 255. not-premultiplied
  * @return A linear color.
  */
-[[nodiscard]] inline color color_from_sRGB(
-    std::integral auto r,
-    std::integral auto g,
-    std::integral auto b,
-    std::integral auto a) noexcept
+[[nodiscard]] inline color
+color_from_sRGB(std::integral auto r, std::integral auto g, std::integral auto b, std::integral auto a) noexcept
 {
     hi_axiom_bounds(r, 0, 256);
     hi_axiom_bounds(g, 0, 256);

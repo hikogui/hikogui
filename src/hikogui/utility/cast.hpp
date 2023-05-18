@@ -127,41 +127,57 @@ template<typename Out, base_of<std::remove_reference_t<Out>> In>
     }
 }
 
-/** Cast a number to a type that will be able to represent all values without loss of precision.
- */
-template<arithmetic Out, arithmetic In>
-[[nodiscard]] constexpr Out wide_cast(In rhs) noexcept
-    requires(type_in_range_v<Out, In>)
+template<typename Out, std::same_as<Out> In>
+[[nodiscard]] constexpr Out wide_cast(In const& rhs) noexcept
 {
+    return rhs;
+}
+
+template<std::floating_point Out, std::floating_point In>
+[[nodiscard]] constexpr Out wide_cast(In const& rhs) noexcept
+    requires(not std::same_as<In, Out>)
+{
+    static_assert(
+        std::numeric_limits<In>::digits <= std::numeric_limits<Out>::digits,
+        "wide_cast() is only allowed to a floating point of the same or larger size.");
+
     return static_cast<Out>(rhs);
 }
 
 /** Cast a number to a type that will be able to represent all values without loss of precision.
  */
-template<arithmetic Out>
+template<std::integral Out, std::integral In>
+[[nodiscard]] constexpr Out wide_cast(In rhs) noexcept
+    requires(not std::same_as<In, Out>)
+{
+    static_assert(
+        std::numeric_limits<In>::is_signed == std::numeric_limits<Out>::is_signed or not std::numeric_limits<In>::is_signed,
+        "wide_cast() is only allowed if the input is unsigned or if both input and output have the same signess.");
+
+    static_assert(
+        std::numeric_limits<In>::digits <= std::numeric_limits<Out>::digits,
+        "wide_cast() is only allowed to an integer of the same or larger size.");
+
+    return static_cast<Out>(rhs);
+}
+
+template<std::floating_point Out, std::integral In>
+[[nodiscard]] constexpr Out wide_cast(In rhs) noexcept
+{
+    static_assert(
+        std::numeric_limits<In>::digits <= std::numeric_limits<Out>::digits,
+        "wide_cast() is only allowed if the input can be represented with perfect accuracy by the floating point output type.");
+
+    return static_cast<Out>(rhs);
+}
+
+/** Cast a number to a type that will be able to represent all values without loss of precision.
+ */
+template<std::integral Out>
 [[nodiscard]] constexpr Out wide_cast(bool rhs) noexcept
 {
     return static_cast<Out>(rhs);
 }
-
-namespace detail {
-
-template<arithmetic Out, arithmetic In>
-[[nodiscard]] constexpr bool narrow_validate(Out out, In in) noexcept
-{
-    // in- and out-value compares the same, after converting out-value back to in-type.
-    auto r = (in == static_cast<In>(out));
-
-    // If the types have different signs we need to do an extra test to make sure the actual sign
-    // of the values are the same as well.
-    if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
-        r &= (in < In{}) == (out < Out{});
-    }
-
-    return r;
-}
-
-} // namespace detail
 
 /** Cast a numeric value to an integer saturating on overflow.
  *
@@ -187,6 +203,77 @@ template<std::integral Out, arithmetic In>
     }
 }
 
+template<typename Out, std::same_as<Out> In>
+[[nodiscard]] constexpr bool can_narrow_cast(In const& rhs) noexcept
+{
+    return true;
+}
+
+template<std::floating_point Out, std::floating_point In>
+[[nodiscard]] constexpr bool can_narrow_cast(In const& rhs) noexcept
+    requires(not std::same_as<In, Out>)
+{
+    if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+        // cast is allowed when the input is NaN, infinite or within the range of the output type.
+        return rhs != rhs or rhs == std::numeric_limits<In>::infinity() or rhs == -std::numeric_limits<In>::infinity() or
+            (rhs >= std::numeric_limits<Out>::lowest() and rhs <= std::numeric_limits<Out>::max());
+    }
+
+    return true;
+}
+
+template<std::integral Out, std::integral In>
+[[nodiscard]] constexpr bool can_narrow_cast(In const& rhs) noexcept
+    requires(not std::same_as<In, Out>)
+{
+    if constexpr (std::numeric_limits<In>::is_signed == std::numeric_limits<Out>::is_signed) {
+        if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+            if constexpr (std::numeric_limits<In>::is_signed) {
+                if (rhs < static_cast<In>(std::numeric_limits<Out>::lowest())) {
+                    return false;
+                }
+            }
+            return rhs <= static_cast<In>(std::numeric_limits<Out>::max());
+        }
+
+    } else if constexpr (std::numeric_limits<In>::is_signed) {
+        if (rhs < 0) {
+            return false;
+        }
+
+        if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+            return rhs <= static_cast<In>(std::numeric_limits<Out>::max());
+        }
+
+    } else {
+        if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+            return rhs <= static_cast<In>(std::numeric_limits<Out>::max());
+        }
+    }
+
+    return true;
+}
+
+template<std::floating_point Out, std::integral In>
+[[nodiscard]] constexpr bool can_narrow_cast(In const& rhs) noexcept
+{
+    if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+        if constexpr (std::numeric_limits<In>::is_signed) {
+            constexpr auto max = (1LL << std::numeric_limits<Out>::digits) - 1;
+            constexpr auto lowest = -max;
+
+            return rhs >= lowest and rhs <= max;
+
+        } else {
+            constexpr auto max = (1ULL << std::numeric_limits<Out>::digits) - 1;
+
+            return rhs <= max;
+        }
+    }
+
+    return true;
+}
+
 /** Cast numeric values without loss of precision.
  *
  * @note It is undefined behavior to cast a value which will cause a loss of precision.
@@ -195,63 +282,124 @@ template<std::integral Out, arithmetic In>
  * @param rhs The value to cast.
  * @return The value casted to a different type without loss of precision.
  */
-template<typename Out, typename In>
-[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept;
-
 template<typename Out, std::same_as<Out> In>
-[[nodiscard]] constexpr Out narrow_cast(In const &rhs) noexcept
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
 {
     return rhs;
 }
 
-/** Cast numeric values without loss of precision.
+template<std::floating_point Out, std::floating_point In>
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
+    requires(not std::same_as<In, Out>)
+{
+    if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+        // cast is allowed when the input is NaN, infinite or within the range of the output type.
+        hi_axiom(
+            rhs != rhs or rhs == std::numeric_limits<In>::infinity() or rhs == -std::numeric_limits<In>::infinity() or
+            (rhs >= std::numeric_limits<Out>::lowest() and rhs <= std::numeric_limits<Out>::max()));
+    }
+
+    return static_cast<Out>(rhs);
+}
+
+/** Cast integral values without loss of precision.
  *
- * @note It is undefined behavior to cast a value which will cause a loss of precision.
+ * @note It is undefined behaviour to cast a value which will cause a loss of precision.
  * @tparam Out The numeric type to cast to
  * @tparam In The numeric type to cast from
  * @param rhs The value to cast.
  * @return The value casted to a different type without loss of precision.
  */
-template<arithmetic Out, arithmetic In>
-[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept requires (not std::same_as<In, Out>)
+template<std::integral Out, std::integral In>
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
+    requires(not std::same_as<In, Out>)
 {
-    if constexpr (type_in_range_v<Out, In>) {
-        return static_cast<Out>(rhs);
+    if constexpr (std::numeric_limits<In>::is_signed == std::numeric_limits<Out>::is_signed) {
+        if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+            if constexpr (std::numeric_limits<In>::is_signed) {
+                hi_axiom(rhs >= static_cast<In>(std::numeric_limits<Out>::lowest()));
+            }
+            hi_axiom(rhs <= static_cast<In>(std::numeric_limits<Out>::max()));
+        }
+
+    } else if constexpr (std::numeric_limits<In>::is_signed) {
+        hi_axiom(rhs >= 0);
+        if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+            hi_axiom(rhs <= static_cast<In>(std::numeric_limits<Out>::max()));
+        }
+
     } else {
-        hilet r = static_cast<Out>(rhs);
-        hi_axiom(detail::narrow_validate(r, rhs));
-        return r;
+        if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+            hi_axiom(rhs <= static_cast<In>(std::numeric_limits<Out>::max()));
+        }
     }
+
+    return static_cast<Out>(rhs);
 }
 
-template<arithmetic Out, arithmetic In>
+template<std::floating_point Out, std::integral In>
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
+{
+    if constexpr (std::numeric_limits<In>::digits > std::numeric_limits<Out>::digits) {
+        if constexpr (std::numeric_limits<In>::is_signed) {
+            constexpr auto max = (1LL << std::numeric_limits<Out>::digits) - 1;
+            constexpr auto lowest = -max;
+
+            hi_axiom(rhs >= lowest and rhs <= max);
+
+        } else {
+            constexpr auto max = (1ULL << std::numeric_limits<Out>::digits) - 1;
+
+            hi_axiom(rhs <= max);
+        }
+    }
+
+    return static_cast<Out>(rhs);
+}
+
+template<std::integral Out, std::floating_point In>
+[[nodiscard]] constexpr bool can_round_cast(In rhs) noexcept
+{
+    hilet rhs_ = std::round(rhs);
+    return rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max();
+}
+
+template<std::integral Out, std::floating_point In>
+[[nodiscard]] constexpr bool can_floor_cast(In rhs) noexcept
+{
+    hilet rhs_ = std::floor(rhs);
+    return rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max();
+}
+
+template<std::integral Out, std::floating_point In>
+[[nodiscard]] constexpr bool can_ceil_cast(In rhs) noexcept
+{
+    hilet rhs_ = std::ceil(rhs);
+    return rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max();
+}
+
+template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr Out round_cast(In rhs) noexcept
 {
-    if constexpr (std::is_floating_point_v<In>) {
-        return narrow_cast<Out>(std::round(rhs));
-    } else {
-        return narrow_cast<Out>(rhs);
-    }
+    hilet rhs_ = std::round(rhs);
+    hi_axiom(rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max());
+    return static_cast<Out>(rhs_);
 }
 
-template<arithmetic Out, arithmetic In>
+template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr Out floor_cast(In rhs) noexcept
 {
-    if constexpr (std::is_floating_point_v<In>) {
-        return narrow_cast<Out>(std::floor(rhs));
-    } else {
-        return narrow_cast<Out>(rhs);
-    }
+    hilet rhs_ = std::floor(rhs);
+    hi_axiom(rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max());
+    return static_cast<Out>(rhs_);
 }
 
-template<arithmetic Out, arithmetic In>
+template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr Out ceil_cast(In rhs) noexcept
 {
-    if constexpr (std::is_floating_point_v<In>) {
-        return narrow_cast<Out>(std::ceil(rhs));
-    } else {
-        return narrow_cast<Out>(rhs);
-    }
+    hilet rhs_ = std::ceil(rhs);
+    hi_axiom(rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max());
+    return static_cast<Out>(rhs_);
 }
 
 /** Cast an integral to an unsigned integral of the same size.

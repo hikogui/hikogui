@@ -61,8 +61,8 @@ public:
             // of the widget within the window. We use the window-height so that we can make
             // Vulkan compatible coordinates. Vulkan uses y-axis down, while HikoGUI uses y-axis up.
             _view_port = VkRect2D{
-                VkOffset2D{hi::narrow_cast<int32_t>(view_port.left()), hi::narrow_cast<int32_t>(window_height - view_port.top())},
-                VkExtent2D{hi::narrow_cast<uint32_t>(view_port.width()), hi::narrow_cast<uint32_t>(view_port.height())}};
+                VkOffset2D{hi::floor_cast<int32_t>(view_port.left()), hi::floor_cast<int32_t>(window_height - view_port.top())},
+                VkExtent2D{hi::ceil_cast<uint32_t>(view_port.width()), hi::ceil_cast<uint32_t>(view_port.height())}};
         }
     }
 

@@ -117,7 +117,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     } else {
         // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize.
         hilet current_size = rectangle.size();
-        hilet new_size = clamp(current_size, _widget_constraints.minimum, _widget_constraints.maximum);
+        hilet new_size = ceil(clamp(current_size, _widget_constraints.minimum, _widget_constraints.maximum));
         if (new_size != current_size and size_state() != gui_window_size::minimized) {
             hi_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
             set_window_size(new_size);

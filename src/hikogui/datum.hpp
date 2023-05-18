@@ -57,8 +57,12 @@ public:
     static constexpr bool data_is_pointer = sizeof(value_type) > sizeof(void *);
     static constexpr bool data_is_scalar = not data_is_pointer;
 
-    constexpr void clear() noexcept requires(data_is_scalar) {}
-    constexpr void clear() noexcept requires(data_is_pointer)
+    constexpr void clear() noexcept
+        requires(data_is_scalar)
+    {
+    }
+    constexpr void clear() noexcept
+        requires(data_is_pointer)
     {
         if (_owns_lhs) {
             delete _lhs;
@@ -103,21 +107,24 @@ public:
         return _is_result;
     }
 
-    constexpr void set(value_type lhs, value_type rhs) noexcept requires(data_is_scalar)
+    constexpr void set(value_type lhs, value_type rhs) noexcept
+        requires(data_is_scalar)
     {
         _lhs = lhs;
         _rhs = rhs;
         _is_result = true;
     }
 
-    constexpr void set(value_type const& lhs, value_type const& rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type const& lhs, value_type const& rhs) noexcept
+        requires(data_is_pointer)
     {
         _lhs = &lhs;
         _rhs = &rhs;
         _is_result = true;
     }
 
-    constexpr void set(value_type&& lhs, value_type const& rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type&& lhs, value_type const& rhs) noexcept
+        requires(data_is_pointer)
     {
         _lhs = new value_type(std::move(lhs));
         _rhs = &rhs;
@@ -125,7 +132,8 @@ public:
         _owns_lhs = true;
     }
 
-    constexpr void set(value_type const& lhs, value_type&& rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type const& lhs, value_type&& rhs) noexcept
+        requires(data_is_pointer)
     {
         _lhs = &lhs;
         _rhs = new value_type(std::move(rhs));
@@ -133,7 +141,8 @@ public:
         _owns_rhs = true;
     }
 
-    constexpr void set(value_type&& lhs, value_type&& rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type&& lhs, value_type&& rhs) noexcept
+        requires(data_is_pointer)
     {
         _lhs = new value_type(std::move(lhs));
         _rhs = new value_type(std::move(rhs));
@@ -142,32 +151,35 @@ public:
         _owns_rhs = true;
     }
 
-    [[nodiscard]] constexpr value_type const& lhs() const noexcept requires(data_is_pointer)
+    [[nodiscard]] constexpr value_type const& lhs() const noexcept
+        requires(data_is_pointer)
     {
         hi_axiom(_is_result);
         return *_lhs;
     }
 
-    [[nodiscard]] constexpr value_type const& rhs() const noexcept requires(data_is_pointer)
+    [[nodiscard]] constexpr value_type const& rhs() const noexcept
+        requires(data_is_pointer)
     {
         hi_axiom(_is_result);
         return *_rhs;
     }
 
-    [[nodiscard]] constexpr value_type lhs() const noexcept requires(data_is_scalar)
+    [[nodiscard]] constexpr value_type lhs() const noexcept
+        requires(data_is_scalar)
     {
         hi_axiom(_is_result);
         return _lhs;
     }
 
-    [[nodiscard]] constexpr value_type rhs() const noexcept requires(data_is_scalar)
+    [[nodiscard]] constexpr value_type rhs() const noexcept
+        requires(data_is_scalar)
     {
         hi_axiom(_is_result);
         return _rhs;
     }
 
-private :
-
+private:
     using data_type = std::conditional_t<data_is_pointer, value_type const *, value_type>;
     data_type _lhs = data_type{};
     data_type _rhs = data_type{};
@@ -179,30 +191,22 @@ private :
 } // namespace detail
 
 template<typename T>
-class is_datum_type : public std::false_type {
-};
+class is_datum_type : public std::false_type {};
 
 template<>
-class is_datum_type<long long> : public std::true_type {
-};
+class is_datum_type<long long> : public std::true_type {};
 template<>
-class is_datum_type<decimal> : public std::true_type {
-};
+class is_datum_type<decimal> : public std::true_type {};
 template<>
-class is_datum_type<double> : public std::true_type {
-};
+class is_datum_type<double> : public std::true_type {};
 template<>
-class is_datum_type<bool> : public std::true_type {
-};
+class is_datum_type<bool> : public std::true_type {};
 template<>
-class is_datum_type<std::chrono::year_month_day> : public std::true_type {
-};
+class is_datum_type<std::chrono::year_month_day> : public std::true_type {};
 template<>
-class is_datum_type<std::string> : public std::true_type {
-};
+class is_datum_type<std::string> : public std::true_type {};
 template<>
-class is_datum_type<bstring> : public std::true_type {
-};
+class is_datum_type<bstring> : public std::true_type {};
 
 template<typename T>
 constexpr bool is_datum_type_v = is_datum_type<T>::value;
@@ -220,10 +224,8 @@ class datum {
 public:
     using vector_type = std::vector<datum>;
     using map_type = std::map<datum, datum>;
-    struct break_type {
-    };
-    struct continue_type {
-    };
+    struct break_type {};
+    struct continue_type {};
 
     /** Promote two datum-arguments to a common type.
      *
@@ -530,16 +532,13 @@ public:
     constexpr explicit operator T() const
     {
         if (auto f = get_if<double>(this)) {
-            errno = 0;
-            hilet r = std::round(*f);
-            if (errno == EDOM or errno == ERANGE or r < wide_cast<double>(std::numeric_limits<T>::min()) or
-                r > wide_cast<double>(std::numeric_limits<T>::max())) {
+            if (not can_round_cast<T>(*f)) {
                 throw std::overflow_error("double to integral");
             }
-            return narrow_cast<T>(r);
+            return round_cast<T>(*f);
 
         } else if (auto i = get_if<long long>(this)) {
-            if (*i < std::numeric_limits<T>::min() or *i > std::numeric_limits<T>::max()) {
+            if (not can_narrow_cast<T>(*i)) {
                 throw std::overflow_error("long long to integral");
             }
             return narrow_cast<T>(*i);
@@ -1864,7 +1863,7 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T *get_if(datum* rhs) noexcept
+    [[nodiscard]] friend constexpr T *get_if(datum *rhs) noexcept
     {
         if (rhs == nullptr or not holds_alternative<T>(*rhs)) {
             return nullptr;
@@ -1881,7 +1880,7 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T const *get_if(datum const* rhs) noexcept
+    [[nodiscard]] friend constexpr T const *get_if(datum const *rhs) noexcept
     {
         if (rhs == nullptr or not holds_alternative<T>(*rhs)) {
             return nullptr;

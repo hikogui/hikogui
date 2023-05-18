@@ -121,16 +121,5 @@ private:
 } // namespace geo
 
 using corner_radii = geo::corner_radii<float>;
-using corner_radiii = geo::corner_radii<int>;
-
-template<>
-[[nodiscard]] constexpr corner_radii narrow_cast(corner_radiii const& rhs) noexcept
-{
-    return {
-        narrow_cast<float>(rhs.left_bottom()),
-        narrow_cast<float>(rhs.right_bottom()),
-        narrow_cast<float>(rhs.left_top()),
-        narrow_cast<float>(rhs.right_top())};
-}
 
 }} // namespace hi::v1

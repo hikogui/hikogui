@@ -430,8 +430,8 @@ std::optional<gfx_draw_context> gfx_surface_vulkan::render_start(aarectangle red
 
     // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
     // We need to do this so that old redraws are also executed in the current swapchain image.
-    hilet scissor_rectangle = std::accumulate(
-        swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectangle{}, [](hilet& sum, hilet& item) {
+    hilet scissor_rectangle =
+        std::accumulate(swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectangle{}, [](hilet& sum, hilet& item) {
             return sum | item.redraw_rectangle;
         });
 
@@ -474,11 +474,11 @@ void gfx_surface_vulkan::render_finish(gfx_draw_context const& context)
 
     hilet render_area = vk::Rect2D{
         vk::Offset2D(
-            narrow_cast<uint32_t>(clamped_scissor_rectangle.left()),
-            narrow_cast<uint32_t>(
+            floor_cast<uint32_t>(clamped_scissor_rectangle.left()),
+            floor_cast<uint32_t>(
                 swapchainImageExtent.height - clamped_scissor_rectangle.bottom() - clamped_scissor_rectangle.height())),
         vk::Extent2D(
-            narrow_cast<uint32_t>(clamped_scissor_rectangle.width()), narrow_cast<uint32_t>(clamped_scissor_rectangle.height()))};
+            ceil_cast<uint32_t>(clamped_scissor_rectangle.width()), ceil_cast<uint32_t>(clamped_scissor_rectangle.height()))};
 
     // Start the first delegate when the swapchain-image becomes available.
     auto start_semaphore = imageAvailableSemaphore;
@@ -517,10 +517,8 @@ void gfx_surface_vulkan::fill_command_buffer(
 
     hilet colorClearValue = vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 0.0f}};
     hilet depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
-    hilet clearValues = std::array{
-        vk::ClearValue{depthClearValue},
-        vk::ClearValue{colorClearValue},
-        vk::ClearValue{colorClearValue}};
+    hilet clearValues =
+        std::array{vk::ClearValue{depthClearValue}, vk::ClearValue{colorClearValue}, vk::ClearValue{colorClearValue}};
 
     // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.
     hilet scissors = std::array{render_area};
@@ -607,7 +605,7 @@ gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, exte
 
     swapchainImageFormat = vulkan_device().get_surface_format(*this);
     nrSwapchainImages = narrow_cast<uint32_t>(new_count);
-    swapchainImageExtent = VkExtent2D{narrow_cast<uint32_t>(new_size.width()), narrow_cast<uint32_t>(new_size.height())};
+    swapchainImageExtent = VkExtent2D{ceil_cast<uint32_t>(new_size.width()), ceil_cast<uint32_t>(new_size.height())};
     vk::SwapchainCreateInfoKHR swapchainCreateInfo{
         vk::SwapchainCreateFlagsKHR(),
         intrinsic,

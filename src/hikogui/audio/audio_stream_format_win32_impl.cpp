@@ -46,7 +46,7 @@ namespace hi::inline v1 {
 
     // These are the fields of WAVEFORMATEXT.
     r.Format.nChannels = narrow_cast<WORD>(x.num_channels);
-    r.Format.nSamplesPerSec = narrow_cast<DWORD>(std::round(x.sample_rate));
+    r.Format.nSamplesPerSec = narrow_cast<DWORD>(x.sample_rate);
     r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(x.sample_rate * x.num_channels * x.format.num_bytes());
     r.Format.nBlockAlign = narrow_cast<WORD>(x.num_channels * x.format.num_bytes());
     r.Format.wBitsPerSample = narrow_cast<WORD>(x.format.num_bytes() * 8);
