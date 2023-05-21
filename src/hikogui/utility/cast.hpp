@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file utility/cast.hpp Functions for casting values between types savely.
+ * @ingroup utility
+ */
+
 #pragma once
 
 #include "utility.hpp"
@@ -41,64 +45,83 @@ template<typename T>
 }
 
 /** Cast a pointer to a class to its base class or itself.
+ *
+ * @ingroup utility
+ * @tparam Out The output type; a base-class of the input.
+ * @param rhs A pointer to a object to cast.
+ * @return A pointer to casted type.
  */
-template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
+template<typename Out, typename In>
 [[nodiscard]] constexpr Out up_cast(In *rhs) noexcept
-    requires std::is_pointer_v<Out> and
-    (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    if constexpr (std::is_same_v<std::remove_const_t<In>, remove_cvptr_t<Out>>) {
-        return rhs;
-    } else {
-        return static_cast<Out>(rhs);
-    }
+    using out_type = std::remove_pointer_t<Out>;
+
+    static_assert(std::is_pointer_v<Out>, "up_cast() Out template paramater must be a pointer if the input is a pointer.");
+    static_assert(std::is_const_v<out_type> == std::is_const_v<In> or std::is_const_v<out_type>, "up_cast() can not cast away const.");
+    static_assert(std::is_base_of_v<out_type, In>, "up_cast() may only be used to cast to a base-type.");
+
+    return static_cast<Out>(rhs);
 }
 
-/** Cast a reference to a class to its base class or itself.
+/** Cast a nullptr to a class.
+ *
+ * @ingroup utility
+ * @tparam Out The output type.
+ * @param rhs A nullptr.
+ * @return A nullptr of the output type
  */
 template<typename Out>
 [[nodiscard]] constexpr Out up_cast(nullptr_t) noexcept
-    requires std::is_pointer_v<Out>
 {
+    static_assert(std::is_pointer_v<Out>, "up_cast() Out template paramater must be a pointer.");
     return nullptr;
 }
 
 /** Cast a reference to a class to its base class or itself.
+ *
+ * @ingroup utility
+ * @tparam Out The output type; a base-class of the input.
+ * @param rhs A reference to a object to cast.
+ * @return A reference to casted type.
  */
-template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
+template<typename Out, typename In>
 [[nodiscard]] constexpr Out up_cast(In& rhs) noexcept
-    requires std::is_reference_v<Out> and
-    (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
-    if constexpr (std::is_same_v<std::remove_const_t<In>, std::remove_cvref_t<Out>>) {
-        return rhs;
-    } else {
-        return static_cast<Out>(rhs);
-    }
+    using out_type = std::remove_reference_t<Out>;
+
+    static_assert(std::is_reference_v<Out>, "up_cast() Out template paramater must be a reference if the input is a reference.");
+    static_assert(std::is_const_v<out_type> == std::is_const_v<In> or std::is_const_v<out_type>, "up_cast() can not cast away const.");
+    static_assert(std::is_base_of_v<out_type, In>, "up_cast() may only be used to cast to a base-type.");
+
+    return static_cast<Out>(rhs);
 }
 
 /** Cast a pointer to a class to its derived class or itself.
  *
+ * @ingroup utility
  * @note It is undefined behavior if the argument is not of type Out.
  * @param rhs A pointer to an object that is of type `Out`. Or a nullptr which will be
  *        passed through.
  * @return A pointer to the same object with a new type.
  */
-template<typename Out, base_of<std::remove_pointer_t<Out>> In>
+template<typename Out, typename In>
 [[nodiscard]] constexpr Out down_cast(In *rhs) noexcept
-    requires std::is_pointer_v<Out> and
-    (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    if constexpr (std::is_same_v<std::remove_const_t<In>, remove_cvptr_t<Out>>) {
-        return rhs;
-    } else {
+    using out_type = std::remove_pointer_t<Out>;
+
+    static_assert(std::is_pointer_v<Out>, "down_cast() Out template paramater must be a pointer if the input is a pointer.");
+    static_assert(std::is_const_v<out_type> == std::is_const_v<In> or std::is_const_v<out_type>, "down_cast() can not cast away const.");
+    static_assert(std::is_base_of_v<out_type, In> or std::is_base_of_v<In, out_type>, "down_cast() may only be used to cast to a related type.");
+
+    if constexpr (not std::is_base_of_v<out_type, In>) {
         hi_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
-        return static_cast<Out>(rhs);
     }
+    return static_cast<Out>(rhs);
 }
 
 /** Cast a pointer to a class to its derived class or itself.
  *
+ * @ingroup utility
  * @return A pointer to the same object with a new type.
  */
 template<typename Out>
@@ -110,29 +133,47 @@ template<typename Out>
 
 /** Cast a reference to a class to its derived class or itself.
  *
+ * @ingroup utility
  * @note It is undefined behaviour if the argument is not of type Out.
  * @param rhs A reference to an object that is of type `Out`.
  * @return A reference to the same object with a new type.
  */
-template<typename Out, base_of<std::remove_reference_t<Out>> In>
+template<typename Out, typename In>
 [[nodiscard]] constexpr Out down_cast(In& rhs) noexcept
-    requires std::is_reference_v<Out> and
-    (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
-    if constexpr (std::is_same_v<std::remove_const_t<In>, std::remove_cvref_t<Out>>) {
-        return rhs;
-    } else {
-        hi_axiom(dynamic_cast<std::add_pointer_t<std::remove_reference_t<Out>>>(std::addressof(rhs)) != nullptr);
-        return static_cast<Out>(rhs);
+    using out_type = std::remove_reference_t<Out>;
+
+    static_assert(std::is_reference_v<Out>, "down_cast() Out template paramater must be a reference if the input is a reference.");
+    static_assert(std::is_const_v<out_type> == std::is_const_v<In> or std::is_const_v<out_type>, "down_cast() can not cast away const.");
+    static_assert(std::is_base_of_v<out_type, In> or std::is_base_of_v<In, out_type>, "down_cast() may only be used to cast to a related type.");
+
+    if constexpr (not std::is_base_of_v<out_type, In>) {
+        hi_axiom(rhs == nullptr or dynamic_cast<std::add_pointer_t<out_type>>(std::addressof(rhs)) != nullptr);
     }
+    return static_cast<Out>(rhs);
 }
 
+/** Cast to a type which can hold all values from the input type.
+ *
+ * @ingroup utility
+ * @note This is the identity operation, when casting to the same type.
+ * @tparam Out The same type as the input.
+ * @param rhs The value of the input type.
+ * @return A copy of the input value.
+ */
 template<typename Out, std::same_as<Out> In>
 [[nodiscard]] constexpr Out wide_cast(In const& rhs) noexcept
 {
     return rhs;
 }
 
+/** Cast a floating point number to a floating point type that is wider.
+ *
+ * @ingroup utility
+ * @tparam Out A floating point type larger than the input type.
+ * @param rhs The floating point input value.
+ * @return The floating point value converted to a wider floating point type.
+ */
 template<std::floating_point Out, std::floating_point In>
 [[nodiscard]] constexpr Out wide_cast(In const& rhs) noexcept
     requires(not std::same_as<In, Out>)
@@ -144,7 +185,12 @@ template<std::floating_point Out, std::floating_point In>
     return static_cast<Out>(rhs);
 }
 
-/** Cast a number to a type that will be able to represent all values without loss of precision.
+/** Cast a integer to an integer type which is wider.
+ *
+ * @ingroup utility
+ * @tparam Out An integer type that can hold all values of the input type.
+ * @param rhs The integer input value.
+ * @return The value converted to a wider integer type.
  */
 template<std::integral Out, std::integral In>
 [[nodiscard]] constexpr Out wide_cast(In rhs) noexcept
@@ -161,6 +207,20 @@ template<std::integral Out, std::integral In>
     return static_cast<Out>(rhs);
 }
 
+/** Cast a integer to an float type which is wider.
+ *
+ * Since wide_cast() must be perfect the integers must be perfectly representable by a floating
+ * point number. Integers that have number of binary digits less or equal to the size of the mantissa
+ * of a floating point number can be perfectly represented.
+ *
+ *  - Up to uint16_t, int16_t can be wide_cast() to float.
+ *  - Up to uint32_t, int32_t can be wide_cast() to double.
+ *
+ * @ingroup utility
+ * @tparam Out An float type that can hold all values of the input type without loss of precission.
+ * @param rhs The integer input value.
+ * @return The value converted to a wider float type.
+ */
 template<std::floating_point Out, std::integral In>
 [[nodiscard]] constexpr Out wide_cast(In rhs) noexcept
 {
@@ -168,14 +228,6 @@ template<std::floating_point Out, std::integral In>
         std::numeric_limits<In>::digits <= std::numeric_limits<Out>::digits,
         "wide_cast() is only allowed if the input can be represented with perfect accuracy by the floating point output type.");
 
-    return static_cast<Out>(rhs);
-}
-
-/** Cast a number to a type that will be able to represent all values without loss of precision.
- */
-template<std::integral Out>
-[[nodiscard]] constexpr Out wide_cast(bool rhs) noexcept
-{
     return static_cast<Out>(rhs);
 }
 
@@ -203,12 +255,26 @@ template<std::integral Out, arithmetic In>
     }
 }
 
+/** Check if a value can be casted to a narrow type.
+ *
+ * @ingroup utility
+ * @tparam Out The output type.
+ * @param rhs The input value to cast.
+ * @return true if the value can be casted.
+ */
 template<typename Out, std::same_as<Out> In>
 [[nodiscard]] constexpr bool can_narrow_cast(In const& rhs) noexcept
 {
     return true;
 }
 
+/** Check if a value can be casted to a narrow type.
+ *
+ * @ingroup utility
+ * @tparam Out The output type.
+ * @param rhs The input value to cast.
+ * @return true if the value can be casted.
+ */
 template<std::floating_point Out, std::floating_point In>
 [[nodiscard]] constexpr bool can_narrow_cast(In const& rhs) noexcept
     requires(not std::same_as<In, Out>)
@@ -222,6 +288,13 @@ template<std::floating_point Out, std::floating_point In>
     return true;
 }
 
+/** Check if a value can be casted to a narrow type.
+ *
+ * @ingroup utility
+ * @tparam Out The output type.
+ * @param rhs The input value to cast.
+ * @return true if the value can be casted.
+ */
 template<std::integral Out, std::integral In>
 [[nodiscard]] constexpr bool can_narrow_cast(In const& rhs) noexcept
     requires(not std::same_as<In, Out>)
@@ -254,6 +327,13 @@ template<std::integral Out, std::integral In>
     return true;
 }
 
+/** Check if a value can be casted to a narrow type.
+ *
+ * @ingroup utility
+ * @tparam Out The output type.
+ * @param rhs The input value to cast.
+ * @return true if the value can be casted.
+ */
 template<std::floating_point Out, std::integral In>
 [[nodiscard]] constexpr bool can_narrow_cast(In const& rhs) noexcept
 {
@@ -276,6 +356,7 @@ template<std::floating_point Out, std::integral In>
 
 /** Cast numeric values without loss of precision.
  *
+ * @ingroup utility
  * @note It is undefined behavior to cast a value which will cause a loss of precision.
  * @tparam Out The numeric type to cast to
  * @tparam In The numeric type to cast from
@@ -288,6 +369,15 @@ template<typename Out, std::same_as<Out> In>
     return rhs;
 }
 
+/** Cast numeric values without loss of precision.
+ *
+ * @ingroup utility
+ * @note It is undefined behavior to cast a value which will cause a loss of precision.
+ * @tparam Out The numeric type to cast to
+ * @tparam In The numeric type to cast from
+ * @param rhs The value to cast.
+ * @return The value casted to a different type without loss of precision.
+ */
 template<std::floating_point Out, std::floating_point In>
 [[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
     requires(not std::same_as<In, Out>)
@@ -302,9 +392,10 @@ template<std::floating_point Out, std::floating_point In>
     return static_cast<Out>(rhs);
 }
 
-/** Cast integral values without loss of precision.
+/** Cast numeric values without loss of precision.
  *
- * @note It is undefined behaviour to cast a value which will cause a loss of precision.
+ * @ingroup utility
+ * @note It is undefined behavior to cast a value which will cause a loss of precision.
  * @tparam Out The numeric type to cast to
  * @tparam In The numeric type to cast from
  * @param rhs The value to cast.
@@ -337,6 +428,15 @@ template<std::integral Out, std::integral In>
     return static_cast<Out>(rhs);
 }
 
+/** Cast numeric values without loss of precision.
+ *
+ * @ingroup utility
+ * @note It is undefined behavior to cast a value which will cause a loss of precision.
+ * @tparam Out The numeric type to cast to
+ * @tparam In The numeric type to cast from
+ * @param rhs The value to cast.
+ * @return The value casted to a different type without loss of precision.
+ */
 template<std::floating_point Out, std::integral In>
 [[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
 {

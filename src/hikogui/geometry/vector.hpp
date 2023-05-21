@@ -416,6 +416,9 @@ using vector3 = geo::vector<float, 3>;
 using vector2i = geo::vector<int, 2>;
 using vector3i = geo::vector<int, 3>;
 
+
+
+
 } // namespace hi::inline v1
 
 template<typename CharT>
