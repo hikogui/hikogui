@@ -29,7 +29,7 @@ template<std::integral T>
 template<std::floating_point T>
 [[nodiscard]] constexpr bool is_integral_value(T const &rhs) noexcept
 {
-    return std::floor(rhs) == rhs;
+    return static_cast<double>(static_cast<long long>(rhs)) == static_cast<double>(rhs);
 }
 
 }}

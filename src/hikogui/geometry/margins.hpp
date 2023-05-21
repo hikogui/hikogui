@@ -98,6 +98,21 @@ public:
         return *this;
     }
 
+    [[nodiscard]] constexpr friend margins round(margins const& rhs) noexcept
+    {
+        return margins{round(rhs._v)};
+    }
+
+    [[nodiscard]] constexpr friend margins floor(margins const& rhs) noexcept
+    {
+        return margins{floor(rhs._v)};
+    }
+
+    [[nodiscard]] constexpr friend margins ceil(margins const& rhs) noexcept
+    {
+        return margins{ceil(rhs._v)};
+    }
+
     [[nodiscard]] constexpr friend margins max(margins const& lhs, margins const& rhs) noexcept
     {
         return margins{max(lhs._v, rhs._v)};

@@ -105,6 +105,11 @@ struct box_constraints {
         if (alignment == horizontal_alignment::flush or alignment == horizontal_alignment::justified) {
             return false;
         }
+        if (not(is_integral_value(minimum.width()) and is_integral_value(minimum.height()) and
+                is_integral_value(preferred.width()) and is_integral_value(preferred.height()) and
+                is_integral_value(maximum.width()) and is_integral_value(maximum.height()))) {
+            return false;
+        }
         if (minimum > preferred or preferred > maximum) {
             return false;
         }

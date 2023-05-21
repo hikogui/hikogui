@@ -148,7 +148,7 @@ template<typename Out, typename In>
     static_assert(std::is_base_of_v<out_type, In> or std::is_base_of_v<In, out_type>, "down_cast() may only be used to cast to a related type.");
 
     if constexpr (not std::is_base_of_v<out_type, In>) {
-        hi_axiom(rhs == nullptr or dynamic_cast<std::add_pointer_t<out_type>>(std::addressof(rhs)) != nullptr);
+        hi_axiom(dynamic_cast<std::add_pointer_t<out_type>>(std::addressof(rhs)) != nullptr);
     }
     return static_cast<Out>(rhs);
 }

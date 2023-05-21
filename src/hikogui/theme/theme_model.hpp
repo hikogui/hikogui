@@ -275,10 +275,10 @@ struct sub_theme_selector_type {
 
 template<typename Context>
 concept theme_delegate = requires(Context const& c) {
-                             {
-                                 c.sub_theme_selector()
-                                 } -> std::convertible_to<sub_theme_selector_type>;
-                         };
+    {
+        c.sub_theme_selector()
+    } -> std::convertible_to<sub_theme_selector_type>;
+};
 
 /** The theme models for all states for a specific widget component.
  */
@@ -295,7 +295,7 @@ public:
 
     void clear() noexcept
     {
-        for (auto &sub_model: _sub_model_by_state) {
+        for (auto& sub_model : _sub_model_by_state) {
             sub_model.clear();
         }
     }
@@ -329,18 +329,18 @@ public:
     }
 
     /** Get the text theme for this widget's model.
-    *
-    * This function copies the text-theme of the model and scales the
-    * text-size. This should be moved into the text-shaper to reduce the amount
-    * of copies and allocations being done.
-    */
+     *
+     * This function copies the text-theme of the model and scales the
+     * text-size. This should be moved into the text-shaper to reduce the amount
+     * of copies and allocations being done.
+     */
     [[nodiscard]] hi::text_theme text_theme(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         auto r = model.text_theme;
 
         // Scale the text-theme.
-        for (auto &style: r) {
+        for (auto& style : r) {
             hi_axiom(style.size < 0.0f);
             style.size *= scale;
             hi_axiom(style.size >= 0.0f);
@@ -392,116 +392,119 @@ public:
     [[nodiscard]] float border_bottom_left_radius(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.border_bottom_left_radius(scale);
+        return std::ceil(model.border_bottom_left_radius(scale));
     }
 
     [[nodiscard]] float border_bottom_right_radius(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.border_bottom_right_radius(scale);
+        return std::ceil(model.border_bottom_right_radius(scale));
     }
 
     [[nodiscard]] float border_top_left_radius(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.border_top_left_radius(scale);
+        return std::ceil(model.border_top_left_radius(scale));
     }
 
     [[nodiscard]] float border_top_right_radius(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.border_top_right_radius(scale);
+        return std::ceil(model.border_top_right_radius(scale));
     }
 
     [[nodiscard]] corner_radii border_radius(theme_delegate auto const *delegate) const noexcept
     {
-        return {
-            border_bottom_left_radius(delegate),
-            border_bottom_right_radius(delegate),
-            border_top_left_radius(delegate),
-            border_top_right_radius(delegate)};
+        hilet[model, scale] = get_model_and_scale(delegate);
+        return ceil(corner_radii{
+            model.border_bottom_left_radius(scale),
+            model.border_bottom_right_radius(scale),
+            model.border_top_left_radius(scale),
+            model.border_top_right_radius(scale)});
     }
 
     [[nodiscard]] float border_width(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.border_width(scale);
+        return std::ceil(model.border_width(scale));
     }
 
     [[nodiscard]] float width(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.width(scale);
+        return std::ceil(model.width(scale));
     }
 
     [[nodiscard]] float height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.height(scale);
+        return std::ceil(model.height(scale));
     }
 
     [[nodiscard]] extent2 size(theme_delegate auto const *delegate) const noexcept
     {
-        return {width(delegate), height(delegate)};
+        hilet[model, scale] = get_model_and_scale(delegate);
+        return ceil(extent2{model.width(scale), model.height(scale)});
     }
 
     [[nodiscard]] float margin_bottom(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.margin_bottom(scale);
+        return std::ceil(model.margin_bottom(scale));
     }
 
     [[nodiscard]] float margin_left(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.margin_left(scale);
+        return std::ceil(model.margin_left(scale));
     }
 
     [[nodiscard]] float margin_top(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.margin_top(scale);
+        return std::ceil(model.margin_top(scale));
     }
 
     [[nodiscard]] float margin_right(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.margin_right(scale);
+        return std::ceil(model.margin_right(scale));
     }
 
     [[nodiscard]] margins margin(theme_delegate auto const *delegate) const noexcept
     {
-        return {margin_left(delegate), margin_bottom(delegate), margin_right(delegate), margin_top(delegate)};
+        hilet[model, scale] = get_model_and_scale(delegate);
+        return ceil(margins{model.margin_left(scale), model.margin_bottom(scale), model.margin_right(scale), model.margin_top(scale)});
     }
 
     [[nodiscard]] float spacing_vertical(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.spacing_vertical(scale);
+        return std::ceil(model.spacing_vertical(scale));
     }
 
     [[nodiscard]] float spacing_horizontal(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.spacing_horizontal(scale);
+        return std::ceil(model.spacing_horizontal(scale));
     }
 
     [[nodiscard]] float x_height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.x_height(scale);
+        return std::ceil(model.x_height(scale));
     }
 
     [[nodiscard]] float cap_height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.cap_height(scale);
+        return std::ceil(model.cap_height(scale));
     }
 
     [[nodiscard]] float line_height(theme_delegate auto const *delegate) const noexcept
     {
         hilet[model, scale] = get_model_and_scale(delegate);
-        return model.line_height(scale);
+        return std::ceil(model.line_height(scale));
     }
 
     [[nodiscard]] static std::vector<std::string> model_keys() noexcept
@@ -522,7 +525,7 @@ public:
         hilet lock = std::scoped_lock(_map_mutex);
 
         if (hilet it = _map.find(key); it != _map.end()) {
-            auto * const ptr = it->second;
+            auto *const ptr = it->second;
 
             hi_axiom_not_null(ptr);
             return *ptr;

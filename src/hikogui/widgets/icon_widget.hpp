@@ -84,17 +84,17 @@ public:
             } else if (hilet g1 = std::get_if<font_book::font_glyph_type>(&icon.read())) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
-                _icon_size = narrow_cast<extent2>(_glyph.get_bounding_rectangle().size() * theme<prefix>.line_height(this));
+                _icon_size = ceil(_glyph.get_bounding_rectangle().size() * theme<prefix>.line_height(this));
 
             } else if (hilet g2 = std::get_if<elusive_icon>(&icon.read())) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
-                _icon_size = narrow_cast<extent2>(_glyph.get_bounding_rectangle().size() * theme<prefix>.line_height(this));
+                _icon_size = ceil(_glyph.get_bounding_rectangle().size() * theme<prefix>.line_height(this));
 
             } else if (hilet g3 = std::get_if<hikogui_icon>(&icon.read())) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
-                _icon_size = narrow_cast<extent2>(_glyph.get_bounding_rectangle().size() * theme<prefix>.line_height(this));
+                _icon_size = ceil(_glyph.get_bounding_rectangle().size() * theme<prefix>.line_height(this));
             }
         }
 

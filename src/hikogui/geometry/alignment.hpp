@@ -54,16 +54,26 @@ enum class vertical_alignment : uint8_t {
  * @return The y-coordinate of the bottom of the guideline.
  * @retval nullopt No alignment, or guideline does not fit in the space.
  */
-template<arithmetic T>
-[[nodiscard]] constexpr std::optional<T>
-make_guideline(vertical_alignment alignment, T bottom, T top, T padding_bottom, T padding_top, T guideline_width)
+[[nodiscard]] constexpr std::optional<float> make_guideline(
+    vertical_alignment alignment,
+    float bottom,
+    float top,
+    float padding_bottom,
+    float padding_top,
+    float guideline_width)
 {
+    hi_axiom(is_integral_value(bottom));
+    hi_axiom(is_integral_value(top));
+    hi_axiom(is_integral_value(padding_bottom));
+    hi_axiom(is_integral_value(padding_top));
+    hi_axiom(is_integral_value(guideline_width));
     hi_axiom(bottom <= top);
-    hi_axiom(guideline_width >= T{});
+    hi_axiom(guideline_width >= 0.0f);
 
     hilet guideline_bottom = bottom + padding_bottom;
     hilet guideline_top = top - padding_top - guideline_width;
-    hilet guideline_middle = (bottom + top - guideline_width) / T{2};
+    // XXX use std::round when constexpr.
+    hilet guideline_middle = static_cast<float>(static_cast<long long>((bottom + top - guideline_width) / 2.0f + 0.5f));
 
     switch (alignment) {
     case vertical_alignment::none:
@@ -151,16 +161,26 @@ enum class horizontal_alignment : uint8_t {
  * @return The x-coordinate of the left of the guideline.
  * @retval std::nullopt No alignment, or guideline does not fit in the space.
  */
-template<arithmetic T>
-[[nodiscard]] constexpr std::optional<T>
-make_guideline(horizontal_alignment alignment, T left, T right, T padding_left, T padding_right, T guideline_width = T{0})
+[[nodiscard]] constexpr std::optional<float> make_guideline(
+    horizontal_alignment alignment,
+    float left,
+    float right,
+    float padding_left,
+    float padding_right,
+    float guideline_width = 0.0f)
 {
+    hi_axiom(is_integral_value(left));
+    hi_axiom(is_integral_value(right));
+    hi_axiom(is_integral_value(padding_left));
+    hi_axiom(is_integral_value(padding_right));
+    hi_axiom(is_integral_value(guideline_width));
     hi_axiom(left <= right);
-    hi_axiom(guideline_width >= T{0});
+    hi_axiom(guideline_width >= 0.0f);
 
     hilet guideline_left = left + padding_left;
     hilet guideline_right = right - padding_right - guideline_width;
-    hilet guideline_center = (left + right - guideline_width) / T{2};
+    // XXX use std::round when constexpr.
+    hilet guideline_center = static_cast<float>(static_cast<long long>((left + right - guideline_width) / 2.0f + 0.5f));
 
     switch (alignment) {
     case horizontal_alignment::none:

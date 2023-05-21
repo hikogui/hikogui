@@ -114,6 +114,21 @@ public:
         return corner_radii{array_type{lhs} - rhs};
     }
 
+    [[nodiscard]] constexpr friend corner_radii round(corner_radii const& rhs) noexcept
+    {
+        return corner_radii{round(rhs._v)};
+    }
+
+    [[nodiscard]] constexpr friend corner_radii floor(corner_radii const& rhs) noexcept
+    {
+        return corner_radii{floor(rhs._v)};
+    }
+
+    [[nodiscard]] constexpr friend corner_radii ceil(corner_radii const& rhs) noexcept
+    {
+        return corner_radii{ceil(rhs._v)};
+    }
+
 private:
     array_type _v;
 };

@@ -24,7 +24,10 @@ struct box_shape {
     constexpr box_shape& operator=(box_shape&&) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(box_shape const&, box_shape const&) noexcept = default;
 
-    constexpr box_shape(extent2 size) noexcept : rectangle(size), baseline(), centerline() {}
+    constexpr box_shape(extent2 size) noexcept : rectangle(size), baseline(), centerline()
+    {
+        hi_axiom(holds_invariant());
+    }
 
     constexpr box_shape(
         override_t,
@@ -46,12 +49,14 @@ struct box_shape {
             constraints.padding.left(),
             constraints.padding.right()))
     {
+        hi_axiom(holds_invariant());
     }
 
     constexpr box_shape(box_constraints const& constraints, aarectangle rectangle, float baseline_adjustment) noexcept :
         box_shape(override_t{}, constraints, rectangle, baseline_adjustment)
     {
         hi_axiom(rectangle.size() >= constraints.minimum);
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr float x() const noexcept
@@ -77,6 +82,21 @@ struct box_shape {
     [[nodiscard]] constexpr float height() const noexcept
     {
         return rectangle.height();
+    }
+
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
+    {
+        if (not(is_integral_value(rectangle.x()) and is_integral_value(rectangle.y()) and is_integral_value(rectangle.width()) and
+                is_integral_value(rectangle.height()))) {
+            return false;
+        }
+        if (baseline and not is_integral_value(*baseline)) {
+            return false;
+        }
+        if (centerline and not is_integral_value(*centerline)) {
+            return false;
+        }
+        return true;
     }
 };
 
