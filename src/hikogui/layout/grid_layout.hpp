@@ -140,6 +140,18 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
+    [[nodiscard]] constexpr float resistance() const noexcept
+    {
+        if constexpr (Axis == axis::x) {
+            return _constraints.resistance.x();
+        } else if constexpr (Axis == axis::y) {
+            return _constraints.resistance.y();
+        } else {
+            hi_static_no_default();
+        }
+    }
+
+    template<hi::axis Axis>
     [[nodiscard]] constexpr float margin_before(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
@@ -685,7 +697,7 @@ private:
             inplace_max(_constraints[cell.first<axis>()].minimum, cell.minimum<axis>());
             inplace_max(_constraints[cell.first<axis>()].preferred, cell.preferred<axis>());
             inplace_min(_constraints[cell.first<axis>()].maximum, cell.maximum<axis>());
-            inplace_max(_constraints[cell.first<axis>()].resistance, cell.resistance<axis>());
+            inplace_min(_constraints[cell.first<axis>()].resistance, cell.resistance<axis>());
         }
     }
 

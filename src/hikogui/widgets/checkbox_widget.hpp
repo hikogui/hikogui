@@ -179,7 +179,7 @@ public:
         _label_constraints = max(_on_label_constraints, _off_label_constraints, _other_label_constraints);
 
         _button_size = theme<prefix>.size(this);
-        hilet extra_size = extent2{theme<prefix>.spacing_horizontal(this) + _button_size.width(), 0};
+        hilet extra_size = extent2{theme<prefix>.margin_right(this) + _button_size.width(), 0};
 
         auto constraints = max(_label_constraints + extra_size, _button_size);
         constraints.margins = theme<prefix>.margin(this);
@@ -198,7 +198,7 @@ public:
                 hi_not_implemented();
             }
 
-            hilet inner_margin = theme<prefix>.spacing_horizontal(this);
+            hilet inner_margin = theme<prefix>.margin_right(this);
             hilet baseline_offset = theme<prefix>.cap_height(this);
 
             hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);

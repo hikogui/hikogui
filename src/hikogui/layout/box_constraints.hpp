@@ -24,7 +24,7 @@ struct box_constraints {
     extent2 preferred = {};
     extent2 maximum = {};
     hi::margins margins = {};
-    float priority = 0.0f;
+    vector2 resistance = {};
     hi::alignment alignment = hi::alignment{};
 
     constexpr box_constraints() noexcept = default;
@@ -40,8 +40,8 @@ struct box_constraints {
         extent2 maximum,
         hi::alignment alignment = hi::alignment{},
         hi::margins margins = hi::margins{},
-        float priority = 0.0f) noexcept :
-        minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), priority(priority), alignment(alignment)
+        vector2 resistance = hi::vector2{}) noexcept :
+        minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), resistance(resistance), alignment(alignment)
     {
         hi_axiom(holds_invariant());
     }
@@ -122,7 +122,7 @@ struct box_constraints {
         inplace_max(r.preferred, rhs.preferred);
         inplace_max(r.maximum, rhs.maximum);
         inplace_max(r.margins, rhs.margins);
-        inplace_max(r.priority, rhs.priority);
+        inplace_max(r.resistance, rhs.resistance);
 
         hi_axiom(r.holds_invariant());
         return r;

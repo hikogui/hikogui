@@ -90,8 +90,8 @@ public:
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         hilet extra_size = extent2{
-            theme<prefix>.margin_left(this) + _check_size.width() + theme<prefix>.spacing_horizontal(this) +
-                theme<prefix>.spacing_horizontal(this) + _short_cut_size.width() + theme<prefix>.margin_right(this),
+            theme<prefix>.margin_left(this) + _check_size.width() + theme<prefix>.margin_right(this) +
+                theme<prefix>.margin_right(this) + _short_cut_size.width() + theme<prefix>.margin_right(this),
             theme<prefix>.margin_top(this) + theme<prefix>.margin_bottom(this)};
 
         auto constraints = _label_constraints + extra_size;
@@ -102,7 +102,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            hilet spacing = theme<prefix>.spacing_horizontal(this);
+            hilet spacing = theme<prefix>.margin_right(this);
             hilet cap_height = theme<prefix>.cap_height(this);
 
             hilet inside_rectangle = context.rectangle() - spacing;

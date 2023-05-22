@@ -189,7 +189,8 @@ public:
                         theme<prefix>.size(this),
                         theme<prefix>.size(this),
                         *alignment,
-                        theme<prefix>.margin(this)});
+                        theme<prefix>.margin(this),
+                        vector2::infinity()});
 
             } else if (cell.value == cell_type::label) {
                 cell.set_constraints(

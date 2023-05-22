@@ -102,11 +102,19 @@ public:
     {
         _content_constraints = _content->update_constraints();
 
-        // The aperture can scroll so its minimum width and height are zero.
-        auto aperture_constraints = _content_constraints;
-        aperture_constraints.minimum = extent2{0, 0};
+        hilet margins = _content_constraints.margins;
 
-        return aperture_constraints.internalize_margins().constrain(*minimum, *maximum);
+        // The aperture can scroll so its minimum width and height are zero.
+        hilet aperture_constraints = box_constraints{
+            extent2{},
+            extent2{
+                _content_constraints.preferred.width() - margins.left() - margins.right(),
+                _content_constraints.preferred.height() - margins.bottom() - margins.top()},
+            extent2{
+                _content_constraints.maximum.width() - margins.left() - margins.right(),
+                _content_constraints.maximum.height() - margins.bottom() - margins.top()}};
+
+        return aperture_constraints.constrain(*minimum, *maximum);
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -197,11 +205,11 @@ public:
             auto delta_x = 0.0f;
             auto delta_y = 0.0f;
 
-            hilet margin = std::max({
-                theme<prefix>.margin_left(this),
-                theme<prefix>.margin_right(this),
-                theme<prefix>.margin_top(this),
-                theme<prefix>.margin_bottom(this)});
+            hilet margin = std::max(
+                {theme<prefix>.margin_left(this),
+                 theme<prefix>.margin_right(this),
+                 theme<prefix>.margin_top(this),
+                 theme<prefix>.margin_bottom(this)});
             if (safe_rectangle.width() > margin * 2.0f and safe_rectangle.height() > margin * 2.0f) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do
@@ -247,5 +255,4 @@ private:
     decltype(offset_y)::callback_token _offset_y_cbt;
     decltype(minimum)::callback_token _minimum_cbt;
 };
-
 }} // namespace hi::v1

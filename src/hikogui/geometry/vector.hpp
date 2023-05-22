@@ -91,6 +91,21 @@ public:
     {
     }
 
+    [[nodiscard]] constexpr static vector infinity() noexcept
+        requires(D == 2)
+    {
+        return vector{std::numeric_limits<value_type>::infinity(), std::numeric_limits<value_type>::infinity()};
+    }
+
+    [[nodiscard]] constexpr static vector infinity() noexcept
+        requires(D == 3)
+    {
+        return vector{
+            std::numeric_limits<value_type>::infinity(),
+            std::numeric_limits<value_type>::infinity(),
+            std::numeric_limits<value_type>::infinity()};
+    }
+
     /** Access the x element from the vector.
      * @return a reference to the x element.
      */
@@ -283,10 +298,9 @@ public:
      * @param rhs The first vector.
      * @return A vector that points the most left of both vectors, and most downward of both vectors.
      */
-    template<int E>
-    [[nodiscard]] friend constexpr auto min(vector const& lhs, vector<value_type, E> const& rhs) noexcept
+    [[nodiscard]] friend constexpr vector min(vector const& lhs, vector const& rhs) noexcept
     {
-        return vector<value_type, std::max(D, E)>{min(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
+        return vector{min(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
 
     /** Mix the two vectors and get the highest value of each element.
@@ -294,10 +308,9 @@ public:
      * @param rhs The first vector.
      * @return A vector that points the most right of both vectors, and most upward of both vectors.
      */
-    template<int E>
-    [[nodiscard]] friend constexpr auto max(vector const& lhs, vector<value_type, E> const& rhs) noexcept
+    [[nodiscard]] friend constexpr vector max(vector const& lhs, vector const& rhs) noexcept
     {
-        return vector<value_type, std::max(D, E)>{max(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
+        return vector{max(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
 
     /** Round the elements of the vector toward nearest integer.
@@ -415,9 +428,6 @@ using vector2 = geo::vector<float, 2>;
 using vector3 = geo::vector<float, 3>;
 using vector2i = geo::vector<int, 2>;
 using vector3i = geo::vector<int, 3>;
-
-
-
 
 } // namespace hi::inline v1
 
