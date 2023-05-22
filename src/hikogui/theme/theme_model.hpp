@@ -135,8 +135,6 @@ struct theme_sub_model {
     theme_model_length margin_left;
     theme_model_length margin_top;
     theme_model_length margin_right;
-    theme_model_length spacing_vertical;
-    theme_model_length spacing_horizontal;
 
     theme_model_length x_height;
     theme_model_length cap_height;
@@ -162,8 +160,6 @@ struct theme_sub_model {
     uint64_t margin_left_assigned : 1 = 0;
     uint64_t margin_top_assigned : 1 = 0;
     uint64_t margin_right_assigned : 1 = 0;
-    uint64_t spacing_vertical_assigned : 1 = 0;
-    uint64_t spacing_horizontal_assigned : 1 = 0;
 
     uint64_t text_theme_important : 1 = 0;
     uint64_t background_color_important : 1 = 0;
@@ -185,8 +181,6 @@ struct theme_sub_model {
     uint64_t margin_left_important : 1 = 0;
     uint64_t margin_top_important : 1 = 0;
     uint64_t margin_right_important : 1 = 0;
-    uint64_t spacing_vertical_important : 1 = 0;
-    uint64_t spacing_horizontal_important : 1 = 0;
 
     void clear() noexcept
     {
@@ -213,8 +207,6 @@ struct theme_sub_model {
         margin_left = dips{0};
         margin_top = dips{0};
         margin_right = dips{0};
-        spacing_vertical = dips{0};
-        spacing_horizontal = dips{0};
 
         x_height = dips{0};
         cap_height = dips{0};
@@ -240,8 +232,6 @@ struct theme_sub_model {
         margin_left_assigned = 0;
         margin_top_assigned = 0;
         margin_right_assigned = 0;
-        spacing_vertical_assigned = 0;
-        spacing_horizontal_assigned = 0;
 
         text_theme_important = 0;
         background_color_important = 0;
@@ -263,8 +253,6 @@ struct theme_sub_model {
         margin_left_important = 0;
         margin_top_important = 0;
         margin_right_important = 0;
-        spacing_vertical_important = 0;
-        spacing_horizontal_important = 0;
     }
 };
 
@@ -475,18 +463,6 @@ public:
     {
         hilet[model, scale] = get_model_and_scale(delegate);
         return ceil(margins{model.margin_left(scale), model.margin_bottom(scale), model.margin_right(scale), model.margin_top(scale)});
-    }
-
-    [[nodiscard]] float spacing_vertical(theme_delegate auto const *delegate) const noexcept
-    {
-        hilet[model, scale] = get_model_and_scale(delegate);
-        return std::ceil(model.spacing_vertical(scale));
-    }
-
-    [[nodiscard]] float spacing_horizontal(theme_delegate auto const *delegate) const noexcept
-    {
-        hilet[model, scale] = get_model_and_scale(delegate);
-        return std::ceil(model.spacing_horizontal(scale));
     }
 
     [[nodiscard]] float x_height(theme_delegate auto const *delegate) const noexcept

@@ -866,33 +866,6 @@ parse_style_sheet_margin_declarations(It& it, ItEnd last, style_sheet_parser_con
 
 template<typename It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr std::vector<style_sheet_declaration>
-parse_style_sheet_spacing_declarations(It& it, ItEnd last, style_sheet_parser_context& context)
-{
-    auto r = std::vector<style_sheet_declaration>{};
-
-    if (auto lengths = parse_style_sheet_lengths(it, last, context); not lengths.empty()) {
-        if (lengths.size() == 1) {
-            r.emplace_back(style_sheet_declaration_name::spacing_vertical, lengths[0]);
-            r.emplace_back(style_sheet_declaration_name::spacing_horizontal, lengths[0]);
-        } else if (lengths.size() == 2) {
-            r.emplace_back(style_sheet_declaration_name::spacing_vertical, lengths[0]);
-            r.emplace_back(style_sheet_declaration_name::spacing_horizontal, lengths[1]);
-        } else {
-            throw parse_error(std::format(
-                "{} Expect 1 or 2 length values when parsing \"spacing\" declaration, got {}.",
-                token_location(it, last, context.path),
-                lengths.size()));
-        }
-    } else {
-        throw parse_error(std::format(
-            "{} Expect 1 or 2 length values when parsing \"spacing\" declaration.", token_location(it, last, context.path)));
-    }
-
-    return r;
-}
-
-template<typename It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::vector<style_sheet_declaration>
 parse_style_sheet_border_radius_declarations(It& it, ItEnd last, style_sheet_parser_context& context)
 {
     auto r = std::vector<style_sheet_declaration>{};
@@ -1011,9 +984,6 @@ parse_style_sheet_declaration(It& it, ItEnd last, style_sheet_parser_context& co
 
     if (name == "margin") {
         r = parse_style_sheet_margin_declarations(it, last, context);
-
-    } else if (name == "spacing") {
-        r = parse_style_sheet_spacing_declarations(it, last, context);
 
     } else if (name == "border-radius") {
         r = parse_style_sheet_border_radius_declarations(it, last, context);

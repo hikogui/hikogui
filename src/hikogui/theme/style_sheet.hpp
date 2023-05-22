@@ -145,8 +145,6 @@ enum class style_sheet_declaration_name {
     margin_right,
     margin_top,
     selection_color,
-    spacing_horizontal,
-    spacing_vertical,
     width,
 };
 
@@ -175,8 +173,6 @@ constexpr auto style_sheet_declaration_name_metadata = enum_metadata{
     style_sheet_declaration_name::margin_right, "margin-right",
     style_sheet_declaration_name::margin_top, "margin-top",
     style_sheet_declaration_name::selection_color, "selection-color",
-    style_sheet_declaration_name::spacing_horizontal, "spacing-horizontal",
-    style_sheet_declaration_name::spacing_vertical, "spacing-vertical",
     style_sheet_declaration_name::width, "width",
 };
 // clang-format on
@@ -206,8 +202,6 @@ constexpr auto style_sheet_declaration_name_value_mask_metadata = enum_metadata{
     style_sheet_declaration_name::margin_right, style_sheet_value_mask::length,
     style_sheet_declaration_name::margin_top, style_sheet_value_mask::length,
     style_sheet_declaration_name::selection_color, style_sheet_value_mask::color,
-    style_sheet_declaration_name::spacing_horizontal, style_sheet_value_mask::length,
-    style_sheet_declaration_name::spacing_vertical, style_sheet_value_mask::length,
     style_sheet_declaration_name::width, style_sheet_value_mask::length,
 };
 // clang-format on
@@ -412,8 +406,6 @@ private:
     HI_X_LENGTH_VALUE(margin_bottom)
     HI_X_LENGTH_VALUE(margin_right)
     HI_X_LENGTH_VALUE(margin_top)
-    HI_X_LENGTH_VALUE(spacing_horizontal)
-    HI_X_LENGTH_VALUE(spacing_vertical)
 #undef HI_X_LENGTH_VALUE
 
     void _activate_model_declaration(
@@ -473,10 +465,6 @@ private:
             return _activate_model_length<margin_top>(phase, sub_model, value, important);
         case selection_color:
             return _activate_model_color<selection_color>(phase, sub_model, value, important);
-        case spacing_horizontal:
-            return _activate_model_length<spacing_horizontal>(phase, sub_model, value, important);
-        case spacing_vertical:
-            return _activate_model_length<spacing_vertical>(phase, sub_model, value, important);
         case width:
             return _activate_model_length<width>(phase, sub_model, value, important);
         default:

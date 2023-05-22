@@ -55,7 +55,6 @@ Theme value names
   Value            | Type       | Description
  :---------------- |:---------- |:--------------------------------------------------------------
   margin           | colors     | The color.
-  spacing          | colors     | The color.
   fill/color       | colors     | The color.
   outline/color    | colors     | The color.
   outline/width    | colors     | The color.

@@ -179,46 +179,6 @@ struct grid_layout_cell {
         }
     }
 
-    template<hi::axis Axis>
-    [[nodiscard]] constexpr float padding_before(bool forward) const noexcept
-    {
-        if constexpr (Axis == axis::x) {
-            if (forward) {
-                return _constraints.padding.left();
-            } else {
-                return _constraints.padding.right();
-            }
-        } else if constexpr (Axis == axis::y) {
-            if (forward) {
-                return _constraints.padding.bottom();
-            } else {
-                return _constraints.padding.top();
-            }
-        } else {
-            hi_static_no_default();
-        }
-    }
-
-    template<hi::axis Axis>
-    [[nodiscard]] constexpr float padding_after(bool forward) const noexcept
-    {
-        if constexpr (Axis == axis::x) {
-            if (forward) {
-                return _constraints.padding.right();
-            } else {
-                return _constraints.padding.left();
-            }
-        } else if constexpr (Axis == axis::y) {
-            if (forward) {
-                return _constraints.padding.top();
-            } else {
-                return _constraints.padding.bottom();
-            }
-        } else {
-            hi_static_no_default();
-        }
-    }
-
 private:
     box_constraints _constraints;
 };
@@ -254,13 +214,9 @@ public:
          */
         float margin_after = 0.0f;
 
-        /** The left/top padding of the cells.
+        /** Resistance of this cell to change.
          */
-        float padding_before = 0.0f;
-
-        /** The right/bottom padding of the cells.
-         */
-        float padding_after = 0.0f;
+        float resistance = 0.0f;
 
         /** The alignment of the cells.
          */
@@ -333,16 +289,6 @@ public:
     [[nodiscard]] constexpr float margin_after() const noexcept
     {
         return empty() ? 0 : _forward ? back().margin_after : front().margin_after;
-    }
-
-    [[nodiscard]] constexpr float padding_before() const noexcept
-    {
-        return empty() ? 0 : _forward ? front().padding_before : back().padding_before;
-    }
-
-    [[nodiscard]] constexpr float padding_after() const noexcept
-    {
-        return empty() ? 0 : _forward ? back().padding_after : front().padding_after;
     }
 
     [[nodiscard]] constexpr std::tuple<float, float, float> update_constraints() const noexcept
@@ -711,8 +657,7 @@ private:
         auto position = start_position;
         for (auto it = first; it != last; ++it) {
             it->position = position;
-            it->guideline = make_guideline(
-                it->alignment, position, position + it->extent, it->padding_before, it->padding_after, guideline_width);
+            it->guideline = make_guideline(it->alignment, position, position + it->extent, guideline_width);
 
             position += it->extent;
             position += it->margin_after;
@@ -730,8 +675,6 @@ private:
     {
         inplace_max(_constraints[cell.first<axis>()].margin_before, cell.margin_before<axis>(_forward));
         inplace_max(_constraints[cell.last<axis>() - 1].margin_after, cell.margin_after<axis>(_forward));
-        inplace_max(_constraints[cell.first<axis>()].padding_before, cell.padding_before<axis>(_forward));
-        inplace_max(_constraints[cell.last<axis>() - 1].padding_after, cell.padding_after<axis>(_forward));
 
         for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
             _constraints[i].beyond_maximum |= cell.beyond_maximum;
@@ -742,6 +685,7 @@ private:
             inplace_max(_constraints[cell.first<axis>()].minimum, cell.minimum<axis>());
             inplace_max(_constraints[cell.first<axis>()].preferred, cell.preferred<axis>());
             inplace_min(_constraints[cell.first<axis>()].maximum, cell.maximum<axis>());
+            inplace_max(_constraints[cell.first<axis>()].resistance, cell.resistance<axis>());
         }
     }
 
@@ -783,7 +727,7 @@ private:
 
     /** Construct fix-up.
      *
-     * Fix-up minimum, preferred, maximum. And calculate the padding.
+     * Fix-up minimum, preferred, maximum.
      */
     constexpr void construct_fixup() noexcept
     {
@@ -796,14 +740,6 @@ private:
             // Fix the constraints so that minimum <= preferred <= maximum.
             inplace_max(it->preferred, it->minimum);
             inplace_max(it->maximum, it->preferred);
-
-            // Fix the padding, so that it doesn't overlap.
-            if (it->padding_before + it->padding_after > it->minimum) {
-                hilet padding_diff = it->padding_after - it->padding_before;
-                hilet middle = std::clamp(std::floor(it->minimum / 2.0f) + padding_diff, 0.0f, it->minimum);
-                it->padding_after = middle;
-                it->padding_before = it->minimum - middle;
-            }
         }
     }
 
@@ -1104,14 +1040,10 @@ public:
         std::tie(r.minimum.width(), r.preferred.width(), r.maximum.width()) = _column_constraints.update_constraints();
         r.margins.left() = _column_constraints.margin_before();
         r.margins.right() = _column_constraints.margin_after();
-        r.padding.left() = _column_constraints.padding_before();
-        r.padding.right() = _column_constraints.padding_after();
 
         std::tie(r.minimum.height(), r.preferred.height(), r.maximum.height()) = _row_constraints.update_constraints();
         r.margins.bottom() = _row_constraints.margin_after();
         r.margins.top() = _row_constraints.margin_before();
-        r.padding.bottom() = _row_constraints.padding_after();
-        r.padding.top() = _row_constraints.padding_before();
 
         r.alignment = [&] {
             if (num_rows() == 1 and num_columns() == 1) {

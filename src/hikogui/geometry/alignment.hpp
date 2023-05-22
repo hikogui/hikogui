@@ -39,17 +39,15 @@ enum class vertical_alignment : uint8_t {
  * The vertical guideline is mostly used to create a baseline; in this
  * case the guideline_width is set to the cap-height of a font.
  *
- *  - aligned-top: The top of the guideline will be flush with the top-padding.
- *  - aligned-bottom: The bottom of the guideline will be flush with the bottom-padding.
- *  - aligned-middle: The middle of the guideline will be in the middle between bottom and top; clamped by the padding.
+ *  - aligned-top: The top of the guideline will be flush with the top.
+ *  - aligned-bottom: The bottom of the guideline will be flush with the bottom.
+ *  - aligned-middle: The middle of the guideline will be in the middle between bottom and top.
  *  - aligned-none: nullopt.
  *
  * @ingroup geometry
  * @param alignment The vertical alignment how to place the guideline.
  * @param bottom The y-coordinate of the bottom.
  * @param top The y-coordinate of the top.
- * @param padding_bottom Distance from @a bottom that can not be used.
- * @param padding_top Distance from @a top that can not be used.
  * @param guideline_width The thickness of the guideline
  * @return The y-coordinate of the bottom of the guideline.
  * @retval nullopt No alignment, or guideline does not fit in the space.
@@ -58,20 +56,16 @@ enum class vertical_alignment : uint8_t {
     vertical_alignment alignment,
     float bottom,
     float top,
-    float padding_bottom,
-    float padding_top,
     float guideline_width)
 {
     hi_axiom(is_integral_value(bottom));
     hi_axiom(is_integral_value(top));
-    hi_axiom(is_integral_value(padding_bottom));
-    hi_axiom(is_integral_value(padding_top));
     hi_axiom(is_integral_value(guideline_width));
     hi_axiom(bottom <= top);
     hi_axiom(guideline_width >= 0.0f);
 
-    hilet guideline_bottom = bottom + padding_bottom;
-    hilet guideline_top = top - padding_top - guideline_width;
+    hilet guideline_bottom = bottom;
+    hilet guideline_top = top - guideline_width;
     // XXX use std::round when constexpr.
     hilet guideline_middle = static_cast<float>(static_cast<long long>((bottom + top - guideline_width) / 2.0f + 0.5f));
 
@@ -146,17 +140,14 @@ enum class horizontal_alignment : uint8_t {
  * The horizontal guideline is may used to create alignment for text or numerics. The guideline_width
  * should probably be set to zero.
  *
- *  - aligned-left: The left of the guideline will be flush with the left-padding.
- *  - aligned-right: The right of the guideline will be flush with the right-padding.
- *  - aligned-center: The center of the guideline will be in the center between left and right; clamped by the padding.
+ *  - aligned-left: The left of the guideline will be flush with the left.
+ *  - aligned-right: The right of the guideline will be flush with the right.
+ *  - aligned-center: The center of the guideline will be in the center between left and right.
  *  - aligned-none: nullopt.
  *
- * @note The padding is a soft-constraint and may be ignored if needed.
  * @param alignment The horizontal alignment where to put the guideline.
  * @param left The x-coordinate of the left.
  * @param right The x-coordinate of the right.
- * @param padding_left Distance from @a left that can not be used.
- * @param padding_right Distance from @a right that can not be used.
  * @param guideline_width The thickness of the guideline
  * @return The x-coordinate of the left of the guideline.
  * @retval std::nullopt No alignment, or guideline does not fit in the space.
@@ -165,20 +156,16 @@ enum class horizontal_alignment : uint8_t {
     horizontal_alignment alignment,
     float left,
     float right,
-    float padding_left,
-    float padding_right,
     float guideline_width = 0.0f)
 {
     hi_axiom(is_integral_value(left));
     hi_axiom(is_integral_value(right));
-    hi_axiom(is_integral_value(padding_left));
-    hi_axiom(is_integral_value(padding_right));
     hi_axiom(is_integral_value(guideline_width));
     hi_axiom(left <= right);
     hi_axiom(guideline_width >= 0.0f);
 
-    hilet guideline_left = left + padding_left;
-    hilet guideline_right = right - padding_right - guideline_width;
+    hilet guideline_left = left;
+    hilet guideline_right = right - guideline_width;
     // XXX use std::round when constexpr.
     hilet guideline_center = static_cast<float>(static_cast<long long>((left + right - guideline_width) / 2.0f + 0.5f));
 

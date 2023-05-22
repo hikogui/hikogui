@@ -727,64 +727,6 @@ TEST(style_sheet_parser, margin_4)
     ASSERT_EQ(std::get<hi::dips>(rule_set[3].value), hi::dips{40});
 }
 
-TEST(style_sheet_parser, spacing_1)
-{
-    auto css = std::string{
-        "@name \"default\";\n"
-        "@mode light;\n"
-        "\n"
-        "foo {\n"
-        "    spacing : 10;\n"
-        "}\n"};
-    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
-
-    ASSERT_EQ(style_sheet.name, "default");
-    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
-    ASSERT_EQ(style_sheet.size(), 1);
-
-    auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
-    ASSERT_EQ(rule_set.size(), 2);
-
-    ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::spacing_vertical);
-    ASSERT_EQ(rule_set[1].name, hi::style_sheet_declaration_name::spacing_horizontal);
-
-    ASSERT_FALSE(rule_set[0].important);
-    ASSERT_FALSE(rule_set[1].important);
-
-    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::dips{10});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::dips{10});
-}
-
-TEST(style_sheet_parser, spacing_2)
-{
-    auto css = std::string{
-        "@name \"default\";\n"
-        "@mode light;\n"
-        "\n"
-        "foo {\n"
-        "    spacing : 10 pt 20;\n"
-        "}\n"};
-    auto style_sheet = hi::parse_style_sheet(css, std::filesystem::path{"theme.css"});
-
-    ASSERT_EQ(style_sheet.name, "default");
-    ASSERT_EQ(style_sheet.mode, hi::theme_mode::light);
-    ASSERT_EQ(style_sheet.size(), 1);
-
-    auto& rule_set = style_sheet[0];
-    ASSERT_EQ(rule_set.get_selector_as_string(), "/**/foo");
-    ASSERT_EQ(rule_set.size(), 2);
-
-    ASSERT_EQ(rule_set[0].name, hi::style_sheet_declaration_name::spacing_vertical);
-    ASSERT_EQ(rule_set[1].name, hi::style_sheet_declaration_name::spacing_horizontal);
-
-    ASSERT_FALSE(rule_set[0].important);
-    ASSERT_FALSE(rule_set[1].important);
-
-    ASSERT_EQ(std::get<hi::dips>(rule_set[0].value), hi::points{10});
-    ASSERT_EQ(std::get<hi::dips>(rule_set[1].value), hi::dips{20});
-}
-
 TEST(style_sheet_parser, state_disabled)
 {
     auto css = std::string{
