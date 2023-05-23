@@ -140,12 +140,12 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr float resistance() const noexcept
+    [[nodiscard]] constexpr float priority() const noexcept
     {
         if constexpr (Axis == axis::x) {
-            return _constraints.resistance.x();
+            return _constraints.priority.x();
         } else if constexpr (Axis == axis::y) {
-            return _constraints.resistance.y();
+            return _constraints.priority.y();
         } else {
             hi_static_no_default();
         }
@@ -216,7 +216,7 @@ public:
 
         /** The maximum width/height of the cells.
          */
-        float maximum = std::numeric_limits<float>::max();
+        float maximum = std::numeric_limits<float>::infinity();
 
         /** The left/top margin of the cells.
          */
@@ -226,9 +226,9 @@ public:
          */
         float margin_after = 0.0f;
 
-        /** Resistance of this cell to change.
+        /** priority of this cell to change.
          */
-        float resistance = 0.0f;
+        float priority = -std::numeric_limits<float>::infinity();
 
         /** The alignment of the cells.
          */
@@ -343,15 +343,14 @@ public:
      *
      * The algorithm works as follows:
      *  1. Initialize each cell based on its preferred size.
-     *  2. While the grid needs to be shrunk:
-     *    a. Calculate the amount of cells that are allowed to shrink.
-     *    b. Apply shrinkage to the cells that are allowed to, up to the minimum.
-     *    c. If all the cells are maximum shrunk, stop.
-     *  3. While the grid needs to be expanded:
-     *    a. Calculate the amount of cells that are allowed to expand.
-     *    b. Apply expansion to the cells that are allowed to, up to the maximum.
-     *    c. If all the cells are maximum expanded, goto 4.
-     *  4. Expand the largest cell to make it fit.
+     *  2. While the grid needs to be shrunk and not all cells are at minimum:
+     *    a. divide the amount of required shrinkage over the cells based on
+     *       their priority.
+     *  3. While the grid needs to be expanded and not all cells are at maximum:
+     *    a. divide the amount of required growth over the cells based on
+     *       their priority.
+     *  4. Expand the cell with the lowest priority
+     *     (on tie the largest, on tie the last) to make it fit.
      *
      * In an emergency widgets will get a size larger than its maximum. However
      * widgets will never get a smaller size than its minimum.
@@ -369,43 +368,17 @@ public:
             constraint.extent = constraint.preferred;
         }
 
-        // If the total extent is too large, shrink the constraints that allow to be shrunk.
-        auto [total_extent, count] = layout_shrink(begin(), end());
-        while (total_extent > new_extent and count != 0) {
-            // The result may shrink slightly too much, which will be fixed by expanding in the next loop.
-            std::tie(total_extent, count) = layout_shrink(begin(), end(), total_extent - new_extent, count);
-        }
+        auto current_extent = extent(begin(), end());
+        if (new_extent < current_extent) {
+            layout_shrink(begin(), end(), current_extent, new_extent);
 
-        // If the total extent is too small, expand the constraints that allow to be grown.
-        std::tie(total_extent, count) = layout_expand(begin(), end());
-        while (total_extent < new_extent and count != 0) {
-            // The result may expand slightly too much, we don't care.
-            std::tie(total_extent, count) = layout_expand(begin(), end(), new_extent - total_extent, count);
-        }
+        } else if (new_extent > current_extent) {
+            layout_grow(begin(), end(), current_extent, new_extent);
 
-        // If the total extent is still too small, expand into the cells that are marked beyond_maximum.
-        if (total_extent < new_extent) {
-            // The result may expand slightly too much, we don't care.
-            count = std::count_if(begin(), end(), [](hilet& item) {
-                return item.beyond_maximum;
-            });
-            if (count) {
-                hilet count_ = narrow_cast<float>(count);
-                hilet todo = new_extent - total_extent;
-                hilet per_extent = std::floor((todo + count_ - 1.0f) / count_);
-                for (auto& constraint : _constraints) {
-                    if (constraint.beyond_maximum) {
-                        constraint.extent += per_extent;
-                    }
-                }
+            current_extent = extent(begin(), end());
+            if (new_extent > current_extent) {
+                layout_balloon(begin(), end(), current_extent, new_extent);
             }
-            total_extent = extent(cbegin(), cend());
-        }
-
-        // If the total extent is still too small, expand the first constrain above the maximum size.
-        if (total_extent < new_extent and not empty()) {
-            // The result may expand slightly too much, we don't care.
-            front().extent += new_extent - total_extent;
         }
 
         if (_forward) {
@@ -574,94 +547,155 @@ private:
      */
     bool _forward = true;
 
-    /** Shrink cells.
+    /** Find the number of cells that can be resized at a given priority.
      *
-     * This function is called in two different ways:
-     *  - First without @a extra and @a count to get the number of pixels of the cells and the number
-     *    of cells that shrink further. These values are used to calculate @a extra and @a count
-     *    of the next iteration.
-     *  - Continued with @a extra and @a count filled in.
-     *
-     * @note Must be called after `layout_initialize()`.
-     * @note It is undefined behavior to pass zero in @a count.
-     * @param first The iterator to the first cell to shrink.
-     * @param last The iterator to beyond the last cell to shrink.
-     * @param extra The total number of pixels to shrink spread over the cells
-     * @param count The number of cells between first/last that can be shrunk, from previous iteration.
-     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can shrink more.
+     * @param first An iterator to the first cell.
+     * @param last An iterator beyond the last cell.
+     * @param priority The minimum priority of cells that are counted.
+     * @return The number of cells of a higher or equal priority that can be resized in a direction.
      */
-    [[nodiscard]] constexpr std::pair<float, size_t>
-    layout_shrink(const_iterator first, const_iterator last, float extra = 0.0f, size_t count = 1) noexcept
+    template<bool Grow>
+    [[nodiscard]] constexpr size_t num_resizable(const_iterator first, const_iterator last, float priority) const noexcept
     {
-        hilet first_ = begin() + std::distance(cbegin(), first);
-        hilet last_ = begin() + std::distance(cbegin(), last);
+        if constexpr (Grow) {
+            return std::count_if(first, last, [priority](hilet& x) {
+                return x.priority >= priority and x.extent < x.maximum;
+            });
 
-        hi_axiom(extra >= 0);
-
-        hilet count_ = narrow_cast<float>(count);
-        hilet extra_per = std::floor((extra + count_ - 1.0f) / count_);
-
-        auto new_extent = 0.0f;
-        auto new_count = 0_uz;
-        for (auto it = first_; it != last_; ++it) {
-            it->extent = it->extent - std::max(extra_per, it->extent - it->minimum);
-
-            if (it != first_) {
-                new_extent += it->margin_before;
-            }
-            new_extent += it->extent;
-
-            if (it->extent > it->minimum) {
-                ++new_count;
-            }
+        } else {
+            return std::count_if(first, last, [priority](hilet& x) {
+                return x.priority >= priority and x.extent > x.minimum;
+            });
         }
-
-        return {new_extent, new_count};
     }
 
-    /** Expand cells.
+    /** Find the next lower priority.
      *
-     * This function is called in two different ways:
-     *  - First without @a extra and @a count to get the number of pixels of the cells and the number
-     *    of cells that expand further. These values are used to calculate @a extra and @a count
-     *    of the next iteration.
-     *  - Continued with @a extra and @a count filled in.
+     * @param first An iterator to the first cell.
+     * @param last An iterator beyond the last cell.
+     * @param base_priority The priority to use as a base-line to find the next lower priority.
+     * @return The next lower priority or -inf.
+     */
+    [[nodiscard]] constexpr float lower_priority(const_iterator first, const_iterator last, float base_priority) const noexcept
+    {
+        // Find the next highest priority less than new_priority.
+        return std::accumulate(first, last, -std::numeric_limits<float>::infinity(), [base_priority](hilet& a, hilet& x) {
+            return std::max(a, x.priority < base_priority ? x.priority : a);
+        });
+    }
+
+    /** Find resizable cells at the current or lower priority.
+     *
+     * @param first The iterator to the first cell.
+     * @param last The iterator beyond the last cell.
+     * @param priority The priority to start the search for cells for.
+     * @return The number of cells that can be resized, the priority at which those cells should be resized.
+     *         Or zero number of cells and -inf priority.
+     */
+    template<bool Grow>
+    [[nodiscard]] constexpr std::pair<size_t, float>
+    find_resizable(const_iterator first, const_iterator last, float priority) const noexcept
+    {
+        auto count = num_resizable<Grow>(first, last, priority);
+        while (count == 0 and priority != -std::numeric_limits<float>::infinity()) {
+            priority = lower_priority(first, last, priority);
+            count = num_resizable<Grow>(first, last, priority);
+        }
+        return {count, priority};
+    }
+
+    /** Resize cells.
      *
      * @note Must be called after `layout_initialize()`.
-     * @note It is undefined behavior to pass zero in @a count.
-     * @param first The iterator to the first cell to expand.
-     * @param last The iterator to beyond the last cell to expand.
-     * @param extra The total number of pixels to expand spread over the cells
-     * @param count The number of cells between first/last that can be expanded, from previous iteration.
-     * @return Number of pixels of the cells and inner-margins, number of cells in the range that can expand more.
+     * @note It is undefined behaviour to pass zero in @a num_resizable.
+     * @note It is undefined behaviour to pass zero in @a total_resize.
+     * @param first The iterator to the first cell to resize.
+     * @param last The iterator to beyond the last cell to resize.
+     * @param total_resize The total number of pixels to resize spread over the cells
+     * @param num_resizable The number of cells between first/last that can be resized, from previous iteration.
+     * @param priority The priority of the cells to resize.
      */
-    [[nodiscard]] constexpr std::pair<float, size_t>
-    layout_expand(const_iterator first, const_iterator last, float extra = 0.0f, size_t count = 1) noexcept
+    template<bool Grow>
+    [[nodiscard]] constexpr void
+    layout_resize(iterator first, iterator last, float total_resize, size_t num_resizable, float priority) noexcept
     {
-        hilet first_ = begin() + std::distance(cbegin(), first);
-        hilet last_ = begin() + std::distance(cbegin(), last);
+        hi_axiom(num_resizable > 0);
+        hi_axiom(total_resize > 0.0f);
+        hi_axiom(is_integral_value(total_resize));
 
-        hi_axiom(extra >= 0.0f);
+        // Over-estimate how many pixels each cell needs to shrink.
+        // This is compensated by keeping track of how much is left to shrink in `total_shrink`.
+        hilet resize_per_cell = std::ceil(total_resize / narrow_cast<float>(num_resizable));
 
-        hilet count_ = narrow_cast<float>(count);
-        hilet extra_per = std::floor((extra + count_ - 1) / count_);
+        for (auto it = first; it != last; ++it) {
+            if (it->priority >= priority) {
+                // Calculate the amount that this cell can maximum resize.
+                hilet maximum_resize = Grow ? it->maximum - it->extent : it->extent - it->minimum;
+                hilet actual_resize = std::min({resize_per_cell, total_resize, maximum_resize});
 
-        auto new_extent = 0.0f;
-        auto new_count = 0_uz;
-        for (auto it = first_; it != last_; ++it) {
-            it->extent = it->extent + std::min(extra_per, it->maximum - it->extent);
-
-            if (it != first_) {
-                new_extent += it->margin_before;
-            }
-            new_extent += it->extent;
-
-            if (it->extent < it->maximum) {
-                ++new_count;
+                it->extent += Grow ? actual_resize : -actual_resize;
+                total_resize -= actual_resize;
             }
         }
+    }
 
-        return {new_extent, new_count};
+    [[nodiscard]] constexpr void layout_shrink(iterator first, iterator last, float current_extent, float new_extent) noexcept
+    {
+        auto priority = std::numeric_limits<float>::infinity();
+        while (new_extent < current_extent) {
+            hilet[num_resizable, new_priority] = find_resizable<false>(begin(), end(), priority);
+            if (num_resizable == 0) {
+                break;
+            }
+
+            layout_resize<false>(begin(), end(), current_extent - new_extent, num_resizable, new_priority);
+
+            current_extent = extent(begin(), end());
+            priority = new_priority;
+        }
+    }
+
+    [[nodiscard]] constexpr void layout_grow(iterator first, iterator last, float current_extent, float new_extent) noexcept
+    {
+        auto priority = std::numeric_limits<float>::infinity();
+        while (new_extent > current_extent) {
+            hilet[num_resizable, new_priority] = find_resizable<true>(begin(), end(), priority);
+            if (num_resizable == 0) {
+                break;
+            }
+
+            layout_resize<true>(begin(), end(), new_extent - current_extent, num_resizable, new_priority);
+
+            current_extent = extent(begin(), end());
+            priority = new_priority;
+        }
+    }
+
+    [[nodiscard]] constexpr void layout_balloon(iterator first, iterator last, float current_extent, float new_extent) noexcept
+    {
+        hilet priority = lower_priority(first, last, std::numeric_limits<float>::infinity());
+        hilet num_resizable = std::count_if(first, last, [priority](hilet& x) {
+            return x.priority >= priority;
+        });
+        hi_axiom(num_resizable > 0);
+
+        auto total_resize = new_extent - current_extent;
+        hi_axiom(total_resize > 0.0f);
+        hi_axiom(is_integral_value(total_resize));
+
+        // Over-estimate how many pixels each cell needs to shrink.
+        // This is compensated by keeping track of how much is left to shrink in `total_shrink`.
+        hilet resize_per_cell = std::ceil(total_resize / narrow_cast<float>(num_resizable));
+
+        // We only need to iterate once, as there is no maximum that a cell can grow.
+        for (auto it = first; it != last; ++it) {
+            if (it->priority >= priority) {
+                hilet actual_resize = std::min(resize_per_cell, total_resize);
+
+                it->extent += actual_resize;
+                total_resize -= actual_resize;
+            }
+        }
     }
 
     constexpr void layout_position(auto first, auto last, float start_position, float guideline_width) noexcept
@@ -697,7 +731,7 @@ private:
             inplace_max(_constraints[cell.first<axis>()].minimum, cell.minimum<axis>());
             inplace_max(_constraints[cell.first<axis>()].preferred, cell.preferred<axis>());
             inplace_min(_constraints[cell.first<axis>()].maximum, cell.maximum<axis>());
-            inplace_min(_constraints[cell.first<axis>()].resistance, cell.resistance<axis>());
+            inplace_max(_constraints[cell.first<axis>()].priority, cell.priority<axis>());
         }
     }
 
@@ -874,7 +908,6 @@ private:
         return guideline(cbegin() + i);
     }
 };
-
 } // namespace detail
 
 /** Grid layout algorithm.
@@ -1131,5 +1164,4 @@ private:
         }
     }
 };
-
 }} // namespace hi::v1
