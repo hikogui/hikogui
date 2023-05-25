@@ -49,8 +49,7 @@ public:
         return rhs;
     }
 
-    template<typename O>
-    [[nodiscard]] constexpr axis_aligned_rectangle<O> operator*(axis_aligned_rectangle<O> const& rhs) const noexcept
+    [[nodiscard]] constexpr axis_aligned_rectangle operator*(axis_aligned_rectangle const& rhs) const noexcept
     {
         return rhs;
     }

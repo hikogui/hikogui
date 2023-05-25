@@ -539,7 +539,7 @@ parse_style_sheet_length(It& it, ItEnd last, style_sheet_parser_context& context
                 return em_quads(static_cast<double>(it[0]));
             } else {
                 throw parse_error(std::format(
-                    "{} Expected either \"pt\", \"cm\", \"in\", \"em\" or \"px\" after number",
+                    "{} Expected either \"dp\", \"pt\", \"mm\", \"cm\", \"dm\", \"m\", \"in\", \"px\" or \"em\" after number",
                     token_location(it, last, context.path)));
             }
         }();

@@ -91,15 +91,25 @@
     font-style: italic;
 }
 
+window {
+    border-width: 0dp;
+}
+
 toggle {
-    width: 20dp;
-    height: 10dp;
-    border-radius: 5dp;
+    width: 30dp;
+    height: 14dp;
+    border-radius: 7dp;
 }
 
 toggle > pip {
-    width: 8dp;
-    height: 8dp;
-    border-radius: 4dp;
+    width: 10dp;
+    height: 10dp;
+    border-radius: 5dp;
+    border-color: foreground;
+    background-color: foreground;
 }
 
+toggle > pip:on {
+    border-color: blue;
+    background-color: blue;
+}

@@ -132,6 +132,22 @@ private:
     enum class state_type : uint8_t {
         idle,
         zero,
+        zero_b,
+        zero_B,
+        zero_o,
+        zero_O,
+        zero_d,
+        zero_D,
+        zero_x,
+        zero_X,
+        zero_b_id,
+        zero_B_id,
+        zero_o_id,
+        zero_O_id,
+        zero_d_id,
+        zero_D_id,
+        zero_x_id,
+        zero_X_id,
         bin_integer,
         oct_integer,
         dec_integer,
@@ -753,10 +769,40 @@ private:
 
         add(zero, any, idle, token::integer);
         add(zero, ".", dec_float, advance, capture);
-        add(zero, "bB", bin_integer, advance, capture);
-        add(zero, "oO", oct_integer, advance, capture);
-        add(zero, "dD", dec_integer, advance, capture);
-        add(zero, "xX", hex_integer, advance, capture);
+        add(zero, "b", zero_b, advance);
+        add(zero, "B", zero_B, advance);
+        add(zero, "o", zero_o, advance);
+        add(zero, "O", zero_O, advance);
+        add(zero, "d", zero_d, advance);
+        add(zero, "D", zero_D, advance);
+        add(zero, "x", zero_x, advance);
+        add(zero, "X", zero_X, advance);
+
+        add(zero_b, any, zero_b_id, token::integer);
+        add(zero_B, any, zero_B_id, token::integer);
+        add(zero_o, any, zero_o_id, token::integer);
+        add(zero_O, any, zero_O_id, token::integer);
+        add(zero_d, any, zero_d_id, token::integer);
+        add(zero_D, any, zero_D_id, token::integer);
+        add(zero_x, any, zero_x_id, token::integer);
+        add(zero_X, any, zero_X_id, token::integer);
+        add(zero_b, "0123456789", bin_integer, 'b');
+        add(zero_B, "0123456789", bin_integer, 'B');
+        add(zero_o, "0123456789", oct_integer, 'o');
+        add(zero_O, "0123456789", oct_integer, 'O');
+        add(zero_d, "0123456789", dec_integer, 'd');
+        add(zero_D, "0123456789", dec_integer, 'D');
+        add(zero_x, "0123456789.", hex_integer, 'x');
+        add(zero_X, "0123456789.", hex_integer, 'X');
+
+        add(zero_b_id, any, identifier, 'b');
+        add(zero_B_id, any, identifier, 'B');
+        add(zero_o_id, any, identifier, 'o');
+        add(zero_O_id, any, identifier, 'O');
+        add(zero_d_id, any, identifier, 'd');
+        add(zero_D_id, any, identifier, 'D');
+        add(zero_x_id, any, identifier, 'x');
+        add(zero_X_id, any, identifier, 'X');
 
         if constexpr (Config.zero_starts_octal) {
             add(zero, "01234567", oct_integer, advance, capture);
@@ -783,10 +829,10 @@ private:
         add(dec_integer, "E", dec_integer_found_E, advance);
         add(dec_integer_found_e, any, dec_integer_found_e_id, token::integer);
         add(dec_integer_found_E, any, dec_integer_found_E_id, token::integer);
-        add(dec_integer_found_e_id, any, identifier, 'e');
-        add(dec_integer_found_E_id, any, identifier, 'E');
         add(dec_integer_found_e, "+-0123456789", dec_sign_exponent, 'e');
         add(dec_integer_found_E, "+-0123456789", dec_sign_exponent, 'E');
+        add(dec_integer_found_e_id, any, identifier, 'e');
+        add(dec_integer_found_E_id, any, identifier, 'E');
 
         // hexadecimal-integer
         add(hex_integer, any, idle, token::integer);
@@ -802,10 +848,10 @@ private:
         add(dec_float, "E", dec_float_found_E, advance);
         add(dec_float_found_e, any, dec_float_found_e_id, token::real);
         add(dec_float_found_E, any, dec_float_found_E_id, token::real);
-        add(dec_float_found_e_id, any, identifier, 'e');
-        add(dec_float_found_E_id, any, identifier, 'E');
         add(dec_float_found_e, "+-0123456789", dec_sign_exponent, 'e');
         add(dec_float_found_E, "+-0123456789", dec_sign_exponent, 'E');
+        add(dec_float_found_e_id, any, identifier, 'e');
+        add(dec_float_found_E_id, any, identifier, 'E');
 
         add(dec_sign_exponent, any, idle, token::error_incomplete_exponent);
         add(dec_sign_exponent, "0123456789", dec_exponent_more, advance, capture);

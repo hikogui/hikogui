@@ -55,13 +55,13 @@ public:
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr explicit translate(axis_aligned_rectangle<value_type> const& other) noexcept :
+    [[nodiscard]] constexpr explicit translate(axis_aligned_rectangle const& other) noexcept :
         _v(static_cast<array_type>(get<0>(other)).xy00())
     {
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr explicit translate(axis_aligned_rectangle<value_type> const& other, value_type z) noexcept
+    [[nodiscard]] constexpr explicit translate(axis_aligned_rectangle const& other, value_type z) noexcept
         requires(D == 3)
         : _v(static_cast<array_type>(get<0>(other)).xy00())
     {
@@ -153,8 +153,8 @@ public:
      * @return Translation to move the src_rectangle into the dst_rectangle.
      */
     [[nodiscard]] constexpr static translate align(
-        axis_aligned_rectangle<value_type> src_rectangle,
-        axis_aligned_rectangle<value_type> dst_rectangle,
+        axis_aligned_rectangle src_rectangle,
+        axis_aligned_rectangle dst_rectangle,
         alignment alignment) noexcept
     {
         auto x = value_type{0};
@@ -215,14 +215,14 @@ public:
         return point<value_type, std::max(D, E)>{_v + static_cast<array_type>(rhs)};
     }
 
-    [[nodiscard]] constexpr axis_aligned_rectangle<value_type>
-    operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept
+    [[nodiscard]] constexpr axis_aligned_rectangle
+    operator*(axis_aligned_rectangle const& rhs) const noexcept
         requires(D == 2)
     {
-        return axis_aligned_rectangle<value_type>{*this * get<0>(rhs), *this * get<3>(rhs)};
+        return axis_aligned_rectangle{*this * get<0>(rhs), *this * get<3>(rhs)};
     }
 
-    [[nodiscard]] constexpr rectangle operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(axis_aligned_rectangle const& rhs) const noexcept
         requires std::is_same_v<value_type, float> and (D == 3)
     {
         return *this * rectangle{rhs};

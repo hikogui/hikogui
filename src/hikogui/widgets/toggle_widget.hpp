@@ -111,6 +111,7 @@ public:
             process_event({gui_event_type::window_redraw});
         });
         this->delegate->init(*this);
+        (*_delegate_cbt)();
     }
 
     /** Construct a toggle widget with a default button delegate.
@@ -183,14 +184,13 @@ public:
     {
         for (auto& cell : _grid) {
             if (cell.value == cell_type::toggle) {
-                cell.set_constraints(
-                    box_constraints{
-                        theme<prefix>.size(this),
-                        theme<prefix>.size(this),
-                        theme<prefix>.size(this),
-                        *alignment,
-                        theme<prefix>.margin(this),
-                        -vector2::infinity()});
+                cell.set_constraints(box_constraints{
+                    theme<prefix>.size(this),
+                    theme<prefix>.size(this),
+                    theme<prefix>.size(this),
+                    *alignment,
+                    theme<prefix>.margin(this),
+                    -vector2::infinity()});
 
             } else if (cell.value == cell_type::label) {
                 cell.set_constraints(
@@ -208,17 +208,19 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(this->layout, context)) {
+        if (compare_store(layout, context)) {
             _grid.set_layout(context.shape, theme<prefix>.cap_height(this));
         }
 
         for (hilet& cell : _grid) {
             if (cell.value == cell_type::toggle) {
+                _toggle_rectangle = align(cell.shape.rectangle, theme<prefix>.size(this), *alignment);
+
                 // The distance between bottom of the 'pip' and bottom of the 'toggle'
                 // is equal to the distance between the left of the 'pip' and
                 // the left of the 'toggle'.
-                _pip_edge_distance = (cell.shape.height() - theme<prefix / "pip">.height(this)) / 2;
-                _pip_move_range = cell.shape.width() - _pip_edge_distance * 2 - theme<prefix / "pip">.width(this);
+                _pip_edge_distance = (_toggle_rectangle.height() - theme<prefix / "pip">.height(this)) / 2;
+                _pip_move_range = _toggle_rectangle.width() - _pip_edge_distance * 2 - theme<prefix / "pip">.width(this);
 
             } else if (cell.value == cell_type::label) {
                 _on_label_widget->set_layout(context.transform(cell.shape, 0.0f));
@@ -233,11 +235,11 @@ public:
 
     void draw(widget_draw_context& context) noexcept override
     {
-        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
+        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             for (hilet& cell : _grid) {
                 if (cell.value == cell_type::toggle) {
-                    draw_toggle_button(context, cell.shape);
-                    draw_toggle_pip(context, cell.shape);
+                    draw_toggle_button(context, _toggle_rectangle);
+                    draw_toggle_pip(context, _toggle_rectangle);
 
                 } else if (cell.value == cell_type::label) {
                     _on_label_widget->draw(context);
@@ -279,7 +281,7 @@ public:
     {
         hi_assert_not_null(delegate);
         delegate->activate(*this);
-        this->_state_changed();
+        _state_changed();
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -331,15 +333,17 @@ private:
 
     notifier<>::callback_token _delegate_cbt;
 
+    aarectangle _toggle_rectangle;
+
     animator<float> _animated_value = _animation_duration;
     float _pip_move_range;
     float _pip_edge_distance;
 
-    void draw_toggle_button(widget_draw_context& context, box_shape const& shape) noexcept
+    void draw_toggle_button(widget_draw_context& context, aarectangle shape) noexcept
     {
         context.draw_box(
-            this->layout,
-            shape.rectangle,
+            layout,
+            shape,
             theme<prefix>.background_color(this),
             theme<prefix>.border_color(this),
             theme<prefix>.border_width(this),
@@ -347,11 +351,11 @@ private:
             theme<prefix>.border_radius(this));
     }
 
-    void draw_toggle_pip(widget_draw_context& context, box_shape const& shape) noexcept
+    void draw_toggle_pip(widget_draw_context& context, aarectangle shape) noexcept
     {
-        _animated_value.update(this->state != widget_state::off ? 1.0f : 0.0f, context.display_time_point);
+        _animated_value.update(state != widget_state::off ? 1.0f : 0.0f, context.display_time_point);
         if (_animated_value.is_animating()) {
-            this->request_redraw();
+            request_redraw();
         }
 
         hilet move_offset = [&] {
@@ -362,12 +366,11 @@ private:
             }
         }();
 
-        hilet pip_rectangle = aarectangle{point2{_pip_edge_distance, _pip_edge_distance}, theme<prefix / "pip">.size(this)};
-        hilet pip_rectangle_ =
-            translate3{move_offset + shape.x(), 0.0f + shape.y(), 0.1f} * narrow_cast<aarectangle>(pip_rectangle);
+        hilet pip_translate = translate3{shape.x() + _pip_edge_distance + move_offset, shape.y() + _pip_edge_distance, 0.1f};
+        hilet pip_rectangle = pip_translate *aarectangle{theme<prefix / "pip">.size(this)};
 
         context.draw_box(
-            this->layout,
+            layout,
             pip_rectangle,
             theme<prefix / "pip">.background_color(this),
             theme<prefix / "pip">.border_color(this),
@@ -409,5 +412,4 @@ private:
         }
     }
 };
-
 }} // namespace hi::v1

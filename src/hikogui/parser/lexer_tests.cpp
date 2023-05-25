@@ -22,7 +22,7 @@ TEST(lexer, integer_literal_e)
     auto it = c_lexer.parse("42e");
     ASSERT_EQ(*it, hi::token(hi::token::integer, "42", 0));
     ++it;
-    // Do to 'e' maybe being exponent the column-nr was advanced already.
+    // Due to 'e' maybe being exponent the column-nr was advanced already.
     ASSERT_EQ(*it, hi::token(hi::token::id, "e", 3));
     ++it;
     ASSERT_EQ(it, std::default_sentinel);
@@ -135,6 +135,18 @@ TEST(lexer, hex_integer_literal_sigma)
     ASSERT_EQ(it, std::default_sentinel);
 }
 
+TEST(lexer, integer_literal_d)
+{
+    constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
+
+    auto it = c_lexer.parse("0dp");
+    ASSERT_EQ(*it, hi::token(hi::token::integer, "0", 0));
+    ++it;
+    // Due to 'd' maybe being decimal-indicator the column-nr was advanced already.
+    ASSERT_EQ(*it, hi::token(hi::token::id, "dp", 2));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
+}
 
 TEST(lexer, dec_integer_literal1)
 {

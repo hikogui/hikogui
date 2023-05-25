@@ -673,6 +673,10 @@ private:
 
     [[nodiscard]] constexpr void layout_balloon(iterator first, iterator last, float current_extent, float new_extent) noexcept
     {
+        if (first == last) {
+            return;
+        }
+
         hilet priority = lower_priority(first, last, std::numeric_limits<float>::infinity());
         hilet num_resizable = std::count_if(first, last, [priority](hilet& x) {
             return x.priority >= priority;

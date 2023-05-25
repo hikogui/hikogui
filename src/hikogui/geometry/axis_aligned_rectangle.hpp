@@ -20,14 +20,14 @@
 
 namespace hi { inline namespace v1 {
 namespace geo {
+
 /** Class which represents an axis-aligned rectangle.
  * @ingroup geometry
  */
-template<typename T>
 class axis_aligned_rectangle {
 public:
-    using value_type = T;
-    using array_type = simd<value_type, 4>;
+    using value_type = float;
+    using array_type = f32x4;
 
     constexpr axis_aligned_rectangle() noexcept : v() {}
     constexpr axis_aligned_rectangle(axis_aligned_rectangle const& rhs) noexcept = default;
@@ -441,7 +441,6 @@ public:
     }
 
     [[nodiscard]] friend constexpr axis_aligned_rectangle round(axis_aligned_rectangle const& rhs) noexcept
-        requires std::is_same_v<value_type, float>
     {
         hilet p0 = round(get<0>(rhs));
         hilet size = round(rhs.size());
@@ -451,7 +450,6 @@ public:
     /** Round rectangle by expanding to pixel edge.
      */
     [[nodiscard]] friend constexpr axis_aligned_rectangle ceil(axis_aligned_rectangle const& rhs) noexcept
-        requires std::is_same_v<value_type, float>
     {
         hilet p0 = floor(get<0>(rhs));
         hilet p3 = ceil(get<3>(rhs));
@@ -471,7 +469,6 @@ public:
     /** Round rectangle by shrinking to pixel edge.
      */
     [[nodiscard]] friend constexpr axis_aligned_rectangle floor(axis_aligned_rectangle const& rhs) noexcept
-        requires std::is_same_v<value_type, float>
     {
         hilet p0 = ceil(get<0>(rhs));
         hilet p3 = floor(get<3>(rhs));
@@ -498,7 +495,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr friend value_type
+    [[nodiscard]] friend value_type
     distance(axis_aligned_rectangle const& lhs, point<value_type, 2> const& rhs) noexcept
     {
         hilet lhs_ = static_cast<array_type>(lhs);
@@ -520,7 +517,7 @@ private:
 
 } // namespace geo
 
-using aarectangle = geo::axis_aligned_rectangle<float>;
+using aarectangle = geo::axis_aligned_rectangle;
 
 /** Make a rectangle fit inside bounds.
  * This algorithm will try to first move the rectangle and resist resizing it.
@@ -533,10 +530,10 @@ using aarectangle = geo::axis_aligned_rectangle<float>;
 
 }} // namespace hi::v1
 
-template<typename T>
-class std::atomic<hi::geo::axis_aligned_rectangle<T>> {
+template<>
+class std::atomic<hi::geo::axis_aligned_rectangle> {
 public:
-    using value_type = hi::geo::axis_aligned_rectangle<T>;
+    using value_type = hi::geo::axis_aligned_rectangle;
     static constexpr bool is_always_lock_free = false;
 
     constexpr atomic() noexcept = default;
@@ -635,26 +632,13 @@ private:
 };
 
 template<typename CharT>
-struct std::formatter<hi::geo::axis_aligned_rectangle<float>, CharT> {
+struct std::formatter<hi::geo::axis_aligned_rectangle, CharT> {
     auto parse(auto& pc)
     {
         return pc.end();
     }
 
-    auto format(hi::geo::axis_aligned_rectangle<float> const& t, auto& fc)
-    {
-        return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
-    }
-};
-
-template<typename CharT>
-struct std::formatter<hi::geo::axis_aligned_rectangle<int>, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
-    auto format(hi::geo::axis_aligned_rectangle<int> const& t, auto& fc)
+    auto format(hi::geo::axis_aligned_rectangle const& t, auto& fc)
     {
         return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
     }

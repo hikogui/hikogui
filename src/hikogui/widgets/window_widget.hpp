@@ -168,6 +168,16 @@ public:
     void draw(widget_draw_context& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
+            context.draw_box(
+                layout,
+                layout.shape.rectangle,
+                theme<prefix>.background_color(this),
+                theme<prefix>.border_color(this),
+                theme<prefix>.border_width(this),
+                border_side::outside,
+                theme<prefix>.border_radius(this)
+            );
+
             _toolbar->draw(context);
             _content->draw(context);
         }
