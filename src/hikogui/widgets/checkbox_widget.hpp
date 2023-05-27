@@ -84,19 +84,29 @@ public:
         checkbox_widget_attribute auto&&...attributes) noexcept :
         super(parent), delegate(std::move(delegate))
     {
+        hi_assert_not_null(this->delegate);
         this->set_attributes<0>(hi_forward(attributes)...);
 
         _on_label_widget = std::make_unique<label_widget<prefix / "on">>(this, on_label, alignment);
         _off_label_widget = std::make_unique<label_widget<prefix / "off">>(this, off_label, alignment);
         _other_label_widget = std::make_unique<label_widget<prefix / "other">>(this, other_label, alignment);
 
+        _grid.add_cell(0, 0, cell_type::button);
+        _grid.add_cell(1, 0, cell_type::label);
+
         _delegate_cbt = this->delegate->subscribe([&] {
             ++global_counter<"checkbox_widget:delegate:redraw">;
             hi_assert_not_null(this->delegate);
             state = this->delegate->state(this);
+
+            _on_label_widget->mode = *state == widget_state::on ? widget_mode::display : widget_mode::invisible;
+            _off_label_widget->mode = *state == widget_state::off ? widget_mode::display : widget_mode::invisible;
+            _other_label_widget->mode = *state == widget_state::other ? widget_mode::display : widget_mode::invisible;
+
             process_event({gui_event_type::window_redraw});
         });
         this->delegate->init(*this);
+        (*_delegate_cbt)();
     }
 
     /** Construct a checkbox widget with a default button delegate.
@@ -173,77 +183,79 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _on_label_constraints = _on_label_widget->update_constraints();
-        _off_label_constraints = _off_label_widget->update_constraints();
-        _other_label_constraints = _other_label_widget->update_constraints();
-        _label_constraints = max(_on_label_constraints, _off_label_constraints, _other_label_constraints);
+        _check_glyph = find_glyph(elusive_icon::Ok);
+        _minus_glyph = find_glyph(elusive_icon::Minus);
 
-        _button_size = theme<prefix>.size(this);
-        hilet extra_size = extent2{theme<prefix>.margin_right(this) + _button_size.width(), 0};
+        for (auto& cell : _grid) {
+            if (cell.value == cell_type::button) {
+                cell.set_constraints(box_constraints{
+                    theme<prefix>.size(this),
+                    theme<prefix>.size(this),
+                    theme<prefix>.size(this),
+                    *alignment,
+                    theme<prefix>.margin(this),
+                    -vector2::infinity()});
 
-        auto constraints = max(_label_constraints + extra_size, _button_size);
-        constraints.margins = theme<prefix>.margin(this);
-        constraints.alignment = *this->alignment;
-        return constraints;
+            } else if (cell.value == cell_type::label) {
+                cell.set_constraints(
+                    max(_on_label_widget->update_constraints(),
+                        _off_label_widget->update_constraints(),
+                        _other_label_widget->update_constraints()));
+
+            } else {
+                hi_no_default();
+            }
+        }
+
+        return _grid.constraints(os_settings::left_to_right());
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(this->layout, context)) {
-            auto alignment_ = os_settings::left_to_right() ? *this->alignment : mirror(*this->alignment);
-
-            if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
-                _button_rectangle = align(context.rectangle(), _button_size, alignment_);
-            } else {
-                hi_not_implemented();
-            }
-
-            hilet inner_margin = theme<prefix>.margin_right(this);
-            hilet baseline_offset = theme<prefix>.cap_height(this);
-
-            hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
-            if (alignment_ == horizontal_alignment::left) {
-                hilet label_left = _button_rectangle.right() + inner_margin;
-                hilet label_rectangle = aarectangle{label_left, 0, label_width, context.height()};
-                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
-                    box_shape(_label_constraints, label_rectangle, baseline_offset);
-
-            } else if (alignment_ == horizontal_alignment::right) {
-                hilet label_rectangle = aarectangle{0, 0, label_width, context.height()};
-                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
-                    box_shape(_label_constraints, label_rectangle, baseline_offset);
-            } else {
-                hi_not_implemented();
-            }
-
-            _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb = _check_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this);
-            _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
-
-            _minus_glyph = find_glyph(elusive_icon::Minus);
-            hilet minus_glyph_bb = _minus_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this);
-            _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
+        if (compare_store(layout, context)) {
+            _grid.set_layout(context.shape, theme<prefix>.cap_height(this));
         }
 
-        _on_label_widget->mode = *state == widget_state::on ? widget_mode::display : widget_mode::invisible;
-        _off_label_widget->mode = *state == widget_state::off ? widget_mode::display : widget_mode::invisible;
-        _other_label_widget->mode = *state == widget_state::other ? widget_mode::display : widget_mode::invisible;
+        for (hilet& cell : _grid) {
+            if (cell.value == cell_type::button) {
+                _button_rectangle = align(cell.shape.rectangle, theme<prefix>.size(this), *alignment);
 
-        _on_label_widget->set_layout(context.transform(_on_label_shape));
-        _off_label_widget->set_layout(context.transform(_off_label_shape));
-        _other_label_widget->set_layout(context.transform(_other_label_shape));
+                hilet mark_size = std::min(theme<prefix / "mark">.width(this), theme<prefix / "mark">.height(this));
+                hilet check_glyph_bb = _check_glyph.get_bounding_rectangle() * mark_size;
+                hilet minus_glyph_bb = _minus_glyph.get_bounding_rectangle() * mark_size;
+
+                _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
+                _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
+
+            } else if (cell.value == cell_type::label) {
+                _on_label_widget->set_layout(context.transform(cell.shape, 0.0f));
+                _off_label_widget->set_layout(context.transform(cell.shape, 0.0f));
+                _other_label_widget->set_layout(context.transform(cell.shape, 0.0f));
+
+            } else {
+                hi_no_default();
+            }
+        }
     }
 
     void draw(widget_draw_context& context) noexcept override
     {
-        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
-            draw_check_box(context);
-            draw_check_mark(context);
-        }
+        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+            for (hilet& cell : _grid) {
+                if (cell.value == cell_type::button) {
+                    draw_button(context);
+                    draw_mark(context);
 
-        _on_label_widget->draw(context);
-        _off_label_widget->draw(context);
-        _other_label_widget->draw(context);
+                } else if (cell.value == cell_type::label) {
+                    _on_label_widget->draw(context);
+                    _off_label_widget->draw(context);
+                    _other_label_widget->draw(context);
+
+                } else {
+                    hi_no_default();
+                }
+            }
+        }
     }
 
     [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
@@ -316,30 +328,24 @@ public:
     }
     /// @endprivatesection
 private:
+    enum class cell_type { button, label };
+
+    grid_layout<cell_type> _grid;
+
     std::unique_ptr<label_widget<prefix / "on">> _on_label_widget;
-    box_constraints _on_label_constraints;
-    box_shape _on_label_shape;
-
     std::unique_ptr<label_widget<prefix / "off">> _off_label_widget;
-    box_constraints _off_label_constraints;
-    box_shape _off_label_shape;
-
     std::unique_ptr<label_widget<prefix / "other">> _other_label_widget;
-    box_constraints _other_label_constraints;
-    box_shape _other_label_shape;
 
     notifier<>::callback_token _delegate_cbt;
 
-    box_constraints _label_constraints;
-
-    extent2 _button_size;
     aarectangle _button_rectangle;
+
     font_book::font_glyph_type _check_glyph;
     aarectangle _check_glyph_rectangle;
     font_book::font_glyph_type _minus_glyph;
     aarectangle _minus_glyph_rectangle;
 
-    void draw_check_box(widget_draw_context& context) noexcept
+    void draw_button(widget_draw_context& context) noexcept
     {
         context.draw_box(
             this->layout,
@@ -347,16 +353,17 @@ private:
             theme<prefix>.background_color(this),
             theme<prefix>.border_color(this),
             theme<prefix>.border_width(this),
-            border_side::inside);
+            border_side::outside,
+            theme<prefix>.border_radius(this));
     }
 
-    void draw_check_mark(widget_draw_context& context) noexcept
+    void draw_mark(widget_draw_context& context) noexcept
     {
         if (this->state == widget_state::on) {
             // Checkmark
             context.draw_glyph(
                 this->layout,
-                translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle),
+                translate_z(0.1f) * _check_glyph_rectangle,
                 *_check_glyph.font,
                 _check_glyph.glyph,
                 theme<prefix>.fill_color(this));
@@ -368,7 +375,7 @@ private:
             // Tri-state
             context.draw_glyph(
                 this->layout,
-                translate_z(0.1f) * narrow_cast<aarectangle>(_minus_glyph_rectangle),
+                translate_z(0.1f) * _minus_glyph_rectangle,
                 *_minus_glyph.font,
                 _minus_glyph.glyph,
                 theme<prefix>.fill_color(this));

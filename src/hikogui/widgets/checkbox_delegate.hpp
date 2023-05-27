@@ -113,8 +113,10 @@ public:
     {
         if (*value == *on_value) {
             return widget_state::on;
-        } else {
+        } else if (*value == *off_value) {
             return widget_state::off;
+        } else {
+            return widget_state::other;
         }
     }
 
@@ -143,11 +145,10 @@ private:
  */
 [[nodiscard]] std::shared_ptr<checkbox_delegate> make_default_checkbox_delegate(auto&& value, auto&&...args) noexcept
     requires requires {
-                 default_checkbox_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
-             }
+        default_checkbox_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
+    }
 {
-    return std::make_shared<default_checkbox_delegate<observer_decay_t<decltype(value)>>>(
-        hi_forward(value), hi_forward(args)...);
+    return std::make_shared<default_checkbox_delegate<observer_decay_t<decltype(value)>>>(hi_forward(value), hi_forward(args)...);
 }
 
 }} // namespace hi::v1

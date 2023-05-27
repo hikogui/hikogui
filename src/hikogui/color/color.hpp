@@ -110,6 +110,7 @@ public:
     [[nodiscard]] static inline color gray9() noexcept;
     [[nodiscard]] static inline color foreground() noexcept;
     [[nodiscard]] static inline color transparent() noexcept;
+    [[nodiscard]] static inline color accent() noexcept;
 
     [[nodiscard]] size_t hash() const noexcept
     {
@@ -349,6 +350,7 @@ template<> inline auto named_color<"gray8"> = detail::named_color_type<"gray8">{
 template<> inline auto named_color<"gray9"> = detail::named_color_type<"gray9">{color{229, 229, 229}};
 template<> inline auto named_color<"foreground"> = detail::named_color_type<"foreground">{color{255, 255, 255}};
 template<> inline auto named_color<"transparent"> = detail::named_color_type<"transparent">{color{0, 0, 0, 0}};
+template<> inline auto named_color<"accent"> = detail::named_color_type<"accent">{color{0, 0, 255}};
 
 [[nodiscard]] inline color color::black() noexcept { return named_color<"black">; }
 [[nodiscard]] inline color color::silver() noexcept { return named_color<"silver">; }
@@ -381,6 +383,7 @@ template<> inline auto named_color<"transparent"> = detail::named_color_type<"tr
 [[nodiscard]] inline color color::gray9() noexcept { return named_color<"gray9">; }
 [[nodiscard]] inline color color::foreground() noexcept { return named_color<"foreground">; }
 [[nodiscard]] inline color color::transparent() noexcept { return named_color<"transparent">; }
+[[nodiscard]] inline color color::accent() noexcept { return named_color<"accent">; }
 // clang-format on
 
 }} // namespace hi::v1

@@ -55,8 +55,6 @@ public:
     using delegate_type = toggle_delegate;
     constexpr static auto prefix = Name / "toggle";
 
-    enum class cell_type { toggle, label };
-
     /** The delegate that controls the button widget.
      */
     std::shared_ptr<delegate_type> delegate;
@@ -96,7 +94,7 @@ public:
         _off_label_widget = std::make_unique<label_widget<prefix / "off">>(this, off_label, alignment);
         _other_label_widget = std::make_unique<label_widget<prefix / "other">>(this, other_label, alignment);
 
-        _grid.add_cell(0, 0, cell_type::toggle);
+        _grid.add_cell(0, 0, cell_type::button);
         _grid.add_cell(1, 0, cell_type::label);
 
         _delegate_cbt = this->delegate->subscribe([&] {
@@ -183,7 +181,7 @@ public:
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         for (auto& cell : _grid) {
-            if (cell.value == cell_type::toggle) {
+            if (cell.value == cell_type::button) {
                 cell.set_constraints(box_constraints{
                     theme<prefix>.size(this),
                     theme<prefix>.size(this),
@@ -213,14 +211,14 @@ public:
         }
 
         for (hilet& cell : _grid) {
-            if (cell.value == cell_type::toggle) {
-                _toggle_rectangle = align(cell.shape.rectangle, theme<prefix>.size(this), *alignment);
+            if (cell.value == cell_type::button) {
+                _button_rectangle = align(cell.shape.rectangle, theme<prefix>.size(this), *alignment);
 
-                // The distance between bottom of the 'pip' and bottom of the 'toggle'
+                // The distance between bottom of the 'pip' and bottom of the 'button'
                 // is equal to the distance between the left of the 'pip' and
-                // the left of the 'toggle'.
-                _pip_edge_distance = (_toggle_rectangle.height() - theme<prefix / "pip">.height(this)) / 2;
-                _pip_move_range = _toggle_rectangle.width() - _pip_edge_distance * 2 - theme<prefix / "pip">.width(this);
+                // the left of the 'button'.
+                _pip_edge_distance = (_button_rectangle.height() - theme<prefix / "pip">.height(this)) / 2;
+                _pip_move_range = _button_rectangle.width() - _pip_edge_distance * 2 - theme<prefix / "pip">.width(this);
 
             } else if (cell.value == cell_type::label) {
                 _on_label_widget->set_layout(context.transform(cell.shape, 0.0f));
@@ -237,9 +235,9 @@ public:
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout)) {
             for (hilet& cell : _grid) {
-                if (cell.value == cell_type::toggle) {
-                    draw_toggle_button(context, _toggle_rectangle);
-                    draw_toggle_pip(context, _toggle_rectangle);
+                if (cell.value == cell_type::button) {
+                    draw_button(context, _button_rectangle);
+                    draw_pip(context, _button_rectangle);
 
                 } else if (cell.value == cell_type::label) {
                     _on_label_widget->draw(context);
@@ -323,6 +321,8 @@ public:
     }
     /// @endprivatesection
 private:
+    enum class cell_type { button, label };
+
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
     grid_layout<cell_type> _grid;
@@ -333,13 +333,13 @@ private:
 
     notifier<>::callback_token _delegate_cbt;
 
-    aarectangle _toggle_rectangle;
+    aarectangle _button_rectangle;
 
     animator<float> _animated_value = _animation_duration;
     float _pip_move_range;
     float _pip_edge_distance;
 
-    void draw_toggle_button(widget_draw_context& context, aarectangle shape) noexcept
+    void draw_button(widget_draw_context& context, aarectangle shape) noexcept
     {
         context.draw_box(
             layout,
@@ -351,7 +351,7 @@ private:
             theme<prefix>.border_radius(this));
     }
 
-    void draw_toggle_pip(widget_draw_context& context, aarectangle shape) noexcept
+    void draw_pip(widget_draw_context& context, aarectangle shape) noexcept
     {
         _animated_value.update(state != widget_state::off ? 1.0f : 0.0f, context.display_time_point);
         if (_animated_value.is_animating()) {

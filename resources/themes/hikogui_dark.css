@@ -22,6 +22,7 @@
 @color gray2 : rgb(48, 48, 51);
 @color gray1 : rgb(27, 27, 30);
 @color background : rgb(3, 3, 8);
+@color accent : rgb(10, 132, 255);
 
 * {
     width: 15pt;
@@ -76,11 +77,11 @@
 }
 
 *:focus {
-    border-color: blue;
+    border-color: accent;
 }
 
 *:on {
-    fill-color: blue;
+    fill-color: accent;
 }
 
 *:phrasing(s) {
@@ -110,6 +111,18 @@ toggle > pip {
 }
 
 toggle > pip:on {
-    border-color: blue;
-    background-color: blue;
+    border-color: accent;
+    background-color: accent;
+}
+
+checkbox {
+    width: 14dp;
+    height: 14dp;
+    border-radius: 0dp;
+}
+
+checkbox > mark {
+    width: 10dp;
+    height: 10dp;
+    fill-color: accent;
 }

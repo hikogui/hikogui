@@ -150,23 +150,33 @@ inline void register_theme_directory(std::filesystem::path const& path) noexcept
  * @param mode The mode of the theme to select.
  * @return true if the theme was loaded and activated successfully.
  */
-inline bool load_theme(std::string name, theme_mode mode) noexcept
+inline void load_theme(std::string name, theme_mode mode) noexcept
 {
+    static std::optional<std::pair<std::string, theme_mode>> loaded_theme = std::nullopt;
+
     if (hilet path = detail::theme_book::global().find(name, mode)) {
         try {
             auto style_sheet = parse_style_sheet(*path);
             style_sheet.activate();
-            hi_log_info("Theme {}:{} at '{}' activated successfully.", style_sheet.name, style_sheet.mode, path->generic_string());
-            return true;
+            loaded_theme = {name, mode};
+            hi_log_info(
+                "Theme {}:{} at '{}' activated successfully.", style_sheet.name, style_sheet.mode, path->generic_string());
 
         } catch (std::exception const& e) {
-            hi_log_error("Unable to load theme {} from file '{}': {}", name, path->generic_string(), e.what());
-            return false;
+            if (loaded_theme) {
+                hi_log_error("Unable to load theme {} from file '{}': {}", name, path->generic_string(), e.what());
+            } else {
+                hi_log_fatal(
+                    "Unable to load theme {} from file '{}': {}. No theme loaded.", name, path->generic_string(), e.what());
+            }
         }
 
     } else {
-        hi_log_error("Unable to find a theme matching {}:{}", name, mode);
-        return false;
+        if (loaded_theme) {
+            hi_log_error("Unable to find a theme matching {}:{}.", name, mode);
+        } else {
+            hi_log_fatal("Unable to find a theme matching {}:{}. No theme loaded.", name, mode);
+        }
     }
 }
 
