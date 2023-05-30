@@ -13,7 +13,7 @@
 #include "overlay_widget.hpp"
 #include "scroll_widget.hpp"
 #include "row_column_widget.hpp"
-#include "menu_button_widget.hpp"
+#include "radio_menu_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "../observer.hpp"
 #include <memory>
@@ -401,7 +401,7 @@ private:
     column_widget<prefix> *_column_widget = nullptr;
 
     decltype(off_label)::callback_token _off_label_cbt;
-    std::vector<menu_button_widget<prefix> *> _menu_button_widgets;
+    std::vector<radio_menu_button_widget<prefix> *> _menu_button_widgets;
     std::vector<notifier<>::callback_token> _menu_button_tokens;
 
     void set_attributes() noexcept {}
@@ -418,7 +418,7 @@ private:
         set_attributes(hi_forward(rest)...);
     }
 
-    [[nodiscard]] menu_button_widget<prefix> const *get_first_menu_button() const noexcept
+    [[nodiscard]] radio_menu_button_widget<prefix> const *get_first_menu_button() const noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -429,7 +429,7 @@ private:
         }
     }
 
-    [[nodiscard]] menu_button_widget<prefix> const *get_selected_menu_button() const noexcept
+    [[nodiscard]] radio_menu_button_widget<prefix> const *get_selected_menu_button() const noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -488,7 +488,7 @@ private:
 
         decltype(selected) index = 0;
         for (hilet& label : options) {
-            auto menu_button = &_column_widget->make_widget<menu_button_widget<prefix>>(selected, index, label, alignment);
+            auto menu_button = &_column_widget->make_widget<radio_menu_button_widget<prefix>>(selected, index, label, alignment);
 
             _menu_button_tokens.push_back(menu_button->subscribe(
                 [this, index] {

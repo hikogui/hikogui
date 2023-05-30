@@ -114,6 +114,11 @@ public:
         return corner_radii{array_type{lhs} - rhs};
     }
 
+    [[nodiscard]] constexpr friend corner_radii operator*(corner_radii const& lhs, value_type rhs) noexcept
+    {
+        return corner_radii{array_type{lhs} * rhs};
+    }
+
     [[nodiscard]] constexpr friend corner_radii round(corner_radii const& rhs) noexcept
     {
         return corner_radii{round(rhs._v)};

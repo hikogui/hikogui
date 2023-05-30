@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "abstract_button_widget.hpp"
+#include "radio_button_delegate.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -40,11 +40,23 @@ namespace hi { inline namespace v1 {
  *       allows radio buttons to act as a set.
  */
 template<fixed_string Name = "">
-class radio_button_widget final : public abstract_button_widget<Name / "radio-button"> {
+class radio_button_widget final : public widget {
 public:
-    using super = abstract_button_widget<Name / "radio-button">;
-    using delegate_type = typename super::delegate_type;
-    constexpr static auto prefix = super::prefix;
+    using super = widget;
+    using delegate_type = radio_button_delegate;
+    constexpr static auto prefix = Name / "radio";
+
+    /** The delegate that controls the button widget.
+     */
+    std::shared_ptr<delegate_type> delegate;
+
+    /** The label to show when the button is in the 'on' state.
+     */
+    observer<label> label = tr("<not set>");
+
+    /** The alignment of the button and on/off/other label.
+     */
+    observer<hi::alignment> alignment = alignment::top_left();
 
     /** Construct a radio button widget.
      *
@@ -61,8 +73,23 @@ public:
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
-        this->alignment = alignment::top_left();
+        hi_assert_not_null(this->delegate);
         this->set_attributes<0>(hi_forward(attributes)...);
+
+        _label_widget = std::make_unique<label_widget<prefix>>(this, on_label, alignment);
+
+        _grid.add_cell(0, 0, cell_type::button);
+        _grid.add_cell(1, 0, cell_type::label);
+
+        _delegate_cbt = this->delegate->subscribe([&] {
+            ++global_counter<"radio_button_widget:delegate:redraw">;
+            hi_assert_not_null(this->delegate);
+            state = this->delegate->state(this);
+
+            process_event({gui_event_type::window_redraw});
+        });
+        this->delegate->init(*this);
+        (*_delegate_cbt)();
     }
 
     /** Construct a radio button widget with a default button delegate.
@@ -94,94 +121,160 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _label_constraints = super::update_constraints();
+        for (auto& cell : _grid) {
+            if (cell.value == cell_type::button) {
+                cell.set_constraints(box_constraints{
+                    theme<prefix>.size(this),
+                    theme<prefix>.size(this),
+                    theme<prefix>.size(this),
+                    *alignment,
+                    theme<prefix>.margin(this),
+                    -vector2::infinity()});
 
-        // Make room for button and margin.
-        _button_size = theme<prefix>.size(this);
-        hi_axiom(_button_size.width() == _button_size.height());
+            } else if (cell.value == cell_type::label) {
+                cell.set_constraints(max(_label_widget->update_constraints()));
 
-        hilet extra_size = extent2{theme<prefix>.margin_right(this) + _button_size.width(), 0};
+            } else {
+                hi_no_default();
+            }
+        }
 
-        auto constraints = max(_label_constraints + extra_size, _button_size);
-        constraints.margins = theme<prefix>.margin(this);
-        constraints.alignment = *this->alignment;
-        return constraints;
+        return _grid.constraints(os_settings::left_to_right());
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(this->layout, context)) {
-            auto alignment_ = os_settings::left_to_right() ? *this->alignment : mirror(*this->alignment);
-
-            if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
-                _button_rectangle = align(context.rectangle(), _button_size, alignment_);
-            } else {
-                hi_not_implemented();
-            }
-
-            hilet inner_margin = theme<prefix>.margin_right(this);
-            hilet cap_height = theme<prefix>.cap_height(this);
-
-            hilet label_width = context.width() - (_button_rectangle.width() + inner_margin);
-            if (alignment_ == horizontal_alignment::left) {
-                hilet label_left = _button_rectangle.right() + inner_margin;
-                hilet label_rectangle = aarectangle{label_left, 0, label_width, context.height()};
-                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, cap_height};
-
-            } else if (alignment_ == horizontal_alignment::right) {
-                hilet label_rectangle = aarectangle{0, 0, label_width, context.height()};
-                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, cap_height};
-
-            } else {
-                hi_not_implemented();
-            }
-
-            _button_circle = circle{narrow_cast<aarectangle>(_button_rectangle)};
-
-            hilet pip_size = theme<prefix / "pip">.size(this);
-            hi_axiom(pip_size.width() == pip_size.height());
-
-            _pip_circle =
-                align(narrow_cast<aarectangle>(_button_rectangle), circle{narrow_cast<float>(pip_size.width() / 2)}, alignment::middle_center());
+        if (compare_store(layout, context)) {
+            _grid.set_layout(context.shape, theme<prefix>.cap_height(this));
         }
-        super::set_layout(context);
+
+        for (hilet& cell : _grid) {
+            if (cell.value == cell_type::button) {
+                _button_rectangle = align(cell.shape.rectangle, theme<prefix>.size(this), *alignment);
+                _pip_rectangle = align(_button_rectangle, theme<prefix / "pip">.size(this), alignment::middle_center());
+
+            } else if (cell.value == cell_type::label) {
+                _label_widget->set_layout(context.transform(cell.shape, 0.0f));
+
+            } else {
+                hi_no_default();
+            }
+        }
     }
 
     void draw(widget_draw_context& context) noexcept override
     {
-        if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
-            draw_radio_button(context);
-            draw_radio_pip(context);
-            this->draw_button(context);
+        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
+            for (hilet& cell : _grid) {
+                if (cell.value == cell_type::button) {
+                    draw_button(context);
+                    draw_pip(context);
+
+                } else if (cell.value == cell_type::label) {
+                    _label_widget->draw(context);
+
+                } else {
+                    hi_no_default();
+                }
+            }
         }
+    }
+
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
+    {
+        co_yield *_label_widget;
+    }
+
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (*mode >= widget_mode::partial and layout.contains(position)) {
+            return {id, layout.elevation, hitbox_type::button};
+        } else {
+            return {};
+        }
+    }
+
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+    }
+
+    void activate() noexcept
+    {
+        hi_assert_not_null(delegate);
+        delegate->activate(*this);
+        this->_state_changed();
+    }
+
+    bool handle_event(gui_event const& event) noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+
+        switch (event.type()) {
+        case gui_event_type::gui_activate:
+            if (*mode >= widget_mode::partial) {
+                activate();
+                return true;
+            }
+            break;
+
+        case gui_event_type::mouse_down:
+            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
+                clicked = true;
+                request_redraw();
+                return true;
+            }
+            break;
+
+        case gui_event_type::mouse_up:
+            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
+                clicked = false;
+
+                if (layout.rectangle().contains(event.mouse().position)) {
+                    handle_event(gui_event_type::gui_activate);
+                }
+                request_redraw();
+                return true;
+            }
+            break;
+
+        default:;
+        }
+
+        return super::handle_event(event);
     }
     /// @endprivatesection
 private:
+    enum class cell_type { button, label };
+
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    box_constraints _label_constraints;
+    grid_layout<cell_type> _grid;
+    std::unique_ptr<label_widget<prefix>> _label_widget;
 
-    extent2 _button_size;
+    notifier<>::callback_token _delegate_cbt;
+
     aarectangle _button_rectangle;
-    circle _button_circle;
+    aarectangle _pip_rectangle;
 
     animator<float> _animated_value = _animation_duration;
-    circle _pip_circle;
 
-    void draw_radio_button(widget_draw_context& context) noexcept
+    void draw_button(widget_draw_context& context) noexcept
     {
-        context.draw_circle(
+        context.draw_box(
             this->layout,
-            _button_circle * 1.02f,
+            _button_rectangle,
             theme<prefix>.background_color(this),
             theme<prefix>.border_color(this),
             theme<prefix>.border_width(this),
-            border_side::inside);
+            border_side::outside,
+            theme<prefix>.border_radius(this));
     }
 
-    void draw_radio_pip(widget_draw_context& context) noexcept
+    void draw_pip(widget_draw_context& context) noexcept
     {
         _animated_value.update(this->state != widget_state::off ? 1.0f : 0.0f, context.display_time_point);
         if (_animated_value.is_animating()) {
@@ -191,12 +284,14 @@ private:
         // draw pip
         auto float_value = _animated_value.current_value();
         if (float_value > 0.0f) {
-            context.draw_circle(
+            context.draw_box(
                 this->layout,
-                _pip_circle * 1.02f * float_value,
+                _pip_rectangle * float_value,
                 theme<prefix / "pip">.background_color(this),
                 theme<prefix / "pip">.border_color(this),
-                theme<prefix / "pip">.border_width(this));
+                theme<prefix / "pip">.border_width(this),
+                border_side::inside,
+                theme<prefix / "pip">.border_radius(this) * float_value);
         }
     }
 };

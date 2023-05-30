@@ -126,3 +126,17 @@ checkbox > mark {
     height: 10dp;
     fill-color: accent;
 }
+
+radio {
+    width: 30dp;
+    height: 14dp;
+    border-radius: 7dp;
+}
+
+radio > pip {
+    width: 10dp;
+    height: 10dp;
+    border-radius: 5dp;
+    border-color: accent;
+    background-color: accent;
+}

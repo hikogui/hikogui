@@ -262,11 +262,11 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/grid_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/icon_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/label_widget.hpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/menu_button_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/module.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/momentary_button_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/overlay_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/radio_button_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/radio_menu_button_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/row_column_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/scroll_aperture_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/scroll_bar_widget.hpp

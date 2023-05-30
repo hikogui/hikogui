@@ -200,7 +200,7 @@ A list of widgets
   - `hi::toolbar_tab_button_widget`: A button representing one out of mutally
     exclusive tabs. Designed to control the `hi::tab_widget`. For use inside a
     `hi::toolbar_widget`.
-  - `hi::menu_button_widget`: A button used inside menus.
+  - `hi::radio_menu_button_widget`: A button used inside menus.
 - **Misc**
   - `hi::selection_widget`: A selection widget allows selecting one out of a set
     of choices.

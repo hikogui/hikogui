@@ -2,13 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file widgets/menu_button_widget.hpp Defines menu_button_widget.
+/** @file widgets/radio_menu_button_widget.hpp Defines radio_menu_button_widget.
  * @ingroup widgets
  */
 
 #pragma once
 
-#include "abstract_button_widget.hpp"
+#include "radio_button_delegate.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -28,11 +28,11 @@ namespace hi { inline namespace v1 {
  * a set, which is configured with a different `on_value`.
  */
 template<fixed_string Name = "">
-class menu_button_widget final : public abstract_button_widget<Name / "menu-button"> {
+class radio_menu_button_widget final : public widget {
 public:
-    using super = abstract_button_widget<Name / "menu-button">;
-    using delegate_type = typename super::delegate_type;
-    using super::prefix;
+    using super = widget;
+    using delegate_type = typename radio_button_delegate;
+    constexpr static auto prefix = Name / "radio-menu";
 
     /** Construct a menu button widget.
      *
@@ -43,7 +43,7 @@ public:
      *                   passed it will be shown in all states. If two labels are passed
      *                   the first label is shown in on-state and the second for off-state.
      */
-    menu_button_widget(
+    radio_menu_button_widget(
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
@@ -69,10 +69,10 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    menu_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    radio_menu_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires { make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)); }
         :
-        menu_button_widget(
+        radio_menu_button_widget(
             parent,
             make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(attributes)...)
@@ -82,39 +82,55 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _label_constraints = super::update_constraints();
+        _label_constraints = _label_widget.update_constraints();
+        _mark_label_constraints = _mark_label_widget.update_constraints();
+        _shortcut_label_constraints = _shortcut_label_widget.update_constraints();
 
-        // Make room for button and margin.
-        _short_cut_size = _check_size =
-            extent2{theme<prefix>.line_height(this), theme<prefix>.line_height(this)};
+        auto constraints = max(_label_constraints, _mark_label_constraints, _shortcut_label_constraints);
+        inplace_max(constraints.margins, theme<prefix>.margin(this));
+        _padding = constraints.margins;
 
-        // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet extra_size = extent2{
-            theme<prefix>.margin_left(this) + _check_size.width() + theme<prefix>.margin_right(this) +
-                theme<prefix>.margin_right(this) + _short_cut_size.width() + theme<prefix>.margin_right(this),
-            theme<prefix>.margin_top(this) + theme<prefix>.margin_bottom(this)};
+        // clang-format off
+        hilet extra_width =
+            constraints.margins.left() +
+            theme<prefix / "mark">.width(this) +
+            _label_constraints.margins.left() +
+            // The label is here.
+            _label_constraints.margins.right() +
+            theme<prefix / "short-cut">.width(this) +
+            constraints.margins.right();
+        // clang-format on
 
-        auto constraints = _label_constraints + extra_size;
-        constraints.margins = 0;
+        // Internalize the margins inside the widget, as menu items are flush
+        // with each other and their container.
+        constraints.minimum.width() = _label_constraints.minimum.width() + extra_width;
+        constraints.preferred.width() = _label_constraints.preferred.width() + extra_width;
+        constraints.maximum.width() = _label_constraints.maximum.width() + extra_width;
+        constraints.minimum.height() += constraints.margins.top() + constraints.margins.bottom();
+        constraints.preferred.height() += constraints.margins.top() + constraints.margins.bottom();
+        constraints.maximum.height() += constraints.margins.top() + constraints.margins.bottom();
+        constraints.margins = {};
         return constraints;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(this->layout, context)) {
-            hilet spacing = theme<prefix>.margin_right(this);
-            hilet cap_height = theme<prefix>.cap_height(this);
-
-            hilet inside_rectangle = context.rectangle() - spacing;
+            hilet outline = context.rectangle() - _padding;
 
             if (os_settings::left_to_right()) {
-                _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left());
-                _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
-                hilet label_rectangle = aarectangle{
-                    point2{_check_rectangle.right() + spacing, 0},
-                    point2{_short_cut_rectangle.left() - spacing, context.height()}};
-                this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, cap_height};
+                hilet mark_outline_size = extent2{theme<prefix / "mark">.width(), outline.height()};
+                hilet shortcut_outline_size = extent2{theme<prefix / "short-cut">.width(), outline.height()};
+
+                hilet mark_shape = aarectangle{get<0>(outline), get<0>(outline) + mark_outline_size};
+                hilet shortcut_shape = aarectangle{get<3>(outline) - shortcut_outline_size, get<3>(outline)};
+                hilet label_shape = aarectangle{
+                    point2{get<1>(mark_outline).x() + _label_constraint.margin.left(), get<1>(mark_outline).y()},
+                    point2{get<2>(shortcut_outline).x() - _label_constraint.margin.right(), get<2>(shortcut_outline.y())}};
+
+                _mark_widget->set_layout(context.transform(mark_shape, 0.1f));
+                _shortcut_widget->set_layout(context.transform(shortcut_shape, 0.1f));
+                _label_widget->set_layout(context.transform(label_shape, 0.1f));
 
             } else {
                 _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_left());
@@ -125,28 +141,44 @@ public:
                 this->_on_label_shape = this->_off_label_shape = this->_other_label_shape =
                     box_shape{_label_constraints, label_rectangle, cap_height};
             }
-
-            _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb =
-                narrow_cast<aarectangle>(_check_glyph.get_bounding_rectangle() * theme<prefix>.line_height(this));
-            _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
         }
-
-        super::set_layout(context);
     }
 
     void draw(widget_draw_context& context) noexcept override
     {
         if (*this->mode > widget_mode::invisible and overlaps(context, this->layout)) {
-            draw_menu_button(context);
-            draw_check_mark(context);
-            this->draw_button(context);
+            draw_button(context);
+            draw_check(context);
+        }
+        _label_widget->draw(context);
+    }
+
+    [[nodiscard]] generator<widget const&> children(bool include_invisible) const noexcept override
+    {
+        co_yield *_label_widget;
+    }
+
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (*mode >= widget_mode::partial and layout.contains(position)) {
+            return {id, layout.elevation, hitbox_type::button};
+        } else {
+            return {};
         }
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         return *this->mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::menu);
+    }
+
+    void activate() noexcept
+    {
+        hi_assert_not_null(delegate);
+        delegate->activate(*this);
+        this->_state_changed();
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -188,16 +220,15 @@ public:
     }
     /// @endprivatesection
 private:
+    std::unique_ptr<label_widget<prefix>> _label_widget;
     box_constraints _label_constraints;
 
-    font_book::font_glyph_type _check_glyph;
-    extent2 _check_size;
-    aarectangle _check_rectangle;
-    aarectangle _check_glyph_rectangle;
-    extent2 _short_cut_size;
-    aarectangle _short_cut_rectangle;
+    notifier<>::callback_token _delegate_cbt;
 
-    void draw_menu_button(widget_draw_context& context) noexcept
+    font_book::font_glyph_type _check_glyph;
+    aarectangle _check_glyph_rectangle;
+
+    void draw_button(widget_draw_context& context) noexcept
     {
         context.draw_box(
             this->layout,
@@ -208,17 +239,16 @@ private:
             border_side::inside);
     }
 
-    void draw_check_mark(widget_draw_context& context) noexcept
+    void draw_check(widget_draw_context& context) noexcept
     {
-        // Checkmark or tristate.
-        if (*this->state != hi::widget_state::off) {
+        if (this->state != widget_state::off) {
             context.draw_glyph(
                 this->layout,
-                translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle),
-                _check_glyph,
+                translate_z(0.1f) * _check_glyph_rectangle,
+                *_check_glyph.font,
+                _check_glyph.glyph,
                 theme<prefix>.fill_color(this));
         }
     }
 };
-
 }} // namespace hi::v1
