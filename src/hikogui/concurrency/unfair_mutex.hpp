@@ -67,7 +67,7 @@ public:
 
         // Switch to 1 means there are no waiters.
         semaphore_value_type expected = 0;
-        if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
+        if (not semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
             [[unlikely]] lock_contended(expected);
         }
 
@@ -154,7 +154,7 @@ private:
 
             // Set to 2 when we are waiting.
             expected = 1;
-            if (should_wait || semaphore.compare_exchange_strong(expected, 2)) {
+            if (should_wait or semaphore.compare_exchange_strong(expected, 2)) {
                 hi_axiom(holds_invariant());
                 semaphore.wait(2);
             }
@@ -162,7 +162,7 @@ private:
             hi_axiom(holds_invariant());
             // Set to 2 when acquiring the lock, so that during unlock we wake other waiting threads.
             expected = 0;
-        } while (!semaphore.compare_exchange_strong(expected, 2));
+        } while (not semaphore.compare_exchange_strong(expected, 2));
     }
 };
 
