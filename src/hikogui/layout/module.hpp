@@ -1,5 +1,6 @@
 namespace hi {
 inline namespace v1 {
+
 /**
 \defgroup layout 2D layout algorithms
 
@@ -12,4 +13,12 @@ Layout algorithms
  * `hi::flex_layout`: An algorithm that lays out boxes next to each other, possibly flowing to a next line.
 
 */
+
+#include "box_constraints.hpp"
+#include "box_shape.hpp"
+#include "grid.hpp"
+#include "grid_axis.hpp"
+#include "grid_cell.hpp"
+#include "grid_cell_impl.hpp"
+
 }}
