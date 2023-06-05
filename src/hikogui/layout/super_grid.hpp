@@ -1,4 +1,7 @@
 
+/** @file layout/super_grid.hpp Types for handling layout of widgets.
+ * @ingroup layout
+ */
 
 #pragma once
 
@@ -9,6 +12,10 @@
 
 namespace hi { inline namespace v1 {
 
+/** A cell in a grid.
+ *
+ * @ingroup layout
+ */
 class super_grid_cell {
 public:
     constexpr super_grid_cell(super_grid_cell const&) = delete;
@@ -19,7 +26,28 @@ public:
 
     constexpr ~super_grid_cell();
     constexpr super_grid_cell() noexcept = default;
-    constexpr super_grid_cell(super_grid const& grid) noexcept;
+    constexpr super_grid_cell(super_grid & grid) noexcept;
+
+    constexpr super_grid_cell(super_grid_cell const &parent, uint8_t col_begin, uint8_t row_begin, uint8_t col_end, uint8_t row_end) noexcept :
+        super_grid_cell(*parent._grid)
+    {
+        set_parent(parent);
+        set_location(col_begin, row_begin, col_end, row_end);
+    }
+
+    constexpr super_grid_cell(super_grid_cell const &parent, uint8_t col_begin, uint8_t row_begin) noexcept :
+        super_grid_cell(*parent._grid)
+    {
+        set_parent(parent);
+        set_location(col_begin, row_begin);
+    }
+
+    constexpr super_grid_cell(super_grid_cell const &parent, std::string_view address) noexcept :
+        super_grid_cell(*parent._grid)
+    {
+        set_parent(parent);
+        set_location(address);
+    }
 
     /** Check if this cell has a location.
      */
@@ -82,6 +110,7 @@ public:
      */
     constexpr void unset_parent(super_grid_cell const& parent) noexcept;
 
+
 private:
     super_grid *_grid = nullptr;
     size_t _id = 0;
@@ -89,20 +118,6 @@ private:
 
 /**
  *
- * The constrain-algorithm:
- *  1. Assign priorities to each row and column.
- *  2. Assign margins to each row and column.
- *  3. Calculate the preferred-height of each row.
- *     - First handle row-span = 1
- *     - Next handle row-span > 1, and extent rows based on the priority assigned
- *       to each row.
- *  4. Calculate the preferred-width of each column.
- *     - First handle col-span = 1
- *     - Next handle col-span > 1, and extent columns based on the priority
- *       assigned to each column.
- *  5. Calculate the minimum-width of each column; select preferred-width or
- *     wrapped-width depending if the cell's wrapped-height fits into the
- *     preferred-height of the row it is in.
  *
  * The layout-algorithm:
  *
@@ -117,6 +132,21 @@ public:
     constexpr super_grid() noexcept = default;
 
     /** Calculate the constraints for the grid.
+     *
+     * The constrain-algorithm:
+     *  1. Assign priorities to each row and column.
+     *  2. Assign margins to each row and column.
+     *  3. Calculate the preferred-height of each row.
+     *     - First handle row-span = 1
+     *     - Next handle row-span > 1, and extent rows based on the priority assigned
+     *       to each row.
+     *  4. Calculate the preferred-width of each column.
+     *     - First handle col-span = 1
+     *     - Next handle col-span > 1, and extent columns based on the priority
+     *       assigned to each column.
+     *  5. Calculate the minimum-width of each column; select preferred-width or
+     *     wrapped-width depending if the cell's wrapped-height fits into the
+     *     preferred-height of the row it is in.
      */
     constexpr void constrain() noexcept
     {
