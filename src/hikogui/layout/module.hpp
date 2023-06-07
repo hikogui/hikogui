@@ -20,5 +20,6 @@ Layout algorithms
 #include "grid_axis.hpp"
 #include "grid_cell.hpp"
 #include "grid_cell_impl.hpp"
+#include "grid_state.hpp"
 
 }}

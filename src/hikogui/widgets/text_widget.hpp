@@ -85,33 +85,18 @@ public:
 
         hi_assert_not_null(this->delegate);
         _delegate_cbt = this->delegate->subscribe([&] {
-            // On every text edit, immediately/synchronously update the shaped text.
-            // This is needed for handling multiple edit commands before the next frame update.
-            if (layout) {
-                auto new_layout = layout;
-                hilet old_constraints = _constraints_cache;
+            // Read the latest text from the delegate.
+            hi_assert_not_null(this->delegate);
+            _text_cache = this->delegate->read(*this);
 
-                // Constrain and layout according to the old layout.
-                hilet new_constraints = update_constraints();
-                new_layout.shape.rectangle = aarectangle{
-                    new_layout.shape.x(),
-                    new_layout.shape.y(),
-                    std::max(new_layout.shape.width(), new_constraints.minimum.width()),
-                    std::max(new_layout.shape.height(), new_constraints.minimum.height())};
-                set_layout(new_layout);
+            // Make sure that the current selection fits the new text.
+            _selection.resize(_text_cache.size());
 
-                if (new_constraints != old_constraints) {
-                    // The constraints have changed, properly constrain and layout on the next frame.
-                    ++global_counter<"text_widget:delegate:constrain">;
-                    request_scroll();
-                    process_event({gui_event_type::window_reconstrain});
-                }
-            } else {
-                // The layout is incomplete, properly constrain and layout on the next frame.
-                ++global_counter<"text_widget:delegate:constrain">;
-                request_scroll();
-                process_event({gui_event_type::window_reconstrain});
-            }
+            // Create a new text_shaper with the new text.
+            hilet alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
+
+            _shaped_text = text_shaper{_text_cache, theme<prefix>.text_theme(this), alignment_, os_settings::left_to_right()};
+            _cell.set_constraints(_shaped_text.constraints());
         });
 
         _cursor_state_cbt = _cursor_state.subscribe([&](auto...) {
@@ -150,40 +135,7 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        // Read the latest text from the delegate.
-        hi_assert_not_null(delegate);
-        _text_cache = delegate->read(*this);
-
-        // Make sure that the current selection fits the new text.
-        _selection.resize(_text_cache.size());
-
-        // Create a new text_shaper with the new text.
-        auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
-
-        _shaped_text = text_shaper{_text_cache, theme<prefix>.text_theme(this), alignment_, os_settings::left_to_right()};
-
-        hilet shaped_text_rectangle =ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
-        hilet shaped_text_size = shaped_text_rectangle.size();
-
-        hilet margins = theme<prefix>.margin(this);
-        if (*mode == widget_mode::partial) {
-            // In line-edit mode the text should not wrap.
-            return _constraints_cache = box_constraints{
-                       shaped_text_size, shaped_text_size, shaped_text_size, _shaped_text.resolved_alignment(), margins};
-
-        } else {
-            // Allow the text to be 550.0f pixels wide.
-            hilet preferred_shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(550.0f));
-            hilet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
-
-            hilet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
-            return _constraints_cache = box_constraints{
-                       extent2{preferred_shaped_text_size.width(), height},
-                       extent2{preferred_shaped_text_size.width(), height},
-                       extent2{shaped_text_size.width(), height},
-                       _shaped_text.resolved_alignment(),
-                       margins};
-        }
+        return _cell.constraints();
     }
 
     void set_layout(widget_layout const& context) noexcept override

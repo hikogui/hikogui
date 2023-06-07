@@ -8,6 +8,7 @@
 #include "spreadsheet_address.hpp"
 #include "grid_axis.hpp"
 #include "grid_cell.hpp"
+#include "grid_state.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -46,24 +47,12 @@ public:
      *     wrapped-width depending if the cell's wrapped-height fits into the
      *     preferred-height of the row it is in.
      */
-    constexpr void constrain() noexcept
-    {
-        if (std::exchange(reconstrain, false)) {
-            update_indices();
-            calculate_row_col_count_and_margins();
-            setup_row_col_tables();
-            populate_row_col_tables();
-            relayout = true;
-        }
-    }
 
-    constexpr void layout() noexcept
+    constexpr void update() noexcept
     {
-        constrain();
-        if (std::exchange(relayout, false)) {
-            layout_rows();
-            layout_columns();
-            position_children();
+        if (state != grid_state::done) {
+            [[unlikely]] _update();
+            state = 0;
         }
     }
 
@@ -90,146 +79,22 @@ public:
         return id;
     }
 
-    [[nodiscard]] constexpr cell_type& operator[](size_t id) noexcept
+    [[nodiscard]] constexpr detail::grid_cell_data& operator[](size_t id) noexcept
     {
         hi_axiom_bounds(id, _cells);
         return _cells[id];
     }
 
-    [[nodiscard]] constexpr cell_type const& operator[](size_t id) const noexcept
+    [[nodiscard]] constexpr detail::grid_cell_data const& operator[](size_t id) const noexcept
     {
         hi_axiom_bounds(id, _cells);
         return _cells[id];
     }
 
 private:
-    struct cell_type {
-        int32_t parent = -1;
-        uint32_t in_use : 1 = 0;
-        uint32_t leaf : 1 = 0;
-        uint32_t perminant_mark : 1 = 0;
-        uint32_t temporary_mark : 1 = 0;
-        uint32_t reserved : 28 = 0;
-
-        /** Offset in the column table.
-         */
-        int32_t col_offset = 0;
-
-        /** Offset in the row table.
-         */
-        int32_t row_offset = 0;
-
-        int8_t col_begin = 0;
-        int8_t col_end = 0;
-        int8_t row_begin = 0;
-        int8_t row_end = 0;
-
-        /** The priority when the change the width compared to other cells in the row.
-         */
-        int8_t width_priority = 0;
-
-        /** The priority when the change the height compared to other cells in the column.
-         */
-        int8_t height_priority = 0;
-
-        /** The left-margin for this cell.
-         * @note For non-leaf cells this is calculated.
-         */
-        int8_t margin_left = 0;
-
-        /** The bottom-margin for this cell.
-         * @note For non-leaf cells this is calculated.
-         */
-        int8_t margin_bottom = 0;
-
-        /** The right-margin for this cell.
-         * @note For non-leaf cells this is calculated.
-         */
-        int8_t margin_right = 0;
-
-        /** The top-margin for this cell.
-         * @note For non-leaf cells this is calculated.
-         */
-        int8_t margin_top = 0;
-
-        /** The thinner width when the cell can wrap.
-         */
-        int32_t wrapped_width;
-
-        /** The preferred width.
-         */
-        int32_t minimum_width;
-
-        /** The maximum width.
-         */
-        int32_t maximum_width;
-
-        /** The taller height when the cell can wrap.
-         */
-        int32_t wrapped_height;
-
-        /** The minimum height.
-         */
-        int32_t minimum_height;
-
-        /** The maximum height.
-         */
-        int32_t maximum_height;
-
-        /** The left position of this cell relative to the parent.
-         * @note This field is calculated.
-         */
-        int32_t left;
-
-        /** The bottom position of this cell relative to the parent.
-         * @note This field is calculated.
-         */
-        int32_t bottom;
-
-        /** The width of this cell.
-         * @note This field is calculated, except for the root grid.
-         */
-        int32_t width;
-
-        /** The height of this cell.
-         * @note This field is calculated, except for the root grid.
-         */
-        int32_t height;
-
-        /** Number of columns based on the locations of this cell's children.
-         * @note This field is calculated.
-         */
-        int8_t num_cols = 0;
-
-        /** Number of rows based on the locations of this cell's children.
-         * @note This field is calculated.
-         */
-        int8_t num_rows = 0;
-
-        /** The left-margin (rtl: right-margin) calculated from children.
-         * @note This field is calculated.
-         */
-        int8_t col_before_margin = 0;
-
-        /** The top-margin calculated from children.
-         * @note This field is calculated.
-         */
-        int8_t row_before_margin = 0;
-
-        /** The right-margin (rtl: left-margin) calculated from children.
-         * @note This field is calculated.
-         */
-        int8_t col_after_margin = 0;
-
-        /** The bottom margin calculated from children.
-         * @note This field is calculated.
-         */
-        int8_t row_after_margin = 0;
-    };
-
     /** All cells, both used and part of the free-list.
      */
-    std::vector<cell_type> _cells = {};
+    std::vector<detail::grid_cell_data> _cells = {};
 
     /** Index to the first cell of the free-list.
      */
@@ -242,12 +107,13 @@ private:
      */
     std::vector<int32_t> _indices = {};
 
-    size_t _num_leaves = 0;
-    size_t _num_grids = 0;
-
-    /** An iterator denoting the end of the leaf-entries, and start of grid-entries.
+    /** An iterator pointing to the first entry that is not a leaf.
      */
-    decltype(_indices)::iterator _indices_split = {};
+    decltype(_indices)::iterator _grid_begin = {};
+
+    /** An iterator pointing to the first entry that is a root.
+     */
+    decltype(_indices)::iterator _root_begin = {};
 
     /** Data for the combined rows of all grids.
      */
@@ -257,15 +123,31 @@ private:
      */
     grid_axis _columns = {};
 
-    /** Set to true when a value has changed that require the grids to be re-constrained.
+    /** The state determines what needs to be updated.
      */
-    bool reconstrain = true;
+    grid_state _state = grid_state::need_constrain;
 
-    /** Set to true when a value has changed that require the grids to be re-laid out.
-     */
-    bool relayout = true;
+    constexpr auto row_begin(detail::grid_cell_data const& cell) noexcept
+    {
+        return _rows.begin() + cell.row_offset;
+    }
 
-    constexpr void update_indices_visit(int32_t i, cell_type& n) noexcept
+    constexpr auto col_end(detail::grid_cell_data const& cell) noexcept
+    {
+        return _cols.begin() + cell.col_offset;
+    }
+
+    constexpr auto row_pair(detail::grid_cell_data const& parent, detail::grid_cell_data const& child) noexcept
+    {
+        return std::make_tuple(row_begin(parent) + cell.row_begin, row_begin(parent) + cell.row_end);
+    }
+
+    constexpr auto col_pair(detail::grid_cell_data const& parent, detail::grid_cell_data const& child) noexcept
+    {
+        return std::make_tuple(col_begin(parent) + cell.col_begin, col_begin(parent) + cell.col_end);
+    }
+
+    constexpr void update_indices_visit(int32_t i, detail::grid_cell_data& n) noexcept
     {
         hi_axiom(n.in_use);
 
@@ -312,14 +194,15 @@ private:
         // The ordering is parents first, children last, reverse this.
         std::reverse(_indices.begin(), _indices.end());
 
-        // Put all the leaves at the start, so that we don't need to check
-        // if a node is a leaf in the future.
-        _indices_split = std::stable_partition(_indices.begin(), _indices.end(), [](hilet a) {
+        // Put all the leaves at the start
+        _grid_begin = std::stable_partition(_indices.begin(), _indices.end(), [](hilet a) {
             return _cells[a].leaf;
         });
 
-        _num_leaves = std::distance(_indices.begin(), _indices_split);
-        _num_grids = std::distance(_indices_split, _indices.end());
+        // Put all the root entries at the end.
+        _root_begin = std::stable_partition(_grid_begin, _indices.end(), [](hilet a) {
+            return _cells[a].parent != -1;
+        }
     }
 
     constexpr void calculate_row_col_count_and_margins() noexcept
@@ -382,26 +265,6 @@ private:
         }
         _cols.clear(num_cols);
         _rows.clear(num_rows);
-    }
-
-    constexpr auto row_begin(cell_type const& cell) noexcept
-    {
-        return _rows.begin() + cell.row_offset;
-    }
-
-    constexpr auto col_end(cell_type const& cell) noexcept
-    {
-        return _cols.begin() + cell.col_offset;
-    }
-
-    constexpr auto row_pair(cell_type const& parent, cell_type const& child) noexcept
-    {
-        return std::make_tuple(row_begin(parent) + cell.row_begin, row_begin(parent) + cell.row_end);
-    }
-
-    constexpr auto col_pair(cell_type const& parent, cell_type const& child) noexcept
-    {
-        return std::make_tuple(col_begin(parent) + cell.col_begin, col_begin(parent) + cell.col_end);
     }
 
     constexpr void populate_row_col_tables() noexcept
@@ -471,6 +334,55 @@ private:
                 set_minimum(first_col, last_col, minimum_width);
             }
         }
+    }
+
+    constexpr void constrain() noexcept
+    {
+        update_indices();
+        calculate_row_col_count_and_margins();
+        setup_row_col_tables();
+        populate_row_col_tables();
+    }
+
+    constexpr void layout() noexcept
+    {
+        // By iterating in reverse we start with the root grids, for which
+        // the width and height are known.
+        for (auto it = _indices.rbegin(); it != _indices.rend(); ++it) {
+            auto& cell = _cells[*it];
+
+            if (cell.parent != -1) {
+                // If this cell has a parent, determine the width and height of
+                // this cell.
+                hilet &parent = _cells[cell.parent];
+                hilet row_first = row_begin(parent) + cell.row_begin;
+                hilet row_last = row_begin(parent) + cell.row_end;
+                hilet col_first = col_begin(parent) + cell.col_begin;
+                hilet col_last = col_begin(parent) + cell.col_end;
+                cell.height = get_size(row_first, row_last);
+                cell.width = get_size(col_first, col_last);
+            }
+
+            if (not cell.leaf) {
+                // For each grid calculate the sizes and positions for rows
+                // and columns
+                hilet [row_first, row_last] = row_pair(grid);
+                update_size(row_first, row_last, grid.height);
+                update_position(row_first, row_last);
+
+                hilet[col_first, col_last] = col_pair(grid);
+                update_size(col_first, col_last, grid.width);
+                update_position(col_first, col_last);
+            }
+        }
+    }
+
+    hi_no_inline constexpr void _update() noexcept
+    {
+        if (to_bool(state & grid_state::need_constrain)) {
+            constraints();
+        }
+        layout();
     }
 };
 
