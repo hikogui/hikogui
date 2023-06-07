@@ -8,6 +8,20 @@
 namespace hi {
 inline namespace v1 {
 
+/** A column or row in a grid.
+ *
+ * This holds the constraints, margins and sizes of each column or each row.
+ *
+ * Since the `hi::grid` holds multiple nested grids; the row and column axis
+ * will also contain the data for all those grids. However the data for axis of a single
+ * grid will be layed out sequentually, the offset will be in the cell's row_offset
+ * and col_offset.
+ *
+ * The outer margins for cells on the edge of a grid will be written into the axis,
+ * however these outer margins will be invalid and the algorithm will ignore those
+ * outer margins. The handle the last outer margin one extra entry is added to the
+ * end of the list.
+ */
 class grid_axis {
 public:
     struct value_type {
