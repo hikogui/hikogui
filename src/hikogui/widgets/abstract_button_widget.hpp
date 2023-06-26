@@ -12,7 +12,7 @@
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
 #include "../animator.hpp"
-#include "../i18n/translate.hpp"
+#include "../l10n/module.hpp"
 #include "../notifier.hpp"
 #include <memory>
 #include <string>

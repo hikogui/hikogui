@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/i18n/iso_3166.hpp"
+#include "iso_3166.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -33,6 +33,7 @@ TEST(iso_3166, parse)
     ASSERT_THROW(hi::iso_3166("xxxx"), hi::parse_error);
 
     ASSERT_EQ(hi::iso_3166("0").number(), 0);
+    ASSERT_TRUE(hi::iso_3166("0").empty());
     ASSERT_EQ(hi::iso_3166("1").number(), 1);
     ASSERT_EQ(hi::iso_3166("01").number(), 1);
     ASSERT_EQ(hi::iso_3166("10").number(), 10);
@@ -40,7 +41,6 @@ TEST(iso_3166, parse)
     ASSERT_EQ(hi::iso_3166("100").number(), 100);
     ASSERT_EQ(hi::iso_3166("0100").number(), 100);
     ASSERT_EQ(hi::iso_3166("999").number(), 999);
-    ASSERT_EQ(hi::iso_3166("999").empty(), true);
     ASSERT_THROW(hi::iso_3166("1000"), hi::parse_error);
     ASSERT_THROW(hi::iso_3166("-1"), hi::parse_error);
 }

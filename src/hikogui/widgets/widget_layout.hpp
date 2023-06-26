@@ -10,7 +10,7 @@
 
 #include "../layout/box_shape.hpp"
 #include "../geometry/module.hpp"
-#include "../unicode/unicode_bidi_class.hpp"
+#include "../unicode/module.hpp"
 #include "../font/module.hpp"
 #include "../GUI/gui_window_size.hpp"
 #include "../GUI/theme.hpp"

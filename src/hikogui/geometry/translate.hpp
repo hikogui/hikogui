@@ -7,6 +7,7 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 #include "rotate.hpp"
+#include <concepts>
 
 namespace hi::inline v1 {
 namespace geo {
@@ -325,8 +326,8 @@ constexpr translate3i translate_z(int z) noexcept
     return translate3i{int{0}, int{0}, z};
 }
 
-template<>
-[[nodiscard]] constexpr translate2 narrow_cast(translate2i const& rhs) noexcept
+template<std::same_as<translate2> Out, std::same_as<translate2i> In>
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
 {
     return {narrow_cast<float>(rhs.x()), narrow_cast<float>(rhs.y())};
 }

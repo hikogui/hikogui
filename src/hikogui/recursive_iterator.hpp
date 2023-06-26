@@ -8,7 +8,8 @@
 #include <compare>
 #include <iterator>
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
 /** An iterator which recursively iterates through nested containers.
  * Currently only recurses through two levels of containers.
@@ -28,23 +29,23 @@ class recursive_iterator {
     using pointer = typename std::iterator_traits<child_iterator>::pointer;
 
 public:
-    recursive_iterator() noexcept = delete;
-    recursive_iterator(recursive_iterator const &other) noexcept = default;
-    recursive_iterator(recursive_iterator &&other) noexcept = default;
-    recursive_iterator &operator=(recursive_iterator const &other) noexcept = default;
-    recursive_iterator &operator=(recursive_iterator &&other) noexcept = default;
+    constexpr recursive_iterator() noexcept = delete;
+    constexpr recursive_iterator(recursive_iterator const& other) noexcept = default;
+    constexpr recursive_iterator(recursive_iterator&& other) noexcept = default;
+    constexpr recursive_iterator& operator=(recursive_iterator const& other) noexcept = default;
+    constexpr recursive_iterator& operator=(recursive_iterator&& other) noexcept = default;
     ~recursive_iterator() = default;
 
     /** Create an iterator at an element inside a child container.
      */
-    recursive_iterator(parent_iterator parent_it, parent_iterator parent_it_end, child_iterator child_it) noexcept :
+    constexpr recursive_iterator(parent_iterator parent_it, parent_iterator parent_it_end, child_iterator child_it) noexcept :
         _parent_it(parent_it), _parent_it_end(parent_it_end), _child_it(child_it)
     {
     }
 
     /** Create a begin iterator at the first child's first element.
      */
-    recursive_iterator(parent_iterator parent_it, parent_iterator parent_it_end) noexcept :
+    constexpr recursive_iterator(parent_iterator parent_it, parent_iterator parent_it_end) noexcept :
         _parent_it(parent_it),
         _parent_it_end(parent_it_end),
         _child_it(parent_it != parent_it_end ? std::begin(*parent_it) : child_iterator{})
@@ -53,14 +54,14 @@ public:
 
     /** Create an end iterator one beyond the last child.
      */
-    recursive_iterator(parent_iterator parent_it_end) noexcept :
+    constexpr recursive_iterator(parent_iterator parent_it_end) noexcept :
         _parent_it(parent_it_end), _parent_it_end(parent_it_end), _child_it()
     {
     }
 
     /** Get the current parent iterator.
      */
-    [[nodiscard]] parent_iterator parent() const noexcept
+    [[nodiscard]] constexpr parent_iterator parent() const noexcept
     {
         return _parent_it;
     }
@@ -68,7 +69,7 @@ public:
     /** Get the current child iterator.
      * It is undefined behaviour to use this function on an iterator that is at_end().
      */
-    [[nodiscard]] child_iterator child() const noexcept
+    [[nodiscard]] constexpr child_iterator child() const noexcept
     {
         hi_axiom(!at_end());
         return _child_it;
@@ -81,27 +82,27 @@ public:
      *
      * @return True if the iterator can no longer advance.
      */
-    [[nodiscard]] bool at_end() const noexcept
+    [[nodiscard]] constexpr bool at_end() const noexcept
     {
         return _parent_it == _parent_it_end;
     }
 
-    [[nodiscard]] reference operator*() const noexcept
+    [[nodiscard]] constexpr reference operator*() const noexcept
     {
         return *_child_it;
     }
 
-    [[nodiscard]] pointer operator->() const noexcept
+    [[nodiscard]] constexpr pointer operator->() const noexcept
     {
         return &(*_child_it);
     }
 
-    [[nodiscard]] reference operator[](std::size_t i) const noexcept
+    [[nodiscard]] constexpr reference operator[](std::size_t i) const noexcept
     {
         return *(*this + i);
     }
 
-    recursive_iterator &operator++() noexcept
+    constexpr recursive_iterator& operator++() noexcept
     {
         ++_child_it;
         if (_child_it == std::end(*_parent_it)) {
@@ -113,7 +114,7 @@ public:
         return *this;
     }
 
-    recursive_iterator &operator--() noexcept
+    constexpr recursive_iterator& operator--() noexcept
     {
         if (_child_it == std::begin(*_parent_it)) {
             --_parent_it;
@@ -123,20 +124,21 @@ public:
         return *this;
     }
 
-    recursive_iterator operator++(int) noexcept
+    constexpr recursive_iterator operator++(int) noexcept
     {
         auto tmp = *this;
         ++(*this);
         return tmp;
     }
-    recursive_iterator operator--(int) noexcept
+
+    constexpr recursive_iterator operator--(int) noexcept
     {
         auto tmp = *this;
         --(*this);
         return tmp;
     }
 
-    recursive_iterator &operator+=(difference_type rhs) noexcept
+    constexpr recursive_iterator& operator+=(difference_type rhs) noexcept
     {
         if (rhs < 0) {
             return (*this) -= -rhs;
@@ -162,7 +164,7 @@ public:
         return *this;
     }
 
-    recursive_iterator &operator-=(difference_type rhs) noexcept
+    constexpr recursive_iterator& operator-=(difference_type rhs) noexcept
     {
         if (rhs < 0) {
             return (*this) += -rhs;
@@ -186,7 +188,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] friend bool operator==(recursive_iterator const &lhs, recursive_iterator const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(recursive_iterator const& lhs, recursive_iterator const& rhs) noexcept
     {
         if (lhs._parent_it != rhs._parent_it) {
             return false;
@@ -198,7 +200,8 @@ public:
         }
     }
 
-    [[nodiscard]] friend std::strong_ordering operator<=>(recursive_iterator const &lhs, recursive_iterator const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::strong_ordering
+    operator<=>(recursive_iterator const& lhs, recursive_iterator const& rhs) noexcept
     {
         if (lhs._parent_it != rhs._parent_it) {
             return (lhs._parent_it - rhs._parent_it) <=> 0;
@@ -210,20 +213,21 @@ public:
         }
     }
 
-    [[nodiscard]] friend recursive_iterator operator+(recursive_iterator lhs, difference_type rhs) noexcept
+    [[nodiscard]] constexpr friend recursive_iterator operator+(recursive_iterator lhs, difference_type rhs) noexcept
     {
         return lhs += rhs;
     }
-    [[nodiscard]] friend recursive_iterator operator-(recursive_iterator lhs, difference_type rhs) noexcept
+    [[nodiscard]] constexpr friend recursive_iterator operator-(recursive_iterator lhs, difference_type rhs) noexcept
     {
         return lhs -= rhs;
     }
-    [[nodiscard]] friend recursive_iterator operator+(difference_type lhs, recursive_iterator rhs) noexcept
+    [[nodiscard]] constexpr friend recursive_iterator operator+(difference_type lhs, recursive_iterator rhs) noexcept
     {
         return rhs += lhs;
     }
 
-    [[nodiscard]] friend difference_type operator-(recursive_iterator const &lhs, recursive_iterator const &rhs) noexcept
+    [[nodiscard]] constexpr friend difference_type
+    operator-(recursive_iterator const& lhs, recursive_iterator const& rhs) noexcept
     {
         if (rhs < lhs) {
             return -(rhs - lhs);
@@ -248,7 +252,7 @@ private:
 /** Get a recursive iterator from the begin of a recursive container.
  */
 template<typename Container>
-[[nodiscard]] auto recursive_iterator_begin(Container &rhs) noexcept
+[[nodiscard]] constexpr auto recursive_iterator_begin(Container& rhs) noexcept
 {
     return recursive_iterator(begin(rhs), end(rhs));
 }
@@ -256,7 +260,7 @@ template<typename Container>
 /** Get a recursive iterator from one beyond the end of a recursive container.
  */
 template<typename Container>
-[[nodiscard]] auto recursive_iterator_end(Container &rhs) noexcept
+[[nodiscard]] constexpr auto recursive_iterator_end(Container& rhs) noexcept
 {
     return recursive_iterator(end(rhs), end(rhs));
 }
@@ -264,7 +268,7 @@ template<typename Container>
 /** Get a recursive iterator from the begin of a recursive container.
  */
 template<typename Container>
-[[nodiscard]] auto recursive_iterator_begin(Container const &rhs) noexcept
+[[nodiscard]] constexpr auto recursive_iterator_begin(Container const& rhs) noexcept
 {
     return recursive_iterator(begin(rhs), end(rhs));
 }
@@ -272,9 +276,9 @@ template<typename Container>
 /** Get a recursive iterator from one beyond the end of a recursive container.
  */
 template<typename Container>
-[[nodiscard]] auto recursive_iterator_end(Container const &rhs) noexcept
+[[nodiscard]] constexpr auto recursive_iterator_end(Container const& rhs) noexcept
 {
     return recursive_iterator(end(rhs), end(rhs));
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

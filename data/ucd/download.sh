@@ -6,6 +6,7 @@ curl https://www.unicode.org/Public/UCD/latest/ucd/CompositionExclusions.txt -o 
 curl https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt -o EastAsianWidth.txt
 curl https://www.unicode.org/Public/UCD/latest/ucd/Scripts.txt -o Scripts.txt
 curl https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt -o UnicodeData.txt
+curl https://www.unicode.org/Public/UCD/latest/ucd/PropList.txt -o PropList.txt
 curl https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt -o emoji-data.txt
 curl https://www.unicode.org/Public/UCD/latest/ucd/LineBreak.txt -o LineBreak.txt
 curl https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakProperty.txt -o GraphemeBreakProperty.txt

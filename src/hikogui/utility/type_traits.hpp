@@ -319,7 +319,7 @@ struct common_integer<L,R> {
         std::conditional_t<(sizeof(L) < sizeof(short)), short,
         std::conditional_t<(sizeof(L) < sizeof(int)), int,
         std::conditional_t<(sizeof(L) < sizeof(long)), long, long long>>>;
-        
+
     using type = common_integer<_left_type, R>::type;
 };
 
@@ -484,7 +484,7 @@ template<typename T> struct smart_pointer_traits<T *> {constexpr static bool val
         } \
     }()
 
-/** All values of numeric type `In` can be represented without loss of precision by numeric type `Out`.
+/** All values of numeric type `In` can be represented without loss of range by numeric type `Out`.
  */
 template<typename Out, typename In>
 constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeric_limits<In>::digits and
@@ -674,5 +674,29 @@ struct overloaded : Ts... {
 
     // The implicit constructor is all that is needed to initialize each lambda. 
 };
+
+
+/** A type traits for generating default values of a type.
+*
+* May be overriden for user defined types.
+*/
+template<typename T>
+struct default_values : std::false_type {};
+
+template<std::integral T>
+struct default_values<T> : std::true_type
+{
+    constexpr static T off = T{};
+    constexpr static T on = T{1};
+};
+
+template<typename T> requires (std::is_enum_v<T>)
+struct default_values<T> : std::true_type {
+    constexpr static T off = static_cast<T>(0);
+    constexpr static T on = static_cast<T>(1);
+};
+
+template<typename T>
+constexpr bool default_values_v = default_values<T>::value;
 
 } // namespace hi::inline v1

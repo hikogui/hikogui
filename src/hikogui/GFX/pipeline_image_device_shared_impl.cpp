@@ -91,12 +91,12 @@ static point2 get_staging_position(const paged_image &image, std::size_t page_in
 
 void device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
 {
-    hilet width = narrow_cast<std::size_t>(border_rectangle.width());
-    hilet height = narrow_cast<std::size_t>(border_rectangle.height());
-    hilet bottom = narrow_cast<std::size_t>(border_rectangle.bottom());
-    hilet top = narrow_cast<std::size_t>(border_rectangle.top());
-    hilet left = narrow_cast<std::size_t>(border_rectangle.left());
-    hilet right = narrow_cast<std::size_t>(border_rectangle.right());
+    hilet width = ceil_cast<std::size_t>(border_rectangle.width());
+    hilet height = ceil_cast<std::size_t>(border_rectangle.height());
+    hilet bottom = floor_cast<std::size_t>(border_rectangle.bottom());
+    hilet top = ceil_cast<std::size_t>(border_rectangle.top());
+    hilet left = floor_cast<std::size_t>(border_rectangle.left());
+    hilet right = ceil_cast<std::size_t>(border_rectangle.right());
 
     hi_assert(bottom == 0);
     hi_assert(left == 0);
@@ -126,10 +126,10 @@ void device_shared::clear_staging_between_border_and_upload(aarectangle border_r
     hi_assert(border_rectangle.left() == 0.0f and border_rectangle.bottom() == 0.0f);
     hi_assert(upload_rectangle.left() == 0.0f and upload_rectangle.bottom() == 0.0f);
 
-    hilet border_top = narrow_cast<std::size_t>(border_rectangle.top());
-    hilet border_right = narrow_cast<std::size_t>(border_rectangle.right());
-    hilet upload_top = narrow_cast<std::size_t>(upload_rectangle.top());
-    hilet upload_right = narrow_cast<std::size_t>(upload_rectangle.right());
+    hilet border_top = floor_cast<std::size_t>(border_rectangle.top());
+    hilet border_right = floor_cast<std::size_t>(border_rectangle.right());
+    hilet upload_top = floor_cast<std::size_t>(upload_rectangle.top());
+    hilet upload_right = floor_cast<std::size_t>(upload_rectangle.right());
     hi_assert(border_right <= upload_right);
     hi_assert(border_top <= upload_top);
 
@@ -181,11 +181,11 @@ void device_shared::update_atlas_with_staging_pixmap(paged_image const &image) n
         // Copy including a 1 pixel border.
         constexpr auto width = narrow_cast<int32_t>(paged_image::page_size + 2);
         constexpr auto height = narrow_cast<int32_t>(paged_image::page_size + 2);
-        hilet src_x = narrow_cast<int32_t>(src_position.x() - 1);
-        hilet src_y = narrow_cast<int32_t>(src_position.y() - 1);
-        hilet dst_x = narrow_cast<int32_t>(dst_position.x() - 1);
-        hilet dst_y = narrow_cast<int32_t>(dst_position.y() - 1);
-        hilet dst_z = narrow_cast<std::size_t>(dst_position.z());
+        hilet src_x = floor_cast<int32_t>(src_position.x() - 1.0f);
+        hilet src_y = floor_cast<int32_t>(src_position.y() - 1.0f);
+        hilet dst_x = floor_cast<int32_t>(dst_position.x() - 1.0f);
+        hilet dst_y = floor_cast<int32_t>(dst_position.y() - 1.0f);
+        hilet dst_z = floor_cast<std::size_t>(dst_position.z());
 
         auto &regionsToCopy = regions_to_copy_per_atlas_texture.at(dst_z);
         regionsToCopy.emplace_back(

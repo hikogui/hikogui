@@ -32,14 +32,9 @@ struct agrapheme {
         return lhs.grapheme() <=> rhs.grapheme();
     }
 
-    [[nodiscard]] constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr friend bool operator==(agrapheme const &lhs, char const &rhs) noexcept
     {
-        return grapheme().empty();
-    }
-
-    constexpr explicit operator bool() const noexcept
-    {
-        return not empty();
+        return lhs.grapheme() == rhs;
     }
 
     [[nodiscard]] size_t hash() const noexcept

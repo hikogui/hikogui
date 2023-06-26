@@ -38,7 +38,7 @@ public:
      * @param text The text entered by the user into the text field.
      * @return no-value when valid, or a label to display to the user when invalid.
      */
-    virtual label validate(text_field_widget& sender, std::string_view text) noexcept
+    virtual label validate(text_field_widget& sender, gstring const &text) noexcept
     {
         return {};
     }
@@ -50,7 +50,7 @@ public:
      * @param sender The widget that called this function.
      * @return The text to show in the text field.
      */
-    virtual std::string text(text_field_widget& sender) noexcept
+    virtual gstring text(text_field_widget& sender) noexcept
     {
         return {};
     }
@@ -65,7 +65,7 @@ public:
      * @param sender The widget that called this function.
      * @param text The text entered by the user.
      */
-    virtual void set_text(text_field_widget& sender, std::string_view text) noexcept {}
+    virtual void set_text(text_field_widget& sender, gstring const &text) noexcept {}
 
     callback_token
     subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
@@ -106,10 +106,10 @@ public:
         });
     }
 
-    std::optional<label> validate(text_field_widget& sender, std::string_view text) noexcept override
+    std::optional<label> validate(text_field_widget& sender, gstring const &text) noexcept override
     {
         try {
-            [[maybe_unused]] auto dummy = from_string<value_type>(text, 10);
+            [[maybe_unused]] auto dummy = from_string<value_type>(to_string(text), 10);
         } catch (parse_error const&) {
             return {tr{"Invalid integer"}};
         }
@@ -117,15 +117,15 @@ public:
         return {};
     }
 
-    std::string text(text_field_widget& sender) noexcept override
+    gstring text(text_field_widget& sender) noexcept override
     {
-        return to_string(*value);
+        return to_gstring(to_string(*value));
     }
 
-    void set_text(text_field_widget& sender, std::string_view text) noexcept override
+    void set_text(text_field_widget& sender, gstring text) noexcept override
     {
         try {
-            value = from_string<value_type>(text, 10);
+            value = from_string<value_type>(to_string(text), 10);
         } catch (std::exception const&) {
             // Ignore the error, don't modify the value.
             return;
@@ -157,10 +157,10 @@ public:
         });
     }
 
-    label validate(text_field_widget& sender, std::string_view text) noexcept override
+    label validate(text_field_widget& sender, gstring const &text) noexcept override
     {
         try {
-            [[maybe_unused]] auto dummy = from_string<value_type>(text);
+            [[maybe_unused]] auto dummy = from_string<value_type>(to_string(text));
         } catch (parse_error const&) {
             return {elusive_icon::WarningSign, tr{"Invalid floating point number"}};
         }
@@ -168,15 +168,15 @@ public:
         return {};
     }
 
-    std::string text(text_field_widget& sender) noexcept override
+    gstring text(text_field_widget& sender) noexcept override
     {
-        return to_string(*value);
+        return to_gstring(to_string(*value));
     }
 
-    void set_text(text_field_widget& sender, std::string_view text) noexcept override
+    void set_text(text_field_widget& sender, gstring const &text) noexcept override
     {
         try {
-            value = from_string<value_type>(text);
+            value = from_string<value_type>(to_string(text));
         } catch (std::exception const&) {
             // Ignore the error, don't modify the value.
             return;

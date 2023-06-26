@@ -1958,12 +1958,18 @@ static std::optional<std::string_view> expand_language_tag(std::string_view from
             ;
 
         } else if (not language) {
-            hi_check(
-                (element.size() == 2 or element.size() == 3) and is_alpha(element),
-                "First element of a language tag must be a ISO-639 2 or 3 letter language code, got '{}'",
-                str);
-            // 2 or 3 letter non-optional ISO-639 language code.
-            language = {element};
+            if (element == "*") {
+                // wild card.
+                language = {};
+
+            } else {
+                hi_check(
+                    (element.size() == 2 or element.size() == 3) and is_alpha(element),
+                    "First element of a language tag must be a ISO-639 2 or 3 letter language code, got '{}'",
+                    str);
+                // 2 or 3 letter non-optional ISO-639 language code.
+                language = {element};
+            }
 
         } else {
             if (not script and not region and element.size() == 3 and is_alpha(element)) {

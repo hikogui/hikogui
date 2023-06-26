@@ -9,6 +9,7 @@
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
 #include <format>
+#include <concepts>
 
 namespace hi::inline v1 {
 namespace geo {
@@ -367,8 +368,8 @@ using point3 = geo::point<float, 3>;
 using point2i = geo::point<int, 2>;
 using point3i = geo::point<int, 3>;
 
-template<>
-[[nodiscard]] constexpr point2 narrow_cast(point2i const& rhs) noexcept
+template<std::same_as<point2> Out, std::same_as<point2i> In>
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
 {
     return {narrow_cast<float>(rhs.x()), narrow_cast<float>(rhs.y())};
 }

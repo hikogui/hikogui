@@ -32,7 +32,7 @@ void window_traffic_lights_widget::set_layout(widget_layout const& context) noex
 {
     if (compare_store(_layout, context)) {
         auto extent = context.size();
-        if (extent.height() > narrow_cast<int>(theme().large_size() * 1.2f)) {
+        if (extent.height() > floor_cast<int>(theme().large_size() * 1.2f)) {
             extent = extent2i{extent.width(), theme().large_size()};
         }
         auto y = context.height() - extent.height();

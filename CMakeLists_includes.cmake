@@ -89,6 +89,15 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/image/srgb_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/uint_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/unorm_a2bgr10_pack.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_639.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/language_tag.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/translation.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/float16_sse4_1.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/module.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_f16x8_sse2.hpp
@@ -102,6 +111,32 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_simd_utility.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_sse2.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/grapheme.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/gstring.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_paired_bracket_types.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_mirroring_glyphs.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_canonical_combining_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_compositions.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_decompositions.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_east_asian_widths.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_general_categories.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_grapheme_cluster_breaks.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_lexical_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_line_break_classes.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_scripts.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_sentence_break_properties.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/ucd_word_break_properties.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_opportunity.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_description.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_grapheme_cluster_break.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_line_break.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_normalization.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_plural.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_sentence_break.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/unicode_word_break.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/architecture.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast.hpp

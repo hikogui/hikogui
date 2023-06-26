@@ -10,7 +10,7 @@
 #include "pipeline_alpha_vertex.hpp"
 #include "subpixel_orientation.hpp"
 #include "../geometry/module.hpp"
-#include "../unicode/unicode_bidi_class.hpp"
+#include "../unicode/module.hpp"
 #include "../text/text_cursor.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"

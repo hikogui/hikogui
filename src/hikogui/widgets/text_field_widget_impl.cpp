@@ -60,7 +60,7 @@ text_field_widget::~text_field_widget()
 
     if (*_text_widget->focus) {
         // Update the optional error value from the string conversion when the text-widget has keyboard focus.
-        _error_label = delegate->validate(*this, to_string(*_text));
+        _error_label = delegate->validate(*this, *_text);
 
     } else {
         // When field is not focused, simply follow the observed_value.
@@ -195,7 +195,7 @@ hitbox text_field_widget::hitbox_test(point2i position) const noexcept
 void text_field_widget::revert(bool force) noexcept
 {
     hi_assert_not_null(delegate);
-    _text = to_gstring(delegate->text(*this), U' ');
+    _text = delegate->text(*this);
     _error_label = label{};
 }
 
@@ -205,7 +205,7 @@ void text_field_widget::commit(bool force) noexcept
     hi_assert_not_null(delegate);
 
     if (*continues or force) {
-        auto text = to_string(*_text);
+        auto text = *_text;
 
         if (delegate->validate(*this, text).empty()) {
             // text is valid.
@@ -213,7 +213,7 @@ void text_field_widget::commit(bool force) noexcept
         }
 
         // After commit get the canonical text to display from the delegate.
-        _text = to_gstring(delegate->text(*this), U' ');
+        _text = delegate->text(*this);
         _error_label = label{};
     }
 }

@@ -2,24 +2,124 @@
 
 #pragma once
 
-#include <array>
+#include "../utility/module.hpp"
 #include <cstdint>
+#include <optional>
 
-namespace hi::inline v1 {
-
-#if defined(__INTELLISENSE__) or defined(_PREFAST_)
-constexpr auto ucd_compositions = std::array<uint64_t, 1>{ $"0x{:016x}ULL".format(compositions[0])$ };
-#else
-constexpr auto ucd_compositions = std::array<uint64_t, $len(compositions)$>{\
-$for i, value in enumerate(compositions):
-    $if i % 4 == 0:
-    
-    $"0x{:016x}ULL".format(value)$,\
-    $else:
- $"0x{:016x}ULL".format(value)$,\
-    $end
-$end
-};
+// Windows.h defines small as a macro.
+#ifdef small
+#undef small
 #endif
 
+namespace hi {
+inline namespace v1 {
+namespace detail {
+
+constexpr auto ucd_compositions_chunk_size = $chunk_size$_uz;
+constexpr auto ucd_compositions_code_point_width = $code_point_width$_uz;
+constexpr auto ucd_compositions_indices_size = $indices_size$_uz;
+constexpr auto ucd_compositions_index_width = $index_width$_uz;
+constexpr auto ucd_composition_width = $composition_width$_uz;
+
+static_assert(std::has_single_bit(ucd_compositions_chunk_size));
+
+constexpr uint8_t ucd_compositions_indices_bytes[$len(indices_bytes)$] = {\
+$for i, x in enumerate(indices_bytes):
+    $if i % 32 == 0:
+
+   \
+    $end
+$"{:3},".format(x)$
+$end
+
+};
+
+constexpr uint8_t ucd_compositions_bytes[$len(compositions_bytes)$] = {\
+$for i, x in enumerate(compositions_bytes):
+    $if i % 32 == 0:
+
+   \
+    $end
+$"{:3},".format(x)$
+$end
+
+};
+
+constexpr uint8_t ucd_composition_code_points_bytes[$len(code_points_bytes)$] = {\
+$for i, x in enumerate(code_points_bytes):
+    $if i % 32 == 0:
+
+   \
+    $end
+$"{:3},".format(x)$
+$end
+
+};
+
+} // namespace detail
+
+
+/** Get the composition info of two code-points.
+ *
+ * @param cp1 The first code-point
+ * @param cp2 The second code-point
+ * @return The code-point forming the composition of the two given code-points,
+ *         or std::nullopt if the two code-point don't composit.
+ */
+[[nodiscard]] constexpr std::optional<char32_t> ucd_get_composition(char32_t cp1, char32_t cp2) noexcept
+{
+    constexpr auto max_code_point_hi = detail::ucd_compositions_indices_size - 1;
+
+    auto code_point_hi = cp1 / detail::ucd_compositions_chunk_size;
+    hilet code_point_lo = cp1 % detail::ucd_compositions_chunk_size;
+
+    if (code_point_hi > max_code_point_hi) {
+        code_point_hi = max_code_point_hi;
+    }
+
+    // The index in the chunk-index table based on the upper-bits of the code-point.
+    hilet chunk_index = load_bits_be<detail::ucd_compositions_index_width>(
+        detail::ucd_compositions_indices_bytes,
+        code_point_hi * detail::ucd_compositions_index_width);
+
+    // Add back in the lower-bits of the code-point.
+    hilet index = (chunk_index * detail::ucd_compositions_chunk_size) + code_point_lo;
+
+    // Get the composition value from the composition table by index.
+    hilet value = load_bits_be<detail::ucd_composition_width>(
+        detail::ucd_compositions_bytes, index * detail::ucd_composition_width);
+
+    constexpr auto cp_size_width = $cp_size_width$;
+    constexpr auto cp_size_mask = (1_uz << cp_size_width) - 1;
+    hilet cp_size = value & cp_size_mask;
+    if (cp_size == 0) {
+        return std::nullopt;
+    }
+
+    hilet cp_index = value >> cp_size_width;
+
+    auto offset = cp_index * 2_uz * detail::ucd_compositions_code_point_width;
+    for (auto i = 0_uz; i != cp_size; ++i, offset += detail::ucd_compositions_code_point_width) {
+        hilet second_cp = load_bits_be<detail::ucd_compositions_code_point_width>(
+            detail::ucd_composition_code_points_bytes, offset);
+
+        if (second_cp == cp2) {
+            offset += cp_size * detail::ucd_compositions_code_point_width;
+
+            hilet result_cp = load_bits_be<detail::ucd_compositions_code_point_width>(
+                detail::ucd_composition_code_points_bytes, offset);
+
+            return char_cast<char32_t>(result_cp);
+
+        } else if (second_cp > cp2) {
+            // Early out, `load_bits_be` is kinda expensive and on average (mean)
+            // this list is about 15 entries in size.
+            return std::nullopt;
+        }
+    }
+
+    return std::nullopt;
 }
+
+}} // namespace hi::v1
+

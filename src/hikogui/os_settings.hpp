@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "i18n/language_tag.hpp"
-#include "i18n/language.hpp"
+#include "i18n/module.hpp"
 #include "GUI/theme_mode.hpp"
 #include "GFX/subpixel_orientation.hpp"
 #include "geometry/module.hpp"
@@ -34,46 +33,14 @@ public:
         return _language_tags;
     }
 
-    /** Get the configured languages.
-     *
-     * @note The list of languages include both the configured region-specific-languages and the generic-languages.
-     * @return A list of languages in order of priority.
-     */
-    [[nodiscard]] static std::vector<language *> languages() noexcept
-    {
-        hi_axiom(_populated.load(std::memory_order::acquire));
-        hilet lock = std::scoped_lock(_mutex);
-        return _languages;
-    }
-
-    /** Get the configured writing direction.
-     *
-     * The writing-direction is extracted from the first language/script configured on the system.
-     *
-     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
-     */
-    [[nodiscard]] static unicode_bidi_class writing_direction() noexcept
-    {
-        hi_axiom(_populated.load(std::memory_order::acquire));
-        return _writing_direction.load(std::memory_order::relaxed);
-    }
-
     /** Check if the configured writing direction is left-to-right.
      *
      * @retval true If the writing direction is left-to-right.
      */
     [[nodiscard]] static bool left_to_right() noexcept
     {
-        return writing_direction() == unicode_bidi_class::L;
-    }
-
-    /** Check if the configured writing direction is right-to-left.
-     *
-     * @retval true If the writing direction is right-to-left.
-     */
-    [[nodiscard]] static bool right_to_left() noexcept
-    {
-        return not left_to_right();
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _left_to_right.load(std::memory_order::relaxed);
     }
 
     /** Get the configured light/dark theme mode
@@ -268,8 +235,7 @@ private:
     static inline notifier_type _notifier;
 
     static inline std::vector<language_tag> _language_tags = {};
-    static inline std::vector<language *> _languages = {};
-    static inline std::atomic<hi::unicode_bidi_class> _writing_direction = hi::unicode_bidi_class::L;
+    static inline std::atomic<bool> _left_to_right = true;
     static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
     static inline std::atomic<bool> _uniform_HDR = false;
     static inline std::atomic<hi::subpixel_orientation> _subpixel_orientation = hi::subpixel_orientation::unknown;

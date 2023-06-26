@@ -96,7 +96,7 @@ public:
         }
 
         // Calculate the position of the slider.
-        hilet slider_offset = narrow_cast<int>(std::round(*offset * travel_vs_hidden_content_ratio()));
+        hilet slider_offset = round_cast<int>(*offset * travel_vs_hidden_content_ratio());
         if constexpr (axis == axis::vertical) {
             _slider_rectangle = aarectanglei{0, slider_offset, context.width(), slider_length()};
         } else {
@@ -144,9 +144,8 @@ public:
             if (event.mouse().cause.left_button) {
                 // The distance the slider has to move relative to the slider position at the
                 // start of the drag.
-                hilet slider_movement =
-                    narrow_cast<int>(axis == axis::vertical ? event.drag_delta().y() : event.drag_delta().x());
-                hilet content_movement = narrow_cast<int>(std::round(slider_movement * hidden_content_vs_travel_ratio()));
+                hilet slider_movement = axis == axis::vertical ? event.drag_delta().y() : event.drag_delta().x();
+                hilet content_movement = round_cast<int>(slider_movement * hidden_content_vs_travel_ratio());
                 hilet new_offset = _offset_before_drag + content_movement;
                 offset = clamp_offset(new_offset);
                 return true;

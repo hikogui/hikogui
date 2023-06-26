@@ -73,7 +73,7 @@ TEST_F(text_widget_tests, add_character)
     widget->handle_event(gui_event{gui_event_type::text_cursor_right_char});
     widget->handle_event(gui_event::keyboard_grapheme(grapheme{'e'}));
 
-    ASSERT_EQ(text, "hello");
+    ASSERT_EQ(*text, "hello");
 }
 
 TEST_F(text_widget_tests, add_combining_character)
@@ -84,5 +84,17 @@ TEST_F(text_widget_tests, add_combining_character)
     widget->handle_event(gui_event::keyboard_partial_grapheme(grapheme{'"'}));
     widget->handle_event(gui_event::keyboard_grapheme(grapheme{U'\u00EB'})); // e-umlaut
 
-    ASSERT_EQ(text, "h\u00EBllo");
+    ASSERT_EQ(*text, "h\u00EBllo");
+}
+
+TEST_F(text_widget_tests, replace_selection_combining_character)
+{
+    text = std::string{"hello"};
+
+    widget->handle_event(gui_event{gui_event_type::text_cursor_right_char});
+    widget->handle_event(gui_event{gui_event_type::text_select_right_char});
+    widget->handle_event(gui_event::keyboard_partial_grapheme(grapheme{'"'}));
+    widget->handle_event(gui_event::keyboard_grapheme(grapheme{U'\u00EB'})); // e-umlaut
+
+    ASSERT_EQ(*text, "h\u00EBllo");
 }

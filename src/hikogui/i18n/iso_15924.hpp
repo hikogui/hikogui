@@ -5,8 +5,6 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../unicode/unicode_script.hpp"
-#include "../unicode/unicode_bidi_class.hpp"
 #include <string_view>
 #include <cstdint>
 #include <format>
@@ -18,24 +16,66 @@ namespace hi::inline v1 {
  */
 class iso_15924 {
 public:
-    constexpr iso_15924() noexcept : _v(999) {}
-    constexpr iso_15924(iso_15924 const &) noexcept = default;
-    constexpr iso_15924(iso_15924 &&) noexcept = default;
-    constexpr iso_15924 &operator=(iso_15924 const &) noexcept = default;
-    constexpr iso_15924 &operator=(iso_15924 &&) noexcept = default;
+    constexpr iso_15924() noexcept : _v(0) {}
+    constexpr iso_15924(iso_15924 const&) noexcept = default;
+    constexpr iso_15924(iso_15924&&) noexcept = default;
+    constexpr iso_15924& operator=(iso_15924 const&) noexcept = default;
+    constexpr iso_15924& operator=(iso_15924&&) noexcept = default;
 
-    constexpr iso_15924(uint16_t number) : _v(number) {
-        if (number > 999) {
-            throw parse_error(std::format("Invalid script number '{}'", number));
-        }
+    constexpr iso_15924(std::integral auto number) : _v(0)
+    {
+        hi_check_bounds(number, 0, 1000);
+        _v = narrow_cast<uint16_t>(number);
     }
 
-    iso_15924(unicode_script const &script) noexcept;
     iso_15924(std::string_view code4);
+
+    /** When any script is allowed.
+     */
+    [[nodiscard]] constexpr static iso_15924 wildcard() noexcept
+    {
+        return iso_15924{0};
+    }
+
+    /** Common script is used for characters that are common in different scripts.
+     *
+     * Punctuation for example are of a common script.
+     */
+    [[nodiscard]] constexpr static iso_15924 common() noexcept
+    {
+        return iso_15924{998};
+    }
+
+    /** Used when the script was not encoded with the text.
+     */
+    [[nodiscard]] constexpr static iso_15924 uncoded() noexcept
+    {
+        return iso_15924{999};
+    }
+
+    [[nodiscard]] constexpr static iso_15924 inherited() noexcept
+    {
+        return iso_15924{994};
+    }
+
+    constexpr iso_15924(intrinsic_t, uint16_t v) noexcept : _v(v)
+    {
+        hi_axiom_bounds(_v, 0, 1000);
+    }
+
+    [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
+    {
+        return _v;
+    }
+
+    [[nodiscard]] constexpr uint16_t& intrinsic() noexcept
+    {
+        return _v;
+    }
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return _v == 999;
+        return _v == 0;
     }
 
     explicit operator bool() const noexcept
@@ -45,7 +85,8 @@ public:
 
     /** Get the iso-15924 numeric value.
      */
-    [[nodiscard]] constexpr uint16_t number() const noexcept {
+    [[nodiscard]] constexpr uint16_t number() const noexcept
+    {
         return _v;
     }
 
@@ -57,9 +98,23 @@ public:
      */
     [[nodiscard]] std::string_view code4_open_type() const noexcept;
 
-    [[nodiscard]] unicode_bidi_class writing_direction() const noexcept;
+    /** Is this script written left-to-right.
+     */
+    [[nodiscard]] bool left_to_right() const noexcept;
 
-    [[nodiscard]] constexpr friend bool operator==(iso_15924 const &lhs, iso_15924 const &rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(iso_15924 const& lhs, iso_15924 const& rhs) noexcept = default;
+    [[nodiscard]] constexpr friend auto operator<=>(iso_15924 const& lhs, iso_15924 const& rhs) noexcept = default;
+
+    /** Check if rhs matches with lhs.
+     *
+     * @param lhs The script or wild-card.
+     * @param rhs The script.
+     * @return True when lhs is a wild-card or when lhs and rhs are equal.
+     */
+    [[nodiscard]] constexpr friend bool matches(iso_15924 const& lhs, iso_15924 const& rhs) noexcept
+    {
+        return lhs.empty() or lhs == rhs;
+    }
 
 private:
     uint16_t _v;
@@ -69,7 +124,7 @@ private:
 
 template<>
 struct std::hash<hi::iso_15924> {
-    [[nodiscard]] size_t operator()(hi::iso_15924 const &rhs) const noexcept
+    [[nodiscard]] size_t operator()(hi::iso_15924 const& rhs) const noexcept
     {
         return std::hash<uint16_t>{}(rhs.number());
     }

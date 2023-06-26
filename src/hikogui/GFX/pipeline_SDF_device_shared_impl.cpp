@@ -32,8 +32,8 @@ void device_shared::destroy(gfx_device_vulkan const *vulkanDevice)
 
 [[nodiscard]] glyph_atlas_info device_shared::allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept
 {
-    auto image_width = narrow_cast<int>(std::ceil(draw_extent.width()));
-    auto image_height = narrow_cast<int>(std::ceil(draw_extent.height()));
+    auto image_width = ceil_cast<int>(draw_extent.width());
+    auto image_height = ceil_cast<int>(draw_extent.height());
 
     // Check if the glyph still fits in the same line of glyphs.
     // Otherwise go to the next line.
@@ -80,10 +80,10 @@ void device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const& location)
         {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
         {0, 0, 0},
         {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-        {narrow_cast<int32_t>(location.position.x()), narrow_cast<int32_t>(location.position.y()), 0},
-        {narrow_cast<uint32_t>(location.size.width()), narrow_cast<uint32_t>(location.size.height()), 1}}};
+        {floor_cast<int32_t>(location.position.x()), floor_cast<int32_t>(location.position.y()), 0},
+        {floor_cast<uint32_t>(location.size.width()), floor_cast<uint32_t>(location.size.height()), 1}}};
 
-    auto& atlasTexture = atlasTextures.at(narrow_cast<std::size_t>(location.position.z()));
+    auto& atlasTexture = atlasTextures.at(floor_cast<std::size_t>(location.position.z()));
     atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyImage(
@@ -147,7 +147,7 @@ void device_shared::add_glyph_to_atlas(glyph_ids const& glyph, glyph_atlas_info&
     prepareStagingPixmapForDrawing();
     info = allocate_rect(image_size, image_size / draw_bounding_box.size());
     auto pixmap =
-        stagingTexture.pixmap.subimage(0, 0, narrow_cast<size_t>(info.size.width()), narrow_cast<size_t>(info.size.height()));
+        stagingTexture.pixmap.subimage(0, 0, ceil_cast<size_t>(info.size.width()), ceil_cast<size_t>(info.size.height()));
     fill(pixmap, draw_path);
     uploadStagingPixmapToAtlas(info);
 }

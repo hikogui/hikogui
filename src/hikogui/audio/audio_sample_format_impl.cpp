@@ -19,7 +19,7 @@ namespace hi::inline v1 {
         hi_assert(num_bits + num_guard_bits <= 31);
         max_value <<= narrow_cast<size_t>(31 - num_bits - num_guard_bits);
 
-        return narrow_cast<float>(max_value);
+        return static_cast<float>(max_value);
     }
 }
 

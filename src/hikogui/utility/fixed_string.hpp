@@ -32,7 +32,7 @@ namespace hi::inline v1 {
  *     }
  *     ```
  */
-template<int N>
+template<size_t N>
 struct fixed_string {
     using value_type = char;
 
@@ -79,6 +79,11 @@ struct fixed_string {
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         return N;
+    }
+
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return N == 0;
     }
 
     template<size_t I>
@@ -182,19 +187,59 @@ struct fixed_string {
         return *this <=> fixed_string<O - 1>(rhs);
     }
 
-    template<size_t O>
-    [[nodiscard]] constexpr auto operator+(fixed_string<O> const& rhs) const noexcept
+    /** Append two strings.
+     */
+    template<size_t R>
+    [[nodiscard]] constexpr auto operator+(fixed_string<R> const& rhs) const noexcept
     {
-        auto r = fixed_string<N + O>{};
+        auto r = fixed_string<N + R>{};
         auto dst_i = 0_uz;
         for (auto src_i = 0_uz; src_i != N; ++src_i, ++dst_i) {
             r[dst_i] = (*this)[src_i];
         }
-        for (auto src_i = 0_uz; src_i != O; ++src_i, ++dst_i) {
+        for (auto src_i = 0_uz; src_i != R; ++src_i, ++dst_i) {
             r[dst_i] = rhs[src_i];
         }
 
         return r;
+    }
+
+    template<size_t R>
+    [[nodiscard]] constexpr auto operator+(char const (&rhs)[R]) const noexcept
+    {
+        return *this + fixed_string<R - 1>(rhs);
+    }
+
+    /** Join two strings with a slash '/'.
+     *
+     * If one or both of the operands is empty, no '/' is added.
+     */
+    template<size_t R>
+    [[nodiscard]] constexpr auto operator/(fixed_string<R> const& rhs) const noexcept
+    {
+        constexpr auto has_dot = N != 0 and R != 0 ? 1_uz : 0_uz;
+        auto r = fixed_string<N + R + has_dot>{};
+
+        auto dst_i = 0_uz;
+        for (auto src_i = 0_uz; src_i != N; ++src_i, ++dst_i) {
+            r[dst_i] = (*this)[src_i];
+        }
+
+        if (has_dot) {
+            r[dst_i++] = '/';
+        }
+
+        for (auto src_i = 0_uz; src_i != R; ++src_i, ++dst_i) {
+            r[dst_i] = rhs[src_i];
+        }
+
+        return r;
+    }
+
+    template<size_t R>
+    [[nodiscard]] constexpr auto operator/(char const (&rhs)[R]) const noexcept
+    {
+        return *this / fixed_string<R - 1>(rhs);
     }
 };
 

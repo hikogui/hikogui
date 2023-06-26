@@ -91,7 +91,7 @@ struct std::char_traits<hi::agrapheme> {
         hi_axiom_not_null(s);
 
         std::size_t i = 0;
-        while (not s[i].empty()) {
+        while (s[i] != '\0') {
             ++i;
         }
         return i;

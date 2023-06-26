@@ -15,7 +15,7 @@
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../geometry/module.hpp"
-#include "../i18n/translate.hpp"
+#include "../l10n/module.hpp"
 #include "../undo_stack.hpp"
 #include "../scoped_task.hpp"
 #include "../observer.hpp"
@@ -82,10 +82,7 @@ public:
      */
     text_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    text_widget(
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        text_widget_attribute auto&&...attributes) noexcept :
+    text_widget(widget *parent, std::shared_ptr<delegate_type> delegate, text_widget_attribute auto&&...attributes) noexcept :
         text_widget(parent, std::move(delegate))
     {
         set_attributes(hi_forward(attributes)...);
@@ -100,10 +97,11 @@ public:
     text_widget(
         widget *parent,
         different_from<std::shared_ptr<delegate_type>> auto&& text,
-        text_widget_attribute auto&&...attributes) noexcept requires requires
+        text_widget_attribute auto&&...attributes) noexcept
+        requires requires { make_default_text_delegate(hi_forward(text)); }
+        : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...)
     {
-        make_default_text_delegate(hi_forward(text));
-    } : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...) {}
+    }
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override;
@@ -160,13 +158,17 @@ private:
     float _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
 
     bool _overwrite_mode = false;
-
+    
     /** The text has a dead character.
-     * The grapheme is empty when there is no dead character.
-     * On overwrite the original grapheme is stored in the _had_dead_character, so
-     * that it can be restored.
+     *
+     * This variable has the following states:
+     *  - std::nullopt: The text-widget is not in dead-char composition mode.
+     *  - '\uffff': The text-widget is in dead-char composition, in insert-mode.
+     *  - other: The text-widget is in dead-char composition, in overwrite and
+     *           the grapheme value is the original character being replaced.
+     *           So that is can be restored when cancelling composition.
      */
-    grapheme _has_dead_character = nullptr;
+    std::optional<grapheme> _has_dead_character = std::nullopt;
 
     undo_stack<undo_type> _undo_stack = {1000};
 

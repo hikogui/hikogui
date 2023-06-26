@@ -11,6 +11,7 @@
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
+#include "../unicode/module.hpp"
 #include "../GFX/subpixel_orientation.hpp"
 #include "../geometry/module.hpp"
 #include "../widgets/window_widget.hpp"
@@ -226,14 +227,14 @@ public:
      * @retval empty When the clipboard is locked by another application, on error, if the data on the clipboard can not
      *               be converted to text or if the clipboard is empty.
      */
-    [[nodiscard]] virtual std::optional<std::string> get_text_from_clipboard() const noexcept = 0;
+    [[nodiscard]] virtual std::optional<gstring> get_text_from_clipboard() const noexcept = 0;
 
     /** Put text on the clipboard.
      *
      * @note This is part of the window as some operating systems need to know from which window the text was posted.
      * @param text The text to place on the clipboard.
      */
-    virtual void put_text_on_clipboard(std::string_view text) const noexcept = 0;
+    virtual void put_text_on_clipboard(gstring_view text) const noexcept = 0;
 
     [[nodiscard]] translate2i window_to_screen() const noexcept
     {
