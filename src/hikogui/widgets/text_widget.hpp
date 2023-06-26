@@ -158,7 +158,7 @@ private:
     float _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
 
     bool _overwrite_mode = false;
-
+    
     /** The text has a dead character.
      *
      * This variable has the following states:

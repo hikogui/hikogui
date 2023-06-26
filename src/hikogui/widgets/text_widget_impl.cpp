@@ -278,23 +278,23 @@ void text_widget::replace_selection(gstring const& replacement) noexcept
 
 void text_widget::add_character(grapheme c, add_type keyboard_mode) noexcept
 {
-    hilet original_cursor = _selection.cursor();
+    hilet[start_selection, end_selection] = _selection.selection(_text_cache.size());
     auto original_grapheme = grapheme{char32_t{0xffff}};
 
-    if (_selection.empty() and _overwrite_mode and original_cursor.before()) {
-        original_grapheme = _text_cache[original_cursor.index()];
+    if (_selection.empty() and _overwrite_mode and start_selection.before()) {
+        original_grapheme = _text_cache[start_selection.index()];
 
-        hilet[first, last] = _shaped_text.select_char(original_cursor);
+        hilet[first, last] = _shaped_text.select_char(start_selection);
         _selection.drag_selection(last);
     }
     replace_selection(gstring{c});
 
     if (keyboard_mode == add_type::insert) {
         // The character was inserted, put the cursor back where it was.
-        _selection = original_cursor;
+        _selection = start_selection;
 
     } else if (keyboard_mode == add_type::dead) {
-        _selection = original_cursor.before_neighbor(_text_cache.size());
+        _selection = start_selection.before_neighbor(_text_cache.size());
         _has_dead_character = original_grapheme;
     }
 }

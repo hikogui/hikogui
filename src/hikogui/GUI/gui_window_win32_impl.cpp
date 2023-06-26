@@ -794,7 +794,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
             if (hilet gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
                 // Only pass code-points that are non-control and non-mark.
-                process_event(gui_event::keyboard_grapheme(grapheme{c}));
+                process_event(gui_event::keyboard_partial_grapheme(grapheme{c}));
             }
         }
         break;
