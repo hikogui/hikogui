@@ -92,11 +92,7 @@ public:
             // Make sure that the current selection fits the new text.
             _selection.resize(_text_cache.size());
 
-            // Create a new text_shaper with the new text.
-            hilet alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
-
-            _shaped_text = text_shaper{_text_cache, theme<prefix>.text_theme(this), alignment_, os_settings::left_to_right()};
-            _cell.set_constraints(_shaped_text.constraints());
+            this->layout();
         });
 
         _cursor_state_cbt = _cursor_state.subscribe([&](auto...) {
@@ -133,21 +129,14 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints update_constraints() noexcept override
+    void layout() noexcept override
     {
-        return _cell.constraints();
-    }
+        // Create a new text_shaper with the new text.
+        // Resolve as if in left-to-right mode, the grid will flip itself.
+        hilet resolved_alignment = resolve(*alignment, true);
 
-    void set_layout(widget_layout const& context) noexcept override
-    {
-        if (compare_store(layout, context)) {
-            hi_assert(context.shape.baseline);
-
-            _shaped_text.layout(
-                narrow_cast<aarectangle>(context.rectangle()),
-                narrow_cast<float>(*context.shape.baseline),
-                context.sub_pixel_size);
-        }
+        _shaped_text = text_shaper{_text_cache, theme<prefix>.text_theme(this), resolved_alignment, os_settings::left_to_right()};
+        _cell.set_constraints(_shaped_text.constraints());
     }
 
     void draw(widget_draw_context& context) noexcept override
@@ -186,7 +175,7 @@ public:
 
             if (*_cursor_state == cursor_state_type::on or *_cursor_state == cursor_state_type::busy) {
                 context.draw_text_cursors(
-                    layout,
+                    cell.rectangle(),
                     _shaped_text,
                     _selection.cursor(),
                     _overwrite_mode,

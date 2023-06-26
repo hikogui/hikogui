@@ -14,7 +14,7 @@
 #include "widget_draw_context.hpp"
 #include "../theme/module.hpp"
 #include "../geometry/module.hpp"
-#include "../layout/box_constraints.hpp"
+#include "../layout/module.hpp"
 #include "../observer.hpp"
 #include "../generator.hpp"
 #include "../loop.hpp"
@@ -80,15 +80,7 @@ public:
      */
     size_t semantic_layer = 0_uz;
 
-    /** The minimum size this widget is allowed to be.
-     */
-    observer<extent2> minimum = extent2{};
-
-    /** The maximum size this widget is allowed to be.
-     */
-    observer<extent2> maximum = extent2::large();
-
-    widget_layout layout;
+    grid_cell cell;
 
     virtual ~widget() {}
     widget(widget *parent) noexcept : parent(parent), id(narrow_cast<uint32_t>(++global_counter<"widget::id">))
@@ -178,37 +170,7 @@ public:
         _scale = -new_scale;
     }
 
-    /** Update the constraints of the widget.
-     *
-     * Typically the implementation of this function starts with recursively calling update_constraints()
-     * on its children.
-     *
-     * If the container, due to a change in constraints, wants the window to resize to the minimum size
-     * it should call `request_resize()`.
-     *
-     * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
-     *       and `widget::maximum_size()`.
-     */
-    [[nodiscard]] virtual box_constraints update_constraints() noexcept
-    {
-        return {*minimum, *minimum, *maximum};
-    }
-
-    /** Update the internal layout of the widget.
-     * This function is called when the size of this widget must change, or if any of the
-     * widget request a re-layout.
-     *
-     * This function may be used for expensive calculations, such as geometry calculations,
-     * which should only be done when the data or sizes change; it should cache these calculations.
-     *
-     * @post This function will change what is returned by `widget::size()` and the transformation
-     *       matrices.
-     * @param context The layout for this child.
-     */
-    virtual void set_layout(widget_layout const& context) noexcept
-    {
-        layout = context;
-    }
+    virtual void layout() noexcept {}
 
     /** Draw the widget.
      *

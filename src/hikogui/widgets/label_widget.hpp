@@ -86,41 +86,45 @@ public:
         co_yield *_text_widget;
     }
 
-    [[nodiscard]] box_constraints update_constraints() noexcept override
+    void layout() noexcept override
     {
         // Resolve as if in left-to-right mode, the grid will flip itself.
         hilet resolved_alignment = resolve(*alignment, true);
 
-        _grid.clear();
         if (to_bool(label->icon) and to_bool(label->text)) {
             // Both of the icon and text are set, so configure the grid to hold both.
             if (resolved_alignment == horizontal_alignment::left) {
                 // icon text
-                _grid.add_cell(0, 0, _icon_widget.get());
-                _grid.add_cell(1, 0, _text_widget.get(), true);
+                cell.set_child(_icon_widget.cell, 0, 0);
+                cell.set_child(_text_widget.cell, 1, 0);
+
             } else if (resolved_alignment == horizontal_alignment::right) {
                 // text icon
-                _grid.add_cell(0, 0, _text_widget.get(), true);
-                _grid.add_cell(1, 0, _icon_widget.get());
+                cell.set_child(_text_widget.cell, 0, 0);
+                cell.set_child(_icon_widget.cell, 1, 0);
+
             } else if (resolved_alignment == vertical_alignment::top) {
                 // icon
                 // text
-                _grid.add_cell(0, 0, _icon_widget.get());
-                _grid.add_cell(0, 1, _text_widget.get(), true);
+                cell.set_child(_icon_widget.cell, 0, 0);
+                cell.set_child(_text_widget.cell, 0, 1);
+
             } else if (resolved_alignment == vertical_alignment::bottom) {
                 // text
                 // icon
-                _grid.add_cell(0, 0, _text_widget.get(), true);
-                _grid.add_cell(0, 1, _icon_widget.get());
+                cell.set_child(_text_widget.cell, 0, 0);
+                cell.set_child(_icon_widget.cell, 0, 1);
+
             } else {
                 hi_no_default("alignment is not allowed to be middle-center.");
             }
         } else if (to_bool(label->icon)) {
             // Only the icon-widget is used.
-            _grid.add_cell(0, 0, _icon_widget.get());
+            cell.set_child(_icon_widget.cell, 0, 0);
+
         } else if (to_bool(label->text)) {
             // Only the text-widget is used.
-            _grid.add_cell(0, 0, _text_widget.get());
+            cell.set_child(_text_widget.cell, 0, 0);
         }
 
         hilet icon_size =
@@ -130,40 +134,20 @@ public:
 
         _icon_widget->minimum = icon_size;
         _icon_widget->maximum = icon_size;
-
-        for (auto& cell : _grid) {
-            cell.set_constraints(cell.value->update_constraints());
-        }
-
-        return _grid.constraints(os_settings::left_to_right());
-    }
-
-    void set_layout(widget_layout const& context) noexcept override
-    {
-        if (compare_store(layout, context)) {
-            _grid.set_layout(context.shape, theme<prefix>.cap_height(this));
-        }
-
-        for (hilet& cell : _grid) {
-            cell.value->set_layout(context.transform(cell.shape, 0.0f));
-        }
     }
 
     void draw(widget_draw_context& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout)) {
-            for (hilet& cell : _grid) {
-                cell.value->draw(context);
-            }
+        if (*mode > widget_mode::invisible) {
+            _icon_widget->draw(context);
+            _text_widget->draw(context);
         }
     }
 
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
-        hi_axiom(loop::main().on_thread());
-
         if (*mode > widget_mode::invisible) {
-            return _text_widget->hitbox_test_from_parent(position);
+            return _text_widget->hitbox_test(position);
         } else {
             return {};
         }
