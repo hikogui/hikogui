@@ -524,14 +524,14 @@ using aarectanglei = geo::axis_aligned_rectangle<int>;
  */
 [[nodiscard]] aarectanglei fit(aarectanglei const& bounds, aarectanglei const& rectangle) noexcept;
 
-template<>
-[[nodiscard]] constexpr aarectanglei narrow_cast(aarectangle const& rhs) noexcept
+template<std::same_as<aarectanglei> Out, std::same_as<aarectangle> In>
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
 {
-    return {narrow_cast<int>(rhs.x()), narrow_cast<int>(rhs.y()), narrow_cast<int>(rhs.width()), narrow_cast<int>(rhs.height())};
+    return {floor_cast<int>(rhs.x()), floor_cast<int>(rhs.y()), ceil_cast<int>(rhs.width()), ceil_cast<int>(rhs.height())};
 }
 
-template<>
-[[nodiscard]] constexpr aarectangle narrow_cast(aarectanglei const& rhs) noexcept
+template<std::same_as<aarectangle> Out, std::same_as<aarectanglei> In>
+[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
 {
     return {
         narrow_cast<float>(rhs.x()),

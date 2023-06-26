@@ -23,7 +23,7 @@ text_shaper_line::text_shaper_line(
 
         // Only calculate line metrics based on visible characters.
         // For example a paragraph separator is seldom available in a font.
-        if (is_visible(it->description->general_category())) {
+        if (is_visible(it->general_category)) {
             this->metrics = max(metrics, it->font_metrics());
             last_visible_it = it;
         }
@@ -35,7 +35,7 @@ text_shaper_line::text_shaper_line(
             it->is_trailing_white_space = true;
         }
 
-        last_category = (last - 1)->description->general_category();
+        last_category = (last - 1)->general_category;
     } else {
         last_category = unicode_general_category::Cn;
     }
@@ -123,7 +123,7 @@ calculate_precise_width(text_shaper_line::column_vector& columns, unicode_bidi_c
         }
 
         right_x = (*it)->position.x() + (*it)->metrics.advance;
-        if (not is_visible((*it)->description->general_category())) {
+        if (not is_visible((*it)->general_category)) {
             ++num_white_space;
         }
     }
@@ -167,7 +167,7 @@ static void move_glyphs(text_shaper_line::column_vector& columns, float offset) 
 
         // Add extra space for each white space in the visible part of the line. Leave the
         // sizes of trailing white space normal.
-        if (not char_it->is_trailing_white_space and not is_visible(char_it->description->general_category())) {
+        if (not char_it->is_trailing_white_space and not is_visible(char_it->general_category)) {
             offset += extra_space_per_whitespace;
         }
     }
@@ -271,7 +271,7 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
     }
 
     auto char_it = *column_it;
-    if (is_Zp_or_Zl(char_it->description->general_category())) {
+    if (is_Zp_or_Zl(char_it->general_category)) {
         // Do not put the cursor on a paragraph separator or line separator.
         if (paragraph_direction == unicode_bidi_class::L) {
             if (column_it != columns.begin()) {

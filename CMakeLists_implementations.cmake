@@ -11,6 +11,10 @@ target_sources(hikogui PRIVATE
     #${HIKOGUI_SOURCE_DIR}/font/true_type_font_GSUB_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/font/true_type_font_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/axis_aligned_rectangle_impl.cpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_impl.cpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.cpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.cpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/translation_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/exception_win32_impl.cpp>
 )

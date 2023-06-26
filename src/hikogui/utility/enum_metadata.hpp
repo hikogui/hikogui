@@ -147,6 +147,20 @@ public:
     /** Get an enum-value from a name.
      *
      * @param name The name to lookup in the enum.
+     * @return The enum-value belonging with the name or std::nullopt if name is not found.
+     */
+    [[nodiscard]] constexpr std::optional<value_type> at_if(std::convertible_to<name_type> auto&& name) const noexcept
+    {
+        if (hilet *value = find(name_type{hi_forward(name)})) {
+            return *value;
+        } else {
+            return std::nullopt;
+        }
+    }
+
+    /** Get an enum-value from a name.
+     *
+     * @param name The name to lookup in the enum.
      * @param default_value The default value to return when the name is not found.
      * @return The enum-value belonging with the name.
      */

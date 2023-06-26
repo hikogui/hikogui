@@ -236,9 +236,9 @@ static void fillRowSpan(std::span<uint8_t> row, float const startX, float const 
         return;
     }
 
-    hilet startX_int = narrow_cast<std::size_t>(startX);
+    hilet startX_int = floor_cast<std::size_t>(startX);
     hilet endXplusOne = endX + 1.0f;
-    hilet endX_int = narrow_cast<std::size_t>(endXplusOne);
+    hilet endX_int = floor_cast<std::size_t>(endXplusOne);
     hilet startColumn = std::max(startX_int, std::size_t{0});
     hilet endColumn = std::min(endX_int, row.size());
     hilet nrColumns = endColumn - startColumn;

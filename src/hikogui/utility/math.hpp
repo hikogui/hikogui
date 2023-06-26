@@ -32,33 +32,6 @@
 
 namespace hi::inline v1 {
 
-constexpr long long pow10_table[20]{
-    1LL,
-    10LL,
-    100LL,
-    1'000LL,
-    10'000LL,
-    100'000LL,
-    1'000'000LL,
-    10'000'000LL,
-    100'000'000LL,
-    1'000'000'000LL,
-    10'000'000'000LL,
-    100'000'000'000LL,
-    1'000'000'000'000LL,
-    10'000'000'000'000LL,
-    100'000'000'000'000LL,
-    1'000'000'000'000'000LL,
-    10'000'000'000'000'000LL,
-    100'000'000'000'000'000LL,
-    1'000'000'000'000'000'000LL,
-};
-
-[[nodiscard]] constexpr long long pow10ll(int x) noexcept
-{
-    hi_axiom(x >= 0 && x <= 18);
-    return pow10_table[x];
-}
 
 template<typename Iterator>
 [[nodiscard]] auto mean(Iterator first, Iterator last)
@@ -160,6 +133,58 @@ template<std::floating_point T>
 [[nodiscard]] constexpr bool isnan(T value) noexcept
 {
     return not (value == value);
+}
+
+constexpr unsigned long long pow10_table[20] = {
+    1ULL,
+    10ULL,
+    100ULL,
+    1'000ULL,
+    10'000ULL,
+    100'000ULL,
+    1'000'000ULL,
+    10'000'000ULL,
+    100'000'000ULL,
+    1'000'000'000ULL,
+    10'000'000'000ULL,
+    100'000'000'000ULL,
+    1'000'000'000'000ULL,
+    10'000'000'000'000ULL,
+    100'000'000'000'000ULL,
+    1'000'000'000'000'000ULL,
+    10'000'000'000'000'000ULL,
+    100'000'000'000'000'000ULL,
+    1'000'000'000'000'000'000ULL,
+};
+
+[[nodiscard]] constexpr uint64_t pow10(unsigned int x) noexcept
+{
+    hi_axiom_bounds(x, 20);
+    return pow10_table[x];
+}
+
+template<std::unsigned_integral T>
+[[nodiscard]] constexpr unsigned int decimal_width(T x)
+{
+    // clang-format off
+    constexpr uint8_t guess_table[] = {
+         0,  0,  0,  0,  1,  1,  1,  2,  2,  2,  3,  3,  3,  3,  4,  4,
+         4,  5,  5,  5,  6,  6,  6,  6,  7,  7,  7,  8,  8,  8,  9,  9,
+         9,  9, 10, 10, 10, 11, 11, 11, 12, 12, 12, 12, 13, 13, 13, 14,
+        14, 14, 15, 15, 15, 15, 16, 16, 16, 17, 17, 17, 18, 18, 18, 18
+    };
+    // clang-format on
+
+    hilet num_bits = std::bit_width(x);
+    hi_axiom_bounds(num_bits, guess_table);
+    hilet guess = guess_table[num_bits];
+    return guess + wide_cast<unsigned int>(x >= pow10(guess));
+}
+
+template<std::signed_integral T>
+[[nodiscard]] constexpr unsigned int decimal_width(T x)
+{
+    return decimal_width(narrow_cast<std::make_unsigned_t<T>>(abs(x)));
 }
 
 } // namespace hi::inline v1

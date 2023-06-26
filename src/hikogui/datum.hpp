@@ -536,7 +536,7 @@ public:
                 r > narrow_cast<double>(std::numeric_limits<T>::max())) {
                 throw std::overflow_error("double to integral");
             }
-            return narrow_cast<T>(r);
+            return round_cast<T>(r);
 
         } else if (auto i = get_if<long long>(*this)) {
             if (*i < std::numeric_limits<T>::min() or *i > std::numeric_limits<T>::max()) {

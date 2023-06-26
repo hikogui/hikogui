@@ -340,15 +340,14 @@ void gui_window_win32::open_system_menu()
 
     // Position the system menu on the left side, below the system menu button.
     hilet left = rectangle.left();
-    hilet top = rectangle.top() - 30.0f;
+    hilet top = rectangle.top() - 30;
 
     // Convert to y-axis down coordinate system
     hilet inv_top = os_settings::primary_monitor_rectangle().height() - top;
 
     // Open the system menu window and wait.
     hilet system_menu = GetSystemMenu(win32Window, false);
-    hilet cmd =
-        TrackPopupMenu(system_menu, TPM_RETURNCMD, narrow_cast<int>(left), narrow_cast<int>(inv_top), 0, win32Window, NULL);
+    hilet cmd = TrackPopupMenu(system_menu, TPM_RETURNCMD, left, inv_top, 0, win32Window, NULL);
     if (cmd > 0) {
         SendMessage(win32Window, WM_SYSCOMMAND, narrow_cast<WPARAM>(cmd), LPARAM{0});
     }
@@ -363,8 +362,8 @@ void gui_window_win32::set_window_size(extent2i new_extent)
         hi_log_error("Could not get the window's rectangle on the screen.");
     }
 
-    hilet new_width = narrow_cast<int>(std::ceil(new_extent.width()));
-    hilet new_height = narrow_cast<int>(std::ceil(new_extent.height()));
+    hilet new_width = new_extent.width();
+    hilet new_height = new_extent.height();
     hilet new_x = os_settings::left_to_right() ? original_rect.left : original_rect.right - new_width;
     hilet new_y = original_rect.top;
 
@@ -378,12 +377,12 @@ void gui_window_win32::set_window_size(extent2i new_extent)
         SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
 }
 
-[[nodiscard]] std::optional<std::string> gui_window_win32::get_text_from_clipboard() const noexcept
+[[nodiscard]] std::optional<gstring> gui_window_win32::get_text_from_clipboard() const noexcept
 {
     if (not OpenClipboard(win32Window)) {
         // Another application could have the clipboard locked.
         hi_log_info("Could not open win32 clipboard '{}'", get_last_error_message());
-        return {};
+        return std::nullopt;
     }
 
     hilet defer_CloseClipboard = defer([] {
@@ -400,13 +399,13 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                 hilet cb_data = GetClipboardData(CF_UNICODETEXT);
                 if (cb_data == nullptr) {
                     hi_log_error("Could not get clipboard data: '{}'", get_last_error_message());
-                    return {};
+                    return std::nullopt;
                 }
 
                 auto const *const wstr_c = static_cast<wchar_t const *>(GlobalLock(cb_data));
                 if (wstr_c == nullptr) {
                     hi_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
-                    return {};
+                    return std::nullopt;
                 }
 
                 hilet defer_GlobalUnlock = defer([cb_data] {
@@ -415,8 +414,8 @@ void gui_window_win32::set_window_size(extent2i new_extent)
                     }
                 });
 
-                auto r = hi::to_string(std::wstring_view(wstr_c));
-                hi_log_debug("get_text_from_clipboard '{}'", r);
+                auto r = to_gstring(hi::to_string(std::wstring_view(wstr_c)));
+                hi_log_debug("get_text_from_clipboard '{}'", to_string(r));
                 return {std::move(r)};
             }
             break;
@@ -429,10 +428,10 @@ void gui_window_win32::set_window_size(extent2i new_extent)
         hi_log_error("Could not enumerator clipboard formats: '{}'", get_last_error_message());
     }
 
-    return {};
+    return std::nullopt;
 }
 
-void gui_window_win32::put_text_on_clipboard(std::string_view text) const noexcept
+void gui_window_win32::put_text_on_clipboard(gstring_view text) const noexcept
 {
     if (not OpenClipboard(win32Window)) {
         // Another application could have the clipboard locked.
@@ -449,8 +448,7 @@ void gui_window_win32::put_text_on_clipboard(std::string_view text) const noexce
         return;
     }
 
-    auto wtext = hi::to_wstring(
-        unicode_NFC(to_u32string(text), unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_newline_to_CRLF));
+    auto wtext = hi::to_wstring(unicode_normalize(to_u32string(text), unicode_normalize_config::NFC_CRLF_noctr()));
 
     auto wtext_handle = GlobalAlloc(GMEM_MOVEABLE, (wtext.size() + 1) * sizeof(wchar_t));
     if (wtext_handle == nullptr) {
@@ -786,23 +784,26 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
 
-        } else if (auto g = grapheme{c}; g.valid()) {
-            process_event(gui_event::keyboard_grapheme(g));
+        } else if (hilet gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
+            // Only pass code-points that are non-control and non-mark.
+            process_event(gui_event::keyboard_grapheme(grapheme{c}));
         }
         break;
 
     case WM_DEADCHAR:
         if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
-            if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event::keyboard_partial_grapheme(g));
+            if (hilet gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
+                // Only pass code-points that are non-control and non-mark.
+                process_event(gui_event::keyboard_grapheme(grapheme{c}));
             }
         }
         break;
 
     case WM_CHAR:
         if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
-            if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event::keyboard_grapheme(g));
+            if (hilet gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
+                // Only pass code-points that are non-control and non-mark.
+                process_event(gui_event::keyboard_grapheme(grapheme{c}));
             }
         }
         break;

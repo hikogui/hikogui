@@ -373,7 +373,7 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     _label_icon_size = parse_int(data, "label-icon-size");
 
     _baseline_adjustment =
-        narrow_cast<int>(std::ceil(std::get<to_underlying(semantic_text_style::label)>(_text_styles)->cap_height(font_book)));
+        ceil_cast<int>(std::get<to_underlying(semantic_text_style::label)>(_text_styles)->cap_height(font_book));
 }
 
 } // namespace hi::inline v1

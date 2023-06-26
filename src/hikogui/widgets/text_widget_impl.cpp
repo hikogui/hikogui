@@ -87,7 +87,7 @@ text_widget::~text_widget()
     auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
     _shaped_text = text_shaper{
-        font_book::global(), _text_cache, actual_text_style, theme().scale, alignment_, os_settings::writing_direction()};
+        font_book::global(), _text_cache, actual_text_style, theme().scale, alignment_, os_settings::left_to_right()};
 
     hilet shaped_text_rectangle =
         narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));
@@ -304,9 +304,10 @@ void text_widget::delete_dead_character() noexcept
     if (_has_dead_character) {
         hi_assert(_selection.cursor().before());
         hi_assert_bounds(_selection.cursor().index(), _text_cache);
-        if (_has_dead_character.valid()) {
+
+        if (_has_dead_character != U'\uffff') {
             auto text = _text_cache;
-            text[_selection.cursor().index()] = _has_dead_character;
+            text[_selection.cursor().index()] = *_has_dead_character;
             delegate->write(*this, text);
         } else {
             auto text = _text_cache;
@@ -314,7 +315,7 @@ void text_widget::delete_dead_character() noexcept
             delegate->write(*this, text);
         }
     }
-    _has_dead_character.clear();
+    _has_dead_character = std::nullopt;
 }
 
 void text_widget::delete_character_next() noexcept
@@ -438,12 +439,15 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     case text_edit_paste:
         if (*mode >= partial) {
             reset_state("BDX");
-            replace_selection(to_gstring(event.clipboard_data(), U' '));
+            auto tmp = event.clipboard_data();
+            // Replace all paragraph separators with white-space.
+            std::replace(tmp.begin(), tmp.end(), grapheme{unicode_PS}, grapheme{' '});
+            replace_selection(tmp);
             return true;
 
         } else if (*mode >= enabled) {
             reset_state("BDX");
-            replace_selection(to_gstring(event.clipboard_data()));
+            replace_selection(event.clipboard_data());
             return true;
         }
         break;
@@ -452,7 +456,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         if (*mode >= select) {
             reset_state("BDX");
             if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
-                process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, to_string(selected_text_)));
+                process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text_));
             }
             return true;
         }
@@ -461,7 +465,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     case text_edit_cut:
         if (*mode >= select) {
             reset_state("BDX");
-            process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, to_string(selected_text())));
+            process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text()));
             if (*mode >= partial) {
                 replace_selection(gstring{});
             }

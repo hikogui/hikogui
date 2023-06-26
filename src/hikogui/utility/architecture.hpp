@@ -177,11 +177,11 @@ using uintreg_t = uint64_t;
 #define HI_HAS_INT128 1
 /** Signed 128 bit integer.
  */
-using int128_t = __int128_t;
+using int128_t = __int128;
 
 /** Unsigned 128 bit integer.
  */
-using uint128_t = unsigned __int128_t;
+using uint128_t = unsigned __int128;
 
 #endif
 

@@ -6,8 +6,7 @@
 
 #include "text_style.hpp"
 #include "../font/module.hpp"
-#include "../unicode/unicode_description.hpp"
-#include "../unicode/grapheme.hpp"
+#include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
 
 namespace hi::inline v1 {
@@ -83,9 +82,9 @@ public:
      */
     aarectangle rectangle;
 
-    /** The unicode description of the grapheme.
+    /** The general category of this grapheme.
      */
-    unicode_description const *description;
+    unicode_general_category general_category;
 
     /** The text direction for this glyph.
      *
@@ -99,7 +98,7 @@ public:
      * - The script of characters before/after this character in the same word, or if `unicode_script::Common`;
      * - The script passed during construction of the text_shaper.
      */
-    unicode_script script;
+    iso_15924 script;
 
     /** The scale of the glyph for displaying on the screen.
      */
@@ -124,21 +123,21 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(hi::grapheme const &grapheme, text_style const &style, float dpi_scale) noexcept;
+    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style const& style, float dpi_scale) noexcept;
 
     /** Initialize the glyph based on the grapheme.
      *
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(hi::font_book const &font_book, hi::font const &font) noexcept;
+    void initialize_glyph(hi::font_book const& font_book, hi::font const& font) noexcept;
 
     /** Initialize the glyph based on the grapheme.
      *
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(hi::font_book &font_book) noexcept;
+    void initialize_glyph(hi::font_book& font_book) noexcept;
 
     /** Called by the bidi-algorithm to mirror glyphs.
      *
@@ -157,12 +156,12 @@ public:
         return scale * glyph.font().metrics;
     }
 
-    [[nodiscard]] friend bool operator==(text_shaper_char const &lhs, char32_t const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(text_shaper_char const& lhs, char32_t const& rhs) noexcept
     {
         return lhs.grapheme == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(text_shaper_char const &lhs, char const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(text_shaper_char const& lhs, char const& rhs) noexcept
     {
         return lhs.grapheme == rhs;
     }
@@ -170,7 +169,7 @@ public:
 private:
     /** Load metrics based on the loaded glyph.
      */
-    void set_glyph(hi::glyph_ids &&new_glyph) noexcept;
+    void set_glyph(hi::glyph_ids&& new_glyph) noexcept;
 };
 
 } // namespace hi::inline v1

@@ -9,7 +9,7 @@
 
 #include "utility/module.hpp"
 #include "strings.hpp"
-#include "i18n/translate.hpp"
+#include "l10n/module.hpp"
 #include "unicode/gstring.hpp"
 #include "image/module.hpp"
 #include "font/module.hpp"
@@ -40,21 +40,7 @@ class text : public std::variant<std::monostate, std::string, gstring, translate
         return not std::holds_alternative<std::monostate>(rhs);
     }
 
-    /** Convert the text into a std::string.
-     */
-    [[nodiscard]] constexpr friend std::string to_string(hi::text const& rhs) noexcept
-    {
-        // clang-format off
-        return std::visit(
-            overloaded{
-                [](std::monostate const &) { return std::string{}; },
-                [](std::string const &x) { return x; },
-                [](gstring const &x) { return hi::to_string(x); },
-                [](translate const &x) { return x(); }
-            },
-            rhs);
-        // clang-format on
-    }
+    
 
     /** Convert the text into a gstring.
      */
@@ -66,10 +52,17 @@ class text : public std::variant<std::monostate, std::string, gstring, translate
                 [](std::monostate const &) { return gstring{}; },
                 [](std::string const &x) { return to_gstring(std::string_view{x}); },
                 [](gstring const &x) { return x; },
-                [](translate const &x) { return to_gstring(std::string_view{x()}); }
+                [](translate const &x) { return x(); }
             },
             rhs);
         // clang-format on
+    }
+
+    /** Convert the text into a std::string.
+     */
+    [[nodiscard]] constexpr friend std::string to_string(hi::text const& rhs) noexcept
+    {
+        return to_string(to_gstring(rhs));
     }
 };
 

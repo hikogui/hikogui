@@ -30,6 +30,34 @@ public:
 
     iso_15924(std::string_view code4);
 
+    /** When any script is allowed.
+     */
+    [[nodiscard]] constexpr static iso_15924 wildcard() noexcept
+    {
+        return iso_15924{0};
+    }
+
+    /** Common script is used for characters that are common in different scripts.
+     *
+     * Punctuation for example are of a common script.
+     */
+    [[nodiscard]] constexpr static iso_15924 common() noexcept
+    {
+        return iso_15924{998};
+    }
+
+    /** Used when the script was not encoded with the text.
+     */
+    [[nodiscard]] constexpr static iso_15924 uncoded() noexcept
+    {
+        return iso_15924{999};
+    }
+
+    [[nodiscard]] constexpr static iso_15924 inherited() noexcept
+    {
+        return iso_15924{994};
+    }
+
     constexpr iso_15924(intrinsic_t, uint16_t v) noexcept : _v(v)
     {
         hi_axiom_bounds(_v, 0, 1000);
