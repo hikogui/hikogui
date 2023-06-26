@@ -1,4 +1,5 @@
 
+import sys
 
 def get_expression(text, begin, separator):
     """Find the end of a expression or statement
@@ -162,3 +163,8 @@ def psp(text, namespace, separator="%"):
     exec(python_code, globals(), namespace)
     return "".join(namespace["__r"])
 
+def psp_execute(template_path, output_path, **args):
+    print("    Generating output {} using template {}".format(output_path, template_path), file=sys.stderr, flush=True)
+    template_text = open(template_path, "r", encoding="utf-8").read()
+    output_text = psp(template_text, args, separator="$")
+    open(output_path, "w", encoding="utf-8").write(output_text)

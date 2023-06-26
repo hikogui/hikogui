@@ -17,13 +17,13 @@ def add_hangul_decompositions(descriptions):
     for S_index in range(S_count):
         code_point = S_base + S_index
         d = descriptions[code_point]
-        d.decomposition_type = "canonical"
+        d.decomposition_type = None
 
         # Unicode standard chapter 3.12 "Hangul Syllable Decomposition"
         if S_index % T_count == 0:
             d.grapheme_cluster_break = "LV"
             d.line_break = "H2"
-            
+
             L_index = S_index // N_count
             V_index = (S_index % N_count) // T_count
             L_part = L_base + L_index
