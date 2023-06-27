@@ -11,11 +11,12 @@
 #include "../strings.hpp"
 #include <vector>
 #include <string>
+#include <type_traits>
 
 template<>
 struct std::char_traits<hi::grapheme> {
     using char_type = hi::grapheme;
-    using int_type = int32_t;
+    using int_type = std::make_signed_t<char_type::value_type>;
     using off_type = std::streamoff;
     using state_type = std::mbstate_t;
     using pos_type = std::fpos<state_type>;
@@ -111,11 +112,7 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr char_type to_char_type(int_type c) noexcept
     {
-        auto tmp = hi::char_cast<char_type::value_type>(c);
-        if (tmp > 0x1f'ffff) {
-            tmp = 0;
-        }
-        return char_type{hi::intrinsic_t{}, tmp};
+        return c < 0 ? char_type{U'\ufffd'} : char_type{hi::intrinsic_t{}, hi::char_cast<char_type::value_type>(c)};
     }
 
     static constexpr int_type to_int_type(char_type c) noexcept
@@ -135,10 +132,7 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr int_type not_eof(int_type e) noexcept
     {
-        if (e < 0) {
-            e = 0;
-        }
-        return e;
+        return e < 0 ? 0 : e;
     }
 };
 

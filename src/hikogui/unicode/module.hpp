@@ -6,6 +6,7 @@
 
 #include "grapheme.hpp"
 #include "gstring.hpp"
+#include "phrasing.hpp"
 #include "ucd_bidi_classes.hpp"
 #include "ucd_bidi_mirroring_glyphs.hpp"
 #include "ucd_bidi_paired_bracket_types.hpp"

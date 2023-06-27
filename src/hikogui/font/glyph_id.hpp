@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../unicode/grapheme.hpp"
+#include "../unicode/module.hpp"
 #include "../tagged_id.hpp"
 #include <algorithm>
 #include <utility>

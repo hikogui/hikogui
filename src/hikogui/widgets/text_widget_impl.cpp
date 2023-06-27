@@ -6,7 +6,7 @@
 #include "../os_settings.hpp"
 #include "../scoped_task.hpp"
 #include "../when_any.hpp"
-#include "../unicode/unicode_bidi.hpp"
+#include "../unicode/module.hpp"
 
 namespace hi::inline v1 {
 

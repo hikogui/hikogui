@@ -11,11 +11,7 @@
 #include "../layout/box_constraints.hpp"
 #include "../font/module.hpp"
 #include "../geometry/module.hpp"
-#include "../unicode/unicode_description.hpp"
-#include "../unicode/unicode_break_opportunity.hpp"
-#include "../unicode/unicode_bidi.hpp"
-#include "../unicode/grapheme.hpp"
-#include "../unicode/gstring.hpp"
+#include "../unicode/module.hpp"
 #include <vector>
 #include <tuple>
 

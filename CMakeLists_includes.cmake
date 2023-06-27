@@ -114,6 +114,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/module.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/grapheme.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/gstring.hpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/phrasing.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_classes.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_paired_bracket_types.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_bidi_mirroring_glyphs.hpp
