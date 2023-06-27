@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../unicode/grapheme.hpp"
+#include "../unicode/module.hpp"
 #include "../utility/module.hpp"
 
 namespace hi::inline v1 {

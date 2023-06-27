@@ -4,10 +4,7 @@
 
 #include "text_shaper.hpp"
 #include "../font/module.hpp"
-#include "../unicode/unicode_line_break.hpp"
-#include "../unicode/unicode_bidi.hpp"
-#include "../unicode/unicode_word_break.hpp"
-#include "../unicode/unicode_sentence_break.hpp"
+#include "../unicode/module.hpp"
 #include "../log.hpp"
 #include "../generator.hpp"
 #include <numeric>

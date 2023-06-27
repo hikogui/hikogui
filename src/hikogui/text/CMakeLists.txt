@@ -4,9 +4,6 @@
 
 
 target_sources(hikogui PRIVATE
-    agrapheme.hpp
-    agstring_impl.cpp
-    agstring.hpp
     line_metrics.hpp
     semantic_text_style.hpp
     text_cursor.hpp

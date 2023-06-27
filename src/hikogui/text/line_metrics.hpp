@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../font/module.hpp"
-#include "../unicode/unicode_general_category.hpp"
+#include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 #include "../alignment.hpp"
