@@ -82,22 +82,22 @@ enum class speaker_mapping : uint32_t {
 
 [[nodiscard]] constexpr bool to_bool(speaker_mapping const& rhs) noexcept
 {
-    return to_bool(to_underlying(rhs));
+    return to_bool(std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr unsigned int popcount(speaker_mapping const &rhs) noexcept
 {
-    return std::popcount(to_underlying(rhs));
+    return std::popcount(std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr speaker_mapping operator|(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
 {
-    return static_cast<speaker_mapping>(to_underlying(lhs) | to_underlying(rhs));
+    return static_cast<speaker_mapping>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr speaker_mapping operator&(speaker_mapping const& lhs, speaker_mapping const& rhs) noexcept
 {
-    return static_cast<speaker_mapping>(to_underlying(lhs) & to_underlying(rhs));
+    return static_cast<speaker_mapping>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
 constexpr speaker_mapping &operator|=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
@@ -114,7 +114,7 @@ template<>
 struct pickle<speaker_mapping> {
     [[nodiscard]] datum encode(speaker_mapping const &rhs) const noexcept
     {
-        return datum{narrow_cast<long long>(to_underlying(rhs))};
+        return datum{narrow_cast<long long>(std::to_underlying(rhs))};
     }
 
     [[nodiscard]] speaker_mapping decode(long long rhs) const

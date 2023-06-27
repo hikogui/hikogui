@@ -57,7 +57,7 @@ public:
             // Either both are widgets, or both are not widgets.
             hilet elevation_ordering = lhs._elevation <=> rhs._elevation;
             if (elevation_ordering == std::partial_ordering::equivalent) {
-                return to_underlying(lhs.type) <=> to_underlying(rhs.type);
+                return std::to_underlying(lhs.type) <=> std::to_underlying(rhs.type);
             } else if (elevation_ordering == std::partial_ordering::less) {
                 return std::strong_ordering::less;
             } else if (elevation_ordering == std::partial_ordering::greater) {

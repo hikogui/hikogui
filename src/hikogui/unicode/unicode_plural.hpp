@@ -51,34 +51,34 @@ enum class plurality_value : uint8_t {
 enum class plurality_mask : uint8_t {
     /** The number was zero, and this means something in the current language.
      */
-    zero = 1 << to_underlying(plurality_value::zero),
+    zero = 1 << std::to_underlying(plurality_value::zero),
 
     /** The number was one, and this means something in the current language.
      */
-    one = 1 << to_underlying(plurality_value::one),
+    one = 1 << std::to_underlying(plurality_value::one),
 
     /** The number was two, and this means something in the current language.
      */
-    two = 1 << to_underlying(plurality_value::two),
+    two = 1 << std::to_underlying(plurality_value::two),
 
     /** The number is part of few, and this means something in the current language.
      */
-    few = 1 << to_underlying(plurality_value::few),
+    few = 1 << std::to_underlying(plurality_value::few),
 
     /** The number is part of many, and this means something in the current language.
      */
-    many = 1 << to_underlying(plurality_value::many),
+    many = 1 << std::to_underlying(plurality_value::many),
 
     /** Any other number, every language will have at least this.
      */
-    other = 1 << to_underlying(plurality_value::other),
+    other = 1 << std::to_underlying(plurality_value::other),
 };
 
 /** Or plurality masks together.
  */
 [[nodiscard]] constexpr plurality_mask operator|(plurality_mask const& lhs, plurality_mask const& rhs) noexcept
 {
-    return static_cast<plurality_mask>(to_underlying(lhs) | to_underlying(rhs));
+    return static_cast<plurality_mask>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 /** Plurality of a number.
@@ -90,7 +90,7 @@ struct plurality {
     constexpr plurality(plurality_value value, plurality_mask mask) noexcept : value(value), mask(mask)
     {
         // Check if the value uses only bits that are set in the mask.
-        hi_axiom(not to_bool(to_underlying(value) & ~to_underlying(mask)));
+        hi_axiom(not to_bool(std::to_underlying(value) & ~std::to_underlying(mask)));
     }
 
     /** Get an index to select between translations.
@@ -104,10 +104,10 @@ struct plurality {
     {
         hi_assert(n != 0);
 
-        hilet value_as_mask = (1 << (to_underlying(value) + 1)) - 1;
+        hilet value_as_mask = (1 << (std::to_underlying(value) + 1)) - 1;
         // Get the index based on the number of '1' bits that are set from the
         // plurality position to lsb.
-        hilet i = std::popcount(narrow_cast<uint8_t>(value_as_mask & to_underlying(mask))) - 1;
+        hilet i = std::popcount(narrow_cast<uint8_t>(value_as_mask & std::to_underlying(mask))) - 1;
         if (i < n) {
             return i;
         } else {

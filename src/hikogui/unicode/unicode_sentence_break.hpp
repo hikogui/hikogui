@@ -23,7 +23,7 @@ public:
     constexpr unicode_sentence_break_info &operator=(unicode_sentence_break_info const &) noexcept = default;
     constexpr unicode_sentence_break_info &operator=(unicode_sentence_break_info &&) noexcept = default;
 
-    constexpr unicode_sentence_break_info(unicode_sentence_break_property const &sentence_break_property) noexcept : _value(to_underlying(sentence_break_property))
+    constexpr unicode_sentence_break_info(unicode_sentence_break_property const &sentence_break_property) noexcept : _value(std::to_underlying(sentence_break_property))
     {}
 
     constexpr unicode_sentence_break_info &make_skip() noexcept
@@ -39,7 +39,7 @@ public:
 
     [[nodiscard]] constexpr friend bool operator==(unicode_sentence_break_info const &lhs, unicode_sentence_break_property const &rhs) noexcept
     {
-        return (lhs._value & 0x3f) == to_underlying(rhs);
+        return (lhs._value & 0x3f) == std::to_underlying(rhs);
     }
 
     [[nodiscard]] constexpr friend bool operator==(unicode_sentence_break_info const &, unicode_sentence_break_info const &) noexcept = default;

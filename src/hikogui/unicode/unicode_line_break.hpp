@@ -483,7 +483,7 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
         ++opportunity_it;
         ++width_it;
     }
-    hi_unreachable();
+    std::unreachable();
 }
 
 [[nodiscard]] constexpr unicode_break_const_iterator unicode_LB_slow_fit_line(
@@ -516,7 +516,7 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
 
         ++it;
     }
-    hi_unreachable();
+    std::unreachable();
 }
 
 [[nodiscard]] constexpr unicode_break_const_iterator

@@ -112,7 +112,7 @@ struct ucd_decomposition_info {
      */
     [[nodiscard]] constexpr bool should_decompose(size_t decomposition_mask) const noexcept
     {
-        return to_bool((1_uz << to_underlying(type())) & decomposition_mask) and cp_size() != 0;
+        return to_bool((1_uz << std::to_underlying(type())) & decomposition_mask) and cp_size() != 0;
     }
 
     /** Decompose the code-point.

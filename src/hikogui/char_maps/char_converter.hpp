@@ -199,7 +199,7 @@ public:
             tmp.resize(num_chars);
             std::memcpy(std::addressof(*tmp.begin()), ptr, num_chars * sizeof(from_char_type));
             for (auto& c : tmp) {
-                c = byte_swap(c);
+                c = std::byteswap(c);
             }
             return convert<OutRange>(std::move(tmp));
         }

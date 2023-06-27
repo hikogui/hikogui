@@ -212,12 +212,12 @@ constexpr auto surround_mode_speaker_mappings = enum_metadata{
 
 [[nodiscard]] constexpr surround_mode operator&(surround_mode const& lhs, surround_mode const& rhs) noexcept
 {
-    return static_cast<surround_mode>(to_underlying(lhs) & to_underlying(rhs));
+    return static_cast<surround_mode>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr surround_mode operator|(surround_mode const& lhs, surround_mode const& rhs) noexcept
 {
-    return static_cast<surround_mode>(to_underlying(lhs) | to_underlying(rhs));
+    return static_cast<surround_mode>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs) noexcept
@@ -227,7 +227,7 @@ constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs
 
 [[nodiscard]] constexpr bool to_bool(surround_mode const& rhs) noexcept
 {
-    return to_bool(to_underlying(rhs));
+    return to_bool(std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr speaker_mapping to_speaker_mapping(surround_mode const& rhs) noexcept
@@ -237,8 +237,8 @@ constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs
 
 [[nodiscard]] inline generator<surround_mode> enumerate_surround_modes() noexcept
 {
-    hilet begin = to_underlying(surround_mode::mono_1_0);
-    hilet end = to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
+    hilet begin = std::to_underlying(surround_mode::mono_1_0);
+    hilet end = std::to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
 
     for (uint64_t i = begin; i != end; i <<= 1) {
         hilet mode = static_cast<surround_mode>(i);
@@ -253,15 +253,15 @@ constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs
 
 [[nodiscard]] constexpr std::string to_string(surround_mode const& mask) noexcept
 {
-    switch (std::popcount(to_underlying(mask))) {
+    switch (std::popcount(std::to_underlying(mask))) {
     case 0:
         return std::string{"-"};
     case 1:
         return std::string{to_string_view_one(mask)};
     default:
         {
-            hilet begin = to_underlying(surround_mode::mono_1_0);
-            hilet end = to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
+            hilet begin = std::to_underlying(surround_mode::mono_1_0);
+            hilet end = std::to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
 
             auto r = std::string{};
             for (uint64_t i = begin; i != end; i <<= 1) {

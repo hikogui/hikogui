@@ -1657,7 +1657,7 @@ enum class unicode_script : uint16_t {
 
 [[nodiscard]] constexpr bool operator==(iso_15924 const &lhs, unicode_script const &rhs) noexcept
 {
-    return lhs.intrinsic() == to_underlying(rhs);
+    return lhs.intrinsic() == std::to_underlying(rhs);
 }
 
 [[nodiscard]] constexpr iso_15924 ucd_get_script(char32_t code_point) noexcept

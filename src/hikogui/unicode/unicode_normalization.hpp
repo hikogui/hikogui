@@ -55,7 +55,7 @@ struct unicode_normalize_config {
 
     constexpr unicode_normalize_config& add(unicode_decomposition_type type) noexcept
     {
-        decomposition_mask |= 1_uz << to_underlying(type);
+        decomposition_mask |= 1_uz << std::to_underlying(type);
         return *this;
     }
 

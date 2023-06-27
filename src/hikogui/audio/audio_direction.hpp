@@ -12,17 +12,17 @@ enum class audio_direction : unsigned char { none = 0b00, input = 0b01, output =
 
 [[nodiscard]] constexpr audio_direction operator&(audio_direction const& lhs, audio_direction const& rhs) noexcept
 {
-    return static_cast<audio_direction>(to_underlying(lhs) & to_underlying(rhs));
+    return static_cast<audio_direction>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr audio_direction operator|(audio_direction const& lhs, audio_direction const& rhs) noexcept
 {
-    return static_cast<audio_direction>(to_underlying(lhs) | to_underlying(rhs));
+    return static_cast<audio_direction>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr bool to_bool(audio_direction const &rhs) noexcept
 {
-    return to_bool(to_underlying(rhs));
+    return to_bool(std::to_underlying(rhs));
 }
 
 // clang-format off

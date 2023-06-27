@@ -239,17 +239,17 @@ public:
     constexpr explicit alignment(uint8_t value) noexcept : _value(value) {}
 
     constexpr alignment(horizontal_alignment t, vertical_alignment v = vertical_alignment::none) noexcept :
-        _value((to_underlying(v) << 4) | to_underlying(t))
+        _value((std::to_underlying(v) << 4) | std::to_underlying(t))
     {
-        hi_axiom(to_underlying(v) <= 0xf);
-        hi_axiom(to_underlying(t) <= 0xf);
+        hi_axiom(std::to_underlying(v) <= 0xf);
+        hi_axiom(std::to_underlying(t) <= 0xf);
     }
 
     constexpr alignment(vertical_alignment v, horizontal_alignment h = horizontal_alignment::none) noexcept :
-        _value((to_underlying(v) << 4) | to_underlying(h))
+        _value((std::to_underlying(v) << 4) | std::to_underlying(h))
     {
-        hi_axiom(to_underlying(v) <= 0xf);
-        hi_axiom(to_underlying(h) <= 0xf);
+        hi_axiom(std::to_underlying(v) <= 0xf);
+        hi_axiom(std::to_underlying(h) <= 0xf);
     }
 
     [[nodiscard]] static constexpr alignment top_flush() noexcept

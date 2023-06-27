@@ -67,10 +67,10 @@ struct jsonpath_descend {
 struct jsonpath_names {
     std::vector<std::string> names;
 
-    hi_constexpr jsonpath_names(jsonpath_names const &) noexcept = default;
-    hi_constexpr jsonpath_names(jsonpath_names &&) noexcept = default;
-    hi_constexpr jsonpath_names &operator=(jsonpath_names const &) noexcept = default;
-    hi_constexpr jsonpath_names &operator=(jsonpath_names &&) noexcept = default;
+    constexpr jsonpath_names(jsonpath_names const &) noexcept = default;
+    constexpr jsonpath_names(jsonpath_names &&) noexcept = default;
+    constexpr jsonpath_names &operator=(jsonpath_names const &) noexcept = default;
+    constexpr jsonpath_names &operator=(jsonpath_names &&) noexcept = default;
 
     jsonpath_names(std::string other) noexcept : names()
     {
@@ -129,10 +129,10 @@ struct jsonpath_names {
 struct jsonpath_indices {
     std::vector<ssize_t> indices;
 
-    hi_constexpr jsonpath_indices(jsonpath_indices const &) noexcept = default;
-    hi_constexpr jsonpath_indices(jsonpath_indices &&) noexcept = default;
-    hi_constexpr jsonpath_indices &operator=(jsonpath_indices const &) noexcept = default;
-    hi_constexpr jsonpath_indices &operator=(jsonpath_indices &&) noexcept = default;
+    constexpr jsonpath_indices(jsonpath_indices const &) noexcept = default;
+    constexpr jsonpath_indices(jsonpath_indices &&) noexcept = default;
+    constexpr jsonpath_indices &operator=(jsonpath_indices const &) noexcept = default;
+    constexpr jsonpath_indices &operator=(jsonpath_indices &&) noexcept = default;
 
     jsonpath_indices(ssize_t other) noexcept : indices()
     {

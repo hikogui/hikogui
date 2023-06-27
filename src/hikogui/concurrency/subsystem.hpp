@@ -67,7 +67,7 @@ hi_no_inline typename T::value_type start_subsystem(
 
 hi_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
 {
-    hi_assert(std::popcount(to_underlying(state_bit)) == 1);
+    hi_assert(std::popcount(std::to_underlying(state_bit)) == 1);
     hi_assert_not_null(init_function);
     hi_assert_not_null(deinit_function);
 

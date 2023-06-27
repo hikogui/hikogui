@@ -25,12 +25,12 @@ enum class keyboard_modifiers : uint8_t {
 
 [[nodiscard]] constexpr keyboard_modifiers operator|(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) noexcept
 {
-    return static_cast<keyboard_modifiers>(to_underlying(lhs) | to_underlying(rhs));
+    return static_cast<keyboard_modifiers>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr keyboard_modifiers operator&(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) noexcept
 {
-    return static_cast<keyboard_modifiers>(to_underlying(lhs) & to_underlying(rhs));
+    return static_cast<keyboard_modifiers>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
 constexpr keyboard_modifiers& operator|=(keyboard_modifiers& lhs, keyboard_modifiers const& rhs) noexcept
@@ -40,7 +40,7 @@ constexpr keyboard_modifiers& operator|=(keyboard_modifiers& lhs, keyboard_modif
 
 [[nodiscard]] constexpr bool to_bool(keyboard_modifiers const& rhs) noexcept
 {
-    return to_bool(to_underlying(rhs));
+    return to_bool(std::to_underlying(rhs));
 }
 
 bool operator>=(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) = delete;

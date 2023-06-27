@@ -104,7 +104,7 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
                 hilet c = *jt;
                 auto name = hi::to_string(std::u32string(1, c));
 
-                if (options_with_arguments_.find(c) == std::u32string::npos) {
+                if (not options_with_arguments_.contains(c)) {
                     // Option without argument
                     co_yield cmdln_short_option(c, {});
 

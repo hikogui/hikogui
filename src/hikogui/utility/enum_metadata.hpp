@@ -88,7 +88,7 @@ public:
         });
 
         std::sort(_by_value.begin(), _by_value.end(), [](hilet& a, hilet& b) {
-            return to_underlying(a.value) < to_underlying(b.value);
+            return std::to_underlying(a.value) < std::to_underlying(b.value);
         });
 
         values_are_continues = check_values_are_continues();
@@ -231,8 +231,8 @@ private:
         if (values_are_continues) {
             // If the enum values are continues we can do an associative lookup.
             hilet it = _by_value.begin();
-            hilet offset = to_underlying(it->value);
-            hilet i = to_underlying(value) - offset;
+            hilet offset = std::to_underlying(it->value);
+            hilet i = std::to_underlying(value) - offset;
             return (i >= 0 and i < N) ? &(it + i)->name : nullptr;
 
         } else {
@@ -276,9 +276,9 @@ private:
      */
     [[nodiscard]] constexpr bool check_values_are_continues() const noexcept
     {
-        auto check_value = to_underlying(minimum());
+        auto check_value = std::to_underlying(minimum());
         for (hilet& item : _by_value) {
-            if (to_underlying(item.value) != check_value++) {
+            if (std::to_underlying(item.value) != check_value++) {
                 return false;
             }
         }

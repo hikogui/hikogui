@@ -57,12 +57,12 @@ enum class tokenizer_action_t : uint8_t {
 
 constexpr uint16_t get_offset(tokenizer_state_t state, char c = '\0') noexcept
 {
-    return (wide_cast<uint16_t>(to_underlying(state)) << 8) | char_cast<uint8_t>(c);
+    return (wide_cast<uint16_t>(std::to_underlying(state)) << 8) | char_cast<uint8_t>(c);
 }
 
 constexpr tokenizer_action_t operator|(tokenizer_action_t lhs, tokenizer_action_t rhs)
 {
-    return static_cast<tokenizer_action_t>(to_underlying(lhs) | to_underlying(rhs));
+    return static_cast<tokenizer_action_t>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 constexpr tokenizer_action_t operator|(tokenizer_action_t lhs, char rhs)
@@ -77,7 +77,7 @@ constexpr tokenizer_action_t operator|(tokenizer_action_t lhs, char rhs)
 
 constexpr bool operator>=(tokenizer_action_t lhs, tokenizer_action_t rhs)
 {
-    return (to_underlying(lhs) & to_underlying(rhs)) == to_underlying(rhs);
+    return (std::to_underlying(lhs) & std::to_underlying(rhs)) == std::to_underlying(rhs);
 }
 
 struct tokenizer_transition_t {
