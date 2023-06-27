@@ -52,7 +52,8 @@ struct grapheme {
      *  - [35:21] ISO-639 language-code: 0 is wildcard.
      *  - [45:36] ISO-15924 script-code: 0 is wildcard.
      *  - [55:46] ISO-3166 region-code: 0 is wildcard.
-     *  - [62:56] phrasing
+     *  - [61:56] phrasing
+     *  - [62:62] reserved = 0
      *  - [63:63] If bit is set this is a end-of-file.
      */
     value_type _value;
@@ -221,14 +222,14 @@ struct grapheme {
 
     [[nodiscard]] constexpr hi::phrasing phrasing() const noexcept
     {
-        return static_cast<hi::phrasing>((_value >> 56) & 0x7f);
+        return static_cast<hi::phrasing>((_value >> 56) & 0x3f);
     }
 
     constexpr void set_phrasing(hi::phrasing rhs) noexcept
     {
-        hi_axiom(to_underlying(rhs) <= 0x7f);
+        hi_axiom(to_underlying(rhs) <= 0x3f);
 
-        constexpr auto mask = ~(value_type{0x7f} << 56);
+        constexpr auto mask = ~(value_type{0x3f} << 56);
         _value &= mask;
         _value |= static_cast<value_type>(rhs) << 56;
     }

@@ -11,13 +11,18 @@
 #include "../utility/module.hpp"
 #include <cstdint>
 #include <optional>
+#include <bit>
 
 namespace hi::inline v1 {
 
-/** Text phrasing.
- * @ingroup text
+/** Phrasing.
+ * @ingroup unicode
  *
- * The underlying value must be between 0 through 15.
+ * This is the phrasing of a piece of text. The phrasing determines
+ * the style of text on a semantic level. Simular to HTML phrasing tags.
+ *
+ * The underlying value must be between 0 through 63;
+ * so that the phrasing_mask can be 64-bits.
  */
 enum class phrasing : uint8_t {
     /** Regular, normal text.
@@ -116,7 +121,6 @@ constexpr auto phrasing_metadata = enum_metadata{
     phrasing::error, "error",
 };
 // clang-format on
-static_assert(phrasing_metadata.size() <= 15, "The mask of a phrasing is 16-bit");
 
 // clang-format off
 [[nodiscard]] constexpr std::optional<phrasing> to_phrasing(char c)
@@ -163,6 +167,10 @@ enum class phrasing_mask : uint16_t {
     all = regular | emphesis | strong | code | abbreviation | quote | keyboard | highlight | math | example | unarticulated |
         title | success | warning | error
 };
+
+static_assert(
+    std::bit_width(phrasing_metadata.size() - 1) <= sizeof(std::underlying_type_t<phrasing_mask>) * CHAR_BIT,
+    "All phrasings must fit the phrasing_mask.");
 
 [[nodiscard]] constexpr phrasing_mask operator&(phrasing_mask const& lhs, phrasing_mask const& rhs) noexcept
 {
