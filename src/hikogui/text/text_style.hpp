@@ -180,7 +180,7 @@ public:
     constexpr text_style& operator=(text_style&&) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(text_style const&, text_style const&) noexcept = default;
 
-    constexpr text_style(semantic_text_style rhs) noexcept : _value(0xff00 + to_underlying(rhs)) {}
+    constexpr text_style(semantic_text_style rhs) noexcept : _value(0xff00 + std::to_underlying(rhs)) {}
 
     text_style(std::vector<text_sub_style> rhs) noexcept
     {

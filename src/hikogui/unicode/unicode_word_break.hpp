@@ -28,7 +28,7 @@ public:
     constexpr unicode_word_break_info& operator=(unicode_word_break_info&&) noexcept = default;
 
     constexpr unicode_word_break_info(unicode_word_break_property const& word_break_property, bool pictographic) noexcept :
-        _value(to_underlying(word_break_property) | (wide_cast<uint8_t>(pictographic) << 7))
+        _value(std::to_underlying(word_break_property) | (wide_cast<uint8_t>(pictographic) << 7))
     {
     }
 
@@ -51,7 +51,7 @@ public:
     [[nodiscard]] constexpr friend bool
     operator==(unicode_word_break_info const& lhs, unicode_word_break_property const& rhs) noexcept
     {
-        return (lhs._value & 0x3f) == to_underlying(rhs);
+        return (lhs._value & 0x3f) == std::to_underlying(rhs);
     }
 
     [[nodiscard]] constexpr friend bool

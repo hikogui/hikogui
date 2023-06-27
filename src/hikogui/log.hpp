@@ -42,7 +42,7 @@ public:
 template<global_state_type Level, fixed_string SourcePath, int SourceLine, fixed_string Fmt, typename... Values>
 class log_message : public log_message_base {
 public:
-    static_assert(std::popcount(to_underlying(Level)) == 1);
+    static_assert(std::popcount(std::to_underlying(Level)) == 1);
 
     // clang-format off
     static constexpr char const *log_level_name =
@@ -116,7 +116,7 @@ public:
     template<global_state_type Level, fixed_string SourcePath, int SourceLine, fixed_string Fmt, typename... Args>
     hi_force_inline void add(Args&&...args) noexcept
     {
-        static_assert(std::popcount(to_underlying(Level)) == 1);
+        static_assert(std::popcount(std::to_underlying(Level)) == 1);
 
         hilet state = global_state.load(std::memory_order::relaxed);
         if (not to_bool(state & Level)) {

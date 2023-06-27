@@ -312,7 +312,7 @@ concept bound_check_range_helper = requires(Context&& range) {
  *
  * @param ... A string-literal as the reason why the no-default exists.
  */
-#define hi_no_default(...) hi_unreachable()
+#define hi_no_default(...) std::unreachable()
 #endif
 
 /** This part of the code should not be reachable, unless a programming bug.

@@ -92,7 +92,7 @@ private:
     /** A array of commands, one for each state and character.
      * The array is in state-major order.
      */
-    using transition_table_type = std::array<command_type,to_underlying(state_type::_size) * 128>;
+    using transition_table_type = std::array<command_type,std::to_underlying(state_type::_size) * 128>;
 
     transition_table_type _transition_table;
 
@@ -261,7 +261,7 @@ public:
     [[nodiscard]] constexpr static size_t make_index(state_type from, char c) noexcept
     {
         auto c_ = char_cast<size_t>(c);
-        return to_underlying(from) * 128 + index;
+        return std::to_underlying(from) * 128 + index;
     }
 
     constexpr command_type &add(state_type from, char c, state_type to) noexcept

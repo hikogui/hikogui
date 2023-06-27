@@ -28,7 +28,7 @@
     do { \
         VkResult res = (f); \
         if (res != VK_SUCCESS) { \
-            std::cerr << std::format("Vulkan error {}", hi::to_underlying(res)) << std::endl; \
+            std::cerr << std::format("Vulkan error {}", std::to_underlying(res)) << std::endl; \
             std::terminate(); \
         } \
     } while (false)

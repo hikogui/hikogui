@@ -62,7 +62,7 @@ constexpr float float32_max_diff = 0.0f;
 
     // `u` was assembled as little-endian, so swap if that is not the native byte order.
     if (std::endian::little != std::endian::native) {
-        u = byte_swap(u);
+        u = std::byteswap(u);
     }
     return std::bit_cast<float>(u);
 }

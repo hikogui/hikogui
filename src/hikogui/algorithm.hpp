@@ -155,7 +155,7 @@ constexpr It rfind_cluster(ConstIt first, It start, UnaryPredicate predicate)
         }
         --i;
     }
-    hi_unreachable();
+    std::unreachable();
 }
 
 /** Find the begin and end of the current cluster.

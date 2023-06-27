@@ -1903,7 +1903,7 @@ public:
 
 private:
     enum class tag_type : signed char {
-        // scalars are detected by: `to_underlying(tag_type) >= 0`
+        // scalars are detected by: `std::to_underlying(tag_type) >= 0`
         monostate = 0,
         floating_point = 1,
         integral = 2,
@@ -1914,7 +1914,7 @@ private:
         flow_continue = 7,
         flow_break = 8,
 
-        // pointers are detected by: `to_underlying(tag_type) < 0`.
+        // pointers are detected by: `std::to_underlying(tag_type) < 0`.
         string = -1,
         vector = -2,
         map = -3,
@@ -1948,12 +1948,12 @@ private:
 
     [[nodiscard]] constexpr bool is_scalar() const noexcept
     {
-        return to_underlying(_tag) >= 0;
+        return std::to_underlying(_tag) >= 0;
     }
 
     [[nodiscard]] constexpr bool is_pointer() const noexcept
     {
-        return to_underlying(_tag) < 0;
+        return std::to_underlying(_tag) < 0;
     }
 
     hi_no_inline void copy_pointer(datum const& other) noexcept

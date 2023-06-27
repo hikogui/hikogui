@@ -148,21 +148,21 @@ constexpr auto phrasing_metadata = enum_metadata{
 // clang-format on
 
 enum class phrasing_mask : uint16_t {
-    regular = 1 << to_underlying(phrasing::regular),
-    emphesis = 1 << to_underlying(phrasing::emphesis),
-    strong = 1 << to_underlying(phrasing::strong),
-    code = 1 << to_underlying(phrasing::code),
-    abbreviation = 1 << to_underlying(phrasing::abbreviation),
-    quote = 1 << to_underlying(phrasing::quote),
-    keyboard = 1 << to_underlying(phrasing::keyboard),
-    highlight = 1 << to_underlying(phrasing::highlight),
-    math = 1 << to_underlying(phrasing::math),
-    example = 1 << to_underlying(phrasing::example),
-    unarticulated = 1 << to_underlying(phrasing::unarticulated),
-    title = 1 << to_underlying(phrasing::title),
-    success = 1 << to_underlying(phrasing::success),
-    warning = 1 << to_underlying(phrasing::warning),
-    error = 1 << to_underlying(phrasing::error),
+    regular = 1 << std::to_underlying(phrasing::regular),
+    emphesis = 1 << std::to_underlying(phrasing::emphesis),
+    strong = 1 << std::to_underlying(phrasing::strong),
+    code = 1 << std::to_underlying(phrasing::code),
+    abbreviation = 1 << std::to_underlying(phrasing::abbreviation),
+    quote = 1 << std::to_underlying(phrasing::quote),
+    keyboard = 1 << std::to_underlying(phrasing::keyboard),
+    highlight = 1 << std::to_underlying(phrasing::highlight),
+    math = 1 << std::to_underlying(phrasing::math),
+    example = 1 << std::to_underlying(phrasing::example),
+    unarticulated = 1 << std::to_underlying(phrasing::unarticulated),
+    title = 1 << std::to_underlying(phrasing::title),
+    success = 1 << std::to_underlying(phrasing::success),
+    warning = 1 << std::to_underlying(phrasing::warning),
+    error = 1 << std::to_underlying(phrasing::error),
 
     all = regular | emphesis | strong | code | abbreviation | quote | keyboard | highlight | math | example | unarticulated |
         title | success | warning | error
@@ -174,18 +174,18 @@ static_assert(
 
 [[nodiscard]] constexpr phrasing_mask operator&(phrasing_mask const& lhs, phrasing_mask const& rhs) noexcept
 {
-    return static_cast<phrasing_mask>(to_underlying(lhs) & to_underlying(rhs));
+    return static_cast<phrasing_mask>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr phrasing_mask operator|(phrasing_mask const& lhs, phrasing_mask const& rhs) noexcept
 {
-    return static_cast<phrasing_mask>(to_underlying(lhs) | to_underlying(rhs));
+    return static_cast<phrasing_mask>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr phrasing_mask to_phrasing_mask(phrasing const& rhs) noexcept
 {
-    hi_axiom(to_underlying(rhs) < sizeof(phrasing_mask) * CHAR_BIT);
-    return static_cast<phrasing_mask>(1 << to_underlying(rhs));
+    hi_axiom(std::to_underlying(rhs) < sizeof(phrasing_mask) * CHAR_BIT);
+    return static_cast<phrasing_mask>(1 << std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr phrasing_mask to_phrasing_mask(std::string const& str)
@@ -212,7 +212,7 @@ static_assert(
 
 [[nodiscard]] constexpr bool to_bool(phrasing_mask const& rhs) noexcept
 {
-    return to_bool(to_underlying(rhs));
+    return to_bool(std::to_underlying(rhs));
 }
 
 /** Check if the text-phrasing is included in the text-phrasing-mask.

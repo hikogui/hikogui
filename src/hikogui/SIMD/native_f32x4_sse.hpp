@@ -334,7 +334,7 @@ struct native_simd<float, 4> {
     template<native_rounding_mode Rounding = native_rounding_mode::current>
     [[nodiscard]] friend native_simd round(native_simd a) noexcept
     {
-        return native_simd{_mm_round_ps(a.v, to_underlying(Rounding))};
+        return native_simd{_mm_round_ps(a.v, std::to_underlying(Rounding))};
     }
 #endif
 

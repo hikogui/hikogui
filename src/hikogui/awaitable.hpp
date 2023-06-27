@@ -105,7 +105,7 @@ struct awaitable_cast<T> {
  * This function may use `operator co_await()` to retrieve the actual awaitable type.
  */
 template<typename T>
-using awaitable_cast_t = hi_typename awaitable_cast<T>::type;
+using awaitable_cast_t = awaitable_cast<T>::type;
 
 /** Check if the type can be co_awaited on after conversion with `awaitable_cast`.
  *
@@ -132,6 +132,6 @@ struct await_resume_result {
  * This is type return type of the `await_resume()` member function.
  */
 template<typename T>
-using await_resume_result_t = hi_typename await_resume_result<T>::type;
+using await_resume_result_t = await_resume_result<T>::type;
 
 }

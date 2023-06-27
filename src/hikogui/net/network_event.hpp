@@ -28,12 +28,12 @@ enum class network_event : uint16_t {
 
 [[nodiscard]] constexpr network_event operator|(network_event const& lhs, network_event const& rhs) noexcept
 {
-    return static_cast<network_event>(to_underlying(lhs) | to_underlying(rhs));
+    return static_cast<network_event>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr network_event operator&(network_event const& lhs, network_event const& rhs) noexcept
 {
-    return static_cast<network_event>(to_underlying(lhs) & to_underlying(rhs));
+    return static_cast<network_event>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
 constexpr network_event& operator|=(network_event& lhs, network_event const& rhs) noexcept
@@ -43,15 +43,15 @@ constexpr network_event& operator|=(network_event& lhs, network_event const& rhs
 
 [[nodiscard]] constexpr bool to_bool(network_event const& rhs) noexcept
 {
-    return to_bool(to_underlying(rhs));
+    return to_bool(std::to_underlying(rhs));
 }
 
 /** Get the bit index of the single bit of the network_event mask.
  */
 [[nodiscard]] constexpr size_t bit(network_event const& rhs) noexcept
 {
-    hi_assert(std::popcount(to_underlying(rhs)) == 1);
-    return std::countr_zero(to_underlying(rhs));
+    hi_assert(std::popcount(std::to_underlying(rhs)) == 1);
+    return std::countr_zero(std::to_underlying(rhs));
 }
 
 enum class network_error : uint8_t {

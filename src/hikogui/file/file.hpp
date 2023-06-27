@@ -54,17 +54,17 @@ enum class access_mode {
 
 [[nodiscard]] constexpr access_mode operator|(access_mode const& lhs, access_mode const& rhs) noexcept
 {
-    return static_cast<access_mode>(to_underlying(lhs) | to_underlying(rhs));
+    return static_cast<access_mode>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr access_mode operator&(access_mode const& lhs, access_mode const& rhs) noexcept
 {
-    return static_cast<access_mode>(to_underlying(lhs) & to_underlying(rhs));
+    return static_cast<access_mode>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr bool to_bool(access_mode const& rhs) noexcept
 {
-    return to_bool(to_underlying(rhs));
+    return to_bool(std::to_underlying(rhs));
 }
 
 namespace detail {

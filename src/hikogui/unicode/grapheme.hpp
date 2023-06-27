@@ -227,7 +227,7 @@ struct grapheme {
 
     constexpr void set_phrasing(hi::phrasing rhs) noexcept
     {
-        hi_axiom(to_underlying(rhs) <= 0x3f);
+        hi_axiom(std::to_underlying(rhs) <= 0x3f);
 
         constexpr auto mask = ~(value_type{0x3f} << 56);
         _value &= mask;
