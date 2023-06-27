@@ -652,11 +652,6 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
     return narrow_cast<OutType>(merge_bit_cast<UOutType>(hi, lo));
 }
 
-[[nodiscard]] constexpr auto to_underlying(scoped_enum auto rhs) noexcept
-{
-    return static_cast<std::underlying_type_t<decltype(rhs)>>(rhs);
-}
-
 template<typename T>
 [[nodiscard]] constexpr bool to_bool(T&& rhs) noexcept
     requires(requires(T&& x) { static_cast<bool>(std::forward<T>(x)); })

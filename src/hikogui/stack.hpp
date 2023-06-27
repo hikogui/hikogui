@@ -22,12 +22,12 @@ template<typename T, std::size_t MaxSize>
 class stack {
 public:
     using value_type = T;
-    using pointer_type = value_type *;
-    using const_pointer_type = value_type const *;
+    using pointer = value_type *;
+    using const_pointer = value_type const *;
     using reference_type = value_type &;
     using const_reference_type = value_type const &;
-    using iterator_type = pointer_type;
-    using const_iterator_type = const_pointer_type;
+    using iterator = pointer;
+    using const_iterator = const_pointer;
     using size_type = std::size_t;
     using difference_type = ptrdiff_t;
 
@@ -50,34 +50,44 @@ public:
         clear();
     }
 
-    /** Get an iterator to the first element on the stack.
-     * @return An iterator to the first element on the stack.
-     */
-    [[nodiscard]] iterator_type begin() noexcept
+    [[nodiscard]] const_pointer data() const noexcept
     {
-        return std::launder(reinterpret_cast<pointer_type>(&_buffer[0]));
+        return reinterpret_cast<const_pointer>(_buffer);
+    }
+
+    [[nodiscard]] pointer data() noexcept
+    {
+        return reinterpret_cast<pointer>(_buffer);
     }
 
     /** Get an iterator to the first element on the stack.
      * @return An iterator to the first element on the stack.
      */
-    [[nodiscard]] const_iterator_type begin() const noexcept
+    [[nodiscard]] iterator begin() noexcept
     {
-        return std::launder(reinterpret_cast<const_pointer_type>(&_buffer[0]));
+        return data();
     }
 
     /** Get an iterator to the first element on the stack.
      * @return An iterator to the first element on the stack.
      */
-    [[nodiscard]] const_iterator_type cbegin() const noexcept
+    [[nodiscard]] const_iterator begin() const noexcept
     {
-        return std::launder(reinterpret_cast<const_pointer_type>(&_buffer[0]));
+        return data();
+    }
+
+    /** Get an iterator to the first element on the stack.
+     * @return An iterator to the first element on the stack.
+     */
+    [[nodiscard]] const_iterator cbegin() const noexcept
+    {
+        return data();
     }
 
     /** Get an iterator to the last element on the stack.
      * @return An iterator one beyond the last element on the stack.
      */
-    [[nodiscard]] iterator_type end() noexcept
+    [[nodiscard]] iterator end() noexcept
     {
         return _top;
     }
@@ -85,7 +95,7 @@ public:
     /** Get an iterator to the last element on the stack.
      * @return An iterator one beyond the last element on the stack.
      */
-    [[nodiscard]] const_iterator_type end() const noexcept
+    [[nodiscard]] const_iterator end() const noexcept
     {
         return _top;
     }
@@ -93,7 +103,7 @@ public:
     /** Get an iterator to the last element on the stack.
      * @return An iterator one beyond the last element on the stack.
      */
-    [[nodiscard]] const_iterator_type cend() const noexcept
+    [[nodiscard]] const_iterator cend() const noexcept
     {
         return _top;
     }
@@ -111,7 +121,7 @@ public:
      */
     [[nodiscard]] size_type size() const noexcept
     {
-        return narrow_cast<size_type>(end() - begin());
+        return narrow_cast<size_type>(std::distance(begin(), end()));
     }
 
     /** Check if the stack is full.
@@ -119,7 +129,7 @@ public:
      */
     [[nodiscard]] bool full() const noexcept
     {
-        return _top == (begin() + max_size());
+        return _top == (data() + max_size());
     }
 
     /** Check if the stack is empty.
@@ -127,7 +137,7 @@ public:
      */
     [[nodiscard]] bool empty() const noexcept
     {
-        return _top == begin();
+        return _top == data();
     }
 
     /** Get a reference to an element on the stack at an index.
@@ -137,7 +147,7 @@ public:
     [[nodiscard]] reference_type operator[](std::size_t index) noexcept
     {
         hi_assert_bounds(index, *this);
-        return *std::launder(reinterpret_cast<pointer_type>(&_buffer[index]));
+        return *(data() + index);
     }
 
     /** Get a reference to an element on the stack at an index.
@@ -147,7 +157,7 @@ public:
     [[nodiscard]] const_reference_type operator[](std::size_t index) const noexcept
     {
         hi_assert_bounds(index, *this);
-        return *std::launder(reinterpret_cast<pointer_type>(&_buffer[index]));
+        return *(data() + index);
     }
 
     /** Get a reference to an element on the stack at an index.
@@ -179,8 +189,8 @@ public:
      */
     [[nodiscard]] reference_type back() noexcept
     {
-        hi_axiom(!empty());
-        return *std::launder(_top - 1);
+        hi_axiom(not empty());
+        return *(_top - 1);
     }
 
     /** Get a reference to the element at the top of the stack.
@@ -188,8 +198,8 @@ public:
      */
     [[nodiscard]] const_reference_type back() const noexcept
     {
-        hi_axiom(!empty());
-        return *std::launder(_top - 1);
+        hi_axiom(not empty());
+        return *(_top - 1);
     }
 
     /** Construct an object after the current top of the stack.
@@ -199,9 +209,8 @@ public:
     template<typename... Args>
     void emplace_back(Args &&...args) noexcept
     {
-        hi_axiom(!full());
-        new (end()) value_type(std::forward<Args>(args)...);
-        ++_top;
+        hi_axiom(not full());
+        new (_top++) value_type(std::forward<Args>(args)...);
     }
 
     /** Push a new value to after the current top of the stack.
@@ -219,16 +228,15 @@ public:
      */
     void pop_back() noexcept
     {
-        hi_axiom(!empty());
-        auto *old_item = std::launder(--_top);
-        std::destroy_at(old_item);
+        hi_axiom(not empty());
+        std::destroy_at(--_top);
     }
 
     /** Pop elements of the stack through the given iterator.
      * Pop elements up to and including the element at new_end.
      * @param new_end Iterator to the object to be removed.
      */
-    void pop_back(iterator_type new_end) noexcept
+    void pop_back(iterator new_end) noexcept
     {
         while (_top != new_end) {
             pop_back();
@@ -239,13 +247,13 @@ public:
      */
     void clear() noexcept
     {
-        std::destroy(begin(), end());
-        _top = begin();
+        std::destroy(data(), _top);
+        _top = data();
     }
 
 private:
-    std::aligned_storage_t<sizeof(T), std::alignment_of_v<T>> _buffer[MaxSize];
-    pointer_type _top;
+    pointer _top;
+    alignas(T) std::byte _buffer[MaxSize * sizeof(T)];
 };
 
 } // namespace hi::inline v1
