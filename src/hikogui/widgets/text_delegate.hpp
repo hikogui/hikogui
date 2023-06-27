@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../l10n/module.hpp"
-#include "../unicode/gstring.hpp"
+#include "../unicode/module.hpp"
 #include "../label.hpp"
 #include <string>
 #include <memory>

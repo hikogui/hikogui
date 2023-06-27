@@ -293,7 +293,7 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
 
     auto sub_styles = std::vector<text_sub_style>{};
     sub_styles.emplace_back(
-        text_phrasing_mask::all, iso_639{}, iso_15924{}, family_id, variant, font_size, color, text_decoration{});
+        phrasing_mask::all, iso_639{}, iso_15924{}, family_id, variant, font_size, color, text_decoration{});
     return hi::text_style(sub_styles);
 }
 
