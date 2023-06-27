@@ -137,7 +137,7 @@
         },
         {
             "name": "clang-x64-windows-static-dbg",
-            "displayName": "clang-x64-Debug",
+            "displayName": "ZZ clang-x64-Debug",
             "inherits": "clang-x64-windows-static",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
