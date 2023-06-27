@@ -146,6 +146,11 @@ std::optional<uint32_t> gfx_surface_vulkan::acquire_next_image_from_swapchain()
     case vk::Result::eSuccess:
         return {frameBufferIndex};
 
+    case vk::Result::eNotReady:
+        // We acquired the next frameBufferIndex, but this swapchain image is
+        // not yet ready, we need to wait for the imageAvailableSemaphore.
+        return {frameBufferIndex};
+
     case vk::Result::eSuboptimalKHR:
         hi_log_info("acquireNextImageKHR() eSuboptimalKHR");
         loss = gfx_surface_loss::swapchain_lost;
