@@ -5,11 +5,10 @@
 #pragma once
 
 #include "text_decoration.hpp"
-#include "text_phrasing.hpp"
 #include "semantic_text_style.hpp"
 #include "../color/module.hpp"
-#include "../i18n/iso_15924.hpp"
-#include "../i18n/iso_639.hpp"
+#include "../i18n/module.hpp"
+#include "../unicode/module.hpp"
 #include "../utility/module.hpp"
 #include "../font/module.hpp"
 #include "../log.hpp"
@@ -22,7 +21,7 @@ namespace hi::inline v1 {
 class font_book;
 
 struct text_sub_style {
-    text_phrasing_mask phrasing_mask;
+    phrasing_mask phrasing_mask;
     iso_639 language_filter;
     iso_15924 script_filter;
 
@@ -35,7 +34,7 @@ struct text_sub_style {
     text_sub_style() noexcept = default;
 
     text_sub_style(
-        text_phrasing_mask phrasing_mask,
+        hi::phrasing_mask phrasing_mask,
         iso_639 language_filter,
         iso_15924 script_filter,
         font_family_id family_id,
@@ -57,7 +56,7 @@ struct text_sub_style {
     [[nodiscard]] size_t hash() const noexcept
     {
         auto r = 0_uz;
-        r ^= std::hash<text_phrasing_mask>{}(phrasing_mask);
+        r ^= std::hash<hi::phrasing_mask>{}(phrasing_mask);
         r ^= std::hash<iso_639>{}(language_filter);
         r ^= std::hash<iso_15924>{}(script_filter);
         r ^= std::hash<font_family_id>{}(family_id);
@@ -71,9 +70,9 @@ struct text_sub_style {
     [[nodiscard]] float cap_height(font_book const& font_book) const noexcept;
     [[nodiscard]] float x_height(font_book const& font_book) const noexcept;
 
-    [[nodiscard]] bool matches(text_phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
+    [[nodiscard]] bool matches(phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
     {
-        if (not to_bool(phrasing_mask & to_text_phrasing_mask(phrasing))) {
+        if (not to_bool(phrasing_mask & to_phrasing_mask(phrasing))) {
             return false;
         }
         if (language_filter and language and language_filter != language) {
@@ -236,7 +235,7 @@ public:
         }
     }
 
-    text_sub_style const& sub_style(text_phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
+    text_sub_style const& sub_style(phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
     {
         for (hilet& style : detail::text_styles[_value]) {
             if (style.matches(phrasing, language, script)) {

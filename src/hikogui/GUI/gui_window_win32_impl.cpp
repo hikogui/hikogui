@@ -16,7 +16,7 @@
 #include "../os_settings.hpp"
 #include "../loop.hpp"
 #include "../defer.hpp"
-#include "../unicode/unicode_normalization.hpp"
+#include "../unicode/module.hpp"
 #include <new>
 
 namespace hi::inline v1 {
