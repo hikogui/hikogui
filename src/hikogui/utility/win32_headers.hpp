@@ -51,6 +51,7 @@
 #include <ddraw.h>
 #include <dwmapi.h>
 #include <dxgi.h>
+#include <dxgi1_6.h>
 
 // initguid allows some of the header files to define actual implementations of the GUID.
 // However this is incompatible with other headers which causes some values to become undefined.

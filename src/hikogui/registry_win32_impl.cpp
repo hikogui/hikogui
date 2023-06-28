@@ -10,7 +10,7 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] uint32_t registry_read_current_user_dword(std::string_view path, std::string_view name)
+[[nodiscard]] std::optional<uint32_t> registry_read_current_user_dword(std::string_view path, std::string_view name)
 {
     hilet wpath = hi::to_wstring(path);
     hilet wname = hi::to_wstring(name);
@@ -22,17 +22,58 @@ namespace hi::inline v1 {
     switch (status) {
     case ERROR_SUCCESS:
         break;
-    case ERROR_BAD_PATHNAME:
+
     case ERROR_FILE_NOT_FOUND:
-        throw os_error(std::format("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status));
+        return std::nullopt;
+
     default:
-        hi_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
+        throw os_error(std::format("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: {}", path, name, get_last_error_message()));
     }
 
     return static_cast<uint32_t>(result);
 }
 
-[[nodiscard]] std::vector<std::string> registry_read_current_user_multi_string(std::string_view path, std::string_view name)
+[[nodiscard]] std::optional<std::string> registry_read_current_user_string(std::string_view path, std::string_view name)
+{
+    hilet wpath = hi::to_wstring(path);
+    hilet wname = hi::to_wstring(name);
+
+    auto result = std::wstring{};
+
+    auto expected_size = 64_uz;
+    for (auto repeat = 0; repeat != 5; ++repeat) {
+        auto status = LSTATUS{};
+
+        result.resize_and_overwrite(expected_size, [&](auto p, auto n) {
+            // size includes the null-terminator.
+            auto result_length = narrow_cast<DWORD>((n + 1) * sizeof(wchar_t));
+            status = RegGetValueW(HKEY_CURRENT_USER, wpath.c_str(), wname.c_str(), RRF_RT_REG_SZ, NULL, p, &result_length);
+
+            expected_size = (result_length / sizeof(wchar_t)) - 1;
+            return std::min(n, expected_size);
+        });
+
+        switch (status) {
+        case ERROR_SUCCESS:
+            return to_string(result);
+
+        case ERROR_MORE_DATA:
+            continue;
+
+        case ERROR_FILE_NOT_FOUND:
+            return std::nullopt;
+
+        default:
+            throw os_error(std::format(
+                "Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: {}", path, name, get_last_error_message()));
+        }
+    }
+
+    throw os_error(std::format("Size requirements for HKEY_CURRENT_USER\\{}\\{} keeps changing", path, name));
+}
+
+[[nodiscard]] std::optional<std::vector<std::string>>
+registry_read_current_user_multi_string(std::string_view path, std::string_view name)
 {
     hilet wpath = hi::to_wstring(path);
     hilet wname = hi::to_wstring(name);
@@ -54,12 +95,12 @@ namespace hi::inline v1 {
             result.resize(result_length / sizeof(wchar_t));
             break;
 
-        case ERROR_BAD_PATHNAME:
         case ERROR_FILE_NOT_FOUND:
-            throw os_error(std::format("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status));
+            return std::nullopt;
 
         default:
-            hi_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
+            throw os_error(std::format(
+                "Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: {}", path, name, get_last_error_message()));
         }
     }
 

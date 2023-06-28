@@ -202,6 +202,15 @@ void os_settings::gather() noexcept
         hi_log_error("Failed to get OS desktop rectangle: {}", e.what());
     }
 
+    try {
+        if (compare_store(_gpu_policy, gather_gpu_policy())) {
+            setting_has_changed = true;
+            hi_log_info("GPU policy has changed: {}", _gpu_policy.load());
+        }
+    } catch (std::exception const& e) {
+        hi_log_error("Failed to get the GPU policy: {}", e.what());
+    }
+
     _populated.store(true, std::memory_order::release);
     if (setting_has_changed) {
         _notifier();

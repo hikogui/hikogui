@@ -11,6 +11,7 @@
 #include "utility/module.hpp"
 #include "loop.hpp"
 #include "notifier.hpp"
+#include "bigint.hpp"
 #include <vector>
 #include <mutex>
 
@@ -202,6 +203,48 @@ public:
         return _desktop_rectangle;
     }
 
+    /** Get the global performance policy.
+     *
+     * @return The performance policy selected by the operating system.
+     */
+    [[nodiscard]] static hi::policy policy() noexcept
+    {
+        return policy::unspecified;
+    }
+
+    /** Get the policy for selecting a GPU.
+     *
+     * @return The performance policy for selecting a GPU.
+     */
+    [[nodiscard]] static hi::policy gpu_policy() noexcept
+    {
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _gpu_policy.load(std::memory_order::relaxed);
+    }
+
+    /** Get a list of GPUs ordered best to worst.
+     *
+     * The performance policy is calculated from several sources,
+     * in order from high priority to low priority:
+     *  1. os_settings::gpu_policy() if not policy::unspecified.
+     *  2. performance_policy argument if not policy::unspecified.
+     *  3. os_settings::policy()
+     *
+     * On win32 the GPU identifiers returned are LUIDs which are smaller
+     * then UUIDs. Vulkan specifically includes VkPhysicalDeviceIDProperties::deviceLUID
+     * to match with these return values.
+     *
+     * On other operating systems the return value here is a UUID which will
+     * match with VkPhysicalDeviceIDProperties::deviceUUID.
+     *
+     * Use VkPhysicalDeviceIDProperties::deviceLUIDValid to know which one to match
+     * and VK_LUID_SIZE for the size of the comparison.
+     * 
+     * @param performance_policy The performance policy of the application.
+     * @return A list of GPU identifiers ordered best to worst.
+     */
+    [[nodiscard]] static std::vector<uuid> preferred_gpus(hi::policy performance_policy) noexcept;
+
     /** Gather the settings from the operating system now.
      */
     static void gather() noexcept;
@@ -252,6 +295,7 @@ private:
     static inline std::atomic<uintptr_t> _primary_monitor_id = 0;
     static inline aarectanglei _primary_monitor_rectangle = aarectanglei{0, 0, 1920, 1080};
     static inline aarectanglei _desktop_rectangle = aarectanglei{0, 0, 1920, 1080};
+    static inline std::atomic<hi::policy> _gpu_policy = policy::unspecified;
 
     [[nodiscard]] static bool subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;
@@ -273,6 +317,7 @@ private:
     [[nodiscard]] static uintptr_t gather_primary_monitor_id();
     [[nodiscard]] static aarectanglei gather_primary_monitor_rectangle();
     [[nodiscard]] static aarectanglei gather_desktop_rectangle();
+    [[nodiscard]] static hi::policy gather_gpu_policy();
 };
 
 } // namespace hi::inline v1

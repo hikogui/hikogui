@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <optional>
 
 namespace hi::inline v1 {
 
@@ -15,12 +16,19 @@ namespace hi::inline v1 {
  *
  * @throws hi::os_error when the path/name is not found in the registry.
  */
-[[nodiscard]] uint32_t registry_read_current_user_dword(std::string_view path, std::string_view name);
+[[nodiscard]] std::optional<uint32_t> registry_read_current_user_dword(std::string_view path, std::string_view name);
+
+/** Read a strings from the registry value from the HKEY_CURRENT_USER.
+ *
+ * @throws hi::os_error when the path/name is not found in the registry.
+ */
+[[nodiscard]] std::optional<std::string> registry_read_current_user_string(std::string_view path, std::string_view name);
 
 /** Read a list of strings from the registry value from the HKEY_CURRENT_USER.
  *
  * @throws hi::os_error when the path/name is not found in the registry.
  */
-[[nodiscard]] std::vector<std::string> registry_read_current_user_multi_string(std::string_view path, std::string_view name);
+[[nodiscard]] std::optional<std::vector<std::string>>
+registry_read_current_user_multi_string(std::string_view path, std::string_view name);
 
 } // namespace hi::inline v1
