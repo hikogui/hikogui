@@ -96,7 +96,7 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
 
 #ifndef NDEBUG
     hilet requested_layers = std::vector<char const *>{
-        "VK_LAYER_KHRONOS_validation",
+        "VK_LAYER_KHRONOS_validation", "VK_LAYER_KHRONOS_synchronization2"
         //"VK_LAYER_LUNARG_api_dump"
     };
 

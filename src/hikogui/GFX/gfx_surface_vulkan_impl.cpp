@@ -146,30 +146,36 @@ std::optional<uint32_t> gfx_surface_vulkan::acquire_next_image_from_swapchain()
     case vk::Result::eSuccess:
         return {frameBufferIndex};
 
-    case vk::Result::eNotReady:
-        // We acquired the next frameBufferIndex, but this swapchain image is
-        // not yet ready, we need to wait for the imageAvailableSemaphore.
-        return {frameBufferIndex};
-
     case vk::Result::eSuboptimalKHR:
+        // Techniqually we received an image here, but we treat it
+        // as a swapchain-lost which should reset the swapchain anyway,
+        // so not rendering to the image should be okay.
         hi_log_info("acquireNextImageKHR() eSuboptimalKHR");
         loss = gfx_surface_loss::swapchain_lost;
-        return {};
+        return std::nullopt;
+
+    case vk::Result::eNotReady:
+        // Don't render, we didn't receive an image.
+        // The timeout was zero, so we only expect eSuccess or eNotReady.
+        // This will wait until the next vertical sync.
+        return std::nullopt;
+
+    case vk::Result::eTimeout:
+        // Don't render, we didn't receive an image.
+        // Since we did not set the timeout we don't expect this result.
+        // This will wait until the next vertical sync.
+        hi_log_info("acquireNextImageKHR() eTimeout");
+        return std::nullopt;
 
     case vk::Result::eErrorOutOfDateKHR:
         hi_log_info("acquireNextImageKHR() eErrorOutOfDateKHR");
         loss = gfx_surface_loss::swapchain_lost;
-        return {};
+        return std::nullopt;
 
     case vk::Result::eErrorSurfaceLostKHR:
         hi_log_info("acquireNextImageKHR() eErrorSurfaceLostKHR");
         loss = gfx_surface_loss::window_lost;
-        return {};
-
-    case vk::Result::eTimeout:
-        // Don't render, we didn't receive an image.
-        hi_log_info("acquireNextImageKHR() eTimeout");
-        return {};
+        return std::nullopt;
 
     default:
         throw gui_error(std::format("Unknown result from acquireNextImageKHR(). '{}'", to_string(result)));
