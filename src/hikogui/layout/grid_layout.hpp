@@ -431,11 +431,14 @@ public:
                 return item.beyond_maximum;
             });
             if (count) {
-                hilet todo = new_extent - total_extent;
-                hilet per_extent = narrow_cast<float>((todo + count - 1) / count);
+                auto expand = new_extent - total_extent;
+                hilet expand_per = std::ceil(expand / count);
+
                 for (auto& constraint : _constraints) {
+                    hilet expand_this = std::min(expand_per, expand);
                     if (constraint.beyond_maximum) {
-                        constraint.extent += per_extent;
+                        constraint.extent += expand_this;
+                        expand -= expand_this;
                     }
                 }
             }
@@ -626,24 +629,26 @@ private:
      * @note It is undefined behavior to pass zero in @a count.
      * @param first The iterator to the first cell to shrink.
      * @param last The iterator to beyond the last cell to shrink.
-     * @param extra The total number of pixels to shrink spread over the cells
+     * @param shrink The total number of pixels to shrink spread over the cells
      * @param count The number of cells between first/last that can be shrunk, from previous iteration.
      * @return Number of pixels of the cells and inner-margins, number of cells in the range that can shrink more.
      */
     [[nodiscard]] constexpr std::pair<float, size_t>
-    layout_shrink(const_iterator first, const_iterator last, float extra = 0, size_t count = 1) noexcept
+    layout_shrink(const_iterator first, const_iterator last, float shrink = 0.0f, size_t count = 1) noexcept
     {
         hilet first_ = begin() + std::distance(cbegin(), first);
         hilet last_ = begin() + std::distance(cbegin(), last);
 
-        hi_axiom(extra >= 0);
+        hi_axiom(shrink >= 0);
 
-        hilet extra_per = std::floor(extra / count);
+        hilet shrink_per = std::floor(shrink / count);
 
         auto new_extent = 0.0f;
         auto new_count = 0_uz;
         for (auto it = first_; it != last_; ++it) {
-            it->extent = it->extent - std::max(extra_per, it->extent - it->minimum);
+            hilet shrink_this = std::max({shrink_per, shrink, it->extent - it->minimum});
+            it->extent -= shrink_this;
+            shrink -= shrink_this;
 
             if (it != first_) {
                 new_extent += it->margin_before;
@@ -670,24 +675,27 @@ private:
      * @note It is undefined behavior to pass zero in @a count.
      * @param first The iterator to the first cell to expand.
      * @param last The iterator to beyond the last cell to expand.
-     * @param extra The total number of pixels to expand spread over the cells
+     * @param expand The total number of pixels to expand spread over the cells
      * @param count The number of cells between first/last that can be expanded, from previous iteration.
      * @return Number of pixels of the cells and inner-margins, number of cells in the range that can expand more.
      */
     [[nodiscard]] constexpr std::pair<float, size_t>
-    layout_expand(const_iterator first, const_iterator last, float extra = 0, size_t count = 1) noexcept
+    layout_expand(const_iterator first, const_iterator last, float expand = 0.0f, size_t count = 1) noexcept
     {
         hilet first_ = begin() + std::distance(cbegin(), first);
         hilet last_ = begin() + std::distance(cbegin(), last);
 
-        hi_axiom(extra >= 0.0f);
+        hi_axiom(expand >= 0.0f);
 
-        hilet extra_per = std::floor(extra / count);
+        hilet expand_per = std::ceil(expand / count);
+        hi_axiom(expand_per >= 0.0f);
 
         auto new_extent = 0.0f;
         auto new_count = 0_uz;
         for (auto it = first_; it != last_; ++it) {
-            it->extent = it->extent + std::min(extra_per, it->maximum - it->extent);
+            hilet expand_this = std::min({expand_per, expand, it->maximum - it->extent});
+            it->extent += expand_this;
+            expand -= expand_this;
 
             if (it != first_) {
                 new_extent += it->margin_before;
