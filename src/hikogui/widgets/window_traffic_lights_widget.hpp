@@ -34,7 +34,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
     /// @endprivatesection
 private:
     static constexpr int GLYPH_SIZE = 5;
@@ -43,19 +43,19 @@ private:
     static constexpr int MARGIN = 10;
     static constexpr int SPACING = 8;
 
-    aarectanglei closeRectangle;
-    aarectanglei minimizeRectangle;
-    aarectanglei maximizeRectangle;
+    aarectangle closeRectangle;
+    aarectangle minimizeRectangle;
+    aarectangle maximizeRectangle;
 
     glyph_ids closeWindowGlyph;
     glyph_ids minimizeWindowGlyph;
     glyph_ids maximizeWindowGlyph;
     glyph_ids restoreWindowGlyph;
 
-    aarectanglei closeWindowGlyphRectangle;
-    aarectanglei minimizeWindowGlyphRectangle;
-    aarectanglei maximizeWindowGlyphRectangle;
-    aarectanglei restoreWindowGlyphRectangle;
+    aarectangle closeWindowGlyphRectangle;
+    aarectangle minimizeWindowGlyphRectangle;
+    aarectangle maximizeWindowGlyphRectangle;
+    aarectangle restoreWindowGlyphRectangle;
 
     bool hoverClose = false;
     bool hoverMinimize = false;

@@ -11,8 +11,8 @@ namespace hi::inline v1 {
     _label_constraints = super::update_constraints();
 
     // Make room for button and margin.
-    _button_size = {theme().size() * 2, theme().size()};
-    hilet extra_size = extent2i{theme().margin<int>() + _button_size.width(), 0};
+    _button_size = {theme().size() * 2.0f, theme().size()};
+    hilet extra_size = extent2{theme().margin<float>() + _button_size.width(), 0.0f};
 
     auto r = max(_label_constraints + extra_size, _button_size);
     r.margins = theme().margin();
@@ -31,15 +31,15 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
             hi_not_implemented();
         }
 
-        hilet label_width = context.width() - (_button_rectangle.width() + theme().margin<int>());
+        hilet label_width = context.width() - (_button_rectangle.width() + theme().margin<float>());
         if (alignment_ == horizontal_alignment::left) {
-            hilet label_left = _button_rectangle.right() + theme().margin<int>();
-            hilet label_rectangle = aarectanglei{label_left, 0, label_width, context.height()};
+            hilet label_left = _button_rectangle.right() + theme().margin<float>();
+            hilet label_rectangle = aarectangle{label_left, 0.0f, label_width, context.height()};
             _on_label_shape = _off_label_shape = _other_label_shape =
                 box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
 
         } else if (alignment_ == horizontal_alignment::right) {
-            hilet label_rectangle = aarectanglei{0, 0, label_width, context.height()};
+            hilet label_rectangle = aarectangle{0, 0, label_width, context.height()};
             _on_label_shape = _off_label_shape = _other_label_shape =
                 box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
 
@@ -48,13 +48,13 @@ void toggle_widget::set_layout(widget_layout const& context) noexcept
         }
 
         hilet button_square = aarectangle{
-            narrow_cast<point2>(get<0>(_button_rectangle)),
-            extent2{narrow_cast<float>(_button_rectangle.height()), narrow_cast<float>(_button_rectangle.height())}};
+            get<0>(_button_rectangle),
+            extent2{_button_rectangle.height(), _button_rectangle.height()}};
 
         _pip_circle = align(button_square, circle{theme().size() * 0.5f - 3.0f}, alignment::middle_center());
 
-        hilet pip_to_button_margin_x2 = _button_rectangle.height() - round_cast<int>(_pip_circle.diameter());
-        _pip_move_range = _button_rectangle.width() - round_cast<int>(_pip_circle.diameter()) - pip_to_button_margin_x2;
+        hilet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_circle.diameter();
+        _pip_move_range = _button_rectangle.width() - _pip_circle.diameter() - pip_to_button_margin_x2;
     }
     super::set_layout(context);
 }

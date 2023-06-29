@@ -18,7 +18,7 @@ namespace hi::inline v1 {
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     hilet extra_size =
-        extent2i{theme().margin<int>() * 4 + _check_size.width() + _short_cut_size.width(), theme().margin<int>() * 2};
+        extent2{theme().margin<float>() * 4.0f + _check_size.width() + _short_cut_size.width(), theme().margin<float>() * 2.0f};
 
     auto constraints = _label_constraints + extra_size;
     constraints.margins = 0;
@@ -28,29 +28,29 @@ namespace hi::inline v1 {
 void menu_button_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet inside_rectangle = context.rectangle() - theme().margin<int>();
+        hilet inside_rectangle = context.rectangle() - theme().margin<float>();
 
         if (os_settings::left_to_right()) {
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left());
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
-            hilet label_rectangle = aarectanglei{
-                point2i{_check_rectangle.right() + theme().margin<int>(), 0},
-                point2i{_short_cut_rectangle.left() - theme().margin<int>(), context.height()}};
+            hilet label_rectangle = aarectangle{
+                point2{_check_rectangle.right() + theme().margin<float>(), 0.0f},
+                point2{_short_cut_rectangle.left() - theme().margin<float>(), context.height()}};
             _on_label_shape = _off_label_shape = _other_label_shape =
                 box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
 
         } else {
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_left());
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_right());
-            hilet label_rectangle = aarectanglei{
-                point2i{_short_cut_rectangle.right() + theme().margin<int>(), 0},
-                point2i{_check_rectangle.left() - theme().margin<int>(), context.height()}};
+            hilet label_rectangle = aarectangle{
+                point2{_short_cut_rectangle.right() + theme().margin<float>(), 0.0f},
+                point2{_check_rectangle.left() - theme().margin<float>(), context.height()}};
             _on_label_shape = _off_label_shape = _other_label_shape =
                 box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
         }
 
         _check_glyph = find_glyph(elusive_icon::Ok);
-        hilet check_glyph_bb = narrow_cast<aarectanglei>(_check_glyph.get_bounding_box() * theme().icon_size<float>());
+        hilet check_glyph_bb = _check_glyph.get_bounding_box() * theme().icon_size();
         _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
     }
 
@@ -122,8 +122,7 @@ void menu_button_widget::draw_check_mark(draw_context const& context) noexcept
 
     // Checkmark or tristate.
     if (state_ == hi::button_state::on) {
-        context.draw_glyph(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(_check_glyph_rectangle), _check_glyph, accent_color());
+        context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, accent_color());
     }
 }
 

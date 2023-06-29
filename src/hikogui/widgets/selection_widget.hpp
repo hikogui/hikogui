@@ -176,7 +176,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
@@ -192,10 +192,10 @@ private:
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    aarectanglei _left_box_rectangle;
+    aarectangle _left_box_rectangle;
 
     glyph_ids _chevrons_glyph;
-    aarectanglei _chevrons_rectangle;
+    aarectangle _chevrons_rectangle;
 
     bool _selecting = false;
     bool _has_options = false;

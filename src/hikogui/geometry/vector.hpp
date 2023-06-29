@@ -413,8 +413,6 @@ private:
 
 using vector2 = geo::vector<float, 2>;
 using vector3 = geo::vector<float, 3>;
-using vector2i = geo::vector<int, 2>;
-using vector3i = geo::vector<int, 3>;
 
 } // namespace hi::inline v1
 
@@ -439,32 +437,6 @@ struct std::formatter<hi::geo::vector<float, 3>, CharT> {
     }
 
     auto format(hi::geo::vector<float, 3> const& t, auto& fc)
-    {
-        return std::vformat_to(fc.out(), "({}, {}, {})", std::make_format_args(t.x(), t.y(), t.z()));
-    }
-};
-
-template<typename CharT>
-struct std::formatter<hi::geo::vector<int, 2>, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
-    auto format(hi::geo::vector<int, 2> const& t, auto& fc)
-    {
-        return std::vformat_to(fc.out(), "({}, {})", std::make_format_args(t.x(), t.y()));
-    }
-};
-
-template<typename CharT>
-struct std::formatter<hi::geo::vector<int, 3>, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
-    auto format(hi::geo::vector<int, 3> const& t, auto& fc)
     {
         return std::vformat_to(fc.out(), "({}, {}, {})", std::make_format_args(t.x(), t.y(), t.z()));
     }

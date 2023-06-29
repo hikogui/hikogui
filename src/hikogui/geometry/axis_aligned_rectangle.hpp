@@ -504,7 +504,6 @@ private:
 } // namespace geo
 
 using aarectangle = geo::axis_aligned_rectangle<float>;
-using aarectanglei = geo::axis_aligned_rectangle<int>;
 
 /** Make a rectangle fit inside bounds.
  * This algorithm will try to first move the rectangle and resist resizing it.
@@ -515,30 +514,6 @@ using aarectanglei = geo::axis_aligned_rectangle<int>;
  */
 [[nodiscard]] aarectangle fit(aarectangle const& bounds, aarectangle const& rectangle) noexcept;
 
-/** Make a rectangle fit inside bounds.
- * This algorithm will try to first move the rectangle and resist resizing it.
- *
- * @param bounds The bounding box.
- * @param rectangle The rectangle to fit inside the bounds.
- * @return A rectangle that fits inside the bounds
- */
-[[nodiscard]] aarectanglei fit(aarectanglei const& bounds, aarectanglei const& rectangle) noexcept;
-
-template<std::same_as<aarectanglei> Out, std::same_as<aarectangle> In>
-[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
-{
-    return {floor_cast<int>(rhs.x()), floor_cast<int>(rhs.y()), ceil_cast<int>(rhs.width()), ceil_cast<int>(rhs.height())};
-}
-
-template<std::same_as<aarectangle> Out, std::same_as<aarectanglei> In>
-[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
-{
-    return {
-        narrow_cast<float>(rhs.x()),
-        narrow_cast<float>(rhs.y()),
-        narrow_cast<float>(rhs.width()),
-        narrow_cast<float>(rhs.height())};
-}
 
 }} // namespace hi::v1
 

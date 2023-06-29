@@ -70,7 +70,7 @@ void tab_widget::draw(draw_context const& context) noexcept
     }
 }
 
-[[nodiscard]] hitbox tab_widget::hitbox_test(point2i position) const noexcept
+[[nodiscard]] hitbox tab_widget::hitbox_test(point2 position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 

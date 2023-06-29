@@ -137,7 +137,7 @@ public:
      *
      * @return The minimum window width.
      */
-    [[nodiscard]] static int minimum_window_width() noexcept
+    [[nodiscard]] static float minimum_window_width() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         return _minimum_window_width.load(std::memory_order::relaxed);
@@ -147,7 +147,7 @@ public:
      *
      * @return The minimum window height.
      */
-    [[nodiscard]] static int minimum_window_height() noexcept
+    [[nodiscard]] static float minimum_window_height() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         return _minimum_window_height.load(std::memory_order::relaxed);
@@ -157,7 +157,7 @@ public:
      *
      * @return The maximum window width.
      */
-    [[nodiscard]] static int maximum_window_width() noexcept
+    [[nodiscard]] static float maximum_window_width() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         return _maximum_window_width.load(std::memory_order::relaxed);
@@ -167,7 +167,7 @@ public:
      *
      * @return The maximum window height.
      */
-    [[nodiscard]] static int maximum_window_height() noexcept
+    [[nodiscard]] static float maximum_window_height() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         return _maximum_window_height.load(std::memory_order::relaxed);
@@ -177,7 +177,7 @@ public:
      *
      * @return The rectangle describing the size and location inside the desktop.
      */
-    [[nodiscard]] static aarectanglei primary_monitor_rectangle() noexcept
+    [[nodiscard]] static aarectangle primary_monitor_rectangle() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
@@ -196,7 +196,7 @@ public:
      *
      * @return The bounding rectangle around the desktop. With the origin being equal to the origin of the primary monitor.
      */
-    [[nodiscard]] static aarectanglei desktop_rectangle() noexcept
+    [[nodiscard]] static aarectangle desktop_rectangle() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
         hilet lock = std::scoped_lock(_mutex);
@@ -288,13 +288,13 @@ private:
     static inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_interval = std::chrono::milliseconds(33);
     static inline std::atomic<std::chrono::milliseconds> _cursor_blink_interval = std::chrono::milliseconds(1000);
     static inline std::atomic<std::chrono::milliseconds> _cursor_blink_delay = std::chrono::milliseconds(1000);
-    static inline std::atomic<int> _minimum_window_width = 40;
-    static inline std::atomic<int> _minimum_window_height = 25;
-    static inline std::atomic<int> _maximum_window_width = 1920;
-    static inline std::atomic<int> _maximum_window_height = 1080;
+    static inline std::atomic<float> _minimum_window_width = 40.0f;
+    static inline std::atomic<float> _minimum_window_height = 25.0f;
+    static inline std::atomic<float> _maximum_window_width = 1920.0f;
+    static inline std::atomic<float> _maximum_window_height = 1080.0f;
     static inline std::atomic<uintptr_t> _primary_monitor_id = 0;
-    static inline aarectanglei _primary_monitor_rectangle = aarectanglei{0, 0, 1920, 1080};
-    static inline aarectanglei _desktop_rectangle = aarectanglei{0, 0, 1920, 1080};
+    static inline aarectangle _primary_monitor_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
+    static inline aarectangle _desktop_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
     static inline std::atomic<hi::policy> _gpu_policy = policy::unspecified;
 
     [[nodiscard]] static bool subsystem_init() noexcept;
@@ -310,13 +310,13 @@ private:
     [[nodiscard]] static std::chrono::milliseconds gather_keyboard_repeat_interval();
     [[nodiscard]] static std::chrono::milliseconds gather_cursor_blink_interval();
     [[nodiscard]] static std::chrono::milliseconds gather_cursor_blink_delay();
-    [[nodiscard]] static int gather_minimum_window_width();
-    [[nodiscard]] static int gather_minimum_window_height();
-    [[nodiscard]] static int gather_maximum_window_width();
-    [[nodiscard]] static int gather_maximum_window_height();
+    [[nodiscard]] static float gather_minimum_window_width();
+    [[nodiscard]] static float gather_minimum_window_height();
+    [[nodiscard]] static float gather_maximum_window_width();
+    [[nodiscard]] static float gather_maximum_window_height();
     [[nodiscard]] static uintptr_t gather_primary_monitor_id();
-    [[nodiscard]] static aarectanglei gather_primary_monitor_rectangle();
-    [[nodiscard]] static aarectanglei gather_desktop_rectangle();
+    [[nodiscard]] static aarectangle gather_primary_monitor_rectangle();
+    [[nodiscard]] static aarectangle gather_desktop_rectangle();
     [[nodiscard]] static hi::policy gather_gpu_policy();
 };
 

@@ -46,22 +46,23 @@ public:
 
     /** Distance between widgets and between widgets and the border of the container.
      */
-    template<typename T = hi::marginsi>
+    template<typename T = hi::margins>
     [[nodiscard]] constexpr T margin() const noexcept
     {
-        if constexpr (std::is_same_v<T, hi::marginsi>) {
-            return hi::marginsi{_margin};
+        if constexpr (std::is_same_v<T, hi::margins>) {
+            return hi::margins{_margin};
+        } else if constexpr (std::is_same_v<T, float>) {
+            return _margin;
         } else {
-            return narrow_cast<T>(_margin);
+            hi_static_not_implemented();
         }
     }
 
     /** The line-width of a border.
      */
-    template<arithmetic T = int>
-    [[nodiscard]] constexpr T border_width() const noexcept
+    [[nodiscard]] constexpr float border_width() const noexcept
     {
-        return narrow_cast<T>(_border_width);
+        return _border_width;
     }
 
     /** The rounding radius of boxes with rounded corners.
@@ -70,58 +71,54 @@ public:
     [[nodiscard]] constexpr T rounding_radius() const noexcept
     {
         if constexpr (std::is_same_v<T, hi::corner_radii>) {
-            return T{narrow_cast<float>(_rounding_radius)};
+            return T{_rounding_radius};
+        } else if constexpr (std::is_same_v<T, float>) {
+            return _rounding_radius;
         } else {
-            return narrow_cast<T>(_rounding_radius);
+            hi_static_not_implemented();
         }
     }
 
     /** The size of small square widgets.
      */
-    template<arithmetic T = int>
-    [[nodiscard]] constexpr T size() const noexcept
+    [[nodiscard]] constexpr float size() const noexcept
     {
-        return narrow_cast<T>(_size);
+        return _size;
     }
 
     /** The size of large widgets. Such as the minimum scroll bar size.
      */
-    template<arithmetic T = int>
-    [[nodiscard]] constexpr T large_size() const noexcept
+    [[nodiscard]] constexpr float large_size() const noexcept
     {
-        return narrow_cast<T>(_large_size);
+        return _large_size;
     }
 
     /** Size of icons inside a widget.
      */
-    template<arithmetic T = int>
-    [[nodiscard]] constexpr T icon_size() const noexcept
+    [[nodiscard]] constexpr float icon_size() const noexcept
     {
-        return narrow_cast<T>(_icon_size);
+        return _icon_size;
     }
 
     /** Size of icons representing the length of am average word of a label's text.
      */
-    template<arithmetic T = int>
-    [[nodiscard]] constexpr T large_icon_size() const noexcept
+    [[nodiscard]] constexpr float large_icon_size() const noexcept
     {
-        return narrow_cast<T>(_large_icon_size);
+        return _large_icon_size;
     }
 
     /** Size of icons being inline with a label's text.
      */
-    template<arithmetic T = int>
-    [[nodiscard]] constexpr T label_icon_size() const noexcept
+    [[nodiscard]] constexpr float label_icon_size() const noexcept
     {
-        return narrow_cast<T>(_label_icon_size);
+        return _label_icon_size;
     }
 
     /** The amount the base-line needs to be moved downwards when a label is aligned to top.
      */
-    template<arithmetic T = int>
-    [[nodiscard]] constexpr T baseline_adjustment() const noexcept
+    [[nodiscard]] constexpr float baseline_adjustment() const noexcept
     {
-        return narrow_cast<T>(_baseline_adjustment);
+        return _baseline_adjustment;
     }
 
     /** Create a transformed copy of the theme.
@@ -144,39 +141,39 @@ public:
 private:
     /** Distance between widgets and between widgets and the border of the container.
      */
-    int _margin = 5;
+    float _margin = 5.0f;
 
     /** The line-width of a border.
      */
-    int _border_width = 1;
+    float _border_width = 1.0f;
 
     /** The rounding radius of boxes with rounded corners.
      */
-    int _rounding_radius = 4;
+    float _rounding_radius = 4.0f;
 
     /** The size of small square widgets.
      */
-    int _size = 11;
+    float _size = 11.0f;
 
     /** The size of large widgets. Such as the minimum scroll bar size.
      */
-    int _large_size = 19;
+    float _large_size = 19.0f;
 
     /** Size of icons inside a widget.
      */
-    int _icon_size = 8;
+    float _icon_size = 8.0f;
 
     /** Size of icons representing the length of am average word of a label's text.
      */
-    int _large_icon_size = 23;
+    float _large_icon_size = 23.0f;
 
     /** Size of icons being inline with a label's text.
      */
-    int _label_icon_size = 15;
+    float _label_icon_size = 15.0f;
 
     /** The amount the base-line needs to be moved downwards when a label is aligned to top.
      */
-    int _baseline_adjustment = 9;
+    float _baseline_adjustment = 9.0f;
 
     std::array<std::vector<hi::color>, semantic_color_metadata.size()> _colors;
     std::array<hi::text_style, semantic_text_style_metadata.size()> _text_styles;

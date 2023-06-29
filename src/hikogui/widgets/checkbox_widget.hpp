@@ -149,12 +149,12 @@ public:
 private:
     box_constraints _label_constraints;
 
-    extent2i _button_size;
-    aarectanglei _button_rectangle;
+    extent2 _button_size;
+    aarectangle _button_rectangle;
     glyph_ids _check_glyph;
-    aarectanglei _check_glyph_rectangle;
+    aarectangle _check_glyph_rectangle;
     glyph_ids _minus_glyph;
-    aarectanglei _minus_glyph_rectangle;
+    aarectangle _minus_glyph_rectangle;
 
     void draw_check_box(draw_context const& context) noexcept;
     void draw_check_mark(draw_context const& context) noexcept;

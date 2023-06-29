@@ -507,28 +507,6 @@ using extent2 = geo::extent<float, 2>;
  */
 using extent3 = geo::extent<float, 3>;
 
-/** A 2D extent.
- * @ingroup geometry
- */
-using extent2i = geo::extent<int, 2>;
-
-/** A 3D extent.
- * @ingroup geometry
- */
-using extent3i = geo::extent<int, 3>;
-
-template<std::same_as<extent2i> Out, std::same_as<extent2> In>
-[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
-{
-    return {ceil_cast<int>(rhs.width()), ceil_cast<int>(rhs.height())};
-}
-
-template<std::same_as<extent2> Out, std::same_as<extent2i> In>
-[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
-{
-    return {narrow_cast<float>(rhs.width()), narrow_cast<float>(rhs.height())};
-}
-
 }} // namespace hi::v1
 
 template<typename CharT>
@@ -552,32 +530,6 @@ struct std::formatter<hi::geo::extent<float, 3>, CharT> {
     }
 
     auto format(hi::geo::extent<float, 3> const& t, auto& fc)
-    {
-        return std::vformat_to(fc.out(), "[{}, {}, {}]", std::make_format_args(t.width(), t.height(), t.depth()));
-    }
-};
-
-template<typename CharT>
-struct std::formatter<hi::geo::extent<int, 2>, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
-    auto format(hi::geo::extent<int, 2> const& t, auto& fc)
-    {
-        return std::vformat_to(fc.out(), "[{}, {}]", std::make_format_args(t.width(), t.height()));
-    }
-};
-
-template<typename CharT>
-struct std::formatter<hi::geo::extent<int, 3>, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
-    auto format(hi::geo::extent<int, 3> const& t, auto& fc)
     {
         return std::vformat_to(fc.out(), "[{}, {}, {}]", std::make_format_args(t.width(), t.height(), t.depth()));
     }

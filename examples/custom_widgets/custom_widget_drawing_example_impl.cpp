@@ -254,7 +254,7 @@ public:
         using namespace std::chrono_literals;
 
         auto const clipping_rectangle =
-            *clip ? hi::aarectanglei{0, 0, _layout.width(), _layout.height() / 2} : _layout.rectangle();
+            *clip ? hi::aarectangle{0, 0, _layout.width(), _layout.height() / 2} : _layout.rectangle();
 
         auto const translation = hi::translate3(std::floor(_layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(_layout.height())) * 0.5f, 0.0f);
         auto const transform = translation * rotation(context);
