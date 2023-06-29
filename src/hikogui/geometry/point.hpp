@@ -365,14 +365,7 @@ private:
 
 using point2 = geo::point<float, 2>;
 using point3 = geo::point<float, 3>;
-using point2i = geo::point<int, 2>;
-using point3i = geo::point<int, 3>;
 
-template<std::same_as<point2> Out, std::same_as<point2i> In>
-[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
-{
-    return {narrow_cast<float>(rhs.x()), narrow_cast<float>(rhs.y())};
-}
 
 } // namespace hi::inline v1
 
@@ -397,32 +390,6 @@ struct std::formatter<hi::geo::point<float, 3>, CharT> {
     }
 
     auto format(hi::geo::point<float, 3> const& t, auto& fc)
-    {
-        return std::vformat_to(fc.out(), "<{}, {}, {}>", std::make_format_args(t.x(), t.y(), t.z()));
-    }
-};
-
-template<typename CharT>
-struct std::formatter<hi::geo::point<int, 2>, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
-    auto format(hi::geo::point<int, 2> const& t, auto& fc)
-    {
-        return std::vformat_to(fc.out(), "<{}, {}>", std::make_format_args(t.x(), t.y()));
-    }
-};
-
-template<typename CharT>
-struct std::formatter<hi::geo::point<int, 3>, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
-    auto format(hi::geo::point<int, 3> const& t, auto& fc)
     {
         return std::vformat_to(fc.out(), "<{}, {}, {}>", std::make_format_args(t.x(), t.y(), t.z()));
     }

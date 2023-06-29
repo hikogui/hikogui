@@ -248,42 +248,42 @@ namespace hi { inline namespace v1 {
     return std::max(gather_keyboard_repeat_delay(), gather_keyboard_repeat_interval());
 }
 
-[[nodiscard]] int os_settings::gather_minimum_window_width()
+[[nodiscard]] float os_settings::gather_minimum_window_width()
 {
     hilet width = GetSystemMetrics(SM_CXMINTRACK);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXMINTRACK");
     }
-    return width;
+    return narrow_cast<float>(width);
 }
 
-[[nodiscard]] int os_settings::gather_minimum_window_height()
+[[nodiscard]] float os_settings::gather_minimum_window_height()
 {
     hilet height = GetSystemMetrics(SM_CYMINTRACK);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYMINTRACK");
     }
 
-    return height;
+    return narrow_cast<float>(height);
 }
 
-[[nodiscard]] int os_settings::gather_maximum_window_width()
+[[nodiscard]] float os_settings::gather_maximum_window_width()
 {
     hilet width = GetSystemMetrics(SM_CXMAXTRACK);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXMAXTRACK");
     }
-    return width;
+    return narrow_cast<float>(width);
 }
 
-[[nodiscard]] int os_settings::gather_maximum_window_height()
+[[nodiscard]] float os_settings::gather_maximum_window_height()
 {
     hilet height = GetSystemMetrics(SM_CYMAXTRACK);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYMAXTRACK");
     }
 
-    return height;
+    return narrow_cast<float>(height);
 }
 
 [[nodiscard]] uintptr_t os_settings::gather_primary_monitor_id()
@@ -293,7 +293,7 @@ namespace hi { inline namespace v1 {
     return std::bit_cast<uintptr_t>(monitor);
 }
 
-[[nodiscard]] aarectanglei os_settings::gather_primary_monitor_rectangle()
+[[nodiscard]] aarectangle os_settings::gather_primary_monitor_rectangle()
 {
     hilet width = GetSystemMetrics(SM_CXSCREEN);
     if (width == 0) {
@@ -306,10 +306,10 @@ namespace hi { inline namespace v1 {
     }
 
     // The origin of the primary monitor is also the origin of the desktop.
-    return aarectanglei{extent2i{width, height}};
+    return aarectangle{extent2{narrow_cast<float>(width), narrow_cast<float>(height)}};
 }
 
-[[nodiscard]] aarectanglei os_settings::gather_desktop_rectangle()
+[[nodiscard]] aarectangle os_settings::gather_desktop_rectangle()
 {
     hilet primary_monitor_height = GetSystemMetrics(SM_CYSCREEN);
     if (primary_monitor_height == 0) {
@@ -333,7 +333,8 @@ namespace hi { inline namespace v1 {
 
     // Calculate the bottom as compared to a y-axis up coordinate system.
     hilet inv_bottom = primary_monitor_height - bottom; // 0, 600
-    return aarectanglei{left, inv_bottom, width, height};
+    return aarectangle{
+        narrow_cast<float>(left), narrow_cast<float>(inv_bottom), narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
 [[nodiscard]] policy os_settings::gather_gpu_policy()

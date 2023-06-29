@@ -34,7 +34,7 @@ draw_context::draw_context(
     _alpha_vertices->clear();
 }
 
-void draw_context::_override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes)
+void draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes)
     const noexcept
 {
     if (_alpha_vertices->full()) {
@@ -43,11 +43,10 @@ void draw_context::_override_alpha(aarectanglei const& clipping_rectangle, quad 
         return;
     }
 
-    pipeline_alpha::device_shared::place_vertices(
-        *_alpha_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, attributes.fill_color.p0.a());
+    pipeline_alpha::device_shared::place_vertices(*_alpha_vertices, clipping_rectangle, box, attributes.fill_color.p0.a());
 }
 
-void draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
+void draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
 {
     // clang-format off
     hilet border_radius = attributes.line_width * 0.5f;
@@ -70,7 +69,7 @@ void draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, d
 
     pipeline_box::device_shared::place_vertices(
         *_box_vertices,
-        narrow_cast<aarectangle>(clipping_rectangle),
+        clipping_rectangle,
         box_,
         attributes.fill_color,
         attributes.line_color,
@@ -79,7 +78,7 @@ void draw_context::_draw_box(aarectanglei const& clipping_rectangle, quad box, d
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept
+draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept
 {
     hi_assert_not_null(_image_vertices);
 
@@ -87,19 +86,19 @@ draw_context::_draw_image(aarectanglei const& clipping_rectangle, quad const& bo
         return false;
     }
 
-    auto &pipeline = *down_cast<gfx_device_vulkan&>(device).image_pipeline;
-    pipeline.place_vertices(*_image_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, image);
+    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).image_pipeline;
+    pipeline.place_vertices(*_image_vertices, clipping_rectangle, box, image);
     return true;
 }
 
 void draw_context::_draw_glyph(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     quad const& box,
     glyph_ids const& glyph,
     draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
-    auto &pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
+    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
 
     if (_sdf_vertices->full()) {
         auto box_attributes = attributes;
@@ -109,8 +108,7 @@ void draw_context::_draw_glyph(
         return;
     }
 
-    hilet atlas_was_updated =
-        pipeline.place_vertices(*_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), box, glyph, attributes.fill_color);
+    hilet atlas_was_updated = pipeline.place_vertices(*_sdf_vertices, clipping_rectangle, box, glyph, attributes.fill_color);
 
     if (atlas_was_updated) {
         pipeline.prepare_atlas_for_rendering();
@@ -118,13 +116,13 @@ void draw_context::_draw_glyph(
 }
 
 void draw_context::_draw_text(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
-    auto &pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
+    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
 
     auto atlas_was_updated = false;
     for (hilet& c : text) {
@@ -142,8 +140,7 @@ void draw_context::_draw_text(
             break;
         }
 
-        atlas_was_updated |= pipeline.place_vertices(
-            *_sdf_vertices, narrow_cast<aarectangle>(clipping_rectangle), transform * box, c.glyph, color);
+        atlas_was_updated |= pipeline.place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, c.glyph, color);
     }
 
     if (atlas_was_updated) {
@@ -152,7 +149,7 @@ void draw_context::_draw_text(
 }
 
 void draw_context::_draw_text_selection(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_selection const& selection,
@@ -171,7 +168,7 @@ void draw_context::_draw_text_selection(
 }
 
 void draw_context::_draw_text_insertion_cursor_empty(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     draw_attributes const& attributes) const noexcept
@@ -189,7 +186,7 @@ void draw_context::_draw_text_insertion_cursor_empty(
 }
 
 void draw_context::_draw_text_insertion_cursor(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_cursor cursor,
@@ -239,7 +236,7 @@ void draw_context::_draw_text_insertion_cursor(
 }
 
 void draw_context::_draw_text_overwrite_cursor(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper::char_const_iterator it,
     draw_attributes const& attributes) const noexcept
@@ -249,7 +246,7 @@ void draw_context::_draw_text_overwrite_cursor(
 }
 
 void draw_context::_draw_text_cursors(
-    aarectanglei const& clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
     text_cursor primary_cursor,

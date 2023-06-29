@@ -67,7 +67,7 @@ void overlay_widget::draw(draw_context const& context) noexcept
     return theme().color(semantic_color::border, semantic_layer + 1);
 }
 
-void overlay_widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
+void overlay_widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 {
     // An overlay is in an absolute position on the window,
     // so do not forward the scroll_to_show message to its parent.
@@ -79,7 +79,7 @@ void overlay_widget::draw_background(draw_context const& context) noexcept
         layout(), layout().rectangle(), background_color(), foreground_color(), theme().border_width(), border_side::outside);
 }
 
-[[nodiscard]] hitbox overlay_widget::hitbox_test(point2i position) const noexcept
+[[nodiscard]] hitbox overlay_widget::hitbox_test(point2 position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 

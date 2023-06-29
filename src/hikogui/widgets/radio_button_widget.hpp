@@ -101,8 +101,8 @@ private:
 
     box_constraints _label_constraints;
 
-    extent2i _button_size;
-    aarectanglei _button_rectangle;
+    extent2 _button_size;
+    aarectangle _button_rectangle;
     circle _button_circle;
 
     animator<float> _animated_value = _animation_duration;

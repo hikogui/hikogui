@@ -96,11 +96,11 @@ public:
 
     /** The minimum size this widget is allowed to be.
      */
-    observer<extent2i> minimum = extent2i{};
+    observer<extent2> minimum = extent2{};
 
     /** The maximum size this widget is allowed to be.
      */
-    observer<extent2i> maximum = extent2i::large();
+    observer<extent2> maximum = extent2::large();
 
     /*! Constructor for creating sub views.
      */
@@ -133,7 +133,7 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point2i position) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test(point2 position) const noexcept
     {
         return {};
     }
@@ -144,7 +144,7 @@ public:
      *
      * @param position The coordinate of the mouse local to the parent widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position) const noexcept
     {
         return hitbox_test(_layout.from_parent * position);
     }
@@ -156,7 +156,7 @@ public:
      * @param position The coordinate of the mouse local to the parent widget.
      * @param sibling_hitbox The hitbox of a sibling to combine with the hitbox of this widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2i position, hitbox sibling_hitbox) const noexcept
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position, hitbox sibling_hitbox) const noexcept
     {
         return std::max(sibling_hitbox, hitbox_test(_layout.from_parent * position));
     }
@@ -294,7 +294,7 @@ public:
      *
      * @param rectangle The rectangle in window coordinates.
      */
-    virtual void scroll_to_show(hi::aarectanglei rectangle) noexcept;
+    virtual void scroll_to_show(hi::aarectangle rectangle) noexcept;
 
     /** Scroll to show the important part of the widget.
      */
@@ -356,7 +356,7 @@ protected:
      * @param requested_rectangle A rectangle in the local coordinate system.
      * @return A rectangle that fits the window's constraints in the local coordinate system.
      */
-    [[nodiscard]] aarectanglei make_overlay_rectangle(aarectanglei requested_rectangle) const noexcept;
+    [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
 };
 
 inline widget *get_if(widget *start, widget_id id, bool include_invisible) noexcept

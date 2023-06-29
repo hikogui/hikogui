@@ -20,17 +20,4 @@ namespace hi::inline v1 {
     return translate2{translate_from_p0 + translate_from_p3} * resized_rectangle;
 }
 
-[[nodiscard]] aarectanglei fit(aarectanglei const& bounds, aarectanglei const& rectangle) noexcept
-{
-    hilet resized_rectangle = aarectanglei{
-        rectangle.left(),
-        rectangle.bottom(),
-        std::min(rectangle.width(), bounds.width()),
-        std::min(rectangle.height(), bounds.height())};
-
-    hilet translate_from_p0 = max(vector2i{}, get<0>(bounds) - get<0>(resized_rectangle));
-    hilet translate_from_p3 = min(vector2i{}, get<3>(bounds) - get<3>(resized_rectangle));
-    return translate2i{translate_from_p0 + translate_from_p3} * resized_rectangle;
-}
-
 } // namespace hi::inline v1

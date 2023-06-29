@@ -158,7 +158,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         widget->set_layout(widget_layout{widget_layout_size, _size_state, subpixel_orientation(), display_time_point});
 
         // After layout do a complete redraw.
-        _redraw_rectangle = aarectanglei{widget_size};
+        _redraw_rectangle = aarectangle{widget_size};
     }
 
 #if 0
@@ -168,14 +168,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
     // Draw widgets if the _redraw_rectangle was set.
     if (auto draw_context = surface->render_start(_redraw_rectangle)) {
-        _redraw_rectangle = aarectanglei{};
+        _redraw_rectangle = aarectangle{};
         draw_context.display_time_point = display_time_point;
         draw_context.subpixel_orientation = subpixel_orientation();
         draw_context.background_color = widget->background_color();
         draw_context.active = active;
 
         if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
-            this->process_event({gui_event_type::window_redraw, aarectanglei{rectangle.size()}});
+            this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
         }
         draw_context.saturation = _animated_active.current_value();
 
@@ -190,7 +190,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     }
 }
 
-void gui_window::update_mouse_target(widget_id new_target_id, point2i position) noexcept
+void gui_window::update_mouse_target(widget_id new_target_id, point2 position) noexcept
 {
     hi_axiom(loop::main().on_thread());
 

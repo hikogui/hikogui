@@ -13,9 +13,9 @@
 namespace hi { inline namespace v1 {
 
 struct box_shape {
-    aarectanglei rectangle;
-    std::optional<int> baseline = {};
-    std::optional<int> centerline = {};
+    aarectangle rectangle;
+    std::optional<float> baseline = {};
+    std::optional<float> centerline = {};
 
     constexpr box_shape() noexcept = default;
     constexpr box_shape(box_shape const&) noexcept = default;
@@ -24,13 +24,13 @@ struct box_shape {
     constexpr box_shape& operator=(box_shape&&) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(box_shape const&, box_shape const&) noexcept = default;
 
-    constexpr box_shape(extent2i size) noexcept : rectangle(size), baseline(), centerline() {}
+    constexpr box_shape(extent2 size) noexcept : rectangle(size), baseline(), centerline() {}
 
     constexpr box_shape(
         override_t,
         box_constraints const& constraints,
-        aarectanglei const& rectangle,
-        int baseline_adjustment) noexcept :
+        aarectangle const& rectangle,
+        float baseline_adjustment) noexcept :
         rectangle(rectangle),
         baseline(make_guideline(
             constraints.alignment.vertical(),
@@ -48,50 +48,33 @@ struct box_shape {
     {
     }
 
-    constexpr box_shape(box_constraints const& constraints, aarectanglei rectangle, int baseline_adjustment) noexcept :
+    constexpr box_shape(box_constraints const& constraints, aarectangle rectangle, float baseline_adjustment) noexcept :
         box_shape(override_t{}, constraints, rectangle, baseline_adjustment)
     {
         hi_axiom(rectangle.size() >= constraints.minimum);
     }
 
-    [[deprecated]] constexpr box_shape(
-        override_t,
-        box_constraints const& constraints,
-        aarectangle const& rectangle,
-        int baseline_adjustment) noexcept :
-        box_shape(override_t{}, constraints, narrow_cast<aarectanglei>(rectangle), baseline_adjustment)
-    {
-    }
-
-    [[deprecated]] constexpr box_shape(
-        box_constraints const& constraints,
-        aarectangle const& rectangle,
-        int baseline_adjustment) noexcept :
-        box_shape(constraints, narrow_cast<aarectanglei>(rectangle), baseline_adjustment)
-    {
-    }
-
-    [[nodiscard]] constexpr int x() const noexcept
+    [[nodiscard]] constexpr float x() const noexcept
     {
         return rectangle.x();
     }
 
-    [[nodiscard]] constexpr int y() const noexcept
+    [[nodiscard]] constexpr float y() const noexcept
     {
         return rectangle.y();
     }
 
-    [[nodiscard]] constexpr extent2i size() const noexcept
+    [[nodiscard]] constexpr extent2 size() const noexcept
     {
         return rectangle.size();
     }
 
-    [[nodiscard]] constexpr int width() const noexcept
+    [[nodiscard]] constexpr float width() const noexcept
     {
         return rectangle.width();
     }
 
-    [[nodiscard]] constexpr int height() const noexcept
+    [[nodiscard]] constexpr float height() const noexcept
     {
         return rectangle.height();
     }

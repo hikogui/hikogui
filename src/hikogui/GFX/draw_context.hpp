@@ -44,7 +44,7 @@ enum class border_side {
 template<typename Context>
 concept draw_attribute = std::same_as<Context, quad_color> or std::same_as<Context, color> or
     std::same_as<Context, border_side> or std::same_as<Context, line_end_cap> or std::same_as<Context, corner_radii> or
-    std::same_as<Context, aarectanglei> or std::same_as<Context, float> or std::same_as<Context, int>;
+    std::same_as<Context, aarectangle> or std::same_as<Context, float> or std::same_as<Context, int>;
 
 /** The draw attributes used to draw shaped into the draw context.
  */
@@ -82,7 +82,7 @@ struct draw_attributes {
      * This rectangle is used for limiting drawing outside of a widget's rectangle.
      * But it may also be used to cut shapes for special effects.
      */
-    aarectanglei clipping_rectangle = aarectanglei::large();
+    aarectangle clipping_rectangle = aarectangle::large();
 
     /** The shape of the beginning of a line.
      */
@@ -168,7 +168,7 @@ struct draw_attributes {
             _has_corner_radii = true;
 #endif
 
-        } else if constexpr (std::is_same_v<T, aarectanglei>) {
+        } else if constexpr (std::is_same_v<T, aarectangle>) {
             clipping_rectangle = attribute;
 #ifndef NDEBUG
             hi_assert(not _has_clipping_rectangle);
@@ -204,7 +204,7 @@ private:
 
 template<typename Context>
 concept draw_quad_shape = std::same_as<Context, quad> or std::same_as<Context, rectangle> or std::same_as<Context, aarectangle> or
-    std::same_as<Context, aarectanglei>;
+    std::same_as<Context, aarectangle>;
 
 /** Draw context for drawing using the HikoGUI shaders.
  */
@@ -218,7 +218,7 @@ public:
 
     /** This is the rectangle of the window that is being redrawn.
      */
-    aarectanglei scissor_rectangle;
+    aarectangle scissor_rectangle;
 
     /** The background color to clear the window with.
      */
@@ -575,10 +575,10 @@ private:
     template<draw_quad_shape Shape>
     [[nodiscard]] constexpr static quad make_quad(Shape const& shape) noexcept
     {
-        if constexpr (std::is_same_v<Shape, aarectanglei>) {
-            return narrow_cast<aarectangle>(shape);
-        } else {
+        if constexpr (std::is_same_v<Shape, quad>) {
             return shape;
+        } else {
+            return quad{shape};
         }
     }
 
@@ -635,31 +635,31 @@ private:
         return corner_radii{f32x4{circle}.wwww()};
     }
 
-    void _override_alpha(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
+    void _override_alpha(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
 
-    void _draw_box(aarectanglei const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
+    void _draw_box(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
 
     void _draw_text(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         draw_attributes const& attributes) const noexcept;
 
     void _draw_text_selection(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         text_selection const& selection,
         draw_attributes const& attributes) const noexcept;
 
     void _draw_text_insertion_cursor_empty(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         draw_attributes const& attributes) const noexcept;
 
     void _draw_text_insertion_cursor(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         text_cursor cursor,
@@ -667,13 +667,13 @@ private:
         draw_attributes const& attributes) const noexcept;
 
     void _draw_text_overwrite_cursor(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper::char_const_iterator it,
         draw_attributes const& attributes) const noexcept;
 
     void _draw_text_cursors(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         matrix3 const& transform,
         text_shaper const& text,
         text_cursor cursor,
@@ -682,12 +682,12 @@ private:
         draw_attributes const& attributes) const noexcept;
 
     void _draw_glyph(
-        aarectanglei const& clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         quad const& box,
         glyph_ids const& glyph,
         draw_attributes const& attributes) const noexcept;
 
-    [[nodiscard]] bool _draw_image(aarectanglei const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;
+    [[nodiscard]] bool _draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;
 };
 
 }} // namespace hi::v1

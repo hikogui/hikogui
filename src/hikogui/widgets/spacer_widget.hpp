@@ -32,7 +32,7 @@ public:
         _layout = {};
 
         auto r = box_constraints{};
-        r.maximum = extent2i::large();
+        r.maximum = extent2::large();
         return r;
     }
 
@@ -43,7 +43,7 @@ public:
 
     void draw(draw_context const& context) noexcept override {}
 
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         return hitbox{};
     }

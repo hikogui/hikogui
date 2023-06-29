@@ -313,23 +313,10 @@ private:
 
 using translate2 = geo::translate<float, 2>;
 using translate3 = geo::translate<float, 3>;
-using translate2i = geo::translate<int, 2>;
-using translate3i = geo::translate<int, 3>;
 
 constexpr translate3 translate_z(float z) noexcept
 {
     return translate3{float{0}, float{0}, z};
-}
-
-constexpr translate3i translate_z(int z) noexcept
-{
-    return translate3i{int{0}, int{0}, z};
-}
-
-template<std::same_as<translate2> Out, std::same_as<translate2i> In>
-[[nodiscard]] constexpr Out narrow_cast(In const& rhs) noexcept
-{
-    return {narrow_cast<float>(rhs.x()), narrow_cast<float>(rhs.y())};
 }
 
 } // namespace hi::inline v1

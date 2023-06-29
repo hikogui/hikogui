@@ -16,11 +16,11 @@ window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexc
     _layout = {};
 
     if (theme().operating_system == operating_system::windows) {
-        hilet size = extent2i{theme().large_size() * 3, theme().large_size()};
+        hilet size = extent2{theme().large_size() * 3.0f, theme().large_size()};
         return {size, size, size};
 
     } else if (theme().operating_system == operating_system::macos) {
-        hilet size = extent2i{DIAMETER * 3 + 2 * MARGIN + 2 * SPACING, DIAMETER + 2 * MARGIN};
+        hilet size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
         return {size, size, size};
 
     } else {
@@ -33,27 +33,28 @@ void window_traffic_lights_widget::set_layout(widget_layout const& context) noex
     if (compare_store(_layout, context)) {
         auto extent = context.size();
         if (extent.height() > floor_cast<int>(theme().large_size() * 1.2f)) {
-            extent = extent2i{extent.width(), theme().large_size()};
+            extent = extent2{extent.width(), theme().large_size()};
         }
         auto y = context.height() - extent.height();
 
         if (theme().operating_system == operating_system::windows) {
-            closeRectangle = aarectanglei{point2i(extent.width() * 2 / 3, y), extent2i{extent.width() * 1 / 3, extent.height()}};
+            closeRectangle =
+                aarectangle{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
             maximizeRectangle =
-                aarectanglei{point2i(extent.width() * 1 / 3, y), extent2i{extent.width() * 1 / 3, extent.height()}};
+                aarectangle{point2(extent.width() * 1.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-            minimizeRectangle = aarectanglei{point2i(0, y), extent2i{extent.width() * 1 / 3, extent.height()}};
+            minimizeRectangle = aarectangle{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
         } else if (theme().operating_system == operating_system::macos) {
-            closeRectangle = aarectanglei{point2i(MARGIN, extent.height() / 2 - RADIUS), extent2i{DIAMETER, DIAMETER}};
+            closeRectangle = aarectangle{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
             minimizeRectangle =
-                aarectanglei{point2i(MARGIN + DIAMETER + SPACING, extent.height() / 2 - RADIUS), extent2i{DIAMETER, DIAMETER}};
+                aarectangle{point2(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
-            maximizeRectangle = aarectanglei{
-                point2i(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2 - RADIUS),
-                extent2i{DIAMETER, DIAMETER}};
+            maximizeRectangle = aarectangle{
+                point2(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
+                extent2{DIAMETER, DIAMETER}};
         } else {
             hi_no_default();
         }
@@ -74,10 +75,10 @@ void window_traffic_lights_widget::set_layout(widget_layout const& context) noex
 
         hilet glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size();
 
-        hilet closeWindowGlyphBB = narrow_cast<aarectanglei>(closeWindowGlyph.get_bounding_box() * glyph_size);
-        hilet minimizeWindowGlyphBB = narrow_cast<aarectanglei>(minimizeWindowGlyph.get_bounding_box() * glyph_size);
-        hilet maximizeWindowGlyphBB = narrow_cast<aarectanglei>(maximizeWindowGlyph.get_bounding_box() * glyph_size);
-        hilet restoreWindowGlyphBB = narrow_cast<aarectanglei>(restoreWindowGlyph.get_bounding_box() * glyph_size);
+        hilet closeWindowGlyphBB = closeWindowGlyph.get_bounding_box() * glyph_size;
+        hilet minimizeWindowGlyphBB = minimizeWindowGlyph.get_bounding_box() * glyph_size;
+        hilet maximizeWindowGlyphBB = maximizeWindowGlyph.get_bounding_box() * glyph_size;
+        hilet restoreWindowGlyphBB = restoreWindowGlyph.get_bounding_box() * glyph_size;
 
         closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
         minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
@@ -107,29 +108,16 @@ void window_traffic_lights_widget::drawMacOS(draw_context const& drawContext) no
     context.draw_box(layout(), maximizeRectangle, maximize_circle_color, corner_radii{RADIUS});
 
     if (*hover) {
+        context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, closeWindowGlyph, color{0.319f, 0.0f, 0.0f});
         context.draw_glyph(
-            layout(),
-            translate_z(0.1f) * narrow_cast<aarectangle>(closeWindowGlyphRectangle),
-            closeWindowGlyph,
-            color{0.319f, 0.0f, 0.0f});
-        context.draw_glyph(
-            layout(),
-            translate_z(0.1f) * narrow_cast<aarectangle>(minimizeWindowGlyphRectangle),
-            minimizeWindowGlyph,
-            color{0.212f, 0.1f, 0.0f});
+            layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, minimizeWindowGlyph, color{0.212f, 0.1f, 0.0f});
 
         if (layout().window_size_state == gui_window_size::maximized) {
             context.draw_glyph(
-                layout(),
-                translate_z(0.1f) * narrow_cast<aarectangle>(restoreWindowGlyphRectangle),
-                restoreWindowGlyph,
-                color{0.0f, 0.133f, 0.0f});
+                layout(), translate_z(0.1f) * restoreWindowGlyphRectangle, restoreWindowGlyph, color{0.0f, 0.133f, 0.0f});
         } else {
             context.draw_glyph(
-                layout(),
-                translate_z(0.1f) * narrow_cast<aarectangle>(maximizeWindowGlyphRectangle),
-                maximizeWindowGlyph,
-                color{0.0f, 0.133f, 0.0f});
+                layout(), translate_z(0.1f) * maximizeWindowGlyphRectangle, maximizeWindowGlyph, color{0.0f, 0.133f, 0.0f});
         }
     }
 }
@@ -147,42 +135,29 @@ void window_traffic_lights_widget::drawWindows(draw_context const& drawContext) 
     }
 
     if (pressedMinimize) {
-        context.draw_box(
-            layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer + 2));
+        context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer + 2));
     } else if (hoverMinimize) {
-        context.draw_box(
-            layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer + 1));
+        context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer + 1));
     } else {
-        context.draw_box(
-            layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer));
+        context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer));
     }
 
     if (pressedMaximize) {
-        context.draw_box(
-            layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer + 2));
+        context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer + 2));
     } else if (hoverMaximize) {
-        context.draw_box(
-            layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer + 1));
+        context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer + 1));
     } else {
-        context.draw_box(
-            layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer));
+        context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer));
     }
 
     hilet glyph_color = context.active ? label_color() : foreground_color();
 
-    context.draw_glyph(
-        layout(), translate_z(0.1f) * narrow_cast<aarectangle>(closeWindowGlyphRectangle), closeWindowGlyph, glyph_color);
-    context.draw_glyph(
-        layout(), translate_z(0.1f) * narrow_cast<aarectangle>(minimizeWindowGlyphRectangle), minimizeWindowGlyph, glyph_color);
+    context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, closeWindowGlyph, glyph_color);
+    context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, minimizeWindowGlyph, glyph_color);
     if (layout().window_size_state == gui_window_size::maximized) {
-        context.draw_glyph(
-            layout(), translate_z(0.1f) * narrow_cast<aarectangle>(restoreWindowGlyphRectangle), restoreWindowGlyph, glyph_color);
+        context.draw_glyph(layout(), translate_z(0.1f) * restoreWindowGlyphRectangle, restoreWindowGlyph, glyph_color);
     } else {
-        context.draw_glyph(
-            layout(),
-            translate_z(0.1f) * narrow_cast<aarectangle>(maximizeWindowGlyphRectangle),
-            maximizeWindowGlyph,
-            glyph_color);
+        context.draw_glyph(layout(), translate_z(0.1f) * maximizeWindowGlyphRectangle, maximizeWindowGlyph, glyph_color);
     }
 }
 
@@ -275,7 +250,7 @@ bool window_traffic_lights_widget::handle_event(gui_event const& event) noexcept
     return super::handle_event(event);
 }
 
-hitbox window_traffic_lights_widget::hitbox_test(point2i position) const noexcept
+hitbox window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 

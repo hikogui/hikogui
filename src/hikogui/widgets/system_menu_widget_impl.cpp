@@ -18,7 +18,7 @@ system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
     _layout = {};
     _icon_constraints = _icon_widget->update_constraints();
 
-    hilet size = extent2i{theme().large_size(), theme().large_size()};
+    hilet size = extent2{theme().large_size(), theme().large_size()};
     return {size, size, size};
 }
 
@@ -27,11 +27,11 @@ void system_menu_widget::set_layout(widget_layout const& context) noexcept
     if (compare_store(_layout, context)) {
         hilet icon_height =
             context.height() < round_cast<int>(theme().large_size() * 1.2f) ? context.height() : theme().large_size();
-        hilet icon_rectangle = aarectanglei{0, context.height() - icon_height, context.width(), icon_height};
+        hilet icon_rectangle = aarectangle{0, context.height() - icon_height, context.width(), icon_height};
         _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme().baseline_adjustment()};
         // Leave space for window resize handles on the left and top.
-        _system_menu_rectangle = aarectanglei{
-            theme().margin<int>(), 0, context.width() - theme().margin<int>(), context.height() - theme().margin<int>()};
+        _system_menu_rectangle = aarectangle{
+            theme().margin<float>(), 0.0f, context.width() - theme().margin<float>(), context.height() - theme().margin<float>()};
     }
 
     _icon_widget->set_layout(context.transform(_icon_shape));
@@ -44,7 +44,7 @@ void system_menu_widget::draw(draw_context const& context) noexcept
     }
 }
 
-hitbox system_menu_widget::hitbox_test(point2i position) const noexcept
+hitbox system_menu_widget::hitbox_test(point2 position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 
