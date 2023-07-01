@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "vector.hpp"
+#include "vector2.hpp"
+#include "vector3.hpp"
 #include "extent.hpp"
 #include "point.hpp"
 #include "rectangle.hpp"
@@ -300,11 +301,25 @@ public:
      * @param rhs The vector to be transformed.
      * @return The transformed vector.
      */
-    template<int E>
-    [[nodiscard]] constexpr auto operator*(vector<float, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr vector2 operator*(vector2 const& rhs) const noexcept requires (D == 2)
     {
         hi_axiom(rhs.holds_invariant());
-        return vector<float, std::max(D, E)>{
+        return vector2{
+            _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy()};
+    }
+
+    /** Transform a vector by the matrix.
+     *
+     * Vectors will not be translated.
+     *
+     * @param rhs The vector to be transformed.
+     * @return The transformed vector.
+     */
+    [[nodiscard]] constexpr vector3 operator*(vector3 const& rhs) const noexcept
+        requires(D == 3)
+    {
+        hi_axiom(rhs.holds_invariant());
+        return vector3{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
     }

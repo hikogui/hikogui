@@ -83,7 +83,7 @@ public:
      *
      * @return True is there is a area.
      */
-    [[nodiscard]] constexpr explicit operator bool() const noexcept
+    [[nodiscard]] explicit operator bool() const noexcept
     {
         // min() is smallest normal float.
         return area() > std::numeric_limits<float>::min();
@@ -137,14 +137,14 @@ public:
 
     /** The width, or length of the right vector.
      */
-    [[nodiscard]] constexpr float width() const noexcept
+    [[nodiscard]] float width() const noexcept
     {
         return hypot(right);
     }
 
     /** The height, or length of the up vector.
      */
-    [[nodiscard]] constexpr float height() const noexcept
+    [[nodiscard]] float height() const noexcept
     {
         return hypot(up);
     }
@@ -156,7 +156,7 @@ public:
         return {width(), height()};
     }
 
-    [[nodiscard]] constexpr float area() const noexcept
+    [[nodiscard]] float area() const noexcept
     {
         return hypot(cross(right, up));
     }

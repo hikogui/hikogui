@@ -75,7 +75,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/geometry/scale.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/transform.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/translate.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/vector.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/vector2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/vector3.hpp
     ${HIKOGUI_SOURCE_DIR}/image/module.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap_span.hpp

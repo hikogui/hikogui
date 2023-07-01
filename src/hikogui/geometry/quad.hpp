@@ -5,7 +5,8 @@
 
 #pragma once
 
-#include "vector.hpp"
+#include "vector2.hpp"
+#include "vector3.hpp"
 #include "point.hpp"
 #include "extent.hpp"
 #include "axis_aligned_rectangle.hpp"

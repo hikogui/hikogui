@@ -7,6 +7,8 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 #include "rotate.hpp"
+#include "vector2.hpp"
+#include "vector3.hpp"
 #include <concepts>
 
 namespace hi::inline v1 {
@@ -56,13 +58,13 @@ public:
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr explicit translate(axis_aligned_rectangle<value_type> const& other) noexcept :
+    [[nodiscard]] constexpr explicit translate(aarectangle const& other) noexcept :
         _v(static_cast<array_type>(get<0>(other)).xy00())
     {
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr explicit translate(axis_aligned_rectangle<value_type> const& other, value_type z) noexcept
+    [[nodiscard]] constexpr explicit translate(aarectangle const& other, value_type z) noexcept
         requires(D == 3)
         : _v(static_cast<array_type>(get<0>(other)).xy00())
     {
@@ -86,9 +88,18 @@ public:
         hi_axiom(holds_invariant());
     }
 
-    template<int E>
-        requires(E <= D)
-    [[nodiscard]] constexpr explicit translate(vector<value_type, E> const& other) noexcept : _v(static_cast<array_type>(other))
+    [[nodiscard]] constexpr explicit translate(vector2 const& other) noexcept
+        requires(D == 2)
+        : _v(static_cast<array_type>(other))
+
+    {
+        hi_axiom(holds_invariant());
+    }
+
+    [[nodiscard]] constexpr explicit translate(vector3 const& other) noexcept
+        requires(D == 3)
+        : _v(static_cast<array_type>(other))
+
     {
         hi_axiom(holds_invariant());
     }
@@ -154,8 +165,8 @@ public:
      * @return Translation to move the src_rectangle into the dst_rectangle.
      */
     [[nodiscard]] constexpr static translate align(
-        axis_aligned_rectangle<value_type> src_rectangle,
-        axis_aligned_rectangle<value_type> dst_rectangle,
+        aarectangle src_rectangle,
+        aarectangle dst_rectangle,
         alignment alignment) noexcept
     {
         auto x = value_type{0};
@@ -189,8 +200,14 @@ public:
         return translate{x - src_rectangle.left(), y - src_rectangle.bottom()};
     }
 
-    template<int E>
-    [[nodiscard]] constexpr vector<value_type, E> operator*(vector<value_type, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr vector2 operator*(vector2 const& rhs) const noexcept
+    {
+        // Vectors are not translated.
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
+        return rhs;
+    }
+
+    [[nodiscard]] constexpr vector3 operator*(vector3 const& rhs) const noexcept
     {
         // Vectors are not translated.
         hi_axiom(holds_invariant() && rhs.holds_invariant());
@@ -210,21 +227,19 @@ public:
         return lhs = rhs * lhs;
     }
 
-    [[nodiscard]] constexpr axis_aligned_rectangle<value_type>
-    operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept
+    [[nodiscard]] constexpr aarectangle operator*(aarectangle const& rhs) const noexcept
         requires(D == 2)
     {
-        return axis_aligned_rectangle<value_type>{*this * get<0>(rhs), *this * get<3>(rhs)};
+        return aarectangle{*this * get<0>(rhs), *this * get<3>(rhs)};
     }
 
-    constexpr friend axis_aligned_rectangle<value_type>&
-    operator*=(axis_aligned_rectangle<value_type>& lhs, translate const& rhs) noexcept
+    constexpr friend aarectangle& operator*=(aarectangle& lhs, translate const& rhs) noexcept
         requires(D == 2)
     {
         return lhs = rhs * lhs;
     }
 
-    [[nodiscard]] constexpr rectangle operator*(axis_aligned_rectangle<value_type> const& rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(aarectangle const& rhs) const noexcept
         requires std::is_same_v<value_type, float> and (D == 3)
     {
         return *this * rectangle{rhs};

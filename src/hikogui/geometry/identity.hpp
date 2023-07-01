@@ -37,8 +37,12 @@ public:
         return {};
     }
 
-    template<typename O, int E>
-    [[nodiscard]] constexpr vector<O, E> operator*(vector<O, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr vector2 operator*(vector2 const& rhs) const noexcept
+    {
+        return rhs;
+    }
+
+    [[nodiscard]] constexpr vector3 operator*(vector3 const& rhs) const noexcept
     {
         return rhs;
     }
@@ -49,8 +53,7 @@ public:
         return rhs;
     }
 
-    template<typename O>
-    [[nodiscard]] constexpr axis_aligned_rectangle<O> operator*(axis_aligned_rectangle<O> const& rhs) const noexcept
+    [[nodiscard]] constexpr aarectangle operator*(aarectangle const& rhs) const noexcept
     {
         return rhs;
     }

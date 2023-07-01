@@ -17,10 +17,10 @@ class scale {
 public:
     static_assert(D == 2 || D == 3, "Only 2D or 3D scale-matrices are supported");
 
-    constexpr scale(scale const &) noexcept = default;
-    constexpr scale(scale &&) noexcept = default;
-    constexpr scale &operator=(scale const &) noexcept = default;
-    constexpr scale &operator=(scale &&) noexcept = default;
+    constexpr scale(scale const&) noexcept = default;
+    constexpr scale(scale&&) noexcept = default;
+    constexpr scale& operator=(scale const&) noexcept = default;
+    constexpr scale& operator=(scale&&) noexcept = default;
 
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
@@ -28,7 +28,8 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr explicit operator extent<float, 2>() const noexcept requires(D == 2)
+    [[nodiscard]] constexpr explicit operator extent<float, 2>() const noexcept
+        requires(D == 2)
     {
         return extent<2>{_v.xy00()};
     }
@@ -39,14 +40,23 @@ public:
         return extent<3>{_v.xyz0()};
     }
 
-    [[nodiscard]] constexpr explicit scale(f32x4 const &v) noexcept : _v(v)
+    [[nodiscard]] constexpr explicit scale(f32x4 const& v) noexcept : _v(v)
     {
         hi_axiom(holds_invariant());
     }
 
-    template<int E>
-        requires(E <= D)
-    [[nodiscard]] constexpr explicit scale(vector<float, E> const& v) noexcept : _v(static_cast<f32x4>(v).xyz1())
+    [[nodiscard]] constexpr explicit scale(vector2 const& v) noexcept
+        requires(D == 2)
+        : _v(static_cast<f32x4>(v).xyz1())
+
+    {
+        hi_axiom(holds_invariant());
+    }
+
+    [[nodiscard]] constexpr explicit scale(vector3 const& v) noexcept
+        requires(D == 3)
+        : _v(static_cast<f32x4>(v).xyz1())
+
     {
         hi_axiom(holds_invariant());
     }
@@ -59,15 +69,31 @@ public:
 
     [[nodiscard]] constexpr scale() noexcept : _v(1.0, 1.0, 1.0, 1.0) {}
 
-    [[nodiscard]] constexpr scale(identity const &) noexcept : _v(1.0, 1.0, 1.0, 1.0) {}
+    [[nodiscard]] constexpr scale(identity const&) noexcept : _v(1.0, 1.0, 1.0, 1.0) {}
 
-    [[nodiscard]] constexpr scale(float value) noexcept requires(D == 2) : _v(value, value, 1.0, 1.0) {}
+    [[nodiscard]] constexpr scale(float value) noexcept
+        requires(D == 2)
+        : _v(value, value, 1.0, 1.0)
+    {
+    }
 
-    [[nodiscard]] constexpr scale(float value) noexcept requires(D == 3) : _v(value, value, value, 1.0) {}
+    [[nodiscard]] constexpr scale(float value) noexcept
+        requires(D == 3)
+        : _v(value, value, value, 1.0)
+    {
+    }
 
-    [[nodiscard]] constexpr scale(float x, float y) noexcept requires(D == 2) : _v(x, y, 1.0, 1.0) {}
+    [[nodiscard]] constexpr scale(float x, float y) noexcept
+        requires(D == 2)
+        : _v(x, y, 1.0, 1.0)
+    {
+    }
 
-    [[nodiscard]] constexpr scale(float x, float y, float z = 1.0) noexcept requires(D == 3) : _v(x, y, z, 1.0) {}
+    [[nodiscard]] constexpr scale(float x, float y, float z = 1.0) noexcept
+        requires(D == 3)
+        : _v(x, y, z, 1.0)
+    {
+    }
 
     /** Get a uniform-scale-transform to scale an extent to another extent.
      * @param src_extent The extent to transform
@@ -98,11 +124,16 @@ public:
         }
     }
 
-    template<int E>
-    [[nodiscard]] constexpr vector<float, E> operator*(vector<float, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr vector2 operator*(vector2 const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return vector<float, E>{_v * static_cast<f32x4>(rhs)};
+        return vector2{_v * static_cast<f32x4>(rhs)};
+    }
+
+    [[nodiscard]] constexpr vector3 operator*(vector3 const& rhs) const noexcept
+    {
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
+        return vector3{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
@@ -121,17 +152,18 @@ public:
 
     /** Scale a rectangle around it's center.
      */
-    [[nodiscard]] constexpr aarectangle operator*(aarectangle const &rhs) const noexcept requires(D == 2)
+    [[nodiscard]] constexpr aarectangle operator*(aarectangle const& rhs) const noexcept
+        requires(D == 2)
     {
         return aarectangle{*this * get<0>(rhs), *this * get<3>(rhs)};
     }
 
-    [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(rectangle const& rhs) const noexcept
     {
         return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
-    [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
+    [[nodiscard]] constexpr quad operator*(quad const& rhs) const noexcept
     {
         return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
     }
@@ -144,7 +176,8 @@ public:
      * @param rhs The width and height to scale each edge with.
      * @return The new quad extended by the size.
      */
-    [[nodiscard]] friend constexpr quad scale_from_center(quad const &lhs, scale const &rhs) noexcept requires(D == 2)
+    [[nodiscard]] friend constexpr quad scale_from_center(quad const& lhs, scale const& rhs) noexcept
+        requires(D == 2)
     {
         hilet top_extra = (lhs.top() * rhs._v.x() - lhs.top()) * 0.5f;
         hilet bottom_extra = (lhs.bottom() * rhs._v.x() - lhs.bottom()) * 0.5f;
@@ -158,21 +191,21 @@ public:
             lhs.p3 + top_extra + right_extra};
     }
 
-    [[nodiscard]] constexpr scale operator*(identity const &) const noexcept
+    [[nodiscard]] constexpr scale operator*(identity const&) const noexcept
     {
         hi_axiom(holds_invariant());
         return *this;
     }
 
     template<int E>
-    [[nodiscard]] constexpr auto operator*(scale<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(scale<E> const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
         return scale<std::max(D, E)>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
-    [[nodiscard]] constexpr bool operator==(scale<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr bool operator==(scale<E> const& rhs) const noexcept
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
         return equal(_v, static_cast<f32x4>(rhs));

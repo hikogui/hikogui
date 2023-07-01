@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "vector.hpp"
+#include "vector2.hpp"
+#include "vector3.hpp"
 #include "extent.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
@@ -156,18 +157,32 @@ public:
         return _v.z();
     }
 
-    template<int E>
-        requires(E <= D)
-    constexpr point& operator+=(vector<value_type, E> const& rhs) noexcept
+    constexpr point& operator+=(vector2 const& rhs) noexcept
+        requires(D == 2)
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v + static_cast<array_type>(rhs);
         return *this;
     }
 
-    template<int E>
-        requires(E <= D)
-    constexpr point& operator-=(vector<value_type, E> const& rhs) noexcept
+    constexpr point& operator+=(vector3 const& rhs) noexcept
+        requires(D == 3)
+    {
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
+        _v = _v + static_cast<array_type>(rhs);
+        return *this;
+    }
+
+    constexpr point& operator-=(vector2 const& rhs) noexcept
+        requires(D == 2)
+    {
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
+        _v = _v - static_cast<array_type>(rhs);
+        return *this;
+    }
+
+    constexpr point& operator-=(vector3 const& rhs) noexcept
+        requires(D == 3)
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v - static_cast<array_type>(rhs);
@@ -179,11 +194,22 @@ public:
      * @param rhs The vector to move along.
      * @return The moved point.
      */
-    template<int E>
-    [[nodiscard]] constexpr friend auto operator+(point const& lhs, vector<value_type, E> const& rhs) noexcept
+    [[nodiscard]] constexpr friend auto operator+(point const& lhs, vector2 const& rhs) noexcept
+        requires(D == 2)
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
-        return point<value_type, std::max(D, E)>{lhs._v + static_cast<array_type>(rhs)};
+        return point<value_type, 2>{lhs._v + static_cast<array_type>(rhs)};
+    }
+
+    /** Move a point along a vector.
+     * @param lhs The point to move.
+     * @param rhs The vector to move along.
+     * @return The moved point.
+     */
+    [[nodiscard]] constexpr friend auto operator+(point const& lhs, vector3 const& rhs) noexcept
+    {
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        return point<value_type, 3>{lhs._v + static_cast<array_type>(rhs)};
     }
 
     /** Move a point along a vector.
@@ -191,11 +217,21 @@ public:
      * @param rhs The point to move.
      * @return The moved point.
      */
-    template<int E>
-    [[nodiscard]] constexpr friend auto operator+(vector<value_type, E> const& rhs, point const& lhs) noexcept
+    [[nodiscard]] constexpr friend auto operator+(vector2 const& rhs, point const& lhs) noexcept requires (D == 2)
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
-        return point<value_type, std::max(D, E)>{lhs._v + static_cast<array_type>(rhs)};
+        return point<value_type, std::max(D, 2)>{lhs._v + static_cast<array_type>(rhs)};
+    }
+
+    /** Move a point along a vector.
+     * @param lhs The vector to move along.
+     * @param rhs The point to move.
+     * @return The moved point.
+     */
+    [[nodiscard]] constexpr friend point<value_type, 3> operator+(vector3 const& rhs, point const& lhs) noexcept
+    {
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        return point<value_type, 3>{lhs._v + static_cast<array_type>(rhs)};
     }
 
     /** Move a point backward along the vector.
@@ -203,11 +239,22 @@ public:
      * @param rhs The vector to move backward.
      * @return The moved point.
      */
-    template<int E>
-    [[nodiscard]] constexpr friend auto operator-(point const& lhs, vector<value_type, E> const& rhs) noexcept
+    [[nodiscard]] constexpr friend auto operator-(point const& lhs, vector2 const& rhs) noexcept
+        requires(D == 2)
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
-        return point<value_type, std::max(D, E)>{lhs._v - static_cast<array_type>(rhs)};
+        return point<value_type, 2>{lhs._v - static_cast<array_type>(rhs)};
+    }
+
+    /** Move a point backward along the vector.
+     * @param lhs The point to move.
+     * @param rhs The vector to move backward.
+     * @return The moved point.
+     */
+    [[nodiscard]] constexpr friend auto operator-(point const& lhs, vector3 const& rhs) noexcept
+    {
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        return point<value_type, 3>{lhs._v - static_cast<array_type>(rhs)};
     }
 
     /** Find the vector between two points
@@ -215,10 +262,22 @@ public:
      * @param rhs The second point.
      * @return The vector from the second to first point.
      */
-    [[nodiscard]] constexpr friend vector<value_type, D> operator-(point const& lhs, point const& rhs) noexcept
+    [[nodiscard]] constexpr friend vector2 operator-(point const& lhs, point const& rhs) noexcept requires (D == 2)
     {
         hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
-        return vector<value_type, D>{lhs._v - rhs._v};
+        return vector2{lhs._v - rhs._v};
+    }
+
+        /** Find the vector between two points
+     * @param lhs The first point.
+     * @param rhs The second point.
+     * @return The vector from the second to first point.
+     */
+    [[nodiscard]] constexpr friend vector3 operator-(point const& lhs, point const& rhs) noexcept
+        requires(D == 3)
+    {
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        return vector3{lhs._v - rhs._v};
     }
 
     /** Compare if two points are equal.

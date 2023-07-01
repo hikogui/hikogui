@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "vector.hpp"
+#include "vector2.hpp"
+#include "vector3.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
 #include <compare>
@@ -74,12 +75,17 @@ public:
         }
     }
 
-    template<int E>
-    [[nodiscard]] constexpr explicit operator vector<value_type, E>() const noexcept
-        requires(E >= D)
+    [[nodiscard]] constexpr explicit operator vector2() const noexcept
+        requires(D == 2)
     {
         hi_axiom(holds_invariant());
-        return vector<value_type, E>{static_cast<array_type>(*this)};
+        return vector2{static_cast<array_type>(*this)};
+    }
+
+    [[nodiscard]] constexpr explicit operator vector3() const noexcept
+    {
+        hi_axiom(holds_invariant());
+        return vector3{static_cast<array_type>(*this)};
     }
 
     /** Construct a empty extent / zero length.
@@ -226,14 +232,28 @@ public:
         return _v.z();
     }
 
-    [[nodiscard]] constexpr vector<value_type, D> right() const noexcept
+    [[nodiscard]] constexpr vector2 right() const noexcept
+        requires(D == 2)
     {
-        return vector<value_type, D>{_v.x000()};
+        return vector2{_v.x000()};
     }
 
-    [[nodiscard]] constexpr vector<value_type, D> up() const noexcept
+    [[nodiscard]] constexpr vector3 right() const noexcept
+        requires(D == 3)
     {
-        return vector<value_type, D>{_v._0y00()};
+        return vector3{_v.x000()};
+    }
+
+    [[nodiscard]] constexpr vector2 up() const noexcept
+        requires(D == 2)
+    {
+        return vector2{_v._0y00()};
+    }
+
+    [[nodiscard]] constexpr vector3 up() const noexcept
+        requires(D == 3)
+    {
+        return vector3{_v._0y00()};
     }
 
     constexpr extent& operator+=(extent const& rhs) noexcept
@@ -276,22 +296,46 @@ public:
         return extent{lhs._v * rhs};
     }
 
-    template<int E>
-    [[nodiscard]] constexpr friend auto operator+(extent const& lhs, vector<value_type, E> const& rhs) noexcept
+    [[nodiscard]] constexpr friend auto operator+(extent const& lhs, vector2 const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant());
         hi_axiom(rhs.holds_invariant());
 
-        return extent<value_type, std::max(D, E)>{static_cast<array_type>(lhs) + static_cast<array_type>(rhs)};
+        return extent<value_type, std::max(D, 2)>{static_cast<array_type>(lhs) + static_cast<array_type>(rhs)};
     }
 
-    template<int E>
-    [[nodiscard]] constexpr friend auto operator+(vector<value_type, E> const& lhs, extent const& rhs) noexcept
+    [[nodiscard]] constexpr friend extent<value_type, 3> operator+(extent const& lhs, vector3 const& rhs) noexcept
     {
         hi_axiom(lhs.holds_invariant());
         hi_axiom(rhs.holds_invariant());
 
-        return vector<value_type, std::max(D, E)>{static_cast<array_type>(lhs) + static_cast<array_type>(rhs)};
+        return extent<value_type, 3>{static_cast<array_type>(lhs) + static_cast<array_type>(rhs)};
+    }
+
+    [[nodiscard]] constexpr friend vector2 operator+(vector2 const& lhs, extent const& rhs) noexcept
+        requires(D == 2)
+    {
+        hi_axiom(lhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
+
+        return vector2{static_cast<array_type>(lhs) + static_cast<array_type>(rhs)};
+    }
+
+    [[nodiscard]] constexpr friend vector3 operator+(vector2 const& lhs, extent const& rhs) noexcept
+        requires(D == 3)
+    {
+        hi_axiom(lhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
+
+        return vector3{static_cast<array_type>(lhs) + static_cast<array_type>(rhs)};
+    }
+
+    [[nodiscard]] constexpr friend vector3 operator+(vector3 const& lhs, extent const& rhs) noexcept
+    {
+        hi_axiom(lhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
+
+        return vector3{static_cast<array_type>(lhs) + static_cast<array_type>(rhs)};
     }
 
     /** Add a scaler to the extent.

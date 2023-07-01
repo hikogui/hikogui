@@ -40,7 +40,8 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/geometry/scale_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/transform_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/translate_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/vector_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/vector2_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/vector3_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_639_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_tests.cpp

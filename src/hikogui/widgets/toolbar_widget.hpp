@@ -79,7 +79,7 @@ public:
     /// @endprivatesection
 private:
     mutable row_layout<std::unique_ptr<widget>> _children;
-    mutable int _child_height_adjustment = 0;
+    mutable float _child_height_adjustment = 0.0f;
     size_t _spacer_index = 0;
 
     void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept;
