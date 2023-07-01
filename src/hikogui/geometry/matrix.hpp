@@ -10,7 +10,8 @@
 
 #include "vector2.hpp"
 #include "vector3.hpp"
-#include "extent.hpp"
+#include "extent2.hpp"
+#include "extent3.hpp"
 #include "point.hpp"
 #include "rectangle.hpp"
 #include "quad.hpp"
@@ -331,11 +332,26 @@ public:
      * @param rhs The extent to be transformed.
      * @return The transformed extent.
      */
-    template<int E>
-    [[nodiscard]] constexpr auto operator*(extent<float, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr extent2 operator*(extent2 const& rhs) const noexcept
+    requires(D == 2)
     {
         hi_axiom(rhs.holds_invariant());
-        return extent<float, std::max(D, E)>{
+        return extent2{
+            _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy()};
+    }
+
+    /** Transform a extent by the matrix.
+     *
+     * Extents will not be translated.
+     *
+     * @param rhs The extent to be transformed.
+     * @return The transformed extent.
+     */
+    [[nodiscard]] constexpr extent3 operator*(extent3 const& rhs) const noexcept
+        requires(D == 3)
+    {
+        hi_axiom(rhs.holds_invariant());
+        return extent3{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
     }

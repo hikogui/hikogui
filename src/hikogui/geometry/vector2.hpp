@@ -48,7 +48,9 @@ public:
      * @param y The y element.
      * @param z The z element.
      */
-    [[nodiscard]] constexpr vector2(float x, float y) noexcept : _v(x, y, 0.0f, 0.0f) {}
+    [[nodiscard]] constexpr vector2(float x, float y) noexcept : _v(x, y, 0.0f, 0.0f)
+    {
+    }
 
     /** Access the x element from the vector.
      * @return a reference to the x element.
@@ -87,7 +89,6 @@ public:
      */
     [[nodiscard]] constexpr vector2 operator-() const noexcept
     {
-        hi_axiom(holds_invariant());
         return vector2{-_v};
     }
 
@@ -113,7 +114,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector2 operator+(vector2 const& lhs, vector2 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector2{lhs._v + rhs._v};
     }
 
@@ -124,7 +124,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector2 operator-(vector2 const& lhs, vector2 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector2{lhs._v - rhs._v};
     }
 
@@ -135,7 +134,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector2 operator*(vector2 const& lhs, float const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant());
         return vector2{lhs._v * rhs};
     }
 
@@ -146,7 +144,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector2 operator*(float const& lhs, vector2 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return vector2{array_type::broadcast(lhs) * rhs._v};
     }
 
@@ -157,7 +154,6 @@ public:
      */
     [[nodiscard]] constexpr friend bool operator==(vector2 const& lhs, vector2 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return equal(lhs._v, rhs._v);
     }
 
@@ -167,7 +163,6 @@ public:
      */
     [[nodiscard]] constexpr friend float squared_hypot(vector2 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return squared_hypot<0b0011>(rhs._v);
     }
 
@@ -177,7 +172,6 @@ public:
      */
     [[nodiscard]] friend float hypot(vector2 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return hypot<0b0011>(rhs._v);
     }
 
@@ -187,7 +181,6 @@ public:
      */
     [[nodiscard]] constexpr friend float rcp_hypot(vector2 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return rcp_hypot<0b0011>(rhs._v);
     }
 
@@ -197,7 +190,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector2 normalize(vector2 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return vector2{normalize<0b0011>(rhs._v)};
     }
 
@@ -208,7 +200,6 @@ public:
      */
     [[nodiscard]] constexpr friend float dot(vector2 const& lhs, vector2 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return dot<0b0011>(lhs._v, rhs._v);
     }
 
@@ -219,7 +210,6 @@ public:
      */
     [[nodiscard]] constexpr friend float det(vector2 const& lhs, vector2 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return lhs.x() * rhs.y() - lhs.y() * rhs.x();
     }
 
@@ -229,7 +219,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector2 cross(vector2 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return vector2{cross_2D(static_cast<f32x4>(rhs))};
     }
 
@@ -243,7 +232,6 @@ public:
      */
     [[nodiscard]] constexpr friend float cross(vector2 const& lhs, vector2 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return cross_2D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs));
     }
 
@@ -253,7 +241,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector2 normal(vector2 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return normalize(cross(rhs));
     }
 

@@ -7,7 +7,8 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 #include "translate.hpp"
-#include "extent.hpp"
+#include "extent2.hpp"
+#include "extent3.hpp"
 
 namespace hi::inline v1 {
 namespace geo {
@@ -28,16 +29,16 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr explicit operator extent<float, 2>() const noexcept
+    [[nodiscard]] constexpr explicit operator extent2() const noexcept
         requires(D == 2)
     {
-        return extent<2>{_v.xy00()};
+        return extent2{_v.xy00()};
     }
 
-    [[nodiscard]] constexpr explicit operator extent<float, 3>() const noexcept
+    [[nodiscard]] constexpr explicit operator extent3() const noexcept
         requires(D == 3)
     {
-        return extent<3>{_v.xyz0()};
+        return extent3{_v.xyz0()};
     }
 
     [[nodiscard]] constexpr explicit scale(f32x4 const& v) noexcept : _v(v)
@@ -100,28 +101,25 @@ public:
      * @param dst_extent The extent to scale to.
      * @return a scale to transform the src_extent to the dst_extent.
      */
-    template<int E, int F>
-        requires(E <= D && F <= D)
-    [[nodiscard]] static constexpr scale uniform(extent<float, E> src_extent, extent<float, F> dst_extent) noexcept
+    [[nodiscard]] static constexpr scale uniform(extent2 src_extent, extent2 dst_extent) noexcept
+        requires(D == 2)
     {
-        hi_axiom(
-            dst_extent.width() != 0.0f && src_extent.width() != 0.0f && dst_extent.height() != 0.0f &&
-            src_extent.height() != 0.0f);
+        hilet non_uniform_scale = static_cast<f32x4>(dst_extent).xyxy() / static_cast<f32x4>(src_extent).xyxy();
+        hilet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
+        return scale{uniform_scale};
+    }
 
-        if constexpr (D == 2) {
-            hilet non_uniform_scale = static_cast<f32x4>(dst_extent).xyxy() / static_cast<f32x4>(src_extent).xyxy();
-            hilet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
-            return scale{uniform_scale};
-
-        } else if constexpr (D == 3) {
-            hi_axiom(dst_extent.z() != 0.0f && src_extent.z() != 0.0f);
-            hilet non_uniform_scale = static_cast<f32x4>(dst_extent).xyzx() / static_cast<f32x4>(src_extent).xyzx();
-            hilet uniform_scale = std::min({non_uniform_scale.x(), non_uniform_scale.y(), non_uniform_scale.z()});
-            return scale{uniform_scale};
-
-        } else {
-            hi_static_no_default();
-        }
+    /** Get a uniform-scale-transform to scale an extent to another extent.
+     * @param src_extent The extent to transform
+     * @param dst_extent The extent to scale to.
+     * @return a scale to transform the src_extent to the dst_extent.
+     */
+    [[nodiscard]] static constexpr scale uniform(extent3 src_extent, extent3 dst_extent) noexcept
+        requires(D == 3)
+    {
+        hilet non_uniform_scale = static_cast<f32x4>(dst_extent).xyzx() / static_cast<f32x4>(src_extent).xyzx();
+        hilet uniform_scale = std::min({non_uniform_scale.x(), non_uniform_scale.y(), non_uniform_scale.z()});
+        return scale{uniform_scale};
     }
 
     [[nodiscard]] constexpr vector2 operator*(vector2 const& rhs) const noexcept
@@ -136,11 +134,14 @@ public:
         return vector3{_v * static_cast<f32x4>(rhs)};
     }
 
-    template<int E>
-    [[nodiscard]] constexpr extent<float, E> operator*(extent<float, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr extent2 operator*(extent2 const& rhs) const noexcept
     {
-        hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return extent<float, E>{_v * static_cast<f32x4>(rhs)};
+        return extent2{_v * static_cast<f32x4>(rhs)};
+    }
+
+    [[nodiscard]] constexpr extent3 operator*(extent3 const& rhs) const noexcept
+    {
+        return extent3{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
@@ -224,20 +225,6 @@ private:
     f32x4 _v;
 };
 
-[[nodiscard]] constexpr scale<2> operator/(extent<float, 2> const& lhs, extent<float, 2> const& rhs) noexcept
-{
-    hi_axiom(rhs._v.x() != 0.0f);
-    hi_axiom(rhs._v.y() != 0.0f);
-    return scale<2>{lhs._v.xy11() / rhs._v.xy11()};
-}
-
-[[nodiscard]] constexpr scale<3> operator/(extent<float, 3> const& lhs, extent<float, 3> const& rhs) noexcept
-{
-    hi_axiom(rhs._v.x() != 0.0f);
-    hi_axiom(rhs._v.y() != 0.0f);
-    hi_axiom(rhs._v.z() != 0.0f);
-    return scale<3>{lhs._v.xyz1() / rhs._v.xyz1()};
-}
 
 template<int D>
 [[nodiscard]] constexpr matrix<D>
@@ -253,5 +240,17 @@ matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignme
 
 using scale2 = geo::scale<2>;
 using scale3 = geo::scale<3>;
+
+[[nodiscard]] constexpr scale2 operator/(extent2 const& lhs, extent2 const& rhs) noexcept
+{
+    hi_axiom(rhs.width() > 0.0f and rhs.height() > 0.0f);
+    return scale2{static_cast<f32x4>(lhs).xy11() / static_cast<f32x4>(rhs).xy11()};
+}
+
+[[nodiscard]] constexpr scale3 operator/(extent3 const& lhs, extent3 const& rhs) noexcept
+{
+    hi_axiom(rhs.width() > 0.0f and rhs.height() > 0.0f and rhs.depth() > 0.0f);
+    return scale3{static_cast<f32x4>(lhs).xyz1() / static_cast<f32x4>(rhs).xyz1()};
+}
 
 } // namespace hi::inline v1

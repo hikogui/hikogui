@@ -58,7 +58,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/geometry/axis_aligned_rectangle.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/circle.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/corner_radii.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/extent.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/extent2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/extent3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/identity.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/line_end_cap.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/line_join_style.hpp

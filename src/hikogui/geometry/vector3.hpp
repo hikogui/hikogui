@@ -121,7 +121,6 @@ public:
      */
     [[nodiscard]] constexpr vector3 operator-() const noexcept
     {
-        hi_axiom(holds_invariant());
         return vector3{-_v};
     }
 
@@ -147,7 +146,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector3 operator+(vector3 const& lhs, vector3 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector3{lhs._v + rhs._v};
     }
 
@@ -158,7 +156,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector3 operator-(vector3 const& lhs, vector3 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector3{lhs._v - rhs._v};
     }
 
@@ -169,7 +166,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector3 operator*(vector3 const& lhs, float const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant());
         return vector3{lhs._v * rhs};
     }
 
@@ -180,7 +176,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector3 operator*(float const& lhs, vector3 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return vector3{array_type::broadcast(lhs) * rhs._v};
     }
 
@@ -191,7 +186,6 @@ public:
      */
     [[nodiscard]] constexpr friend bool operator==(vector3 const& lhs, vector3 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return equal(lhs._v, rhs._v);
     }
 
@@ -201,7 +195,6 @@ public:
      */
     [[nodiscard]] constexpr friend float squared_hypot(vector3 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return squared_hypot<0b0111>(rhs._v);
     }
 
@@ -211,7 +204,6 @@ public:
      */
     [[nodiscard]] friend float hypot(vector3 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return hypot<0b0111>(rhs._v);
     }
 
@@ -221,7 +213,6 @@ public:
      */
     [[nodiscard]] constexpr friend float rcp_hypot(vector3 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return rcp_hypot<0b0111>(rhs._v);
     }
 
@@ -231,7 +222,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector3 normalize(vector3 const& rhs) noexcept
     {
-        hi_axiom(rhs.holds_invariant());
         return vector3{normalize<0b0111>(rhs._v)};
     }
 
@@ -242,7 +232,6 @@ public:
      */
     [[nodiscard]] constexpr friend float dot(vector3 const& lhs, vector3 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return dot<0b0111>(lhs._v, rhs._v);
     }
 
@@ -266,7 +255,6 @@ public:
      */
     [[nodiscard]] constexpr friend vector3 cross(vector3 const& lhs, vector3 const& rhs) noexcept
     {
-        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector3{cross_3D(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
 

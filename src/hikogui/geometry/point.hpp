@@ -6,7 +6,8 @@
 
 #include "vector2.hpp"
 #include "vector3.hpp"
-#include "extent.hpp"
+#include "extent2.hpp"
+#include "extent3.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
 #include <format>
@@ -351,8 +352,8 @@ public:
 
     /** Round the coordinates of a point toward the top-right with the given granularity.
      */
-    [[nodiscard]] friend constexpr point ceil(point const& lhs, extent<value_type, D> rhs) noexcept
-        requires std::is_same_v<value_type, float>
+    [[nodiscard]] friend constexpr point ceil(point const& lhs, extent2 rhs) noexcept
+        requires(D == 2 and std::is_same_v<value_type, float>)
     {
         hilet rhs_ = array_type{rhs}.xy11();
         return point{ceil(array_type{lhs} / rhs_) * rhs_};
@@ -360,18 +361,37 @@ public:
 
     /** Round the coordinates of a point toward the top-right with the given granularity.
      */
-    [[nodiscard]] friend constexpr point ceil(point const& lhs, extent<value_type, D> rhs) noexcept
-        requires std::is_same_v<value_type, int>
+    [[nodiscard]] friend constexpr point ceil(point const& lhs, extent3 rhs) noexcept
+        requires(D == 3 and std::is_same_v<value_type, float>)
+    {
+        hilet rhs_ = array_type{rhs}.xyz1();
+        return point{ceil(array_type{lhs} / rhs_) * rhs_};
+    }
+
+    /** Round the coordinates of a point toward the top-right with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point ceil(point const& lhs, extent2 rhs) noexcept
+        requires(D == 2 and std::is_same_v<value_type, int>)
     {
         hilet rhs_ = array_type{rhs}.xy11();
         hilet lhs_ = array_type{lhs};
         return point{(lhs_ + (rhs_ - 1)) / rhs_ * rhs_};
     }
 
+    /** Round the coordinates of a point toward the top-right with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point ceil(point const& lhs, extent3 rhs) noexcept
+        requires(D == 3 and std::is_same_v<value_type, int>)
+    {
+        hilet rhs_ = array_type{rhs}.xyz1();
+        hilet lhs_ = array_type{lhs};
+        return point{(lhs_ + (rhs_ - 1)) / rhs_ * rhs_};
+    }
+
     /** Round the coordinates of a point toward the left-bottom with the given granularity.
      */
-    [[nodiscard]] friend constexpr point floor(point const& lhs, extent<value_type, D> rhs) noexcept
-        requires std::is_same_v<value_type, float>
+    [[nodiscard]] friend constexpr point floor(point const& lhs, extent2 rhs) noexcept
+        requires(D == 2 and std::is_same_v<value_type, float>)
     {
         hilet rhs_ = array_type{rhs}.xy11();
         return point{floor(array_type{lhs} / rhs_) * rhs_};
@@ -379,10 +399,29 @@ public:
 
     /** Round the coordinates of a point toward the left-bottom with the given granularity.
      */
-    [[nodiscard]] friend constexpr point floor(point const& lhs, extent<value_type, D> rhs) noexcept
-        requires std::is_same_v<value_type, int>
+    [[nodiscard]] friend constexpr point floor(point const& lhs, extent3 rhs) noexcept
+        requires(D == 3 and std::is_same_v<value_type, float>)
+    {
+        hilet rhs_ = array_type{rhs}.xyz1();
+        return point{floor(array_type{lhs} / rhs_) * rhs_};
+    }
+
+    /** Round the coordinates of a point toward the left-bottom with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point floor(point const& lhs, extent2 rhs) noexcept
+        requires(D == 2 and std::is_same_v<value_type, int>)
     {
         hilet rhs_ = array_type{rhs}.xy11();
+        hilet lhs_ = array_type{lhs};
+        return point{lhs_ / rhs_ * rhs_};
+    }
+
+    /** Round the coordinates of a point toward the left-bottom with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point floor(point const& lhs, extent3 rhs) noexcept
+        requires(D == 3 and std::is_same_v<value_type, int>)
+    {
+        hilet rhs_ = array_type{rhs}.xyz1();
         hilet lhs_ = array_type{lhs};
         return point{lhs_ / rhs_ * rhs_};
     }

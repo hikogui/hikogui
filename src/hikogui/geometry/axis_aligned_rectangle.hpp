@@ -9,7 +9,7 @@
 #pragma once
 
 #include "alignment.hpp"
-#include "extent.hpp"
+#include "extent2.hpp"
 #include "point.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
