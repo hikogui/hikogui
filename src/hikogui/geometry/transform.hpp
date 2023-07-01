@@ -10,7 +10,8 @@
 #include "translate2.hpp"
 #include "translate3.hpp"
 #include "rotate.hpp"
-#include "scale.hpp"
+#include "scale2.hpp"
+#include "scale3.hpp"
 #include "perspective.hpp"
 #include <type_traits>
 
@@ -26,25 +27,25 @@ namespace hi { inline namespace v1 {
     return rhs;
 }
 
-[[nodiscard]] constexpr matrix2 operator*(translate2 const& lhs, geo::scale<2> const& rhs) noexcept
+[[nodiscard]] constexpr matrix2 operator*(translate2 const& lhs, scale2 const& rhs) noexcept
 {
     hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return matrix2{f32x4{rhs}.x000(), f32x4{rhs}._0y00(), f32x4{rhs}._00z0(), f32x4{lhs}.xyz1()};
 }
 
-[[nodiscard]] constexpr matrix3 operator*(translate3 const& lhs, geo::scale<3> const& rhs) noexcept
+[[nodiscard]] constexpr matrix3 operator*(translate3 const& lhs, scale3 const& rhs) noexcept
 {
     hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return matrix3{f32x4{rhs}.x000(), f32x4{rhs}._0y00(), f32x4{rhs}._00z0(), f32x4{lhs}.xyz1()};
 }
 
-[[nodiscard]] constexpr matrix2 operator*(geo::scale<2> const& lhs, translate2 const& rhs) noexcept
+[[nodiscard]] constexpr matrix2 operator*(scale2 const& lhs, translate2 const& rhs) noexcept
 {
     hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return matrix2{f32x4{lhs}.x000(), f32x4{lhs}._0y00(), f32x4{lhs}._00z0(), f32x4{lhs} * f32x4{rhs}.xyz1()};
 }
 
-[[nodiscard]] constexpr matrix3 operator*(geo::scale<3> const& lhs, translate3 const& rhs) noexcept
+[[nodiscard]] constexpr matrix3 operator*(scale3 const& lhs, translate3 const& rhs) noexcept
 {
     hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return matrix3{f32x4{lhs}.x000(), f32x4{lhs}._0y00(), f32x4{lhs}._00z0(), f32x4{lhs} * f32x4{rhs}.xyz1()};
@@ -60,13 +61,19 @@ namespace hi { inline namespace v1 {
     return rhs;
 }
 
-namespace geo {
-
-template<int D>
-[[nodiscard]] constexpr scale<D> operator*(identity const& lhs, scale<D> const& rhs) noexcept
+[[nodiscard]] constexpr scale2 operator*(geo::identity const& lhs, scale2 const& rhs) noexcept
 {
     return rhs;
 }
+
+[[nodiscard]] constexpr scale3 operator*(geo::identity const& lhs, scale3 const& rhs) noexcept
+{
+    return rhs;
+}
+
+namespace geo {
+
+
 
 template<int D>
 [[nodiscard]] constexpr rotate<D> operator*(identity const& lhs, rotate<D> const& rhs) noexcept
@@ -85,8 +92,8 @@ template<> struct transform<translate2> : public std::true_type {};
 template<> struct transform<translate3> : public std::true_type {};
 template<> struct transform<rotate<2>> : public std::true_type {};
 template<> struct transform<rotate<3>> : public std::true_type {};
-template<> struct transform<scale<2>> : public std::true_type {};
-template<> struct transform<scale<3>> : public std::true_type {};
+template<> struct transform<scale2> : public std::true_type {};
+template<> struct transform<scale3> : public std::true_type {};
 template<> struct transform<perspective> : public std::true_type {};
 // clang-format on
 
