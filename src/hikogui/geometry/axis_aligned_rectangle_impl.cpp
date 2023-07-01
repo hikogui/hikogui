@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "axis_aligned_rectangle.hpp"
-#include "translate.hpp"
+#include "translate2.hpp"
 
 namespace hi::inline v1 {
 

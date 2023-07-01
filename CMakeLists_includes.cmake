@@ -66,7 +66,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/geometry/line_segment.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/lookat.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/margins.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/matrix.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/matrix2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/matrix3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/module.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/perspective.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/point2.hpp
@@ -76,7 +77,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/geometry/rotate.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/scale.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/transform.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/translate.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/translate2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/translate3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/vector2.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/vector3.hpp
     ${HIKOGUI_SOURCE_DIR}/image/module.hpp

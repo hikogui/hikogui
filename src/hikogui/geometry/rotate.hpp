@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "matrix.hpp"
+#include "matrix2.hpp"
+#include "matrix3.hpp"
 #include "identity.hpp"
 
 namespace hi::inline v1 {
@@ -46,7 +47,7 @@ public:
     /** Convert quaternion to matrix.
      *
      */
-    [[nodiscard]] constexpr operator matrix<D>() const noexcept
+    [[nodiscard]] constexpr operator matrix3() const noexcept
     {
         // Original from https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
         //   1 - 2(yy + zz) |     2(xy - zw) |     2(xz + yw)
@@ -73,7 +74,40 @@ public:
         twos = twos.xzyw();
         hilet col2 = one + addsub<0b0101>(y_mul.wzyx(), x_mul.zwxy()) * twos;
         one = one.xywz();
-        return matrix<D>{col0, col1, col2, one};
+        return matrix3{col0, col1, col2, one};
+    }
+
+    /** Convert quaternion to matrix.
+     *
+     */
+    [[nodiscard]] constexpr operator matrix2() const noexcept
+    {
+        // Original from https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
+        //   1 - 2(yy + zz) |     2(xy - zw) |     2(xz + yw)
+        //       2(xy + zw) | 1 - 2(xx + zz) |     2(yz - xw)
+        //       2(xz - yw) |     2(yz + xw) | 1 - 2(xx + yy)
+
+        // Flipping adds and multiplies:
+        //   1 - 2(zz + yy) |     2(xy - zw) |     2(yw + xz)
+        //       2(zw + yx) | 1 - 2(xx + zz) |     2(yz - xw)
+        //       2(zx - yw) |     2(xw + zy) | 1 - 2(yy + xx)
+
+        // All multiplies.
+        hilet x_mul = _v.xxxx() * _v;
+        hilet y_mul = _v.yyyy() * _v;
+        hilet z_mul = _v.zzzz() * _v;
+
+        auto twos = f32x4(-2.0f, 2.0f, 2.0f, 0.0f);
+        auto one = f32x4(1.0f, 0.0f, 0.0f, 0.0f);
+        hilet col0 = one + addsub<0b0011>(z_mul.zwxy(), y_mul.yxwz()) * twos;
+        one = one.yxzw();
+        twos = twos.yxzw();
+        hilet col1 = one + addsub<0b0110>(x_mul.yxwz(), z_mul.wzyx()) * twos;
+        one = one.xzyw();
+        twos = twos.xzyw();
+        hilet col2 = one + addsub<0b0101>(y_mul.wzyx(), x_mul.zwxy()) * twos;
+        one = one.xywz();
+        return matrix2{col0, col1, col2, one};
     }
 
     std::pair<float, vector3> angle_and_axis() const noexcept

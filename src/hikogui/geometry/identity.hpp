@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "matrix.hpp"
+#include "matrix2.hpp"
+#include "matrix3.hpp"
 
 namespace hi { inline namespace v1 {
 namespace geo {
@@ -26,10 +27,14 @@ public:
 
     constexpr identity() noexcept = default;
 
-    template<int E>
-    constexpr operator matrix<E>() const noexcept
+    constexpr operator matrix2() const noexcept
     {
-        return matrix<E>();
+        return matrix2();
+    }
+
+    constexpr operator matrix3() const noexcept
+    {
+        return matrix3();
     }
 
     [[nodiscard]] identity operator~() const noexcept

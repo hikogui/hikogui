@@ -4,9 +4,11 @@
 
 #pragma once
 
-#include "matrix.hpp"
+#include "matrix2.hpp"
+#include "matrix3.hpp"
 #include "identity.hpp"
-#include "translate.hpp"
+#include "translate2.hpp"
+#include "translate3.hpp"
 #include "extent2.hpp"
 #include "extent3.hpp"
 
@@ -22,6 +24,22 @@ public:
     constexpr scale(scale&&) noexcept = default;
     constexpr scale& operator=(scale const&) noexcept = default;
     constexpr scale& operator=(scale&&) noexcept = default;
+
+    template<int E>
+    [[nodiscard]] constexpr scale(scale<E> const& other) noexcept
+        requires(E < D)
+        : _v(f32x4{other})
+    {
+    }
+
+    template<int E>
+    [[nodiscard]] constexpr explicit operator scale<E>() const noexcept
+        requires(E < D)
+    {
+        auto tmp = _v;
+        tmp.z() = 0.0f;
+        return scale{tmp};
+    }
 
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
@@ -62,10 +80,18 @@ public:
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr operator matrix<D>() const noexcept
+    [[nodiscard]] constexpr operator matrix2() const noexcept
+        requires(D == 2)
     {
         hi_axiom(holds_invariant());
-        return matrix<D>{_v.x000(), _v._0y00(), _v._00z0(), _v._000w()};
+        return matrix2{_v.x000(), _v._0y00(), _v._00z0(), _v._000w()};
+    }
+
+    [[nodiscard]] constexpr operator matrix3() const noexcept
+        requires(D == 3)
+    {
+        hi_axiom(holds_invariant());
+        return matrix3{_v.x000(), _v._0y00(), _v._00z0(), _v._000w()};
     }
 
     [[nodiscard]] constexpr scale() noexcept : _v(1.0, 1.0, 1.0, 1.0) {}
@@ -225,20 +251,19 @@ private:
 };
 
 
-template<int D>
-[[nodiscard]] constexpr matrix<D>
-matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
-{
-    hilet scale = hi::geo::scale<D>::uniform(src_rectangle.size(), dst_rectangle.size());
-    hilet scaled_rectangle = scale * src_rectangle;
-    hilet translation = translate<D>::align(scaled_rectangle, dst_rectangle, alignment);
-    return translation * scale;
-}
-
 } // namespace geo
 
 using scale2 = geo::scale<2>;
 using scale3 = geo::scale<3>;
+
+[[nodiscard]] constexpr matrix2
+matrix2::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
+{
+    hilet scale = scale2::uniform(src_rectangle.size(), dst_rectangle.size());
+    hilet scaled_rectangle = scale * src_rectangle;
+    hilet translation = translate2::align(scaled_rectangle, dst_rectangle, alignment);
+    return translation * scale;
+}
 
 [[nodiscard]] constexpr scale2 operator/(extent2 const& lhs, extent2 const& rhs) noexcept
 {
