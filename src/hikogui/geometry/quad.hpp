@@ -6,7 +6,7 @@
 #pragma once
 
 #include "vector3.hpp"
-#include "point.hpp"
+#include "point3.hpp"
 #include "extent3.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "rectangle.hpp"

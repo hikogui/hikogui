@@ -69,7 +69,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/geometry/matrix.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/module.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/perspective.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/point.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/point2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/point3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/quad.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/rectangle.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/rotate.hpp

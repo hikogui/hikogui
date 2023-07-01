@@ -10,7 +10,8 @@
 
 #include "alignment.hpp"
 #include "extent2.hpp"
-#include "point.hpp"
+#include "point2.hpp"
+#include "point3.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"

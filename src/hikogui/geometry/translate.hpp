@@ -93,7 +93,6 @@ public:
         : _v(static_cast<array_type>(other))
 
     {
-        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr explicit translate(vector3 const& other) noexcept
@@ -101,15 +100,19 @@ public:
         : _v(static_cast<array_type>(other))
 
     {
-        hi_axiom(holds_invariant());
     }
 
-    template<int E>
-        requires(E <= D)
-    [[nodiscard]] constexpr explicit translate(point<value_type, E> const& other) noexcept :
+    [[nodiscard]] constexpr explicit translate(point2 const& other) noexcept
+        requires(D == 2)
+        : _v(static_cast<array_type>(other).xy00())
+    {
+    }
+
+    [[nodiscard]] constexpr explicit translate(point3 const& other) noexcept
+        requires(D == 3)
+        :
         _v(static_cast<array_type>(other).xyz0())
     {
-        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr translate(value_type x, value_type y) noexcept
@@ -214,15 +217,26 @@ public:
         return rhs;
     }
 
-    template<int E>
-    [[nodiscard]] constexpr point<value_type, std::max(D, E)> operator*(point<value_type, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr point2 operator*(point2 const& rhs) const noexcept
+        requires(D == 2)
     {
         hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return point<value_type, std::max(D, E)>{_v + static_cast<array_type>(rhs)};
+        return point2{_v + static_cast<array_type>(rhs)};
     }
 
-    constexpr friend point<value_type, 2>& operator*=(point<value_type, 2>& lhs, translate const& rhs) noexcept
+    [[nodiscard]] constexpr point3 operator*(point3 const& rhs) const noexcept
+    {
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
+        return point3{_v + static_cast<array_type>(rhs)};
+    }
+
+    constexpr friend point2& operator*=(point2& lhs, translate const& rhs) noexcept
         requires(D == 2)
+    {
+        return lhs = rhs * lhs;
+    }
+
+    constexpr friend point3& operator*=(point3& lhs, translate const& rhs) noexcept
     {
         return lhs = rhs * lhs;
     }

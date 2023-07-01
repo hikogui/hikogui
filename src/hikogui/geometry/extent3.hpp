@@ -44,7 +44,7 @@ public:
 
     [[nodiscard]] constexpr explicit operator extent2() const noexcept
     {
-        auto tmp = static_cast<array_type>(*this);
+        auto tmp = _v;
         tmp.z() = 0.0f;
         return extent2{tmp};
     }

@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include "point.hpp"
-#include "vector2.hpp"
+#include "point3.hpp"
 #include "vector3.hpp"
 
 namespace hi {

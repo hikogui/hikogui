@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "point.hpp"
+#include "point2.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "quad.hpp"
 

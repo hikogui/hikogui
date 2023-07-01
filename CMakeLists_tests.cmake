@@ -36,7 +36,8 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/formula/formula_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/identity_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/matrix_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/point_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/point2_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/point3_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/scale_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/transform_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/translate_tests.cpp

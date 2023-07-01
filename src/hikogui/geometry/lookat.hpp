@@ -9,7 +9,7 @@
 #pragma once
 
 #include "matrix.hpp"
-#include "point.hpp"
+#include "point3.hpp"
 
 namespace hi { inline namespace v1 {
 namespace geo {

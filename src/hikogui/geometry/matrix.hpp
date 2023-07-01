@@ -12,7 +12,8 @@
 #include "vector3.hpp"
 #include "extent2.hpp"
 #include "extent3.hpp"
-#include "point.hpp"
+#include "point2.hpp"
+#include "point3.hpp"
 #include "rectangle.hpp"
 #include "quad.hpp"
 #include "circle.hpp"
@@ -21,15 +22,14 @@
 #include "axis_aligned_rectangle.hpp"
 #include <array>
 
-namespace hi {
-inline namespace v1 {
+namespace hi { inline namespace v1 {
 namespace geo {
 
 /** A 2D or 3D homogenius matrix for transforming homogenious vectors and points.
  *
  * This matrix is in column major order. It is implemented as 4 columns made
  * from a `f32x4` numeric-array.
- * 
+ *
  */
 template<int D>
 class matrix {
@@ -302,11 +302,11 @@ public:
      * @param rhs The vector to be transformed.
      * @return The transformed vector.
      */
-    [[nodiscard]] constexpr vector2 operator*(vector2 const& rhs) const noexcept requires (D == 2)
+    [[nodiscard]] constexpr vector2 operator*(vector2 const& rhs) const noexcept
+        requires(D == 2)
     {
         hi_axiom(rhs.holds_invariant());
-        return vector2{
-            _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy()};
+        return vector2{_col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy()};
     }
 
     /** Transform a vector by the matrix.
@@ -333,11 +333,10 @@ public:
      * @return The transformed extent.
      */
     [[nodiscard]] constexpr extent2 operator*(extent2 const& rhs) const noexcept
-    requires(D == 2)
+        requires(D == 2)
     {
         hi_axiom(rhs.holds_invariant());
-        return extent2{
-            _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy()};
+        return extent2{_col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy()};
     }
 
     /** Transform a extent by the matrix.
@@ -361,13 +360,23 @@ public:
      * @param rhs The point to be transformed.
      * @return The transformed point.
      */
-    template<int E>
-    [[nodiscard]] constexpr auto operator*(point<float, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr point3 operator*(point3 const& rhs) const noexcept
     {
         hi_axiom(rhs.holds_invariant());
-        return point<float, std::max(D, E)>{
+        return point3{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
-            _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
+            _col2 * static_cast<f32x4>(rhs).zzzz() + _col3};
+    }
+
+    /** Transform a point by the matrix.
+     *
+     * @param rhs The point to be transformed.
+     * @return The transformed point.
+     */
+    [[nodiscard]] constexpr point2 operator*(point2 const& rhs) const noexcept requires (D == 2)
+    {
+        hi_axiom(rhs.holds_invariant());
+        return point2{_col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() + _col3};
     }
 
     /** Transform an axis-aligned rectangle by the matrix.
@@ -439,7 +448,6 @@ public:
         auto tmp = transpose(rhs._col0, rhs._col1, rhs._col2, rhs._col3);
         return {std::get<0>(tmp), std::get<1>(tmp), std::get<2>(tmp), std::get<3>(tmp)};
     }
-
 
     /** Reflect axis of a matrix.
      *
@@ -644,5 +652,4 @@ using matrix2 = geo::matrix<2>;
  */
 using matrix3 = geo::matrix<3>;
 
-}} // namespace hi::inline v1
-
+}} // namespace hi::v1

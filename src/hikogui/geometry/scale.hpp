@@ -124,13 +124,11 @@ public:
 
     [[nodiscard]] constexpr vector2 operator*(vector2 const& rhs) const noexcept
     {
-        hi_axiom(holds_invariant() && rhs.holds_invariant());
         return vector2{_v * static_cast<f32x4>(rhs)};
     }
 
     [[nodiscard]] constexpr vector3 operator*(vector3 const& rhs) const noexcept
     {
-        hi_axiom(holds_invariant() && rhs.holds_invariant());
         return vector3{_v * static_cast<f32x4>(rhs)};
     }
 
@@ -144,11 +142,14 @@ public:
         return extent3{_v * static_cast<f32x4>(rhs)};
     }
 
-    template<int E>
-    [[nodiscard]] constexpr point<float, E> operator*(point<float, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr point2 operator*(point2 const& rhs) const noexcept
     {
-        hi_axiom(holds_invariant() && rhs.holds_invariant());
-        return point<float, E>{_v * static_cast<f32x4>(rhs)};
+        return point2{_v * static_cast<f32x4>(rhs)};
+    }
+
+    [[nodiscard]] constexpr point3 operator*(point3 const& rhs) const noexcept
+    {
+        return point3{_v * static_cast<f32x4>(rhs)};
     }
 
     /** Scale a rectangle around it's center.
@@ -201,14 +202,12 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(scale<E> const& rhs) const noexcept
     {
-        hi_axiom(holds_invariant() && rhs.holds_invariant());
         return scale<std::max(D, E)>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
     [[nodiscard]] constexpr bool operator==(scale<E> const& rhs) const noexcept
     {
-        hi_axiom(holds_invariant() && rhs.holds_invariant());
         return equal(_v, static_cast<f32x4>(rhs));
     }
 

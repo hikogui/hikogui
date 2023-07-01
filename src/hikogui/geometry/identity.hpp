@@ -47,8 +47,12 @@ public:
         return rhs;
     }
 
-    template<typename O, int E>
-    [[nodiscard]] constexpr point<O, E> operator*(point<O, E> const& rhs) const noexcept
+    [[nodiscard]] constexpr point2 operator*(point2 const& rhs) const noexcept
+    {
+        return rhs;
+    }
+
+    [[nodiscard]] constexpr point3 operator*(point3 const& rhs) const noexcept
     {
         return rhs;
     }
