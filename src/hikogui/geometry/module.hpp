@@ -6,26 +6,32 @@
 
 #include "alignment.hpp"
 #include "axis.hpp"
-#include "axis_aligned_rectangle.hpp"
+#include "aarectangle.hpp"
 #include "circle.hpp"
 #include "corner_radii.hpp"
-#include "extent.hpp"
-#include "identity.hpp"
+#include "extent2.hpp"
+#include "extent3.hpp"
 #include "line_end_cap.hpp"
 #include "line_join_style.hpp"
 #include "line_segment.hpp"
 #include "lookat.hpp"
 #include "margins.hpp"
-#include "matrix.hpp"
+#include "matrix2.hpp"
+#include "matrix3.hpp"
 #include "perspective.hpp"
-#include "point.hpp"
+#include "point2.hpp"
+#include "point3.hpp"
 #include "quad.hpp"
 #include "rectangle.hpp"
-#include "rotate.hpp"
-#include "scale.hpp"
+#include "rotate2.hpp"
+#include "rotate3.hpp"
+#include "scale2.hpp"
+#include "scale3.hpp"
 #include "transform.hpp"
-#include "translate.hpp"
-#include "vector.hpp"
+#include "translate2.hpp"
+#include "translate3.hpp"
+#include "vector2.hpp"
+#include "vector3.hpp"
 
 namespace hi {
 inline namespace v1 {
@@ -97,14 +103,14 @@ A `rectangle` can be transformed like a `point3`.
 It should be implemented as a `point3` in the left-bottom corner and two `vector3`s to the upper and right corners.
 However, it is currently implemented as 4 points, one for each corner.
 
-### axis_aligned_rectangle
+### aarectangle
 
-The `axis_aligned_rectangle` class is a 2D axis-aligned rectangle.
+The `aarectangle` class is a 2D axis-aligned rectangle.
 
 When transforming an axis aligned rectangle in 3D or with rotation, the result will be a normal `rectangle`.
-A rectangle can be converted back to an `axis_aligned_rectangle`, as a bounding rectangle around the transformed rectangle.
+A rectangle can be converted back to an `aarectangle`, as a bounding rectangle around the transformed rectangle.
 
-An `axis_aligned_rectangle` is implemented as a `f32x4` where:
+An `aarectangle` is implemented as a `f32x4` where:
 
  - `x`: left-bottom point x
  - `y`: left-bottom point y
@@ -113,8 +119,6 @@ An `axis_aligned_rectangle` is implemented as a `f32x4` where:
 
 Transformation types
 --------------------
-
-### geo::identity
 
 ### geo::translate<D>
 

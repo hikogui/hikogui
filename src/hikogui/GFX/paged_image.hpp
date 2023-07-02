@@ -66,8 +66,8 @@ struct paged_image {
 
     [[nodiscard]] constexpr extent2 size_in_float_pages() const noexcept
     {
-        constexpr auto page_size_ = f32x4{narrow_cast<float>(page_size), narrow_cast<float>(page_size)};
-        auto size = f32x4{i32x4{narrow_cast<int32_t>(width), narrow_cast<int32_t>(height), 1, 1}};
+        constexpr auto page_size_ = f32x4{narrow_cast<float>(page_size), narrow_cast<float>(page_size), 1.0f, 1.0f};
+        auto size = f32x4{narrow_cast<float>(width), narrow_cast<float>(height)};
         return extent2{size / page_size_};
     }
 

@@ -8,40 +8,34 @@
 
 #pragma once
 
-#include "vector.hpp"
-#include "extent.hpp"
-#include "point.hpp"
-#include "rectangle.hpp"
-#include "quad.hpp"
-#include "circle.hpp"
-#include "line_segment.hpp"
-#include "corner_radii.hpp"
-#include "axis_aligned_rectangle.hpp"
+#include "matrix2.hpp"
+#include "translate3.hpp"
+#include "scale3.hpp"
+#include "rotate3.hpp"
 #include <array>
 
-namespace hi {
-inline namespace v1 {
-namespace geo {
+namespace hi { inline namespace v1 {
+
+class matrix3;
+[[nodiscard]] constexpr matrix3 operator*(translate3 const& lhs, scale3 const& rhs) noexcept;
+[[nodiscard]] constexpr matrix3 operator*(translate3 const& lhs, rotate3 const& rhs) noexcept;
 
 /** A 2D or 3D homogenius matrix for transforming homogenious vectors and points.
  *
  * This matrix is in column major order. It is implemented as 4 columns made
  * from a `f32x4` numeric-array.
- * 
+ *
  */
-template<int D>
-class matrix {
+class matrix3 {
 public:
-    static_assert(D == 2 || D == 3, "Only 2D or 3D rotation-matrices are supported");
-
-    constexpr matrix(matrix const&) noexcept = default;
-    constexpr matrix(matrix&&) noexcept = default;
-    constexpr matrix& operator=(matrix const&) noexcept = default;
-    constexpr matrix& operator=(matrix&&) noexcept = default;
+    constexpr matrix3(matrix3 const&) noexcept = default;
+    constexpr matrix3(matrix3&&) noexcept = default;
+    constexpr matrix3& operator=(matrix3 const&) noexcept = default;
+    constexpr matrix3& operator=(matrix3&&) noexcept = default;
 
     /** Constructs an identity matrix.
      */
-    constexpr matrix() noexcept
+    constexpr matrix3() noexcept
     {
         hilet a = f32x4::broadcast(1.0f);
         _col0 = a.x000();
@@ -57,7 +51,7 @@ public:
      * @param col2 The 3rd `f32x4` column.
      * @param col3 The 4th `f32x4` column.
      */
-    constexpr matrix(f32x4 col0, f32x4 col1, f32x4 col2, f32x4 col3 = f32x4{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
+    constexpr matrix3(f32x4 col0, f32x4 col1, f32x4 col2, f32x4 col3 = f32x4{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
         _col0(col0), _col1(col1), _col2(col2), _col3(col3)
     {
     }
@@ -69,9 +63,7 @@ public:
      * @param col2 The 3rd `vector3` column.
      * @param col3 The 4th `vector3` column.
      */
-    constexpr matrix(vector3 col0, vector3 col1, vector3 col2, vector3 col3 = vector3{}) noexcept
-        requires(D == 3)
-        :
+    constexpr matrix3(vector3 col0, vector3 col1, vector3 col2, vector3 col3 = vector3{}) noexcept :
         _col0(static_cast<f32x4>(col0)),
         _col1(static_cast<f32x4>(col1)),
         _col2(static_cast<f32x4>(col2)),
@@ -79,20 +71,19 @@ public:
     {
     }
 
-    /** Construct a matrix from four vectors.
+    /** Construct a matrix from two vectors.
      *
      * @param col0 The 1st `vector2` column.
      * @param col1 The 2nd `vector2` column.
      */
-    constexpr matrix(vector2 col0, vector2 col1) noexcept
-        requires(D == 2)
-        :
-        _col0(static_cast<f32x4>(col0)),
-        _col1(static_cast<f32x4>(col1)),
-        _col2(f32x4{0.0f, 0.0f, 1.0f, 0.0f}),
-        _col3(f32x4{0.0f, 0.0f, 0.0f, 1.0f})
-    {
-    }
+    // constexpr matrix3(vector2 col0, vector2 col1) noexcept
+    //     :
+    //     _col0(static_cast<f32x4>(col0)),
+    //     _col1(static_cast<f32x4>(col1)),
+    //     _col2(f32x4{0.0f, 0.0f, 1.0f, 0.0f}),
+    //     _col3(f32x4{0.0f, 0.0f, 0.0f, 1.0f})
+    //{
+    // }
 
     /** Construct a 3x3 matrix from scalar values.
      *
@@ -109,7 +100,7 @@ public:
      * @param c1r2 Value for column 1, row 2
      * @param c2r2 Value for column 2, row 2
      */
-    constexpr matrix(
+    constexpr matrix3(
         float c0r0,
         float c1r0,
         float c2r0,
@@ -118,9 +109,7 @@ public:
         float c2r1,
         float c0r2,
         float c1r2,
-        float c2r2) noexcept
-        requires(D == 3)
-        :
+        float c2r2) noexcept :
         _col0(c0r0, c0r1, c0r2, 0.0f), _col1(c1r0, c1r1, c1r2, 0.0f), _col2(c2r0, c2r1, c2r2, 0.0f), _col3(0.0f, 0.0f, 0.0f, 1.0f)
     {
     }
@@ -147,7 +136,7 @@ public:
      * @param c2r3 Value for column 2, row 3
      * @param c3r3 Value for column 3, row 3
      */
-    constexpr matrix(
+    constexpr matrix3(
         float c0r0,
         float c1r0,
         float c2r0,
@@ -163,33 +152,84 @@ public:
         float c0r3,
         float c1r3,
         float c2r3,
-        float c3r3) noexcept
-        requires(D == 3)
-        :
+        float c3r3) noexcept :
         _col0(c0r0, c0r1, c0r2, c0r3), _col1(c1r0, c1r1, c1r2, c1r3), _col2(c2r0, c2r1, c2r2, c2r3), _col3(c3r0, c3r1, c3r2, c3r3)
     {
     }
 
     /** Copy-construct a matrix from a smaller matrix.
      */
-    template<int E>
-        requires(E < D)
-    [[nodiscard]] constexpr matrix(matrix<E> const& other) noexcept :
+    [[nodiscard]] constexpr matrix3(matrix2 const& other) noexcept :
         _col0(get<0>(other)), _col1(get<1>(other)), _col2(get<2>(other)), _col3(get<3>(other))
     {
     }
 
-    /** Copy-assign a matrix from a smaller matrix.
-     */
-    template<int E>
-        requires(E < D)
-    constexpr matrix& operator=(matrix<E> const& rhs) noexcept
+    [[nodiscard]] constexpr explicit operator matrix2() const noexcept
     {
-        _col0 = get<0>(rhs);
-        _col1 = get<1>(rhs);
-        _col2 = get<2>(rhs);
-        _col3 = get<3>(rhs);
-        return *this;
+        auto tmp0 = _col0;
+        auto tmp1 = _col1;
+        auto tmp2 = _col2;
+        auto tmp3 = _col3;
+        tmp0.z() = 0.0f;
+        tmp0.w() = 0.0f;
+        tmp1.z() = 0.0f;
+        tmp1.w() = 0.0f;
+        tmp2.x() = 0.0f;
+        tmp2.y() = 0.0f;
+        tmp2.z() = 1.0f;
+        tmp2.w() = 0.0f;
+        tmp3.z() = 0.0f;
+        tmp3.w() = 1.0f;
+        return matrix2{tmp0, tmp1, tmp2, tmp3};
+    }
+
+    [[nodiscard]] constexpr matrix3(scale3 const& rhs) noexcept
+    {
+        _col0 = f32x4{rhs}.x000();
+        _col1 = f32x4{rhs}._0y00();
+        _col2 = f32x4{rhs}._00z0();
+        _col3 = f32x4{rhs}._000w();
+    }
+
+    [[nodiscard]] constexpr matrix3(translate3 const& rhs) noexcept
+    {
+        hilet ones = f32x4::broadcast(1.0f);
+        _col0 = ones.x000();
+        _col1 = ones._0y00();
+        _col2 = ones._00z0();
+        _col3 = ones._000w() + f32x4{rhs};
+    }
+
+    /** Convert quaternion to matrix.
+     *
+     */
+    [[nodiscard]] constexpr matrix3(rotate3 const& rhs) noexcept
+    {
+        // Original from https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
+        //   1 - 2(yy + zz) |     2(xy - zw) |     2(xz + yw)
+        //       2(xy + zw) | 1 - 2(xx + zz) |     2(yz - xw)
+        //       2(xz - yw) |     2(yz + xw) | 1 - 2(xx + yy)
+
+        // Flipping adds and multiplies:
+        //   1 - 2(zz + yy) |     2(xy - zw) |     2(yw + xz)
+        //       2(zw + yx) | 1 - 2(xx + zz) |     2(yz - xw)
+        //       2(zx - yw) |     2(xw + zy) | 1 - 2(yy + xx)
+
+        // All multiplies.
+        hilet x_mul = f32x4{rhs}.xxxx() * f32x4{rhs};
+        hilet y_mul = f32x4{rhs}.yyyy() * f32x4{rhs};
+        hilet z_mul = f32x4{rhs}.zzzz() * f32x4{rhs};
+
+        auto twos = f32x4{-2.0f, 2.0f, 2.0f, 0.0f};
+        auto one = f32x4{1.0f, 0.0f, 0.0f, 0.0f};
+        _col0 = one + addsub<0b0011>(z_mul.zwxy(), y_mul.yxwz()) * twos;
+        one = one.yxzw();
+        twos = twos.yxzw();
+        _col1 = one + addsub<0b0110>(x_mul.yxwz(), z_mul.wzyx()) * twos;
+        one = one.xzyw();
+        twos = twos.xzyw();
+        _col2 = one + addsub<0b0101>(y_mul.wzyx(), x_mul.zwxy()) * twos;
+        _col3 = one.xywz();
     }
 
     /** Convert a point to its f32x4-nummeric_array.
@@ -209,8 +249,11 @@ public:
      * @param alignment How the src_rectangle should be aligned inside the dst_rectangle after scaling and moving.
      * @return A transformation matrix to move and scale the src_rectangle to the dst_rectangle.
      */
-    [[nodiscard]] constexpr static matrix
-    uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept;
+    [[nodiscard]] constexpr static matrix3
+    uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
+    {
+        return matrix3{matrix2::uniform(src_rectangle, dst_rectangle, alignment)};
+    }
 
     /** Get a column.
      *
@@ -218,7 +261,7 @@ public:
      * @return A const reference to the selected column as a `f32x4`.
      */
     template<int I>
-    [[nodiscard]] friend constexpr f32x4 const& get(matrix const& rhs) noexcept
+    [[nodiscard]] friend constexpr f32x4 const& get(matrix3 const& rhs) noexcept
     {
         if constexpr (I == 0) {
             return rhs._col0;
@@ -239,7 +282,7 @@ public:
      * @return A reference to the selected column as a `f32x4`.
      */
     template<int I>
-    [[nodiscard]] friend constexpr f32x4& get(matrix& rhs) noexcept
+    [[nodiscard]] friend constexpr f32x4& get(matrix3& rhs) noexcept
     {
         if constexpr (I == 0) {
             return rhs._col0;
@@ -269,146 +312,14 @@ public:
         return {_col0 * rhs.xxxx() + _col1 * rhs.yyyy() + _col2 * rhs.zzzz() + _col3 * rhs.wwww()};
     }
 
-    /** Transform a float by the scaling factor of the matrix.
-     *
-     * The floating point number is transformed into a vector laying on the x-axis,
-     * then transformed, then extracting the hypot from it.
-     */
-    [[nodiscard]] constexpr float operator*(float const& rhs) const noexcept
-    {
-        // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
-        auto abs_scale = hypot<D>(_col0 * f32x4::broadcast(rhs));
-
-        // We want to keep the sign of the original scaler, even if the matrix has rotation.
-        return std::copysign(abs_scale, rhs);
-    }
-
-    /** Transform a float by the scaling factor of the matrix.
-     *
-     * The floating point number is transformed into a vector laying on the x-axis,
-     * then transformed, then extracting the hypot from it.
-     */
-    [[nodiscard]] constexpr corner_radii operator*(corner_radii const& rhs) const noexcept
-    {
-        return {*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
-    }
-
-    /** Transform a vector by the matrix.
-     *
-     * Vectors will not be translated.
-     *
-     * @param rhs The vector to be transformed.
-     * @return The transformed vector.
-     */
-    template<int E>
-    [[nodiscard]] constexpr auto operator*(vector<float, E> const& rhs) const noexcept
-    {
-        hi_axiom(rhs.holds_invariant());
-        return vector<float, std::max(D, E)>{
-            _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
-            _col2 * static_cast<f32x4>(rhs).zzzz()};
-    }
-
-    /** Transform a extent by the matrix.
-     *
-     * Extents will not be translated.
-     *
-     * @param rhs The extent to be transformed.
-     * @return The transformed extent.
-     */
-    template<int E>
-    [[nodiscard]] constexpr auto operator*(extent<float, E> const& rhs) const noexcept
-    {
-        hi_axiom(rhs.holds_invariant());
-        return extent<float, std::max(D, E)>{
-            _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
-            _col2 * static_cast<f32x4>(rhs).zzzz()};
-    }
-
-    /** Transform a point by the matrix.
-     *
-     * @param rhs The point to be transformed.
-     * @return The transformed point.
-     */
-    template<int E>
-    [[nodiscard]] constexpr auto operator*(point<float, E> const& rhs) const noexcept
-    {
-        hi_axiom(rhs.holds_invariant());
-        return point<float, std::max(D, E)>{
-            _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
-            _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
-    }
-
-    /** Transform an axis-aligned rectangle by the matrix.
-     *
-     * After transformation it can not be guaranteed that an axis-aligned rectangle
-     * remained aligned to axis, therefor a normal rectangle is returned
-     *
-     * @note It is undefined behavior to perspective transform a rectangle
-     * @param rhs The axis-aligned rectangle to be transformed.
-     * @return The transformed rectangle
-     */
-    [[nodiscard]] constexpr rectangle operator*(aarectangle const& rhs) const noexcept
-    {
-        return *this * rectangle{rhs};
-    }
-
-    /** Transform a rectangle by the matrix.
-     *
-     * @note It is undefined behavior to perspective transform a rectangle
-     * @param rhs The rectangle to be transformed.
-     * @return The transformed rectangle
-     */
-    [[nodiscard]] constexpr rectangle operator*(rectangle const& rhs) const noexcept
-    {
-        return rectangle{*this * rhs.origin, *this * rhs.right, *this * rhs.up};
-    }
-
-    /** Transform a quad by the matrix.
-     *
-     * @param rhs The quad to be transformed.
-     * @return The transformed quad
-     */
-    [[nodiscard]] constexpr quad operator*(quad const& rhs) const noexcept
-    {
-        return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
-    }
-
-    /** Transform a circle by the matrix.
-     *
-     * @param rhs The circle to be transformed.
-     * @return The transformed circle
-     */
-    [[nodiscard]] constexpr circle operator*(circle const& rhs) const noexcept
-    {
-        return circle{*this * midpoint(rhs), *this * rhs.radius()};
-    }
-
-    /** Transform a line-segment by the matrix.
-     *
-     * @param rhs The line-segment to be transformed.
-     * @return The transformed line-segment
-     */
-    [[nodiscard]] constexpr line_segment operator*(line_segment const& rhs) const noexcept
-    {
-        return line_segment{*this * rhs.origin(), *this * rhs.direction()};
-    }
-
-    /** Matrix/Matrix multiplication.
-     */
-    [[nodiscard]] constexpr auto operator*(matrix const& rhs) const noexcept
-    {
-        return matrix{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
-    }
-
+    
     /** Matrix transpose.
      */
-    [[nodiscard]] friend constexpr matrix transpose(matrix const& rhs) noexcept
+    [[nodiscard]] friend constexpr matrix3 transpose(matrix3 const& rhs) noexcept
     {
         auto tmp = transpose(rhs._col0, rhs._col1, rhs._col2, rhs._col3);
-        return {std::get<0>(tmp), std::get<1>(tmp), std::get<2>(tmp), std::get<3>(tmp)};
+        return matrix3{std::get<0>(tmp), std::get<1>(tmp), std::get<2>(tmp), std::get<3>(tmp)};
     }
-
 
     /** Reflect axis of a matrix.
      *
@@ -444,10 +355,9 @@ public:
      * @return The reflected matrix.
      */
     template<char DstX, char DstY, char DstZ, char DstW = 'w'>
-    [[nodiscard]] friend constexpr matrix reflect(matrix const& rhs) noexcept
-        requires(D == 3)
+    [[nodiscard]] friend constexpr matrix3 reflect(matrix3 const& rhs) noexcept
     {
-        return matrix{reflect_column<DstX>(), reflect_column<DstY>(), reflect_column<DstZ>(), reflect_column<DstW>()} * rhs;
+        return matrix3{reflect_column<DstX>(), reflect_column<DstY>(), reflect_column<DstZ>(), reflect_column<DstW>()} * rhs;
     }
 
     /** Compare two matrices potentially of different dimensions.
@@ -455,15 +365,15 @@ public:
      * @param rhs The right-hand-side matrix.
      * @retval true When the two matrices compare equal.
      */
-    template<int E>
-    [[nodiscard]] constexpr bool operator==(matrix<E> const& rhs) const noexcept
+    [[nodiscard]] constexpr friend bool operator==(matrix3 const& lhs, matrix3 const& rhs) noexcept
     {
-        return _col0 == rhs._col0 && _col1 == rhs._col1 && _col2 == rhs._col2 && _col3 == rhs._col3;
+        return equal(lhs._col0, rhs._col0) and equal(lhs._col1, rhs._col1) and equal(lhs._col2, rhs._col2) and
+            equal(lhs._col3, rhs._col3);
     }
 
     /** Invert matrix.
      */
-    [[nodiscard]] constexpr matrix operator~() const
+    [[nodiscard]] constexpr matrix3 operator~() const
     {
         //                   rc
         // var s0 : Number = i00 * i11 -
@@ -569,7 +479,7 @@ public:
         tmp_s3100 = -tmp_s3100;
         hilet inv_col3 = ((t._col2.yxxx() * tmp_s5543) + (t._col2.zzyy() * tmp_s4221) + (t._col2.wwwz() * tmp_s3100)) * invdet;
 
-        return {inv_col0, inv_col1, inv_col2, inv_col3};
+        return matrix3{inv_col0, inv_col1, inv_col2, inv_col3};
     }
 
 private:
@@ -603,15 +513,6 @@ private:
     }
 };
 
-} // namespace geo
 
-/** A 2D homogenious transformation matrix.
- */
-using matrix2 = geo::matrix<2>;
 
-/** A 3D homogenious transformation matrix.
- */
-using matrix3 = geo::matrix<3>;
-
-}} // namespace hi::inline v1
-
+}} // namespace hi::v1

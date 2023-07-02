@@ -2,19 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "matrix.hpp"
+#include "matrix3.hpp"
+#include "transform.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
 
-using namespace hi::geo;
 using namespace hi;
 
 #define ASSERT_NEAR_VEC(lhs, rhs, abs_err) ASSERT_TRUE(hypot<0b1111>(lhs - rhs) < abs_err)
 
-TEST(matrix, invert)
+TEST(matrix3, invert)
 {
-    auto test_XYZ_to_sRGB = matrix<3>{
+    auto test_XYZ_to_sRGB = matrix3{
         3.24096994f,
         -1.53738318f,
         -0.49861076f,

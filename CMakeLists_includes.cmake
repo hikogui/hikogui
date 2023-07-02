@@ -55,27 +55,33 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/font/true_type_font.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/alignment.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/axis.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/axis_aligned_rectangle.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/aarectangle.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/circle.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/corner_radii.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/extent.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/identity.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/extent2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/extent3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/line_end_cap.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/line_join_style.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/line_segment.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/lookat.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/margins.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/matrix.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/matrix2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/matrix3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/module.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/perspective.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/point.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/point2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/point3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/quad.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/rectangle.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/rotate.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/scale.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/rotate2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/rotate3.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/scale2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/scale3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/transform.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/translate.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/vector.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/translate2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/translate3.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/vector2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/vector3.hpp
     ${HIKOGUI_SOURCE_DIR}/image/module.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap_span.hpp

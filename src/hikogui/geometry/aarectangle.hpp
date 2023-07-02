@@ -2,15 +2,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file geometry/axis_aligned_rectangle.hpp
+/** @file geometry/aarectangle.hpp
  * @ingroup geometry
  */
 
 #pragma once
 
 #include "alignment.hpp"
-#include "extent.hpp"
-#include "point.hpp"
+#include "extent2.hpp"
+#include "point2.hpp"
+#include "point3.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
@@ -18,32 +19,29 @@
 #include <mutex>
 
 namespace hi { inline namespace v1 {
-namespace geo {
+
 /** Class which represents an axis-aligned rectangle.
  * @ingroup geometry
  */
-template<typename T>
-class axis_aligned_rectangle {
+class aarectangle {
 public:
-    using value_type = T;
-    using array_type = simd<value_type, 4>;
+    using array_type = simd<float, 4>;
+    using value_type = array_type::value_type;
 
-    constexpr axis_aligned_rectangle() noexcept : v() {}
-    constexpr axis_aligned_rectangle(axis_aligned_rectangle const& rhs) noexcept = default;
-    constexpr axis_aligned_rectangle& operator=(axis_aligned_rectangle const& rhs) noexcept = default;
-    constexpr axis_aligned_rectangle(axis_aligned_rectangle&& rhs) noexcept = default;
-    constexpr axis_aligned_rectangle& operator=(axis_aligned_rectangle&& rhs) noexcept = default;
+    constexpr aarectangle() noexcept : v() {}
+    constexpr aarectangle(aarectangle const& rhs) noexcept = default;
+    constexpr aarectangle& operator=(aarectangle const& rhs) noexcept = default;
+    constexpr aarectangle(aarectangle&& rhs) noexcept = default;
+    constexpr aarectangle& operator=(aarectangle&& rhs) noexcept = default;
 
     /** Create a large axis aligned rectangle.
      */
-    [[nodiscard]] constexpr static axis_aligned_rectangle large() noexcept
+    [[nodiscard]] constexpr static aarectangle large() noexcept
     {
-        return {
-            point<value_type, 2>{-large_number_v<value_type>, -large_number_v<value_type>},
-            point<value_type, 2>{large_number_v<value_type>, large_number_v<value_type>}};
+        return {point2{-large_number_v<float>, -large_number_v<float>}, point2{large_number_v<float>, large_number_v<float>}};
     }
 
-    constexpr explicit axis_aligned_rectangle(array_type const& other) noexcept : v(other)
+    constexpr explicit aarectangle(array_type const& other) noexcept : v(other)
     {
         hi_axiom(holds_invariant());
     }
@@ -55,7 +53,7 @@ public:
      * @param width The width of the box.
      * @param height The height of the box.
      */
-    constexpr axis_aligned_rectangle(value_type x, value_type y, value_type width, value_type height) noexcept :
+    constexpr aarectangle(float x, float y, float width, float height) noexcept :
         v{x, y, x + width, y + height}
     {
         hi_axiom(holds_invariant());
@@ -65,8 +63,7 @@ public:
      * The rectangle's left bottom corner is at the origin.
      * @param extent The size of the box.
      */
-    constexpr explicit axis_aligned_rectangle(extent<value_type, 2> const& extent) noexcept :
-        v(static_cast<array_type>(extent)._00xy())
+    constexpr explicit aarectangle(extent2 const& extent) noexcept : v(static_cast<array_type>(extent)._00xy())
     {
         hi_axiom(holds_invariant());
     }
@@ -75,7 +72,7 @@ public:
      * @param p0 The left bottom point.
      * @param p3 The right opt point.
      */
-    constexpr axis_aligned_rectangle(point<value_type, 2> const& p0, point<value_type, 2> const& p3) noexcept :
+    constexpr aarectangle(point2 const& p0, point2 const& p3) noexcept :
         v(static_cast<array_type>(p0).xy00() + static_cast<array_type>(p3)._00xy())
     {
         hi_axiom(p0.holds_invariant());
@@ -90,7 +87,7 @@ public:
      * @param p0 The left-bottom point where the rectangle starts.
      * @param extent The size of the rectangle.
      */
-    constexpr axis_aligned_rectangle(point<value_type, 2> const& p0, extent<value_type, 2> const& extent) noexcept :
+    constexpr aarectangle(point2 const& p0, extent2 const& extent) noexcept :
         v(static_cast<array_type>(p0).xyxy() + static_cast<array_type>(extent)._00xy())
     {
         hi_axiom(holds_invariant());
@@ -128,7 +125,7 @@ public:
      *
      * @param rhs The new rectangle to include in the current rectangle.
      */
-    constexpr axis_aligned_rectangle& operator|=(axis_aligned_rectangle const& rhs) noexcept
+    constexpr aarectangle& operator|=(aarectangle const& rhs) noexcept
     {
         return *this = *this | rhs;
     }
@@ -138,38 +135,38 @@ public:
      *
      * @param rhs A new point to include in the current rectangle.
      */
-    constexpr axis_aligned_rectangle& operator|=(point<value_type, 2> const& rhs) noexcept
+    constexpr aarectangle& operator|=(point2 const& rhs) noexcept
     {
         return *this = *this | rhs;
     }
 
-    [[nodiscard]] constexpr point<value_type, 2> operator[](std::size_t i) const noexcept
+    [[nodiscard]] constexpr point2 operator[](std::size_t i) const noexcept
     {
         switch (i) {
         case 0:
-            return point<value_type, 2>{v.xy01()};
+            return point2{v.xy01()};
         case 1:
-            return point<value_type, 2>{v.zy01()};
+            return point2{v.zy01()};
         case 2:
-            return point<value_type, 2>{v.xw01()};
+            return point2{v.xw01()};
         case 3:
-            return point<value_type, 2>{v.zw01()};
+            return point2{v.zw01()};
         default:
             hi_no_default();
         }
     }
 
     template<int I>
-    [[nodiscard]] constexpr friend point<value_type, 2> get(axis_aligned_rectangle const& rhs) noexcept
+    [[nodiscard]] constexpr friend point2 get(aarectangle const& rhs) noexcept
     {
         if constexpr (I == 0) {
-            return point<value_type, 2>{rhs.v.xy01()};
+            return point2{rhs.v.xy01()};
         } else if constexpr (I == 1) {
-            return point<value_type, 2>{rhs.v.zy01()};
+            return point2{rhs.v.zy01()};
         } else if constexpr (I == 2) {
-            return point<value_type, 2>{rhs.v.xw01()};
+            return point2{rhs.v.xw01()};
         } else if constexpr (I == 3) {
-            return point<value_type, 2>{rhs.v.zw01()};
+            return point2{rhs.v.zw01()};
         } else {
             hi_static_no_default();
         }
@@ -179,9 +176,9 @@ public:
      *
      * @return The (x, y) vector representing the width and height of the rectangle.
      */
-    [[nodiscard]] constexpr extent<value_type, 2> size() const noexcept
+    [[nodiscard]] constexpr extent2 size() const noexcept
     {
-        return extent<value_type, 2>{v.zwzw() - v};
+        return extent2{v.zwzw() - v};
     }
 
     [[nodiscard]] constexpr value_type x() const noexcept
@@ -240,18 +237,18 @@ public:
 
     /** Get the center of the rectangle.
      */
-    [[nodiscard]] constexpr friend point<value_type, 2> midpoint(axis_aligned_rectangle const& rhs) noexcept
+    [[nodiscard]] constexpr friend point2 midpoint(aarectangle const& rhs) noexcept
     {
         return midpoint(get<0>(rhs), get<3>(rhs));
     }
 
-    constexpr axis_aligned_rectangle& set_width(value_type newWidth) noexcept
+    constexpr aarectangle& set_width(value_type newWidth) noexcept
     {
         v = v.xyxw() + array_type{value_type{0}, value_type{0}, newWidth, value_type{0}};
         return *this;
     }
 
-    constexpr axis_aligned_rectangle& set_height(value_type newHeight) noexcept
+    constexpr aarectangle& set_height(value_type newHeight) noexcept
     {
         v = v.xyzy() + array_type{value_type{0}, value_type{0}, value_type{0}, newHeight};
         return *this;
@@ -261,7 +258,7 @@ public:
      *
      * @param rhs The coordinate of the point to test.
      */
-    [[nodiscard]] constexpr bool contains(point<value_type, 2> const& rhs) const noexcept
+    [[nodiscard]] constexpr bool contains(point2 const& rhs) const noexcept
     {
         // No need to check with empty due to half open range check.
         return (static_cast<array_type>(rhs).xyxy() >= v).mask() == 0b0011;
@@ -272,9 +269,9 @@ public:
      * @param rhs The coordinate of the point to test. This point is
      *            converted to 2D by this function.
      */
-    [[nodiscard]] constexpr bool contains(point<value_type, 3> const& rhs) const noexcept
+    [[nodiscard]] constexpr bool contains(point3 const& rhs) const noexcept
     {
-        return contains(point<value_type, 2>{rhs});
+        return contains(point2{rhs});
     }
 
     /** Align a rectangle within another rectangle.
@@ -283,8 +280,8 @@ public:
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
-    [[nodiscard]] friend constexpr axis_aligned_rectangle
-    align(axis_aligned_rectangle haystack, extent<value_type, 2> needle, alignment alignment) noexcept
+    [[nodiscard]] friend constexpr aarectangle
+    align(aarectangle haystack, extent2 needle, alignment alignment) noexcept
     {
         auto x = value_type{0};
         if (alignment == horizontal_alignment::left) {
@@ -314,7 +311,7 @@ public:
             hi_no_default();
         }
 
-        return {point<value_type, 2>{x, y}, needle};
+        return {point2{x, y}, needle};
     }
 
     /** Align a rectangle within another rectangle.
@@ -323,26 +320,24 @@ public:
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
-    [[nodiscard]] friend constexpr axis_aligned_rectangle
-    align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
+    [[nodiscard]] friend constexpr aarectangle align(aarectangle haystack, aarectangle needle, alignment alignment) noexcept
     {
         return align(haystack, needle.size(), alignment);
     }
 
     /** Need to call the hidden friend function from within another class.
      */
-    [[nodiscard]] static constexpr axis_aligned_rectangle
-    _align(axis_aligned_rectangle outside, axis_aligned_rectangle inside, alignment alignment) noexcept
+    [[nodiscard]] static constexpr aarectangle _align(aarectangle outside, aarectangle inside, alignment alignment) noexcept
     {
         return align(outside, inside, alignment);
     }
 
-    [[nodiscard]] friend constexpr bool operator==(axis_aligned_rectangle const& lhs, axis_aligned_rectangle const& rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(aarectangle const& lhs, aarectangle const& rhs) noexcept
     {
         return equal(lhs.v, rhs.v);
     }
 
-    [[nodiscard]] friend constexpr bool overlaps(axis_aligned_rectangle const& lhs, axis_aligned_rectangle const& rhs) noexcept
+    [[nodiscard]] friend constexpr bool overlaps(aarectangle const& lhs, aarectangle const& rhs) noexcept
     {
         if (lhs.empty() or rhs.empty()) {
             return false;
@@ -363,25 +358,23 @@ public:
         return true;
     }
 
-    [[nodiscard]] friend constexpr axis_aligned_rectangle
-    operator|(axis_aligned_rectangle const& lhs, axis_aligned_rectangle const& rhs) noexcept
+    [[nodiscard]] friend constexpr aarectangle operator|(aarectangle const& lhs, aarectangle const& rhs) noexcept
     {
         if (!lhs) {
             return rhs;
         } else if (!rhs) {
             return lhs;
         } else {
-            return axis_aligned_rectangle{min(get<0>(lhs), get<0>(rhs)), max(get<3>(lhs), get<3>(rhs))};
+            return aarectangle{min(get<0>(lhs), get<0>(rhs)), max(get<3>(lhs), get<3>(rhs))};
         }
     }
 
-    [[nodiscard]] friend constexpr axis_aligned_rectangle
-    operator|(axis_aligned_rectangle const& lhs, point<value_type, 2> const& rhs) noexcept
+    [[nodiscard]] friend constexpr aarectangle operator|(aarectangle const& lhs, point2 const& rhs) noexcept
     {
         if (!lhs) {
-            return axis_aligned_rectangle{rhs, rhs};
+            return aarectangle{rhs, rhs};
         } else {
-            return axis_aligned_rectangle{min(get<0>(lhs), rhs), max(get<3>(lhs), rhs)};
+            return aarectangle{min(get<0>(lhs), rhs), max(get<3>(lhs), rhs)};
         }
     }
 
@@ -390,15 +383,15 @@ public:
      * @param rhs How much the width and height should be scaled by.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend constexpr axis_aligned_rectangle operator*(axis_aligned_rectangle const& lhs, value_type rhs) noexcept
+    [[nodiscard]] friend constexpr aarectangle operator*(aarectangle const& lhs, value_type rhs) noexcept
     {
         hilet new_extent = lhs.size() * rhs;
-        hilet diff = vector<value_type, 2>{new_extent} - vector<value_type, 2>{lhs.size()};
+        hilet diff = vector2{new_extent} - vector2{lhs.size()};
         hilet offset = diff * 0.5f;
 
         hilet p0 = get<0>(lhs) - offset;
         hilet p3 = max(get<3>(lhs) + offset, p0);
-        return axis_aligned_rectangle{p0, p3};
+        return aarectangle{p0, p3};
     }
 
     /** Expand the rectangle for the same amount in all directions.
@@ -407,9 +400,9 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend constexpr axis_aligned_rectangle operator+(axis_aligned_rectangle const& lhs, value_type rhs) noexcept
+    [[nodiscard]] friend constexpr aarectangle operator+(aarectangle const& lhs, value_type rhs) noexcept
     {
-        return axis_aligned_rectangle{lhs.v + neg<0b0011>(array_type::broadcast(rhs))};
+        return aarectangle{lhs.v + neg<0b0011>(array_type::broadcast(rhs))};
     }
 
     /** Shrink the rectangle for the same amount in all directions.
@@ -418,50 +411,46 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle shrank on each side.
      */
-    [[nodiscard]] friend constexpr axis_aligned_rectangle operator-(axis_aligned_rectangle const& lhs, value_type rhs) noexcept
+    [[nodiscard]] friend constexpr aarectangle operator-(aarectangle const& lhs, value_type rhs) noexcept
     {
         return lhs + -rhs;
     }
 
-    [[nodiscard]] friend constexpr axis_aligned_rectangle round(axis_aligned_rectangle const& rhs) noexcept
-        requires std::is_same_v<value_type, float>
+    [[nodiscard]] friend constexpr aarectangle round(aarectangle const& rhs) noexcept
     {
         hilet p0 = round(get<0>(rhs));
         hilet size = round(rhs.size());
-        return axis_aligned_rectangle{p0, size};
+        return aarectangle{p0, size};
     }
 
     /** Round rectangle by expanding to pixel edge.
      */
-    [[nodiscard]] friend constexpr axis_aligned_rectangle ceil(axis_aligned_rectangle const& rhs) noexcept
-        requires std::is_same_v<value_type, float>
+    [[nodiscard]] friend constexpr aarectangle ceil(aarectangle const& rhs) noexcept
     {
         hilet p0 = floor(get<0>(rhs));
         hilet p3 = ceil(get<3>(rhs));
-        return axis_aligned_rectangle{p0, p3};
+        return aarectangle{p0, p3};
     }
 
     /** Round rectangle by expanding to a certain granularity.
      */
-    [[nodiscard]] friend constexpr axis_aligned_rectangle
-    ceil(axis_aligned_rectangle const& lhs, extent<value_type, 2> const& rhs) noexcept
+    [[nodiscard]] friend constexpr aarectangle ceil(aarectangle const& lhs, extent2 const& rhs) noexcept
     {
         hilet p0 = floor(get<0>(lhs), rhs);
         hilet p3 = ceil(get<3>(lhs), rhs);
-        return axis_aligned_rectangle{p0, p3};
+        return aarectangle{p0, p3};
     }
 
     /** Round rectangle by shrinking to pixel edge.
      */
-    [[nodiscard]] friend constexpr axis_aligned_rectangle floor(axis_aligned_rectangle const& rhs) noexcept
-        requires std::is_same_v<value_type, float>
+    [[nodiscard]] friend constexpr aarectangle floor(aarectangle const& rhs) noexcept
     {
         hilet p0 = ceil(get<0>(rhs));
         hilet p3 = floor(get<3>(rhs));
-        return axis_aligned_rectangle{p0, p3};
+        return aarectangle{p0, p3};
     }
 
-    [[nodiscard]] friend constexpr axis_aligned_rectangle bounding_rectangle(axis_aligned_rectangle const& rhs) noexcept
+    [[nodiscard]] friend constexpr aarectangle bounding_rectangle(aarectangle const& rhs) noexcept
     {
         return rhs;
     }
@@ -469,8 +458,7 @@ public:
     /** Return the overlapping part of two rectangles.
      * When the rectangles are not overlapping, the width and height are zero.
      */
-    [[nodiscard]] friend constexpr axis_aligned_rectangle
-    intersect(axis_aligned_rectangle const& lhs, axis_aligned_rectangle const& rhs) noexcept
+    [[nodiscard]] friend constexpr aarectangle intersect(aarectangle const& lhs, aarectangle const& rhs) noexcept
     {
         hilet p0 = max(get<0>(lhs), get<0>(rhs));
         hilet p3 = min(get<3>(lhs), get<3>(rhs));
@@ -481,8 +469,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr friend value_type
-    distance(axis_aligned_rectangle const& lhs, point<value_type, 2> const& rhs) noexcept
+    [[nodiscard]] friend value_type distance(aarectangle const& lhs, point2 const& rhs) noexcept
     {
         hilet lhs_ = static_cast<array_type>(lhs);
         hilet rhs_ = static_cast<array_type>(rhs);
@@ -501,26 +488,12 @@ private:
     array_type v;
 };
 
-} // namespace geo
-
-using aarectangle = geo::axis_aligned_rectangle<float>;
-
-/** Make a rectangle fit inside bounds.
- * This algorithm will try to first move the rectangle and resist resizing it.
- *
- * @param bounds The bounding box.
- * @param rectangle The rectangle to fit inside the bounds.
- * @return A rectangle that fits inside the bounds
- */
-[[nodiscard]] aarectangle fit(aarectangle const& bounds, aarectangle const& rectangle) noexcept;
-
-
 }} // namespace hi::v1
 
-template<typename T>
-class std::atomic<hi::geo::axis_aligned_rectangle<T>> {
+template<>
+class std::atomic<hi::aarectangle> {
 public:
-    using value_type = hi::geo::axis_aligned_rectangle<T>;
+    using value_type = hi::aarectangle;
     static constexpr bool is_always_lock_free = false;
 
     constexpr atomic() noexcept = default;
@@ -619,27 +592,15 @@ private:
 };
 
 template<typename CharT>
-struct std::formatter<hi::geo::axis_aligned_rectangle<float>, CharT> {
+struct std::formatter<hi::aarectangle, CharT> {
     auto parse(auto& pc)
     {
         return pc.end();
     }
 
-    auto format(hi::geo::axis_aligned_rectangle<float> const& t, auto& fc)
+    auto format(hi::aarectangle const& t, auto& fc)
     {
         return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
     }
 };
 
-template<typename CharT>
-struct std::formatter<hi::geo::axis_aligned_rectangle<int>, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
-    auto format(hi::geo::axis_aligned_rectangle<int> const& t, auto& fc)
-    {
-        return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
-    }
-};

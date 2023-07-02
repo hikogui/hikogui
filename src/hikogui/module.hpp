@@ -34,10 +34,6 @@ namespace hi {
  */
 inline namespace v1 {
 
-/** @namespace hi::v1::geo HikoGUI geometry types.
- */
-namespace geo{}
-
 } // namespace v1
 } // namespace hi
 

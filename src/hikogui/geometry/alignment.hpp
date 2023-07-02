@@ -11,7 +11,7 @@
 #include "../utility/module.hpp"
 #include <optional>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Vertical alignment.
  * @ingroup geometry
@@ -408,4 +408,4 @@ constexpr alignment operator|(vertical_alignment lhs, horizontal_alignment rhs) 
     return alignment{lhs, rhs};
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -8,11 +8,10 @@
 
 #pragma once
 
-#include "matrix.hpp"
-#include "point.hpp"
+#include "matrix3.hpp"
+#include "point3.hpp"
 
 namespace hi { inline namespace v1 {
-namespace geo {
 
 /** Perspective transform.
  * @ingroup geometry
@@ -30,7 +29,7 @@ public:
     {
     }
 
-    [[nodiscard]] constexpr operator matrix<3>() noexcept
+    [[nodiscard]] constexpr operator matrix3() noexcept
     {
         hilet f = normalize(_lookat_location - _camera_location);
         hilet s = normalize(cross(f, _up));
@@ -54,9 +53,5 @@ private:
     point3 _lookat_location;
     vector3 _up;
 };
-
-} // namespace geo
-
-using lookat3 = geo::lookat;
 
 }} // namespace hi::v1

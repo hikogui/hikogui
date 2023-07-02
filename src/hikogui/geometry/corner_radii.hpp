@@ -88,6 +88,7 @@ public:
         return corner_radii{f32x4{lhs} - rhs};
     }
 
+
 private:
     f32x4 _v;
 };
