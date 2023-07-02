@@ -74,7 +74,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/geometry/point3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/quad.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/rectangle.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/rotate.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/rotate2.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/rotate3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/scale2.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/scale3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/transform.hpp

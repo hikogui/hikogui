@@ -6,7 +6,7 @@
 
 #include "matrix2.hpp"
 #include "identity.hpp"
-#include "rotate.hpp"
+#include "rotate2.hpp"
 #include "vector2.hpp"
 #include <concepts>
 
@@ -171,7 +171,7 @@ public:
         return matrix2{get<0>(rhs), get<1>(rhs), get<2>(rhs), get<3>(rhs) + lhs._v};
     }
 
-    [[nodiscard]] constexpr friend matrix2 operator*(translate2 const& lhs, geo::rotate<2> const& rhs) noexcept
+    [[nodiscard]] constexpr friend matrix2 operator*(translate2 const& lhs, rotate2 const& rhs) noexcept
     {
         return lhs * matrix2(rhs);
     }

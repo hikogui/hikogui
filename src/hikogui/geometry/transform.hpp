@@ -9,7 +9,8 @@
 #include "identity.hpp"
 #include "translate2.hpp"
 #include "translate3.hpp"
-#include "rotate.hpp"
+#include "rotate2.hpp"
+#include "rotate3.hpp"
 #include "scale2.hpp"
 #include "scale3.hpp"
 #include "perspective.hpp"
@@ -71,15 +72,20 @@ namespace hi { inline namespace v1 {
     return rhs;
 }
 
+[[nodiscard]] constexpr rotate2 operator*(geo::identity const& lhs, rotate2 const& rhs) noexcept
+{
+    return rhs;
+}
+
+[[nodiscard]] constexpr rotate3 operator*(geo::identity const& lhs, rotate3 const& rhs) noexcept
+{
+    return rhs;
+}
+
 namespace geo {
 
 
 
-template<int D>
-[[nodiscard]] constexpr rotate<D> operator*(identity const& lhs, rotate<D> const& rhs) noexcept
-{
-    return rhs;
-}
 
 template<typename T>
 struct transform : public std::false_type {};
@@ -90,8 +96,8 @@ template<> struct transform<matrix3> : public std::true_type {};
 template<> struct transform<identity> : public std::true_type {};
 template<> struct transform<translate2> : public std::true_type {};
 template<> struct transform<translate3> : public std::true_type {};
-template<> struct transform<rotate<2>> : public std::true_type {};
-template<> struct transform<rotate<3>> : public std::true_type {};
+template<> struct transform<rotate2> : public std::true_type {};
+template<> struct transform<rotate3> : public std::true_type {};
 template<> struct transform<scale2> : public std::true_type {};
 template<> struct transform<scale3> : public std::true_type {};
 template<> struct transform<perspective> : public std::true_type {};

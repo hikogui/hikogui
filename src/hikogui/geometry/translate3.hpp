@@ -6,7 +6,7 @@
 
 #include "matrix2.hpp"
 #include "identity.hpp"
-#include "rotate.hpp"
+#include "rotate3.hpp"
 #include "vector2.hpp"
 #include "vector3.hpp"
 #include "point2.hpp"
@@ -180,7 +180,7 @@ public:
         return matrix3{get<0>(rhs), get<1>(rhs), get<2>(rhs), get<3>(rhs) + lhs._v};
     }
 
-    [[nodiscard]] constexpr friend matrix3 operator*(translate3 const& lhs, geo::rotate<3> const& rhs) noexcept
+    [[nodiscard]] constexpr friend matrix3 operator*(translate3 const& lhs, rotate3 const& rhs) noexcept
     {
         return lhs * matrix3(rhs);
     }
