@@ -2,7 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "scale3.hpp"
+#include "scale2.hpp"
+#include "transform.hpp"
 #include "../utility/module.hpp"
 #include "../utility/test.hpp"
 #include <gtest/gtest.h>
@@ -23,13 +24,6 @@ TEST(scale2, scale_point)
     static_assert(std::is_same_v<decltype(scale2(4.0, 6.0) * point2(1.0, 2.0)), point2>);
 
     STATIC_ASSERT_TRUE(scale2(4.0, 6.0) * point2(1.0, 2.0) == point2(4.0, 12.0));
-}
-
-TEST(scale2, scale_identity)
-{
-    static_assert(std::is_same_v<decltype(scale2(1.0, 2.0) * gidentity()), scale2>);
-
-    STATIC_ASSERT_TRUE(scale2(1.0, 2.0) * gidentity() == scale2(1.0, 2.0));
 }
 
 TEST(scale2, scale_scale)

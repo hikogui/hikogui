@@ -33,6 +33,11 @@ public:
     constexpr extent2& operator=(extent2 const&) noexcept = default;
     constexpr extent2& operator=(extent2&&) noexcept = default;
 
+    [[nodiscard]] constexpr explicit extent2(array_type const& other) noexcept : _v(other)
+    {
+        hi_axiom(holds_invariant());
+    }
+
     /** Convert a extent to its array_type-nummeric_array.
      */
     [[nodiscard]] constexpr explicit operator array_type() const noexcept
@@ -40,14 +45,9 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr explicit extent2(array_type const& other) noexcept : _v(other)
+    [[nodiscard]] constexpr explicit extent2(vector2 const &other) noexcept : _v(f32x4{other})
     {
         hi_axiom(holds_invariant());
-    }
-
-    [[nodiscard]] constexpr explicit operator bool() const noexcept
-    {
-        return _v.x() != 0.0f or _v.y() != 0.0f or _v.z() != 0.0f;
     }
 
     [[nodiscard]] constexpr explicit operator vector2() const noexcept
@@ -85,6 +85,11 @@ public:
         r._v.x() = std::numeric_limits<value_type>::signaling_NaN();
         r._v.y() = std::numeric_limits<value_type>::signaling_NaN();
         return r;
+    }
+
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
+    {
+        return _v.x() != 0.0f or _v.y() != 0.0f or _v.z() != 0.0f;
     }
 
     /** Access the x-as-width element from the extent.

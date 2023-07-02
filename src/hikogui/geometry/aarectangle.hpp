@@ -488,15 +488,6 @@ private:
     array_type v;
 };
 
-/** Make a rectangle fit inside bounds.
- * This algorithm will try to first move the rectangle and resist resizing it.
- *
- * @param bounds The bounding box.
- * @param rectangle The rectangle to fit inside the bounds.
- * @return A rectangle that fits inside the bounds
- */
-[[nodiscard]] aarectangle fit(aarectangle const& bounds, aarectangle const& rectangle) noexcept;
-
 }} // namespace hi::v1
 
 template<>

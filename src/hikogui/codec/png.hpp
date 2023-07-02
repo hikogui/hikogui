@@ -44,7 +44,7 @@ private:
     /** Matrix to convert png color values to sRGB.
      * The default are sRGB color primaries and white-point.
      */
-    matrix3 _color_to_sRGB = gidentity();
+    matrix3 _color_to_sRGB = {};
 
     /** The gamma curve to convert a sample directly to linear float.
      */

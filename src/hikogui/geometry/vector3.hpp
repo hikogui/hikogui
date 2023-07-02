@@ -323,7 +323,6 @@ private:
 
 
 
-
 }} // namespace hi::v1
 
 template<typename CharT>

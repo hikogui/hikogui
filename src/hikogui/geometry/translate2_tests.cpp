@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "translate2.hpp"
+#include "transform.hpp"
 #include "../utility/module.hpp"
 #include "../utility/test.hpp"
 #include <gtest/gtest.h>
@@ -23,13 +24,6 @@ TEST(translate2, translate_point)
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * point2(1.0, 2.0)), point2>);
 
     STATIC_ASSERT_TRUE(translate2(4.0, 6.0) * point2(1.0, 2.0) == point2(5.0, 8.0));
-}
-
-TEST(translate2, translate_identity)
-{
-    static_assert(std::is_same_v<decltype(translate2(1.0, 2.0) * gidentity()), translate2>);
-
-    STATIC_ASSERT_TRUE(translate2(1.0, 2.0) * gidentity() == translate2(1.0, 2.0));
 }
 
 TEST(translate2, translate_translate)

@@ -4,14 +4,8 @@
 
 #pragma once
 
-#include "matrix2.hpp"
-#include "gidentity.hpp"
-#include "rotate3.hpp"
-#include "vector2.hpp"
-#include "vector3.hpp"
-#include "point2.hpp"
-#include "point3.hpp"
 #include "translate2.hpp"
+#include "point3.hpp"
 #include <concepts>
 
 namespace hi { inline namespace v1 {
@@ -30,16 +24,7 @@ public:
     constexpr translate3& operator=(translate3 const&) noexcept = default;
     constexpr translate3& operator=(translate3&&) noexcept = default;
 
-    [[nodiscard]] constexpr operator matrix3() const noexcept
-    {
-        hi_axiom(holds_invariant());
-        hilet ones = array_type::broadcast(1.0f);
-        return matrix3{ones.x000(), ones._0y00(), ones._00z0(), ones._000w() + _v};
-    }
-
     [[nodiscard]] constexpr translate3() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f) {}
-
-    [[nodiscard]] constexpr translate3(gidentity const&) noexcept : translate3() {}
 
     [[nodiscard]] constexpr explicit operator array_type() const noexcept
     {
@@ -165,37 +150,6 @@ public:
         return translate3{x - src_rectangle.left(), y - src_rectangle.bottom()};
     }
 
-    [[nodiscard]] constexpr vector2 operator*(vector2 const& rhs) const noexcept
-    {
-        return rhs;
-    }
-
-    [[nodiscard]] constexpr friend translate3 operator*(translate3 const& lhs, gidentity const&) noexcept
-    {
-        return lhs;
-    }
-
-    [[nodiscard]] constexpr friend matrix3 operator*(translate3 const& lhs, matrix3 const& rhs) noexcept
-    {
-        return matrix3{get<0>(rhs), get<1>(rhs), get<2>(rhs), get<3>(rhs) + lhs._v};
-    }
-
-    [[nodiscard]] constexpr friend matrix3 operator*(translate3 const& lhs, rotate3 const& rhs) noexcept
-    {
-        return lhs * matrix3(rhs);
-    }
-
-    [[nodiscard]] constexpr friend translate3 operator*(translate3 const &lhs, translate3 const& rhs) noexcept
-    {
-        return translate3{lhs._v + rhs._v};
-    }
-
-    [[nodiscard]] constexpr friend rectangle operator*(translate3 const& lhs, aarectangle const& rhs) noexcept
-    {
-        hilet rhs_ = rectangle{rhs};
-        return rectangle{lhs * rhs_.origin, rhs_.right, rhs_.up};
-    }
-
     [[nodiscard]] constexpr friend bool operator==(translate3 const& lhs, translate3 const& rhs) noexcept
     {
         return equal(lhs._v, rhs._v);
@@ -223,41 +177,6 @@ private:
 [[nodiscard]] constexpr translate3 translate_z(float z) noexcept
 {
     return translate3{0.0f, 0.0f, z};
-}
-
-[[nodiscard]] constexpr vector3 operator*(translate3 const &lhs, vector3 const& rhs) noexcept
-{
-    return rhs;
-}
-
-[[nodiscard]] constexpr point3 operator*(translate3 const& lhs, point3 const& rhs) noexcept
-{
-    return point3{f32x4{lhs} + f32x4{rhs}};
-}
-
-constexpr point3& operator*=(point3& lhs, translate3 const& rhs) noexcept
-{
-    return lhs = rhs * lhs;
-}
-
-[[nodiscard]] constexpr rectangle operator*(translate3 const& lhs, rectangle const& rhs) noexcept
-{
-    return rectangle{lhs * rhs.origin, rhs.right, rhs.up};
-}
-
-[[nodiscard]] constexpr quad operator*(translate3 const& lhs, quad const& rhs) noexcept
-{
-    return quad{lhs * rhs.p0, lhs * rhs.p1, lhs * rhs.p2, lhs * rhs.p3};
-}
-
-[[nodiscard]] constexpr circle operator*(translate3 const& lhs, circle const& rhs) noexcept
-{
-    return circle{f32x4{rhs} + f32x4{lhs}};
-}
-
-[[nodiscard]] constexpr line_segment operator*(translate3 const& lhs, line_segment const& rhs) noexcept
-{
-    return line_segment{lhs * rhs.origin(), rhs.direction()};
 }
 
 }} // namespace hi::inline v1

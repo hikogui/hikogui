@@ -923,7 +923,7 @@ void TriangleExample::render(
 
         auto projection = hi::perspective{hi::to_radian(60.0f), viewPortSize, 1.0f, 256.0f};
         auto view = hi::lookat{hi::point3{0.0f, 0.0f, -3.5f}, hi::point3{}};
-        auto model = hi::gidentity{};
+        auto model = hi::matrix3{};
 
         auto projection_m = static_cast<hi::matrix3>(projection);
         auto view_m = static_cast<hi::matrix3>(view);

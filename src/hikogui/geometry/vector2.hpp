@@ -48,9 +48,7 @@ public:
      * @param y The y element.
      * @param z The z element.
      */
-    [[nodiscard]] constexpr vector2(float x, float y) noexcept : _v(x, y, 0.0f, 0.0f)
-    {
-    }
+    [[nodiscard]] constexpr vector2(float x, float y) noexcept : _v(x, y, 0.0f, 0.0f) {}
 
     /** Access the x element from the vector.
      * @return a reference to the x element.

@@ -79,6 +79,32 @@ public:
 
     constexpr rectangle(point3 origin, extent2 extent) noexcept : rectangle(origin, extent.right(), extent.up()) {}
 
+    /** Return the axis-aligned bounding rectangle of this rectangle.
+     */
+    [[nodiscard]] constexpr explicit operator aarectangle() const noexcept
+    {
+        auto left_bottom = f32x4::broadcast(std::numeric_limits<float>::max());
+        auto right_top = f32x4::broadcast(-std::numeric_limits<float>::max());
+
+        hilet p0 = origin;
+        left_bottom = min(left_bottom, static_cast<f32x4>(p0));
+        right_top = max(right_top, static_cast<f32x4>(p0));
+
+        hilet p1 = p0 + right;
+        left_bottom = min(left_bottom, static_cast<f32x4>(p1));
+        right_top = max(right_top, static_cast<f32x4>(p1));
+
+        hilet p2 = p0 + up;
+        left_bottom = min(left_bottom, static_cast<f32x4>(p2));
+        right_top = max(right_top, static_cast<f32x4>(p2));
+
+        hilet p3 = p2 + right;
+        left_bottom = min(left_bottom, static_cast<f32x4>(p3));
+        right_top = max(right_top, static_cast<f32x4>(p3));
+
+        return aarectangle{left_bottom.xy00() | right_top._00xy()};
+    }
+
     /** Check if the rectangle has an area.
      *
      * @return True is there is a area.
@@ -107,32 +133,6 @@ public:
     {
         hilet should_be_zeroes = static_cast<f32x4>(right).yz00() | static_cast<f32x4>(up)._00xz();
         return equal(should_be_zeroes, f32x4{});
-    }
-
-    /** The axis-aligned bounding box around the rectangle.
-     */
-    [[nodiscard]] constexpr friend aarectangle bounding_rectangle(rectangle const& rhs) noexcept
-    {
-        auto left_bottom = f32x4::broadcast(std::numeric_limits<float>::max());
-        auto right_top = f32x4::broadcast(-std::numeric_limits<float>::max());
-
-        hilet p0 = rhs.origin;
-        left_bottom = min(left_bottom, static_cast<f32x4>(p0));
-        right_top = max(right_top, static_cast<f32x4>(p0));
-
-        hilet p1 = p0 + rhs.right;
-        left_bottom = min(left_bottom, static_cast<f32x4>(p1));
-        right_top = max(right_top, static_cast<f32x4>(p1));
-
-        hilet p2 = p0 + rhs.up;
-        left_bottom = min(left_bottom, static_cast<f32x4>(p2));
-        right_top = max(right_top, static_cast<f32x4>(p2));
-
-        hilet p3 = p2 + rhs.right;
-        left_bottom = min(left_bottom, static_cast<f32x4>(p3));
-        right_top = max(right_top, static_cast<f32x4>(p3));
-
-        return aarectangle{left_bottom.xy00() | right_top._00xy()};
     }
 
     /** The width, or length of the right vector.

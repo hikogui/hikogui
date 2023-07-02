@@ -346,7 +346,7 @@ struct bezier_curve {
         }
     }
 
-    [[nodiscard]] friend bezier_curve operator*(gtransformer auto const& lhs, bezier_curve const& rhs) noexcept
+    [[nodiscard]] friend bezier_curve operator*(transformer2 auto const& lhs, bezier_curve const& rhs) noexcept
     {
         return {rhs.type, lhs * rhs.P1, lhs * rhs.C1, lhs * rhs.C2, lhs * rhs.P2};
     }

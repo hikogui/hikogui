@@ -9,25 +9,16 @@
 #pragma once
 
 #include "matrix2.hpp"
-#include "vector2.hpp"
-#include "vector3.hpp"
-#include "extent2.hpp"
-#include "extent3.hpp"
-#include "point2.hpp"
-#include "point3.hpp"
-#include "rectangle.hpp"
-#include "quad.hpp"
-#include "circle.hpp"
-#include "line_segment.hpp"
-#include "corner_radii.hpp"
-#include "aarectangle.hpp"
+#include "translate3.hpp"
+#include "scale3.hpp"
+#include "rotate3.hpp"
 #include <array>
 
 namespace hi { inline namespace v1 {
 
 class matrix3;
-[[nodiscard]] constexpr vector3 operator*(matrix3 const& lhs, vector3 const& rhs) noexcept;
-[[nodiscard]] constexpr point3 operator*(matrix3 const& lhs, point3 const& rhs) noexcept;
+[[nodiscard]] constexpr matrix3 operator*(translate3 const& lhs, scale3 const& rhs) noexcept;
+[[nodiscard]] constexpr matrix3 operator*(translate3 const& lhs, rotate3 const& rhs) noexcept;
 
 /** A 2D or 3D homogenius matrix for transforming homogenious vectors and points.
  *
@@ -192,6 +183,55 @@ public:
         return matrix2{tmp0, tmp1, tmp2, tmp3};
     }
 
+    [[nodiscard]] constexpr matrix3(scale3 const& rhs) noexcept
+    {
+        _col0 = f32x4{rhs}.x000();
+        _col1 = f32x4{rhs}._0y00();
+        _col2 = f32x4{rhs}._00z0();
+        _col3 = f32x4{rhs}._000w();
+    }
+
+    [[nodiscard]] constexpr matrix3(translate3 const& rhs) noexcept
+    {
+        hilet ones = f32x4::broadcast(1.0f);
+        _col0 = ones.x000();
+        _col1 = ones._0y00();
+        _col2 = ones._00z0();
+        _col3 = ones._000w() + f32x4{rhs};
+    }
+
+    /** Convert quaternion to matrix.
+     *
+     */
+    [[nodiscard]] constexpr matrix3(rotate3 const& rhs) noexcept
+    {
+        // Original from https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
+        //   1 - 2(yy + zz) |     2(xy - zw) |     2(xz + yw)
+        //       2(xy + zw) | 1 - 2(xx + zz) |     2(yz - xw)
+        //       2(xz - yw) |     2(yz + xw) | 1 - 2(xx + yy)
+
+        // Flipping adds and multiplies:
+        //   1 - 2(zz + yy) |     2(xy - zw) |     2(yw + xz)
+        //       2(zw + yx) | 1 - 2(xx + zz) |     2(yz - xw)
+        //       2(zx - yw) |     2(xw + zy) | 1 - 2(yy + xx)
+
+        // All multiplies.
+        hilet x_mul = f32x4{rhs}.xxxx() * f32x4{rhs};
+        hilet y_mul = f32x4{rhs}.yyyy() * f32x4{rhs};
+        hilet z_mul = f32x4{rhs}.zzzz() * f32x4{rhs};
+
+        auto twos = f32x4{-2.0f, 2.0f, 2.0f, 0.0f};
+        auto one = f32x4{1.0f, 0.0f, 0.0f, 0.0f};
+        _col0 = one + addsub<0b0011>(z_mul.zwxy(), y_mul.yxwz()) * twos;
+        one = one.yxzw();
+        twos = twos.yxzw();
+        _col1 = one + addsub<0b0110>(x_mul.yxwz(), z_mul.wzyx()) * twos;
+        one = one.xzyw();
+        twos = twos.xzyw();
+        _col2 = one + addsub<0b0101>(y_mul.wzyx(), x_mul.zwxy()) * twos;
+        _col3 = one.xywz();
+    }
+
     /** Convert a point to its f32x4-nummeric_array.
      */
     [[nodiscard]] constexpr explicit operator std::array<f32x4, 4>() const noexcept
@@ -272,91 +312,7 @@ public:
         return {_col0 * rhs.xxxx() + _col1 * rhs.yyyy() + _col2 * rhs.zzzz() + _col3 * rhs.wwww()};
     }
 
-    /** Transform a float by the scaling factor of the matrix.
-     *
-     * The floating point number is transformed into a vector laying on the x-axis,
-     * then transformed, then extracting the hypot from it.
-     */
-    [[nodiscard]] float operator*(float const& rhs) const noexcept
-    {
-        // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
-        hilet abs_scale = hypot<0b0111>(_col0 * f32x4::broadcast(rhs));
-
-        // We want to keep the sign of the original scaler, even if the matrix has rotation.
-        return std::copysign(abs_scale, rhs);
-    }
-
-    /** Transform a float by the scaling factor of the matrix.
-     *
-     * The floating point number is transformed into a vector laying on the x-axis,
-     * then transformed, then extracting the hypot from it.
-     */
-    [[nodiscard]] constexpr corner_radii friend operator*(matrix3 const& lhs, corner_radii const& rhs) noexcept
-    {
-        return {lhs * get<0>(rhs), lhs * get<1>(rhs), lhs * get<2>(rhs), lhs * get<3>(rhs)};
-    }
-
-    /** Transform a vector by the matrix.
-     *
-     * Vectors will not be translated.
-     *
-     * @param rhs The vector to be transformed.
-     * @return The transformed vector.
-     */
-    //[[nodiscard]] constexpr vector2 friend operator*(matrix2 const &lhs, vector2 const& rhs) const noexcept
-    //{
-    //    hi_axiom(rhs.holds_invariant());
-    //    return vector2{lhs._col0 * static_cast<f32x4>(rhs).xxxx() + lhs._col1 * static_cast<f32x4>(rhs).yyyy()};
-    //}
-
-    /** Transform a extent by the matrix.
-     *
-     * Extents will not be translated.
-     *
-     * @param rhs The extent to be transformed.
-     * @return The transformed extent.
-     */
-    //[[nodiscard]] constexpr extent2 operator*(extent2 const& rhs) const noexcept
-    //    requires(D == 2)
-    //{
-    //    hi_axiom(rhs.holds_invariant());
-    //    return extent2{_col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy()};
-    //}
-
-    /** Transform a point by the matrix.
-     *
-     * @param rhs The point to be transformed.
-     * @return The transformed point.
-     */
-    //[[nodiscard]] constexpr point2 operator*(point2 const& rhs) const noexcept
-    //    requires(D == 2)
-    //{
-    //    hi_axiom(rhs.holds_invariant());
-    //    return point2{_col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() + _col3};
-    //}
-
-    /** Transform an axis-aligned rectangle by the matrix.
-     *
-     * After transformation it can not be guaranteed that an axis-aligned rectangle
-     * remained aligned to axis, therefor a normal rectangle is returned
-     *
-     * @note It is undefined behavior to perspective transform a rectangle
-     * @param rhs The axis-aligned rectangle to be transformed.
-     * @return The transformed rectangle
-     */
-    [[nodiscard]] constexpr friend rectangle operator*(matrix3 const& lhs, aarectangle const& rhs) noexcept
-    {
-        hilet rhs_ = rectangle{rhs};
-        return rectangle{lhs * rhs_.origin, lhs * rhs_.right, lhs * rhs_.up};
-    }
-
-    /** Matrix/Matrix multiplication.
-     */
-    [[nodiscard]] constexpr friend matrix3 operator*(matrix3 const& lhs, matrix3 const& rhs) noexcept
-    {
-        return matrix3{lhs * get<0>(rhs), lhs * get<1>(rhs), lhs * get<2>(rhs), lhs * get<3>(rhs)};
-    }
-
+    
     /** Matrix transpose.
      */
     [[nodiscard]] friend constexpr matrix3 transpose(matrix3 const& rhs) noexcept
@@ -557,81 +513,6 @@ private:
     }
 };
 
-/** Transform a vector by the matrix.
- *
- * Vectors will not be translated.
- *
- * @param rhs The vector to be transformed.
- * @return The transformed vector.
- */
-[[nodiscard]] constexpr vector3 operator*(matrix3 const& lhs, vector3 const& rhs) noexcept
-{
-    return vector3{get<0>(lhs) * f32x4{rhs}.xxxx() + get<1>(lhs) * f32x4{rhs}.yyyy() + get<2>(lhs) * f32x4{rhs}.zzzz()};
-}
 
-/** Transform a extent by the matrix.
- *
- * Extents will not be translated.
- *
- * @param rhs The extent to be transformed.
- * @return The transformed extent.
- */
-[[nodiscard]] constexpr extent3 operator*(matrix3 const& lhs, extent3 const& rhs) noexcept
-{
-    return extent3{get<0>(lhs) * f32x4{rhs}.xxxx() + get<1>(lhs) * f32x4{rhs}.yyyy() + get<2>(lhs) * f32x4{rhs}.zzzz()};
-}
-
-/** Transform a point by the matrix.
- *
- * @param rhs The point to be transformed.
- * @return The transformed point.
- */
-[[nodiscard]] constexpr point3 operator*(matrix3 const& lhs, point3 const& rhs) noexcept
-{
-    return point3{
-        get<0>(lhs) * f32x4{rhs}.xxxx() + get<1>(lhs) * f32x4{rhs}.yyyy() + get<2>(lhs) * f32x4{rhs}.zzzz() +
-        get<3>(lhs) * f32x4{rhs}.wwww()};
-}
-
-/** Transform a rectangle by the matrix.
- *
- * @note It is undefined behavior to perspective transform a rectangle
- * @param rhs The rectangle to be transformed.
- * @return The transformed rectangle
- */
-[[nodiscard]] constexpr rectangle operator*(matrix3 const& lhs, rectangle const& rhs) noexcept
-{
-    return rectangle{lhs * rhs.origin, lhs * rhs.right, lhs * rhs.up};
-}
-
-/** Transform a quad by the matrix.
- *
- * @param rhs The quad to be transformed.
- * @return The transformed quad
- */
-[[nodiscard]] constexpr quad operator*(matrix3 const& lhs, quad const& rhs) noexcept
-{
-    return quad{lhs * rhs.p0, lhs * rhs.p1, lhs * rhs.p2, lhs * rhs.p3};
-}
-
-/** Transform a circle by the matrix.
- *
- * @param rhs The circle to be transformed.
- * @return The transformed circle
- */
-[[nodiscard]] constexpr circle operator*(matrix3 const& lhs, circle const& rhs) noexcept
-{
-    return circle{lhs * midpoint(rhs), lhs * rhs.radius()};
-}
-
-/** Transform a line-segment by the matrix.
- *
- * @param rhs The line-segment to be transformed.
- * @return The transformed line-segment
- */
-[[nodiscard]] constexpr line_segment operator*(matrix3 const& lhs, line_segment const& rhs) noexcept
-{
-    return line_segment{lhs * rhs.origin(), lhs * rhs.direction()};
-}
 
 }} // namespace hi::v1

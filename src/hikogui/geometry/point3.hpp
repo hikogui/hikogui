@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "point2.hpp"
 #include "vector3.hpp"
 #include "extent3.hpp"
-#include "point2.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
 #include <format>
@@ -290,6 +290,9 @@ private:
 {
     return point3{f32x4{lhs} - f32x4{rhs}};
 }
+
+
+
 
 } // namespace hi::inline v1
 

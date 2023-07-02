@@ -55,7 +55,7 @@ public:
         position(position),
         size(size),
         border_scale(border_scale),
-        texture_coordinates(bounding_rectangle(texture_coordinate_scale * rectangle{position, size}))
+        texture_coordinates(aarectangle{texture_coordinate_scale * rectangle{position, size}})
     {
         hi_axiom(position == floor(position));
         hi_axiom(size == ceil(size));

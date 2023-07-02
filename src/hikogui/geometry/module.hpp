@@ -11,7 +11,6 @@
 #include "corner_radii.hpp"
 #include "extent2.hpp"
 #include "extent3.hpp"
-#include "gidentity.hpp"
 #include "line_end_cap.hpp"
 #include "line_join_style.hpp"
 #include "line_segment.hpp"
@@ -28,7 +27,7 @@
 #include "rotate3.hpp"
 #include "scale2.hpp"
 #include "scale3.hpp"
-#include "gtransform.hpp"
+#include "transform.hpp"
 #include "translate2.hpp"
 #include "translate3.hpp"
 #include "vector2.hpp"
@@ -120,8 +119,6 @@ An `aarectangle` is implemented as a `f32x4` where:
 
 Transformation types
 --------------------
-
-### gidentity
 
 ### geo::translate<D>
 

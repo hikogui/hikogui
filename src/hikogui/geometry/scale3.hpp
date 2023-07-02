@@ -5,12 +5,7 @@
 #pragma once
 
 #include "scale2.hpp"
-#include "matrix2.hpp"
-#include "matrix3.hpp"
-#include "gidentity.hpp"
-#include "translate2.hpp"
-#include "translate3.hpp"
-#include "extent2.hpp"
+#include "vector3.hpp"
 #include "extent3.hpp"
 
 namespace hi { inline namespace v1 {
@@ -46,14 +41,7 @@ public:
 
     [[nodiscard]] constexpr explicit scale3(vector3 const& v) noexcept : _v(static_cast<f32x4>(v).xyz1()) {}
 
-    [[nodiscard]] constexpr operator matrix3() const noexcept
-    {
-        return matrix3{_v.x000(), _v._0y00(), _v._00z0(), _v._000w()};
-    }
-
     [[nodiscard]] constexpr scale3() noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
-
-    [[nodiscard]] constexpr scale3(gidentity const&) noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
 
     [[nodiscard]] constexpr scale3(float value) noexcept : _v(value, value, value, 1.0f) {}
 
@@ -71,31 +59,6 @@ public:
         return scale3{uniform_scale};
     }
 
-    [[nodiscard]] constexpr friend vector2 operator*(scale3 const& lhs, vector2 const& rhs) noexcept
-    {
-        return vector2{f32x4{lhs} * f32x4{rhs}};
-    }
-
-    [[nodiscard]] constexpr friend extent2 operator*(scale3 const& lhs, extent2 const& rhs) noexcept
-    {
-        return extent2{f32x4{lhs} * f32x4{rhs}};
-    }
-
-    [[nodiscard]] constexpr friend point2 operator*(scale3 const& lhs, point2 const& rhs) noexcept
-    {
-        return point2{f32x4{lhs} * f32x4{rhs}};
-    }
-
-    [[nodiscard]] constexpr friend scale3 operator*(scale3 const& lhs, gidentity const&) noexcept
-    {
-        return lhs;
-    }
-
-    [[nodiscard]] constexpr friend scale3 operator*(scale3 const& lhs, scale3 const& rhs) noexcept
-    {
-        return scale3{lhs._v * rhs._v};
-    }
-
     [[nodiscard]] constexpr friend bool operator==(scale3 const& lhs, scale3 const& rhs) noexcept
     {
         return equal(lhs._v, rhs._v);
@@ -106,6 +69,36 @@ public:
         return _v.w() == 1.0f;
     }
 
+    [[nodiscard]] constexpr float& x() noexcept
+    {
+        return _v.x();
+    }
+
+    [[nodiscard]] constexpr float& y() noexcept
+    {
+        return _v.y();
+    }
+
+    [[nodiscard]] constexpr float& z() noexcept
+    {
+        return _v.z();
+    }
+
+    [[nodiscard]] constexpr float x() const noexcept
+    {
+        return _v.x();
+    }
+
+    [[nodiscard]] constexpr float y() const noexcept
+    {
+        return _v.y();
+    }
+
+    [[nodiscard]] constexpr float z() const noexcept
+    {
+        return _v.z();
+    }
+
 private:
     array_type _v;
 };
@@ -113,31 +106,6 @@ private:
 [[nodiscard]] constexpr scale3 operator/(extent3 const& lhs, extent3 const& rhs) noexcept
 {
     return scale3{f32x4{lhs}.xyz1() / f32x4{rhs}.xyz1()};
-}
-
-[[nodiscard]] constexpr vector3 operator*(scale3 const& lhs, vector3 const& rhs) noexcept
-{
-    return vector3{f32x4{lhs} * f32x4{rhs}};
-}
-
-[[nodiscard]] constexpr extent3 operator*(scale3 const& lhs, extent3 const& rhs) noexcept
-{
-    return extent3{f32x4{lhs} * f32x4{rhs}};
-}
-
-[[nodiscard]] constexpr point3 operator*(scale3 const& lhs, point3 const& rhs) noexcept
-{
-    return point3{f32x4{lhs} * f32x4{rhs}};
-}
-
-[[nodiscard]] constexpr rectangle operator*(scale3 const& lhs, rectangle const& rhs) noexcept
-{
-    return rectangle{lhs * get<0>(rhs), lhs * get<1>(rhs), lhs * get<2>(rhs), lhs * get<3>(rhs)};
-}
-
-[[nodiscard]] constexpr quad operator*(scale3 const& lhs, quad const& rhs) noexcept
-{
-    return quad{lhs * rhs.p0, lhs * rhs.p1, lhs * rhs.p2, lhs * rhs.p3};
 }
 
 }} // namespace hi::v1

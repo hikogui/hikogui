@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "scale3.hpp"
+#include "transform.hpp"
 #include "../utility/module.hpp"
 #include "../utility/test.hpp"
 #include <gtest/gtest.h>
@@ -31,13 +32,6 @@ TEST(scale3, scale_point)
     STATIC_ASSERT_TRUE(scale2(4.0, 6.0) * point3(1.0, 2.0, 3.0) == point3(4.0, 12.0, 3.0));
     STATIC_ASSERT_TRUE(scale3(4.0, 6.0, 8.0) * point2(1.0, 2.0) == point2(4.0, 12.0));
     STATIC_ASSERT_TRUE(scale3(4.0, 6.0, 8.0) * point3(1.0, 2.0, 3.0) == point3(4, 12.0, 24.0));
-}
-
-TEST(scale3, scale_identity)
-{
-    static_assert(std::is_same_v<decltype(scale3(1.0, 2.0, 3.0) * gidentity()), scale3>);
-
-    STATIC_ASSERT_TRUE(scale3(1.0, 2.0, 3.0) * gidentity() == scale3(1.0, 2.0, 3.0));
 }
 
 TEST(scale3, scale_scale)

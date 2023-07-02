@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "vector2.hpp"
-#include "extent2.hpp"
-#include "point2.hpp"
-#include "corner_radii.hpp"
+#include "translate2.hpp"
+#include "scale2.hpp"
+#include "rotate2.hpp"
 #include "aarectangle.hpp"
+#include "transform_fwd.hpp"
 #include <array>
 
 namespace hi { inline namespace v1 {
@@ -158,6 +158,55 @@ public:
         hi_axiom(holds_invariant());
     }
 
+    [[nodiscard]] constexpr matrix2(translate2 const& rhs) noexcept
+    {
+        hilet ones = f32x4::broadcast(1.0f);
+        _col0 = ones.x000();
+        _col1 = ones._0y00();
+        _col2 = ones._00z0();
+        _col3 = ones._000w() + f32x4{rhs};
+    }
+
+    [[nodiscard]] constexpr matrix2(scale2 const& rhs) noexcept
+    {
+        _col0 = f32x4{rhs}.x000();
+        _col1 = f32x4{rhs}._0y00();
+        _col2 = f32x4{rhs}._00z0();
+        _col3 = f32x4{rhs}._000w();
+    }
+
+    /** Convert quaternion to matrix.
+     *
+     */
+    [[nodiscard]] constexpr matrix2(rotate2 const& rhs) noexcept
+    {
+        // Original from https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
+        //   1 - 2(yy + zz) |     2(xy - zw) |     2(xz + yw)
+        //       2(xy + zw) | 1 - 2(xx + zz) |     2(yz - xw)
+        //       2(xz - yw) |     2(yz + xw) | 1 - 2(xx + yy)
+
+        // Flipping adds and multiplies:
+        //   1 - 2(zz + yy) |     2(xy - zw) |     2(yw + xz)
+        //       2(zw + yx) | 1 - 2(xx + zz) |     2(yz - xw)
+        //       2(zx - yw) |     2(xw + zy) | 1 - 2(yy + xx)
+
+        // All multiplies.
+        hilet x_mul = f32x4{rhs}.xxxx() * f32x4{rhs};
+        hilet y_mul = f32x4{rhs}.yyyy() * f32x4{rhs};
+        hilet z_mul = f32x4{rhs}.zzzz() * f32x4{rhs};
+
+        auto twos = f32x4{-2.0f, 2.0f, 2.0f, 0.0f};
+        auto one = f32x4{1.0f, 0.0f, 0.0f, 0.0f};
+        _col0 = one + addsub<0b0011>(z_mul.zwxy(), y_mul.yxwz()) * twos;
+        one = one.yxzw();
+        twos = twos.yxzw();
+        _col1 = one + addsub<0b0110>(x_mul.yxwz(), z_mul.wzyx()) * twos;
+        one = one.xzyw();
+        twos = twos.xzyw();
+        _col2 = one + addsub<0b0101>(y_mul.wzyx(), x_mul.zwxy()) * twos;
+        _col3 = one.xywz();
+    }
+
     /** Convert a point to its f32x4-nummeric_array.
      */
     [[nodiscard]] constexpr explicit operator std::array<f32x4, 4>() const noexcept
@@ -176,7 +225,13 @@ public:
      * @return A transformation matrix to move and scale the src_rectangle to the dst_rectangle.
      */
     [[nodiscard]] constexpr static matrix2
-    uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept;
+    uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
+    {
+        hilet scale = scale2::uniform(src_rectangle.size(), dst_rectangle.size());
+        hilet scaled_rectangle = scale * src_rectangle;
+        hilet translation = translate2::align(scaled_rectangle, dst_rectangle, alignment);
+        return translation * scale;
+    }
 
     /** Get a column.
      *
@@ -234,85 +289,6 @@ public:
     [[nodiscard]] constexpr f32x4 operator*(f32x4 const& rhs) const noexcept
     {
         return {_col0 * rhs.xxxx() + _col1 * rhs.yyyy() + _col2 * rhs.zzzz() + _col3 * rhs.wwww()};
-    }
-
-    /** Transform a float by the scaling factor of the matrix.
-     *
-     * The floating point number is transformed into a vector laying on the x-axis,
-     * then transformed, then extracting the hypot from it.
-     */
-    [[nodiscard]] float operator*(float const& rhs) const noexcept
-    {
-        // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
-        hilet abs_scale = hypot<0b0111>(_col0 * f32x4::broadcast(rhs));
-
-        // We want to keep the sign of the original scaler, even if the matrix has rotation.
-        return std::copysign(abs_scale, rhs);
-    }
-
-    /** Transform a float by the scaling factor of the matrix.
-     *
-     * The floating point number is transformed into a vector laying on the x-axis,
-     * then transformed, then extracting the hypot from it.
-     */
-    [[nodiscard]] constexpr corner_radii friend operator*(matrix2 const& lhs, corner_radii const& rhs) noexcept
-    {
-        return {lhs * get<0>(rhs), lhs * get<1>(rhs), lhs * get<2>(rhs), lhs * get<3>(rhs)};
-    }
-
-    /** Transform a vector by the matrix.
-     *
-     * Vectors will not be translated.
-     *
-     * @param rhs The vector to be transformed.
-     * @return The transformed vector.
-     */
-    [[nodiscard]] constexpr friend vector2 operator*(matrix2 const& lhs, vector2 const& rhs) noexcept
-    {
-        return vector2{lhs._col0 * static_cast<f32x4>(rhs).xxxx() + lhs._col1 * static_cast<f32x4>(rhs).yyyy()};
-    }
-
-    /** Transform a extent by the matrix.
-     *
-     * Extents will not be translated.
-     *
-     * @param rhs The extent to be transformed.
-     * @return The transformed extent.
-     */
-    [[nodiscard]] constexpr friend extent2 operator*(matrix2 const& lhs, extent2 const& rhs) noexcept
-    {
-        return extent2{lhs._col0 * static_cast<f32x4>(rhs).xxxx() + lhs._col1 * static_cast<f32x4>(rhs).yyyy()};
-    }
-
-    /** Transform a point by the matrix.
-     *
-     * @param rhs The point to be transformed.
-     * @return The transformed point.
-     */
-    [[nodiscard]] constexpr friend point2 operator*(matrix2 const& lhs, point2 const& rhs) noexcept
-    {
-        return point2{lhs._col0 * static_cast<f32x4>(rhs).xxxx() + lhs._col1 * static_cast<f32x4>(rhs).yyyy() + lhs._col3};
-    }
-
-    /** Transform an axis-aligned rectangle by the matrix.
-     *
-     * After transformation it can not be guaranteed that an axis-aligned rectangle
-     * remained aligned to axis, therefor a normal rectangle is returned
-     *
-     * @note It is undefined behavior to perspective transform a rectangle
-     * @param rhs The axis-aligned rectangle to be transformed.
-     * @return The transformed rectangle
-     */
-    [[nodiscard]] constexpr friend aarectangle operator*(matrix2 const& lhs, aarectangle const& rhs) noexcept
-    {
-        return aarectangle{lhs * get<0>(rhs), lhs * get<3>(rhs)};
-    }
-
-    /** Matrix/Matrix multiplication.
-     */
-    [[nodiscard]] constexpr friend matrix2 operator*(matrix2 const& lhs, matrix2 const& rhs) noexcept
-    {
-        return matrix2{lhs * get<0>(rhs), lhs * get<1>(rhs), lhs * get<2>(rhs), lhs * get<3>(rhs)};
     }
 
     /** Matrix transpose.

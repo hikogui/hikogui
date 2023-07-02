@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "vector2.hpp"
 #include "vector3.hpp"
 #include "extent2.hpp"
 #include "../SIMD/module.hpp"

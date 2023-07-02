@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "matrix2.hpp"
-#include "gidentity.hpp"
-#include "translate2.hpp"
+#include "vector2.hpp"
 #include "extent2.hpp"
 
 namespace hi { inline namespace v1 {
@@ -33,14 +31,7 @@ public:
 
     [[nodiscard]] constexpr explicit scale2(vector2 const& v) noexcept : _v(static_cast<f32x4>(v).xyz1()) {}
 
-    [[nodiscard]] constexpr operator matrix2() const noexcept
-    {
-        return matrix2{_v.x000(), _v._0y00(), _v._00z0(), _v._000w()};
-    }
-
     [[nodiscard]] constexpr scale2() noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
-
-    [[nodiscard]] constexpr scale2(gidentity const&) noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
 
     [[nodiscard]] constexpr scale2(float value) noexcept : _v(value, value, value, 1.0f) {}
 
@@ -58,60 +49,6 @@ public:
         return scale2{uniform_scale};
     }
 
-    [[nodiscard]] constexpr friend vector2 operator*(scale2 const& lhs, vector2 const& rhs) noexcept
-    {
-        return vector2{lhs._v *f32x4{rhs}};
-    }
-
-    [[nodiscard]] constexpr friend extent2 operator*(scale2 const& lhs, extent2 const& rhs) noexcept
-    {
-        return extent2{lhs._v *f32x4{rhs}};
-    }
-
-    [[nodiscard]] constexpr friend point2 operator*(scale2 const& lhs, point2 const& rhs) noexcept
-    {
-        return point2{lhs._v *f32x4{rhs}};
-    }
-
-    /** Scale a rectangle around it's center.
-     */
-    [[nodiscard]] constexpr friend aarectangle operator*(scale2 const& lhs, aarectangle const& rhs) noexcept
-    {
-        return aarectangle{lhs * get<0>(rhs), lhs * get<3>(rhs)};
-    }
-
-    /** scale the quad.
-     *
-     * Each edge of the quad scaled.
-     *
-     * @param lhs A quad.
-     * @param rhs The width and height to scale each edge with.
-     * @return The new quad extended by the size.
-     */
-    [[nodiscard]] friend constexpr quad scale_from_center(quad const& lhs, scale2 const& rhs) noexcept
-    {
-        hilet top_extra = (lhs.top() * rhs._v.x() - lhs.top()) * 0.5f;
-        hilet bottom_extra = (lhs.bottom() * rhs._v.x() - lhs.bottom()) * 0.5f;
-        hilet left_extra = (lhs.left() * rhs._v.y() - lhs.left()) * 0.5f;
-        hilet right_extra = (lhs.right() * rhs._v.y() - lhs.right()) * 0.5f;
-
-        return {
-            lhs.p0 - bottom_extra - left_extra,
-            lhs.p1 + bottom_extra - right_extra,
-            lhs.p2 - top_extra + left_extra,
-            lhs.p3 + top_extra + right_extra};
-    }
-
-    [[nodiscard]] constexpr friend scale2 operator*(scale2 const& lhs, gidentity const&) noexcept
-    {
-        return lhs;
-    }
-
-    [[nodiscard]] constexpr friend scale2 operator*(scale2 const& lhs, scale2 const& rhs) noexcept
-    {
-        return scale2{lhs._v * rhs._v};
-    }
-
     [[nodiscard]] constexpr friend bool operator==(scale2 const& lhs, scale2 const& rhs) noexcept
     {
         return equal(lhs._v, rhs._v);
@@ -122,18 +59,29 @@ public:
         return _v.z() == 1.0f and _v.w() == 1.0f;
     }
 
+    [[nodiscard]] constexpr float& x() noexcept
+    {
+        return _v.x();
+    }
+
+    [[nodiscard]] constexpr float& y() noexcept
+    {
+        return _v.y();
+    }
+
+    [[nodiscard]] constexpr float x() const noexcept
+    {
+        return _v.x();
+    }
+
+    [[nodiscard]] constexpr float y() const noexcept
+    {
+        return _v.y();
+    }
+
 private:
     array_type _v;
 };
-
-[[nodiscard]] constexpr matrix2
-matrix2::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
-{
-    hilet scale = scale2::uniform(src_rectangle.size(), dst_rectangle.size());
-    hilet scaled_rectangle = scale * src_rectangle;
-    hilet translation = translate2::align(scaled_rectangle, dst_rectangle, alignment);
-    return translation * scale;
-}
 
 [[nodiscard]] constexpr scale2 operator/(extent2 const& lhs, extent2 const& rhs) noexcept
 {
