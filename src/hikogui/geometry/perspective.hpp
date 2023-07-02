@@ -8,7 +8,6 @@
 #include "../utility/module.hpp"
 
 namespace hi { inline namespace v1 {
-namespace geo {
 
 /** Perspective transform.
  * @ingroup geometry
@@ -72,9 +71,5 @@ private:
     float _znear;
     float _zfar;
 };
-
-} // namespace geo
-
-using perspective3 = geo::perspective;
 
 }} // namespace hi::v1

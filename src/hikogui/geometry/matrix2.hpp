@@ -12,7 +12,7 @@
 #include "extent2.hpp"
 #include "point2.hpp"
 #include "corner_radii.hpp"
-#include "axis_aligned_rectangle.hpp"
+#include "aarectangle.hpp"
 #include <array>
 
 namespace hi { inline namespace v1 {

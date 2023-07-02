@@ -220,7 +220,7 @@ public:
         return r;
     }
 
-    [[nodiscard]] constexpr friend color operator*(identity3 const& lhs, color const& rhs) noexcept
+    [[nodiscard]] constexpr friend color operator*(gidentity const& lhs, color const& rhs) noexcept
     {
         return rhs;
     }

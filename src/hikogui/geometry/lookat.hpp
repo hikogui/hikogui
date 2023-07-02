@@ -12,7 +12,6 @@
 #include "point3.hpp"
 
 namespace hi { inline namespace v1 {
-namespace geo {
 
 /** Perspective transform.
  * @ingroup geometry
@@ -54,9 +53,5 @@ private:
     point3 _lookat_location;
     vector3 _up;
 };
-
-} // namespace geo
-
-using lookat3 = geo::lookat;
 
 }} // namespace hi::v1

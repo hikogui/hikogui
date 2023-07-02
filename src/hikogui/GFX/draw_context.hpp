@@ -439,7 +439,7 @@ public:
     template<draw_attribute... Attributes>
     void draw_text(widget_layout const& layout, text_shaper const& text, Attributes const&...attributes) const noexcept
     {
-        return draw_text(layout, geo::identity{}, text, draw_attributes{attributes...});
+        return draw_text(layout, gidentity{}, text, draw_attributes{attributes...});
     }
 
     /** Draw text-selection of shaped text.

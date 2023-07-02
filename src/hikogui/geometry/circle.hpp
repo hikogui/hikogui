@@ -8,7 +8,7 @@
 #pragma once
 
 #include "point2.hpp"
-#include "axis_aligned_rectangle.hpp"
+#include "aarectangle.hpp"
 #include "quad.hpp"
 
 namespace hi { inline namespace v1 {

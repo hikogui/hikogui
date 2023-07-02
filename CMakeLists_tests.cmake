@@ -34,13 +34,13 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/file/URL_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/font/font_char_map_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/identity_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/gidentity_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/matrix3_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/point2_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/point3_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/scale2_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/scale3_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/transform_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/gtransform_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/translate2_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/translate3_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/vector2_tests.cpp

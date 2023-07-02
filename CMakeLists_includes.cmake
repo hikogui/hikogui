@@ -55,12 +55,12 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/font/true_type_font.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/alignment.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/axis.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/axis_aligned_rectangle.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/aarectangle.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/circle.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/corner_radii.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/extent2.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/extent3.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/identity.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/gidentity.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/line_end_cap.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/line_join_style.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/line_segment.hpp
@@ -78,7 +78,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/geometry/rotate3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/scale2.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/scale3.hpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/transform.hpp
+    ${HIKOGUI_SOURCE_DIR}/geometry/gtransform.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/translate2.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/translate3.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/vector2.hpp

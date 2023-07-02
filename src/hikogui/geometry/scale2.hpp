@@ -5,7 +5,7 @@
 #pragma once
 
 #include "matrix2.hpp"
-#include "identity.hpp"
+#include "gidentity.hpp"
 #include "translate2.hpp"
 #include "extent2.hpp"
 
@@ -40,7 +40,7 @@ public:
 
     [[nodiscard]] constexpr scale2() noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
 
-    [[nodiscard]] constexpr scale2(geo::identity const&) noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
+    [[nodiscard]] constexpr scale2(gidentity const&) noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
 
     [[nodiscard]] constexpr scale2(float value) noexcept : _v(value, value, value, 1.0f) {}
 
@@ -102,7 +102,7 @@ public:
             lhs.p3 + top_extra + right_extra};
     }
 
-    [[nodiscard]] constexpr friend scale2 operator*(scale2 const& lhs, geo::identity const&) noexcept
+    [[nodiscard]] constexpr friend scale2 operator*(scale2 const& lhs, gidentity const&) noexcept
     {
         return lhs;
     }

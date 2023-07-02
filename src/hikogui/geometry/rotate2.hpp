@@ -5,7 +5,7 @@
 #pragma once
 
 #include "matrix2.hpp"
-#include "identity.hpp"
+#include "gidentity.hpp"
 
 namespace hi { inline namespace v1 {
 

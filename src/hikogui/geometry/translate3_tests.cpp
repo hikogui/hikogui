@@ -35,9 +35,9 @@ TEST(translate3, translate_point)
 
 TEST(translate3, translate_identity)
 {
-    static_assert(std::is_same_v<decltype(translate3(1.0, 2.0, 3.0) * geo::identity()), translate3>);
+    static_assert(std::is_same_v<decltype(translate3(1.0, 2.0, 3.0) * gidentity()), translate3>);
 
-    STATIC_ASSERT_TRUE(translate3(1.0, 2.0, 3.0) * geo::identity() == translate3(1.0, 2.0, 3.0));
+    STATIC_ASSERT_TRUE(translate3(1.0, 2.0, 3.0) * gidentity() == translate3(1.0, 2.0, 3.0));
 }
 
 TEST(translate3, translate_translate)

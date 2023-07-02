@@ -5,7 +5,7 @@
 #pragma once
 
 #include "matrix2.hpp"
-#include "identity.hpp"
+#include "gidentity.hpp"
 #include "rotate2.hpp"
 #include "vector2.hpp"
 #include <concepts>
@@ -31,7 +31,7 @@ public:
 
     [[nodiscard]] constexpr translate2() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f) {}
 
-    [[nodiscard]] constexpr translate2(geo::identity const&) noexcept : translate2() {}
+    [[nodiscard]] constexpr translate2(gidentity const&) noexcept : translate2() {}
 
     [[nodiscard]] constexpr explicit operator array_type() const noexcept
     {
@@ -161,7 +161,7 @@ public:
         return lhs = rhs * lhs;
     }
 
-    [[nodiscard]] constexpr friend translate2 operator*(translate2 const& lhs, geo::identity const&) noexcept
+    [[nodiscard]] constexpr friend translate2 operator*(translate2 const& lhs, gidentity const&) noexcept
     {
         return lhs;
     }

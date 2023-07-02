@@ -165,7 +165,7 @@ void png::read_sRGB(std::span<std::byte const> bytes)
     hilet rendering_intent = srgb->rendering_intent;
     hi_check(rendering_intent <= 3, "Invalid rendering intent");
 
-    _color_to_sRGB = geo::identity();
+    _color_to_sRGB = gidentity();
     generate_sRGB_transfer_function();
 }
 

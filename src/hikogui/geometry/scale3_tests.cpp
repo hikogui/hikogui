@@ -35,9 +35,9 @@ TEST(scale3, scale_point)
 
 TEST(scale3, scale_identity)
 {
-    static_assert(std::is_same_v<decltype(scale3(1.0, 2.0, 3.0) * geo::identity()), scale3>);
+    static_assert(std::is_same_v<decltype(scale3(1.0, 2.0, 3.0) * gidentity()), scale3>);
 
-    STATIC_ASSERT_TRUE(scale3(1.0, 2.0, 3.0) * geo::identity() == scale3(1.0, 2.0, 3.0));
+    STATIC_ASSERT_TRUE(scale3(1.0, 2.0, 3.0) * gidentity() == scale3(1.0, 2.0, 3.0));
 }
 
 TEST(scale3, scale_scale)

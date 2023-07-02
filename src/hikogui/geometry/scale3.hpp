@@ -7,7 +7,7 @@
 #include "scale2.hpp"
 #include "matrix2.hpp"
 #include "matrix3.hpp"
-#include "identity.hpp"
+#include "gidentity.hpp"
 #include "translate2.hpp"
 #include "translate3.hpp"
 #include "extent2.hpp"
@@ -53,7 +53,7 @@ public:
 
     [[nodiscard]] constexpr scale3() noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
 
-    [[nodiscard]] constexpr scale3(geo::identity const&) noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
+    [[nodiscard]] constexpr scale3(gidentity const&) noexcept : _v(1.0f, 1.0f, 1.0f, 1.0f) {}
 
     [[nodiscard]] constexpr scale3(float value) noexcept : _v(value, value, value, 1.0f) {}
 
@@ -86,7 +86,7 @@ public:
         return point2{f32x4{lhs} * f32x4{rhs}};
     }
 
-    [[nodiscard]] constexpr friend scale3 operator*(scale3 const& lhs, geo::identity const&) noexcept
+    [[nodiscard]] constexpr friend scale3 operator*(scale3 const& lhs, gidentity const&) noexcept
     {
         return lhs;
     }

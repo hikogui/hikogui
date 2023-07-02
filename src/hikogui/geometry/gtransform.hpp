@@ -6,7 +6,7 @@
 
 #include "matrix2.hpp"
 #include "matrix3.hpp"
-#include "identity.hpp"
+#include "gidentity.hpp"
 #include "translate2.hpp"
 #include "translate3.hpp"
 #include "rotate2.hpp"
@@ -15,15 +15,16 @@
 #include "scale3.hpp"
 #include "perspective.hpp"
 #include <type_traits>
+#include <functional>
 
 namespace hi { inline namespace v1 {
 
-[[nodiscard]] constexpr translate2 operator*(geo::identity const& lhs, translate2 const& rhs) noexcept
+[[nodiscard]] constexpr translate2 operator*(gidentity const& lhs, translate2 const& rhs) noexcept
 {
     return rhs;
 }
 
-[[nodiscard]] constexpr translate3 operator*(geo::identity const& lhs, translate3 const& rhs) noexcept
+[[nodiscard]] constexpr translate3 operator*(gidentity const& lhs, translate3 const& rhs) noexcept
 {
     return rhs;
 }
@@ -52,62 +53,56 @@ namespace hi { inline namespace v1 {
     return matrix3{f32x4{lhs}.x000(), f32x4{lhs}._0y00(), f32x4{lhs}._00z0(), f32x4{lhs} * f32x4{rhs}.xyz1()};
 }
 
-[[nodiscard]] constexpr matrix2 operator*(geo::identity const& lhs, matrix2 const& rhs) noexcept
+[[nodiscard]] constexpr matrix2 operator*(gidentity const& lhs, matrix2 const& rhs) noexcept
 {
     return rhs;
 }
 
-[[nodiscard]] constexpr matrix3 operator*(geo::identity const& lhs, matrix3 const& rhs) noexcept
+[[nodiscard]] constexpr matrix3 operator*(gidentity const& lhs, matrix3 const& rhs) noexcept
 {
     return rhs;
 }
 
-[[nodiscard]] constexpr scale2 operator*(geo::identity const& lhs, scale2 const& rhs) noexcept
+[[nodiscard]] constexpr scale2 operator*(gidentity const& lhs, scale2 const& rhs) noexcept
 {
     return rhs;
 }
 
-[[nodiscard]] constexpr scale3 operator*(geo::identity const& lhs, scale3 const& rhs) noexcept
+[[nodiscard]] constexpr scale3 operator*(gidentity const& lhs, scale3 const& rhs) noexcept
 {
     return rhs;
 }
 
-[[nodiscard]] constexpr rotate2 operator*(geo::identity const& lhs, rotate2 const& rhs) noexcept
+[[nodiscard]] constexpr rotate2 operator*(gidentity const& lhs, rotate2 const& rhs) noexcept
 {
     return rhs;
 }
 
-[[nodiscard]] constexpr rotate3 operator*(geo::identity const& lhs, rotate3 const& rhs) noexcept
+[[nodiscard]] constexpr rotate3 operator*(gidentity const& lhs, rotate3 const& rhs) noexcept
 {
     return rhs;
 }
-
-namespace geo {
-
-
-
 
 template<typename T>
-struct transform : public std::false_type {};
+struct gtransform : public std::false_type {};
 
 // clang-format off
-template<> struct transform<matrix2> : public std::true_type {};
-template<> struct transform<matrix3> : public std::true_type {};
-template<> struct transform<identity> : public std::true_type {};
-template<> struct transform<translate2> : public std::true_type {};
-template<> struct transform<translate3> : public std::true_type {};
-template<> struct transform<rotate2> : public std::true_type {};
-template<> struct transform<rotate3> : public std::true_type {};
-template<> struct transform<scale2> : public std::true_type {};
-template<> struct transform<scale3> : public std::true_type {};
-template<> struct transform<perspective> : public std::true_type {};
+template<> struct gtransform<matrix2> : public std::true_type {};
+template<> struct gtransform<matrix3> : public std::true_type {};
+template<> struct gtransform<gidentity> : public std::true_type {};
+template<> struct gtransform<translate2> : public std::true_type {};
+template<> struct gtransform<translate3> : public std::true_type {};
+template<> struct gtransform<rotate2> : public std::true_type {};
+template<> struct gtransform<rotate3> : public std::true_type {};
+template<> struct gtransform<scale2> : public std::true_type {};
+template<> struct gtransform<scale3> : public std::true_type {};
+template<> struct gtransform<perspective> : public std::true_type {};
 // clang-format on
 
 template<typename T>
-constexpr bool transform_v = transform<T>::value;
+constexpr bool gtransform_v = gtransform<T>::value;
 
 template<typename T>
-concept transformer = transform_v<T>;
+concept gtransformer = gtransform_v<T>;
 
-} // namespace geo
 }} // namespace hi::v1

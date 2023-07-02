@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file geometry/identity.hpp Defines identity type.
+/** @file geometry/gidentity.hpp Defines gidentity type.
  * @ingroup geometry
  */
 
@@ -12,20 +12,19 @@
 #include "matrix3.hpp"
 
 namespace hi { inline namespace v1 {
-namespace geo {
 
-/** Identity transform.
+/** gidentity transform.
  * @ingroup geometry
  *
  */
-class identity {
+class gidentity {
 public:
-    constexpr identity(identity const&) noexcept = default;
-    constexpr identity(identity&&) noexcept = default;
-    constexpr identity& operator=(identity const&) noexcept = default;
-    constexpr identity& operator=(identity&&) noexcept = default;
+    constexpr gidentity(gidentity const&) noexcept = default;
+    constexpr gidentity(gidentity&&) noexcept = default;
+    constexpr gidentity& operator=(gidentity const&) noexcept = default;
+    constexpr gidentity& operator=(gidentity&&) noexcept = default;
 
-    constexpr identity() noexcept = default;
+    constexpr gidentity() noexcept = default;
 
     constexpr operator matrix2() const noexcept
     {
@@ -37,7 +36,7 @@ public:
         return matrix3();
     }
 
-    [[nodiscard]] identity operator~() const noexcept
+    [[nodiscard]] gidentity operator~() const noexcept
     {
         return {};
     }
@@ -73,7 +72,7 @@ public:
     }
 
     template<int E>
-    [[nodiscard]] constexpr identity operator*(identity const&) const noexcept
+    [[nodiscard]] constexpr gidentity operator*(gidentity const&) const noexcept
     {
         return {};
     }
@@ -83,17 +82,5 @@ public:
         return true;
     }
 };
-
-} // namespace geo
-
-/** 2D identity transform.
- * @ingroup geometry
- */
-using identity2 = geo::identity;
-
-/** 2D identity transform.
- * @ingroup geometry
- */
-using identity3 = geo::identity;
 
 }} // namespace hi::v1

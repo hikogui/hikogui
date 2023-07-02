@@ -6,12 +6,12 @@
 
 #include "alignment.hpp"
 #include "axis.hpp"
-#include "axis_aligned_rectangle.hpp"
+#include "aarectangle.hpp"
 #include "circle.hpp"
 #include "corner_radii.hpp"
 #include "extent2.hpp"
 #include "extent3.hpp"
-#include "identity.hpp"
+#include "gidentity.hpp"
 #include "line_end_cap.hpp"
 #include "line_join_style.hpp"
 #include "line_segment.hpp"
@@ -28,7 +28,7 @@
 #include "rotate3.hpp"
 #include "scale2.hpp"
 #include "scale3.hpp"
-#include "transform.hpp"
+#include "gtransform.hpp"
 #include "translate2.hpp"
 #include "translate3.hpp"
 #include "vector2.hpp"
@@ -121,7 +121,7 @@ An `aarectangle` is implemented as a `f32x4` where:
 Transformation types
 --------------------
 
-### geo::identity
+### gidentity
 
 ### geo::translate<D>
 
