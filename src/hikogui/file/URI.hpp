@@ -483,9 +483,10 @@ public:
     constexpr URI& operator=(URI const&) noexcept = default;
     constexpr URI& operator=(URI&&) noexcept = default;
 
-    /** Construct a URL from a string.
+    /** Construct a URI from a string.
      *
      * @note This constructor will normalize the URI
+     * @param str A URI encoded as a string.
      * @throws uri_error When the URI can not be normalized due to a parse error.
      */
     constexpr explicit URI(std::string_view str)
@@ -493,8 +494,20 @@ public:
         parse(str);
     }
 
+    /** Construct a URI from a string.
+     *
+     * @note This constructor will normalize the URI
+     * @param str A URI encoded as a string.
+     * @throws uri_error When the URI can not be normalized due to a parse error.
+     */
     constexpr explicit URI(std::string const& str) : URI(std::string_view{str}) {}
 
+    /** Construct a URI from a string.
+     *
+     * @note This constructor will normalize the URI
+     * @param str A URI encoded as a string.
+     * @throws uri_error When the URI can not be normalized due to a parse error.
+     */
     constexpr explicit URI(const char *str) : URI(std::string_view{str}) {}
 
     [[nodiscard]] constexpr bool empty() const noexcept

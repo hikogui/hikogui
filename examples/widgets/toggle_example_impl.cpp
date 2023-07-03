@@ -7,11 +7,16 @@
 #include "hikogui/widgets/toggle_widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
+#include "hikogui/metadata.hpp"
 
 using namespace hi;
 
 int hi_main(int argc, char *argv[])
 {
+    set_application_name("Toggle example");
+    set_application_vendor("HikoGUI");
+    set_application_version({1, 0, 0});
+
     auto gui = gui_system::make_unique();
     auto window = gui->make_window(tr("Toggle example"));
     window->content().make_widget<label_widget>("A1", tr("toggle:"));

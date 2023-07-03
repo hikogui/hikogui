@@ -64,6 +64,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/concurrency/rcu_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/enum_metadata_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/defer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/float16_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/math_tests.cpp
@@ -78,7 +79,6 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/counters_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/datum_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/decimal_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/defer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/format_check_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/forward_value_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/gap_buffer_tests.cpp
@@ -103,6 +103,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/strings_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/tokenizer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/tree_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/user_settings_tests.cpp
 )
 
 install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)

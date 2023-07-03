@@ -5,13 +5,14 @@
 #include "gfx_system_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../metadata.hpp"
+#include "../metadata_library.hpp"
 #include "../utility/module.hpp"
 #include <chrono>
 #include <cstring>
 
 namespace hi::inline v1 {
 
-static bool hasFoundationExtensions(const std::vector<const char *> &requiredExtensions)
+static bool hasFoundationExtensions(const std::vector<const char *>& requiredExtensions)
 {
     auto availableExtensions = std::unordered_set<std::string>();
     for (auto availableExtensionProperties : vk::enumerateInstanceExtensionProperties()) {
@@ -26,13 +27,13 @@ static bool hasFoundationExtensions(const std::vector<const char *> &requiredExt
     return true;
 }
 
-static std::vector<const char *> filter_available_layers(std::vector<const char *> const &requested_layers)
+static std::vector<const char *> filter_available_layers(std::vector<const char *> const& requested_layers)
 {
     auto available_layers = vk::enumerateInstanceLayerProperties();
 
     hi_log_info("Available vulkan layers:");
     auto r = std::vector<const char *>{};
-    for (hilet &available_layer : available_layers) {
+    for (hilet& available_layer : available_layers) {
         hilet layer_name = std::string{available_layer.layerName.data()};
 
         hilet it = std::find(begin(requested_layers), end(requested_layers), layer_name);
@@ -63,11 +64,10 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
     }
 
     applicationInfo = vk::ApplicationInfo(
-        metadata::application().name.c_str(),
-        VK_MAKE_VERSION(
-            metadata::application().version.major, metadata::application().version.minor, metadata::application().version.patch),
-        metadata::library().name.c_str(),
-        VK_MAKE_VERSION(metadata::library().version.major, metadata::library().version.minor, metadata::library().version.patch),
+        get_application_name().c_str(),
+        VK_MAKE_VERSION(get_application_version().major, get_application_version().minor, get_application_version().patch),
+        get_library_name().c_str(),
+        VK_MAKE_VERSION(get_library_version().major, get_library_version().minor, get_library_version().patch),
         VK_API_VERSION_1_2);
 
     // VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2 extension is needed to retrieve unique identifiers for

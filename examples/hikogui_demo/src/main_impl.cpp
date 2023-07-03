@@ -216,12 +216,9 @@ int hi_main(int argc, char *argv[])
 {
     using namespace hi;
 
-    // Set the version at the very beginning, because file system paths depend on it.
-    auto& m = metadata::application();
-    m.name = "hikogui-demo";
-    m.display_name = "HikoGUI Demo";
-    m.vendor = metadata::library().vendor;
-    m.version = metadata::library().version;
+    set_application_name("HikoGUI Demo");
+    set_application_vendor("HikoGUI");
+    set_application_version({1, 0, 0});
 
     // Start the logger system, so logging is done asynchronously.
     log::start_subsystem(global_state_type::log_level_info);

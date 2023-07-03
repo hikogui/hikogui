@@ -9,7 +9,6 @@
 #include "log.hpp"
 #include "utility/module.hpp"
 #include "file/path_location.hpp"
-#include "defer.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -83,7 +82,8 @@ namespace hi { inline namespace v1 {
 {
     auto r = std::vector<language_tag>{};
 
-    if (hilet languages = registry_read_current_user_multi_string("Control Panel\\International\\User Profile", "Languages")) {
+    if (hilet languages = registry_read<std::vector<std::string>>(
+            registry_key::current_user, "Control Panel\\International\\User Profile", "Languages")) {
         r.reserve(languages->size());
         for (hilet& language : *languages) {
             r.push_back(language_tag{language});
@@ -96,8 +96,10 @@ namespace hi { inline namespace v1 {
 [[nodiscard]] hi::theme_mode os_settings::gather_theme_mode()
 {
     try {
-        if (hilet result = registry_read_current_user_dword(
-                "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "AppsUseLightTheme")) {
+        if (hilet result = registry_read<uint32_t>(
+                registry_key::current_user,
+                "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                "AppsUseLightTheme")) {
             return *result ? theme_mode::light : theme_mode::dark;
         } else {
             return theme_mode::light;
@@ -345,7 +347,7 @@ namespace hi { inline namespace v1 {
     hilet user_gpu_preferences_key = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
 
     try {
-        if (hilet result = registry_read_current_user_string(user_gpu_preferences_key, executable_path)) {
+        if (hilet result = registry_read<std::string>(registry_key::current_user, user_gpu_preferences_key, executable_path)) {
             for (auto entry : std::views::split(std::string_view{*result}, ";"sv)) {
                 auto entry_sv = std::string_view{entry};
                 if (entry_sv.starts_with("GpuPreference=")) {

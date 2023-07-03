@@ -12,6 +12,7 @@
 #include "hikogui/loop.hpp"
 #include "hikogui/task.hpp"
 #include "hikogui/ranges.hpp"
+#include "hikogui/metadata.hpp"
 #include "triangle.hpp"
 #include <ranges>
 #include <cassert>
@@ -200,6 +201,10 @@ hi::task<> main_window(hi::gui_system& gui)
 // The main (platform independent) entry point of the application.
 int hi_main(int argc, char *argv[])
 {
+    hi::set_application_name("Triangle example");
+    hi::set_application_vendor("HikoGUI");
+    hi::set_application_version({1, 0, 0});
+
     // Start the RenderDoc server so that the application is easy to debug in RenderDoc.
     auto doc = hi::RenderDoc{};
 

@@ -37,7 +37,6 @@
 #include "utility/win32_headers.hpp"
 
 #include "loop.hpp"
-#include "defer.hpp"
 #include "counters.hpp"
 #include "trace.hpp"
 #include "utility/module.hpp"

@@ -15,7 +15,6 @@
 #include "../utility/module.hpp"
 #include "../os_settings.hpp"
 #include "../loop.hpp"
-#include "../defer.hpp"
 #include "../unicode/module.hpp"
 #include <new>
 

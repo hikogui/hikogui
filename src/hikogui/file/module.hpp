@@ -1,5 +1,21 @@
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+#pragma once
+
+#include "file.hpp"
+#include "file_view.hpp"
+#include "file_win32.hpp"
+#include "glob.hpp"
+#include "path_location.hpp"
+#include "resource_view.hpp"
+#include "URI.hpp"
+#include "URL.hpp"
+
 namespace hi {
 inline namespace v1 {
+
 /**
 \defgroup file File handling utilities.
 
@@ -74,8 +90,10 @@ Then the `glob()` function will search for files and directories matching this p
 For example to find all the files in the font directories:
 
 ```
-for (auto const &path : hi::glob(path_location::font_dirs, "**/*.ttf")) {
-    std::cout << path.string() << std::endl;
+for (auto const &path : hi::glob(path_location::font_dirs, "**&zwj;/&zwj;
+    *.ttf ")) {
+    std::cout
+    << path.string() << std::endl;
 }
 ```
 
@@ -103,4 +121,5 @@ HikoGUI currently implements dereferencing of the following types of URLs:
 Both file: and resource: URLs may be implicitly converted to a `std::filesystem::path`.
 
 */
+
 }}

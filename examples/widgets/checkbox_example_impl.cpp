@@ -8,6 +8,7 @@
 #include "hikogui/widgets/checkbox_widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
+#include "hikogui/metadata.hpp"
 
 using namespace hi;
 
@@ -33,6 +34,10 @@ task<void> checkbox_example(gui_system &gui)
 
 int hi_main(int argc, char* argv[])
 {
+    set_application_name("Checkbox example");
+    set_application_vendor("HikoGUI");
+    set_application_version({1, 0, 0});
+
     auto gui = gui_system::make_unique();
     checkbox_example(*gui);
     return loop::main().resume();
