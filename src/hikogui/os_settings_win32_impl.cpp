@@ -9,7 +9,6 @@
 #include "log.hpp"
 #include "utility/module.hpp"
 #include "file/path_location.hpp"
-#include "defer.hpp"
 
 namespace hi { inline namespace v1 {
 

@@ -160,7 +160,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/compare.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/concepts.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/debugger.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/debugger.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/defer.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/enum_metadata.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/endian.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/exception.hpp

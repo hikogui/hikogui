@@ -15,14 +15,24 @@ namespace hi::inline v1 {
 
 enum class registry_key { classes_root, current_config, current_user, local_machine, users };
 
-/** Read from the registry value.
+/** Delete a registry value.
  *
  * @param key The registry's key
  * @param path The path to the values.
  * @param name The name of the value.
+ * @return true if the value existed, false if not.
  * @throws hi::os_error Unable to delete the registry value.
  */
-[[nodiscard]] void registry_delete(registry_key key, std::string_view path, std::string_view name);
+bool registry_delete(registry_key key, std::string_view path, std::string_view name);
+
+/** Delete all registry values and the last part of the subkey.
+ *
+ * @param key The registry's key
+ * @param path The path to the values.
+ * @return true if the value existed, false if not.
+ * @throws hi::os_error Unable to delete the registry value.
+ */
+bool registry_delete(registry_key key, std::string_view path);
 
 /** Write a DWORD registry value.
  *
@@ -35,7 +45,6 @@ enum class registry_key { classes_root, current_config, current_user, local_mach
  */
 [[nodiscard]] void registry_write(registry_key key, std::string_view path, std::string_view name, uint32_t value);
 
-
 /** Write a string registry value.
  *
  * @note If the path or name do not exist it is automatically created.
@@ -46,6 +55,10 @@ enum class registry_key { classes_root, current_config, current_user, local_mach
  * @throws hi::os_error Unable to write the registry-value.
  */
 [[nodiscard]] void registry_write(registry_key key, std::string_view path, std::string_view name, std::string_view value);
+
+/** Check if a registry entry exists.
+ */
+[[nodiscard]] bool registry_exists(registry_key key, std::string_view path, std::string_view name);
 
 /** Read a DWORD registry value.
  *

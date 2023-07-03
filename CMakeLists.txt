@@ -186,6 +186,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
         target_compile_options(hikogui PUBLIC -utf-8)
     else()
         target_compile_options(hikogui PUBLIC -fexec-charset=UTF-8)
+        target_compile_options(hikogui PUBLIC -finput-charset=UTF-8)
     endif()
 
     # Clang will complain about __builtin_assume even on constexpr functions and operators,

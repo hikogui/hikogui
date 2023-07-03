@@ -30,9 +30,22 @@ inline std::atomic<char const *> terminate_message = nullptr;
 #define hi_set_terminate_message(...) \
     ::hi::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__, std::memory_order::relaxed)
 
-/** Get the OS error message from the last error received on this thread.
+/** Get the OS error code from the last error received on this thread.
  */
-[[nodiscard]] std::string get_last_error_message() noexcept;
+[[nodiscard]] uint32_t get_last_error_code() noexcept;
+
+/** Get the error message from an error code.
+ *
+ * @param error_code The error code returned by an os call.
+ * @return A formatted message.
+ */
+[[nodiscard]] std::string get_last_error_message(uint32_t error_code);
+
+/** Get the OS error message from the last error received on this thread.
+ *
+ * @return A formatted message.
+ */
+[[nodiscard]] std::string get_last_error_message();
 
 /** Exception thrown during parsing on an error.
  * This exception is often thrown due to an error in the syntax

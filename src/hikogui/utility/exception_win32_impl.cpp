@@ -4,26 +4,45 @@
 
 #include "exception.hpp"
 #include "win32_headers.hpp"
+#include "defer.hpp"
 
 namespace hi {
 inline namespace v1 {
 
-[[nodiscard]] std::string get_last_error_message() noexcept
+[[nodiscard]] std::string get_last_error_message(uint32_t error_code)
 {
-    DWORD const errorCode = GetLastError();
+    hilet error_code_ = narrow_cast<DWORD>(error_code);
 
-    auto message = std::wstring{32768, L'\0'};
-
-    FormatMessageW(
-        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+    // FormatMessageW() is unable to tell what the buffer size should be.
+    // But 64Kbyte is the largest buffer that one should pass.
+    LPWSTR buffer = nullptr;
+    hilet result = FormatMessageW(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL, // source
-        errorCode,
+        error_code_,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        message.data(),
-        narrow_cast<DWORD>(message.size()),
+        reinterpret_cast<LPWSTR>(&buffer),
+        0,
         NULL);
 
-    return win32_wstring_to_string(message);
+    if (result == 0) {
+        throw os_error(std::format("Could not format OS error message for error {}.", error_code));
+    }
+
+    hilet d = defer([&]{
+        LocalFree(buffer);
+    });
+
+    return win32_wstring_to_string(std::wstring_view{buffer, result});
+}
+
+[[nodiscard]] uint32_t get_last_error_code() noexcept
+{
+    return narrow_cast<uint32_t>(GetLastError());
+}
+
+[[nodiscard]] std::string get_last_error_message() {
+    return get_last_error_message(get_last_error_code());
 }
 
 }}

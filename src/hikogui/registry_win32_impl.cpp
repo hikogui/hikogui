@@ -46,14 +46,57 @@ namespace hi::inline v1 {
     }
 }
 
-[[nodiscard]] void registry_delete(registry_key key, std::string_view path, std::string_view name)
+bool registry_delete(registry_key key, std::string_view path, std::string_view name)
 {
     hilet wpath = hi::to_wstring(path);
     hilet wname = hi::to_wstring(name);
 
-    if (RegDeleteKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str()) != ERROR_SUCCESS) {
-        throw os_error(
-            std::format("Error deleting {}\\{}\\{} registry entry: {}", to_string(key), path, name, get_last_error_message()));
+    hilet status = RegDeleteKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str());
+    switch (status) {
+    case ERROR_SUCCESS:
+        return true;
+    case ERROR_FILE_NOT_FOUND:
+        return false;
+    default:
+        throw os_error(std::format(
+            "Error deleting {}\\{}\\{} registry entry: {}", to_string(key), path, name, get_last_error_message(status)));
+    }
+}
+
+bool registry_delete(registry_key key, std::string_view path)
+{
+    hilet wpath = hi::to_wstring(path);
+
+    hilet status = RegDeleteKeyW(to_hkey(key), wpath.c_str());
+    switch (status) {
+    case ERROR_SUCCESS:
+        return true;
+    case ERROR_FILE_NOT_FOUND:
+        return false;
+    default:
+        throw os_error(std::format(
+            "Error deleting {}\\{}\\ registry entry: {}", to_string(key), path, get_last_error_message(status)));
+    }
+}
+
+[[nodiscard]] bool registry_exists(registry_key key, std::string_view path, std::string_view name)
+{
+    hilet wpath = hi::to_wstring(path);
+    hilet wname = hi::to_wstring(name);
+
+    hilet status = RegGetValueW(to_hkey(key), wpath.c_str(), wname.c_str(), RRF_RT_ANY, NULL, NULL, NULL);
+    switch (status) {
+    case ERROR_SUCCESS:
+        return true;
+    case ERROR_FILE_NOT_FOUND:
+        return false;
+    default:
+        throw os_error(std::format(
+            "Error checking existence of {}\\{}\\{} registry entry: {}",
+            to_string(key),
+            path,
+            name,
+            get_last_error_message(status)));
     }
 }
 
@@ -63,9 +106,15 @@ namespace hi::inline v1 {
     hilet wname = hi::to_wstring(name);
     hilet dvalue = narrow_cast<DWORD>(value);
 
-    if (RegSetKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str(), RRF_RT_DWORD, &dvalue, sizeof(dvalue)) != ERROR_SUCCESS) {
+    if (hilet status = RegSetKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str(), RRF_RT_DWORD, &dvalue, sizeof(dvalue));
+        status != ERROR_SUCCESS) {
         throw os_error(std::format(
-            "Error deleting {}\\{}\\{} = {} registry entry: {}", to_string(key), path, name, value, get_last_error_message()));
+            "Error deleting {}\\{}\\{} = {} registry entry: {}",
+            to_string(key),
+            path,
+            name,
+            value,
+            get_last_error_message(status)));
     }
 }
 
@@ -76,10 +125,15 @@ namespace hi::inline v1 {
     hilet wvalue = hi::to_wstring(value);
     hilet wvalue_size = narrow_cast<DWORD>((wvalue.size() + 1) * sizeof(wchar_t));
 
-    if (RegSetKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str(), RRF_RT_REG_SZ, wvalue.c_str(), wvalue_size) !=
-        ERROR_SUCCESS) {
+    if (hilet status = RegSetKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str(), RRF_RT_REG_SZ, wvalue.c_str(), wvalue_size);
+        status != ERROR_SUCCESS) {
         throw os_error(std::format(
-            "Error writing {}\\{}\\{} = \"{}\" registry entry: {}", to_string(key), path, name, value, get_last_error_message()));
+            "Error writing {}\\{}\\{} = \"{}\" registry entry: {}",
+            to_string(key),
+            path,
+            name,
+            value,
+            get_last_error_message(status)));
     }
 }
 
@@ -90,7 +144,8 @@ namespace hi::inline v1 {
 
     DWORD result;
     DWORD result_length = sizeof(result);
-    hilet status = RegGetValueW(to_hkey(key), wpath.c_str(), wname.c_str(), RRF_RT_DWORD, NULL, &result, &result_length);
+    DWORD result_type = 0;
+    hilet status = RegGetValueW(to_hkey(key), wpath.c_str(), wname.c_str(), RRF_RT_ANY, &result_type, &result, &result_length);
 
     switch (status) {
     case ERROR_SUCCESS:
@@ -100,8 +155,12 @@ namespace hi::inline v1 {
         return std::nullopt;
 
     default:
-        throw os_error(
-            std::format("Error reading {}\\{}\\{} registry entry: {}", to_string(key), path, name, get_last_error_message()));
+        throw os_error(std::format(
+            "Error reading {}\\{}\\{} registry entry: {}", to_string(key), path, name, get_last_error_message(status)));
+    }
+
+    if (result_type != RRF_RT_DWORD) {
+        throw os_error(std::format("Incorrect type of {}\\{}\\{} registry entry.", to_string(key), path, name));
     }
 
     return static_cast<uint32_t>(result);
@@ -138,8 +197,8 @@ namespace hi::inline v1 {
             return std::nullopt;
 
         default:
-            throw os_error(
-                std::format("Error reading {}\\{}\\{} registry entry: {}", to_string(key), path, name, get_last_error_message()));
+            throw os_error(std::format(
+                "Error reading {}\\{}\\{} registry entry: {}", to_string(key), path, name, get_last_error_message(status)));
         }
     }
 
@@ -173,8 +232,8 @@ registry_read_multi_string(registry_key key, std::string_view path, std::string_
             return std::nullopt;
 
         default:
-            throw os_error(
-                std::format("Error reading {}\\{}\\{} registry entry: {}", to_string(key), path, name, get_last_error_message()));
+            throw os_error(std::format(
+                "Error reading {}\\{}\\{} registry entry: {}", to_string(key), path, name, get_last_error_message(status)));
         }
     }
 

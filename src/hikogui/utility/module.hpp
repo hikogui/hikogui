@@ -11,6 +11,7 @@
 #include "compare.hpp"
 #include "concepts.hpp"
 #include "debugger.hpp"
+#include "defer.hpp"
 #include "endian.hpp"
 #include "enum_metadata.hpp"
 #include "exception.hpp"

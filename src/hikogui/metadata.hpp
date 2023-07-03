@@ -58,6 +58,9 @@ inline void set_application_name(std::string_view name, std::string_view slug)
     if (name.empty()) {
         throw std::invalid_argument("application name must not be empty.");
     }
+    if (name.contains('/') or name.contains('\\')) {
+        throw std::invalid_argument("application name must not contain a slash or backslash.");
+    }
     if (slug.empty()) {
         throw std::invalid_argument("application slug must not be empty.");
     }
@@ -78,6 +81,9 @@ inline void set_application_vendor(std::string_view name)
 {
     if (name.empty()) {
         throw std::invalid_argument("vendor name must not be empty.");
+    }
+    if (name.contains('/') or name.contains('\\')) {
+        throw std::invalid_argument("vendor name must not contain a slash or backslash.");
     }
 
     _application_vendor = name;

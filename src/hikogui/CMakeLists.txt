@@ -46,7 +46,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32_impl.cpp>
     datum.hpp
     decimal.hpp
-    defer.hpp
     dialog.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32_impl.cpp>
     fixed.hpp
@@ -129,6 +128,8 @@ target_sources(hikogui PRIVATE
     trace.hpp
     tree.hpp
     undo_stack.hpp
+    user_settings.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/user_settings_win32_impl.cpp>
     vector_span.hpp
     void_span.hpp
     when_any.hpp
