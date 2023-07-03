@@ -241,10 +241,10 @@ struct graphic_path {
         return lhs += rhs;
     }
 
-    friend graphic_path operator*(geo::transformer auto const &lhs, graphic_path const &rhs) noexcept
+    friend graphic_path operator*(transformer2 auto const &lhs, graphic_path const &rhs) noexcept
     {
         auto rhs_ = rhs;
-        for (auto &&point : rhs_.points) {
+        for (auto &point : rhs_.points) {
             point = lhs * point;
         }
         return rhs_;

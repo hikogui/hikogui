@@ -159,11 +159,11 @@ private:
 
     box_constraints _label_constraints;
 
-    extent2i _button_size;
-    aarectanglei _button_rectangle;
+    extent2 _button_size;
+    aarectangle _button_rectangle;
     animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
-    int _pip_move_range;
+    float _pip_move_range;
 
     void draw_toggle_button(draw_context const& context) noexcept;
     void draw_toggle_pip(draw_context const& context) noexcept;

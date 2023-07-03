@@ -10,27 +10,9 @@
 #include <string>
 
 using namespace hi;
-using namespace hi::geo;
 
-TEST(geometry, identity_translate)
-{
-    static_assert(std::is_same_v<decltype(identity() * translate2(1.0, 2.0)), translate2>);
-    static_assert(std::is_same_v<decltype(identity() * translate3(1.0, 2.0, 3.0)), translate3>);
 
-    STATIC_ASSERT_TRUE(identity() * translate2(1.0, 2.0) == translate2(1.0, 2.0));
-    STATIC_ASSERT_TRUE(identity() * translate3(1.0, 2.0, 3.0) == translate3(1.0, 2.0, 3.0));
-}
-
-TEST(geometry, identity_scale)
-{
-    static_assert(std::is_same_v<decltype(identity() * scale2(1.0, 2.0)), scale2>);
-    static_assert(std::is_same_v<decltype(identity() * scale3(1.0, 2.0, 3.0)), scale3>);
-
-    STATIC_ASSERT_TRUE(identity() * scale2(1.0, 2.0) == scale2(1.0, 2.0));
-    STATIC_ASSERT_TRUE(identity() * scale3(1.0, 2.0, 3.0) == scale3(1.0, 2.0, 3.0));
-}
-
-TEST(geometry, translate_scale_point)
+TEST(gtransform, translate_scale_point)
 {
     static_assert(std::is_same_v<decltype(translate2(-3, -4) * (scale2(4.0, 6.0) * point2(1.0, 2.0))), point2>);
     static_assert(std::is_same_v<decltype(translate2(-3, -4) * (scale2(4.0, 6.0) * point3(1.0, 2.0, 3.0))), point3>);

@@ -10,7 +10,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/font/true_type_font_coverage_impl.cpp
     #${HIKOGUI_SOURCE_DIR}/font/true_type_font_GSUB_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/font/true_type_font_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/geometry/axis_aligned_rectangle_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.cpp

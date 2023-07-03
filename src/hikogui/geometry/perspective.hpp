@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "matrix.hpp"
+#include "matrix3.hpp"
 #include "../utility/module.hpp"
 
 namespace hi { inline namespace v1 {
-namespace geo {
 
 /** Perspective transform.
  * @ingroup geometry
@@ -49,7 +48,7 @@ public:
     {
     }
 
-    [[nodiscard]] constexpr operator matrix<3>() noexcept
+    [[nodiscard]] constexpr operator matrix3() noexcept
     {
         hilet a = _aspect_ratio;
         hilet t = _tan_half_fov_y;
@@ -72,9 +71,5 @@ private:
     float _znear;
     float _zfar;
 };
-
-} // namespace geo
-
-using perspective3 = geo::perspective;
 
 }} // namespace hi::v1

@@ -36,11 +36,11 @@ public:
         // We add the ability to resize the widget beyond the size of the label.
         auto r = hi::box_constraints{};
         r.minimum.width() = _label_constraints.minimum.width();
-        r.preferred.width() = _label_constraints.preferred.width() + theme().margin<int>();
-        r.maximum.width() = _label_constraints.maximum.width() + 100;
+        r.preferred.width() = _label_constraints.preferred.width() + theme().margin<float>();
+        r.maximum.width() = _label_constraints.maximum.width() + 100.0f;
         r.minimum.height() = _label_constraints.minimum.height();
-        r.preferred.height() = _label_constraints.preferred.height() + theme().margin<int>();
-        r.maximum.height() = _label_constraints.maximum.height() + 50;
+        r.preferred.height() = _label_constraints.preferred.height() + theme().margin<float>();
+        r.maximum.height() = _label_constraints.maximum.height() + 50.0f;
         r.margins = theme().margin();
         r.alignment = _label_constraints.alignment;
         return r;

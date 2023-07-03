@@ -58,7 +58,7 @@ public:
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2i position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     bool process_event(gui_event const& event) const noexcept override;
     [[nodiscard]] gui_window *window() const noexcept override;

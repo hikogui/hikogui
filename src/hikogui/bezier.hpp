@@ -33,57 +33,51 @@ constexpr std::array<T, 4> bezierToPolynomial(T P1, T C1, T C2, T P2) noexcept
     return {-P1 + C1 * 3 - C2 * 3 + P2, P1 * 3 - C1 * 6 + C2 * 3, P1 * -3 + C1 * 3, P1};
 }
 
-template<int D>
-constexpr geo::point<float, D> bezierPointAt(geo::point<float, D> P1, geo::point<float, D> P2, float t) noexcept
+constexpr point2 bezierPointAt(point2 P1, point2 P2, float t) noexcept
 {
     hilet[a, b] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(P2));
-    return geo::point<float, D>{a * t + b};
+    return point2{a * t + b};
 }
 
-template<int D>
-constexpr geo::point<float, D>
-bezierPointAt(geo::point<float, D> P1, geo::point<float, D> C, geo::point<float, D> P2, float t) noexcept
+constexpr point2
+bezierPointAt(point2 P1, point2 C, point2 P2, float t) noexcept
 {
     hilet[a, b, c] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C), static_cast<f32x4>(P2));
-    return geo::point<float, D>{a * t * t + b * t + c};
+    return point2{a * t * t + b * t + c};
 }
 
-template<int D>
-constexpr geo::point<float, D> bezierPointAt(
-    geo::point<float, D> P1,
-    geo::point<float, D> C1,
-    geo::point<float, D> C2,
-    geo::point<float, D> P2,
+constexpr point2 bezierPointAt(
+    point2 P1,
+    point2 C1,
+    point2 C2,
+    point2 P2,
     float t) noexcept
 {
     hilet[a, b, c, d] =
         bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C1), static_cast<f32x4>(C2), static_cast<f32x4>(P2));
-    return geo::point<float, D>{a * t * t * t + b * t * t + c * t + d};
+    return point2{a * t * t * t + b * t * t + c * t + d};
 }
 
-template<int D>
-constexpr geo::vector<float, D> bezierTangentAt(geo::point<float, D> P1, geo::point<float, D> P2, float t) noexcept
+constexpr vector2 bezierTangentAt(point2 P1, point2 P2, float t) noexcept
 {
     return P2 - P1;
 }
 
-template<int D>
-constexpr geo::vector<float, D>
-bezierTangentAt(geo::point<float, D> P1, geo::point<float, D> C, geo::point<float, D> P2, float t) noexcept
+constexpr vector2
+bezierTangentAt(point2 P1, point2 C, point2 P2, float t) noexcept
 {
     hilet P1_ = static_cast<f32x4>(P1);
     hilet C_ = static_cast<f32x4>(C);
     hilet P2_ = static_cast<f32x4>(P2);
 
-    return geo::vector<float, D>{2 * t * (P2_ - 2 * C_ + P1_) + 2 * (C_ - P1_)};
+    return vector2{2 * t * (P2_ - 2 * C_ + P1_) + 2 * (C_ - P1_)};
 }
 
-template<int D>
-constexpr geo::vector<float, D> bezierTangentAt(
-    geo::point<float, D> P1,
-    geo::point<float, D> C1,
-    geo::point<float, D> C2,
-    geo::point<float, D> P2,
+constexpr vector2 bezierTangentAt(
+    point2 P1,
+    point2 C1,
+    point2 C2,
+    point2 P2,
     float t) noexcept
 {
     hilet P1_ = static_cast<f32x4>(P1);
@@ -91,7 +85,7 @@ constexpr geo::vector<float, D> bezierTangentAt(
     hilet C2_ = static_cast<f32x4>(C2);
     hilet P2_ = static_cast<f32x4>(P2);
 
-    return geo::vector<float, D>{3 * t * t * (P2_ - 3 * C2_ + 3 * C1_ - P1_) + 6 * t * (C2_ - 2 * C1_ + P1_) + 3 * (C1_ - P1_)};
+    return vector2{3 * t * t * (P2_ - 3 * C2_ + 3 * C1_ - P1_) + 6 * t * (C2_ - 2 * C1_ + P1_) + 3 * (C1_ - P1_)};
 }
 
 constexpr results<float, 1> bezierFindT(float P1, float P2, float x) noexcept

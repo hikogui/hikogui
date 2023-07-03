@@ -71,7 +71,7 @@ text_field_widget::~text_field_widget()
     _scroll_constraints =_scroll_widget->update_constraints();
 
     hilet scroll_width = 100;
-    hilet box_size = extent2i{
+    hilet box_size = extent2{
         _scroll_constraints.margins.left() + scroll_width + _scroll_constraints.margins.right(),
         _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
@@ -100,16 +100,16 @@ text_field_widget::~text_field_widget()
 void text_field_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        hilet scroll_size = extent2i{
+        hilet scroll_size = extent2{
             context.width(),
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
-        hilet scroll_rectangle = aarectanglei{point2i{0, context.height() - scroll_size.height()}, scroll_size};
+        hilet scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
         _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme().baseline_adjustment()};
 
         if (*_error_label_widget->mode > widget_mode::invisible) {
             hilet error_label_rectangle =
-                aarectanglei{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
+                aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
             _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme().baseline_adjustment()};
         }
     }
@@ -153,7 +153,7 @@ bool text_field_widget::handle_event(gui_event const& event) noexcept
     return super::handle_event(event);
 }
 
-hitbox text_field_widget::hitbox_test(point2i position) const noexcept
+hitbox text_field_widget::hitbox_test(point2 position) const noexcept
 {
     if (*mode >= widget_mode::partial) {
         auto r = hitbox{};
@@ -220,7 +220,7 @@ void text_field_widget::commit(bool force) noexcept
 
 void text_field_widget::draw_background_box(draw_context const& context) const noexcept
 {
-    hilet outline = narrow_cast<aarectangle>(_scroll_shape.rectangle);
+    hilet outline = _scroll_shape.rectangle;
 
     hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
     context.draw_box(layout(), outline, background_color(), corner_radii);

@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "point.hpp"
+#include "point3.hpp"
+#include "vector3.hpp"
 
 namespace hi {
 inline namespace v1 {
@@ -37,7 +38,7 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr friend float hypot(line_segment const &rhs) noexcept
+    [[nodiscard]] friend float hypot(line_segment const &rhs) noexcept
     {
         return hypot(rhs._v);
     }

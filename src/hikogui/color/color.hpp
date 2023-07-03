@@ -220,11 +220,6 @@ public:
         return r;
     }
 
-    [[nodiscard]] constexpr friend color operator*(identity3 const& lhs, color const& rhs) noexcept
-    {
-        return rhs;
-    }
-
 private:
     f16x4 _v;
 };

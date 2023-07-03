@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "vector.hpp"
-#include "point.hpp"
-#include "extent.hpp"
-#include "axis_aligned_rectangle.hpp"
+#include "vector3.hpp"
+#include "point3.hpp"
+#include "extent3.hpp"
+#include "aarectangle.hpp"
 #include "rectangle.hpp"
 #include <tuple>
 

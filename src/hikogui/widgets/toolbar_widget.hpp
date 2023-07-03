@@ -74,12 +74,12 @@ public:
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
-    hitbox hitbox_test(point2i position) const noexcept override;
+    hitbox hitbox_test(point2 position) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
     mutable row_layout<std::unique_ptr<widget>> _children;
-    mutable int _child_height_adjustment = 0;
+    mutable float _child_height_adjustment = 0.0f;
     size_t _spacer_index = 0;
 
     void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept;

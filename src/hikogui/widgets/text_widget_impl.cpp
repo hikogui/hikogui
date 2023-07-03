@@ -25,7 +25,7 @@ text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate
 
             // Constrain and layout according to the old layout.
             hilet new_constraints = update_constraints();
-            new_layout.shape.rectangle = aarectanglei{
+            new_layout.shape.rectangle = aarectangle{
                 new_layout.shape.x(),
                 new_layout.shape.y(),
                 std::max(new_layout.shape.width(), new_constraints.minimum.width()),
@@ -86,11 +86,10 @@ text_widget::~text_widget()
     // Create a new text_shaper with the new text.
     auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
-    _shaped_text = text_shaper{
-        font_book::global(), _text_cache, actual_text_style, theme().scale, alignment_, os_settings::left_to_right()};
+    _shaped_text =
+        text_shaper{font_book::global(), _text_cache, actual_text_style, theme().scale, alignment_, os_settings::left_to_right()};
 
-    hilet shaped_text_rectangle =
-        narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity())));
+    hilet shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
     hilet shaped_text_size = shaped_text_rectangle.size();
 
     if (*mode == widget_mode::partial) {
@@ -100,14 +99,14 @@ text_widget::~text_widget()
 
     } else {
         // Allow the text to be 550.0f pixels wide.
-        hilet preferred_shaped_text_rectangle = narrow_cast<aarectanglei>(ceil(_shaped_text.bounding_rectangle(550.0f)));
+        hilet preferred_shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(550.0f));
         hilet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
 
         hilet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
         return _constraints_cache = {
-                   extent2i{preferred_shaped_text_size.width(), height},
-                   extent2i{preferred_shaped_text_size.width(), height},
-                   extent2i{shaped_text_size.width(), height},
+                   extent2{preferred_shaped_text_size.width(), height},
+                   extent2{preferred_shaped_text_size.width(), height},
+                   extent2{shaped_text_size.width(), height},
                    _shaped_text.resolved_alignment(),
                    theme().margin()};
     }
@@ -118,8 +117,7 @@ void text_widget::set_layout(widget_layout const& context) noexcept
     if (compare_store(_layout, context)) {
         hi_assert(context.shape.baseline);
 
-        _shaped_text.layout(
-            narrow_cast<aarectangle>(context.rectangle()), narrow_cast<float>(*context.shape.baseline), context.sub_pixel_size);
+        _shaped_text.layout(context.rectangle(), *context.shape.baseline, context.sub_pixel_size);
     }
 }
 
@@ -129,7 +127,7 @@ void text_widget::scroll_to_show_selection() noexcept
         hilet cursor = _selection.cursor();
         hilet char_it = _shaped_text.begin() + cursor.index();
         if (char_it < _shaped_text.end()) {
-            scroll_to_show(narrow_cast<aarectanglei>(char_it->rectangle));
+            scroll_to_show(char_it->rectangle);
         }
     }
 }
@@ -794,7 +792,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
 
     case mouse_down:
         if (*mode >= select) {
-            hilet cursor = _shaped_text.get_nearest_cursor(narrow_cast<point2>(event.mouse().position));
+            hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
             switch (event.mouse().click_count) {
             case 1:
                 reset_state("BDX");
@@ -828,7 +826,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
 
     case mouse_drag:
         if (*mode >= select) {
-            hilet cursor = _shaped_text.get_nearest_cursor(narrow_cast<point2>(event.mouse().position));
+            hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
             switch (event.mouse().click_count) {
             case 1:
                 reset_state("BDX");
@@ -866,7 +864,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     return super::handle_event(event);
 }
 
-hitbox text_widget::hitbox_test(point2i position) const noexcept
+hitbox text_widget::hitbox_test(point2 position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 

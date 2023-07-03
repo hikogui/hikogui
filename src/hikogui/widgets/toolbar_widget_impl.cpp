@@ -45,7 +45,7 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
     // Clip directly around the toolbar, so that tab buttons looks proper.
     if (compare_store(_layout, context)) {
         auto shape = context.shape;
-        shape.rectangle = aarectanglei{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
+        shape.rectangle = aarectangle{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
         _children.set_layout(shape, theme().baseline_adjustment());
     }
 
@@ -53,7 +53,7 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
 
     for (hilet& child : _children) {
         hilet child_clipping_rectangle =
-            aarectanglei{child.shape.x() - overhang, 0, child.shape.width() + overhang * 2, context.height() + overhang * 2};
+            aarectangle{child.shape.x() - overhang, 0, child.shape.width() + overhang * 2, context.height() + overhang * 2};
 
         child.value->set_layout(context.transform(child.shape, 1.0f, child_clipping_rectangle));
     }
@@ -62,7 +62,7 @@ void toolbar_widget::set_layout(widget_layout const& context) noexcept
 bool toolbar_widget::tab_button_has_focus() const noexcept
 {
     for (hilet& cell : _children) {
-        if (auto const * const c = dynamic_cast<toolbar_tab_button_widget *>(cell.value.get())) {
+        if (auto const *const c = dynamic_cast<toolbar_tab_button_widget *>(cell.value.get())) {
             if (*c->focus and c->state() == hi::button_state::on) {
                 return true;
             }
@@ -76,17 +76,13 @@ void toolbar_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible) {
         if (overlaps(context, layout())) {
-            context.draw_box(
-                layout(),
-                layout().rectangle(),
-                theme().color(semantic_color::fill, semantic_layer + 1));
+            context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, semantic_layer + 1));
 
             if (tab_button_has_focus()) {
                 // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
                 // line depending if that specific button is in focus or not.
-                hilet focus_rectangle = aarectanglei{0, 0, layout().rectangle().width(), theme().border_width()};
-                context.draw_box(
-                    layout(), translate3{0.0f, 0.0f, 1.5f} * narrow_cast<aarectangle>(focus_rectangle), focus_color());
+                hilet focus_rectangle = aarectangle{0.0f, 0.0f, layout().rectangle().width(), theme().border_width()};
+                context.draw_box(layout(), translate3{0.0f, 0.0f, 1.5f} * focus_rectangle, focus_color());
             }
         }
 
@@ -97,7 +93,7 @@ void toolbar_widget::draw(draw_context const& context) noexcept
     }
 }
 
-hitbox toolbar_widget::hitbox_test(point2i position) const noexcept
+hitbox toolbar_widget::hitbox_test(point2 position) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 

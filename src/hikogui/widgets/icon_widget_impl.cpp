@@ -58,11 +58,11 @@ icon_widget::icon_widget(widget *parent) noexcept : super(parent)
 
     hilet resolved_alignment = resolve(*alignment, os_settings::left_to_right());
     hilet icon_constraints = box_constraints{
-        extent2i{0, 0},
-        narrow_cast<extent2i>(_icon_size),
-        narrow_cast<extent2i>(_icon_size),
+        extent2{0, 0},
+        narrow_cast<extent2>(_icon_size),
+        narrow_cast<extent2>(_icon_size),
         resolved_alignment,
-        theme().margin<int>()};
+        theme().margin<float>()};
     return icon_constraints.constrain(*minimum, *maximum);
 }
 
@@ -76,7 +76,7 @@ void icon_widget::set_layout(widget_layout const& context) noexcept
             hilet height = std::clamp(context.shape.height(), minimum->height(), maximum->height());
 
             hilet icon_scale = scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
-            hilet new_icon_size = narrow_cast<extent2i>(icon_scale * _icon_size);
+            hilet new_icon_size = narrow_cast<extent2>(icon_scale * _icon_size);
             hilet resolved_alignment = resolve(*alignment, os_settings::left_to_right());
             _icon_rectangle = align(context.rectangle(), new_icon_size, resolved_alignment);
         }

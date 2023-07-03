@@ -272,7 +272,7 @@ widget_id widget::find_next_widget(
     return parent->find_last_widget(group) == id;
 }
 
-void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
+void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 {
     hi_axiom(loop::main().on_thread());
 
@@ -300,13 +300,13 @@ void widget::scroll_to_show(hi::aarectanglei rectangle) noexcept
     return chain;
 }
 
-[[nodiscard]] aarectanglei widget::make_overlay_rectangle(aarectanglei requested_rectangle) const noexcept
+[[nodiscard]] aarectangle widget::make_overlay_rectangle(aarectangle requested_rectangle) const noexcept
 {
     hi_axiom(loop::main().on_thread());
 
     // Move the request_rectangle to window coordinates.
-    hilet requested_window_rectangle = translate2i{layout().clipping_rectangle_on_window()} * requested_rectangle;
-    hilet window_bounds = aarectanglei{layout().window_size} - theme().margin<int>();
+    hilet requested_window_rectangle = translate2{layout().clipping_rectangle_on_window()} * requested_rectangle;
+    hilet window_bounds = aarectangle{layout().window_size} - theme().margin<float>();
     hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return layout().from_window * response_window_rectangle;
 }

@@ -81,7 +81,7 @@ private:
     std::atomic<bool> _icon_has_modified = true;
 
     extent2 _icon_size;
-    aarectanglei _icon_rectangle;
+    aarectangle _icon_rectangle;
 
     icon_widget(widget *parent) noexcept;
 };
