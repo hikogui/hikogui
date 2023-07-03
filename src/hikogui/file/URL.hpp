@@ -27,7 +27,6 @@ hi_warning_push();
 // False positive reported: https://developercommunity.visualstudio.com/t/C26434-false-positive-with-conversion-op/10262199
 hi_warning_ignore_msvc(26434);
 
-
 namespace hi { inline namespace v1 {
 
 /** Universal Resource Locator.
@@ -63,6 +62,30 @@ public:
     /** Convert a URI to an URL.
      */
     constexpr explicit URL(URI&& other) noexcept : URI(std::move(other)){};
+
+    /** Construct a URI from a string.
+     *
+     * @note This constructor will normalize the URI
+     * @param str A URI encoded as a string.
+     * @throws uri_error When the URI can not be normalized due to a parse error.
+     */
+    constexpr explicit URL(std::string_view str) : URI(str) {}
+
+    /** Construct a URI from a string.
+     *
+     * @note This constructor will normalize the URI
+     * @param str A URI encoded as a string.
+     * @throws uri_error When the URI can not be normalized due to a parse error.
+     */
+    constexpr explicit URL(std::string const& str) : URL(std::string_view{str}) {}
+
+    /** Construct a URI from a string.
+     *
+     * @note This constructor will normalize the URI
+     * @param str A URI encoded as a string.
+     * @throws uri_error When the URI can not be normalized due to a parse error.
+     */
+    constexpr explicit URL(const char *str) : URL(std::string_view{str}) {}
 
     /** Convert a filesystem-path to a file-scheme URL.
      *

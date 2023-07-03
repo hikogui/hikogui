@@ -17,6 +17,7 @@
 #include "hikogui/file/URL.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
+#include "hikogui/metadata.hpp"
 #include <numbers>
 
 enum class drawing_type {
@@ -335,6 +336,10 @@ private:
 
 int hi_main(int argc, char *argv[])
 {
+    hi::set_application_name("Custom widget drawing example");
+    hi::set_application_vendor("HikoGUI");
+    hi::set_application_version({1, 0, 0});
+
     hi::observer<drawing_type> drawing = drawing_type::box;
     hi::observer<shape_type> shape = shape_type::square;
     hi::observer<bool> rotating = false;

@@ -6,74 +6,91 @@
 
 #include "file/URL.hpp"
 #include "semantic_version.hpp"
+#include "strings.hpp"
 #include <string>
+#include <stdexcept>
 
 namespace hi::inline v1 {
 
-/** Metadata for a library or application.
- */
-class metadata {
-public:
-    /** The name of the application or library.
-     * The name should be in slug-format, i.e. based
-     * on the following case-sensitive regular expression: [a-z-][a-z0-9-]*
-     */
-    std::string name;
+inline std::optional<std::string> _application_name = std::nullopt;
+inline std::optional<std::string> _application_slug = std::nullopt;
+inline std::optional<std::string> _application_vendor = std::nullopt;
+inline std::optional<semantic_version> _application_version = std::nullopt;
 
-    /** Display name of the application or library.
-     * A free text string, may contain spaces and capital letters and letters
-     * from other languages. It is however used for file and directory names.
-     */
-    std::string display_name;
+[[nodiscard]] inline std::string const& get_application_name()
+{
+    if (_application_name) {
+        return *_application_name;
+    } else {
+        throw std::logic_error("set_application_name() should be called at application startup.");
+    }
+}
 
-    /** Name of the vendor of the application or library.
-     * Free text name of the vendor, may contain spaces and capital letters
-     * and letters from different languages. However the vendor field will
-     * be used to construct file and directory paths.
-     */
-    std::string vendor;
+[[nodiscard]] inline std::string const& get_application_slug()
+{
+    if (_application_slug) {
+        return *_application_slug;
+    } else {
+        throw std::logic_error("set_application_name() should be called at application startup.");
+    }
+}
 
-    /** The version number of the application or library.
-     */
-    semantic_version version;
+[[nodiscard]] inline std::string const& get_application_vendor()
+{
+    if (_application_vendor) {
+        return *_application_vendor;
+    } else {
+        throw std::logic_error("set_application_vendor() should be called at application startup.");
+    }
+}
 
-    /** The copyright license used for distribution.
-     * This is a spdx-license-identifier of the license, not the
-     * full license text.
-     */
-    std::string license;
+[[nodiscard]] inline semantic_version const& get_application_version()
+{
+    if (_application_version) {
+        return *_application_version;
+    } else {
+        throw std::logic_error("set_application_version() should be called at application startup.");
+    }
+}
 
-    /** The homepage of the application or library.
-     */
-    URL homepage;
+inline void set_application_name(std::string_view name, std::string_view slug)
+{
+    if (name.empty()) {
+        throw std::invalid_argument("application name must not be empty.");
+    }
+    if (slug.empty()) {
+        throw std::invalid_argument("application slug must not be empty.");
+    }
+    if (not is_slug(slug)) {
+        throw std::invalid_argument("application slug must contain only 'a'-'z' '0'-'9' and '-' characters.");
+    }
 
-    /** Description of the application or library.
-     * This is a free-text description of the application of library.
-     * should not be longer than a single paragraph.
-     */
-    std::string description;
+    _application_name = name;
+    _application_slug = slug;
+}
 
-    /** The global application metadata.
-     *
-     * This function returns a reference to
-     * the global application metadata. The first time this function is called
-     * the application name and display_name are set based on the name of the
-     * executable.
-     *
-     * The application metadata is also used when opening the Vulkan API which
-     * request the name of the application and version number.
-     */
-    [[nodiscard]] static metadata &application() noexcept;
+inline void set_application_name(std::string_view name)
+{
+    return set_application_name(name, make_slug(name));
+}
 
-    /** The global hikogui-library metadata.
-     *
-     * This returns a reference to the metadata of the current hikogui library.
-     * It may be useful for an application to read the version number.
-     */
-    [[nodiscard]] static metadata const &library() noexcept;
-};
+inline void set_application_vendor(std::string_view name)
+{
+    if (name.empty()) {
+        throw std::invalid_argument("vendor name must not be empty.");
+    }
 
-extern metadata application;
-extern metadata libary;
+    _application_vendor = name;
+}
+
+inline void set_application_version(semantic_version version) noexcept
+{
+    _application_version = version;
+}
+
+inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
+{
+    return set_application_version(semantic_version{major, minor, patch});
+}
 
 } // namespace hi::inline v1

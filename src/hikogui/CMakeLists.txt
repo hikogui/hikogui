@@ -5,7 +5,6 @@
 
 add_subdirectory(audio)
 add_subdirectory(codec)
-add_subdirectory(file)
 add_subdirectory(formula)
 add_subdirectory(layout)
 add_subdirectory(GFX)
@@ -15,7 +14,7 @@ add_subdirectory(skeleton)
 add_subdirectory(text)
 add_subdirectory(widgets)
 
-configure_file(metadata_impl.cpp.in metadata_impl.cpp @ONLY)
+configure_file(metadata_library.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/metadata_library.hpp @ONLY)
 
 target_sources(hikogui PRIVATE
     algorithm.hpp
@@ -76,8 +75,7 @@ target_sources(hikogui PRIVATE
 	loop.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32_impl.cpp>
     group_ptr.hpp
-    meta.hpp
-    ${CMAKE_CURRENT_BINARY_DIR}/metadata_impl.cpp
+    metadata_library.hpp
     metadata.hpp
     notifier.hpp
     observable.hpp

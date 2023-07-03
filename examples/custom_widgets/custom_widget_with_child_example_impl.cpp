@@ -8,6 +8,7 @@
 #include "hikogui/widgets/label_widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
+#include "hikogui/metadata.hpp"
 
 // Every widget must inherit from hi::widget.
 class widget_with_child : public hi::widget {
@@ -120,6 +121,10 @@ private:
 
 int hi_main(int argc, char *argv[])
 {
+    hi::set_application_name("Custom widget with child example");
+    hi::set_application_vendor("HikoGUI");
+    hi::set_application_version({1, 0, 0});
+
     auto gui = hi::gui_system::make_unique();
     auto window = gui->make_window(hi::tr("Widget with child"));
     window->content().make_widget<widget_with_child>("A1", hi::tr("Widget with child"));

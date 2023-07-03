@@ -7,6 +7,7 @@
 #include "hikogui/widgets/widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
+#include "hikogui/metadata.hpp"
 
 // Every widget must inherit from hi::widget.
 class minimum_widget : public hi::widget {
@@ -73,6 +74,10 @@ private:
 
 int hi_main(int argc, char *argv[])
 {
+    hi::set_application_name("Minimum custom widget example");
+    hi::set_application_vendor("HikoGUI");
+    hi::set_application_version({1, 0, 0});
+
     auto gui = hi::gui_system::make_unique();
     auto window = gui->make_window(hi::tr("Minimum Custom Widget"));
     window->content().make_widget<minimum_widget>("A1");

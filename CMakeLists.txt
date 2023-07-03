@@ -172,8 +172,8 @@ target_include_directories(hikogui PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
     "$<INSTALL_INTERFACE:include>"
 )
-target_include_directories(hikogui PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(hikogui PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
+#target_include_directories(hikogui PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+#target_include_directories(hikogui PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 #
 # We will support the following CPUs:

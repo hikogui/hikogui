@@ -26,6 +26,15 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/concurrency/subsystem.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/thread.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/file.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/file_view.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_win32.hpp>
+    ${HIKOGUI_SOURCE_DIR}/file/glob.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/path_location.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/resource_view.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/URI.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/URL.hpp
     ${HIKOGUI_SOURCE_DIR}/font/elusive_icon.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_book.hpp

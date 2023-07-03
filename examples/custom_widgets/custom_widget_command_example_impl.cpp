@@ -8,6 +8,7 @@
 #include "hikogui/crt.hpp"
 #include "hikogui/log.hpp"
 #include "hikogui/loop.hpp"
+#include "hikogui/metadata.hpp"
 
 // Every widget must inherit from hi::widget.
 class command_widget : public hi::widget {
@@ -134,6 +135,10 @@ private:
 
 int hi_main(int argc, char *argv[])
 {
+    hi::set_application_name("Custom widget command example");
+    hi::set_application_vendor("HikoGUI");
+    hi::set_application_version({1, 0, 0});
+
     auto gui = hi::gui_system::make_unique();
     auto window = gui->make_window(hi::tr("Custom Widget Command"));
     window->content().make_widget<command_widget>("A1");

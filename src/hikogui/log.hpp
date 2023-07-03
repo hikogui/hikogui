@@ -8,7 +8,6 @@
 #include "time_stamp_utc.hpp"
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
-#include "meta.hpp"
 #include "delayed_format.hpp"
 #include "format_check.hpp"
 #include "utility/module.hpp"

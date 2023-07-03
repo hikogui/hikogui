@@ -248,7 +248,7 @@ template<size_t N>
  * A slug contains only lower case letters, digits and dashes.
  * Duplicated dashes are eliminated.
  */
-[[nodiscard]] inline std::string make_slug(std::string_view str) noexcept
+[[nodiscard]] constexpr std::string make_slug(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -264,6 +264,16 @@ template<size_t N>
     }
 
     return r;
+}
+
+[[nodiscard]] constexpr bool is_slug(std::string_view str) noexcept
+{
+    for (hilet c : str) {
+        if (not (is_alpha_num(c) or c == '-')) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /** Create a title from a string.
