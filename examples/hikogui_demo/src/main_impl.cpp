@@ -212,6 +212,13 @@ hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::aud
     }
 }
 
+auto hi_metadata = hi::metadata{
+    .name: "hikogui-demo",
+    .display_name: "HikoGUI Demo",
+    .vendor: "HikoGUI",
+    .version: {1, 0, 0}
+};
+
 int hi_main(int argc, char *argv[])
 {
     using namespace hi;

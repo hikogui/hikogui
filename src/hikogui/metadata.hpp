@@ -73,4 +73,7 @@ public:
     [[nodiscard]] static metadata const &library() noexcept;
 };
 
+extern metadata application;
+extern metadata libary;
+
 } // namespace hi::inline v1
