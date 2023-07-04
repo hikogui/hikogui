@@ -6,9 +6,9 @@
 
 #include "../utility/module.hpp"
 #include "../i18n/module.hpp"
+#include "../container/module.hpp"
+#include "../telemetry/log.hpp"
 #include "../strings.hpp"
-#include "../stable_set.hpp"
-#include "../log.hpp"
 #include "unicode_normalization.hpp"
 #include "ucd_general_categories.hpp"
 #include "phrasing.hpp"

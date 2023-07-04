@@ -10,7 +10,7 @@
 #include "../utility/module.hpp"
 #include "../image/module.hpp"
 #include "../geometry/module.hpp"
-#include "../vector_span.hpp"
+#include "../container/module.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

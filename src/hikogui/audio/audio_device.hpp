@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "../bigint.hpp"
 #include "audio_device_delegate.hpp"
 #include "audio_stream_config.hpp"
 #include "audio_channel.hpp"
 #include "audio_direction.hpp"
 #include "audio_device_state.hpp"
 #include "speaker_mapping.hpp"
+#include "../numeric/module.hpp"
 #include "../label.hpp"
 #include "../utility/module.hpp"
 #include "../loop.hpp"

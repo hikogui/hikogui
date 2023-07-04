@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "concurrency/module.hpp"
+#include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
 #include <mutex>
 #include <memory>
 #include <atomic>

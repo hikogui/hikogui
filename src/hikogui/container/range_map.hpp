@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "utility/module.hpp"
+#include "../utility/module.hpp"
 #include <vector>
 #include <memory>
 #include <algorithm>
@@ -21,7 +21,7 @@ class range_map {
         Key last;
         std::shared_ptr<values> values;
 
-        item &operation += (Value const &value) noexcept
+        item &operator += (Value const &value) noexcept
         {
             if (values->count(value) == 0) {
                 // When a value is added we need to create a new set.

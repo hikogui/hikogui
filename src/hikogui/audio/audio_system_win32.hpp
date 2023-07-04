@@ -5,7 +5,7 @@
 #pragma once
 
 #include "audio_system.hpp"
-#include "../wfree_fifo.hpp"
+#include "../container/module.hpp"
 #include <memory>
 
 struct IMMDeviceEnumerator;

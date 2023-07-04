@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../byte_string.hpp"
+#include "../container/module.hpp"
 #include "../utility/module.hpp"
 #include <mutex>
 #include <cstdint>

@@ -9,8 +9,8 @@
 #include "pipeline_SDF_specialization_constants.hpp"
 #include "../font/module.hpp"
 #include "../utility/module.hpp"
-#include "../log.hpp"
-#include "../vector_span.hpp"
+#include "../telemetry/module.hpp"
+#include "../container/module.hpp"
 #include "../geometry/module.hpp"
 #include "../color/module.hpp"
 #include <vma/vk_mem_alloc.h>

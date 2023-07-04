@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "SIMD/module.hpp"
+#include "../utility/module.hpp"
+#include "../SIMD/module.hpp"
 #include <type_traits>
 #include <limits>
 #include <concepts>

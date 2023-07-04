@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "concurrency/module.hpp"
-#include "int_carry.hpp"
+#include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
+#include "../numeric/int_carry.hpp"
 #include <atomic>
 #include <array>
 #include <cstdint>

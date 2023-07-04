@@ -19,7 +19,7 @@
 #include "mouse_buttons.hpp"
 #include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
-#include "../chrono.hpp"
+#include "../time/module.hpp"
 #include <chrono>
 #include <memory>
 

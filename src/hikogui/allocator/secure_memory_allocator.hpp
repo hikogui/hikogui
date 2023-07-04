@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "security.hpp"
+#include "../security/module.hpp"
 #include <type_traits>
 #include <cstddef>
 

@@ -4,10 +4,10 @@
 
 #pragma once
 
+#include "../utility/module.hpp"
 #include <type_traits>
 #include <memory>
 #include <initializer_list>
-#include "utility/module.hpp"
 
 namespace hi::inline v1 {
 

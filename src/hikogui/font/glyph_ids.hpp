@@ -6,10 +6,10 @@
 
 #include "glyph_id.hpp"
 #include "glyph_atlas_info.hpp"
-#include "../graphic_path.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
-#include "../lean_vector.hpp"
+#include "../container/module.hpp"
+#include "../graphic_path/module.hpp"
 #include <bit>
 #include <memory>
 #include <cstddef>

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "int_overflow.hpp"
-#include "utility/module.hpp"
+#include "../utility/module.hpp"
 #include <system_error>
 #include <type_traits>
 #include <limits>

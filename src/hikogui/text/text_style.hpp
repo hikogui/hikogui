@@ -11,8 +11,8 @@
 #include "../unicode/module.hpp"
 #include "../utility/module.hpp"
 #include "../font/module.hpp"
-#include "../log.hpp"
-#include "../stable_set.hpp"
+#include "../telemetry/module.hpp"
+#include "../container/module.hpp"
 #include <ostream>
 #include <vector>
 #include <algorithm>

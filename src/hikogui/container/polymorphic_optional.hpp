@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "counters.hpp"
+#include "../utility/module.hpp"
 #include <array>
 #include <memory>
 #include <type_traits>
@@ -340,7 +339,7 @@ private:
         using namespace std::chrono_literals;
 
         // If we get here, that would suck, but nothing to do about it.
-        ++global_counter<"polymorphic_optional:contended">;
+        //++global_counter<"polymorphic_optional:contended">;
         std::this_thread::sleep_for(16ms);
     }
 };

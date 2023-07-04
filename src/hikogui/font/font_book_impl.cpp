@@ -4,10 +4,9 @@
 
 #include "font_book.hpp"
 #include "true_type_font.hpp"
-#include "../file/glob.hpp"
-#include "../trace.hpp"
+#include "../file/module.hpp"
+#include "../telemetry/module.hpp"
 #include "../ranges.hpp"
-#include "../log.hpp"
 #include <ranges>
 #include <vector>
 

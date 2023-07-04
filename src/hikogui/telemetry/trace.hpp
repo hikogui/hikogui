@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "time_stamp_count.hpp"
+#include "../utility/module.hpp"
+#include "../time/module.hpp"
 #include "counters.hpp"
-#include "datum.hpp"
+#include "../datum.hpp"
 #include <array>
 #include <tuple>
 

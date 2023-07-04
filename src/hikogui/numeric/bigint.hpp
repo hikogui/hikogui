@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "strings.hpp"
-#include "utility/module.hpp"
 #include "int_carry.hpp"
-#include "codec/base_n.hpp"
+#include "../strings.hpp"
+#include "../utility/module.hpp"
+#include "../codec/base_n.hpp"
 #include <format>
 #include <type_traits>
 #include <ostream>

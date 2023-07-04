@@ -5,8 +5,8 @@
 #pragma once
 
 #include "utility/module.hpp"
-#include "decimal.hpp"
-#include "byte_string.hpp"
+#include "numeric/module.hpp"
+#include "container/byte_string.hpp"
 #include "codec/base_n.hpp"
 #include "jsonpath.hpp"
 #include <cstdint>

@@ -17,9 +17,9 @@
 #include "otype_sfnt.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
+#include "../telemetry/module.hpp"
 #include "../placement.hpp"
 #include "../strings.hpp"
-#include "../log.hpp"
 #include <cstddef>
 #include <span>
 

@@ -7,10 +7,10 @@
 #include "pipeline_image_vertex.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include "../geometry/module.hpp"
-#include "../codec/png.hpp"
+#include "../codec/module.hpp"
 
 namespace hi::inline v1 {
 

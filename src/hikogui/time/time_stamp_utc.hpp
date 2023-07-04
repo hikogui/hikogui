@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "concurrency/module.hpp"
 #include "chrono.hpp"
+#include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
 #include <array>
 #include <atomic>
 #include <thread>

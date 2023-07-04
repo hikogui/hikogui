@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../byte_string.hpp"
+#include "../container/module.hpp"
 #include "../utility/module.hpp"
 #include "../datum.hpp"
 #include <cstddef>

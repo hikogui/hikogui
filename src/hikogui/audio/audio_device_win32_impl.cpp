@@ -11,9 +11,9 @@
 #include "speaker_mapping.hpp"
 #include "speaker_mapping_win32.hpp"
 #include "win32_wave_device.hpp"
-#include "../log.hpp"
-#include "../strings.hpp"
+#include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
+#include "../strings.hpp"
 #include <bit>
 
 namespace hi::inline v1 {

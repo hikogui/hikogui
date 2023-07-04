@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "function_fifo.hpp"
+#include "container/module.hpp"
 #include "function_timer.hpp"
 #include "utility/module.hpp"
 #include "net/network_event.hpp"

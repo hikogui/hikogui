@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../vector_span.hpp"
+#include "../container/module.hpp"
 #include "../geometry/module.hpp"
 #include "../image/module.hpp"
 #include <vulkan/vulkan.hpp>

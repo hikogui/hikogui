@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "chrono.hpp"
 #include "algorithm.hpp"
 #include "utility/module.hpp"
+#include "time/module.hpp"
 #include <cmath>
 
 namespace hi::inline v1 {

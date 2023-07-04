@@ -2,11 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "utility/module.hpp"
+#include "../utility/module.hpp"
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Securely clear memory.
  *
@@ -23,7 +23,7 @@ void secure_clear(void *ptr, size_t size) noexcept;
  *
  * @param object The object to securely clear to zeroes.
  */
-void secure_clear(trivially_copyable auto &object) noexcept
+inline void secure_clear(trivially_copyable auto &object) noexcept
 {
     secure_clear(&object, sizeof(object));
 }

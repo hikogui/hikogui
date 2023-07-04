@@ -10,7 +10,7 @@
 #include "ucd_decompositions.hpp"
 #include "ucd_general_categories.hpp"
 #include "../utility/module.hpp"
-#include "../stack.hpp"
+#include "../container/module.hpp"
 #include "../recursive_iterator.hpp"
 
 namespace hi::inline v1 {

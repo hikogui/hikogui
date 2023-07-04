@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "../GFX/gfx_surface_vulkan.hpp"
 #include "gui_window.hpp"
+#include "../GFX/gfx_surface_vulkan.hpp"
 #include <unordered_map>
 
 struct HWND__;

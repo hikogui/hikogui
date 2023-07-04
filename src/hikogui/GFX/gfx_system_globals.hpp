@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
 
 namespace hi::inline v1 {
 

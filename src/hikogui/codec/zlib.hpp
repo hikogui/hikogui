@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../file/file_view.hpp"
-#include "../byte_string.hpp"
+#include "../container/module.hpp"
 #include <cstddef>
 #include <filesystem>
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "utility/module.hpp"
+#include "fixed_string.hpp"
 #include <limits>
 #include <typeinfo>
 #include <typeindex>
@@ -13,7 +13,7 @@
 
 namespace hi::inline v1 {
 
-template<std::unsigned_integral T, fixed_string Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
+template<std::unsigned_integral T, fixed_string Tag, std::size_t Max = std::numeric_limits<T>::max() - 1>
 class tagged_id {
 public:
     static_assert(Max < std::numeric_limits<T>::max(), "Max must be at least one less than the maximum value of T");

@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "time_stamp_count.hpp"
-#include "time_stamp_utc.hpp"
-#include "wfree_fifo.hpp"
-#include "atomic.hpp"
-#include "delayed_format.hpp"
-#include "format_check.hpp"
-#include "utility/module.hpp"
-#include "concurrency/module.hpp"
+#include "../atomic.hpp"
+#include "../delayed_format.hpp"
+#include "../format_check.hpp"
+#include "../container/module.hpp"
+#include "../time/module.hpp"
+#include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
+#include "counters.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -219,14 +219,14 @@ inline log log_global;
 
 #define hi_log_info_once(name, fmt, ...) \
     do { \
-        if (++global_counter<name> == 1) { \
+        if (++::hi::global_counter<name> == 1) { \
             hi_log(::hi::global_state_type::log_info, fmt __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)
 
 #define hi_log_error_once(name, fmt, ...) \
     do { \
-        if (++global_counter<name> == 1) { \
+        if (++::hi::global_counter<name> == 1) { \
             hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)

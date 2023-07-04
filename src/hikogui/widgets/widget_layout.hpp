@@ -8,15 +8,11 @@
 
 #pragma once
 
-#include "../layout/box_shape.hpp"
+#include "../layout/module.hpp"
 #include "../geometry/module.hpp"
-#include "../unicode/module.hpp"
-#include "../font/module.hpp"
-#include "../GUI/gui_window_size.hpp"
-#include "../GUI/theme.hpp"
-#include "../GFX/subpixel_orientation.hpp"
-#include "../chrono.hpp"
+#include "../time/module.hpp"
 #include "../utility/module.hpp"
+#include "../settings/module.hpp"
 
 namespace hi { inline namespace v1 {
 
@@ -71,8 +67,6 @@ public:
     /** The elevation of the widget above the window.
      */
     float elevation = 0.0f;
-
-    gui_window_size window_size_state = gui_window_size::normal;
 
     /** The clipping rectangle.
      *
@@ -177,7 +171,6 @@ public:
      */
     constexpr widget_layout(
         extent2 window_size,
-        gui_window_size window_size_state,
         hi::subpixel_orientation subpixel_orientation,
         utc_nanoseconds display_time_point) noexcept :
         to_parent(),
@@ -186,7 +179,6 @@ public:
         from_window(),
         shape(window_size),
         window_size(window_size),
-        window_size_state(window_size_state),
         clipping_rectangle(window_size),
         sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
         display_time_point(display_time_point)

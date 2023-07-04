@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../tagged_id.hpp"
+#include "../utility/module.hpp"
 #include <cstdint>
 
 namespace hi {

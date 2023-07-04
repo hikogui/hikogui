@@ -5,7 +5,7 @@
 #include "../utility/win32_headers.hpp"
 
 #include "file_win32.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include "../strings.hpp"
 #include <type_traits>

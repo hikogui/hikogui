@@ -10,21 +10,14 @@
 
 #include "widget_layout.hpp"
 #include "widget_mode.hpp"
-#include "../GFX/draw_context.hpp"
-#include "../GUI/theme.hpp"
-#include "../GUI/hitbox.hpp"
-#include "../GUI/keyboard_focus_direction.hpp"
-#include "../GUI/keyboard_focus_group.hpp"
-#include "../GUI/gui_event.hpp"
-#include "../GUI/widget_id.hpp"
-#include "../layout/box_constraints.hpp"
+#include "../GFX/module.hpp"
+#include "../GUI/module.hpp"
+#include "../layout/module.hpp"
 #include "../geometry/module.hpp"
-#include "../observer.hpp"
-#include "../chrono.hpp"
+#include "../observer/module.hpp"
+#include "../time/module.hpp"
+#include "../settings/module.hpp"
 #include "../generator.hpp"
-#include "../cache.hpp"
-#include "../os_settings.hpp"
-#include "../tagged_id.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -43,7 +36,7 @@ class gfx_surface;
  *
  * @ingroup widgets
  */
-class widget : public std::enable_shared_from_this<widget> {
+class widget {
 public:
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.

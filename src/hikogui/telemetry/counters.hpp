@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "concurrency/module.hpp"
-#include "time_stamp_count.hpp"
-#include "atomic.hpp"
+#include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
+#include "../time/module.hpp"
+#include "../atomic.hpp"
 #include <span>
 #include <typeinfo>
 #include <typeindex>

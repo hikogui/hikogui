@@ -8,7 +8,7 @@
 #include "../utility/module.hpp"
 #include "../image/module.hpp"
 #include "../geometry/module.hpp"
-#include "../byte_string.hpp"
+#include "../container/module.hpp"
 #include "../strings.hpp"
 #include <span>
 #include <vector>
