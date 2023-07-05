@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "theme_mode.hpp"
 #include "theme.hpp"
+#include "../settings/module.hpp"
 #include <limits>
 #include <vector>
 #include <memory>

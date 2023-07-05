@@ -3,12 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/widget.hpp"
-#include "hikogui/widgets/label_widget.hpp"
 #include "hikogui/crt.hpp"
-#include "hikogui/loop.hpp"
-#include "hikogui/metadata.hpp"
 
 // Every widget must inherit from hi::widget.
 class widget_with_child : public hi::widget {
@@ -106,7 +101,7 @@ protected:
     //
     // The allocator argument should not be used by the function, it is used by the caller
     // to allocate the co-routine's frame on the stack.
-    [[nodiscard]] hi::generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] hi::generator<widget_intf &> children(bool include_invisible) noexcept override
     {
         // This function is often written as a co-routine that yields a pointer to each of its children.
         co_yield *_label_widget;
@@ -126,8 +121,8 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     auto gui = hi::gui_system::make_unique();
-    auto window = gui->make_window(hi::tr("Widget with child"));
-    window->content().make_widget<widget_with_child>("A1", hi::tr("Widget with child"));
+    auto [window, widget] = gui->make_window<hi::window_widget>(hi::tr("Widget with child"));
+    widget->content().make_widget<widget_with_child>("A1", hi::tr("Widget with child"));
 
     auto close_cbt = window->closing.subscribe(
         [&] {

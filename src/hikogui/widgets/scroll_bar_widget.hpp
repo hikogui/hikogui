@@ -9,9 +9,9 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/gui_event.hpp"
+#include "../GUI/module.hpp"
 #include "../geometry/module.hpp"
-#include "../observer.hpp"
+#include "../observer/module.hpp"
 #include "../utility/module.hpp"
 #include <memory>
 #include <string>

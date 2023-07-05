@@ -5,7 +5,7 @@
 #pragma once
 
 #include "awaitable.hpp"
-#include "chrono.hpp"
+#include "time/module.hpp"
 #include <chrono>
 #include <coroutine>
 #include <functional>

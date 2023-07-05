@@ -9,8 +9,6 @@
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include "system_menu_widget.hpp"
 #endif
-#include "../GUI/gui_window.hpp"
-#include "../scoped_buffer.hpp"
 
 namespace hi::inline v1 {
 
@@ -38,19 +36,7 @@ void window_widget::constructor_implementation() noexcept
     return _window;
 }
 
-[[nodiscard]] hi::theme const& window_widget::theme() const noexcept
-{
-    hi_assert_not_null(_window);
-    return _window->theme;
-}
-
-[[nodiscard]] gfx_surface const *window_widget::surface() const noexcept
-{
-    hi_assert_not_null(_window);
-    return _window->surface.get();
-}
-
-[[nodiscard]] generator<widget const&> window_widget::children(bool include_invisible) const noexcept
+[[nodiscard]] generator<widget_intf &> window_widget::children(bool include_invisible) noexcept
 {
     co_yield *_toolbar;
     co_yield *_content;

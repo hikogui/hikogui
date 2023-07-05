@@ -1,6 +1,5 @@
 
 target_sources(hikogui PRIVATE
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/allocator/locked_memory_allocator_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/audio/audio_device_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/audio/audio_device_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/audio/audio_sample_format_impl.cpp
@@ -75,9 +74,10 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/l10n/po_parser_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translation_impl.cpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/net/globals_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/random/seed_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/settings/cpu_id_x64_impl.cpp
+    #${HIKOGUI_SOURCE_DIR}/settings/cpu_id_x64_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/settings/os_settings_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/os_settings_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/settings/preferences_impl.cpp
@@ -124,7 +124,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt_utils_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/dialog_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/loop_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/loop_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/terminate_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/tokenizer_impl.cpp    

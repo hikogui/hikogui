@@ -5,9 +5,9 @@
 #include "theme.hpp"
 #include "theme_book.hpp"
 #include "../font/module.hpp"
-#include "../codec/JSON.hpp"
+#include "../codec/module.hpp"
 #include "../color/module.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {

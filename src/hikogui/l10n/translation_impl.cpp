@@ -5,7 +5,7 @@
 #include "translation.hpp"
 #include "po_parser.hpp"
 #include "../unicode/module.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 
 namespace hi {
 inline namespace v1 {

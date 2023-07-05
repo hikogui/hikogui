@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "os_settings.hpp"
-#include "log.hpp"
+#include "../telemetry/module.hpp"
 
 namespace hi::inline v1 {
 

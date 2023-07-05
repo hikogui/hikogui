@@ -35,7 +35,7 @@ audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio
     }
 }
 
-[[nodiscard]] generator<widget const&> audio_device_widget::children(bool include_invisible) const noexcept
+[[nodiscard]] generator<widget_intf &> audio_device_widget::children(bool include_invisible) noexcept
 {
     co_yield *_grid_widget;
 }

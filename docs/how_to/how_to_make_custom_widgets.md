@@ -365,7 +365,7 @@ The example function below yields the pointer to both children stored as member 
 stored in a vector.
 
 ```cpp
-[[nodiscard]] hi::generator<widget const &> children(bool include_invisible) const noexcept override
+[[nodiscard]] hi::generator<widget_intf const &> children(bool include_invisible) const noexcept override
 {
     co_yield _label_widget.get();
     co_yield _checkbox_widget.get();

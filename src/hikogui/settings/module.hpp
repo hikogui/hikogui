@@ -3,6 +3,7 @@
 
 //#include "cpu_id.hpp"
 #include "metadata.hpp"
+#include "metadata_library.hpp"
 #include "module.hpp"
 #include "os_settings.hpp"
 #include "preferences.hpp"

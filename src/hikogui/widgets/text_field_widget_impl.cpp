@@ -47,7 +47,7 @@ text_field_widget::~text_field_widget()
     delegate->deinit(*this);
 }
 
-[[nodiscard]] generator<widget const&> text_field_widget::children(bool include_invisible) const noexcept
+[[nodiscard]] generator<widget_intf &> text_field_widget::children(bool include_invisible) noexcept
 {
     co_yield *_scroll_widget;
 }

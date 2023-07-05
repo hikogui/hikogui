@@ -83,7 +83,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {
         co_yield *_icon_widget;
         co_yield *_text_widget;

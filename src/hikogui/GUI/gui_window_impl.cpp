@@ -6,22 +6,16 @@
 #include "gui_system.hpp"
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
-#include "../os_settings.hpp"
-#include "../GFX/gfx_device.hpp"
-#include "../GFX/gfx_surface.hpp"
-#include "../widgets/window_widget.hpp"
-#include "../widgets/grid_widget.hpp"
-#include "../trace.hpp"
-#include "../log.hpp"
+#include "../settings/module.hpp"
+#include "../GFX/module.hpp"
+#include "../telemetry/module.hpp"
 
 namespace hi::inline v1 {
-
-gui_window::gui_window(gui_system& gui, label const& title) noexcept : gui(gui), title(title) {}
 
 gui_window::~gui_window()
 {
     // Destroy the top-level widget, before Window-members that the widgets require from the window during their destruction.
-    widget = {};
+    _widget = {};
 
     try {
         surface.reset();
@@ -38,12 +32,10 @@ void gui_window::init()
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
 
-    widget = std::make_unique<window_widget>(this, title);
-
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
-    _widget_constraints = widget->update_constraints();
+    _widget_constraints = _widget->update_constraints();
     hilet new_size = _widget_constraints.preferred;
 
     // Reset the keyboard target to not focus anything.
@@ -83,7 +75,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
     hi_axiom(loop::main().on_thread());
     hi_assert_not_null(surface);
-    hi_assert_not_null(widget);
+    hi_assert_not_null(_widget);
 
     // When a widget requests it or a window-wide event like language change
     // has happened all the widgets will be set_constraints().
@@ -99,7 +91,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
-        _widget_constraints = widget->update_constraints();
+        _widget_constraints = _widget->update_constraints();
     }
 
     // Check if the window size matches the preferred size of the window_widget.
@@ -155,7 +147,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         // Guarantee that the layout size is always at least the minimum size.
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
         hilet widget_layout_size = max(_widget_constraints.minimum, widget_size);
-        widget->set_layout(widget_layout{widget_layout_size, _size_state, subpixel_orientation(), display_time_point});
+        _widget->set_layout(widget_layout{widget_layout_size, _size_state, subpixel_orientation(), display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};
@@ -171,7 +163,6 @@ void gui_window::render(utc_nanoseconds display_time_point)
         _redraw_rectangle = aarectangle{};
         draw_context.display_time_point = display_time_point;
         draw_context.subpixel_orientation = subpixel_orientation();
-        draw_context.background_color = widget->background_color();
         draw_context.active = active;
 
         if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
@@ -181,7 +172,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         {
             hilet t2 = trace<"window::draw">();
-            widget->draw(draw_context);
+            _widget->draw(draw_context);
         }
         {
             hilet t2 = trace<"window::submit">();
@@ -216,7 +207,7 @@ void gui_window::update_keyboard_target(widget_id new_target_id, keyboard_focus_
 {
     hi_axiom(loop::main().on_thread());
 
-    auto new_target_widget = get_if(widget.get(), new_target_id, false);
+    auto new_target_widget = get_if(_widget.get(), new_target_id, false);
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
@@ -229,7 +220,7 @@ void gui_window::update_keyboard_target(widget_id new_target_id, keyboard_focus_
         new_target_widget = nullptr;
     }
 
-    if (auto const * const keyboard_target_widget = get_if(widget.get(), _keyboard_target_id, false)) {
+    if (auto const * const keyboard_target_widget = get_if(_widget.get(), _keyboard_target_id, false)) {
         // keyboard target still exists and visible.
         if (new_target_widget == keyboard_target_widget) {
             // Focus does not change.
@@ -240,7 +231,7 @@ void gui_window::update_keyboard_target(widget_id new_target_id, keyboard_focus_
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
-    widget->handle_event_recursive(gui_event_type::gui_cancel, new_target_parent_chain);
+    _widget->handle_event_recursive(gui_event_type::gui_cancel, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
     if (new_target_widget != nullptr) {
@@ -258,10 +249,10 @@ void gui_window::update_keyboard_target(
 {
     hi_axiom(loop::main().on_thread());
 
-    auto tmp = widget->find_next_widget(start_widget, group, direction);
+    auto tmp = _widget->find_next_widget(start_widget, group, direction);
     if (tmp == start_widget) {
         // Could not a next widget, loop around.
-        tmp = widget->find_next_widget({}, group, direction);
+        tmp = _widget->find_next_widget({}, group, direction);
     }
     update_keyboard_target(tmp, group);
 }
@@ -346,7 +337,7 @@ bool gui_window::process_event(gui_event const& event) noexcept
     case mouse_down:
     case mouse_move:
         {
-            hilet hitbox = widget->hitbox_test(event.mouse().position);
+            hilet hitbox = _widget->hitbox_test(event.mouse().position);
             update_mouse_target(hitbox.widget_id, event.mouse().position);
 
             if (event == mouse_down) {
@@ -394,10 +385,10 @@ bool gui_window::send_events_to_widget(hi::widget_id target_id, std::vector<gui_
 {
     if (not target_id) {
         // If there was no target, send the event to the window's widget.
-        target_id = widget->id;
+        target_id = _widget->id;
     }
 
-    auto target_widget = get_if(widget.get(), target_id, false);
+    auto target_widget = get_if(_widget.get(), target_id, false);
     while (target_widget) {
         // Each widget will try to handle the first event it can.
         for (hilet& event : events) {

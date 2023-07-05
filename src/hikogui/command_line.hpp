@@ -6,17 +6,20 @@
 
 #include "utility/module.hpp"
 #include "generator.hpp"
+#include <optional>
+#include <string>
+#include <variant>
 
 namespace hi::inline v1 {
 
 struct cmdline_short_option {
     char32_t option;
-    std::option<std::string> argument;
+    std::optional<std::string> argument;
 };
 
 struct cmdline_long_option {
     std::string option;
-    std::option<std::string> argument;
+    std::optional<std::string> argument;
 };
 
 struct cmdline_executable {

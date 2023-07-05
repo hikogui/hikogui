@@ -43,7 +43,7 @@ selection_widget::selection_widget(widget *parent, std::shared_ptr<delegate_type
     this->delegate->init(*this);
 }
 
-[[nodiscard]] generator<widget const&> selection_widget::children(bool include_invisible) const noexcept
+[[nodiscard]] generator<widget_intf &> selection_widget::children(bool include_invisible) noexcept
 {
     co_yield *_overlay_widget;
     co_yield *_current_label_widget;

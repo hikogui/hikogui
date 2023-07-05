@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "base_n.hpp"
-#include "../byte_string.hpp"
+#include "../container/module.hpp"
 #include "../utility/module.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

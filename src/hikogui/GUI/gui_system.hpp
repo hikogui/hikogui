@@ -7,6 +7,7 @@
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
+#include "widget_intf.hpp"
 #include "../unicode/module.hpp"
 #include "../GFX/module.hpp"
 #include "../utility/module.hpp"
@@ -16,6 +17,8 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <concepts>
+#include <utility>
 
 namespace hi::inline v1 {
 class gfx_system;
@@ -85,16 +88,20 @@ public:
      *             `hi::gui_window_win32`.
      * @return A reference to the new window.
      */
-    template<typename... Args>
-    std::shared_ptr<gui_window> make_window(Args &&...args)
+    template<std::derived_from<widget_intf> Widget, typename... Args>
+    std::pair<std::shared_ptr<gui_window>, Widget *> make_window(Args &&...args)
     {
         hi_axiom(loop::main().on_thread());
 
+        auto widget = std::make_unique<Widget>(std::forward<Args>(args)...);
+        hilet widget_ptr = widget.get();
+
         // XXX abstract away the _win32 part.
-        auto window = std::make_shared<gui_window_win32>(*this, std::forward<Args>(args)...);
+        auto window = std::make_shared<gui_window_win32>(*this, std::move(widget), *widget_ptr->title);
+        widget_ptr->set_window(window.get());
         window->init();
 
-        return add_window(std::move(window));
+        return {add_window(std::move(window)), widget_ptr};
     }
 
     /** Request all windows to constrain.

@@ -15,7 +15,7 @@
 #include "row_column_widget.hpp"
 #include "menu_button_widget.hpp"
 #include "selection_delegate.hpp"
-#include "../observer.hpp"
+#include "../observer/module.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -171,7 +171,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override;
+    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;

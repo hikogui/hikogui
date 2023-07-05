@@ -218,10 +218,6 @@ public:
      */
     aarectangle scissor_rectangle;
 
-    /** The background color to clear the window with.
-     */
-    color background_color;
-
     /** The subpixel orientation for rendering glyphs.
      */
     hi::subpixel_orientation subpixel_orientation;

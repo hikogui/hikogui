@@ -1,13 +1,9 @@
 
-configure_file(${HIKOGUI_SOURCE_DIR}/settings/metadata_library.hpp.in ${HIKOGUI_SOURCE_DIR}/settings/metadata_library.hpp @ONLY)
-
-#    ${HIKOGUI_SOURCE_DIR}/file/file_view.hpp
-#    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_win32.hpp>
+configure_file(
+    ${HIKOGUI_SOURCE_DIR}/settings/metadata_library.hpp.in
+    ${HIKOGUI_SOURCE_DIR}/settings/metadata_library.hpp @ONLY)
 
 target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES
-    ${HIKOGUI_SOURCE_DIR}/allocator/locked_memory_allocator.hpp
-    ${HIKOGUI_SOURCE_DIR}/allocator/module.hpp
-    ${HIKOGUI_SOURCE_DIR}/allocator/secure_memory_allocator.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_block.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_channel.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_device.hpp
@@ -242,6 +238,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GUI/theme.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/theme_book.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/widget_id.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/widget_layout.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/aarectangle.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/alignment.hpp
     ${HIKOGUI_SOURCE_DIR}/geometry/axis.hpp
@@ -306,12 +304,15 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/layout/module.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/row_column_layout.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/spreadsheet_address.hpp
+    ${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator.hpp
+    ${HIKOGUI_SOURCE_DIR}/memory/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/memory/secure_memory_allocator.hpp
     ${HIKOGUI_SOURCE_DIR}/net/module.hpp
     ${HIKOGUI_SOURCE_DIR}/net/network_event.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/net/network_event_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/net/packet.hpp
-    ${HIKOGUI_SOURCE_DIR}/net/packet_buffer.hpp
-    ${HIKOGUI_SOURCE_DIR}/net/stream.hpp
+    #${HIKOGUI_SOURCE_DIR}/net/packet_buffer.hpp
+    #${HIKOGUI_SOURCE_DIR}/net/stream.hpp
     ${HIKOGUI_SOURCE_DIR}/numeric/bigint.hpp
     ${HIKOGUI_SOURCE_DIR}/numeric/bound_integer.hpp
     ${HIKOGUI_SOURCE_DIR}/numeric/decimal.hpp
@@ -353,6 +354,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/security/security_win32.hpp>
     #${HIKOGUI_SOURCE_DIR}/settings/cpu_id.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/metadata.hpp
+    ${HIKOGUI_SOURCE_DIR}/settings/metadata_library.hpp # generated.
     ${HIKOGUI_SOURCE_DIR}/settings/module.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/os_settings.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/preferences.hpp
@@ -480,7 +482,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_tab_button_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/widget.hpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/widget_layout.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/widget_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
@@ -492,7 +493,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/awaitable_timer.hpp
     ${HIKOGUI_SOURCE_DIR}/bits.hpp
     ${HIKOGUI_SOURCE_DIR}/cache.hpp
-    ${HIKOGUI_SOURCE_DIR}/command_line.hpp
+    #${HIKOGUI_SOURCE_DIR}/command_line.hpp
     ${HIKOGUI_SOURCE_DIR}/console.hpp
     ${HIKOGUI_SOURCE_DIR}/crt.hpp
     ${HIKOGUI_SOURCE_DIR}/crt_utils.hpp
@@ -509,15 +510,14 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/indent.hpp
     ${HIKOGUI_SOURCE_DIR}/jsonpath.hpp
     ${HIKOGUI_SOURCE_DIR}/label.hpp
-    ${HIKOGUI_SOURCE_DIR}/lexer.hpp
-    ${HIKOGUI_SOURCE_DIR}/lookahead_iterator.hpp
+    #${HIKOGUI_SOURCE_DIR}/lexer.hpp
+    #${HIKOGUI_SOURCE_DIR}/lookahead_iterator.hpp
     ${HIKOGUI_SOURCE_DIR}/loop.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp
     ${HIKOGUI_SOURCE_DIR}/operator.hpp
     ${HIKOGUI_SOURCE_DIR}/parse_location.hpp
     ${HIKOGUI_SOURCE_DIR}/pickle.hpp
     ${HIKOGUI_SOURCE_DIR}/placement.hpp
-    ${HIKOGUI_SOURCE_DIR}/process.hpp
     ${HIKOGUI_SOURCE_DIR}/ranges.hpp
     ${HIKOGUI_SOURCE_DIR}/recursive_iterator.hpp
     ${HIKOGUI_SOURCE_DIR}/reflection.hpp

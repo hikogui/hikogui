@@ -3,21 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GFX/RenderDoc.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/widget.hpp"
-#include "hikogui/widgets/grid_widget.hpp"
-#include "hikogui/widgets/row_column_widget.hpp"
-#include "hikogui/widgets/toggle_widget.hpp"
-#include "hikogui/widgets/momentary_button_widget.hpp"
-#include "hikogui/widgets/selection_widget.hpp"
-#include "hikogui/widgets/radio_button_widget.hpp"
-#include "hikogui/font/module.hpp"
-#include "hikogui/codec/png.hpp"
-#include "hikogui/file/URL.hpp"
 #include "hikogui/crt.hpp"
-#include "hikogui/loop.hpp"
-#include "hikogui/metadata.hpp"
 #include <numbers>
 
 enum class drawing_type {
@@ -353,9 +339,9 @@ int hi_main(int argc, char *argv[])
     auto render_doc = hi::RenderDoc();
 
     auto gui = hi::gui_system::make_unique();
-    auto window = gui->make_window(hi::tr("Drawing Custom Widget"));
+    auto [window, widget] = gui->make_window<hi::window_widget>(hi::tr("Drawing Custom Widget"));
 
-    auto& custom_widget = window->content().make_widget<drawing_widget>("A1:D1");
+    auto& custom_widget = widget->content().make_widget<drawing_widget>("A1:D1");
     custom_widget.drawing = drawing;
     custom_widget.shape = shape;
     custom_widget.rotating = rotating;
@@ -365,31 +351,31 @@ int hi_main(int argc, char *argv[])
     custom_widget.border_width = border_width;
     custom_widget.rounded = rounded;
 
-    window->content().make_widget<hi::label_widget>("A2", hi::tr("Drawing type:"));
-    window->content().make_widget<hi::selection_widget>("B2:D2", drawing, drawing_list);
+    widget->content().make_widget<hi::label_widget>("A2", hi::tr("Drawing type:"));
+    widget->content().make_widget<hi::selection_widget>("B2:D2", drawing, drawing_list);
 
-    window->content().make_widget<hi::label_widget>("A3", hi::tr("Shape:"));
-    window->content().make_widget<hi::selection_widget>("B3:D3", shape, shape_list);
+    widget->content().make_widget<hi::label_widget>("A3", hi::tr("Shape:"));
+    widget->content().make_widget<hi::selection_widget>("B3:D3", shape, shape_list);
 
-    window->content().make_widget<hi::label_widget>("A4", hi::tr("Gradient:"));
-    window->content().make_widget<hi::selection_widget>("B4:D4", gradient, gradient_list);
+    widget->content().make_widget<hi::label_widget>("A4", hi::tr("Gradient:"));
+    widget->content().make_widget<hi::selection_widget>("B4:D4", gradient, gradient_list);
 
-    window->content().make_widget<hi::label_widget>("A5", hi::tr("Border side:"));
-    window->content().make_widget<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::tr("on"));
-    window->content().make_widget<hi::radio_button_widget>("C5", border_side, hi::border_side::inside, hi::tr("inside"));
-    window->content().make_widget<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::tr("outside"));
+    widget->content().make_widget<hi::label_widget>("A5", hi::tr("Border side:"));
+    widget->content().make_widget<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::tr("on"));
+    widget->content().make_widget<hi::radio_button_widget>("C5", border_side, hi::border_side::inside, hi::tr("inside"));
+    widget->content().make_widget<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::tr("outside"));
 
-    window->content().make_widget<hi::label_widget>("A6", hi::tr("Border width:"));
-    window->content().make_widget<hi::selection_widget>("B6:D6", border_width, border_width_list);
+    widget->content().make_widget<hi::label_widget>("A6", hi::tr("Border width:"));
+    widget->content().make_widget<hi::selection_widget>("B6:D6", border_width, border_width_list);
 
-    window->content().make_widget<hi::label_widget>("A7", hi::tr("Rotate:"));
-    window->content().make_widget<hi::toggle_widget>("B7:D7", rotating);
+    widget->content().make_widget<hi::label_widget>("A7", hi::tr("Rotate:"));
+    widget->content().make_widget<hi::toggle_widget>("B7:D7", rotating);
 
-    window->content().make_widget<hi::label_widget>("A8", hi::tr("Clip:"));
-    window->content().make_widget<hi::toggle_widget>("B8:D8", clip);
+    widget->content().make_widget<hi::label_widget>("A8", hi::tr("Clip:"));
+    widget->content().make_widget<hi::toggle_widget>("B8:D8", clip);
 
-    window->content().make_widget<hi::label_widget>("A9", hi::tr("Rounded:"));
-    window->content().make_widget<hi::toggle_widget>("B9:D9", rounded);
+    widget->content().make_widget<hi::label_widget>("A9", hi::tr("Rounded:"));
+    widget->content().make_widget<hi::toggle_widget>("B9:D9", rounded);
 
     auto close_cbt = window->closing.subscribe(
         [&] {

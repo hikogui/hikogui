@@ -31,7 +31,6 @@
 #include "toolbar_tab_button_widget.hpp"
 #include "toolbar_widget.hpp"
 #include "widget.hpp"
-#include "widget_layout.hpp"
 #include "widget_mode.hpp"
 #include "window_traffic_lights_widget.hpp"
 #include "window_widget.hpp"

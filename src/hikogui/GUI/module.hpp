@@ -9,7 +9,6 @@
 #include "gui_system_win32.hpp"
 #include "gui_window.hpp"
 #include "gui_window_size.hpp"
-#include "gui_window_vulkan_macos.hpp"
 #include "gui_window_win32.hpp"
 #include "hitbox.hpp"
 #include "keyboard_bindings.hpp"
@@ -24,6 +23,8 @@
 #include "theme.hpp"
 #include "theme_book.hpp"
 #include "widget_id.hpp"
+#include "widget_intf.hpp"
+#include "widget_layout.hpp"
 
 namespace hi { inline namespace v1 {
 /**

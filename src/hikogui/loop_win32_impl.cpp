@@ -37,10 +37,8 @@
 #include "utility/win32_headers.hpp"
 
 #include "loop.hpp"
-#include "counters.hpp"
-#include "trace.hpp"
+#include "telemetry/module.hpp"
 #include "utility/module.hpp"
-#include "log.hpp"
 #include "GUI/gui_window.hpp"
 #include "net/network_event.hpp"
 #include "net/network_event_win32.hpp"

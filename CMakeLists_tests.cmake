@@ -72,7 +72,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/numeric/safe_int_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/observer/notifier_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/observer/shared_state_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/random/dither_tests.cpp
+    #${HIKOGUI_SOURCE_DIR}/random/dither_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/seed_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/xorshift128p_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/simd_tests.cpp

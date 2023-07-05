@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include "../notifier.hpp"
-#include "../observer.hpp"
+#include "../observer/module.hpp"
 #include <type_traits>
 #include <memory>
 

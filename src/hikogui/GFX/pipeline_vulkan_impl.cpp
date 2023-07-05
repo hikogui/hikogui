@@ -5,7 +5,7 @@
 #include "pipeline_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "gfx_surface.hpp"
-#include "../trace.hpp"
+#include "../telemetry/trace.hpp"
 #include <array>
 #include <vector>
 

@@ -28,8 +28,8 @@ public:
 
     observer<label> title;
 
-    window_widget(gui_window *window, forward_of<observer<label>> auto&& title) noexcept :
-        super(nullptr), _window(window), title(hi_forward(title))
+    window_widget(forward_of<observer<label>> auto&& title) noexcept :
+        super(nullptr), title(hi_forward(title))
     {
         hi_assert_not_null(_window);
         constructor_implementation();
@@ -53,8 +53,14 @@ public:
      */
     [[nodiscard]] toolbar_widget& toolbar() noexcept;
 
+    void set_window(gui_window *window) noexcept
+    {
+        hi_assert_not_null(window);
+        _window = window;
+    }
+
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override;
+    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
@@ -62,11 +68,9 @@ public:
     bool handle_event(gui_event const& event) noexcept override;
     bool process_event(gui_event const& event) const noexcept override;
     [[nodiscard]] gui_window *window() const noexcept override;
-    [[nodiscard]] hi::theme const& theme() const noexcept override;
-    [[nodiscard]] gfx_surface const *surface() const noexcept override;
     /// @endprivatesection
 private:
-    gui_window *_window;
+    gui_window *_window = nullptr;
 
     std::unique_ptr<grid_widget> _content;
     box_constraints _content_constraints;

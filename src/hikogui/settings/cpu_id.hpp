@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "utility/module.hpp"
+#include "../utility/module.hpp"
 #include <array>
 
 #if HI_COMPILER == HI_CC_MSVC

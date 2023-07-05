@@ -4,9 +4,9 @@
 
 #include "terminate.hpp"
 #include "utility/module.hpp"
+#include "telemetry/module.hpp"
 #include "console.hpp"
 #include "dialog.hpp"
-#include "log.hpp"
 
 namespace hi { inline namespace v1 {
 

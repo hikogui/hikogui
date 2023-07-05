@@ -9,7 +9,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 
 namespace hi { inline namespace v1 {
 

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "gui_window_size.hpp"
 #include "../layout/module.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
@@ -64,6 +65,10 @@ public:
      */
     extent2 window_size = {};
 
+    /** The size state of the window.
+     */
+    gui_window_size window_size_state = gui_window_size::normal;
+
     /** The elevation of the widget above the window.
      */
     float elevation = 0.0f;
@@ -96,6 +101,26 @@ public:
     constexpr widget_layout& operator=(widget_layout&&) noexcept = default;
     constexpr widget_layout() noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(widget_layout const&, widget_layout const&) noexcept = default;
+
+    /** Construct a widget_layout from inside the window.
+     */
+    constexpr widget_layout(
+        extent2 window_size,
+        gui_window_size window_size_state,
+        hi::subpixel_orientation subpixel_orientation,
+        utc_nanoseconds display_time_point) noexcept :
+        to_parent(),
+        from_parent(),
+        to_window(),
+        from_window(),
+        shape(window_size),
+        window_size(window_size),
+        window_size_state(window_size_state),
+        clipping_rectangle(window_size),
+        sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
+        display_time_point(display_time_point)
+    {
+    }
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
@@ -165,24 +190,6 @@ public:
     [[nodiscard]] constexpr extent2 size() const noexcept
     {
         return shape.size();
-    }
-
-    /** Construct a widget_layout from inside the window.
-     */
-    constexpr widget_layout(
-        extent2 window_size,
-        hi::subpixel_orientation subpixel_orientation,
-        utc_nanoseconds display_time_point) noexcept :
-        to_parent(),
-        from_parent(),
-        to_window(),
-        from_window(),
-        shape(window_size),
-        window_size(window_size),
-        clipping_rectangle(window_size),
-        sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
-        display_time_point(display_time_point)
-    {
     }
 
     /** Create a new widget_layout for the child widget.

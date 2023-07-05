@@ -98,7 +98,7 @@ enum class graphic_character_t {
 /** Binary Operator Precedence according to C++.
  * @return Precedence, left-to-right-associativity
  */
-[[nodiscard]] std::pair<uint8_t, bool> binary_operator_precedence(char const *str) noexcept
+[[nodiscard]] constexpr std::pair<uint8_t, bool> binary_operator_precedence(char const *str) noexcept
 {
     switch (operator_to_int(str)) {
     case operator_to_int("::"): return {uint8_t{1}, true};
@@ -151,7 +151,7 @@ enum class graphic_character_t {
 /** Operator Precedence according to C++.
  * @return Precedence, left-to-right-associativity
  */
-[[nodiscard]] std::pair<uint8_t, bool> operator_precedence(char const *str, bool binary) noexcept
+[[nodiscard]] constexpr std::pair<uint8_t, bool> operator_precedence(char const *str, bool binary) noexcept
 {
     return binary ? binary_operator_precedence(str) : std::pair<uint8_t, bool>{uint8_t{3}, false};
 }

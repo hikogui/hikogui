@@ -6,7 +6,7 @@
 
 #include "seed.hpp"
 #include "../utility/module.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 
 namespace hi::inline v1 {
 

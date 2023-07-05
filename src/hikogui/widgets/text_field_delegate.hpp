@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../label.hpp"
-#include "../observer.hpp"
+#include "../observer/module.hpp"
 #include <string>
 #include <string_view>
 #include <optional>

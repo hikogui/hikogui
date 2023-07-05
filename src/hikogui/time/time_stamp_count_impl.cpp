@@ -4,7 +4,7 @@
 
 #include "time_stamp_count.hpp"
 #include "time_stamp_utc.hpp"
-#include "log.hpp"
+#include "../telemetry/module.hpp"
 #include <emmintrin.h>
 #include <array>
 #include <cstdint>

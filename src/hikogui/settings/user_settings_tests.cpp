@@ -4,7 +4,7 @@
 
 #include "user_settings.hpp"
 #include "metadata.hpp"
-#include "concurrency/module.hpp"
+#include "../concurrency/module.hpp"
 #include <gtest/gtest.h>
 #include <format>
 

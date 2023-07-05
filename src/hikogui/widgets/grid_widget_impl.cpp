@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "grid_widget.hpp"
-#include "../algorithm.hpp"
 #include "../geometry/module.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
+#include "../algorithm.hpp"
 
 namespace hi::inline v1 {
 

@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "preferences.hpp"
-#include "codec/JSON.hpp"
-#include "file/file.hpp"
-#include "log.hpp"
+#include "../codec/module.hpp"
+#include "../file/module.hpp"
+#include "../telemetry/module.hpp"
 
 namespace hi::inline v1 {
 namespace detail {

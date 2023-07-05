@@ -9,7 +9,7 @@
 #include "audio_system_aggregate.hpp"
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
-#include "../allocator/module.hpp"
+#include "../memory/module.hpp"
 #include "../loop.hpp"
 
 hi_warning_push();

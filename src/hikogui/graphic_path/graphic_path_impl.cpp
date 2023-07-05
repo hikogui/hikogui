@@ -4,8 +4,8 @@
 
 #include "graphic_path.hpp"
 #include "bezier_curve.hpp"
-#include "image/module.hpp"
-#include "utility/module.hpp"
+#include "../image/module.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

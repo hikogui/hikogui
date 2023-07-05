@@ -19,7 +19,7 @@ public:
 
     HWND win32Window = nullptr;
 
-    gui_window_win32(gui_system& gui, label const& title) noexcept;
+    gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf> widget, label const& title) noexcept;
 
     ~gui_window_win32();
 

@@ -11,6 +11,7 @@
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
+#include "widget_intf.hpp"
 #include "../unicode/module.hpp"
 #include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
@@ -87,16 +88,15 @@ public:
      */
     extent2 widget_size;
 
-    /** The widget covering the complete window.
-     */
-    std::unique_ptr<window_widget> widget;
-
     /** Notifier used when the window is closing.
      * It is expected that after notifying these callbacks the instance of this class is destroyed.
      */
     notifier<void()> closing;
 
-    gui_window(gui_system& gui, label const& title) noexcept;
+    gui_window(gui_system& gui, std::unique_ptr<widget_intf> widget, label const& title) noexcept :
+        gui(gui), title(title), _widget(std::move(widget))
+    {
+    }
 
     virtual ~gui_window();
 
@@ -124,26 +124,10 @@ public:
      */
     virtual void render(utc_nanoseconds displayTimePoint);
 
-    /** Get a reference to the window's content widget.
-     * @see grid_widget
-     * @return A reference to a grid_widget.
-     */
-    [[nodiscard]] grid_widget& content() noexcept
+    template<typename Widget>
+    [[nodiscard]] Widget& widget() const noexcept
     {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(widget);
-        return widget->content();
-    }
-
-    /** Get a reference to window's toolbar widget.
-     * @see toolbar_widget
-     * @return A reference to a toolbar_widget.
-     */
-    [[nodiscard]] toolbar_widget& toolbar() noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(widget);
-        return widget->toolbar();
+        return up_cast<Widget>(*_widget);
     }
 
     /** Set the mouse cursor icon.
@@ -255,6 +239,10 @@ public:
 
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
+
+    /** The widget covering the complete window.
+     */
+    std::unique_ptr<widget_intf> _widget;
 
     box_constraints _widget_constraints = {};
 

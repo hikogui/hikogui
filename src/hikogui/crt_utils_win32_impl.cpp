@@ -5,11 +5,11 @@
 #include "utility/win32_headers.hpp"
 
 #include "crt_utils.hpp"
+#include "terminate.hpp"
+#include "console.hpp"
 #include "GUI/gui_system.hpp"
 #include "utility/module.hpp"
-#include "console.hpp"
-#include "log.hpp"
-#include "terminate.hpp"
+#include "telemetry/log.hpp"
 
 hi_warning_push();
 // C26400: Do not assign the result of an allocation or a function cal with an owner<T> return value to... (i11)
