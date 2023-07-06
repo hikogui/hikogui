@@ -106,7 +106,7 @@ bool registry_delete(registry_key key, std::string_view path)
     hilet wname = hi::to_wstring(name);
     hilet dvalue = narrow_cast<DWORD>(value);
 
-    if (hilet status = RegSetKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str(), RRF_RT_DWORD, &dvalue, sizeof(dvalue));
+    if (hilet status = RegSetKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str(), REG_DWORD, &dvalue, sizeof(dvalue));
         status != ERROR_SUCCESS) {
         throw os_error(std::format(
             "Error deleting {}\\{}\\{} = {} registry entry: {}",
@@ -125,7 +125,7 @@ bool registry_delete(registry_key key, std::string_view path)
     hilet wvalue = hi::to_wstring(value);
     hilet wvalue_size = narrow_cast<DWORD>((wvalue.size() + 1) * sizeof(wchar_t));
 
-    if (hilet status = RegSetKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str(), RRF_RT_REG_SZ, wvalue.c_str(), wvalue_size);
+    if (hilet status = RegSetKeyValueW(to_hkey(key), wpath.c_str(), wname.c_str(), REG_SZ, wvalue.c_str(), wvalue_size);
         status != ERROR_SUCCESS) {
         throw os_error(std::format(
             "Error writing {}\\{}\\{} = \"{}\" registry entry: {}",
@@ -159,7 +159,7 @@ bool registry_delete(registry_key key, std::string_view path)
             "Error reading {}\\{}\\{} registry entry: {}", to_string(key), path, name, get_last_error_message(status)));
     }
 
-    if (result_type != RRF_RT_DWORD) {
+    if (result_type != REG_DWORD) {
         throw os_error(std::format("Incorrect type of {}\\{}\\{} registry entry.", to_string(key), path, name));
     }
 

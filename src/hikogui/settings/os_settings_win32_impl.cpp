@@ -82,12 +82,18 @@ namespace hi { inline namespace v1 {
 {
     auto r = std::vector<language_tag>{};
 
-    if (hilet languages = registry_read<std::vector<std::string>>(
-            registry_key::current_user, "Control Panel\\International\\User Profile", "Languages")) {
-        r.reserve(languages->size());
-        for (hilet& language : *languages) {
-            r.push_back(language_tag{language});
+    try {
+        if (hilet languages = registry_read<std::vector<std::string>>(
+                registry_key::current_user, "Control Panel\\International\\User Profile", "Languages")) {
+            r.reserve(languages->size());
+            for (hilet& language : *languages) {
+                r.push_back(language_tag{language});
+            }
         }
+
+    } catch (std::exception const& e) {
+        hi_log_error("Could not read languages: {}", e.what());
+        r.push_back(language_tag{"en"});
     }
 
     return r;
@@ -105,7 +111,8 @@ namespace hi { inline namespace v1 {
             return theme_mode::light;
         }
 
-    } catch (...) {
+    } catch (std::exception const& e) {
+        hi_log_error("Could not read theme mode: {}", e.what());
         return theme_mode::light;
     }
 }
@@ -365,8 +372,8 @@ namespace hi { inline namespace v1 {
         }
         return policy::unspecified;
 
-    } catch (...) {
-        // If the registry is not set.
+    } catch (std::exception const& e) {
+        hi_log_error("Could not read gpu profile policy: {}", e.what());
         return policy::unspecified;
     }
 }

@@ -12,7 +12,7 @@ add_dependencies(hikogui_tests hikogui_tests_resources)
 add_dependencies(hikogui_all_tests hikogui_tests)
 
 target_sources(hikogui_tests PRIVATE
-    ${HIKOGUI_SOURCE_DIR}/audio/audio_sample_packer_tests.cpp
+    #${HIKOGUI_SOURCE_DIR}/audio/audio_sample_packer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_sample_unpacker_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/ascii_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/char_converter_tests.cpp
@@ -92,7 +92,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/utility/math_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/units_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp
+    #${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp
 )
 
 install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)

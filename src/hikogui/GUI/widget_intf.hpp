@@ -30,7 +30,17 @@ public:
 
     widget_intf(widget_intf *parent) noexcept : id(narrow_cast<uint32_t>(++global_counter<"widget::id">)), parent(parent) {}
 
+    /** Set the window for this tree of widgets.
+     *
+     * @param window A pointer to the window that will own this tree of widgets.
+     *               or nullptr if the window must be removed.
+     */
+    virtual void set_window(gui_window *window) noexcept = 0;
+
     /** Get the window that the widget is owned by.
+     *
+     * @return window The window that owns this tree of widgets. Or nullptr
+     *                if this tree of widgets is not owned by a window.
      */
     [[nodiscard]] virtual gui_window *window() const noexcept = 0;
 

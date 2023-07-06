@@ -19,48 +19,11 @@ gui_window::~gui_window()
 
     try {
         surface.reset();
-        hi_log_info("Window '{}' has been properly destructed.", title);
+        hi_log_info("Window '{}' has been properly destructed.", _title);
 
     } catch (std::exception const& e) {
         hi_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
     }
-}
-
-void gui_window::init()
-{
-    // This function is called just after construction in single threaded mode,
-    // and therefor should not have a lock.
-    hi_axiom(loop::main().on_thread());
-
-    // Execute a constraint check to determine initial window size.
-    theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
-
-    _widget_constraints = _widget->update_constraints();
-    hilet new_size = _widget_constraints.preferred;
-
-    // Reset the keyboard target to not focus anything.
-    update_keyboard_target({});
-
-    // For changes in setting on the OS we should reconstrain/layout/redraw the window
-    // For example when the language or theme changes.
-    _setting_change_token = os_settings::subscribe(
-        [this] {
-            ++global_counter<"gui_window:os_setting:constrain">;
-            this->process_event({gui_event_type::window_reconstrain});
-        },
-        callback_flags::main);
-
-    // Subscribe on theme changes.
-    _selected_theme_token = gui.selected_theme.subscribe(
-        [this](auto...) {
-            ++global_counter<"gui_window:selected_theme:constrain">;
-            this->process_event({gui_event_type::window_reconstrain});
-        },
-        callback_flags::main);
-
-    // Delegate has been called, layout of widgets has been calculated for the
-    // minimum and maximum size of the window.
-    create_window(new_size);
 }
 
 void gui_window::set_device(gfx_device *device) noexcept

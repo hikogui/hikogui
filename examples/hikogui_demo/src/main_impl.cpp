@@ -127,11 +127,11 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, 
     auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), tr("Preferences")};
     auto [window, widget] = gui.make_window<window_widget>(window_label);
 
-    widget->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 0, label{elusive_icon::Speaker, tr("Audio")});
-    widget->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 1, label{elusive_icon::Key, tr("License")});
-    widget->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 2, label{elusive_icon::Brush, tr("Theme")});
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 0, label{elusive_icon::Speaker, tr("Audio")});
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 1, label{elusive_icon::Key, tr("License")});
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 2, label{elusive_icon::Brush, tr("Theme")});
 
-    auto& tabs = widget->content().make_widget<tab_widget>("A1", preferences.tab_index);
+    auto& tabs = widget.content().make_widget<tab_widget>("A1", preferences.tab_index);
     auto& audio_tab_grid = tabs.make_widget<grid_widget>(0);
     auto& license_tab_grid = tabs.make_widget<scroll_widget<axis::both>>(1).make_widget<grid_widget>();
     auto& theme_tab_grid = tabs.make_widget<grid_widget>(2);
@@ -151,9 +151,9 @@ hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::aud
     auto [window, widget] = gui.make_window<window_widget>(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, tr("Preferences")};
-    hilet& preferences_button = widget->toolbar().make_widget<hi::toolbar_button_widget>(preferences_label);
+    hilet& preferences_button = widget.toolbar().make_widget<hi::toolbar_button_widget>(preferences_label);
 
-    auto& column = widget->content().make_widget<column_widget>("A1");
+    auto& column = widget.content().make_widget<column_widget>("A1");
     column.make_widget<toggle_widget>(preferences.toggle_value);
     hilet& hello_world_button = column.make_widget<momentary_button_widget>(tr("Hello world AV"));
 

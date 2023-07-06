@@ -183,7 +183,7 @@ hi::task<> main_window(hi::gui_system& gui)
 
     // Create the vulkan triangle-widget as the content of the window. The content
     // of the window is a grid, we only use the cell "A1" for this widget.
-    widget->content().make_widget<triangle_widget>("A1", *window->surface);
+    widget.content().make_widget<triangle_widget>("A1", *window->surface);
 
     // Wait until the window is "closing" because the operating system says so, or when
     // the X is pressed.

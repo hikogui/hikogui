@@ -19,16 +19,16 @@ int hi_main(int argc, char *argv[])
     observer<int> value = 0;
 
     /// [Create three tabs]
-    auto& tab_view = widget->content().make_widget<tab_widget>("A1", value);
+    auto& tab_view = widget.content().make_widget<tab_widget>("A1", value);
     tab_view.make_widget<label_widget>(0, tr("one"), alignment::middle_center());
     tab_view.make_widget<label_widget>(1, tr("two"), alignment::middle_center());
     tab_view.make_widget<label_widget>(2, tr("three"), alignment::middle_center());
     /// [Create three tabs]
 
     /// [Create three toolbar tab buttons]
-    widget->toolbar().make_widget<toolbar_tab_button_widget>(value, 0, tr("one"));
-    widget->toolbar().make_widget<toolbar_tab_button_widget>(value, 1, tr("two"));
-    widget->toolbar().make_widget<toolbar_tab_button_widget>(value, 2, tr("three"));
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(value, 0, tr("one"));
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(value, 1, tr("two"));
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(value, 2, tr("three"));
     /// [Create three toolbar tab buttons]
 
     auto close_cb = window->closing.subscribe(

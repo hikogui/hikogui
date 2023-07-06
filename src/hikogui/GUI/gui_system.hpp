@@ -54,10 +54,10 @@ public:
 
     virtual ~gui_system();
 
-    gui_system(const gui_system &) = delete;
-    gui_system &operator=(const gui_system &) = delete;
-    gui_system(gui_system &&) = delete;
-    gui_system &operator=(gui_system &&) = delete;
+    gui_system(const gui_system&) = delete;
+    gui_system& operator=(const gui_system&) = delete;
+    gui_system(gui_system&&) = delete;
+    gui_system& operator=(gui_system&&) = delete;
 
     /** Initialize after construction.
      * Call this function directly after the constructor on the same thread.
@@ -83,25 +83,35 @@ public:
 
     std::shared_ptr<gui_window> add_window(std::shared_ptr<gui_window> window);
 
-    /** Create a new window.
-     * @param args The arguments that are forwarded to the constructor of
-     *             `hi::gui_window_win32`.
-     * @return A reference to the new window.
+    /** Create a new window with the specified managing widget.
+     *
+     * @param widget The widget that manages the window.
+     * @return A owning pointer to the new window.
+     *         releasing the pointer will close the window.
      */
-    template<std::derived_from<widget_intf> Widget, typename... Args>
-    std::pair<std::shared_ptr<gui_window>, Widget *> make_window(Args &&...args)
+    [[nodiscard]] std::shared_ptr<gui_window> make_window_with_widget(std::unique_ptr<widget_intf> widget)
     {
         hi_axiom(loop::main().on_thread());
 
-        auto widget = std::make_unique<Widget>(std::forward<Args>(args)...);
-        hilet widget_ptr = widget.get();
-
         // XXX abstract away the _win32 part.
-        auto window = std::make_shared<gui_window_win32>(*this, std::move(widget), *widget_ptr->title);
-        widget_ptr->set_window(window.get());
-        window->init();
+        return add_window(std::make_shared<gui_window_win32>(*this, std::move(widget)));
+    }
 
-        return {add_window(std::move(window)), widget_ptr};
+    /** Create a new window.
+     *
+     * @tparam Widget The type of widget to create to manage the window.
+     * @param args The arguments that are forwarded to the constructor of the managing
+     *             widget that is created.
+     * @return A owning pointer to the new window.
+     *         releasing the pointer will close the window.
+     */
+    template<std::derived_from<widget_intf> Widget, typename... Args>
+    [[nodiscard]] std::pair<std::shared_ptr<gui_window>, Widget&> make_window(Args&&...args)
+    {
+        auto widget = std::make_unique<Widget>(std::forward<Args>(args)...);
+        auto& widget_ref = *widget;
+
+        return {make_window_with_widget(std::move(widget)), widget_ref};
     }
 
     /** Request all windows to constrain.

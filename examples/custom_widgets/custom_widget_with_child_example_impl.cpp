@@ -122,7 +122,7 @@ int hi_main(int argc, char *argv[])
 
     auto gui = hi::gui_system::make_unique();
     auto [window, widget] = gui->make_window<hi::window_widget>(hi::tr("Widget with child"));
-    widget->content().make_widget<widget_with_child>("A1", hi::tr("Widget with child"));
+    widget.content().make_widget<widget_with_child>("A1", hi::tr("Widget with child"));
 
     auto close_cbt = window->closing.subscribe(
         [&] {

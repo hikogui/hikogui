@@ -207,6 +207,15 @@ public:
     using widget_intf::scroll_to_show;
     void scroll_to_show(hi::aarectangle rectangle) noexcept override;
 
+    void set_window(gui_window *window) noexcept override
+    {
+        if (parent) {
+            return parent->set_window(window);
+        } else {
+            return;
+        }
+    }
+
     [[nodiscard]] gui_window *window() const noexcept override
     {
         if (parent) {

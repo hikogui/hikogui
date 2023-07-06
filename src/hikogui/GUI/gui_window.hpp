@@ -71,8 +71,6 @@ public:
      */
     bool active = false;
 
-    label title;
-
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
      * the source for the DPI value.
@@ -93,10 +91,7 @@ public:
      */
     notifier<void()> closing;
 
-    gui_window(gui_system& gui, std::unique_ptr<widget_intf> widget, label const& title) noexcept :
-        gui(gui), title(title), _widget(std::move(widget))
-    {
-    }
+    gui_window(gui_system& gui, std::unique_ptr<widget_intf> widget) noexcept : gui(gui), _widget(std::move(widget)) {}
 
     virtual ~gui_window();
 
@@ -104,14 +99,6 @@ public:
     gui_window& operator=(gui_window const&) = delete;
     gui_window(gui_window&&) = delete;
     gui_window& operator=(gui_window&&) = delete;
-
-    /** 2 phase constructor.
-     * Must be called directly after the constructor on the same thread,
-     * before another thread can send messages to the window.
-     *
-     * `init()` should not take locks on window::mutex.
-     */
-    virtual void init();
 
     void set_device(gfx_device *device) noexcept;
 
@@ -128,6 +115,11 @@ public:
     [[nodiscard]] Widget& widget() const noexcept
     {
         return up_cast<Widget>(*_widget);
+    }
+
+    virtual void set_title(label title) noexcept
+    {
+        _title = std::move(title);
     }
 
     /** Set the mouse cursor icon.
@@ -240,6 +232,10 @@ public:
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
+    /** The label of the window that is passed to the operating system.
+     */
+    label _title;
+
     /** The widget covering the complete window.
      */
     std::unique_ptr<widget_intf> _widget;
@@ -278,9 +274,6 @@ protected:
     virtual void create_window(extent2 new_size) = 0;
 
 private:
-    notifier<>::callback_token _setting_change_token;
-    observer<std::string>::callback_token _selected_theme_token;
-
     /** Target of the mouse
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.

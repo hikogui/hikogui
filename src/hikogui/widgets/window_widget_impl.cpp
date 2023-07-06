@@ -12,23 +12,12 @@
 
 namespace hi::inline v1 {
 
-void window_widget::constructor_implementation() noexcept
+void window_widget::set_window(gui_window *window) noexcept
 {
-    _toolbar = std::make_unique<toolbar_widget>(this);
-
-    if (operating_system::current == operating_system::windows) {
-#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-        _system_menu = &_toolbar->make_widget<system_menu_widget>();
-        this->_system_menu->icon = this->title.get<"icon">();
-#endif
-        _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
-    } else if (operating_system::current == operating_system::macos) {
-        _toolbar->make_widget<window_traffic_lights_widget>();
-    } else {
-        hi_no_default();
+    _window = window;
+    if (_window) {
+        _window->set_title(*title);
     }
-
-    _content = std::make_unique<grid_widget>(this);
 }
 
 [[nodiscard]] gui_window *window_widget::window() const noexcept
@@ -127,6 +116,8 @@ void window_widget::set_layout(widget_layout const& context) noexcept
 void window_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible) {
+        context.draw_box(_layout, _layout.rectangle(), background_color(), background_color());
+
         _toolbar->draw(context);
         _content->draw(context);
     }
@@ -232,8 +223,12 @@ bool window_widget::handle_event(gui_event const& event) noexcept
 
 bool window_widget::process_event(gui_event const& event) const noexcept
 {
-    hi_assert_not_null(_window);
-    return _window->process_event(event);
+    if (_window) {
+        return _window->process_event(event);
+    } else {
+        // Since there is no window, pretend that the message was handled.
+        return true;
+    }
 }
 
 } // namespace hi::inline v1
