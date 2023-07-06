@@ -2,12 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/module.hpp"
+import hikogui;
 #include "hikogui/crt.hpp"
 
 using namespace hi;
 
-task<void> checkbox_example(gui_system &gui)
+hi::task<void> checkbox_example(hi::gui_system &gui)
 {
     auto [window, widget] = gui.make_window<window_widget>(tr("Checkbox example"));
 

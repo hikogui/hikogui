@@ -23,7 +23,8 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class window_widget final : public widget {
+class window_widget final : public widget
+{
 public:
     using super = widget;
 

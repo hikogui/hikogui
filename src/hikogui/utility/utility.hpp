@@ -123,7 +123,6 @@
 #define hi_warning_pop() _Pragma("warning(push)")
 #define hi_warning_ignore_msvc(code)
 #define hi_warning_ignore_clang(a) _Pragma(hi_stringify(clang diagnostic ignored a))
-#define hi_export
 
 #elif defined(_MSC_BUILD)
 #define hi_assume(condition) __assume(condition)
@@ -135,7 +134,6 @@
 #define hi_msvc_pragma(a) _Pragma(a)
 #define hi_warning_ignore_msvc(code) _Pragma(hi_stringify(warning(disable : code)))
 #define hi_warning_ignore_clang(a)
-#define hi_export __declspec(dllexport)
 
 #elif defined(__GNUC__)
 #define hi_assume(condition) \

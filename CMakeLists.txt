@@ -21,6 +21,7 @@ option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                            
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
 option(HI_ENABLE_PCH        "Compile with precompiled headers"                   ON)
 option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" "")
+set(BUILD_TESTING 0)
 
 #-------------------------------------------------------------------
 # Project
@@ -46,9 +47,10 @@ string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 0)
-set(CMAKE_EXPERIMENTAL_CXX_SCANDEP_SOURCE 0)
-set(CMAKE_CXX_SCAN_FOR_MODULES 0)
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
+#set(CMAKE_EXPERIMENTAL_CXX_SCANDEP_SOURCE 1)
+#set(CMAKE_CXX_SCAN_FOR_MODULES 1)
 
 #-------------------------------------------------------------------
 # Setup CMake Includes
@@ -100,6 +102,9 @@ if(NOT EXISTS "${Vulkan_INCLUDE_DIRS}/vma")
     message(FATAL_ERROR "Please make sure to include VMA (Vulkan Memory Allocator) with the installation of VulkanSDK.\n")
 endif()
 
+#set(Vulkan_OVERLAY_DIR "C:/Users/Tjienta/Projects/Vulkan-Hpp")
+#set(Vulkan_INCLUDE_DIRS "${Vulkan_OVERLAY_DIR}" "${Vulkan_INCLUDE_DIRS}")
+
 #-------------------------------------------------------------------
 # Setup Build Targets
 #-------------------------------------------------------------------
@@ -110,6 +115,7 @@ endif()
 add_library(hikogui)
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 include(CMakeLists_includes.cmake)
+include(CMakeLists_modules.cmake)
 include(CMakeLists_implementations.cmake)
 if(HI_ENABLE_PCH)
     include(CMakeLists_pch.cmake)
@@ -132,7 +138,7 @@ endif()
 
 # Add the Vulkan libraries.
 target_link_libraries(hikogui PUBLIC ${Vulkan_LIBRARIES})
-target_include_directories(hikogui PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_include_directories(hikogui PUBLIC ${Vulkan_INCLUDE_DIRS} ${VMA_INCLUDE_DIRS})
 if (WIN32)
     # Add vulkan win32 surface support.
     target_compile_definitions(hikogui PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
@@ -443,6 +449,8 @@ if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
         FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        #CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
@@ -451,6 +459,8 @@ else()
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
         FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        #CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib

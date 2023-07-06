@@ -8,7 +8,7 @@
 #include <coroutine>
 #include <type_traits>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 template<typename T>
 class task;
@@ -22,7 +22,7 @@ struct task_promise_base {
         hi_no_default();
     }
 
-    void return_value(std::convertible_to<T> auto &&value) noexcept
+    void return_value(std::convertible_to<T> auto&& value) noexcept
     {
         _value = hi_forward(value);
     }
@@ -61,7 +61,7 @@ struct task_promise : task_promise_base<T> {
 };
 
 /** Co-routine task.
- * 
+ *
  * @tparam T The type returned by co_return.
  */
 template<typename T = void>
@@ -74,17 +74,15 @@ public:
     explicit task(handle_type coroutine) : _coroutine(coroutine) {}
 
     task() = default;
-    ~task()
-    {
-    }
+    ~task() {}
 
-    task(task const &) = delete;
-    task(task &&) = delete;
-    task &operator=(task const &) = delete;
-    task &operator=(task &&) = delete;
+    task(task const&) = delete;
+    task(task&&) = delete;
+    task& operator=(task const&) = delete;
+    task& operator=(task&&) = delete;
 
 private:
     handle_type _coroutine;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
