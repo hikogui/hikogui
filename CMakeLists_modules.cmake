@@ -7,9 +7,9 @@
   #${PROJECT_BINARY_DIR}/stdxx
 #)
 
-set(
-    STD_MODULE_DIR
-    "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.35.32215/modules")
+#set(
+#    STD_MODULE_DIR
+#    "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.35.32215/modules")
 
 target_sources(hikogui
     PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES "${HIKOGUI_SOURCE_DIR}/hikogui.ixx"
