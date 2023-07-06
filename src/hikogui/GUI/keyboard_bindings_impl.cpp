@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "keyboard_bindings.hpp"
-#include "../codec/JSON.hpp"
 #include "gui_event_type.hpp"
-#include "../log.hpp"
+#include "../codec/module.hpp"
+#include "../telemetry/module.hpp"
 
 namespace hi::inline v1 {
 

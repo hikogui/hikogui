@@ -8,7 +8,7 @@
 #include "audio_format_range.hpp"
 #include "../generator.hpp"
 #include "../utility/module.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 #include <string>
 
 namespace hi::inline v1 {

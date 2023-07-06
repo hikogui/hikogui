@@ -15,16 +15,41 @@ using namespace hi;
 
 class text_widget_tests : public ::testing::Test {
 protected:
+    class system_moc : public hi::gui_system {
+    public:
+        system_moc() : hi::gui_system({}, {}, {}, {}) {}
+    };
+
+    class window_moc : public hi::gui_window {
+    public:
+        hi::theme _theme;
+
+        // clang-format off
+        window_moc(gui_system &system) : hi::gui_window(system, {}, {}) {}
+        void set_cursor(hi::mouse_cursor) override {}
+        void close_window() override {}
+        void set_size_state(hi::gui_window_size) noexcept override {}
+        hi::aarectangle workspace_rectangle() const noexcept override { return {};}
+        hi::aarectangle fullscreen_rectangle() const noexcept override { return {};}
+        hi::subpixel_orientation subpixel_orientation() const noexcept override { return hi::subpixel_orientation::unknown; }
+        void open_system_menu() override {}
+        void set_window_size(hi::extent2) override {}
+        std::optional<gstring> get_text_from_clipboard() const noexcept override { return {};}
+        void put_text_on_clipboard(gstring_view) const noexcept override {}
+        void create_window(hi::extent2) override {}
+        // clang-format on
+    };
+
     class window_widget_moc : public hi::widget {
     public:
-        window_widget_moc() noexcept : hi::widget(nullptr) {}
+        window_widget_moc(hi::gui_window *window) noexcept : hi::widget(nullptr), _window(window) {}
 
-        [[nodiscard]] hi::theme const& theme() const noexcept override
+        [[nodiscard]] hi::gui_window *window() const noexcept override
         {
-            return _theme;
+            return _window;
         }
 
-        hi::theme _theme;
+        gui_window *_window;
     };
 
     std::unique_ptr<hi::font_book> font_book;
@@ -32,9 +57,10 @@ protected:
     hi::theme theme;
 
     observer<std::string> text;
+    std::unique_ptr<system_moc> system;
+    std::unique_ptr<window_moc> window;
     std::unique_ptr<window_widget_moc> window_widget;
     std::unique_ptr<hi::text_widget> widget;
-
 
     void SetUp() override
     {
@@ -43,15 +69,19 @@ protected:
 
         // Cursor movement (including editing) requires the text to be shaped.
         // text shaping requires fonts and text styles.
-        auto &fb = font_book::global();
-        for (auto const &path : get_paths(path_location::font_dirs)) {
+        auto& fb = font_book::global();
+        for (auto const& path : get_paths(path_location::font_dirs)) {
             fb.register_font_directory(path);
         }
         theme_book = std::make_unique<hi::theme_book>(fb, make_vector(get_paths(path_location::theme_dirs)));
         theme = theme_book->find("default", theme_mode::light);
 
-        window_widget = std::make_unique<window_widget_moc>();
-        window_widget->_theme = theme;
+        system = std::make_unique<system_moc>();
+
+        window = std::make_unique<window_moc>(*system);
+        window->theme = theme;
+
+        window_widget = std::make_unique<window_widget_moc>(window.get());
 
         widget = std::make_unique<hi::text_widget>(window_widget.get(), text);
         widget->mode = hi::widget_mode::enabled;
@@ -60,7 +90,7 @@ protected:
         auto layout = widget_layout{};
         layout.shape.rectangle = aarectangle{constraints.preferred};
         layout.shape.baseline = constraints.preferred.height() / 2;
-        // display_time_point is used to check for valid widget_layout. 
+        // display_time_point is used to check for valid widget_layout.
         layout.display_time_point = std::chrono::utc_clock::now();
         widget->set_layout(layout);
     }

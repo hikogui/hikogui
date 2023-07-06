@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../tagged_id.hpp"
+#include "../utility/module.hpp"
 
 namespace hi::inline v1 {
 

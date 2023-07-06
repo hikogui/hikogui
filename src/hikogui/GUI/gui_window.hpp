@@ -11,13 +11,11 @@
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
+#include "widget_intf.hpp"
 #include "../unicode/module.hpp"
-#include "../GFX/subpixel_orientation.hpp"
+#include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
-#include "../widgets/window_widget.hpp"
-#include "../widgets/grid_widget.hpp"
-#include "../widgets/toolbar_widget.hpp"
-#include "../chrono.hpp"
+#include "../time/module.hpp"
 #include "../label.hpp"
 #include "../animator.hpp"
 #include <unordered_set>
@@ -73,8 +71,6 @@ public:
      */
     bool active = false;
 
-    label title;
-
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
      * the source for the DPI value.
@@ -90,16 +86,12 @@ public:
      */
     extent2 widget_size;
 
-    /** The widget covering the complete window.
-     */
-    std::unique_ptr<window_widget> widget;
-
     /** Notifier used when the window is closing.
      * It is expected that after notifying these callbacks the instance of this class is destroyed.
      */
     notifier<void()> closing;
 
-    gui_window(gui_system& gui, label const& title) noexcept;
+    gui_window(gui_system& gui, std::unique_ptr<widget_intf> widget) noexcept : gui(gui), _widget(std::move(widget)) {}
 
     virtual ~gui_window();
 
@@ -107,14 +99,6 @@ public:
     gui_window& operator=(gui_window const&) = delete;
     gui_window(gui_window&&) = delete;
     gui_window& operator=(gui_window&&) = delete;
-
-    /** 2 phase constructor.
-     * Must be called directly after the constructor on the same thread,
-     * before another thread can send messages to the window.
-     *
-     * `init()` should not take locks on window::mutex.
-     */
-    virtual void init();
 
     void set_device(gfx_device *device) noexcept;
 
@@ -127,26 +111,15 @@ public:
      */
     virtual void render(utc_nanoseconds displayTimePoint);
 
-    /** Get a reference to the window's content widget.
-     * @see grid_widget
-     * @return A reference to a grid_widget.
-     */
-    [[nodiscard]] grid_widget& content() noexcept
+    template<typename Widget>
+    [[nodiscard]] Widget& widget() const noexcept
     {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(widget);
-        return widget->content();
+        return up_cast<Widget>(*_widget);
     }
 
-    /** Get a reference to window's toolbar widget.
-     * @see toolbar_widget
-     * @return A reference to a toolbar_widget.
-     */
-    [[nodiscard]] toolbar_widget& toolbar() noexcept
+    virtual void set_title(label title) noexcept
     {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(widget);
-        return widget->toolbar();
+        _title = std::move(title);
     }
 
     /** Set the mouse cursor icon.
@@ -259,6 +232,14 @@ public:
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
+    /** The label of the window that is passed to the operating system.
+     */
+    label _title;
+
+    /** The widget covering the complete window.
+     */
+    std::unique_ptr<widget_intf> _widget;
+
     box_constraints _widget_constraints = {};
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
@@ -293,9 +274,6 @@ protected:
     virtual void create_window(extent2 new_size) = 0;
 
 private:
-    notifier<>::callback_token _setting_change_token;
-    observer<std::string>::callback_token _selected_theme_token;
-
     /** Target of the mouse
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.

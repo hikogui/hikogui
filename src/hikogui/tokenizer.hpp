@@ -5,9 +5,9 @@
 #pragma once
 
 #include "strings.hpp"
-#include "small_vector.hpp"
+#include "container/small_vector.hpp"
 #include "utility/module.hpp"
-#include "decimal.hpp"
+#include "numeric/decimal.hpp"
 #include "parse_location.hpp"
 #include <chrono>
 #include <memory>

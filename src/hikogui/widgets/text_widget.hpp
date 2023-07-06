@@ -10,15 +10,13 @@
 
 #include "widget.hpp"
 #include "text_delegate.hpp"
-#include "../GUI/gui_event.hpp"
-#include "../text/semantic_text_style.hpp"
-#include "../text/text_selection.hpp"
-#include "../text/text_shaper.hpp"
+#include "../GUI/module.hpp"
+#include "../text/module.hpp"
 #include "../geometry/module.hpp"
 #include "../l10n/module.hpp"
-#include "../undo_stack.hpp"
+#include "../container/module.hpp"
+#include "../observer/module.hpp"
 #include "../scoped_task.hpp"
-#include "../observer.hpp"
 #include <memory>
 #include <string>
 #include <array>

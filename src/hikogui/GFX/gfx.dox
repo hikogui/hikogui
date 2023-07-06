@@ -1,8 +1,0 @@
-namespace hi { inline namespace v1 {
-/**
-\defgroup GFX Graphics
-\ingroup GUI
-\brief Operating System interface to low-level drawing and the GPU.
-
-*/
-}}

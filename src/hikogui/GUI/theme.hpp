@@ -4,13 +4,12 @@
 
 #pragma once
 
-#include "theme_mode.hpp"
-#include "../text/semantic_text_style.hpp"
-#include "../text/text_style.hpp"
+#include "../settings/module.hpp"
+#include "../text/module.hpp"
 #include "../utility/module.hpp"
-#include "../datum.hpp"
 #include "../color/module.hpp"
 #include "../geometry/module.hpp"
+#include "../datum.hpp"
 #include <array>
 #include <filesystem>
 #include <string>

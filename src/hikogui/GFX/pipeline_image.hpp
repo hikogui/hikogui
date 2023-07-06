@@ -7,7 +7,7 @@
 #include "pipeline_vulkan.hpp"
 #include "pipeline_image_push_constants.hpp"
 #include "pipeline_image_vertex.hpp"
-#include "../vector_span.hpp"
+#include "../container/module.hpp"
 #include <vma/vk_mem_alloc.h>
 
 namespace hi::inline v1::pipeline_image {

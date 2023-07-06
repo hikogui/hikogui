@@ -4,14 +4,14 @@
 
 #include "widget.hpp"
 #include "../GUI/gui_window.hpp"
+#include "../telemetry/counters.hpp"
 #include "../ranges.hpp"
-#include "../counters.hpp"
 #include <ranges>
 
 namespace hi::inline v1 {
 
 widget::widget(widget *parent) noexcept :
-    parent(parent), id(narrow_cast<uint32_t>(++global_counter<"widget::id">)), logical_layer(0), semantic_layer(0)
+    widget_intf(parent), logical_layer(0), semantic_layer(0)
 {
     hi_axiom(loop::main().on_thread());
 
@@ -95,7 +95,7 @@ bool widget::handle_event(gui_event const& event) noexcept
         using enum hi::gui_event_type;
     case keyboard_enter:
         focus = true;
-        scroll_to_show();
+        this->scroll_to_show();
         ++global_counter<"widget:keyboard_enter:redraw">;
         request_redraw();
         return true;
@@ -161,7 +161,7 @@ bool widget::handle_event_recursive(gui_event const& event, std::vector<widget_i
 
     auto handled = false;
 
-    for (auto& child : children(false)) {
+    for (auto& child : this->children(false)) {
         handled |= child.handle_event_recursive(event, reject_list);
     }
 
@@ -191,7 +191,7 @@ widget_id widget::find_next_widget(
         found = true;
     }
 
-    auto children_ = std::vector<widget const *>{};
+    auto children_ = std::vector<widget_intf const *>{};
     for (auto& child : children(false)) {
         children_.push_back(std::addressof(child));
     }
@@ -279,25 +279,6 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
     if (parent) {
         parent->scroll_to_show(_layout.to_parent * rectangle);
     }
-}
-
-/** Get a list of parents of a given widget.
- * The chain includes the given widget.
- */
-[[nodiscard]] std::vector<widget_id> widget::parent_chain() const noexcept
-{
-    hi_axiom(loop::main().on_thread());
-
-    std::vector<widget_id> chain;
-
-    if (auto w = this) {
-        chain.push_back(w->id);
-        while (to_bool(w = w->parent)) {
-            chain.push_back(w->id);
-        }
-    }
-
-    return chain;
 }
 
 [[nodiscard]] aarectangle widget::make_overlay_rectangle(aarectangle requested_rectangle) const noexcept

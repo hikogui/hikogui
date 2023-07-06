@@ -11,8 +11,7 @@
 #include "pipeline_SDF.hpp"
 #include "pipeline_alpha.hpp"
 #include "pipeline_tone_mapper.hpp"
-#include "../widgets/window_widget.hpp"
-#include "../trace.hpp"
+#include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include <vector>
 
@@ -530,8 +529,7 @@ void gfx_surface_vulkan::fill_command_buffer(
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    hilet background_color_f32x4 = static_cast<f32x4>(context.background_color);
-    // hilet background_color_f32x4 = f32x4{1.0f, 0.0f, 0.0f, 1.0f};
+    hilet background_color_f32x4 = f32x4{1.0f, 0.0f, 0.0f, 1.0f};
     hilet background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
 
     hilet colorClearValue = vk::ClearColorValue{background_color_array};

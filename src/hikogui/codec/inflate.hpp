@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../byte_string.hpp"
+#include "../container/module.hpp"
 #include <span>
 
 namespace hi::inline v1 {

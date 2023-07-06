@@ -13,10 +13,9 @@
 #include "font_char_map.hpp"
 #include "../unicode/module.hpp"
 #include "../i18n/module.hpp"
-#include "../graphic_path.hpp"
+#include "../graphic_path/module.hpp"
 #include "../utility/module.hpp"
-#include "../hash_map.hpp"
-#include "../lean_vector.hpp"
+#include "../container/module.hpp"
 #include <span>
 #include <vector>
 #include <map>

@@ -3,12 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/tab_widget.hpp"
-#include "hikogui/widgets/toolbar_tab_button_widget.hpp"
 #include "hikogui/crt.hpp"
-#include "hikogui/loop.hpp"
-#include "hikogui/metadata.hpp"
 
 using namespace hi;
 
@@ -19,21 +14,21 @@ int hi_main(int argc, char *argv[])
     set_application_version({1, 0, 0});
 
     auto gui = gui_system::make_unique();
-    auto window = gui->make_window(tr("tab example"));
+    auto [window, widget] = gui->make_window<window_widget>(tr("tab example"));
 
     observer<int> value = 0;
 
     /// [Create three tabs]
-    auto& tab_view = window->content().make_widget<tab_widget>("A1", value);
+    auto& tab_view = widget.content().make_widget<tab_widget>("A1", value);
     tab_view.make_widget<label_widget>(0, tr("one"), alignment::middle_center());
     tab_view.make_widget<label_widget>(1, tr("two"), alignment::middle_center());
     tab_view.make_widget<label_widget>(2, tr("three"), alignment::middle_center());
     /// [Create three tabs]
 
     /// [Create three toolbar tab buttons]
-    window->toolbar().make_widget<toolbar_tab_button_widget>(value, 0, tr("one"));
-    window->toolbar().make_widget<toolbar_tab_button_widget>(value, 1, tr("two"));
-    window->toolbar().make_widget<toolbar_tab_button_widget>(value, 2, tr("three"));
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(value, 0, tr("one"));
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(value, 1, tr("two"));
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(value, 2, tr("three"));
     /// [Create three toolbar tab buttons]
 
     auto close_cb = window->closing.subscribe(

@@ -8,21 +8,19 @@
 #include "pipeline_image_vertex.hpp"
 #include "pipeline_SDF_vertex.hpp"
 #include "pipeline_alpha_vertex.hpp"
-#include "subpixel_orientation.hpp"
+#include "../settings/module.hpp"
 #include "../geometry/module.hpp"
 #include "../unicode/module.hpp"
-#include "../text/text_cursor.hpp"
-#include "../text/text_selection.hpp"
-#include "../text/text_shaper.hpp"
+#include "../text/module.hpp"
 #include "../color/module.hpp"
-#include "../widgets/widget_layout.hpp"
-#include "../vector_span.hpp"
+#include "../container/module.hpp"
 #include "../utility/module.hpp"
 
 namespace hi { inline namespace v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class glyph_ids;
+class widget_layout;
 struct paged_image;
 
 /** The side where the border is drawn.
@@ -220,10 +218,6 @@ public:
      */
     aarectangle scissor_rectangle;
 
-    /** The background color to clear the window with.
-     */
-    color background_color;
-
     /** The subpixel orientation for rendering glyphs.
      */
     hi::subpixel_orientation subpixel_orientation;
@@ -266,7 +260,8 @@ public:
      * @param box The four points of the box to draw.
      * @param attributes The drawing attributes to use.
      */
-    void draw_box(widget_layout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
+    template<std::same_as<widget_layout> WidgetLayout>
+    void draw_box(WidgetLayout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
     {
         return _draw_box(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, attributes);
@@ -278,8 +273,8 @@ public:
      * @param shape The shape of the box.
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
-    template<draw_quad_shape Shape, draw_attribute... Attributes>
-    void draw_box(widget_layout const& layout, Shape const& shape, Attributes const&...attributes) const noexcept
+    template<std::same_as<widget_layout> WidgetLayout, draw_quad_shape Shape, draw_attribute... Attributes>
+    void draw_box(WidgetLayout const& layout, Shape const& shape, Attributes const&...attributes) const noexcept
     {
         return draw_box(layout, make_quad(shape), draw_attributes{attributes...});
     }
@@ -290,7 +285,8 @@ public:
      * @param line The line segment to draw.
      * @param attributes The drawing attributes to use.
      */
-    void draw_line(widget_layout const& layout, line_segment const& line, draw_attributes const& attributes) const noexcept
+    template<std::same_as<widget_layout> WidgetLayout>
+    void draw_line(WidgetLayout const& layout, line_segment const& line, draw_attributes const& attributes) const noexcept
     {
         hilet box = make_rectangle(line, attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
 
@@ -307,8 +303,8 @@ public:
      * @param line The line segment to draw.
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
-    template<draw_attribute... Attributes>
-    void draw_line(widget_layout const& layout, line_segment const& line, Attributes const&...attributes) const noexcept
+    template<std::same_as<widget_layout> WidgetLayout, draw_attribute... Attributes>
+    void draw_line(WidgetLayout const& layout, line_segment const& line, Attributes const&...attributes) const noexcept
     {
         return draw_line(layout, line, draw_attributes{attributes...});
     }
@@ -319,7 +315,8 @@ public:
      * @param circle The circle to draw.
      * @param attributes The drawing attributes to use.
      */
-    void draw_circle(widget_layout const& layout, hi::circle const& circle, draw_attributes const& attributes) const noexcept
+    template<std::same_as<widget_layout> WidgetLayout>
+    void draw_circle(WidgetLayout const& layout, hi::circle const& circle, draw_attributes const& attributes) const noexcept
     {
         auto box_attributes = attributes;
         box_attributes.corner_radius = make_corner_radii(circle);
@@ -332,8 +329,8 @@ public:
      * @param circle The circle to draw.
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
-    template<draw_attribute... Attributes>
-    void draw_circle(widget_layout const& layout, hi::circle const& circle, Attributes const&...attributes) const noexcept
+    template<std::same_as<widget_layout> WidgetLayout, draw_attribute... Attributes>
+    void draw_circle(WidgetLayout const& layout, hi::circle const& circle, Attributes const&...attributes) const noexcept
     {
         return draw_circle(layout, circle, draw_attributes{attributes...});
     }
@@ -347,8 +344,9 @@ public:
      * @return True when the image was drawn, false if the image is not ready yet.
      *         Widgets may want to request a redraw if the image is not ready.
      */
+    template<std::same_as<widget_layout> WidgetLayout>
     [[nodiscard]] bool
-    draw_image(widget_layout const& layout, quad const& box, paged_image& image, draw_attributes const& attributes) const noexcept
+    draw_image(WidgetLayout const& layout, quad const& box, paged_image& image, draw_attributes const& attributes) const noexcept
     {
         return _draw_image(layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, image);
     }
@@ -362,9 +360,9 @@ public:
      * @return True when the image was drawn, false if the image is not ready yet.
      *         Widgets may want to request a redraw if the image is not ready.
      */
-    template<draw_attribute... Attributes>
+    template<std::same_as<widget_layout> WidgetLayout, draw_attribute... Attributes>
     [[nodiscard]] bool
-    draw_image(widget_layout const& layout, draw_quad_shape auto const& box, paged_image& image, Attributes const&...attributes)
+    draw_image(WidgetLayout const& layout, draw_quad_shape auto const& box, paged_image& image, Attributes const&...attributes)
         const noexcept
     {
         return draw_image(layout, make_quad(box), image, draw_attributes{attributes...});
@@ -377,7 +375,8 @@ public:
      * @param glyph The glyphs to draw.
      * @param attributes The drawing attributes to use.
      */
-    void draw_glyph(widget_layout const& layout, quad const& box, glyph_ids const& glyph, draw_attributes const& attributes)
+    template<std::same_as<widget_layout> WidgetLayout>
+    void draw_glyph(WidgetLayout const& layout, quad const& box, glyph_ids const& glyph, draw_attributes const& attributes)
         const noexcept
     {
         return _draw_glyph(
@@ -391,8 +390,8 @@ public:
      * @param glyph The glyphs to draw.
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
-    template<draw_quad_shape Shape, draw_attribute... Attributes>
-    void draw_glyph(widget_layout const& layout, Shape const& box, glyph_ids const& glyph, Attributes const&...attributes)
+    template<std::same_as<widget_layout> WidgetLayout, draw_quad_shape Shape, draw_attribute... Attributes>
+    void draw_glyph(WidgetLayout const& layout, Shape const& box, glyph_ids const& glyph, Attributes const&...attributes)
         const noexcept
     {
         return draw_glyph(layout, make_quad(box), glyph, draw_attributes{attributes...});
@@ -405,8 +404,9 @@ public:
      * @param text The shaped text to draw.
      * @param attributes The drawing attributes to use.
      */
+    template<std::same_as<widget_layout> WidgetLayout>
     void
-    draw_text(widget_layout const& layout, matrix3 const& transform, text_shaper const& text, draw_attributes const& attributes)
+    draw_text(WidgetLayout const& layout, matrix3 const& transform, text_shaper const& text, draw_attributes const& attributes)
         const noexcept
     {
         return _draw_text(
@@ -423,8 +423,8 @@ public:
      * @param text The shaped text to draw.
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
-    template<draw_attribute... Attributes>
-    void draw_text(widget_layout const& layout, matrix3 const& transform, text_shaper const& text, Attributes const&...attributes)
+    template<std::same_as<widget_layout> WidgetLayout, draw_attribute... Attributes>
+    void draw_text(WidgetLayout const& layout, matrix3 const& transform, text_shaper const& text, Attributes const&...attributes)
         const noexcept
     {
         return draw_text(layout, transform, text, draw_attributes{attributes...});
@@ -436,8 +436,8 @@ public:
      * @param text The shaped text to draw.
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
-    template<draw_attribute... Attributes>
-    void draw_text(widget_layout const& layout, text_shaper const& text, Attributes const&...attributes) const noexcept
+    template<std::same_as<widget_layout> WidgetLayout, draw_attribute... Attributes>
+    void draw_text(WidgetLayout const& layout, text_shaper const& text, Attributes const&...attributes) const noexcept
     {
         return draw_text(layout, matrix3{}, text, draw_attributes{attributes...});
     }
@@ -449,8 +449,9 @@ public:
      * @param selection The text selection.
      * @param attributes The drawing attributes to use.
      */
+    template<std::same_as<widget_layout> WidgetLayout>
     void draw_text_selection(
-        widget_layout const& layout,
+        WidgetLayout const& layout,
         text_shaper const& text,
         text_selection const& selection,
         draw_attributes const& attributes) const noexcept
@@ -466,9 +467,9 @@ public:
      * @param selection The text selection.
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
-    template<draw_attribute... Attributes>
+    template<std::same_as<widget_layout> WidgetLayout, draw_attribute... Attributes>
     void draw_text_selection(
-        widget_layout const& layout,
+        WidgetLayout const& layout,
         text_shaper const& text,
         text_selection const& selection,
         Attributes const&...attributes) const noexcept
@@ -485,8 +486,9 @@ public:
      * @param dead_character_mode If true draw the dead-character cursor. The dead_character_mode overrides all other cursors.
      * @param attributes The drawing attributes to use.
      */
+    template<std::same_as<widget_layout> WidgetLayout>
     void draw_text_cursors(
-        widget_layout const& layout,
+        WidgetLayout const& layout,
         text_shaper const& text,
         text_cursor cursor,
         bool overwrite_mode,
@@ -512,9 +514,9 @@ public:
      * @param dead_character_mode If true draw the dead-character cursor. The dead_character_mode overrides all other cursors.
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
-    template<draw_attribute... Attributes>
+    template<std::same_as<widget_layout> WidgetLayout, draw_attribute... Attributes>
     void draw_text_cursors(
-        widget_layout const& layout,
+        WidgetLayout const& layout,
         text_shaper const& text,
         text_cursor cursor,
         bool overwrite_mode,
@@ -533,7 +535,8 @@ public:
      * @param box The box in local coordinates of the widget.
      * @param attributes The drawing attributes to use.
      */
-    void draw_hole(widget_layout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
+    template<std::same_as<widget_layout> WidgetLayout>
+    void draw_hole(WidgetLayout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
     {
         return _override_alpha(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, attributes);
@@ -548,8 +551,8 @@ public:
      * @param box The box in local coordinates of the widget.
      * @param attributes The drawing attributes to use, see: `draw_attributes::draw_attributes()`.
      */
-    template<draw_quad_shape Shape, draw_attribute... Attributes>
-    void draw_hole(widget_layout const& layout, Shape const& box, Attributes const&...attributes) const noexcept
+    template<std::same_as<widget_layout> WidgetLayout, draw_quad_shape Shape, draw_attribute... Attributes>
+    void draw_hole(WidgetLayout const& layout, Shape const& box, Attributes const&...attributes) const noexcept
     {
         return draw_hole(layout, make_quad(box), draw_attributes{attributes...});
     }
@@ -561,7 +564,8 @@ public:
      *               on the window
      * @return True if the widget needs to draw into the context.
      */
-    [[nodiscard]] friend bool overlaps(draw_context const& context, widget_layout const& layout) noexcept
+    template<std::same_as<widget_layout> WidgetLayout>
+    [[nodiscard]] friend bool overlaps(draw_context const& context, WidgetLayout const& layout) noexcept
     {
         return overlaps(context.scissor_rectangle, layout.clipping_rectangle_on_window());
     }
@@ -681,13 +685,12 @@ private:
         bool dead_character_mode,
         draw_attributes const& attributes) const noexcept;
 
-    void _draw_glyph(
-        aarectangle const& clipping_rectangle,
-        quad const& box,
-        glyph_ids const& glyph,
-        draw_attributes const& attributes) const noexcept;
+    void
+    _draw_glyph(aarectangle const& clipping_rectangle, quad const& box, glyph_ids const& glyph, draw_attributes const& attributes)
+        const noexcept;
 
-    [[nodiscard]] bool _draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;
+    [[nodiscard]] bool
+    _draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;
 };
 
 }} // namespace hi::v1

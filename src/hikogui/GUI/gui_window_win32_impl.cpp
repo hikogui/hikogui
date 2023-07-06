@@ -8,14 +8,14 @@
 #include "gui_system.hpp"
 #include "keyboard_virtual_key.hpp"
 #include "theme_book.hpp"
-#include "../GFX/gfx_system_vulkan.hpp"
-#include "../widgets/window_widget.hpp"
-#include "../log.hpp"
-#include "../strings.hpp"
-#include "../utility/module.hpp"
-#include "../os_settings.hpp"
-#include "../loop.hpp"
+#include "../GFX/module.hpp"
+#include "../widgets/module.hpp"
+#include "../telemetry/module.hpp"
 #include "../unicode/module.hpp"
+#include "../utility/module.hpp"
+#include "../settings/module.hpp"
+#include "../strings.hpp"
+#include "../loop.hpp"
 #include <new>
 
 namespace hi::inline v1 {
@@ -103,9 +103,9 @@ void gui_window_win32::create_window(extent2 new_size)
 
     createWindowClass();
 
-    auto u16title = to_wstring(to_string(title.text));
+    auto u16title = to_wstring(to_string(_title.text));
 
-    hi_log_info("Create window of size {} with title '{}'", new_size, title);
+    hi_log_info("Create window of size {} with title '{}'", new_size, _title);
 
     // Recommended to set the dpi-awareness before opening any window.
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -173,10 +173,42 @@ void gui_window_win32::create_window(extent2 new_size)
     surface = gui.gfx->make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(gui_system& gui, label const& title) noexcept :
-    gui_window(gui, title), track_mouse_leave_event_parameters()
+gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf> widget) noexcept :
+    gui_window(gui, std::move(widget)), track_mouse_leave_event_parameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+    _widget->set_window(this);
+
+    // Execute a constraint check to determine initial window size.
+    theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
+
+    _widget_constraints = _widget->update_constraints();
+    hilet new_size = _widget_constraints.preferred;
+
+    // Reset the keyboard target to not focus anything.
+    update_keyboard_target({});
+
+    // For changes in setting on the OS we should reconstrain/layout/redraw the window
+    // For example when the language or theme changes.
+    _setting_change_cbt = os_settings::subscribe(
+        [this] {
+            ++global_counter<"gui_window:os_setting:constrain">;
+            this->process_event({gui_event_type::window_reconstrain});
+        },
+        callback_flags::main);
+
+    // Subscribe on theme changes.
+    _selected_theme_cbt = gui.selected_theme.subscribe(
+        [this](auto...) {
+            ++global_counter<"gui_window:selected_theme:constrain">;
+            this->process_event({gui_event_type::window_reconstrain});
+        },
+        callback_flags::main);
+
+    // Delegate has been called, layout of widgets has been calculated for the
+    // minimum and maximum size of the window.
+    create_window(new_size);
 }
 
 gui_window_win32::~gui_window_win32()
@@ -197,7 +229,7 @@ void gui_window_win32::close_window()
 {
     hi_axiom(loop::main().on_thread());
     if (not PostMessageW(win32Window, WM_CLOSE, 0, 0)) {
-        hi_log_error("Could not send WM_CLOSE to window {}: {}", title, get_last_error_message());
+        hi_log_error("Could not send WM_CLOSE to window {}: {}", _title, get_last_error_message());
     }
 }
 
@@ -775,7 +807,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_GETMINMAXINFO:
         {
             hi_axiom(loop::main().on_thread());
-            hi_assert_not_null(widget);
             hilet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
             minmaxinfo->ptMaxSize.x = round_cast<LONG>(_widget_constraints.maximum.width());
             minmaxinfo->ptMaxSize.y = round_cast<LONG>(_widget_constraints.maximum.height());
@@ -889,7 +920,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             // Convert to y-axis up coordinate system.
             hilet inv_y = os_settings::primary_monitor_rectangle().height() - y;
 
-            hilet hitbox_type = widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
+            hilet hitbox_type = _widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
 
             switch (hitbox_type) {
             case hitbox_type::bottom_resize_border:

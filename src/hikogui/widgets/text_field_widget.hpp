@@ -107,7 +107,7 @@ public:
     } : text_field_widget(parent, make_default_text_field_delegate(hi_forward(value)), hi_forward(attributes)...) {}
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override;
+    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;

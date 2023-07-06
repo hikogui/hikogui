@@ -9,8 +9,8 @@
 #include "otype_kern.hpp"
 #include "font_char_map.hpp"
 #include "../file/file_view.hpp"
-#include "../graphic_path.hpp"
-#include "../counters.hpp"
+#include "../graphic_path/module.hpp"
+#include "../telemetry/counters.hpp"
 #include "../utility/module.hpp"
 #include <memory>
 #include <filesystem>

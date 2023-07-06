@@ -2,18 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/module.hpp"
-#include "hikogui/codec/png.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/GFX/RenderDoc.hpp"
-#include "hikogui/GFX/gfx_surface_delegate_vulkan.hpp"
-#include "hikogui/widgets/widget.hpp"
-#include "hikogui/crt.hpp"
-#include "hikogui/loop.hpp"
-#include "hikogui/task.hpp"
-#include "hikogui/ranges.hpp"
-#include "hikogui/metadata.hpp"
 #include "triangle.hpp"
+#include "hikogui/module.hpp"
+#include "hikogui/crt.hpp"
 #include <ranges>
 #include <cassert>
 
@@ -22,7 +13,8 @@ class triangle_widget : public hi::widget, public hi::gfx_surface_delegate_vulka
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    triangle_widget(hi::widget *parent, hi::gfx_surface &surface) noexcept : widget(parent), _surface(surface) {
+    triangle_widget(hi::widget *parent, hi::gfx_surface& surface) noexcept : widget(parent), _surface(surface)
+    {
         _surface.add_delegate(this);
     }
 
@@ -175,7 +167,7 @@ public:
     }
 
 private:
-    hi::gfx_surface &_surface;
+    hi::gfx_surface& _surface;
     std::shared_ptr<TriangleExample> _triangle_example;
     VkRect2D _view_port;
 };
@@ -187,11 +179,11 @@ hi::task<> main_window(hi::gui_system& gui)
     auto icon = hi::icon(hi::png::load(hi::URL{"resource:vulkan_triangle.png"}));
 
     // Create a window, when `window` gets out-of-scope the window is destroyed.
-    auto window = gui.make_window(hi::label{std::move(icon), hi::tr("Vulkan Triangle")});
+    auto [window, widget] = gui.make_window<hi::window_widget>(hi::label{std::move(icon), hi::tr("Vulkan Triangle")});
 
     // Create the vulkan triangle-widget as the content of the window. The content
     // of the window is a grid, we only use the cell "A1" for this widget.
-    window->content().make_widget<triangle_widget>("A1", *window->surface);
+    widget.content().make_widget<triangle_widget>("A1", *window->surface);
 
     // Wait until the window is "closing" because the operating system says so, or when
     // the X is pressed.

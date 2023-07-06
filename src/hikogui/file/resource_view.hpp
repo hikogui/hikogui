@@ -9,7 +9,7 @@
 #pragma once
 
 #include "file_view.hpp"
-#include "../void_span.hpp"
+#include "../container/module.hpp"
 #include <span>
 #include <variant>
 #include <functional>

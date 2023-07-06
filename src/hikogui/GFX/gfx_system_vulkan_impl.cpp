@@ -4,8 +4,7 @@
 
 #include "gfx_system_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
-#include "../metadata.hpp"
-#include "../metadata_library.hpp"
+#include "../settings/module.hpp"
 #include "../utility/module.hpp"
 #include <chrono>
 #include <cstring>

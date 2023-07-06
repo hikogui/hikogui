@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "file.hpp"
-#include "log.hpp"
+#include "../telementry/module.hpp"
 #include "../utility/module.hpp"
 #include "strings.hpp"
 #include <fcntl.h>

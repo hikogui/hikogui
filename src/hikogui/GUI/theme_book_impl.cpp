@@ -6,8 +6,7 @@
 #include "../font/module.hpp"
 #include "../file/glob.hpp"
 #include "../utility/module.hpp"
-#include "../trace.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 
 namespace hi::inline v1 {
 

@@ -5,7 +5,7 @@
 #include "../utility/win32_headers.hpp"
 
 #include "win32_device_interface.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 
 namespace hi::inline v1 {

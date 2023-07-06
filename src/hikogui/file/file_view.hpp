@@ -10,7 +10,7 @@
 
 #include "file.hpp"
 #include "URL.hpp"
-#include "../void_span.hpp"
+#include "../container/module.hpp"
 #include <span>
 #include <filesystem>
 #include <memory>
@@ -87,11 +87,7 @@ protected:
  *
  * To map a file into memory there are three objects needed:
  * - The `file` object which holds a handle or file descriptor to an open file on disk.
- * - The `file_mapping` object maps a section of the file in the operating system.
  * - The `file_view` object maps a section of the file-mapping into virtual memory.
- *
- * The `file_mapping` intermediate object is required on Windows systems which
- * holds a handle to a file mapping object.
  *
  */
 class file_view {

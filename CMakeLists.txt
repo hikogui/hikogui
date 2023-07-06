@@ -104,6 +104,9 @@ endif()
 # Setup Build Targets
 #-------------------------------------------------------------------
 
+#-------------------------------------------------------------------
+# Build Target: hikogui                                     (library)
+#-------------------------------------------------------------------
 add_library(hikogui)
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 include(CMakeLists_includes.cmake)
@@ -112,23 +115,7 @@ if(HI_ENABLE_PCH)
     include(CMakeLists_pch.cmake)
 endif()
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
-
-#-------------------------------------------------------------------
-# Setup Sources
-#-------------------------------------------------------------------
-
-# This needs to be below the build target commands (add_*).
-# We omit adding source files to the `add_*` commands, but add them
-# later using target_sources() in CMakeLists of subdirectories.
-
-add_subdirectory(src/hikogui)
-
-#-------------------------------------------------------------------
-# Build Target: hikogui                                     (library)
-#-------------------------------------------------------------------
-
 target_compile_features(hikogui PUBLIC cxx_std_23)
-
 set_target_properties(hikogui PROPERTIES VERSION ${HIKOGUI_PROJECT_VERSION_SHORT} SOVERSION ${HIKOGUI_MAJOR_VERSION})
 set_target_properties(hikogui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
@@ -172,8 +159,6 @@ target_include_directories(hikogui PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
     "$<INSTALL_INTERFACE:include>"
 )
-#target_include_directories(hikogui PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-#target_include_directories(hikogui PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 #
 # We will support the following CPUs:

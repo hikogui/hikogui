@@ -13,7 +13,7 @@
 #include "label_widget.hpp"
 #include "../animator.hpp"
 #include "../l10n/module.hpp"
-#include "../notifier.hpp"
+#include "../observer/module.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -77,7 +77,7 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const &context) noexcept override;
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override
+    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {
         co_yield *_on_label_widget;
         co_yield *_off_label_widget;

@@ -7,8 +7,7 @@
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
 #include "../GFX/gfx_system.hpp"
-#include "../font/module.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 #include "../loop.hpp"
 #include <chrono>
 

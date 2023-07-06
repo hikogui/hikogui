@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../unicode/module.hpp"
-#include "../tagged_id.hpp"
+#include "../utility/module.hpp"
 #include <algorithm>
 #include <utility>
 

@@ -42,7 +42,7 @@ public:
     audio_device_widget(widget *parent, hi::audio_system& audio_system) noexcept;
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override;
+    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;

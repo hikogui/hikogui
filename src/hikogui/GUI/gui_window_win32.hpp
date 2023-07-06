@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "../GFX/gfx_surface_vulkan.hpp"
 #include "gui_window.hpp"
+#include "../GFX/gfx_surface_vulkan.hpp"
 #include <unordered_map>
 
 struct HWND__;
@@ -19,7 +19,7 @@ public:
 
     HWND win32Window = nullptr;
 
-    gui_window_win32(gui_system& gui, label const& title) noexcept;
+    gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf> widget) noexcept;
 
     ~gui_window_win32();
 
@@ -39,6 +39,9 @@ public:
 
 private:
     static constexpr UINT_PTR move_and_resize_timer_id = 2;
+
+    notifier<>::callback_token _setting_change_cbt;
+    observer<std::string>::callback_token _selected_theme_cbt;
 
     TRACKMOUSEEVENT track_mouse_leave_event_parameters;
     bool tracking_mouse_leave_event = false;

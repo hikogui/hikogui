@@ -41,7 +41,10 @@ text_shaper_line::text_shaper_line(
     }
 }
 
-static void advance_glyphs_run(point2 &p, text_shaper_line::column_vector::iterator first, text_shaper_line::column_vector::iterator last) noexcept
+static void advance_glyphs_run(
+    point2& p,
+    text_shaper_line::column_vector::iterator first,
+    text_shaper_line::column_vector::iterator last) noexcept
 {
     hi_axiom(first != last);
 
@@ -223,7 +226,16 @@ create_bounding_rectangles(text_shaper_line::column_vector& columns, float y, fl
                 point2{char_it->position.x() + char_it->metrics.advance, y + ascender}};
         } else {
             hilet next_char_it = *next_it;
-            char_it->rectangle = {point2{char_it->position.x(), y - descender}, point2{next_char_it->position.x(), y + ascender}};
+
+            if (next_char_it->position.x() <= char_it->position.x()) {
+                // Somehow the next character is overlapping with the current character, use the advance instead.
+                char_it->rectangle = {
+                    point2{char_it->position.x(), y - descender},
+                    point2{char_it->position.x() + char_it->metrics.advance, y + ascender}};
+            } else {
+                char_it->rectangle = {
+                    point2{char_it->position.x(), y - descender}, point2{next_char_it->position.x(), y + ascender}};
+            }
         }
     }
 }

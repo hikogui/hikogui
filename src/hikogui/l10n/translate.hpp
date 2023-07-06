@@ -8,7 +8,7 @@
 #include "../forward_value.hpp"
 #include "../utility/module.hpp"
 #include "../unicode/module.hpp"
-#include "../os_settings.hpp"
+#include "../settings/module.hpp"
 #include <memory>
 #include <string>
 #include <string_view>

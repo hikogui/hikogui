@@ -7,7 +7,7 @@
 #include "../i18n/module.hpp"
 #include "../formula/formula.hpp"
 #include "../utility/module.hpp"
-#include "../os_settings.hpp"
+#include "../settings/module.hpp"
 #include <string>
 #include <string_view>
 #include <vector>

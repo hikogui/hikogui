@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../chrono.hpp"
+#include "../time/module.hpp"
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
 #include <span>

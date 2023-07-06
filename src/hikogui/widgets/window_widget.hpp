@@ -9,12 +9,13 @@
 #pragma once
 
 #include "widget.hpp"
+#include "toolbar_widget.hpp"
+#include "system_menu_widget.hpp"
+#include "grid_widget.hpp"
+#include "window_traffic_lights_widget.hpp"
 #include "../label.hpp"
 
 namespace hi { inline namespace v1 {
-class toolbar_widget;
-class system_menu_widget;
-class grid_widget;
 
 /** The top-level window widget.
  * This widget is the top-level widget that is owned by the `gui_window`.
@@ -28,11 +29,24 @@ public:
 
     observer<label> title;
 
-    window_widget(gui_window *window, forward_of<observer<label>> auto&& title) noexcept :
-        super(nullptr), _window(window), title(hi_forward(title))
+    window_widget(forward_of<observer<label>> auto&& title) noexcept :
+        super(nullptr), title(hi_forward(title))
     {
-        hi_assert_not_null(_window);
-        constructor_implementation();
+        _toolbar = std::make_unique<toolbar_widget>(this);
+
+        if (operating_system::current == operating_system::windows) {
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
+            _system_menu = &_toolbar->make_widget<system_menu_widget>();
+            this->_system_menu->icon = this->title.get<"icon">();
+#endif
+            _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
+        } else if (operating_system::current == operating_system::macos) {
+            _toolbar->make_widget<window_traffic_lights_widget>();
+        } else {
+            hi_no_default();
+        }
+
+        _content = std::make_unique<grid_widget>(this);
     }
 
     /** The background color of the window.
@@ -54,19 +68,18 @@ public:
     [[nodiscard]] toolbar_widget& toolbar() noexcept;
 
     /// @privatesection
-    [[nodiscard]] generator<widget const &> children(bool include_invisible) const noexcept override;
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override;
     [[nodiscard]] box_constraints update_constraints() noexcept override;
     void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     bool process_event(gui_event const& event) const noexcept override;
+    void set_window(gui_window *window) noexcept override;
     [[nodiscard]] gui_window *window() const noexcept override;
-    [[nodiscard]] hi::theme const& theme() const noexcept override;
-    [[nodiscard]] gfx_surface const *surface() const noexcept override;
     /// @endprivatesection
 private:
-    gui_window *_window;
+    gui_window *_window = nullptr;
 
     std::unique_ptr<grid_widget> _content;
     box_constraints _content_constraints;
@@ -82,8 +95,6 @@ private:
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;
 #endif
-
-    void constructor_implementation() noexcept;
 };
 
 }} // namespace hi::v1

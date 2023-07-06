@@ -5,8 +5,8 @@
 #pragma once
 
 #include "utility/module.hpp"
-#include "notifier.hpp"
-#include "counters.hpp"
+#include "observer/module.hpp"
+#include "telemetry/module.hpp"
 #include "awaitable_timer.hpp"
 #include <coroutine>
 #include <type_traits>

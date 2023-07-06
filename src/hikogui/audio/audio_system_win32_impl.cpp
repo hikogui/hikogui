@@ -8,8 +8,8 @@
 #include "audio_device_win32.hpp"
 #include "audio_system_aggregate.hpp"
 #include "../utility/module.hpp"
-#include "../log.hpp"
-#include "../locked_memory_allocator.hpp"
+#include "../telemetry/module.hpp"
+#include "../memory/module.hpp"
 #include "../loop.hpp"
 
 hi_warning_push();

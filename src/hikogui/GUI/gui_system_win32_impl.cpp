@@ -9,9 +9,8 @@
 #include "../font/module.hpp"
 #include "../file/path_location.hpp"
 #include "../file/URL.hpp"
-#include "../trace.hpp"
-#include "../log.hpp"
-#include "../os_settings.hpp"
+#include "../telemetry/module.hpp"
+#include "../settings/module.hpp"
 #include <memory>
 
 namespace hi::inline v1 {

@@ -3,31 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GFX/RenderDoc.hpp"
-#include "hikogui/GFX/gfx_system.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/GUI/theme_book.hpp"
-#include "hikogui/audio/audio_system.hpp"
-#include "hikogui/widgets/toolbar_button_widget.hpp"
-#include "hikogui/widgets/momentary_button_widget.hpp"
-#include "hikogui/widgets/row_column_widget.hpp"
-#include "hikogui/widgets/selection_widget.hpp"
-#include "hikogui/widgets/toggle_widget.hpp"
-#include "hikogui/widgets/checkbox_widget.hpp"
-#include "hikogui/widgets/radio_button_widget.hpp"
-#include "hikogui/widgets/text_field_widget.hpp"
-#include "hikogui/widgets/tab_widget.hpp"
-#include "hikogui/widgets/toolbar_tab_button_widget.hpp"
-#include "hikogui/widgets/audio_device_widget.hpp"
-#include "hikogui/codec/png.hpp"
-#include "hikogui/log.hpp"
 #include "hikogui/crt.hpp"
-#include "hikogui/time_stamp_count.hpp"
-#include "hikogui/metadata.hpp"
-#include "hikogui/preferences.hpp"
-#include "hikogui/when_any.hpp"
-#include "hikogui/task.hpp"
-#include "hikogui/loop.hpp"
 #include <memory>
 
 class my_preferences : public hi::preferences {
@@ -149,13 +125,13 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, 
     using namespace hi;
 
     auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), tr("Preferences")};
-    auto window = gui.make_window(window_label);
+    auto [window, widget] = gui.make_window<window_widget>(window_label);
 
-    window->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 0, label{elusive_icon::Speaker, tr("Audio")});
-    window->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 1, label{elusive_icon::Key, tr("License")});
-    window->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 2, label{elusive_icon::Brush, tr("Theme")});
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 0, label{elusive_icon::Speaker, tr("Audio")});
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 1, label{elusive_icon::Key, tr("License")});
+    widget.toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 2, label{elusive_icon::Brush, tr("Theme")});
 
-    auto& tabs = window->content().make_widget<tab_widget>("A1", preferences.tab_index);
+    auto& tabs = widget.content().make_widget<tab_widget>("A1", preferences.tab_index);
     auto& audio_tab_grid = tabs.make_widget<grid_widget>(0);
     auto& license_tab_grid = tabs.make_widget<scroll_widget<axis::both>>(1).make_widget<grid_widget>();
     auto& theme_tab_grid = tabs.make_widget<grid_widget>(2);
@@ -172,12 +148,12 @@ hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::aud
     using namespace hi;
 
     auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), tr("HikoGUI demo")};
-    auto window = gui.make_window(window_label);
+    auto [window, widget] = gui.make_window<window_widget>(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, tr("Preferences")};
-    hilet& preferences_button = window->toolbar().make_widget<hi::toolbar_button_widget>(preferences_label);
+    hilet& preferences_button = widget.toolbar().make_widget<hi::toolbar_button_widget>(preferences_label);
 
-    auto& column = window->content().make_widget<column_widget>("A1");
+    auto& column = widget.content().make_widget<column_widget>("A1");
     column.make_widget<toggle_widget>(preferences.toggle_value);
     hilet& hello_world_button = column.make_widget<momentary_button_widget>(tr("Hello world AV"));
 

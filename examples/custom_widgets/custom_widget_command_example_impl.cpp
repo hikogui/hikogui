@@ -3,12 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/module.hpp"
-#include "hikogui/GUI/gui_system.hpp"
-#include "hikogui/widgets/widget.hpp"
 #include "hikogui/crt.hpp"
-#include "hikogui/log.hpp"
-#include "hikogui/loop.hpp"
-#include "hikogui/metadata.hpp"
 
 // Every widget must inherit from hi::widget.
 class command_widget : public hi::widget {
@@ -140,9 +135,9 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     auto gui = hi::gui_system::make_unique();
-    auto window = gui->make_window(hi::tr("Custom Widget Command"));
-    window->content().make_widget<command_widget>("A1");
-    window->content().make_widget<command_widget>("A2");
+    auto [window, widget] = gui->make_window<hi::window_widget>(hi::tr("Custom Widget Command"));
+    widget.content().make_widget<command_widget>("A1");
+    widget.content().make_widget<command_widget>("A2");
 
     auto close_cbt = window->closing.subscribe(
         [&] {

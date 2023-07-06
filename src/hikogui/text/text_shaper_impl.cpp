@@ -5,7 +5,7 @@
 #include "text_shaper.hpp"
 #include "../font/module.hpp"
 #include "../unicode/module.hpp"
-#include "../log.hpp"
+#include "../telemetry/module.hpp"
 #include "../generator.hpp"
 #include <numeric>
 #include <ranges>

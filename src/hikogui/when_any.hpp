@@ -6,7 +6,7 @@
 
 #include "utility/module.hpp"
 #include "scoped_task.hpp"
-#include "notifier.hpp"
+#include "observer/module.hpp"
 #include "awaitable.hpp"
 #include "awaitable_timer.hpp"
 #include <coroutine>

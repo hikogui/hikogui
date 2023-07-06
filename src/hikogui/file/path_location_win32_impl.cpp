@@ -5,8 +5,8 @@
 #include "../utility/win32_headers.hpp"
 
 #include "path_location.hpp"
-#include "../log.hpp"
-#include "../metadata.hpp"
+#include "../telemetry/module.hpp"
+#include "../settings/metadata.hpp"
 #include "../utility/module.hpp"
 #include <filesystem>
 #include <string>
