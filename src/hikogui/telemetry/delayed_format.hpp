@@ -2,10 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "../utility/module.hpp"
 #include <format>
 #include <tuple>
-#include "forward_value.hpp"
-#include "utility/module.hpp"
 
 #pragma once
 

@@ -7,9 +7,19 @@
 
 #pragma once
 
+#include "../utility/module.hpp"
 #include <tuple>
 
 namespace hi::inline v1 {
+
+/** The application instance identified by the operating system.
+*
+* A handle to the application instance of the operating system:
+*  - on windows this is the hInstance of WinMain(), and is used to create
+*    windows that are owned by the current application.
+*/
+static inline os_handle crt_application_instance;
+
 
 /** Start the hikogui system.
  *

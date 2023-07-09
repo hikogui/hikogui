@@ -85,6 +85,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/container/void_span.hpp
     ${HIKOGUI_SOURCE_DIR}/container/wfree_fifo.hpp
     ${HIKOGUI_SOURCE_DIR}/container/wfree_unordered_map.hpp
+    ${HIKOGUI_SOURCE_DIR}/crt/console.hpp
+    ${HIKOGUI_SOURCE_DIR}/crt/crt_utils.hpp
+    ${HIKOGUI_SOURCE_DIR}/crt/dialog.hpp
+    ${HIKOGUI_SOURCE_DIR}/crt/terminate.hpp
     ${HIKOGUI_SOURCE_DIR}/file/file.hpp
     ${HIKOGUI_SOURCE_DIR}/file/file_view.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_win32.hpp>
@@ -380,7 +384,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_string_node.hpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_top_node.hpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_while_node.hpp
+    ${HIKOGUI_SOURCE_DIR}/telemetry/atomic.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/counters.hpp
+    ${HIKOGUI_SOURCE_DIR}/telemetry/delayed_format.hpp
+    ${HIKOGUI_SOURCE_DIR}/telemetry/format_check.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/log.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/module.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/trace.hpp
@@ -437,6 +444,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/exception.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/float16.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/forward_value.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/hash.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/math.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/memory.hpp
@@ -488,20 +496,12 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/algorithm.hpp
     ${HIKOGUI_SOURCE_DIR}/animator.hpp
     ${HIKOGUI_SOURCE_DIR}/arguments.hpp
-    ${HIKOGUI_SOURCE_DIR}/atomic.hpp
     ${HIKOGUI_SOURCE_DIR}/awaitable.hpp
     ${HIKOGUI_SOURCE_DIR}/awaitable_timer.hpp
     ${HIKOGUI_SOURCE_DIR}/bits.hpp
-    ${HIKOGUI_SOURCE_DIR}/cache.hpp
     #${HIKOGUI_SOURCE_DIR}/command_line.hpp
-    ${HIKOGUI_SOURCE_DIR}/console.hpp
     ${HIKOGUI_SOURCE_DIR}/crt.hpp
-    ${HIKOGUI_SOURCE_DIR}/crt_utils.hpp
     ${HIKOGUI_SOURCE_DIR}/datum.hpp
-    ${HIKOGUI_SOURCE_DIR}/delayed_format.hpp
-    ${HIKOGUI_SOURCE_DIR}/dialog.hpp
-    ${HIKOGUI_SOURCE_DIR}/format_check.hpp
-    ${HIKOGUI_SOURCE_DIR}/forward_value.hpp
     ${HIKOGUI_SOURCE_DIR}/function_timer.hpp
     ${HIKOGUI_SOURCE_DIR}/functional.hpp
     ${HIKOGUI_SOURCE_DIR}/generator.hpp
@@ -525,7 +525,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/sip_hash.hpp
     ${HIKOGUI_SOURCE_DIR}/strings.hpp
     ${HIKOGUI_SOURCE_DIR}/task.hpp
-    ${HIKOGUI_SOURCE_DIR}/terminate.hpp
     ${HIKOGUI_SOURCE_DIR}/tokenizer.hpp
     ${HIKOGUI_SOURCE_DIR}/when_any.hpp
     

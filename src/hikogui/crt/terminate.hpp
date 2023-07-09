@@ -5,7 +5,7 @@
 /** @file terminate.hpp Utilities for throwing exceptions and terminating the application.
  */
 
-#include "utility/module.hpp"
+#include "../utility/module.hpp"
 #include <exception>
 #include <stdexcept>
 #include <atomic>

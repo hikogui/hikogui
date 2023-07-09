@@ -79,6 +79,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/settings/user_settings_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/counters_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/telemetry/format_check_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_scripts_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_tests.cpp
@@ -89,6 +90,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/utility/exceptions_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/float16_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/forward_value_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/math_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/units_tests.cpp

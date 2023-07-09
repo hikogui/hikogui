@@ -22,6 +22,10 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/concurrency/thread_impl.cpp
     #${HIKOGUI_SOURCE_DIR}/concurrency/thread_macos_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/concurrency/thread_win32_impl.cpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/console_win32_impl.cpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/crt_utils_win32_impl.cpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/dialog_win32_impl.cpp>
+    ${HIKOGUI_SOURCE_DIR}/crt/terminate_impl.cpp
     $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_posix_impl.cpp>
     $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_view_posix_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_view_win32_impl.cpp>
@@ -121,10 +125,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/awaitable_timer_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console_win32_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt_utils_win32_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/dialog_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/loop_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/terminate_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/tokenizer_impl.cpp    
 )

@@ -17,6 +17,7 @@
 #include "exception.hpp"
 #include "fixed_string.hpp"
 #include "float16.hpp"
+#include "forward_value.hpp"
 #include "hash.hpp"
 #include "math.hpp"
 #include "memory.hpp"

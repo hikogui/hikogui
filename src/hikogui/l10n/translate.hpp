@@ -5,7 +5,6 @@
 #pragma once
 
 #include "translation.hpp"
-#include "../forward_value.hpp"
 #include "../utility/module.hpp"
 #include "../unicode/module.hpp"
 #include "../settings/module.hpp"

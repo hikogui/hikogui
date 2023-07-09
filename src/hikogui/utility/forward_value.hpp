@@ -35,7 +35,7 @@ struct forward_value {
     }
 };
 
-#define MAKE_FORWARD_VALUE(TEMPLATE_TYPE, RETURN_TYPE, ARGUMENT_TYPE) \
+#define HI_X(TEMPLATE_TYPE, RETURN_TYPE, ARGUMENT_TYPE) \
     template<> \
     struct forward_value<TEMPLATE_TYPE> { \
         using type = RETURN_TYPE; \
@@ -47,22 +47,22 @@ struct forward_value {
     };
 
 // Copy string_view by string value.
-MAKE_FORWARD_VALUE(std::string_view, std::string, std::string_view const &)
-MAKE_FORWARD_VALUE(std::string_view const, std::string, std::string_view const &)
-MAKE_FORWARD_VALUE(std::string_view &, std::string, std::string_view const &)
-MAKE_FORWARD_VALUE(std::string_view const &, std::string, std::string_view const &)
+HI_X(std::string_view, std::string, std::string_view const &)
+HI_X(std::string_view const, std::string, std::string_view const &)
+HI_X(std::string_view &, std::string, std::string_view const &)
+HI_X(std::string_view const &, std::string, std::string_view const &)
 
 // Copy char pointers by string value.
-MAKE_FORWARD_VALUE(char *, std::string, char const *)
-MAKE_FORWARD_VALUE(char const *, std::string, char const *)
-MAKE_FORWARD_VALUE(char *const, std::string, char const *)
-MAKE_FORWARD_VALUE(char const *const, std::string, char const *)
-MAKE_FORWARD_VALUE(char *&, std::string, char const *)
-MAKE_FORWARD_VALUE(char const *&, std::string, char const *)
-MAKE_FORWARD_VALUE(char *const &, std::string, char const *)
-MAKE_FORWARD_VALUE(char const *const &, std::string, char const *)
+HI_X(char *, std::string, char const *)
+HI_X(char const *, std::string, char const *)
+HI_X(char *const, std::string, char const *)
+HI_X(char const *const, std::string, char const *)
+HI_X(char *&, std::string, char const *)
+HI_X(char const *&, std::string, char const *)
+HI_X(char *const &, std::string, char const *)
+HI_X(char const *const &, std::string, char const *)
 
-#undef MAKE_FORWARD_VALUE
+#undef HI_X
 
 // Copy string literal by pointer.
 template<std::size_t N>

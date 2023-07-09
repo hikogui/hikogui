@@ -14,6 +14,7 @@
 #include "../unicode/module.hpp"
 #include "../utility/module.hpp"
 #include "../settings/module.hpp"
+#include "../crt/module.hpp"
 #include "../strings.hpp"
 #include "../loop.hpp"
 #include <new>
@@ -88,7 +89,7 @@ static void createWindowClass()
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance = static_cast<HINSTANCE>(gui_system::instance);
+        win32WindowClass.hInstance = static_cast<HINSTANCE>(crt_application_instance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -125,7 +126,7 @@ void gui_window_win32::create_window(extent2 new_size)
 
         NULL, // Parent window
         NULL, // Menu
-        reinterpret_cast<HINSTANCE>(gui_system::instance), // Instance handle
+        reinterpret_cast<HINSTANCE>(crt_application_instance), // Instance handle
         this);
     if (win32Window == nullptr) {
         hi_log_fatal("Could not open a win32 window: {}", get_last_error_message());
@@ -170,7 +171,7 @@ void gui_window_win32::create_window(extent2 new_size)
     }
     dpi = narrow_cast<float>(_dpi);
 
-    surface = gui.gfx->make_surface(gui_system::instance, win32Window);
+    surface = gui.gfx->make_surface(crt_application_instance, win32Window);
 }
 
 gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf> widget) noexcept :

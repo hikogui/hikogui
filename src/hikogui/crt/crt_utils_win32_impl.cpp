@@ -2,14 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "utility/win32_headers.hpp"
+#include "../utility/win32_headers.hpp"
 
 #include "crt_utils.hpp"
 #include "terminate.hpp"
 #include "console.hpp"
-#include "GUI/gui_system.hpp"
-#include "utility/module.hpp"
-#include "telemetry/log.hpp"
+#include "../utility/module.hpp"
+#include "../concurrency/module.hpp"
+#include "../char_maps/module.hpp"
+#include "../time/module.hpp"
 
 hi_warning_push();
 // C26400: Do not assign the result of an allocation or a function cal with an owner<T> return value to... (i11)
@@ -17,6 +18,28 @@ hi_warning_push();
 hi_warning_ignore_msvc(26400);
 
 namespace hi::inline v1 {
+
+/** Copy a std::string to new memory.
+ * The caller will have to delete [] return value.
+ */
+[[nodiscard]] inline char *make_cstr(char const *c_str, std::size_t size = -1) noexcept
+{
+    if (size == -1) {
+        size = std::strlen(c_str);
+    }
+
+    auto r = new char[size + 1];
+    std::memcpy(r, c_str, size + 1);
+    return r;
+}
+
+/** Copy a std::string to new memory.
+ * The caller will have to delete [] return value.
+ */
+[[nodiscard]] inline char *make_cstr(std::string const& s) noexcept
+{
+    return make_cstr(s.c_str(), s.size());
+}
 
 std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
@@ -55,19 +78,12 @@ std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
     // Add a nullptr to the end of the argument list.
     argv[argc] = nullptr;
 
-    // Initialize tzdata base.
-    try {
-        detail::log_message_base::zone = std::chrono::get_tzdb().current_zone();
-    } catch (std::runtime_error const &e) {
-        hi_log_error("Could not get current time zone: \"{}\"", e.what());
-    }
-
     // Make sure the console is in a valid state to write text to it.
     hi::console_start();
     hi::time_stamp_count::start_subsystem();
     hi::start_system();
 
-    hi::gui_system::instance = instance;
+    hi::crt_application_instance = instance;
     return {argc, argv};
 }
 
