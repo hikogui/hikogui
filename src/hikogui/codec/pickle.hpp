@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../datum.hpp"
+#include "datum.hpp"
 #include "base_n.hpp"
 #include <string>
 #include <limits>

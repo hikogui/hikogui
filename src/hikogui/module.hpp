@@ -44,7 +44,6 @@
 
 //#include "command_line.hpp"
 // Never include "crt.hpp"
-#include "datum.hpp"
 
 /** @file module.hpp
 * 

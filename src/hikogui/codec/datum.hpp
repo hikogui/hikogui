@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "numeric/module.hpp"
-#include "container/module.hpp"
-#include "codec/base_n.hpp"
-#include "codec/jsonpath.hpp"
+#include "../utility/module.hpp"
+#include "../numeric/module.hpp"
+#include "../container/module.hpp"
+#include "base_n.hpp"
+#include "jsonpath.hpp"
 #include <cstdint>
 #include <concepts>
 #include <bit>

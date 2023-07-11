@@ -12,8 +12,8 @@
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
 #include "../geometry/module.hpp"
-#include "../layout/grid_layout.hpp"
-#include "../label.hpp"
+#include "../layout/module.hpp"
+#include "../l10n/module.hpp"
 #include <memory>
 #include <string>
 #include <array>

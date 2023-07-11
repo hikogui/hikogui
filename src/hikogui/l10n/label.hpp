@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include "utility/module.hpp"
-#include "l10n/module.hpp"
-#include "unicode/module.hpp"
-#include "image/module.hpp"
-#include "font/module.hpp"
+#include "../utility/module.hpp"
+#include "../unicode/module.hpp"
+#include "../image/module.hpp"
+#include "../font/module.hpp"
+#include "translate.hpp"
 #include <string>
 #include <type_traits>
 #include <memory>

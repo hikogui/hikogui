@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "../file/file_view.hpp"
+#include "../file/module.hpp"
 #include "../parser/module.hpp"
 #include "../utility/module.hpp"
-#include "../datum.hpp"
 #include "../algorithm/module.hpp"
+#include "datum.hpp"
 #include "indent.hpp"
 #include <string>
 #include <string_view>

@@ -6,7 +6,7 @@
 
 #include "../container/module.hpp"
 #include "../utility/module.hpp"
-#include "../datum.hpp"
+#include "datum.hpp"
 #include <cstddef>
 #include <string>
 

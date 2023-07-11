@@ -49,6 +49,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/char_maps/utf_8.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/base_n.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/BON8.hpp
+    ${HIKOGUI_SOURCE_DIR}/codec/datum.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/gzip.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/huffman.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/inflate.hpp
@@ -315,6 +316,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/image/srgb_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/uint_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/unorm_a2bgr10_pack.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/label.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/module.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
@@ -523,8 +525,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
 
     ${HIKOGUI_SOURCE_DIR}/crt.hpp
-    ${HIKOGUI_SOURCE_DIR}/datum.hpp
-    ${HIKOGUI_SOURCE_DIR}/label.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp
     
 )

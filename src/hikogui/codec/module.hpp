@@ -3,6 +3,7 @@
 
 #include "base_n.hpp"
 #include "BON8.hpp"
+#include "datum.hpp"
 #include "gzip.hpp"
 #include "huffman.hpp"
 #include "indent.hpp"

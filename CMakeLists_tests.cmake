@@ -24,6 +24,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/char_maps/utf_8_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/base_n_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/BON8_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/codec/datum_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/gzip_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/JSON_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/SHA2_tests.cpp

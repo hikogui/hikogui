@@ -9,7 +9,7 @@
 #include "../utility/module.hpp"
 #include "../color/module.hpp"
 #include "../geometry/module.hpp"
-#include "../datum.hpp"
+#include "../codec/module.hpp"
 #include <array>
 #include <filesystem>
 #include <string>

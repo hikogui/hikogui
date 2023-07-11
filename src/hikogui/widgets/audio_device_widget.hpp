@@ -10,10 +10,8 @@
 
 #include "selection_widget.hpp"
 #include "grid_widget.hpp"
-#include "../audio/audio_system.hpp"
-#include "../audio/audio_device.hpp"
-#include "../audio/audio_direction.hpp"
-#include "../label.hpp"
+#include "../audio/module.hpp"
+#include "../l10n/module.hpp"
 #include <memory>
 #include <string>
 #include <array>
