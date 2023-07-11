@@ -4,7 +4,7 @@
 
 #include "iso_15924.hpp"
 #include "../utility/module.hpp"
-#include "../strings.hpp"
+#include "../algorithm/module.hpp"
 #include <array>
 
 namespace hi::inline v1 {

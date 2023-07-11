@@ -6,7 +6,7 @@
 
 #include "audio_direction.hpp"
 #include "win32_device_interface.hpp"
-#include "../generator.hpp"
+#include "../coroutine/module.hpp"
 #include <string>
 
 namespace hi::inline v1 {

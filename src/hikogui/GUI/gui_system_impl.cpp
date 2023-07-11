@@ -8,7 +8,7 @@
 #include "theme_book.hpp"
 #include "../GFX/gfx_system.hpp"
 #include "../telemetry/module.hpp"
-#include "../loop.hpp"
+#include "../loop/module.hpp"
 #include <chrono>
 
 namespace hi::inline v1 {

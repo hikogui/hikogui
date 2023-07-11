@@ -8,7 +8,7 @@
 #include "../font/module.hpp"
 #include "../utility/module.hpp"
 #include "../label.hpp"
-#include "../generator.hpp"
+#include "../coroutine/module.hpp"
 #include <cstdint>
 
 namespace hi::inline v1 {

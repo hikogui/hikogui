@@ -30,6 +30,13 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/audio/surround_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/win32_device_interface.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/win32_wave_device.hpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/algorithm.hpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/animator.hpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/lookahead_iterator.hpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/ranges.hpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/recursive_iterator.hpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/strings.hpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/ascii.hpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/char_converter.hpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/cp_1252.hpp
@@ -43,6 +50,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/codec/base_n.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/BON8.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/gzip.hpp
+    ${HIKOGUI_SOURCE_DIR}/codec/huffman.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/inflate.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/JSON.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/module.hpp
@@ -57,9 +65,11 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/color/Rec2100.hpp
     ${HIKOGUI_SOURCE_DIR}/color/semantic_color.hpp
     ${HIKOGUI_SOURCE_DIR}/color/sRGB.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/callback_flags.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/global_state.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/notifier.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/rcu.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/subsystem.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/thread.hpp
@@ -68,6 +78,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
     ${HIKOGUI_SOURCE_DIR}/container/byte_string.hpp
     ${HIKOGUI_SOURCE_DIR}/container/function_fifo.hpp
+    ${HIKOGUI_SOURCE_DIR}/container/functional.hpp
     ${HIKOGUI_SOURCE_DIR}/container/gap_buffer.hpp
     ${HIKOGUI_SOURCE_DIR}/container/hash_map.hpp
     ${HIKOGUI_SOURCE_DIR}/container/lean_vector.hpp
@@ -85,6 +96,12 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/container/void_span.hpp
     ${HIKOGUI_SOURCE_DIR}/container/wfree_fifo.hpp
     ${HIKOGUI_SOURCE_DIR}/container/wfree_unordered_map.hpp
+    ${HIKOGUI_SOURCE_DIR}/coroutine/awaitable.hpp
+    ${HIKOGUI_SOURCE_DIR}/coroutine/generator.hpp
+    ${HIKOGUI_SOURCE_DIR}/coroutine/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/coroutine/scoped_task.hpp
+    ${HIKOGUI_SOURCE_DIR}/coroutine/task.hpp
+    ${HIKOGUI_SOURCE_DIR}/coroutine/when_any.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/console.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/crt_utils.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/dialog.hpp
@@ -302,6 +319,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translation.hpp
+    ${HIKOGUI_SOURCE_DIR}/loop/awaitable_timer.hpp
+    ${HIKOGUI_SOURCE_DIR}/loop/function_timer.hpp
+    ${HIKOGUI_SOURCE_DIR}/loop/loop.hpp
+    ${HIKOGUI_SOURCE_DIR}/loop/module.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/box_constraints.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/box_shape.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/grid_layout.hpp
@@ -328,13 +349,17 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/numeric/polynomial.hpp
     ${HIKOGUI_SOURCE_DIR}/numeric/safe_int.hpp
     ${HIKOGUI_SOURCE_DIR}/numeric/stdint.hpp
-    ${HIKOGUI_SOURCE_DIR}/observer/callback_flags.hpp
+    ${HIKOGUI_SOURCE_DIR}/observer/group_ptr.hpp
     ${HIKOGUI_SOURCE_DIR}/observer/module.hpp
-    ${HIKOGUI_SOURCE_DIR}/observer/notifier.hpp
     ${HIKOGUI_SOURCE_DIR}/observer/observable.hpp
     ${HIKOGUI_SOURCE_DIR}/observer/observable_value.hpp
     ${HIKOGUI_SOURCE_DIR}/observer/observer.hpp
     ${HIKOGUI_SOURCE_DIR}/observer/shared_state.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lexer.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/operator.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/parse_location.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/placement.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/tokenizer.hpp
     ${HIKOGUI_SOURCE_DIR}/random/dither.hpp
     ${HIKOGUI_SOURCE_DIR}/random/module.hpp
     ${HIKOGUI_SOURCE_DIR}/random/seed.hpp
@@ -356,6 +381,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/security/module.hpp
     ${HIKOGUI_SOURCE_DIR}/security/security.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/security/security_win32.hpp>
+    ${HIKOGUI_SOURCE_DIR}/security/sip_hash.hpp
     #${HIKOGUI_SOURCE_DIR}/settings/cpu_id.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/metadata.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/metadata_library.hpp # generated.
@@ -433,6 +459,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_word_break.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/architecture.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/bits.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/cast.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/charconv.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/compare.hpp
@@ -451,6 +478,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/module.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/numbers.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/policy.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/reflection.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/tagged_id.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/test.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/time_zone.hpp
@@ -493,39 +521,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/widget_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
-    ${HIKOGUI_SOURCE_DIR}/algorithm.hpp
-    ${HIKOGUI_SOURCE_DIR}/animator.hpp
-    ${HIKOGUI_SOURCE_DIR}/arguments.hpp
-    ${HIKOGUI_SOURCE_DIR}/awaitable.hpp
-    ${HIKOGUI_SOURCE_DIR}/awaitable_timer.hpp
-    ${HIKOGUI_SOURCE_DIR}/bits.hpp
-    #${HIKOGUI_SOURCE_DIR}/command_line.hpp
+
     ${HIKOGUI_SOURCE_DIR}/crt.hpp
     ${HIKOGUI_SOURCE_DIR}/datum.hpp
-    ${HIKOGUI_SOURCE_DIR}/function_timer.hpp
-    ${HIKOGUI_SOURCE_DIR}/functional.hpp
-    ${HIKOGUI_SOURCE_DIR}/generator.hpp
-    ${HIKOGUI_SOURCE_DIR}/group_ptr.hpp
-    ${HIKOGUI_SOURCE_DIR}/huffman.hpp
-    ${HIKOGUI_SOURCE_DIR}/indent.hpp
-    ${HIKOGUI_SOURCE_DIR}/jsonpath.hpp
     ${HIKOGUI_SOURCE_DIR}/label.hpp
-    #${HIKOGUI_SOURCE_DIR}/lexer.hpp
-    #${HIKOGUI_SOURCE_DIR}/lookahead_iterator.hpp
-    ${HIKOGUI_SOURCE_DIR}/loop.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp
-    ${HIKOGUI_SOURCE_DIR}/operator.hpp
-    ${HIKOGUI_SOURCE_DIR}/parse_location.hpp
-    ${HIKOGUI_SOURCE_DIR}/pickle.hpp
-    ${HIKOGUI_SOURCE_DIR}/placement.hpp
-    ${HIKOGUI_SOURCE_DIR}/ranges.hpp
-    ${HIKOGUI_SOURCE_DIR}/recursive_iterator.hpp
-    ${HIKOGUI_SOURCE_DIR}/reflection.hpp
-    ${HIKOGUI_SOURCE_DIR}/scoped_task.hpp
-    ${HIKOGUI_SOURCE_DIR}/sip_hash.hpp
-    ${HIKOGUI_SOURCE_DIR}/strings.hpp
-    ${HIKOGUI_SOURCE_DIR}/task.hpp
-    ${HIKOGUI_SOURCE_DIR}/tokenizer.hpp
-    ${HIKOGUI_SOURCE_DIR}/when_any.hpp
     
 )

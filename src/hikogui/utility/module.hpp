@@ -6,6 +6,7 @@
 
 #include "architecture.hpp"
 #include "assert.hpp"
+#include "bits.hpp"
 #include "cast.hpp"
 #include "charconv.hpp"
 #include "compare.hpp"

@@ -6,9 +6,9 @@
 
 #include "utility/module.hpp"
 #include "numeric/module.hpp"
-#include "container/byte_string.hpp"
+#include "container/module.hpp"
 #include "codec/base_n.hpp"
-#include "jsonpath.hpp"
+#include "codec/jsonpath.hpp"
 #include <cstdint>
 #include <concepts>
 #include <bit>

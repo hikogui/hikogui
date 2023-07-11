@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../strings.hpp"
+#include "../algorithm/module.hpp"
 #include <cstdint>
 
 namespace hi::inline v1 {

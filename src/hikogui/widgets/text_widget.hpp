@@ -16,7 +16,7 @@
 #include "../l10n/module.hpp"
 #include "../container/module.hpp"
 #include "../observer/module.hpp"
-#include "../scoped_task.hpp"
+#include "../coroutine/module.hpp"
 #include <memory>
 #include <string>
 #include <array>

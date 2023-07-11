@@ -5,7 +5,6 @@
 #pragma once
 
 #include "int_carry.hpp"
-#include "../strings.hpp"
 #include "../utility/module.hpp"
 #include "../codec/base_n.hpp"
 #include <format>

@@ -10,7 +10,7 @@
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../memory/module.hpp"
-#include "../loop.hpp"
+#include "../loop/module.hpp"
 
 hi_warning_push();
 // C26435: Function '' should specify exactly one of 'virtual', 'override' or 'final' (c.128)

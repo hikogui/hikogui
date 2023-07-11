@@ -6,7 +6,7 @@
 
 #include "console.hpp"
 #include "../utility/module.hpp"
-#include "../strings.hpp"
+#include "../char_maps/module.hpp"
 #include <memory>
 #include <string_view>
 

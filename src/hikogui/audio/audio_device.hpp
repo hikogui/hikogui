@@ -13,7 +13,7 @@
 #include "../numeric/module.hpp"
 #include "../label.hpp"
 #include "../utility/module.hpp"
-#include "../loop.hpp"
+#include "../loop/module.hpp"
 #include <string>
 #include <memory>
 #include <ostream>

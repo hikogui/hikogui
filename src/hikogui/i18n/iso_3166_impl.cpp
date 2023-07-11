@@ -4,6 +4,7 @@
 
 #include "iso_3166.hpp"
 #include "../utility/module.hpp"
+#include "../algorithm/module.hpp"
 #include <array>
 
 namespace hi::inline v1 {

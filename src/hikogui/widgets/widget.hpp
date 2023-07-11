@@ -16,7 +16,7 @@
 #include "../settings/module.hpp"
 #include "../numeric/module.hpp"
 #include "../GUI/module.hpp"
-#include "../generator.hpp"
+#include "../coroutine/module.hpp"
 #include <memory>
 #include <vector>
 #include <string>

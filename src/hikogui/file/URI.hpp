@@ -9,8 +9,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../ranges.hpp"
-#include "../strings.hpp"
+#include "../algorithm/module.hpp"
 #include <string>
 #include <optional>
 #include <ranges>

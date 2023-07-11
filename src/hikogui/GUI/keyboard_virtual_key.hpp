@@ -6,7 +6,6 @@
 
 #include "keyboard_modifiers.hpp"
 #include "../utility/module.hpp"
-#include "../strings.hpp"
 #include <unordered_map>
 
 namespace hi::inline v1 {

@@ -7,7 +7,6 @@
 #include "formula_evaluation_context.hpp"
 #include "../utility/module.hpp"
 #include "../datum.hpp"
-#include "../strings.hpp"
 #include <functional>
 #include <unordered_map>
 #include <vector>

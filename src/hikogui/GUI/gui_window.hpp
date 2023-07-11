@@ -17,7 +17,7 @@
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
 #include "../label.hpp"
-#include "../animator.hpp"
+#include "../algorithm/module.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>

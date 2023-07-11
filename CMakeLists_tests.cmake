@@ -14,6 +14,7 @@ add_dependencies(hikogui_all_tests hikogui_tests)
 target_sources(hikogui_tests PRIVATE
     #${HIKOGUI_SOURCE_DIR}/audio/audio_sample_packer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_sample_unpacker_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/ranges_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/ascii_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/char_converter_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/cp_1252_tests.cpp
@@ -28,6 +29,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/codec/SHA2_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/color/color_space_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/notifier_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/rcu_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/container/gap_buffer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/container/lean_vector_tests.cpp
@@ -68,9 +70,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/numeric/int_overflow_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/numeric/polynomial_tests.hpp
     ${HIKOGUI_SOURCE_DIR}/numeric/polynomial_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/numeric/ranges_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/numeric/safe_int_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/observer/notifier_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/observer/shared_state_tests.cpp
     #${HIKOGUI_SOURCE_DIR}/random/dither_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/seed_tests.cpp

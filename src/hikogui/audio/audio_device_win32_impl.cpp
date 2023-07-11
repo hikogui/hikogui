@@ -13,7 +13,6 @@
 #include "win32_wave_device.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
-#include "../strings.hpp"
 #include <bit>
 
 namespace hi::inline v1 {

@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "inflate.hpp"
-#include "../bits.hpp"
-#include "../placement.hpp"
-#include "../huffman.hpp"
+#include "../utility/module.hpp"
+#include "../parser/module.hpp"
+#include "huffman.hpp"
 #include <array>
 
 namespace hi::inline v1 {

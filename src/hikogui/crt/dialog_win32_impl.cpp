@@ -6,7 +6,7 @@
 
 #include "dialog.hpp"
 #include "../utility/module.hpp"
-#include "../strings.hpp"
+#include "../char_maps/module.hpp"
 
 namespace hi::inline v1 {
 

@@ -15,8 +15,8 @@
 #include "../utility/module.hpp"
 #include "../settings/module.hpp"
 #include "../crt/module.hpp"
-#include "../strings.hpp"
-#include "../loop.hpp"
+#include "../algorithm/module.hpp"
+#include "../loop/module.hpp"
 #include <new>
 
 namespace hi::inline v1 {

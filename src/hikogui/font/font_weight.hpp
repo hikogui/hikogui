@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../strings.hpp"
 #include <string>
 #include <unordered_map>
 #include <ostream>

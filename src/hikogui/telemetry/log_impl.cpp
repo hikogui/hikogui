@@ -6,7 +6,6 @@
 #include "trace.hpp"
 #include "../utility/module.hpp"
 #include "../crt/module.hpp"
-#include "../strings.hpp"
 #include <format>
 #include <exception>
 #include <memory>

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../strings.hpp"
 #include <cctype>
 
 namespace hi::inline v1 {

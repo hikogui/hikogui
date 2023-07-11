@@ -3,10 +3,11 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "../utility/win32_headers.hpp"
-#include "registry_win32.hpp"
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
-#include "../strings.hpp"
+#include "../char_maps/module.hpp"
+#include "../algorithm/module.hpp"
+#include "registry_win32.hpp"
 
 namespace hi::inline v1 {
 

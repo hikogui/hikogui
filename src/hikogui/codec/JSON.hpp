@@ -5,11 +5,11 @@
 #pragma once
 
 #include "../file/file_view.hpp"
-#include "../tokenizer.hpp"
+#include "../parser/module.hpp"
 #include "../utility/module.hpp"
 #include "../datum.hpp"
-#include "../strings.hpp"
-#include "../indent.hpp"
+#include "../algorithm/module.hpp"
+#include "indent.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
