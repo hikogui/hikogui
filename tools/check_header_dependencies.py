@@ -12,6 +12,15 @@ class module (object):
         if name.endswith("/module.hpp"):
             module_name = name.split("/")[-2]
             self.dependencies.add(module_name)
+        elif "win32_headers.hpp" in name:
+            # This file is not included by utility/module.hpp
+            pass
+        elif "crt.hpp" in name:
+            # Only files that have hi_main() defined may include this.
+            pass
+        elif "test" in name:
+            # Some headers are only used in unit tests, they always have test in the name.
+            pass
         elif "/" in name:
             self.includes.add(name)
 

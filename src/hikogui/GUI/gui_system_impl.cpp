@@ -6,7 +6,7 @@
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
-#include "../GFX/gfx_system.hpp"
+#include "../GFX/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../loop/module.hpp"
 #include <chrono>

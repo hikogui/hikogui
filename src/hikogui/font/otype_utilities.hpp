@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../parser/placement.hpp"
+#include "../parser/module.hpp"
 #include <concepts>
 
 namespace hi { inline namespace v1 {

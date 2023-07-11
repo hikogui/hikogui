@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "utility/module.hpp"
+#include "utility.hpp"
+#include "assert.hpp"
+#include "fixed_string.hpp"
 #include <type_traits>
 #include <string>
 #include <string_view>

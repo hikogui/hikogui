@@ -9,7 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../layout/grid_layout.hpp"
+#include "../layout/module.hpp"
 #include <memory>
 
 namespace hi { inline namespace v1 {

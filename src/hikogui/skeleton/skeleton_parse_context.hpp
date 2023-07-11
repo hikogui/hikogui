@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../algorithm/module.hpp"
-#include "../formula/formula.hpp"
+#include "../formula/module.hpp"
 #include <memory>
 #include <string_view>
 #include <optional>

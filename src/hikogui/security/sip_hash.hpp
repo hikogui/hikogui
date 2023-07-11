@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "random/seed.hpp"
-#include "utility/module.hpp"
+#include "../random/module.hpp"
+#include "../utility/module.hpp"
 #include <string_view>
 #include <string>
 #include <span>

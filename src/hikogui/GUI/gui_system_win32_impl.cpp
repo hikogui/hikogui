@@ -5,10 +5,9 @@
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
-#include "../GFX/gfx_system_vulkan.hpp"
+#include "../GFX/module.hpp"
 #include "../font/module.hpp"
-#include "../file/path_location.hpp"
-#include "../file/URL.hpp"
+#include "../file/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../settings/module.hpp"
 #include <memory>

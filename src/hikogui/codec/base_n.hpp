@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../container/byte_string.hpp"
+#include "../container/module.hpp"
 #include "../utility/module.hpp"
 #include <span>
 #include <cstdint>

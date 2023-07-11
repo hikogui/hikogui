@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../i18n/module.hpp"
-#include "../formula/formula.hpp"
+#include "../formula/module.hpp"
 #include "../utility/module.hpp"
 #include "../settings/module.hpp"
 #include <string>

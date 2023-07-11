@@ -4,7 +4,7 @@
 
 #include "icon_widget.hpp"
 #include "../font/module.hpp"
-#include "../GUI/theme.hpp"
+#include "../GUI/module.hpp"
 #include "../utility/module.hpp"
 
 namespace hi::inline v1 {

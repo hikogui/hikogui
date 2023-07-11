@@ -4,7 +4,7 @@
 
 #include "menu_button_widget.hpp"
 #include "../font/module.hpp"
-#include "../GFX/pipeline_SDF_device_shared.hpp"
+#include "../GFX/module.hpp"
 
 namespace hi::inline v1 {
 

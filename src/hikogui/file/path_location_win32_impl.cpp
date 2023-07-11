@@ -6,7 +6,7 @@
 
 #include "path_location.hpp"
 #include "../telemetry/module.hpp"
-#include "../settings/metadata.hpp"
+#include "../settings/module.hpp"
 #include "../utility/module.hpp"
 #include <filesystem>
 #include <string>

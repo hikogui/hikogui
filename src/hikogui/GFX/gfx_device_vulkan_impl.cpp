@@ -7,8 +7,7 @@
 #include "gfx_surface_vulkan.hpp"
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../file/file_view.hpp"
+#include "../file/module.hpp"
 #include "../utility/module.hpp"
 #include <span>
 

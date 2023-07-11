@@ -12,9 +12,11 @@ add_dependencies(hikogui_tests hikogui_tests_resources)
 add_dependencies(hikogui_all_tests hikogui_tests)
 
 target_sources(hikogui_tests PRIVATE
+    ${HIKOGUI_SOURCE_DIR}/algorithm/algorithm_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/ranges_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/algorithm/strings_tests.cpp
     #${HIKOGUI_SOURCE_DIR}/audio/audio_sample_packer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_sample_unpacker_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/algorithm/ranges_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/ascii_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/char_converter_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/char_maps/cp_1252_tests.cpp
@@ -26,6 +28,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/codec/BON8_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/datum_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/gzip_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/codec/jsonpath_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/JSON_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/SHA2_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/color/color_space_tests.cpp
@@ -38,6 +41,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/container/polymorphic_optional_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/container/small_map_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/container/tree_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/coroutine/generator_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/file/file_view_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/file/glob_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/file/URI_tests.cpp
@@ -72,12 +76,15 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/numeric/polynomial_tests.hpp
     ${HIKOGUI_SOURCE_DIR}/numeric/polynomial_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/numeric/safe_int_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/observer/group_ptr_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/observer/shared_state_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/parser/tokenizer_tests.cpp
     #${HIKOGUI_SOURCE_DIR}/random/dither_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/seed_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/xorshift128p_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/SIMD/simd_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/security/sip_hash_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/settings/user_settings_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/SIMD/simd_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/counters_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/format_check_tests.cpp
@@ -93,6 +100,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/utility/float16_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/forward_value_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/math_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/utility/reflection_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/utility/units_tests.cpp
     #${HIKOGUI_SOURCE_DIR}/widgets/text_widget_tests.cpp

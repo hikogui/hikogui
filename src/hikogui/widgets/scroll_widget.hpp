@@ -12,7 +12,7 @@
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
 #include "../geometry/module.hpp"
-#include "../layout/grid_layout.hpp"
+#include "../layout/module.hpp"
 
 namespace hi { inline namespace v1 {
 
