@@ -8,8 +8,8 @@
 #include "iso_3166.hpp"
 #include "iso_639.hpp"
 #include "../utility/module.hpp"
-#include "../generator.hpp"
-#include "../ranges.hpp"
+#include "../coroutine/module.hpp"
+#include "../algorithm/module.hpp"
 #include <vector>
 #include <string_view>
 

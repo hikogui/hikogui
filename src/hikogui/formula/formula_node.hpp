@@ -7,8 +7,8 @@
 #include "formula_post_process_context.hpp"
 #include "formula_evaluation_context.hpp"
 #include "../utility/module.hpp"
-#include "../parse_location.hpp"
-#include "../datum.hpp"
+#include "../parser/module.hpp"
+#include "../codec/module.hpp"
 #include <vector>
 #include <memory>
 #include <string>

@@ -11,7 +11,7 @@
 #include "widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
-#include "../animator.hpp"
+#include "../algorithm/module.hpp"
 #include "../l10n/module.hpp"
 #include "../observer/module.hpp"
 #include <memory>

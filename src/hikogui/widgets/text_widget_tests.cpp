@@ -3,9 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_widget.hpp"
-#include "../file/path_location.hpp"
-#include "../GUI/theme_book.hpp"
-#include "../GUI/gui_window.hpp"
+#include "../file/module.hpp"
+#include "../GUI/module.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

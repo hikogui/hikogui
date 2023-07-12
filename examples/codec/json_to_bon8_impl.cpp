@@ -3,9 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/crt.hpp"
-#include "hikogui/file/file_view.hpp"
-#include "hikogui/codec/JSON.hpp"
-#include "hikogui/codec/BON8.hpp"
+#include "hikogui/module.hpp"
 #include <string>
 #include <format>
 #include <ostream>

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../label.hpp"
+#include "../l10n/module.hpp"
 #include <memory>
 #include <functional>
 #include <vector>

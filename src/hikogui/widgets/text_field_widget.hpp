@@ -12,7 +12,7 @@
 #include "widget.hpp"
 #include "label_widget.hpp"
 #include "scroll_widget.hpp"
-#include "../label.hpp"
+#include "../l10n/module.hpp"
 #include <memory>
 #include <string>
 #include <array>

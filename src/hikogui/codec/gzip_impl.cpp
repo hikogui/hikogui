@@ -5,7 +5,7 @@
 #include "gzip.hpp"
 #include "inflate.hpp"
 #include "../utility/module.hpp"
-#include "../placement.hpp"
+#include "../parser/module.hpp"
 
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead (bounds.1).

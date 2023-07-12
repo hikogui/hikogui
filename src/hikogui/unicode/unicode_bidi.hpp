@@ -11,7 +11,7 @@
 #include "ucd_general_categories.hpp"
 #include "../utility/module.hpp"
 #include "../container/module.hpp"
-#include "../recursive_iterator.hpp"
+#include "../algorithm/module.hpp"
 
 namespace hi::inline v1 {
 

@@ -30,8 +30,6 @@ class keyboard_bindings;
  */
 class gui_system {
 public:
-    static inline os_handle instance;
-
     std::unique_ptr<gfx_system> gfx;
     std::unique_ptr<hi::theme_book> theme_book;
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings;

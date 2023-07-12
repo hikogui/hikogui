@@ -6,7 +6,7 @@
 
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
-#include "../numeric/int_carry.hpp"
+#include "../numeric/module.hpp"
 #include <atomic>
 #include <array>
 #include <cstdint>

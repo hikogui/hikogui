@@ -10,7 +10,7 @@
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
 #include "../time/module.hpp"
-#include "../atomic.hpp"
+#include "atomic.hpp"
 #include <span>
 #include <typeinfo>
 #include <typeindex>

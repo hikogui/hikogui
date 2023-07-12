@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "../container/byte_string.hpp"
-#include "../file/file_view.hpp"
+#include "../container/module.hpp"
+#include "../file/module.hpp"
 #include <cstddef>
 #include <filesystem>
 

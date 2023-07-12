@@ -11,7 +11,7 @@
 #include "../utility/module.hpp"
 #include "../numeric/module.hpp"
 #include "../observer/module.hpp"
-#include "../loop.hpp"
+#include "../loop/module.hpp"
 #include <vector>
 #include <mutex>
 

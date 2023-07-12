@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../tokenizer.hpp"
+#include "../parser/module.hpp"
 #include <vector>
 #include <string_view>
 

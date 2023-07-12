@@ -17,9 +17,8 @@
 #include "skeleton_string_node.hpp"
 #include "skeleton_top_node.hpp"
 #include "skeleton_while_node.hpp"
-#include "../formula/formula.hpp"
-#include "../strings.hpp"
-#include "../algorithm.hpp"
+#include "../formula/module.hpp"
+#include "../algorithm/module.hpp"
 
 namespace hi::inline v1 {
 

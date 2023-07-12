@@ -3,10 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "po_parser.hpp"
-#include "../i18n/module.hpp"
 #include "translation.hpp"
-#include "../file/file_view.hpp"
-#include "../tokenizer.hpp"
+#include "../i18n/module.hpp"
+#include "../file/module.hpp"
+#include "../parser/module.hpp"
 
 namespace hi::inline v1 {
 

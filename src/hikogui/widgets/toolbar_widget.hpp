@@ -9,7 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../layout/row_column_layout.hpp"
+#include "../layout/module.hpp"
 #include "../geometry/module.hpp"
 #include <memory>
 #include <ranges>

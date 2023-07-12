@@ -5,7 +5,7 @@
 #include "zlib.hpp"
 #include "inflate.hpp"
 #include "../utility/module.hpp"
-#include "../placement.hpp"
+#include "../parser/module.hpp"
 
 namespace hi::inline v1 {
 

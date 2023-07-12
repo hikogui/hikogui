@@ -10,7 +10,7 @@
 
 #include "../l10n/module.hpp"
 #include "../unicode/module.hpp"
-#include "../label.hpp"
+#include "../l10n/module.hpp"
 #include <string>
 #include <memory>
 #include <functional>

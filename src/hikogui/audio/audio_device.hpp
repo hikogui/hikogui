@@ -11,9 +11,9 @@
 #include "audio_device_state.hpp"
 #include "speaker_mapping.hpp"
 #include "../numeric/module.hpp"
-#include "../label.hpp"
+#include "../l10n/module.hpp"
 #include "../utility/module.hpp"
-#include "../loop.hpp"
+#include "../loop/module.hpp"
 #include <string>
 #include <memory>
 #include <ostream>

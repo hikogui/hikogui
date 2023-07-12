@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
-#include "../pickle.hpp"
+#include "../codec/module.hpp"
 #include "../font/module.hpp"
 #include <array>
 #include <string>

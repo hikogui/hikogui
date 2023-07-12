@@ -3,8 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "abstract_button_widget.hpp"
-#include "../GUI/theme.hpp"
-#include "../loop.hpp"
+#include "../GUI/module.hpp"
+#include "../loop/module.hpp"
 
 namespace hi::inline v1 {
 

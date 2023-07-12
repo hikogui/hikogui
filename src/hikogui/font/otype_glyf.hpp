@@ -6,7 +6,7 @@
 
 #include "otype_utilities.hpp"
 #include "font_char_map.hpp"
-#include "../generator.hpp"
+#include "../coroutine/module.hpp"
 #include <variant>
 
 namespace hi { inline namespace v1 {

@@ -6,7 +6,6 @@
 
 #include <cctype>
 #include "../utility/module.hpp"
-#include "../strings.hpp"
 
 namespace hi::inline v1 {
 

@@ -6,6 +6,7 @@
 
 #include "observable_value.hpp"
 #include "observable.hpp"
+#include "../coroutine/module.hpp"
 #include "../utility/module.hpp"
 
 namespace hi::inline v1 {

@@ -6,7 +6,7 @@
 #include "png.hpp"
 #include "zlib.hpp"
 #include "../utility/module.hpp"
-#include "../placement.hpp"
+#include "../parser/module.hpp"
 #include "../color/module.hpp"
 
 namespace hi::inline v1 {

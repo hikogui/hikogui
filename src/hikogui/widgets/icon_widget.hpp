@@ -9,9 +9,9 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GFX/paged_image.hpp"
+#include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
-#include "../label.hpp"
+#include "../l10n/module.hpp"
 #include <memory>
 #include <string>
 #include <array>

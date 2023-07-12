@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../generator.hpp"
+#include "../coroutine/module.hpp"
 #include "../utility/module.hpp"
 #include <filesystem>
 #include <ranges>

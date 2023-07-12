@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "../group_ptr.hpp"
-#include "notifier.hpp"
+#include "group_ptr.hpp"
+#include "../coroutine/module.hpp"
 #include <memory>
 #include <vector>
 #include <string>

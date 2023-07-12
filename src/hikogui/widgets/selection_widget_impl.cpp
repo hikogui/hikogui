@@ -4,8 +4,8 @@
 
 #include "selection_widget.hpp"
 #include "../font/module.hpp"
-#include "../GFX/pipeline_SDF_device_shared.hpp"
-#include "../loop.hpp"
+#include "../GFX/module.hpp"
+#include "../loop/module.hpp"
 
 namespace hi::inline v1 {
 

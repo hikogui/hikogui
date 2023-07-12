@@ -8,7 +8,6 @@
 #include "unicode_normalization.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
 #include "../utility/module.hpp"
-#include "../strings.hpp"
 #include <vector>
 #include <string>
 #include <type_traits>

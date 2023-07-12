@@ -5,7 +5,7 @@
 #pragma once
 
 #include "gui_window.hpp"
-#include "../GFX/gfx_surface_vulkan.hpp"
+#include "../GFX/module.hpp"
 #include <unordered_map>
 
 struct HWND__;

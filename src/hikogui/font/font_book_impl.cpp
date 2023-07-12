@@ -6,7 +6,7 @@
 #include "true_type_font.hpp"
 #include "../file/module.hpp"
 #include "../telemetry/module.hpp"
-#include "../ranges.hpp"
+#include "../algorithm/module.hpp"
 #include <ranges>
 #include <vector>
 

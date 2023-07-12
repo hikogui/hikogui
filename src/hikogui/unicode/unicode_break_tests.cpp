@@ -7,10 +7,9 @@
 #include "unicode_line_break.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_description.hpp"
-#include "../file/file_view.hpp"
-#include "../strings.hpp"
-#include "../generator.hpp"
-#include "../ranges.hpp"
+#include "../file/module.hpp"
+#include "../algorithm/module.hpp"
+#include "../coroutine/module.hpp"
 #include "../utility/module.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

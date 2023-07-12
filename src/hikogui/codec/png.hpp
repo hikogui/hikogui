@@ -4,12 +4,11 @@
 
 #pragma once
 
-#include "../file/file_view.hpp"
+#include "../file/module.hpp"
 #include "../utility/module.hpp"
 #include "../image/module.hpp"
 #include "../geometry/module.hpp"
 #include "../container/module.hpp"
-#include "../strings.hpp"
 #include <span>
 #include <vector>
 #include <cstddef>

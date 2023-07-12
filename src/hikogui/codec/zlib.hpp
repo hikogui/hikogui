@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../file/file_view.hpp"
+#include "../file/module.hpp"
 #include "../container/module.hpp"
 #include <cstddef>
 #include <filesystem>

@@ -6,7 +6,7 @@
 #include "../font/module.hpp"
 #include "../unicode/module.hpp"
 #include "../telemetry/module.hpp"
-#include "../generator.hpp"
+#include "../coroutine/module.hpp"
 #include <numeric>
 #include <ranges>
 #include <algorithm>

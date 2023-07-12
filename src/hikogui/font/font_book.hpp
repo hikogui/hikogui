@@ -13,7 +13,7 @@
 #include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
-#include "../generator.hpp"
+#include "../coroutine/module.hpp"
 #include <limits>
 #include <array>
 #include <new>

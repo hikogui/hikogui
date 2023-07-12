@@ -4,9 +4,9 @@
 
 #include "../telemetry/module.hpp"
 #include "../observer/module.hpp"
-#include "../datum.hpp"
-#include "../jsonpath.hpp"
-#include "../pickle.hpp"
+#include "../codec/module.hpp"
+#include "../loop/module.hpp"
+#include "../codec/module.hpp"
 #include <typeinfo>
 #include <filesystem>
 

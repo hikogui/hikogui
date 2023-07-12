@@ -5,7 +5,7 @@
 #include "grid_widget.hpp"
 #include "../geometry/module.hpp"
 #include "../telemetry/module.hpp"
-#include "../algorithm.hpp"
+#include "../algorithm/module.hpp"
 
 namespace hi::inline v1 {
 

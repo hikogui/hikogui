@@ -5,9 +5,7 @@
 #pragma once
 
 #include "int_carry.hpp"
-#include "../strings.hpp"
 #include "../utility/module.hpp"
-#include "../codec/base_n.hpp"
 #include <format>
 #include <type_traits>
 #include <ostream>
@@ -43,15 +41,16 @@ struct bigint {
         }
     }
 
-    constexpr bigint(bigint const &) noexcept = default;
-    constexpr bigint &operator=(bigint const &) noexcept = default;
-    constexpr bigint(bigint &&) noexcept = default;
-    constexpr bigint &operator=(bigint &&) noexcept = default;
+    constexpr bigint(bigint const&) noexcept = default;
+    constexpr bigint& operator=(bigint const&) noexcept = default;
+    constexpr bigint(bigint&&) noexcept = default;
+    constexpr bigint& operator=(bigint&&) noexcept = default;
 
     /** Construct from a small bigint.
      */
     template<std::size_t N, bool S>
-    constexpr bigint(bigint<digit_type, N, S> const &rhs) noexcept requires(N < num_digits)
+    constexpr bigint(bigint<digit_type, N, S> const& rhs) noexcept
+        requires(N < num_digits)
     {
         std::size_t i = 0;
 
@@ -70,7 +69,8 @@ struct bigint {
     /** Assign from a small bigint.
      */
     template<std::size_t N, bool S>
-    constexpr bigint &operator=(bigint<digit_type, N, S> const &rhs) noexcept requires(N < num_digits)
+    constexpr bigint& operator=(bigint<digit_type, N, S> const& rhs) noexcept
+        requires(N < num_digits)
     {
         std::size_t i = 0;
 
@@ -106,7 +106,7 @@ struct bigint {
         }
     }
 
-    constexpr bigint &operator=(std::integral auto value) noexcept
+    constexpr bigint& operator=(std::integral auto value) noexcept
     {
         static_assert(sizeof(value) <= sizeof(digit_type));
         static_assert(num_digits > 0);
@@ -126,12 +126,20 @@ struct bigint {
         return *this;
     }
 
-    constexpr explicit bigint(std::string_view str, int base = 10) noexcept : bigint()
+    constexpr explicit bigint(std::string_view str, int base = 10) : bigint()
     {
-        std::size_t i = 0;
-        for (; i < str.size(); ++i) {
-            (*this) *= base;
-            (*this) += base16::int_from_char<int>(str[i]);
+        for (hilet c : str) {
+            *this *= base;
+
+            if (c >= '0' and c <= '9') {
+                *this += char_cast<size_t>(c - '0');
+            } else if (c >= 'a' and c <= 'f') {
+                *this += char_cast<size_t>(c - 'a' + 10);
+            } else if (c >= 'A' and c <= 'F') {
+                *this += char_cast<size_t>(c - 'A' + 10);
+            } else {
+                throw parse_error(std::format("Unexpected character '{}' in string initializing bigint", c));
+            }
         }
     }
 
@@ -250,13 +258,13 @@ struct bigint {
         return r;
     }
 
-    constexpr bigint &operator<<=(std::size_t rhs) noexcept
+    constexpr bigint& operator<<=(std::size_t rhs) noexcept
     {
         sll_carry_chain(digits, digits, rhs, num_digits);
         return *this;
     }
 
-    constexpr bigint &operator>>=(std::size_t rhs) noexcept
+    constexpr bigint& operator>>=(std::size_t rhs) noexcept
     {
         if constexpr (is_signed) {
             sra_carry_chain(digits, digits, rhs, num_digits);
@@ -266,7 +274,7 @@ struct bigint {
         return *this;
     }
 
-    constexpr bigint &operator*=(bigint const &rhs) noexcept
+    constexpr bigint& operator*=(bigint const& rhs) noexcept
     {
         auto r = bigint{0};
         mul_carry_chain(r.digits, digits, rhs.digits, num_digits);
@@ -274,31 +282,31 @@ struct bigint {
         return *this;
     }
 
-    constexpr bigint &operator+=(bigint const &rhs) noexcept
+    constexpr bigint& operator+=(bigint const& rhs) noexcept
     {
         add_carry_chain(digits, digits, rhs.digits, num_digits);
         return *this;
     }
 
-    constexpr bigint &operator-=(bigint const &rhs) noexcept
+    constexpr bigint& operator-=(bigint const& rhs) noexcept
     {
         sub_carry_chain(digits, digits, rhs.digits, num_digits);
         return *this;
     }
 
-    constexpr bigint &operator&=(bigint const &rhs) noexcept
+    constexpr bigint& operator&=(bigint const& rhs) noexcept
     {
         and_carry_chain(digits, digits, rhs.digits, num_digits);
         return *this;
     }
 
-    constexpr bigint &operator|=(bigint const &rhs) noexcept
+    constexpr bigint& operator|=(bigint const& rhs) noexcept
     {
         or_carry_chain(digits, digits, rhs.digits, num_digits);
         return *this;
     }
 
-    constexpr bigint &operator^=(bigint const &rhs) noexcept
+    constexpr bigint& operator^=(bigint const& rhs) noexcept
     {
         xor_carry_chain(digits, digits, rhs.digits, num_digits);
         return *this;
@@ -348,7 +356,8 @@ struct bigint {
      * @param rhs Polynomial.
      * @return the remainder.
      */
-    [[nodiscard]] constexpr friend bigint crc(bigint const &lhs, bigint const &rhs) noexcept requires(not is_signed)
+    [[nodiscard]] constexpr friend bigint crc(bigint const& lhs, bigint const& rhs) noexcept
+        requires(not is_signed)
     {
         hilet polynomialOrder = bsr_carry_chain(rhs.digits, rhs.num_digits);
         hi_assert(polynomialOrder >= 0);
@@ -374,19 +383,19 @@ struct bigint {
      * @param rhs The divider of 1.
      * @return (1 << (K*sizeof(T)*8)) / rhs
      */
-    [[nodiscard]] constexpr friend bigint reciprocal(bigint const &rhs)
+    [[nodiscard]] constexpr friend bigint reciprocal(bigint const& rhs)
     {
         auto r = bigint<digit_type, num_digits + 1, is_signed>(0);
         r.digits[num_digits] = 1;
         return static_cast<bigint>(r / rhs);
     }
 
-    [[nodiscard]] constexpr friend bool operator==(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(bigint const& lhs, bigint const& rhs) noexcept
     {
         return eq_carry_chain(lhs.digits, rhs.digits, lhs.num_digits);
     }
 
-    [[nodiscard]] constexpr friend std::strong_ordering operator<=>(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::strong_ordering operator<=>(bigint const& lhs, bigint const& rhs) noexcept
     {
         if constexpr (lhs.is_signed or rhs.is_signed) {
             return cmp_signed_carry_chain(lhs.digits, rhs.digits, lhs.num_digits);
@@ -395,14 +404,14 @@ struct bigint {
         }
     }
 
-    [[nodiscard]] constexpr friend bigint operator<<(bigint const &lhs, std::size_t rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator<<(bigint const& lhs, std::size_t rhs) noexcept
     {
         auto r = bigint{};
         sll_carry_chain(r.digits, lhs.digits, rhs, lhs.num_digits);
         return r;
     }
 
-    [[nodiscard]] constexpr friend bigint operator>>(bigint const &lhs, std::size_t rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator>>(bigint const& lhs, std::size_t rhs) noexcept
     {
         auto r = bigint{};
         if constexpr (lhs.is_signed) {
@@ -413,56 +422,56 @@ struct bigint {
         return r;
     }
 
-    [[nodiscard]] constexpr friend bigint operator*(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator*(bigint const& lhs, bigint const& rhs) noexcept
     {
         auto r = bigint{};
         mul_carry_chain(r.digits, lhs.digits, rhs.digits, lhs.num_digits);
         return r;
     }
 
-    [[nodiscard]] constexpr friend bigint operator+(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator+(bigint const& lhs, bigint const& rhs) noexcept
     {
         auto r = bigint{};
         add_carry_chain(r.digits, lhs.digits, rhs.digits, lhs.num_digits);
         return r;
     }
 
-    [[nodiscard]] constexpr friend bigint operator-(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator-(bigint const& lhs, bigint const& rhs) noexcept
     {
         auto r = bigint{};
         sub_carry_chain(r.digits, lhs.digits, rhs.digits, lhs.num_digits);
         return r;
     }
 
-    [[nodiscard]] constexpr friend bigint operator~(bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator~(bigint const& rhs) noexcept
     {
         auto r = bigint{};
         invert_carry_chain(r.digits, rhs.digits, rhs.num_digits);
         return r;
     }
 
-    [[nodiscard]] constexpr friend bigint operator|(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator|(bigint const& lhs, bigint const& rhs) noexcept
     {
         auto r = bigint{};
         or_carry_chain(r.digits, lhs.digits, rhs.digits, lhs.num_digits);
         return r;
     }
 
-    [[nodiscard]] constexpr friend bigint operator&(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator&(bigint const& lhs, bigint const& rhs) noexcept
     {
         auto r = bigint{};
         and_carry_chain(r.digits, lhs.digits, rhs.digits, lhs.num_digits);
         return r;
     }
 
-    [[nodiscard]] constexpr friend bigint operator^(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator^(bigint const& lhs, bigint const& rhs) noexcept
     {
         auto r = bigint{};
         xor_carry_chain(r.digits, lhs.digits, rhs.digits, lhs.num_digits);
         return r;
     }
 
-    [[nodiscard]] constexpr friend std::pair<bigint, bigint> div(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::pair<bigint, bigint> div(bigint const& lhs, bigint const& rhs) noexcept
     {
         auto quotient = bigint{};
         auto remainder = bigint{};
@@ -476,7 +485,7 @@ struct bigint {
     }
 
     [[nodiscard]] constexpr friend std::pair<bigint, bigint>
-    div(bigint const &lhs, bigint const &rhs, bigint<digit_type, 2 * num_digits, is_signed> const &rhs_reciprocal) noexcept
+    div(bigint const& lhs, bigint const& rhs, bigint<digit_type, 2 * num_digits, is_signed> const& rhs_reciprocal) noexcept
         requires(not is_signed)
     {
         constexpr auto nr_bits = num_digits * bits_per_digit;
@@ -503,7 +512,7 @@ struct bigint {
         return std::pair{static_cast<bigint>(quotient), static_cast<bigint>(remainder)};
     }
 
-    [[nodiscard]] constexpr friend bigint operator/(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator/(bigint const& lhs, bigint const& rhs) noexcept
     {
         auto quotient = bigint{};
         auto remainder = bigint{};
@@ -516,7 +525,7 @@ struct bigint {
         return quotient;
     }
 
-    [[nodiscard]] constexpr friend bigint operator%(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator%(bigint const& lhs, bigint const& rhs) noexcept
     {
         auto quotient = bigint{};
         auto remainder = bigint{};
@@ -529,30 +538,26 @@ struct bigint {
         return remainder;
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, bigint const &rhs)
+    friend std::ostream& operator<<(std::ostream& lhs, bigint const& rhs)
     {
         return lhs << rhs.string();
     }
 };
 
 template<std::unsigned_integral T, std::size_t N>
-struct is_numeric_unsigned_integral<bigint<T, N, false>> : std::true_type {
-};
+struct is_numeric_unsigned_integral<bigint<T, N, false>> : std::true_type {};
 
 template<std::unsigned_integral T, std::size_t N>
-struct is_numeric_signed_integral<bigint<T, N, true>> : std::true_type {
-};
+struct is_numeric_signed_integral<bigint<T, N, true>> : std::true_type {};
 
 template<std::unsigned_integral T, std::size_t N, bool S>
-struct is_numeric_integral<bigint<T, N, S>> : std::true_type {
-};
+struct is_numeric_integral<bigint<T, N, S>> : std::true_type {};
 
 using ubig128 = bigint<uint64_t, 2, false>;
 using big128 = bigint<uint64_t, 2, true>;
 using uuid = bigint<uint64_t, 2, false>;
 
 } // namespace hi::inline v1
-
 
 template<std::unsigned_integral DigitType, std::size_t NumDigits, bool IsSigned>
 struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
@@ -650,4 +655,3 @@ struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
         return value_type{0};
     }
 };
-

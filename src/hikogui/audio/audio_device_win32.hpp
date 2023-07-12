@@ -7,7 +7,7 @@
 #include "audio_device.hpp"
 #include "audio_stream_format.hpp"
 #include "audio_format_range.hpp"
-#include "../generator.hpp"
+#include "../coroutine/module.hpp"
 
 struct IMMDevice;
 struct IPropertyStore;

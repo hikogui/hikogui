@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "widget.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../telemetry/counters.hpp"
-#include "../ranges.hpp"
+#include "../GUI/module.hpp"
+#include "../telemetry/module.hpp"
+#include "../algorithm/module.hpp"
 #include <ranges>
 
 namespace hi::inline v1 {

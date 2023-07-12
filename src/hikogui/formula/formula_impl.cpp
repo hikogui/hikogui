@@ -52,8 +52,8 @@
 #include "formula_ternary_operator_node.hpp"
 #include "formula_unary_operator_node.hpp"
 #include "formula_vector_literal_node.hpp"
-#include "../operator.hpp"
-#include "../strings.hpp"
+#include "../parser/module.hpp"
+#include "../algorithm/module.hpp"
 #include "../utility/module.hpp"
 #include <format>
 #include <string>

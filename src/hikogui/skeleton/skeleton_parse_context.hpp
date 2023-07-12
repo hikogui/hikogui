@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "../formula/formula.hpp"
-#include "../strings.hpp"
-#include "../algorithm.hpp"
+#include "../algorithm/module.hpp"
+#include "../formula/module.hpp"
 #include <memory>
 #include <string_view>
 #include <optional>

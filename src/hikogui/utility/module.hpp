@@ -6,6 +6,7 @@
 
 #include "architecture.hpp"
 #include "assert.hpp"
+#include "bits.hpp"
 #include "cast.hpp"
 #include "charconv.hpp"
 #include "compare.hpp"
@@ -17,6 +18,7 @@
 #include "exception.hpp"
 #include "fixed_string.hpp"
 #include "float16.hpp"
+#include "forward_value.hpp"
 #include "hash.hpp"
 #include "math.hpp"
 #include "memory.hpp"

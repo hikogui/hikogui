@@ -4,7 +4,7 @@
 
 #include "theme_book.hpp"
 #include "../font/module.hpp"
-#include "../file/glob.hpp"
+#include "../file/module.hpp"
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
 
