@@ -140,21 +140,21 @@ struct native_i16x8 {
 //#endif
 //    }
 
-    /** For each bit in mask set corrosponding element to all-ones or all-zeros.
+    /** For each bit in mask set corresponding element to all-ones or all-zeros.
      */
     [[nodiscard]] static native_i16x8 from_mask(size_t mask) noexcept
     {
         hi_axiom(mask <= 0b1111'1111);
 
         return native_i16x8{
-            mask & 0b0000'0001 ? 0 : truncate<value_type>(0xffff),
-            mask & 0b0000'0010 ? 0 : truncate<value_type>(0xffff),
-            mask & 0b0000'0100 ? 0 : truncate<value_type>(0xffff),
-            mask & 0b0000'1000 ? 0 : truncate<value_type>(0xffff),
-            mask & 0b0001'0000 ? 0 : truncate<value_type>(0xffff),
-            mask & 0b0010'0000 ? 0 : truncate<value_type>(0xffff),
-            mask & 0b0100'0000 ? 0 : truncate<value_type>(0xffff),
-            mask & 0b1000'0000 ? 0 : truncate<value_type>(0xffff)};
+            truncate<value_type>(mask & 0b0000'0001 ? 0 : 0xffff),
+            truncate<value_type>(mask & 0b0000'0010 ? 0 : 0xffff),
+            truncate<value_type>(mask & 0b0000'0100 ? 0 : 0xffff),
+            truncate<value_type>(mask & 0b0000'1000 ? 0 : 0xffff),
+            truncate<value_type>(mask & 0b0001'0000 ? 0 : 0xffff),
+            truncate<value_type>(mask & 0b0010'0000 ? 0 : 0xffff),
+            truncate<value_type>(mask & 0b0100'0000 ? 0 : 0xffff),
+            truncate<value_type>(mask & 0b1000'0000 ? 0 : 0xffff)};
     }
 
     /** Concatonate the top bit of each element.

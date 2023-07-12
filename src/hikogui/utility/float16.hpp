@@ -219,8 +219,6 @@ struct std::numeric_limits<hi::float16> {
     static constexpr bool has_infinity = true;
     static constexpr bool has_quiet_NaN = true;
     static constexpr bool has_signaling_NaN = false;
-    static constexpr float_denorm_style has_denorm = std::denorm_present;
-    static constexpr bool has_denorm_loss = false;
     static constexpr float_round_style round_style = std::round_to_nearest;
     static constexpr bool is_iec559 = true;
     static constexpr bool is_bounded = true;

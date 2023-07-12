@@ -5,6 +5,7 @@
 #pragma once
 
 #include "memory.hpp"
+#include "reflection.hpp"
 
 #ifdef HI_HAS_SSE
 #include <immintrin.h>
@@ -77,44 +78,27 @@ template<std::integral T>
     }
 }
 
-/** Load a numeric value from memory.
+/** Unaligned Load of a numeric value from an array.
  *
- * @tparam T The type of the integer or floating point value to load.
- * @tparam Endian The endiances of the data.
- * @param src A pointer to the numeric value.
- * @return The numeric value after endian conversion.
- */
-template<std::integral T, std::endian Endian = std::endian::native>
-[[nodiscard]] constexpr T load(T const *src) noexcept
-{
-    auto value = *src;
-    if constexpr (Endian != std::endian::native) {
-        value = std::byteswap(value);
-    }
-    return value;
-}
-
-/** Unaligned Load of a numeric value from a byte-like array.
- *
- * @tparam T The type of the integer or floating point value to load.
- * @tparam Endian The endiances of the data.
+ * @tparam Out The type of the integer or floating point value to load.
+ * @tparam Endian The endianness of the data.
  * @param src A pointer to byte-like array.
  * @return The numeric value after endian conversion.
  */
-template<std::integral T, std::endian Endian = std::endian::native, byte_like B>
-[[nodiscard]] constexpr T load(B const *src) noexcept
+template<std::integral Out, std::endian Endian = std::endian::native, typename In>
+[[nodiscard]] constexpr Out load(In const *src) noexcept
 {
-    auto value = unaligned_load<T>(src);
     if constexpr (Endian != std::endian::native) {
-        value = std::byteswap(value);
+        return std::byteswap(unaligned_load<Out>(src));
+    } else {
+        return unaligned_load<Out>(src);
     }
-    return value;
 }
 
 /** Unaligned Load of a numeric value from a byte-like array.
  *
  * @tparam T The type of the integer or floating point value to load.
- * @tparam Endian The endiances of the data.
+ * @tparam Endian The endianness of the data.
  * @param src A pointer to memory.
  * @return The numeric value after endian conversion.
  */
@@ -267,8 +251,6 @@ template<unsigned int NumBits, byte_like B>
     return r;
 }
 
-
-
 template<std::endian Endian = std::endian::native, std::integral T, byte_like B>
 constexpr void store(T value, B const *dst) noexcept
 {
@@ -310,7 +292,6 @@ inline void store_be(T value, void const *dst) noexcept
 {
     store<std::endian::big>(value, dst);
 }
-
 
 template<typename T, std::endian E, std::size_t A = alignof(T)>
 struct endian_buf_t {

@@ -8,7 +8,7 @@
 
 namespace hi::inline v1::pipeline_image {
 
-pipeline_image::pipeline_image(gfx_surface const &surface) : pipeline_vulkan(surface) {}
+pipeline_image::pipeline_image(gfx_surface const& surface) : pipeline_vulkan(surface) {}
 
 void pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
@@ -26,9 +26,10 @@ void pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, dra
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
     pushConstants.windowExtent = extent2{narrow_cast<float>(extent.width), narrow_cast<float>(extent.height)};
-    pushConstants.viewportScale = {2.0f / extent.width, 2.0f / extent.height};
-    pushConstants.atlasExtent = {device_shared::atlas_image_axis_size, device_shared::atlas_image_axis_size};
-    pushConstants.atlasScale = {1.0f / device_shared::atlas_image_axis_size, 1.0f / device_shared::atlas_image_axis_size};
+    pushConstants.viewportScale = sfloat_rg32{2.0f / extent.width, 2.0f / extent.height};
+    pushConstants.atlasExtent = sfloat_rg32{device_shared::atlas_image_axis_size, device_shared::atlas_image_axis_size};
+    pushConstants.atlasScale =
+        sfloat_rg32{1.0f / device_shared::atlas_image_axis_size, 1.0f / device_shared::atlas_image_axis_size};
     commandBuffer.pushConstants(
         pipelineLayout,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
@@ -63,7 +64,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_image::createDescriptorSetL
 
 std::vector<vk::WriteDescriptorSet> pipeline_image::createWriteDescriptorSet() const
 {
-    hilet &sharedImagePipeline = vulkan_device().image_pipeline;
+    hilet& sharedImagePipeline = vulkan_device().image_pipeline;
 
     return {
         {

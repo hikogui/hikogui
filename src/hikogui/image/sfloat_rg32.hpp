@@ -30,6 +30,8 @@ public:
     sfloat_rg32 &operator=(sfloat_rg32 const &rhs) noexcept = default;
     sfloat_rg32 &operator=(sfloat_rg32 &&rhs) noexcept = default;
 
+    constexpr sfloat_rg32(float x, float y) noexcept : v{x, y} {}
+
     explicit sfloat_rg32(f32x4 const &rhs) noexcept : v{rhs.r(), rhs.g()} {}
 
     sfloat_rg32 &operator=(f32x4 const &rhs) noexcept
