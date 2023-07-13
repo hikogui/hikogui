@@ -10,7 +10,7 @@
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
 #include "../time/module.hpp"
-#include "atomic.hpp"
+#include "log.hpp"
 #include <span>
 #include <typeinfo>
 #include <typeindex>
@@ -66,11 +66,47 @@ public:
         }
     }
 
-    static void log_header() noexcept;
+    static void log_header() noexcept
+    {
+        hi_log_statistics("");
+        hi_log_statistics("{:>18} {:>9} {:>10} {:>10} {:>10}", "total", "delta", "min", "max", "mean");
+        hi_log_statistics("------------------ --------- ---------- ---------- ----------");
+    }
 
     /** Log the counter.
      */
-    void log(std::string const& tag) noexcept;
+    /** Log the counter.
+     */
+    void log(std::string const& tag) noexcept
+    {
+        hilet total_count = _total_count.load(std::memory_order::relaxed);
+        hilet prev_count = _prev_count.exchange(_total_count, std::memory_order::relaxed);
+        hilet delta_count = total_count - prev_count;
+        if (delta_count != 0) {
+            hilet duration_max = time_stamp_count::duration_from_count(_duration_max.exchange(0, std::memory_order::relaxed));
+            hilet duration_min = time_stamp_count::duration_from_count(
+                _duration_min.exchange(std::numeric_limits<uint64_t>::max(), std::memory_order::relaxed));
+
+            hilet duration_avg = _duration_avg.exchange(0, std::memory_order::relaxed);
+            if (duration_avg == 0) {
+                hi_log_statistics("{:>18} {:>+9} {:10} {:10} {:10} {}", total_count, delta_count, "", "", "", tag);
+
+            } else {
+                hilet avg_count = duration_avg & 0xffff;
+                hilet avg_sum = duration_avg >> 16;
+                hilet average = time_stamp_count::duration_from_count(avg_sum / avg_count);
+
+                hi_log_statistics(
+                    "{:18d} {:+9d} {:>10} {:>10} {:>10} {}",
+                    total_count,
+                    delta_count,
+                    format_engineering(duration_min),
+                    format_engineering(duration_max),
+                    format_engineering(average),
+                    tag);
+            }
+        }
+    }
 
     uint64_t operator++() noexcept
     {
@@ -147,6 +183,30 @@ inline detail::tagged_counter<Tag> global_counter;
 [[nodiscard]] inline detail::counter *get_global_counter_if(std::string const& name)
 {
     return detail::counter::get_if(name);
+}
+
+inline void log::log_thread_main(std::stop_token stop_token) noexcept
+{
+    using namespace std::chrono_literals;
+
+    set_thread_name("log");
+    hi_log_info("log thread started");
+
+    auto counter_statistics_deadline = std::chrono::utc_clock::now() + 1min;
+
+    while (not stop_token.stop_requested()) {
+        log_global.flush();
+
+        hilet now = std::chrono::utc_clock::now();
+        if (now >= counter_statistics_deadline) {
+            counter_statistics_deadline = now + 1min;
+            detail::counter::log();
+        }
+
+        std::this_thread::sleep_for(100ms);
+    }
+
+    hi_log_info("log thread finished");
 }
 
 } // namespace hi::inline v1

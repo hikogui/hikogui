@@ -92,9 +92,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/user_settings_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_parse_context_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/telemetry/counters_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/telemetry/log_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/telemetry/trace_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_char_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_line_impl.cpp

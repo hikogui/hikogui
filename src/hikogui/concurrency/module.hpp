@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "atomic.hpp"
 #include "callback_flags.hpp"
 #include "dead_lock_detector.hpp"
 #include "global_state.hpp"

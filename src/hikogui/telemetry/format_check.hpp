@@ -60,29 +60,4 @@ constexpr int format_count(std::string_view fmt) noexcept
     return num_args;
 }
 
-#define hi_format_argument_check(arg) \
-    static_assert( \
-        ::std::is_default_constructible_v<std::formatter<std::decay_t<decltype(arg)>>>, \
-        "std::format, argument '" #arg "' does not have a specialized std::formatter<>.");
-
-/** A macro to check if the format string and the arguments are valid for std::format.
- *
- * This macro checks if the usage of braces '{' and '}' are correctly used in the format-string.
- * Then it will check if the number of arguments match the number of arguments in the format-string.
- * Lastly it will check if the type for each argument has a valid `std::formatter<>` specialization.
- * 
- * This is done in a macro instead of a function, so that the static_asserts will point to the line
- * where the format-string and arguments where defined.
- * 
- * @param fmt The `std::format` format-string.
- * @param ... The arguments to be formatted by `std::format`.
- */
-#define hi_format_check(fmt, ...) \
-    static_assert(::hi::format_count(fmt) != -1, "std::format, Unexpected '{' inside argument-format."); \
-    static_assert(::hi::format_count(fmt) != -2, "std::format, Unexpected '}' without corresponding '{'."); \
-    static_assert(::hi::format_count(fmt) != -3, "std::format, Missing '}' at end of format string."); \
-    static_assert( \
-        ::hi::format_count(fmt) == hi_num_va_args(__VA_ARGS__), "std::format, invalid number of arguments for format string."); \
-    hi_for_each(hi_format_argument_check, __VA_ARGS__)
-
 } // namespace hi::inline v1

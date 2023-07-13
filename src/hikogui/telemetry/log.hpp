@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "atomic.hpp"
-#include "counters.hpp"
 #include "delayed_format.hpp"
 #include "format_check.hpp"
 #include "../container/module.hpp"
 #include "../time/module.hpp"
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
+#include "../console/module.hpp"
+#include "../log.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -140,7 +140,26 @@ public:
      * Flushing includes writing the message to a log file or displaying
      * them on the console.
      */
-    hi_no_inline void flush() noexcept;
+    hi_no_inline void flush() noexcept
+    {
+        bool wrote_message;
+        do {
+            std::unique_ptr<detail::log_message_base> copy_of_message;
+
+            {
+                hilet lock = std::scoped_lock(_mutex);
+
+                wrote_message = _fifo.take_one([&copy_of_message](auto& message) {
+                    copy_of_message = message.make_unique_copy();
+                });
+            }
+
+            if (wrote_message) {
+                hi_assert_not_null(copy_of_message);
+                write(copy_of_message->format());
+            }
+        } while (wrote_message);
+    }
 
     /** Start the logger system.
      *
@@ -173,57 +192,55 @@ private:
      * This will write to the console if one is open.
      * It will also create a log file in the application-data directory.
      */
-    void write(std::string const& str) const noexcept;
+    /*! Write to a log file and console.
+     * This will write to the console if one is open.
+     * It will also create a log file in the application-data directory.
+     */
+    void write(std::string const& str) const noexcept
+    {
+        console_output(str);
+    }
 
     /** The global logger thread.
      */
     static inline std::jthread _log_thread;
 
     /** The function of the logger thread.
+     *
+     * @note implementation is in counters.hpp
      */
-    static void log_thread_main(std::stop_token stop_token) noexcept;
+    inline static void log_thread_main(std::stop_token stop_token) noexcept;
 
     /** Deinitalize the logger system.
      */
-    static void subsystem_deinit() noexcept;
+    inline static void subsystem_deinit() noexcept;
 
     /** Initialize the log system.
      * This will start the logging threads which periodically
      * checks the log_queue for new messages and then
      * call log_flush_messages().
      */
-    static bool subsystem_init() noexcept;
+    static bool subsystem_init() noexcept
+    {
+        _log_thread = std::jthread(log_thread_main);
+        return true;
+    }
 };
 
 inline log log_global;
 
+/** Deinitalize the logger system.
+ */
+inline void log::subsystem_deinit() noexcept
+{
+    if (global_state_disable(global_state_type::log_is_running)) {
+        if (_log_thread.joinable()) {
+            _log_thread.request_stop();
+            _log_thread.join();
+        }
+
+        log_global.flush();
+    }
+}
+
 }} // namespace hi::v1
-
-#define hi_log(level, fmt, ...) \
-    hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
-    ::hi::log_global.add<level, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-
-#define hi_log_debug(fmt, ...) hi_log(::hi::global_state_type::log_debug, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define hi_log_info(fmt, ...) hi_log(::hi::global_state_type::log_info, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define hi_log_statistics(fmt, ...) hi_log(::hi::global_state_type::log_statistics, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define hi_log_trace(fmt, ...) hi_log(::hi::global_state_type::log_trace, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define hi_log_audit(fmt, ...) hi_log(::hi::global_state_type::log_audit, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define hi_log_warning(fmt, ...) hi_log(::hi::global_state_type::log_warning, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define hi_log_error(fmt, ...) hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define hi_log_fatal(fmt, ...) \
-    hi_log(::hi::global_state_type::log_fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
-    hi_debug_abort()
-
-#define hi_log_info_once(name, fmt, ...) \
-    do { \
-        if (++::hi::global_counter<name> == 1) { \
-            hi_log(::hi::global_state_type::log_info, fmt __VA_OPT__(, ) __VA_ARGS__); \
-        } \
-    } while (false)
-
-#define hi_log_error_once(name, fmt, ...) \
-    do { \
-        if (++::hi::global_counter<name> == 1) { \
-            hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__); \
-        } \
-    } while (false)

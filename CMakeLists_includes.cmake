@@ -66,6 +66,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/color/Rec2100.hpp
     ${HIKOGUI_SOURCE_DIR}/color/semantic_color.hpp
     ${HIKOGUI_SOURCE_DIR}/color/sRGB.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/atomic.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/callback_flags.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/global_state.hpp
@@ -412,7 +413,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_string_node.hpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_top_node.hpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_while_node.hpp
-    ${HIKOGUI_SOURCE_DIR}/telemetry/atomic.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/counters.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/delayed_format.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/format_check.hpp
