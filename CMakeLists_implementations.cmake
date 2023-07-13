@@ -71,7 +71,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/keyboard_virtual_key_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/GUI/theme_book_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GUI/theme_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/graphic_path/bezier_curve_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path/graphic_path_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_impl.cpp
