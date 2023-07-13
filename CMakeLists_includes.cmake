@@ -77,6 +77,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_mutex.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_recursive_mutex.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
+    ${HIKOGUI_SOURCE_DIR}/console/console.hpp
+    ${HIKOGUI_SOURCE_DIR}/console/dialog.hpp
     ${HIKOGUI_SOURCE_DIR}/container/byte_string.hpp
     ${HIKOGUI_SOURCE_DIR}/container/function_fifo.hpp
     ${HIKOGUI_SOURCE_DIR}/container/functional.hpp
@@ -103,9 +105,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/coroutine/scoped_task.hpp
     ${HIKOGUI_SOURCE_DIR}/coroutine/task.hpp
     ${HIKOGUI_SOURCE_DIR}/coroutine/when_any.hpp
-    ${HIKOGUI_SOURCE_DIR}/crt/console.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/crt_utils.hpp
-    ${HIKOGUI_SOURCE_DIR}/crt/dialog.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/terminate.hpp
     ${HIKOGUI_SOURCE_DIR}/file/file.hpp
     ${HIKOGUI_SOURCE_DIR}/file/file_view.hpp

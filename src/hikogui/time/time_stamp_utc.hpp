@@ -5,6 +5,7 @@
 #pragma once
 
 #include "chrono.hpp"
+#include "time_stamp_count.hpp"
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
 #include <array>
@@ -12,7 +13,6 @@
 #include <thread>
 
 namespace hi::inline v1 {
-class time_stamp_count;
 
 /** Timestamp
  */
@@ -20,7 +20,7 @@ struct time_stamp_utc {
     /** Get the current time and TSC value.
      * @pre Use `set_thread_affinity()` to set the CPU affinity to a single CPU.
      */
-    [[nodiscard]] static utc_nanoseconds now(time_stamp_count &tsc) noexcept;
+    [[nodiscard]] static utc_nanoseconds now(time_stamp_count &tsc);
 
     /** Make a time point from a time stamp count.
      * This function will work in two modes:
@@ -53,8 +53,8 @@ private:
     static inline unfair_mutex mutex;
     static inline std::array<std::atomic<utc_nanoseconds>, maximum_num_cpus> tsc_epochs = {};
 
-    static void subsystem_proc_frequency_calibration(std::stop_token stop_token) noexcept;
-    static void subsystem_proc(std::stop_token stop_token) noexcept;
+    static void subsystem_proc_frequency_calibration(std::stop_token stop_token);
+    static void subsystem_proc(std::stop_token stop_token);
 
     /** Subsystem initializer.
      */

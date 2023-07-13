@@ -5,7 +5,7 @@
 #include "log.hpp"
 #include "trace.hpp"
 #include "../utility/module.hpp"
-#include "../crt/module.hpp"
+#include "../console/module.hpp"
 #include <format>
 #include <exception>
 #include <memory>

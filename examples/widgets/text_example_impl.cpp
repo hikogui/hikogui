@@ -18,7 +18,6 @@ int hi_main(int argc, char *argv[])
 
     // Start the logger system, so logging is done asynchronously.
     hi::log::start_subsystem(hi::global_state_type::log_level_info);
-    hi::time_stamp_count::start_subsystem();
 
     // Startup renderdoc for debugging
     auto render_doc = hi::RenderDoc();

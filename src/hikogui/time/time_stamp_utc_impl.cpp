@@ -4,7 +4,6 @@
 
 #include "time_stamp_utc.hpp"
 #include "time_stamp_count.hpp"
-#include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include <format>
 #include <bit>
@@ -30,7 +29,7 @@ std::string format_engineering(std::chrono::nanoseconds duration)
     }
 }
 
-[[nodiscard]] utc_nanoseconds time_stamp_utc::now(time_stamp_count &tsc) noexcept
+[[nodiscard]] utc_nanoseconds time_stamp_utc::now(time_stamp_count &tsc)
 {
     auto shortest_diff = std::numeric_limits<uint64_t>::max();
     time_stamp_count shortest_tsc;
@@ -44,11 +43,13 @@ std::string format_engineering(std::chrono::nanoseconds duration)
         hilet tmp_tsc2 = time_stamp_count::now();
 
         if (tmp_tsc1.cpu_id() != tmp_tsc2.cpu_id()) {
-            hi_log_fatal("CPU Switch detected during get_sample(), which should never happen");
+            throw os_error("CPU Switch detected during get_sample(), which should never happen");
         }
 
         if (tmp_tsc1.count() > tmp_tsc2.count()) {
-            hi_log_warning("TSC skipped backwards");
+            // TSC skipped backwards, this may happen when the TSC of multiple
+            // CPUs get synchronized with each other.
+            // For example when waking up from sleep.
             continue;
         }
 
@@ -62,7 +63,7 @@ std::string format_engineering(std::chrono::nanoseconds duration)
     }
 
     if (shortest_diff == std::numeric_limits<uint64_t>::max()) {
-        hi_log_fatal("Unable to get TSC sample.");
+        throw os_error("Unable to get TSC sample.");
     }
 
     tsc = shortest_tsc;
@@ -86,7 +87,7 @@ std::string format_engineering(std::chrono::nanoseconds duration)
     return ref_tp - diff_ns;
 }
 
-void time_stamp_utc::subsystem_proc_frequency_calibration(std::stop_token stop_token) noexcept
+void time_stamp_utc::subsystem_proc_frequency_calibration(std::stop_token stop_token)
 {
     using namespace std::chrono_literals;
 
@@ -113,7 +114,6 @@ void time_stamp_utc::subsystem_proc_frequency_calibration(std::stop_token stop_t
     hilet iqr_last = std::next(iqr_first, iqr_size);
     hilet frequency = std::accumulate(iqr_first, iqr_last, uint64_t{0}) / iqr_size;
 
-    hi_log_info("Accurate measurement of TSC frequency result is {} Hz", frequency);
     time_stamp_count::set_frequency(frequency);
 }
 
@@ -130,7 +130,7 @@ static void advance_cpu_thread_mask(uint64_t const &process_cpu_mask, uint64_t &
     } while ((process_cpu_mask & thread_cpu_mask) == 0);
 }
 
-void time_stamp_utc::subsystem_proc(std::stop_token stop_token) noexcept
+void time_stamp_utc::subsystem_proc(std::stop_token stop_token)
 {
     using namespace std::chrono_literals;
 

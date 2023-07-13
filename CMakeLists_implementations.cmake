@@ -22,9 +22,9 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/concurrency/thread_impl.cpp
     #${HIKOGUI_SOURCE_DIR}/concurrency/thread_macos_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/concurrency/thread_win32_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/console_win32_impl.cpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/console_win32_impl.cpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/dialog_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/crt_utils_win32_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/dialog_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/crt/terminate_impl.cpp
     $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_posix_impl.cpp>
     $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_view_posix_impl.cpp>
@@ -99,8 +99,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_line_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_style_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/time/time_stamp_count_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/time/time_stamp_count_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/time/time_stamp_utc_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/exception_win32_impl.cpp>

@@ -66,10 +66,14 @@ def main(filenames):
                 print(e, file=sys.stderr)
 
     # Find loops
+    found_loop = False
     for module in modules.values():
         loop_path = module.check_loop(modules, set([module.name]))
         if loop_path is not None:
+            found_loop = True
             print("Found circular dependency: {}".format(loop_path))
+    if found_loop:
+        sys.exit()
 
     print("digraph G {\n")
     for module in modules.values():
