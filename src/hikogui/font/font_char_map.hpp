@@ -16,6 +16,7 @@
 #include <vector>
 #include <tuple>
 #include <algorithm>
+#include <string>
 
 namespace hi { inline namespace v1 {
 

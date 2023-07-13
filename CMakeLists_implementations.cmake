@@ -94,7 +94,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_parse_context_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/counters_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/log_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/telemetry/log_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/telemetry/trace_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_char_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_impl.cpp
@@ -105,26 +104,4 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/time/time_stamp_utc_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/exception_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/widgets/abstract_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/audio_device_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/checkbox_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/grid_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/icon_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/label_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/menu_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/momentary_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/overlay_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/radio_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/selection_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/system_menu_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/tab_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/text_field_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/toggle_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_tab_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/window_widget_impl.cpp
-)
+) 

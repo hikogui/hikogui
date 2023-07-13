@@ -6,7 +6,7 @@
 
 #include "seed.hpp"
 #include "../utility/module.hpp"
-#include "../telemetry/module.hpp"
+#include <format>
 
 namespace hi::inline v1 {
 
@@ -14,8 +14,7 @@ void generate_seed(void *ptr, size_t size)
 {
     auto status = BCryptGenRandom(NULL, static_cast<PUCHAR>(ptr), narrow_cast<ULONG>(size), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
     if (not SUCCEEDED(status)) {
-        hi_log_error("BCryptGenRandom(): {}", get_last_error_message());
-        throw os_error("BCryptGenRandom()");
+        throw os_error(std::format("BCryptGenRandom(): {}", get_last_error_message(status)));
     }
 }
 

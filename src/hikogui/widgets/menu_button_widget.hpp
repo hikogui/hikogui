@@ -80,11 +80,106 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
-    bool handle_event(gui_event const& event) noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _label_constraints = super::update_constraints();
+
+        // Make room for button and margin.
+        _check_size = {theme().size(), theme().size()};
+        _short_cut_size = {theme().size(), theme().size()};
+
+        // On left side a check mark, on right side short-cut. Around the label extra margin.
+        hilet extra_size = extent2{
+            theme().margin<float>() * 4.0f + _check_size.width() + _short_cut_size.width(), theme().margin<float>() * 2.0f};
+
+        auto constraints = _label_constraints + extra_size;
+        constraints.margins = 0;
+        return constraints;
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(_layout, context)) {
+            hilet inside_rectangle = context.rectangle() - theme().margin<float>();
+
+            if (os_settings::left_to_right()) {
+                _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left());
+                _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
+                hilet label_rectangle = aarectangle{
+                    point2{_check_rectangle.right() + theme().margin<float>(), 0.0f},
+                    point2{_short_cut_rectangle.left() - theme().margin<float>(), context.height()}};
+                _on_label_shape = _off_label_shape = _other_label_shape =
+                    box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
+
+            } else {
+                _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_left());
+                _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_right());
+                hilet label_rectangle = aarectangle{
+                    point2{_short_cut_rectangle.right() + theme().margin<float>(), 0.0f},
+                    point2{_check_rectangle.left() - theme().margin<float>(), context.height()}};
+                _on_label_shape = _off_label_shape = _other_label_shape =
+                    box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
+            }
+
+            _check_glyph = find_glyph(elusive_icon::Ok);
+            hilet check_glyph_bb = _check_glyph.get_bounding_box() * theme().icon_size();
+            _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
+        }
+
+        super::set_layout(context);
+    }
+
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+            draw_menu_button(context);
+            draw_check_mark(context);
+            draw_button(context);
+        }
+    }
+
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::menu);
+    }
+
+    bool handle_event(gui_event const& event) noexcept override
+    {
+        using enum gui_event_type;
+
+        switch (event.type()) {
+        case gui_menu_next:
+            if (*mode >= widget_mode::partial and not is_last(keyboard_focus_group::menu)) {
+                process_event(gui_event::window_set_keyboard_target(
+                    nullptr, keyboard_focus_group::menu, keyboard_focus_direction::forward));
+                return true;
+            }
+            break;
+
+        case gui_menu_prev:
+            if (*mode >= widget_mode::partial and not is_first(keyboard_focus_group::menu)) {
+                process_event(gui_event::window_set_keyboard_target(
+                    nullptr, keyboard_focus_group::menu, keyboard_focus_direction::backward));
+                return true;
+            }
+            break;
+
+        case gui_activate:
+            if (*mode >= widget_mode::partial) {
+                activate();
+                process_event(gui_event::window_set_keyboard_target(
+                    nullptr, keyboard_focus_group::normal, keyboard_focus_direction::forward));
+                process_event(gui_event::window_set_keyboard_target(
+                    nullptr, keyboard_focus_group::normal, keyboard_focus_direction::backward));
+                return true;
+            }
+            break;
+
+        default:;
+        }
+
+        return super::handle_event(event);
+    }
     /// @endprivatesection
 private:
     box_constraints _label_constraints;
@@ -96,8 +191,21 @@ private:
     extent2 _short_cut_size;
     aarectangle _short_cut_rectangle;
 
-    void draw_menu_button(draw_context const& context) noexcept;
-    void draw_check_mark(draw_context const& context) noexcept;
+    void draw_menu_button(draw_context const& context) noexcept
+    {
+        hilet border_color = *focus ? focus_color() : color::transparent();
+        context.draw_box(
+            layout(), layout().rectangle(), background_color(), border_color, theme().border_width(), border_side::inside);
+    }
+    void draw_check_mark(draw_context const& context) noexcept
+    {
+        auto state_ = state();
+
+        // Checkmark or tristate.
+        if (state_ == hi::button_state::on) {
+            context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, accent_color());
+        }
+    }
 };
 
 }} // namespace hi::v1
