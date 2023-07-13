@@ -99,7 +99,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_line_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_style_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/time/time_stamp_utc_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/exception_win32_impl.cpp>
 ) 
