@@ -19,9 +19,9 @@ struct bezier_point {
     Type type;
     point2 p;
 
-    bezier_point(point2 const p, Type const type) noexcept : type(type), p(p) {}
+    constexpr bezier_point(point2 const p, Type const type) noexcept : type(type), p(p) {}
 
-    bezier_point(float const x, float const y, Type const type) noexcept : bezier_point(point2{x, y}, type) {}
+    constexpr bezier_point(float const x, float const y, Type const type) noexcept : bezier_point(point2{x, y}, type) {}
 
     /*! Normalize points in a list.
      * The following normalizations are executed:
@@ -35,7 +35,7 @@ struct bezier_point {
      * \param end iterator beyond the end of the bezier point list.
      * \return a vector of bezier point that include all the anchor and control points.
      */
-    [[nodiscard]] static std::vector<bezier_point> normalizePoints(
+    [[nodiscard]] constexpr static std::vector<bezier_point> normalizePoints(
         std::vector<bezier_point>::const_iterator const begin,
         std::vector<bezier_point>::const_iterator const end) noexcept
     {
@@ -94,14 +94,11 @@ struct bezier_point {
         hi_no_default();
     }
 
-    [[nodiscard]] friend bool operator==(bezier_point const &lhs, bezier_point const &rhs) noexcept
-    {
-        return (lhs.p == rhs.p) && (lhs.type == rhs.type);
-    }
+    [[nodiscard]] constexpr friend bool operator==(bezier_point const&, bezier_point const&) noexcept = default;
 
     /** Transform the point.
      */
-    [[nodiscard]] friend bezier_point operator*(transformer2 auto const &lhs, bezier_point const &rhs) noexcept
+    [[nodiscard]] constexpr friend bezier_point operator*(transformer2 auto const &lhs, bezier_point const &rhs) noexcept
     {
         return {lhs * rhs.p, rhs.type};
     }

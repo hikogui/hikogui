@@ -27,12 +27,9 @@ namespace hi::inline v1 {
  */
 class time_stamp_count {
 public:
-    struct inplace {
-    };
-    struct inplace_with_cpu_id {
-    };
-    struct inplace_with_thread_id {
-    };
+    struct inplace {};
+    struct inplace_with_cpu_id {};
+    struct inplace_with_thread_id {};
 
     constexpr time_stamp_count() noexcept : _count(0), _aux(0), _thread_id(0) {}
 
@@ -138,7 +135,7 @@ public:
         return duration_from_count(_count);
     }
 
-    constexpr time_stamp_count &operator+=(uint64_t rhs) noexcept
+    constexpr time_stamp_count& operator+=(uint64_t rhs) noexcept
     {
         _count += rhs;
         return *this;
@@ -151,10 +148,100 @@ public:
         return tmp;
     }
 
+    /** Get a good quality time sample.
+     *
+     * @pre The CPU affinity must be set to a single CPU.
+     * @return The current UTC time in nanoseconds, the current time-stamp count.
+     * @throw os_error When there is a problem getting a time-sample.
+     */
+    [[nodiscard]] static std::pair<utc_nanoseconds, time_stamp_count> time_stamp_utc_sample()
+    {
+        auto shortest_diff = std::numeric_limits<uint64_t>::max();
+        time_stamp_count shortest_tsc;
+        utc_nanoseconds shortest_tp;
+
+        // With three samples gathered on the same CPU we should
+        // have a TSC/UTC/TSC combination that was run inside a single time-slice.
+        for (auto i = 0; i != 10; ++i) {
+            hilet tmp_tsc1 = time_stamp_count::now();
+            hilet tmp_tp = std::chrono::utc_clock::now();
+            hilet tmp_tsc2 = time_stamp_count::now();
+
+            if (tmp_tsc1.cpu_id() != tmp_tsc2.cpu_id()) {
+                throw os_error("CPU Switch detected during get_sample(), which should never happen");
+            }
+
+            if (tmp_tsc1.count() > tmp_tsc2.count()) {
+                // TSC skipped backwards, this may happen when the TSC of multiple
+                // CPUs get synchronized with each other.
+                // For example when waking up from sleep.
+                continue;
+            }
+
+            hilet diff = tmp_tsc2.count() - tmp_tsc1.count();
+
+            if (diff < shortest_diff) {
+                shortest_diff = diff;
+                shortest_tp = tmp_tp;
+                shortest_tsc = tmp_tsc1 + (diff / 2);
+            }
+        }
+
+        if (shortest_diff == std::numeric_limits<uint64_t>::max()) {
+            throw os_error("Unable to get TSC sample.");
+        }
+
+        return {shortest_tp, shortest_tsc};
+    }
+
     /** Measure the frequency of the time_stamp_count.
      * Frequency drift from TSC is 1ppm
+     *
+     * @param sample_duration The time between samples to determine the frequency
+     *                        longer duration gives a better quality but may
+     *                        increase application start-up time.
+     * @return The clock frequency of the TSC in Hz.
      */
-    [[nodiscard]] static uint64_t measure_frequency(std::chrono::milliseconds duration) noexcept;
+    [[nodiscard]] static uint64_t measure_frequency(std::chrono::milliseconds sample_duration)
+    {
+        using namespace std::chrono_literals;
+
+        // Only sample the frequency of one of the TSC clocks.
+        hilet prev_mask = set_thread_affinity(current_cpu_id());
+
+        hilet [tp1, tsc1] = time_stamp_utc_sample();
+        std::this_thread::sleep_for(sample_duration);
+        hilet [tp2, tsc2] = time_stamp_utc_sample();
+
+        // Reset the mask back.
+        set_thread_affinity_mask(prev_mask);
+
+        if (tsc1._aux != tsc2._aux) {
+            // This must never happen, as we set the thread affinity to a single CPU
+            // if this happens something is seriously wrong.
+            throw os_error("CPU Switch detected when measuring the TSC frequency.");
+        }
+
+        if (tsc1.count() >= tsc2.count()) {
+            // The TSC should only be reset during the very early boot sequence when
+            // the CPUs are started and synchronized. It may also happen to a CPU that
+            // was hot-swapped while the computer is running, in that case the CPU
+            // should not be running applications yet.
+            throw os_error("TSC Did not advance during measuring its frequency.");
+        }
+
+        if (tp1 >= tp2) {
+            // The UTC clock did not advance, maybe a time server changed the clock.
+            return 0;
+        }
+
+        // Calculate the frequency by dividing the delta-tsc by the duration.
+        // We scale both the delta-tsc and duration by 1'000'000'000 before the
+        // division. The duration is scaled by 1'000'000'000 by dividing by 1ns.
+        hilet[delta_tsc_lo, delta_tsc_hi] = mul_carry(tsc2.count() - tsc1.count(), uint64_t{1'000'000'000});
+        auto duration = narrow_cast<uint64_t>((tp2 - tp1) / 1ns);
+        return wide_div(delta_tsc_lo, delta_tsc_hi, duration);
+    }
 
     static void set_frequency(uint64_t frequency) noexcept
     {
@@ -163,8 +250,17 @@ public:
     }
 
     /** Start the time_stamp_count subsystem.
+     *
+     * @return The time-stamp-counter frequency
+     * @throw os_error When the time-stamp-counter does not work. AUX is the same
+     *                 as the cpu-id.
      */
-    static void start_subsystem() noexcept;
+    static std::pair<uint64_t, bool> start_subsystem()
+    {
+        hilet frequency = configure_frequency();
+        hilet aux_is_cpu_id = populate_aux_values();
+        return {frequency, aux_is_cpu_id};
+    }
 
 private:
     uint64_t _count;
@@ -177,7 +273,7 @@ private:
      * of each aux value and CPU id.
      */
     uint32_t _aux;
-
+    
     /** A struct packing optimization, add the thread id in this same struct.
      */
     uint32_t _thread_id;
@@ -207,10 +303,88 @@ private:
      *
      * @return the CPU id, or -1 if the CPU id is unknown.
      */
-    [[nodiscard]] ssize_t cpu_id_fallback() const noexcept;
+    [[nodiscard]] ssize_t cpu_id_fallback() const noexcept
+    {
+        auto aux_value_ = _mm_set1_epi32(_aux);
 
-    static void populate_aux_values() noexcept;
-    static void configure_frequency() noexcept;
+        hilet num_aux_values = _num_aux_values.load(std::memory_order_acquire);
+        hi_assert(_aux_values.size() == _cpu_ids.size());
+        hi_assert_bounds(num_aux_values, _aux_values);
+
+        for (std::size_t i = 0; i < num_aux_values; i += 4) {
+            hilet row = _mm_loadu_si128(reinterpret_cast<__m128i const *>(_aux_values.data() + i));
+            hilet row_result = _mm_cmpeq_epi32(row, aux_value_);
+            hilet row_result_ = _mm_castsi128_ps(row_result);
+            hilet row_result_mask = _mm_movemask_ps(row_result_);
+            if (to_bool(row_result_mask)) {
+                hilet j = i + std::countr_zero(narrow_cast<unsigned int>(row_result_mask));
+                if (j < num_aux_values) {
+                    return _cpu_ids[j];
+                }
+
+                return -1;
+            }
+        }
+
+        return -1;
+    }
+
+    static bool populate_aux_values()
+    {
+        // Keep track of the original thread affinity of the main thread.
+        auto prev_mask = set_thread_affinity(current_cpu_id());
+
+        // Create a table of cpu_ids.
+        std::size_t next_cpu = 0;
+        std::size_t current_cpu = 0;
+        bool aux_is_cpu_id = true;
+        do {
+            current_cpu = advance_thread_affinity(next_cpu);
+
+            auto i = _num_aux_values.load(std::memory_order::acquire);
+            auto tsc = time_stamp_count::now();
+            _aux_values[i] = tsc._aux;
+            _cpu_ids[i] = current_cpu;
+            _num_aux_values.store(i + 1, std::memory_order::release);
+
+            if ((tsc._aux & 0xfff) != current_cpu) {
+                aux_is_cpu_id = false;
+            }
+
+        } while (next_cpu > current_cpu);
+
+        _aux_is_cpu_id.store(aux_is_cpu_id, std::memory_order_relaxed);
+
+        // Set the thread affinity back to the original.
+        set_thread_affinity_mask(prev_mask);
+        return aux_is_cpu_id;
+    }
+    static uint64_t configure_frequency()
+    {
+        using namespace std::chrono_literals;
+
+        // This function is called from the crt and must therefor be quick as we do not
+        // want to keep the user waiting. We are satisfied if the measured frequency is
+        // to within 1% accuracy.
+
+        // We take an average over 4 times in case the hires_utc_clock gets reset by a time server.
+        uint64_t frequency = 0;
+        uint64_t num_samples = 0;
+        for (int i = 0; i != 4; ++i) {
+            hilet f = time_stamp_count::measure_frequency(25ms);
+            if (f != 0) {
+                frequency += f;
+                ++num_samples;
+            }
+        }
+        if (num_samples == 0) {
+            throw os_error("Unable the measure the frequency of the TSC. The UTC time did not advance.");
+        }
+        frequency /= num_samples;
+
+        time_stamp_count::set_frequency(frequency);
+        return frequency;
+    }
 };
 
 } // namespace hi::inline v1

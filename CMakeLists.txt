@@ -222,13 +222,16 @@ elseif (MSVC)
     # This causes warning "C5105: macro expansion producing 'defined' has undefined behavior" in winbase.h
     # which is supposed to be fixed in a newer version of the SDK.
     target_compile_options(hikogui PUBLIC -Zc:preprocessor)
-    target_compile_options(hikogui PUBLIC -wd5105)
+    #target_compile_options(hikogui PUBLIC -wd5105)
 
     # Set the execution and source character encoding to UTF-8
     target_compile_options(hikogui PUBLIC -utf-8)
 
     # The hikogui generic tokenizer uses large constexpr tables.
     target_compile_options(hikogui PUBLIC "-constexpr:steps100000000")
+
+    # The library is too big.
+    target_compile_options(hikogui PUBLIC "-bigobj")
 
     # C4068: unknown pragma.
     # Ignore unknown pragmas, needed for other compilers.
@@ -282,9 +285,6 @@ elseif (MSVC)
 
         # Just my code enables the VS debugger to step over system, framework, library, and other non-user calls.
         target_compile_options(hikogui PUBLIC -JMC)
-
-        # The debugger can't watch variables that are part of NRVO (named return value optimization) even in debugging.
-        target_compile_options(hikogui PUBLIC -Zc:nrvo-)
     endif()
 
     if(HI_ENABLE_ASAN)
@@ -333,11 +333,6 @@ elseif (MSVC)
         # The bug (since 2020) in the compiler seem to have been triggered in unrelated code.
         # https://developercommunity.visualstudio.com/t/c28020-false-positives/923103
         target_compile_options(hikogui PUBLIC -wd28020)
-
-        # C26465: Don't use const_cat to cast away const or volatile, const_cast is not required constness... (type.3)
-        # False positive on string literal,
-        # bug reported: https://developercommunity.visualstudio.com/t/C26465-false-positive-on-string-literal/10263615
-        target_compile_options(hikogui PUBLIC -wd26465)
 
         # C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11)
         # Can't exclude unit-test and google-test uses new and delete in the TEST() macro.

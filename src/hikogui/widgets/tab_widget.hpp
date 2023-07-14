@@ -40,14 +40,33 @@ public:
 
     std::shared_ptr<delegate_type> delegate;
 
-    ~tab_widget();
+    ~tab_widget()
+    {
+        hi_assert_not_null(delegate);
+        delegate->deinit(*this);
+    }
 
     /** Construct a tab widget with a delegate.
      *
      * @param parent The owner of this widget.
      * @param delegate The delegate that will control this widget.
      */
-    tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
+    {
+        hi_axiom(loop::main().on_thread());
+        hi_assert_not_null(parent);
+
+        // The tab-widget will not draw itself, only its selected child.
+        semantic_layer = parent->semantic_layer;
+
+        hi_assert_not_null(this->delegate);
+        _delegate_cbt = this->delegate->subscribe([&] {
+            ++global_counter<"tab_widget:delegate:constrain">;
+            process_event({gui_event_type::window_reconstrain});
+        });
+
+        this->delegate->init(*this);
+    }
 
     /** Construct a tab widget with an observer value.
      *
@@ -93,14 +112,64 @@ public:
         }
     }
 
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _layout = {};
+
+        auto& selected_child_ = selected_child();
+
+        if (_previous_selected_child != &selected_child_) {
+            _previous_selected_child = &selected_child_;
+            hi_log_info("tab_widget::update_constraints() selected tab changed");
+            process_event({gui_event_type::window_resize});
+        }
+
+        for (hilet& child : _children) {
+            child->mode = child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible;
+        }
+
+        return selected_child_.update_constraints();
+    }
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        _layout = context;
+
+        for (hilet& child : _children) {
+            if (*child->mode > widget_mode::invisible) {
+                child->set_layout(context);
+            }
+        }
+    }
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible) {
+            for (hilet& child : _children) {
+                child->draw(context);
+            }
+        }
+    }
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (*mode >= widget_mode::partial) {
+            auto r = hitbox{};
+            for (hilet& child : _children) {
+                r = child->hitbox_test_from_parent(position, r);
+            }
+            return r;
+        } else {
+            return {};
+        }
+    }
     [[nodiscard]] widget_id find_next_widget(
         widget_id current_widget,
         keyboard_focus_group group,
-        keyboard_focus_direction direction) const noexcept override;
+        keyboard_focus_direction direction) const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+        return selected_child().find_next_widget(current_widget, group, direction);
+    }
     /// @endprivatsectopn
 private:
     widget const *_previous_selected_child = nullptr;
@@ -109,8 +178,30 @@ private:
 
     using const_iterator = decltype(_children)::const_iterator;
 
-    [[nodiscard]] const_iterator find_selected_child() const noexcept;
-    [[nodiscard]] widget& selected_child() const noexcept;
+    [[nodiscard]] const_iterator find_selected_child() const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+        hi_assert_not_null(delegate);
+
+        auto index = delegate->index(const_cast<tab_widget&>(*this));
+        if (index >= 0 and index < ssize(_children)) {
+            return _children.begin() + index;
+        }
+
+        return _children.end();
+    }
+    [[nodiscard]] widget& selected_child() const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+        hi_assert(not _children.empty());
+
+        auto i = find_selected_child();
+        if (i != _children.cend()) {
+            return **i;
+        } else {
+            return *_children.front();
+        }
+    }
 };
 
 }} // namespace hi::v1

@@ -25,7 +25,7 @@ int hi_main(int argc, char *argv[])
     widget.content().make_widget<radio_button_widget>("B3", value, 3, tr("three"));
     /// [Create three radio buttons]
 
-    auto close_cb = window->closing.subscribe(
+    auto close_cbt = window->closing.subscribe(
         [&] {
             window.reset();
         },

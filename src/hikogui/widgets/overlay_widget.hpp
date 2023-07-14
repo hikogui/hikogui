@@ -39,15 +39,28 @@ class overlay_widget final : public widget {
 public:
     using super = widget;
 
-    ~overlay_widget();
+    ~overlay_widget() {}
 
     /** Constructs an empty overlay widget.
      *
      * @param parent The parent widget.
      */
-    overlay_widget(widget *parent) noexcept;
+    overlay_widget(widget *parent) noexcept : super(parent)
+    {
+        if (parent) {
+            // The overlay-widget will reset the semantic_layer as it is the bottom
+            // layer of this virtual-window. However the draw-layer should be above
+            // any other widget drawn.
+            semantic_layer = 0;
+        }
+    }
 
-    void set_widget(std::unique_ptr<widget> new_widget) noexcept;
+    void set_widget(std::unique_ptr<widget> new_widget) noexcept
+    {
+        _content = std::move(new_widget);
+        ++global_counter<"overlay_widget:set_widget:constrain">;
+        process_event({gui_event_type::window_reconstrain});
+    }
 
     /** Add a content widget directly to this overlay widget.
      *
@@ -76,20 +89,68 @@ public:
         co_yield *_content;
     }
 
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] color background_color() const noexcept override;
-    [[nodiscard]] color foreground_color() const noexcept override;
-    void scroll_to_show(hi::aarectangle rectangle) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _layout = {};
+        _content_constraints = _content->update_constraints();
+        return _content_constraints;
+    }
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        _layout = context;
+
+        // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
+        _layout.clipping_rectangle = context.rectangle() + theme().border_width();
+
+        hilet content_rectangle = context.rectangle();
+        _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment()};
+
+        // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
+        _content->set_layout(_layout.transform(_content_shape, 1.0f, context.rectangle()));
+    }
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible) {
+            if (overlaps(context, layout())) {
+                draw_background(context);
+            }
+            _content->draw(context);
+        }
+    }
+    [[nodiscard]] color background_color() const noexcept override
+    {
+        return theme().color(semantic_color::fill, semantic_layer + 1);
+    }
+    [[nodiscard]] color foreground_color() const noexcept override
+    {
+        return theme().color(semantic_color::border, semantic_layer + 1);
+    }
+    void scroll_to_show(hi::aarectangle rectangle) noexcept override
+    {
+        // An overlay is in an absolute position on the window,
+        // so do not forward the scroll_to_show message to its parent.
+    }
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (*mode >= widget_mode::partial) {
+            return _content->hitbox_test_from_parent(position);
+        } else {
+            return {};
+        }
+    }
     /// @endprivatesection
 private:
     std::unique_ptr<widget> _content;
     box_constraints _content_constraints;
     box_shape _content_shape;
 
-    void draw_background(draw_context const& context) noexcept;
+    void draw_background(draw_context const& context) noexcept
+    {
+        context.draw_box(
+            layout(), layout().rectangle(), background_color(), foreground_color(), theme().border_width(), border_side::outside);
+    }
 };
 
 }} // namespace hi::v1

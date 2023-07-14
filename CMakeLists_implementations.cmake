@@ -22,9 +22,9 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/concurrency/thread_impl.cpp
     #${HIKOGUI_SOURCE_DIR}/concurrency/thread_macos_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/concurrency/thread_win32_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/console_win32_impl.cpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/console_win32_impl.cpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/dialog_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/crt_utils_win32_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/dialog_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/crt/terminate_impl.cpp
     $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_posix_impl.cpp>
     $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_view_posix_impl.cpp>
@@ -71,7 +71,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/keyboard_virtual_key_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/GUI/theme_book_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GUI/theme_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/graphic_path/bezier_curve_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path/graphic_path_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_impl.cpp
@@ -92,39 +91,10 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/user_settings_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_parse_context_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/telemetry/counters_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/telemetry/log_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/telemetry/log_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/telemetry/trace_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_char_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_line_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_style_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/time/time_stamp_count_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/time/time_stamp_count_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/time/time_stamp_utc_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/utility/exception_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/widgets/abstract_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/audio_device_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/checkbox_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/grid_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/icon_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/label_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/menu_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/momentary_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/overlay_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/radio_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/selection_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/system_menu_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/tab_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/text_field_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/text_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/toggle_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_tab_button_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/window_widget_impl.cpp
-)
+) 

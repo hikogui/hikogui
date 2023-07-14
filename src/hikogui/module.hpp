@@ -10,6 +10,7 @@
 #include "codec/module.hpp"
 #include "color/module.hpp"
 #include "concurrency/module.hpp"
+#include "console/module.hpp"
 #include "container/module.hpp"
 #include "coroutine/module.hpp"
 #include "crt/module.hpp"

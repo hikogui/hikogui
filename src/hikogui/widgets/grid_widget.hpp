@@ -40,13 +40,20 @@ class grid_widget : public widget {
 public:
     using super = widget;
 
-    ~grid_widget();
+    ~grid_widget() {}
 
     /** Constructs an empty grid widget.
      *
      * @param parent The parent widget.
      */
-    grid_widget(widget *parent) noexcept;
+    grid_widget(widget *parent) noexcept : widget(parent)
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (parent) {
+            semantic_layer = parent->semantic_layer;
+        }
+    }
 
     /** Add a widget directly to this grid-widget.
      *
@@ -105,10 +112,48 @@ public:
         }
     }
 
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        _layout = {};
+
+        for (auto& cell : _grid) {
+            cell.set_constraints(cell.value->update_constraints());
+        }
+
+        return _grid.constraints(os_settings::left_to_right());
+    }
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(_layout, context)) {
+            _grid.set_layout(context.shape, theme().baseline_adjustment());
+        }
+
+        for (hilet& cell : _grid) {
+            cell.value->set_layout(context.transform(cell.shape, 0.0f));
+        }
+    }
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible) {
+            for (hilet& cell : _grid) {
+                cell.value->draw(context);
+            }
+        }
+    }
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (*mode >= widget_mode::partial) {
+            auto r = hitbox{};
+            for (hilet& cell : _grid) {
+                r = cell.value->hitbox_test_from_parent(position, r);
+            }
+            return r;
+        } else {
+            return {};
+        }
+    }
     /// @endprivatesection
 private:
     grid_layout<std::unique_ptr<widget>> _grid;
@@ -120,7 +165,24 @@ private:
         std::size_t first_row,
         std::size_t last_column,
         std::size_t last_row,
-        std::unique_ptr<widget> child_widget) noexcept;
+        std::unique_ptr<widget> widget) noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+        hi_axiom(first_column < last_column);
+        hi_axiom(first_row < last_row);
+
+        if (_grid.cell_in_use(first_column, first_row, last_column, last_row)) {
+            hi_log_fatal("cell ({},{}) of grid_widget is already in use", first_column, first_row);
+        }
+
+        auto& ref = *widget;
+        _grid.add_cell(first_column, first_row, last_column, last_row, std::move(widget));
+        hi_log_info("grid_widget::add_widget({}, {}, {}, {})", first_column, first_row, last_column, last_row);
+
+        ++global_counter<"grid_widget:add_widget:constrain">;
+        process_event({gui_event_type::window_reconstrain});
+        return ref;
+    }
 };
 
 }} // namespace hi::v1

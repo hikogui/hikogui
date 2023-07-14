@@ -3,8 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "terminate.hpp"
-#include "console.hpp"
-#include "dialog.hpp"
+#include "../console/module.hpp"
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
 

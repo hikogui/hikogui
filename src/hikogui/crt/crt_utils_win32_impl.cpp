@@ -6,7 +6,8 @@
 
 #include "crt_utils.hpp"
 #include "terminate.hpp"
-#include "console.hpp"
+#include "../telemetry/module.hpp"
+#include "../console/module.hpp"
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
 #include "../char_maps/module.hpp"
@@ -80,8 +81,13 @@ std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 
     // Make sure the console is in a valid state to write text to it.
     hi::console_start();
-    hi::time_stamp_count::start_subsystem();
+    hilet [tsc_frequency, aux_is_cpu_id] = hi::time_stamp_count::start_subsystem();
+
     hi::start_system();
+    if (aux_is_cpu_id) {
+        hi_log_info("The AUX value from the time-stamp-count is equal to the cpu-id.");
+    }
+    hi_log_info("The measured frequency of the TSC is {} Hz.", tsc_frequency);
 
     hi::crt_application_instance = instance;
     return {argc, argv};

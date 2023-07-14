@@ -31,7 +31,10 @@ public:
 
     ~system_menu_widget() {}
 
-    system_menu_widget(widget *parent) noexcept;
+    system_menu_widget(widget *parent) noexcept : super(parent)
+    {
+        _icon_widget = std::make_unique<icon_widget>(this, icon);
+    }
 
     system_menu_widget(widget *parent, forward_of<observer<hi::icon>> auto&& icon) noexcept :
         system_menu_widget(parent)
@@ -45,10 +48,55 @@ public:
         co_yield *_icon_widget;
     }
 
-    [[nodiscard]] box_constraints update_constraints() noexcept override;
-    void set_layout(widget_layout const& context) noexcept override;
-    void draw(draw_context const& context) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] box_constraints update_constraints() noexcept override
+    {
+        hi_assert_not_null(_icon_widget);
+
+        _layout = {};
+        _icon_constraints = _icon_widget->update_constraints();
+
+        hilet size = extent2{theme().large_size(), theme().large_size()};
+        return {size, size, size};
+    }
+
+    void set_layout(widget_layout const& context) noexcept override
+    {
+        if (compare_store(_layout, context)) {
+            hilet icon_height =
+                context.height() < round_cast<int>(theme().large_size() * 1.2f) ? context.height() : theme().large_size();
+            hilet icon_rectangle = aarectangle{0, context.height() - icon_height, context.width(), icon_height};
+            _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme().baseline_adjustment()};
+            // Leave space for window resize handles on the left and top.
+            _system_menu_rectangle = aarectangle{
+                theme().margin<float>(),
+                0.0f,
+                context.width() - theme().margin<float>(),
+                context.height() - theme().margin<float>()};
+        }
+
+        _icon_widget->set_layout(context.transform(_icon_shape));
+    }
+
+    void draw(draw_context const& context) noexcept override
+    {
+        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+            _icon_widget->draw(context);
+        }
+    }
+
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (*mode >= widget_mode::partial and layout().contains(position)) {
+            // Only the top-left square should return ApplicationIcon, leave
+            // the reset to the toolbar implementation.
+            return {id, _layout.elevation, hitbox_type::application_icon};
+        } else {
+            return {};
+        }
+    }
+
     /// @endprivatesection
 private:
     std::unique_ptr<icon_widget> _icon_widget;

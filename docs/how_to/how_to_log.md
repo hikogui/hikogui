@@ -61,14 +61,6 @@ are met:
 
 ### Accurate timestamps
 
-By default the timestamps in the log are an estimate of when the
-`hi_log_*()` function where executed. For more accurate and precise
-timestamps you will need to start the `time_stamp_count` subsystem.
-
-```cpp
-hi::time_stamp_count::start_subsystem();
-```
-
 To make logging quick, the timestamp is taken from the CPU's
 timestamp-counter. The `time_stamp_count` subsystem will calibrate
 the timestamp-count of each CPU with the real-time `std::utc_clock`.
