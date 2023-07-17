@@ -4,6 +4,7 @@
 
 #include "../utility/win32_headers.hpp"
 
+import hikogui_utility;
 #include "audio_device_win32.hpp"
 #include "audio_sample_format.hpp"
 #include "audio_stream_format.hpp"

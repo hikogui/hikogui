@@ -4,6 +4,7 @@
 
 #include "../utility/win32_headers.hpp"
 
+import hikogui_utility;
 #include "thread.hpp"
 #include "unfair_mutex.hpp"
 #include "../utility/module.hpp"

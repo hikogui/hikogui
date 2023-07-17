@@ -46,9 +46,11 @@ string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 0)
-set(CMAKE_EXPERIMENTAL_CXX_SCANDEP_SOURCE 0)
-set(CMAKE_CXX_SCAN_FOR_MODULES 0)
+# CMake 3.25
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "3c375311-a3c9-4396-a187-3227ef642046")
+# CMake 3.26
+#set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
 
 #-------------------------------------------------------------------
 # Setup CMake Includes
@@ -111,6 +113,7 @@ add_library(hikogui)
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 include(CMakeLists_includes.cmake)
 include(CMakeLists_implementations.cmake)
+include(CMakeLists_modules.cmake)
 if(HI_ENABLE_PCH)
     include(CMakeLists_pch.cmake)
 endif()
@@ -438,6 +441,7 @@ if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
         FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
@@ -446,6 +450,7 @@ else()
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
         FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib

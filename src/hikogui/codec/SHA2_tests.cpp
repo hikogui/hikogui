@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+import hikogui_utility;
 #include "SHA2.hpp"
 #include "base_n.hpp"
 #include "../utility/module.hpp"

@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+import hikogui_utility;
 #include "unicode_word_break.hpp"
 #include "unicode_sentence_break.hpp"
 #include "unicode_line_break.hpp"

@@ -4,6 +4,7 @@
 
 #include "../utility/win32_headers.hpp"
 
+import hikogui_utility;
 #include "locked_memory_allocator.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"

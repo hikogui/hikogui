@@ -4,6 +4,7 @@
 
 #include "../utility/win32_headers.hpp"
 
+import hikogui_utility;
 #include "crt_utils.hpp"
 #include "terminate.hpp"
 #include "../telemetry/module.hpp"

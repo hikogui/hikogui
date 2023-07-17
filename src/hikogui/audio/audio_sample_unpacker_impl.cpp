@@ -8,6 +8,7 @@
 #include <bit>
 #include <cstdint>
 #include <tuple>
+import hikogui_utility;
 
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead (bounds.1).

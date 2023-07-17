@@ -4,6 +4,7 @@
 
 #include "../utility/win32_headers.hpp"
 
+import hikogui_utility;
 #include "path_location.hpp"
 #include "../telemetry/module.hpp"
 #include "../settings/module.hpp"

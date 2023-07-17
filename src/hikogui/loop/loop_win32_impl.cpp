@@ -36,6 +36,7 @@
 
 #include "../utility/win32_headers.hpp"
 
+import hikogui_utility;
 #include "loop.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
