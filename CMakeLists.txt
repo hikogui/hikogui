@@ -131,7 +131,6 @@ endif()
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 target_compile_features(hikogui PUBLIC cxx_std_23)
 set_target_properties(hikogui PROPERTIES VERSION ${HIKOGUI_PROJECT_VERSION_SHORT} SOVERSION ${HIKOGUI_MAJOR_VERSION})
-set_target_properties(hikogui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 if(APPLE)
     target_link_libraries(hikogui PUBLIC "-framework Foundation -framework AppKit")
