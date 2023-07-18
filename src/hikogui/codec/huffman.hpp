@@ -5,6 +5,7 @@
 #include "../utility/module.hpp"
 #include <span>
 #include <vector>
+#include <algorithm>
 
 namespace hi::inline v1 {
 
