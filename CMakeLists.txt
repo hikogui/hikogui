@@ -5,6 +5,19 @@
 
 
 cmake_minimum_required(VERSION 3.25)
+
+#-------------------------------------------------------------------
+# Enable C++20 Modules
+#-------------------------------------------------------------------
+if(${CMAKE_VERSION} VERSION_LESS "3.26")
+    # CMake 3.25
+    set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "3c375311-a3c9-4396-a187-3227ef642046")
+else()
+    # CMake 3.26
+    set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
+endif()
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
+
 #-------------------------------------------------------------------
 # Configure early CMAKE paths
 #-------------------------------------------------------------------
@@ -46,11 +59,6 @@ string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
-# CMake 3.25
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "3c375311-a3c9-4396-a187-3227ef642046")
-# CMake 3.26
-#set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
 
 #-------------------------------------------------------------------
 # Setup CMake Includes
