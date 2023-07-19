@@ -8,6 +8,7 @@ import hikogui_utility;
 #include "win32_device_interface.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

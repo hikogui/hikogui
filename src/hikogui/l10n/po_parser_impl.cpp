@@ -7,6 +7,7 @@
 #include "../i18n/module.hpp"
 #include "../file/module.hpp"
 #include "../parser/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

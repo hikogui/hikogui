@@ -9,6 +9,7 @@ import hikogui_utility;
 #include "../telemetry/module.hpp"
 #include "../settings/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <filesystem>
 #include <string>
 

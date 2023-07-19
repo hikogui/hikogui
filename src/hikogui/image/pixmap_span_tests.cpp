@@ -4,6 +4,7 @@
 
 #include "pixmap_span.hpp"
 #include "pixmap.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 
 TEST(pixmap_span, construct_empty)

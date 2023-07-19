@@ -19,6 +19,7 @@ import hikogui_utility;
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 #include <cstddef>
 #include <span>
 

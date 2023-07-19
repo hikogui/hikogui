@@ -6,6 +6,7 @@
 
 #include "vector2.hpp"
 #include "extent2.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

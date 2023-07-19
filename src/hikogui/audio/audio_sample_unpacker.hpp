@@ -7,6 +7,7 @@
 #include "audio_sample_format.hpp"
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
+#include "../macros.hpp"
 #include <cstddef>
 #include <bit>
 

@@ -6,6 +6,7 @@
 
 #include "../utility/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <cstdint>
 
 namespace hi::inline v1 {

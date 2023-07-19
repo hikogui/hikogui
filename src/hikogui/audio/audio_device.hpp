@@ -14,6 +14,7 @@
 #include "../l10n/module.hpp"
 #include "../utility/module.hpp"
 #include "../loop/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <memory>
 #include <ostream>

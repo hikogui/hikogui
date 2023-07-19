@@ -4,6 +4,7 @@
 
 #include "../random/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <string_view>
 #include <string>
 #include <span>

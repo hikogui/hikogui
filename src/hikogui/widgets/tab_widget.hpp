@@ -11,6 +11,7 @@
 #include "widget.hpp"
 #include "grid_widget.hpp"
 #include "tab_delegate.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

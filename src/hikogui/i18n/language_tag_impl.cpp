@@ -5,6 +5,7 @@
 import hikogui_utility;
 #include "language_tag.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <algorithm>
 #include <numeric>
 

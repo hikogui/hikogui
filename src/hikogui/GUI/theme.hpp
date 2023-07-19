@@ -10,6 +10,7 @@
 #include "../color/module.hpp"
 #include "../geometry/module.hpp"
 #include "../codec/module.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <filesystem>
 #include <string>
@@ -20,8 +21,6 @@ class font_book;
 
 class theme {
 public:
-    operating_system operating_system = operating_system::windows;
-
     /** The DPI of the size values.
      */
     float dpi = 72;

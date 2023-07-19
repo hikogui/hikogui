@@ -12,6 +12,7 @@
 #include "grid_widget.hpp"
 #include "../audio/module.hpp"
 #include "../l10n/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>

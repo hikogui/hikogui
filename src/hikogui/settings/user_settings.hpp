@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <optional>
 #include <string>
 #include <string_view>

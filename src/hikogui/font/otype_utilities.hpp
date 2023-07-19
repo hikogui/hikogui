@@ -6,6 +6,7 @@
 
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
+#include "../macros.hpp"
 #include <concepts>
 
 namespace hi { inline namespace v1 {

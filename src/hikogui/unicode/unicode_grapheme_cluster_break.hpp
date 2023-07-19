@@ -6,6 +6,7 @@
 
 #include "ucd_grapheme_cluster_breaks.hpp"
 #include "unicode_break_opportunity.hpp"
+#include "../macros.hpp"
 #include <cstdint>
 
 namespace hi { inline namespace v1 {

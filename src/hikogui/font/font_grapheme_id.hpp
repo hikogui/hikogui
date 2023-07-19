@@ -6,6 +6,7 @@
 
 #include "../unicode/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

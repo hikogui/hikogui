@@ -42,6 +42,7 @@ import hikogui_utility;
 #include "../utility/module.hpp"
 #include "../GUI/module.hpp"
 #include "../net/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <utility>
 #include <stop_token>

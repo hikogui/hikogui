@@ -4,6 +4,7 @@
 
 #include "datum.hpp"
 #include "JSON.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

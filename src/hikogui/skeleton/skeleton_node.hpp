@@ -6,6 +6,7 @@
 
 #include "../algorithm/module.hpp"
 #include "../formula/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string_view>
 #include <optional>

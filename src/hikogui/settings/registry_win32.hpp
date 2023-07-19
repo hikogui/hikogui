@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <string_view>
 #include <string>
 #include <vector>

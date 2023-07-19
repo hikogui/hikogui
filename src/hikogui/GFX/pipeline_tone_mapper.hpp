@@ -7,6 +7,7 @@
 #include "pipeline_vulkan.hpp"
 #include "pipeline_tone_mapper_push_constants.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <span>
 

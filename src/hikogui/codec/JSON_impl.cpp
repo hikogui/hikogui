@@ -4,6 +4,7 @@
 
 #include "JSON.hpp"
 #include "../file/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

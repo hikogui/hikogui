@@ -6,6 +6,7 @@
 
 #include "keyboard_virtual_key.hpp"
 #include "keyboard_modifiers.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

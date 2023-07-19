@@ -13,6 +13,7 @@
 #include "../geometry/module.hpp"
 #include "../observer/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>

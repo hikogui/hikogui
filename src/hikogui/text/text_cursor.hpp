@@ -6,6 +6,7 @@
 
 #include "../utility/module.hpp"
 #include "../unicode/module.hpp"
+#include "../macros.hpp"
 #include <tuple>
 #include <cstdlib>
 #include <algorithm>

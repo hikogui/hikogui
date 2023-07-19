@@ -9,6 +9,7 @@
 
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <format>
 
 namespace hi::inline v1 {

@@ -7,6 +7,7 @@
 #include "../codec/module.hpp"
 #include "../loop/module.hpp"
 #include "../codec/module.hpp"
+#include "../macros.hpp"
 #include <typeinfo>
 #include <filesystem>
 

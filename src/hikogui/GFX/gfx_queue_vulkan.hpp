@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <cstdint>
 

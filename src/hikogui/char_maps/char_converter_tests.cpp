@@ -4,6 +4,7 @@
 
 #include "utf_8.hpp"
 #include "utf_32.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <format>

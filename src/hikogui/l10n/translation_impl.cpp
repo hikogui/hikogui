@@ -6,6 +6,7 @@
 #include "po_parser.hpp"
 #include "../unicode/module.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 
 namespace hi {
 inline namespace v1 {

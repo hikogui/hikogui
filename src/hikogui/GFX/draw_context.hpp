@@ -15,6 +15,7 @@
 #include "../color/module.hpp"
 #include "../container/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 class gfx_device;

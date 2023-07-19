@@ -6,6 +6,7 @@
 
 #include "matrix3.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

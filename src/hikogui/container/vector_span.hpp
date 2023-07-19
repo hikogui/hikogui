@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <iterator>
 #include <memory>

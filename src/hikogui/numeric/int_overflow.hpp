@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 #include <type_traits>
 #include <cmath>
@@ -42,11 +43,12 @@ inline bool add_overflow(T lhs, T rhs, T *r)
 {
     static_assert(std::is_integral_v<T>, "add_overflow() requires integral arguments.");
 
-    if constexpr (compiler::current == compiler::gcc || compiler::current == compiler::clang) {
-        // ADD, JO
-        return __builtin_add_overflow(lhs, rhs, r);
+#if HI_COMPILER == HI_CC_GCC or HI_COMPILER == HI_CC_CLANG
+    // ADD, JO
+    return __builtin_add_overflow(lhs, rhs, r);
+#endif
 
-    } else if constexpr (std::is_unsigned_v<T>) {
+    if constexpr (std::is_unsigned_v<T>) {
         // LEA, CMP, JB
         *r = lhs + rhs;
         return *r < lhs;
@@ -66,11 +68,12 @@ inline bool sub_overflow(T lhs, T rhs, T *r)
 {
     static_assert(std::is_integral_v<T>, "sub_overflow() requires integral arguments.");
 
-    if constexpr (compiler::current == compiler::gcc || compiler::current == compiler::clang) {
-        // SUB, JB
-        return __builtin_sub_overflow(lhs, rhs, r);
+#if HI_COMPILER == HI_CC_GCC or HI_COMPILER == HI_CC_CLANG
+    // SUB, JB
+    return __builtin_sub_overflow(lhs, rhs, r);
+#endif
 
-    } else if constexpr (std::is_unsigned_v<T>) {
+    if constexpr (std::is_unsigned_v<T>) {
         // MOV, SUB, CMP, JA
         *r = lhs - rhs;
         return *r > lhs;
@@ -93,10 +96,11 @@ inline bool mul_overflow(T lhs, T rhs, T *r) noexcept
 {
     static_assert(std::is_integral_v<T>, "mul_overflow() requires integral arguments.");
 
-    if constexpr (compiler::current == compiler::gcc || compiler::current == compiler::clang) {
-        return __builtin_mul_overflow(lhs, rhs, r);
+#if HI_COMPILER == HI_CC_GCC or HI_COMPILER == HI_CC_CLANG
+    return __builtin_mul_overflow(lhs, rhs, r);
 
-    } else if constexpr (std::is_signed_v<T> && compiler::current == compiler::msvc && sizeof(T) == sizeof(long long)) {
+#elif HI_COMPILER == HI_CC_MSVC
+    if constexpr (std::is_signed_v<T> and sizeof(T) == sizeof(long long)) {
         // IMUL, SAR, XOR, JNE
         long long hi = 0;
         *r = _mul128(lhs, rhs, &hi);
@@ -104,13 +108,14 @@ inline bool mul_overflow(T lhs, T rhs, T *r) noexcept
         // Sign bit in *r should match all bits in hi.
         return (hi ^ (*r >> 63)) != 0;
 
-    } else if constexpr (
-        std::is_unsigned_v<T> && compiler::current == compiler::msvc && sizeof(T) == sizeof(unsigned long long)) {
+    } else if constexpr (std::is_unsigned_v<T> and sizeof(T) == sizeof(unsigned long long)) {
         unsigned long long hi = 0;
         *r = _umul128(lhs, rhs, &hi);
         return hi > 0;
+    }
+#endif
 
-    } else if constexpr (sizeof(T) <= (sizeof(make_intmax_t<T>) / 2)) {
+    if constexpr (sizeof(T) <= (sizeof(make_intmax_t<T>) / 2)) {
         // MOVSX, MOVSX, IMUL, MOVSX, CMP, JNE
         hilet lhs_ = static_cast<make_intmax_t<T>>(lhs);
         hilet rhs_ = static_cast<make_intmax_t<T>>(rhs);
@@ -124,3 +129,4 @@ inline bool mul_overflow(T lhs, T rhs, T *r) noexcept
 }
 
 } // namespace hi::inline v1
+

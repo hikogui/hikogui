@@ -4,11 +4,13 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "assert.hpp"
+#include "../macros.hpp"
 #include <utility>
 #include <array>
 #include <type_traits>
+
+import hikogui_utility_assert;
+import hikogui_utility_misc;
 
 namespace hi::inline v1 {
 

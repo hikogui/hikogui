@@ -5,6 +5,7 @@
 import hikogui_utility;
 #include "gap_buffer.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

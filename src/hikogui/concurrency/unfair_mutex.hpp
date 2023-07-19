@@ -10,6 +10,7 @@
 
 #include "dead_lock_detector.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <atomic>
 #include <memory>
 

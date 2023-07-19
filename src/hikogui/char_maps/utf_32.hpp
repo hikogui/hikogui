@@ -9,6 +9,7 @@
 #pragma once
 
 #include "char_converter.hpp"
+#include "../macros.hpp"
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast.

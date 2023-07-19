@@ -6,6 +6,7 @@
 
 #include "otype_utilities.hpp"
 #include "font_char_map.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

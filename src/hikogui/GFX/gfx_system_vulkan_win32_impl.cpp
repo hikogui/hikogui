@@ -6,6 +6,7 @@
 
 #include "gfx_system_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

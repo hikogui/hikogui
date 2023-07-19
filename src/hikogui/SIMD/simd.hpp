@@ -12,6 +12,7 @@
 #include "native_simd_conversions_x86.hpp"
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <cstdint>
 #include <ostream>
 #include <string>

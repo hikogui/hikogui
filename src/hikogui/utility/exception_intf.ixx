@@ -2,33 +2,27 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file utility/exception.hpp Utilities for throwing exceptions and terminating the application.
+/** @file utility/exception_intf.ixx Utilities for throwing exceptions and terminating the application.
  */
 
-#include "utility.hpp"
+module;
+
+#include "../macros.hpp"
 #include <exception>
 #include <stdexcept>
 #include <atomic>
 #include <bit>
 #include <format>
 
-#pragma once
+export module hikogui_utility_exception : intf;
+import hikogui_utility_misc;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Message to show when the application is terminated.
  */
 inline std::atomic<char const *> terminate_message = nullptr;
 
-/** Set the message to display when the application terminates.
- *
- * The std::terminate() handler will display the __FILE__, __LINE__
- * number and the message to the console or a popup dialogue.
- *
- * @param ... The message to display.
- */
-#define hi_set_terminate_message(...) \
-    ::hi::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__, std::memory_order::relaxed)
 
 /** Get the OS error code from the last error received on this thread.
  */

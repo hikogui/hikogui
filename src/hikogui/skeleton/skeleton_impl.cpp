@@ -19,6 +19,7 @@
 #include "skeleton_while_node.hpp"
 #include "../formula/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

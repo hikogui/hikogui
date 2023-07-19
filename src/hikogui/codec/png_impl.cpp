@@ -9,6 +9,7 @@ import hikogui_utility;
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
 #include "../color/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

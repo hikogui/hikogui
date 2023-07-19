@@ -3,6 +3,7 @@
 #pragma once
 
 #include "enum_metadata.hpp"
+#include "../macros.hpp"
 #include <format>
 
 namespace hi { inline namespace v1 {

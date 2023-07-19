@@ -4,12 +4,16 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "assert.hpp"
 #include "fixed_string.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 #include <string>
 #include <string_view>
+
+import hikogui_utility_assert;
+import hikogui_utility_debugger;
+import hikogui_utility_exception;
+import hikogui_utility_misc;
 
 namespace hi { inline namespace v1 {
 

@@ -27,6 +27,7 @@
 
 #include "../utility/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <tuple>
 #include <string_view>
 

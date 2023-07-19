@@ -10,6 +10,7 @@
 
 #include "../utility/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <optional>
 #include <ranges>

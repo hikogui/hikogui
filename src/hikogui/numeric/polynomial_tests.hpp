@@ -6,6 +6,7 @@
 
 #include "polynomial.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

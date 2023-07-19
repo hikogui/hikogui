@@ -4,18 +4,7 @@
 
 #pragma once
 
-#include "architecture.hpp"
-#include "assert.hpp"
-#include "bits.hpp"
-#include "cast.hpp"
-#include "charconv.hpp"
-#include "compare.hpp"
-#include "concepts.hpp"
-#include "debugger.hpp"
-#include "endian.hpp"
 #include "enum_metadata.hpp"
-#include "exception.hpp"
-#include "fixed_string.hpp"
 #include "float16.hpp"
 #include "forward_value.hpp"
 #include "hash.hpp"
@@ -27,6 +16,5 @@
 #include "time_zone.hpp"
 #include "type_traits.hpp"
 #include "units.hpp"
-#include "utility.hpp"
 #include "value_traits.hpp"
 

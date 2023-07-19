@@ -5,6 +5,7 @@
 import hikogui_utility;
 #include "file_view.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

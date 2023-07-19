@@ -7,6 +7,7 @@
 #include "formula_node.hpp"
 #include "formula_post_process_context.hpp"
 #include "formula_parse_context.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <memory>

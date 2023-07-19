@@ -6,6 +6,7 @@
 
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 
 namespace hi::inline v1 {

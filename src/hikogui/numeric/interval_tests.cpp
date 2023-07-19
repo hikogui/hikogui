@@ -4,6 +4,7 @@
 
 #include "interval.hpp"
 #include "stdint.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 
 static_assert(hi::interval<int>{0, 5}.lower() == 0);

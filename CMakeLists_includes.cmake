@@ -465,17 +465,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_plural.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_sentence_break.hpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_word_break.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/architecture.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/assert.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/bits.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/cast.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/charconv.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/compare.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/concepts.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/debugger.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/endian.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/enum_metadata.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/exception.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/float16.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/forward_value.hpp
@@ -491,7 +481,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/time_zone.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/units.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/utility.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/value_traits.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/win32_headers.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/abstract_button_widget.hpp
@@ -529,8 +518,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
 
+    ${HIKOGUI_SOURCE_DIR}/macros.hpp
     ${HIKOGUI_SOURCE_DIR}/crt.hpp
-    ${HIKOGUI_SOURCE_DIR}/log.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp
     
 )

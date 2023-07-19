@@ -11,6 +11,7 @@
 #include <memory_resource>
 #include <type_traits>
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

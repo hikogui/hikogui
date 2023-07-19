@@ -18,6 +18,7 @@ import hikogui_utility;
 #include "../crt/module.hpp"
 #include "../algorithm/module.hpp"
 #include "../loop/module.hpp"
+#include "../macros.hpp"
 #include <new>
 
 namespace hi::inline v1 {

@@ -1,5 +1,6 @@
 
 
+#include "../macros.hpp"
 
 namespace hi {
 inline namespace v1 {

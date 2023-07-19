@@ -8,6 +8,7 @@
 #include "pipeline_alpha_push_constants.hpp"
 #include "pipeline_alpha_vertex.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <span>
 

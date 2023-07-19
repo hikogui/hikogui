@@ -5,6 +5,7 @@
 #pragma once
 
 #include "gfx_system.hpp"
+#include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace hi::inline v1 {

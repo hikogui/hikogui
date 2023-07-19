@@ -6,6 +6,7 @@
 
 #include "observable_value.hpp"
 #include "observer.hpp"
+#include "../macros.hpp"
 #include <memory>
 
 namespace hi::inline v1 {

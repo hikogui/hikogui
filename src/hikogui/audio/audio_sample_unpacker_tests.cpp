@@ -5,6 +5,7 @@
 import hikogui_utility;
 #include "audio_sample_unpacker.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

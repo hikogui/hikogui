@@ -10,6 +10,7 @@
 
 #include "../container/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <mutex>
 #include <cstdint>
 #include <map>

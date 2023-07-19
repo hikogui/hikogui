@@ -4,6 +4,7 @@
 
 #include "bezier_curve.hpp"
 #include "../numeric/polynomial_tests.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

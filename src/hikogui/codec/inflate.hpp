@@ -6,6 +6,7 @@
 
 #include "../utility/module.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include <span>
 
 namespace hi::inline v1 {

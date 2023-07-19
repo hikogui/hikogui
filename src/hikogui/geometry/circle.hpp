@@ -10,6 +10,7 @@
 #include "point2.hpp"
 #include "aarectangle.hpp"
 #include "quad.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

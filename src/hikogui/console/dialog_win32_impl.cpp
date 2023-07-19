@@ -8,6 +8,7 @@ import hikogui_utility;
 #include "dialog.hpp"
 #include "../utility/module.hpp"
 #include "../char_maps/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

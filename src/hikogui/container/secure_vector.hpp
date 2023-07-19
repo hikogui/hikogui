@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../security/module.hpp"
+#include "../macros.hpp"
 
 // namespace hi::inline v1 {
 // 

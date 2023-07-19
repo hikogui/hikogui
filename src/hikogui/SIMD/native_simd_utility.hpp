@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 
 #ifdef HI_HAS_SSE

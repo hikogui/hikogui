@@ -6,6 +6,7 @@
  */
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <exception>
 #include <stdexcept>
 #include <atomic>

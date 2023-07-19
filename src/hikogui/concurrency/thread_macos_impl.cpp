@@ -5,6 +5,7 @@
 import hikogui_utility;
 #include "thread.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 #include <pthread.h>
 

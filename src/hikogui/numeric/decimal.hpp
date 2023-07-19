@@ -6,6 +6,7 @@
 
 #include "int_overflow.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <limits>
 #include <string_view>
 #include <string>
@@ -288,7 +289,7 @@ public:
         auto rhs_m = rhs.mantissa();
 
         long long m = 0;
-        if (!mul_overflow(lhs_m, rhs_m, &m)) {
+        if (not mul_overflow(lhs_m, rhs_m, &m)) {
             [[likely]] return {lhs_e + rhs_e, m};
         }
 

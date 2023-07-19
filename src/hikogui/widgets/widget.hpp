@@ -17,6 +17,7 @@
 #include "../numeric/module.hpp"
 #include "../GUI/module.hpp"
 #include "../coroutine/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <vector>
 #include <string>

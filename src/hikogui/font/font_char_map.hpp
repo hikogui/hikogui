@@ -11,6 +11,7 @@
 #include "glyph_id.hpp"
 #include "../algorithm/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <bitset>
 #include <cstdint>
 #include <vector>

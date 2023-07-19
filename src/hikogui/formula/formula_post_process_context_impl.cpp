@@ -4,6 +4,7 @@
 
 #include "formula_post_process_context.hpp"
 #include "../file/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

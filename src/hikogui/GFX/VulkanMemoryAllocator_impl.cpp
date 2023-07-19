@@ -4,6 +4,7 @@
 
 import hikogui_utility;
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 hi_warning_push();
 hi_warning_ignore_clang("-Wunused-variable");

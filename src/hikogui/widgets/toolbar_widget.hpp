@@ -11,6 +11,7 @@
 #include "widget.hpp"
 #include "../layout/module.hpp"
 #include "../geometry/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <ranges>
 

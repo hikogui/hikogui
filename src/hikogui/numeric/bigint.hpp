@@ -6,6 +6,7 @@
 
 #include "int_carry.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <format>
 #include <type_traits>
 #include <ostream>

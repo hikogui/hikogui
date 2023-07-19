@@ -2,17 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file utility/compare.hpp Safe numeric comparison between different types.
+/** @file utility/compare.ixx Safe numeric comparison between different types.
  */
 
-#pragma once
+module;
 
-#include "concepts.hpp"
 #include "type_traits.hpp"
+#include "../macros.hpp"
 #include <concepts>
 #include <compare>
 
-namespace hi { inline namespace v1 {
+export module hikogui_utility_compare;
+import hikogui_utility_concepts;
+
+export namespace hi { inline namespace v1 {
 
 /** A functor to safely compare two arithmetic values.
  */

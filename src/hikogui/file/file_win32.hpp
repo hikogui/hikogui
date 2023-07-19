@@ -7,6 +7,7 @@
 #include "../utility/win32_headers.hpp"
 
 #include "file.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

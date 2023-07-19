@@ -4,16 +4,19 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "cast.hpp"
-#include "assert.hpp"
 #include <string>
 #include <string_view>
 #include <format>
 #include <array>
 #include <ranges>
 
-namespace hi::inline v1 {
+import hikogui_utility_assert;
+import hikogui_utility_cast;
+import hikogui_utility_debugger;
+import hikogui_utility_exception;
+import hikogui_utility_misc;
+
+namespace hi { inline namespace v1 {
 
 /** A string which may be used as a none-type template parameter.
  *
@@ -272,7 +275,7 @@ fixed_string(F const& f) -> fixed_string<std::ranges::size(F{}())>;
         } \
     }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 template<std::size_t N, typename CharT>
 struct std::formatter<hi::fixed_string<N>, CharT> : std::formatter<std::string_view, CharT> {

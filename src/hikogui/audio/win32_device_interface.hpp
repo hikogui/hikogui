@@ -9,6 +9,7 @@
 #include "../coroutine/module.hpp"
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 #include <string>
 
 namespace hi::inline v1 {

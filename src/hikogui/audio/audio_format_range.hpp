@@ -7,6 +7,7 @@
 #include "pcm_format.hpp"
 #include "audio_stream_format.hpp"
 #include "surround_mode.hpp"
+#include "../macros.hpp"
 #include <compare>
 
 namespace hi::inline v1 {

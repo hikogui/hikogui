@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 namespace hi::inline v1 {
 
 enum class gui_window_size { normal, minimized, maximized, fullscreen };

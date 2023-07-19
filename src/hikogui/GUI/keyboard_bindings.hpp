@@ -7,6 +7,7 @@
 #include "keyboard_key.hpp"
 #include "gui_event.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <unordered_map>
 #include <tuple>
 #include <filesystem>

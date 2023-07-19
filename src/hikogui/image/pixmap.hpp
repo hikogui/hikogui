@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <cstddef>
 #include <memory>
 #include <span>

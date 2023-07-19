@@ -11,6 +11,7 @@
 
 #include "../utility/module.hpp"
 #include "../i18n/module.hpp"
+#include "../macros.hpp"
 #include <concepts>
 #include <array>
 #include <cstdint>

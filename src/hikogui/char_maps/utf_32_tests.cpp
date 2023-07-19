@@ -4,6 +4,7 @@
 
 #include "utf_32.hpp"
 #include "random_char.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <format>

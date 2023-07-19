@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../image/module.hpp"
+#include "../macros.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 

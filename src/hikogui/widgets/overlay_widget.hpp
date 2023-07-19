@@ -9,6 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

@@ -8,6 +8,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 #include <new>
 #include <cstddef>

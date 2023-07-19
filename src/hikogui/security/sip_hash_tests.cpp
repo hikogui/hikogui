@@ -5,6 +5,7 @@
 import hikogui_utility;
 #include "sip_hash.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <array>

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "audio_stream_format.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

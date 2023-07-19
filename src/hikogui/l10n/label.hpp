@@ -12,6 +12,7 @@
 #include "../image/module.hpp"
 #include "../font/module.hpp"
 #include "translate.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <type_traits>
 #include <memory>

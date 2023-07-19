@@ -8,6 +8,7 @@
 #include "../formula/module.hpp"
 #include "../utility/module.hpp"
 #include "../settings/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <vector>

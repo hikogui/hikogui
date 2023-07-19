@@ -13,6 +13,7 @@
 #include "../geometry/module.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <algorithm>
 #include <bit>
 #include <array>

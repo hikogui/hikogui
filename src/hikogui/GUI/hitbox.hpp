@@ -7,6 +7,7 @@
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
 #include "widget_id.hpp"
+#include "../macros.hpp"
 #include <limits>
 #include <cstdint>
 #include <compare>

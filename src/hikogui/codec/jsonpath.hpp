@@ -7,6 +7,7 @@
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
 #include "../coroutine/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <variant>
 #include <string_view>

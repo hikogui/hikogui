@@ -6,6 +6,7 @@
 
 #include "../container/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 #include <array>
 #include <cstdint>

@@ -4,6 +4,7 @@
 
 module;
 
+#include "../macros.hpp"
 #include <type_traits>
 #include <functional>
 

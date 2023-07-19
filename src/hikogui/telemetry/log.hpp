@@ -11,7 +11,7 @@
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
 #include "../console/module.hpp"
-#include "../log.hpp"
+#include "../macros.hpp"
 #include <chrono>
 #include <format>
 #include <string>

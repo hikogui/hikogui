@@ -3,6 +3,7 @@
 #include "user_settings.hpp"
 #include "metadata.hpp"
 #include "registry_win32.hpp"
+#include "../macros.hpp"
 #include <format>
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include <cstdint>
 #include <limits>
 #include <tuple>

@@ -4,6 +4,7 @@
 #include "strings.hpp"
 #include "../utility/module.hpp"
 #include "url_parser.hpp"
+#include "../macros.hpp"
 #include <regex>
 
 #import <Foundation/Foundation.h>

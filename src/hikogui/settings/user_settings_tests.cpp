@@ -5,6 +5,7 @@
 #include "user_settings.hpp"
 #include "metadata.hpp"
 #include "../concurrency/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <format>
 

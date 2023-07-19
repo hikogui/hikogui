@@ -12,6 +12,7 @@
 #include "../GUI/module.hpp"
 #include "../geometry/module.hpp"
 #include "../layout/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <type_traits>
 

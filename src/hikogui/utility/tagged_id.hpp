@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include "fixed_string.hpp"
 #include <limits>
 #include <typeinfo>

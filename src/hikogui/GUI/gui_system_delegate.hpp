@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include <optional>
 
 namespace hi::inline v1 {

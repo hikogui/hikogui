@@ -12,6 +12,7 @@
 #include "../GFX/module.hpp"
 #include "../utility/module.hpp"
 #include "../observer/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <memory>
 #include <mutex>

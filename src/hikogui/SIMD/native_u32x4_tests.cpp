@@ -4,6 +4,7 @@
 
 #include "native_u32x4_sse2.hpp"
 #include "simd_test_utility.hpp"
+#include "../macros.hpp"
 
 hi_warning_push();
 // C26474: Don't cast between pointer types when the conversion could be implicit (type.1).

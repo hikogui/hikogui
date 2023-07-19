@@ -5,6 +5,7 @@
 import hikogui_utility;
 #include "BON8.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

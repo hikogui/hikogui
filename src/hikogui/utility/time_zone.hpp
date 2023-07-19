@@ -9,9 +9,11 @@
 
 #pragma once
 
-#include "debugger.hpp"
-#include "exception.hpp"
+#include "../macros.hpp"
 #include <chrono>
+
+import hikogui_utility_debugger;
+import hikogui_utility_exception;
 
 namespace hi { inline namespace v1 {
 namespace detail {

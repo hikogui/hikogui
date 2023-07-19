@@ -7,6 +7,7 @@
 import hikogui_utility;
 #include "speaker_mapping_win32.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

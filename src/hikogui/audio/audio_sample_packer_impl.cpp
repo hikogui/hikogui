@@ -2,13 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-import hikogui_utility;
 #include "audio_sample_packer.hpp"
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 #include <cstdint>
 #include <tuple>
+
+import hikogui_utility;
 
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead.

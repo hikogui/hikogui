@@ -10,6 +10,7 @@
 #include "../utility/module.hpp"
 #include "../container/module.hpp"
 #include "../graphic_path/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 #include <memory>
 #include <cstddef>

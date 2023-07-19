@@ -12,6 +12,7 @@
 #include "../utility/module.hpp"
 #include "../container/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

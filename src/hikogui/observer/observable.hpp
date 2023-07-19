@@ -6,6 +6,7 @@
 
 #include "group_ptr.hpp"
 #include "../coroutine/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <vector>
 #include <string>

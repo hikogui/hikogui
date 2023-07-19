@@ -9,6 +9,7 @@
 #include "../numeric/module.hpp"
 #include "../algorithm/module.hpp"
 #include "parse_location.hpp"
+#include "../macros.hpp"
 #include <chrono>
 #include <memory>
 #include <string>

@@ -9,6 +9,7 @@
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
 #include "../codec/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <memory>
 #include <string>

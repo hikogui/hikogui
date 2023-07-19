@@ -6,6 +6,7 @@
 #include "gfx_device_vulkan.hpp"
 #include "gfx_surface.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <vector>
 

@@ -4,6 +4,7 @@
 
 #include "text_shaper_line.hpp"
 #include "../unicode/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

@@ -13,6 +13,7 @@ import hikogui_utility;
 #include "../concurrency/module.hpp"
 #include "../char_maps/module.hpp"
 #include "../time/module.hpp"
+#include "../macros.hpp"
 
 hi_warning_push();
 // C26400: Do not assign the result of an allocation or a function cal with an owner<T> return value to... (i11)

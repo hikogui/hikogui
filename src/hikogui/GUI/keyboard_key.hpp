@@ -7,6 +7,7 @@
 #include "keyboard_modifiers.hpp"
 #include "keyboard_virtual_key.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <string_view>
 #include <unordered_map>
 

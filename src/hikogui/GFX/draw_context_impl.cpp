@@ -10,6 +10,7 @@
 #include "paged_image.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../text/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

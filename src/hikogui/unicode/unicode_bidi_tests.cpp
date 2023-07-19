@@ -8,6 +8,7 @@ import hikogui_utility;
 #include "../utility/module.hpp"
 #include "../algorithm/module.hpp"
 #include "../coroutine/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

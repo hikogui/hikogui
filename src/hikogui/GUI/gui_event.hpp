@@ -20,6 +20,7 @@
 #include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
+#include "../macros.hpp"
 #include <chrono>
 #include <memory>
 

@@ -8,6 +8,7 @@
 #include "../utility/module.hpp"
 #include "../unicode/module.hpp"
 #include "../settings/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <string_view>

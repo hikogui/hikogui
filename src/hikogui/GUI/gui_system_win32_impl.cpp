@@ -10,6 +10,7 @@
 #include "../file/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../settings/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 
 namespace hi::inline v1 {

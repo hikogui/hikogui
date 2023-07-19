@@ -7,6 +7,7 @@ import hikogui_utility;
 #include "gfx_device_vulkan.hpp"
 #include "../settings/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <chrono>
 #include <cstring>
 
@@ -56,12 +57,11 @@ __declspec(no_sanitize_address) vk::Instance vk_create_instance_no_asan(vk::Inst
 
 gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
 {
-    if constexpr (operating_system::current == operating_system::windows) {
-        requiredExtensions = {VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
-    } else {
-        hi_not_implemented();
-        // XXX hi_static_not_implemented();
-    }
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
+    requiredExtensions = {VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
+#else
+#error "Not Implemented"
+#endif
 
     applicationInfo = vk::ApplicationInfo(
         get_application_name().c_str(),

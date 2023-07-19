@@ -9,8 +9,10 @@
 
 #pragma once
 
-#include "concepts.hpp"
+#include "../macros.hpp"
 #include <concepts>
+
+import hikogui_utility_concepts;
 
 namespace hi::inline v1 {
 

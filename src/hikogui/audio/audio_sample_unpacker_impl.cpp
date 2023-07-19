@@ -5,6 +5,7 @@
 #include "audio_sample_unpacker.hpp"
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 #include <cstdint>
 #include <tuple>

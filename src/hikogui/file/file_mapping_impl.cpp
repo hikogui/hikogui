@@ -6,6 +6,7 @@ import hikogui_utility;
 #include "file_mapping.hpp"
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 #include <mutex>
 
 namespace hi::inline v1 {

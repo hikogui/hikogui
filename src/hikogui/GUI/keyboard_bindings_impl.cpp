@@ -6,6 +6,7 @@
 #include "gui_event_type.hpp"
 #include "../codec/module.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

@@ -7,6 +7,7 @@
 #include "../utility/module.hpp"
 #include "../codec/module.hpp"
 #include "../font/module.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <string>
 #include <iostream>

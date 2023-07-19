@@ -5,10 +5,13 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <algorithm>
 #include <string>
 #include <type_traits>
+
+import hikogui_utility;
 
 namespace hi::inline v1 {
 

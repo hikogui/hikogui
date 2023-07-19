@@ -10,6 +10,7 @@
 
 #include "char_converter.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <cstdint>
 #include <utility>
 #include <tuple>

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../l10n/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <functional>
 #include <vector>

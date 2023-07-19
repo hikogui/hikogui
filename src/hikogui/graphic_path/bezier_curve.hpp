@@ -9,6 +9,7 @@
 #include "../utility/module.hpp"
 #include "bezier.hpp"
 #include "bezier_point.hpp"
+#include "../macros.hpp"
 #include <tuple>
 #include <limits>
 #include <algorithm>

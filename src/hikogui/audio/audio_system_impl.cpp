@@ -5,6 +5,7 @@ import hikogui_utility;
 #include "audio_system.hpp"
 #include "audio_system_aggregate.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include "audio_system_win32.hpp"
 #endif

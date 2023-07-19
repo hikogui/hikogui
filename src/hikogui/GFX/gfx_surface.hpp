@@ -7,6 +7,7 @@
 #include "draw_context.hpp"
 #include "gfx_surface_state.hpp"
 #include "gfx_system_globals.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 class gfx_device;

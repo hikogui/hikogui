@@ -15,6 +15,7 @@
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
+#include "../macros.hpp"
 #include <concepts>
 #include <mutex>
 

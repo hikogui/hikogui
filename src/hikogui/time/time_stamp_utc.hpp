@@ -8,6 +8,7 @@
 #include "time_stamp_count.hpp"
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <atomic>
 #include <thread>

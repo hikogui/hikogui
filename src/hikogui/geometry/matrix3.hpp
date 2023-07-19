@@ -12,6 +12,7 @@
 #include "translate3.hpp"
 #include "scale3.hpp"
 #include "rotate3.hpp"
+#include "../macros.hpp"
 #include <array>
 
 namespace hi { inline namespace v1 {

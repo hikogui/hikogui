@@ -4,6 +4,7 @@
 
 #include "audio_system.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {

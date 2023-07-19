@@ -7,6 +7,7 @@
 #include "../numeric/module.hpp"
 #include "../SIMD/module.hpp"
 #include "../geometry/module.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <optional>
 

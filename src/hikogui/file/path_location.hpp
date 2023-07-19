@@ -10,6 +10,7 @@
 
 #include "../coroutine/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <filesystem>
 #include <ranges>
 

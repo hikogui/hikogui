@@ -11,6 +11,7 @@
 #include "utf_8.hpp"
 #include "utf_16.hpp"
 #include "utf_32.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <climits>

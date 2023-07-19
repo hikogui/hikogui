@@ -5,6 +5,7 @@
 
 #include "../unicode/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <algorithm>
 #include <utility>
 

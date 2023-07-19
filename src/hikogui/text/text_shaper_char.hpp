@@ -8,6 +8,7 @@
 #include "../font/module.hpp"
 #include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 class font_book;

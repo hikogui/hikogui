@@ -9,6 +9,7 @@ import hikogui_utility;
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include "../char_maps/module.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 
 namespace hi { inline namespace v1 {

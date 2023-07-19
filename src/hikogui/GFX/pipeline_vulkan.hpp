@@ -6,6 +6,7 @@
 
 #include "pipeline.hpp"
 #include "draw_context.hpp"
+#include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <vector>

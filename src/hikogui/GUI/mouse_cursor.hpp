@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 namespace hi::inline v1 {
 
 enum class mouse_cursor { None, Default, TextEdit, Button };

@@ -7,10 +7,8 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "cast.hpp"
 #include "type_traits.hpp"
-#include "assert.hpp"
+#include "../macros.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>
@@ -30,8 +28,13 @@
 #include <immintrin.h>
 #endif
 
-namespace hi::inline v1 {
+import hikogui_utility_assert;
+import hikogui_utility_cast;
+import hikogui_utility_debugger;
+import hikogui_utility_exception;
+import hikogui_utility_misc;
 
+namespace hi::inline v1 {
 
 template<typename Iterator>
 [[nodiscard]] auto mean(Iterator first, Iterator last)

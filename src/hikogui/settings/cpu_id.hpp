@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <array>
 
 #if HI_COMPILER == HI_CC_MSVC

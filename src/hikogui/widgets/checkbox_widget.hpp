@@ -10,6 +10,7 @@
 
 #include "abstract_button_widget.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

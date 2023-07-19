@@ -10,6 +10,7 @@ import hikogui_utility;
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include "../file/module.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

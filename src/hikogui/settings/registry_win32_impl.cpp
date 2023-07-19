@@ -9,6 +9,7 @@ import hikogui_utility;
 #include "../char_maps/module.hpp"
 #include "../algorithm/module.hpp"
 #include "registry_win32.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

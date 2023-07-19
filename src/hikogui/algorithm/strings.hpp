@@ -7,6 +7,7 @@
 #include "algorithm.hpp"
 #include "../utility/module.hpp"
 #include "../char_maps/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <iterator>

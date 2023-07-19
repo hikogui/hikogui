@@ -7,6 +7,7 @@
 #include "../unicode/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../coroutine/module.hpp"
+#include "../macros.hpp"
 #include <numeric>
 #include <ranges>
 #include <algorithm>

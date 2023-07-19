@@ -8,6 +8,7 @@
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
 #include "../random/module.hpp"
+#include "../macros.hpp"
 #include <cstddef>
 #include <bit>
 

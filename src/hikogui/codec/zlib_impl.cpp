@@ -7,6 +7,7 @@ import hikogui_utility;
 #include "inflate.hpp"
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

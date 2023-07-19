@@ -7,6 +7,7 @@
 #include "../file/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <ranges>
 #include <vector>
 

@@ -6,17 +6,25 @@
  * @ingroup utility
  */
 
-#pragma once
+module;
 
-#include "utility.hpp"
 #include "type_traits.hpp"
-#include "concepts.hpp"
-#include "assert.hpp"
-#include "compare.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 #include <concepts>
-#include <climits>
+#include <limits>
 #include <span>
+#include <numeric>
+#include <bit>
+#include <cmath>
+
+export module hikogui_utility_cast;
+import hikogui_utility_assert;
+import hikogui_utility_compare;
+import hikogui_utility_concepts;
+import hikogui_utility_debugger;
+import hikogui_utility_exception;
+import hikogui_utility_misc;
 
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
@@ -37,7 +45,8 @@ hi_warning_ignore_msvc(26466);
 // Since these functions are templates this happens.
 hi_warning_ignore_msvc(26474);
 
-namespace hi::inline v1 {
+export namespace hi { inline namespace v1 {
+
 template<typename T>
 [[nodiscard]] constexpr T copy(T value) noexcept
 {
@@ -766,6 +775,6 @@ template<typename T, byte_like Byte>
     return {reinterpret_cast<value_type *>(data), n};
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 hi_warning_pop();

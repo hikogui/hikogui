@@ -5,6 +5,7 @@
 #include "pipeline_box.hpp"
 #include "pipeline_box_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1::pipeline_box {
 

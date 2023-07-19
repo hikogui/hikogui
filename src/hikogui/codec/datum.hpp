@@ -7,6 +7,7 @@
 #include "../utility/module.hpp"
 #include "../numeric/module.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include "base_n.hpp"
 #include "jsonpath.hpp"
 #include <cstdint>

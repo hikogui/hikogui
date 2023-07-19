@@ -7,6 +7,7 @@
 #include "../utility/module.hpp"
 #include "../time/module.hpp"
 #include "counters.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <tuple>
 

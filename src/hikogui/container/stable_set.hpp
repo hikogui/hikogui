@@ -6,6 +6,7 @@
 
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
+#include "../macros.hpp"
 #include <mutex>
 #include <memory>
 #include <atomic>

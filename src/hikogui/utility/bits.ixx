@@ -2,13 +2,21 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#pragma once
+module;
 
-#include "cast.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <cstddef>
+#include <exception>
+#include <bit>
 
-namespace hi::inline v1 {
+export module hikogui_utility_bits;
+import hikogui_utility_cast;
+import hikogui_utility_debugger;
+import hikogui_utility_exception;
+import hikogui_utility_misc;
+
+export namespace hi { inline namespace v1 {
 
 /** Read a single bit from span of bytes
  * Bits are ordered LSB first.
@@ -73,4 +81,4 @@ namespace hi::inline v1 {
     return value;
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

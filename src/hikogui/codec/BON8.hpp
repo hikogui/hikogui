@@ -7,6 +7,7 @@
 #include "../container/module.hpp"
 #include "../utility/module.hpp"
 #include "datum.hpp"
+#include "../macros.hpp"
 #include <cstddef>
 #include <string>
 

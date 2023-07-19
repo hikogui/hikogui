@@ -7,10 +7,11 @@
 
 #pragma once
 
+#include "log.hpp"
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
 #include "../time/module.hpp"
-#include "log.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <typeinfo>
 #include <typeindex>

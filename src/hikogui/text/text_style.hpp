@@ -13,6 +13,7 @@
 #include "../font/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include <ostream>
 #include <vector>
 #include <algorithm>

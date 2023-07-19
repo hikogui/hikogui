@@ -14,6 +14,7 @@
 #include "../time/module.hpp"
 #include "../utility/module.hpp"
 #include "../settings/module.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

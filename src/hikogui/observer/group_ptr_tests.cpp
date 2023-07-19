@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "group_ptr.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 
 hi_warning_push();

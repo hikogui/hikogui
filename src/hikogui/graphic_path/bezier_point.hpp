@@ -6,6 +6,7 @@
 
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 
 namespace hi::inline v1 {

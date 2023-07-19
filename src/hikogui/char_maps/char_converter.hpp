@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <string_view>
 #if defined(HI_HAS_SSE2)

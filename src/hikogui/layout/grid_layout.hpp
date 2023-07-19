@@ -9,6 +9,7 @@
 #include "spreadsheet_address.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <cstdint>
 #include <numeric>
 #include <vector>

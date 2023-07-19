@@ -12,6 +12,7 @@ import hikogui_utility;
 #include "../utility/module.hpp"
 #include "../geometry/module.hpp"
 #include "../codec/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

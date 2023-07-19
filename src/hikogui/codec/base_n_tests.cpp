@@ -6,6 +6,7 @@ import hikogui_utility;
 #include "base_n.hpp"
 #include "../container/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

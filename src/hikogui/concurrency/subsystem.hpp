@@ -11,6 +11,7 @@
 #include "../utility/module.hpp"
 #include "unfair_recursive_mutex.hpp"
 #include "global_state.hpp"
+#include "../macros.hpp"
 #include <atomic>
 #include <vector>
 #include <functional>

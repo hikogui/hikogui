@@ -5,6 +5,7 @@
 #pragma once
 
 #include <chrono>
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

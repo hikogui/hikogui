@@ -14,6 +14,7 @@ import hikogui_utility;
 #include "win32_wave_device.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 
 namespace hi::inline v1 {
