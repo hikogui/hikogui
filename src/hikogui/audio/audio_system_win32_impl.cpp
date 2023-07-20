@@ -4,7 +4,6 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "audio_system_win32.hpp"
 #include "audio_device_win32.hpp"
 #include "audio_system_aggregate.hpp"
@@ -13,6 +12,8 @@ import hikogui_utility;
 #include "../memory/module.hpp"
 #include "../loop/module.hpp"
 #include "../macros.hpp"
+
+import hikogui_utility;
 
 hi_warning_push();
 // C26435: Function '' should specify exactly one of 'virtual', 'override' or 'final' (c.128)

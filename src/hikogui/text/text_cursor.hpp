@@ -11,6 +11,8 @@
 #include <cstdlib>
 #include <algorithm>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** A cursor-position in text.

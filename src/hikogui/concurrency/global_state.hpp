@@ -14,6 +14,8 @@
 #include <type_traits>
 #include <bit>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26490: Don't use reinterpret_cast
 // Need it for allow the use of enum in an atomic operation.

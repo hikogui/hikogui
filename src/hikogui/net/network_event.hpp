@@ -11,6 +11,8 @@
 #include <cstdint>
 #include <bit>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class network_event : uint16_t {

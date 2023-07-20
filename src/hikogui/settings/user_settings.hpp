@@ -9,6 +9,8 @@
 #include <string_view>
 #include <cstdlib>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 [[nodiscard]] std::optional<std::string> get_user_setting_string(std::string_view key);

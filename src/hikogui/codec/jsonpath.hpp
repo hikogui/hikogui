@@ -15,6 +15,8 @@
 #include <limits>
 #include <format>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 struct jsonpath_root {

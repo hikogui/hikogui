@@ -13,6 +13,8 @@
 #include <ostream>
 #include <chrono>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 std::string get_last_error_message()

@@ -11,6 +11,8 @@
 #include <array>
 #include <ostream>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_SSE

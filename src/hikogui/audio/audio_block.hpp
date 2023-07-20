@@ -10,6 +10,8 @@
 #include "../macros.hpp"
 #include <span>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class audio_block_state { normal, silent, corrupt };

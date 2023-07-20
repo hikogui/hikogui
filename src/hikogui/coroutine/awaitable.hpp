@@ -9,6 +9,8 @@
 #include <coroutine>
 #include <type_traits>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** Check if type can be directly co_await on.

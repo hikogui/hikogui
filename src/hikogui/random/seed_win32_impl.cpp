@@ -4,11 +4,12 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "seed.hpp"
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 #include <format>
+
+import hikogui_utility;
 
 namespace hi::inline v1 {
 

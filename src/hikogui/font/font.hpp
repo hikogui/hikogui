@@ -22,6 +22,8 @@
 #include <map>
 #include <string>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /*! A font.

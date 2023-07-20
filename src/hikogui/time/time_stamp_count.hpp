@@ -18,6 +18,8 @@
 #include <x86intrin.h>
 #endif
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /**

@@ -12,6 +12,8 @@
 #include "../macros.hpp"
 #include <array>
 
+import hikogui_utility;
+
 namespace hi {
 inline namespace v1 {
 

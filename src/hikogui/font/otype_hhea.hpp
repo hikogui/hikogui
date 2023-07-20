@@ -10,6 +10,8 @@
 #include <span>
 #include <cstddef>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline auto otype_hhea_parse(std::span<std::byte const> bytes, float em_scale)

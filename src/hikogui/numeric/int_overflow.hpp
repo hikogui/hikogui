@@ -19,6 +19,8 @@
 #pragma intrinsic(_mul128)
 #endif
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 template<typename T, typename U>

@@ -9,6 +9,8 @@
 #include <coroutine>
 #include <type_traits>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 template<typename T>

@@ -17,6 +17,8 @@
 #include <cstdint>
 #include <cstddef>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** The plurality value of a cardinal or ordinal number.

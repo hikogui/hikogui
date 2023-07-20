@@ -9,6 +9,8 @@
 #include "../macros.hpp"
 #include <span>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** Inflate compressed data using the deflate algorithm

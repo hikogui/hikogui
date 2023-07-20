@@ -16,6 +16,8 @@
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 class gfx_device_vulkan;
 

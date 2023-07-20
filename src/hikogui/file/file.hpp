@@ -17,6 +17,8 @@
 #include <span>
 #include <filesystem>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** The position in the file to seek from.

@@ -11,6 +11,8 @@
 #include <memory>
 #include <new>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 template<typename T>

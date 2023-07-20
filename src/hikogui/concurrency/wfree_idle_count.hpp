@@ -9,6 +9,8 @@
 #include <atomic>
 #include <cstdint>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** Counts how many times a critical section was idle.

@@ -11,6 +11,8 @@
 #include <vector>
 #include <memory>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /*! An system of audio devices.

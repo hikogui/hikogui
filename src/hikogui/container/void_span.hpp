@@ -13,6 +13,8 @@
 #include <type_traits>
 #include <string_view>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 class void_span {

@@ -14,6 +14,8 @@
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** This is a RGBA floating point color.

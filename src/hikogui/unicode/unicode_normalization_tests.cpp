@@ -2,7 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-import hikogui_utility;
 #include "unicode_normalization.hpp"
 #include "../file/module.hpp"
 #include "../algorithm/module.hpp"
@@ -14,6 +13,8 @@ import hikogui_utility;
 #include <string>
 #include <span>
 #include <format>
+
+import hikogui_utility;
 
 using namespace std;
 using namespace hi;

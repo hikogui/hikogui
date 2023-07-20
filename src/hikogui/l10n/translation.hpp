@@ -15,6 +15,8 @@
 #include <unordered_map>
 #include <tuple>
 
+import hikogui_utility;
+
 namespace hi {
 inline namespace v1 {
 

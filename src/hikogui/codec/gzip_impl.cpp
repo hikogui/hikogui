@@ -2,12 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-import hikogui_utility;
 #include "gzip.hpp"
 #include "inflate.hpp"
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
 #include "../macros.hpp"
+
+import hikogui_utility;
 
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead (bounds.1).

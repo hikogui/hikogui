@@ -4,7 +4,6 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "gui_window_win32.hpp"
 #include "gui_system.hpp"
 #include "keyboard_virtual_key.hpp"
@@ -20,6 +19,8 @@ import hikogui_utility;
 #include "../loop/module.hpp"
 #include "../macros.hpp"
 #include <new>
+
+import hikogui_utility;
 
 namespace hi::inline v1 {
 

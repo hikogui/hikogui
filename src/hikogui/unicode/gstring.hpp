@@ -13,6 +13,8 @@
 #include <string>
 #include <type_traits>
 
+import hikogui_utility;
+
 template<>
 struct std::char_traits<hi::grapheme> {
     using char_type = hi::grapheme;

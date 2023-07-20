@@ -14,6 +14,8 @@
 #include <limits>
 #include <algorithm>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 struct bezier_point;

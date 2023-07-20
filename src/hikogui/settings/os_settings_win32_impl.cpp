@@ -4,13 +4,14 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "os_settings.hpp"
 #include "registry_win32.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include "../file/module.hpp"
 #include "../macros.hpp"
+
+import hikogui_utility;
 
 namespace hi { inline namespace v1 {
 

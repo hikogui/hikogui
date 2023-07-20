@@ -10,6 +10,8 @@
 #include "../macros.hpp"
 #include <random>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** xorshift128+

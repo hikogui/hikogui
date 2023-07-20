@@ -13,6 +13,8 @@
 #include <thread>
 #include <vector>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 class gfx_surface;
 

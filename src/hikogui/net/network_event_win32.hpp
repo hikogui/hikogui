@@ -10,6 +10,8 @@
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 [[nodiscard]] constexpr network_event network_event_from_win32(long rhs) noexcept

@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <string>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** Character map of a font.

@@ -12,6 +12,8 @@
 #include <string_view>
 #include <filesystem>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /*! Location inside a configuration file.

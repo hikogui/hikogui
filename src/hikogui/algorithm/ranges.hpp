@@ -13,6 +13,8 @@
 #include <vector>
 #include <exception>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 template<typename Value, typename Range>

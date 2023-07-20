@@ -9,6 +9,8 @@
 #include "../macros.hpp"
 #include <cstdint>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** Key modification keys pressed at the same time as another key.

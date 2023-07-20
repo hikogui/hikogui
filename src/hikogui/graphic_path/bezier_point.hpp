@@ -9,6 +9,8 @@
 #include "../macros.hpp"
 #include <vector>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /*! A point or control-point on contour of bezier curves.

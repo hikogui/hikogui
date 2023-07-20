@@ -14,6 +14,8 @@
 #include <string_view>
 #include <tuple>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 namespace detail {
 class translate_args_base {

@@ -19,6 +19,8 @@
 #include <memory>
 #include <ostream>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** A set of audio channels which can be rendered and/or captures at the same time.

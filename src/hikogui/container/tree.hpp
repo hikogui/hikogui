@@ -8,6 +8,8 @@
 #include "../macros.hpp"
 #include <map>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** A tree container.

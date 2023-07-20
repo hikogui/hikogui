@@ -11,6 +11,8 @@
 #include <string_view>
 #include <unordered_map>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** A key in combination with modifiers.

@@ -11,6 +11,8 @@
 #include <optional>
 #include <type_traits>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 template<typename K, typename V, int N>

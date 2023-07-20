@@ -9,6 +9,8 @@
 #include "../macros.hpp"
 #include <concepts>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** Open-type 16.16 signed fixed point, range between -32768.0 and 32767.999

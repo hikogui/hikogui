@@ -10,6 +10,8 @@
 #include <thread>
 #include <chrono>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26403: Reset or explicitly delete and owner<T> pointer '...' (r.3).: ...
 // The static analyser is very confused about the get_or_make() function.

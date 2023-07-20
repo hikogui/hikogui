@@ -5,13 +5,14 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "file_view.hpp"
 #include "file_win32.hpp"
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"
 #include <format>
+
+import hikogui_utility;
 
 namespace hi { inline namespace v1 {
 namespace detail {

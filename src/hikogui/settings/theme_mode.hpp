@@ -9,6 +9,8 @@
 #include <string>
 #include <ostream>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class theme_mode { light, dark };

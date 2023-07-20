@@ -23,6 +23,8 @@
 #include <climits>
 #include <utility>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
 hi_warning_ignore_msvc(4702);

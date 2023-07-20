@@ -8,6 +8,8 @@
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** Combined font_id + grapheme for use as a key in a std::unordered_map.

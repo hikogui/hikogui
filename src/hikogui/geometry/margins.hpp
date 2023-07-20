@@ -13,6 +13,8 @@
 #include "../macros.hpp"
 #include <concepts>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** The left, bottom, right and top margins.

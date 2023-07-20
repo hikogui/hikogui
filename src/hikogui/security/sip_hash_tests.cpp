@@ -2,7 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-import hikogui_utility;
 #include "sip_hash.hpp"
 #include "../utility/module.hpp"
 #include "../macros.hpp"
@@ -10,6 +9,8 @@ import hikogui_utility;
 #include <iostream>
 #include <array>
 #include <string_view>
+
+import hikogui_utility;
 
 // clang-format off
 auto results = std::array<uint64_t, 64>{

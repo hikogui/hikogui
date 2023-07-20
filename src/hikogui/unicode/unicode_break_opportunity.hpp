@@ -10,6 +10,8 @@
 #include <ostream>
 #include <vector>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class unicode_break_opportunity : uint8_t {

@@ -2,7 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-import hikogui_utility;
 #include "unicode_bidi.hpp"
 #include "../file/module.hpp"
 #include "../utility/module.hpp"
@@ -16,6 +15,8 @@ import hikogui_utility;
 #include <span>
 #include <format>
 #include <ranges>
+
+import hikogui_utility;
 
 using namespace hi;
 

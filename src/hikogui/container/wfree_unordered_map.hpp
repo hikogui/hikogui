@@ -13,6 +13,8 @@
 #include <typeinfo>
 #include <typeindex>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 template<typename K, typename V>

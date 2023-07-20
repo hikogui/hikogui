@@ -18,6 +18,8 @@
 #include <bit>
 #include <array>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** 4 x float16 pixel format.

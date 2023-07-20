@@ -6,6 +6,8 @@
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 using font_family_id = tagged_id<uint16_t, "font_family_id">;

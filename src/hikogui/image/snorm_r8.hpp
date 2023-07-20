@@ -12,6 +12,8 @@
 #include "../macros.hpp"
 #include <algorithm>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 [[nodiscard]] constexpr int8_t make_snorm_r8_value(float rhs) noexcept

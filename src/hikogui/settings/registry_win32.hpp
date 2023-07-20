@@ -12,6 +12,8 @@
 #include <cstdint>
 #include <optional>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class registry_key { classes_root, current_config, current_user, local_machine, users };

@@ -23,6 +23,8 @@
 #include <mutex>
 #include <filesystem>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26434: Function '' hides a non-virtual function ''.
 // False positive reported: https://developercommunity.visualstudio.com/t/C26434-false-positive-with-conversion-op/10262199

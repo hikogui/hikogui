@@ -2,7 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-import hikogui_utility;
 #include "dead_lock_detector.hpp"
 #include "../utility/module.hpp"
 #include "../macros.hpp"
@@ -10,6 +9,8 @@ import hikogui_utility;
 #include <iostream>
 #include <string>
 #include <thread>
+
+import hikogui_utility;
 
 using namespace std;
 using namespace hi;

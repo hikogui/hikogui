@@ -16,6 +16,8 @@
 #include <emmintrin.h>
 #endif
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** Character encoder/decoder template.

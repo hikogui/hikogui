@@ -9,6 +9,8 @@
 #include <format>
 #include <string_view>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class audio_device_state { uninitialized, active, disabled, not_present, unplugged };

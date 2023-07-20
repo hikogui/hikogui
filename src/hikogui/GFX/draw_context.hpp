@@ -17,6 +17,8 @@
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 class gfx_device;
 class gfx_device_vulkan;

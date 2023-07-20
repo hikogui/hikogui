@@ -10,6 +10,8 @@
 #include <span>
 #include <cstddef>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline std::pair<size_t, size_t> otype_loca16_get(std::span<std::byte const> bytes, hi::glyph_id glyph_id)

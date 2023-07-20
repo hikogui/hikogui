@@ -12,6 +12,8 @@
 #include "../macros.hpp"
 #include <string>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 class win32_device_interface {

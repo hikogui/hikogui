@@ -4,12 +4,13 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "audio_stream_format_win32.hpp"
 #include "speaker_mapping_win32.hpp"
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 #include <bit>
+
+import hikogui_utility;
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).

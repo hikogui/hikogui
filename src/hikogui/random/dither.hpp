@@ -8,6 +8,8 @@
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** An object that create dither values to add to samples before rounding.

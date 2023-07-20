@@ -12,6 +12,8 @@
 #include <string>
 #include <iostream>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class speaker_mapping : uint32_t {

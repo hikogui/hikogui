@@ -20,6 +20,8 @@
 #include <chrono>
 #include <bit>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS

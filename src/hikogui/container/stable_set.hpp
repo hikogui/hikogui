@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <functional>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** This is a set of object with stable indices.

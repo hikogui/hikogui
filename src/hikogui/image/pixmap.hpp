@@ -14,6 +14,8 @@
 #include <memory>
 #include <span>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26439: This kind of function should not throw. Declare it 'noexcept' (f.6)
 // move assignment can throw because allocation may be needed due to proper allocator implementation.

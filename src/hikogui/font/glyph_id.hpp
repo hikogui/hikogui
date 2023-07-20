@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <utility>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 using glyph_id = tagged_id<uint16_t, "glyph_id">;

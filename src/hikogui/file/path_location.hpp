@@ -14,6 +14,8 @@
 #include <filesystem>
 #include <ranges>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** File and Directory locations.

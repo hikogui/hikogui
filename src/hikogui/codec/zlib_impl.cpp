@@ -2,12 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-import hikogui_utility;
 #include "zlib.hpp"
 #include "inflate.hpp"
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
 #include "../macros.hpp"
+
+import hikogui_utility;
 
 namespace hi::inline v1 {
 

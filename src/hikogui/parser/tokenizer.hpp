@@ -17,6 +17,8 @@
 #include <charconv>
 #include <array>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class tokenizer_name_t : uint8_t {

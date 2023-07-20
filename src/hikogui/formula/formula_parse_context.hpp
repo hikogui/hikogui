@@ -10,6 +10,8 @@
 #include <vector>
 #include <string_view>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 struct formula_parse_context {

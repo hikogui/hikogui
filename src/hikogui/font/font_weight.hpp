@@ -11,6 +11,8 @@
 #include <ostream>
 #include <array>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class font_weight {

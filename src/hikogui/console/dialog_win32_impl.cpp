@@ -4,11 +4,12 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "dialog.hpp"
 #include "../utility/module.hpp"
 #include "../char_maps/module.hpp"
 #include "../macros.hpp"
+
+import hikogui_utility;
 
 namespace hi::inline v1 {
 

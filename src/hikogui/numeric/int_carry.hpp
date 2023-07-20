@@ -13,6 +13,8 @@
 #include <tuple>
 #include <concepts>
 
+import hikogui_utility;
+
 #if HI_COMPILER == HI_CC_MSVC
 #include <intrin.h>
 #endif

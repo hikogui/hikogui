@@ -13,6 +13,8 @@
 #include <concepts>
 #include <type_traits>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).
 // Need to call strlen() and friends with a `char *`.

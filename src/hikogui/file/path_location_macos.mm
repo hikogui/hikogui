@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <mach-o/dyld.h>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 URL URL::urlFromCurrentWorkingDirectory() noexcept

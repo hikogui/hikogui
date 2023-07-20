@@ -10,6 +10,8 @@
 #include <string>
 #include <ostream>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** Describes how a grapheme should be underlined when rendering the text.

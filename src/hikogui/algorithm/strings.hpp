@@ -17,6 +17,8 @@
 #include <cstdlib>
 #include <bit>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
 // make_cstr() is used for arguments passed to tt_main() for compatibility we need to create

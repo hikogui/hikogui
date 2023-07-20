@@ -7,6 +7,8 @@
 #include "../concurrency/module.hpp"
 #include "../macros.hpp"
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 class gfx_system;

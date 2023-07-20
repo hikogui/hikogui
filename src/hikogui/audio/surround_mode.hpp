@@ -12,6 +12,8 @@
 #include "../macros.hpp"
 #include <cstdint>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class surround_mode : uint64_t {

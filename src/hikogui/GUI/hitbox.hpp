@@ -12,6 +12,8 @@
 #include <cstdint>
 #include <compare>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class hitbox_type : uint8_t {

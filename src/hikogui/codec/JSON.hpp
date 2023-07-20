@@ -16,6 +16,8 @@
 #include <vector>
 #include <optional>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** Parse a JSON string.

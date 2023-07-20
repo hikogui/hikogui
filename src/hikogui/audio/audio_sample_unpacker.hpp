@@ -11,6 +11,8 @@
 #include <cstddef>
 #include <bit>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 class audio_sample_unpacker {

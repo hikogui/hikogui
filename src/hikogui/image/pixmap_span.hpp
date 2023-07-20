@@ -14,6 +14,8 @@
 #include <span>
 #include <memory>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26459: You called an STL function 'std::copy' with a raw pointer paramter... (stl.1)
 // Using iterators adds a lot of code without any extra safety.

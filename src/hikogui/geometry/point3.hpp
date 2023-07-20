@@ -13,6 +13,8 @@
 #include <format>
 #include <concepts>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** A high-level geometric point

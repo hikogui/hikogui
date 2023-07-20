@@ -10,6 +10,8 @@
 #include <cstdint>
 #include <format>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** ISO-15924 script code.

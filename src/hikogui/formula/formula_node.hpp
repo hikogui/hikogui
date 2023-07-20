@@ -14,6 +14,8 @@
 #include <memory>
 #include <string>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 struct formula_node;
 }

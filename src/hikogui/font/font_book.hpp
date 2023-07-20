@@ -21,6 +21,8 @@
 #include <atomic>
 #include <filesystem>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** font_book keeps track of multiple fonts.

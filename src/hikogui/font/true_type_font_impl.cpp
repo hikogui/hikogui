@@ -2,7 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-import hikogui_utility;
 #include "true_type_font.hpp"
 #include "otype_utilities.hpp"
 #include "otype_cmap.hpp"
@@ -22,6 +21,8 @@ import hikogui_utility;
 #include "../macros.hpp"
 #include <cstddef>
 #include <span>
+
+import hikogui_utility;
 
 namespace hi::inline v1 {
 

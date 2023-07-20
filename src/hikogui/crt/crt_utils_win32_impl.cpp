@@ -4,7 +4,6 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "crt_utils.hpp"
 #include "terminate.hpp"
 #include "../telemetry/module.hpp"
@@ -14,6 +13,8 @@ import hikogui_utility;
 #include "../char_maps/module.hpp"
 #include "../time/module.hpp"
 #include "../macros.hpp"
+
+import hikogui_utility;
 
 hi_warning_push();
 // C26400: Do not assign the result of an allocation or a function cal with an owner<T> return value to... (i11)

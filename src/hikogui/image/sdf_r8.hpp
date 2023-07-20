@@ -12,6 +12,8 @@
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26434: Function '...' hides a non-virtual function '...'.
 // We need to hide those functions.

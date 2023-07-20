@@ -19,6 +19,8 @@
 #include <vector>
 #include <map>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26476: Expression/symbol '...' uses a naked union '...' with multiple type pointers: Use variant instead (type.7.).
 // This implements `datum` which is simular to a std::variant.

@@ -15,6 +15,8 @@
 #include <utility>
 #include <tuple>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** ASCII (7-bit) character map.

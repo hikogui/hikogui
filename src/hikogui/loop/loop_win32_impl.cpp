@@ -36,7 +36,6 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "loop.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
@@ -48,6 +47,8 @@ import hikogui_utility;
 #include <stop_token>
 #include <thread>
 #include <chrono>
+
+import hikogui_utility;
 
 namespace hi::inline v1 {
 

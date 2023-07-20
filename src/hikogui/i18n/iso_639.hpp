@@ -8,6 +8,8 @@
 #include "../macros.hpp"
 #include <cctype>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** ISO-639 language code.

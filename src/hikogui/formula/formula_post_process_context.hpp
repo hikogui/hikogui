@@ -14,6 +14,8 @@
 #include <string>
 #include <string_view>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 struct formula_post_process_context {

@@ -8,6 +8,8 @@
 #include "../geometry/module.hpp"
 #include "../macros.hpp"
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /*! Metrics of a glyph.

@@ -17,6 +17,8 @@
 #include <utility>
 #include <cmath>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 namespace detail {
 

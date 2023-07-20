@@ -16,6 +16,8 @@
 #include <compare>
 #include <concepts>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** A high-level geometric extent

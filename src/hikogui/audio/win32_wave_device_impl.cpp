@@ -4,10 +4,11 @@
 
 #include "../utility/win32_headers.hpp"
 
-import hikogui_utility;
 #include "win32_wave_device.hpp"
 #include "../utility/module.hpp"
 #include "../macros.hpp"
+
+import hikogui_utility;
 
 namespace hi::inline v1 {
 

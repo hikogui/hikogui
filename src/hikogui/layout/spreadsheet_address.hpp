@@ -31,6 +31,8 @@
 #include <tuple>
 #include <string_view>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 inline std::tuple<bool, std::size_t, bool, std::size_t> _parse_spreadsheet_address(std::string_view& address)

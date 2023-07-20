@@ -12,6 +12,8 @@
 #include <limits>
 #include <concepts>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 enum class on_overflow_t {

@@ -14,6 +14,8 @@
 #include <atomic>
 #include <memory>
 
+import hikogui_utility;
+
 namespace hi { inline namespace v1 {
 
 /** An unfair mutex

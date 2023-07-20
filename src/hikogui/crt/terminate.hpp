@@ -13,6 +13,8 @@
 #include <bit>
 #include <format>
 
+import hikogui_utility;
+
 #pragma once
 
 namespace hi { inline namespace v1 {

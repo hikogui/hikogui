@@ -12,6 +12,8 @@
 #include <memory>
 #include <exception>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 /** A scoped_task.

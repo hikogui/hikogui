@@ -16,6 +16,8 @@
 #include <memory>
 #include <filesystem>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 
 class true_type_font final : public font {

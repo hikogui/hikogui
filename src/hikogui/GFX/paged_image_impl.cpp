@@ -2,7 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-import hikogui_utility;
 #include "paged_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_image_vertex.hpp"
@@ -13,6 +12,8 @@ import hikogui_utility;
 #include "../geometry/module.hpp"
 #include "../codec/module.hpp"
 #include "../macros.hpp"
+
+import hikogui_utility;
 
 namespace hi::inline v1 {
 

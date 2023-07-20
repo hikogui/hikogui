@@ -12,6 +12,8 @@
 #include <cstdint>
 #include <span>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26429: Symbol '' is never tested for nullness, it can be marked as not_null (f.23)
 // False positive reported: https://developercommunity.visualstudio.com/t/C26429-false-positive-on-reference-to-po/10262151

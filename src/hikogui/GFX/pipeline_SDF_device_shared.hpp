@@ -19,6 +19,8 @@
 #include <mutex>
 #include <unordered_map>
 
+import hikogui_utility;
+
 namespace hi::inline v1 {
 class mat;
 class gfx_device_vulkan;

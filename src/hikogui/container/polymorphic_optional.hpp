@@ -13,6 +13,8 @@
 #include <concepts>
 #include <thread>
 
+import hikogui_utility;
+
 hi_warning_push();
 // C26432: If you define or delete any default operation in the type '...', define or delete them all (c.21).
 // False positive. The copy/move assignment/constructors are templated
