@@ -10,12 +10,11 @@ module;
 #include "../macros.hpp"
 #include <exception>
 #include <stdexcept>
-#include <atomic>
 #include <bit>
 #include <format>
+#include <atomic>;
 
 export module hikogui_utility_exception : intf;
-import hikogui_utility_misc;
 
 export namespace hi { inline namespace v1 {
 

@@ -10,7 +10,6 @@
 #include <type_traits>
 
 import hikogui_utility_assert;
-import hikogui_utility_misc;
 
 namespace hi::inline v1 {
 

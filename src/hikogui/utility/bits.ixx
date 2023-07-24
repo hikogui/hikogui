@@ -14,7 +14,6 @@ export module hikogui_utility_bits;
 import hikogui_utility_cast;
 import hikogui_utility_debugger;
 import hikogui_utility_exception;
-import hikogui_utility_misc;
 
 export namespace hi { inline namespace v1 {
 

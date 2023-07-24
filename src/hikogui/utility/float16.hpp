@@ -12,7 +12,6 @@
 #include <numeric>
 #include <format>
 
-import hikogui_utility_misc;
 
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).

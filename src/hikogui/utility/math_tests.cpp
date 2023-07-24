@@ -6,8 +6,6 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-import hikogui_utility_misc;
-
 using namespace std;
 using namespace hi;
 

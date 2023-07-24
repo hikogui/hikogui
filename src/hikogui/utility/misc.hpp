@@ -7,7 +7,7 @@
  * This file includes required definitions.
  */
 
-module;
+#pragma once
 
 #include "../macros.hpp"
 #include <utility>
@@ -15,8 +15,6 @@ module;
 #include <string>
 #include <chrono>
 #include <atomic>
-
-export module hikogui_utility_misc;
 
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).

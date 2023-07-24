@@ -14,6 +14,7 @@
 #include <string_view>
 #include <memory>
 #include <variant>
+#include <atomic>
 
 namespace hi::inline v1 {
 

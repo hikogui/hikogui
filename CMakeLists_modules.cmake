@@ -17,5 +17,4 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${HIKOGUI_SOURCE_DIR}/utility/exception_intf.ixx
     ${HIKOGUI_SOURCE_DIR}/utility/exception.ixx
     ${HIKOGUI_SOURCE_DIR}/utility/utility.ixx
-    ${HIKOGUI_SOURCE_DIR}/utility/misc.ixx
 )

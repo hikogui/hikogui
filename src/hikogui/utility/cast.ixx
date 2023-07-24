@@ -24,7 +24,6 @@ import hikogui_utility_compare;
 import hikogui_utility_concepts;
 import hikogui_utility_debugger;
 import hikogui_utility_exception;
-import hikogui_utility_misc;
 
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).

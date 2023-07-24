@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 
 import hikogui_utility_defer;
-import hikogui_utility_misc;
 
 TEST(defer, early_out)
 {

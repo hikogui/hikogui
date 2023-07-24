@@ -10,6 +10,7 @@
 #include "hash.hpp"
 #include "math.hpp"
 #include "memory.hpp"
+#include "misc.hpp"
 #include "numbers.hpp"
 #include "policy.hpp"
 #include "tagged_id.hpp"

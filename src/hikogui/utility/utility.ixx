@@ -11,4 +11,3 @@ export import hikogui_utility_debugger;
 export import hikogui_utility_defer;
 export import hikogui_utility_endian;
 export import hikogui_utility_exception;
-export import hikogui_utility_misc;

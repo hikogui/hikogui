@@ -9,12 +9,12 @@
 #include <format>
 #include <array>
 #include <ranges>
+#include "../macros.hpp"
 
 import hikogui_utility_assert;
 import hikogui_utility_cast;
 import hikogui_utility_debugger;
 import hikogui_utility_exception;
-import hikogui_utility_misc;
 
 namespace hi { inline namespace v1 {
 
