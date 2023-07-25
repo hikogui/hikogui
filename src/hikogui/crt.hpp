@@ -31,7 +31,7 @@
 int hi_main(int argc, char *argv[]);
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-#include "utility/win32_headers.hpp"
+#include "win32_headers.hpp"
 
 /** Windows entry-point.
  * This function will call `hi_main()`.

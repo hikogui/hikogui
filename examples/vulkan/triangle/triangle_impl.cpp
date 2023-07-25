@@ -14,8 +14,6 @@
  * Copyright (C) 2022 by Take Vos
  */
 
-import hikogui;
-
 #include "triangle.hpp"
 #include "hikogui/module.hpp"
 #include <format>

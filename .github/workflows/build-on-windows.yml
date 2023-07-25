@@ -44,6 +44,9 @@ jobs:
       - name: 🤘 Checkout Code
         uses: actions/checkout@v3 # https://github.com/actions/checkout
 
+      - name: Install Ninja
+        run: winget install ninja
+
       - name: ℹ Show Tool Versions
         run: |
           date /T
