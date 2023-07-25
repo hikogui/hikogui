@@ -47,7 +47,7 @@ jobs:
       - name: Install ninja-build tool
         uses: seanmiddleditch/gha-setup-ninja@v3
         with:
-          version: 1.11
+          version: 1.11.1
       
       - name: ℹ Show Tool Versions
         run: |
