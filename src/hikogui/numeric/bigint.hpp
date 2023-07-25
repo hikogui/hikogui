@@ -12,7 +12,7 @@
 #include <ostream>
 #include <concepts>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

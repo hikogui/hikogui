@@ -12,7 +12,7 @@
 #include "../macros.hpp"
 #include <array>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1::pipeline_image {
 

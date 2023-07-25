@@ -13,7 +13,7 @@
 #include <concepts>
 #include <type_traits>
 
-import hikogui_utility;
+
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).

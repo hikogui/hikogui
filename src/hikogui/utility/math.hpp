@@ -9,6 +9,10 @@
 
 #include "type_traits.hpp"
 #include "../macros.hpp"
+#include "assert.hpp"
+#include "cast.hpp"
+#include "debugger.hpp"
+#include "exception.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>
@@ -27,11 +31,6 @@
 #if HI_PROCESSOR == HI_CPU_X64
 #include <immintrin.h>
 #endif
-
-import hikogui_utility_assert;
-import hikogui_utility_cast;
-import hikogui_utility_debugger;
-import hikogui_utility_exception;
 
 namespace hi::inline v1 {
 

@@ -5,13 +5,12 @@
 #include "fixed_string.hpp"
 #include "type_traits.hpp"
 #include "../macros.hpp"
+#include "concepts.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
 #include <limits>
 #include <utility>
-
-import hikogui_utility_concepts;
 
 class A {};
 

@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string>
 
-import hikogui_utility;
+
 
 template<typename T, typename U, int N>
 double maxAbsDiff(hi::results<T, N> const &lhs, hi::results<U, N> const &rhs)

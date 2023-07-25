@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-module;
+#pragma once
 
 #include "memory.hpp"
 #include "reflection.hpp"
@@ -24,7 +24,7 @@ module;
 #include <bit>
 #include <concepts>
 
-export module hikogui_utility_endian;
+hi_export_module(hikogui_utility_endian);
 
 hi_warning_push();
 // C26472: Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narrow
@@ -32,7 +32,7 @@ hi_warning_push();
 // static_cast are used to cheaply cast integers to unsigned and back, for byteswapping.
 hi_warning_ignore_msvc(26472);
 
-export namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Convert an integral from little-to-native endian.
  */

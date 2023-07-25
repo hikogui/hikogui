@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 
-import hikogui_utility;
+
 
 using namespace std;
 using namespace hi;

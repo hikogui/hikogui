@@ -5,17 +5,17 @@
 /** @file utility/compare.ixx Safe numeric comparison between different types.
  */
 
-module;
+#pragma once
 
 #include "type_traits.hpp"
 #include "../macros.hpp"
+#include "concepts.hpp"
 #include <concepts>
 #include <compare>
 
-export module hikogui_utility_compare;
-import hikogui_utility_concepts;
+hi_export_module(hikogui_utility_compare);
 
-export namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A functor to safely compare two arithmetic values.
  */

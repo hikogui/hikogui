@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-module;
+#pragma once
 
 #include "type_traits.hpp"
 #include "../macros.hpp"
@@ -13,9 +13,9 @@ module;
 #include <coroutine>
 #include <chrono>
 
-export module hikogui_utility_concepts;
+hi_export_module(hikogui_utility_concepts);
 
-export namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<typename T>
 concept numeric_limited = std::numeric_limits<T>::is_specialized;

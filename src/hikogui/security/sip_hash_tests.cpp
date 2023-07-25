@@ -10,7 +10,7 @@
 #include <array>
 #include <string_view>
 
-import hikogui_utility;
+
 
 // clang-format off
 auto results = std::array<uint64_t, 64>{

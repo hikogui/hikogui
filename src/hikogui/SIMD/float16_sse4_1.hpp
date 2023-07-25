@@ -22,7 +22,7 @@
 #endif
 #include "../utility/module.hpp"
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

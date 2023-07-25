@@ -5,18 +5,18 @@
 /** @file utility/exception_intf.ixx Utilities for throwing exceptions and terminating the application.
  */
 
-module;
+#pragma once
 
 #include "../macros.hpp"
 #include <exception>
 #include <stdexcept>
 #include <bit>
 #include <format>
-#include <atomic>;
+#include <atomic>
 
-export module hikogui_utility_exception : intf;
+hi_export_module(hikogui_utility_exception : intf);
 
-export namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Message to show when the application is terminated.
  */

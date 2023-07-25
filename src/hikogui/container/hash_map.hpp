@@ -9,7 +9,7 @@
 #include <memory>
 #include <iterator>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 namespace detail {

@@ -8,7 +8,7 @@
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 
-import hikogui_utility;
+
 
 namespace hi { inline namespace v1 { namespace detail {
 

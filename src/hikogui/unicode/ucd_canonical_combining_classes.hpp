@@ -11,7 +11,7 @@
 #undef small
 #endif
 
-import hikogui_utility;
+
 
 namespace hi {
 inline namespace v1 {

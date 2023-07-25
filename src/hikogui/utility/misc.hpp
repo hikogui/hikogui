@@ -24,7 +24,7 @@ hi_warning_ignore_msvc(26472);
 // hi_forward need to specifically cast a value to a reference using static_cast.
 hi_warning_ignore_msvc(26473);
 
-export namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Signed size/index into an array.
  */

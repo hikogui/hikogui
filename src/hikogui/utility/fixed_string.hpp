@@ -10,11 +10,11 @@
 #include <array>
 #include <ranges>
 #include "../macros.hpp"
-
-import hikogui_utility_assert;
-import hikogui_utility_cast;
-import hikogui_utility_debugger;
-import hikogui_utility_exception;
+#include "assert.hpp"
+#include "cast.hpp"
+#include "debugger.hpp"
+#include "exception.hpp"
+#include "misc.hpp"
 
 namespace hi { inline namespace v1 {
 

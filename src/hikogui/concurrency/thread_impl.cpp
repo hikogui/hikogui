@@ -12,7 +12,7 @@
 #include <mutex>
 #include <format>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 namespace detail {

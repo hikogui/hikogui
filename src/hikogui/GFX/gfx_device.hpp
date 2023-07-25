@@ -13,7 +13,7 @@
 #include <mutex>
 #include <tuple>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 class gfx_system;

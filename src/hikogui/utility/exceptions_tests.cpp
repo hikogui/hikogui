@@ -2,11 +2,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "../macros.hpp"
+#include "exception.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
-
-import hikogui_utility_exception;
 
 using namespace std;
 using namespace std::literals;

@@ -23,7 +23,7 @@
 #include <mutex>
 #include <filesystem>
 
-import hikogui_utility;
+
 
 hi_warning_push();
 // C26434: Function '' hides a non-virtual function ''.

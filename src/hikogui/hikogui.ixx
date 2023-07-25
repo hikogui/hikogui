@@ -1,3 +1,3 @@
 
-export module hikogui;
-export import hikogui_utility;
+hi_export_module(hikogui);
+export 

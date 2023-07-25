@@ -2,23 +2,23 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-module;
+#pragma once
 
-#include "win32_headers.hpp"
+#include "../win32_headers.hpp"
 #include "../macros.hpp"
+#include "debugger_intf.hpp"
 #include <exception>
 
-export module hikogui_utility_debugger : impl;
-import :intf;
+hi_export_module(hikogui_utility_debugger : impl);
 
 hi_warning_push();
 // C6320: Exception-filter expression is the constant EXCEPTION_EXECUTE_HANDLER.
 // This might mask exceptions that were not intended to be handled.
 hi_warning_ignore_msvc(6320);
 
-export namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
-void prepare_debug_break() noexcept
+inline hi_no_inline void prepare_debug_break() noexcept
 {
     if (IsDebuggerPresent()) {
         // When running under the debugger, __debugbreak() after returning.

@@ -9,7 +9,7 @@
 #include <vector>
 #include <cstddef>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

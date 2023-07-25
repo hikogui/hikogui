@@ -10,7 +10,7 @@
 #include <string>
 #include <ostream>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

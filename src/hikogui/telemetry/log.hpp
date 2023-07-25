@@ -23,7 +23,7 @@
 #include <thread>
 #include <filesystem>
 
-import hikogui_utility;
+
 
 namespace hi { inline namespace v1 {
 namespace detail {

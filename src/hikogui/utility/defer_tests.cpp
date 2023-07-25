@@ -3,9 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "../macros.hpp"
+#include "defer.hpp"
 #include <gtest/gtest.h>
-
-import hikogui_utility_defer;
 
 TEST(defer, early_out)
 {

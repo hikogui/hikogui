@@ -5,14 +5,14 @@
 /** @file debugger.ixx Utilities to interact with the debugger this application runs under.
  */
 
-module;
+#pragma once
 
 #include "../macros.hpp"
 #include <format>
 
-export module hikogui_utility_debugger : intf;
+hi_export_module(hikogui_utility_debugger : intf);
 
-export namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Prepare for breaking in the debugger.
  *

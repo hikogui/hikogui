@@ -8,7 +8,7 @@
 #include <mutex>
 #include <sys/mman.h>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

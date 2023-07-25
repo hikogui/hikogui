@@ -6,7 +6,7 @@
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 
-import hikogui_utility;
+
 
 namespace hi {
 inline namespace v1 {

@@ -12,7 +12,7 @@
 #include "../macros.hpp"
 #include <algorithm>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

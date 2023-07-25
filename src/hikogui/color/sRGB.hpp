@@ -15,7 +15,7 @@
 #include <cmath>
 #include <array>
 
-import hikogui_utility;
+
 
 hi_warning_push();
 // C26426: Global initializer calls a non-constexpr function '...' (i.22).

@@ -2,20 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-module;
+#pragma once
 
 #include "../macros.hpp"
+#include "debugger.hpp"
+#include "exception.hpp"
 #include <concepts>
 #include <charconv>
 #include <string>
 #include <string_view>
 #include <iterator>
 
-export module hikogui_utility_charconv;
-import hikogui_utility_debugger;
-import hikogui_utility_exception;
+hi_export_module(hikogui_utility_charconv);
 
-export namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Convert integer to string.
  * This function bypasses std::locale.

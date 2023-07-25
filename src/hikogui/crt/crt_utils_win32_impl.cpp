@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../utility/win32_headers.hpp"
+#include "../win32_headers.hpp"
 
 #include "crt_utils.hpp"
 #include "terminate.hpp"
@@ -14,7 +14,7 @@
 #include "../time/module.hpp"
 #include "../macros.hpp"
 
-import hikogui_utility;
+
 
 hi_warning_push();
 // C26400: Do not assign the result of an allocation or a function cal with an owner<T> return value to... (i11)

@@ -64,7 +64,7 @@
 #include <functional>
 #include <limits>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

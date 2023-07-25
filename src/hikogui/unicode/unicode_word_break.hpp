@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <vector>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

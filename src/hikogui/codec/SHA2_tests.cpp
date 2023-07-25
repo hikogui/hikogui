@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-import hikogui_utility;
+
 
 using namespace std;
 using namespace hi;

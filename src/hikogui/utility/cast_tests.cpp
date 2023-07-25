@@ -3,11 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "../macros.hpp"
+#include "cast.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
-
-import hikogui_utility_cast;
 
 namespace cast_tests {
 

@@ -5,11 +5,10 @@
 #pragma once
 
 #include "../macros.hpp"
+#include "cast.hpp"
 #include <ratio>
 #include <concepts>
 #include <compare>
-
-import hikogui_utility_cast;
 
 namespace hi { inline namespace v1 {
 

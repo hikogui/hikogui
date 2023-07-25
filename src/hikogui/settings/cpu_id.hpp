@@ -16,7 +16,7 @@
 #error "Unsuported compiler for x64 cpu_id"
 #endif
 
-import hikogui_utility;
+
 
 namespace hi {
 inline namespace v1 {

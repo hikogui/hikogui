@@ -10,7 +10,7 @@
 #include <array>
 #include <ostream>
 
-import hikogui_utility;
+
 
 hi_warning_push();
 // Ignore "C26490: Don't use reinterpret_cast", needed for intrinsic loads and stores.

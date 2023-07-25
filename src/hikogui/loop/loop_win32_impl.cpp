@@ -34,7 +34,7 @@
  *
  */
 
-#include "../utility/win32_headers.hpp"
+#include "../win32_headers.hpp"
 
 #include "loop.hpp"
 #include "../telemetry/module.hpp"
@@ -48,7 +48,7 @@
 #include <thread>
 #include <chrono>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

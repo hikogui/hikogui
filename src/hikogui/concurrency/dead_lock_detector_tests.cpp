@@ -10,7 +10,7 @@
 #include <string>
 #include <thread>
 
-import hikogui_utility;
+
 
 using namespace std;
 using namespace hi;

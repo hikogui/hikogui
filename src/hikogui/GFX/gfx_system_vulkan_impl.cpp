@@ -10,7 +10,7 @@
 #include <chrono>
 #include <cstring>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

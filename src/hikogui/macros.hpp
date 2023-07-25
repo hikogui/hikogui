@@ -119,7 +119,6 @@
 #define hi_warning_pop() _Pragma("warning(push)")
 #define hi_warning_ignore_msvc(code)
 #define hi_warning_ignore_clang(a) _Pragma(hi_stringify(clang diagnostic ignored a))
-#define hi_export
 
 #elif HI_COMPILER == HI_CC_MSVC
 #define hi_assume(condition) __assume(condition)
@@ -131,7 +130,6 @@
 #define hi_msvc_pragma(a) _Pragma(a)
 #define hi_warning_ignore_msvc(code) _Pragma(hi_stringify(warning(disable : code)))
 #define hi_warning_ignore_clang(a)
-#define hi_export __declspec(dllexport)
 
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_assume(condition) \
@@ -158,6 +156,18 @@
 #define hi_msvc_pragma(a)
 #define hi_warning_ignore_clang(a)
 #define msvc_pragma(a)
+#endif
+
+/** After module translation this is replaced with "export module x".
+ */
+#ifndef hi_export_module
+#define hi_export_module(x)
+#endif
+
+/** After module translation this is replace with "export".
+ */
+#ifndef hi_export
+#define hi_export
 #endif
 
 /** Invariant should be the default for variables.

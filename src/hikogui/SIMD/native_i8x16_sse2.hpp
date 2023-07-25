@@ -10,7 +10,7 @@
 #include <array>
 #include <ostream>
 
-import hikogui_utility;
+
 
 hi_warning_push();
 // C26472: Don't use a static_cast for arithmetic conversions.

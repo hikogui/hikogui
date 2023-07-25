@@ -8,7 +8,7 @@
 #include "../parser/module.hpp"
 #include "../macros.hpp"
 
-import hikogui_utility;
+
 
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead (bounds.1).

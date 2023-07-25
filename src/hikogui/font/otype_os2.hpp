@@ -11,7 +11,7 @@
 #include <span>
 #include <cstddef>
 
-import hikogui_utility;
+
 
 namespace hi { inline namespace v1 {
 

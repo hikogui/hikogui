@@ -2,20 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-module;
+#pragma once
 
-#include "win32_headers.hpp"
+#include "../win32_headers.hpp"
 #include "../macros.hpp"
+#include "defer.hpp"
+#include "exception_intf.hpp"
 #include <type_traits>
 #include <string>
 #include <string_view>
 #include <format>
 
-export module hikogui_utility_exception : impl;
-import :intf;
-import hikogui_utility_defer;
+hi_export_module(hikogui_utility_exception : impl);
 
-export namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Convert a win32-API compatible std::wstring to a UTF-8 std::string.
@@ -33,7 +33,7 @@ inline namespace v1 {
     return r;
 }
 
-[[nodiscard]] std::string get_last_error_message(uint32_t error_code)
+[[nodiscard]] inline std::string get_last_error_message(uint32_t error_code)
 {
     hilet error_code_ = static_cast<DWORD>(error_code);
 
@@ -60,12 +60,12 @@ inline namespace v1 {
     return win32_wstring_to_string(std::wstring_view{buffer, result});
 }
 
-[[nodiscard]] uint32_t get_last_error_code() noexcept
+[[nodiscard]] inline uint32_t get_last_error_code() noexcept
 {
     return static_cast<uint32_t>(GetLastError());
 }
 
-[[nodiscard]] std::string get_last_error_message() {
+[[nodiscard]] inline std::string get_last_error_message() {
     return get_last_error_message(get_last_error_code());
 }
 

@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <bit>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

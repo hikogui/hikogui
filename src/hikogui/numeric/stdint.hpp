@@ -16,7 +16,7 @@
 #endif
 #include <cstdint>
 
-import hikogui_utility;
+
 
 /** @file stdint.hpp Extra integer definitions.
  *

@@ -2,13 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-module;
+#pragma once
 
 #include "../macros.hpp"
 #include <type_traits>
 #include <functional>
 
-export module hikogui_utility_defer;
+hi_export_module(hikogui_utility_defer);
 
 namespace hi { inline namespace v1 {
 
@@ -18,7 +18,7 @@ namespace hi { inline namespace v1 {
 * at the closing brace, in reverse order of declaration. This means that multiple
 * `defer` instances will call their lambdas in reverse order of declaration as well.
 */
-export class defer {
+hi_export class defer {
 public:
     defer() = delete;
     defer(defer &&) = delete;

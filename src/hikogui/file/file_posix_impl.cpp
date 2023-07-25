@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

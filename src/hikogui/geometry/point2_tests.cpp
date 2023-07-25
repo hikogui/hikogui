@@ -4,13 +4,13 @@
 
 #include "point2.hpp"
 #include "../utility/module.hpp"
-#include "../utility/test.hpp"
+#include "../test.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
 
-import hikogui_utility;
+
 
 using namespace hi;
 

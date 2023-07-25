@@ -2,9 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../utility/win32_headers.hpp"
+#include "../win32_headers.hpp"
 
-import hikogui_utility;
+
 #include "audio_device_win32.hpp"
 #include "audio_sample_format.hpp"
 #include "audio_stream_format.hpp"
@@ -17,7 +17,7 @@ import hikogui_utility;
 #include "../macros.hpp"
 #include <bit>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

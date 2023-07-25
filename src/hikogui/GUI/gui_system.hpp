@@ -21,7 +21,7 @@
 #include <concepts>
 #include <utility>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 class gfx_system;

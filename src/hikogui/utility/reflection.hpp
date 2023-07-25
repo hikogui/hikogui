@@ -7,13 +7,12 @@
 #include "fixed_string.hpp"
 #include "misc.hpp"
 #include "../macros.hpp"
+#include "assert.hpp"
+#include "debugger.hpp"
+#include "exception.hpp"
 #include <type_traits>
 #include <string>
 #include <string_view>
-
-import hikogui_utility_assert;
-import hikogui_utility_debugger;
-import hikogui_utility_exception;
 
 namespace hi { inline namespace v1 {
 

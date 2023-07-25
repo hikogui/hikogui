@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <iterator>
 
-import hikogui_utility;
+
 
 hi_warning_push();
 // C26450: You called an STL function '' with raw pointer... (stl.1)

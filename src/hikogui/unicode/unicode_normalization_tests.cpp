@@ -14,7 +14,7 @@
 #include <span>
 #include <format>
 
-import hikogui_utility;
+
 
 using namespace std;
 using namespace hi;

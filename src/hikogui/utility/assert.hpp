@@ -5,16 +5,16 @@
 /** @file assert.hpp Utilities to assert and bound check.
  */
 
-module;
+#pragma once
 
 #include "type_traits.hpp"
 #include "../macros.hpp"
+#include "debugger.hpp"
+#include "exception.hpp"
 #include <exception>
 #include <ranges>
 
-export module hikogui_utility_assert;
-import hikogui_utility_debugger;
-import hikogui_utility_exception;
+hi_export_module(hikogui_utility_assert);
 
 hi_warning_push();
 // "C26472: Don't use a static_cast for arithmetic", asserts use static_cast specifically for savety.
@@ -28,7 +28,7 @@ namespace hi { inline namespace v1 {
  * @param upper The upper bound.
  * @return true If index is less than the upper bound.
  */
-export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto index, std::unsigned_integral auto upper) noexcept
+hi_export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto index, std::unsigned_integral auto upper) noexcept
 {
     using value_type = common_integer_t<decltype(index), decltype(upper)>;
 
@@ -37,7 +37,7 @@ export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto inde
     return index_ < upper_;
 }
 
-export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto index, std::signed_integral auto upper) noexcept
+hi_export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto index, std::signed_integral auto upper) noexcept
 {
     if (upper <= 0) {
         return false;
@@ -53,7 +53,7 @@ export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto inde
  * @param upper The upper bound.
  * @return true If index is greater or equal to lower bound and index is less than upper bound.
  */
-export [[nodiscard]] constexpr bool bound_check(std::integral auto index, std::integral auto lower, std::integral auto upper) noexcept
+hi_export [[nodiscard]] constexpr bool bound_check(std::integral auto index, std::integral auto lower, std::integral auto upper) noexcept
 {
     using value_type = common_integer_t<decltype(index), decltype(lower), decltype(upper)>;
 
@@ -85,7 +85,7 @@ concept bound_check_range_helper = requires(Context&& range) {
  * @param range The range object, such as a vector or array, which has a `std::ranges::size()`.
  * @return true If index natural and below the size of the array.
  */
-export [[nodiscard]] constexpr bool bound_check(std::integral auto index, bound_check_range_helper auto&& range) noexcept
+hi_export [[nodiscard]] constexpr bool bound_check(std::integral auto index, bound_check_range_helper auto&& range) noexcept
 {
     static_assert(sizeof(index) <= sizeof(size_t));
 

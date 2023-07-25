@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <compare>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

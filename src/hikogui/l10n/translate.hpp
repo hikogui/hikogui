@@ -14,7 +14,7 @@
 #include <string_view>
 #include <tuple>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 namespace detail {

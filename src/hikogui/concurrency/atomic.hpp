@@ -10,7 +10,7 @@
 #include <thread>
 #include <chrono>
 
-import hikogui_utility;
+
 
 hi_warning_push();
 // C26403: Reset or explicitly delete and owner<T> pointer '...' (r.3).: ...

@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <utility>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

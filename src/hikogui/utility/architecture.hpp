@@ -7,7 +7,7 @@
  * Functions and macros for handling architectural difference between compilers, CPUs and operating systems.
  */
 
-module;
+#pragma once
 
 #include "../macros.hpp"
 
@@ -18,9 +18,9 @@ module;
 #include <TargetConditionals.h>
 #endif
 
-export module hikogui_utility_architecture;
+hi_export_module(hikogui_utility_architecture);
 
-export namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 #if HI_PROCESSOR == HI_CPU_X86
 constexpr std::size_t hardware_destructive_interference_size = 128;

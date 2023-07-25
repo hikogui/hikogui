@@ -11,7 +11,7 @@
 #include <limits>
 #include <concepts>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 

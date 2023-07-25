@@ -17,7 +17,7 @@
 #include <charconv>
 #include <array>
 
-import hikogui_utility;
+
 
 namespace hi::inline v1 {
 
