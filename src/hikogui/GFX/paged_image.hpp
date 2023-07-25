@@ -6,6 +6,7 @@
 
 #include "../geometry/module.hpp"
 #include "../image/module.hpp"
+#include "../macros.hpp"
 #include <cstdlib>
 #include <span>
 #include <atomic>

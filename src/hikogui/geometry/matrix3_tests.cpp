@@ -4,6 +4,7 @@
 
 #include "matrix3.hpp"
 #include "transform.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

@@ -6,10 +6,13 @@
 
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <vector>
 #include <functional>
 #include <tuple>
+
+
 
 namespace hi::inline v1 {
 

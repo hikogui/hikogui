@@ -6,11 +6,14 @@
 
 #include "polymorphic_optional.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 #include <concepts>
 #include <atomic>
 #include <memory>
 #include <array>
+
+
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../i18n/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <vector>
 #include <filesystem>

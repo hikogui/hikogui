@@ -10,6 +10,7 @@
 
 #include "char_converter.hpp"
 #include "cp_1252.hpp"
+#include "../macros.hpp"
 #include <bit>
 
 hi_warning_push();

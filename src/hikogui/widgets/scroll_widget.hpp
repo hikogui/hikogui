@@ -13,6 +13,7 @@
 #include "scroll_aperture_widget.hpp"
 #include "../geometry/module.hpp"
 #include "../layout/module.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

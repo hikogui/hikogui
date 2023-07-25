@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../image/module.hpp"
+#include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace hi::inline v1::pipeline_box {

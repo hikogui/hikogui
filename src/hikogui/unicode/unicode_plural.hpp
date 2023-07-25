@@ -11,10 +11,13 @@
 
 #include "../utility/module.hpp"
 #include "../i18n/module.hpp"
+#include "../macros.hpp"
 #include <concepts>
 #include <array>
 #include <cstdint>
 #include <cstddef>
+
+
 
 namespace hi { inline namespace v1 {
 

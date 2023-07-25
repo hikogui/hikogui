@@ -8,6 +8,7 @@
 #include "audio_stream_format.hpp"
 #include "audio_format_range.hpp"
 #include "../coroutine/module.hpp"
+#include "../macros.hpp"
 
 struct IMMDevice;
 struct IPropertyStore;

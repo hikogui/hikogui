@@ -6,6 +6,7 @@
 
 #include "../coroutine/module.hpp"
 #include "../time/module.hpp"
+#include "../macros.hpp"
 #include <chrono>
 #include <coroutine>
 #include <functional>

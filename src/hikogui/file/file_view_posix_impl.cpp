@@ -4,9 +4,11 @@
 
 #include "file_view.hpp"
 #include "../utility/module.hpp"
-#include "log.hpp"
+#include "../macros.hpp"
 #include <mutex>
 #include <sys/mman.h>
+
+
 
 namespace hi::inline v1 {
 

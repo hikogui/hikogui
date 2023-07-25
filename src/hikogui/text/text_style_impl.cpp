@@ -3,6 +3,7 @@
 
 #include "text_style.hpp"
 #include "../font/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

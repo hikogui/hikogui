@@ -9,7 +9,10 @@
 #include "../utility/module.hpp"
 #include "../l10n/module.hpp"
 #include "../coroutine/module.hpp"
+#include "../macros.hpp"
 #include <cstdint>
+
+
 
 namespace hi::inline v1 {
 

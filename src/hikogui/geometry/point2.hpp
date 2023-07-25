@@ -8,8 +8,11 @@
 #include "extent2.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <format>
 #include <concepts>
+
+
 
 namespace hi::inline v1 {
 

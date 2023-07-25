@@ -4,6 +4,7 @@
 
 #include "shared_state.hpp"
 #include "../loop/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

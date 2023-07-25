@@ -6,10 +6,13 @@
 
 #include "int_overflow.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <system_error>
 #include <type_traits>
 #include <limits>
 #include <concepts>
+
+
 
 namespace hi::inline v1 {
 

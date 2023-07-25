@@ -4,8 +4,11 @@
 
 #include "thread.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 
 #include <pthread.h>
+
+
 
 namespace hi::inline v1 {
 

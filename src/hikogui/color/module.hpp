@@ -11,6 +11,7 @@
 #include "Rec2100.hpp"
 #include "semantic_color.hpp"
 #include "sRGB.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

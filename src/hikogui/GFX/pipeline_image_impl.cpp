@@ -5,6 +5,7 @@
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1::pipeline_image {
 

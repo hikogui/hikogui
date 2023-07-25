@@ -5,9 +5,12 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <format>
 #include <ostream>
 #include <vector>
+
+
 
 namespace hi::inline v1 {
 

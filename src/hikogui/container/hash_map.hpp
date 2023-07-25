@@ -5,8 +5,11 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <iterator>
+
+
 
 namespace hi::inline v1 {
 namespace detail {

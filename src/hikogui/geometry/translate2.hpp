@@ -6,6 +6,7 @@
 
 #include "point2.hpp"
 #include "aarectangle.hpp"
+#include "../macros.hpp"
 #include <concepts>
 
 namespace hi { inline namespace v1 {

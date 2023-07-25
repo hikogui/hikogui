@@ -7,11 +7,14 @@
 #include "formula_evaluation_context.hpp"
 #include "../utility/module.hpp"
 #include "../codec/module.hpp"
+#include "../macros.hpp"
 #include <functional>
 #include <unordered_map>
 #include <vector>
 #include <string>
 #include <string_view>
+
+
 
 namespace hi::inline v1 {
 

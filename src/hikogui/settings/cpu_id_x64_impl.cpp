@@ -2,6 +2,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "cpu_id.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

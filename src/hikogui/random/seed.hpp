@@ -9,10 +9,13 @@
 
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
+#include "../macros.hpp"
 #include <random>
 #include <concepts>
 #include <type_traits>
 #include <bit>
+
+
 
 namespace hi::inline v1 {
 

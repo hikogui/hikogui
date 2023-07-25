@@ -14,6 +14,7 @@
 #include "../geometry/module.hpp"
 #include "../layout/module.hpp"
 #include "../l10n/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>

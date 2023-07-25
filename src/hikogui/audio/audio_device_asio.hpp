@@ -4,6 +4,7 @@
 #pragma once
 
 #include "audio_device.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

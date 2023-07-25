@@ -4,8 +4,11 @@
 
 #include "JSON.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
+
+
 
 using namespace std;
 using namespace hi;

@@ -8,15 +8,22 @@
 
 #pragma once
 
-#include "utility.hpp"
 #include "type_traits.hpp"
-#include "concepts.hpp"
+#include "../macros.hpp"
 #include "assert.hpp"
 #include "compare.hpp"
+#include "concepts.hpp"
+#include "debugger.hpp"
+#include "exception.hpp"
 #include <type_traits>
 #include <concepts>
-#include <climits>
+#include <limits>
 #include <span>
+#include <numeric>
+#include <bit>
+#include <cmath>
+
+hi_export_module(hikogui_utility_cast);
 
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
@@ -37,7 +44,8 @@ hi_warning_ignore_msvc(26466);
 // Since these functions are templates this happens.
 hi_warning_ignore_msvc(26474);
 
-namespace hi::inline v1 {
+hi_export namespace hi { inline namespace v1 {
+
 template<typename T>
 [[nodiscard]] constexpr T copy(T value) noexcept
 {
@@ -766,6 +774,6 @@ template<typename T, byte_like Byte>
     return {reinterpret_cast<value_type *>(data), n};
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 hi_warning_pop();

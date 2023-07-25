@@ -5,10 +5,13 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <utility>
 #include <optional>
 #include <type_traits>
+
+
 
 namespace hi::inline v1 {
 

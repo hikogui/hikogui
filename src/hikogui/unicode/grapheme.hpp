@@ -11,6 +11,7 @@
 #include "unicode_normalization.hpp"
 #include "ucd_general_categories.hpp"
 #include "phrasing.hpp"
+#include "../macros.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -19,6 +20,8 @@
 #include <vector>
 #include <algorithm>
 #include <bit>
+
+
 
 namespace hi::inline v1 {
 namespace detail {

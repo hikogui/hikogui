@@ -6,6 +6,7 @@
 
 #include "theme.hpp"
 #include "../settings/module.hpp"
+#include "../macros.hpp"
 #include <limits>
 #include <vector>
 #include <memory>

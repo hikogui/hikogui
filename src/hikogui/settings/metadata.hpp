@@ -6,6 +6,7 @@
 
 #include "semantic_version.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <stdexcept>
 

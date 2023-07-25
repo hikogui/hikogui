@@ -5,7 +5,10 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <cstdint>
+
+
 
 namespace hi {
 inline namespace v1 {

@@ -11,7 +11,7 @@
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
 #include "../console/module.hpp"
-#include "../log.hpp"
+#include "../macros.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -22,6 +22,8 @@
 #include <memory>
 #include <thread>
 #include <filesystem>
+
+
 
 namespace hi { inline namespace v1 {
 namespace detail {

@@ -13,6 +13,7 @@
 #include "rotate2.hpp"
 #include "aarectangle.hpp"
 #include "transform_fwd.hpp"
+#include "../macros.hpp"
 #include <array>
 
 namespace hi { inline namespace v1 {

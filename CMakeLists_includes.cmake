@@ -52,9 +52,12 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/codec/datum.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/gzip.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/huffman.hpp
+    ${HIKOGUI_SOURCE_DIR}/codec/indent.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/inflate.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/JSON.hpp
+    ${HIKOGUI_SOURCE_DIR}/codec/jsonpath.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/codec/pickle.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/png.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/SHA2.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/zlib.hpp
@@ -80,6 +83,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
     ${HIKOGUI_SOURCE_DIR}/console/console.hpp
     ${HIKOGUI_SOURCE_DIR}/console/dialog.hpp
+    ${HIKOGUI_SOURCE_DIR}/console/module.hpp
     ${HIKOGUI_SOURCE_DIR}/container/byte_string.hpp
     ${HIKOGUI_SOURCE_DIR}/container/function_fifo.hpp
     ${HIKOGUI_SOURCE_DIR}/container/functional.hpp
@@ -107,6 +111,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/coroutine/task.hpp
     ${HIKOGUI_SOURCE_DIR}/coroutine/when_any.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/crt_utils.hpp
+    ${HIKOGUI_SOURCE_DIR}/crt/module.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/terminate.hpp
     ${HIKOGUI_SOURCE_DIR}/file/file.hpp
     ${HIKOGUI_SOURCE_DIR}/file/file_view.hpp
@@ -359,6 +364,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/observer/observer.hpp
     ${HIKOGUI_SOURCE_DIR}/observer/shared_state.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/lexer.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/module.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/operator.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/parse_location.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/placement.hpp
@@ -466,10 +472,14 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/charconv.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/compare.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/concepts.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/debugger_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/debugger_win32_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/debugger.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/defer.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/endian.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/enum_metadata.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/exception_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/exception_win32_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/exception.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/fixed_string.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/float16.hpp
@@ -477,18 +487,16 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/hash.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/math.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/memory.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/misc.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/module.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/numbers.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/policy.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/reflection.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/tagged_id.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/test.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/time_zone.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/type_traits.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/units.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/utility.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/value_traits.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/win32_headers.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/abstract_button_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/audio_device_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/button_delegate.hpp
@@ -524,7 +532,9 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
 
+    ${HIKOGUI_SOURCE_DIR}/macros.hpp
     ${HIKOGUI_SOURCE_DIR}/crt.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp
-    
+    ${HIKOGUI_SOURCE_DIR}/test.hpp
+    ${HIKOGUI_SOURCE_DIR}/win32_headers.hpp
 )

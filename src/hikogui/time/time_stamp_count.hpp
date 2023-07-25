@@ -7,6 +7,7 @@
 #include "../utility/module.hpp"
 #include "../concurrency/module.hpp"
 #include "../numeric/module.hpp"
+#include "../macros.hpp"
 #include <atomic>
 #include <array>
 #include <cstdint>
@@ -16,6 +17,8 @@
 #elif HI_OPERATING_SYSTEM == HI_OS_LINUX
 #include <x86intrin.h>
 #endif
+
+
 
 namespace hi::inline v1 {
 
@@ -39,37 +42,37 @@ public:
      */
     explicit time_stamp_count(time_stamp_count::inplace) noexcept : _aux(0), _thread_id(0)
     {
-        if constexpr (processor::current == processor::x64) {
-            uint32_t tmp;
-            _count = __rdtscp(&tmp);
-        } else {
-            hi_not_implemented();
-        }
+#if HI_PROCESSOR == HI_CPU_X64
+        uint32_t tmp;
+        _count = __rdtscp(&tmp);
+#else
+#error "Not Implemented"
+#endif
     }
 
     /** Use a constructor to in-place create the timestamp.
      */
     explicit time_stamp_count(time_stamp_count::inplace_with_cpu_id) noexcept : _thread_id(0)
     {
-        if constexpr (processor::current == processor::x64) {
+#if HI_PROCESSOR == HI_CPU_X64
             _count = __rdtscp(&_aux);
-        } else {
-            hi_not_implemented();
-        }
+#else
+#error "Not Implemented"
+#endif
     }
 
     /** Use a constructor to in-place create the timestamp.
      */
     explicit time_stamp_count(time_stamp_count::inplace_with_thread_id) noexcept
     {
-        if constexpr (processor::current == processor::x64) {
-            constexpr uint64_t NT_TIB_CurrentThreadID = 0x48;
+#if HI_PROCESSOR == HI_CPU_X64 and HI_OPERATING_SYSTEM == HI_OS_WINDOWS
+        constexpr uint64_t NT_TIB_CurrentThreadID = 0x48;
 
-            _count = __rdtscp(&_aux);
-            _thread_id = __readgsdword(NT_TIB_CurrentThreadID);
-        } else {
-            hi_not_implemented();
-        }
+        _count = __rdtscp(&_aux);
+        _thread_id = __readgsdword(NT_TIB_CurrentThreadID);
+#else
+#error "Not Implemented"
+#endif
     }
 
     /** Get the current count from the CPU's time stamp count.

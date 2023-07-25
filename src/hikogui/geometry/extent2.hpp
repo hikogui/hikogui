@@ -11,8 +11,11 @@
 #include "vector2.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <compare>
 #include <concepts>
+
+
 
 namespace hi { inline namespace v1 {
 

@@ -4,6 +4,7 @@
 
 #include "os_settings.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

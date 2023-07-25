@@ -4,6 +4,7 @@
 
 #include "awaitable_timer.hpp"
 #include "loop.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

@@ -5,7 +5,10 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <map>
+
+
 
 namespace hi::inline v1 {
 

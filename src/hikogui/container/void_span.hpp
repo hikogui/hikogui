@@ -6,11 +6,14 @@
 
 #include "byte_string.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <cstddef>
 #include <bit>
 #include <type_traits>
 #include <string_view>
+
+
 
 namespace hi::inline v1 {
 

@@ -4,6 +4,7 @@
 
 
 #include "security.hpp"
+#include "../macros.hpp"
 #include <windows.h>
 
 namespace tt::inline v1 {

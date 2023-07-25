@@ -4,10 +4,13 @@
 
 #include "utf_16.hpp"
 #include "random_char.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <format>
 #include <random>
+
+
 
 using namespace std;
 using namespace hi;

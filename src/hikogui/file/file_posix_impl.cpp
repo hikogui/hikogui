@@ -6,10 +6,13 @@
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include "strings.hpp"
+#include "../macros.hpp"
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+
 
 namespace hi::inline v1 {
 

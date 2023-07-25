@@ -5,7 +5,10 @@
 #include "iso_15924.hpp"
 #include "../utility/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <array>
+
+
 
 namespace hi::inline v1 {
 

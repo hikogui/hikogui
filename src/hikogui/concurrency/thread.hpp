@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <intrin.h>
 #endif
@@ -18,6 +19,8 @@
 #include <atomic>
 #include <chrono>
 #include <bit>
+
+
 
 namespace hi { inline namespace v1 {
 

@@ -6,6 +6,7 @@
 
 #include "gfx_surface_delegate.hpp"
 #include "../geometry/module.hpp"
+#include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <vector>

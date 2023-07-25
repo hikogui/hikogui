@@ -7,7 +7,10 @@
 #include "../time/module.hpp"
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
+#include "../macros.hpp"
 #include <span>
+
+
 
 namespace hi::inline v1 {
 

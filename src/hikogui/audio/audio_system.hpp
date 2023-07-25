@@ -7,8 +7,11 @@
 #include "audio_device.hpp"
 #include "../utility/module.hpp"
 #include "../coroutine/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <memory>
+
+
 
 namespace hi::inline v1 {
 

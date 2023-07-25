@@ -7,10 +7,12 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "cast.hpp"
 #include "type_traits.hpp"
+#include "../macros.hpp"
 #include "assert.hpp"
+#include "cast.hpp"
+#include "debugger.hpp"
+#include "exception.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>
@@ -31,7 +33,6 @@
 #endif
 
 namespace hi::inline v1 {
-
 
 template<typename Iterator>
 [[nodiscard]] auto mean(Iterator first, Iterator last)

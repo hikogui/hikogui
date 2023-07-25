@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 namespace hi { inline namespace v1 {
 
 class rotate2 {

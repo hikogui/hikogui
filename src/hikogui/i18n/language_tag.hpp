@@ -10,8 +10,11 @@
 #include "../utility/module.hpp"
 #include "../coroutine/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <string_view>
+
+
 
 namespace hi::inline v1 {
 

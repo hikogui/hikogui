@@ -6,6 +6,7 @@
 
 #include "memory.hpp"
 #include "reflection.hpp"
+#include "../macros.hpp"
 
 #ifdef HI_HAS_SSE
 #include <immintrin.h>
@@ -19,8 +20,11 @@
 #if HI_COMPILER == HI_CC_MSVC
 #include <stdlib.h>
 #endif
+
 #include <bit>
 #include <concepts>
+
+hi_export_module(hikogui_utility_endian);
 
 hi_warning_push();
 // C26472: Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narrow
@@ -28,7 +32,7 @@ hi_warning_push();
 // static_cast are used to cheaply cast integers to unsigned and back, for byteswapping.
 hi_warning_ignore_msvc(26472);
 
-namespace hi::inline v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Convert an integral from little-to-native endian.
  */
@@ -351,6 +355,6 @@ using native_int64_buf_at = endian_buf_t<int64_t, std::endian::native>;
 using native_int32_buf_at = endian_buf_t<int32_t, std::endian::native>;
 using native_int16_buf_at = endian_buf_t<int16_t, std::endian::native>;
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 hi_warning_pop();

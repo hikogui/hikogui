@@ -6,8 +6,11 @@
 
 #include "native_simd_utility.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <ostream>
+
+
 
 hi_warning_push();
 // Ignore "C26490: Don't use reinterpret_cast", needed for intrinsic loads and stores.

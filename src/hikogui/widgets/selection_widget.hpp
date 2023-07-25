@@ -16,6 +16,7 @@
 #include "menu_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "../observer/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>

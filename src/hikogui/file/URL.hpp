@@ -12,6 +12,7 @@
 #include "path_location.hpp"
 #include "../char_maps/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <optional>
@@ -21,6 +22,8 @@
 #include <ostream>
 #include <mutex>
 #include <filesystem>
+
+
 
 hi_warning_push();
 // C26434: Function '' hides a non-virtual function ''.

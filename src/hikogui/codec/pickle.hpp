@@ -7,8 +7,11 @@
 #include "../utility/module.hpp"
 #include "datum.hpp"
 #include "base_n.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <limits>
+
+
 
 namespace hi::inline v1 {
 

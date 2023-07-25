@@ -11,12 +11,15 @@
 #include "path_location.hpp"
 #include "../char_maps/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <string>
 #include <string_view>
 #include <filesystem>
 #include <variant>
 #include <type_traits>
+
+
 
 namespace hi { inline namespace v1 {
 

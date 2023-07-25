@@ -7,7 +7,10 @@
 #include "seed.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <random>
+
+
 
 namespace hi::inline v1 {
 

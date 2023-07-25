@@ -2,13 +2,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../utility/win32_headers.hpp"
+#include "../win32_headers.hpp"
 
 #include "file_win32.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include "../char_maps/module.hpp"
+#include "../macros.hpp"
 #include <type_traits>
+
+
 
 namespace hi { inline namespace v1 {
 namespace detail {

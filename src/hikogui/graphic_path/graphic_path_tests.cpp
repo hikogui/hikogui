@@ -4,6 +4,7 @@
 
 #include "graphic_path.hpp"
 #include "bezier_curve.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

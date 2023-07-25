@@ -5,12 +5,15 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <cstddef>
 #include <string>
 #include <string_view>
 #include <cstring>
 #include <concepts>
 #include <type_traits>
+
+
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).

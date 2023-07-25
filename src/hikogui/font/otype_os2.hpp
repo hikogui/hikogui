@@ -7,8 +7,11 @@
 #include "otype_utilities.hpp"
 #include "font_weight.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <cstddef>
+
+
 
 namespace hi { inline namespace v1 {
 

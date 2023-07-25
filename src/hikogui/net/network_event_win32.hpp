@@ -4,10 +4,13 @@
 
 #pragma once
 
-#include "../utility/win32_headers.hpp"
+#include "../win32_headers.hpp"
 
 #include "network_event.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
+
+
 
 namespace hi::inline v1 {
 

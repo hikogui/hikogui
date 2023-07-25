@@ -5,12 +5,15 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <memory>
 #include <type_traits>
 #include <atomic>
 #include <concepts>
 #include <thread>
+
+
 
 hi_warning_push();
 // C26432: If you define or delete any default operation in the type '...', define or delete them all (c.21).

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include "cast.hpp"
 #include <ratio>
 #include <concepts>

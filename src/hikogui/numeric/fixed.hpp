@@ -6,9 +6,12 @@
 
 #include "safe_int.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 #include <limits>
 #include <concepts>
+
+
 
 namespace hi::inline v1 {
 

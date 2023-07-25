@@ -6,6 +6,9 @@
 #include "inflate.hpp"
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
+#include "../macros.hpp"
+
+
 
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead (bounds.1).

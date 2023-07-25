@@ -1,11 +1,15 @@
 // Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
 #include "gzip.hpp"
 #include "../file/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
+
+
 
 using namespace std;
 using namespace hi;

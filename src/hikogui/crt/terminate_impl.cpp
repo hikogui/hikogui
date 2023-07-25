@@ -6,6 +6,9 @@
 #include "../console/module.hpp"
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
+
+
 
 namespace hi { inline namespace v1 {
 

@@ -9,6 +9,7 @@
 #include "../image/module.hpp"
 #include "../geometry/module.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <vector>
 #include <cstddef>
@@ -16,6 +17,8 @@
 #include <numeric>
 #include <filesystem>
 #include <memory>
+
+
 
 namespace hi::inline v1 {
 

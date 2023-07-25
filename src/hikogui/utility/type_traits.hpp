@@ -7,13 +7,14 @@
 
 #pragma once
 
-#include "architecture.hpp"
+#include "../macros.hpp"
 #include <cstdint>
 #include <type_traits>
 #include <string>
 #include <string_view>
 #include <memory>
 #include <variant>
+#include <atomic>
 
 namespace hi::inline v1 {
 

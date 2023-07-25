@@ -9,9 +9,12 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <atomic>
 #include <type_traits>
 #include <bit>
+
+
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast

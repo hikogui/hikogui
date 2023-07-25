@@ -16,10 +16,13 @@
 #include "../graphic_path/module.hpp"
 #include "../utility/module.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <vector>
 #include <map>
 #include <string>
+
+
 
 namespace hi::inline v1 {
 

@@ -6,8 +6,11 @@
 
 #include "native_simd_utility.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <array>
 #include <ostream>
+
+
 
 hi_warning_push();
 // C26472: Don't use a static_cast for arithmetic conversions.

@@ -6,9 +6,12 @@
 
 #include "../utility/module.hpp"
 #include "../codec/module.hpp"
+#include "../macros.hpp"
 #include <unordered_map>
 #include <vector>
 #include <string_view>
+
+
 
 namespace hi::inline v1 {
 

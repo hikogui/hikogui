@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../utility/win32_headers.hpp"
+#include "../win32_headers.hpp"
 
 #include "audio_system_win32.hpp"
 #include "audio_device_win32.hpp"
@@ -11,6 +11,9 @@
 #include "../telemetry/module.hpp"
 #include "../memory/module.hpp"
 #include "../loop/module.hpp"
+#include "../macros.hpp"
+
+
 
 hi_warning_push();
 // C26435: Function '' should specify exactly one of 'virtual', 'override' or 'final' (c.128)

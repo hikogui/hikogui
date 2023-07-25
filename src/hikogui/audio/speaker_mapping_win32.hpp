@@ -5,6 +5,7 @@
 #pragma once
 
 #include "speaker_mapping.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

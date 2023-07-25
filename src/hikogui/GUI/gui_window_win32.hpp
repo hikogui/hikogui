@@ -6,6 +6,7 @@
 
 #include "gui_window.hpp"
 #include "../GFX/module.hpp"
+#include "../macros.hpp"
 #include <unordered_map>
 
 struct HWND__;

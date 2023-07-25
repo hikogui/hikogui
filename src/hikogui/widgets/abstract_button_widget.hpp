@@ -14,6 +14,7 @@
 #include "../algorithm/module.hpp"
 #include "../l10n/module.hpp"
 #include "../observer/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>

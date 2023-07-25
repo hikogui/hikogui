@@ -13,11 +13,14 @@
 #include "../geometry/module.hpp"
 #include "../observer/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+
+
 
 namespace hi { inline namespace v1 {
 

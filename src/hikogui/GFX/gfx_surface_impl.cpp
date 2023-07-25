@@ -6,6 +6,9 @@
 #include "gfx_device.hpp"
 #include "gfx_system.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
+
+
 
 namespace hi::inline v1 {
 

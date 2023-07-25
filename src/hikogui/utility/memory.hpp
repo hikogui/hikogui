@@ -5,7 +5,9 @@
 #pragma once
 
 #include "math.hpp"
+#include "../macros.hpp"
 #include "concepts.hpp"
+#include "exception.hpp"
 #include <concepts>
 #include <memory>
 #include <vector>

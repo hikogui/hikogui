@@ -4,6 +4,7 @@
 
 #include "simd.hpp"
 #include "simd_test_utility.hpp"
+#include "../macros.hpp"
 
 using namespace std;
 using namespace hi;

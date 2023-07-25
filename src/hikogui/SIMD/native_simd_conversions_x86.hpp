@@ -10,6 +10,7 @@
 #include "native_i64x4_avx2.hpp"
 #include "native_u32x4_sse2.hpp"
 #include "native_simd_utility.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

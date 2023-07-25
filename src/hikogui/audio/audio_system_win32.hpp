@@ -6,6 +6,7 @@
 
 #include "audio_system.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 
 struct IMMDeviceEnumerator;

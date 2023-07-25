@@ -9,6 +9,7 @@
 #include "../settings/module.hpp"
 #include "../GFX/module.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

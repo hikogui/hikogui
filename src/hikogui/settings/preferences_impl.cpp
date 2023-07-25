@@ -6,6 +6,7 @@
 #include "../codec/module.hpp"
 #include "../file/module.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 namespace detail {

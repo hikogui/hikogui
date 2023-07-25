@@ -5,12 +5,15 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>
 #include <span>
 #include <tuple>
 #include <concepts>
+
+
 
 #if HI_COMPILER == HI_CC_MSVC
 #include <intrin.h>

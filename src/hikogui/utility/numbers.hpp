@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include "concepts.hpp"
 #include <concepts>
 

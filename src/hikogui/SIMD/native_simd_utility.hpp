@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 
 #ifdef HI_HAS_SSE
@@ -31,6 +32,8 @@
 #ifdef HI_HAS_AVX512F
 #include <immintrin.h>
 #endif
+
+
 
 namespace hi { inline namespace v1 {
 

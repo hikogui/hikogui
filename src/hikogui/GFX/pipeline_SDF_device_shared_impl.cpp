@@ -10,7 +10,10 @@
 #include "../geometry/module.hpp"
 #include "../image/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <array>
+
+
 
 namespace hi::inline v1::pipeline_SDF {
 

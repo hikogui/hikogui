@@ -9,6 +9,7 @@
 #pragma once
 
 #include "gui_event_type.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

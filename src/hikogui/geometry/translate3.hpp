@@ -6,6 +6,7 @@
 
 #include "translate2.hpp"
 #include "point3.hpp"
+#include "../macros.hpp"
 #include <concepts>
 
 namespace hi { inline namespace v1 {

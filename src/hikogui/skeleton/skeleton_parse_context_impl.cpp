@@ -8,6 +8,7 @@
 #include "skeleton_do_node.hpp"
 #include "skeleton_string_node.hpp"
 #include "skeleton.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

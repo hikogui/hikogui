@@ -10,6 +10,7 @@
 #include "extent3.hpp"
 #include "aarectangle.hpp"
 #include "rectangle.hpp"
+#include "../macros.hpp"
 #include <tuple>
 
 namespace hi::inline v1 {

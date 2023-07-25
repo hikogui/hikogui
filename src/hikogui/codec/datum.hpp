@@ -7,6 +7,7 @@
 #include "../utility/module.hpp"
 #include "../numeric/module.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include "base_n.hpp"
 #include "jsonpath.hpp"
 #include <cstdint>
@@ -17,6 +18,8 @@
 #include <limits>
 #include <vector>
 #include <map>
+
+
 
 hi_warning_push();
 // C26476: Expression/symbol '...' uses a naked union '...' with multiple type pointers: Use variant instead (type.7.).

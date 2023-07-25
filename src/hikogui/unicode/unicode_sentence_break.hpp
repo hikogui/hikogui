@@ -8,6 +8,7 @@
 #pragma once
 
 #include "ucd_sentence_break_properties.hpp"
+#include "../macros.hpp"
 #include <tuple>
 
 namespace hi::inline v1 {

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "audio_block.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

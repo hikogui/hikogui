@@ -5,6 +5,7 @@
 #pragma once
 
 #include "font_weight.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

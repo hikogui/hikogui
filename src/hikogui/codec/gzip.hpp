@@ -6,6 +6,7 @@
 
 #include "../container/module.hpp"
 #include "../file/module.hpp"
+#include "../macros.hpp"
 #include <cstddef>
 #include <filesystem>
 

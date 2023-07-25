@@ -9,9 +9,12 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <ostream>
+
+
 
 namespace hi { inline namespace v1 {
 

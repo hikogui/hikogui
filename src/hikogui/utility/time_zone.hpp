@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include "debugger.hpp"
 #include "exception.hpp"
 #include <chrono>

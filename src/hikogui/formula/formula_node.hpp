@@ -9,9 +9,12 @@
 #include "../utility/module.hpp"
 #include "../parser/module.hpp"
 #include "../codec/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <memory>
 #include <string>
+
+
 
 namespace hi::inline v1 {
 struct formula_node;

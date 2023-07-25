@@ -4,6 +4,7 @@
 
 
 #include "format_check.hpp"
+#include "../macros.hpp"
 
 static_assert(hi::format_count("") == 0);
 static_assert(hi::format_count("foo") == 0);

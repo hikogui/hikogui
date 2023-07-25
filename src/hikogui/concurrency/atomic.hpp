@@ -5,9 +5,12 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <atomic>
 #include <thread>
 #include <chrono>
+
+
 
 hi_warning_push();
 // C26403: Reset or explicitly delete and owner<T> pointer '...' (r.3).: ...

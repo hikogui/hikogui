@@ -4,11 +4,14 @@
 #include "strings.hpp"
 #include "../utility/module.hpp"
 #include "url_parser.hpp"
+#include "../macros.hpp"
 #include <regex>
 
 #import <Foundation/Foundation.h>
 #include <unistd.h>
 #include <mach-o/dyld.h>
+
+
 
 namespace hi::inline v1 {
 

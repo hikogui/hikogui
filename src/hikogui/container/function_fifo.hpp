@@ -6,6 +6,7 @@
 
 #include "wfree_fifo.hpp"
 #include "functional.hpp"
+#include "../macros.hpp"
 #include <future>
 
 namespace hi::inline v1 {

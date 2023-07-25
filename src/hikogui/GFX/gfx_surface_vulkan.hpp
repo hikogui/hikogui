@@ -6,6 +6,7 @@
 
 #include "gfx_surface.hpp"
 #include "gfx_queue_vulkan.hpp"
+#include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <optional>

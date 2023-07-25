@@ -2,14 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-
-#include <type_traits>
-#include <concepts>
-#include <functional>
-
 #pragma once
 
-namespace hi::inline v1 {
+#include "../macros.hpp"
+#include <type_traits>
+#include <functional>
+
+hi_export_module(hikogui_utility_defer);
+
+namespace hi { inline namespace v1 {
 
 /** Defer execution of a lambda to the end of the scope.
 * 
@@ -17,7 +18,7 @@ namespace hi::inline v1 {
 * at the closing brace, in reverse order of declaration. This means that multiple
 * `defer` instances will call their lambdas in reverse order of declaration as well.
 */
-class defer {
+hi_export class defer {
 public:
     defer() = delete;
     defer(defer &&) = delete;
@@ -44,5 +45,5 @@ private:
     std::function<void()> _func;
 };
 
-}
+}}
 

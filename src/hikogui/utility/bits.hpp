@@ -4,11 +4,19 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include "cast.hpp"
+#include "debugger.hpp"
+#include "exception.hpp"
+#include "misc.hpp"
 #include <span>
 #include <cstddef>
+#include <exception>
+#include <bit>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui_utility_bits);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** Read a single bit from span of bytes
  * Bits are ordered LSB first.
@@ -73,4 +81,4 @@ namespace hi::inline v1 {
     return value;
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

@@ -10,6 +10,7 @@
 
 #include "point3.hpp"
 #include "vector3.hpp"
+#include "../macros.hpp"
 
 namespace hi {
 inline namespace v1 {

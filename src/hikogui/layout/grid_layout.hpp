@@ -9,12 +9,15 @@
 #include "spreadsheet_address.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <cstdint>
 #include <numeric>
 #include <vector>
 #include <algorithm>
 #include <utility>
 #include <cmath>
+
+
 
 namespace hi { inline namespace v1 {
 namespace detail {

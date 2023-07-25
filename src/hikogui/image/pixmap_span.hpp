@@ -9,9 +9,12 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <cstddef>
 #include <span>
 #include <memory>
+
+
 
 hi_warning_push();
 // C26459: You called an STL function 'std::copy' with a raw pointer paramter... (stl.1)

@@ -5,10 +5,13 @@
 #include "translate3.hpp"
 #include "transform.hpp"
 #include "../utility/module.hpp"
-#include "../utility/test.hpp"
+#include "../test.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
+
+
 
 using namespace hi;
 

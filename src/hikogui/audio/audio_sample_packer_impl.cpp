@@ -5,9 +5,12 @@
 #include "audio_sample_packer.hpp"
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 #include <cstdint>
 #include <tuple>
+
+
 
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead.

@@ -6,6 +6,7 @@
 
 #include "pcm_format.hpp"
 #include "speaker_mapping.hpp"
+#include "../macros.hpp"
 #include <bit>
 
 namespace hi::inline v1 {

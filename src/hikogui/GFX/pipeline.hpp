@@ -5,7 +5,10 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <memory>
+
+
 
 namespace hi::inline v1 {
 class gfx_surface;

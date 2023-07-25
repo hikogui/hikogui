@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 namespace hi::inline v1 {
 
 /** The metrics of a font.

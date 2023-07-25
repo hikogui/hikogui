@@ -7,7 +7,10 @@
 #include "thread.hpp"
 #include "subsystem.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <mutex>
+
+
 
 namespace hi::inline v1 {
 

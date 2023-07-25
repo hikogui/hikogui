@@ -6,11 +6,14 @@
  */
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <exception>
 #include <stdexcept>
 #include <atomic>
 #include <bit>
 #include <format>
+
+
 
 #pragma once
 

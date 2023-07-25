@@ -5,12 +5,15 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <atomic>
 #include <array>
 #include <optional>
 #include <vector>
 #include <typeinfo>
 #include <typeindex>
+
+
 
 namespace hi::inline v1 {
 

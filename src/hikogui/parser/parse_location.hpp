@@ -5,11 +5,14 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <format>
 #include <memory>
 #include <iostream>
 #include <string_view>
 #include <filesystem>
+
+
 
 namespace hi::inline v1 {
 

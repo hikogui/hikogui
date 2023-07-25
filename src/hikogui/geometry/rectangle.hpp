@@ -7,6 +7,7 @@
 #include "aarectangle.hpp"
 #include "alignment.hpp"
 #include "../SIMD/module.hpp"
+#include "../macros.hpp"
 #include <array>
 
 namespace hi { inline namespace v1 {

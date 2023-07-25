@@ -12,6 +12,7 @@
 #include "../GFX/module.hpp"
 #include "../utility/module.hpp"
 #include "../observer/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <memory>
 #include <mutex>
@@ -19,6 +20,8 @@
 #include <vector>
 #include <concepts>
 #include <utility>
+
+
 
 namespace hi::inline v1 {
 class gfx_system;

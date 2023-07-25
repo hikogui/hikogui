@@ -25,6 +25,7 @@
 #include "circle.hpp"
 #include "corner_radii.hpp"
 #include "line_segment.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 #include <functional>
 

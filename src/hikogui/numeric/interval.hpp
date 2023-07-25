@@ -6,11 +6,14 @@
 
 #include "../utility/module.hpp"
 #include "../SIMD/module.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 #include <limits>
 #include <concepts>
 #include <algorithm>
 #include <compare>
+
+
 
 namespace hi::inline v1 {
 

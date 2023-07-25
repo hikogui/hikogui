@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include "audio_direction.hpp"
 
 namespace hi::inline v1 {

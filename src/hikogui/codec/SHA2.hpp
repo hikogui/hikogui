@@ -6,10 +6,13 @@
 
 #include "../container/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 #include <array>
 #include <cstdint>
 #include <span>
+
+
 
 hi_warning_push();
 // C26429: Symbol '' is never tested for nullness, it can be marked as not_null (f.23)

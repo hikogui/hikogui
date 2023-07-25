@@ -6,6 +6,7 @@
 
 #include "../container/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <cstdint>
 #include <array>
@@ -13,7 +14,7 @@
 #include <string_view>
 #include <bit>
 
-#pragma once
+
 
 namespace hi::inline v1 {
 namespace detail {

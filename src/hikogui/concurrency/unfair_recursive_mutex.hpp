@@ -10,6 +10,7 @@
 
 #include "unfair_mutex.hpp"
 #include "thread.hpp"
+#include "../macros.hpp"
 #include <thread>
 
 namespace hi { inline namespace v1 {

@@ -4,13 +4,16 @@
 
 #pragma once
 
-#include "utility.hpp"
+#include "../macros.hpp"
 #include "cast.hpp"
+#include "debugger.hpp"
+#include "exception.hpp"
 #include <cstddef>
 #include <type_traits>
 #include <array>
 #include <algorithm>
 #include <string_view>
+#include <stdexcept>
 
 hi_warning_push();
 // C26445: Do not assign gsl::span or std::string_view to a reference. They are cheap to construct and are not owners of
@@ -18,7 +21,7 @@ hi_warning_push();
 // False positive, sometimes the template is instantiated with string_view, sometimes not.
 hi_warning_ignore_msvc(26445);
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A object that holds enum-values and strings.
  *
@@ -305,6 +308,6 @@ template<typename ValueType, typename NameType, typename... Rest>
 enum_metadata(ValueType const&, NameType const&, Rest const&...)
     -> enum_metadata<ValueType, enum_metadata_name_t<NameType>, (sizeof...(Rest) + 2) / 2>;
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 hi_warning_pop();

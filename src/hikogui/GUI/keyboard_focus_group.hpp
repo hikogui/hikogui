@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 namespace hi::inline v1 {
 
 /** The keyboard focus group used for finding a widget that will accept a particular focus.

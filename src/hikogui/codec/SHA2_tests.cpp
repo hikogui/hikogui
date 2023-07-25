@@ -6,8 +6,11 @@
 #include "base_n.hpp"
 #include "../utility/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
+
+
 
 using namespace std;
 using namespace hi;

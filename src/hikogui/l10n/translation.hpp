@@ -8,11 +8,14 @@
 #include "../formula/module.hpp"
 #include "../utility/module.hpp"
 #include "../settings/module.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
 #include <unordered_map>
 #include <tuple>
+
+
 
 namespace hi {
 inline namespace v1 {

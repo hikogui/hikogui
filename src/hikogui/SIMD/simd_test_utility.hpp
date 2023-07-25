@@ -5,7 +5,10 @@
 #pragma once
 
 #include "simd.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
+
+
 
 namespace hi { inline namespace v1 { namespace detail {
 

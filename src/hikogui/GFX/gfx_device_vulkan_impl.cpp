@@ -9,7 +9,10 @@
 #include "pipeline_image_device_shared.hpp"
 #include "../file/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <span>
+
+
 
 namespace hi::inline v1 {
 

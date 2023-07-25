@@ -3,6 +3,7 @@
 
 #include "pipeline_SDF_texture_map.hpp"
 #include "gfx_device_vulkan.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1::pipeline_SDF {
 

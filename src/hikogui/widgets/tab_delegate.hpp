@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include <memory>
 #include <functional>
 

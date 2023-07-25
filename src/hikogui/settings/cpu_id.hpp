@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <array>
 
 #if HI_COMPILER == HI_CC_MSVC
@@ -14,6 +15,8 @@
 #else
 #error "Unsuported compiler for x64 cpu_id"
 #endif
+
+
 
 namespace hi {
 inline namespace v1 {

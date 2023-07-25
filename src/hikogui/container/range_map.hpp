@@ -5,10 +5,13 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <memory>
 #include <algorithm>
 #include <set>
+
+
 
 namespace hi::inline v1 {
 

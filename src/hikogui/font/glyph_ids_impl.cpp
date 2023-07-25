@@ -5,6 +5,7 @@
 #include "font.hpp"
 #include "../graphic_path/module.hpp"
 #include "../telemetry/module.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

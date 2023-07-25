@@ -5,9 +5,12 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <string_view>
 #include <cstdint>
 #include <format>
+
+
 
 namespace hi::inline v1 {
 

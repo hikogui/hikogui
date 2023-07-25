@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 namespace hi::inline v1 {
 
 enum class keyboard_state : uint8_t {

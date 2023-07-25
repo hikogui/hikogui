@@ -10,10 +10,13 @@
 #include "../algorithm/module.hpp"
 #include "datum.hpp"
 #include "indent.hpp"
+#include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
 #include <optional>
+
+
 
 namespace hi::inline v1 {
 

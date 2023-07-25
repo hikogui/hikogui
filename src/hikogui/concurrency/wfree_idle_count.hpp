@@ -5,8 +5,11 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <atomic>
 #include <cstdint>
+
+
 
 namespace hi::inline v1 {
 

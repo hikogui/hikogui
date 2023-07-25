@@ -10,6 +10,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "lean_vector.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 
 using namespace hi;

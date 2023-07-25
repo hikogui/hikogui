@@ -10,6 +10,7 @@
 
 #include "file_view.hpp"
 #include "../container/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <variant>
 #include <functional>

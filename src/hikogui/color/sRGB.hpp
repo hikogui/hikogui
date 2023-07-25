@@ -11,8 +11,11 @@
 #include "../utility/module.hpp"
 #include "../geometry/module.hpp"
 #include "color.hpp"
+#include "../macros.hpp"
 #include <cmath>
 #include <array>
+
+
 
 hi_warning_push();
 // C26426: Global initializer calls a non-constexpr function '...' (i.22).

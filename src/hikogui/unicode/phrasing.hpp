@@ -9,9 +9,12 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <cstdint>
 #include <optional>
 #include <bit>
+
+
 
 namespace hi::inline v1 {
 

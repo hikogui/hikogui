@@ -4,6 +4,7 @@
  * @ingroup utility
  */
 
+#include "../macros.hpp"
 #pragma once
 
 namespace hi { inline namespace v1 {

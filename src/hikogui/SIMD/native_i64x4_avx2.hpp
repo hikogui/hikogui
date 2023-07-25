@@ -6,9 +6,12 @@
 
 #include "native_simd_utility.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <span>
 #include <array>
 #include <ostream>
+
+
 
 namespace hi { inline namespace v1 {
 

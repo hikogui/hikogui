@@ -17,6 +17,7 @@
 #include "../container/module.hpp"
 #include "../observer/module.hpp"
 #include "../coroutine/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>

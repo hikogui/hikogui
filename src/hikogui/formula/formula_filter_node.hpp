@@ -7,6 +7,7 @@
 #include "formula_binary_operator_node.hpp"
 #include "formula_post_process_context.hpp"
 #include "formula_name_node.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

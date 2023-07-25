@@ -7,6 +7,9 @@
 #include "../utility/module.hpp"
 #include "stdint.hpp"
 #include "interval.hpp"
+#include "../macros.hpp"
+
+
 
 namespace hi::inline v1 {
 

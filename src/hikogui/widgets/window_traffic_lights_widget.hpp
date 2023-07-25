@@ -10,6 +10,7 @@
 
 #include "widget.hpp"
 #include "../font/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -34,18 +35,19 @@ public:
     {
         _layout = {};
 
-        if (theme().operating_system == operating_system::windows) {
-            hilet size = extent2{theme().large_size() * 3.0f, theme().large_size()};
-            return {size, size, size};
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
+        hilet size = extent2{theme().large_size() * 3.0f, theme().large_size()};
+        return {size, size, size};
 
-        } else if (theme().operating_system == operating_system::macos) {
-            hilet size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
-            return {size, size, size};
+#elif HI_OPERATING_SYSTEM == HI_OS_MACOS
+        hilet size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
+        return {size, size, size};
 
-        } else {
-            hi_no_default();
-        }
+#else
+#error "Not implemented"
+#endif
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
@@ -55,43 +57,43 @@ public:
             }
             auto y = context.height() - extent.height();
 
-            if (theme().operating_system == operating_system::windows) {
-                closeRectangle =
-                    aarectangle{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
+            closeRectangle =
+                aarectangle{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-                maximizeRectangle =
-                    aarectangle{point2(extent.width() * 1.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
+            maximizeRectangle =
+                aarectangle{point2(extent.width() * 1.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-                minimizeRectangle = aarectangle{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
+            minimizeRectangle = aarectangle{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-            } else if (theme().operating_system == operating_system::macos) {
-                closeRectangle = aarectangle{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
+#elif HI_OPERATING_SYSTEM == HI_OS_MACOS
+            closeRectangle = aarectangle{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
-                minimizeRectangle = aarectangle{
-                    point2(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
+            minimizeRectangle = aarectangle{
+                point2(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
-                maximizeRectangle = aarectangle{
-                    point2(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
-                    extent2{DIAMETER, DIAMETER}};
-            } else {
-                hi_no_default();
-            }
+            maximizeRectangle = aarectangle{
+                point2(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
+                extent2{DIAMETER, DIAMETER}};
+#else
+#error "Not implemented"
+#endif
 
             closeWindowGlyph = find_glyph(hikogui_icon::CloseWindow);
             minimizeWindowGlyph = find_glyph(hikogui_icon::MinimizeWindow);
 
-            if (theme().operating_system == operating_system::windows) {
-                maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMS);
-                restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMS);
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
+            maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMS);
+            restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMS);
+            hilet glyph_size = theme().icon_size();
 
-            } else if (theme().operating_system == operating_system::macos) {
-                maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMacOS);
-                restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMacOS);
-            } else {
-                hi_no_default();
-            }
-
-            hilet glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size();
+#elif HI_OPERATING_SYSTEM == HI_OS_MACOS
+            maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMacOS);
+            restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMacOS);
+            hilet glyph_size = 5.0f;
+#else
+#error "Not implemented"
+#endif
 
             hilet closeWindowGlyphBB = closeWindowGlyph.get_bounding_box() * glyph_size;
             hilet minimizeWindowGlyphBB = minimizeWindowGlyph.get_bounding_box() * glyph_size;
@@ -107,15 +109,13 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-            if (theme().operating_system == operating_system::macos) {
-                drawMacOS(context);
-
-            } else if (theme().operating_system == operating_system::windows) {
-                drawWindows(context);
-
-            } else {
-                hi_no_default();
-            }
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
+            drawMacOS(context);
+#elif HI_OPERATING_SYSTEM == HI_OS_MACOS
+            drawWindows(context);
+#else
+#error "Not implemented"
+#endif
         }
     }
     bool handle_event(gui_event const& event) noexcept override

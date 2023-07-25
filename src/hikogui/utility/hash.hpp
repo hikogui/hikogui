@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "utility.hpp"
+#include "../macros.hpp"
 #include "assert.hpp"
 #include <utility>
 #include <array>

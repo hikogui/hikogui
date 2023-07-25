@@ -7,10 +7,13 @@
 #include "wfree_idle_count.hpp"
 #include "unfair_mutex.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <tuple>
 #include <mutex>
 #include <memory>
+
+
 
 namespace hi::inline v1 {
 

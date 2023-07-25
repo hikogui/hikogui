@@ -14,7 +14,6 @@
  * Copyright (C) 2022 by Take Vos
  */
 
-
 #include "hikogui/module.hpp"
 #include <vulkan/vulkan.h>
 #include <vma/vk_mem_alloc.h>

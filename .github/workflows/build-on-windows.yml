@@ -44,6 +44,11 @@ jobs:
       - name: 🤘 Checkout Code
         uses: actions/checkout@v3 # https://github.com/actions/checkout
 
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v3
+        with:
+          version: 1.11.1
+      
       - name: ℹ Show Tool Versions
         run: |
           date /T

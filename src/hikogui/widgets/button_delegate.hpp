@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../observer/module.hpp"
+#include "../macros.hpp"
 #include <type_traits>
 #include <memory>
 

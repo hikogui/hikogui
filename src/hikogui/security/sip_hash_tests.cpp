@@ -4,10 +4,13 @@
 
 #include "sip_hash.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <array>
 #include <string_view>
+
+
 
 // clang-format off
 auto results = std::array<uint64_t, 64>{

@@ -6,12 +6,15 @@
 
 #include "int_overflow.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <limits>
 #include <string_view>
 #include <string>
 #include <charconv>
 #include <ostream>
 #include <bit>
+
+
 
 namespace hi::inline v1 {
 
@@ -288,7 +291,7 @@ public:
         auto rhs_m = rhs.mantissa();
 
         long long m = 0;
-        if (!mul_overflow(lhs_m, rhs_m, &m)) {
+        if (not mul_overflow(lhs_m, rhs_m, &m)) {
             [[likely]] return {lhs_e + rhs_e, m};
         }
 

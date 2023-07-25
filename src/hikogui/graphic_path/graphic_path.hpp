@@ -9,7 +9,10 @@
 #include "../utility/module.hpp"
 #include "../geometry/module.hpp"
 #include "../image/module.hpp"
+#include "../macros.hpp"
 #include <vector>
+
+
 
 namespace hi::inline v1 {
 

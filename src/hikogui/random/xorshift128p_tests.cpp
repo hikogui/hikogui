@@ -4,6 +4,7 @@
 
 #include "xorshift128p.hpp"
 #include "../SIMD/simd_test_utility.hpp"
+#include "../macros.hpp"
 #include <iostream>
 #include <string>
 #include <limits>

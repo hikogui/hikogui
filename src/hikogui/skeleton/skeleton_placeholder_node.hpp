@@ -5,6 +5,7 @@
 #pragma once
 
 #include "skeleton_node.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 #include <string_view>
 #include <iostream>
 #include <format>

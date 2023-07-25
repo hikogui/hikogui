@@ -12,8 +12,11 @@
 #include "../graphic_path/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 #include <filesystem>
+
+
 
 namespace hi::inline v1 {
 

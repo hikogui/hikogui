@@ -5,6 +5,7 @@
 #include "URL.hpp"
 #include "glob.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

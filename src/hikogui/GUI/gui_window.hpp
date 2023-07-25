@@ -18,6 +18,7 @@
 #include "../time/module.hpp"
 #include "../l10n/module.hpp"
 #include "../algorithm/module.hpp"
+#include "../macros.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>

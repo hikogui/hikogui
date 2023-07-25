@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Rec2020.hpp"
+#include "../macros.hpp"
 #include <cmath>
 #include <array>
 

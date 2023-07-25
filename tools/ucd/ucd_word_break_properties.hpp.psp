@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <optional>
 
+import hikogui_utility;
+
 // Windows.h defines small as a macro.
 #ifdef small
 #undef small

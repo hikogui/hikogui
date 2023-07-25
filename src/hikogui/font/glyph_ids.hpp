@@ -10,12 +10,15 @@
 #include "../utility/module.hpp"
 #include "../container/module.hpp"
 #include "../graphic_path/module.hpp"
+#include "../macros.hpp"
 #include <bit>
 #include <memory>
 #include <cstddef>
 #include <array>
 #include <cstdint>
 #include <functional>
+
+
 
 hi_warning_push();
 // C26401: Do not delete a raw pointer that is not an owner<T> (i.11).

@@ -11,6 +11,7 @@
 #include "../SIMD/module.hpp"
 #include "../geometry/module.hpp"
 #include "../color/module.hpp"
+#include "../macros.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {

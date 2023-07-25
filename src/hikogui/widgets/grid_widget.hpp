@@ -10,6 +10,7 @@
 
 #include "widget.hpp"
 #include "../layout/module.hpp"
+#include "../macros.hpp"
 #include <memory>
 
 namespace hi { inline namespace v1 {

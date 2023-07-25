@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 namespace hi::inline v1 {
 
 struct audio_stream_config {

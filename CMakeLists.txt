@@ -5,6 +5,22 @@
 
 
 cmake_minimum_required(VERSION 3.25)
+
+#-------------------------------------------------------------------
+# Enable C++20 Modules
+#-------------------------------------------------------------------
+if(${CMAKE_VERSION} VERSION_LESS "3.26")
+    # CMake 3.25
+    set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "3c375311-a3c9-4396-a187-3227ef642046")
+elseif(${CMAKE_VERSION} VERSION_LESS "3.27")
+    # CMake 3.26
+    set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
+else()
+    # CMake 3.27
+    set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "aa1f7df0-828a-4fcd-9afc-2dc80491aca7")
+endif()
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
+
 #-------------------------------------------------------------------
 # Configure early CMAKE paths
 #-------------------------------------------------------------------
@@ -46,9 +62,6 @@ string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 0)
-set(CMAKE_EXPERIMENTAL_CXX_SCANDEP_SOURCE 0)
-set(CMAKE_CXX_SCAN_FOR_MODULES 0)
 
 #-------------------------------------------------------------------
 # Setup CMake Includes
@@ -111,13 +124,13 @@ add_library(hikogui)
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 include(CMakeLists_includes.cmake)
 include(CMakeLists_implementations.cmake)
+include(CMakeLists_modules.cmake)
 if(HI_ENABLE_PCH)
     include(CMakeLists_pch.cmake)
 endif()
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 target_compile_features(hikogui PUBLIC cxx_std_23)
 set_target_properties(hikogui PROPERTIES VERSION ${HIKOGUI_PROJECT_VERSION_SHORT} SOVERSION ${HIKOGUI_MAJOR_VERSION})
-set_target_properties(hikogui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 if(APPLE)
     target_link_libraries(hikogui PUBLIC "-framework Foundation -framework AppKit")
@@ -438,6 +451,7 @@ if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
         FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
@@ -446,6 +460,7 @@ else()
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
         FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib

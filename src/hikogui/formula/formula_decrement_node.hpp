@@ -5,6 +5,7 @@
 #pragma once
 
 #include "formula_unary_operator_node.hpp"
+#include "../macros.hpp"
 
 namespace hi::inline v1 {
 

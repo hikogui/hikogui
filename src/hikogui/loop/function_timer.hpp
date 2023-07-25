@@ -6,10 +6,13 @@
 
 #include "../utility/module.hpp"
 #include "../time/module.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <algorithm>
 #include <chrono>
 #include <functional>
+
+
 
 namespace hi::inline v1 {
 

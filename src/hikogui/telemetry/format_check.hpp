@@ -5,8 +5,11 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <string_view>
 #include <type_traits>
+
+
 
 namespace hi::inline v1 {
 

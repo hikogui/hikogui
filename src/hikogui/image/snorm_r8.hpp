@@ -9,7 +9,10 @@
 #pragma once
 
 #include "../utility/module.hpp"
+#include "../macros.hpp"
 #include <algorithm>
+
+
 
 namespace hi::inline v1 {
 

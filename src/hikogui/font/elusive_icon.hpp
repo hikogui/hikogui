@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 namespace hi::inline v1 {
 
 enum class elusive_icon : char32_t {
