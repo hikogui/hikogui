@@ -8,7 +8,7 @@
 #include "theme_book.hpp"
 #include "../GFX/module.hpp"
 #include "../telemetry/module.hpp"
-#include "../loop/module.hpp"
+#include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <chrono>
 

@@ -2,10 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file file/path_location.hpp functions to locate files and directories.
- * @ingroup file
- */
-
 #pragma once
 
 #include "../coroutine/module.hpp"
@@ -14,7 +10,11 @@
 #include <filesystem>
 #include <ranges>
 
+/** @file path/path_location.hpp functions to locate files and directories.
+ * @ingroup path
+ */
 
+hi_export_module(hikogui_path_path_location);
 
 namespace hi { inline namespace v1 {
 

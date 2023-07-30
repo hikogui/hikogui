@@ -11,6 +11,8 @@
 #include <coroutine>
 #include <functional>
 
+hi_export_module(hikogui_dispatch_awaitable_timer : intf);
+
 namespace hi::inline v1 {
 
 class awaitable_timer {

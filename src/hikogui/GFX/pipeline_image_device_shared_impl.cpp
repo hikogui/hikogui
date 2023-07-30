@@ -6,7 +6,7 @@
 #include "pipeline_image_device_shared.hpp"
 #include "paged_image.hpp"
 #include "gfx_device_vulkan.hpp"
-#include "../file/module.hpp"
+#include "../path/path.hpp"
 #include "../image/module.hpp"
 #include "../utility/module.hpp"
 #include "../macros.hpp"

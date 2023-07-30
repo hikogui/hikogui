@@ -1,7 +1,7 @@
 
 configure_file(
-    ${HIKOGUI_SOURCE_DIR}/settings/metadata_library.hpp.in
-    ${HIKOGUI_SOURCE_DIR}/settings/metadata_library.hpp @ONLY)
+    ${HIKOGUI_SOURCE_DIR}/path/metadata_library.hpp.in
+    ${HIKOGUI_SOURCE_DIR}/path/metadata_library.hpp @ONLY)
 
 target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES
     ${HIKOGUI_SOURCE_DIR}/audio/audio_block.hpp
@@ -116,12 +116,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/file/file.hpp
     ${HIKOGUI_SOURCE_DIR}/file/file_view.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_win32.hpp>
-    ${HIKOGUI_SOURCE_DIR}/file/glob.hpp
     ${HIKOGUI_SOURCE_DIR}/file/module.hpp
-    ${HIKOGUI_SOURCE_DIR}/file/path_location.hpp
     ${HIKOGUI_SOURCE_DIR}/file/resource_view.hpp
-    ${HIKOGUI_SOURCE_DIR}/file/URI.hpp
-    ${HIKOGUI_SOURCE_DIR}/file/URL.hpp
     ${HIKOGUI_SOURCE_DIR}/font/elusive_icon.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_book.hpp
@@ -327,13 +323,17 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translation.hpp
-    ${HIKOGUI_SOURCE_DIR}/loop/awaitable_timer.hpp
-    ${HIKOGUI_SOURCE_DIR}/loop/function_timer.hpp
-    ${HIKOGUI_SOURCE_DIR}/loop/loop.hpp
-    ${HIKOGUI_SOURCE_DIR}/loop/module.hpp
-    ${HIKOGUI_SOURCE_DIR}/loop/socket_event.hpp
-    ${HIKOGUI_SOURCE_DIR}/loop/socket_event_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/loop/socket_event_win32_impl.hpp>
+    ${HIKOGUI_SOURCE_DIR}/dispatch/awaitable_timer.hpp
+    ${HIKOGUI_SOURCE_DIR}/dispatch/awaitable_timer_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/dispatch/awaitable_timer_impl.hpp
+    ${HIKOGUI_SOURCE_DIR}/dispatch/function_timer.hpp
+    ${HIKOGUI_SOURCE_DIR}/dispatch/loop.hpp
+    ${HIKOGUI_SOURCE_DIR}/dispatch/loop_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/dispatch/loop_win32_impl.hpp>
+    ${HIKOGUI_SOURCE_DIR}/dispatch/dispatch.hpp
+    ${HIKOGUI_SOURCE_DIR}/dispatch/socket_event.hpp
+    ${HIKOGUI_SOURCE_DIR}/dispatch/socket_event_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/dispatch/socket_event_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/layout/box_constraints.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/box_shape.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/grid_layout.hpp
@@ -370,6 +370,14 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/parser/parse_location.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/placement.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer.hpp
+    ${HIKOGUI_SOURCE_DIR}/path/glob.hpp
+    ${HIKOGUI_SOURCE_DIR}/path/metadata.hpp
+    ${HIKOGUI_SOURCE_DIR}/path/metadata_library.hpp # generated.
+    ${HIKOGUI_SOURCE_DIR}/path/path.hpp
+    ${HIKOGUI_SOURCE_DIR}/path/path_location.hpp
+    ${HIKOGUI_SOURCE_DIR}/path/semantic_version.hpp
+    ${HIKOGUI_SOURCE_DIR}/path/URI.hpp
+    ${HIKOGUI_SOURCE_DIR}/path/URL.hpp
     ${HIKOGUI_SOURCE_DIR}/random/dither.hpp
     ${HIKOGUI_SOURCE_DIR}/random/module.hpp
     ${HIKOGUI_SOURCE_DIR}/random/seed.hpp
@@ -393,13 +401,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/security/security_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/security/sip_hash.hpp
     #${HIKOGUI_SOURCE_DIR}/settings/cpu_id.hpp
-    ${HIKOGUI_SOURCE_DIR}/settings/metadata.hpp
-    ${HIKOGUI_SOURCE_DIR}/settings/metadata_library.hpp # generated.
     ${HIKOGUI_SOURCE_DIR}/settings/module.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/os_settings.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/preferences.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/registry_win32.hpp>
-    ${HIKOGUI_SOURCE_DIR}/settings/semantic_version.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/theme_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/subpixel_orientation.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/user_settings.hpp

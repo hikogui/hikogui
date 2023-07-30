@@ -8,10 +8,8 @@
 #include "registry_win32.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
-#include "../file/module.hpp"
+#include "../path/path.hpp"
 #include "../macros.hpp"
-
-
 
 namespace hi { inline namespace v1 {
 

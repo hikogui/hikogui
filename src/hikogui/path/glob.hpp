@@ -4,10 +4,6 @@
 
 #pragma once
 
-/** @file file/glob.hpp Defines utilities for handling glob patterns.
- * @ingroup file
- */
-
 #include "path_location.hpp"
 #include "../char_maps/module.hpp"
 #include "../utility/module.hpp"
@@ -19,7 +15,10 @@
 #include <variant>
 #include <type_traits>
 
-
+/** @file path/glob.hpp Defines utilities for handling glob patterns.
+ * @ingroup path
+ */
+hi_export_module(hikogui_path_glob);
 
 namespace hi { inline namespace v1 {
 

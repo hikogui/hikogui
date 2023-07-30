@@ -36,16 +36,17 @@
 
 #include "../win32_headers.hpp"
 
-#include "loop.hpp"
+#include "loop_intf.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
-#include "../settings/module.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <utility>
 #include <stop_token>
 #include <thread>
 #include <chrono>
+
+hi_export_module(hikogui_dispatch_loop : impl);
 
 namespace hi::inline v1 {
 
@@ -110,6 +111,11 @@ public:
     void set_maximum_frame_rate(double frame_rate) noexcept override
     {
         hi_axiom(on_thread());
+    }
+
+    void set_vsync_monitor_id(uintptr_t id) noexcept override
+    {
+        _selected_monitor_id.store(id, std::memory_order::relaxed);
     }
 
     void subscribe_render(std::weak_ptr<loop::render_callback_type> f) noexcept override
@@ -368,14 +374,18 @@ private:
      */
     int _vsync_thread_priority = THREAD_PRIORITY_NORMAL;
 
+    /** The monitor id that is selected for vsync.
+     */
+    std::atomic<std::uintptr_t> _selected_monitor_id = 0;
+
     /** The primary monitor id.
      * As returned by os_settings::primary_monitor_id().
      */
-    std::uintptr_t _primary_monitor_id = 0;
+    std::uintptr_t _vsync_monitor_id = 0;
 
     /** The DXGI Output of the primary monitor.
      */
-    IDXGIOutput *_primary_monitor_output = nullptr;
+    IDXGIOutput *_vsync_monitor_output = nullptr;
 
     void notify_has_send() noexcept override
     {
@@ -460,13 +470,13 @@ private:
      */
     void vsync_thread_update_dxgi_output() noexcept
     {
-        if (not compare_store(_primary_monitor_id, os_settings::primary_monitor_id())) {
+        if (not compare_store(_vsync_monitor_id, _selected_monitor_id.load(std::memory_order::relaxed))) {
             return;
         }
 
-        if (_primary_monitor_output) {
-            _primary_monitor_output->Release();
-            _primary_monitor_output = nullptr;
+        if (_vsync_monitor_output) {
+            _vsync_monitor_output->Release();
+            _vsync_monitor_output = nullptr;
         }
 
         IDXGIFactory *factory = nullptr;
@@ -489,23 +499,23 @@ private:
             adapter->Release();
         });
 
-        if (FAILED(adapter->EnumOutputs(0, &_primary_monitor_output))) {
+        if (FAILED(adapter->EnumOutputs(0, &_vsync_monitor_output))) {
             hi_log_error_once("vsync:error:EnumOutputs", "Could not get IDXGIOutput. {}", get_last_error_message());
             return;
         }
 
         DXGI_OUTPUT_DESC description;
-        if (FAILED(_primary_monitor_output->GetDesc(&description))) {
+        if (FAILED(_vsync_monitor_output->GetDesc(&description))) {
             hi_log_error_once("vsync:error:GetDesc", "Could not get IDXGIOutput description. {}", get_last_error_message());
-            _primary_monitor_output->Release();
-            _primary_monitor_output = nullptr;
+            _vsync_monitor_output->Release();
+            _vsync_monitor_output = nullptr;
             return;
         }
 
-        if (description.Monitor != std::bit_cast<HMONITOR>(_primary_monitor_id)) {
+        if (description.Monitor != std::bit_cast<HMONITOR>(_vsync_monitor_id)) {
             hi_log_error_once("vsync:error:not-primary-monitor", "DXGI primary monitor does not match desktop primary monitor");
-            _primary_monitor_output->Release();
-            _primary_monitor_output = nullptr;
+            _vsync_monitor_output->Release();
+            _vsync_monitor_output = nullptr;
             return;
         }
 
@@ -540,7 +550,7 @@ private:
 
         vsync_thread_update_dxgi_output();
 
-        if (_primary_monitor_output and FAILED(_primary_monitor_output->WaitForVBlank())) {
+        if (_vsync_monitor_output and FAILED(_vsync_monitor_output->WaitForVBlank())) {
             hi_log_error_once("vsync:error:WaitForVBlank", "WaitForVBlank() failed. {}", get_last_error_message());
         }
 
@@ -627,6 +637,6 @@ private:
     }
 };
 
-loop::loop() : _pimpl(std::make_unique<loop_impl_win32>()) {}
+inline loop::loop() : _pimpl(std::make_unique<loop_impl_win32>()) {}
 
 } // namespace hi::inline v1

@@ -10,7 +10,7 @@
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui_loop_socket_event : impl);
+hi_export_module(hikogui_dipatch_socket_event : impl);
 
 namespace hi::inline v1 {
 

@@ -9,14 +9,13 @@
 #include "keyboard_virtual_key.hpp"
 #include "theme_book.hpp"
 #include "../GFX/module.hpp"
-#include "../widgets/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../unicode/module.hpp"
 #include "../utility/module.hpp"
 #include "../settings/module.hpp"
 #include "../crt/module.hpp"
 #include "../algorithm/module.hpp"
-#include "../loop/module.hpp"
+#include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <new>
 

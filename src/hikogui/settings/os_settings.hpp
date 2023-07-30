@@ -11,12 +11,10 @@
 #include "../utility/module.hpp"
 #include "../numeric/module.hpp"
 #include "../observer/module.hpp"
-#include "../loop/module.hpp"
+#include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <mutex>
-
-
 
 namespace hi::inline v1 {
 

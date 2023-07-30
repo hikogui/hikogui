@@ -15,7 +15,7 @@
 #include <vector>
 #include <memory>
 
-hi_export_module(hikogui_loop_loop);
+hi_export_module(hikogui_dispatch_loop : intf);
 
 namespace hi::inline v1 {
 
@@ -37,7 +37,8 @@ public:
         impl_type& operator=(impl_type&&) = delete;
 
         virtual void set_maximum_frame_rate(double frame_rate) noexcept = 0;
-
+        virtual void set_vsync_monitor_id(uintptr_t id) noexcept = 0;
+        
         void wfree_post_function(auto&& func) noexcept
         {
             return _function_fifo.add_function(hi_forward(func));
@@ -169,6 +170,14 @@ public:
     {
         hi_assert_not_null(_pimpl);
         return _pimpl->set_maximum_frame_rate(frame_rate);
+    }
+
+    /** Set the monitor id for vertical sync.
+     */
+    void set_vsync_monitor_id(uintptr_t id) noexcept
+    {
+        hi_assert_not_null(_pimpl);
+        return _pimpl->set_vsync_monitor_id(id);
     }
 
     /** Wait-free post a function to be called from the loop.

@@ -2,48 +2,47 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../file/module.hpp"
+#include "URL.hpp"
+#include "semantic_version.hpp"
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 #include <atomic>
-
-
 
 namespace hi { inline namespace v1 {
 
 [[nodiscard]] constexpr std::string get_library_name() noexcept
 {
-    return "@HI_LIB_DISPLAY_NAME@";
+    return "HikoGUI Library";
 }
 
 [[nodiscard]] constexpr std::string get_library_slug() noexcept
 {
-    return "@HI_LIB_NAME@";
+    return "hikogui";
 }
 
 [[nodiscard]] constexpr std::string get_library_vendor_name() noexcept
 {
-    return "@HI_LIB_VENDOR@";
+    return "HikoGUI";
 }
 
 [[nodiscard]] constexpr semantic_version get_library_version() noexcept
 {
-    return semantic_version{@PROJECT_VERSION_MAJOR@, @PROJECT_VERSION_MINOR@, @PROJECT_VERSION_PATCH@};
+    return semantic_version{0, 7, 0};
 }
 
 [[nodiscard]] constexpr std::string get_library_license() noexcept
 {
-    return "@HI_LIB_LICENSE@";
+    return "BSL-1.0";
 }
 
 [[nodiscard]] constexpr URL get_library_url() noexcept
 {
-    return URL{"@HI_LIB_HOMEPAGE@"};
+    return URL{"https://github.com/hikogui/hikogui"};
 }
 
 [[nodiscard]] constexpr std::string get_library_description() noexcept
 {
-    return "@HI_LIB_DESCRIPTION@";
+    return "A portable, low latency, retained-mode GUI framework written in C++.";
 }
 
 }} // namespace hi::v1
