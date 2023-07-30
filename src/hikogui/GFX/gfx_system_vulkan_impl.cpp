@@ -6,10 +6,10 @@
 #include "gfx_device_vulkan.hpp"
 #include "../settings/module.hpp"
 #include "../utility/module.hpp"
+#include "../path/path.hpp"
 #include "../macros.hpp"
 #include <chrono>
 #include <cstring>
-
 
 
 namespace hi::inline v1 {

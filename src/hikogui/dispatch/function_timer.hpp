@@ -12,7 +12,7 @@
 #include <chrono>
 #include <functional>
 
-
+hi_export_module(hikogui_dispatch_function_timer);
 
 namespace hi::inline v1 {
 

@@ -43,9 +43,6 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/container/tree_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/coroutine/generator_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/file/file_view_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/file/glob_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/file/URI_tests.cpp
-    ${HIKOGUI_SOURCE_DIR}/file/URL_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/font/font_char_map_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/matrix3_tests.cpp
@@ -79,6 +76,9 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/observer/group_ptr_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/observer/shared_state_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/path/glob_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/path/URI_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/path/URL_tests.cpp
     #${HIKOGUI_SOURCE_DIR}/random/dither_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/seed_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/random/xorshift128p_tests.cpp

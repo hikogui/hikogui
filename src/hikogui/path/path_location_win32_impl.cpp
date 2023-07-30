@@ -5,14 +5,13 @@
 #include "../win32_headers.hpp"
 
 #include "path_location.hpp"
+#include "metadata.hpp"
+#include "metadata_library.hpp"
 #include "../telemetry/module.hpp"
-#include "../settings/module.hpp"
 #include "../utility/module.hpp"
 #include "../macros.hpp"
 #include <filesystem>
 #include <string>
-
-
 
 namespace hi::inline v1 {
 

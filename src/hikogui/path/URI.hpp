@@ -15,7 +15,7 @@
 #include <optional>
 #include <ranges>
 
-
+hi_export_module(hikogui_path_URI);
 
 namespace hi { inline namespace v1 {
 

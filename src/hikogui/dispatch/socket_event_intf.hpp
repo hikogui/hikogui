@@ -11,11 +11,11 @@
 #include <cstdint>
 #include <bit>
 
-
+hi_export_module(hikogui_dispatch_socket_event : intf);
 
 namespace hi::inline v1 {
 
-enum class network_event : uint16_t {
+enum class socket_event : uint16_t {
     none = 0,
     read = 0x0001,
     write = 0x0002,
@@ -29,35 +29,35 @@ enum class network_event : uint16_t {
     routing_interface_changed = 0x0200
 };
 
-[[nodiscard]] constexpr network_event operator|(network_event const& lhs, network_event const& rhs) noexcept
+[[nodiscard]] constexpr socket_event operator|(socket_event const& lhs, socket_event const& rhs) noexcept
 {
-    return static_cast<network_event>(std::to_underlying(lhs) | std::to_underlying(rhs));
+    return static_cast<socket_event>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr network_event operator&(network_event const& lhs, network_event const& rhs) noexcept
+[[nodiscard]] constexpr socket_event operator&(socket_event const& lhs, socket_event const& rhs) noexcept
 {
-    return static_cast<network_event>(std::to_underlying(lhs) & std::to_underlying(rhs));
+    return static_cast<socket_event>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
-constexpr network_event& operator|=(network_event& lhs, network_event const& rhs) noexcept
+constexpr socket_event& operator|=(socket_event& lhs, socket_event const& rhs) noexcept
 {
     return lhs = lhs | rhs;
 }
 
-[[nodiscard]] constexpr bool to_bool(network_event const& rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(socket_event const& rhs) noexcept
 {
     return to_bool(std::to_underlying(rhs));
 }
 
-/** Get the bit index of the single bit of the network_event mask.
+/** Get the bit index of the single bit of the socket_event mask.
  */
-[[nodiscard]] constexpr size_t bit(network_event const& rhs) noexcept
+[[nodiscard]] constexpr size_t bit(socket_event const& rhs) noexcept
 {
     hi_assert(std::popcount(std::to_underlying(rhs)) == 1);
     return std::countr_zero(std::to_underlying(rhs));
 }
 
-enum class network_error : uint8_t {
+enum class socket_error : uint8_t {
     success = 0,
     af_not_supported,
     connection_refused,
@@ -69,14 +69,14 @@ enum class network_error : uint8_t {
     connection_aborted
 };
 
-constexpr static size_t network_event_max = 10;
+constexpr static size_t socket_event_max = 10;
 
-class network_events {
+class socket_events {
 public:
-    network_event events;
-    std::array<network_error, network_event_max> errors;
+    socket_event events;
+    std::array<socket_error, socket_event_max> errors;
 
-    constexpr network_events() noexcept : events(network_event::none), errors{} {}
+    constexpr socket_events() noexcept : events(socket_event::none), errors{} {}
 };
 
 } // namespace hi::inline v1

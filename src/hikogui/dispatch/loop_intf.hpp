@@ -5,9 +5,9 @@
 #pragma once
 
 #include "function_timer.hpp"
+#include "socket_event.hpp"
 #include "../container/module.hpp"
 #include "../utility/module.hpp"
-#include "../net/module.hpp"
 #include "../macros.hpp"
 #include <functional>
 #include <type_traits>
@@ -15,14 +15,15 @@
 #include <vector>
 #include <memory>
 
-
+hi_export_module(hikogui_dispatch_loop : intf);
 
 namespace hi::inline v1 {
-class gui_window;
 
 class loop {
 public:
     using timer_callback_token = function_timer<>::callback_token;
+    using render_callback_type = std::function<void(utc_nanoseconds)>;
+    using render_callback_token = std::shared_ptr<render_callback_type>;
 
     class impl_type {
     public:
@@ -36,7 +37,8 @@ public:
         impl_type& operator=(impl_type&&) = delete;
 
         virtual void set_maximum_frame_rate(double frame_rate) noexcept = 0;
-
+        virtual void set_vsync_monitor_id(uintptr_t id) noexcept = 0;
+        
         void wfree_post_function(auto&& func) noexcept
         {
             return _function_fifo.add_function(hi_forward(func));
@@ -85,8 +87,8 @@ public:
             return token;
         }
 
-        virtual void add_window(std::weak_ptr<gui_window> window) noexcept = 0;
-        virtual void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f) = 0;
+        virtual void subscribe_render(std::weak_ptr<render_callback_type> f) noexcept = 0;
+        virtual void add_socket(int fd, socket_event event_mask, std::function<void(int, socket_events const&)> f) = 0;
         virtual void remove_socket(int fd) = 0;
         virtual int resume(std::stop_token stop_token) noexcept = 0;
         virtual void resume_once(bool block) noexcept = 0;
@@ -110,7 +112,7 @@ public:
         double _maximum_frame_rate = 30.0;
         std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
         thread_id _thread_id = 0;
-        std::vector<std::weak_ptr<gui_window>> _windows;
+        std::vector<std::weak_ptr<render_callback_type>> _render_functions;
     };
 
     /** Construct a loop.
@@ -168,6 +170,14 @@ public:
     {
         hi_assert_not_null(_pimpl);
         return _pimpl->set_maximum_frame_rate(frame_rate);
+    }
+
+    /** Set the monitor id for vertical sync.
+     */
+    void set_vsync_monitor_id(uintptr_t id) noexcept
+    {
+        hi_assert_not_null(_pimpl);
+        return _pimpl->set_vsync_monitor_id(id);
     }
 
     /** Wait-free post a function to be called from the loop.
@@ -244,14 +254,27 @@ public:
         return _pimpl->repeat_function(period, hi_forward(func));
     }
 
-    /** Add a window to be redrawn from the event loop.
+    /** Subscribe a render function to be called on vsync.
      *
-     * @param window A reference to an existing window, ready to be redrawn.
+     * @param f A weak pointer to a function to be called when vsync occurs.
      */
-    void add_window(std::weak_ptr<gui_window> window) noexcept
+    void subscribe_render(std::weak_ptr<render_callback_type> f) noexcept
     {
         hi_assert_not_null(_pimpl);
-        return _pimpl->add_window(std::move(window));
+        return _pimpl->subscribe_render(std::move(f));
+    }
+
+    /** Subscribe a render function to be called on vsync.
+     *
+     * @param f A function to be called when vsync occurs.
+     */
+    template<std::invocable<utc_nanoseconds> F>
+    render_callback_token subscribe_render(F &&f) noexcept
+    {
+        hi_assert_not_null(_pimpl);
+        auto ptr = std::make_shared<render_callback_type>(std::forward<F>(f));
+        _pimpl->subscribe_render(ptr);
+        return ptr;
     }
 
     /** Add a callback that reacts on a socket.
@@ -266,7 +289,7 @@ public:
      * @param event_mask The socket events to wait for.
      * @param f The callback to call when the file descriptor unblocks.
      */
-    void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f)
+    void add_socket(int fd, socket_event event_mask, std::function<void(int, socket_events const&)> f)
     {
         hi_assert_not_null(_pimpl);
         return _pimpl->add_socket(fd, event_mask, std::move(f));

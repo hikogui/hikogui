@@ -10,7 +10,7 @@
 #include "../utility/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../memory/module.hpp"
-#include "../loop/module.hpp"
+#include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 
 

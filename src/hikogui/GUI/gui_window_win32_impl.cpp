@@ -9,14 +9,13 @@
 #include "keyboard_virtual_key.hpp"
 #include "theme_book.hpp"
 #include "../GFX/module.hpp"
-#include "../widgets/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../unicode/module.hpp"
 #include "../utility/module.hpp"
 #include "../settings/module.hpp"
 #include "../crt/module.hpp"
 #include "../algorithm/module.hpp"
-#include "../loop/module.hpp"
+#include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <new>
 
@@ -209,6 +208,10 @@ gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf>
             this->process_event({gui_event_type::window_reconstrain});
         },
         callback_flags::main);
+
+    _render_cbt = loop::main().subscribe_render([this](utc_nanoseconds display_time) {
+        this->render(display_time);
+    });
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.

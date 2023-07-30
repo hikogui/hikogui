@@ -177,9 +177,11 @@ void os_settings::gather() noexcept
     }
 
     try {
-        if (compare_store(_primary_monitor_id, gather_primary_monitor_id())) {
+        hilet primary_monitor_id = gather_primary_monitor_id();
+        if (compare_store(_primary_monitor_id, primary_monitor_id)) {
             setting_has_changed = true;
-            hi_log_info("OS primary monitor id has changed: {}", _primary_monitor_id.load());
+            hi_log_info("OS primary monitor id has changed: {}, updating vsync source", primary_monitor_id);
+            loop::main().set_vsync_monitor_id(primary_monitor_id);
         }
     } catch (std::exception const& e) {
         hi_log_error("Failed to get OS primary monitor id: {}", e.what());

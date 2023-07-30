@@ -8,7 +8,7 @@
 #include "theme_book.hpp"
 #include "../GFX/module.hpp"
 #include "../telemetry/module.hpp"
-#include "../loop/module.hpp"
+#include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <chrono>
 
@@ -38,12 +38,11 @@ std::shared_ptr<gui_window> gui_system::add_window(std::shared_ptr<gui_window> w
     hi_axiom(loop::main().on_thread());
 
     auto device = gfx->find_best_device_for_surface(*(window->surface));
-    if (!device) {
+    if (not device) {
         throw gui_error("Could not find a vulkan-device matching this window");
     }
 
     window->set_device(device);
-    loop::main().add_window(window);
     return std::move(window);
 }
 

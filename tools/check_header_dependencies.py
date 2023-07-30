@@ -10,18 +10,20 @@ class module (object):
         self.dependencies = set()
         self.includes = set()
 
-    def add_include(self, name):
-        if name.endswith("/module.hpp"):
-            module_name = name.split("/")[-2]
-            self.dependencies.add(module_name)
-        elif "win32_headers.hpp" in name:
-            # This file is not included by utility/module.hpp
+    def add_include(self, path):
+        dir_name, file_name = os.path.split(path)
+        basedir, module_name = os.path.split(dir_name)
+
+        if file_name == "module.hpp" or file_name == module_name + ".hpp":
+            if module_name:
+                self.dependencies.add(module_name)
+
+        elif file_name in ("win32_headers.hpp", "macro.hpp", "crt.hpp"):
+            # These files are not part of any module.
             pass
-        elif "crt.hpp" in name:
-            # Only files that have hi_main() defined may include this.
-            pass
-        elif "/" in name:
-            self.includes.add(name)
+
+        elif dir_name:
+            self.includes.add(path)
 
     def check_loop(self, modules, visited):
         for dependency_name in self.dependencies:

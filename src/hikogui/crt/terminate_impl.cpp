@@ -37,7 +37,7 @@ namespace hi { inline namespace v1 {
     }
 
     if (auto terminate_message_ = terminate_message.exchange(nullptr)) {
-        message += *terminate_message_;
+        message += terminate_message_;
     }
 
     console_output(title + "\n", std::cerr);

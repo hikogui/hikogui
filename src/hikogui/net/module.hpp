@@ -1,9 +1,8 @@
 
 #pragma once
 
-#include "module.hpp"
-#include "network_event.hpp"
-#include "network_event_win32.hpp"
-#include "packet.hpp"
+hi_export_module(hikogui_net);
+
+#include "packet.hpp" // export
 //#include "packet_buffer.hpp"
 //#include "stream.hpp"
