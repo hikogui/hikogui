@@ -41,7 +41,6 @@ public:
 
     [[nodiscard]] gfx_device *device() const noexcept
     {
-        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return _device;
     }
 

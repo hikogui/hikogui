@@ -43,6 +43,7 @@ private:
 
     notifier<>::callback_token _setting_change_cbt;
     observer<std::string>::callback_token _selected_theme_cbt;
+    loop::render_callback_token _render_cbt;
 
     TRACKMOUSEEVENT track_mouse_leave_event_parameters;
     bool tracking_mouse_leave_event = false;

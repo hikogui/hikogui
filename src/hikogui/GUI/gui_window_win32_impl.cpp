@@ -210,6 +210,10 @@ gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf>
         },
         callback_flags::main);
 
+    _render_cbt = loop::main().subscribe_render([this](utc_nanoseconds display_time) {
+        this->render(display_time);
+    });
+
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
     create_window(new_size);

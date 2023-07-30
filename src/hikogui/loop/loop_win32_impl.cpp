@@ -39,16 +39,13 @@
 #include "loop.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
-#include "../GUI/module.hpp"
-#include "../net/module.hpp"
+#include "../settings/module.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <utility>
 #include <stop_token>
 #include <thread>
 #include <chrono>
-
-
 
 namespace hi::inline v1 {
 
@@ -115,10 +112,10 @@ public:
         hi_axiom(on_thread());
     }
 
-    void add_window(std::weak_ptr<gui_window> window) noexcept override
+    void subscribe_render(std::weak_ptr<loop::render_callback_type> f) noexcept override
     {
         hi_axiom(on_thread());
-        _windows.push_back(std::move(window));
+        _render_functions.push_back(std::move(f));
 
         // Startup the vsync thread once there is a window.
         if (not _vsync_thread.joinable()) {
@@ -128,14 +125,16 @@ public:
         }
     }
 
-    void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f) override
+    void add_socket(int fd, socket_event event_mask, std::function<void(int, socket_events const&)> f) override
     {
         hi_axiom(on_thread());
+        hi_not_implemented();
     }
 
     void remove_socket(int fd) override
     {
         hi_axiom(on_thread());
+        hi_not_implemented();
     }
 
     int resume(std::stop_token stop_token) noexcept override
@@ -168,7 +167,7 @@ public:
                     _exit_code = 0;
                 }
             } else {
-                if (_windows.empty() and _function_fifo.empty() and _function_timer.empty() and
+                if (_render_functions.empty() and _function_fifo.empty() and _function_timer.empty() and
                     _handles.size() <= _socket_handle_idx) {
                     // If there is not stop token, then exit when there are no more resources to wait on.
                     _exit_code = 0;
@@ -255,7 +254,7 @@ public:
 
             } else {
                 // Because of how WSAEnumNetworkEvents() work we must only handle this specific socket.
-                _socket_functions[index](_sockets[index], network_events_from_win32(events));
+                _socket_functions[index](_sockets[index], socket_events_from_win32(events));
             }
 
         } else if (wait_r == WAIT_OBJECT_0 + _handles.size()) {
@@ -292,8 +291,8 @@ public:
 private:
     struct socket_type {
         int fd;
-        network_event mode;
-        std::function<void(int, network_events const&)> callback;
+        socket_event mode;
+        std::function<void(int, socket_events const&)> callback;
     };
 
     constexpr static size_t _vsync_handle_idx = 0;
@@ -355,7 +354,7 @@ private:
 
     /** A list of functions to call on an event to a socket.
      */
-    std::vector<std::function<void(int, network_events const&)>> _socket_functions;
+    std::vector<std::function<void(int, socket_events const&)>> _socket_functions;
 
     /** The vsync thread.
      */
@@ -400,19 +399,19 @@ private:
             _vsync_time.store(std::chrono::utc_clock::now());
         }
 
-        hilet display_type = _vsync_time.load(std::memory_order::relaxed) + std::chrono::milliseconds(30);
+        hilet display_time = _vsync_time.load(std::memory_order::relaxed) + std::chrono::milliseconds(30);
 
-        for (auto& window : _windows) {
-            if (auto window_ = window.lock()) {
-                window_->render(display_type);
+        for (auto& render_function : _render_functions) {
+            if (auto render_function_ = render_function.lock()) {
+                (*render_function_)(display_time);
             }
         }
 
-        std::erase_if(_windows, [](auto& window) {
-            return window.expired();
+        std::erase_if(_render_functions, [](auto& render_function) {
+            return render_function.expired();
         });
 
-        if (_windows.empty()) {
+        if (_render_functions.empty()) {
             // Stop the vsync thread when there are no more windows.
             if (_vsync_thread.joinable()) {
                 _vsync_thread.request_stop();

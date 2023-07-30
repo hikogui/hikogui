@@ -331,6 +331,9 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/loop/function_timer.hpp
     ${HIKOGUI_SOURCE_DIR}/loop/loop.hpp
     ${HIKOGUI_SOURCE_DIR}/loop/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/loop/socket_event.hpp
+    ${HIKOGUI_SOURCE_DIR}/loop/socket_event_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/loop/socket_event_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/layout/box_constraints.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/box_shape.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/grid_layout.hpp
@@ -341,8 +344,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/memory/module.hpp
     ${HIKOGUI_SOURCE_DIR}/memory/secure_memory_allocator.hpp
     ${HIKOGUI_SOURCE_DIR}/net/module.hpp
-    ${HIKOGUI_SOURCE_DIR}/net/network_event.hpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/net/network_event_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/net/packet.hpp
     #${HIKOGUI_SOURCE_DIR}/net/packet_buffer.hpp
     #${HIKOGUI_SOURCE_DIR}/net/stream.hpp
