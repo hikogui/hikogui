@@ -108,96 +108,120 @@ target_sources(hikogui_tests PRIVATE
 
 install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
 show_build_target_properties(hikogui_tests)
-gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
+#gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
+add_test(NAME hikogui_tests COMMAND hikogui_tests)
 
 if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
-    add_executable(hikogui_x64v1_tests)
-    add_executable(hikogui_x64v2_tests)
-    add_executable(hikogui_x64v3_tests)
-    add_executable(hikogui_x64v4_tests)
-
-    target_link_libraries(hikogui_x64v1_tests PRIVATE gtest_main hikogui)
-    target_link_libraries(hikogui_x64v2_tests PRIVATE gtest_main hikogui)
-    target_link_libraries(hikogui_x64v3_tests PRIVATE gtest_main hikogui)
-    target_link_libraries(hikogui_x64v4_tests PRIVATE gtest_main hikogui)
-
-    target_include_directories(hikogui_x64v1_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(hikogui_x64v2_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(hikogui_x64v3_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_include_directories(hikogui_x64v4_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-    add_dependencies(hikogui_x64v1_tests hikogui_tests_resources)
-    add_dependencies(hikogui_x64v2_tests hikogui_tests_resources)
-    add_dependencies(hikogui_x64v3_tests hikogui_tests_resources)
-    add_dependencies(hikogui_x64v4_tests hikogui_tests_resources)
-
-    add_dependencies(hikogui_all_tests hikogui_x64v1_tests)
-    add_dependencies(hikogui_all_tests hikogui_x64v2_tests)
-    add_dependencies(hikogui_all_tests hikogui_x64v3_tests)
-    add_dependencies(hikogui_all_tests hikogui_x64v4_tests)
-
-    target_sources(hikogui_x64v1_tests PRIVATE
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
-    )
-    target_sources(hikogui_x64v2_tests PRIVATE
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
-    )
-    target_sources(hikogui_x64v3_tests PRIVATE
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_f64x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_i64x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
-    )
-    target_sources(hikogui_x64v4_tests PRIVATE
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_f64x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_i64x4_tests.cpp
-        ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
-    )
-    install(TARGETS hikogui_tests hikogui_x64v1_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
-    install(TARGETS hikogui_tests hikogui_x64v2_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
-    install(TARGETS hikogui_tests hikogui_x64v3_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
-    install(TARGETS hikogui_tests hikogui_x64v4_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
-
-    show_build_target_properties(hikogui_x64v1_tests)
-    show_build_target_properties(hikogui_x64v2_tests)
-    show_build_target_properties(hikogui_x64v3_tests)
-    show_build_target_properties(hikogui_x64v4_tests)
-
-    if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")
-        target_compile_options(hikogui_x64v1_tests PRIVATE -march=x86-64)
-        target_compile_options(hikogui_x64v2_tests PRIVATE -march=x86-64-v2)
-        target_compile_options(hikogui_x64v3_tests PRIVATE -march=x86-64-v3)
-        target_compile_options(hikogui_x64v4_tests PRIVATE -march=x86-64-v4)
-    elseif (MSVC)
-        # On MSVC the architecture flags do not exactly correspond with the x86-64 architecture levels.
-        # The HI_X86_64_MAX_LEVEL macro limits use for intrinsic usage to the exact level for testing purposes.
-        target_compile_options(hikogui_x64v1_tests PRIVATE -DHI_X86_64_MAX_LEVEL=1)
-        target_compile_options(hikogui_x64v2_tests PRIVATE -arch:AVX -DHI_X86_64_MAX_LEVEL=2)
-        target_compile_options(hikogui_x64v3_tests PRIVATE -arch:AVX2 -DHI_X86_64_MAX_LEVEL=3)
-        target_compile_options(hikogui_x64v4_tests PRIVATE -arch:AVX512 -DHI_X86_64_MAX_LEVEL=4)
-    else()
-        message(WARNING "Unknown compiler to generate architecture depended tests.") 
-    endif()
-     
-    # Only execute the tests that will run on the current host.
     if(HOST_IS_X86_64_1)
-        gtest_discover_tests(hikogui_x64v1_tests DISCOVERY_MODE PRE_TEST)
+        add_executable(hikogui_x64v1_tests)
+        add_test(NAME hikogui_x64v1_tests COMMAND hikogui_x64v1_tests)
+        target_link_libraries(hikogui_x64v1_tests PRIVATE gtest_main hikogui)
+        target_include_directories(hikogui_x64v1_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        add_dependencies(hikogui_x64v1_tests hikogui_tests_resources)
+        add_dependencies(hikogui_all_tests hikogui_x64v1_tests)
+        install(TARGETS hikogui_tests hikogui_x64v1_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+        show_build_target_properties(hikogui_x64v1_tests)
+
+        if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")
+            target_compile_options(hikogui_x64v1_tests PRIVATE -march=x86-64)
+        elseif (MSVC)
+            # On MSVC the architecture flags do not exactly correspond with the x86-64 architecture levels.
+            # The HI_X86_64_MAX_LEVEL macro limits use for intrinsic usage to the exact level for testing purposes.
+            target_compile_options(hikogui_x64v1_tests PRIVATE -DHI_X86_64_MAX_LEVEL=1)
+        else()
+            message(WARNING "Unknown compiler to generate architecture depended tests.") 
+        endif()
+
+        target_sources(hikogui_x64v1_tests PRIVATE
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
+        )
     endif()
+
     if(HOST_IS_X86_64_2)
-        gtest_discover_tests(hikogui_x64v2_tests DISCOVERY_MODE PRE_TEST)
+        add_executable(hikogui_x64v2_tests)
+        add_test(NAME hikogui_x64v2_tests COMMAND hikogui_x64v2_tests)
+        target_link_libraries(hikogui_x64v2_tests PRIVATE gtest_main hikogui)
+        target_include_directories(hikogui_x64v2_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        add_dependencies(hikogui_x64v2_tests hikogui_tests_resources)
+        add_dependencies(hikogui_all_tests hikogui_x64v2_tests)
+        install(TARGETS hikogui_tests hikogui_x64v2_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+        show_build_target_properties(hikogui_x64v2_tests)
+
+        if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")
+            target_compile_options(hikogui_x64v2_tests PRIVATE -march=x86-64-v2)
+        elseif (MSVC)
+            # On MSVC the architecture flags do not exactly correspond with the x86-64 architecture levels.
+            # The HI_X86_64_MAX_LEVEL macro limits use for intrinsic usage to the exact level for testing purposes.
+            target_compile_options(hikogui_x64v2_tests PRIVATE -arch:AVX -DHI_X86_64_MAX_LEVEL=2)
+        else()
+            message(WARNING "Unknown compiler to generate architecture depended tests.") 
+        endif()
+
+        target_sources(hikogui_x64v2_tests PRIVATE
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
+        )
     endif()
+
     if(HOST_IS_X86_64_3)
-        gtest_discover_tests(hikogui_x64v3_tests DISCOVERY_MODE PRE_TEST)
+        add_executable(hikogui_x64v3_tests)
+        add_test(NAME hikogui_x64v3_tests COMMAND hikogui_x64v3_tests)
+        target_link_libraries(hikogui_x64v3_tests PRIVATE gtest_main hikogui)
+        target_include_directories(hikogui_x64v3_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        add_dependencies(hikogui_x64v3_tests hikogui_tests_resources)
+        add_dependencies(hikogui_all_tests hikogui_x64v3_tests)
+        install(TARGETS hikogui_tests hikogui_x64v3_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+        show_build_target_properties(hikogui_x64v3_tests)
+
+        if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")
+            target_compile_options(hikogui_x64v3_tests PRIVATE -march=x86-64-v3)
+        elseif (MSVC)
+            # On MSVC the architecture flags do not exactly correspond with the x86-64 architecture levels.
+            # The HI_X86_64_MAX_LEVEL macro limits use for intrinsic usage to the exact level for testing purposes.
+            target_compile_options(hikogui_x64v3_tests PRIVATE -arch:AVX2 -DHI_X86_64_MAX_LEVEL=3)
+        else()
+            message(WARNING "Unknown compiler to generate architecture depended tests.") 
+        endif()
+
+        target_sources(hikogui_x64v3_tests PRIVATE
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_f64x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_i64x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
+        )
     endif()
+
     if(HOST_IS_X86_64_4)
-        gtest_discover_tests(hikogui_x64v4_tests DISCOVERY_MODE PRE_TEST)
+        add_executable(hikogui_x64v4_tests)
+        add_test(NAME hikogui_x64v4_tests COMMAND hikogui_x64v4_tests)
+        target_link_libraries(hikogui_x64v4_tests PRIVATE gtest_main hikogui)
+        target_include_directories(hikogui_x64v4_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        add_dependencies(hikogui_x64v4_tests hikogui_tests_resources)
+        add_dependencies(hikogui_all_tests hikogui_x64v4_tests)
+        install(TARGETS hikogui_tests hikogui_x64v4_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+        show_build_target_properties(hikogui_x64v4_tests)
+
+        if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")
+            target_compile_options(hikogui_x64v4_tests PRIVATE -march=x86-64-v4)
+        elseif (MSVC)
+            # On MSVC the architecture flags do not exactly correspond with the x86-64 architecture levels.
+            # The HI_X86_64_MAX_LEVEL macro limits use for intrinsic usage to the exact level for testing purposes.
+            target_compile_options(hikogui_x64v4_tests PRIVATE -arch:AVX512 -DHI_X86_64_MAX_LEVEL=4)
+        else()
+            message(WARNING "Unknown compiler to generate architecture depended tests.") 
+        endif()
+
+        target_sources(hikogui_x64v4_tests PRIVATE
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_f32x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_f64x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_i32x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_i64x4_tests.cpp
+            ${HIKOGUI_SOURCE_DIR}/SIMD/native_u32x4_tests.cpp
+        )
     endif()
 
 else()

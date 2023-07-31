@@ -384,8 +384,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/path/URI.hpp
     ${HIKOGUI_SOURCE_DIR}/path/URL.hpp
     ${HIKOGUI_SOURCE_DIR}/random/dither.hpp
-    ${HIKOGUI_SOURCE_DIR}/random/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/random/random.hpp
     ${HIKOGUI_SOURCE_DIR}/random/seed.hpp
+    ${HIKOGUI_SOURCE_DIR}/random/seed_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/random/seed_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/random/xorshift128p.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/float16_sse4_1.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/module.hpp

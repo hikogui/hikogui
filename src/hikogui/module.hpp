@@ -32,7 +32,7 @@
 #include "observer/module.hpp"
 #include "parser/module.hpp"
 #include "path/path.hpp"
-#include "random/module.hpp"
+#include "random/random.hpp"
 #include "security/module.hpp"
 #include "settings/settings.hpp"
 #include "SIMD/module.hpp"

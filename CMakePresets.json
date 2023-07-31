@@ -183,5 +183,14 @@
             "configurePreset": "vc17-x64-windows-static-rel",
             "targets": [ "hikogui", "hikogui_all_tests", "examples" ]
         }
+    ],
+    "testPresets": [
+        {
+            "name": "vc17-x64-windows-static-dbg-test-base",
+            "displayName": "Generic Tests",
+            "configurePreset": "vc17-x64-windows-static-dbg",
+            "output": {"outputOnFailure": false, "verbosity": "verbose"},
+            "execution": {"noTestsAction": "error", "stopOnFailure": false, "jobs": 8}
+        }
     ]
 }
