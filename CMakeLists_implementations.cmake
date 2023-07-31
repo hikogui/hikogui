@@ -79,7 +79,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/net/globals_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer_impl.cpp    
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/path/path_location_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/random/seed_win32_impl.cpp>
     #${HIKOGUI_SOURCE_DIR}/settings/cpu_id_x64_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_impl.cpp

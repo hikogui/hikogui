@@ -1,7 +1,7 @@
 
 configure_file(
-    ${HIKOGUI_SOURCE_DIR}/path/metadata_library.hpp.in
-    ${HIKOGUI_SOURCE_DIR}/path/metadata_library.hpp @ONLY)
+    ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp.in
+    ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp @ONLY)
 
 target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES
     ${HIKOGUI_SOURCE_DIR}/audio/audio_block.hpp
@@ -343,6 +343,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator.hpp
     ${HIKOGUI_SOURCE_DIR}/memory/module.hpp
     ${HIKOGUI_SOURCE_DIR}/memory/secure_memory_allocator.hpp
+    ${HIKOGUI_SOURCE_DIR}/metadata/application_metadata.hpp
+    ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp # generated.
+    ${HIKOGUI_SOURCE_DIR}/metadata/metadata.hpp
+    ${HIKOGUI_SOURCE_DIR}/metadata/semantic_version.hpp
     ${HIKOGUI_SOURCE_DIR}/net/module.hpp
     ${HIKOGUI_SOURCE_DIR}/net/packet.hpp
     #${HIKOGUI_SOURCE_DIR}/net/packet_buffer.hpp
@@ -371,11 +375,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/parser/placement.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer.hpp
     ${HIKOGUI_SOURCE_DIR}/path/glob.hpp
-    ${HIKOGUI_SOURCE_DIR}/path/metadata.hpp
-    ${HIKOGUI_SOURCE_DIR}/path/metadata_library.hpp # generated.
     ${HIKOGUI_SOURCE_DIR}/path/path.hpp
     ${HIKOGUI_SOURCE_DIR}/path/path_location.hpp
-    ${HIKOGUI_SOURCE_DIR}/path/semantic_version.hpp
+    ${HIKOGUI_SOURCE_DIR}/path/path_location_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/path/path_location_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/path/URI.hpp
     ${HIKOGUI_SOURCE_DIR}/path/URL.hpp
     ${HIKOGUI_SOURCE_DIR}/random/dither.hpp

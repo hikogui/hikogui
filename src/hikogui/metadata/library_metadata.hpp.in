@@ -4,13 +4,12 @@
 
 #pragma once
 
-#include "URL.hpp"
 #include "semantic_version.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <atomic>
 
-hi_export_module(hikogui.path.metadata_library);
+hi_export_module(hikogui.metadata.metadata_library);
 
 hi_export namespace hi { inline namespace v1 {
 
@@ -39,9 +38,9 @@ hi_export namespace hi { inline namespace v1 {
     return "@HI_LIB_LICENSE@";
 }
 
-[[nodiscard]] constexpr URL get_library_url() noexcept
+[[nodiscard]] constexpr std::string get_library_url() noexcept
 {
-    return URL{"@HI_LIB_HOMEPAGE@"};
+    return "@HI_LIB_HOMEPAGE@";
 }
 
 [[nodiscard]] constexpr std::string get_library_description() noexcept

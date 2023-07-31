@@ -10,7 +10,7 @@
 #include <string>
 #include <stdexcept>
 
-hi_export_module(hikogui.path.metadata);
+hi_export_module(hikogui.metadata.metadata_application);
 
 hi_export namespace hi::inline v1 {
 
