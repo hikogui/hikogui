@@ -20,7 +20,9 @@ hi_export namespace hi { inline namespace v1 {
  * This function may terminate the application if no debugger is found.
  *
  * It does not do the actual breaking.
+ * 
+ * @return true if the debugger is attached.
  */
-void prepare_debug_break() noexcept;
+bool prepare_debug_break() noexcept;
 
 }} // namespace hi::v1

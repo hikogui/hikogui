@@ -341,7 +341,9 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/layout/row_column_layout.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/spreadsheet_address.hpp
     ${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator.hpp
-    ${HIKOGUI_SOURCE_DIR}/memory/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator_win32_impl.hpp>
+    ${HIKOGUI_SOURCE_DIR}/memory/memory.hpp
     ${HIKOGUI_SOURCE_DIR}/memory/secure_memory_allocator.hpp
     ${HIKOGUI_SOURCE_DIR}/metadata/application_metadata.hpp
     ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp # generated.

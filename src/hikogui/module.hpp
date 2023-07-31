@@ -26,7 +26,7 @@
 #include "l10n/module.hpp"
 #include "dispatch/dispatch.hpp"
 #include "layout/module.hpp"
-#include "memory/module.hpp"
+#include "memory/memory.hpp"
 #include "net/module.hpp"
 #include "numeric/module.hpp"
 #include "observer/module.hpp"

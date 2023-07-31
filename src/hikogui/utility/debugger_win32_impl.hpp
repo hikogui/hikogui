@@ -18,11 +18,11 @@ hi_warning_ignore_msvc(6320);
 
 hi_export namespace hi { inline namespace v1 {
 
-inline hi_no_inline void prepare_debug_break() noexcept
+inline hi_no_inline bool prepare_debug_break() noexcept
 {
     if (IsDebuggerPresent()) {
         // When running under the debugger, __debugbreak() after returning.
-        return;
+        return true;
 
     } else {
         __try {
@@ -39,13 +39,16 @@ inline hi_no_inline void prepare_debug_break() noexcept
 
             } __except (UnhandledExceptionFilter(GetExceptionInformation())) {
                 // The jit-debugger is not configured and the user pressed any of the buttons.
-                std::terminate();
+                return false;
             }
 
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             // User pressed "OK", debugger has been attached, __debugbreak() after return.
-            return;
+            return true;
         }
+
+        // The jit-debugger was configured, but the use pressed Cancel.
+        return false;
     }
 }
 

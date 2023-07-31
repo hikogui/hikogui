@@ -145,9 +145,6 @@ public:
 
     int resume(std::stop_token stop_token) noexcept override
     {
-        // Once the loop is resuming, all other calls should be from the same thread.
-        _thread_id = current_thread_id();
-
         // Microsoft recommends an event-loop that also renders to the screen to run at above normal priority.
         hilet thread_handle = GetCurrentThread();
 
@@ -188,7 +185,6 @@ public:
             }
         }
 
-        _thread_id = 0;
         return *_exit_code;
     }
 
