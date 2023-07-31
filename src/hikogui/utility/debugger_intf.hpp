@@ -10,7 +10,7 @@
 #include "../macros.hpp"
 #include <format>
 
-hi_export_module(hikogui_utility_debugger : intf);
+hi_export_module(hikogui.utility.debugger : intf);
 
 hi_export namespace hi { inline namespace v1 {
 

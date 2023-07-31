@@ -24,7 +24,7 @@
 #include <bit>
 #include <concepts>
 
-hi_export_module(hikogui_utility_endian);
+hi_export_module(hikogui.utility.endian);
 
 hi_warning_push();
 // C26472: Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narrow

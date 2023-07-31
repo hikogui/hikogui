@@ -6,4 +6,4 @@
 #include "loop.hpp" // export
 #include "socket_event.hpp" // export
 
-hi_export_module(hikogui_dispatch);
+hi_export_module(hikogui.dispatch);

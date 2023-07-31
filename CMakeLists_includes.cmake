@@ -401,13 +401,16 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/security/security_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/security/sip_hash.hpp
     #${HIKOGUI_SOURCE_DIR}/settings/cpu_id.hpp
-    ${HIKOGUI_SOURCE_DIR}/settings/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/settings/settings.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/os_settings.hpp
+    ${HIKOGUI_SOURCE_DIR}/settings/os_settings_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/os_settings_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/settings/preferences.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/registry_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/settings/theme_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/subpixel_orientation.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/user_settings.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/user_settings_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/skeleton/module.hpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton.hpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_block_node.hpp

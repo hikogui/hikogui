@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../settings/module.hpp"
+#include "../settings/settings.hpp"
 #include "../text/module.hpp"
 #include "../utility/module.hpp"
 #include "../color/module.hpp"

@@ -14,7 +14,7 @@
  * @ingroup path
  */
 
-hi_export_module(hikogui_path_path_location);
+hi_export_module(hikogui.path.path_location);
 
 namespace hi { inline namespace v1 {
 

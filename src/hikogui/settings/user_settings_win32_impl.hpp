@@ -1,20 +1,23 @@
 
+#pragma once
 
-#include "user_settings.hpp"
+#include "user_settings_intf.hpp"
 #include "registry_win32.hpp"
 #include "../path/path.hpp"
 #include "../macros.hpp"
 #include <format>
 #include <string>
 
+hi_export_module(hikogui.settings.user_settings : impl);
+
 namespace hi { inline namespace v1 {
 
-[[nodiscard]] static std::string user_setting_registry_path()
+[[nodiscard]] inline std::string user_setting_registry_path()
 {
     return std::format("Software\\{}\\{}", get_application_vendor(), get_application_name());
 }
 
-[[nodiscard]] std::optional<std::string> get_user_setting_string(std::string_view name)
+[[nodiscard]] inline std::optional<std::string> get_user_setting_string(std::string_view name)
 {
     // First check the registry of the current-user.
     if (hilet value = registry_read<std::string>(registry_key::current_user, user_setting_registry_path(), name)) {
@@ -31,7 +34,7 @@ namespace hi { inline namespace v1 {
     return std::nullopt;
 }
 
-[[nodiscard]] std::optional<long long> get_user_setting_integral(std::string_view name)
+[[nodiscard]] inline std::optional<long long> get_user_setting_integral(std::string_view name)
 {
     // First check the registry of the current-user.
     if (hilet value = registry_read<long long>(registry_key::current_user, user_setting_registry_path(), name)) {
@@ -48,22 +51,22 @@ namespace hi { inline namespace v1 {
     return std::nullopt;
 }
 
-void set_user_setting(std::string_view name, std::string_view value)
+inline void set_user_setting(std::string_view name, std::string_view value)
 {
     registry_write(registry_key::current_user, user_setting_registry_path(), name, value);
 }
 
-void set_user_setting(std::string_view name, long long value)
+inline void set_user_setting(std::string_view name, long long value)
 {
     registry_write(registry_key::current_user, user_setting_registry_path(), name, narrow_cast<uint32_t>(value));
 }
 
-void delete_user_setting(std::string_view name)
+inline void delete_user_setting(std::string_view name)
 {
     registry_delete(registry_key::current_user, user_setting_registry_path(), name);
 }
 
-void delete_user_settings()
+inline void delete_user_settings()
 {
     registry_delete(registry_key::current_user, user_setting_registry_path());
 }

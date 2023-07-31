@@ -18,7 +18,7 @@
 #include <TargetConditionals.h>
 #endif
 
-hi_export_module(hikogui_utility_architecture);
+hi_export_module(hikogui.utility.architecture);
 
 hi_export namespace hi::inline v1 {
 

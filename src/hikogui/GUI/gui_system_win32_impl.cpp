@@ -9,7 +9,7 @@
 #include "../font/module.hpp"
 #include "../path/path.hpp"
 #include "../telemetry/module.hpp"
-#include "../settings/module.hpp"
+#include "../settings/settings.hpp"
 #include "../macros.hpp"
 #include <memory>
 

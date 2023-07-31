@@ -12,7 +12,7 @@
 #include "../macros.hpp"
 #include <format>
 
-
+hi_export_module(hikogui.settings.subpixel_orientation);
 
 namespace hi::inline v1 {
 

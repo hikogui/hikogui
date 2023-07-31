@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <bit>
 
-hi_export_module(hikogui_dispatch_socket_event : intf);
+hi_export_module(hikogui.dispatch.socket_event : intf);
 
 namespace hi::inline v1 {
 

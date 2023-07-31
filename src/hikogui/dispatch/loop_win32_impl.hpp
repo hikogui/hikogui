@@ -46,7 +46,7 @@
 #include <thread>
 #include <chrono>
 
-hi_export_module(hikogui_dispatch_loop : impl);
+hi_export_module(hikogui.dispatch.loop : impl);
 
 namespace hi::inline v1 {
 

@@ -8,7 +8,7 @@
 #include "pipeline_image_vertex.hpp"
 #include "pipeline_SDF_vertex.hpp"
 #include "pipeline_alpha_vertex.hpp"
-#include "../settings/module.hpp"
+#include "../settings/settings.hpp"
 #include "../geometry/module.hpp"
 #include "../unicode/module.hpp"
 #include "../text/module.hpp"

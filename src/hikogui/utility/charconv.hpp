@@ -13,7 +13,7 @@
 #include <string_view>
 #include <iterator>
 
-hi_export_module(hikogui_utility_charconv);
+hi_export_module(hikogui.utility.charconv);
 
 hi_export namespace hi { inline namespace v1 {
 

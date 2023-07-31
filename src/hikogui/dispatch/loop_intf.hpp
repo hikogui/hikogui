@@ -15,7 +15,7 @@
 #include <vector>
 #include <memory>
 
-hi_export_module(hikogui_dispatch_loop : intf);
+hi_export_module(hikogui.dispatch.loop : intf);
 
 namespace hi::inline v1 {
 

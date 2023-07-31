@@ -2,18 +2,22 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../win32_headers.hpp"
 
-#include "os_settings.hpp"
+#include "os_settings_intf.hpp"
 #include "registry_win32.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/module.hpp"
 #include "../path/path.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.settings.os_settings : impl);
+
 namespace hi { inline namespace v1 {
 
-[[nodiscard]] std::vector<uuid> os_settings::preferred_gpus(hi::policy performance_policy) noexcept
+[[nodiscard]] inline std::vector<uuid> os_settings::preferred_gpus(hi::policy performance_policy) noexcept
 {
     auto r = std::vector<uuid>{};
 
@@ -79,7 +83,7 @@ namespace hi { inline namespace v1 {
  *
  * Therefor the only option available is to read the language list from the registry.
  */
-[[nodiscard]] std::vector<language_tag> os_settings::gather_languages()
+[[nodiscard]] inline std::vector<language_tag> os_settings::gather_languages()
 {
     auto r = std::vector<language_tag>{};
 
@@ -100,7 +104,7 @@ namespace hi { inline namespace v1 {
     return r;
 }
 
-[[nodiscard]] hi::theme_mode os_settings::gather_theme_mode()
+[[nodiscard]] inline hi::theme_mode os_settings::gather_theme_mode()
 {
     try {
         if (hilet result = registry_read<uint32_t>(
@@ -118,7 +122,7 @@ namespace hi { inline namespace v1 {
     }
 }
 
-[[nodiscard]] hi::subpixel_orientation os_settings::gather_subpixel_orientation()
+[[nodiscard]] inline hi::subpixel_orientation os_settings::gather_subpixel_orientation()
 {
     {
         BOOL has_font_smoothing;
@@ -175,19 +179,19 @@ namespace hi { inline namespace v1 {
     }
 }
 
-[[nodiscard]] bool os_settings::gather_uniform_HDR()
+[[nodiscard]] inline bool os_settings::gather_uniform_HDR()
 {
     // Microsoft Windows 10 switches display mode when getting a HDR surface
     // The switching causes all application to display using a different color and brightness calibration.
     return false;
 }
 
-[[nodiscard]] std::chrono::milliseconds os_settings::gather_double_click_interval()
+[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_double_click_interval()
 {
     return std::chrono::milliseconds{GetDoubleClickTime()};
 }
 
-[[nodiscard]] float os_settings::gather_double_click_distance()
+[[nodiscard]] inline float os_settings::gather_double_click_distance()
 {
     hilet width = GetSystemMetrics(SM_CXDOUBLECLK);
     if (width <= 0) {
@@ -203,7 +207,7 @@ namespace hi { inline namespace v1 {
     return diameter * 0.5f;
 }
 
-[[nodiscard]] std::chrono::milliseconds os_settings::gather_keyboard_repeat_delay()
+[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_keyboard_repeat_delay()
 {
     using namespace std::literals::chrono_literals;
 
@@ -219,7 +223,7 @@ namespace hi { inline namespace v1 {
     return bias + r * gain;
 }
 
-[[nodiscard]] std::chrono::milliseconds os_settings::gather_keyboard_repeat_interval()
+[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_keyboard_repeat_interval()
 {
     using namespace std::literals::chrono_literals;
 
@@ -235,7 +239,7 @@ namespace hi { inline namespace v1 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(1000ms / rate);
 }
 
-[[nodiscard]] std::chrono::milliseconds os_settings::gather_cursor_blink_interval()
+[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_cursor_blink_interval()
 {
     using namespace std::literals::chrono_literals;
 
@@ -252,13 +256,13 @@ namespace hi { inline namespace v1 {
     }
 }
 
-[[nodiscard]] std::chrono::milliseconds os_settings::gather_cursor_blink_delay()
+[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_cursor_blink_delay()
 {
     // The blink delay is not available in the OS, we can use the keyboard repeat delay.
     return std::max(gather_keyboard_repeat_delay(), gather_keyboard_repeat_interval());
 }
 
-[[nodiscard]] float os_settings::gather_minimum_window_width()
+[[nodiscard]] inline float os_settings::gather_minimum_window_width()
 {
     hilet width = GetSystemMetrics(SM_CXMINTRACK);
     if (width == 0) {
@@ -267,7 +271,7 @@ namespace hi { inline namespace v1 {
     return narrow_cast<float>(width);
 }
 
-[[nodiscard]] float os_settings::gather_minimum_window_height()
+[[nodiscard]] inline float os_settings::gather_minimum_window_height()
 {
     hilet height = GetSystemMetrics(SM_CYMINTRACK);
     if (height == 0) {
@@ -277,7 +281,7 @@ namespace hi { inline namespace v1 {
     return narrow_cast<float>(height);
 }
 
-[[nodiscard]] float os_settings::gather_maximum_window_width()
+[[nodiscard]] inline float os_settings::gather_maximum_window_width()
 {
     hilet width = GetSystemMetrics(SM_CXMAXTRACK);
     if (width == 0) {
@@ -286,7 +290,7 @@ namespace hi { inline namespace v1 {
     return narrow_cast<float>(width);
 }
 
-[[nodiscard]] float os_settings::gather_maximum_window_height()
+[[nodiscard]] inline float os_settings::gather_maximum_window_height()
 {
     hilet height = GetSystemMetrics(SM_CYMAXTRACK);
     if (height == 0) {
@@ -296,14 +300,14 @@ namespace hi { inline namespace v1 {
     return narrow_cast<float>(height);
 }
 
-[[nodiscard]] uintptr_t os_settings::gather_primary_monitor_id()
+[[nodiscard]] inline uintptr_t os_settings::gather_primary_monitor_id()
 {
     hilet origin = POINT{0, 0};
     hilet monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
     return std::bit_cast<uintptr_t>(monitor);
 }
 
-[[nodiscard]] aarectangle os_settings::gather_primary_monitor_rectangle()
+[[nodiscard]] inline aarectangle os_settings::gather_primary_monitor_rectangle()
 {
     hilet width = GetSystemMetrics(SM_CXSCREEN);
     if (width == 0) {
@@ -319,7 +323,7 @@ namespace hi { inline namespace v1 {
     return aarectangle{extent2{narrow_cast<float>(width), narrow_cast<float>(height)}};
 }
 
-[[nodiscard]] aarectangle os_settings::gather_desktop_rectangle()
+[[nodiscard]] inline aarectangle os_settings::gather_desktop_rectangle()
 {
     hilet primary_monitor_height = GetSystemMetrics(SM_CYSCREEN);
     if (primary_monitor_height == 0) {
@@ -347,7 +351,7 @@ namespace hi { inline namespace v1 {
         narrow_cast<float>(left), narrow_cast<float>(inv_bottom), narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
-[[nodiscard]] policy os_settings::gather_gpu_policy()
+[[nodiscard]] inline policy os_settings::gather_gpu_policy()
 {
     using namespace std::literals;
 

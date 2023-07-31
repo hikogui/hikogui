@@ -8,7 +8,7 @@
 #include "loop.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui_dispatch_awaitable_timer : impl);
+hi_export_module(hikogui.dispatch.awaitable_timer : impl);
 
 namespace hi::inline v1 {
 

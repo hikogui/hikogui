@@ -13,7 +13,7 @@
 #include <coroutine>
 #include <chrono>
 
-hi_export_module(hikogui_utility_concepts);
+hi_export_module(hikogui.utility.concepts);
 
 hi_export namespace hi { inline namespace v1 {
 

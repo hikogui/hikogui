@@ -13,7 +13,7 @@
 #include <concepts>
 #include <compare>
 
-hi_export_module(hikogui_utility_compare);
+hi_export_module(hikogui.utility.compare);
 
 hi_export namespace hi { inline namespace v1 {
 

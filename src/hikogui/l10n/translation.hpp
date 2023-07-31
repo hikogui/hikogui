@@ -7,7 +7,7 @@
 #include "../i18n/module.hpp"
 #include "../formula/module.hpp"
 #include "../utility/module.hpp"
-#include "../settings/module.hpp"
+#include "../settings/settings.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>

@@ -23,7 +23,7 @@
 #include <mutex>
 #include <filesystem>
 
-hi_export_module(hikogui_path_URL);
+hi_export_module(hikogui.path.URL);
 
 hi_warning_push();
 // C26434: Function '' hides a non-virtual function ''.

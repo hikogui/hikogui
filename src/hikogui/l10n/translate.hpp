@@ -7,7 +7,7 @@
 #include "translation.hpp"
 #include "../utility/module.hpp"
 #include "../unicode/module.hpp"
-#include "../settings/module.hpp"
+#include "../settings/settings.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>

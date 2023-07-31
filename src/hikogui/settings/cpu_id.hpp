@@ -16,7 +16,7 @@
 #error "Unsuported compiler for x64 cpu_id"
 #endif
 
-
+hi_export_module(hikogui.settings.cpu_id);
 
 namespace hi {
 inline namespace v1 {

@@ -13,7 +13,7 @@
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
 #include "../utility/module.hpp"
-#include "../settings/module.hpp"
+#include "../settings/settings.hpp"
 #include "../macros.hpp"
 
 

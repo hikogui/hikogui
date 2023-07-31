@@ -23,7 +23,7 @@
 #include <bit>
 #include <cmath>
 
-hi_export_module(hikogui_utility_cast);
+hi_export_module(hikogui.utility.cast);
 
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).

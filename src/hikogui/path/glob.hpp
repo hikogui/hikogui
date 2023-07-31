@@ -18,7 +18,7 @@
 /** @file path/glob.hpp Defines utilities for handling glob patterns.
  * @ingroup path
  */
-hi_export_module(hikogui_path_glob);
+hi_export_module(hikogui.path.glob);
 
 namespace hi { inline namespace v1 {
 

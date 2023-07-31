@@ -9,7 +9,7 @@
 #include <string>
 #include <ostream>
 
-
+hi_export_module(hikogui.settings.theme_mode);
 
 namespace hi::inline v1 {
 

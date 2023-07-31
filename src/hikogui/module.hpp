@@ -34,7 +34,7 @@
 #include "path/path.hpp"
 #include "random/module.hpp"
 #include "security/module.hpp"
-#include "settings/module.hpp"
+#include "settings/settings.hpp"
 #include "SIMD/module.hpp"
 #include "skeleton/module.hpp"
 #include "telemetry/module.hpp"

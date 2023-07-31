@@ -9,7 +9,7 @@
 #include "URI.hpp"
 #include "URL.hpp"
 
-hi_export_module(hikogui_path);
+hi_export_module(hikogui.path);
 
 namespace hi {
 inline namespace v1 {

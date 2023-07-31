@@ -6,7 +6,7 @@
 #include "gui_system.hpp"
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
-#include "../settings/module.hpp"
+#include "../settings/settings.hpp"
 #include "../GFX/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"

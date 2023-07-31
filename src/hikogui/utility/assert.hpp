@@ -14,7 +14,7 @@
 #include <exception>
 #include <ranges>
 
-hi_export_module(hikogui_utility_assert);
+hi_export_module(hikogui.utility.assert);
 
 hi_warning_push();
 // "C26472: Don't use a static_cast for arithmetic", asserts use static_cast specifically for savety.
