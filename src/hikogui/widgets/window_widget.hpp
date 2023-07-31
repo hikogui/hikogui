@@ -13,7 +13,7 @@
 #include "system_menu_widget.hpp"
 #include "grid_widget.hpp"
 #include "window_traffic_lights_widget.hpp"
-#include "../l10n/module.hpp"
+#include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 
 namespace hi { inline namespace v1 {

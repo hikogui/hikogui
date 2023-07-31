@@ -18,6 +18,7 @@
 #include <memory>
 #include <variant>
 
+hi_export_module(hikogui.l10n.label);
 
 
 namespace hi::inline v1 {

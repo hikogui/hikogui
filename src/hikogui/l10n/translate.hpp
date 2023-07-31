@@ -14,6 +14,7 @@
 #include <string_view>
 #include <tuple>
 
+hi_export_module(hikogui.l10n.translate);
 
 
 namespace hi::inline v1 {

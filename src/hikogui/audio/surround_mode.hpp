@@ -7,7 +7,7 @@
 #include "speaker_mapping.hpp"
 #include "../font/module.hpp"
 #include "../utility/utility.hpp"
-#include "../l10n/module.hpp"
+#include "../l10n/l10n.hpp"
 #include "../coroutine/module.hpp"
 #include "../macros.hpp"
 #include <cstdint>

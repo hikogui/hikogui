@@ -13,7 +13,7 @@
 #include "../GUI/module.hpp"
 #include "../text/module.hpp"
 #include "../geometry/module.hpp"
-#include "../l10n/module.hpp"
+#include "../l10n/l10n.hpp"
 #include "../container/module.hpp"
 #include "../observer/module.hpp"
 #include "../coroutine/module.hpp"

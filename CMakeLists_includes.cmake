@@ -319,7 +319,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/image/uint_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/unorm_a2bgr10_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/label.hpp
-    ${HIKOGUI_SOURCE_DIR}/l10n/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/l10n.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translation.hpp

@@ -74,8 +74,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/l10n/po_parser_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/l10n/translation_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer_impl.cpp    
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_parse_context_impl.cpp

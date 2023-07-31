@@ -11,7 +11,7 @@
 #include "widget.hpp"
 #include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
-#include "../l10n/module.hpp"
+#include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>

@@ -23,7 +23,7 @@
 #include "GUI/module.hpp"
 #include "i18n/module.hpp"
 #include "image/module.hpp"
-#include "l10n/module.hpp"
+#include "l10n/l10n.hpp"
 #include "dispatch/dispatch.hpp"
 #include "layout/module.hpp"
 #include "memory/memory.hpp"
