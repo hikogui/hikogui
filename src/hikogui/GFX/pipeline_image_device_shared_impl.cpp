@@ -8,7 +8,7 @@
 #include "gfx_device_vulkan.hpp"
 #include "../path/path.hpp"
 #include "../image/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <array>
 

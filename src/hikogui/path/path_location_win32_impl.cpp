@@ -8,7 +8,7 @@
 #include "metadata.hpp"
 #include "metadata_library.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <filesystem>
 #include <string>

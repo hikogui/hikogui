@@ -6,7 +6,7 @@
 
 #include "path_location.hpp"
 #include "../char_maps/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <string>
@@ -20,7 +20,7 @@
  */
 hi_export_module(hikogui.path.glob);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A glob pattern.
  * @ingroup file

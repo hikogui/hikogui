@@ -6,7 +6,7 @@
 
 #include "speaker_mapping.hpp"
 #include "../font/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../l10n/module.hpp"
 #include "../coroutine/module.hpp"
 #include "../macros.hpp"

@@ -6,7 +6,7 @@
 
 #include "awaitable.hpp"
 #include "scoped_task.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../concurrency/module.hpp"
 #include "../macros.hpp"
 #include <coroutine>

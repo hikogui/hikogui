@@ -4,7 +4,7 @@
 
 #include "terminate.hpp"
 #include "../console/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"
 

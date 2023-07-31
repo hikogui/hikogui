@@ -8,7 +8,7 @@
 #include "box_shape.hpp"
 #include "spreadsheet_address.hpp"
 #include "../geometry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <numeric>

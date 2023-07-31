@@ -7,7 +7,7 @@
 #include "iso_15924.hpp"
 #include "iso_3166.hpp"
 #include "iso_639.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../coroutine/module.hpp"
 #include "../algorithm/module.hpp"
 #include "../macros.hpp"

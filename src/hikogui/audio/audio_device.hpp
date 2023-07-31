@@ -12,7 +12,7 @@
 #include "speaker_mapping.hpp"
 #include "../numeric/module.hpp"
 #include "../l10n/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <string>

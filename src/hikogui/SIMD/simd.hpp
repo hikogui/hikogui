@@ -11,7 +11,7 @@
 #include "native_u32x4_sse2.hpp"
 #include "native_simd_conversions_x86.hpp"
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <ostream>

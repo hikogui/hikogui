@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "unfair_recursive_mutex.hpp"
 #include "global_state.hpp"
 #include "../macros.hpp"

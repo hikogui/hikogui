@@ -7,7 +7,7 @@
 #include "function_timer.hpp"
 #include "socket_event.hpp"
 #include "../container/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <functional>
 #include <type_traits>

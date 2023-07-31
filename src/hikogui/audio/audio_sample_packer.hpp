@@ -5,7 +5,7 @@
 #pragma once
 
 #include "audio_sample_format.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../SIMD/module.hpp"
 #include "../random/module.hpp"
 #include "../macros.hpp"

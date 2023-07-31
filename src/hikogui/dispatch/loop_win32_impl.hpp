@@ -38,7 +38,7 @@
 
 #include "loop_intf.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <utility>

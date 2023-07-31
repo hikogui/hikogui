@@ -2,14 +2,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../macros.hpp"
 #include <type_traits>
 #include <string>
 #include <string_view>
 
-#pragma once
+hi_export_module(hikogui.utility.forward_value);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Functor for forwarding an forwarding-reference to variable.
  *

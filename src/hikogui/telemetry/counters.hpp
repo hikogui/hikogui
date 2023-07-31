@@ -8,7 +8,7 @@
 #pragma once
 
 #include "log.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../concurrency/module.hpp"
 #include "../time/module.hpp"
 #include "../macros.hpp"

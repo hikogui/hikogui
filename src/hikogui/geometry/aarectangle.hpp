@@ -13,7 +13,7 @@
 #include "point2.hpp"
 #include "point3.hpp"
 #include "../SIMD/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../concurrency/module.hpp"
 #include "../macros.hpp"
 #include <concepts>

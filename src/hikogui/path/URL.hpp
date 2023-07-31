@@ -11,7 +11,7 @@
 #include "URI.hpp"
 #include "path_location.hpp"
 #include "../char_maps/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>

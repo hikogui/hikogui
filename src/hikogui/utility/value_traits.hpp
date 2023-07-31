@@ -1,11 +1,13 @@
 
 
+#pragma once
+
+#include "../macros.hpp"
+
 /** @file utility/value_traits.hpp Utility functions to determine information about values.
  * @ingroup utility
  */
-
-#include "../macros.hpp"
-#pragma once
+hi_export_module(hikogui.utility.value_traits);
 
 namespace hi { inline namespace v1 {
 

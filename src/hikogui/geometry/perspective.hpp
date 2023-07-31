@@ -5,7 +5,7 @@
 #pragma once
 
 #include "matrix3.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 
 

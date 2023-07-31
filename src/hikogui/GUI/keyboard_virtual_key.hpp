@@ -5,7 +5,7 @@
 #pragma once
 
 #include "keyboard_modifiers.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <unordered_map>
 

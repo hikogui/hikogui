@@ -2,13 +2,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "URL.hpp"
 #include "semantic_version.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <atomic>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.path.metadata_library);
+
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] constexpr std::string get_library_name() noexcept
 {

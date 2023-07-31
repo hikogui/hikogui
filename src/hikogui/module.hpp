@@ -41,7 +41,7 @@
 #include "text/module.hpp"
 #include "time/module.hpp"
 #include "unicode/module.hpp"
-#include "utility/module.hpp"
+#include "utility/utility.hpp"
 #include "widgets/module.hpp"
 
 //#include "command_line.hpp"

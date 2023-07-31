@@ -6,7 +6,7 @@
 
 #include "seed.hpp"
 #include "../SIMD/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <random>
 

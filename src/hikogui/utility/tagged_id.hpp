@@ -12,7 +12,9 @@
 #include <compare>
 #include <concepts>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.utility.tagged_id);
+
+hi_export namespace hi::inline v1 {
 
 template<std::unsigned_integral T, fixed_string Tag, std::size_t Max = std::numeric_limits<T>::max() - 1>
 class tagged_id {

@@ -8,7 +8,7 @@
 #include "subpixel_orientation.hpp"
 #include "../i18n/module.hpp"
 #include "../geometry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../numeric/module.hpp"
 #include "../observer/module.hpp"
 #include "../dispatch/dispatch.hpp"

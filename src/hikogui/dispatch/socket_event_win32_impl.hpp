@@ -7,7 +7,7 @@
 #include "../win32_headers.hpp"
 
 #include "socket_event_intf.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 
 hi_export_module(hikogui.dipatch.socket_event : impl);

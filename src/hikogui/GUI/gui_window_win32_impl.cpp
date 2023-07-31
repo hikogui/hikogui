@@ -11,7 +11,7 @@
 #include "../GFX/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../unicode/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../settings/settings.hpp"
 #include "../crt/module.hpp"
 #include "../algorithm/module.hpp"

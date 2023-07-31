@@ -12,6 +12,7 @@
 #include <numeric>
 #include <format>
 
+hi_export_module(hikogui.utility.float16);
 
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
@@ -89,7 +90,7 @@ constexpr uint16_t cvtss_sh(float value) noexcept
     return static_cast<uint16_t>(u);
 }
 
-struct float16 {
+hi_export struct float16 {
     uint16_t v = 0;
 
     constexpr float16() noexcept = default;
@@ -196,7 +197,7 @@ static_assert(requires(uint16_t a) { std::bit_cast<float16>(a); });
 
 } // namespace hi::inline v1
 
-template<>
+hi_export template<>
 struct std::hash<hi::float16> {
     std::size_t operator()(hi::float16 const& rhs) noexcept
     {
@@ -204,7 +205,7 @@ struct std::hash<hi::float16> {
     }
 };
 
-template<typename CharT>
+hi_export template<typename CharT>
 struct std::formatter<hi::float16, CharT> : std::formatter<float, CharT> {
     constexpr auto format(hi::float16 const& t, auto& fc)
     {
@@ -212,7 +213,7 @@ struct std::formatter<hi::float16, CharT> : std::formatter<float, CharT> {
     }
 };
 
-template<>
+hi_export template<>
 struct std::numeric_limits<hi::float16> {
     using value_type = hi::float16;
 

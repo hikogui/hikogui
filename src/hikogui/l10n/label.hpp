@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../unicode/module.hpp"
 #include "../image/module.hpp"
 #include "../font/module.hpp"

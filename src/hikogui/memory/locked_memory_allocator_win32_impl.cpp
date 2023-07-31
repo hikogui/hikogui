@@ -6,7 +6,7 @@
 
 #include "locked_memory_allocator.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 
 

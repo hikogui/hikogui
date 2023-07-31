@@ -8,7 +8,7 @@
 #include "format_check.hpp"
 #include "../container/module.hpp"
 #include "../time/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../concurrency/module.hpp"
 #include "../console/module.hpp"
 #include "../macros.hpp"

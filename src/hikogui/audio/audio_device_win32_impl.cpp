@@ -13,7 +13,7 @@
 #include "speaker_mapping_win32.hpp"
 #include "win32_wave_device.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <bit>
 

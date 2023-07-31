@@ -5,7 +5,7 @@
 
 #include "png.hpp"
 #include "zlib.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../parser/module.hpp"
 #include "../color/module.hpp"
 #include "../macros.hpp"

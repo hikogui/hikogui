@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../algorithm/module.hpp"
 #include "../macros.hpp"
 #include <string>

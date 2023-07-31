@@ -7,7 +7,7 @@
 #include "grapheme.hpp"
 #include "unicode_normalization.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <string>

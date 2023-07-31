@@ -5,7 +5,7 @@
 #pragma once
 
 #include "gfx_device.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <span>
 #include <memory>

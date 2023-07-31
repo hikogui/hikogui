@@ -7,7 +7,7 @@
 #include "audio_system_win32.hpp"
 #include "audio_device_win32.hpp"
 #include "audio_system_aggregate.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../telemetry/module.hpp"
 #include "../memory/module.hpp"
 #include "../dispatch/dispatch.hpp"

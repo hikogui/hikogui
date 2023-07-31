@@ -8,7 +8,7 @@
 #include "gfx_device_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../geometry/module.hpp"
 #include "../codec/module.hpp"
 #include "../macros.hpp"

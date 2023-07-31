@@ -9,7 +9,7 @@
 #include "os_settings_intf.hpp"
 #include "registry_win32.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../path/path.hpp"
 #include "../macros.hpp"
 

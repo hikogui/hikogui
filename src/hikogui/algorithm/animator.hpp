@@ -6,7 +6,7 @@
 
 #include "algorithm.hpp"
 #include "../macros.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../time/module.hpp"
 #include <cmath>
 

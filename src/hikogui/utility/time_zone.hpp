@@ -14,7 +14,9 @@
 #include "exception.hpp"
 #include <chrono>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.utility.time_zone);
+
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 [[nodiscard]] inline std::chrono::time_zone const *_cached_current_zone() noexcept

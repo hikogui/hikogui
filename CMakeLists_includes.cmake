@@ -497,7 +497,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/math.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/memory.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/misc.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/utility.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/numbers.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/policy.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/reflection.hpp

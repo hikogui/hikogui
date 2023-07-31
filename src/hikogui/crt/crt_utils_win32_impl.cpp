@@ -8,7 +8,7 @@
 #include "terminate.hpp"
 #include "../telemetry/module.hpp"
 #include "../console/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../concurrency/module.hpp"
 #include "../char_maps/module.hpp"
 #include "../time/module.hpp"

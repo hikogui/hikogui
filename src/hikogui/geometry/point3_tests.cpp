@@ -4,7 +4,7 @@
 
 #include "point3.hpp"
 #include "point2.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../test.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>

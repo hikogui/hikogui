@@ -10,7 +10,9 @@
 #include <string>
 #include <stdexcept>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.path.metadata);
+
+hi_export namespace hi::inline v1 {
 
 inline std::optional<std::string> _application_name = std::nullopt;
 inline std::optional<std::string> _application_slug = std::nullopt;

@@ -14,7 +14,9 @@
 #include <string>
 #include <string_view>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.utility.reflection);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A type that can be implicitly converted to any type.
  */

@@ -7,7 +7,7 @@
 #include "glyph_id.hpp"
 #include "glyph_atlas_info.hpp"
 #include "../geometry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../container/module.hpp"
 #include "../graphic_path/module.hpp"
 #include "../macros.hpp"

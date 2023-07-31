@@ -9,7 +9,7 @@
 #include "ucd_bidi_mirroring_glyphs.hpp"
 #include "ucd_decompositions.hpp"
 #include "ucd_general_categories.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../container/module.hpp"
 #include "../algorithm/module.hpp"
 #include "../macros.hpp"

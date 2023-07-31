@@ -5,7 +5,7 @@
 #pragma once
 
 #include "translation.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../unicode/module.hpp"
 #include "../settings/settings.hpp"
 #include "../macros.hpp"

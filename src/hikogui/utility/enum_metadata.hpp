@@ -15,13 +15,15 @@
 #include <string_view>
 #include <stdexcept>
 
+hi_export_module(hikogui.utility.enum_metadata);
+
 hi_warning_push();
 // C26445: Do not assign gsl::span or std::string_view to a reference. They are cheap to construct and are not owners of
 // the underlying data. (gsl.view).
 // False positive, sometimes the template is instantiated with string_view, sometimes not.
 hi_warning_ignore_msvc(26445);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A object that holds enum-values and strings.
  *

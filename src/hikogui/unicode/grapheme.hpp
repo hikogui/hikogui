@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../i18n/module.hpp"
 #include "../container/module.hpp"
 #include "../telemetry/module.hpp"

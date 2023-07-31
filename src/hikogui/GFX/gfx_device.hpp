@@ -6,7 +6,7 @@
 
 #include "gfx_system_globals.hpp"
 #include "gfx_surface.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../numeric/module.hpp"
 #include "../macros.hpp"
 #include <unordered_set>

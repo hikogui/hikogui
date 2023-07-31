@@ -16,7 +16,9 @@
 #include "exception.hpp"
 #include "misc.hpp"
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.utility.fixed_string);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A string which may be used as a none-type template parameter.
  *
@@ -277,7 +279,7 @@ fixed_string(F const& f) -> fixed_string<std::ranges::size(F{}())>;
 
 }} // namespace hi::inline v1
 
-template<std::size_t N, typename CharT>
+hi_export template<std::size_t N, typename CharT>
 struct std::formatter<hi::fixed_string<N>, CharT> : std::formatter<std::string_view, CharT> {
     constexpr auto format(hi::fixed_string<N> const& t, auto& fc)
     {

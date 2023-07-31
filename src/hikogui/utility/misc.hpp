@@ -16,6 +16,8 @@
 #include <chrono>
 #include <atomic>
 
+hi_export_module(hikogui.utility.misc);
+
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
 // We do not have access to narrow_cast in this file.

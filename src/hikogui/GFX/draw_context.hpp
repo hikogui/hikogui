@@ -14,7 +14,7 @@
 #include "../text/module.hpp"
 #include "../color/module.hpp"
 #include "../container/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 
 
