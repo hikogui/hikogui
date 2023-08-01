@@ -71,14 +71,17 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/color/sRGB.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/atomic.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/callback_flags.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/global_state.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/concurrency.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/notifier.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/rcu.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/subsystem.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/thread.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/thread_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/concurrency/thread_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_mutex.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_mutex_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_mutex_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_recursive_mutex.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
     ${HIKOGUI_SOURCE_DIR}/console/console.hpp

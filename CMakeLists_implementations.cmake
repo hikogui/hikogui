@@ -18,10 +18,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/codec/JSON_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/png_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/zlib_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/thread_impl.cpp
-    #${HIKOGUI_SOURCE_DIR}/concurrency/thread_macos_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/concurrency/thread_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/console_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/dialog_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/crt_utils_win32_impl.cpp>

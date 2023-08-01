@@ -4,26 +4,28 @@
 
 #include "../win32_headers.hpp"
 
-#include "thread.hpp"
+#include "thread_intf.hpp"
 #include "unfair_mutex.hpp"
 #include "../utility/utility.hpp"
 #include "../char_maps/module.hpp"
 #include "../macros.hpp"
+#include <intrin.h>
 #include <mutex>
 #include <string>
 #include <unordered_map>
 
-
+hi_export_module(hikogui.conurrency.thread);
 
 namespace hi::inline v1 {
-namespace detail {
 
-extern std::unordered_map<thread_id, std::string> thread_names;
-extern unfair_mutex thread_names_mutex;
-
+[[nodiscard]] inline thread_id current_thread_id() noexcept
+{
+    // Thread IDs on Win32 are guaranteed to be not zero.
+    constexpr uint64_t NT_TIB_CurrentThreadID = 0x48;
+    return __readgsdword(NT_TIB_CurrentThreadID);
 }
 
-void set_thread_name(std::string_view name) noexcept
+inline void set_thread_name(std::string_view name) noexcept
 {
     hilet wname = hi::to_wstring(name);
     SetThreadDescription(GetCurrentThread(), wname.c_str());
@@ -32,7 +34,7 @@ void set_thread_name(std::string_view name) noexcept
     detail::thread_names.emplace(current_thread_id(), std::string{name});
 }
 
-static std::vector<bool> mask_int_to_vec(DWORD_PTR rhs) noexcept
+inline  std::vector<bool> mask_int_to_vec(DWORD_PTR rhs) noexcept
 {
     auto r = std::vector<bool>{};
 
@@ -44,7 +46,7 @@ static std::vector<bool> mask_int_to_vec(DWORD_PTR rhs) noexcept
     return r;
 }
 
-static DWORD_PTR mask_vec_to_int(std::vector<bool> const &rhs) noexcept
+inline  DWORD_PTR mask_vec_to_int(std::vector<bool> const &rhs) noexcept
 {
     DWORD r = 0;
     for (std::size_t i = 0; i != rhs.size(); ++i) {
@@ -53,7 +55,7 @@ static DWORD_PTR mask_vec_to_int(std::vector<bool> const &rhs) noexcept
     return r;
 }
 
-[[nodiscard]] std::vector<bool> process_affinity_mask()
+[[nodiscard]] inline std::vector<bool> process_affinity_mask()
 {
     DWORD_PTR process_mask;
     DWORD_PTR system_mask;
@@ -67,7 +69,7 @@ static DWORD_PTR mask_vec_to_int(std::vector<bool> const &rhs) noexcept
     return mask_int_to_vec(process_mask);
 }
 
-std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
+inline std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
 {
     hilet mask_ = mask_vec_to_int(mask);
 
@@ -81,7 +83,7 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
     return mask_int_to_vec(old_mask);
 }
 
-[[nodiscard]] std::size_t current_cpu_id() noexcept
+[[nodiscard]] inline std::size_t current_cpu_id() noexcept
 {
     hilet index = GetCurrentProcessorNumber();
     hi_assert(index < 64);

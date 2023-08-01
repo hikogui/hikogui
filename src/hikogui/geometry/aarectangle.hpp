@@ -14,7 +14,7 @@
 #include "point3.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/utility.hpp"
-#include "../concurrency/module.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 #include <concepts>
 #include <mutex>

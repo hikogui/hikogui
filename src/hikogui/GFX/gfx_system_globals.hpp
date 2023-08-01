@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../concurrency/module.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 
 

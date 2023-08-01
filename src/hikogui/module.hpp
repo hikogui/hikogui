@@ -9,7 +9,7 @@
 #include "char_maps/module.hpp"
 #include "codec/module.hpp"
 #include "color/module.hpp"
-#include "concurrency/module.hpp"
+#include "concurrency/concurrency.hpp"
 #include "console/module.hpp"
 #include "container/module.hpp"
 #include "coroutine/module.hpp"
