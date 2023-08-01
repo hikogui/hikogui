@@ -10,7 +10,9 @@
 #include <concepts>
 #include <compare>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.utility.units);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Tag, typename T, typename Ratio = std::ratio<1>>
 class unit {

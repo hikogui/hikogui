@@ -5,7 +5,7 @@
 #pragma once
 
 #include "int_carry.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <format>
 #include <type_traits>

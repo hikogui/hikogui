@@ -6,7 +6,9 @@
 #include "../macros.hpp"
 #include <format>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.utility.policy);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** The performance policy to use.
  *

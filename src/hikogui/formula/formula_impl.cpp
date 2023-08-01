@@ -54,7 +54,7 @@
 #include "formula_vector_literal_node.hpp"
 #include "../parser/module.hpp"
 #include "../algorithm/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include <format>
 #include <string>
 #include <string_view>

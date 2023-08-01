@@ -4,7 +4,7 @@
 
 #include "zlib.hpp"
 #include "inflate.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../parser/module.hpp"
 #include "../macros.hpp"
 

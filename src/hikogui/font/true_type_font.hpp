@@ -11,7 +11,7 @@
 #include "../file/module.hpp"
 #include "../graphic_path/module.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <filesystem>

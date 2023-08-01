@@ -9,7 +9,7 @@
 #pragma once
 
 #include "char_converter.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <utility>

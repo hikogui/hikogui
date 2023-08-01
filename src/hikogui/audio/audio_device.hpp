@@ -11,8 +11,8 @@
 #include "audio_device_state.hpp"
 #include "speaker_mapping.hpp"
 #include "../numeric/module.hpp"
-#include "../l10n/module.hpp"
-#include "../utility/module.hpp"
+#include "../l10n/l10n.hpp"
+#include "../utility/utility.hpp"
 #include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <string>

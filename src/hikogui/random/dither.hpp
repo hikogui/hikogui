@@ -5,7 +5,7 @@
 #pragma once
 
 #include "xorshift128p.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 
 

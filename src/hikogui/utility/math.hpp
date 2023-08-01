@@ -32,7 +32,9 @@
 #include <immintrin.h>
 #endif
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.utility.math);
+
+hi_export namespace hi::inline v1 {
 
 template<typename Iterator>
 [[nodiscard]] auto mean(Iterator first, Iterator last)

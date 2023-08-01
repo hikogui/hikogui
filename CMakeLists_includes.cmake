@@ -1,7 +1,7 @@
 
 configure_file(
-    ${HIKOGUI_SOURCE_DIR}/path/metadata_library.hpp.in
-    ${HIKOGUI_SOURCE_DIR}/path/metadata_library.hpp @ONLY)
+    ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp.in
+    ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp @ONLY)
 
 target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES
     ${HIKOGUI_SOURCE_DIR}/audio/audio_block.hpp
@@ -319,7 +319,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/image/uint_abgr8_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/image/unorm_a2bgr10_pack.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/label.hpp
-    ${HIKOGUI_SOURCE_DIR}/l10n/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/l10n.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translation.hpp
@@ -341,8 +341,14 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/layout/row_column_layout.hpp
     ${HIKOGUI_SOURCE_DIR}/layout/spreadsheet_address.hpp
     ${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator.hpp
-    ${HIKOGUI_SOURCE_DIR}/memory/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator_win32_impl.hpp>
+    ${HIKOGUI_SOURCE_DIR}/memory/memory.hpp
     ${HIKOGUI_SOURCE_DIR}/memory/secure_memory_allocator.hpp
+    ${HIKOGUI_SOURCE_DIR}/metadata/application_metadata.hpp
+    ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp # generated.
+    ${HIKOGUI_SOURCE_DIR}/metadata/metadata.hpp
+    ${HIKOGUI_SOURCE_DIR}/metadata/semantic_version.hpp
     ${HIKOGUI_SOURCE_DIR}/net/module.hpp
     ${HIKOGUI_SOURCE_DIR}/net/packet.hpp
     #${HIKOGUI_SOURCE_DIR}/net/packet_buffer.hpp
@@ -371,16 +377,17 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/parser/placement.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer.hpp
     ${HIKOGUI_SOURCE_DIR}/path/glob.hpp
-    ${HIKOGUI_SOURCE_DIR}/path/metadata.hpp
-    ${HIKOGUI_SOURCE_DIR}/path/metadata_library.hpp # generated.
     ${HIKOGUI_SOURCE_DIR}/path/path.hpp
     ${HIKOGUI_SOURCE_DIR}/path/path_location.hpp
-    ${HIKOGUI_SOURCE_DIR}/path/semantic_version.hpp
+    ${HIKOGUI_SOURCE_DIR}/path/path_location_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/path/path_location_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/path/URI.hpp
     ${HIKOGUI_SOURCE_DIR}/path/URL.hpp
     ${HIKOGUI_SOURCE_DIR}/random/dither.hpp
-    ${HIKOGUI_SOURCE_DIR}/random/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/random/random.hpp
     ${HIKOGUI_SOURCE_DIR}/random/seed.hpp
+    ${HIKOGUI_SOURCE_DIR}/random/seed_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/random/seed_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/random/xorshift128p.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/float16_sse4_1.hpp
     ${HIKOGUI_SOURCE_DIR}/SIMD/module.hpp
@@ -401,13 +408,16 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/security/security_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/security/sip_hash.hpp
     #${HIKOGUI_SOURCE_DIR}/settings/cpu_id.hpp
-    ${HIKOGUI_SOURCE_DIR}/settings/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/settings/settings.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/os_settings.hpp
+    ${HIKOGUI_SOURCE_DIR}/settings/os_settings_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/os_settings_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/settings/preferences.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/registry_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/settings/theme_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/subpixel_orientation.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/user_settings.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/user_settings_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/skeleton/module.hpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton.hpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_block_node.hpp
@@ -494,7 +504,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/utility/math.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/memory.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/misc.hpp
-    ${HIKOGUI_SOURCE_DIR}/utility/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/utility/utility.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/numbers.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/policy.hpp
     ${HIKOGUI_SOURCE_DIR}/utility/reflection.hpp

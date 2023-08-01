@@ -5,7 +5,7 @@
 #include "../win32_headers.hpp"
 
 #include "dialog.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../char_maps/module.hpp"
 #include "../macros.hpp"
 

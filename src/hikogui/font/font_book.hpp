@@ -12,7 +12,7 @@
 #include "hikogui_icon.hpp"
 #include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../coroutine/module.hpp"
 #include "../macros.hpp"
 #include <limits>

@@ -4,7 +4,7 @@
 
 #include "thread.hpp"
 #include "unfair_mutex.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <bit>
 #include <unordered_map>

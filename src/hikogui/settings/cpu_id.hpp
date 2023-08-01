@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <array>
 
@@ -16,7 +16,7 @@
 #error "Unsuported compiler for x64 cpu_id"
 #endif
 
-
+hi_export_module(hikogui.settings.cpu_id);
 
 namespace hi {
 inline namespace v1 {

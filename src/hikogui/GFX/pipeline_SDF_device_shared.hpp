@@ -8,7 +8,7 @@
 #include "pipeline_SDF_vertex.hpp"
 #include "pipeline_SDF_specialization_constants.hpp"
 #include "../font/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../telemetry/module.hpp"
 #include "../container/module.hpp"
 #include "../geometry/module.hpp"

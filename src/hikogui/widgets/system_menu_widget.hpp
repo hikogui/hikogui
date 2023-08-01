@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "icon_widget.hpp"
-#include "../l10n/module.hpp"
+#include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>

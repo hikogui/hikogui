@@ -5,7 +5,7 @@
 #include "true_type_font.hpp"
 #include "../geometry/module.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../parser/module.hpp"
 #include "../macros.hpp"
 #include <cstddef>

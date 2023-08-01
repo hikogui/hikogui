@@ -18,7 +18,7 @@ class module (object):
             if module_name:
                 self.dependencies.add(module_name)
 
-        elif file_name in ("win32_headers.hpp", "macro.hpp", "crt.hpp"):
+        elif file_name in ("win32_headers.hpp", "macros.hpp", "crt.hpp"):
             # These files are not part of any module.
             pass
 
@@ -54,8 +54,9 @@ def read_headers(filename, text, modules):
     for line in text.split("\n"):
         line = line.strip()
         if line.startswith("#include \""):
+            end = line.rfind("\"")
             m = modules.setdefault(module_name, module(module_name))
-            m.add_include(line[10:-1])
+            m.add_include(line[10:end])
 
 
 def main(filenames):

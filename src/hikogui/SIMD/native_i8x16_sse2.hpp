@@ -5,7 +5,7 @@
 #pragma once
 
 #include "native_simd_utility.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <array>
 #include <ostream>

@@ -10,7 +10,7 @@
 
 #include "vector2.hpp"
 #include "../SIMD/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <compare>
 #include <concepts>

@@ -12,8 +12,8 @@
 #include "../layout/module.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
-#include "../utility/module.hpp"
-#include "../settings/module.hpp"
+#include "../utility/utility.hpp"
+#include "../settings/settings.hpp"
 #include "../macros.hpp"
 
 

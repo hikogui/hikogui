@@ -6,7 +6,7 @@
 
 #include "chrono.hpp"
 #include "time_stamp_count.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../concurrency/module.hpp"
 #include "../macros.hpp"
 #include <array>

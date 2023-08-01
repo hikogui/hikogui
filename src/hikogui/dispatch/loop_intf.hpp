@@ -7,7 +7,7 @@
 #include "function_timer.hpp"
 #include "socket_event.hpp"
 #include "../container/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <functional>
 #include <type_traits>
@@ -15,7 +15,7 @@
 #include <vector>
 #include <memory>
 
-hi_export_module(hikogui_dispatch_loop : intf);
+hi_export_module(hikogui.dispatch.loop : intf);
 
 namespace hi::inline v1 {
 
@@ -29,7 +29,8 @@ public:
     public:
         bool is_main = false;
 
-        impl_type() = default;
+        impl_type() : _thread_id(current_thread_id()) {}
+
         virtual ~impl_type() {}
         impl_type(impl_type const&) = delete;
         impl_type(impl_type&&) = delete;
@@ -95,9 +96,7 @@ public:
 
         [[nodiscard]] bool on_thread() const noexcept
         {
-            // Some functions check on_thread() while resume() has not been called yet.
-            // calling functions outside of the loop's thread if the loop is not being resumed is valid.
-            return _thread_id == 0 or current_thread_id() == _thread_id;
+            return current_thread_id() == _thread_id;
         }
 
     protected:
@@ -111,7 +110,7 @@ public:
         std::optional<int> _exit_code = {};
         double _maximum_frame_rate = 30.0;
         std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
-        thread_id _thread_id = 0;
+        thread_id _thread_id;
         std::vector<std::weak_ptr<render_callback_type>> _render_functions;
     };
 
@@ -145,6 +144,12 @@ public:
             return *ptr;
         }
 
+        hi_axiom(_timer.load(std::memory_order::relaxed) == nullptr, "loop::main() must be called before loop::timer()");
+
+        // This is the first time loop::main() is called so we must be on the main-thread
+        // So name the thread "main" so we can find it during debugging.
+        set_thread_name("main");
+
         auto ptr = std::addressof(local());
         ptr->_pimpl->is_main = true;
         _main.store(ptr, std::memory_order::release);
@@ -157,6 +162,10 @@ public:
      */
     [[nodiscard]] hi_no_inline static loop& timer() noexcept
     {
+        // The first time timer() is called, make sure that the main-loop exists,
+        // or even create the main-loop on the current thread.
+        [[maybe_unused]] hilet &tmp = loop::main();
+
         return *start_subsystem_or_terminate(_timer, nullptr, timer_init, timer_deinit);
     }
 

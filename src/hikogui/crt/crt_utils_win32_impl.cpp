@@ -8,7 +8,7 @@
 #include "terminate.hpp"
 #include "../telemetry/module.hpp"
 #include "../console/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../concurrency/module.hpp"
 #include "../char_maps/module.hpp"
 #include "../time/module.hpp"
@@ -47,8 +47,6 @@ namespace hi::inline v1 {
 
 std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
-    set_thread_name("main");
-
     // Switch out the terminate handler with one that can print an error message.
     old_terminate_handler = std::set_terminate(hi::terminate_handler);
 

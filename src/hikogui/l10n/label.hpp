@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../unicode/module.hpp"
 #include "../image/module.hpp"
 #include "../font/module.hpp"
@@ -18,6 +18,7 @@
 #include <memory>
 #include <variant>
 
+hi_export_module(hikogui.l10n.label);
 
 
 namespace hi::inline v1 {

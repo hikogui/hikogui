@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../algorithm/module.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <optional>
 #include <ranges>
 
-hi_export_module(hikogui_path_URI);
+hi_export_module(hikogui.path.URI);
 
 namespace hi { inline namespace v1 {
 

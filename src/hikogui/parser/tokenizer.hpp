@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../container/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../numeric/module.hpp"
 #include "../algorithm/module.hpp"
 #include "parse_location.hpp"

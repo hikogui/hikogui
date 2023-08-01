@@ -7,7 +7,7 @@
 
 #include "file_view.hpp"
 #include "file_win32.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"
 #include <format>

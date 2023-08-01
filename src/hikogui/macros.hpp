@@ -109,7 +109,6 @@
 #define HI_HAS_SSE2 1
 #endif
 
-
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_assume(condition) __builtin_assume(to_bool(condition))
 #define hi_force_inline inline __attribute__((always_inline))
@@ -282,17 +281,25 @@
 #define hi_set_terminate_message(...) \
     ::hi::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__, std::memory_order::relaxed)
 
-
 /** Debug-break.
  *
  * This function will break the application in the debugger.
  * Potentially it will start the Just-In-Time debugger if one is configured.
- * Otherwise it will terminate the application and potentially dump a core file for post mortem debugging.
+ * Otherwise it will continue execution, in this case the return value of this
+ * macro should be checked to determine if `std::terminate()` should be called.
+ *
+ * @return true if the debugger is attached.
  */
 #if defined(_WIN32)
 #define hi_debug_break() \
-    ::hi::prepare_debug_break(); \
-    __debugbreak()
+    []() { \
+        if (::hi::prepare_debug_break()) { \
+            __debugbreak(); \
+            return true; \
+        } else { \
+            return false; \
+        } \
+    }()
 #else
 #error Missing implementation of hi_debug_break().
 #endif
@@ -302,14 +309,18 @@
  * This function will break the application in the debugger.
  * Potentially it will start the Just-In-Time debugger if one is configured.
  *
- * Eventually it will terminate the application and potentially dump a core file for post mortem debugging.
+ * If no debugger is present than the application will be aborted with `std::terminate()`.
+ * If the debugger is attached, it is allowed to continue.
  *
  * @param ... The reason why the abort is done.
  */
 #define hi_debug_abort(...) \
-    hi_set_terminate_message(__VA_ARGS__); \
-    hi_debug_break(); \
-    std::terminate()
+    do { \
+        if (not hi_debug_break()) { \
+            [[unlikely]] hi_set_terminate_message(__VA_ARGS__); \
+            std::terminate(); \
+        } \
+    } while (false)
 
 /** Check if the expression is valid, or throw a parse_error.
  *
@@ -502,7 +513,9 @@
  * @param ... A string-literal as the reason why the no-default exists.
  */
 #ifndef NDEBUG
-#define hi_no_default(...) [[unlikely]] hi_debug_abort("Reached no-default:" __VA_ARGS__)
+#define hi_no_default(...) \
+    [[unlikely]] hi_debug_abort("Reached no-default:" __VA_ARGS__); \
+    std::terminate()
 #else
 #define hi_no_default(...) std::unreachable()
 #endif
@@ -524,7 +537,9 @@
  *
  * @param ... A string-literal as the reason why this it not implemented.
  */
-#define hi_not_implemented(...) [[unlikely]] hi_debug_abort("Not implemented: " __VA_ARGS__);
+#define hi_not_implemented(...) \
+    [[unlikely]] hi_debug_abort("Not implemented: " __VA_ARGS__); \
+    std::terminate()
 
 /** This part of the code has not been implemented yet.
  * This function should be used in unreachable constexpr else statements.
@@ -571,7 +586,8 @@
 #define hi_log_error(fmt, ...) hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define hi_log_fatal(fmt, ...) \
     hi_log(::hi::global_state_type::log_fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
-    hi_debug_abort()
+    hi_debug_abort();\
+    std::terminate()
 
 #define hi_log_info_once(name, fmt, ...) \
     do { \

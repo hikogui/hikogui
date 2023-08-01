@@ -2,18 +2,21 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../win32_headers.hpp"
 
-#include "path_location.hpp"
-#include "metadata.hpp"
-#include "metadata_library.hpp"
+#include "path_location_intf.hpp"
+#include "../metadata/metadata.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <filesystem>
 #include <string>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.path.path_location : impl);
+
+hi_export namespace hi::inline v1 {
 
 /** Convenience function for SHGetKnownFolderPath().
  *  Retrieves a full path of a known folder identified by the folder's KNOWNFOLDERID.
@@ -22,7 +25,7 @@ namespace hi::inline v1 {
  * @param KNOWNFOLDERID folder_id.
  * @return The path of the folder.
  */
-[[nodiscard]] static std::filesystem::path get_path_by_id(const KNOWNFOLDERID& folder_id) noexcept
+[[nodiscard]] inline std::filesystem::path get_path_by_id(const KNOWNFOLDERID& folder_id) noexcept
 {
     PWSTR wpath = nullptr;
     if (SHGetKnownFolderPath(folder_id, 0, nullptr, &wpath) != S_OK) {
@@ -35,7 +38,7 @@ namespace hi::inline v1 {
     return std::filesystem::path{wpath} / "";
 }
 
-[[nodiscard]] static std::filesystem::path get_module_path(HMODULE module_handle) noexcept
+[[nodiscard]] inline std::filesystem::path get_module_path(HMODULE module_handle) noexcept
 {
     std::wstring module_path;
     auto buffer_size = MAX_PATH; // initial default value = 256
@@ -55,12 +58,12 @@ namespace hi::inline v1 {
     hi_log_fatal("Could not get executable path. It exceeds the buffer length of 32768 chars.");
 }
 
-[[nodiscard]] static std::filesystem::path get_executable_path() noexcept
+[[nodiscard]] inline std::filesystem::path get_executable_path() noexcept
 {
     return get_module_path(nullptr);
 }
 
-[[nodiscard]] hi_no_inline static std::filesystem::path get_library_path() noexcept
+[[nodiscard]] hi_no_inline inline std::filesystem::path get_library_path() noexcept
 {
     HMODULE module_handle = nullptr;
     if (not GetModuleHandleEx(
@@ -74,7 +77,7 @@ namespace hi::inline v1 {
     return get_module_path(module_handle);
 }
 
-[[nodiscard]] generator<std::filesystem::path> get_paths(path_location location)
+[[nodiscard]] inline generator<std::filesystem::path> get_paths(path_location location)
 {
     using enum path_location;
 

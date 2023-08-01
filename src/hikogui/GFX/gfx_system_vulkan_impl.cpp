@@ -4,8 +4,8 @@
 
 #include "gfx_system_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
-#include "../settings/module.hpp"
-#include "../utility/module.hpp"
+#include "../settings/settings.hpp"
+#include "../utility/utility.hpp"
 #include "../path/path.hpp"
 #include "../macros.hpp"
 #include <chrono>

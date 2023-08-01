@@ -14,7 +14,7 @@
 #include <exception>
 #include <bit>
 
-hi_export_module(hikogui_utility_bits);
+hi_export_module(hikogui.utility.bits);
 
 hi_export namespace hi { inline namespace v1 {
 

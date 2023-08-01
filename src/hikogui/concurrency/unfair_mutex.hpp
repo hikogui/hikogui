@@ -9,7 +9,7 @@
 #pragma once
 
 #include "dead_lock_detector.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <atomic>
 #include <memory>

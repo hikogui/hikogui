@@ -16,7 +16,7 @@
 #include "otype_os2.hpp"
 #include "otype_sfnt.hpp"
 #include "../geometry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"
 #include <cstddef>

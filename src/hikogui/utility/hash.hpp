@@ -10,7 +10,9 @@
 #include <array>
 #include <type_traits>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.utility.hash);
+
+hi_export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr std::size_t hash_mix_two(std::size_t hash1, std::size_t hash2) noexcept
 {

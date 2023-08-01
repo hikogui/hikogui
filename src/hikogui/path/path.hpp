@@ -1,15 +1,12 @@
 
 #pragma once
 
-#include "glob.hpp"
-#include "metadata_library.hpp"
-#include "metadata.hpp"
-#include "path_location.hpp"
-#include "semantic_version.hpp"
-#include "URI.hpp"
-#include "URL.hpp"
+#include "glob.hpp" // export
+#include "path_location.hpp" // export
+#include "URI.hpp" // export
+#include "URL.hpp" // export
 
-hi_export_module(hikogui_path);
+hi_export_module(hikogui.path);
 
 namespace hi {
 inline namespace v1 {

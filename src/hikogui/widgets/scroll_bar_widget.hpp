@@ -12,7 +12,7 @@
 #include "../GUI/module.hpp"
 #include "../geometry/module.hpp"
 #include "../observer/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>

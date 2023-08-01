@@ -6,7 +6,7 @@
 
 #include "observable.hpp"
 #include "../concurrency/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 
 

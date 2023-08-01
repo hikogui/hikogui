@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "../settings/module.hpp"
+#include "../settings/settings.hpp"
 #include "../text/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../color/module.hpp"
 #include "../geometry/module.hpp"
 #include "../codec/module.hpp"

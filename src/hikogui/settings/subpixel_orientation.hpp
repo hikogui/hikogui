@@ -8,11 +8,11 @@
 #pragma once
 
 #include "../geometry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <format>
 
-
+hi_export_module(hikogui.settings.subpixel_orientation);
 
 namespace hi::inline v1 {
 

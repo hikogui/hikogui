@@ -5,7 +5,7 @@
 #pragma once
 
 #include "audio_device.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../coroutine/module.hpp"
 #include "../macros.hpp"
 #include <vector>

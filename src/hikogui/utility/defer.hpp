@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <functional>
 
-hi_export_module(hikogui_utility_defer);
+hi_export_module(hikogui.utility.defer);
 
 namespace hi { inline namespace v1 {
 

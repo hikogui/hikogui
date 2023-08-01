@@ -20,7 +20,7 @@
 #if defined(HI_HAS_SSE)
 #include <xmmintrin.h> // SSE
 #endif
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 
 
 

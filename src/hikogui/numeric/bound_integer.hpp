@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "stdint.hpp"
 #include "interval.hpp"
 #include "../macros.hpp"

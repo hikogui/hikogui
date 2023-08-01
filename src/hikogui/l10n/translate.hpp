@@ -5,15 +5,16 @@
 #pragma once
 
 #include "translation.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../unicode/module.hpp"
-#include "../settings/module.hpp"
+#include "../settings/settings.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <string_view>
 #include <tuple>
 
+hi_export_module(hikogui.l10n.translate);
 
 
 namespace hi::inline v1 {

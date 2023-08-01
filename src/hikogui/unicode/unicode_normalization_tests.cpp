@@ -6,7 +6,7 @@
 #include "../file/module.hpp"
 #include "../algorithm/module.hpp"
 #include "../coroutine/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

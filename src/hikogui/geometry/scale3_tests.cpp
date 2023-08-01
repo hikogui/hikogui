@@ -4,7 +4,7 @@
 
 #include "scale3.hpp"
 #include "transform.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../test.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>

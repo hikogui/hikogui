@@ -5,7 +5,7 @@
 #pragma once
 
 #include "otype_utilities.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../i18n/module.hpp"
 #include "../macros.hpp"
 #include <span>

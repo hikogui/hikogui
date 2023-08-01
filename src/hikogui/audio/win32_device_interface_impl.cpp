@@ -6,7 +6,7 @@
 
 #include "win32_device_interface.hpp"
 #include "../telemetry/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 
 

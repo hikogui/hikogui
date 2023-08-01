@@ -13,7 +13,7 @@
 #include <string_view>
 #include <format>
 
-hi_export_module(hikogui_utility_exception : impl);
+hi_export_module(hikogui.utility.exception : impl);
 
 hi_export namespace hi {
 inline namespace v1 {

@@ -5,7 +5,7 @@
 #include "theme_book.hpp"
 #include "../font/module.hpp"
 #include "../path/path.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"
 

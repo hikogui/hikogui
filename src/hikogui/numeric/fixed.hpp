@@ -5,7 +5,7 @@
 #pragma once
 
 #include "safe_int.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <limits>

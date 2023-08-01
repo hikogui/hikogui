@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../time/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../SIMD/module.hpp"
 #include "../macros.hpp"
 #include <span>

@@ -74,19 +74,7 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/l10n/po_parser_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/l10n/translation_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/memory/locked_memory_allocator_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/net/globals_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer_impl.cpp    
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/path/path_location_win32_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/random/seed_win32_impl.cpp>
-    #${HIKOGUI_SOURCE_DIR}/settings/cpu_id_x64_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/settings/os_settings_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/os_settings_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/settings/preferences_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/registry_win32_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/user_settings_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_parse_context_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_char_impl.cpp

@@ -2,16 +2,18 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../telemetry/module.hpp"
 #include "../observer/module.hpp"
 #include "../codec/module.hpp"
 #include "../dispatch/dispatch.hpp"
-#include "../codec/module.hpp"
+#include "../file/module.hpp"
 #include "../macros.hpp"
 #include <typeinfo>
 #include <filesystem>
 
-#pragma once
+hi_export_module(hikogui.settings.preferences);
 
 namespace hi::inline v1 {
 class preferences;
@@ -20,7 +22,7 @@ namespace detail {
 
 class preference_item_base {
 public:
-    preference_item_base(preferences& parent, std::string_view path) noexcept;
+    preference_item_base(preferences& parent, std::string_view path) noexcept : _parent(parent), _path(path) {}
 
     preference_item_base(preference_item_base const&) = delete;
     preference_item_base(preference_item_base&&) = delete;
@@ -126,7 +128,14 @@ public:
      *
      * It is recommended to call `preferences::load(std::filesystem::path)` after the constructor.
      */
-    preferences() noexcept;
+    preferences() noexcept : _location(), _data(datum::make_map()), _modified(false)
+    {
+        using namespace std::chrono_literals;
+
+        _check_modified_cbt = loop::timer().repeat_function(5s, [this](auto...) {
+            this->check_modified();
+        });
+    }
 
     /** Construct a preferences instance.
      *
@@ -134,13 +143,20 @@ public:
      *
      * @param location The location of the preferences file to load from.
      */
-    preferences(std::filesystem::path location) noexcept;
+    preferences(std::filesystem::path location) noexcept : preferences()
+    {
+        load(location);
+    }
 
     preferences(std::string_view location) : preferences(std::filesystem::path{location}) {}
-    preferences(std::string const &location) : preferences(std::filesystem::path{location}) {}
+    preferences(std::string const& location) : preferences(std::filesystem::path{location}) {}
     preferences(char const *location) : preferences(std::filesystem::path{location}) {}
 
-    ~preferences();
+    ~preferences()
+    {
+        save();
+    }
+
     preferences(preferences const&) = delete;
     preferences(preferences&&) = delete;
     preferences& operator=(preferences const&) = delete;
@@ -150,7 +166,11 @@ public:
      *
      * This will load the preferences from the current selected file.
      */
-    void save() const noexcept;
+    void save() const noexcept
+    {
+        hilet lock = std::scoped_lock(mutex);
+        _save();
+    }
 
     /** Save the preferences.
      *
@@ -158,13 +178,22 @@ public:
      *
      * @param location The file to save the preferences to.
      */
-    void save(std::filesystem::path location) noexcept;
+    void save(std::filesystem::path location) noexcept
+    {
+        hilet lock = std::scoped_lock(mutex);
+        _location = std::move(location);
+        _save();
+    }
 
     /** Load the preferences.
      *
      * This will load the preferences from the current selected file.
      */
-    void load() noexcept;
+    void load() noexcept
+    {
+        hilet lock = std::scoped_lock(mutex);
+        _load();
+    }
 
     /** Load the preferences.
      *
@@ -172,12 +201,22 @@ public:
      *
      * @param location The file to save the preferences to.
      */
-    void load(std::filesystem::path location) noexcept;
+    void load(std::filesystem::path location) noexcept
+    {
+        hilet lock = std::scoped_lock(mutex);
+        _location = std::move(location);
+        _load();
+    }
 
     /** Reset data members to their default value.
      */
-    void reset() noexcept;
-
+    void reset() noexcept
+    {
+        _data = datum::make_map();
+        for (auto& item : _items) {
+            item->reset();
+        }
+    }
     /** Register an observer to a preferences file.
      *
      * @param path The json-path inside the preference file.
@@ -212,28 +251,114 @@ private:
      */
     std::vector<std::unique_ptr<detail::preference_item_base>> _items;
 
-    void _load() noexcept;
-    void _save() const noexcept;
+    void _load() noexcept
+    {
+        try {
+            auto file = hi::file(_location, access_mode::open_for_read);
+            auto text = file.read_string();
+            _data = parse_JSON(text);
+
+            for (auto& item : _items) {
+                item->load();
+            }
+
+        } catch (io_error const& e) {
+            hi_log_warning("Could not read preferences file. \"{}\"", e.what());
+            reset();
+
+        } catch (parse_error const& e) {
+            hi_log_error("Could not parse preferences file. \"{}\"", e.what());
+            reset();
+        }
+    }
+
+    void _save() const noexcept
+    {
+        try {
+            auto text = format_JSON(_data);
+
+            auto tmp_location = _location;
+            tmp_location += ".tmp";
+
+            auto file = hi::file(tmp_location, access_mode::truncate_or_create_for_write | access_mode::rename);
+            file.write(text);
+            file.flush();
+            file.rename(_location, true);
+
+        } catch (io_error const& e) {
+            hi_log_error("Could not save preferences to file. \"{}\"", e.what());
+        }
+
+        _modified = false;
+    }
 
     /** Check if there are modification in data and save when necessary.
      */
-    void check_modified() noexcept;
+    void check_modified() noexcept
+    {
+        hilet lock = std::scoped_lock(mutex);
+
+        if (_modified) {
+            _save();
+        }
+    }
 
     /** Write a value to the data.
      */
-    void write(jsonpath const& path, datum const value) noexcept;
+    void write(jsonpath const& path, datum const value) noexcept
+    {
+        hilet lock = std::scoped_lock(mutex);
+        auto *v = _data.find_one_or_create(path);
+        if (v == nullptr) {
+            hi_log_fatal("Could not write '{}' to preference file '{}'", path, _location.string());
+        }
+
+        if (*v != value) {
+            *v = value;
+            _modified = true;
+        }
+    }
 
     /** Read a value from the data.
      */
-    datum read(jsonpath const& path) noexcept;
+    datum read(jsonpath const& path) noexcept
+    {
+        hilet lock = std::scoped_lock(mutex);
+        if (auto const *const r = _data.find_one(path)) {
+            return *r;
+        } else {
+            return datum{std::monostate{}};
+        }
+    }
 
     /** Remove a value from the data.
      */
-    void remove(jsonpath const& path) noexcept;
+    void remove(jsonpath const& path) noexcept
+    {
+        hilet lock = std::scoped_lock(mutex);
+        if (_data.remove(path)) {
+            _modified = true;
+        }
+    }
 
     friend class detail::preference_item_base;
     template<typename T>
     friend class detail::preference_item;
 };
+
+inline void detail::preference_item_base::load() noexcept
+{
+    hilet value = this->_parent.read(_path);
+    if (value.is_undefined()) {
+        this->reset();
+    } else {
+        try {
+            this->decode(value);
+        } catch (std::exception const&) {
+            hi_log_error("Could not decode preference {}, value {}", _path, value);
+            this->reset();
+        }
+    }
+}
 
 } // namespace hi::inline v1

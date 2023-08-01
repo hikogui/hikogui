@@ -16,7 +16,9 @@
 #include <variant>
 #include <atomic>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.utility.type_traits);
+
+hi_export namespace hi::inline v1 {
 
 // clang-format off
 

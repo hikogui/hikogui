@@ -11,7 +11,7 @@
 #include "URI.hpp"
 #include "path_location.hpp"
 #include "../char_maps/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>
@@ -23,7 +23,7 @@
 #include <mutex>
 #include <filesystem>
 
-hi_export_module(hikogui_path_URL);
+hi_export_module(hikogui.path.URL);
 
 hi_warning_push();
 // C26434: Function '' hides a non-virtual function ''.

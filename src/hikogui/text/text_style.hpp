@@ -9,7 +9,7 @@
 #include "../color/module.hpp"
 #include "../i18n/module.hpp"
 #include "../unicode/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../font/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../container/module.hpp"

@@ -8,7 +8,9 @@
 #include <string>
 #include <string_view>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.metadata.semantic_version);
+
+hi_export namespace hi::inline v1 {
 
 class semantic_version {
 public:

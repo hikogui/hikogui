@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../time/module.hpp"
 #include "../macros.hpp"
 #include <vector>
@@ -12,7 +12,7 @@
 #include <chrono>
 #include <functional>
 
-hi_export_module(hikogui_dispatch_function_timer);
+hi_export_module(hikogui.dispatch.function_timer);
 
 namespace hi::inline v1 {
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "polynomial.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

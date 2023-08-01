@@ -16,7 +16,7 @@
 #include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
-#include "../l10n/module.hpp"
+#include "../l10n/l10n.hpp"
 #include "../algorithm/module.hpp"
 #include "../macros.hpp"
 #include <unordered_set>

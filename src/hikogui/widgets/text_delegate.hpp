@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "../l10n/module.hpp"
+#include "../l10n/l10n.hpp"
 #include "../unicode/module.hpp"
-#include "../l10n/module.hpp"
+#include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <memory>

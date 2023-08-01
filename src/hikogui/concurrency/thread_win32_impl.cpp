@@ -6,7 +6,7 @@
 
 #include "thread.hpp"
 #include "unfair_mutex.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../char_maps/module.hpp"
 #include "../macros.hpp"
 #include <mutex>

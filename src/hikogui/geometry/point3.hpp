@@ -8,7 +8,7 @@
 #include "vector3.hpp"
 #include "extent3.hpp"
 #include "../SIMD/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <format>
 #include <concepts>

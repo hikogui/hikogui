@@ -14,7 +14,7 @@
 #include <format>
 #include <atomic>
 
-hi_export_module(hikogui_utility_exception : intf);
+hi_export_module(hikogui.utility.exception : intf);
 
 hi_export namespace hi { inline namespace v1 {
 

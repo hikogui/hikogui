@@ -5,7 +5,7 @@
 #include "graphic_path.hpp"
 #include "bezier_curve.hpp"
 #include "../image/module.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 
 

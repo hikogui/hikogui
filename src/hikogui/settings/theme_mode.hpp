@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <ostream>
 
-
+hi_export_module(hikogui.settings.theme_mode);
 
 namespace hi::inline v1 {
 

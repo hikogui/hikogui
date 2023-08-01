@@ -6,7 +6,7 @@
 
 #include "bezier_point.hpp"
 #include "bezier_curve.hpp"
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../geometry/module.hpp"
 #include "../image/module.hpp"
 #include "../macros.hpp"

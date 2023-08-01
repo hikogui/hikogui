@@ -13,7 +13,9 @@
 #include "concepts.hpp"
 #include <concepts>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.utility.numbers);
+
+hi_export namespace hi::inline v1 {
 
 /** A large number.
 * 
