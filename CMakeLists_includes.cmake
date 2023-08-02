@@ -303,9 +303,15 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/graphic_path/graphic_path.hpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path/module.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_639.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/module.hpp
     ${HIKOGUI_SOURCE_DIR}/image/module.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap.hpp
