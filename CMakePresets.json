@@ -189,7 +189,7 @@
             "name": "vc17-x64-windows-static-dbg-test-base",
             "displayName": "Generic Tests",
             "configurePreset": "vc17-x64-windows-static-dbg",
-            "output": {"outputOnFailure": false, "verbosity": "verbose"},
+            "output": {"outputOnFailure": true, "verbosity": "verbose"},
             "execution": {"noTestsAction": "error", "stopOnFailure": false, "jobs": 8}
         }
     ]
