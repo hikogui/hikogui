@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../parser/module.hpp"
+#include "../parser/parser.hpp"
 #include "../coroutine/module.hpp"
 #include "../macros.hpp"
 #include <string>

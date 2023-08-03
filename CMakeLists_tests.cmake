@@ -75,6 +75,8 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/numeric/safe_int_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/observer/group_ptr_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/observer/shared_state_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lexer_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lookahead_iterator_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/path/glob_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/path/URI_tests.cpp

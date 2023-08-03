@@ -30,7 +30,7 @@
 #include "net/module.hpp"
 #include "numeric/module.hpp"
 #include "observer/module.hpp"
-#include "parser/module.hpp"
+#include "parser/parser.hpp"
 #include "path/path.hpp"
 #include "random/random.hpp"
 #include "security/module.hpp"

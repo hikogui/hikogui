@@ -5,7 +5,7 @@
 #include "gzip.hpp"
 #include "inflate.hpp"
 #include "../utility/utility.hpp"
-#include "../parser/module.hpp"
+#include "../parser/parser.hpp"
 #include "../macros.hpp"
 
 

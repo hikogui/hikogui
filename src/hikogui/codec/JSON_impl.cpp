@@ -5,179 +5,202 @@
 #include "JSON.hpp"
 #include "../file/module.hpp"
 #include "../macros.hpp"
+#include <filesystem>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
+namespace detail {
 
 struct parse_context_t {
+    std::filesystem::path path;
     std::string_view::const_iterator text_begin;
 };
 
-[[nodiscard]] static parse_result<datum> parseValue(parse_context_t &context, token_iterator token);
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] std::optional<datum> json_parse_value(parse_context_t& context, It &it, ItEnd last);
 
-[[nodiscard]] static parse_result<datum> parseArray(parse_context_t &context, token_iterator token)
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] inline std::optional<datum> json_parse_array(parse_context_t& context, It &it, ItEnd last)
 {
-    auto v = datum::make_vector();
+    auto r = datum::make_vector();
 
     // Required '['
-    if ((*token == tokenizer_name_t::Operator) && (*token == "[")) {
-        token++;
+    if (*it == '[') {
+        ++it;
     } else {
-        return {};
+        return std::nullopt;
     }
 
-    bool commaAfterValue = true;
+    auto comma_after_value = true;
     while (true) {
         // A ']' is required at end of configuration-items.
-        if ((*token == tokenizer_name_t::Operator) && (*token == "]")) {
-            token++;
+        if (*it == ']') {
+            ++it;
             break;
 
             // Required a value.
-        } else if (auto result = parseValue(context, token)) {
-            if (!commaAfterValue) {
-                throw parse_error(std::format("{}: Missing expected ','", token->location));
+        } else if (auto result = json_parse_value(context, it, last)) {
+            if (not comma_after_value) {
+                throw parse_error(std::format("{}: Expecting ',', found {}", token_location(it, last, context.path), *it));
             }
 
-            v.push_back(*result);
-            token = result.next_token;
+            r.push_back(std::move(*result));
 
-            if ((*token == tokenizer_name_t::Operator) && (*token == ",")) {
-                token++;
-                commaAfterValue = true;
+            if (*it == ',') {
+                ++it;
+                comma_after_value = true;
             } else {
-                commaAfterValue = false;
+                comma_after_value = false;
             }
 
         } else {
-            throw parse_error(std::format("{}: Expecting a value as the next item in an array.", token->location));
+            throw parse_error(std::format("{}: Expecting a JSON value, found {}", token_location(it, last, context.path), *it));
         }
     }
 
-    return {std::move(v), token};
+    return r;
 }
 
-[[nodiscard]] static parse_result<datum> parseObject(parse_context_t &context, token_iterator token)
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] inline std::optional<datum> json_parse_object(parse_context_t& context, It& it, ItEnd last)
 {
-    auto object = datum::make_map();
+    auto r = datum::make_map();
 
     // Required '{'
-    if ((*token == tokenizer_name_t::Operator) && (*token == "{")) {
-        token++;
+    if (*it == '{') {
+        ++it;
+
     } else {
-        return {};
+        return std::nullopt;
     }
 
-    bool commaAfterValue = true;
+    auto comma_after_value = true;
     while (true) {
         // A '}' is required at end of configuration-items.
-        if ((*token == tokenizer_name_t::Operator) && (*token == "}")) {
-            token++;
+        if (*it == '}') {
+            ++it;
             break;
 
             // Required a string name.
-        } else if (*token == tokenizer_name_t::StringLiteral) {
-            if (!commaAfterValue) {
-                throw parse_error(std::format("{}: Missing expected ','", token->location));
+        } else if (*it == token::dstr) {
+            if (not comma_after_value) {
+                throw parse_error(std::format("{}: Expecting ',', found {}.", token_location(it, last, context.path), *it));
             }
 
-            auto name = static_cast<std::string>(*token++);
+            auto name = static_cast<std::string>(*it++);
 
-            if ((*token == tokenizer_name_t::Operator) && (*token == ":")) {
-                token++;
+            if ((*it == ':')) {
+                ++it;
             } else {
-                throw parse_error(std::format("{}: Missing expected ':'", token->location));
+                throw parse_error(std::format("{}: Expecting ':', found {}.", token_location(it, last, context.path), *it));
             }
 
-            if (auto result = parseValue(context, token)) {
-                object[name] = *result;
-                token = result.next_token;
+            if (auto result = json_parse_value(context, it, last)) {
+                r[name] = std::move(*result);
 
             } else {
-                throw parse_error(std::format("{}: Missing JSON value", token->location));
+                throw parse_error(
+                    std::format("{}: Expecting a JSON value, found {}.", token_location(it, last, context.path), *it));
             }
 
-            if ((*token == tokenizer_name_t::Operator) && (*token == ",")) {
-                token++;
-                commaAfterValue = true;
+            if (*it == ',') {
+                ++it;
+                comma_after_value = true;
             } else {
-                commaAfterValue = false;
+                comma_after_value = false;
             }
 
         } else {
-            throw parse_error(std::format("{}: Unexpected token {}, expected a key or close-brace.", token->location, *token));
+            throw parse_error(std::format(
+                "{}: Unexpected token {}, expected a key or close-brace.", token_location(it, last, context.path), *it));
         }
     }
 
-    return {std::move(object), token};
+    return r;
 }
 
-[[nodiscard]] static parse_result<datum> parseValue(parse_context_t &context, token_iterator token)
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] inline std::optional<datum> json_parse_value(parse_context_t& context, It& it, ItEnd last)
 {
-    switch (token->name) {
-    case tokenizer_name_t::StringLiteral: {
-        auto value = datum{static_cast<std::string>(*token++)};
-        return {std::move(value), token};
-    } break;
-    case tokenizer_name_t::IntegerLiteral: {
-        auto value = datum{static_cast<long long>(*token++)};
-        return {std::move(value), token};
-    } break;
-    case tokenizer_name_t::FloatLiteral: {
-        auto value = datum{static_cast<double>(*token++)};
-        return {std::move(value), token};
-    } break;
-    case tokenizer_name_t::Name: {
-        hilet name = static_cast<std::string>(*token++);
-        if (name == "true") {
-            return {datum{true}, token};
-        } else if (name == "false") {
-            return {datum{false}, token};
-        } else if (name == "null") {
-            return {datum{nullptr}, token};
+    hi_assert(it != last);
+
+    if (*it == token::dstr) {
+        return datum{static_cast<std::string>(*it++)};
+
+    } else if (*it == token::integer) {
+        return datum{static_cast<long long>(*it++)};
+
+    } else if (*it == token::real) {
+        return datum{static_cast<double>(*it++)};
+
+    } else if (*it == '-') {
+        ++it;
+        if (*it == token::integer) {
+            return datum{-static_cast<long long>(*it++)};
+
+        } else if (*it == token::real) {
+            return datum{-static_cast<double>(*it++)};
+
         } else {
-            throw parse_error(std::format("{}: Unexpected name '{}'", token->location, name));
+            throw parse_error(std::format(
+                "{}: Unexpected token '{}' after '-', expected integer or floating point literal.",
+                token_location(it, last, context.path),
+                *it));
         }
-    } break;
-    default:
-        if (auto result1 = parseObject(context, token)) {
-            return result1;
-        } else if (auto result2 = parseArray(context, token)) {
-            return result2;
-        } else {
-            throw parse_error(std::format("{}: Unexpected token '{}'", token->location, token->name));
-        }
+
+    } else if (*it == token::id and *it == "true") {
+        ++it;
+        return datum{true};
+
+    } else if (*it == token::id and *it == "false") {
+        ++it;
+        return datum{false};
+
+    } else if (*it == token::id and *it == "null") {
+        ++it;
+        return datum{nullptr};
+
+    } else if (auto object = json_parse_object(context, it, last)) {
+        return *object;
+
+    } else if (auto array = json_parse_array(context, it, last)) {
+        return *array;
+
+    } else {
+        return std::nullopt;
     }
 }
+
+} // namespace detail
 
 [[nodiscard]] datum parse_JSON(std::string_view text)
 {
-    token_vector tokens = parseTokens(text);
+    auto it = lexer<lexer_config::json_style()>.parse(text);
 
-    datum root;
-
-    hi_assert(tokens.back() == tokenizer_name_t::End);
-    parse_context_t context;
+    auto context = detail::parse_context_t{};
+    context.path = "<no-filename>";
     context.text_begin = text.begin();
 
-    auto token = tokens.begin();
+    if (it == std::default_sentinel) {
+        throw parse_error(std::format("{}: No tokens found", token_location(it, std::default_sentinel, context.path)));
+    }
 
-    if (auto result = parseValue(context, token)) {
-        root = std::move(*result);
-        token = result.next_token;
+    auto r = datum{};
+    if (auto result = json_parse_value(context, it, std::default_sentinel)) {
+        r = std::move(*result);
 
     } else {
-        throw parse_error(std::format("{}: Missing JSON object", token->location));
+        throw parse_error(std::format("{}: Missing JSON object", token_location(it, std::default_sentinel, context.path)));
     }
 
-    if (*token != tokenizer_name_t::End) {
-        throw parse_error(std::format("{}: Unexpected text after JSON root object", token->location));
+    if (it != std::default_sentinel) {
+        throw parse_error(
+            std::format("{}: Unexpected text after JSON root object", token_location(it, std::default_sentinel, context.path)));
     }
 
-    return root;
+    return r;
 }
 
-
-static void format_JSON_impl(datum const &value, std::string &result, hi::indent indent = {})
+static void format_JSON_impl(datum const& value, std::string& result, hi::indent indent = {})
 {
     if (holds_alternative<nullptr_t>(value)) {
         result += "null";
@@ -211,7 +234,8 @@ static void format_JSON_impl(datum const &value, std::string &result, hi::indent
                 result += '\\';
                 result += '"';
                 break;
-            default: result += c;
+            default:
+                result += c;
             }
         }
         result += '"';
@@ -260,11 +284,12 @@ static void format_JSON_impl(datum const &value, std::string &result, hi::indent
     }
 }
 
-[[nodiscard]] std::string format_JSON(datum const &root)
+[[nodiscard]] std::string format_JSON(datum const& root)
 {
     auto r = std::string{};
     format_JSON_impl(root, r);
     r += '\n';
     return r;
 }
-} // namespace hi::inline v1
+
+}} // namespace hi::v1

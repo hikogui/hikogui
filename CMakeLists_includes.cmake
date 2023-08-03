@@ -380,10 +380,12 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/observer/observer.hpp
     ${HIKOGUI_SOURCE_DIR}/observer/shared_state.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/lexer.hpp
-    ${HIKOGUI_SOURCE_DIR}/parser/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lookahead_iterator.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/operator.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/parse_location.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/parser.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/placement.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/token.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer.hpp
     ${HIKOGUI_SOURCE_DIR}/path/glob.hpp
     ${HIKOGUI_SOURCE_DIR}/path/path.hpp

@@ -7,7 +7,7 @@
 #include "translation.hpp"
 #include "../i18n/module.hpp"
 #include "../file/module.hpp"
-#include "../parser/module.hpp"
+#include "../parser/parser.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <vector>
