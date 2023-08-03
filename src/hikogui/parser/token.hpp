@@ -155,20 +155,26 @@ private:
 };
 
 /** Create a location string for error messages.
-*
-* @param it An iterator that dereferences to a `hi::token`.
-* @param last The sentinel for @a it.
-* @param path The filename of the file being parsed.
-* @return A string with the location of the token.
-*/
+ *
+ * @param it An iterator that dereferences to a `hi::token`.
+ * @param last The sentinel for @a it.
+ * @param path The filename of the file being parsed.
+ * @return A string with the location of the token.
+ */
 template<std::input_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::string token_location(It& it, ItEnd last, std::filesystem::path const& path) noexcept
+[[nodiscard]] constexpr std::string token_location(It& it, ItEnd last, std::string_view path) noexcept
 {
     if (it == last) {
-        return std::format("{}:eof", path.filename().generic_string());
+        return std::format("{}:eof", path);
     } else {
-        return std::format("{}:{}:{}", path.filename().generic_string(), it->line_nr + 1, it->column_nr + 1);
+        return std::format("{}:{}:{}", path, it->line_nr + 1, it->column_nr + 1);
     }
+}
+
+template<std::input_iterator It>
+[[nodiscard]] constexpr std::string token_location(It& it, std::string_view path) noexcept
+{
+    return token_location(it, std::default_sentinel, path);
 }
 
 }} // namespace hi::v1
@@ -179,11 +185,7 @@ struct std::formatter<hi::token, CharT> : std::formatter<std::string, CharT> {
     {
         return std::formatter<std::string, CharT>::format(
             std::format(
-                "{} \"{}\" {}:{}",
-                hi::token::kind_type_metadata[t.kind],
-                static_cast<std::string>(t),
-                t.line_nr,
-                t.column_nr),
+                "{} \"{}\" {}:{}", hi::token::kind_type_metadata[t.kind], static_cast<std::string>(t), t.line_nr, t.column_nr),
             fc);
     }
 };

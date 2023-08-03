@@ -15,7 +15,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/codec/BON8_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/gzip_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/inflate_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/codec/JSON_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/png_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/zlib_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/console_win32_impl.cpp>
