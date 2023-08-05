@@ -2,6 +2,12 @@
 # Configuration file for ctest
 #-------------------------------------------------------------------
 
+#
+# By default, invoking ctest without a script will read custom files from the binary directory.
+# This file is copied into the binary dir from the main CMakeLists.txt via the following command:
+# configure_file("${CMAKE_SOURCE_DIR}/cmake/ctest/CTestCustom.cmake.in" "CTestCustom.cmake" @ONLY)
+#
+
 # lines to include as error context, default 10.
 set(CTEST_CUSTOM_ERROR_POST_CONTEXT           12)
 set(CTEST_CUSTOM_ERROR_PRE_CONTEXT            12)
