@@ -128,9 +128,12 @@ jobs:
       - name: ✔ ❌✔️ Test
         working-directory: build
         run: |
-          ctest --output-junit "${{github.workspace}}\test_results_${{matrix.config.PRESET}}.xml"
-          type Testing\Temporary\LastTest.log
-          type Testing\Temporary\LastTestsFailed.log
+          ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{matrix.config.PRESET}}.xml"
+          dir LastTest.log /S /B
+          dir LastTestsFailed.log /S /B
+
+      # type Testing\Temporary\LastTest.log
+      # type Testing\Temporary\LastTestsFailed.log
 
       # We upload multiple files into the same artifact file (zip).
       # Each file is differently named by adding the job name of the matrix as a suffix.
