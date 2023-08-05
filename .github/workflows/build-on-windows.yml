@@ -96,17 +96,12 @@ jobs:
       - name: ✏ CMake ➔ Configure
         run: cmake --preset=${{matrix.config.NAME}}
 
-      - name: 🙏 CMake ➔ Build (Debug)
-        if: contains(matrix.config.NAME, 'deb')
+      - name: 🙏 CMake ➔ Build
         run: cmake --build build --parallel 1
 
       - name: 🙏 CMake ➔ Build unit-tests (Debug)
         if: contains(matrix.config.NAME, 'deb')
         run: cmake --build build --parallel 1 --target=hikogui_tests
-
-      - name: 🙏 CMake ➔ Build (Release)
-        if: contains(matrix.config.NAME, 'rel')
-        run: cmake --build build --parallel 1
 
       - name: 🙏 CMake ➔ Build examples (Release)
         if: contains(matrix.config.NAME, 'rel')
