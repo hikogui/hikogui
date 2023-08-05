@@ -1,35 +1,36 @@
-# the module will build and run cpuid utility, which store detected
-# host processor features into cpuid.txt file in form:
-# FEATURE [not] supported
-# variable HAVE_CPUID_INFO set in case of success
-# if variable HAVE_CPUID_INFO is set then it is possible
-# to test HAVE_SSE42/HAVE_AVX2 variables
+
+# This CMake script will build and run a CPUID utility.
+# It detects processor features and writes a cpuinfo.json file,
+# containing cpu vendor, brand, isa-features and architecture level.
+#
+# The variable CPUINFO_OK is set in case of a successful compilation and run.
+# If successful, we can read the json file, check each feature
+# and set CMAKE variables accordingly, e.g. HAS_SSE42, HAS_AVX2, HAS_AVX512.
 
 include (CheckCXXSourceRuns)
+include (CMakePushCheckState)
+
+cmake_push_check_state ()
 
 if(NOT WIN32)
-    set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+  set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+else()
+# /EHsc catches C++ exceptions only and tells the compiler to assume that
+# extern C functions never throw a C++ exception.
+  set(CMAKE_REQUIRED_FLAGS "/EHsc /W4")
 endif()
 
-check_cxx_source_runs(
-"
-// InstructionSet.cpp
-// Compile by using: cl /EHsc /W4 InstructionSet.cpp
-// processor: x86, x64
-// Uses the __cpuid intrinsic to get information about
-// CPU extended instruction set support.
-//
-// source origin:
-// https://msdn.microsoft.com/en-us/library/hskdteyh.aspx
-// https://gcc.gnu.org/git/?p=gcc.git;a=blob_plain;f=gcc/config/i386/driver-i386.c
+# resetting this var is needed to debug CPUINFO_SOURCE_FILE
+#unset(CPUINFO_OK CACHE)
 
-
-#include <iostream>
-#include <fstream>
+set(CPUINFO_SOURCE_FILE
+"#include <iostream>
 #include <vector>
 #include <bitset>
 #include <array>
 #include <string>
+#include <fstream>
+#include <sstream>
 #ifdef WIN32
 #include <intrin.h>
 #else
@@ -245,127 +246,164 @@ private:
 // Initialize static member data
 const InstructionSet::InstructionSet_Internal InstructionSet::CPU_Rep;
 
-// Print out supported instruction set extensions
+inline std::string trim(std::string& str)
+{
+    str.erase(str.find_last_not_of(' ')+1);   // right-trim
+    str.erase(0, str.find_first_not_of(' ')); // left-trim
+    return str;
+}
+inline std::string rm_last_char(std::string& str, const std::string& c)
+{
+    return str.substr(0, str.find_last_of(c));
+}
+
 int main()
 {
-    std::ofstream fo(\"${CMAKE_BINARY_DIR}/cpuid.txt\");
-    auto& outstream = fo;//std::cout;
+    std::ostringstream outstream;
 
-    auto support_message = [&outstream](std::string isa_feature, bool is_supported) {
-        outstream << isa_feature << (is_supported ? \" supported\" : \" not supported\") << std::endl;
+    // print the json key value pair
+    auto print_pair = [&outstream](std::string key, auto val) {
+        outstream << \"    \\\\\"\" << key << \"\\\\\": \" << std::boolalpha << val << \",\\\\n\";
     };
 
-    std::cout << InstructionSet::Vendor() << std::endl;
-    std::cout << InstructionSet::Brand() << std::endl;
+    print_pair(\"3DNOW\",       InstructionSet::_3DNOW());
+    print_pair(\"3DNOWEXT\",    InstructionSet::_3DNOWEXT());
+    print_pair(\"ABM\",         InstructionSet::ABM());
+    print_pair(\"ADX\",         InstructionSet::ADX());
+    print_pair(\"AES\",         InstructionSet::AES());
+    print_pair(\"AVX\",         InstructionSet::AVX());
+    print_pair(\"AVX2\",        InstructionSet::AVX2());
+    print_pair(\"AVX512CD\",    InstructionSet::AVX512CD());
+    print_pair(\"AVX512F\",     InstructionSet::AVX512F());
+    print_pair(\"AVX512ER\",    InstructionSet::AVX512ER());
+    print_pair(\"AVX512PF\",    InstructionSet::AVX512PF());
+    print_pair(\"BMI1\",        InstructionSet::BMI1());
+    print_pair(\"BMI2\",        InstructionSet::BMI2());
+    print_pair(\"CLFSH\",       InstructionSet::CLFSH());
+    print_pair(\"CMPXCHG16B\",  InstructionSet::CMPXCHG16B());
+    print_pair(\"CX8\",         InstructionSet::CX8());
+    print_pair(\"ERMS\",        InstructionSet::ERMS());
+    print_pair(\"F16C\",        InstructionSet::F16C());
+    print_pair(\"FMA\",         InstructionSet::FMA());
+    print_pair(\"FSGSBASE\",    InstructionSet::FSGSBASE());
+    print_pair(\"FXSR\",        InstructionSet::FXSR());
+    print_pair(\"HLE\",         InstructionSet::HLE());
+    print_pair(\"INVPCID\",     InstructionSet::INVPCID());
+    print_pair(\"LAHF\",        InstructionSet::LAHF());
+    print_pair(\"LZCNT\",       InstructionSet::LZCNT());
+    print_pair(\"MMX\",         InstructionSet::MMX());
+    print_pair(\"MMXEXT\",      InstructionSet::MMXEXT());
+    print_pair(\"MONITOR\",     InstructionSet::MONITOR());
+    print_pair(\"MOVBE\",       InstructionSet::MOVBE());
+    print_pair(\"MSR\",         InstructionSet::MSR());
+    print_pair(\"OSXSAVE\",     InstructionSet::OSXSAVE());
+    print_pair(\"PCLMULQDQ\",   InstructionSet::PCLMULQDQ());
+    print_pair(\"POPCNT\",      InstructionSet::POPCNT());
+    print_pair(\"PREFETCHWT1\", InstructionSet::PREFETCHWT1());
+    print_pair(\"RDRAND\",      InstructionSet::RDRAND());
+    print_pair(\"RDSEED\",      InstructionSet::RDSEED());
+    print_pair(\"RDTSCP\",      InstructionSet::RDTSCP());
+    print_pair(\"RTM\",         InstructionSet::RTM());
+    print_pair(\"SEP\",         InstructionSet::SEP());
+    print_pair(\"SHA\",         InstructionSet::SHA());
+    print_pair(\"SSE\",         InstructionSet::SSE());
+    print_pair(\"SSE2\",        InstructionSet::SSE2());
+    print_pair(\"SSE3\",        InstructionSet::SSE3());
+    print_pair(\"SSE4.1\",      InstructionSet::SSE41());
+    print_pair(\"SSE4.2\",      InstructionSet::SSE42());
+    print_pair(\"SSE4a\",       InstructionSet::SSE4a());
+    print_pair(\"SSSE3\",       InstructionSet::SSSE3());
+    print_pair(\"SYSCALL\",     InstructionSet::SYSCALL());
+    print_pair(\"TBM\",         InstructionSet::TBM());
+    print_pair(\"XOP\",         InstructionSet::XOP());
+    print_pair(\"XSAVE\",       InstructionSet::XSAVE());
 
-    support_message(\"3DNOW\",       InstructionSet::_3DNOW());
-    support_message(\"3DNOWEXT\",    InstructionSet::_3DNOWEXT());
-    support_message(\"ABM\",         InstructionSet::ABM());
-    support_message(\"ADX\",         InstructionSet::ADX());
-    support_message(\"AES\",         InstructionSet::AES());
-    support_message(\"AVX\",         InstructionSet::AVX());
-    support_message(\"AVX2\",        InstructionSet::AVX2());
-    support_message(\"AVX512CD\",    InstructionSet::AVX512CD());
-    support_message(\"AVX512F\",     InstructionSet::AVX512F());
-    support_message(\"AVX512ER\",    InstructionSet::AVX512ER());
-    support_message(\"AVX512PF\",    InstructionSet::AVX512PF());
-    support_message(\"BMI1\",        InstructionSet::BMI1());
-    support_message(\"BMI2\",        InstructionSet::BMI2());
-    support_message(\"CLFSH\",       InstructionSet::CLFSH());
-    support_message(\"CMPXCHG16B\",  InstructionSet::CMPXCHG16B());
-    support_message(\"CX8\",         InstructionSet::CX8());
-    support_message(\"ERMS\",        InstructionSet::ERMS());
-    support_message(\"F16C\",        InstructionSet::F16C());
-    support_message(\"FMA\",         InstructionSet::FMA());
-    support_message(\"FSGSBASE\",    InstructionSet::FSGSBASE());
-    support_message(\"FXSR\",        InstructionSet::FXSR());
-    support_message(\"HLE\",         InstructionSet::HLE());
-    support_message(\"INVPCID\",     InstructionSet::INVPCID());
-    support_message(\"LAHF\",        InstructionSet::LAHF());
-    support_message(\"LZCNT\",       InstructionSet::LZCNT());
-    support_message(\"MMX\",         InstructionSet::MMX());
-    support_message(\"MMXEXT\",      InstructionSet::MMXEXT());
-    support_message(\"MONITOR\",     InstructionSet::MONITOR());
-    support_message(\"MOVBE\",       InstructionSet::MOVBE());
-    support_message(\"MSR\",         InstructionSet::MSR());
-    support_message(\"OSXSAVE\",     InstructionSet::OSXSAVE());
-    support_message(\"PCLMULQDQ\",   InstructionSet::PCLMULQDQ());
-    support_message(\"POPCNT\",      InstructionSet::POPCNT());
-    support_message(\"PREFETCHWT1\", InstructionSet::PREFETCHWT1());
-    support_message(\"RDRAND\",      InstructionSet::RDRAND());
-    support_message(\"RDSEED\",      InstructionSet::RDSEED());
-    support_message(\"RDTSCP\",      InstructionSet::RDTSCP());
-    support_message(\"RTM\",         InstructionSet::RTM());
-    support_message(\"SEP\",         InstructionSet::SEP());
-    support_message(\"SHA\",         InstructionSet::SHA());
-    support_message(\"SSE\",         InstructionSet::SSE());
-    support_message(\"SSE2\",        InstructionSet::SSE2());
-    support_message(\"SSE3\",        InstructionSet::SSE3());
-    support_message(\"SSE4.1\",      InstructionSet::SSE41());
-    support_message(\"SSE4.2\",      InstructionSet::SSE42());
-    support_message(\"SSE4a\",       InstructionSet::SSE4a());
-    support_message(\"SSSE3\",       InstructionSet::SSSE3());
-    support_message(\"SYSCALL\",     InstructionSet::SYSCALL());
-    support_message(\"TBM\",         InstructionSet::TBM());
-    support_message(\"XOP\",         InstructionSet::XOP());
-    support_message(\"XSAVE\",       InstructionSet::XSAVE());
+    // remove trailing comma from last item in isa-features
+    std::string isa_feature = outstream.str();
+    isa_feature = rm_last_char(isa_feature, \",\");
+
+    // determine architecture level
+    std::string architecture;
+    if(InstructionSet::AVX512F()) { architecture = \"x86-64-v4\"; } else
+    if(InstructionSet::AVX2())    { architecture = \"x86-64-v3\"; } else
+    if(InstructionSet::SSE42())   { architecture = \"x86-64-v2\"; } else
+    if(InstructionSet::SSE2())    { architecture = \"x86-64-v1\"; }
+
+    std::string vendor = InstructionSet::Vendor();
+    std::string brand = InstructionSet::Brand();
+    brand = trim(brand);
+
+    std::string NL = \"\\\\n\";  // double-escaped new line
+
+    // build json document
+    // This uses double escape qouting insanity.
+    // We embed json into cpp by escaping it, then we embed escaped cpp into cmake.
+    std::string json_str =
+        \"{\"                                                               +NL+
+        \" \\\\\"cpu\\\\\": {\"                                             +NL+
+        \"    \\\\\"vendor\\\\\": \\\\\"\" + vendor + \"\\\\\",\"           +NL+
+        \"    \\\\\"brand\\\\\": \\\\\"\" + brand + \"\\\\\"\"              +NL+
+        \" },\"                                                             +NL+
+        \" \\\\\"isa-features\\\\\": {\" + NL + isa_feature + NL + \"  },\" +NL+
+        \" \\\\\"architecture\\\\\": \\\\\"\" + architecture + \"\\\\\"\"   +NL+
+        \"}\";
+
+    // print to console
+    std::cout << json_str;
+
+    // write file
+    std::ofstream file(\"${CMAKE_BINARY_DIR}/cpuinfo.json\");
+    file << json_str;
+    file.close();
+
     return 0;
 }
-"
-CPUID_X86_SUCCESS
-)
+")
 
-set(HOST_IS_X86_64 FALSE)
-set(HOST_IS_X86_64_1 FALSE)
-set(HOST_IS_X86_64_2 FALSE)
-set(HOST_IS_X86_64_3 FALSE)
-set(HOST_IS_X86_64_4 FALSE)
-if(CPUID_X86_SUCCESS)
-    set(_CPUID_INFO "${CMAKE_BINARY_DIR}/cpuid.txt")
-    file(STRINGS ${_CPUID_INFO} _FEATURES)
+check_cxx_source_runs("${CPUINFO_SOURCE_FILE}" CPUINFO_OK)
 
-    message(STATUS "Host CPU features:")
+cmake_pop_check_state ()
 
-    foreach(FEATURE IN ITEMS ${_FEATURES})
-        message(STATUS "  ${FEATURE}")
+# fail early. this is for debugging the cpp
+if(NOT CPUINFO_OK)
+    message(FATAL_ERROR "Failed to compile cpuid.cpp source. CMake Exit.")
+endif()
 
-        string(COMPARE EQUAL "${FEATURE}" "AVX512F supported" _FEATURE_FOUND)
-        if(${_FEATURE_FOUND})
-            if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
-                set(HOST_IS_X86_64_4 ${_FEATURE_FOUND})
-            else()
-                message(WARNING "Compiler doesn't support AVX512 instruction set")
-            endif()
-        endif()
+if(CPUINFO_OK)
+  file(READ "${CMAKE_BINARY_DIR}/cpuinfo.json" CPUINFO_JSON_STRING)
 
-        string(COMPARE EQUAL "${FEATURE}" "AVX2 supported" _FEATURE_FOUND)
-        if(${_FEATURE_FOUND})
-            set(HOST_IS_X86_64_3 ${_FEATURE_FOUND})
-        endif()
+  string(JSON HI_CPUINFO_CPU_OBJECT   GET ${CPUINFO_JSON_STRING}   "cpu")
+  string(JSON HI_CPUINFO_VENDOR       GET ${HI_CPUINFO_CPU_OBJECT} "vendor") # cpu.vendor
+  string(JSON HI_CPUINFO_BRAND        GET ${HI_CPUINFO_CPU_OBJECT} "brand")  # cpu.brand
 
-        string(COMPARE EQUAL "${FEATURE}" "SSE4.2 supported" _FEATURE_FOUND)
-        if(${_FEATURE_FOUND})
-            set(HOST_IS_X86_64_2 ${_FEATURE_FOUND})
-        endif()
+  # example on how to access the isa-features
+  #string(JSON HI_CPUINFO_ISA_OBJECT   GET ${CPUINFO_JSON_STRING}   "isa-features")
+  #string(JSON HAS_SSE2                GET ${HI_CPUINFO_ISA_OBJECT} "SSE2") # isa-features.SSE2
 
-        string(COMPARE EQUAL "${FEATURE}" "SSE2 supported" _FEATURE_FOUND)
-        if(${_FEATURE_FOUND})
-            set(HOST_IS_X86_64 ${_FEATURE_FOUND})
-            set(HOST_IS_X86_64_1 ${_FEATURE_FOUND})
-        endif()
-    endforeach(FEATURE)
+  string(JSON HI_ARCHITECTURE_LEVEL   GET ${CPUINFO_JSON_STRING}   "architecture")
 
-    unset(_FEATURE_FOUND)
-    unset(_CPUID_INFO)
-    unset(_FEATURES)
+  message(STATUS "[CPU_INFO] Overview:")
+  message(STATUS "[CPU_INFO]  - Dataset            -> ${CMAKE_BINARY_DIR}/cpuinfo.json")
+  message(STATUS "[CPU_INFO]  - Vendor             -> ${HI_CPUINFO_VENDOR}")
+  message(STATUS "[CPU_INFO]  - Brand              -> ${HI_CPUINFO_BRAND}")
+  message(STATUS "[CPU_INFO]  - Architecture Level -> ${HI_ARCHITECTURE_LEVEL}")
 
-    if(HOST_IS_X86_64_4)
-        message(STATUS "Host CPU architecture level: x86-64-v4")
-    elseif(HOST_IS_X86_64_3)
-        message(STATUS "Host CPU architecture level: x86-64-v3")
-    elseif(HOST_IS_X86_64_2)
-        message(STATUS "Host CPU architecture level: x86-64-v2")
-    elseif(HOST_IS_X86_64_1)
-        message(STATUS "Host CPU architecture level: x86-64-v1")
-    endif()
+  # architecture levels
+  set(HOST_IS_X86_64_1 FALSE)
+  set(HOST_IS_X86_64_2 FALSE)
+  set(HOST_IS_X86_64_3 FALSE)
+  set(HOST_IS_X86_64_4 FALSE)
+
+  if(${HI_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v4")
+    set(HOST_IS_X86_64_4 TRUE)
+  elseif(${HI_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v3")
+    set(HOST_IS_X86_64_3 TRUE)
+  elseif(${HI_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v2")
+    set(HOST_IS_X86_64_2 TRUE)
+  elseif(${HI_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v1")
+    set(HOST_IS_X86_64_1 TRUE)
+  else()
+    message(WARNING "Architecture level does not match any expected value: ${HI_ARCHITECTURE_LEVEL}")
+  endif()
+
 endif()
