@@ -136,7 +136,7 @@ jobs:
           dir /S /B install
 
       - name: ✔ ❌✔️ Test
-        working-directory: build-dbg
+        working-directory: build
         run: |
           ctest --output-junit "${{github.workspace}}\test_results_${{matrix.config.NAME}}.xml"
           type Testing\Temporary\LastTest.log
