@@ -45,7 +45,6 @@ jobs:
         run: |
           date /T
           time /T
-          curl -V
           cmake --version
           vcpkg --version
           ninja --version

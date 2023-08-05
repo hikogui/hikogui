@@ -1,10 +1,53 @@
+# This file configures editors using the EditorConfig scheme.
+# https://editorconfig.org/
+
+# Guideline support for "Visual Studio 2022" IDE using extension: "PaulHarrington.EditorGuidelinesPreview"
+# https://marketplace.visualstudio.com/items?itemName=PaulHarrington.EditorGuidelinesPreview
+
+# Editorconfig support for "VSCode" using extension: "editorconfig.editorconfig"
+# https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig
+
+root = true
+
+# "visual studio" specific
+vc_generate_documentation_comments = doxygen_slash_star
 
 [*]
-indent_style = space
-indent_size = 4
 charset = utf-8
-trim_trailing_whitespace = true
+end_of_line = lf
+indent_style = space
 insert_final_newline = true
+
+# "visual studio" specific
 spelling_languages = en-us
 guidelines = 80 dashed, 130
 
+[CMakeLists.txt, *.{cmake}]
+indent_size = 2
+indent_style = space
+
+[*.cmake]
+indent_size = 2
+indent_style = space
+
+[*.{c,cc,cpp,h,hpp,hxx,inl}]
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{json,yaml,yml}]
+indent_size = 2
+insert_final_newline = false
+
+[*.sh]
+indent_size = 2
+
+[*.{js,ts}]
+indent_size = 4
+
+[*.{md,markdown}]
+indent_size = 4
+trim_trailing_whitespace = false
+
+# Config files
+[*.{clang-format}]
+indent_size = 2
