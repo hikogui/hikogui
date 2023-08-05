@@ -125,7 +125,7 @@
             "name": "vc17-x64-windows-static-rel-ci",
             "displayName": "ZZ MSVC-x64-Release (for CI)",
             "inherits": "vc17-x64-windows-static-rel",
-            "binaryDir": "build-rel",
+            "binaryDir": "build",
             "cacheVariables": {
                 "CMAKE_INSTALL_PREFIX": "install"
             }
@@ -134,7 +134,7 @@
             "name": "vc17-x64-windows-static-dbg-ci",
             "displayName": "ZZ MSVC-x64-Debug (for CI)",
             "inherits": "vc17-x64-windows-static-dbg",
-            "binaryDir": "build-dbg",
+            "binaryDir": "build",
             "cacheVariables": {
                 "CMAKE_INSTALL_PREFIX": "install"
             }
