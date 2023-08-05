@@ -36,6 +36,21 @@ jobs:
       - name: 🤘 Checkout Code
         uses: actions/checkout@v3 # https://github.com/actions/checkout
 
+      # https://community.chocolatey.org/packages/ninja
+      # https://community.chocolatey.org/packages/ccache
+      - name: 🔽 Install Ninja
+        run: choco install ninja ccache
+
+      - name: ℹ Show Tool Versions
+        run: |
+          date /T
+          time /T
+          curl -V
+          cmake --version
+          vcpkg --version
+          ninja --version
+          ccache --version
+
       - name: 🎯 Setup Build Cache
         uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
         with:
@@ -44,20 +59,6 @@ jobs:
             win-ci-build-${{ github.ref }}
             win-ci-build-refs/heads/main
             win-ci-build-
-
-      # https://community.chocolatey.org/packages/ninja
-      - name: 🔽 Install Ninja
-        run: choco install ninja
-
-      - name: ℹ Show Tool Versions
-        run: |
-          date /T
-          time /T
-          curl -V
-          cmake --version
-          msbuild /version
-          vcpkg version
-          ninja --version
 
       # Build Artifact Name: hikogui-0.3.0-0cda6a2-vc17-x64-windows-static
       - name: ✏ Fetch Versioning Data & Set Artifact Name
