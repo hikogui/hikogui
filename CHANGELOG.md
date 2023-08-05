@@ -1,8 +1,13 @@
-Change log
-==========
+# Changelog
 
-0.7 Strange Squirrel
---------------------
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+- Changed things.
+
+## [0.7.0] - 2022-10-07 - Strange Squirrel
+
 To make it possible to select and configure audio devices this release
 is a start to make composable shared-state, composable preferences and
 composable widgets.
@@ -26,8 +31,8 @@ There are also a few other systems that have been updated:
  * Rewritten `file` and `file_view` to function as copyable and movable value types.
  * Split INSTALL documentation between different IDEs.
 
-0.6 Dizzy Donkey
-----------------
+## [0.6.0] - 2022-04-12 - Dizzy Donkey
+
 The changes in this version are pretty random, but there is a theme
 of improving how to create custom widgets.
 
@@ -50,19 +55,19 @@ of improving how to create custom widgets.
    improving animations even in debug builds.
  * Improved localization support with language\_tags that have access to
    ISO-codes for language, script and region.
- 
 
-0.5.1 Bad Butterfly
--------------------
- * Fix bug; pre-main initialization order of global\_counter. 
+
+## [0.5.1] - 2021-10-11 - Bad Butterfly
+
+ * Fix bug; pre-main initialization order of global\_counter.
  * Make it easier to build out-of-tree application without vcpkg.
  * vcpkg builds are not recommended at the moment due to future
    changes of std::format and std::ranges to the c++20 standard.
    Please build using non-vcpkg to ensure equal versions of CMake
    and the compiler.
 
-0.5.0 Eager Elephant
---------------------
+## [0.5.0] - 2021-09-29 - Eager Elephant
+
 The changes in this version are pretty random, but there is a theme
 of improving the application developer's view of the API.
 
@@ -95,8 +100,8 @@ of improving the application developer's view of the API.
  * Add address-sanitizer builds.
  * Finalize BON8 (Binary Object Notation 8) specification.
 
-0.4.0 Lovely Lizard
--------------------
+## [0.4.0] - 2021-07-10 - Lovely Lizard
+
 This version is focused on making it practical for application developers to
 start using the ttauri framework to create GUI application.
 
@@ -127,8 +132,8 @@ Here are some of the important changes for this release:
   - RenderDoc
   - vcpkg
 
-0.3.0 Fancy Frog
-----------------
+## [0.3.0] - 2021-03-17 - Fancy Frog
+
 In this version we concentrated on making it easy for developers
 to install ttauri as a dependency for their own projects through vcpkg.
 
@@ -144,3 +149,15 @@ Here are some of the important changes for this release:
  * Made several documentation improvements.
  * Improved the pull-request work flow with continuous integration requirements before merging.
 
+## [0.2.0] - 2021-02-17 - First Public Release
+
+The first public release.
+
+[Unreleased]: https://github.com/hikogui/hikogui/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/hikogui/hikogui/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/hikogui/hikogui/compare/v0.5.1...v0.6.0
+[0.5.1]: https://github.com/hikogui/hikogui/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/hikogui/hikogui/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/hikogui/hikogui/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/hikogui/hikogui/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/hikogui/hikogui/releases/tag/v0.2.0
