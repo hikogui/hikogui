@@ -36,10 +36,9 @@ jobs:
       - name: 🤘 Checkout Code
         uses: actions/checkout@v3 # https://github.com/actions/checkout
 
-      - name: Install ninja-build tool
-        uses: seanmiddleditch/gha-setup-ninja@v3
-        with:
-          version: 1.11.1
+      # https://community.chocolatey.org/packages/ninja
+      - name: 🔽 Install Ninja
+        run: choco install ninja
 
       - name: ℹ Show Tool Versions
         run: |
@@ -105,9 +104,6 @@ jobs:
         if: contains(matrix.config.NAME, 'deb')
         run: cmake --build build --parallel 1 --target=hikogui_tests
 
-      - name: 📦 CMake ➔ Install
-        run: cmake --install build
-
       - name: 🙏 CMake ➔ Build (Release)
         if: contains(matrix.config.NAME, 'rel')
         run: cmake --build build --parallel 1
@@ -116,8 +112,7 @@ jobs:
         if: contains(matrix.config.NAME, 'rel')
         run: cmake --build build --parallel 1 --target=examples
 
-      - name: 📦 CMake ➔ Install (Release)
-        if: contains(matrix.config.NAME, 'rel')
+      - name: 📦 CMake ➔ Install
         run: cmake --install build
 
       - name: 📦 CMake ➔ Install examples (Release)
