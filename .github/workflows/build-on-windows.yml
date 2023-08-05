@@ -21,7 +21,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { NAME: "vc17-x64-windows-static" }
+            - { NAME: "vc17-x64-windows-static-dbg-ci" }
+            - { NAME: "vc17-x64-windows-static-rel-ci" }
 
     env:
       PLATFORM: x64
@@ -93,32 +94,35 @@ jobs:
         with:
           arch: x64
 
-      - name: ✏ CMake ➔ Configure (Debug)
-        run: cmake --preset=vc17-x64-windows-static-dbg-local
-
-      - name: ✏ CMake ➔ Configure (Release)
-        run: cmake --preset=vc17-x64-windows-static-rel-local
+      - name: ✏ CMake ➔ Configure
+        run: cmake --preset=${{matrix.config.NAME}}
 
       - name: 🙏 CMake ➔ Build (Debug)
-        run: cmake --build build-dbg --parallel 1
+        if: contains(matrix.config.NAME, 'deb')
+        run: cmake --build build --parallel 1
 
       - name: 🙏 CMake ➔ Build unit-tests (Debug)
-        run: cmake --build build-dbg  --parallel 1 --target=hikogui_tests
+        if: contains(matrix.config.NAME, 'deb')
+        run: cmake --build build --parallel 1 --target=hikogui_tests
 
-      - name: 📦 CMake ➔ Install (Debug)
-        run: cmake --install build-dbg
+      - name: 📦 CMake ➔ Install
+        run: cmake --install build
 
       - name: 🙏 CMake ➔ Build (Release)
-        run: cmake --build build-rel --parallel 1
+        if: contains(matrix.config.NAME, 'rel')
+        run: cmake --build build --parallel 1
 
       - name: 🙏 CMake ➔ Build examples (Release)
-        run: cmake --build build-rel  --parallel 1 --target=examples
+        if: contains(matrix.config.NAME, 'rel')
+        run: cmake --build build --parallel 1 --target=examples
 
       - name: 📦 CMake ➔ Install (Release)
-        run: cmake --install build-rel
+        if: contains(matrix.config.NAME, 'rel')
+        run: cmake --install build
 
       - name: 📦 CMake ➔ Install examples (Release)
-        run: cmake --install build-rel --component=examples
+        if: contains(matrix.config.NAME, 'rel')
+        run: cmake --install build --component=examples
 
       # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
       - name: Install Vulkan Runtime
@@ -128,8 +132,7 @@ jobs:
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
-          dir /S /B build-dbg
-          dir /S /B build-rel
+          dir /S /B build
           dir /S /B install
 
       - name: ✔ ❌✔️ Test
@@ -159,10 +162,9 @@ jobs:
           --sources=src ^
           --excluded_sources=src\*_tests.cpp ^
           --excluded_sources=src\*\*_tests.cpp ^
-          --excluded_sources=build-rel\_deps ^
-          --excluded_sources=build-dbg\_deps ^
+          --excluded_sources=build\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
-          --working_dir=.\\build-dbg ^
+          --working_dir=.\\build ^
           --cover_children ^
           -- ctest.exe
 

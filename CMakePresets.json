@@ -114,18 +114,6 @@
             }
         },
         {
-            "name": "vc17-x64-windows-static-dbg-vcpkg",
-            "displayName": "MSVC-x64-Debug (vcpkg)",
-            "inherits": "vc17-x64-windows-static-dbg",
-            "toolchainFile": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        },
-        {
-            "name": "vc17-x64-windows-static-rel-vcpkg",
-            "displayName": "MSVC-x64-Release (vcpkg)",
-            "inherits": "vc17-x64-windows-static-rel",
-            "toolchainFile": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        },
-        {
             "name": "clang-x64-windows-static-dbg",
             "displayName": "ZZ clang-x64-Debug",
             "inherits": "clang-x64-windows-static",
@@ -134,7 +122,7 @@
             }
         },
         {
-            "name": "vc17-x64-windows-static-rel-local",
+            "name": "vc17-x64-windows-static-rel-ci",
             "displayName": "ZZ MSVC-x64-Release (for CI)",
             "inherits": "vc17-x64-windows-static-rel",
             "binaryDir": "build-rel",
@@ -143,7 +131,7 @@
             }
         },
         {
-            "name": "vc17-x64-windows-static-dbg-local",
+            "name": "vc17-x64-windows-static-dbg-ci",
             "displayName": "ZZ MSVC-x64-Debug (for CI)",
             "inherits": "vc17-x64-windows-static-dbg",
             "binaryDir": "build-dbg",
