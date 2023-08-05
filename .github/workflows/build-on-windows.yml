@@ -21,8 +21,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-            - { NAME: "vc17-x64-windows-static-dbg-ci" }
-            - { NAME: "vc17-x64-windows-static-rel-ci" }
+            - { NAME: "Release", PRESET: "vc17-x64-windows-static-rel-ci" }
+            - { NAME: "Debug",   PRESET: "vc17-x64-windows-static-dbg-ci" }
 
     env:
       PLATFORM: x64
@@ -57,7 +57,7 @@ jobs:
           $NAME=$(jq -r .name vcpkg.json)
           $VERSION=$(jq -r .version vcpkg.json)
           $SHORT_HASH=$($env:GITHUB_SHA.substring(0,7))
-          $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-${{matrix.config.NAME}}"
+          $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-${{matrix.config.PRESET}}"
           echo "Artifact Name:" $ARTIFACT_NAME
           echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
           echo "VERSION=$($VERSION)" >> $env:GITHUB_ENV
@@ -94,24 +94,24 @@ jobs:
           arch: x64
 
       - name: ✏ CMake ➔ Configure
-        run: cmake --preset=${{matrix.config.NAME}}
+        run: cmake --preset=${{matrix.config.PRESET}}
 
       - name: 🙏 CMake ➔ Build
         run: cmake --build build --parallel 1
 
       - name: 🙏 CMake ➔ Build unit-tests (Debug)
-        if: contains(matrix.config.NAME, 'deb')
+        if: contains(matrix.config.PRESET, 'deb')
         run: cmake --build build --parallel 1 --target=hikogui_tests
 
       - name: 🙏 CMake ➔ Build examples (Release)
-        if: contains(matrix.config.NAME, 'rel')
+        if: contains(matrix.config.PRESET, 'rel')
         run: cmake --build build --parallel 1 --target=examples
 
       - name: 📦 CMake ➔ Install
         run: cmake --install build
 
       - name: 📦 CMake ➔ Install examples (Release)
-        if: contains(matrix.config.NAME, 'rel')
+        if: contains(matrix.config.PRESET, 'rel')
         run: cmake --install build --component=examples
 
       # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
@@ -128,7 +128,7 @@ jobs:
       - name: ✔ ❌✔️ Test
         working-directory: build
         run: |
-          ctest --output-junit "${{github.workspace}}\test_results_${{matrix.config.NAME}}.xml"
+          ctest --output-junit "${{github.workspace}}\test_results_${{matrix.config.PRESET}}.xml"
           type Testing\Temporary\LastTest.log
           type Testing\Temporary\LastTestsFailed.log
 
@@ -144,7 +144,7 @@ jobs:
           path: test_results_*.xml
 
       - name: 📑 Generate CodeCoverage Report (Debug)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(matrix.config.NAME, 'deb')
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(matrix.config.PRESET, 'deb')
         run: |
           curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
           OpenCppCoverageSetup-x64-0.9.9.0.exe /VERYSILENT /DIR=.\bin\coverage
@@ -159,7 +159,7 @@ jobs:
           -- ctest.exe
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(matrix.config.NAME, 'deb')
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(matrix.config.PRESET, 'deb')
         uses: codecov/codecov-action@v3 # https://github.com/codecov/codecov-action
         with:
           files: ./hikogui_coverage.xml
