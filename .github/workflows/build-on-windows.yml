@@ -36,6 +36,15 @@ jobs:
       - name: 🤘 Checkout Code
         uses: actions/checkout@v3 # https://github.com/actions/checkout
 
+      - name: 🎯 Setup Build Cache
+        uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
+        with:
+          key: win-ci-build-${{ github.ref }}
+          restore-keys: |
+            win-ci-build-${{ github.ref }}
+            win-ci-build-refs/heads/main
+            win-ci-build-
+
       # https://community.chocolatey.org/packages/ninja
       - name: 🔽 Install Ninja
         run: choco install ninja
