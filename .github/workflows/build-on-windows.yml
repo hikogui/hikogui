@@ -41,7 +41,7 @@ jobs:
       - name: 🔽 Install Ninja
         run: choco install ninja ccache
 
-      - name: ℹ Show Tool Versions
+      - name: 🛠️ Show Tool Versions
         run: |
           date /T
           time /T
@@ -53,8 +53,9 @@ jobs:
       - name: 🎯 Setup Build Cache
         uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
         with:
-          key: win-ci-build-${{ github.ref }}
+          key: win-ci-build-${{ github.ref }}-${{matrix.config.name}}
           restore-keys: |
+            win-ci-build-${{ github.ref }}-${{matrix.config.name}}
             win-ci-build-${{ github.ref }}
             win-ci-build-refs/heads/main
             win-ci-build-
