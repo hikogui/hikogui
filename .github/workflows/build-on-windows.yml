@@ -56,6 +56,8 @@ jobs:
           ninja --version
           ccache --version
 
+      # Reminder: This step requires that the CMakePresets for CI contain
+      # "CMAKE_CXX_COMPILER_LAUNCHER": "sccache".
       - name: 🎯 Setup Build Cache
         uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
         with:
