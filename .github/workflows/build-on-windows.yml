@@ -8,6 +8,12 @@
 
 name: "Build on Windows"
 on: [push, pull_request]
+
+# improve CI concurrency by automatically cancelling outdated jobs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
 # ---------------------------------------------------------------------------------------
