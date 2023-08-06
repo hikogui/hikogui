@@ -372,21 +372,21 @@ endif()
 if(CPUINFO_OK)
   file(READ "${CMAKE_BINARY_DIR}/cpuinfo.json" CPUINFO_JSON_STRING)
 
-  string(JSON HI_CPUINFO_CPU_OBJECT   GET ${CPUINFO_JSON_STRING}   "cpu")
-  string(JSON HI_CPUINFO_VENDOR       GET ${HI_CPUINFO_CPU_OBJECT} "vendor") # cpu.vendor
-  string(JSON HI_CPUINFO_BRAND        GET ${HI_CPUINFO_CPU_OBJECT} "brand")  # cpu.brand
+  string(JSON CPUINFO_CPU_OBJECT   GET ${CPUINFO_JSON_STRING} "cpu")
+  string(JSON CPUINFO_VENDOR       GET ${CPUINFO_CPU_OBJECT}  "vendor") # cpu.vendor
+  string(JSON CPUINFO_BRAND        GET ${CPUINFO_CPU_OBJECT}  "brand")  # cpu.brand
 
   # example on how to access the isa-features
-  #string(JSON HI_CPUINFO_ISA_OBJECT   GET ${CPUINFO_JSON_STRING}   "isa-features")
-  #string(JSON HAS_SSE2                GET ${HI_CPUINFO_ISA_OBJECT} "SSE2") # isa-features.SSE2
+  #string(JSON CPUINFO_ISA_OBJECT   GET ${CPUINFO_JSON_STRING}   "isa-features")
+  #string(JSON HAS_SSE2                GET ${CPUINFO_ISA_OBJECT} "SSE2") # isa-features.SSE2
 
-  string(JSON HI_ARCHITECTURE_LEVEL   GET ${CPUINFO_JSON_STRING}   "architecture")
+  string(JSON CPUINFO_ARCHITECTURE_LEVEL   GET ${CPUINFO_JSON_STRING} "architecture")
 
   message(STATUS "[CPU_INFO] Overview:")
   message(STATUS "[CPU_INFO]  - Dataset            -> ${CMAKE_BINARY_DIR}/cpuinfo.json")
-  message(STATUS "[CPU_INFO]  - Vendor             -> ${HI_CPUINFO_VENDOR}")
-  message(STATUS "[CPU_INFO]  - Brand              -> ${HI_CPUINFO_BRAND}")
-  message(STATUS "[CPU_INFO]  - Architecture Level -> ${HI_ARCHITECTURE_LEVEL}")
+  message(STATUS "[CPU_INFO]  - Vendor             -> ${CPUINFO_VENDOR}")
+  message(STATUS "[CPU_INFO]  - Brand              -> ${CPUINFO_BRAND}")
+  message(STATUS "[CPU_INFO]  - Architecture Level -> ${CPUINFO_ARCHITECTURE_LEVEL}")
 
   # architecture levels
   set(HOST_IS_X86_64_1 FALSE)
@@ -394,16 +394,16 @@ if(CPUINFO_OK)
   set(HOST_IS_X86_64_3 FALSE)
   set(HOST_IS_X86_64_4 FALSE)
 
-  if(${HI_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v4")
+  if(${CPUINFO_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v4")
     set(HOST_IS_X86_64_4 TRUE)
-  elseif(${HI_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v3")
+  elseif(${CPUINFO_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v3")
     set(HOST_IS_X86_64_3 TRUE)
-  elseif(${HI_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v2")
+  elseif(${CPUINFO_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v2")
     set(HOST_IS_X86_64_2 TRUE)
-  elseif(${HI_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v1")
+  elseif(${CPUINFO_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v1")
     set(HOST_IS_X86_64_1 TRUE)
   else()
-    message(WARNING "Architecture level does not match any expected value: ${HI_ARCHITECTURE_LEVEL}")
+    message(WARNING "Architecture level does not match any expected value: ${CPUINFO_ARCHITECTURE_LEVEL}")
   endif()
 
 endif()
