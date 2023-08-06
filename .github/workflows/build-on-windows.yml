@@ -53,10 +53,11 @@ jobs:
       - name: 🎯 Setup Build Cache
         uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
         with:
-          key: win-ci-build-${{ github.ref }}-${{matrix.config.name}}
+          variant: sccache
+          key: win-ci-build-${{github.ref}}-${{matrix.config.PRESET}}
           restore-keys: |
-            win-ci-build-${{ github.ref }}-${{matrix.config.name}}
-            win-ci-build-${{ github.ref }}
+            win-ci-build-${{github.ref}}-${{matrix.config.PRESET}}
+            win-ci-build-${{github.ref}}
             win-ci-build-refs/heads/main
             win-ci-build-
 
