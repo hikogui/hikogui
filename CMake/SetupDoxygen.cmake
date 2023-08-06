@@ -43,7 +43,13 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
     set(DOXYGEN_PREDEFINED "protected=private")
 
-    doxygen_add_docs(docs src/hikogui docs)
+    # https://cmake.org/cmake/help/latest/module/FindDoxygen.html#command:doxygen_add_docs
+    doxygen_add_docs(docs
+      src/hikogui
+      docs
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      COMMENT "Generate Documentation"
+    )
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share COMPONENT docs EXCLUDE_FROM_ALL)
 else()
     message("Please install Doxygen to generate the documentation.")
