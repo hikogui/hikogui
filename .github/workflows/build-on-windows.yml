@@ -107,10 +107,8 @@ jobs:
           dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\Bin
           dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\runtime\${{env.PLATFORM}}
 
-      - name: Set up Visual Studio shell
-        uses: egor-tensin/vs-shell@v2
-        with:
-          arch: x64
+      - name: 🛠️ Setup Visual Studio Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: ✏ CMake ➔ Configure
         run: cmake --preset=${{matrix.config.PRESET}}
