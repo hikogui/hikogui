@@ -73,6 +73,7 @@ include(CPUID)
 
 # disable adding CTest build targets like "NightlyStart" (before ctest include)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
+configure_file("${CMAKE_SOURCE_DIR}/cmake/ctest/CTestCustom.cmake.in" "CTestCustom.cmake" @ONLY)
 include(CTest)
 
 #-------------------------------------------------------------------
