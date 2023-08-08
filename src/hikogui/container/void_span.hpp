@@ -24,7 +24,7 @@ public:
     using pointer = void *;
     using const_pointer = void const *;
 
-    static constexpr std::size_t extent = std::dynamic_extent;
+    constexpr static std::size_t extent = std::dynamic_extent;
 
     constexpr ~void_span() = default;
     constexpr void_span() noexcept = default;
@@ -161,7 +161,7 @@ public:
     using pointer = void const *;
     using const_pointer = void const *;
 
-    static constexpr std::size_t extent = std::dynamic_extent;
+    constexpr static std::size_t extent = std::dynamic_extent;
 
     constexpr ~const_void_span() = default;
     constexpr const_void_span() noexcept = default;

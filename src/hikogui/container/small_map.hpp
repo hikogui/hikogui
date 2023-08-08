@@ -24,7 +24,7 @@ public:
         K key;
         V value;
     };
-    static constexpr int capacity = N;
+    constexpr static int capacity = N;
     using array_type = std::array<item_type, capacity>;
 
 private:

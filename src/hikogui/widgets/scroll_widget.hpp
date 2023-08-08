@@ -50,7 +50,7 @@ public:
     using horizontal_scroll_bar_type = scroll_bar_widget<axis::horizontal>;
     using vertical_scroll_bar_type = scroll_bar_widget<axis::vertical>;
 
-    static constexpr hi::axis axis = Axis;
+    constexpr static hi::axis axis = Axis;
 
     ~scroll_widget() {}
 

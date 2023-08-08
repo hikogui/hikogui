@@ -13,7 +13,7 @@
 
 namespace hi::inline v1 {
 
-// static auto KSPROPSETID_Pin_GUID = GUID{KSPROPSETID_Pin};
+// auto KSPROPSETID_Pin_GUID = GUID{KSPROPSETID_Pin};
 
 win32_device_interface::win32_device_interface(std::string device_name) :
     _device_name(std::move(device_name)), _handle(INVALID_HANDLE_VALUE)

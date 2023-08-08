@@ -979,7 +979,7 @@ public:
 
 private:
     // By how much the buffer should grow when size() == capacity().
-    static constexpr difference_type _grow_size = 256;
+    constexpr static difference_type _grow_size = 256;
 
     /** Start of the memory array.
      */

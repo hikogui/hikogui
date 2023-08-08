@@ -35,6 +35,32 @@ public:
     using difference_type = std::ptrdiff_t;
     using iterator_category = std::forward_iterator_tag;
 
+    class proxy {
+    public:
+        using value_type = value_type;
+        using reference = reference;
+        using pointer = pointer;
+
+        constexpr proxy(proxy const &) noexcept = default;
+        constexpr proxy(proxy &&) noexcept = default;
+        constexpr proxy &operator=(proxy const &) noexcept = default;
+        constexpr proxy &operator=(proxy &&) noexcept = default;
+        constexpr proxy(value_type other) noexcept : _v(std::move(other)) {}
+
+        constexpr reference operator*() const noexcept
+        {
+            return _v;
+        }
+
+        constexpr pointer operator->() const noexcept
+        {
+            return std::addressof(_v);
+        }
+
+    private:
+        value_type _v;
+    };
+
     constexpr lookahead_iterator() noexcept = default;
     constexpr lookahead_iterator(lookahead_iterator const &) noexcept = delete;
     constexpr lookahead_iterator(lookahead_iterator &&) noexcept = default;
@@ -43,7 +69,7 @@ public:
 
     constexpr explicit lookahead_iterator(It first, ItEnd last) noexcept : _it(first), _last(last), _size(0)
     {
-        while (_size != max_size and first != last) {
+        while (_size != max_size and _it != last) {
             add_one_to_lookahead();
         }
     }
@@ -153,9 +179,11 @@ public:
         return *this;
     }
 
-    constexpr void operator++(int) noexcept
+    constexpr proxy operator++(int) noexcept
     {
+        auto r = proxy{**this};
         ++(*this);
+        return r;
     }
 
 private:

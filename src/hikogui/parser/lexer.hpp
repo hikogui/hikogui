@@ -85,6 +85,7 @@ struct lexer_config {
     [[nodiscard]] constexpr static lexer_config json_style() noexcept
     {
         auto r = lexer_config{};
+        r.has_single_quote_string_literal = 1;
         r.has_double_quote_string_literal = 1;
         r.has_double_slash_line_comment = 1;
         r.filter_white_space = 1;
@@ -367,7 +368,7 @@ public:
 
     struct proxy {
         using value_type = token;
-        using reference = value_type const &;
+        using reference = value_type const&;
 
         value_type _v;
 
@@ -382,7 +383,7 @@ public:
     public:
         using iterator_category = std::input_iterator_tag;
         using value_type = token;
-        using reference = value_type const &;
+        using reference = value_type const&;
         using pointer = value_type const *;
         using difference_type = std::ptrdiff_t;
 
@@ -392,7 +393,13 @@ public:
             _cp = advance();
             do {
                 _token.kind = parse_token();
-            } while (Config.filter_white_space and _token.kind == token::ws);
+            } while (is_token_filtered(_token));
+        }
+
+        [[nodiscard]] constexpr static bool is_token_filtered(token x) noexcept
+        {
+            return (Config.filter_white_space and x == token::ws) or (Config.filter_comment and x == token::lcomment) or
+                (Config.filter_comment and x == token::bcomment);
         }
 
         [[nodiscard]] constexpr reference operator*() const noexcept
@@ -410,7 +417,7 @@ public:
             hi_axiom(*this != std::default_sentinel);
             do {
                 _token.kind = parse_token();
-            } while (Config.filter_white_space and _token.kind == token::ws);
+            } while (is_token_filtered(_token));
             return *this;
         }
 
@@ -690,7 +697,8 @@ public:
     };
 
     static_assert(std::movable<iterator<std::string::iterator, std::string::iterator>>);
-    static_assert(std::is_same_v<std::iterator_traits<iterator<std::string::iterator, std::string::iterator>>::value_type, token>);
+    static_assert(
+        std::is_same_v<std::iterator_traits<iterator<std::string::iterator, std::string::iterator>>::value_type, token>);
     static_assert(std::input_or_output_iterator<iterator<std::string::iterator, std::string::iterator>>);
     static_assert(std::weakly_incrementable<iterator<std::string::iterator, std::string::iterator>>);
 

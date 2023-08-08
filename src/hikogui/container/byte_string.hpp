@@ -33,17 +33,17 @@ public:
     using pos_type = std::fpos<std::mbstate_t>;
     using state_type = std::mbstate_t;
 
-    static constexpr void assign(std::byte& r, std::byte const& a) noexcept
+    constexpr static void assign(std::byte& r, std::byte const& a) noexcept
     {
         r = a;
     }
 
-    static constexpr bool eq(std::byte a, std::byte b) noexcept
+    constexpr static bool eq(std::byte a, std::byte b) noexcept
     {
         return static_cast<uint8_t>(a) == static_cast<uint8_t>(b);
     }
 
-    static constexpr bool lt(std::byte a, std::byte b) noexcept
+    constexpr static bool lt(std::byte a, std::byte b) noexcept
     {
         return static_cast<uint8_t>(a) < static_cast<uint8_t>(b);
     }
@@ -78,27 +78,27 @@ public:
         return static_cast<std::byte const *>(std::memchr(reinterpret_cast<char const *>(s), static_cast<uint8_t>(ch), count));
     }
 
-    static constexpr std::byte to_char_type(unsigned int c) noexcept
+    constexpr static std::byte to_char_type(unsigned int c) noexcept
     {
         return static_cast<std::byte>(c);
     }
 
-    static constexpr unsigned int to_int_type(std::byte c) noexcept
+    constexpr static unsigned int to_int_type(std::byte c) noexcept
     {
         return static_cast<unsigned int>(c);
     }
 
-    static constexpr bool eq_int_type(unsigned int c1, unsigned int c2) noexcept
+    constexpr static bool eq_int_type(unsigned int c1, unsigned int c2) noexcept
     {
         return c1 == c2;
     }
 
-    static constexpr unsigned int eof() noexcept
+    constexpr static unsigned int eof() noexcept
     {
         return 256;
     }
 
-    static constexpr unsigned int not_eof(unsigned int e) noexcept
+    constexpr static unsigned int not_eof(unsigned int e) noexcept
     {
         return eq_int_type(e, eof()) ? 0 : e;
     }

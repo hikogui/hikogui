@@ -26,7 +26,7 @@ template<interval<longreg_t> Bounds>
 struct bound_integer {
     using bound_type = interval<longreg_t>;
 
-    static constexpr bound_type bounds = Bounds;
+    constexpr static bound_type bounds = Bounds;
 
     // clang-format off
 
@@ -67,7 +67,7 @@ struct bound_integer {
     constexpr bound_integer &operator=(bound_integer const &) noexcept = default;
     constexpr bound_integer &operator=(bound_integer &&) noexcept = default;
 
-    [[nodiscard]] static constexpr bound_integer make_without_check(numeric_limited auto other) noexcept
+    [[nodiscard]] constexpr static bound_integer make_without_check(numeric_limited auto other) noexcept
     {
         bound_integer r;
         r.value = static_cast<value_type>(other);

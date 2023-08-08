@@ -72,17 +72,17 @@ public:
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] static constexpr extent2 infinity() noexcept
+    [[nodiscard]] constexpr static extent2 infinity() noexcept
     {
         return extent2{std::numeric_limits<value_type>::infinity(), std::numeric_limits<value_type>::infinity()};
     }
 
-    [[nodiscard]] static constexpr extent2 large() noexcept
+    [[nodiscard]] constexpr static extent2 large() noexcept
     {
         return extent2{large_number_v<float>, large_number_v<float>};
     }
 
-    [[nodiscard]] static constexpr extent2 nan() noexcept
+    [[nodiscard]] constexpr static extent2 nan() noexcept
     {
         auto r = extent2{};
         r._v.x() = std::numeric_limits<value_type>::signaling_NaN();

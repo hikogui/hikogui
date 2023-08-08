@@ -204,11 +204,11 @@ public:
     }
     /// @endprivatesection
 private:
-    static constexpr int GLYPH_SIZE = 5;
-    static constexpr int RADIUS = 5;
-    static constexpr int DIAMETER = RADIUS * 2;
-    static constexpr int MARGIN = 10;
-    static constexpr int SPACING = 8;
+    constexpr static int GLYPH_SIZE = 5;
+    constexpr static int RADIUS = 5;
+    constexpr static int DIAMETER = RADIUS * 2;
+    constexpr static int MARGIN = 10;
+    constexpr static int SPACING = 8;
 
     aarectangle closeRectangle;
     aarectangle minimizeRectangle;

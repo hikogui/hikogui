@@ -231,7 +231,7 @@ public:
     bool process_event(gui_event const& event) noexcept;
 
 protected:
-    static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
+    constexpr static std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
     /** The label of the window that is passed to the operating system.
      */

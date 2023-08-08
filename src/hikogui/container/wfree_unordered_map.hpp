@@ -61,7 +61,7 @@ public:
     using mapped_type = V;
 
 private:
-    static constexpr std::size_t CAPACITY = MAX_NR_ITEMS * 2;
+    constexpr static std::size_t CAPACITY = MAX_NR_ITEMS * 2;
 
     std::array<wfree_unordered_map_item<K, V>, CAPACITY> items = {};
 

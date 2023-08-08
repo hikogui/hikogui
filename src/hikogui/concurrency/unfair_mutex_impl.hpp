@@ -14,28 +14,29 @@
 #include "../macros.hpp"
 #include <atomic>
 #include <memory>
+#include <format>
 
 hi_export_module(hikogui.concurrency.unfair_mutex : impl);
 
 namespace hi { inline namespace v1 {
 namespace detail {
 
-inline static unfair_mutex_impl<false> unfair_mutex_deadlock_mutex;
+inline unfair_mutex_impl<false> unfair_mutex_deadlock_mutex;
 
-thread_local inline static std::vector<void *> unfair_mutex_deadlock_stack;
+thread_local inline std::vector<void *> unfair_mutex_deadlock_stack;
 
 /** The order in which objects where locked.
  * Each pair gives a first before second order.
  *
  * When accessing lock_order unfair_mutex_deadlock_mutex must be locked.
  */
-inline static std::vector<std::pair<void *, void *>> unfair_mutex_deadlock_lock_graph;
+inline std::vector<std::pair<void *, void *>> unfair_mutex_deadlock_lock_graph;
 
 [[nodiscard]] inline void *unfair_mutex_deadlock_check_graph(void *object) noexcept
 {
     hi_assert_not_null(object);
 
-    hilet lock = std::scoped_lock(unfair_mutex_deadlock_mutex);
+    hilet lock = std::scoped_lock(detail::unfair_mutex_deadlock_mutex);
 
     for (hilet before : unfair_mutex_deadlock_stack) {
         auto correct_order = std::make_pair(before, object);
@@ -77,11 +78,9 @@ hi_export inline void *unfair_mutex_deadlock_lock(void *object) noexcept
 
     hi_assert_not_null(object);
 
-    for (hilet& x : detail::unfair_mutex_deadlock_stack) {
-        if (object == x) {
-            // `object` already locked by the current thread.
-            return object;
-        }
+    if (std::count(detail::unfair_mutex_deadlock_stack.begin(), detail::unfair_mutex_deadlock_stack.end(), object) != 0) {
+        // `object` already locked by the current thread.
+        return object;
     }
 
     if (auto before = detail::unfair_mutex_deadlock_check_graph(object)) {
@@ -136,7 +135,6 @@ hi_export inline void unfair_mutex_deadlock_remove_object(void *object) noexcept
     }
 
     hilet lock = std::scoped_lock(detail::unfair_mutex_deadlock_mutex);
-
     std::erase_if(detail::unfair_mutex_deadlock_lock_graph, [object](hilet& item) {
         return item.first == object or item.second == object;
     });
@@ -169,26 +167,10 @@ hi_export inline void unfair_mutex_deadlock_clear_graph() noexcept
     detail::unfair_mutex_deadlock_lock_graph.clear();
 }
 
-/** An unfair mutex
- * This is a fast implementation of a mutex which does not fairly arbitrate
- * between multiple blocking threads. Due to the unfairness it is possible
- * that blocking threads will be completely starved.
- *
- * This mutex however does block on a operating system's futex/unfair_mutex
- * primitives and therefor thread priority are properly handled.
- *
- * On windows and Linux the compiler generally emits the following sequence
- * of instructions:
- *  + non-contented:
- *     - lock(): MOV r,1; XOR r,r; LOCK CMPXCHG; JNE (skip)
- *     - unlock(): LOCK XADD [],-1; CMP; JE
- *
- * @ingroup concurrency
- * @tparam UseDeadLockDetector true when the unfair_mutex will use the deadlock detector.
- */
 template<bool UseDeadLockDetector>
 inline unfair_mutex_impl<UseDeadLockDetector>::~unfair_mutex_impl()
 {
+    hi_axiom(not is_locked());
     if constexpr (UseDeadLockDetector) {
         unfair_mutex_deadlock_remove_object(this);
     }
@@ -205,10 +187,8 @@ inline void unfair_mutex_impl<UseDeadLockDetector>::lock() noexcept
 {
     if constexpr (UseDeadLockDetector) {
         hilet other = unfair_mutex_deadlock_lock(this);
-        // *this mutex is already locked.
-        hi_assert(other != this);
-        // Potential dead-lock because of different ordering with other.
-        hi_assert(other == nullptr);
+        hi_assert(other != this, "This mutex is already locked.");
+        hi_assert(other == nullptr, "Potential dead-lock because of different lock ordering of mutexes.");
     }
 
     hi_axiom(holds_invariant());
@@ -234,10 +214,8 @@ template<bool UseDeadLockDetector>
 {
     if constexpr (UseDeadLockDetector) {
         hilet other = unfair_mutex_deadlock_lock(this);
-        // *this mutex is already locked.
-        hi_assert(other != this);
-        // Potential dead-lock because of different ordering with other.
-        hi_assert(other == nullptr);
+        hi_assert(other != this, "This mutex is already locked.");
+        hi_assert(other == nullptr, "Potential dead-lock because of different lock ordering of mutexes.");
     }
 
     hi_axiom(holds_invariant());
@@ -248,8 +226,7 @@ template<bool UseDeadLockDetector>
         hi_axiom(holds_invariant());
 
         if constexpr (UseDeadLockDetector) {
-            // *this mutex is locked out-of-order from the order of being locked.
-            hi_assert(unfair_mutex_deadlock_unlock(this));
+            hi_assert(unfair_mutex_deadlock_unlock(this), "Unlock is not done in reverse order.");
         }
 
         [[unlikely]] return false;
@@ -263,8 +240,7 @@ template<bool UseDeadLockDetector>
 inline void unfair_mutex_impl<UseDeadLockDetector>::unlock() noexcept
 {
     if constexpr (UseDeadLockDetector) {
-        // *this mutex is locked out-of-order from the order of being locked.
-        hi_assert(unfair_mutex_deadlock_unlock(this));
+        hi_assert(unfair_mutex_deadlock_unlock(this), "Unlock is not done in reverse order.");
     }
 
     hi_axiom(holds_invariant());
