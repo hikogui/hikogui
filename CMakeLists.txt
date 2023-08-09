@@ -42,7 +42,7 @@ string(JSON HI_LIB_LICENSE  GET ${VCPKG_JSON_STRING} "license")
 string(JSON HI_LIB_DESC     GET ${VCPKG_JSON_STRING} "description")
 string(JSON HI_LIB_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
 
-configure_file("${CMAKE_SOURCE_DIR}/cmake/packaging/package.json.in" "package.json" @ONLY)
+configure_file("${CMAKE_SOURCE_DIR}/CMake/packaging/package.json.in" "package.json" @ONLY)
 file(READ ${CMAKE_CURRENT_BINARY_DIR}/package.json PACKAGE_JSON_STRING)
 string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
