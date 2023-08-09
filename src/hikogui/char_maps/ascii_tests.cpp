@@ -11,8 +11,8 @@
 using namespace std;
 using namespace hi;
 
-static auto invalid_tst = std::string{"abcdefghijklmnopqrstuvwxy\x80zABCDEFGHIJKLMNOPQRSTUVWXY\xffZ0123456789"};
-static auto invalid_exp = std::string{"abcdefghijklmnopqrstuvwxy?zABCDEFGHIJKLMNOPQRSTUVWXY?Z0123456789"};
+inline auto invalid_tst = std::string{"abcdefghijklmnopqrstuvwxy\x80zABCDEFGHIJKLMNOPQRSTUVWXY\xffZ0123456789"};
+inline auto invalid_exp = std::string{"abcdefghijklmnopqrstuvwxy?zABCDEFGHIJKLMNOPQRSTUVWXY?Z0123456789"};
 
 TEST(char_maps_ascii, identity_move)
 {

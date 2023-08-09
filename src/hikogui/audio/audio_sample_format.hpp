@@ -88,92 +88,92 @@ struct audio_sample_format {
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] static constexpr audio_sample_format float32_le() noexcept
+    [[nodiscard]] constexpr static audio_sample_format float32_le() noexcept
     {
         return {4, 8, 23, true, std::endian::little};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format float32_be() noexcept
+    [[nodiscard]] constexpr static audio_sample_format float32_be() noexcept
     {
         return {4, 8, 23, true, std::endian::big};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format float32() noexcept
+    [[nodiscard]] constexpr static audio_sample_format float32() noexcept
     {
         return {4, 8, 23, true, std::endian::native};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int16_le() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int16_le() noexcept
     {
         return {2, 0, 15, false, std::endian::little};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int16_be() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int16_be() noexcept
     {
         return {2, 0, 15, false, std::endian::big};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int16() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int16() noexcept
     {
         return {2, 0, 15, false, std::endian::native};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int20_le() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int20_le() noexcept
     {
         return {3, 0, 19, false, std::endian::little};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int20_be() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int20_be() noexcept
     {
         return {3, 0, 19, false, std::endian::big};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int20() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int20() noexcept
     {
         return {3, 0, 19, false, std::endian::native};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int24_le() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int24_le() noexcept
     {
         return {3, 0, 23, false, std::endian::little};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int24_be() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int24_be() noexcept
     {
         return {3, 0, 23, false, std::endian::big};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int24() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int24() noexcept
     {
         return {3, 0, 23, false, std::endian::native};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int32_le() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int32_le() noexcept
     {
         return {4, 0, 31, false, std::endian::little};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int32_be() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int32_be() noexcept
     {
         return {4, 0, 31, false, std::endian::big};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format int32() noexcept
+    [[nodiscard]] constexpr static audio_sample_format int32() noexcept
     {
         return {4, 0, 31, false, std::endian::native};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format fix8_23_le() noexcept
+    [[nodiscard]] constexpr static audio_sample_format fix8_23_le() noexcept
     {
         return {4, 8, 23, false, std::endian::little};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format fix8_23_be() noexcept
+    [[nodiscard]] constexpr static audio_sample_format fix8_23_be() noexcept
     {
         return {4, 8, 23, false, std::endian::big};
     }
 
-    [[nodiscard]] static constexpr audio_sample_format fix8_23() noexcept
+    [[nodiscard]] constexpr static audio_sample_format fix8_23() noexcept
     {
         return {4, 8, 23, false, std::endian::native};
     }

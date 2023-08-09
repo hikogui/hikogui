@@ -92,7 +92,7 @@ struct std::atomic<hi::global_state_type> {
     using atomic_type = std::atomic<underlying_type_t<value_type>>;
     atomic_type v;
 
-    static constexpr bool is_always_lock_free = atomic_type::is_always_lock_free;
+    constexpr static bool is_always_lock_free = atomic_type::is_always_lock_free;
 
     constexpr atomic() noexcept = default;
     atomic(atomic const&) = delete;

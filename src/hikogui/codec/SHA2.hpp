@@ -89,7 +89,7 @@ template<typename T>
 struct block {
     std::array<T, 16> v;
 
-    static constexpr std::size_t size = sizeof(v);
+    constexpr static std::size_t size = sizeof(v);
 
     constexpr void set_byte(std::size_t i, std::byte value) noexcept
     {
@@ -124,8 +124,8 @@ struct block {
 template<typename T, std::size_t Bits>
 class SHA2 {
     static_assert(Bits % 8 == 0);
-    static constexpr std::size_t nr_rounds = (sizeof(T) == 4) ? 64 : 80;
-    static constexpr std::size_t pad_length_of_length = (sizeof(T) == 4) ? 8 : 16;
+    constexpr static std::size_t nr_rounds = (sizeof(T) == 4) ? 64 : 80;
+    constexpr static std::size_t pad_length_of_length = (sizeof(T) == 4) ? 8 : 16;
 
     using state_type = detail::SHA2::state<T>;
     using block_type = detail::SHA2::block<T>;
@@ -139,7 +139,7 @@ class SHA2 {
 
     std::size_t size;
 
-    [[nodiscard]] static constexpr T K(std::size_t i) noexcept
+    [[nodiscard]] constexpr static T K(std::size_t i) noexcept
     {
         constexpr std::array<uint32_t, 64> K32 = {
             0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -176,29 +176,29 @@ class SHA2 {
         }
     }
 
-    [[nodiscard]] static constexpr T Maj(T x, T y, T z) noexcept
+    [[nodiscard]] constexpr static T Maj(T x, T y, T z) noexcept
     {
         return (x & y) ^ (x & z) ^ (y & z);
     }
 
-    [[nodiscard]] static constexpr T Ch(T x, T y, T z) noexcept
+    [[nodiscard]] constexpr static T Ch(T x, T y, T z) noexcept
     {
         return (x & y) ^ (~x & z);
     }
 
     template<int A, int B, int C>
-    [[nodiscard]] static constexpr T S(T x) noexcept
+    [[nodiscard]] constexpr static T S(T x) noexcept
     {
         return std::rotr(x, A) ^ std::rotr(x, B) ^ std::rotr(x, C);
     }
 
     template<int A, int B, int C>
-    [[nodiscard]] static constexpr T s(T x) noexcept
+    [[nodiscard]] constexpr static T s(T x) noexcept
     {
         return std::rotr(x, A) ^ std::rotr(x, B) ^ x >> C;
     }
 
-    [[nodiscard]] static constexpr T S0(T x) noexcept
+    [[nodiscard]] constexpr static T S0(T x) noexcept
     {
         if constexpr (std::is_same_v<T, uint32_t>) {
             return S<2, 13, 22>(x);
@@ -207,7 +207,7 @@ class SHA2 {
         }
     }
 
-    [[nodiscard]] static constexpr T S1(T x)
+    [[nodiscard]] constexpr static T S1(T x)
     {
         if constexpr (std::is_same_v<T, uint32_t>) {
             return S<6, 11, 25>(x);
@@ -216,7 +216,7 @@ class SHA2 {
         }
     }
 
-    [[nodiscard]] static constexpr T s0(T x)
+    [[nodiscard]] constexpr static T s0(T x)
     {
         if constexpr (std::is_same_v<T, uint32_t>) {
             return s<7, 18, 3>(x);
@@ -225,7 +225,7 @@ class SHA2 {
         }
     }
 
-    [[nodiscard]] static constexpr T s1(T x)
+    [[nodiscard]] constexpr static T s1(T x)
     {
         if constexpr (std::is_same_v<T, uint32_t>) {
             return s<17, 19, 10>(x);
@@ -234,7 +234,7 @@ class SHA2 {
         }
     }
 
-    static constexpr state_type round(state_type const &tmp, T K, T W) noexcept
+    constexpr static state_type round(state_type const &tmp, T K, T W) noexcept
     {
         hilet T1 = tmp.h + S1(tmp.e) + Ch(tmp.e, tmp.f, tmp.g) + K + W;
 

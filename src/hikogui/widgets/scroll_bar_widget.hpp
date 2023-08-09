@@ -38,7 +38,7 @@ class scroll_bar_widget final : public widget {
 public:
     using super = widget;
 
-    static constexpr hi::axis axis = Axis;
+    constexpr static hi::axis axis = Axis;
 
     observer<float> offset;
     observer<float> aperture;

@@ -15,13 +15,8 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/codec/BON8_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/gzip_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/inflate_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/codec/JSON_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/png_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/codec/zlib_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/thread_impl.cpp
-    #${HIKOGUI_SOURCE_DIR}/concurrency/thread_macos_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/concurrency/thread_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/console_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/dialog_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/crt_utils_win32_impl.cpp>
@@ -71,9 +66,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/GUI/theme_book_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GUI/theme_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path/graphic_path_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer_impl.cpp    
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_parse_context_impl.cpp

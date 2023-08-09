@@ -57,8 +57,8 @@ template<typename To>
 class datum_promotion_result {
 public:
     using value_type = To;
-    static constexpr bool data_is_pointer = sizeof(value_type) > sizeof(void *);
-    static constexpr bool data_is_scalar = not data_is_pointer;
+    constexpr static bool data_is_pointer = sizeof(value_type) > sizeof(void *);
+    constexpr static bool data_is_scalar = not data_is_pointer;
 
     constexpr void clear() noexcept requires(data_is_scalar) {}
     constexpr void clear() noexcept requires(data_is_pointer)
@@ -2039,7 +2039,7 @@ private:
     }
 
     void find_indices(
-        jsonpath_indices const& indices,
+        jsonpath::indices const& indices,
         jsonpath::const_iterator it,
         jsonpath::const_iterator it_end,
         std::vector<datum *>& r) noexcept
@@ -2052,7 +2052,7 @@ private:
     }
 
     void find_names(
-        jsonpath_names const& names,
+        jsonpath::names const& names,
         jsonpath::const_iterator it,
         jsonpath::const_iterator it_end,
         std::vector<datum *>& r) noexcept
@@ -2069,7 +2069,7 @@ private:
     }
 
     void find_slice(
-        jsonpath_slice const& slice,
+        jsonpath::slice const& slice,
         jsonpath::const_iterator it,
         jsonpath::const_iterator it_end,
         std::vector<datum *>& r) noexcept
@@ -2091,25 +2091,25 @@ private:
         if (it == it_end) {
             r.push_back(this);
 
-        } else if (std::holds_alternative<jsonpath_root>(*it)) {
+        } else if (std::holds_alternative<jsonpath::root>(*it)) {
             find(it + 1, it_end, r);
 
-        } else if (std::holds_alternative<jsonpath_current>(*it)) {
+        } else if (std::holds_alternative<jsonpath::current>(*it)) {
             find(it + 1, it_end, r);
 
-        } else if (std::holds_alternative<jsonpath_wildcard>(*it)) {
+        } else if (std::holds_alternative<jsonpath::wildcard>(*it)) {
             find_wildcard(it, it_end, r);
 
-        } else if (std::holds_alternative<jsonpath_descend>(*it)) {
+        } else if (std::holds_alternative<jsonpath::descend>(*it)) {
             find_descend(it, it_end, r);
 
-        } else if (auto indices = std::get_if<jsonpath_indices>(&*it)) {
+        } else if (auto indices = std::get_if<jsonpath::indices>(&*it)) {
             find_indices(*indices, it, it_end, r);
 
-        } else if (auto names = std::get_if<jsonpath_names>(&*it)) {
+        } else if (auto names = std::get_if<jsonpath::names>(&*it)) {
             find_names(*names, it, it_end, r);
 
-        } else if (auto slice = std::get_if<jsonpath_slice>(&*it)) {
+        } else if (auto slice = std::get_if<jsonpath::slice>(&*it)) {
             find_slice(*slice, it, it_end, r);
 
         } else {
@@ -2200,7 +2200,7 @@ private:
     }
 
     [[nodiscard]] int
-    remove_indices(jsonpath_indices const& indices, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    remove_indices(jsonpath::indices const& indices, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
             int r = 0;
@@ -2223,7 +2223,7 @@ private:
     }
 
     [[nodiscard]] int
-    remove_names(jsonpath_names const& names, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    remove_names(jsonpath::names const& names, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
     {
         if (auto map = get_if<datum::map_type>(*this)) {
             int r = 0;
@@ -2248,7 +2248,7 @@ private:
     }
 
     [[nodiscard]] int
-    remove_slice(jsonpath_slice const& slice, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    remove_slice(jsonpath::slice const& slice, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
             int r = 0;
@@ -2282,25 +2282,25 @@ private:
             // Reached end, remove matching name or index in parent.
             return 2;
 
-        } else if (std::holds_alternative<jsonpath_root>(*it)) {
+        } else if (std::holds_alternative<jsonpath::root>(*it)) {
             return remove(it + 1, it_end);
 
-        } else if (std::holds_alternative<jsonpath_current>(*it)) {
+        } else if (std::holds_alternative<jsonpath::current>(*it)) {
             return remove(it + 1, it_end);
 
-        } else if (std::holds_alternative<jsonpath_wildcard>(*it)) {
+        } else if (std::holds_alternative<jsonpath::wildcard>(*it)) {
             return remove_wildcard(it, it_end);
 
-        } else if (std::holds_alternative<jsonpath_descend>(*it)) {
+        } else if (std::holds_alternative<jsonpath::descend>(*it)) {
             return remove_descend(it, it_end);
 
-        } else if (auto indices = std::get_if<jsonpath_indices>(&*it)) {
+        } else if (auto indices = std::get_if<jsonpath::indices>(&*it)) {
             return remove_indices(*indices, it, it_end);
 
-        } else if (auto names = std::get_if<jsonpath_names>(&*it)) {
+        } else if (auto names = std::get_if<jsonpath::names>(&*it)) {
             return remove_names(*names, it, it_end);
 
-        } else if (auto slice = std::get_if<jsonpath_slice>(&*it)) {
+        } else if (auto slice = std::get_if<jsonpath::slice>(&*it)) {
             return remove_slice(*slice, it, it_end);
 
         } else {
@@ -2362,17 +2362,17 @@ private:
         if (it == it_end) {
             return this;
 
-        } else if (std::holds_alternative<jsonpath_root>(*it)) {
+        } else if (std::holds_alternative<jsonpath::root>(*it)) {
             return find_one(it + 1, it_end, create);
 
-        } else if (std::holds_alternative<jsonpath_current>(*it)) {
+        } else if (std::holds_alternative<jsonpath::current>(*it)) {
             return find_one(it + 1, it_end, create);
 
-        } else if (hilet *indices = std::get_if<jsonpath_indices>(&*it)) {
+        } else if (hilet *indices = std::get_if<jsonpath::indices>(&*it)) {
             hi_axiom(indices->size() == 1);
             return find_one_index(indices->front(), it, it_end, create);
 
-        } else if (hilet *names = std::get_if<jsonpath_names>(&*it)) {
+        } else if (hilet *names = std::get_if<jsonpath::names>(&*it)) {
             hi_axiom(names->size() == 1);
             return find_one_name(datum{names->front()}, it, it_end, create);
 

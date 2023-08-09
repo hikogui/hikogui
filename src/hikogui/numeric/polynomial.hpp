@@ -103,7 +103,7 @@ public:
     }
 
 private:
-    static constexpr std::size_t _capacity = N;
+    constexpr static std::size_t _capacity = N;
 
     array_type _v;
     std::size_t _size;

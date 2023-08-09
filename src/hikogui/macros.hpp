@@ -271,35 +271,19 @@
  */
 #define hi_get_overloaded_macro2(_1, _2, name, ...) name
 
-/** Set the message to display when the application terminates.
- *
- * The std::terminate() handler will display the __FILE__, __LINE__
- * number and the message to the console or a popup dialogue.
- *
- * @param ... The message to display.
- */
-#define hi_set_terminate_message(...) \
-    ::hi::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__, std::memory_order::relaxed)
-
 /** Debug-break.
  *
  * This function will break the application in the debugger.
  * Potentially it will start the Just-In-Time debugger if one is configured.
- * Otherwise it will continue execution, in this case the return value of this
- * macro should be checked to determine if `std::terminate()` should be called.
- *
- * @return true if the debugger is attached.
+ * Otherwise it will continue execution.
  */
 #if defined(_WIN32)
 #define hi_debug_break() \
-    []() { \
+    do { \
         if (::hi::prepare_debug_break()) { \
             __debugbreak(); \
-            return true; \
-        } else { \
-            return false; \
         } \
-    }()
+    } while (false)
 #else
 #error Missing implementation of hi_debug_break().
 #endif
@@ -314,13 +298,15 @@
  *
  * @param ... The reason why the abort is done.
  */
+#if defined(_WIN32)
 #define hi_debug_abort(...) \
     do { \
-        if (not hi_debug_break()) { \
-            [[unlikely]] hi_set_terminate_message(__VA_ARGS__); \
-            std::terminate(); \
-        } \
+        ::hi::prepare_debug_break(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__); \
+        __debugbreak(); \
     } while (false)
+#else
+#error Missing implementation of hi_debug_abort().
+#endif
 
 /** Check if the expression is valid, or throw a parse_error.
  *
@@ -424,7 +410,7 @@
 #define hi_assert(expression, ...) \
     do { \
         if (not(expression)) { \
-            hi_debug_abort("assert: " __VA_ARGS__ " (" hi_stringify(expression) ")"); \
+            hi_debug_abort("assert: " __VA_ARGS__ " not (" hi_stringify(expression) ")"); \
         } \
     } while (false)
 
@@ -586,7 +572,7 @@
 #define hi_log_error(fmt, ...) hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define hi_log_fatal(fmt, ...) \
     hi_log(::hi::global_state_type::log_fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
-    hi_debug_abort();\
+    hi_debug_abort(); \
     std::terminate()
 
 #define hi_log_info_once(name, fmt, ...) \

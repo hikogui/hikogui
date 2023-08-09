@@ -24,12 +24,12 @@ class gfx_device_vulkan;
 namespace pipeline_image {
 
 struct device_shared {
-    static constexpr std::size_t atlas_num_pages_per_axis = 8;
-    static constexpr std::size_t atlas_num_pages_per_image = atlas_num_pages_per_axis * atlas_num_pages_per_axis;
-    static constexpr std::size_t atlas_image_axis_size = atlas_num_pages_per_axis * (paged_image::page_size + 2);
-    static constexpr std::size_t atlas_maximum_num_images = 64;
-    static constexpr std::size_t staging_image_width = 1024;
-    static constexpr std::size_t staging_image_height = 1024;
+    constexpr static std::size_t atlas_num_pages_per_axis = 8;
+    constexpr static std::size_t atlas_num_pages_per_image = atlas_num_pages_per_axis * atlas_num_pages_per_axis;
+    constexpr static std::size_t atlas_image_axis_size = atlas_num_pages_per_axis * (paged_image::page_size + 2);
+    constexpr static std::size_t atlas_maximum_num_images = 64;
+    constexpr static std::size_t staging_image_width = 1024;
+    constexpr static std::size_t staging_image_height = 1024;
 
     gfx_device_vulkan const &device;
 

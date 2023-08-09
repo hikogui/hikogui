@@ -7,7 +7,7 @@
 #include "formula_post_process_context.hpp"
 #include "formula_evaluation_context.hpp"
 #include "../utility/utility.hpp"
-#include "../parser/module.hpp"
+#include "../parser/parser.hpp"
 #include "../codec/module.hpp"
 #include "../macros.hpp"
 #include <vector>

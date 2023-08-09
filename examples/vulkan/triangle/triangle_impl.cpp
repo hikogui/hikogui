@@ -31,7 +31,7 @@
         } \
     } while (false)
 
-[[nodiscard]] constexpr static bool operator==(VkRect2D const& lhs, VkRect2D const& rhs) noexcept
+[[nodiscard]] constexpr bool operator==(VkRect2D const& lhs, VkRect2D const& rhs) noexcept
 {
     return lhs.offset.x == rhs.offset.x and lhs.offset.y == rhs.offset.y and lhs.extent.width == rhs.extent.width and
         lhs.extent.height == rhs.extent.height;

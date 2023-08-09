@@ -71,14 +71,17 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/color/sRGB.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/atomic.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/callback_flags.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/dead_lock_detector.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/global_state.hpp
-    ${HIKOGUI_SOURCE_DIR}/concurrency/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/concurrency.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/notifier.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/rcu.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/subsystem.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/thread.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/thread_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/concurrency/thread_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_mutex.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_mutex_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_mutex_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/unfair_recursive_mutex.hpp
     ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
     ${HIKOGUI_SOURCE_DIR}/console/console.hpp
@@ -300,9 +303,15 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/graphic_path/graphic_path.hpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path/module.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/iso_3166_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_639.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/module.hpp
     ${HIKOGUI_SOURCE_DIR}/image/module.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap.hpp
@@ -371,10 +380,12 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/observer/observer.hpp
     ${HIKOGUI_SOURCE_DIR}/observer/shared_state.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/lexer.hpp
-    ${HIKOGUI_SOURCE_DIR}/parser/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/lookahead_iterator.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/operator.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/parse_location.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/parser.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/placement.hpp
+    ${HIKOGUI_SOURCE_DIR}/parser/token.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/tokenizer.hpp
     ${HIKOGUI_SOURCE_DIR}/path/glob.hpp
     ${HIKOGUI_SOURCE_DIR}/path/path.hpp

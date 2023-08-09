@@ -70,7 +70,7 @@ public:
      * @param bounds The bounds x=lower, y=-upper.
      * @return An interval.
      */
-    [[nodiscard]] static constexpr interval raw(bound_type bounds) noexcept
+    [[nodiscard]] constexpr static interval raw(bound_type bounds) noexcept
     {
         interval r;
         r.v = bounds;
