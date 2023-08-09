@@ -35,7 +35,7 @@ namespace hi { inline namespace v1 {
             message = "<no data>"sv;
         }
 
-        std::print(std::cerr, "{}\n{}", title, message);
+        std::cerr << std::format("{}\n{}\n", title, message);
 
     } else {
         title = "Abnormal termination."sv;
