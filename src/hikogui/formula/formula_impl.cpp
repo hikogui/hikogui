@@ -52,7 +52,7 @@
 #include "formula_ternary_operator_node.hpp"
 #include "formula_unary_operator_node.hpp"
 #include "formula_vector_literal_node.hpp"
-#include "../parser/module.hpp"
+#include "../parser/parser.hpp"
 #include "../algorithm/module.hpp"
 #include "../utility/utility.hpp"
 #include <format>

@@ -46,7 +46,7 @@ public:
 
     vk::SwapchainKHR swapchain;
 
-    static constexpr uint32_t defaultNumberOfSwapchainImages = 2;
+    constexpr static uint32_t defaultNumberOfSwapchainImages = 2;
 
     uint32_t nrSwapchainImages;
     vk::Extent2D swapchainImageExtent;

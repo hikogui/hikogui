@@ -9,7 +9,7 @@
 #include "../container/module.hpp"
 #include "../time/module.hpp"
 #include "../utility/utility.hpp"
-#include "../concurrency/module.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "../console/module.hpp"
 #include "../macros.hpp"
 #include <chrono>
@@ -43,7 +43,7 @@ public:
     static_assert(std::popcount(std::to_underlying(Level)) == 1);
 
     // clang-format off
-    static constexpr char const *log_level_name =
+    constexpr static char const *log_level_name =
         Level == global_state_type::log_fatal ? "fatal" :
         Level == global_state_type::log_error ? "error" :
         Level == global_state_type::log_warning ? "warning" :

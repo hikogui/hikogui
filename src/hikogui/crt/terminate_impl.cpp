@@ -14,10 +14,12 @@ namespace hi { inline namespace v1 {
 
 [[noreturn]] void terminate_handler() noexcept
 {
+    using namespace std::literals;
+
     log_global.flush();
 
-    auto title = std::string{};
-    auto message = std::string{};
+    auto title = std::string_view{};
+    auto message = std::string_view{};
 
     hilet ep = std::current_exception();
     if (ep) {
@@ -25,27 +27,19 @@ namespace hi { inline namespace v1 {
             std::rethrow_exception(ep);
 
         } catch (std::exception const& e) {
-            title = "Unhandled std::exception";
-            message += e.what();
+            title = "Unhandled std::exception."sv;
+            message = e.what();
 
         } catch (...) {
-            title = "Unhandled unknown exception";
+            title = "Unhandled unknown exception."sv;
+            message = "<no data>"sv;
         }
 
+        std::cerr << std::format("{}\n{}\n", title, message);
+
     } else {
-        title = "Abnormal termination";
-    }
-
-    if (auto terminate_message_ = terminate_message.exchange(nullptr)) {
-        message += terminate_message_;
-    }
-
-    console_output(title + "\n", std::cerr);
-
-    if (not message.empty()) {
-        console_output(message, std::cerr);
-    } else {
-        message = "Unknown error.";
+        title = "Abnormal termination."sv;
+        message = debug_message.exchange(nullptr, std::memory_order::relaxed);
     }
 
     dialog_ok(title, message);

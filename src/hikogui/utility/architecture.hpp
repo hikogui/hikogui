@@ -62,17 +62,24 @@ using uint128_t = unsigned __int128;
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 using os_handle = void *;
 using file_handle = os_handle;
+using thread_id = uint32_t;
+constexpr std::size_t maximum_num_cpus = 64;
 
 #elif HI_OPERATING_SYSTEM == HI_OS_MACOS
 using os_handle = int;
 using file_handle = int;
+using thread_id = uint32_t;
+constexpr std::size_t maximum_num_cpus = CPU_SETSIZE;
 
 #elif HI_OPERATING_SYSTEM == HI_OS_LINUX
 using os_handle = int;
 using file_handle = int;
+using thread_id = uint32_t;
+constexpr std::size_t maximum_num_cpus = CPU_SETSIZE;
 
 #else
-#error "file_handle Not implemented."
+#error "Not implemented."
 #endif
+
 
 } // namespace hi::inline v1

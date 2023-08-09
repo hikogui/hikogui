@@ -259,7 +259,7 @@ public:
     }
 
 private:
-    static constexpr std::size_t initial_capacity = 307;
+    constexpr static std::size_t initial_capacity = 307;
 
     node_type *_nodes = nullptr;
     std::size_t _capacity = 0;

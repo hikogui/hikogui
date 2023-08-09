@@ -116,22 +116,22 @@ constexpr auto base85_btoa_alphabet =
 template<detail::base_n_alphabet Alphabet, int CharsPerBlock, int BytesPerBlock>
 class base_n {
 public:
-    static constexpr detail::base_n_alphabet alphabet = Alphabet;
-    static constexpr char padding_char = alphabet.padding_char;
-    static constexpr long long radix = alphabet.radix;
-    static constexpr long long bytes_per_block = BytesPerBlock;
-    static constexpr long long chars_per_block = CharsPerBlock;
+    constexpr static detail::base_n_alphabet alphabet = Alphabet;
+    constexpr static char padding_char = alphabet.padding_char;
+    constexpr static long long radix = alphabet.radix;
+    constexpr static long long bytes_per_block = BytesPerBlock;
+    constexpr static long long chars_per_block = CharsPerBlock;
     static_assert(bytes_per_block != 0, "radix must be 16, 32, 64 or 85");
     static_assert(chars_per_block != 0, "radix must be 16, 32, 64 or 85");
 
     template<typename T>
-    static constexpr T int_from_char(char c) noexcept
+    constexpr static T int_from_char(char c) noexcept
     {
         return narrow_cast<T>(alphabet.int_from_char(c));
     }
 
     template<typename T>
-    static constexpr char char_from_int(T x) noexcept
+    constexpr static char char_from_int(T x) noexcept
     {
         return alphabet.char_from_int(narrow_cast<int8_t>(x));
     }
@@ -143,7 +143,7 @@ public:
      * @param output
      */
     template<typename ItIn, typename ItOut>
-    static constexpr void encode(ItIn ptr, ItIn last, ItOut output)
+    constexpr static void encode(ItIn ptr, ItIn last, ItOut output)
     {
         long long byte_index_in_block = 0;
         long long block = 0;
@@ -184,7 +184,7 @@ public:
      * @param bytes A span of bytes to encode.
      * @return The data encoded as a string.
      */
-    static constexpr std::string encode(std::span<std::byte const> bytes) noexcept
+    constexpr static std::string encode(std::span<std::byte const> bytes) noexcept
     {
         return encode(begin(bytes), end(bytes));
     }
@@ -197,7 +197,7 @@ public:
      * @return An iterator pointing on the first invalid character or last.
      */
     template<typename ItIn, typename ItOut>
-    static constexpr ItIn decode(ItIn ptr, ItIn last, ItOut output)
+    constexpr static ItIn decode(ItIn ptr, ItIn last, ItOut output)
     {
         int char_index_in_block = 0;
         long long block = 0;
@@ -269,7 +269,7 @@ private:
     }
 
     template<typename ItOut>
-    static constexpr void decode_block(long long block, long long nr_chars, ItOut output)
+    constexpr static void decode_block(long long block, long long nr_chars, ItOut output)
     {
         hilet padding = chars_per_block - nr_chars;
 

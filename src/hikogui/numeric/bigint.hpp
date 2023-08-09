@@ -24,12 +24,12 @@ template<std::unsigned_integral DigitType, std::size_t NumDigits, bool IsSigned>
 struct bigint {
     using digit_type = DigitType;
     using signed_digit_type = std::make_signed_t<digit_type>;
-    static constexpr auto num_digits = NumDigits;
-    static constexpr auto is_signed = IsSigned;
-    static constexpr auto bits_per_digit = sizeof(digit_type) * CHAR_BIT;
+    constexpr static auto num_digits = NumDigits;
+    constexpr static auto is_signed = IsSigned;
+    constexpr static auto bits_per_digit = sizeof(digit_type) * CHAR_BIT;
 
-    static constexpr digit_type zero_digit = 0;
-    static constexpr digit_type min1_digit = static_cast<digit_type>(signed_digit_type{-1});
+    constexpr static digit_type zero_digit = 0;
+    constexpr static digit_type min1_digit = static_cast<digit_type>(signed_digit_type{-1});
 
     /** Digits, in little endian order.
      */
@@ -566,28 +566,28 @@ template<std::unsigned_integral DigitType, std::size_t NumDigits, bool IsSigned>
 struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
     using value_type = hi::bigint<DigitType, NumDigits, IsSigned>;
 
-    static constexpr bool is_specialized = true;
-    static constexpr bool is_signed = IsSigned;
-    static constexpr bool is_integer = true;
-    static constexpr bool is_exact = true;
-    static constexpr bool has_infinity = false;
-    static constexpr bool has_quiet_NaN = false;
-    static constexpr bool has_signaling_NaN = false;
-    static constexpr float_round_style round_style = std::round_toward_zero;
-    static constexpr bool is_iec559 = false;
-    static constexpr bool is_bounded = true;
-    static constexpr bool is_modulo = true;
-    static constexpr int digits = std::numeric_limits<DigitType>::digits * NumDigits;
-    static constexpr int digits10 = std::numeric_limits<DigitType>::digits10 * NumDigits;
-    static constexpr int max_digits10 = 0;
-    static constexpr int min_exponent = 0;
-    static constexpr int min_exponent10 = 0;
-    static constexpr int max_exponent = 0;
-    static constexpr int max_exponent10 = 0;
-    static constexpr bool traps = std::numeric_limits<DigitType>::traps;
-    static constexpr bool tinyness_before = false;
+    constexpr static bool is_specialized = true;
+    constexpr static bool is_signed = IsSigned;
+    constexpr static bool is_integer = true;
+    constexpr static bool is_exact = true;
+    constexpr static bool has_infinity = false;
+    constexpr static bool has_quiet_NaN = false;
+    constexpr static bool has_signaling_NaN = false;
+    constexpr static float_round_style round_style = std::round_toward_zero;
+    constexpr static bool is_iec559 = false;
+    constexpr static bool is_bounded = true;
+    constexpr static bool is_modulo = true;
+    constexpr static int digits = std::numeric_limits<DigitType>::digits * NumDigits;
+    constexpr static int digits10 = std::numeric_limits<DigitType>::digits10 * NumDigits;
+    constexpr static int max_digits10 = 0;
+    constexpr static int min_exponent = 0;
+    constexpr static int min_exponent10 = 0;
+    constexpr static int max_exponent = 0;
+    constexpr static int max_exponent10 = 0;
+    constexpr static bool traps = std::numeric_limits<DigitType>::traps;
+    constexpr static bool tinyness_before = false;
 
-    static constexpr value_type min() noexcept
+    constexpr static value_type min() noexcept
     {
         auto r = value_type{};
         constexpr auto smin = std::numeric_limits<typename value_type::signed_digit_type>::min();
@@ -604,12 +604,12 @@ struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
         return r;
     }
 
-    static constexpr value_type lowest() noexcept
+    constexpr static value_type lowest() noexcept
     {
         return min();
     }
 
-    static constexpr value_type max() noexcept
+    constexpr static value_type max() noexcept
     {
         auto r = value_type{};
         constexpr auto smax = std::numeric_limits<typename value_type::signed_digit_type>::max();
@@ -626,32 +626,32 @@ struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
         return r;
     }
 
-    static constexpr value_type epsilon() noexcept
+    constexpr static value_type epsilon() noexcept
     {
         return value_type{0};
     }
 
-    static constexpr value_type round_error() noexcept
+    constexpr static value_type round_error() noexcept
     {
         return value_type{0};
     }
 
-    static constexpr value_type infinity() noexcept
+    constexpr static value_type infinity() noexcept
     {
         return value_type{0};
     }
 
-    static constexpr value_type quiet_NaN() noexcept
+    constexpr static value_type quiet_NaN() noexcept
     {
         return value_type{0};
     }
 
-    static constexpr value_type signaling_NaN() noexcept
+    constexpr static value_type signaling_NaN() noexcept
     {
         return value_type{0};
     }
 
-    static constexpr value_type denorm_min() noexcept
+    constexpr static value_type denorm_min() noexcept
     {
         return value_type{0};
     }

@@ -14,7 +14,7 @@
 #include "point3.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/utility.hpp"
-#include "../concurrency/module.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 #include <concepts>
 #include <mutex>
@@ -330,7 +330,7 @@ public:
 
     /** Need to call the hidden friend function from within another class.
      */
-    [[nodiscard]] static constexpr aarectangle _align(aarectangle outside, aarectangle inside, alignment alignment) noexcept
+    [[nodiscard]] constexpr static aarectangle _align(aarectangle outside, aarectangle inside, alignment alignment) noexcept
     {
         return align(outside, inside, alignment);
     }
@@ -497,7 +497,7 @@ template<>
 class std::atomic<hi::aarectangle> {
 public:
     using value_type = hi::aarectangle;
-    static constexpr bool is_always_lock_free = false;
+    constexpr static bool is_always_lock_free = false;
 
     constexpr atomic() noexcept = default;
     atomic(atomic const&) = delete;

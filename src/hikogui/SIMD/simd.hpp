@@ -227,7 +227,7 @@ struct simd {
         v = array_type{first, static_cast<value_type>(args)...};
     }
 
-    [[nodiscard]] static constexpr simd broadcast(T rhs) noexcept
+    [[nodiscard]] constexpr static simd broadcast(T rhs) noexcept
     {
         HI_X_runtime_evaluate_if_valid(simd{native_type::broadcast(rhs)});
 
@@ -238,7 +238,7 @@ struct simd {
         return r;
     }
 
-    [[nodiscard]] static constexpr simd epsilon() noexcept
+    [[nodiscard]] constexpr static simd epsilon() noexcept
     {
         if constexpr (std::is_floating_point_v<T>) {
             return broadcast(std::numeric_limits<T>::epsilon());
@@ -286,7 +286,7 @@ struct simd {
      * @return A numeric array.
      */
     template<std::size_t S>
-    [[nodiscard]] static constexpr simd load(std::byte const *ptr) noexcept
+    [[nodiscard]] constexpr static simd load(std::byte const *ptr) noexcept
     {
         HI_X_runtime_evaluate_if_valid(simd{native_type{ptr}});
 
@@ -299,7 +299,7 @@ struct simd {
      * @param ptr A Pointer to an array of values in memory.
      * @return A numeric array.
      */
-    [[nodiscard]] static constexpr simd load(std::byte const *ptr) noexcept
+    [[nodiscard]] constexpr static simd load(std::byte const *ptr) noexcept
     {
         HI_X_runtime_evaluate_if_valid(simd{native_type{ptr}});
 
@@ -312,7 +312,7 @@ struct simd {
      * @param ptr A Pointer to an array of values in memory.
      * @return A numeric array.
      */
-    [[nodiscard]] static constexpr simd load(T const *ptr) noexcept
+    [[nodiscard]] constexpr static simd load(T const *ptr) noexcept
     {
         HI_X_runtime_evaluate_if_valid(simd{native_type{ptr}});
 
@@ -913,7 +913,7 @@ struct simd {
         return left - right;
     }
 
-    [[nodiscard]] static constexpr simd byte_srl_shuffle_indices(unsigned int rhs)
+    [[nodiscard]] constexpr static simd byte_srl_shuffle_indices(unsigned int rhs)
         requires(std::is_same_v<value_type, int8_t> and size == 16)
     {
         static_assert(std::endian::native == std::endian::little);
@@ -930,7 +930,7 @@ struct simd {
         return r;
     }
 
-    [[nodiscard]] static constexpr simd byte_sll_shuffle_indices(unsigned int rhs)
+    [[nodiscard]] constexpr static simd byte_sll_shuffle_indices(unsigned int rhs)
         requires(std::is_same_v<value_type, int8_t> and size == 16)
     {
         static_assert(std::endian::native == std::endian::little);

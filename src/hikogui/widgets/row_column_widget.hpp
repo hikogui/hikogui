@@ -43,7 +43,7 @@ public:
     static_assert(Axis == axis::horizontal or Axis == axis::vertical);
 
     using super = widget;
-    static constexpr hi::axis axis = Axis;
+    constexpr static hi::axis axis = Axis;
 
     ~row_column_widget() {}
 

@@ -18,11 +18,6 @@ hi_export_module(hikogui.utility.exception : intf);
 
 hi_export namespace hi { inline namespace v1 {
 
-/** Message to show when the application is terminated.
- */
-inline std::atomic<char const *> terminate_message = nullptr;
-
-
 /** Get the OS error code from the last error received on this thread.
  */
 [[nodiscard]] uint32_t get_last_error_code() noexcept;
@@ -92,7 +87,7 @@ public:
      * @return Zero based indices for the line and column number.
      */
     template<typename It>
-    [[nodiscard]] static constexpr std::pair<size_t, size_t> get_line_position(It first, It last, size_t tab_size) noexcept
+    [[nodiscard]] constexpr static std::pair<size_t, size_t> get_line_position(It first, It last, size_t tab_size) noexcept
     {
         auto line_nr = 0_uz;
         auto column_nr = 0_uz;
@@ -144,7 +139,7 @@ public:
 
 private:
     template<typename It, typename... Args>
-    [[nodiscard]] static constexpr std::string
+    [[nodiscard]] constexpr static std::string
     make_what(It first, It last, size_t tab_size, char const *msg, Args const&...args) noexcept
     {
         hilet[line_nr, column_nr] = get_line_position(first, last, tab_size);

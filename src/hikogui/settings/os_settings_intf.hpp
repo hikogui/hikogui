@@ -463,8 +463,8 @@ public:
     }
 
 private:
-    static constexpr std::chrono::duration gather_interval = std::chrono::seconds(5);
-    static constexpr std::chrono::duration gather_minimum_interval = std::chrono::seconds(1);
+    constexpr static std::chrono::duration gather_interval = std::chrono::seconds(5);
+    constexpr static std::chrono::duration gather_minimum_interval = std::chrono::seconds(1);
 
     static inline std::atomic<bool> _started = false;
     static inline std::atomic<bool> _populated = false;

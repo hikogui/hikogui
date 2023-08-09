@@ -21,7 +21,7 @@ namespace hi::inline v1 {
 *  - on windows this is the hInstance of WinMain(), and is used to create
 *    windows that are owned by the current application.
 */
-static inline os_handle crt_application_instance;
+inline os_handle crt_application_instance;
 
 
 /** Start the hikogui system.

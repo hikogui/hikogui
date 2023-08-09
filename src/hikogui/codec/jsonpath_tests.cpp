@@ -17,6 +17,7 @@ TEST(jsonpath, parse)
     ASSERT_EQ(to_string(jsonpath("$['store','author'].*")), "$['store','author'][*]");
     ASSERT_EQ(to_string(jsonpath("$.store..price")), "$['store']..['price']");
     ASSERT_EQ(to_string(jsonpath("$..book[2]")), "$..['book'][2]");
+    ASSERT_EQ(to_string(jsonpath("$..book[-1]")), "$..['book'][-1]");
     ASSERT_EQ(to_string(jsonpath("$..book[-1:]")), "$..['book'][-1:e:1]");
     ASSERT_EQ(to_string(jsonpath("$..book[0,1]")), "$..['book'][0,1]");
     ASSERT_EQ(to_string(jsonpath("$..book[:2]")), "$..['book'][0:2:1]");
