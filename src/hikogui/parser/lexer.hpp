@@ -82,6 +82,17 @@ struct lexer_config {
      */
     char digit_separator = '\0';
 
+    [[nodiscard]] constexpr static lexer_config sh_style() noexcept
+    {
+        auto r = lexer_config{};
+        r.has_single_quote_string_literal = 1;
+        r.has_double_quote_string_literal = 1;
+        r.has_hash_line_comment = 1;
+        r.filter_white_space = 1;
+        r.filter_comment = 1;
+        return r;
+    }
+
     [[nodiscard]] constexpr static lexer_config json_style() noexcept
     {
         auto r = lexer_config{};

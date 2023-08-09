@@ -281,10 +281,13 @@ public:
             auto language_tags = gather_languages();
             if (language_tags.empty()) {
                 // If not language is configured on the system, use English as default.
-                language_tags.emplace_back("en");
+                language_tags.emplace_back("en-Latn-US");
             }
 
             auto left_to_right = language_tags.front().left_to_right();
+
+            // Add all the variants of languages, for searching into translations.
+            language_tags = variants(language_tags);
 
             auto language_changed = compare_store(_language_tags, language_tags);
             language_changed |= compare_store(_left_to_right, left_to_right);

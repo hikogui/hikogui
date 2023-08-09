@@ -200,7 +200,9 @@ public:
             // Include the trailing slash of the base directory.
             text.resize(i + 1);
         }
-        return {std::move(text)};
+        auto path = std::filesystem::path{std::move(text)};
+        path.make_preferred(); // returns a reference to *this.
+        return path;
     }
 
     /** Match the pattern with the given string.
