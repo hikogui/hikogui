@@ -7,6 +7,5 @@
 #include "parse_location.hpp"  // export
 #include "placement.hpp"  // export
 #include "token.hpp"  // export
-#include "tokenizer.hpp"  // export
 
 hi_export_module(hikogui.parser);

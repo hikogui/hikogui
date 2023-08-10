@@ -12,7 +12,7 @@ namespace hi::inline v1 {
 struct formula_literal_node final : formula_node {
     datum value;
 
-    formula_literal_node(parse_location location, datum const &value) : formula_node(std::move(location)), value(value) {}
+    formula_literal_node(size_t line_nr, size_t column_nr, datum const &value) : formula_node(line_nr, column_nr), value(value) {}
 
     datum evaluate(formula_evaluation_context &context) const override
     {
