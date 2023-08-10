@@ -50,10 +50,46 @@ namespace hi {
 inline namespace v1 {
 
 inline std::unordered_map<translation_key, std::vector<std::string>> translations;
+inline std::atomic<bool> translations_loaded = false;
+
+inline void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept
+{
+    auto key = translation_key{std::string{msgid}, language};
+    translations[key] = plural_forms;
+}
+
+inline void add_translations(po_translations const &po_translations) noexcept
+{
+    for (hilet &translation : po_translations.translations) {
+        auto msgid = translation.msgctxt ? *translation.msgctxt + '|' + translation.msgid : translation.msgid;
+        add_translation(std::move(msgid), po_translations.language, translation.msgstr);
+    }
+}
+
+inline void load_translations(std::filesystem::path path)
+{
+    hi_log_info("Loading translation file {}.", path.string());
+    return add_translations(parse_po(path));
+}
+
+inline void load_translations()
+{
+    if (not translations_loaded.exchange(true)) {
+        for (auto &path : glob(path_location::resource_dirs, "**/*.po")) {
+            try {
+                load_translations(path);
+            } catch (std::exception const &e) {
+                hi_log_error("Could not load translation file. {}", e.what());
+            }
+        }
+    }
+}
 
 [[nodiscard]] inline std::pair<std::string_view, language_tag>
 get_translation(std::string_view msgid, long long n, std::vector<language_tag> const &languages) noexcept
 {
+    load_translations();
+
     // Update only the language in each iteration.
     auto key = translation_key{std::string{msgid}, language_tag{}};
 
@@ -73,18 +109,5 @@ get_translation(std::string_view msgid, long long n, std::vector<language_tag> c
     return {msgid, language_tag{"en-Latn-US"}};
 }
 
-inline void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept
-{
-    auto key = translation_key{std::string{msgid}, language};
-    translations[key] = plural_forms;
-}
-
-inline void add_translation(po_translations const &po_translations, language_tag language) noexcept
-{
-    for (hilet &translation : po_translations.translations) {
-        auto msgid = translation.msgctxt.empty() ? translation.msgid : translation.msgctxt + '|' + translation.msgid;
-        add_translation(msgid, language, translation.msgstr);
-    }
-}
 
 }} // namespace hi::inline v1

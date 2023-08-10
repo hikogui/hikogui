@@ -155,33 +155,51 @@
     "buildPresets": [
         {
             "name": "vc17-x64-windows-static-dbg-all",
-            "displayName": "Library",
+            "displayName": "All",
             "configurePreset": "vc17-x64-windows-static-dbg",
-            "targets": [ "hikogui", "hikogui_all_tests"]
+            "targets": [ "hikogui", "hikogui_all_tests", "hikogui_demo", "examples" ]
+        },
+        {
+            "name": "vc17-x64-windows-static-dbg-tests",
+            "displayName": "Library + Tests",
+            "configurePreset": "vc17-x64-windows-static-dbg",
+            "targets": [ "hikogui", "hikogui_all_tests" ]
         },
         {
             "name": "vc17-x64-windows-static-dbg-examples",
             "displayName": "Library + Examples",
             "configurePreset": "vc17-x64-windows-static-dbg",
-            "targets": [ "hikogui", "hikogui_all_tests", "examples" ]
+            "targets": [ "hikogui", "examples" ]
         },
         {
             "name": "vc17-x64-windows-static-dbg-demo",
-            "displayName": "Demo",
+            "displayName": "Library + Demo",
             "configurePreset": "vc17-x64-windows-static-dbg",
             "targets": [ "hikogui", "hikogui_demo" ]
         },
         {
             "name": "vc17-x64-windows-static-rel-all",
-            "displayName": "Library",
+            "displayName": "All",
             "configurePreset": "vc17-x64-windows-static-rel",
-            "targets": [ "hikogui", "hikogui_all_tests"]
+            "targets": [ "hikogui", "hikogui_all_tests", "hikogui_demo", "examples" ]
+        },
+        {
+            "name": "vc17-x64-windows-static-rel-tests",
+            "displayName": "Library + Tests",
+            "configurePreset": "vc17-x64-windows-static-rel",
+            "targets": [ "hikogui", "hikogui_all_tests" ]
         },
         {
             "name": "vc17-x64-windows-static-rel-examples",
             "displayName": "Library + Examples",
             "configurePreset": "vc17-x64-windows-static-rel",
-            "targets": [ "hikogui", "hikogui_all_tests", "examples" ]
+            "targets": [ "hikogui", "examples" ]
+        },
+        {
+            "name": "vc17-x64-windows-static-rel-demo",
+            "displayName": "Library + Demo",
+            "configurePreset": "vc17-x64-windows-static-rel",
+            "targets": [ "hikogui", "hikogui_demo" ]
         }
     ],
     "testPresets": [

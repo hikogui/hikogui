@@ -102,10 +102,10 @@ hi_export namespace hi::inline v1 {
         {
             hilet executable_path = get_path(path_location::executable_dir);
             hilet library_path = get_path(path_location::library_dir);
-            co_yield executable_path / "resources/";
+            co_yield executable_path / "resources" / "";
             if (library_path != executable_path) {
                 // XXX use the system-library resource path instead.
-                co_yield library_path / "resources/";
+                co_yield library_path / "resources" / "";
             }
         }
         break;
@@ -121,7 +121,7 @@ hi_export namespace hi::inline v1 {
 
     case log_dir:
         // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\Log\"
-        co_yield get_path(data_dir) / "Log/";
+        co_yield get_path(data_dir) / "Log" / "";
         break;
 
     case preferences_file:
