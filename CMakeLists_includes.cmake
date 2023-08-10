@@ -385,7 +385,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/parser/parser.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/placement.hpp
     ${HIKOGUI_SOURCE_DIR}/parser/token.hpp
-    ${HIKOGUI_SOURCE_DIR}/parser/tokenizer.hpp
     ${HIKOGUI_SOURCE_DIR}/path/glob.hpp
     ${HIKOGUI_SOURCE_DIR}/path/path.hpp
     ${HIKOGUI_SOURCE_DIR}/path/path_location.hpp

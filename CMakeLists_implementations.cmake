@@ -65,7 +65,6 @@ target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/GUI/theme_book_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GUI/theme_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path/graphic_path_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/parser/tokenizer_impl.cpp    
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_parse_context_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/text/text_shaper_char_impl.cpp
