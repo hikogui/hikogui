@@ -556,7 +556,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/toolbar_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/widget_mode.hpp
-    ${HIKOGUI_SOURCE_DIR}/widgets/window_traffic_lights_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/window_controls_macos_widget.hpp
+    ${HIKOGUI_SOURCE_DIR}/widgets/window_controls_win32_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
 
     ${HIKOGUI_SOURCE_DIR}/macros.hpp
