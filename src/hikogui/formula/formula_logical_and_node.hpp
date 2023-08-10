@@ -10,8 +10,8 @@
 namespace hi::inline v1 {
 
 struct formula_logical_and_node final : formula_binary_operator_node {
-    formula_logical_and_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
-        formula_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs))
+    formula_logical_and_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
+        formula_binary_operator_node(line_nr, column_nr, std::move(lhs), std::move(rhs))
     {
     }
 

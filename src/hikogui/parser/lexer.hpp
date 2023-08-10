@@ -49,6 +49,14 @@ struct lexer_config {
     uint16_t filter_white_space : 1 = 0;
     uint16_t filter_comment : 1 = 0;
 
+    /** The '.*' operators used in C++ as member-pointer operator.
+     */
+    uint16_t has_dot_star_operator : 1 = 0;
+
+    /** The '..', '...' and '..<' operators used in Swift as the range operators.
+     */
+    uint16_t has_dot_dot_operator : 1 = 0;
+
     /** The equal '=' character is used for INI-like assignment.S
      *
      * After the equal sign '=':
@@ -114,6 +122,8 @@ struct lexer_config {
         r.has_single_quote_string_literal = 1;
         r.has_double_slash_line_comment = 1;
         r.has_c_block_comment = 1;
+        r.has_dot_star_operator = 1;
+        r.has_dot_dot_operator = 1;
         return r;
     }
 
@@ -208,13 +218,29 @@ private:
         block_comment_found_dash_dash_fin0,
         found_colon,
         found_dot,
+        found_dot_dot,
         found_eq,
+        found_eq_eq,
         found_hash,
         found_lt,
+        found_lt_lt,
         found_lt_bang,
         found_lt_bang_dash,
         found_lt_eq,
         found_slash,
+        found_plus,
+        found_minus,
+        found_minus_gt,
+        found_star,
+        found_and,
+        found_vbar,
+        found_caret,
+        found_percent,
+        found_bang,
+        found_question,
+        found_tilde,
+        found_gt,
+        found_gt_gt,
         ini_string,
         white_space,
         identifier,
@@ -350,8 +376,7 @@ public:
         add_white_space();
         add_identifier();
         add_ini_assignment();
-
-        add(idle, "~!@$%^&*()-+[]{}\\|,>?", idle, token::other, capture, advance);
+        add_others();
 
         // All unused entries of the idle state are unexpected characters.
         for (uint8_t i = 0; i != 128; ++i) {
@@ -1043,6 +1068,83 @@ private:
         if constexpr (Config.minus_in_identifier) {
             add(identifier, '-', identifier, advance, capture);
         }
+    }
+
+    constexpr void add_others() noexcept
+    {
+        using enum state_type;
+
+        // The following characters MUST only exists as single character operators.
+        add(idle, "()[]{},@$\\", idle, token::other, capture, advance);
+
+        // The following characters are the first character of a potential multi-character operator.
+        add(idle, '+', found_plus, advance, capture); 
+        add(idle, '-', found_minus, advance, capture); 
+        add(idle, '*', found_star, advance, capture); 
+        add(idle, '&', found_and, advance, capture); 
+        add(idle, '|', found_vbar, advance, capture); 
+        add(idle, '^', found_caret, advance, capture); 
+        add(idle, '%', found_percent, advance, capture); 
+        add(idle, '!', found_bang, advance, capture); 
+        add(idle, '?', found_question, advance, capture); 
+        add(idle, '~', found_tilde, advance, capture); 
+        add(idle, '>', found_gt, advance, capture); 
+
+        add(found_plus, any, idle, token::other);
+        add(found_minus, any, idle, token::other);
+        add(found_star, any, idle, token::other);
+        add(found_and, any, idle, token::other);
+        add(found_vbar, any, idle, token::other);
+        add(found_caret, any, idle, token::other);
+        add(found_percent, any, idle, token::other);
+        add(found_bang, any, idle, token::other);
+        add(found_question, any, idle, token::other);
+        add(found_tilde, any, idle, token::other);
+        add(found_gt, any, idle, token::other);
+
+        // The following characters are the second character of a potential multi-character operator.
+        add(found_colon, ':', idle, advance, capture, token::other); // ::
+        if constexpr (Config.has_dot_star_operator) {
+            add(found_dot, '*', idle, advance, capture, token::other); // .*
+        }
+        if constexpr (Config.has_dot_dot_operator) {
+            add(found_dot, '.', found_dot_dot, advance, capture); // ..
+        }
+        add(found_plus, "+=", idle, advance, capture, token::other); // ++, +=
+        add(found_minus, "-=", idle, advance, capture, token::other); // --, -=
+        add(found_minus, '>', found_minus_gt, advance, capture); // ->
+        add(found_star, "*=", idle, advance, capture, token::other); // **, *=
+        if constexpr (not Config.has_double_slash_line_comment) {
+            add(found_slash, '/', idle, advance, capture, token::other); // //
+        }
+        add(found_slash, '=', idle, advance, capture, token::other); // /=
+        add(found_and, "&=+-*", idle, advance, capture, token::other); // &&, &=, &+, &-, &*
+        add(found_vbar, "|=", idle, advance, capture, token::other); // ||, |=
+        add(found_caret, "^=", idle, advance, capture, token::other); // ^^, ^=
+        add(found_percent, "%=", idle, advance, capture, token::other); // %%, %=
+        add(found_bang, '=', idle, advance, capture, token::other); // !=
+        add(found_question, "?=", idle, advance, capture, token::other); // ??, ?=
+        add(found_tilde, '=', idle, advance, capture, token::other); // ~=
+        add(found_lt, '=', found_lt_eq, advance, capture); // <=
+        add(found_lt, '<', found_lt_lt, advance, capture); // <<
+        add(found_gt, '=', idle, advance, capture, token::other); // >=
+        add(found_gt, '>', found_gt_gt, advance, capture); // >>
+        add(found_eq, '=', found_eq_eq, advance, capture); // ==
+
+        add(found_minus_gt, any, idle, token::other);
+        add(found_dot_dot, any, idle, token::other);
+        add(found_lt_eq, any, idle, token::other);
+        add(found_lt_lt, any, idle, token::other);
+        add(found_gt_gt, any, idle, token::other);
+        add(found_eq_eq, any, idle, token::other);
+
+        // The following characters are the third character of a potential multi-character operator.
+        add(found_minus_gt, '*', idle, advance, capture, token::other); // ->*
+        add(found_dot_dot, ".<", idle, advance, capture, token::other); // ..., ..<
+        add(found_lt_eq, '>', idle, advance, capture, token::other); // <=>
+        add(found_lt_lt, '=', idle, advance, capture, token::other); // <<=
+        add(found_gt_gt, '=', idle, advance, capture, token::other); // >>=
+        add(found_eq_eq, '=', idle, advance, capture, token::other); // ===
     }
 
     constexpr command_type& _add(state_type from, char c, state_type to) noexcept

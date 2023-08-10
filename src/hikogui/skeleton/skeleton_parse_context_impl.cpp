@@ -27,12 +27,10 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression(std::stri
 {
     hilet formula_last = find_end_of_formula(index, last, end_text);
 
-    auto context = formula_parse_context(index, formula_last);
-
     std::unique_ptr<formula_node> expression;
 
     try {
-        expression = parse_formula(context);
+        expression = parse_formula_without_post_processing(std::string_view{index, formula_last});
 
     } catch (std::exception const &e) {
         throw parse_error(std::format("{}: Could not parse expression.\n{}", location, e.what()));

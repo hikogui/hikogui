@@ -31,7 +31,8 @@ namespace hi::inline v1 {
 struct formula_node {
     using formula_vector = std::vector<std::unique_ptr<formula_node>>;
 
-    parse_location location;
+    size_t line_nr;
+    size_t column_nr;
 
     virtual ~formula_node() {}
     formula_node() = delete;
@@ -40,7 +41,7 @@ struct formula_node {
     formula_node& operator=(formula_node const&) = delete;
     formula_node& operator=(formula_node&&) = delete;
 
-    formula_node(parse_location location) : location(location) {}
+    formula_node(size_t line_nr, size_t column_nr) : line_nr(line_nr), column_nr(column_nr) {}
 
     /** Resolve function and method pointers.
      * At all call-formulas resolve the function pointers from the parse_context.
@@ -68,7 +69,7 @@ struct formula_node {
      */
     virtual datum& evaluate_lvalue(formula_evaluation_context& context) const
     {
-        throw operation_error(std::format("{}: Expression is not a modifiable value.", location));
+        throw operation_error(std::format("{}:{}: Expression is not a modifiable value.", line_nr, column_nr));
     }
 
     virtual bool has_evaluate_xvalue() const
@@ -80,7 +81,7 @@ struct formula_node {
      */
     virtual datum const& evaluate_xvalue(formula_evaluation_context const& context) const
     {
-        throw operation_error(std::format("{}: Expression is not a xvalue.", location));
+        throw operation_error(std::format("{}:{}: Expression is not a xvalue.", line_nr, column_nr));
     }
 
     /** Assign to a non-existing or existing lvalue.
@@ -102,14 +103,14 @@ struct formula_node {
      */
     virtual datum call(formula_evaluation_context& context, datum::vector_type const& arguments) const
     {
-        throw operation_error(std::format("{}: Expression is not callable.", location));
+        throw operation_error(std::format("{}:{}: Expression is not callable.", line_nr, column_nr));
     }
 
     /** Get the name of a formula_name_node.
      */
     virtual std::string get_name() const
     {
-        throw parse_error(std::format("{}: Expect a name got {})", location, *this));
+        throw parse_error(std::format("{}:{}: Expect a name, got {})", line_nr, column_nr, *this));
     }
 
     /** Get name and argument names from a function declaration.
@@ -117,7 +118,7 @@ struct formula_node {
      */
     virtual std::vector<std::string> get_name_and_argument_names() const
     {
-        throw parse_error(std::format("{}: Expect a function definition got {})", location, *this));
+        throw parse_error(std::format("{}:{}: Expect a function definition, got {})", line_nr, column_nr, *this));
     }
 
     virtual std::string string() const noexcept = 0;

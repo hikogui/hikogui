@@ -690,9 +690,6 @@ TEST(lexer, ini_assignment_ini_string)
     ASSERT_EQ(it, std::default_sentinel);
 }
 
-
-
-
 TEST(lexer, multiple_tokens)
 {
     constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
@@ -713,6 +710,34 @@ TEST(lexer, multiple_tokens)
     ASSERT_EQ(*it, hi::token(hi::token::id, "foo", 21));
     ++it;
     ASSERT_EQ(*it, hi::token(hi::token::other, ";", 24));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
+}
+
+TEST(lexer, operator_eq)
+{
+    constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
+
+    auto it = c_lexer.parse("foo = bar");
+    ASSERT_EQ(*it, hi::token(hi::token::id, "foo", 0));
+    ++it;
+    ASSERT_EQ(*it, hi::token(hi::token::other, "=", 4));
+    ++it;
+    ASSERT_EQ(*it, hi::token(hi::token::id, "bar", 6));
+    ++it;
+    ASSERT_EQ(it, std::default_sentinel);
+}
+
+TEST(lexer, operator_eq_eq)
+{
+    constexpr auto c_lexer = hi::detail::lexer<hi::lexer_config::c_style()>{};
+
+    auto it = c_lexer.parse("foo == bar");
+    ASSERT_EQ(*it, hi::token(hi::token::id, "foo", 0));
+    ++it;
+    ASSERT_EQ(*it, hi::token(hi::token::other, "==", 4));
+    ++it;
+    ASSERT_EQ(*it, hi::token(hi::token::id, "bar", 7));
     ++it;
     ASSERT_EQ(it, std::default_sentinel);
 }
