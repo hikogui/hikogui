@@ -12,7 +12,7 @@
 
 namespace hi { inline namespace v1 {
 
-struct token {
+hi_export struct token {
     enum class kind_type : uint8_t {
         none,
         error_unexepected_character,
@@ -142,11 +142,6 @@ struct token {
         return color_from_sRGB(static_cast<std::string_view>(*this));
     }
 
-    inline friend std::ostream& operator<<(std::ostream& lhs, token const& rhs)
-    {
-        return lhs << std::format("{}", rhs);
-    }
-
 private:
     constexpr operator std::string_view() const noexcept
     {
@@ -161,7 +156,7 @@ private:
  * @param path The filename of the file being parsed.
  * @return A string with the location of the token.
  */
-template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+hi_export template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr std::string token_location(It& it, ItEnd last, std::string_view path) noexcept
 {
     if (it == last) {
@@ -171,7 +166,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     }
 }
 
-template<std::input_iterator It>
+hi_export template<std::input_iterator It>
 [[nodiscard]] constexpr std::string token_location(It& it, std::string_view path) noexcept
 {
     return token_location(it, std::default_sentinel, path);
@@ -179,9 +174,9 @@ template<std::input_iterator It>
 
 }} // namespace hi::v1
 
-template<typename CharT>
+hi_export template<typename CharT>
 struct std::formatter<hi::token, CharT> : std::formatter<std::string, CharT> {
-    auto format(hi::token const& t, auto& fc)
+    auto format(hi::token const& t, auto& fc) const
     {
         return std::formatter<std::string, CharT>::format(
             std::format(
@@ -189,3 +184,12 @@ struct std::formatter<hi::token, CharT> : std::formatter<std::string, CharT> {
             fc);
     }
 };
+
+namespace hi { inline namespace v1 {
+
+hi_export inline std::ostream& operator<<(std::ostream& lhs, token const& rhs)
+{
+    return lhs << std::format("{}", rhs);
+}
+
+}} // namespace hi::v1

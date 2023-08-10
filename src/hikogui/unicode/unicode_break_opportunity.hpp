@@ -43,7 +43,7 @@ inline std::ostream &operator<<(std::ostream &lhs, unicode_break_opportunity con
 
 template<typename CharT>
 struct std::formatter<hi::unicode_break_opportunity, CharT> : std::formatter<char const *, CharT> {
-    auto format(hi::unicode_break_opportunity const &t, auto &fc)
+    auto format(hi::unicode_break_opportunity const &t, auto &fc) const
     {
         hilet *s = [&]() {
             switch (t) {

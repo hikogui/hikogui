@@ -205,7 +205,7 @@ public:
 
 template<typename CharT>
 struct std::formatter<hi::parse_location, CharT> : std::formatter<string_view, CharT> {
-    auto format(hi::parse_location t, auto& fc)
+    auto format(hi::parse_location t, auto& fc) const
     {
         return std::formatter<string_view, CharT>::format(to_string(t), fc);
     }

@@ -601,7 +601,7 @@ struct std::formatter<hi::aarectangle, CharT> {
         return pc.end();
     }
 
-    auto format(hi::aarectangle const& t, auto& fc)
+    auto format(hi::aarectangle const& t, auto& fc) const
     {
         return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
     }

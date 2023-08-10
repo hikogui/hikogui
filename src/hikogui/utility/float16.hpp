@@ -207,7 +207,7 @@ struct std::hash<hi::float16> {
 
 hi_export template<typename CharT>
 struct std::formatter<hi::float16, CharT> : std::formatter<float, CharT> {
-    constexpr auto format(hi::float16 const& t, auto& fc)
+    constexpr auto format(hi::float16 const& t, auto& fc) const
     {
         return std::formatter<float, CharT>::format(static_cast<float>(t), fc);
     }

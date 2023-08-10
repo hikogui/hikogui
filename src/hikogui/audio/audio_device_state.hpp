@@ -34,7 +34,7 @@ constexpr auto audio_device_state_metadata = enum_metadata{
 
 template<typename CharT>
 struct std::formatter<hi::audio_device_state, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::audio_device_state const& t, auto& fc)
+    auto format(hi::audio_device_state const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(hi::audio_device_state_metadata[t], fc);
     }

@@ -31,7 +31,7 @@ inline std::ostream &operator<<(std::ostream &lhs, theme_mode rhs)
 
 template<typename CharT>
 struct std::formatter<hi::theme_mode, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::theme_mode const &t, auto &fc)
+    auto format(hi::theme_mode const &t, auto &fc) const
     {
         return std::formatter<std::string_view, CharT>::format(hi::theme_mode_metadata[t], fc);
     }

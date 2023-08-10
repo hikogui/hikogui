@@ -281,7 +281,7 @@ fixed_string(F const& f) -> fixed_string<std::ranges::size(F{}())>;
 
 hi_export template<std::size_t N, typename CharT>
 struct std::formatter<hi::fixed_string<N>, CharT> : std::formatter<std::string_view, CharT> {
-    constexpr auto format(hi::fixed_string<N> const& t, auto& fc)
+    constexpr auto format(hi::fixed_string<N> const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(static_cast<std::string_view>(t), fc);
     }

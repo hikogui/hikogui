@@ -89,7 +89,7 @@ public:
 
 template<typename CharT>
 struct std::formatter<hi::audio_format_range, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::audio_format_range const& t, auto& fc)
+    auto format(hi::audio_format_range const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }

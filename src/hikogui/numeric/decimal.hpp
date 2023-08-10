@@ -580,7 +580,7 @@ struct std::hash<hi::decimal> {
 
 template<typename CharT>
 struct std::formatter<hi::decimal, CharT> : std::formatter<double, CharT> {
-    auto format(hi::decimal const& t, auto& fc)
+    auto format(hi::decimal const& t, auto& fc) const
     {
         return std::formatter<double, CharT>::format(static_cast<double>(t), fc);
     }
