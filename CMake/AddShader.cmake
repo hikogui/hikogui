@@ -20,10 +20,12 @@ function(add_shader_target RET)
         endif()
     endforeach()
 
+    message(STATUS "[ADD_SHADER] Adding shaders to target \"${RET}\"")
+
     foreach(SOURCE_FILE IN LISTS ARGN)
         get_filename_component(INPUT_EXT "${SOURCE_FILE}" LAST_EXT)
         if (NOT "${INPUT_EXT}" STREQUAL ".glsl")
-            message("add_shader: ${SOURCE_FILE}")
+            message(STATUS "add_shader: ${SOURCE_FILE}")
 	        get_filename_component(INPUT_PATH "${SOURCE_FILE}" ABSOLUTE)
             get_filename_component(INPUT_FILENAME "${SOURCE_FILE}" NAME)
             get_relative_path(INPUT_RELPATH "${INPUT_PATH}")

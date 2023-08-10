@@ -8,8 +8,7 @@
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_VERBOSE_MAKEFILE": "ON",
-                "HI_ARCHITECTURE": "x86-64-v3"
+                "CMAKE_VERBOSE_MAKEFILE": "ON"
             },
             "architecture": {
                 "value": "x64",
@@ -114,18 +113,6 @@
             }
         },
         {
-            "name": "vc17-x64-windows-static-dbg-vcpkg",
-            "displayName": "MSVC-x64-Debug (vcpkg)",
-            "inherits": "vc17-x64-windows-static-dbg",
-            "toolchainFile": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        },
-        {
-            "name": "vc17-x64-windows-static-rel-vcpkg",
-            "displayName": "MSVC-x64-Release (vcpkg)",
-            "inherits": "vc17-x64-windows-static-rel",
-            "toolchainFile": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        },
-        {
             "name": "clang-x64-windows-static-dbg",
             "displayName": "ZZ clang-x64-Debug",
             "inherits": "clang-x64-windows-static",
@@ -134,21 +121,25 @@
             }
         },
         {
-            "name": "vc17-x64-windows-static-rel-local",
+            "name": "vc17-x64-windows-static-rel-ci",
             "displayName": "ZZ MSVC-x64-Release (for CI)",
             "inherits": "vc17-x64-windows-static-rel",
-            "binaryDir": "build-rel",
+            "binaryDir": "build",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install"
+                "CMAKE_INSTALL_PREFIX": "install",
+                "CMAKE_C_COMPILER_LAUNCHER": "sccache",
+                "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
             }
         },
         {
-            "name": "vc17-x64-windows-static-dbg-local",
+            "name": "vc17-x64-windows-static-dbg-ci",
             "displayName": "ZZ MSVC-x64-Debug (for CI)",
             "inherits": "vc17-x64-windows-static-dbg",
-            "binaryDir": "build-dbg",
+            "binaryDir": "build",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install"
+                "CMAKE_INSTALL_PREFIX": "install",
+                "CMAKE_C_COMPILER_LAUNCHER": "sccache",
+                "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
             }
         }
     ],
