@@ -1,32 +1,19 @@
-# Copyright Jens A. Koch 2021-2022.
+# Copyright Jens A. Koch 2021-2023.
 # Copyright Take Vos 2019-2022.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-
 cmake_minimum_required(VERSION 3.25)
-
-#-------------------------------------------------------------------
-# Enable C++20 Modules
-#-------------------------------------------------------------------
-if(${CMAKE_VERSION} VERSION_LESS "3.26")
-    # CMake 3.25
-    set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "3c375311-a3c9-4396-a187-3227ef642046")
-elseif(${CMAKE_VERSION} VERSION_LESS "3.27")
-    # CMake 3.26
-    set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
-else()
-    # CMake 3.27
-    set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "aa1f7df0-828a-4fcd-9afc-2dc80491aca7")
-endif()
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
 
 #-------------------------------------------------------------------
 # Configure early CMAKE paths
 #-------------------------------------------------------------------
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+
 include(SetupVcpkg)
 include(SetupCompiler)
+include(SetupCxxModules)
 
 #-------------------------------------------------------------------
 # Build Options
@@ -55,7 +42,7 @@ string(JSON HI_LIB_LICENSE  GET ${VCPKG_JSON_STRING} "license")
 string(JSON HI_LIB_DESC     GET ${VCPKG_JSON_STRING} "description")
 string(JSON HI_LIB_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
 
-configure_file("package.json.in" "package.json" @ONLY)
+configure_file("${CMAKE_SOURCE_DIR}/CMake/packaging/package.json.in" "package.json" @ONLY)
 file(READ ${CMAKE_CURRENT_BINARY_DIR}/package.json PACKAGE_JSON_STRING)
 string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
@@ -66,15 +53,23 @@ project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 # Setup CMake Includes
 #-------------------------------------------------------------------
 
+include(FeatureSummary)
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
 include(CPUID)
+include(SetupDoxygen)
 
 # disable adding CTest build targets like "NightlyStart" (before ctest include)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
 configure_file("${CMAKE_SOURCE_DIR}/cmake/ctest/CTestCustom.cmake.in" "CTestCustom.cmake" @ONLY)
 include(CTest)
+
+# HI_ARCHITECTURE can be set as a build option.
+# if this build option is not set, default to the auto-detected architecture level.
+if(HI_ARCHITECTURE STREQUAL "")
+  set(HI_ARCHITECTURE ${CPUINFO_ARCHITECTURE_LEVEL})
+endif()
 
 #-------------------------------------------------------------------
 # Find Dependencies
@@ -207,11 +202,11 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
-    if("${HI_ARCHITECTURE}" STREQUAL "x86-64-v4")
+    if(HOST_IS_X86_64_4)
         target_compile_options(hikogui PUBLIC -arch:AVX512)
-    elseif("${HI_ARCHITECTURE}" STREQUAL "x86-64-v3")
+    elseif(HOST_IS_X86_64_3)
         target_compile_options(hikogui PUBLIC -arch:AVX2)
-    elseif("${HI_ARCHITECTURE}" STREQUAL "x86-64-v2")
+    elseif(HOST_IS_X86_64_2)
         target_compile_options(hikogui PUBLIC -arch:AVX)
     endif()
 
@@ -474,7 +469,7 @@ install(
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/CMake/hikoguiConfig.cmake.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/CMake/packaging/hikoguiConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfig.cmake"
     INSTALL_DESTINATION lib/cmake/hikogui
 )
@@ -510,57 +505,5 @@ add_subdirectory(examples/widgets)
 #-------------------------------------------------------------------
 
 show_build_target_properties(hikogui)
-#-------------------------------------------------------------------
-# Build Documentation
-#-------------------------------------------------------------------
 
-#
-# Doxygen
-#
-find_package(Doxygen)
-
-if(DOXYGEN_FOUND)
-    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp *_impl.cpp *.mm)
-    set(DOXYGEN_GENERATE_HTML YES)
-    set(DOXYGEN_GENERATE_LATEX NO)
-    set(DOXYGEN_QUIET YES)
-    set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-    set(DOXYGEN_WARN_NO_PARAMDOC NO)
-    set(DOXYGEN_STRIP_FROM_PATH src)
-    set(DOXYGEN_STRIP_FROM_INC_PATH src)
-
-    # Use SHORT_NAMES to prevent Doxygen from generating filenames with double-quotes.
-    # ALLOW_UNICODE_NAMES does not escape double-quotes.
-    set(DOXYGEN_SHORT_NAMES YES)
-
-    set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
-    set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
-    set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
-
-    set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
-    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-    #set(DOXYGEN_CLANG_ASSISTED_PARSING YES)
-    #set(DOXYGEN_CLANG_OPTIONS "-std=c++20")
-
-    set(DOXYGEN_TAGFILES "${CMAKE_SOURCE_DIR}/docs/media/style/cppreference-doxygen-web.tag.xml=http://en.cppreference.com/w/")
-    set(DOXYGEN_IMAGE_PATH "${CMAKE_SOURCE_DIR}/src/" "${CMAKE_SOURCE_DIR}/docs/")
-    set(DOXYGEN_EXAMPLE_PATH "${CMAKE_SOURCE_DIR}/examples/")
-
-    set(DOXYGEN_LAYOUT_FILE "${CMAKE_SOURCE_DIR}/docs/media/style/DoxygenLayout.xml")
-    set(DOXYGEN_HTML_COLORSTYLE_HUE 24)
-    set(DOXYGEN_HTML_COLORSTYLE_SAT 150)
-    set(DOXYGEN_HTML_COLORSTYLE_GAMMA 80)
-    set(DOXYGEN_HTML_EXTRA_STYLESHEET "${CMAKE_SOURCE_DIR}/docs/media/style/customdoxygen.css")
-
-
-    # The following 4 settings are to get protected members to behave as private.
-    set(DOXYGEN_ENABLE_PREPROCESSING YES)
-    set(DOXYGEN_MACRO_EXPANSION YES)
-    set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
-    set(DOXYGEN_PREDEFINED "protected=private")
-
-    doxygen_add_docs(docs src/hikogui docs)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share COMPONENT docs EXCLUDE_FROM_ALL)
-else()
-    message("Please install Doxygen to generate the documentation.")
-endif()
+feature_summary(WHAT PACKAGES_FOUND PACKAGES_NOT_FOUND ENABLED_FEATURES DISABLED_FEATURES)

@@ -8,6 +8,12 @@
 
 name: "Build on Windows"
 on: [push, pull_request]
+
+# improve CI concurrency by automatically cancelling outdated jobs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
 # ---------------------------------------------------------------------------------------
@@ -15,22 +21,14 @@ jobs:
   build-and-test:
     name: ${{ matrix.config.NAME }}
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
-    runs-on: ${{ matrix.config.OS }}
+    runs-on: windows-2022
 
     strategy:
       fail-fast: false
       matrix:
-        # Each entry in config has a:
-        # - NAME: The name used as the suffix in files, directories and artifacts.
-        #         If the name ends with "-debug" code-coverage is being uploaded.
-        # - OS: The operating system to run the job on.
-        # - VCPKG_TARGET_TRIPLET: The vcpkg target triplet, or empty if cmake should use fetch.
         config:
-          - {
-              NAME: "vc17-x64-windows-static",
-              OS: windows-2022,
-              VCPKG_TARGET_TRIPLET: "",
-            }
+            - { NAME: "Release", PRESET: "vc17-x64-windows-static-rel-ci" }
+            - { NAME: "Debug",   PRESET: "vc17-x64-windows-static-dbg-ci" }
 
     env:
       PLATFORM: x64
@@ -44,28 +42,41 @@ jobs:
       - name: 🤘 Checkout Code
         uses: actions/checkout@v3 # https://github.com/actions/checkout
 
-      - name: Install ninja-build tool
-        uses: seanmiddleditch/gha-setup-ninja@v3
-        with:
-          version: 1.11.1
-      
-      - name: ℹ Show Tool Versions
+      # https://community.chocolatey.org/packages/ninja
+      # https://community.chocolatey.org/packages/ccache
+      - name: 🔽 Install Ninja
+        run: choco install ninja ccache
+
+      - name: 🛠️ Show Tool Versions
         run: |
           date /T
           time /T
-          curl -V
           cmake --version
-          msbuild /version
-          vcpkg version
+          vcpkg --version
+          ninja --version
+          ccache --version
 
-      # Build Artifact Name: hikogui-0.3.0-0cda6a2-MSVC19-x64-static-RelWithDebInfo
+      # Reminder: This step requires that the CMakePresets for CI contain
+      # "CMAKE_CXX_COMPILER_LAUNCHER": "sccache".
+      - name: 🎯 Setup Build Cache
+        uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
+        with:
+          variant: sccache
+          key: win-ci-build-${{github.ref}}-${{matrix.config.PRESET}}
+          restore-keys: |
+            win-ci-build-${{github.ref}}-${{matrix.config.PRESET}}
+            win-ci-build-${{github.ref}}
+            win-ci-build-refs/heads/main
+            win-ci-build-
+
+      # Build Artifact Name: hikogui-0.3.0-0cda6a2-vc17-x64-windows-static
       - name: ✏ Fetch Versioning Data & Set Artifact Name
         shell: pwsh
         run: |
           $NAME=$(jq -r .name vcpkg.json)
           $VERSION=$(jq -r .version vcpkg.json)
           $SHORT_HASH=$($env:GITHUB_SHA.substring(0,7))
-          $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-${{matrix.config.NAME}}"
+          $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-${{matrix.config.PRESET}}"
           echo "Artifact Name:" $ARTIFACT_NAME
           echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
           echo "VERSION=$($VERSION)" >> $env:GITHUB_ENV
@@ -96,60 +107,49 @@ jobs:
           dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\Bin
           dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\runtime\${{env.PLATFORM}}
 
-      - name: Set up Visual Studio shell
-        uses: egor-tensin/vs-shell@v2
-        with:
-          arch: x64
+      - name: 🛠️ Setup Visual Studio Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
 
-      - name: 🔽 Update VCPKG
-        if: matrix.config.VCPKG_TARGET_TRIPLET != ''
-        shell: pwsh
-        run: |
-          git clone -b master --single-branch --depth 1 --quiet https://github.com/microsoft/vcpkg.git "${{env.VCPKG_ROOT}}"
-          cd "${{env.VCPKG_ROOT}}"
-          .\bootstrap-vcpkg.bat -disableMetrics
-          .\vcpkg integrate install --feature-flags=manifests
-          .\vcpkg version
+      - name: ✏ CMake ➔ Configure
+        run: cmake --preset=${{matrix.config.PRESET}}
 
-      - name: ✏ CMake ➔ Configure (Debug)
-        run: cmake --preset=vc17-x64-windows-static-dbg-local
-
-      - name: ✏ CMake ➔ Configure (Release)
-        run: cmake --preset=vc17-x64-windows-static-rel-local
-
-      - name: 🙏 CMake ➔ Build (Debug)
-        run: cmake --build build-dbg --parallel 1
+      - name: 🙏 CMake ➔ Build
+        run: cmake --build build --parallel 1
 
       - name: 🙏 CMake ➔ Build unit-tests (Debug)
-        run: cmake --build build-dbg  --parallel 1 --target=hikogui_tests
-
-      - name: 📦 CMake ➔ Install (Debug)
-        run: cmake --install build-dbg
-
-      - name: 🙏 CMake ➔ Build (Release)
-        run: cmake --build build-rel --parallel 1
+        if: contains(matrix.config.PRESET, 'deb')
+        run: cmake --build build --parallel 1 --target=hikogui_tests
 
       - name: 🙏 CMake ➔ Build examples (Release)
-        run: cmake --build build-rel  --parallel 1 --target=examples
+        if: contains(matrix.config.PRESET, 'rel')
+        run: cmake --build build --parallel 1 --target=examples
 
-      - name: 📦 CMake ➔ Install (Release)
-        run: cmake --install build-rel
+      - name: 📦 CMake ➔ Install
+        run: cmake --install build
 
       - name: 📦 CMake ➔ Install examples (Release)
-        run: cmake --install build-rel --component=examples
+        if: contains(matrix.config.PRESET, 'rel')
+        run: cmake --install build --component=examples
+
+      # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
+      - name: 🔽 Install Vulkan Runtime
+        working-directory: build
+        run: |
+          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* .
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
-          dir /S /B build-dbg
-          dir /S /B build-rel
+          dir /S /B build
           dir /S /B install
 
-      # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
       - name: ✔ ❌✔️ Test
-        working-directory: build-dbg
+        working-directory: build
         run: |
-          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* .
-          ctest --output-junit "${{github.workspace}}\test_results_${{matrix.config.NAME}}.xml"
+          ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{matrix.config.PRESET}}.xml"
+          type "${{github.workspace}}\build\Testing\Temporary\LastTest.log"
+          if exist "${{github.workspace}}\build\Testing\Temporary\LastTestsFailed.log" (
+            type "${{github.workspace}}\build\Testing\Temporary\LastTestsFailed.log"
+          )
 
       # We upload multiple files into the same artifact file (zip).
       # Each file is differently named by adding the job name of the matrix as a suffix.
@@ -162,8 +162,8 @@ jobs:
           name: test-results
           path: test_results_*.xml
 
-      - name: 📑 Generate CodeCoverage Report
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: 📑 Generate CodeCoverage Report (Debug)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(matrix.config.PRESET, 'deb')
         run: |
           curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
           OpenCppCoverageSetup-x64-0.9.9.0.exe /VERYSILENT /DIR=.\bin\coverage
@@ -171,15 +171,14 @@ jobs:
           --sources=src ^
           --excluded_sources=src\*_tests.cpp ^
           --excluded_sources=src\*\*_tests.cpp ^
-          --excluded_sources=build-rel\_deps ^
-          --excluded_sources=build-dbg\_deps ^
+          --excluded_sources=build\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
-          --working_dir=.\\build-dbg ^
+          --working_dir=.\\build ^
           --cover_children ^
           -- ctest.exe
 
-      - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(matrix.config.PRESET, 'deb')
         uses: codecov/codecov-action@v3 # https://github.com/codecov/codecov-action
         with:
           files: ./hikogui_coverage.xml
