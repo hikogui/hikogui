@@ -12,7 +12,8 @@
 #include "toolbar_widget.hpp"
 #include "system_menu_widget.hpp"
 #include "grid_widget.hpp"
-#include "window_traffic_lights_widget.hpp"
+#include "window_controls_macos_widget.hpp"
+#include "window_controls_win32_widget.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 
@@ -37,10 +38,10 @@ public:
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
         this->_system_menu->icon = this->title.get<"icon">();
-        _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
+        _toolbar->make_widget<window_controls_win32_widget, horizontal_alignment::right>();
 
 #elif HI_OPERATING_SYSTEM == HI_OS_MACOS
-        _toolbar->make_widget<window_traffic_lights_widget>();
+        _toolbar->make_widget<window_controls_macos_widget>();
 
 #else
 #error "Not implemented"

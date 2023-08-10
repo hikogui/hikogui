@@ -30,9 +30,10 @@
 #include "toolbar_button_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"
 #include "toolbar_widget.hpp"
-#include "widget.hpp"
 #include "widget_mode.hpp"
-#include "window_traffic_lights_widget.hpp"
+#include "widget.hpp"
+#include "window_controls_macos_widget.hpp"
+#include "window_controls_win32_widget.hpp"
 #include "window_widget.hpp"
 
 
