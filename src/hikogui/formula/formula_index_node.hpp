@@ -10,8 +10,8 @@
 namespace hi::inline v1 {
 
 struct formula_index_node final : formula_binary_operator_node {
-    formula_index_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
-        formula_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs))
+    formula_index_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
+        formula_binary_operator_node(line_nr, column_nr, std::move(lhs), std::move(rhs))
     {
     }
 
@@ -21,13 +21,13 @@ struct formula_index_node final : formula_binary_operator_node {
         auto rhs_ = rhs->evaluate(context);
 
         if (holds_alternative<datum::map_type>(lhs_) and not lhs_.contains(rhs_)) {
-            throw operation_error(std::format("{}: Unknown key '{}'.", location, rhs_));
+            throw operation_error(std::format("{}:{}: Unknown key '{}'.", line_nr, column_nr, rhs_));
         }
 
         try {
             return lhs_[rhs_];
         } catch (std::exception const &e) {
-            throw operation_error(std::format("{}: Can not evaluate indexing operation.\n{}", location, e.what()));
+            throw operation_error(std::format("{}:{}: Can not evaluate indexing operation.\n{}", line_nr, column_nr, e.what()));
         }
     }
 
@@ -38,7 +38,7 @@ struct formula_index_node final : formula_binary_operator_node {
         try {
             return lhs_[rhs_];
         } catch (std::exception const &e) {
-            throw operation_error(std::format("{}: Can not evaluate indexing operation.\n{}", location, e.what()));
+            throw operation_error(std::format("{}:{}: Can not evaluate indexing operation.\n{}", line_nr, column_nr, e.what()));
         }
     }
 

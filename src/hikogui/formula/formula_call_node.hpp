@@ -13,8 +13,8 @@ struct formula_call_node final : formula_node {
     std::unique_ptr<formula_node> lhs;
     formula_vector args;
 
-    formula_call_node(parse_location location, std::unique_ptr<formula_node> lhs, formula_node &rhs) :
-        formula_node(std::move(location)), lhs(std::move(lhs))
+    formula_call_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, formula_node &rhs) :
+        formula_node(line_nr, column_nr), lhs(std::move(lhs))
     {
         auto &rhs_ = dynamic_cast<formula_arguments &>(rhs);
         args = std::move(rhs_.args);

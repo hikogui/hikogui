@@ -10,8 +10,8 @@
 namespace hi::inline v1 {
 
 struct formula_logical_not_node final : formula_unary_operator_node {
-    formula_logical_not_node(parse_location location, std::unique_ptr<formula_node> rhs) :
-        formula_unary_operator_node(std::move(location), std::move(rhs))
+    formula_logical_not_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> rhs) :
+        formula_unary_operator_node(line_nr, column_nr, std::move(rhs))
     {
     }
 
@@ -21,7 +21,7 @@ struct formula_logical_not_node final : formula_unary_operator_node {
         try {
             return datum{!rhs_};
         } catch (std::exception const &e) {
-            throw operation_error(std::format("{}: Can not evaluate logical not.\n{}", location, e.what()));
+            throw operation_error(std::format("{}:{}: Can not evaluate logical not.\n{}", line_nr, column_nr, e.what()));
         }
     }
 

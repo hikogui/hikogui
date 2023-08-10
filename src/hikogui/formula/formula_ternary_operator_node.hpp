@@ -15,10 +15,10 @@ struct formula_ternary_operator_node final : formula_node {
     std::unique_ptr<formula_node> rhs_false;
 
     formula_ternary_operator_node(
-        parse_location location,
+        size_t line_nr, size_t column_nr,
         std::unique_ptr<formula_node> lhs,
         formula_node &pair) :
-        formula_node(std::move(location)), lhs(std::move(lhs))
+        formula_node(line_nr, column_nr), lhs(std::move(lhs))
     {
         formula_arguments &pair_ = dynamic_cast<formula_arguments &>(pair);
         hi_assert(pair_.args.size() == 2);

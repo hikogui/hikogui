@@ -192,7 +192,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/formula/formula_name_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_ne_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_node.hpp
-    ${HIKOGUI_SOURCE_DIR}/formula/formula_parse_context.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_plus_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_post_process_context.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_pow_node.hpp

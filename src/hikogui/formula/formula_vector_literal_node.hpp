@@ -12,8 +12,8 @@ namespace hi::inline v1 {
 struct formula_vector_literal_node final : formula_node {
     formula_vector values;
 
-    formula_vector_literal_node(parse_location location, formula_vector values) :
-        formula_node(std::move(location)), values(std::move(values))
+    formula_vector_literal_node(size_t line_nr, size_t column_nr, formula_vector values) :
+        formula_node(line_nr, column_nr), values(std::move(values))
     {
     }
 
@@ -36,15 +36,15 @@ struct formula_vector_literal_node final : formula_node {
     datum &assign(formula_evaluation_context &context, datum const &rhs) const override
     {
         if (!holds_alternative<datum::vector_type>(rhs)) {
-            throw operation_error(std::format("{}: Unpacking values can only be done on vectors, got {}.", location, rhs));
+            throw operation_error(std::format("{}:{}: Unpacking values can only be done on vectors, got {}.", line_nr, column_nr, rhs));
         }
         if (values.size() < 1) {
-            throw operation_error(std::format("{}: Unpacking can only be done on 1 or more return values.", location));
+            throw operation_error(std::format("{}:{}: Unpacking can only be done on 1 or more return values.", line_nr, column_nr));
         }
         if (values.size() != rhs.size()) {
             throw operation_error(std::format(
-                "{}: Unpacking values can only be done on with a vector of size {} got {}.",
-                location,
+                "{}:{}: Unpacking values can only be done on with a vector of size {} got {}.",
+                line_nr, column_nr,
                 values.size(),
                 rhs.size()));
         }
