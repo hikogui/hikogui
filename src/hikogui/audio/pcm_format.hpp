@@ -297,7 +297,7 @@ private:
 
 template<typename CharT>
 struct std::formatter<hi::pcm_format, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::pcm_format const& t, auto& fc)
+    auto format(hi::pcm_format const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }

@@ -540,7 +540,7 @@ private:
 
 template<typename CharT>
 struct std::formatter<hi::jsonpath, CharT> : std::formatter<char const *, CharT> {
-    auto format(hi::jsonpath const& t, auto& fc)
+    auto format(hi::jsonpath const& t, auto& fc) const
     {
         return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
     }

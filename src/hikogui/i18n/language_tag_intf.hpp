@@ -227,7 +227,7 @@ struct std::hash<hi::language_tag> {
 
 template<typename CharT>
 struct std::formatter<hi::language_tag, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::language_tag const& t, auto& fc)
+    auto format(hi::language_tag const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(t.to_string(), fc);
     }
@@ -236,7 +236,7 @@ struct std::formatter<hi::language_tag, CharT> : std::formatter<std::string_view
 // XXX C++23 should have this fixed?
 template<typename CharT>
 struct std::formatter<std::vector<hi::language_tag>, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(std::vector<hi::language_tag> const& t, auto& fc)
+    auto format(std::vector<hi::language_tag> const& t, auto& fc) const
     {
         auto r = std::string{};
         for (hilet language : t) {

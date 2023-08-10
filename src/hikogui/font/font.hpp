@@ -242,7 +242,7 @@ private:
 
 template<typename CharT>
 struct std::formatter<hi::font, CharT> : formatter<std::string_view, CharT> {
-    auto format(hi::font const& t, auto& fc)
+    auto format(hi::font const& t, auto& fc) const
     {
         return formatter<string_view, CharT>::format(to_string(t), fc);
     }

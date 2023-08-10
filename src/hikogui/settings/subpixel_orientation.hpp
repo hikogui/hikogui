@@ -53,7 +53,7 @@ constexpr auto subpixel_orientation_metadata = enum_metadata{
 
 template<typename CharT>
 struct std::formatter<hi::subpixel_orientation, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::subpixel_orientation const &t, auto &fc)
+    auto format(hi::subpixel_orientation const &t, auto &fc) const
     {
         return std::formatter<std::string_view, CharT>::format(hi::subpixel_orientation_metadata[t], fc);
     }

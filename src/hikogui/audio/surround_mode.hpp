@@ -285,7 +285,7 @@ constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs
 
 template<typename CharT>
 struct std::formatter<hi::surround_mode, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::surround_mode const& t, auto& fc)
+    auto format(hi::surround_mode const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(hi::to_string(t), fc);
     }

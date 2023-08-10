@@ -98,7 +98,7 @@ constexpr auto semantic_color_metadata = enum_metadata{
 
 template<typename CharT>
 struct std::formatter<hi::semantic_color, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::semantic_color const &t, auto &fc)
+    auto format(hi::semantic_color const &t, auto &fc) const
     {
         return std::formatter<std::string_view, CharT>::format(hi::semantic_color_metadata[t], fc);
     }

@@ -977,7 +977,7 @@ struct std::hash<hi::URI> {
 
 template<typename CharT>
 struct std::formatter<hi::URI, CharT> : std::formatter<std::string, CharT> {
-    auto format(hi::URI const& t, auto& fc)
+    auto format(hi::URI const& t, auto& fc) const
     {
         return std::formatter<std::string, CharT>::format(to_string(t), fc);
     }
