@@ -14,19 +14,9 @@
 #include <memory>
 #include <string>
 
+hi_export_module(hikogui.formula.formula_node);
 
-
-namespace hi::inline v1 {
-struct formula_node;
-}
-
-template<typename CharT>
-struct std::formatter<hi::formula_node, CharT> : std::formatter<string_view, CharT> {
-    auto format(hi::formula_node const& t, auto& fc) const
-        -> decltype(std::formatter<string_view, CharT>{}.format(std::string{}, fc));
-};
-
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 struct formula_node {
     using formula_vector = std::vector<std::unique_ptr<formula_node>>;
@@ -127,18 +117,23 @@ struct formula_node {
     {
         return rhs.string();
     }
+};
 
-    friend std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept
+}} // namespace hi::v1
+
+template<class CharT>
+struct std::formatter<hi::formula_node, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::formula_node const& t, auto& fc) const
     {
-        return lhs << to_string(rhs);
+        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
 };
 
-} // namespace hi::inline v1
+namespace hi { inline namespace v1 {
 
-template<typename CharT>
-auto std::formatter<hi::formula_node, CharT>::format(hi::formula_node const& t, auto& fc) const
-    -> decltype(std::formatter<string_view, CharT>{}.format(std::string{}, fc))
+inline std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept
 {
-    return std::formatter<string_view, CharT>{}.format(to_string(t), fc);
+    return lhs << std::format("{}", rhs);
 }
+
+}} // namespace hi::v1

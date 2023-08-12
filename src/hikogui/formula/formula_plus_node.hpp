@@ -7,9 +7,11 @@
 #include "formula_unary_operator_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_plus_node);
 
-struct formula_plus_node final : formula_unary_operator_node {
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_plus_node final : formula_unary_operator_node {
     formula_plus_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> rhs) :
         formula_unary_operator_node(line_nr, column_nr, std::move(rhs))
     {
@@ -31,4 +33,4 @@ struct formula_plus_node final : formula_unary_operator_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

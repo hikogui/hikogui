@@ -201,7 +201,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/formula/formula_ternary_operator_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_unary_operator_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_vector_literal_node.hpp
-    ${HIKOGUI_SOURCE_DIR}/formula/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/formula/formula.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/draw_context.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan.hpp

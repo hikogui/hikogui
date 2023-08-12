@@ -16,7 +16,7 @@
 #include "crt/module.hpp"
 #include "file/module.hpp"
 #include "font/module.hpp"
-#include "formula/module.hpp"
+#include "formula/formula.hpp"
 #include "geometry/module.hpp"
 #include "GFX/module.hpp"
 #include "graphic_path/module.hpp"
