@@ -9,9 +9,11 @@
 #include "formula_name_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_filter_node);
 
-struct formula_filter_node final : formula_binary_operator_node {
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_filter_node final : formula_binary_operator_node {
     mutable formula_post_process_context::filter_type filter;
     formula_name_node *rhs_name;
 
@@ -50,4 +52,4 @@ struct formula_filter_node final : formula_binary_operator_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

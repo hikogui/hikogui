@@ -7,9 +7,11 @@
 #include "formula_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_literal_node);
 
-struct formula_literal_node final : formula_node {
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_literal_node final : formula_node {
     datum value;
 
     formula_literal_node(size_t line_nr, size_t column_nr, datum const &value) : formula_node(line_nr, column_nr), value(value) {}
@@ -25,4 +27,4 @@ struct formula_literal_node final : formula_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

@@ -7,9 +7,11 @@
 #include "formula_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_call_node);
 
-struct formula_call_node final : formula_node {
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_call_node final : formula_node {
     std::unique_ptr<formula_node> lhs;
     formula_vector args;
 
@@ -73,4 +75,4 @@ struct formula_call_node final : formula_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

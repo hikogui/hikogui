@@ -11,11 +11,11 @@
 #include <vector>
 #include <string_view>
 
+hi_export_module(hikogui.formula.formula_evaluation_context);
 
+namespace hi { inline namespace v1 {
 
-namespace hi::inline v1 {
-
-struct formula_evaluation_context {
+hi_export struct formula_evaluation_context {
     using scope = std::unordered_map<std::string, datum>;
     using stack = std::vector<scope>;
 
@@ -228,4 +228,4 @@ struct formula_evaluation_context {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
