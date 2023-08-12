@@ -7,9 +7,11 @@
 #include "formula_binary_operator_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_bit_and_node);
 
-struct formula_bit_and_node final : formula_binary_operator_node {
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_bit_and_node final : formula_binary_operator_node {
     formula_bit_and_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
         formula_binary_operator_node(line_nr, column_nr, std::move(lhs), std::move(rhs))
     {
@@ -32,4 +34,4 @@ struct formula_bit_and_node final : formula_binary_operator_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

@@ -7,7 +7,7 @@
 #include "translation.hpp"
 #include "po_parser.hpp"
 #include "../i18n/module.hpp"
-#include "../formula/module.hpp"
+#include "../formula/formula.hpp"
 #include "../utility/utility.hpp"
 #include "../settings/settings.hpp"
 #include "../unicode/module.hpp"
