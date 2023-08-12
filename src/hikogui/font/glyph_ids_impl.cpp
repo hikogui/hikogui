@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "font.hpp"
-#include "../graphic_path/module.hpp"
+#include "../graphic_path/graphic_path.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"
 

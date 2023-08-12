@@ -14,16 +14,14 @@
 #include <limits>
 #include <algorithm>
 
+hi_export_module(hikogui.graphic_path.bezier_curve);
 
-
-namespace hi::inline v1 {
-
-struct bezier_point;
+namespace hi { inline namespace v1 {
 
 /*! Bezier Curve
  * A linear, quadratic or cubic bezier curve.
  */
-struct bezier_curve {
+hi_export struct bezier_curve {
     enum class Type : uint8_t { None, Linear, Quadratic, Cubic };
 
     Type type;
@@ -40,15 +38,11 @@ struct bezier_curve {
 
     /*! Construct a linear bezier-curve.
      */
-    bezier_curve(point2 const P1, point2 const P2) noexcept :
-        type(Type::Linear), P1(P1), C1(), C2(), P2(P2)
-    {
-    }
+    bezier_curve(point2 const P1, point2 const P2) noexcept : type(Type::Linear), P1(P1), C1(), C2(), P2(P2) {}
 
     /*! Construct a quadratic bezier-curve.
      */
-    bezier_curve(point2 const P1, point2 const C1, point2 const P2) noexcept :
-        type(Type::Quadratic), P1(P1), C1(C1), C2(), P2(P2)
+    bezier_curve(point2 const P1, point2 const C1, point2 const P2) noexcept : type(Type::Quadratic), P1(P1), C1(C1), C2(), P2(P2)
     {
     }
 
@@ -61,12 +55,7 @@ struct bezier_curve {
 
     /*! Construct a bezier-curve of any type.
      */
-    bezier_curve(
-        Type const type,
-        point2 const P1,
-        point2 const C1,
-        point2 const C2,
-        point2 const P2) noexcept :
+    bezier_curve(Type const type, point2 const P1, point2 const C1, point2 const C2, point2 const P2) noexcept :
         type(type), P1(P1), C1(C1), C2(C2), P2(P2)
     {
     }
@@ -417,8 +406,7 @@ getFillSpansAtY(std::vector<bezier_curve> const& v, float y) noexcept
     return r;
 }
 
-constexpr void
-fillPartialPixels(std::span<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
+constexpr void fillPartialPixels(std::span<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
 {
     hilet pixelCoverage = std::clamp(endX, i + 0.0f, i + 1.0f) - std::clamp(startX, i + 0.0f, i + 1.0f);
 
@@ -699,4 +687,4 @@ constexpr void fill(pixmap_span<sdf_r8> image, std::vector<bezier_curve> const& 
     }
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -300,7 +300,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/graphic_path/bezier_curve.hpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path/bezier_point.hpp
     ${HIKOGUI_SOURCE_DIR}/graphic_path/graphic_path.hpp
-    ${HIKOGUI_SOURCE_DIR}/graphic_path/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/graphic_path/graphic_path.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_intf.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/iso_15924_impl.hpp

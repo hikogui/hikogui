@@ -9,7 +9,7 @@
 #include "otype_kern.hpp"
 #include "font_char_map.hpp"
 #include "../file/module.hpp"
-#include "../graphic_path/module.hpp"
+#include "../graphic_path/graphic_path.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"

@@ -9,7 +9,7 @@
 #include "../geometry/module.hpp"
 #include "../utility/utility.hpp"
 #include "../container/module.hpp"
-#include "../graphic_path/module.hpp"
+#include "../graphic_path/graphic_path.hpp"
 #include "../macros.hpp"
 #include <bit>
 #include <memory>
