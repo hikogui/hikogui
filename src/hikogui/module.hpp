@@ -19,7 +19,7 @@
 #include "formula/formula.hpp"
 #include "geometry/module.hpp"
 #include "GFX/module.hpp"
-#include "graphic_path/module.hpp"
+#include "graphic_path/graphic_path.hpp"
 #include "GUI/module.hpp"
 #include "i18n/module.hpp"
 #include "image/module.hpp"
