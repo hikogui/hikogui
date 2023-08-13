@@ -8,7 +8,7 @@
 #include "formula_evaluation_context.hpp"
 #include "../utility/utility.hpp"
 #include "../parser/parser.hpp"
-#include "../codec/module.hpp"
+#include "../codec/codec.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <memory>

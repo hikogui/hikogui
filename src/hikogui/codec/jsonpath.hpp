@@ -15,9 +15,11 @@
 #include <limits>
 #include <format>
 
+hi_export_module(hikogui.codec.jsonpath);
+
 namespace hi { inline namespace v1 {
 
-class jsonpath {
+hi_export class jsonpath {
 public:
     struct root {
         [[nodiscard]] constexpr std::string string() const noexcept
@@ -538,7 +540,7 @@ private:
 
 }} // namespace hi::v1
 
-template<typename CharT>
+hi_export template<typename CharT>
 struct std::formatter<hi::jsonpath, CharT> : std::formatter<char const *, CharT> {
     auto format(hi::jsonpath const& t, auto& fc) const
     {

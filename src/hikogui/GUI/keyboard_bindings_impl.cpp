@@ -4,7 +4,7 @@
 
 #include "keyboard_bindings.hpp"
 #include "gui_event_type.hpp"
-#include "../codec/module.hpp"
+#include "../codec/codec.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"
 

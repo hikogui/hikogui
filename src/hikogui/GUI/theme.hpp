@@ -9,7 +9,7 @@
 #include "../utility/utility.hpp"
 #include "../color/module.hpp"
 #include "../geometry/module.hpp"
-#include "../codec/module.hpp"
+#include "../codec/codec.hpp"
 #include "../macros.hpp"
 #include <array>
 #include <filesystem>

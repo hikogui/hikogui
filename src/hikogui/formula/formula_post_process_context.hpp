@@ -6,7 +6,7 @@
 
 #include "formula_evaluation_context.hpp"
 #include "../utility/utility.hpp"
-#include "../codec/module.hpp"
+#include "../codec/codec.hpp"
 #include "../path/path.hpp"
 #include "../macros.hpp"
 #include <functional>

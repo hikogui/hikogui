@@ -2,17 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <span>
 #include <vector>
 #include <algorithm>
 
+hi_export_module(hikogui.codec.huffman);
 
+namespace hi { inline namespace v1 {
 
-namespace hi::inline v1 {
-
-template<typename T>
+hi_export template<typename T>
 class huffman_tree {
     static_assert(std::is_integral_v<T> && std::is_signed_v<T>);
 
@@ -91,7 +93,7 @@ public:
      *         are needed.
      * @throw parse-error on invalid code-bit sequence.
      */
-    [[nodiscard]] int get(bool code_bit, state_t &state) const
+    [[nodiscard]] int get(bool code_bit, state_t& state) const
     {
         state += static_cast<ptrdiff_t>(code_bit);
 
@@ -104,7 +106,7 @@ public:
         return value - 1;
     }
 
-    [[nodiscard]] std::size_t get_symbol(std::span<std::byte const> bytes, std::size_t &bit_offset) const noexcept
+    [[nodiscard]] std::size_t get_symbol(std::span<std::byte const> bytes, std::size_t& bit_offset) const noexcept
     {
         auto state = start();
         while (true) {
@@ -137,7 +139,7 @@ public:
         }
 
         // Sort the table based on the length of the code, followed by symbol
-        std::sort(symbol_lengths.begin(), symbol_lengths.end(), [](hilet &a, hilet &b) {
+        std::sort(symbol_lengths.begin(), symbol_lengths.end(), [](hilet& a, hilet& b) {
             if (a.length == b.length) {
                 return a.symbol < b.symbol;
             } else {
@@ -149,7 +151,7 @@ public:
 
         int code = 0;
         int prev_length = 0;
-        for (auto &&entry : symbol_lengths) {
+        for (auto&& entry : symbol_lengths) {
             if (entry.length != 0) {
                 code <<= (entry.length - prev_length);
 
@@ -163,10 +165,10 @@ public:
         return r;
     }
 
-    [[nodiscard]] static huffman_tree from_lengths(std::vector<uint8_t> const &lengths)
+    [[nodiscard]] static huffman_tree from_lengths(std::vector<uint8_t> const& lengths)
     {
         return from_lengths(lengths.data(), lengths.size());
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

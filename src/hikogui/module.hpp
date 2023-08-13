@@ -7,7 +7,7 @@
 #include "audio/module.hpp"
 #include "algorithm/module.hpp"
 #include "char_maps/module.hpp"
-#include "codec/module.hpp"
+#include "codec/codec.hpp"
 #include "color/module.hpp"
 #include "concurrency/concurrency.hpp"
 #include "console/module.hpp"

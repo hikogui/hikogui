@@ -56,7 +56,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/codec/inflate.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/JSON.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/jsonpath.hpp
-    ${HIKOGUI_SOURCE_DIR}/codec/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/codec/codec.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/pickle.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/png.hpp
     ${HIKOGUI_SOURCE_DIR}/codec/SHA2.hpp
