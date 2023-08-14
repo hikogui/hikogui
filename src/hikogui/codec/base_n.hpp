@@ -14,7 +14,7 @@
 #include <string_view>
 #include <bit>
 
-
+hi_export_module(hikogui.codec.base_n);
 
 namespace hi::inline v1 {
 namespace detail {
@@ -290,14 +290,14 @@ private:
 };
 
 // Alphabet, CharsPerBlock, BytesPerBlock
-using base2 = base_n<detail::base2_alphabet, 8, 1>;
-using base8 = base_n<detail::base8_alphabet, 8, 3>;
-using base16 = base_n<detail::base16_alphabet, 2, 1>;
-using base32 = base_n<detail::base32_rfc4648_alphabet, 8, 5>;
-using base32hex = base_n<detail::base32hex_rfc4648_alphabet, 8, 5>;
-using base64 = base_n<detail::base64_rfc4648_alphabet, 4, 3>;
-using base64url = base_n<detail::base64url_rfc4648_alphabet, 4, 3>;
-using base85 = base_n<detail::base85_rfc1924_alphabet, 5, 4>;
-using ascii85 = base_n<detail::base85_btoa_alphabet, 5, 4>;
+hi_export using base2 = base_n<detail::base2_alphabet, 8, 1>;
+hi_export using base8 = base_n<detail::base8_alphabet, 8, 3>;
+hi_export using base16 = base_n<detail::base16_alphabet, 2, 1>;
+hi_export using base32 = base_n<detail::base32_rfc4648_alphabet, 8, 5>;
+hi_export using base32hex = base_n<detail::base32hex_rfc4648_alphabet, 8, 5>;
+hi_export using base64 = base_n<detail::base64_rfc4648_alphabet, 4, 3>;
+hi_export using base64url = base_n<detail::base64url_rfc4648_alphabet, 4, 3>;
+hi_export using base85 = base_n<detail::base85_rfc1924_alphabet, 5, 4>;
+hi_export using ascii85 = base_n<detail::base85_btoa_alphabet, 5, 4>;
 
 } // namespace hi::inline v1

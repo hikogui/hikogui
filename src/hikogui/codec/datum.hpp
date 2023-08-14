@@ -19,8 +19,6 @@
 #include <vector>
 #include <map>
 
-
-
 hi_warning_push();
 // C26476: Expression/symbol '...' uses a naked union '...' with multiple type pointers: Use variant instead (type.7.).
 // This implements `datum` which is simular to a std::variant.
@@ -32,21 +30,9 @@ hi_warning_ignore_msvc(26409);
 // Needed until c++23 deducing this.
 hi_warning_ignore_msvc(26492);
 
-namespace hi::inline v1 {
-class datum;
-}
+hi_export_module(hikogui.codec.datum);
 
-template<>
-struct std::hash<hi::datum> {
-    [[nodiscard]] std::size_t operator()(hi::datum const& rhs) const noexcept;
-};
-
-template<typename CharT>
-struct std::formatter<hi::datum, CharT> : std::formatter<std::string, CharT> {
-    auto format(hi::datum const& t, auto& fc) const -> decltype(std::formatter<std::string, CharT>{}.format(std::string{}, fc));
-};
-
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 namespace detail {
 
 /** Promotion result.
@@ -60,8 +46,12 @@ public:
     constexpr static bool data_is_pointer = sizeof(value_type) > sizeof(void *);
     constexpr static bool data_is_scalar = not data_is_pointer;
 
-    constexpr void clear() noexcept requires(data_is_scalar) {}
-    constexpr void clear() noexcept requires(data_is_pointer)
+    constexpr void clear() noexcept
+        requires(data_is_scalar)
+    {
+    }
+    constexpr void clear() noexcept
+        requires(data_is_pointer)
     {
         if (_owns_lhs) {
             delete _lhs;
@@ -106,21 +96,24 @@ public:
         return _is_result;
     }
 
-    constexpr void set(value_type lhs, value_type rhs) noexcept requires(data_is_scalar)
+    constexpr void set(value_type lhs, value_type rhs) noexcept
+        requires(data_is_scalar)
     {
         _lhs = lhs;
         _rhs = rhs;
         _is_result = true;
     }
 
-    constexpr void set(value_type const& lhs, value_type const& rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type const& lhs, value_type const& rhs) noexcept
+        requires(data_is_pointer)
     {
         _lhs = &lhs;
         _rhs = &rhs;
         _is_result = true;
     }
 
-    constexpr void set(value_type&& lhs, value_type const& rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type&& lhs, value_type const& rhs) noexcept
+        requires(data_is_pointer)
     {
         _lhs = new value_type(std::move(lhs));
         _rhs = &rhs;
@@ -128,7 +121,8 @@ public:
         _owns_lhs = true;
     }
 
-    constexpr void set(value_type const& lhs, value_type&& rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type const& lhs, value_type&& rhs) noexcept
+        requires(data_is_pointer)
     {
         _lhs = &lhs;
         _rhs = new value_type(std::move(rhs));
@@ -136,7 +130,8 @@ public:
         _owns_rhs = true;
     }
 
-    constexpr void set(value_type&& lhs, value_type&& rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type&& lhs, value_type&& rhs) noexcept
+        requires(data_is_pointer)
     {
         _lhs = new value_type(std::move(lhs));
         _rhs = new value_type(std::move(rhs));
@@ -145,32 +140,35 @@ public:
         _owns_rhs = true;
     }
 
-    [[nodiscard]] constexpr value_type const& lhs() const noexcept requires(data_is_pointer)
+    [[nodiscard]] constexpr value_type const& lhs() const noexcept
+        requires(data_is_pointer)
     {
         hi_axiom(_is_result);
         return *_lhs;
     }
 
-    [[nodiscard]] constexpr value_type const& rhs() const noexcept requires(data_is_pointer)
+    [[nodiscard]] constexpr value_type const& rhs() const noexcept
+        requires(data_is_pointer)
     {
         hi_axiom(_is_result);
         return *_rhs;
     }
 
-    [[nodiscard]] constexpr value_type lhs() const noexcept requires(data_is_scalar)
+    [[nodiscard]] constexpr value_type lhs() const noexcept
+        requires(data_is_scalar)
     {
         hi_axiom(_is_result);
         return _lhs;
     }
 
-    [[nodiscard]] constexpr value_type rhs() const noexcept requires(data_is_scalar)
+    [[nodiscard]] constexpr value_type rhs() const noexcept
+        requires(data_is_scalar)
     {
         hi_axiom(_is_result);
         return _rhs;
     }
 
-private :
-
+private:
     using data_type = std::conditional_t<data_is_pointer, value_type const *, value_type>;
     data_type _lhs = data_type{};
     data_type _rhs = data_type{};
@@ -181,33 +179,25 @@ private :
 
 } // namespace detail
 
-template<typename T>
-class is_datum_type : public std::false_type {
-};
+hi_export template<typename T>
+class is_datum_type : public std::false_type {};
 
-template<>
-class is_datum_type<long long> : public std::true_type {
-};
-template<>
-class is_datum_type<decimal> : public std::true_type {
-};
-template<>
-class is_datum_type<double> : public std::true_type {
-};
-template<>
-class is_datum_type<bool> : public std::true_type {
-};
-template<>
-class is_datum_type<std::chrono::year_month_day> : public std::true_type {
-};
-template<>
-class is_datum_type<std::string> : public std::true_type {
-};
-template<>
-class is_datum_type<bstring> : public std::true_type {
-};
+hi_export template<>
+class is_datum_type<long long> : public std::true_type {};
+hi_export template<>
+class is_datum_type<decimal> : public std::true_type {};
+hi_export template<>
+class is_datum_type<double> : public std::true_type {};
+hi_export template<>
+class is_datum_type<bool> : public std::true_type {};
+hi_export template<>
+class is_datum_type<std::chrono::year_month_day> : public std::true_type {};
+hi_export template<>
+class is_datum_type<std::string> : public std::true_type {};
+hi_export template<>
+class is_datum_type<bstring> : public std::true_type {};
 
-template<typename T>
+hi_export template<typename T>
 constexpr bool is_datum_type_v = is_datum_type<T>::value;
 
 /** A dynamic data type.
@@ -219,14 +209,12 @@ constexpr bool is_datum_type_v = is_datum_type<T>::value;
  * Not only does this datum handle the storage of data, but can also different operations
  * which are dynamically executed.
  */
-class datum {
+hi_export class datum {
 public:
     using vector_type = std::vector<datum>;
     using map_type = std::map<datum, datum>;
-    struct break_type {
-    };
-    struct continue_type {
-    };
+    struct break_type {};
+    struct continue_type {};
 
     /** Promote two datum-arguments to a common type.
      *
@@ -2382,18 +2370,22 @@ private:
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
 
-[[nodiscard]] inline std::size_t std::hash<hi::datum>::operator()(hi::datum const& rhs) const noexcept
-{
-    return rhs.hash();
-}
+hi_export template<>
+struct std::hash<hi::datum> {
+    [[nodiscard]] inline std::size_t operator()(hi::datum const& rhs) const noexcept
+    {
+        return rhs.hash();
+    }
+};
 
-template<typename CharT>
-auto std::formatter<hi::datum, CharT>::format(hi::datum const& t, auto& fc) const
-    -> decltype(std::formatter<std::string, CharT>{}.format(std::string{}, fc))
-{
-    return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
-}
+hi_export template<typename CharT>
+struct std::formatter<hi::datum, CharT> : std::formatter<std::string, CharT> {
+    auto format(hi::datum const& t, auto& fc) const
+    {
+        return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
+    }
+};
 
 hi_warning_pop();

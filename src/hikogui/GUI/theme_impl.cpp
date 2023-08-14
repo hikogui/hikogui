@@ -5,7 +5,7 @@
 #include "theme.hpp"
 #include "theme_book.hpp"
 #include "../font/module.hpp"
-#include "../codec/module.hpp"
+#include "../codec/codec.hpp"
 #include "../color/module.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"

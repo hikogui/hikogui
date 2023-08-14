@@ -16,10 +16,9 @@
 #include <vector>
 #include <optional>
 
-
+hi_export_module(hikogui.codec.JSON);
 
 namespace hi::inline v1 {
-
 namespace detail {
 
 template<std::input_iterator It, std::sentinel_for<It> ItEnd>
@@ -179,7 +178,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 
 } // namespace detail
 
-template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+hi_export template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr datum parse_JSON(It it, ItEnd last, std::string_view path = std::string_view{"<none>"})
 {
     auto token_it = lexer<lexer_config::json_style()>.parse(it, last);
@@ -208,7 +207,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
  * @param text The text to parse.
  * @return A datum representing the parsed object.
  */
-[[nodiscard]] constexpr datum parse_JSON(std::string_view text, std::string_view path = std::string_view{"<none>"})
+hi_export [[nodiscard]] constexpr datum parse_JSON(std::string_view text, std::string_view path = std::string_view{"<none>"})
 {
     return parse_JSON(text.cbegin(), text.cend(), path);
 }
@@ -217,7 +216,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
  * @param text The text to parse.
  * @return A datum representing the parsed object.
  */
-[[nodiscard]] constexpr datum parse_JSON(std::string const& text, std::string_view path = std::string_view{"<none>"})
+hi_export [[nodiscard]] constexpr datum parse_JSON(std::string const& text, std::string_view path = std::string_view{"<none>"})
 {
     return parse_JSON(std::string_view{text}, path);
 }
@@ -226,7 +225,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
  * @param text The text to parse.
  * @return A datum representing the parsed object.
  */
-[[nodiscard]] constexpr datum parse_JSON(char const *text, std::string_view path = std::string_view{"<none>"})
+hi_export [[nodiscard]] constexpr datum parse_JSON(char const *text, std::string_view path = std::string_view{"<none>"})
 {
     return parse_JSON(std::string_view{text}, path);
 }
@@ -235,12 +234,12 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
  * @param path A path pointing to the file to parse.
  * @return A datum representing the parsed object.
  */
-[[nodiscard]] inline datum parse_JSON(std::filesystem::path const& path)
+hi_export [[nodiscard]] inline datum parse_JSON(std::filesystem::path const& path)
 {
     return parse_JSON(as_string_view(file_view(path)), path.string());
 }
 
-constexpr void format_JSON_impl(datum const& value, std::string& result, hi::indent indent = {})
+hi_export constexpr void format_JSON_impl(datum const& value, std::string& result, hi::indent indent = {})
 {
     if (holds_alternative<nullptr_t>(value)) {
         result += "null";
@@ -328,7 +327,7 @@ constexpr void format_JSON_impl(datum const& value, std::string& result, hi::ind
  * @param root datum-object to serialize
  * @return The JSON serialized object as a string
  */
-[[nodiscard]] constexpr std::string format_JSON(datum const& root)
+hi_export [[nodiscard]] constexpr std::string format_JSON(datum const& root)
 {
     auto r = std::string{};
     format_JSON_impl(root, r);

@@ -6,7 +6,7 @@
 
 #include "../telemetry/module.hpp"
 #include "../observer/module.hpp"
-#include "../codec/module.hpp"
+#include "../codec/codec.hpp"
 #include "../dispatch/dispatch.hpp"
 #include "../file/module.hpp"
 #include "../macros.hpp"

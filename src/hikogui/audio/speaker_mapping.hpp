@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../codec/module.hpp"
+#include "../codec/codec.hpp"
 #include "../font/module.hpp"
 #include "../macros.hpp"
 #include <array>

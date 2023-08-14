@@ -12,11 +12,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/audio/speaker_mapping_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/audio/win32_device_interface_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/audio/win32_wave_device_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/codec/BON8_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/codec/gzip_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/codec/inflate_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/codec/png_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/codec/zlib_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/console_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/dialog_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/crt_utils_win32_impl.cpp>
