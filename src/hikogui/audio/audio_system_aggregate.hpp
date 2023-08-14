@@ -7,9 +7,11 @@
 #include "../macros.hpp"
 #include <algorithm>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.audio.audio_system_aggregate);
 
-class audio_system_aggregate : public audio_system {
+namespace hi { inline namespace v1 {
+
+hi_export class audio_system_aggregate : public audio_system {
 public:
     using super = audio_system;
 
@@ -43,4 +45,4 @@ private:
     std::vector<child_type> _children;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

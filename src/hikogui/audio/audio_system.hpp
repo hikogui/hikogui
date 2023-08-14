@@ -11,14 +11,14 @@
 #include <vector>
 #include <memory>
 
+hi_export_module(hikogui.audio.audio_system);
 
-
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /*! An system of audio devices.
  * Systems are for example: Window Audio Session API (WASAPI), ASIO, Apple CoreAudio
  */
-class audio_system {
+hi_export class audio_system {
 public:
     using notifier_type = notifier<>;
     using callback_token = notifier_type::callback_token;
@@ -62,4 +62,4 @@ protected:
     notifier_type _notifier;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

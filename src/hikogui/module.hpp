@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "audio/module.hpp"
+#include "audio/audio.hpp"
 #include "algorithm/module.hpp"
 #include "char_maps/module.hpp"
 #include "codec/codec.hpp"

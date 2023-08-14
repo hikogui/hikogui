@@ -10,9 +10,11 @@
 #include "../macros.hpp"
 #include <compare>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.audio.audio_format_range);
 
-class audio_format_range {
+namespace hi { inline namespace v1 {
+
+hi_export class audio_format_range {
 public:
     pcm_format format = {};
     uint16_t num_channels = 0;
@@ -85,9 +87,9 @@ public:
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
-template<typename CharT>
+hi_export template<typename CharT>
 struct std::formatter<hi::audio_format_range, CharT> : std::formatter<std::string_view, CharT> {
     auto format(hi::audio_format_range const& t, auto& fc) const
     {

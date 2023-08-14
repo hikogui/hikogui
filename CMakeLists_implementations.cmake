@@ -1,17 +1,5 @@
 
 target_sources(hikogui PRIVATE
-    ${HIKOGUI_SOURCE_DIR}/audio/audio_device_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/audio/audio_device_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/audio/audio_sample_format_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/audio/audio_sample_packer_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/audio/audio_sample_unpacker_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/audio/audio_stream_format_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/audio/audio_system_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/audio/audio_system_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/audio/speaker_mapping_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/audio/speaker_mapping_win32_impl.cpp>
-    ${HIKOGUI_SOURCE_DIR}/audio/win32_device_interface_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/audio/win32_wave_device_impl.cpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/console_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/dialog_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/crt_utils_win32_impl.cpp>
