@@ -23,7 +23,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/audio/audio_system_aggregate.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_system_asio.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/audio/audio_system_win32.hpp>
-    ${HIKOGUI_SOURCE_DIR}/audio/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/audio/audio.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/pcm_format.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/speaker_mapping.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/audio/speaker_mapping_win32.hpp>

@@ -6,9 +6,11 @@
 #include "audio_system.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.audio.audio_system_asio);
 
-class audio_system_asio : public audio_system {
+namespace hi { inline namespace v1 {
+
+hi_export class audio_system_asio : public audio_system {
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
