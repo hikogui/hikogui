@@ -135,7 +135,7 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     auto gui = hi::gui_system::make_unique();
-    auto [window, widget] = gui->make_window<hi::window_widget>(hi::tr("Custom Widget Command"));
+    auto [window, widget] = gui->make_window<hi::window_widget>(hi::txt("Custom Widget Command"));
     widget.content().make_widget<command_widget>("A1");
     widget.content().make_widget<command_widget>("A2");
 

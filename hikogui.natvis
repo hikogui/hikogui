@@ -258,7 +258,7 @@
         </Expand>
     </Type>
     <Type Name="hi::v1::tr">
-        <DisplayString>tr({_msg_id})</DisplayString>
+        <DisplayString>txt({_msg_id})</DisplayString>
     </Type>
     <Type Name="hi::v1::label">
         <DisplayString>label({text._msg_id})</DisplayString>

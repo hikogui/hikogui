@@ -51,12 +51,14 @@ public:
     {
         co_yield *_grid_widget;
     }
+
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
         _grid_constraints = _grid_widget->update_constraints();
         return _grid_constraints;
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
@@ -66,12 +68,14 @@ public:
 
         _grid_widget->set_layout(context.transform(_grid_shape));
     }
+
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             _grid_widget->draw(context);
         }
     }
+
     hitbox hitbox_test(point2 position) const noexcept override
     {
         if (*mode >= widget_mode::partial) {
@@ -82,6 +86,7 @@ public:
             return hitbox{};
         }
     }
+    
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         if (*mode >= widget_mode::partial) {

@@ -179,7 +179,7 @@ hi::task<> main_window(hi::gui_system& gui)
     auto icon = hi::icon(hi::png::load(hi::URL{"resource:vulkan_triangle.png"}));
 
     // Create a window, when `window` gets out-of-scope the window is destroyed.
-    auto [window, widget] = gui.make_window<hi::window_widget>(hi::label{std::move(icon), hi::tr("Vulkan Triangle")});
+    auto [window, widget] = gui.make_window<hi::window_widget>(hi::label{std::move(icon), hi::txt("Vulkan Triangle")});
 
     // Create the vulkan triangle-widget as the content of the window. The content
     // of the window is a grid, we only use the cell "A1" for this widget.

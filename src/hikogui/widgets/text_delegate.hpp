@@ -175,9 +175,9 @@ private:
  * @ingroup widget_delegates
  */
 template<>
-class default_text_delegate<translate> : public text_delegate {
+class default_text_delegate<txt> : public text_delegate {
 public:
-    using value_type = translate;
+    using value_type = txt;
 
     observer<value_type> value;
 
@@ -194,57 +194,12 @@ public:
 
     [[nodiscard]] gstring read(text_widget& sender) noexcept override
     {
-        return value.read()();
+        return value.read()->translate();
     }
 
     void write(text_widget& sender, gstring const& text) noexcept override
     {
         hi_no_default();
-    }
-
-private:
-    typename decltype(value)::callback_token _value_cbt;
-};
-
-/** A default text delegate specialization for `text`.
- *
- * @ingroup widget_delegates
- */
-template<>
-class default_text_delegate<text> : public text_delegate {
-public:
-    using value_type = text;
-
-    observer<value_type> value;
-
-    /** Construct a delegate.
-     *
-     * @param value A value or observer-value used as a representation of the state.
-     */
-    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
-    {
-        _value_cbt = this->value.subscribe([&](auto...) {
-            this->_notifier();
-        });
-    }
-
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
-    {
-        return to_gstring(*value.read());
-    }
-
-    void write(text_widget& sender, gstring const& text) noexcept override
-    {
-        auto proxy = value.copy();
-        auto *ptr = std::addressof(*proxy);
-
-        if (auto *string_ptr = get_if<std::string>(ptr)) {
-            *string_ptr = to_string(text);
-        } else if (auto *gstring_ptr = get_if<gstring>(ptr)) {
-            *gstring_ptr = text;
-        } else {
-            hi_not_implemented();
-        }
     }
 
 private:

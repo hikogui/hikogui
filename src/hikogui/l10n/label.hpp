@@ -11,7 +11,7 @@
 #include "../unicode/module.hpp"
 #include "../image/module.hpp"
 #include "../font/module.hpp"
-#include "translate.hpp"
+#include "txt.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <type_traits>
@@ -22,52 +22,6 @@ hi_export_module(hikogui.l10n.label);
 
 
 namespace hi::inline v1 {
-
-/** A variant of text.
- *
- * May be:
- *  - `std::monostate`
- *  - `std::string`
- *  - `hi::gstring`
- *  - `hi::translate` or `hi::tr`
- */
-class text : public std::variant<std::monostate, std::string, gstring, translate> {
-    using std::variant<std::monostate, std::string, gstring, translate>::variant;
-
-    /** Check if text contains a string.
-     *
-     * @note `to_bool()` returns true on an zero length string.
-     */
-    [[nodiscard]] constexpr friend bool to_bool(text const& rhs) noexcept
-    {
-        return not std::holds_alternative<std::monostate>(rhs);
-    }
-
-    
-
-    /** Convert the text into a gstring.
-     */
-    [[nodiscard]] constexpr friend gstring to_gstring(hi::text const& rhs) noexcept
-    {
-        // clang-format off
-        return std::visit(
-            overloaded{
-                [](std::monostate const &) { return gstring{}; },
-                [](std::string const &x) { return to_gstring(std::string_view{x}); },
-                [](gstring const &x) { return x; },
-                [](translate const &x) { return x(); }
-            },
-            rhs);
-        // clang-format on
-    }
-
-    /** Convert the text into a std::string.
-     */
-    [[nodiscard]] constexpr friend std::string to_string(hi::text const& rhs) noexcept
-    {
-        return to_string(to_gstring(rhs));
-    }
-};
 
 /** A variant of icon.
  *
@@ -90,18 +44,6 @@ class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, gly
     }
 };
 
-} // namespace hi::inline v1
-
-template<typename CharT>
-struct std::formatter<hi::text, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::text const& t, auto& fc) const
-    {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
-    }
-};
-
-namespace hi::inline v1 {
-
 /** A label consisting of localizable text and an icon.
  *
  * A label is used for user-visible information. The label is used as
@@ -121,26 +63,29 @@ public:
     /** Localizable text.
      * The text in this field is not yet translated nor formatted.
      */
-    hi::text text;
+    txt text;
 
     /** Construct a new label from an icon and text.
      * @param icon The icon.
      * @param text The text.
      */
-    constexpr label(std::convertible_to<hi::icon> auto&& icon, std::convertible_to<hi::text> auto&& text) noexcept :
-        icon(hi_forward(icon)), text(hi_forward(text))
+    template<std::convertible_to<hi::icon> Icon, std::convertible_to<txt> Txt>
+    constexpr label(Icon && icon, Txt && text) noexcept :
+        icon(std::forward<Icon>(icon)), text(std::forward<Txt>(text))
     {
     }
 
     /** Construct a new label from text.
      * @param text The text.
      */
-    constexpr label(std::convertible_to<hi::text> auto&& text) noexcept : icon(), text(hi_forward(text)) {}
+    template<std::convertible_to<txt> Txt>
+    constexpr label(Txt && text) noexcept : icon(), text(std::forward<Txt>(text)) {}
 
     /** Construct a new label from an icon.
      * @param icon The icon.
      */
-    constexpr label(std::convertible_to<hi::icon> auto&& icon) noexcept : icon(hi_forward(icon)), text() {}
+    template<std::convertible_to<hi::icon> Icon>
+    constexpr label(Icon&& icon) noexcept : icon(std::forward<Icon>(icon)), text() {}
 
     /** Construct a empty label.
      */
@@ -166,7 +111,7 @@ public:
      * @param rhs A label.
      * @return True is the text and icon of both labels are equal.
      */
-    [[nodiscard]] constexpr friend bool operator==(label const& lhs, label const& rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(label const&, label const&) noexcept = default;
 };
 
 template<>
@@ -190,9 +135,9 @@ struct selector<label> {
 } // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<hi::label, CharT> : std::formatter<hi::text, CharT> {
+struct std::formatter<hi::label, CharT> : std::formatter<std::string_view, CharT> {
     auto format(hi::label const& t, auto& fc) const
     {
-        return std::formatter<hi::text, CharT>::format(t.text, fc);
+        return std::formatter<std::string_view, CharT>::format(std::string{t.text}, fc);
     }
 };

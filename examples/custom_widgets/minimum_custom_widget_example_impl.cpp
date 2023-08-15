@@ -75,7 +75,7 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     auto gui = hi::gui_system::make_unique();
-    auto [window, widget] = gui->make_window<hi::window_widget>(hi::tr("Minimum Custom Widget"));
+    auto [window, widget] = gui->make_window<hi::window_widget>(hi::txt("Minimum Custom Widget"));
     widget.content().make_widget<minimum_widget>("A1");
 
     auto close_cbt = window->closing.subscribe(
