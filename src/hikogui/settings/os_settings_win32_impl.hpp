@@ -88,6 +88,11 @@ namespace hi { inline namespace v1 {
     auto r = std::vector<language_tag>{};
 
     try {
+        // The official APIs to get the current languages do not work.
+        // Either they return the languages in a random order.
+        // Or they return only three languages, but not nessarily the first three
+        // Or they do not update at runtime.
+        // The only way that works is to get the registry from the Control Panel application.
         if (hilet languages = registry_read<std::vector<std::string>>(
                 registry_key::current_user, "Control Panel\\International\\User Profile", "Languages")) {
             r.reserve(languages->size());
@@ -102,6 +107,21 @@ namespace hi { inline namespace v1 {
     }
 
     return r;
+}
+
+[[nodiscard]] inline std::locale os_settings::gather_locale()
+{
+    auto name_w = std::wstring{};
+
+    name_w.resize_and_overwrite(LOCALE_NAME_MAX_LENGTH, [](wchar_t *p, size_t count) {
+        if (auto r = GetUserDefaultLocaleName(p, narrow_cast<int>(count + 1)); r != 0) {
+            return r - 1;
+        }
+        throw os_error("Could not get the user default locale name");
+    });
+
+    auto name = to_string(name_w);
+    return std::locale(name);
 }
 
 [[nodiscard]] inline hi::theme_mode os_settings::gather_theme_mode()

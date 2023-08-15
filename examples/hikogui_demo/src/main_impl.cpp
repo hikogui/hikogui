@@ -117,6 +117,9 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
         },
         callback_flags::main);
 
+    grid.make_widget<label_widget>("A8:B8", txt("This is large number locale formatted: {:L}", 1234.56));
+
+
     co_await std::suspend_always{};
 }
 

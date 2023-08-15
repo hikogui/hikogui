@@ -37,6 +37,18 @@ public:
         return _language_tags;
     }
 
+    /** Get the current local.
+     *
+     * @return The current locale.
+     */
+    [[nodiscard]] static std::locale locale() noexcept
+    {
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        hilet lock = std::scoped_lock(_mutex);
+        return _locale;
+    }
+
+
     /** Check if the configured writing direction is left-to-right.
      *
      * @retval true If the writing direction is left-to-right.
@@ -301,6 +313,15 @@ public:
         }
 
         try {
+            if (compare_store(_locale, gather_locale())) {
+                setting_has_changed = true;
+                hi_log_info("OS locale has changed: {}", _locale.name());
+            }
+        } catch (std::exception const& e) {
+            hi_log_error("Failed to get OS locale: {}", e.what());
+        }
+
+        try {
             if (compare_store(_theme_mode, gather_theme_mode())) {
                 setting_has_changed = true;
                 hi_log_info("OS theme-mode has changed: {}", _theme_mode.load());
@@ -478,6 +499,7 @@ private:
     static inline notifier_type _notifier;
 
     static inline std::vector<language_tag> _language_tags = {};
+    static inline std::locale _locale = std::locale{""};
     static inline std::atomic<bool> _left_to_right = true;
     static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
     static inline std::atomic<bool> _uniform_HDR = false;
@@ -514,6 +536,7 @@ private:
     }
 
     [[nodiscard]] static std::vector<language_tag> gather_languages();
+    [[nodiscard]] static std::locale gather_locale();
     [[nodiscard]] static hi::theme_mode gather_theme_mode();
     [[nodiscard]] static hi::subpixel_orientation gather_subpixel_orientation();
     [[nodiscard]] static bool gather_uniform_HDR();
