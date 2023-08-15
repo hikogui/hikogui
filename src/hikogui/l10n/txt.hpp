@@ -13,10 +13,68 @@
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <algorithm>
+#include <utility>
 
 hi_export_module(hikogui.l10n.txt);
 
 namespace hi { inline namespace v1 {
+
+namespace detail {
+
+struct txt_arguments_base {
+    virtual ~txt_arguments_base() = default;
+
+    [[nodiscard]] virtual std::unique_ptr<txt_arguments_base> make_unique_copy() const noexcept = 0;
+    [[nodiscard]] virtual std::string format(std::locale const &loc, std::string_view fmt) const noexcept = 0;
+    [[nodiscard]] virtual bool equal_to(txt_arguments_base const& rhs) const noexcept = 0;
+};
+
+template<typename... Types>
+struct txt_arguments : txt_arguments_base {
+    template<typename... Args>
+    constexpr txt_arguments(Args&&...args) : _args(std::forward<Args>(args)...)
+    {
+    }
+
+    [[nodiscard]] std::unique_ptr<txt_arguments_base> make_unique_copy() const noexcept override
+    {
+        return std::apply(
+            [](auto const&...args) {
+                return std::make_unique<txt_arguments>(args...);
+            },
+            _args);
+    }
+
+    [[nodiscard]] std::string format(std::locale const &loc, std::string_view fmt) const noexcept override
+    {
+        return std::apply(
+            [&](auto const&...args) {
+                return std::vformat(loc, fmt, std::make_format_args(args...));
+            },
+            _args);
+    }
+
+    [[nodiscard]] virtual bool equal_to(txt_arguments_base const& rhs) const noexcept
+    {
+        if (auto *rhs_ = dynamic_cast<txt_arguments const *>(std::addressof(rhs))) {
+            return _args == rhs_->_args;
+        } else {
+            return false;
+        }
+    }
+
+    std::tuple<Types...> _args;
+};
+
+template<typename... Args>
+constexpr std::unique_ptr<txt_arguments_base> make_unique_txt_arguments(Args&&...args) noexcept
+{
+    using txt_arguments_type = txt_arguments<std::decay_t<Args>...>;
+    return std::make_unique<txt_arguments_type>(std::forward<Args>(args)...);
+}
+
+} // namespace detail
 
 [[nodiscard]] constexpr long long get_first_integer_argument() noexcept
 {
@@ -39,18 +97,42 @@ template<typename First, typename... Rest>
  * it to the user. This allows the user to change the language while the
  * application is running.
  */
-class txt {
+hi_export class txt {
 public:
-    constexpr txt(txt const&) noexcept = default;
-    constexpr txt(txt&&) noexcept = default;
-    constexpr txt& operator=(txt const&) noexcept = default;
-    constexpr txt& operator=(txt&&) noexcept = default;
     ~txt() = default;
-    constexpr txt() noexcept = default;
 
-    [[nodiscard]] constexpr friend bool operator==(txt const& lhs, txt const& rhs) noexcept
+    constexpr txt() noexcept : _first_integer_argument(), _msg_id(), _args(detail::make_unique_txt_arguments()) {}
+
+    txt(txt const& other) noexcept :
+        _first_integer_argument(other._first_integer_argument), _msg_id(other._msg_id), _args(other._args->make_unique_copy())
     {
-        return lhs._msg_id == rhs._msg_id;
+    }
+
+    txt(txt&& other) noexcept
+    {
+        std::swap(_first_integer_argument, other._first_integer_argument);
+        std::swap(_msg_id, other._msg_id);
+        std::swap(_args, other._args);
+    }
+
+    txt& operator=(txt const& other) noexcept
+    {
+        if (std::addressof(other) != this) {
+            _first_integer_argument = other._first_integer_argument;
+            _msg_id = other._msg_id;
+            _args = other._args->make_unique_copy();
+        }
+        return *this;
+    }
+
+    txt& operator=(txt&& other) noexcept
+    {
+        if (std::addressof(other) != this) {
+            std::swap(_first_integer_argument, other._first_integer_argument);
+            std::swap(_msg_id, other._msg_id);
+            std::swap(_args, other._args);
+        }
+        return *this;
     }
 
     /** Construct a localizable message.
@@ -69,7 +151,7 @@ public:
     txt(std::string msg_id, Args&&...args) noexcept :
         _first_integer_argument(get_first_integer_argument(args...)),
         _msg_id(std::move(msg_id)),
-        _args(std::make_format_args(std::forward<Args>(args)...))
+        _args(detail::make_unique_txt_arguments(std::forward<Args>(args)...))
     {
     }
 
@@ -85,20 +167,11 @@ public:
         return not empty();
     }
 
-    /** Translate and format the message.
-     * Find the translation of the message, then format it.
-     *
-     * @param languages A list of languages to search for translations.
-     * @return The translated and formatted message.
-     */
-    [[nodiscard]] gstring translate(std::vector<language_tag> const& languages = os_settings::language_tags()) const noexcept
+    [[nodiscard]] constexpr friend bool operator==(txt const& lhs, txt const& rhs) noexcept
     {
-        hilet[fmt, language_tag] = ::hi::get_translation(_msg_id, _first_integer_argument, languages);
-        hilet msg = std::vformat(fmt, _args);
-
-        // hilet default_attributes = character_attributes{language_tag.expand()};
-        // return to_text_with_markup(msg, default_attributes);
-        return to_gstring(msg);
+        hi_axiom_not_null(lhs._args);
+        hi_axiom_not_null(rhs._args);
+        return lhs._msg_id == rhs._msg_id and lhs._args->equal_to(*rhs._args);
     }
 
     /** Translate and format the message.
@@ -108,20 +181,34 @@ public:
      * @param languages A list of languages to search for translations.
      * @return The translated and formatted message.
      */
-    [[nodiscard]] gstring
-    translate(std::locale const& loc, std::vector<language_tag> const& languages = os_settings::language_tags()) const noexcept
+    [[nodiscard]] gstring translate(
+        std::locale const& loc = os_settings::locale(),
+        std::vector<language_tag> const& languages = os_settings::language_tags()) const noexcept
     {
+        hi_axiom_not_null(_args);
         hilet[fmt, language_tag] = ::hi::get_translation(_msg_id, _first_integer_argument, languages);
-        hilet msg = std::vformat(loc, fmt, _args);
+        hilet msg = _args->format(loc, fmt);
 
         // hilet default_attributes = character_attributes{language_tag.expand()};
         // return to_text_with_markup(msg, default_attributes);
         return to_gstring(msg);
     }
 
-    [[nodiscard]] gstring original(std::vector<language_tag> const& languages = os_settings::language_tags()) const noexcept
+    /** Translate and format the message.
+     * Find the translation of the message, then format it.
+     *
+     * @param languages A list of languages to search for translations.
+     * @return The translated and formatted message.
+     */
+    [[nodiscard]] gstring translate(std::vector<language_tag> const& languages) const noexcept
     {
-        hilet msg = std::vformat(_msg_id, _args);
+        return translate(os_settings::locale(), languages);
+    }
+
+    [[nodiscard]] gstring original() const noexcept
+    {
+        hi_axiom_not_null(_args);
+        hilet msg = _args->format(std::locale::classic(), _msg_id);
 
         // hilet default_attributes = character_attributes{language_tag.expand()};
         // return to_text_with_markup(msg, default_attributes);
@@ -136,7 +223,7 @@ public:
 private:
     long long _first_integer_argument = 0;
     std::string _msg_id = {};
-    std::format_args _args = {};
+    std::unique_ptr<detail::txt_arguments_base> _args;
 };
 
 }} // namespace hi::v1
