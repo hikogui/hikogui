@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "unicode_normalization.hpp"
-#include "../file/module.hpp"
+#include "../file/file.hpp"
 #include "../algorithm/module.hpp"
 #include "../coroutine/module.hpp"
 #include "../utility/utility.hpp"
