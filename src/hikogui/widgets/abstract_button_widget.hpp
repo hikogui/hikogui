@@ -41,15 +41,15 @@ public:
 
     /** The label to show when the button is in the 'on' state.
      */
-    observer<label> on_label = tr("on");
+    observer<label> on_label = txt("on");
 
     /** The label to show when the button is in the 'off' state.
      */
-    observer<label> off_label = tr("off");
+    observer<label> off_label = txt("off");
 
     /** The label to show when the button is in the 'other' state.
      */
-    observer<label> other_label = tr("other");
+    observer<label> other_label = txt("other");
 
     /** The alignment of the button and on/off/other label.
      */

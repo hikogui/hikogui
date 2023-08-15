@@ -175,9 +175,9 @@ private:
  * @ingroup widget_delegates
  */
 template<>
-class default_text_delegate<translate> : public text_delegate {
+class default_text_delegate<txt> : public text_delegate {
 public:
-    using value_type = translate;
+    using value_type = txt;
 
     observer<value_type> value;
 
@@ -194,7 +194,7 @@ public:
 
     [[nodiscard]] gstring read(text_widget& sender) noexcept override
     {
-        return value.read()();
+        return value.read()->translate();
     }
 
     void write(text_widget& sender, gstring const& text) noexcept override

@@ -10,7 +10,7 @@ translatable text and an icon.
 
 ```cpp
 auto gui = hi::gui_system::make_unique();
-auto &window = gui->make_window(hi::tr("The window title"));
+auto &window = gui->make_window(hi::txt("The window title"));
 ```
 
 The second optional argument to `make_window()` is a subclass of
@@ -36,8 +36,8 @@ returned from the `main()` function.
 int hi_main(int argc, char *argv[])
 {
     auto gui = hi::gui_system::make_unique();
-    auto &window = gui->make_window(hi::tr("The window title"));
-    window.content().make_widget<momentary_button_widget>("A1", tr("Does nothing"));
+    auto &window = gui->make_window(hi::txt("The window title"));
+    window.content().make_widget<momentary_button_widget>("A1", txt("Does nothing"));
     return gui->loop();
 }
 ```
@@ -68,12 +68,12 @@ int hi_main(int argc, char *argv[])
     observer<int> value = 0;
 
     auto gui = hi::gui_system::make_unique();
-    auto &window = gui->make_window(hi::tr("Radio button example"));
+    auto &window = gui->make_window(hi::txt("Radio button example"));
 
-    window.content().make_widget<label_widget>("A1", tr("radio buttons:"));
-    window.content().make_widget<radio_button_widget>("B1", value, 1, tr("one"));
-    window.content().make_widget<radio_button_widget>("B2", value, 2, tr("two"));
-    window.content().make_widget<radio_button_widget>("B3", value, 3, tr("three"));
+    window.content().make_widget<label_widget>("A1", txt("radio buttons:"));
+    window.content().make_widget<radio_button_widget>("B1", value, 1, txt("one"));
+    window.content().make_widget<radio_button_widget>("B2", value, 2, txt("two"));
+    window.content().make_widget<radio_button_widget>("B3", value, 3, txt("three"));
 
     return gui->loop();
 }

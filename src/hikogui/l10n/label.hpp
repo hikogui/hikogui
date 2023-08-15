@@ -11,7 +11,7 @@
 #include "../unicode/module.hpp"
 #include "../image/module.hpp"
 #include "../font/module.hpp"
-#include "translate.hpp"
+#include "txt.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <type_traits>
@@ -63,26 +63,29 @@ public:
     /** Localizable text.
      * The text in this field is not yet translated nor formatted.
      */
-    translate text;
+    txt text;
 
     /** Construct a new label from an icon and text.
      * @param icon The icon.
      * @param text The text.
      */
-    constexpr label(std::convertible_to<hi::icon> auto&& icon, std::convertible_to<translate> auto&& text) noexcept :
-        icon(hi_forward(icon)), text(hi_forward(text))
+    template<std::convertible_to<hi::icon> Icon, std::convertible_to<txt> Txt>
+    constexpr label(Icon && icon, Txt && text) noexcept :
+        icon(std::forward<Icon>(icon)), text(std::forward<Txt>(text))
     {
     }
 
     /** Construct a new label from text.
      * @param text The text.
      */
-    constexpr label(std::convertible_to<translate> auto&& text) noexcept : icon(), text(hi_forward(text)) {}
+    template<std::convertible_to<txt> Txt>
+    constexpr label(Txt && text) noexcept : icon(), text(std::forward<Txt>(text)) {}
 
     /** Construct a new label from an icon.
      * @param icon The icon.
      */
-    constexpr label(std::convertible_to<hi::icon> auto&& icon) noexcept : icon(hi_forward(icon)), text() {}
+    template<std::convertible_to<hi::icon> Icon>
+    constexpr label(Icon&& icon) noexcept : icon(std::forward<Icon>(icon)), text() {}
 
     /** Construct a empty label.
      */

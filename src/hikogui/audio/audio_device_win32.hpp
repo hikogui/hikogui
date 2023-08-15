@@ -123,7 +123,7 @@ public:
 
     [[nodiscard]] hi::label label() const noexcept override
     {
-        return {elusive_icon::Speaker, tr("{}", name())};
+        return {elusive_icon::Speaker, txt("{}", name())};
     }
 
     [[nodiscard]] audio_device_state state() const noexcept override

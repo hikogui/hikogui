@@ -336,7 +336,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/l10n/label.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/l10n.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/po_parser.hpp
-    ${HIKOGUI_SOURCE_DIR}/l10n/translate.hpp
+    ${HIKOGUI_SOURCE_DIR}/l10n/txt.hpp
     ${HIKOGUI_SOURCE_DIR}/l10n/translation.hpp
     ${HIKOGUI_SOURCE_DIR}/dispatch/awaitable_timer.hpp
     ${HIKOGUI_SOURCE_DIR}/dispatch/awaitable_timer_intf.hpp

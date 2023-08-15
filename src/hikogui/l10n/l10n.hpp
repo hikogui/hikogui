@@ -4,7 +4,7 @@
 
 #include "label.hpp" // export
 #include "po_parser.hpp" // export
-#include "translate.hpp" // export
+#include "txt.hpp" // export
 #include "translation.hpp" // export
 
 hi_export_module(hikogui.l10n);
