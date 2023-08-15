@@ -13,7 +13,7 @@
 #include "../unicode/module.hpp"
 #include "../utility/utility.hpp"
 #include "../settings/settings.hpp"
-#include "../crt/module.hpp"
+#include "../crt/crt.hpp"
 #include "../algorithm/module.hpp"
 #include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"

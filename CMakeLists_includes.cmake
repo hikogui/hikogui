@@ -86,7 +86,12 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/concurrency/wfree_idle_count.hpp
     ${HIKOGUI_SOURCE_DIR}/console/console.hpp
     ${HIKOGUI_SOURCE_DIR}/console/dialog.hpp
-    ${HIKOGUI_SOURCE_DIR}/console/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/console/dialog_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/dialog_win32_impl.hpp>
+    $<$<PLATFORM_ID:MacOS>:${HIKOGUI_SOURCE_DIR}/console/dialog_macos_impl.hpp>
+    ${HIKOGUI_SOURCE_DIR}/console/print.hpp
+    ${HIKOGUI_SOURCE_DIR}/console/print_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/print_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/container/byte_string.hpp
     ${HIKOGUI_SOURCE_DIR}/container/function_fifo.hpp
     ${HIKOGUI_SOURCE_DIR}/container/functional.hpp
@@ -113,8 +118,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/coroutine/scoped_task.hpp
     ${HIKOGUI_SOURCE_DIR}/coroutine/task.hpp
     ${HIKOGUI_SOURCE_DIR}/coroutine/when_any.hpp
+    ${HIKOGUI_SOURCE_DIR}/crt/crt.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/crt_utils.hpp
-    ${HIKOGUI_SOURCE_DIR}/crt/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/crt/crt_utils_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/crt_utils_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/crt/terminate.hpp
     ${HIKOGUI_SOURCE_DIR}/file/file.hpp
     ${HIKOGUI_SOURCE_DIR}/file/file_view.hpp
