@@ -290,6 +290,11 @@ public:
         }
     }
 
+    explicit operator std::string() const noexcept
+    {
+        return to_string((*this)());
+    }
+
     /** Compare two localizable messages.
      *
      * @param lhs A localizable message.
@@ -320,3 +325,13 @@ private:
 using tr = translate;
 
 } // namespace hi::inline v1
+
+template<typename CharT>
+struct std::formatter<hi::translate, CharT> : std::formatter<std::string, CharT> {
+    auto format(hi::translate const& t, auto& fc) const
+    {
+        return std::formatter<std::string, CharT>::format(std::string{t}, fc);
+    }
+};
+
+

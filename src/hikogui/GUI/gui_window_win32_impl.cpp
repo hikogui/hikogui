@@ -106,7 +106,7 @@ void gui_window_win32::create_window(extent2 new_size)
 
     createWindowClass();
 
-    auto u16title = to_wstring(to_string(_title.text));
+    auto u16title = to_wstring(std::format("{}", _title));
 
     hi_log_info("Create window of size {} with title '{}'", new_size, _title);
 
