@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../container/module.hpp"
-#include "../file/module.hpp"
+#include "../file/file.hpp"
 #include "../parser/parser.hpp"
 #include "../macros.hpp"
 #include "inflate.hpp"

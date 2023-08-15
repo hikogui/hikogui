@@ -8,7 +8,7 @@
 #include "../observer/module.hpp"
 #include "../codec/codec.hpp"
 #include "../dispatch/dispatch.hpp"
-#include "../file/module.hpp"
+#include "../file/file.hpp"
 #include "../macros.hpp"
 #include <typeinfo>
 #include <filesystem>

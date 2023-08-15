@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gzip.hpp"
-#include "../file/module.hpp"
+#include "../file/file.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>

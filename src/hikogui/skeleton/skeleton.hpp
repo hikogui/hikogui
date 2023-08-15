@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 #include "skeleton_parse_context.hpp"
-#include "../file/module.hpp"
+#include "../file/file.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1 {
