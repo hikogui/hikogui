@@ -534,6 +534,14 @@
  */
 #define hi_static_not_implemented(...) hi_static_no_default("Not implemented: " __VA_ARGS__)
 
+/** Format and output text to the console.
+ * This will output the text to the console's std::cout.
+ * During debugging the console will be the debugger's output panel/window.
+ *
+ * @param text The text to display on the console.
+ */
+#define hi_print(fmt, ...) console_output(std::format(fmt __VA_OPT__(, ) __VA_ARGS__))
+
 #define hi_format_argument_check(arg) \
     static_assert( \
         ::std::is_default_constructible_v<std::formatter<std::decay_t<decltype(arg)>>>, \

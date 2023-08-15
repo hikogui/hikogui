@@ -10,7 +10,7 @@
 #include "../time/module.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
-#include "../console/module.hpp"
+#include "../console/console.hpp"
 #include "../macros.hpp"
 #include <chrono>
 #include <format>
@@ -194,13 +194,9 @@ private:
      * This will write to the console if one is open.
      * It will also create a log file in the application-data directory.
      */
-    /*! Write to a log file and console.
-     * This will write to the console if one is open.
-     * It will also create a log file in the application-data directory.
-     */
     void write(std::string const& str) const noexcept
     {
-        console_output(str);
+        print("{}", str);
     }
 
     /** The global logger thread.
