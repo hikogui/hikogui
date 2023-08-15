@@ -2,18 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../win32_headers.hpp"
 
-#include "dialog.hpp"
+#include "dialog_intf.hpp"
 #include "../utility/utility.hpp"
 #include "../char_maps/module.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.console.dialog : impl);
 
+namespace hi { inline namespace v1 {
 
-namespace hi::inline v1 {
-
-bool dialog(dialog_type type, std::string_view title, std::string_view text)
+hi_export inline bool dialog(dialog_type type, std::string_view title, std::string_view text)
 {
     UINT type_;
 
@@ -50,4 +52,4 @@ bool dialog(dialog_type type, std::string_view title, std::string_view text)
     }
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
