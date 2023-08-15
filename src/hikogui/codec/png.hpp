@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../file/module.hpp"
+#include "../file/file.hpp"
 #include "../utility/utility.hpp"
 #include "../image/module.hpp"
 #include "../geometry/module.hpp"

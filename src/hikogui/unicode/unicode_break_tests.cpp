@@ -7,7 +7,7 @@
 #include "unicode_line_break.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_description.hpp"
-#include "../file/module.hpp"
+#include "../file/file.hpp"
 #include "../algorithm/module.hpp"
 #include "../coroutine/module.hpp"
 #include "../utility/utility.hpp"

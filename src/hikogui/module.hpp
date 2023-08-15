@@ -14,7 +14,7 @@
 #include "container/module.hpp"
 #include "coroutine/module.hpp"
 #include "crt/module.hpp"
-#include "file/module.hpp"
+#include "file/file.hpp"
 #include "font/module.hpp"
 #include "formula/formula.hpp"
 #include "geometry/module.hpp"

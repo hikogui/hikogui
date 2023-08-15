@@ -4,10 +4,6 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/console/dialog_win32_impl.cpp>
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/crt/crt_utils_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/crt/terminate_impl.cpp
-    $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_posix_impl.cpp>
-    $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_view_posix_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_view_win32_impl.cpp>
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/font/font_book_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/font/font_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/font/glyph_ids_impl.cpp

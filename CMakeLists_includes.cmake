@@ -116,11 +116,18 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/crt/crt_utils.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/module.hpp
     ${HIKOGUI_SOURCE_DIR}/crt/terminate.hpp
-    ${HIKOGUI_SOURCE_DIR}/file/file.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/access_mode.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/file_file_intf.hpp
+    $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_file_posix_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_file_win32_impl.hpp>
+    ${HIKOGUI_SOURCE_DIR}/file/file_file.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/file_view_intf.hpp
+    $<$<PLATFORM_ID:Linux>:${HIKOGUI_SOURCE_DIR}/file/file_view_posix_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_view_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/file/file_view.hpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/file/file_win32.hpp>
-    ${HIKOGUI_SOURCE_DIR}/file/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/file.hpp
     ${HIKOGUI_SOURCE_DIR}/file/resource_view.hpp
+    ${HIKOGUI_SOURCE_DIR}/file/seek_whence.hpp
     ${HIKOGUI_SOURCE_DIR}/font/elusive_icon.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_book.hpp

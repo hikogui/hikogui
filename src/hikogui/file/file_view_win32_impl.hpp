@@ -3,23 +3,29 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../win32_headers.hpp"
 
-#include "file_view.hpp"
-#include "file_win32.hpp"
+#include "file_file.hpp"
 #include "../utility/utility.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"
 #include <format>
 
-
+hi_export_module(hikogui.file.file_view : impl);
 
 namespace hi { inline namespace v1 {
 namespace detail {
 
-class file_view_win32 final : public file_view_impl {
+class file_view_impl {
 public:
-    ~file_view_win32()
+    file_view_impl(file_view_impl const&) = delete;
+    file_view_impl(file_view_impl&&) = delete;
+    file_view_impl& operator=(file_view_impl const&) = delete;
+    file_view_impl& operator=(file_view_impl&&) = delete;
+
+    ~file_view_impl()
     {
         if (_data != nullptr) {
             destroy_view(_data);
@@ -29,9 +35,13 @@ public:
         }
     }
 
-    file_view_win32(std::shared_ptr<file_impl> file, std::size_t offset, std::size_t size) :
-        file_view_impl(std::move(file), offset, size)
+    file_view_impl(std::shared_ptr<file_impl> file, std::size_t offset, std::size_t size) :
+        _file(std::move(file)), _offset(offset), _size(size)
     {
+        if (_size == 0) {
+            _size = _file->size() - _offset;
+        }
+
         if (_offset + _size > _file->size()) {
             throw io_error("Requested mapping is beyond file size.");
         }
@@ -51,7 +61,35 @@ public:
         }
     }
 
-    [[nodiscard]] bool unmapped() const noexcept override
+    [[nodiscard]] std::size_t offset() const noexcept
+    {
+        return _offset;
+    }
+
+    [[nodiscard]] std::size_t size() const noexcept
+    {
+        return _size;
+    }
+
+    [[nodiscard]] hi::access_mode access_mode() const noexcept
+    {
+        hi_assert_not_null(_file);
+        return _file->access_mode();
+    }
+
+    [[nodiscard]] void_span void_span() const noexcept
+    {
+        hi_assert_not_null(_file);
+        hi_assert(to_bool(_file->access_mode() & access_mode::write));
+        return {_data, _size};
+    }
+
+    [[nodiscard]] const_void_span const_void_span() const noexcept
+    {
+        return {_data, _size};
+    }
+
+    [[nodiscard]] bool unmapped() const noexcept
     {
         if (_file != nullptr) {
             if (_file->closed()) {
@@ -65,7 +103,7 @@ public:
         }
     }
 
-    void unmap() override
+    void unmap()
     {
         if (_data) {
             destroy_view(_data);
@@ -77,7 +115,7 @@ public:
         _file = nullptr;
     }
 
-    void flush(hi::void_span span) const noexcept override
+    void flush(hi::void_span span) const noexcept
     {
         if (not FlushViewOfFile(span.data(), span.size())) {
             hi_log_error_once("file::error::flush-view", "Could not flush file. '{}'", get_last_error_message());
@@ -86,11 +124,15 @@ public:
 
 private:
     mutable HANDLE _mapping_handle = nullptr;
+    mutable std::shared_ptr<file_impl> _file;
+    std::size_t _offset;
+    std::size_t _size;
+    void *_data = nullptr;
 
     [[nodiscard]] HANDLE file_handle() noexcept
     {
         hi_assert_not_null(_file);
-        return down_cast<file_win32&>(*_file).file_handle();
+        return _file->file_handle();
     }
 
     static void destroy_mapping(HANDLE mapping)
@@ -155,10 +197,4 @@ private:
 };
 
 } // namespace detail
-
-file_view::file_view(file const& file, std::size_t offset, std::size_t size) :
-    _pimpl(std::make_shared<detail::file_view_win32>(file._pimpl, offset, size))
-{
-}
-
 }} // namespace hi::v1
