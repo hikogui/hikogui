@@ -14,7 +14,7 @@ hi_export_module(hikogui.win32.errhandlingapi);
 
 namespace hi { inline namespace v1 {
 
-enum class win32_error : uint32_t {
+hi_export enum class win32_error : uint32_t {
     success = ERROR_SUCCESS,
     file_not_found = ERROR_FILE_NOT_FOUND,
     more_data = ERROR_MORE_DATA,
@@ -23,12 +23,12 @@ enum class win32_error : uint32_t {
 
 }} // namespace hi::v1
 
-template<>
+hi_export template<>
 struct std::is_error_code_enum<hi::win32_error> : std::true_type {};
 
 namespace hi { inline namespace v1 {
 
-struct win32_error_category : std::error_category {
+hi_export struct win32_error_category : std::error_category {
     char const *name() const noexcept override
     {
         return "win32";
@@ -41,20 +41,24 @@ struct win32_error_category : std::error_category {
         switch (static_cast<hi::win32_error>(code)) {
         case hi::win32_error::file_not_found:
             return condition == std::errc::no_such_file_or_directory;
+        case hi::win32_error::more_data:
+            return condition == std::errc::message_size;
+        case hi::win32_error::invalid_data:
+            return condition == std::errc::bad_message;
         default:
             return false;
         };
     }
 };
 
-inline auto global_win32_error_category = win32_error_category{};
+hi_export inline auto global_win32_error_category = win32_error_category{};
 
-[[nodiscard]] inline std::error_code make_error_code(win32_error code) noexcept
+hi_export [[nodiscard]] inline std::error_code make_error_code(win32_error code) noexcept
 {
     return {static_cast<int>(code), global_win32_error_category};
 }
 
-[[nodiscard]] inline win32_error win32_GetLastError() noexcept
+hi_export [[nodiscard]] inline win32_error win32_GetLastError() noexcept
 {
     return static_cast<win32_error>(::GetLastError());
 }
@@ -66,7 +70,7 @@ inline auto global_win32_error_category = win32_error_category{};
  * @param flags The flags to passing
  * @return multi-byte string.
  */
-[[nodiscard]] inline std::expected<std::string, win32_error> win32_WideCharToMultiByte(std::wstring_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
+hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_WideCharToMultiByte(std::wstring_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
 {
     if (s.empty()) {
         // WideCharToMultiByte() does not handle empty strings, if it can not also convert the null-character.
@@ -98,7 +102,7 @@ inline auto global_win32_error_category = win32_error_category{};
  * @param flags The flags to passing
  * @return multi-byte string.
  */
-[[nodiscard]] inline std::expected<std::wstring, win32_error> win32_MultiByteToWideChar(std::string_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
+hi_export [[nodiscard]] inline std::expected<std::wstring, win32_error> win32_MultiByteToWideChar(std::string_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
 {
     if (s.empty()) {
         // MultiByteToWideChar() does not handle empty strings, if it can not also convert the null-character.
@@ -132,7 +136,7 @@ inline auto global_win32_error_category = win32_error_category{};
  * @param last A pointer one beyond the buffer.
  * @return A vector of UTF-8 encoded strings, win32_error::invalid_data when the list is incorrectly terminated.
  */
-[[nodiscard]] inline std::expected<std::vector<std::string>, win32_error> win32_MultiSZToStringVector(wchar_t const *first, wchar_t const *last) noexcept
+hi_export [[nodiscard]] inline std::expected<std::vector<std::string>, win32_error> win32_MultiSZToStringVector(wchar_t const *first, wchar_t const *last) noexcept
 {
     auto r = std::vector<std::string>{};
 
@@ -162,7 +166,7 @@ inline auto global_win32_error_category = win32_error_category{};
     return r;
 }
 
-[[nodiscard]] inline std::expected<std::string, win32_error> win32_FormatMessage(win32_error error_code) noexcept
+hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_FormatMessage(win32_error error_code) noexcept
 {
     hilet error_code_ = static_cast<DWORD>(std::to_underlying(error_code));
 
@@ -187,7 +191,7 @@ inline auto global_win32_error_category = win32_error_category{};
     return r;
 }
 
-inline std::string win32_error_category::message(int code) const
+hi_export inline std::string win32_error_category::message(int code) const
 {
     if (auto msg = win32_FormatMessage(static_cast<win32_error>(code))) {
         return *msg;

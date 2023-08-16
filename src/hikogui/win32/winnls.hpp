@@ -11,7 +11,7 @@ hi_export_module(hikogui.win32.winnls);
 
 namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline std::expected<std::string, win32_error> win32_GetUserDefaultLocaleName() noexcept
+hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_GetUserDefaultLocaleName() noexcept
 {
     auto code = win32_error{};
     

@@ -93,7 +93,7 @@ namespace hi { inline namespace v1 {
     // Or they do not update at runtime.
     // The only way that works is to get the registry from the Control Panel application.
     if (hilet languages = win32_RegGetValue<std::vector<std::string>>(
-            registry_key::current_user, "Control Panel\\International\\User Profile", "Languages")) {
+            HKEY_CURRENT_USER, "Control Panel\\International\\User Profile", "Languages")) {
         r.reserve(languages->size());
         for (hilet& language : *languages) {
             r.push_back(language_tag{language});
@@ -119,7 +119,7 @@ namespace hi { inline namespace v1 {
 [[nodiscard]] inline hi::theme_mode os_settings::gather_theme_mode()
 {
     if (hilet result = win32_RegGetValue<uint32_t>(
-            registry_key::current_user,
+            HKEY_CURRENT_USER,
             "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
             "AppsUseLightTheme")) {
         return *result ? theme_mode::light : theme_mode::dark;
@@ -366,7 +366,7 @@ namespace hi { inline namespace v1 {
     hilet executable_path = get_path(path_location::executable_file).string();
     hilet user_gpu_preferences_key = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
 
-    if (hilet result = win32_RegGetValue<std::string>(registry_key::current_user, user_gpu_preferences_key, executable_path)) {
+    if (hilet result = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_gpu_preferences_key, executable_path)) {
         for (auto entry : std::views::split(std::string_view{*result}, ";"sv)) {
             auto entry_sv = std::string_view{entry};
             if (entry_sv.starts_with("GpuPreference=")) {

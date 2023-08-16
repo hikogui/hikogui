@@ -18,51 +18,13 @@ hi_export_module(hikogui.win32.winreg);
 
 namespace hi::inline v1 {
 
-enum class registry_key { classes_root, current_config, current_user, local_machine, users };
-
-[[nodiscard]] constexpr HKEY to_hkey(registry_key key) noexcept
-{
-    switch (key) {
-    case registry_key::classes_root:
-        return HKEY_CLASSES_ROOT;
-    case registry_key::current_config:
-        return HKEY_CURRENT_CONFIG;
-    case registry_key::current_user:
-        return HKEY_CURRENT_USER;
-    case registry_key::local_machine:
-        return HKEY_LOCAL_MACHINE;
-    case registry_key::users:
-        return HKEY_USERS;
-    default:
-        std::terminate();
-    }
-}
-
-[[nodiscard]] constexpr std::string to_string(registry_key key) noexcept
-{
-    switch (key) {
-    case registry_key::classes_root:
-        return "HKEY_CLASSES_ROOT";
-    case registry_key::current_config:
-        return "HKEY_CURRENT_CONFIG";
-    case registry_key::current_user:
-        return "HKEY_CURRENT_USER";
-    case registry_key::local_machine:
-        return "HKEY_LOCAL_MACHINE";
-    case registry_key::users:
-        return "HKEY_USERS";
-    default:
-        std::terminate();
-    }
-}
-
 /** Delete a registry value.
  *
  * @param key The registry's key
  * @param path The path to the values.
  * @param name The name of the value.
  */
-inline win32_error win32_RegDeleteKeyValue(registry_key key, std::string_view path, std::string_view name) noexcept
+hi_export inline win32_error win32_RegDeleteKeyValue(HKEY key, std::string_view path, std::string_view name) noexcept
 {
     hilet wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
@@ -74,7 +36,7 @@ inline win32_error win32_RegDeleteKeyValue(registry_key key, std::string_view pa
         return wname.error();
     }
 
-    return static_cast<win32_error>(::RegDeleteKeyValueW(to_hkey(key), wpath->c_str(), wname->c_str()));
+    return static_cast<win32_error>(::RegDeleteKeyValueW(key, wpath->c_str(), wname->c_str()));
 }
 
 /** Delete all registry values and the last part of the subkey.
@@ -82,14 +44,14 @@ inline win32_error win32_RegDeleteKeyValue(registry_key key, std::string_view pa
  * @param key The registry's key
  * @param path The path to the values.
  */
-inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) noexcept
+hi_export inline win32_error win32_RegDeleteKey(HKEY key, std::string_view path) noexcept
 {
     hilet wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
         return wpath.error();
     }
 
-    return static_cast<win32_error>(::RegDeleteKeyW(to_hkey(key), wpath->c_str()));
+    return static_cast<win32_error>(::RegDeleteKeyW(key, wpath->c_str()));
 }
 
 /** Write a DWORD registry value.
@@ -101,7 +63,7 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
  * @param value The value to write
  * @return 0 on success, or error code on failure.
  */
-[[nodiscard]] inline win32_error win32_RegSetKeyValue(registry_key key, std::string_view path, std::string_view name, uint32_t value)
+hi_export [[nodiscard]] inline win32_error win32_RegSetKeyValue(HKEY key, std::string_view path, std::string_view name, uint32_t value)
 {
     hilet wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
@@ -115,7 +77,7 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
 
     hilet dvalue = static_cast<DWORD>(value);
 
-    return static_cast<win32_error>(::RegSetKeyValueW(to_hkey(key), wpath->c_str(), wname->c_str(), REG_DWORD, &dvalue, sizeof(dvalue)));
+    return static_cast<win32_error>(::RegSetKeyValueW(key, wpath->c_str(), wname->c_str(), REG_DWORD, &dvalue, sizeof(dvalue)));
 }
 
 /** Write a string registry value.
@@ -127,7 +89,7 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
  * @param value The value to write
  * @return 0 on success, or error code on failure.
  */
-[[nodiscard]] inline win32_error win32_RegSetKeyValue(registry_key key, std::string_view path, std::string_view name, std::string_view value)
+hi_export [[nodiscard]] inline win32_error win32_RegSetKeyValue(HKEY key, std::string_view path, std::string_view name, std::string_view value)
 {
     hilet wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
@@ -146,13 +108,13 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
 
     hilet wvalue_size = static_cast<DWORD>((wvalue->size() + 1) * sizeof(wchar_t));
 
-    return static_cast<win32_error>(::RegSetKeyValueW(to_hkey(key), wpath->c_str(), wname->c_str(), REG_SZ, wvalue->c_str(), wvalue_size));
+    return static_cast<win32_error>(::RegSetKeyValueW(key, wpath->c_str(), wname->c_str(), REG_SZ, wvalue->c_str(), wvalue_size));
 }
 
 /** Check if a registry entry exists.
  * @return win32_error success, or win32_error::file_not_found if entry was not found, otherwise an error.
  */
-[[nodiscard]] inline std::expected<void, win32_error> win32_RegGetValue_void(registry_key key, std::string_view path, std::string_view name)
+hi_export [[nodiscard]] inline std::expected<void, win32_error> win32_RegGetValue_void(HKEY key, std::string_view path, std::string_view name)
 {
     hilet wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
@@ -164,7 +126,7 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
         return std::unexpected{wname.error()};
     }
 
-    auto status = static_cast<win32_error>(::RegGetValueW(to_hkey(key), wpath->c_str(), wname->c_str(), RRF_RT_ANY, NULL, NULL, NULL));
+    auto status = static_cast<win32_error>(::RegGetValueW(key, wpath->c_str(), wname->c_str(), RRF_RT_ANY, NULL, NULL, NULL));
     if (status == win32_error::success) {
         return {};
     } else {
@@ -179,7 +141,7 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
  * @param name The name of the value.
  * @return value, or win32_error::file_not_found if entry was not found, otherwise an error.
  */
-[[nodiscard]] inline std::expected<uint32_t, win32_error> win32_RegGetValue_dword(registry_key key, std::string_view path, std::string_view name) noexcept
+hi_export [[nodiscard]] inline std::expected<uint32_t, win32_error> win32_RegGetValue_dword(HKEY key, std::string_view path, std::string_view name) noexcept
 {
     hilet wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
@@ -194,7 +156,7 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
     DWORD result;
     DWORD result_length = sizeof(result);
     DWORD result_type = 0;
-    hilet status = static_cast<win32_error>(::RegGetValueW(to_hkey(key), wpath->c_str(), wname->c_str(), RRF_RT_ANY, &result_type, &result, &result_length));
+    hilet status = static_cast<win32_error>(::RegGetValueW(key, wpath->c_str(), wname->c_str(), RRF_RT_ANY, &result_type, &result, &result_length));
 
     if (static_cast<bool>(status)) {
         return std::unexpected{status};
@@ -210,7 +172,7 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
  * @param name The name of the value.
  * @return value, or win32_error::file_not_found if entry was not found, otherwise an error.
  */
-[[nodiscard]] inline std::expected<std::string, win32_error> win32_RegGetValue_string(registry_key key, std::string_view path, std::string_view name) noexcept
+hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_RegGetValue_string(HKEY key, std::string_view path, std::string_view name) noexcept
 {
     hilet wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
@@ -231,7 +193,7 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
         result.resize_and_overwrite(expected_size, [&](auto p, auto n) {
             // size includes the null-terminator.
             auto result_length = static_cast<DWORD>((n + 1) * sizeof(wchar_t));
-            status = static_cast<win32_error>(::RegGetValueW(to_hkey(key), wpath->c_str(), wname->c_str(), RRF_RT_REG_SZ, NULL, p, &result_length));
+            status = static_cast<win32_error>(::RegGetValueW(key, wpath->c_str(), wname->c_str(), RRF_RT_REG_SZ, NULL, p, &result_length));
 
             expected_size = (result_length / sizeof(wchar_t)) - 1;
             return std::min(n, expected_size);
@@ -261,8 +223,8 @@ inline win32_error win32_RegDeleteKey(registry_key key, std::string_view path) n
  * @return value, or std::nullopt if the registry-value was not found.
  * @throws hi::os_error Unable to read the registry-value, for example when the type was different.
  */
-[[nodiscard]] inline std::expected<std::vector<std::string>, win32_error>
-win32_RegGetValue_multi_string(registry_key key, std::string_view path, std::string_view name) noexcept
+hi_export [[nodiscard]] inline std::expected<std::vector<std::string>, win32_error>
+win32_RegGetValue_multi_string(HKEY key, std::string_view path, std::string_view name) noexcept
 {
     hilet wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
@@ -280,7 +242,7 @@ win32_RegGetValue_multi_string(registry_key key, std::string_view path, std::str
     for (auto repeat = 0; repeat != 5; ++repeat) {
         auto result_length = static_cast<DWORD>(result.size() * sizeof(wchar_t));
         hilet status =
-            static_cast<win32_error>(::RegGetValueW(to_hkey(key), wpath->c_str(), wname->c_str(), RRF_RT_REG_MULTI_SZ, NULL, result.data(), &result_length));
+            static_cast<win32_error>(::RegGetValueW(key, wpath->c_str(), wname->c_str(), RRF_RT_REG_MULTI_SZ, NULL, result.data(), &result_length));
 
         switch (status) {
         case win32_error::success:
@@ -309,17 +271,17 @@ win32_RegGetValue_multi_string(registry_key key, std::string_view path, std::str
  * @return value, or std::nullopt if the registry-value was not found.
  * @throws hi::os_error Unable to read the registry-value, for example when the type was different.
  */
-template<typename T>
-[[nodiscard]] std::expected<T, win32_error> win32_RegGetValue(registry_key key, std::string_view path, std::string_view name) = delete;
+hi_export template<typename T>
+[[nodiscard]] std::expected<T, win32_error> win32_RegGetValue(HKEY key, std::string_view path, std::string_view name) = delete;
 
-template<>
-[[nodiscard]] inline std::expected<void, win32_error> win32_RegGetValue(registry_key key, std::string_view path, std::string_view name)
+hi_export template<>
+[[nodiscard]] inline std::expected<void, win32_error> win32_RegGetValue(HKEY key, std::string_view path, std::string_view name)
 {
     return win32_RegGetValue_void(key, path, name);
 }
 
-template<std::integral T>
-[[nodiscard]] inline std::expected<T, win32_error> win32_RegGetValue(registry_key key, std::string_view path, std::string_view name)
+hi_export template<std::integral T>
+[[nodiscard]] inline std::expected<T, win32_error> win32_RegGetValue(HKEY key, std::string_view path, std::string_view name)
 {
     if (hilet tmp = win32_RegGetValue_dword(key, path, name)) {
         return static_cast<T>(*tmp);
@@ -328,15 +290,15 @@ template<std::integral T>
     }
 }
 
-template<>
-[[nodiscard]] inline std::expected<std::string, win32_error> win32_RegGetValue(registry_key key, std::string_view path, std::string_view name)
+hi_export template<>
+[[nodiscard]] inline std::expected<std::string, win32_error> win32_RegGetValue(HKEY key, std::string_view path, std::string_view name)
 {
     return win32_RegGetValue_string(key, path, name);
 }
 
-template<>
+hi_export template<>
 [[nodiscard]] inline std::expected<std::vector<std::string>, win32_error>
-win32_RegGetValue(registry_key key, std::string_view path, std::string_view name)
+win32_RegGetValue(HKEY key, std::string_view path, std::string_view name)
 {
     return win32_RegGetValue_multi_string(key, path, name);
 }
