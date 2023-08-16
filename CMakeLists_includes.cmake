@@ -436,7 +436,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/settings/os_settings_intf.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/os_settings_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/settings/preferences.hpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/registry_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/settings/theme_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/subpixel_orientation.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/user_settings.hpp
@@ -571,7 +570,10 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/widgets/window_controls_macos_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_controls_win32_widget.hpp
     ${HIKOGUI_SOURCE_DIR}/widgets/window_widget.hpp
-
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/win32/base.hpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/win32/win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/win32/winnls.hpp>
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/win32/winreg.hpp>
     ${HIKOGUI_SOURCE_DIR}/macros.hpp
     ${HIKOGUI_SOURCE_DIR}/crt.hpp
     ${HIKOGUI_SOURCE_DIR}/module.hpp

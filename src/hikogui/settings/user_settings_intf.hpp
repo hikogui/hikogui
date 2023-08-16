@@ -8,13 +8,15 @@
 #include <string>
 #include <string_view>
 #include <cstdlib>
+#include <expected>
+#include <system_error>
 
 hi_export_module(hikogui.settings.user_settings : intf);
 
 namespace hi { inline namespace v1 {
 
-[[nodiscard]] std::optional<std::string> get_user_setting_string(std::string_view key);
-[[nodiscard]] std::optional<long long> get_user_setting_integral(std::string_view key);
+[[nodiscard]] std::expected<std::string, std::error_code> get_user_setting_string(std::string_view key) noexcept;
+[[nodiscard]] std::expected<long long, std::error_code> get_user_setting_integral(std::string_view key) noexcept;
 
 /** Get a user-setting for the application.
  *
@@ -27,7 +29,7 @@ namespace hi { inline namespace v1 {
  * @throws std::out_of_range if the value in the default does not fit in the return value.
  */
 template<typename T>
-[[nodiscard]] std::optional<T> get_user_setting(std::string_view key) = delete;
+[[nodiscard]] std::expected<T, std::error_code> get_user_setting(std::string_view key) noexcept = delete;
 
 /** Set a user-setting for the application.
  *
@@ -38,7 +40,7 @@ template<typename T>
  * @throws std::invalid_argument When the key is not valid.
  * @throws std::out_of_range if the value in the default does not fit in the return value.
  */
-void set_user_setting(std::string_view key, std::string_view value);
+std::error_code set_user_setting(std::string_view key, std::string_view value) noexcept;
 
 /** Set a user-setting for the application.
  *
@@ -49,7 +51,7 @@ void set_user_setting(std::string_view key, std::string_view value);
  * @throws std::invalid_argument When the key is not valid.
  * @throws std::out_of_range if the value in the default does not fit in the return value.
  */
-void set_user_setting(std::string_view key, long long value);
+std::error_code set_user_setting(std::string_view key, long long value) noexcept;
 
 /** Delete a user-setting for the application.
  *
@@ -59,29 +61,29 @@ void set_user_setting(std::string_view key, long long value);
  * @throws std::invalid_argument When the key is not valid.
  * @throws std::out_of_range if the value in the default does not fit in the return value.
  */
-void delete_user_setting(std::string_view key);
+std::error_code delete_user_setting(std::string_view key) noexcept;
 
 /** Delete all user-setting for the application.
  */
-void delete_user_settings();
+std::error_code delete_user_settings() noexcept;
 
 template<>
-[[nodiscard]] inline std::optional<std::string> get_user_setting(std::string_view key)
+[[nodiscard]] inline std::expected<std::string, std::error_code> get_user_setting(std::string_view key) noexcept
 {
     return get_user_setting_string(key);
 }
 
 template<std::integral T>
-[[nodiscard]] inline std::optional<T> get_user_setting(std::string_view key)
+[[nodiscard]] inline std::expected<T, std::error_code> get_user_setting(std::string_view key) noexcept
 {
     if (hilet value = get_user_setting_integral(key)) {
         if (can_narrow_cast<T>(*value)) {
             return narrow_cast<T>(*value);
         } else {
-            throw std::out_of_range(std::format("Integer {} out of range", *value));
+            return std::unexpected{std::make_error_code(std::errc::result_out_of_range)};
         }
     } else {
-        return std::nullopt;
+        return std::unexpected{std::error_code{value.error()}};
     }
 }
 

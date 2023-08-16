@@ -2,11 +2,13 @@
 #pragma once
 
 #include "user_settings_intf.hpp"
-#include "registry_win32.hpp"
+#include "../win32/win32.hpp"
 #include "../path/path.hpp"
 #include "../macros.hpp"
 #include <format>
 #include <string>
+#include <expected>
+#include <system_error>
 
 hi_export_module(hikogui.settings.user_settings : impl);
 
@@ -17,58 +19,64 @@ namespace hi { inline namespace v1 {
     return std::format("Software\\{}\\{}", get_application_vendor(), get_application_name());
 }
 
-[[nodiscard]] inline std::optional<std::string> get_user_setting_string(std::string_view name)
+/** 
+ * 
+ * @return A string value, or std::errc::file_not_found if entry not found, or other error.
+ */
+[[nodiscard]] inline std::expected<std::string, std::error_code> get_user_setting_string(std::string_view name) noexcept
 {
     // First check the registry of the current-user.
-    if (hilet value = registry_read<std::string>(registry_key::current_user, user_setting_registry_path(), name)) {
+    if (hilet value = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_setting_registry_path(), name)) {
         return *value;
+    } else if (value.error() != win32_error::file_not_found) {
+        return std::unexpected{std::error_code{value.error()}};
     }
 
     // Now check the registry for the local-machine.
     // These are settings that where made by the Administrator of the machine.
-    if (hilet value = registry_read<std::string>(registry_key::local_machine, user_setting_registry_path(), name)) {
+    if (hilet value = win32_RegGetValue<std::string>(HKEY_LOCAL_MACHINE, user_setting_registry_path(), name)) {
         return *value;
+    } else {
+        return std::unexpected{std::error_code{value.error()}};
     }
-
-    // There where no settings configured.
-    return std::nullopt;
 }
 
-[[nodiscard]] inline std::optional<long long> get_user_setting_integral(std::string_view name)
+[[nodiscard]] inline std::expected<long long, std::error_code> get_user_setting_integral(std::string_view name) noexcept
 {
     // First check the registry of the current-user.
-    if (hilet value = registry_read<long long>(registry_key::current_user, user_setting_registry_path(), name)) {
+    if (hilet value = win32_RegGetValue<long long>(HKEY_CURRENT_USER, user_setting_registry_path(), name)) {
         return *value;
+    } else if (value.error() != win32_error::file_not_found) {
+        return std::unexpected{std::error_code{value.error()}};
     }
 
     // Now check the registry for the local-machine.
     // These are settings that where made by the Administrator of the machine.
-    if (hilet value = registry_read<long long>(registry_key::local_machine, user_setting_registry_path(), name)) {
+    if (hilet value = win32_RegGetValue<long long>(HKEY_LOCAL_MACHINE, user_setting_registry_path(), name)) {
         return *value;
+    } else {
+        return std::unexpected{std::error_code{value.error()}};
     }
-
-    // There where no settings configured.
-    return std::nullopt;
 }
 
-inline void set_user_setting(std::string_view name, std::string_view value)
+inline std::error_code set_user_setting(std::string_view name, std::string_view value) noexcept
 {
-    registry_write(registry_key::current_user, user_setting_registry_path(), name, value);
+    return win32_RegSetKeyValue(HKEY_CURRENT_USER, user_setting_registry_path(), name, value);
 }
 
-inline void set_user_setting(std::string_view name, long long value)
+inline std::error_code set_user_setting(std::string_view name, long long value) noexcept
 {
-    registry_write(registry_key::current_user, user_setting_registry_path(), name, narrow_cast<uint32_t>(value));
+    return win32_RegSetKeyValue(HKEY_CURRENT_USER, user_setting_registry_path(), name, narrow_cast<uint32_t>(value));
 }
 
-inline void delete_user_setting(std::string_view name)
+inline std::error_code delete_user_setting(std::string_view name) noexcept
 {
-    registry_delete(registry_key::current_user, user_setting_registry_path(), name);
+    return win32_RegDeleteKeyValue(HKEY_CURRENT_USER, user_setting_registry_path(), name);
 }
 
-inline void delete_user_settings()
+inline std::error_code delete_user_settings() noexcept
 {
-    registry_delete(registry_key::current_user, user_setting_registry_path());
+    return win32_RegDeleteKey(HKEY_CURRENT_USER, user_setting_registry_path());
 }
 
 }}
