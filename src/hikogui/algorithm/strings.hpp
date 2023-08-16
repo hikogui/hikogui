@@ -558,46 +558,6 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
     return std::string{first, last};
 }
 
-/** Convert a win32 zero terminated list of zero terminated strings.
- * @param first A pointer to a buffer of a zero terminated list of zero terminated string.
- * @param last A pointer one beyond the buffer.
- * @param nr_strings The number of string in the buffer.
- * @return A vector of UTF-8 encoded strings.
- * @throws parse_error when the list does not terminate with a zero.
- */
-[[nodiscard]] inline std::vector<std::string> ZZWSTR_to_string(wchar_t *first, wchar_t *last, ssize_t nr_strings = -1)
-{
-    auto r = std::vector<std::string>{};
-
-    while (first != last) {
-        auto it_zero = std::find(first, last, wchar_t{0});
-        if (it_zero == last) {
-            throw parse_error("Could not find terminating zero of a string.");
-        }
-
-        hilet ws = std::wstring_view{first, narrow_cast<std::size_t>(it_zero - first)};
-        if (ws.empty()) {
-            // The list is terminated with an empty string.
-            break;
-        }
-
-        r.push_back(hi::to_string(ws));
-
-        // Continue after the zero terminator.
-        first = it_zero + 1;
-    }
-
-    if (nr_strings != -1 && ssize(r) != nr_strings) {
-        throw parse_error("Unexpected number of string in list.");
-    }
-
-    return r;
-}
-
-
-
-
-
 } // namespace hi::inline v1
 
 hi_warning_pop();

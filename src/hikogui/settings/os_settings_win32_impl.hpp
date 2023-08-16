@@ -7,7 +7,7 @@
 #include "../win32_headers.hpp"
 
 #include "os_settings_intf.hpp"
-#include "registry_win32.hpp"
+#include "../win32/win32.hpp"
 #include "../telemetry/module.hpp"
 #include "../utility/utility.hpp"
 #include "../path/path.hpp"
@@ -87,57 +87,45 @@ namespace hi { inline namespace v1 {
 {
     auto r = std::vector<language_tag>{};
 
-    try {
-        // The official APIs to get the current languages do not work.
-        // Either they return the languages in a random order.
-        // Or they return only three languages, but not nessarily the first three
-        // Or they do not update at runtime.
-        // The only way that works is to get the registry from the Control Panel application.
-        if (hilet languages = registry_read<std::vector<std::string>>(
-                registry_key::current_user, "Control Panel\\International\\User Profile", "Languages")) {
-            r.reserve(languages->size());
-            for (hilet& language : *languages) {
-                r.push_back(language_tag{language});
-            }
+    // The official APIs to get the current languages do not work.
+    // Either they return the languages in a random order.
+    // Or they return only three languages, but not nessarily the first three
+    // Or they do not update at runtime.
+    // The only way that works is to get the registry from the Control Panel application.
+    if (hilet languages = win32_RegGetValue<std::vector<std::string>>(
+            registry_key::current_user, "Control Panel\\International\\User Profile", "Languages")) {
+        r.reserve(languages->size());
+        for (hilet& language : *languages) {
+            r.push_back(language_tag{language});
         }
-
-    } catch (std::exception const& e) {
-        hi_log_error("Could not read languages: {}", e.what());
+    } else {
+        hi_log_error("Could not read languages: {}", std::error_code{languages.error()}.message());
         r.push_back(language_tag{"en"});
     }
 
     return r;
 }
 
-[[nodiscard]] inline std::locale os_settings::gather_locale()
+[[nodiscard]] inline std::expected<std::locale, std::error_code> os_settings::gather_locale() noexcept
 {
-    auto name_w = std::wstring{};
+    if (auto name = win32_GetUserDefaultLocaleName()) {
+        return std::locale(*name);
 
-    name_w.resize_and_overwrite(LOCALE_NAME_MAX_LENGTH, [](wchar_t *p, size_t count) {
-        if (auto r = GetUserDefaultLocaleName(p, narrow_cast<int>(count + 1)); r != 0) {
-            return r - 1;
-        }
-        throw os_error("Could not get the user default locale name");
-    });
-
-    auto name = to_string(name_w);
-    return std::locale(name);
+    } else {
+        return std::unexpected{std::error_code{name.error()}};
+    }
 }
 
 [[nodiscard]] inline hi::theme_mode os_settings::gather_theme_mode()
 {
-    try {
-        if (hilet result = registry_read<uint32_t>(
-                registry_key::current_user,
-                "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
-                "AppsUseLightTheme")) {
-            return *result ? theme_mode::light : theme_mode::dark;
-        } else {
-            return theme_mode::light;
-        }
+    if (hilet result = win32_RegGetValue<uint32_t>(
+            registry_key::current_user,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+            "AppsUseLightTheme")) {
+        return *result ? theme_mode::light : theme_mode::dark;
 
-    } catch (std::exception const& e) {
-        hi_log_error("Could not read theme mode: {}", e.what());
+    } else {
+        hi_log_error("Could not read theme mode: {}", std::error_code{result.error()}.message());
         return theme_mode::light;
     }
 }
@@ -378,27 +366,28 @@ namespace hi { inline namespace v1 {
     hilet executable_path = get_path(path_location::executable_file).string();
     hilet user_gpu_preferences_key = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
 
-    try {
-        if (hilet result = registry_read<std::string>(registry_key::current_user, user_gpu_preferences_key, executable_path)) {
-            for (auto entry : std::views::split(std::string_view{*result}, ";"sv)) {
-                auto entry_sv = std::string_view{entry};
-                if (entry_sv.starts_with("GpuPreference=")) {
-                    if (entry_sv.ends_with("=0")) {
-                        return policy::unspecified;
-                    } else if (entry_sv.ends_with("=1")) {
-                        return policy::low_power;
-                    } else if (entry_sv.ends_with("=2")) {
-                        return policy::high_performance;
-                    } else {
-                        throw os_error(std::format("Unexpected GpuPreference value \"{}\".", entry_sv));
-                    }
+    if (hilet result = win32_RegGetValue<std::string>(registry_key::current_user, user_gpu_preferences_key, executable_path)) {
+        for (auto entry : std::views::split(std::string_view{*result}, ";"sv)) {
+            auto entry_sv = std::string_view{entry};
+            if (entry_sv.starts_with("GpuPreference=")) {
+                if (entry_sv.ends_with("=0")) {
+                    return policy::unspecified;
+                } else if (entry_sv.ends_with("=1")) {
+                    return policy::low_power;
+                } else if (entry_sv.ends_with("=2")) {
+                    return policy::high_performance;
+                } else {
+                    hi_log_error("Unexpected GpuPreference value \"{}\".", entry_sv);
+                    return policy::unspecified;
                 }
             }
         }
+
+        hi_log_error("Could not find GpuPreference entry.");
         return policy::unspecified;
 
-    } catch (std::exception const& e) {
-        hi_log_error("Could not read gpu profile policy: {}", e.what());
+    } else {
+        hi_log_error("Could not read gpu profile policy: {}", std::error_code{result.error()}.message());
         return policy::unspecified;
     }
 }

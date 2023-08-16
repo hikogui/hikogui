@@ -18,10 +18,6 @@ hi_export_module(hikogui.utility.exception : intf);
 
 hi_export namespace hi { inline namespace v1 {
 
-/** Get the OS error code from the last error received on this thread.
- */
-[[nodiscard]] uint32_t get_last_error_code() noexcept;
-
 /** Get the error message from an error code.
  *
  * @param error_code The error code returned by an os call.

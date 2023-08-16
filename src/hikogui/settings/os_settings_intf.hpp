@@ -15,6 +15,8 @@
 #include "../macros.hpp"
 #include <vector>
 #include <mutex>
+#include <expected>
+#include <system_error>
 
 hi_export_module(hikogui.settings.os_settings : intf);
 
@@ -312,13 +314,13 @@ public:
             hi_log_error("Failed to get OS language: {}", e.what());
         }
 
-        try {
-            if (compare_store(_locale, gather_locale())) {
+        if (auto optional_locale = gather_locale()) {
+            if (compare_store(_locale, *optional_locale)) {
                 setting_has_changed = true;
                 hi_log_info("OS locale has changed: {}", _locale.name());
             }
-        } catch (std::exception const& e) {
-            hi_log_error("Failed to get OS locale: {}", e.what());
+        } else {
+            hi_log_error("Failed to get OS locale: {}", optional_locale.error().message());
         }
 
         try {
@@ -536,7 +538,7 @@ private:
     }
 
     [[nodiscard]] static std::vector<language_tag> gather_languages();
-    [[nodiscard]] static std::locale gather_locale();
+    [[nodiscard]] static std::expected<std::locale, std::error_code> gather_locale() noexcept;
     [[nodiscard]] static hi::theme_mode gather_theme_mode();
     [[nodiscard]] static hi::subpixel_orientation gather_subpixel_orientation();
     [[nodiscard]] static bool gather_uniform_HDR();
