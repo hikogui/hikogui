@@ -386,7 +386,10 @@ namespace hi { inline namespace v1 {
         hi_log_error("Could not find GpuPreference entry.");
         return policy::unspecified;
 
-    } else {
+    } else if (result.error() == win32_error::file_not_found) {
+        return policy::unspecified;
+    
+    } else{
         hi_log_error("Could not read gpu profile policy: {}", std::error_code{result.error()}.message());
         return policy::unspecified;
     }

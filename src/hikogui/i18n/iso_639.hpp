@@ -162,6 +162,11 @@ public:
         return r;
     }
 
+    [[nodiscard]] constexpr friend std::string to_string(iso_639 const &rhs) noexcept
+    {
+        return rhs.code();
+    }
+
     /** Compare two language codes.
      */
     [[nodiscard]] constexpr friend bool operator==(iso_639 const& lhs, iso_639 const& rhs) noexcept = default;

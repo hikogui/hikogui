@@ -6,7 +6,7 @@
 
 #include "token.hpp"
 #include "../utility/utility.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../char_maps/module.hpp"
 #include <ranges>
 #include <iterator>

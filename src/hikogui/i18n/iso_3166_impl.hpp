@@ -409,13 +409,13 @@ constexpr iso_3166::iso_3166(std::string_view str)
     }
 }
 
-[[nodiscard]] constexpr std::string_view iso_3166::code2() const noexcept
+[[nodiscard]] constexpr std::string iso_3166::code2() const noexcept
 {
     hi_assert(_v < 1000);
     return detail::iso_3166_code2_by_number[_v];
 }
 
-[[nodiscard]] constexpr std::string_view iso_3166::code3() const noexcept
+[[nodiscard]] constexpr std::string iso_3166::code3() const noexcept
 {
     hi_assert(_v < 1000);
     return detail::iso_3166_code3_by_number[_v];

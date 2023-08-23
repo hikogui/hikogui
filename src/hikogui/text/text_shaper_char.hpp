@@ -6,7 +6,7 @@
 
 #include "text_style.hpp"
 #include "../font/module.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../geometry/module.hpp"
 #include "../macros.hpp"
 

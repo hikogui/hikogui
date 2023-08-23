@@ -43,6 +43,8 @@ hi_warning_ignore_msvc(26466);
 // C26474: Don't cast between pointer types when the conversion could be implicit (type.1).
 // Since these functions are templates this happens.
 hi_warning_ignore_msvc(26474);
+// C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
+hi_warning_ignore_msvc(4702);
 
 hi_export namespace hi { inline namespace v1 {
 

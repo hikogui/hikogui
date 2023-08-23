@@ -14,8 +14,8 @@ namespace hi::inline v1 {
     auto r = lean_vector<glyph_id>{};
 
     // First try composed normalization
-    for (auto i = 0_uz; i != g.size(); ++i) {
-        if (hilet glyph_id = find_glyph(g[i])) {
+    for (hilet c : g.composed()) {
+        if (hilet glyph_id = find_glyph(c)) {
             r.push_back(glyph_id);
         } else {
             r.clear();

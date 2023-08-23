@@ -11,7 +11,7 @@
 #include "../layout/module.hpp"
 #include "../font/module.hpp"
 #include "../geometry/module.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <tuple>

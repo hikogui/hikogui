@@ -6,7 +6,7 @@
 
 #include "translation.hpp"
 #include "../utility/utility.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../settings/settings.hpp"
 #include "../macros.hpp"
 #include <memory>
@@ -188,10 +188,7 @@ public:
         hi_axiom_not_null(_args);
         hilet[fmt, language_tag] = ::hi::get_translation(_msg_id, _first_integer_argument, languages);
         hilet msg = _args->format(loc, fmt);
-
-        // hilet default_attributes = character_attributes{language_tag.expand()};
-        // return to_text_with_markup(msg, default_attributes);
-        return to_gstring(msg);
+        return apply_markup(msg, language_tag);
     }
 
     /** Translate and format the message.
@@ -209,10 +206,7 @@ public:
     {
         hi_axiom_not_null(_args);
         hilet msg = _args->format(std::locale::classic(), _msg_id);
-
-        // hilet default_attributes = character_attributes{language_tag.expand()};
-        // return to_text_with_markup(msg, default_attributes);
-        return to_gstring(msg);
+        return apply_markup(msg, language_tag{"en-US"});
     }
 
     explicit operator std::string() const noexcept

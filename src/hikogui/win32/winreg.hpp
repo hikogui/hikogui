@@ -203,12 +203,10 @@ hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_Reg
         case win32_error::success:
             return win32_WideCharToMultiByte(result);
         case win32_error::more_data:
-            break;
+            continue;
         default:
             return std::unexpected{status};
         }
-
-        return win32_WideCharToMultiByte(result);
     }
 
     // Data size keeps changing.

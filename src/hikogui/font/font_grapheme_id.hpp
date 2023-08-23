@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 

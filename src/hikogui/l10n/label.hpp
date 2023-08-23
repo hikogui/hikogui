@@ -8,7 +8,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../image/module.hpp"
 #include "../font/module.hpp"
 #include "txt.hpp"

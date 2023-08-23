@@ -95,11 +95,16 @@ public:
 
     /** Get the iso-15924 4-letter code.
      */
-    [[nodiscard]] constexpr std::string_view code4() const noexcept;
+    [[nodiscard]] constexpr std::string code4() const noexcept;
 
     /** Get the 4-letter code used by open-type.
      */
-    [[nodiscard]] constexpr std::string_view code4_open_type() const noexcept;
+    [[nodiscard]] constexpr std::string code4_open_type() const noexcept;
+
+    [[nodiscard]] constexpr friend std::string to_string(iso_15924 const &rhs) noexcept
+    {
+        return rhs.code4();
+    }
 
     /** Is this script written left-to-right.
      */

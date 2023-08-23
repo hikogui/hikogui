@@ -168,17 +168,17 @@ public:
         return default_script().left_to_right();
     }
 
-    [[nodiscard]] std::string to_string() const noexcept
+    [[nodiscard]] constexpr friend std::string to_string(language_tag const &rhs) noexcept
     {
         auto r = std::string{};
-        r += language.code();
-        if (script) {
+        r += rhs.language.code();
+        if (rhs.script) {
             r += '-';
-            r += script.code4();
+            r += rhs.script.code4();
         }
-        if (region) {
+        if (rhs.region) {
             r += "-";
-            r += region.code2();
+            r += rhs.region.code2();
         }
         return r;
     }
@@ -229,7 +229,7 @@ template<typename CharT>
 struct std::formatter<hi::language_tag, CharT> : std::formatter<std::string_view, CharT> {
     auto format(hi::language_tag const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(t.to_string(), fc);
+        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
 };
 

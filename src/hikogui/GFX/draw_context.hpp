@@ -10,7 +10,7 @@
 #include "pipeline_alpha_vertex.hpp"
 #include "../settings/settings.hpp"
 #include "../geometry/module.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../text/module.hpp"
 #include "../color/module.hpp"
 #include "../container/module.hpp"

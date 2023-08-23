@@ -10,7 +10,7 @@
 #include "glyph_ids.hpp"
 #include "elusive_icon.hpp"
 #include "hikogui_icon.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/utility.hpp"
 #include "../coroutine/module.hpp"

@@ -17,7 +17,7 @@
 #include "keyboard_focus_group.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "mouse_buttons.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
 #include "../macros.hpp"
