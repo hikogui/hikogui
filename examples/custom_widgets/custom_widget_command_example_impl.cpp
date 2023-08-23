@@ -108,7 +108,7 @@ public:
             break;
 
         case hi::gui_event_type::keyboard_grapheme:
-            hi_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(get<0>(event.grapheme())));
+            hi_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(event.grapheme().starter()));
             return true;
 
         case hi::gui_event_type::mouse_up:
