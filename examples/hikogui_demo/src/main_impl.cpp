@@ -82,7 +82,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
 
     grid.make_widget<label_widget>(
         "A1",
-        txt("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:"),
+        txt("This is a [he-IL]\xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92[.].\nAnd another sentence. One more:"),
         alignment::top_right());
     grid.make_widget<toggle_widget>("B1", preferences.toggle_value, txt("true"), txt("false"), txt("other"));
 

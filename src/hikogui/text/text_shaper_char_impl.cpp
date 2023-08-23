@@ -17,7 +17,7 @@ namespace hi::inline v1 {
     dpi_scale(dpi_scale),
     line_nr(std::numeric_limits<size_t>::max()),
     column_nr(std::numeric_limits<size_t>::max()),
-    general_category(ucd_get_general_category(grapheme[0]))
+    general_category(ucd_get_general_category(grapheme.starter()))
 {
 }
 

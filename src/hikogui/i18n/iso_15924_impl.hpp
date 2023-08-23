@@ -331,16 +331,16 @@ constexpr iso_15924::iso_15924(std::string_view code4)
     _v = it->second;
 }
 
-[[nodiscard]] constexpr std::string_view iso_15924::code4() const noexcept
+[[nodiscard]] constexpr std::string iso_15924::code4() const noexcept
 {
     hi_assert(_v < 1000);
-    return static_cast<std::string_view>(detail::iso_15924_code4_by_number[_v]);
+    return detail::iso_15924_code4_by_number[_v];
 }
 
-[[nodiscard]] constexpr std::string_view iso_15924::code4_open_type() const noexcept
+[[nodiscard]] constexpr std::string iso_15924::code4_open_type() const noexcept
 {
     hi_assert(_v < 1000);
-    return static_cast<std::string_view>(detail::iso_15924_code4_open_type_by_number[_v]);
+    return detail::iso_15924_code4_open_type_by_number[_v];
 }
 
 [[nodiscard]] constexpr bool iso_15924::left_to_right() const noexcept

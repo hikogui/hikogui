@@ -12,10 +12,10 @@
 #include <vector>
 #include <string>
 #include <type_traits>
+#include <iterator>
 
 
-
-template<>
+hi_export template<>
 struct std::char_traits<hi::grapheme> {
     using char_type = hi::grapheme;
     using int_type = std::make_signed_t<char_type::value_type>;
@@ -140,11 +140,105 @@ struct std::char_traits<hi::grapheme> {
 
 namespace hi::inline v1 {
 
-using gstring = std::basic_string<grapheme>;
-using gstring_view = std::basic_string_view<grapheme>;
+hi_export using gstring = std::basic_string<grapheme>;
+hi_export using gstring_view = std::basic_string_view<grapheme>;
 
 namespace pmr {
-using gstring = std::pmr::basic_string<grapheme>;
+hi_export using gstring = std::pmr::basic_string<grapheme>;
+}
+
+
+[[nodiscard]] constexpr bool operator==(gstring_view const &lhs, std::string_view const &rhs) noexcept
+{
+    if (lhs.size() != rhs.size()) {
+        return false;
+    }
+
+    auto l_it = lhs.begin();
+    auto l_last = lhs.end();
+    auto r_it = rhs.begin();
+
+    for (; l_it != l_last; ++l_it, ++r_it) {
+        if (*l_it != *r_it) {
+            return false;
+        }
+    }
+    return true;
+} 
+
+/** Set the language for the string.
+ * 
+ * @param first An iterator pointing to the first grapheme.
+ * @param last An iterator pointing beyond the last grapheme.
+ * @param language The language to set each grapheme to. This language will
+ *                 be expanded. The script of the grapheme will never
+ *                 contradict the unicode database.
+ */
+hi_export template<std::input_or_output_iterator It, std::sentinel_for<It> ItEnd>
+constexpr void set_language(It first, ItEnd last, language_tag language) noexcept
+{
+    language = language.expand();
+
+    for (auto it = first; it != last; ++it) {
+        it->set_language_tag(language);
+    }
+}
+
+hi_export [[nodiscard]] constexpr gstring set_language(gstring str, language_tag language) noexcept
+{
+    set_language(str.begin(), str.end(), language);
+    return str;
+}
+
+/** Fix the language for the string.
+ * 
+ * Make sure that every grapheme will have a language assigned. The following
+ * rules will be used to assign languages
+ *  - If a grapheme has no language assigned, it will use the language of
+ *    the previous grapheme.
+ *  - If there is no previous grapheme with an assigned language, the first
+ *    language found in the text is used.
+ *  - If the text does not have any language assigned then the argument
+ *    @a default_language_tag is used.
+ *  - If the script of a language contradicts the Unicode Database for the
+ *    grapheme then the Unicode Database's script is used instead.
+ * 
+ * @param first An iterator pointing to the first grapheme.
+ * @param last An iterator pointing beyond the last grapheme.
+ * @param default_language_tag The language to set each grapheme to.
+ */
+hi_export template<std::input_or_output_iterator It, std::sentinel_for<It> ItEnd>
+constexpr void fix_language(It first, ItEnd last, language_tag default_language_tag) noexcept
+    requires(std::is_same_v<std::iter_value_t<It>, grapheme>)
+{
+    if (first == last) {
+        return;
+    }
+
+    hilet first_language_it = std::find_if(first, last, [](auto &x) { return x.language(); });
+    if (first_language_it != last) {
+        default_language_tag = first_language_it->language_tag().expand();
+    } else {
+        default_language_tag = default_language_tag.expand();
+    }
+
+    for (auto it = first; it != first_language_it; ++it) {
+        it->set_language_tag(default_language_tag);
+    }
+
+    for (auto it = first_language_it; it != last; ++it) {
+        if (not it->language()) {
+            it->set_language_tag(default_language_tag);
+        } else {
+            it->set_language_tag(it->language_tag().expand());
+        }
+    }
+}
+
+hi_export [[nodiscard]] constexpr gstring fix_language(gstring str, language_tag default_language_tag) noexcept
+{
+    fix_language(str.begin(), str.end(), default_language_tag);
+    return str;
 }
 
 /** Convert a UTF-32 string-view to a grapheme-string.
@@ -156,7 +250,7 @@ using gstring = std::pmr::basic_string<grapheme>;
  * @param config The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-[[nodiscard]] constexpr gstring
+hi_export [[nodiscard]] constexpr gstring
 to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
     hilet normalized_string = unicode_normalize(rhs, config);
@@ -190,25 +284,10 @@ to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_no
  * @param config The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-[[nodiscard]] constexpr gstring
+hi_export [[nodiscard]] constexpr gstring
 to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
     return to_gstring(to_u32string(rhs), config);
-}
-
-/** Convert a UTF-8 string to a grapheme-string.
- *
- * Before conversion to `gstring` a string is first normalized using the Unicode
- * normalization algorithm. By default it is normalized using NFC.
- *
- * @param rhs The UTF-8 string to convert.
- * @param config The attributes used for normalizing the input string.
- * @return A grapheme-string.
- */
-[[nodiscard]] constexpr gstring
-to_gstring(std::string const& rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
-{
-    return to_gstring(std::string_view{rhs}, config);
 }
 
 /** Convert a grapheme string to UTF-8.
@@ -216,7 +295,7 @@ to_gstring(std::string const& rhs, unicode_normalize_config config = unicode_nor
  * @param rhs The grapheme string view to convert to UTF-8
  * @return The resulting UTF-8 string, in NFC normalization.
  */
-[[nodiscard]] constexpr std::string to_string(gstring_view rhs) noexcept
+hi_export [[nodiscard]] constexpr std::string to_string(gstring_view rhs) noexcept
 {
     auto r = std::string{};
     r.reserve(rhs.size());
@@ -231,7 +310,7 @@ to_gstring(std::string const& rhs, unicode_normalize_config config = unicode_nor
  * @param rhs The grapheme string view to convert to UTF-8
  * @return The resulting wide-string, in NFC normalization.
  */
-[[nodiscard]] constexpr std::wstring to_wstring(gstring_view rhs) noexcept
+hi_export [[nodiscard]] constexpr std::wstring to_wstring(gstring_view rhs) noexcept
 {
     auto r = std::wstring{};
     r.reserve(rhs.size());
@@ -246,7 +325,7 @@ to_gstring(std::string const& rhs, unicode_normalize_config config = unicode_nor
  * @param rhs The grapheme string view to convert to UTF-8
  * @return The resulting UTF-32 string, in NFC normalization.
  */
-[[nodiscard]] constexpr std::u32string to_u32string(gstring_view rhs) noexcept
+hi_export [[nodiscard]] constexpr std::u32string to_u32string(gstring_view rhs) noexcept
 {
     auto r = std::u32string{};
     r.reserve(rhs.size());
@@ -261,14 +340,14 @@ to_gstring(std::string const& rhs, unicode_normalize_config config = unicode_nor
  * @param rhs The grapheme string to convert to UTF-8
  * @return The resulting UTF-32 string, in NFC normalization.
  */
-[[nodiscard]] constexpr std::string to_string(gstring const& rhs) noexcept
+hi_export [[nodiscard]] constexpr std::string to_string(gstring const& rhs) noexcept
 {
     return to_string(gstring_view{rhs});
 }
 
 } // namespace hi::inline v1
 
-template<>
+hi_export template<>
 struct std::hash<hi::gstring> {
     [[nodiscard]] std::size_t operator()(hi::gstring const& rhs) noexcept
     {
@@ -280,7 +359,7 @@ struct std::hash<hi::gstring> {
     }
 };
 
-template<>
+hi_export template<>
 struct std::hash<hi::pmr::gstring> {
     [[nodiscard]] std::size_t operator()(hi::pmr::gstring const& rhs) noexcept
     {

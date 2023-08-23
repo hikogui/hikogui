@@ -8,7 +8,7 @@
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
 #include "widget_intf.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../GFX/module.hpp"
 #include "../utility/utility.hpp"
 #include "../observer/module.hpp"

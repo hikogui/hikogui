@@ -15,27 +15,27 @@ using namespace std::literals;
 
 hi_warning_push() hi_warning_ignore_msvc(4834)
 
-    TEST(language_tag, parse)
+TEST(language_tag, parse)
 {
-    ASSERT_EQ(tag::parse("").to_string(), "");
+    ASSERT_EQ(to_string(tag::parse("")), "");
 
-    ASSERT_EQ(tag::parse("nl").to_string(), "nl");
-    ASSERT_EQ(tag::parse("nl-NL").to_string(), "nl-NL");
-    ASSERT_EQ(tag::parse("nl-Cyrl-NL").to_string(), "nl-Cyrl-NL");
-    ASSERT_EQ(tag::parse("nl-BE").to_string(), "nl-BE");
-    ASSERT_EQ(tag::parse("NL-be").to_string(), "nl-BE");
-    ASSERT_EQ(tag::parse("nl-56").to_string(), "nl-BE");
-    ASSERT_EQ(tag::parse("nl-056").to_string(), "nl-BE");
+    ASSERT_EQ(to_string(tag::parse("nl")), "nl");
+    ASSERT_EQ(to_string(tag::parse("nl-NL")), "nl-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-Cyrl-NL")), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-BE")), "nl-BE");
+    ASSERT_EQ(to_string(tag::parse("NL-be")), "nl-BE");
+    ASSERT_EQ(to_string(tag::parse("nl-56")), "nl-BE");
+    ASSERT_EQ(to_string(tag::parse("nl-056")), "nl-BE");
     // "foo" language extension is ignored.
-    ASSERT_EQ(tag::parse("nl-foo-056").to_string(), "nl-BE");
+    ASSERT_EQ(to_string(tag::parse("nl-foo-056")), "nl-BE");
     // "foo" language is accepted even though it doesn't exist and has no default script.
-    ASSERT_EQ(tag::parse("foo-056").to_string(), "foo-BE");
+    ASSERT_EQ(to_string(tag::parse("foo-056")), "foo-BE");
     // "abcde" variant is ignored.
-    ASSERT_EQ(tag::parse("nl-Cyrl-NL-abcde").to_string(), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-Cyrl-NL-abcde")), "nl-Cyrl-NL");
     // "a-bcde" extension is ignored.
-    ASSERT_EQ(tag::parse("nl-Cyrl-NL-a-bcde").to_string(), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-Cyrl-NL-a-bcde")), "nl-Cyrl-NL");
     // "x-bcde" user-defined extension is ignored.
-    ASSERT_EQ(tag::parse("nl-Cyrl-NL-x-bcde").to_string(), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-Cyrl-NL-x-bcde")), "nl-Cyrl-NL");
 
     tag tmp;
     ASSERT_THROW(tmp = tag::parse("x-NL"), hi::parse_error);
@@ -47,25 +47,25 @@ hi_warning_push() hi_warning_ignore_msvc(4834)
 }
 TEST(language_tag, construct)
 {
-    ASSERT_EQ(tag{""}.to_string(), "");
+    ASSERT_EQ(to_string(tag{""}), "");
 
-    ASSERT_EQ(tag{"nl"}.to_string(), "nl-Latn-NL");
-    ASSERT_EQ(tag{"nl-NL"}.to_string(), "nl-Latn-NL");
-    ASSERT_EQ(tag{"nl-Cyrl-NL"}.to_string(), "nl-Cyrl-NL");
-    ASSERT_EQ(tag{"nl-BE"}.to_string(), "nl-Latn-BE");
-    ASSERT_EQ(tag{"NL-be"}.to_string(), "nl-Latn-BE");
-    ASSERT_EQ(tag{"nl-56"}.to_string(), "nl-Latn-BE");
-    ASSERT_EQ(tag{"nl-056"}.to_string(), "nl-Latn-BE");
+    ASSERT_EQ(to_string(tag{"nl"}), "nl-Latn-NL");
+    ASSERT_EQ(to_string(tag{"nl-NL"}), "nl-Latn-NL");
+    ASSERT_EQ(to_string(tag{"nl-Cyrl-NL"}), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag{"nl-BE"}), "nl-Latn-BE");
+    ASSERT_EQ(to_string(tag{"NL-be"}), "nl-Latn-BE");
+    ASSERT_EQ(to_string(tag{"nl-56"}), "nl-Latn-BE");
+    ASSERT_EQ(to_string(tag{"nl-056"}), "nl-Latn-BE");
     // "foo" language extension is ignored.
-    ASSERT_EQ(tag{"nl-foo-056"}.to_string(), "nl-Latn-BE");
+    ASSERT_EQ(to_string(tag{"nl-foo-056"}), "nl-Latn-BE");
     // "foo" language is accepted even though it doesn't exist and has no default script.
-    ASSERT_EQ(tag{"foo-056"}.to_string(), "foo-BE");
+    ASSERT_EQ(to_string(tag{"foo-056"}), "foo-BE");
     // "abcde" variant is ignored.
-    ASSERT_EQ(tag{"nl-Cyrl-NL-abcde"}.to_string(), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag{"nl-Cyrl-NL-abcde"}), "nl-Cyrl-NL");
     // "a-bcde" extension is ignored.
-    ASSERT_EQ(tag{"nl-Cyrl-NL-a-bcde"}.to_string(), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag{"nl-Cyrl-NL-a-bcde"}), "nl-Cyrl-NL");
     // "x-bcde" user-defined extension is ignored.
-    ASSERT_EQ(tag{"nl-Cyrl-NL-x-bcde"}.to_string(), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag{"nl-Cyrl-NL-x-bcde"}), "nl-Cyrl-NL");
 
     ASSERT_THROW(tag{"x-NL"}, hi::parse_error);
     ASSERT_THROW(tag{"xxxx-NL"}, hi::parse_error);
@@ -77,30 +77,40 @@ TEST(language_tag, construct)
 
 TEST(language_tag, shrink)
 {
-    ASSERT_EQ(tag{"nl"}.shrink().to_string(), "nl");
-    ASSERT_EQ(tag{"nl-NL"}.shrink().to_string(), "nl");
-    ASSERT_EQ(tag{"nl-Latn"}.shrink().to_string(), "nl");
-    ASSERT_EQ(tag{"nl-Latn-NL"}.shrink().to_string(), "nl");
-    ASSERT_EQ(tag{"nl-BE"}.shrink().to_string(), "nl-BE");
-    ASSERT_EQ(tag{"nl-Latn-BE"}.shrink().to_string(), "nl-BE");
+    ASSERT_EQ(to_string(tag{"nl"}.shrink()), "nl");
+    ASSERT_EQ(to_string(tag{"nl-NL"}.shrink()), "nl");
+    ASSERT_EQ(to_string(tag{"nl-Latn"}.shrink()), "nl");
+    ASSERT_EQ(to_string(tag{"nl-Latn-NL"}.shrink()), "nl");
+    ASSERT_EQ(to_string(tag{"nl-BE"}.shrink()), "nl-BE");
+    ASSERT_EQ(to_string(tag{"nl-Latn-BE"}.shrink()), "nl-BE");
 
-    ASSERT_EQ(tag{"nl-Cyrl"}.shrink().to_string(), "nl-Cyrl");
-    ASSERT_EQ(tag{"nl-Cyrl-NL"}.shrink().to_string(), "nl-Cyrl");
-    ASSERT_EQ(tag{"nl-Cyrl-BE"}.shrink().to_string(), "nl-Cyrl-BE");
+    ASSERT_EQ(to_string(tag{"nl-Cyrl"}.shrink()), "nl-Cyrl");
+    ASSERT_EQ(to_string(tag{"nl-Cyrl-NL"}.shrink()), "nl-Cyrl");
+    ASSERT_EQ(to_string(tag{"nl-Cyrl-BE"}.shrink()), "nl-Cyrl-BE");
 }
 
 TEST(language_tag, expand)
 {
-    ASSERT_EQ(tag::parse("nl").expand().to_string(), "nl-Latn-NL");
-    ASSERT_EQ(tag::parse("nl-NL").expand().to_string(), "nl-Latn-NL");
-    ASSERT_EQ(tag::parse("nl-Latn").expand().to_string(), "nl-Latn-NL");
-    ASSERT_EQ(tag::parse("nl-Latn-NL").expand().to_string(), "nl-Latn-NL");
-    ASSERT_EQ(tag::parse("nl-BE").expand().to_string(), "nl-Latn-BE");
-    ASSERT_EQ(tag::parse("nl-Latn-BE").expand().to_string(), "nl-Latn-BE");
+    ASSERT_EQ(to_string(tag::parse("nl").expand()), "nl-Latn-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-NL").expand()), "nl-Latn-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-Latn").expand()), "nl-Latn-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-Latn-NL").expand()), "nl-Latn-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-BE").expand()), "nl-Latn-BE");
+    ASSERT_EQ(to_string(tag::parse("nl-Latn-BE").expand()), "nl-Latn-BE");
 
-    ASSERT_EQ(tag::parse("nl-Cyrl").expand().to_string(), "nl-Cyrl-NL");
-    ASSERT_EQ(tag::parse("nl-Cyrl-NL").expand().to_string(), "nl-Cyrl-NL");
-    ASSERT_EQ(tag::parse("nl-Cyrl-BE").expand().to_string(), "nl-Cyrl-BE");
+    ASSERT_EQ(to_string(tag::parse("nl-Cyrl").expand()), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-Cyrl-NL").expand()), "nl-Cyrl-NL");
+    ASSERT_EQ(to_string(tag::parse("nl-Cyrl-BE").expand()), "nl-Cyrl-BE");
+
+    ASSERT_EQ(to_string(tag::parse("en").expand()), "en-Latn-US");
+    ASSERT_EQ(to_string(tag::parse("en-US").expand()), "en-Latn-US");
+    ASSERT_EQ(to_string(tag::parse("en-Latn").expand()), "en-Latn-US");
+    ASSERT_EQ(to_string(tag::parse("en-Latn-US").expand()), "en-Latn-US");
+    ASSERT_EQ(to_string(tag::parse("en-GB").expand()), "en-Latn-GB");
+    ASSERT_EQ(to_string(tag::parse("en-Latn-GB").expand()), "en-Latn-GB");
+
+    ASSERT_EQ(to_string(tag::parse("en-Cyrl").expand()), "en-Cyrl-US");
+    ASSERT_EQ(to_string(tag::parse("en-Cyrl-GB").expand()), "en-Cyrl-GB");
 }
 
 TEST(language_tag, variants)
@@ -167,8 +177,7 @@ TEST(language_tag, variant_vector)
         tag::parse("nl-Latn-NL"),
         tag::parse("nl-NL"),
         tag::parse("nl-Latn"),
-        tag::parse("nl")
-    };
+        tag::parse("nl")};
     ASSERT_EQ(variants(test), expected);
 }
 

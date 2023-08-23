@@ -60,8 +60,13 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr std::string_view code2() const noexcept;
-    [[nodiscard]] constexpr std::string_view code3() const noexcept;
+    [[nodiscard]] constexpr std::string code2() const noexcept;
+    [[nodiscard]] constexpr std::string code3() const noexcept;
+
+    [[nodiscard]] constexpr friend std::string to_string(iso_3166 const &rhs) noexcept
+    {
+        return rhs.code2();
+    }
 
     [[nodiscard]] constexpr friend bool operator==(iso_3166 const& lhs, iso_3166 const& rhs) noexcept = default;
     [[nodiscard]] constexpr friend auto operator<=>(iso_3166 const& lhs, iso_3166 const& rhs) noexcept = default;

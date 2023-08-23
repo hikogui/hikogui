@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../l10n/l10n.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <string>

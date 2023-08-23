@@ -40,7 +40,7 @@
 #include "telemetry/module.hpp"
 #include "text/module.hpp"
 #include "time/module.hpp"
-#include "unicode/module.hpp"
+#include "unicode/unicode.hpp"
 #include "utility/utility.hpp"
 #include "widgets/module.hpp"
 

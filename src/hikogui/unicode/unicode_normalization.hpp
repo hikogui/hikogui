@@ -313,4 +313,45 @@ unicode_normalize(std::u32string_view text, unicode_normalize_config config = un
     return r;
 }
 
+/** Check if the string of code-points is a single grapheme in NFC normal form.
+ * 
+ * @param it An iterator pointing to the first code-point.
+ * @param last An iterator pointing beyond the last code-point.
+ */
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr bool unicode_is_NFC_grapheme(It it, ItEnd last) noexcept
+{
+    if (it == last) {
+        // Needs to have at least one code-point.
+        return false;
+    }
+    
+    if (std::distance(it, last) > 31) {
+        // A maximum 30 marks is allowed after the starter.
+        return false;
+    }
+
+    if (ucd_get_canonical_combining_class(*it++) != 0) {
+        // The first code-point must be a starter (CCC == 0).
+        return false;
+    }
+
+    // Check if each consequtive code-point is a mark (CCC != 0).
+    // And that the CCC is ordered by numeric value.
+    auto max_ccc = uint8_t{1};
+    for (; it != last; ++it) {
+        hilet ccc = ucd_get_canonical_combining_class(*it);
+        if (ccc < max_ccc) {
+            return false;
+        }
+        max_ccc = ccc;
+
+        // XXX Needs check if code-point is allowed in NFC.
+
+    }
+
+    // All tests pass.
+    return true;
+}
+
 } // namespace hi::inline v1

@@ -12,7 +12,7 @@
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
 #include "widget_intf.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../GFX/module.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"

@@ -1,4 +1,16 @@
 {
+    "editor.rulers": [
+        {
+            "column": 80,
+            "color": "#003a18"
+        },
+        {
+            "column": 130,
+            "color": "#0b003a"
+        }
+    ],
+    "editor.fontFamily": "JetBrains Mono",
+    "editor.fontLigatures": true,
     "files.associations": {
         "new": "cpp",
         "unordered_map": "cpp",

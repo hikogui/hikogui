@@ -10,7 +10,7 @@
 #include "../formula/formula.hpp"
 #include "../utility/utility.hpp"
 #include "../settings/settings.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../telemetry/module.hpp"
 #include "../macros.hpp"
 #include <string>

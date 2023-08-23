@@ -11,7 +11,7 @@
 #include "font_variant.hpp"
 #include "font_metrics.hpp"
 #include "font_char_map.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../i18n/module.hpp"
 #include "../graphic_path/graphic_path.hpp"
 #include "../utility/utility.hpp"

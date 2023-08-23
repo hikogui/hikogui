@@ -89,6 +89,9 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/counters_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/format_check_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/grapheme_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/gstring_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/unicode/markup_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/ucd_scripts_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_bidi_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/unicode/unicode_break_tests.cpp
