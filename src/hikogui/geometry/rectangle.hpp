@@ -82,24 +82,24 @@ public:
 
     /** Return the axis-aligned bounding rectangle of this rectangle.
      */
-    [[nodiscard]] constexpr explicit operator aarectangle() const noexcept
+    [[nodiscard]] constexpr friend aarectangle bounding_rectangle(rectangle const &rhs) noexcept
     {
         auto left_bottom = f32x4::broadcast(std::numeric_limits<float>::max());
         auto right_top = f32x4::broadcast(-std::numeric_limits<float>::max());
 
-        hilet p0 = origin;
+        hilet p0 = rhs.origin;
         left_bottom = min(left_bottom, static_cast<f32x4>(p0));
         right_top = max(right_top, static_cast<f32x4>(p0));
 
-        hilet p1 = p0 + right;
+        hilet p1 = p0 + rhs.right;
         left_bottom = min(left_bottom, static_cast<f32x4>(p1));
         right_top = max(right_top, static_cast<f32x4>(p1));
 
-        hilet p2 = p0 + up;
+        hilet p2 = p0 + rhs.up;
         left_bottom = min(left_bottom, static_cast<f32x4>(p2));
         right_top = max(right_top, static_cast<f32x4>(p2));
 
-        hilet p3 = p2 + right;
+        hilet p3 = p2 + rhs.right;
         left_bottom = min(left_bottom, static_cast<f32x4>(p3));
         right_top = max(right_top, static_cast<f32x4>(p3));
 
