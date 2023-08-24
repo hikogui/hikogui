@@ -14,7 +14,7 @@ namespace hi::inline v1 {
 
 /** ISO-3166 country code.
  */
-class iso_3166 {
+hi_export class iso_3166 {
 public:
     constexpr iso_3166(iso_3166 const&) noexcept = default;
     constexpr iso_3166(iso_3166&&) noexcept = default;

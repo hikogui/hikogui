@@ -8,7 +8,7 @@
 #include "../macros.hpp"
 #include <cctype>
 
-
+hi_export_module(hikogui.i18n.iso_639);
 
 namespace hi::inline v1 {
 
@@ -22,7 +22,7 @@ namespace hi::inline v1 {
  *
  * This class compresses this 2 or 3 character language code inside 15 bits.
  */
-class iso_639 {
+hi_export class iso_639 {
 public:
     /** Set the letter at a specific position.
      *
@@ -201,7 +201,7 @@ private:
 
 } // namespace hi::inline v1
 
-template<>
+hi_export template<>
 struct std::hash<hi::iso_639> {
     [[nodiscard]] size_t operator()(hi::iso_639 const& rhs) const noexcept
     {

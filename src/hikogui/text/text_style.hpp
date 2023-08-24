@@ -7,7 +7,7 @@
 #include "text_decoration.hpp"
 #include "semantic_text_style.hpp"
 #include "../color/module.hpp"
-#include "../i18n/module.hpp"
+#include "../i18n/i18n.hpp"
 #include "../unicode/unicode.hpp"
 #include "../utility/utility.hpp"
 #include "../font/module.hpp"

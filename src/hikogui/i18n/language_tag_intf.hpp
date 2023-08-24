@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.i18n.language_tag : intf);
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** The IETF BCP 47 language tag.
  *
@@ -25,7 +25,7 @@ namespace hi::inline v1 {
  * In the future another 16 bits can be used to store the variants and extensions.
  *
  */
-class language_tag {
+hi_export class language_tag {
 public:
     iso_639 language;
     iso_15924 script;
@@ -210,11 +210,11 @@ public:
  * @param languages A list of languages ordered by preference.
  * @return A new list of languages which includes variants and ordered by the given list of languages.
  */
-[[nodiscard]] std::vector<language_tag> variants(std::vector<language_tag> languages);
+hi_export [[nodiscard]] std::vector<language_tag> variants(std::vector<language_tag> languages);
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
-template<>
+hi_export template<>
 struct std::hash<hi::language_tag> {
     [[nodiscard]] size_t operator()(hi::language_tag const& rhs) const noexcept
     {
@@ -225,7 +225,7 @@ struct std::hash<hi::language_tag> {
     }
 };
 
-template<typename CharT>
+hi_export template<typename CharT>
 struct std::formatter<hi::language_tag, CharT> : std::formatter<std::string_view, CharT> {
     auto format(hi::language_tag const& t, auto& fc) const
     {
@@ -234,7 +234,7 @@ struct std::formatter<hi::language_tag, CharT> : std::formatter<std::string_view
 };
 
 // XXX C++23 should have this fixed?
-template<typename CharT>
+hi_export template<typename CharT>
 struct std::formatter<std::vector<hi::language_tag>, CharT> : std::formatter<std::string_view, CharT> {
     auto format(std::vector<hi::language_tag> const& t, auto& fc) const
     {

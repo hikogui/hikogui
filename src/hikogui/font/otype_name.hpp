@@ -6,7 +6,7 @@
 
 #include "otype_utilities.hpp"
 #include "../utility/utility.hpp"
-#include "../i18n/module.hpp"
+#include "../i18n/i18n.hpp"
 #include "../macros.hpp"
 #include <span>
 #include <cstddef>

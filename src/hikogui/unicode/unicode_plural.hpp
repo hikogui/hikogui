@@ -10,7 +10,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../i18n/module.hpp"
+#include "../i18n/i18n.hpp"
 #include "../macros.hpp"
 #include <concepts>
 #include <array>
