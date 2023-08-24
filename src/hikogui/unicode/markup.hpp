@@ -5,7 +5,7 @@
 #include "grapheme.hpp"
 #include "phrasing.hpp"
 #include "gstring.hpp"
-#include "../i18n/module.hpp"
+#include "../i18n/i18n.hpp"
 #include "../utility/utility.hpp"
 #include <string>
 #include <string_view>

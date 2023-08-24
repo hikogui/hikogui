@@ -21,7 +21,7 @@
 #include "GFX/module.hpp"
 #include "graphic_path/graphic_path.hpp"
 #include "GUI/module.hpp"
-#include "i18n/module.hpp"
+#include "i18n/i18n.hpp"
 #include "image/module.hpp"
 #include "l10n/l10n.hpp"
 #include "dispatch/dispatch.hpp"

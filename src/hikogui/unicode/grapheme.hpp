@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../i18n/module.hpp"
+#include "../i18n/i18n.hpp"
 #include "../telemetry/module.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "unicode_normalization.hpp"

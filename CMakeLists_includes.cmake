@@ -324,7 +324,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_intf.hpp
     ${HIKOGUI_SOURCE_DIR}/i18n/language_tag_impl.hpp
-    ${HIKOGUI_SOURCE_DIR}/i18n/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/i18n/i18n.hpp
     ${HIKOGUI_SOURCE_DIR}/image/module.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap.hpp
     ${HIKOGUI_SOURCE_DIR}/image/pixmap_span.hpp
