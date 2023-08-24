@@ -8,9 +8,11 @@
 #include "../geometry/module.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.font.glyph_atlas_info);
+
 namespace hi::inline v1 {
 
-class glyph_atlas_info {
+hi_export class glyph_atlas_info {
 public:
     /** pixel coordinates.
      *

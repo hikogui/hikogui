@@ -10,7 +10,9 @@
 #include <cstddef>
 #include <span>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.font.otype_coverage);
+
+hi_export namespace hi::inline v1 {
 
 struct coverage_format1 {
     big_int16_buf_t coverage_format;

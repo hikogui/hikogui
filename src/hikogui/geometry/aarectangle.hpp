@@ -160,7 +160,7 @@ public:
     }
 
     template<int I>
-    [[nodiscard]] constexpr friend point2 get(aarectangle const& rhs) noexcept
+    [[nodiscard]] constexpr friend point2 get(aarectangle const &rhs) noexcept
     {
         if constexpr (I == 0) {
             return point2{rhs.v.xy01()};

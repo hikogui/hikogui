@@ -6,7 +6,7 @@
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
 #include "../GFX/module.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../path/path.hpp"
 #include "../telemetry/module.hpp"
 #include "../settings/settings.hpp"

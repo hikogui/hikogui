@@ -10,7 +10,7 @@
 #include "../i18n/i18n.hpp"
 #include "../unicode/unicode.hpp"
 #include "../utility/utility.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../telemetry/module.hpp"
 #include "../container/module.hpp"
 #include "../macros.hpp"

@@ -8,7 +8,9 @@
 #include "font_char_map.hpp"
 #include "../macros.hpp"
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.font.otype_cmap);
+
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline std::span<std::byte const>
 otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t platform_specific_id)

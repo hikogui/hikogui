@@ -7,7 +7,7 @@
 #include "pipeline_SDF_texture_map.hpp"
 #include "pipeline_SDF_vertex.hpp"
 #include "pipeline_SDF_specialization_constants.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../utility/utility.hpp"
 #include "../telemetry/module.hpp"
 #include "../container/module.hpp"

@@ -7,6 +7,8 @@
 #include "font_weight.hpp"
 #include "font_style.hpp"
 
+hi_export_module(hikogui.font.font_variant);
+
 namespace hi::inline v1 {
 
 /** A font variant is one of 16 different fonts that can be part of a family.
@@ -14,7 +16,7 @@ namespace hi::inline v1 {
  *
  * monospace, serif, condensed, expanded & optical-size are all part of the font family.
  */
-class font_variant {
+hi_export class font_variant {
 public:
     [[nodiscard]] constexpr static size_t size() noexcept
     {
@@ -100,7 +102,7 @@ private:
 
 } // namespace hi::inline v1
 
-template<>
+hi_export template<>
 struct std::hash<hi::font_variant> {
     [[nodiscard]] size_t operator()(hi::font_variant const& rhs) const noexcept
     {

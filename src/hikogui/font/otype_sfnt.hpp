@@ -10,9 +10,9 @@
 #include <span>
 #include <cstddef>
 
+hi_export_module(hikogui.font.otype_sfnt);
 
-
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 template<fixed_string Name>

@@ -4,7 +4,7 @@
 
 #include "theme.hpp"
 #include "theme_book.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../codec/codec.hpp"
 #include "../color/module.hpp"
 #include "../telemetry/module.hpp"

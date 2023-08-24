@@ -9,7 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>

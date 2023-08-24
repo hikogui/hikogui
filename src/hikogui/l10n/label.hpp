@@ -10,7 +10,7 @@
 #include "../utility/utility.hpp"
 #include "../unicode/unicode.hpp"
 #include "../image/module.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "txt.hpp"
 #include "../macros.hpp"
 #include <string>

@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_shaper.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../unicode/unicode.hpp"
 #include "../telemetry/module.hpp"
 #include "../coroutine/module.hpp"

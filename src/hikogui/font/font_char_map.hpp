@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <string>
 
-
+hi_export_module(hikogui.font.font_char_map);
 
 namespace hi { inline namespace v1 {
 
@@ -31,7 +31,7 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup font
  */
-class font_char_map {
+hi_export class font_char_map {
 public:
     constexpr font_char_map() noexcept = default;
     constexpr font_char_map(font_char_map const&) noexcept = default;

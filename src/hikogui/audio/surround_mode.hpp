@@ -5,7 +5,7 @@
 #pragma once
 
 #include "speaker_mapping.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../utility/utility.hpp"
 #include "../l10n/l10n.hpp"
 #include "../coroutine/module.hpp"

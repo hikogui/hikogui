@@ -12,7 +12,9 @@
 #include <cstddef>
 #include <span>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.font.otype_GSUB);
+
+hi_export namespace hi::inline v1 {
 
 /** Compatible with version 1.1, all offsets start at the beginning of this header.
  */

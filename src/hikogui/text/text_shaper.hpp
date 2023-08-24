@@ -9,7 +9,7 @@
 #include "text_cursor.hpp"
 #include "text_style.hpp"
 #include "../layout/module.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../geometry/module.hpp"
 #include "../unicode/unicode.hpp"
 #include "../macros.hpp"

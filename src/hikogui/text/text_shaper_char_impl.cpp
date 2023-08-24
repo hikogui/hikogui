@@ -5,7 +5,7 @@
 #pragma once
 
 #include "text_shaper_char.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1 {

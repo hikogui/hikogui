@@ -10,6 +10,8 @@
 #include "../utility/utility.hpp"
 #include "../coroutine/module.hpp"
 
+hi_export_module(hikogui.font.font_style);
+
 namespace hi {
 inline namespace v1 {
 
@@ -21,7 +23,7 @@ inline namespace v1 {
  *
  * @ingroup font
  */
-enum class font_style {
+hi_export enum class font_style {
     /** A font that is normal, non-italic.
      */
     normal = 0,
@@ -42,7 +44,7 @@ constexpr auto font_style_metadata = enum_metadata{
 };
 // clang-format on
 
-[[nodiscard]] inline generator<font_style> alternatives(font_style const &start) noexcept
+hi_export [[nodiscard]] inline generator<font_style> alternatives(font_style const &start) noexcept
 {
     if (start == font_style::normal) {
         co_yield font_style::normal;

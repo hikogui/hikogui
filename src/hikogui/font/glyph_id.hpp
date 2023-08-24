@@ -9,10 +9,10 @@
 #include <algorithm>
 #include <utility>
 
-
+hi_export_module(hikogui.font.glyph_id);
 
 namespace hi::inline v1 {
 
-using glyph_id = tagged_id<uint16_t, "glyph_id">;
+hi_export using glyph_id = tagged_id<uint16_t, "glyph_id">;
 
 }
