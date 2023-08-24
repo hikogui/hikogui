@@ -12,12 +12,12 @@
 
 hi_export_module(hikogui.i18n.iso_15924 : intf);
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** ISO-15924 script code.
  * A 4 letter title case script code:
  */
-class iso_15924 {
+hi_export class iso_15924 {
 public:
     constexpr iso_15924() noexcept : _v(0) {}
     constexpr iso_15924(iso_15924 const&) noexcept = default;
@@ -128,9 +128,9 @@ private:
     uint16_t _v;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
-template<>
+hi_export template<>
 struct std::hash<hi::iso_15924> {
     [[nodiscard]] size_t operator()(hi::iso_15924 const& rhs) const noexcept
     {

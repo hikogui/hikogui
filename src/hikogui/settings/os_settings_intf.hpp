@@ -6,7 +6,7 @@
 
 #include "theme_mode.hpp"
 #include "subpixel_orientation.hpp"
-#include "../i18n/module.hpp"
+#include "../i18n/i18n.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/utility.hpp"
 #include "../numeric/module.hpp"
