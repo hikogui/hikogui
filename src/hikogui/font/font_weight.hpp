@@ -57,7 +57,7 @@ constexpr auto font_weight_metadata = enum_metadata{
  */
 [[nodiscard]] constexpr font_weight font_weight_from_int(numeric_integral auto rhs)
 {
-    if (rhs < 50 || rhs > 1000) {
+    if (rhs < 50 or rhs > 1000) {
         throw parse_error(std::format("Unknown font-weight {}", rhs));
     }
     return static_cast<font_weight>(((rhs + 50) / 100) - 1);
@@ -118,7 +118,7 @@ constexpr bool almost_equal(font_weight const& lhs, font_weight const& rhs) noex
     auto min = start;
     auto max = start;
     auto forward = false;
-    while (min > font_weight::thin and max < font_weight::extra_black) {
+    while (min > font_weight::thin or max < font_weight::extra_black) {
         if ((forward and max == font_weight::extra_black) or (not forward and min == font_weight::thin)) {
             // Change direction to not overflow.
             forward = not forward;
