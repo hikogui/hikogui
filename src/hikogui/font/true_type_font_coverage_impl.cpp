@@ -7,11 +7,8 @@
 #include "../telemetry/module.hpp"
 #include "../utility/utility.hpp"
 #include "../parser/parser.hpp"
-#include "../macros.hpp"
 #include <cstddef>
 #include <span>
-
-
 
 namespace hi::inline v1 {
 

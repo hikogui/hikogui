@@ -183,11 +183,11 @@ public:
             }
 
             _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb = _check_glyph.get_bounding_box() * theme().icon_size();
+            hilet check_glyph_bb = _check_glyph.get_metrics().bounding_rectangle * theme().icon_size();
             _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
 
             _minus_glyph = find_glyph(elusive_icon::Minus);
-            hilet minus_glyph_bb = _minus_glyph.get_bounding_box() * theme().icon_size();
+            hilet minus_glyph_bb = _minus_glyph.get_metrics().bounding_rectangle * theme().icon_size();
             _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
         }
         super::set_layout(context);
@@ -207,9 +207,9 @@ private:
 
     extent2 _button_size;
     aarectangle _button_rectangle;
-    glyph_ids _check_glyph;
+    font_book::font_glyph_type _check_glyph;
     aarectangle _check_glyph_rectangle;
-    glyph_ids _minus_glyph;
+    font_book::font_glyph_type _minus_glyph;
     aarectangle _minus_glyph_rectangle;
 
     void draw_check_box(draw_context const& context) noexcept

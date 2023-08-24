@@ -3,16 +3,14 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "true_type_font.hpp"
-#include "../unicode/unicode.hpp"
+#include "../unicode/module.hpp"
 #include "../geometry/module.hpp"
-#include "../telemetry/module.hpp"
-#include "../utility/utility.hpp"
-#include "../parser/parser.hpp"
-#include "../macros.hpp"
+#include "../placement.hpp"
+#include "../strings.hpp"
+#include "../log.hpp"
+#include "../utility/module.hpp"
 #include <cstddef>
 #include <span>
-
-
 
 namespace hi::inline v1 {
 

@@ -94,7 +94,8 @@ draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box
 void draw_context::_draw_glyph(
     aarectangle const& clipping_rectangle,
     quad const& box,
-    glyph_ids const& glyph,
+    font const& font,
+    glyph_id glyph,
     draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
@@ -108,7 +109,7 @@ void draw_context::_draw_glyph(
         return;
     }
 
-    hilet atlas_was_updated = pipeline.place_vertices(*_sdf_vertices, clipping_rectangle, box, glyph, attributes.fill_color);
+    hilet atlas_was_updated = pipeline.place_vertices(*_sdf_vertices, clipping_rectangle, box, font, glyph, attributes.fill_color);
 
     if (atlas_was_updated) {
         pipeline.prepare_atlas_for_rendering();
@@ -140,7 +141,7 @@ void draw_context::_draw_text(
             break;
         }
 
-        atlas_was_updated |= pipeline.place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, c.glyph, color);
+        atlas_was_updated |= pipeline.place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.ids.front(), color);
     }
 
     if (atlas_was_updated) {

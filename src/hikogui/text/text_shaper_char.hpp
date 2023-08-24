@@ -11,7 +11,6 @@
 #include "../macros.hpp"
 
 namespace hi::inline v1 {
-class font_book;
 
 class text_shaper_char {
 public:
@@ -29,7 +28,7 @@ public:
 
     /** The glyph representing one or more graphemes.
      * The glyph will change during shaping of the text:
-     *  1. The initial glyph, used for determining the width of the grapheme
+     *  1. The starter glyph, used for determining the width of the grapheme
      *     and the folding algorithm.
      *  2. The glyph representing a bracket may be replaced with a mirrored bracket
      *     by the bidi-algorithm.
@@ -37,9 +36,9 @@ public:
      *     for better continuation of cursive text and merging of graphemes into
      *     a ligature.
      */
-    hi::glyph_ids glyph;
+    hi::font_book::font_glyphs_type glyphs;
 
-    /** The glyph metrics of the currently glyph.
+    /** The glyph metrics of the current starter glyph.
      *
      * The metrics are scaled by `scale`.
      */
@@ -131,14 +130,14 @@ public:
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(hi::font_book const& font_book, hi::font const& font) noexcept;
+    void initialize_glyph(hi::font const& font) noexcept;
 
     /** Initialize the glyph based on the grapheme.
      *
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(hi::font_book& font_book) noexcept;
+    void initialize_glyph() noexcept;
 
     /** Called by the bidi-algorithm to mirror glyphs.
      *
@@ -154,7 +153,8 @@ public:
      */
     [[nodiscard]] hi::font_metrics font_metrics() const noexcept
     {
-        return scale * glyph.font().metrics;
+        hi_axiom_not_null(glyphs.font);
+        return scale * glyphs.font->metrics;
     }
 
     [[nodiscard]] friend bool operator==(text_shaper_char const& lhs, char32_t const& rhs) noexcept
@@ -170,7 +170,7 @@ public:
 private:
     /** Load metrics based on the loaded glyph.
      */
-    void set_glyph(hi::glyph_ids&& new_glyph) noexcept;
+    void set_glyph(hi::font_book::font_glyphs_type&& new_glyph) noexcept;
 };
 
 } // namespace hi::inline v1

@@ -17,7 +17,6 @@
 #include <tuple>
 
 namespace hi::inline v1 {
-class font_book;
 
 /** Text shaper.
  *
@@ -69,7 +68,6 @@ public:
      *  - middle, odd: y = 0 is the base-line of the middle line.
      *  - middle, even: y = 0 is half way between the base-lines of the middle two lines.
      *
-     * @param font_book The font_book instance to retrieve fonts from.
      * @param text The text as a vector of attributed graphemes.
      *             Use U+2029 as paragraph separator, and if needed U+2028 as line separator.
      * @param style The initial text-style to use to display the text.
@@ -79,7 +77,6 @@ public:
      * @param script The script of the text.
      */
     [[nodiscard]] text_shaper(
-        hi::font_book& font_book,
         gstring const& text,
         text_style const& style,
         float dpi_scale,
@@ -88,7 +85,6 @@ public:
         iso_15924 script = iso_15924{"Zyyy"}) noexcept;
 
     [[nodiscard]] text_shaper(
-        hi::font_book& font_book,
         std::string_view text,
         text_style const& style,
         float dpi_scale,
@@ -413,8 +409,6 @@ public:
     [[nodiscard]] text_cursor move_end_document(text_cursor cursor) const noexcept;
 
 private:
-    font_book *_font_book = nullptr;
-
     /** The scaling factor to use to scale a font's size to match the physical pixels on the display.
      */
     float _dpi_scale;

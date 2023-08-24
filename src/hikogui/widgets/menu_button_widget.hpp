@@ -123,7 +123,7 @@ public:
             }
 
             _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb = _check_glyph.get_bounding_box() * theme().icon_size();
+            hilet check_glyph_bb = _check_glyph.get_metrics().bounding_rectangle * theme().icon_size();
             _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
         }
 
@@ -185,7 +185,7 @@ public:
 private:
     box_constraints _label_constraints;
 
-    glyph_ids _check_glyph;
+    font_book::font_glyph_type _check_glyph;
     extent2 _check_size;
     aarectangle _check_rectangle;
     aarectangle _check_glyph_rectangle;

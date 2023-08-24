@@ -44,6 +44,7 @@ target_sources(hikogui_tests PRIVATE
     ${HIKOGUI_SOURCE_DIR}/coroutine/generator_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/file/file_view_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/font/font_char_map_tests.cpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_weight_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/matrix3_tests.cpp
     ${HIKOGUI_SOURCE_DIR}/geometry/point2_tests.cpp

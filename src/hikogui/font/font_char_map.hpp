@@ -93,7 +93,7 @@ public:
         hi_axiom(start_code_point <= end_code_point);
         auto todo = wide_cast<size_t>(end_code_point - start_code_point + 1);
         _count += todo;
-        hi_axiom(start_glyph + todo < 0xffff, "Only glyph_ids 0 through 0xfffe are valid");
+        hi_axiom(start_glyph + todo < 0xffff, "Only glyph-ids 0 through 0xfffe are valid");
 
         while (todo != 0) {
             hilet doing = std::min(todo, entry_type::max_count);

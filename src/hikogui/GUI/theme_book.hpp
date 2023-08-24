@@ -13,7 +13,6 @@
 #include <filesystem>
 
 namespace hi::inline v1 {
-class font_book;
 
 /** theme_book keeps track of multiple themes.
  *
@@ -26,7 +25,7 @@ public:
     theme_book &operator=(theme_book const &) = delete;
     theme_book &operator=(theme_book &&) = delete;
 
-    theme_book(hi::font_book const &font_book, std::vector<std::filesystem::path> const &theme_directories) noexcept;
+    theme_book(std::vector<std::filesystem::path> const &theme_directories) noexcept;
 
     [[nodiscard]] std::vector<std::string> theme_names() const noexcept;
 

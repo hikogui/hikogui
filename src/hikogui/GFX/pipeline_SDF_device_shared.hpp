@@ -19,8 +19,6 @@
 #include <mutex>
 #include <unordered_map>
 
-
-
 namespace hi::inline v1 {
 class mat;
 class gfx_device_vulkan;
@@ -50,7 +48,7 @@ struct device_shared {
     constexpr static float drawBorder = sdf_r8::max_distance;
     constexpr static float scaledDrawBorder = drawBorder / drawfontSize;
 
-    gfx_device_vulkan const &device;
+    gfx_device_vulkan const& device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
@@ -71,13 +69,13 @@ struct device_shared {
     /// During allocation on a row, we keep track of the tallest glyph.
     int atlasAllocationMaxHeight = 0;
 
-    device_shared(gfx_device_vulkan const &device);
+    device_shared(gfx_device_vulkan const& device);
     ~device_shared();
 
-    device_shared(device_shared const &) = delete;
-    device_shared &operator=(device_shared const &) = delete;
-    device_shared(device_shared &&) = delete;
-    device_shared &operator=(device_shared &&) = delete;
+    device_shared(device_shared const&) = delete;
+    device_shared& operator=(device_shared const&) = delete;
+    device_shared(device_shared&&) = delete;
+    device_shared& operator=(device_shared&&) = delete;
 
     /*! Deallocate vulkan resources.
      * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan>
@@ -90,12 +88,12 @@ struct device_shared {
      */
     [[nodiscard]] glyph_atlas_info allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept;
 
-    void drawInCommandBuffer(vk::CommandBuffer const &commandBuffer);
+    void drawInCommandBuffer(vk::CommandBuffer const& commandBuffer);
 
     /** Once drawing in the staging pixmap is completed, you can upload it to the atlas.
      * This will transition the stating texture to 'source' and the atlas to 'destination'.
      */
-    void uploadStagingPixmapToAtlas(glyph_atlas_info const &location);
+    void uploadStagingPixmapToAtlas(glyph_atlas_info const& location);
 
     /** This will transition the staging texture to 'general' for writing by the CPU.
      */
@@ -104,10 +102,6 @@ struct device_shared {
     /** This will transition the atlas to 'shader-read'.
      */
     void prepare_atlas_for_rendering();
-
-    /** Get the bounding box, including draw border of a glyph.
-     */
-    aarectangle get_bounding_box(glyph_ids const &glyphs) const noexcept;
 
     /** Place vertices for a single glyph.
      *
@@ -120,32 +114,33 @@ struct device_shared {
      * @return True is atlas was updated.
      */
     bool place_vertices(
-        vector_span<vertex> &vertices,
-        aarectangle const &clipping_rectangle,
-        quad const &box,
-        glyph_ids const &glyphs,
+        vector_span<vertex>& vertices,
+        aarectangle const& clipping_rectangle,
+        quad const& box,
+        hi::font const& font,
+        glyph_id glyph,
         quad_color colors) noexcept;
 
 private:
     void buildShaders();
-    void teardownShaders(gfx_device_vulkan const*vulkanDevice);
+    void teardownShaders(gfx_device_vulkan const *vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(gfx_device_vulkan const*vulkanDevice);
-    void add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info &info) noexcept;
+    void teardownAtlas(gfx_device_vulkan const *vulkanDevice);
+    void add_glyph_to_atlas(hi::font const& font, glyph_id glyph, glyph_atlas_info& info) noexcept;
 
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    hi_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(glyph_ids const &glyph) noexcept
+    hi_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(hi::font const& font, glyph_id glyph) noexcept
     {
-        auto &info = glyph.atlas_info();
+        auto& info = font.atlas_info(glyph);
 
         if (info) [[likely]] {
             return {&info, false};
 
         } else {
-            add_glyph_to_atlas(glyph, info);
+            add_glyph_to_atlas(font, glyph, info);
             return {&info, true};
         }
     }

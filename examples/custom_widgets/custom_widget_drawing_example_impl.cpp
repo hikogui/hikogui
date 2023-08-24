@@ -303,7 +303,7 @@ public:
     }
 
 private:
-    hi::glyph_ids _glyph;
+    hi::font_book::font_glyph_type _glyph;
     hi::aarectangle _glyph_rectangle;
     std::atomic<bool> _image_was_modified = true;
     hi::png _image;

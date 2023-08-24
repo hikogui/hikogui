@@ -62,10 +62,10 @@ public:
             restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMacOS);
             hilet glyph_size = 5.0f;
 
-            hilet closeWindowGlyphBB = closeWindowGlyph.get_bounding_box() * glyph_size;
-            hilet minimizeWindowGlyphBB = minimizeWindowGlyph.get_bounding_box() * glyph_size;
-            hilet maximizeWindowGlyphBB = maximizeWindowGlyph.get_bounding_box() * glyph_size;
-            hilet restoreWindowGlyphBB = restoreWindowGlyph.get_bounding_box() * glyph_size;
+            hilet closeWindowGlyphBB = closeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            hilet minimizeWindowGlyphBB = minimizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            hilet maximizeWindowGlyphBB = maximizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            hilet restoreWindowGlyphBB = restoreWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
 
             closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
             minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
@@ -210,10 +210,10 @@ private:
     aarectangle minimizeRectangle;
     aarectangle maximizeRectangle;
 
-    glyph_ids closeWindowGlyph;
-    glyph_ids minimizeWindowGlyph;
-    glyph_ids maximizeWindowGlyph;
-    glyph_ids restoreWindowGlyph;
+    font_book::font_glyph_type closeWindowGlyph;
+    font_book::font_glyph_type minimizeWindowGlyph;
+    font_book::font_glyph_type maximizeWindowGlyph;
+    font_book::font_glyph_type restoreWindowGlyph;
 
     aarectangle closeWindowGlyphRectangle;
     aarectangle minimizeWindowGlyphRectangle;

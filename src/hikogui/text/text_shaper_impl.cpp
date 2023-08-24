@@ -171,20 +171,18 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
 }
 
 [[nodiscard]] text_shaper::text_shaper(
-    hi::font_book& font_book,
     gstring const& text,
     text_style const& style,
     float dpi_scale,
     hi::alignment alignment,
     bool left_to_right,
     iso_15924 script) noexcept :
-    _font_book(&font_book),
     _bidi_context(left_to_right ? unicode_bidi_class::L : unicode_bidi_class::R),
     _dpi_scale(dpi_scale),
     _alignment(alignment),
     _script(script)
 {
-    hilet& font = font_book.find_font(style->family_id, style->variant);
+    hilet& font = find_font(style->family_id, style->variant);
     _initial_line_metrics = (style->size * dpi_scale) * font.metrics;
 
     _text.reserve(text.size());
@@ -192,7 +190,7 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
         hilet clean_c = c == '\n' ? grapheme{unicode_PS} : c;
 
         auto& tmp = _text.emplace_back(clean_c, style, dpi_scale);
-        tmp.initialize_glyph(font_book, font);
+        tmp.initialize_glyph(font);
     }
 
     _text_direction = unicode_bidi_direction(
@@ -224,14 +222,13 @@ bidi_algorithm(text_shaper::line_vector& lines, text_shaper::char_vector& text, 
 }
 
 [[nodiscard]] text_shaper::text_shaper(
-    font_book& font_book,
     std::string_view text,
     text_style const& style,
     float dpi_scale,
     hi::alignment alignment,
     bool left_to_right,
     iso_15924 script) noexcept :
-    text_shaper(font_book, to_gstring(text), style, dpi_scale, alignment, left_to_right, script)
+    text_shaper(to_gstring(text), style, dpi_scale, alignment, left_to_right, script)
 {
 }
 

@@ -17,12 +17,10 @@
 #include "otype_sfnt.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/utility.hpp"
+#include "../parser/parser.hpp"
 #include "../telemetry/module.hpp"
-#include "../macros.hpp"
 #include <cstddef>
 #include <span>
-
-
 
 namespace hi::inline v1 {
 
@@ -132,7 +130,7 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
         condensed = os2.condensed;
         serif = os2.serif;
         monospace = os2.monospace;
-        italic = os2.italic;
+        style = os2.italic ? font_style::italic : font_style::normal;
         OS2_x_height = os2.x_height;
         OS2_cap_height = os2.cap_height;
     }
@@ -142,42 +140,60 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     // Parsing the weight, italic and other features from the sub-family-name
     // is much more reliable than the explicit data in the OS/2 table.
     // Only use the OS/2 data as a last resort.
+    // clang-format off
     auto name_lower = to_lower(family_name + " " + sub_family_name);
-    if (name_lower.contains("italic") or name_lower.contains("oblique")) {
-        italic = true;
+    if (name_lower.find("italic") != std::string::npos) {
+        style = font_style::italic;
     }
 
-    if (name_lower.contains("condensed")) {
+    if (name_lower.find("oblique") != std::string::npos) {
+        style = font_style::oblique;
+    }
+
+    if (name_lower.find("condensed") != std::string::npos) {
         condensed = true;
     }
 
-    if (name_lower.contains("mono") or name_lower.contains("console") or name_lower.contains("code")) {
+    if (name_lower.find("mono") != std::string::npos or
+        name_lower.find("console") != std::string::npos or
+        name_lower.find("code") != std::string::npos ) {
         monospace = true;
     }
 
-    if (name_lower.contains("sans")) {
+    if (name_lower.find("sans") != std::string::npos) {
         serif = false;
-    } else if (name_lower.contains("serif")) {
+    } else if (name_lower.find("serif") != std::string::npos) {
         serif = true;
     }
 
-    if (name_lower.contains("regular") or name_lower.contains("medium")) {
-        weight = font_weight::Regular;
-    } else if (name_lower.contains("extra light") or name_lower.contains("extra-light") or name_lower.contains("extralight")) {
-        weight = font_weight::ExtraLight;
-    } else if (name_lower.contains("extra black") or name_lower.contains("extra-black") or name_lower.contains("extrablack")) {
-        weight = font_weight::ExtraBlack;
-    } else if (name_lower.contains("extra bold") or name_lower.contains("extra-bold") or name_lower.contains("extrabold")) {
-        weight = font_weight::ExtraBold;
-    } else if (name_lower.contains("thin")) {
-        weight = font_weight::Thin;
-    } else if (name_lower.contains("light")) {
-        weight = font_weight::Light;
-    } else if (name_lower.contains("bold")) {
-        weight = font_weight::Bold;
-    } else if (name_lower.contains("black")) {
-        weight = font_weight::Black;
+    if (name_lower.find("regular") != std::string::npos or
+        name_lower.find("medium") != std::string::npos) {
+        weight = font_weight::regular;
+    } else if (
+        name_lower.find("extra light") != std::string::npos or
+        name_lower.find("extra-light") != std::string::npos or
+        name_lower.find("extralight") != std::string::npos) {
+        weight = font_weight::extra_light;
+    } else if (
+        name_lower.find("extra black") != std::string::npos or
+        name_lower.find("extra-black") != std::string::npos or
+        name_lower.find("extrablack") != std::string::npos) {
+        weight = font_weight::extra_black;
+    } else if (
+        name_lower.find("extra bold") != std::string::npos or
+        name_lower.find("extra-bold") != std::string::npos or
+        name_lower.find("extrabold") != std::string::npos) {
+        weight = font_weight::extra_bold;
+    } else if (name_lower.find("thin") != std::string::npos) {
+        weight = font_weight::thin;
+    } else if (name_lower.find("light") != std::string::npos) {
+        weight = font_weight::light;
+    } else if (name_lower.find("bold") != std::string::npos) {
+        weight = font_weight::bold;
+    } else if (name_lower.find("black") != std::string::npos) {
+        weight = font_weight::black;
     }
+    // clang-format on
 
     // Figure out the features.
     features.clear();
@@ -217,55 +233,60 @@ void true_type_font::parse_font_directory(std::span<std::byte const> bytes)
     auto r = font::shape_run_result_type{};
     r.reserve(run.size());
 
-    auto x = 0.0f;
     for (hilet grapheme : run) {
         hilet glyphs = find_glyph(grapheme);
-        auto grapheme_advance = 0.0f;
-        for (hilet glyph_id : glyphs) {
-            hilet glyph_metrics = get_metrics(glyph_id);
-            hilet glyph_bounding_rectangle = translate2{x, 0.0f} * glyph_metrics.bounding_rectangle;
-            hilet glyph_position = point2{x, 0.0f};
 
-            x += glyph_metrics.advance;
-            grapheme_advance += glyph_metrics.advance;
+        // At this point ligature substitution has not been done. So we should
+        // have at least one glyph per grapheme.
+        hi_axiom(not glyphs.empty());
+        hilet base_glyph_id = glyphs.front();
+        hilet base_glyph_metrics = get_metrics(base_glyph_id);
+
+        r.advances.push_back(base_glyph_metrics.advance);
+        r.glyph_count.push_back(glyphs.size());
+
+        // Store information of the base-glyph
+        r.glyphs.push_back(base_glyph_id);
+        r.glyph_positions.push_back(point2{});
+        r.glyph_rectangles.push_back(base_glyph_metrics.bounding_rectangle);
+
+        // Position the mark-glyphs.
+        auto glyph_position = point2{base_glyph_metrics.advance, 0.0f};
+        for (auto i = 1_uz; i != glyphs.size(); ++i) {
+            hilet glyph_id = glyphs[i];
+
+            hilet glyph_metrics = get_metrics(glyph_id);
 
             r.glyphs.push_back(glyph_id);
             r.glyph_positions.push_back(glyph_position);
-            r.glyph_bounding_rectangles.push_back(glyph_bounding_rectangle);
+            r.glyph_rectangles.push_back(glyph_metrics.bounding_rectangle);
+
+            glyph_position.x() += glyph_metrics.advance;
         }
-        r.grapheme_advances.push_back(grapheme_advance);
-        r.glyph_count.push_back(glyphs.size());
     }
     return r;
 }
 
 void true_type_font::shape_run_kern(font::shape_run_result_type& shape_result) const
 {
-    hilet num_graphemes = shape_result.grapheme_advances.size();
+    hilet num_graphemes = shape_result.advances.size();
 
-    auto total_kerning = translate2{};
-    auto prev_glyph_id = hi::glyph_id{};
+    auto prev_base_glyph_id = hi::glyph_id{};
     auto glyph_index = 0_uz;
-    for (auto i = 0_uz; i != num_graphemes; ++i) {
-        hilet num_glyphs_in_grapheme = shape_result.glyph_count[i];
-        for (auto j = 0_uz; j != num_glyphs_in_grapheme; ++j, ++glyph_index) {
-            auto glyph_id = shape_result.glyphs[glyph_index];
+    for (auto grapheme_index = 0_uz; grapheme_index != num_graphemes; ++grapheme_index) {
+        // Kerning is done between base-glyphs of consecutive graphemes.
+        // Marks should be handled by the Unicode mark positioning algorithm.
+        // Or by the more stateful GPOS table.
+        hilet base_glyph_id = shape_result.glyphs[glyph_index];
 
-            if (prev_glyph_id) {
-                auto kerning = otype_kern_find(_kern_table_bytes, prev_glyph_id, glyph_id, _em_scale);
-                if (kerning.y() != 0.0f) {
-                    throw parse_error("'kern' table contains vertical kerning.");
-                }
-                total_kerning.x() += kerning.x();
-            }
+        if (prev_base_glyph_id) {
+            hilet kerning = otype_kern_find(_kern_table_bytes, prev_base_glyph_id, base_glyph_id, _em_scale);
 
-            shape_result.glyph_bounding_rectangles[glyph_index] *= total_kerning;
-            shape_result.glyph_positions[glyph_index] *= total_kerning;
-
-            prev_glyph_id = glyph_id;
+            hi_axiom(grapheme_index != 0);
+            shape_result.advances[grapheme_index - 1] += kerning.x();
         }
 
-        shape_result.grapheme_advances[i] += total_kerning.x();
+        glyph_index += shape_result.glyph_count[grapheme_index];
     }
 }
 
@@ -274,7 +295,7 @@ void true_type_font::shape_run_kern(font::shape_run_result_type& shape_result) c
     auto r = shape_run_basic(run);
 
     // Glyphs should be morphed only once.
-    auto morphed = false;
+    // auto morphed = false;
     // Glyphs should be positioned only once.
     auto positioned = false;
 

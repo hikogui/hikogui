@@ -29,12 +29,12 @@ namespace hi::inline v1 {
  *  - `std::monostate`
  *  - `hi::elusive_icon`
  *  - `hi::hikogui_icon`
- *  - `hi::glyph_ids`
+ *  - `hi::font_book::font_glyph_type`
  *  - `hi::pixmap<hi::sfloat_rgba16>`
  */
-class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixmap<sfloat_rgba16>>
+class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyph_type, pixmap<sfloat_rgba16>>
 {
-    using std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixmap<sfloat_rgba16>>::variant;
+    using std::variant<std::monostate, elusive_icon, hikogui_icon, font_book::font_glyph_type, pixmap<sfloat_rgba16>>::variant;
 
     /** Check if icon contains an image.
      */

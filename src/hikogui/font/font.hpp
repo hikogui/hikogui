@@ -6,7 +6,6 @@
 
 #include "glyph_metrics.hpp"
 #include "glyph_atlas_info.hpp"
-#include "glyph_ids.hpp"
 #include "font_weight.hpp"
 #include "font_variant.hpp"
 #include "font_metrics.hpp"
@@ -16,13 +15,10 @@
 #include "../graphic_path/graphic_path.hpp"
 #include "../utility/utility.hpp"
 #include "../container/module.hpp"
-#include "../macros.hpp"
 #include <span>
 #include <vector>
 #include <map>
 #include <string>
-
-
 
 namespace hi::inline v1 {
 
@@ -46,9 +42,9 @@ public:
 
     bool monospace = false;
     bool serif = false;
-    bool italic = false;
+    font_style style = font_style::normal;
     bool condensed = false;
-    font_weight weight = font_weight::Regular;
+    font_weight weight = font_weight::regular;
     float optical_size = 12.0;
 
     /** A optimized character map.
@@ -127,9 +123,9 @@ public:
     [[nodiscard]] virtual glyph_metrics get_metrics(hi::glyph_id glyph_id) const = 0;
 
     struct shape_run_result_type {
-        /** Position of each grapheme.
+        /** The horizontal advance of each grapheme.
          */
-        std::vector<float> grapheme_advances;
+        std::vector<float> advances;
 
         /** The number of glyphs used by each grapheme.
          */
@@ -143,39 +139,44 @@ public:
          */
         std::vector<glyph_id> glyphs;
 
-        /** Position of each glyph.
+        /** Position of each glyph, relative to the grapheme
+         *
+         * There is exactly one position for each glyph.
          */
         std::vector<point2> glyph_positions;
 
-        /** The bounding rectangle for each glyph.
-         *
-         * The coordinates are in EM units and start at zero
-         * at the left-most / first grapheme.
+        /** The bounding rectangle for each glyph, relative to glyph_position.
          *
          * There is exactly one bounding rectangle for each glyph.
          */
-        std::vector<aarectangle> glyph_bounding_rectangles;
+        std::vector<aarectangle> glyph_rectangles;
 
         void reserve(size_t count) noexcept
         {
-            grapheme_advances.reserve(count);
+            advances.reserve(count);
             glyph_count.reserve(count);
             glyphs.reserve(count);
             glyph_positions.reserve(count);
-            glyph_bounding_rectangles.reserve(count);
+            glyph_rectangles.reserve(count);
         }
 
-        void scale(float s) noexcept
+        /** Scale and position the result of the run.
+        *
+        * @param s The font-size to scale by
+        * @param x The horizontal position, calculated after scaling
+        */
+        void scale_and_offset(float s) noexcept
         {
-            auto M = scale2{s};
-            for (auto& tmp : grapheme_advances) {
+            auto S = scale2{s};
+
+            for (auto& tmp : advances) {
                 tmp = s * tmp;
             }
             for (auto& tmp : glyph_positions) {
-                tmp = M * tmp;
+                tmp = S * tmp;
             }
-            for (auto& tmp : glyph_bounding_rectangles) {
-                tmp = M * tmp;
+            for (auto& tmp : glyph_rectangles) {
+                tmp = S * tmp;
             }
         }
     };
@@ -199,23 +200,19 @@ public:
      */
     [[nodiscard]] virtual shape_run_result_type shape_run(iso_639 language, iso_15924 script, gstring run) const = 0;
 
-    glyph_atlas_info& atlas_info(glyph_ids const& glyphs) const
+    glyph_atlas_info& atlas_info(glyph_id glyph) const
     {
-        if (glyphs.has_num_glyphs<1>()) [[likely]] {
-            hilet index = static_cast<std::size_t>(get<0>(glyphs));
-            if (index >= _single_glyph_atlas_table.size()) [[unlikely]] {
-                _single_glyph_atlas_table.resize(index + 1);
-            }
-            return _single_glyph_atlas_table[index];
-
-        } else {
-            return _multi_glyph_atlas_table[glyphs];
+        if (*glyph >= _glyph_atlas_table.size()) [[unlikely]] {
+            _glyph_atlas_table.resize(*glyph + 1);
         }
+
+        hi_axiom_bounds(*glyph, _glyph_atlas_table);
+        return _glyph_atlas_table[*glyph];
     }
 
     [[nodiscard]] font_variant font_variant() const noexcept
     {
-        return {weight, italic};
+        return {weight, style};
     }
 
     [[nodiscard]] friend std::string to_string(font const& rhs) noexcept
@@ -226,7 +223,7 @@ public:
             rhs.sub_family_name,
             rhs.monospace ? 'M' : '_',
             rhs.serif ? 'S' : '_',
-            rhs.italic ? 'I' : '_',
+            rhs.style == font_style::italic ? 'I' : '_',
             rhs.condensed ? 'C' : '_',
             to_char(rhs.weight),
             rhs.optical_size,
@@ -234,8 +231,7 @@ public:
     }
 
 private:
-    mutable std::vector<glyph_atlas_info> _single_glyph_atlas_table;
-    mutable hash_map<glyph_ids, glyph_atlas_info> _multi_glyph_atlas_table;
+    mutable std::vector<glyph_atlas_info> _glyph_atlas_table;
 };
 
 } // namespace hi::inline v1

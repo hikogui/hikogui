@@ -76,44 +76,44 @@
 
     "small-label-style": {
         "family": "Candara",
-        "weight": "Normal",
+        "weight": "regular",
         "size": 10,
         "color": "foreground"
     },
 
     "label-style": {
         "family": "Candara",
-        "weight": "Normal",
+        "weight": "regular",
         "size": 12,
         "color": "foreground"
     },
     "warning-label-style": {
         "family": "Candara",
-        "weight": "Normal",
+        "weight": "regular",
         "size": 12,
         "color": "foreground"
     },
     "error-label-style": {
         "family": "Candara",
-        "weight": "Normal",
+        "weight": "regular",
         "size": 12,
         "color": "orange"
     },
     "help-label-style": {
         "family": "Candara",
-        "weight": "Normal",
+        "weight": "regular",
         "size": 12,
         "color": [88, 86, 214]
     },
     "placeholder-label-style": {
         "family": "Candara",
-        "weight": "Normal",
+        "weight": "regular",
         "size": 12,
         "color": [142, 142, 147]
     },
     "link-label-style": {
         "family": "Candara",
-        "weight": "Normal",
+        "weight": "regular",
         "size": 12,
         "color": [0, 122, 255]
     }
