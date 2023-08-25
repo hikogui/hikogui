@@ -10,9 +10,9 @@
 #include <span>
 #include <cstddef>
 
+hi_export_module(hikogui.font.otype_kern);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline std::optional<float>
 otype_kern_sub0_find(size_t &offset, std::span<std::byte const> bytes, glyph_id first_glyph_id, glyph_id second_glyph_id, float em_scale)

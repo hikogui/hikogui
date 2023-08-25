@@ -140,16 +140,14 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/font/font_book.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_char_map.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_family_id.hpp
-    ${HIKOGUI_SOURCE_DIR}/font/font_grapheme_id.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_metrics.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_variant.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font_weight.hpp
     ${HIKOGUI_SOURCE_DIR}/font/glyph_atlas_info.hpp
     ${HIKOGUI_SOURCE_DIR}/font/glyph_id.hpp
-    ${HIKOGUI_SOURCE_DIR}/font/glyph_ids.hpp
     ${HIKOGUI_SOURCE_DIR}/font/glyph_metrics.hpp
     ${HIKOGUI_SOURCE_DIR}/font/hikogui_icon.hpp
-    ${HIKOGUI_SOURCE_DIR}/font/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_cmap.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_glyf.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_head.hpp

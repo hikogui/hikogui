@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "theme_book.hpp"
-#include "../font/module.hpp"
 #include "../path/path.hpp"
 #include "../utility/utility.hpp"
 #include "../telemetry/module.hpp"
@@ -13,7 +12,7 @@ namespace hi::inline v1 {
 
 theme_book::~theme_book() {}
 
-theme_book::theme_book(hi::font_book const &font_book, std::vector<std::filesystem::path> const &theme_directories) noexcept : themes()
+theme_book::theme_book(std::vector<std::filesystem::path> const &theme_directories) noexcept : themes()
 {
     for (hilet &theme_directory : theme_directories) {
         hilet theme_directory_glob = theme_directory / "**" / "*.theme.json";
@@ -21,7 +20,7 @@ theme_book::theme_book(hi::font_book const &font_book, std::vector<std::filesyst
             auto t = trace<"theme_scan">{};
 
             try {
-                themes.push_back(std::make_unique<theme>(font_book, theme_path));
+                themes.push_back(std::make_unique<theme>(theme_path));
             } catch (std::exception const &e) {
                 hi_log_error("Failed parsing theme at {}. \"{}\"", theme_path.string(), e.what());
             }

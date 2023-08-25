@@ -7,13 +7,12 @@
 #include "../telemetry/module.hpp"
 #include "../utility/utility.hpp"
 #include "../parser/parser.hpp"
-#include "../macros.hpp"
 #include <cstddef>
 #include <span>
 
+hi_export_module(hikogui.font.otype_coverage);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct coverage_format1 {
     big_int16_buf_t coverage_format;

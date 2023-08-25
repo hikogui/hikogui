@@ -16,10 +16,7 @@
 #include <string>
 #include <vector>
 
-
-
 namespace hi::inline v1 {
-class font_book;
 
 class theme {
 public:
@@ -42,7 +39,7 @@ public:
 
     /** Open and parse a theme file.
      */
-    theme(hi::font_book const& font_book, std::filesystem::path const& url);
+    theme(std::filesystem::path const& url);
 
     /** Distance between widgets and between widgets and the border of the container.
      */
@@ -186,10 +183,10 @@ private:
     [[nodiscard]] hi::color parse_color_value(datum const& data);
     [[nodiscard]] hi::color parse_color(datum const& data, char const *object_name);
     [[nodiscard]] std::vector<hi::color> parse_color_list(datum const& data, char const *object_name);
-    [[nodiscard]] hi::text_style parse_text_style_value(hi::font_book const& font_book, datum const& data);
+    [[nodiscard]] hi::text_style parse_text_style_value(datum const& data);
     [[nodiscard]] font_weight parse_font_weight(datum const& data, char const *object_name);
-    [[nodiscard]] hi::text_style parse_text_style(hi::font_book const& font_book, datum const& data, char const *object_name);
-    void parse(hi::font_book const& font_book, datum const& data);
+    [[nodiscard]] hi::text_style parse_text_style(datum const& data, char const *object_name);
+    void parse(datum const& data);
 
     [[nodiscard]] friend std::string to_string(theme const& rhs) noexcept
     {

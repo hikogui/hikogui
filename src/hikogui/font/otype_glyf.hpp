@@ -10,7 +10,9 @@
 #include "../macros.hpp"
 #include <variant>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.font.otype_glyf);
+
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 constexpr uint16_t otype_glyf_flag_arg1_and_arg2_are_words = 0x0001;
 constexpr uint16_t otype_glyf_flag_args_are_xy_values = 0x0002;

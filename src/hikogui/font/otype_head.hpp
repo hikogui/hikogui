@@ -10,9 +10,9 @@
 #include <span>
 #include <cstddef>
 
+hi_export_module(hikogui.font.otype_head);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline auto otype_head_parse(std::span<std::byte const> bytes)
 {

@@ -89,23 +89,23 @@ public:
                     process_event({gui_event_type::window_reconstrain});
                 }
 
-            } else if (hilet g1 = std::get_if<glyph_ids>(&icon.read())) {
+            } else if (hilet g1 = std::get_if<font_book::font_glyph_type>(&icon.read())) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
                 _icon_size =
-                    _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+                    _glyph.get_metrics().bounding_rectangle.size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
 
             } else if (hilet g2 = std::get_if<elusive_icon>(&icon.read())) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
                 _icon_size =
-                    _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+                    _glyph.get_metrics().bounding_rectangle.size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
 
             } else if (hilet g3 = std::get_if<hikogui_icon>(&icon.read())) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
                 _icon_size =
-                    _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+                    _glyph.get_metrics().bounding_rectangle.size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
             }
         }
 
@@ -164,7 +164,7 @@ private:
     enum class icon_type { no, glyph, pixmap };
 
     icon_type _icon_type;
-    glyph_ids _glyph;
+    font_book::font_glyph_type _glyph;
     paged_image _pixmap_backing;
     decltype(icon)::callback_token _icon_cbt;
     std::atomic<bool> _icon_has_modified = true;

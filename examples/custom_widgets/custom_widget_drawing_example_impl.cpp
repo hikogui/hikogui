@@ -132,7 +132,7 @@ public:
 
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
             // In this case we make two rectangles which are used in the `draw()` function.
-            auto const glyph_size = _glyph.get_bounding_box().size();
+            auto const glyph_size = _glyph.get_metrics().bounding_rectangle.size();
             auto const glyph_scale = hi::scale2::uniform(glyph_size, max_size);
             auto const new_glyph_size = glyph_scale * glyph_size;
             _glyph_rectangle = align(max_rectangle, new_glyph_size, hi::alignment::middle_center());
@@ -303,7 +303,7 @@ public:
     }
 
 private:
-    hi::glyph_ids _glyph;
+    hi::font_book::font_glyph_type _glyph;
     hi::aarectangle _glyph_rectangle;
     std::atomic<bool> _image_was_modified = true;
     hi::png _image;

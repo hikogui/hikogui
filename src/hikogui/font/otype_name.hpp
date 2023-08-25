@@ -11,9 +11,9 @@
 #include <span>
 #include <cstddef>
 
+hi_export_module(hikogui.font.otype_name);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 struct otype_name_language_entry_type {

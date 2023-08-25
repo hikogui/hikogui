@@ -4,7 +4,7 @@
 
 #include "theme.hpp"
 #include "theme_book.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../codec/codec.hpp"
 #include "../color/module.hpp"
 #include "../telemetry/module.hpp"
@@ -13,12 +13,12 @@
 
 namespace hi::inline v1 {
 
-theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
+theme::theme(std::filesystem::path const& path)
 {
     try {
         hi_log_info("Parsing theme at {}", path.string());
         hilet data = parse_JSON(path);
-        parse(font_book, data);
+        parse(data);
     } catch (std::exception const& e) {
         throw io_error(std::format("{}: Could not load theme.\n{}", path.string(), e.what()));
     }
@@ -267,26 +267,26 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     }
 }
 
-[[nodiscard]] text_style theme::parse_text_style_value(hi::font_book const& font_book, datum const& data)
+[[nodiscard]] text_style theme::parse_text_style_value(datum const& data)
 {
     if (!holds_alternative<datum::map_type>(data)) {
         throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
     }
 
-    hilet family_id = font_book.find_family(parse_string(data, "family"));
+    hilet family_id = find_font_family(parse_string(data, "family"));
     hilet font_size = parse_float(data, "size");
 
     auto variant = font_variant{};
     if (data.contains("weight")) {
         variant.set_weight(parse_font_weight(data, "weight"));
     } else {
-        variant.set_weight(font_weight::Regular);
+        variant.set_weight(font_weight::regular);
     }
 
     if (data.contains("italic")) {
-        variant.set_italic(parse_bool(data, "italic"));
+        variant.set_style(parse_bool(data, "italic") ? font_style::italic : font_style::normal);
     } else {
-        variant.set_italic(false);
+        variant.set_style(font_style::normal);
     }
 
     // resolve semantic color.
@@ -298,7 +298,7 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
     return hi::text_style(sub_styles);
 }
 
-[[nodiscard]] text_style theme::parse_text_style(hi::font_book const& font_book, datum const& data, char const *object_name)
+[[nodiscard]] text_style theme::parse_text_style(datum const& data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -307,13 +307,13 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
 
     hilet textStyleObject = data[object_name];
     try {
-        return parse_text_style_value(font_book, textStyleObject);
+        return parse_text_style_value(textStyleObject);
     } catch (parse_error const& e) {
         throw parse_error(std::format("Could not parse text-style '{}'\n{}", object_name, e.what()));
     }
 }
 
-void theme::parse(hi::font_book const& font_book, datum const& data)
+void theme::parse(datum const& data)
 {
     hi_assert(holds_alternative<datum::map_type>(data));
 
@@ -353,16 +353,16 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     std::get<std::to_underlying(semantic_color::primary_cursor)>(_colors) = parse_color_list(data, "primary-cursor-color");
     std::get<std::to_underlying(semantic_color::secondary_cursor)>(_colors) = parse_color_list(data, "secondary-cursor-color");
 
-    std::get<std::to_underlying(semantic_text_style::label)>(_text_styles) = parse_text_style(font_book, data, "label-style");
+    std::get<std::to_underlying(semantic_text_style::label)>(_text_styles) = parse_text_style(data, "label-style");
     std::get<std::to_underlying(semantic_text_style::small_label)>(_text_styles) =
-        parse_text_style(font_book, data, "small-label-style");
+        parse_text_style(data, "small-label-style");
     std::get<std::to_underlying(semantic_text_style::warning)>(_text_styles) =
-        parse_text_style(font_book, data, "warning-label-style");
-    std::get<std::to_underlying(semantic_text_style::error)>(_text_styles) = parse_text_style(font_book, data, "error-label-style");
-    std::get<std::to_underlying(semantic_text_style::help)>(_text_styles) = parse_text_style(font_book, data, "help-label-style");
+        parse_text_style(data, "warning-label-style");
+    std::get<std::to_underlying(semantic_text_style::error)>(_text_styles) = parse_text_style(data, "error-label-style");
+    std::get<std::to_underlying(semantic_text_style::help)>(_text_styles) = parse_text_style(data, "help-label-style");
     std::get<std::to_underlying(semantic_text_style::placeholder)>(_text_styles) =
-        parse_text_style(font_book, data, "placeholder-label-style");
-    std::get<std::to_underlying(semantic_text_style::link)>(_text_styles) = parse_text_style(font_book, data, "link-label-style");
+        parse_text_style(data, "placeholder-label-style");
+    std::get<std::to_underlying(semantic_text_style::link)>(_text_styles) = parse_text_style(data, "link-label-style");
 
     _margin = narrow_cast<float>(parse_int(data, "margin"));
     _border_width = narrow_cast<float>(parse_int(data, "border-width"));
@@ -374,7 +374,7 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     _label_icon_size = narrow_cast<float>(parse_int(data, "label-icon-size"));
 
     _baseline_adjustment =
-        std::ceil(std::get<std::to_underlying(semantic_text_style::label)>(_text_styles)->cap_height(font_book));
+        std::ceil(std::get<std::to_underlying(semantic_text_style::label)>(_text_styles)->cap_height());
 }
 
 } // namespace hi::inline v1

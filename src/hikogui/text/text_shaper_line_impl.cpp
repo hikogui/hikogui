@@ -50,7 +50,7 @@ static void advance_glyphs_run(
     hi_axiom(first != last);
 
     hilet char_it = *first;
-    hilet& font = char_it->glyph.font();
+    hilet& font = *char_it->glyphs.font;
     hilet script = char_it->script;
     hilet language = iso_639{};
 
@@ -61,16 +61,15 @@ static void advance_glyphs_run(
     }
 
     auto result = font.shape_run(language, script, run);
-    result.scale(char_it->scale);
-    hi_axiom(result.grapheme_advances.size() == run.size());
+    result.scale_and_offset(char_it->scale);
+    hi_axiom(result.advances.size() == run.size());
     hi_axiom(result.glyph_count.size() == run.size());
 
     auto grapheme_index = 0_uz;
-    auto glyph_index = 0_uz;
     for (auto it = first; it != last; ++it, ++grapheme_index) {
         (*it)->position = p;
 
-        p += vector2{result.grapheme_advances[grapheme_index], 0.0f};
+        p += vector2{result.advances[grapheme_index], 0.0f};
     }
 }
 
@@ -89,7 +88,7 @@ static void advance_glyphs(text_shaper_line::column_vector& columns, float y) no
         hilet start_char_it = *run_start;
         hilet char_it = *it;
 
-        hilet same_font = &start_char_it->glyph.font() == &char_it->glyph.font();
+        hilet same_font = start_char_it->glyphs.font == char_it->glyphs.font;
         hilet same_style = start_char_it->style == char_it->style;
         hilet same_size = start_char_it->scale == char_it->scale;
         hilet same_language = true;
