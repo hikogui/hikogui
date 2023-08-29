@@ -8,9 +8,11 @@
 #include "gfx_surface_vulkan.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.GUI : gfx_system_vulkan_impl);
+
 namespace hi::inline v1 {
 
-[[nodiscard]] std::unique_ptr<gfx_surface> gfx_system_vulkan::make_surface(os_handle instance, void *os_window) const noexcept
+[[nodiscard]] inline std::unique_ptr<gfx_surface> gfx_system_vulkan::make_surface(os_handle instance, void *os_window) const noexcept
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 

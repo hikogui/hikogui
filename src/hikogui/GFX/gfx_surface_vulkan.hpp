@@ -5,30 +5,22 @@
 #pragma once
 
 #include "gfx_surface.hpp"
+#include "gfx_surface_delegate_vulkan.hpp"
+#include "gfx_device.hpp"
 #include "gfx_queue_vulkan.hpp"
+#include "pipeline_image.hpp"
+#include "pipeline_box.hpp"
+#include "pipeline_SDF.hpp"
+#include "pipeline_alpha.hpp"
+#include "pipeline_tone_mapper.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <optional>
 
+hi_export_module(hikogui.GUI : gfx_surface_vulkan);
+
 namespace hi::inline v1 {
-class gfx_surface_delegate_vulkan;
-class gfx_device_vulkan;
-namespace pipeline_image {
-class pipeline_image;
-}
-namespace pipeline_box {
-class pipeline_box;
-}
-namespace pipeline_SDF {
-class pipeline_SDF;
-}
-namespace pipeline_alpha {
-class pipeline_alpha;
-}
-namespace pipeline_tone_mapper {
-class pipeline_tone_mapper;
-}
 
 struct swapchain_image_info {
     vk::Image image;
@@ -79,8 +71,16 @@ public:
     std::unique_ptr<pipeline_alpha::pipeline_alpha> alpha_pipeline;
     std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> tone_mapper_pipeline;
 
-    gfx_surface_vulkan(gfx_system& system, vk::SurfaceKHR surface);
-    ~gfx_surface_vulkan();
+    gfx_surface_vulkan(gfx_system& system, vk::SurfaceKHR surface) : gfx_surface(system), intrinsic(surface) {}
+    
+    ~gfx_surface_vulkan(){
+    if (state != gfx_surface_state::no_window) {
+        hilet lock = std::scoped_lock(gfx_system_mutex);
+        loss = gfx_surface_loss::window_lost;
+        teardown();
+        hi_assert(state == gfx_surface_state::no_window);
+    }
+}
 
     gfx_surface_vulkan(const gfx_surface_vulkan&) = delete;
     gfx_surface_vulkan& operator=(const gfx_surface_vulkan&) = delete;

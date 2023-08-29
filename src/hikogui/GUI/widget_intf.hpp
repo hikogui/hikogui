@@ -7,8 +7,8 @@
 #include "widget_id.hpp"
 #include "keyboard_focus_group.hpp"
 #include "../layout/module.hpp"
-#include "../GFX/module.hpp"
-#include "../telemetry/module.hpp"
+#include "../GFX/GFX.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
 namespace hi { inline namespace v1 {

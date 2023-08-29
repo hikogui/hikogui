@@ -9,7 +9,7 @@
 #include "gui_system_delegate.hpp"
 #include "widget_intf.hpp"
 #include "../unicode/unicode.hpp"
-#include "../GFX/module.hpp"
+#include "../GFX/GFX.hpp"
 #include "../utility/utility.hpp"
 #include "../observer/module.hpp"
 #include "../macros.hpp"

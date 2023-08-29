@@ -6,8 +6,8 @@
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
-#include "../GFX/module.hpp"
-#include "../telemetry/module.hpp"
+#include "../GFX/GFX.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <chrono>

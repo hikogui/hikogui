@@ -4,7 +4,7 @@
 
 #include "true_type_font.hpp"
 #include "../geometry/module.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../parser/parser.hpp"
 #include <cstddef>

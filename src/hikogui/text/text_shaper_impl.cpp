@@ -5,7 +5,7 @@
 #include "text_shaper.hpp"
 #include "../font/font.hpp"
 #include "../unicode/unicode.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../coroutine/module.hpp"
 #include "../macros.hpp"
 #include <numeric>

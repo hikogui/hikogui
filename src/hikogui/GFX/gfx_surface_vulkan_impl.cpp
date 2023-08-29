@@ -11,7 +11,7 @@
 #include "pipeline_SDF.hpp"
 #include "pipeline_alpha.hpp"
 #include "pipeline_tone_mapper.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <vector>
@@ -20,17 +20,6 @@
 
 namespace hi::inline v1 {
 
-gfx_surface_vulkan::gfx_surface_vulkan(gfx_system& system, vk::SurfaceKHR surface) : gfx_surface(system), intrinsic(surface) {}
-
-gfx_surface_vulkan::~gfx_surface_vulkan()
-{
-    if (state != gfx_surface_state::no_window) {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
-        loss = gfx_surface_loss::window_lost;
-        teardown();
-        hi_assert(state == gfx_surface_state::no_window);
-    }
-}
 
 void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
 {

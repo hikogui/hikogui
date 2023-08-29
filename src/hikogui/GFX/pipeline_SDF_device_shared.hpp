@@ -9,7 +9,7 @@
 #include "pipeline_SDF_specialization_constants.hpp"
 #include "../font/font.hpp"
 #include "../utility/utility.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../container/module.hpp"
 #include "../geometry/module.hpp"
 #include "../color/module.hpp"

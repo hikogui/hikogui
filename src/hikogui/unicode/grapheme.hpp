@@ -6,7 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "../i18n/i18n.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "unicode_normalization.hpp"
 #include "ucd_general_categories.hpp"

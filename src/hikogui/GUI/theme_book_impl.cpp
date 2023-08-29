@@ -5,7 +5,7 @@
 #include "theme_book.hpp"
 #include "../path/path.hpp"
 #include "../utility/utility.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1 {

@@ -11,7 +11,7 @@
 #include "../utility/utility.hpp"
 #include "../settings/settings.hpp"
 #include "../unicode/unicode.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>

@@ -7,7 +7,7 @@
 #include "../font/font.hpp"
 #include "../codec/codec.hpp"
 #include "../color/module.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <algorithm>
 

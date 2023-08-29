@@ -7,8 +7,8 @@
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
 #include "../settings/settings.hpp"
-#include "../GFX/module.hpp"
-#include "../telemetry/module.hpp"
+#include "../GFX/GFX.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1 {

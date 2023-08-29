@@ -9,7 +9,7 @@
 
 #include "../utility/utility.hpp"
 #include "../console/console.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <exception>
 #include <stdexcept>

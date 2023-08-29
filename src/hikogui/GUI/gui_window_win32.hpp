@@ -5,7 +5,7 @@
 #pragma once
 
 #include "gui_window.hpp"
-#include "../GFX/module.hpp"
+#include "../GFX/GFX.hpp"
 #include "../macros.hpp"
 #include <unordered_map>
 

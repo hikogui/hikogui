@@ -8,7 +8,7 @@
 
 #include "os_settings_intf.hpp"
 #include "../win32/win32.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../path/path.hpp"
 #include "../macros.hpp"

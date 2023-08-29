@@ -6,7 +6,7 @@
 
 #include "RenderDoc.hpp"
 #include "renderdoc_app.h"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <filesystem>

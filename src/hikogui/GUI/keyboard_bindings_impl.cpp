@@ -5,7 +5,7 @@
 #include "keyboard_bindings.hpp"
 #include "gui_event_type.hpp"
 #include "../codec/codec.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1 {

@@ -5,10 +5,10 @@
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
-#include "../GFX/module.hpp"
+#include "../GFX/GFX.hpp"
 #include "../font/font.hpp"
 #include "../path/path.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../settings/settings.hpp"
 #include "../macros.hpp"
 #include <memory>

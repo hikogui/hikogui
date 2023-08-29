@@ -5,6 +5,9 @@
 #pragma once
 
 #include "../macros.hpp"
+
+hi_export_module(hikogui.GUI : gfx_surface_state);
+
 namespace hi::inline v1 {
 
 enum class gfx_surface_state {

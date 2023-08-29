@@ -8,11 +8,11 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
-
+hi_export_module(hikogui.GUI : gfx_surface_impl);
 
 namespace hi::inline v1 {
 
-void gfx_surface::set_device(gfx_device *new_device) noexcept
+inline void gfx_surface::set_device(gfx_device *new_device) noexcept
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
