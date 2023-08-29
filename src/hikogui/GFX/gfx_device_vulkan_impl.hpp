@@ -22,7 +22,7 @@ namespace hi::inline v1 {
 #define QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT (QUEUE_CAPABILITY_GRAPHICS | QUEUE_CAPABILITY_PRESENT)
 #define QUEUE_CAPABILITY_ALL (QUEUE_CAPABILITY_GRAPHICS | QUEUE_CAPABILITY_COMPUTE | QUEUE_CAPABILITY_PRESENT)
 
-static bool hasRequiredExtensions(const vk::PhysicalDevice& physicalDevice, const std::vector<const char *>& requiredExtensions)
+inline bool hasRequiredExtensions(const vk::PhysicalDevice& physicalDevice, const std::vector<const char *>& requiredExtensions)
 {
     auto availableExtensions = std::unordered_set<std::string>();
     for (auto availableExtensionProperties : physicalDevice.enumerateDeviceExtensionProperties()) {
@@ -37,12 +37,12 @@ static bool hasRequiredExtensions(const vk::PhysicalDevice& physicalDevice, cons
     return true;
 }
 
-static bool meetsRequiredLimits(const vk::PhysicalDevice& physicalDevice, const vk::PhysicalDeviceLimits& requiredLimits)
+inline bool meetsRequiredLimits(const vk::PhysicalDevice& physicalDevice, const vk::PhysicalDeviceLimits& requiredLimits)
 {
     return true;
 }
 
-static bool hasRequiredFeatures(const vk::PhysicalDevice& physicalDevice, const vk::PhysicalDeviceFeatures& requiredFeatures)
+inline bool hasRequiredFeatures(const vk::PhysicalDevice& physicalDevice, const vk::PhysicalDeviceFeatures& requiredFeatures)
 {
     hilet availableFeatures = physicalDevice.getFeatures();
     auto meetsRequirements = true;
@@ -154,7 +154,7 @@ static bool hasRequiredFeatures(const vk::PhysicalDevice& physicalDevice, const 
     return meetsRequirements;
 }
 
-gfx_device_vulkan::gfx_device_vulkan(gfx_system& system, vk::PhysicalDevice physicalDevice) :
+inline gfx_device_vulkan::gfx_device_vulkan(gfx_system& system, vk::PhysicalDevice physicalDevice) :
     gfx_device(system), physicalIntrinsic(std::move(physicalDevice))
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(
@@ -180,7 +180,7 @@ gfx_device_vulkan::gfx_device_vulkan(gfx_system& system, vk::PhysicalDevice phys
     initialize_device();
 }
 
-gfx_device_vulkan::~gfx_device_vulkan()
+inline gfx_device_vulkan::~gfx_device_vulkan()
 {
     try {
         hilet lock = std::scoped_lock(gfx_system_mutex);
@@ -213,7 +213,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
 
 /** Get a graphics queue.
  */
-[[nodiscard]] gfx_queue_vulkan const& gfx_device_vulkan::get_graphics_queue() const noexcept
+[[nodiscard]] inline gfx_queue_vulkan const& gfx_device_vulkan::get_graphics_queue() const noexcept
 {
     for (auto& queue : _queues) {
         if (queue.flags & vk::QueueFlagBits::eGraphics) {
@@ -223,7 +223,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
     hi_no_default();
 }
 
-[[nodiscard]] gfx_queue_vulkan const& gfx_device_vulkan::get_graphics_queue(gfx_surface const& surface) const noexcept
+[[nodiscard]] inline gfx_queue_vulkan const& gfx_device_vulkan::get_graphics_queue(gfx_surface const& surface) const noexcept
 {
     hilet& surface_ = down_cast<gfx_surface_vulkan const&>(surface).intrinsic;
 
@@ -244,7 +244,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
     return *graphics_queue;
 }
 
-[[nodiscard]] gfx_queue_vulkan const& gfx_device_vulkan::get_present_queue(gfx_surface const& surface) const noexcept
+[[nodiscard]] inline gfx_queue_vulkan const& gfx_device_vulkan::get_present_queue(gfx_surface const& surface) const noexcept
 {
     hilet& surface_ = down_cast<gfx_surface_vulkan const&>(surface).intrinsic;
 
@@ -265,7 +265,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
     return *present_queue;
 }
 
-[[nodiscard]] vk::SurfaceFormatKHR gfx_device_vulkan::get_surface_format(gfx_surface const& surface, int *score) const noexcept
+[[nodiscard]] inline vk::SurfaceFormatKHR gfx_device_vulkan::get_surface_format(gfx_surface const& surface, int *score) const noexcept
 {
     hilet& surface_ = down_cast<gfx_surface_vulkan const&>(surface).intrinsic;
 
@@ -352,7 +352,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
     return best_surface_format;
 }
 
-[[nodiscard]] vk::PresentModeKHR gfx_device_vulkan::get_present_mode(gfx_surface const& surface, int *score) const noexcept
+[[nodiscard]] inline vk::PresentModeKHR gfx_device_vulkan::get_present_mode(gfx_surface const& surface, int *score) const noexcept
 {
     hilet& surface_ = down_cast<gfx_surface_vulkan const&>(surface).intrinsic;
 
@@ -394,7 +394,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
     return best_present_mode;
 }
 
-int gfx_device_vulkan::score(gfx_surface const& surface) const
+inline int gfx_device_vulkan::score(gfx_surface const& surface) const
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     hilet& surface_ = down_cast<gfx_surface_vulkan const&>(surface).intrinsic;
@@ -499,7 +499,7 @@ int gfx_device_vulkan::score(gfx_surface const& surface) const
     return total_score;
 }
 
-std::vector<vk::DeviceQueueCreateInfo> gfx_device_vulkan::make_device_queue_create_infos() const noexcept
+inline std::vector<vk::DeviceQueueCreateInfo> gfx_device_vulkan::make_device_queue_create_infos() const noexcept
 {
     hilet default_queue_priority = std::array{1.0f};
     uint32_t queue_family_index = 0;
@@ -513,7 +513,7 @@ std::vector<vk::DeviceQueueCreateInfo> gfx_device_vulkan::make_device_queue_crea
     return r;
 }
 
-void gfx_device_vulkan::initialize_queues(std::vector<vk::DeviceQueueCreateInfo> const& device_queue_create_infos) noexcept
+inline void gfx_device_vulkan::initialize_queues(std::vector<vk::DeviceQueueCreateInfo> const& device_queue_create_infos) noexcept
 {
     hilet queue_family_properties = physicalIntrinsic.getQueueFamilyProperties();
 
@@ -533,7 +533,7 @@ void gfx_device_vulkan::initialize_queues(std::vector<vk::DeviceQueueCreateInfo>
     }
 }
 
-void gfx_device_vulkan::initialize_device()
+inline void gfx_device_vulkan::initialize_device()
 {
     hilet device_queue_create_infos = make_device_queue_create_infos();
 
@@ -591,7 +591,7 @@ void gfx_device_vulkan::initialize_device()
     tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::device_shared>(*this);
 }
 
-void gfx_device_vulkan::initialize_quad_index_buffer()
+inline void gfx_device_vulkan::initialize_quad_index_buffer()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -693,13 +693,13 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
     }
 }
 
-void gfx_device_vulkan::destroy_quad_index_buffer()
+inline void gfx_device_vulkan::destroy_quad_index_buffer()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     destroyBuffer(quadIndexBuffer, quadIndexBufferAllocation);
 }
 
-std::pair<vk::Buffer, VmaAllocation> gfx_device_vulkan::createBuffer(
+inline std::pair<vk::Buffer, VmaAllocation> gfx_device_vulkan::createBuffer(
     const vk::BufferCreateInfo& bufferCreateInfo,
     const VmaAllocationCreateInfo& allocationCreateInfo) const
 {
@@ -719,14 +719,14 @@ std::pair<vk::Buffer, VmaAllocation> gfx_device_vulkan::createBuffer(
     return {buffer, allocation};
 }
 
-void gfx_device_vulkan::destroyBuffer(const vk::Buffer& buffer, const VmaAllocation& allocation) const
+inline void gfx_device_vulkan::destroyBuffer(const vk::Buffer& buffer, const VmaAllocation& allocation) const
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
     vmaDestroyBuffer(allocator, buffer, allocation);
 }
 
-std::pair<vk::Image, VmaAllocation> gfx_device_vulkan::createImage(
+inline std::pair<vk::Image, VmaAllocation> gfx_device_vulkan::createImage(
     const vk::ImageCreateInfo& imageCreateInfo,
     const VmaAllocationCreateInfo& allocationCreateInfo) const
 {
@@ -745,21 +745,21 @@ std::pair<vk::Image, VmaAllocation> gfx_device_vulkan::createImage(
     return {image, allocation};
 }
 
-void gfx_device_vulkan::destroyImage(const vk::Image& image, const VmaAllocation& allocation) const
+inline void gfx_device_vulkan::destroyImage(const vk::Image& image, const VmaAllocation& allocation) const
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
     vmaDestroyImage(allocator, image, allocation);
 }
 
-void gfx_device_vulkan::unmapMemory(const VmaAllocation& allocation) const
+inline void gfx_device_vulkan::unmapMemory(const VmaAllocation& allocation) const
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
     vmaUnmapMemory(allocator, allocation);
 }
 
-vk::CommandBuffer gfx_device_vulkan::beginSingleTimeCommands() const
+inline vk::CommandBuffer gfx_device_vulkan::beginSingleTimeCommands() const
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -771,7 +771,7 @@ vk::CommandBuffer gfx_device_vulkan::beginSingleTimeCommands() const
     return commandBuffer;
 }
 
-void gfx_device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
+inline void gfx_device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -796,7 +796,7 @@ void gfx_device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) c
     intrinsic.freeCommandBuffers(queue.command_pool, commandBuffers);
 }
 
-static std::pair<vk::AccessFlags, vk::PipelineStageFlags> access_and_stage_from_layout(vk::ImageLayout layout) noexcept
+inline std::pair<vk::AccessFlags, vk::PipelineStageFlags> access_and_stage_from_layout(vk::ImageLayout layout) noexcept
 {
     switch (layout) {
     case vk::ImageLayout::eUndefined:
@@ -829,7 +829,7 @@ static std::pair<vk::AccessFlags, vk::PipelineStageFlags> access_and_stage_from_
     }
 }
 
-void gfx_device_vulkan::transition_layout(
+inline void gfx_device_vulkan::transition_layout(
     vk::CommandBuffer command_buffer,
     vk::Image image,
     vk::Format format,
@@ -869,7 +869,7 @@ void gfx_device_vulkan::transition_layout(
         barriers.data());
 }
 
-void gfx_device_vulkan::transition_layout(
+inline void gfx_device_vulkan::transition_layout(
     vk::Image image,
     vk::Format format,
     vk::ImageLayout src_layout,
@@ -884,7 +884,7 @@ void gfx_device_vulkan::transition_layout(
     endSingleTimeCommands(command_buffer);
 }
 
-void gfx_device_vulkan::copyImage(
+inline void gfx_device_vulkan::copyImage(
     vk::Image srcImage,
     vk::ImageLayout srcLayout,
     vk::Image dstImage,
@@ -900,7 +900,7 @@ void gfx_device_vulkan::copyImage(
     endSingleTimeCommands(commandBuffer);
 }
 
-void gfx_device_vulkan::clearColorImage(
+inline void gfx_device_vulkan::clearColorImage(
     vk::Image image,
     vk::ImageLayout layout,
     vk::ClearColorValue const& color,
@@ -915,7 +915,7 @@ void gfx_device_vulkan::clearColorImage(
     endSingleTimeCommands(commandBuffer);
 }
 
-vk::ShaderModule gfx_device_vulkan::loadShader(uint32_t const *data, std::size_t size) const
+inline vk::ShaderModule gfx_device_vulkan::loadShader(uint32_t const *data, std::size_t size) const
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -927,7 +927,7 @@ vk::ShaderModule gfx_device_vulkan::loadShader(uint32_t const *data, std::size_t
     return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), size, data});
 }
 
-vk::ShaderModule gfx_device_vulkan::loadShader(std::span<std::byte const> shaderObjectBytes) const
+inline vk::ShaderModule gfx_device_vulkan::loadShader(std::span<std::byte const> shaderObjectBytes) const
 {
     // no lock, only local variable.
 
@@ -939,14 +939,14 @@ vk::ShaderModule gfx_device_vulkan::loadShader(std::span<std::byte const> shader
     return loadShader(shaderObjectBytes32, shaderObjectBytes.size());
 }
 
-vk::ShaderModule gfx_device_vulkan::loadShader(std::filesystem::path const& path) const
+inline vk::ShaderModule gfx_device_vulkan::loadShader(std::filesystem::path const& path) const
 {
     // no lock, only local variable.
 
     return loadShader(as_span<std::byte const>(file_view{path}));
 }
 
-void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const
+inline void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const
 {
 #ifndef NDEBUG
     hi_axiom(gfx_system_mutex.recurse_lock_count());
@@ -954,21 +954,21 @@ void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoE
 #endif
 }
 
-void gfx_device_vulkan::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const& create_info) const
+inline void gfx_device_vulkan::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const& create_info) const
 {
 #ifndef NDEBUG
     buffer.beginDebugUtilsLabelEXT(create_info, down_cast<gfx_system_vulkan&>(system).loader());
 #endif
 }
 
-void gfx_device_vulkan::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
+inline void gfx_device_vulkan::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
 {
 #ifndef NDEBUG
     buffer.endDebugUtilsLabelEXT(down_cast<gfx_system_vulkan&>(system).loader());
 #endif
 }
 
-void gfx_device_vulkan::log_memory_usage() const noexcept
+inline void gfx_device_vulkan::log_memory_usage() const noexcept
 {
     hi_log_info("Memory usage for gfx device {}:", string());
 

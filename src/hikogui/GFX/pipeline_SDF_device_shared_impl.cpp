@@ -4,7 +4,7 @@
 
 #include "pipeline_SDF.hpp"
 #include "pipeline_SDF_device_shared.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "gfx_system.hpp"
 #include "../path/path.hpp"
 #include "../geometry/module.hpp"

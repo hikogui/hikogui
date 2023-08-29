@@ -4,6 +4,7 @@
 #include "draw_context.hpp" // export
 #include "gfx_device.hpp" // export
 #include "gfx_device_vulkan.hpp" // export
+#include "gfx_device_vulkan_impl.hpp" // export
 #include "gfx_queue_vulkan.hpp" // export
 #include "gfx_surface.hpp" // export
 #include "gfx_surface_delegate.hpp" // export

@@ -13,8 +13,6 @@
 #include <mutex>
 #include <tuple>
 
-
-
 namespace hi::inline v1 {
 class gfx_system;
 
@@ -22,22 +20,26 @@ class gfx_system;
  */
 class gfx_device {
 public:
-    gfx_system &system;
+    gfx_system& system;
 
     std::string deviceName = "<no device>";
     uint32_t vendorID = 0;
     uint32_t deviceID = 0;
     uuid deviceUUID = {};
 
-    std::string string() const noexcept;
+    virtual ~gfx_device() = default;
+    gfx_device(const gfx_device&) = delete;
+    gfx_device& operator=(const gfx_device&) = delete;
+    gfx_device(gfx_device&&) = delete;
+    gfx_device& operator=(gfx_device&&) = delete;
+    gfx_device(gfx_system& system) noexcept : system(system) {}
 
-    gfx_device(gfx_system &system) noexcept;
-    virtual ~gfx_device();
+    std::string string() const noexcept
+    {
+        hilet lock = std::scoped_lock(gfx_system_mutex);
 
-    gfx_device(const gfx_device &) = delete;
-    gfx_device &operator=(const gfx_device &) = delete;
-    gfx_device(gfx_device &&) = delete;
-    gfx_device &operator=(gfx_device &&) = delete;
+        return std::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.uuid_string());
+    }
 
     /*! Check if this device is a good match for this window.
      *
@@ -46,7 +48,7 @@ public:
      *
      * \returns -1 When not viable, 0 when not presentable, positive values for increasing score.
      */
-    virtual int score(gfx_surface const &surface) const = 0;
+    virtual int score(gfx_surface const& surface) const = 0;
 
     virtual void log_memory_usage() const noexcept {}
 };

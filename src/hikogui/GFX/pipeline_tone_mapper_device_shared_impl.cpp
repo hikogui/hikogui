@@ -4,7 +4,7 @@
 
 #include "pipeline_tone_mapper.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "../path/path.hpp"
 #include "../image/module.hpp"
 #include "../macros.hpp"

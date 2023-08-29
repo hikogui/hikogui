@@ -5,7 +5,7 @@
 #include "gfx_surface_vulkan.hpp"
 #include "gfx_surface_delegate_vulkan.hpp"
 #include "gfx_system_vulkan.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "pipeline_box.hpp"
 #include "pipeline_image.hpp"
 #include "pipeline_SDF.hpp"

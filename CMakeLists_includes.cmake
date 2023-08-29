@@ -216,6 +216,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/formula/formula.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/draw_context.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_queue_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface.hpp

@@ -5,7 +5,7 @@
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "paged_image.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "../path/path.hpp"
 #include "../image/module.hpp"
 #include "../utility/utility.hpp"
