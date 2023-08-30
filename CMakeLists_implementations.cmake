@@ -1,13 +1,6 @@
 
 target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/GFX/draw_context_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_vulkan_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan_impl.cpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan_win32_impl.cpp>
     ${HIKOGUI_SOURCE_DIR}/GFX/paged_image_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha_device_shared_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha_impl.cpp

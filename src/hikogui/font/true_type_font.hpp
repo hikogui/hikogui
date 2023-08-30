@@ -20,7 +20,7 @@
 #include "font_char_map.hpp"
 #include "../file/file_view.hpp"
 #include "../graphic_path/graphic_path.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include <memory>
 #include <filesystem>

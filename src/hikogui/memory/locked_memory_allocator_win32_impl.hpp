@@ -7,7 +7,7 @@
 #include "../win32_headers.hpp"
 
 #include "locked_memory_allocator_intf.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 

@@ -5,13 +5,13 @@
 #include "gfx_surface_vulkan.hpp"
 #include "gfx_surface_delegate_vulkan.hpp"
 #include "gfx_system_vulkan.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "pipeline_box.hpp"
 #include "pipeline_image.hpp"
 #include "pipeline_SDF.hpp"
 #include "pipeline_alpha.hpp"
 #include "pipeline_tone_mapper.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <vector>
@@ -20,55 +20,33 @@
 
 namespace hi::inline v1 {
 
-gfx_surface_vulkan::gfx_surface_vulkan(gfx_system& system, vk::SurfaceKHR surface) : gfx_surface(system), intrinsic(surface) {}
 
-gfx_surface_vulkan::~gfx_surface_vulkan()
-{
-    if (state != gfx_surface_state::no_window) {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
-        loss = gfx_surface_loss::window_lost;
-        teardown();
-        hi_assert(state == gfx_surface_state::no_window);
-    }
-}
-
-void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
+inline void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
 {
     hi_assert_not_null(device);
 
     hilet lock = std::scoped_lock(gfx_system_mutex);
     super::set_device(device);
 
-    auto &device_ = down_cast<gfx_device_vulkan &>(*device);
-
-    _present_queue = &device_.get_present_queue(*this);
-    _graphics_queue = &device_.get_graphics_queue(*this);
+    _present_queue = &device->get_present_queue(intrinsic);
+    _graphics_queue = &device->get_graphics_queue(intrinsic);
 }
 
-gfx_device_vulkan& gfx_surface_vulkan::vulkan_device() const noexcept
-{
-    hi_axiom(gfx_system_mutex.recurse_lock_count());
-    hi_assert_not_null(_device);
-    return down_cast<gfx_device_vulkan&>(*_device);
-}
-
-void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
+inline void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
     hi_assert_not_null(delegate);
     auto& delegate_info =
-        _delegates.emplace_back(down_cast<gfx_surface_delegate_vulkan *>(delegate), vulkan_device().createSemaphore());
+        _delegates.emplace_back(down_cast<gfx_surface_delegate_vulkan *>(delegate), _device->createSemaphore());
 
     if (state >= gfx_surface_state::has_device) {
-        auto& vulkan_device_ = vulkan_device();
-        auto& vulkan_system = down_cast<gfx_system_vulkan&>(vulkan_device_.system);
-        auto& graphics_queue = vulkan_device_.get_graphics_queue(*this);
+        auto& graphics_queue = _device->get_graphics_queue(intrinsic);
 
         delegate_info.delegate->build_for_new_device(
-            vulkan_device_.allocator,
-            vulkan_system.intrinsic,
-            vulkan_device_.intrinsic,
+            _device->allocator,
+            vulkan_instance(),
+            _device->intrinsic,
             graphics_queue.queue,
             graphics_queue.family_queue_index);
     }
@@ -83,7 +61,7 @@ void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
     }
 }
 
-void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcept
+inline void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcept
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -99,41 +77,41 @@ void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcep
         it->delegate->teardown_for_device_lost();
     }
 
-    vulkan_device().destroy(it->semaphore);
+    _device->destroy(it->semaphore);
 
     _delegates.erase(it);
 }
 
-void gfx_surface_vulkan::init()
+inline void gfx_surface_vulkan::init()
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
     gfx_surface::init();
-    box_pipeline = std::make_unique<pipeline_box::pipeline_box>(*this);
-    image_pipeline = std::make_unique<pipeline_image::pipeline_image>(*this);
-    SDF_pipeline = std::make_unique<pipeline_SDF::pipeline_SDF>(*this);
-    alpha_pipeline = std::make_unique<pipeline_alpha::pipeline_alpha>(*this);
-    tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(*this);
+    box_pipeline = std::make_unique<pipeline_box::pipeline_box>(this);
+    image_pipeline = std::make_unique<pipeline_image::pipeline_image>(this);
+    SDF_pipeline = std::make_unique<pipeline_SDF::pipeline_SDF>(this);
+    alpha_pipeline = std::make_unique<pipeline_alpha::pipeline_alpha>(this);
+    tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(this);
 }
 
-[[nodiscard]] extent2 gfx_surface_vulkan::size() const noexcept
+[[nodiscard]] inline extent2 gfx_surface_vulkan::size() const noexcept
 {
     return {narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)};
 }
 
-void gfx_surface_vulkan::wait_idle()
+inline void gfx_surface_vulkan::wait_idle()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
     hi_assert(_device);
     if (renderFinishedFence) {
-        vulkan_device().waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        _device->waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
     }
-    vulkan_device().waitIdle();
+    _device->waitIdle();
     hi_log_info("/waitIdle");
 }
 
-std::optional<uint32_t> gfx_surface_vulkan::acquire_next_image_from_swapchain()
+inline std::optional<uint32_t> gfx_surface_vulkan::acquire_next_image_from_swapchain()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -141,7 +119,7 @@ std::optional<uint32_t> gfx_surface_vulkan::acquire_next_image_from_swapchain()
     uint32_t frameBufferIndex = 0;
     // hi_log_debug("acquireNextImage '{}'", title);
 
-    hilet result = vulkan_device().acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
+    hilet result = _device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
     // hi_log_debug("acquireNextImage {}", frameBufferIndex);
 
     switch (result) {
@@ -184,7 +162,7 @@ std::optional<uint32_t> gfx_surface_vulkan::acquire_next_image_from_swapchain()
     }
 }
 
-void gfx_surface_vulkan::present_image_to_queue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
+inline void gfx_surface_vulkan::present_image_to_queue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -229,10 +207,9 @@ void gfx_surface_vulkan::present_image_to_queue(uint32_t frameBufferIndex, vk::S
     }
 }
 
-gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
+inline gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
 {
-    auto& vulkan_device_ = vulkan_device();
-    if (vulkan_device_.score(*this) <= 0) {
+    if (_device->score(intrinsic) <= 0) {
         return gfx_surface_loss::device_lost;
     }
 
@@ -242,15 +219,14 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
     alpha_pipeline->build_for_new_device();
     tone_mapper_pipeline->build_for_new_device();
 
-    auto& vulkan_system = down_cast<gfx_system_vulkan&>(vulkan_device_.system);
-    auto& graphics_queue = vulkan_device_.get_graphics_queue(*this);
+    auto& graphics_queue = _device->get_graphics_queue(intrinsic);
     for (auto [delegate, semaphore] : _delegates) {
         hi_assert_not_null(delegate);
 
         delegate->build_for_new_device(
-            vulkan_device_.allocator,
-            vulkan_system.intrinsic,
-            vulkan_device_.intrinsic,
+            _device->allocator,
+            vulkan_instance(),
+            _device->intrinsic,
             graphics_queue.queue,
             graphics_queue.family_queue_index);
     }
@@ -258,7 +234,7 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
     return gfx_surface_loss::none;
 }
 
-gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2 new_size) noexcept
+inline gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2 new_size) noexcept
 {
     try {
         hilet[clamped_count, clamped_size] = get_image_count_and_size(defaultNumberOfSwapchainImages, new_size);
@@ -314,7 +290,7 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2 new_size) n
     }
 }
 
-void gfx_surface_vulkan::build(extent2 new_size) noexcept
+inline void gfx_surface_vulkan::build(extent2 new_size) noexcept
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     hi_assert(loss == gfx_surface_loss::none);
@@ -341,7 +317,7 @@ void gfx_surface_vulkan::build(extent2 new_size) noexcept
     }
 }
 
-void gfx_surface_vulkan::teardown_for_swapchain_lost() noexcept
+inline void gfx_surface_vulkan::teardown_for_swapchain_lost() noexcept
 {
     hi_log_info("Tearing down because the window lost the swapchain.");
     wait_idle();
@@ -363,7 +339,7 @@ void gfx_surface_vulkan::teardown_for_swapchain_lost() noexcept
     teardown_swapchain();
 }
 
-void gfx_surface_vulkan::teardown_for_device_lost() noexcept
+inline void gfx_surface_vulkan::teardown_for_device_lost() noexcept
 {
     hi_log_info("Tearing down because the window lost the vulkan device.");
     for (auto [delegate, semaphore] : _delegates) {
@@ -378,12 +354,12 @@ void gfx_surface_vulkan::teardown_for_device_lost() noexcept
     _device = nullptr;
 }
 
-void gfx_surface_vulkan::teardown_for_window_lost() noexcept
+inline void gfx_surface_vulkan::teardown_for_window_lost() noexcept
 {
-    down_cast<gfx_system_vulkan&>(system).destroySurfaceKHR(intrinsic);
+    gfx_system::global().destroySurfaceKHR(intrinsic);
 }
 
-void gfx_surface_vulkan::teardown() noexcept
+inline void gfx_surface_vulkan::teardown() noexcept
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -405,7 +381,7 @@ void gfx_surface_vulkan::teardown() noexcept
     loss = gfx_surface_loss::none;
 }
 
-void gfx_surface_vulkan::update(extent2 new_size) noexcept
+inline void gfx_surface_vulkan::update(extent2 new_size) noexcept
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -419,7 +395,7 @@ void gfx_surface_vulkan::update(extent2 new_size) noexcept
     build(new_size);
 }
 
-draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
+inline draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
 {
     // Extent the redraw_rectangle to the render-area-granularity to improve performance on tile based GPUs.
     redraw_rectangle = ceil(redraw_rectangle, _render_area_granularity);
@@ -427,7 +403,7 @@ draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
     auto r = draw_context{
-        *down_cast<gfx_device_vulkan *>(_device),
+        *_device,
         box_pipeline->vertexBufferData,
         image_pipeline->vertexBufferData,
         SDF_pipeline->vertexBufferData,
@@ -460,15 +436,15 @@ draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
         });
 
     // Wait until previous rendering has finished, before the next rendering.
-    vulkan_device().waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    _device->waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
-    vulkan_device().resetFences({renderFinishedFence});
+    _device->resetFences({renderFinishedFence});
 
     return r;
 }
 
-void gfx_surface_vulkan::render_finish(draw_context const& context)
+inline void gfx_surface_vulkan::render_finish(draw_context const& context)
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -478,7 +454,7 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     // Because of reuse the swapchain image must already be in the "ePresentSrcKHR" layout.
     // The swapchain creates images in undefined layout, so we need to change the layout once.
     if (not current_image.layout_is_present) {
-        vulkan_device().transition_layout(
+        _device->transition_layout(
             current_image.image, swapchainImageFormat.format, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR);
 
         current_image.layout_is_present = true;
@@ -520,7 +496,7 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     teardown();
 }
 
-void gfx_surface_vulkan::fill_command_buffer(
+inline void gfx_surface_vulkan::fill_command_buffer(
     swapchain_image_info const& current_image,
     draw_context const& context,
     vk::Rect2D render_area)
@@ -566,7 +542,7 @@ void gfx_surface_vulkan::fill_command_buffer(
     commandBuffer.end();
 }
 
-void gfx_surface_vulkan::submit_command_buffer(vk::Semaphore delegate_semaphore)
+inline void gfx_surface_vulkan::submit_command_buffer(vk::Semaphore delegate_semaphore)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -591,11 +567,11 @@ void gfx_surface_vulkan::submit_command_buffer(vk::Semaphore delegate_semaphore)
     _graphics_queue->queue.submit(submitInfo, vk::Fence());
 }
 
-std::tuple<std::size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(std::size_t new_count, extent2 new_size)
+inline std::tuple<std::size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(std::size_t new_count, extent2 new_size)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    hilet surfaceCapabilities = vulkan_device().getSurfaceCapabilitiesKHR(intrinsic);
+    hilet surfaceCapabilities = _device->getSurfaceCapabilitiesKHR(intrinsic);
 
     hilet min_count = narrow_cast<std::size_t>(surfaceCapabilities.minImageCount);
     hilet max_count = narrow_cast<std::size_t>(surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 3);
@@ -616,7 +592,7 @@ std::tuple<std::size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(st
     return {clamped_count, clamped_size};
 }
 
-gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, extent2 new_size)
+inline gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, extent2 new_size)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -627,7 +603,7 @@ gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, exte
     std::array<uint32_t, 2> const sharingQueueFamilyAllIndices = {
         _graphics_queue->family_queue_index, _present_queue->family_queue_index};
 
-    swapchainImageFormat = vulkan_device().get_surface_format(*this);
+    swapchainImageFormat = _device->get_surface_format(intrinsic);
     nrSwapchainImages = narrow_cast<uint32_t>(new_count);
     swapchainImageExtent = VkExtent2D{round_cast<uint32_t>(new_size.width()), round_cast<uint32_t>(new_size.height())};
     vk::SwapchainCreateInfoKHR swapchainCreateInfo{
@@ -644,11 +620,11 @@ gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, exte
         sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices.data() : nullptr,
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        vulkan_device().get_present_mode(*this),
+        _device->get_present_mode(intrinsic),
         VK_TRUE, // clipped
         nullptr};
 
-    vk::Result const result = vulkan_device().createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
+    vk::Result const result = _device->createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
     switch (result) {
     case vk::Result::eSuccess:
         break;
@@ -679,7 +655,7 @@ gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, exte
         1, // arrayLayers
         vk::SampleCountFlagBits::e1,
         vk::ImageTiling::eOptimal,
-        vk::ImageUsageFlagBits::eDepthStencilAttachment | vulkan_device().transientImageUsageFlags,
+        vk::ImageUsageFlagBits::eDepthStencilAttachment | _device->transientImageUsageFlags,
         vk::SharingMode::eExclusive,
         0,
         nullptr,
@@ -688,9 +664,9 @@ gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, exte
     VmaAllocationCreateInfo depthAllocationCreateInfo = {};
     depthAllocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
     depthAllocationCreateInfo.pUserData = const_cast<char *>("vk::Image depth attachment");
-    depthAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
-    std::tie(depthImage, depthImageAllocation) = vulkan_device().createImage(depthImageCreateInfo, depthAllocationCreateInfo);
-    vulkan_device().setDebugUtilsObjectNameEXT(depthImage, "vk::Image depth attachment");
+    depthAllocationCreateInfo.usage = _device->lazyMemoryUsage;
+    std::tie(depthImage, depthImageAllocation) = _device->createImage(depthImageCreateInfo, depthAllocationCreateInfo);
+    _device->setDebugUtilsObjectNameEXT(depthImage, "vk::Image depth attachment");
 
     // Create color image matching the swapchain.
     vk::ImageCreateInfo const colorImageCreateInfo = {
@@ -703,7 +679,7 @@ gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, exte
         vk::SampleCountFlagBits::e1,
         vk::ImageTiling::eOptimal,
         vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment |
-            vulkan_device().transientImageUsageFlags,
+            _device->transientImageUsageFlags,
         vk::SharingMode::eExclusive,
         0,
         nullptr,
@@ -712,32 +688,32 @@ gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, exte
     VmaAllocationCreateInfo colorAllocationCreateInfo = {};
     colorAllocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
     colorAllocationCreateInfo.pUserData = const_cast<char *>("vk::Image color attachment");
-    colorAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
+    colorAllocationCreateInfo.usage = _device->lazyMemoryUsage;
 
     std::tie(colorImages[0], colorImageAllocations[0]) =
-        vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
-    vulkan_device().setDebugUtilsObjectNameEXT(colorImages[0], "vk::Image color attachment");
+        _device->createImage(colorImageCreateInfo, colorAllocationCreateInfo);
+    _device->setDebugUtilsObjectNameEXT(colorImages[0], "vk::Image color attachment");
 
     return gfx_surface_loss::none;
 }
 
-void gfx_surface_vulkan::teardown_swapchain()
+inline void gfx_surface_vulkan::teardown_swapchain()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    vulkan_device().destroy(swapchain);
-    vulkan_device().destroyImage(depthImage, depthImageAllocation);
+    _device->destroy(swapchain);
+    _device->destroyImage(depthImage, depthImageAllocation);
 
     for (std::size_t i = 0; i != colorImages.size(); ++i) {
-        vulkan_device().destroyImage(colorImages[i], colorImageAllocations[i]);
+        _device->destroyImage(colorImages[i], colorImageAllocations[i]);
     }
 }
 
-void gfx_surface_vulkan::build_frame_buffers()
+inline void gfx_surface_vulkan::build_frame_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    depthImageView = vulkan_device().createImageView(
+    depthImageView = _device->createImageView(
         {vk::ImageViewCreateFlags(),
          depthImage,
          vk::ImageViewType::e2D,
@@ -746,7 +722,7 @@ void gfx_surface_vulkan::build_frame_buffers()
          {vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1}});
 
     for (std::size_t i = 0; i != colorImageViews.size(); ++i) {
-        colorImageViews[i] = vulkan_device().createImageView(
+        colorImageViews[i] = _device->createImageView(
             {vk::ImageViewCreateFlags(),
              colorImages[i],
              vk::ImageViewType::e2D,
@@ -757,9 +733,9 @@ void gfx_surface_vulkan::build_frame_buffers()
         colorDescriptorImageInfos[i] = {vk::Sampler(), colorImageViews[i], vk::ImageLayout::eShaderReadOnlyOptimal};
     }
 
-    auto swapchain_images = vulkan_device().getSwapchainImagesKHR(swapchain);
+    auto swapchain_images = _device->getSwapchainImagesKHR(swapchain);
     for (auto image : swapchain_images) {
-        auto image_view = vulkan_device().createImageView(
+        auto image_view = _device->createImageView(
             {vk::ImageViewCreateFlags(),
              image,
              vk::ImageViewType::e2D,
@@ -769,7 +745,7 @@ void gfx_surface_vulkan::build_frame_buffers()
 
         hilet attachments = std::array{depthImageView, colorImageViews[0], image_view};
 
-        hilet frame_buffer = vulkan_device().createFramebuffer({
+        hilet frame_buffer = _device->createFramebuffer({
             vk::FramebufferCreateFlags(),
             renderPass,
             narrow_cast<uint32_t>(attachments.size()),
@@ -786,19 +762,19 @@ void gfx_surface_vulkan::build_frame_buffers()
     hi_assert(swapchain_image_infos.size() == swapchain_images.size());
 }
 
-void gfx_surface_vulkan::teardown_frame_buffers()
+inline void gfx_surface_vulkan::teardown_frame_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
     for (auto& info : swapchain_image_infos) {
-        vulkan_device().destroy(info.frame_buffer);
-        vulkan_device().destroy(info.image_view);
+        _device->destroy(info.frame_buffer);
+        _device->destroy(info.image_view);
     }
     swapchain_image_infos.clear();
 
-    vulkan_device().destroy(depthImageView);
+    _device->destroy(depthImageView);
     for (std::size_t i = 0; i != colorImageViews.size(); ++i) {
-        vulkan_device().destroy(colorImageViews[i]);
+        _device->destroy(colorImageViews[i]);
     }
 }
 
@@ -814,7 +790,7 @@ void gfx_surface_vulkan::teardown_frame_buffers()
  * Rendering is done on a float-16 RGBA color-attachment.
  * In the last subpass the color-attachment is translated to the swap-chain attachment.
  */
-void gfx_surface_vulkan::build_render_passes()
+inline void gfx_surface_vulkan::build_render_passes()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -981,56 +957,70 @@ void gfx_surface_vulkan::build_render_passes()
         subpass_dependency.data() // dependencies
     };
 
-    renderPass = vulkan_device().createRenderPass(render_pass_create_info);
-    hilet granularity = vulkan_device().getRenderAreaGranularity(renderPass);
+    renderPass = _device->createRenderPass(render_pass_create_info);
+    hilet granularity = _device->getRenderAreaGranularity(renderPass);
     _render_area_granularity = extent2{narrow_cast<float>(granularity.width), narrow_cast<float>(granularity.height)};
 }
 
-void gfx_surface_vulkan::teardown_render_passes()
+inline void gfx_surface_vulkan::teardown_render_passes()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    vulkan_device().destroy(renderPass);
+    _device->destroy(renderPass);
 }
 
-void gfx_surface_vulkan::build_semaphores()
+inline void gfx_surface_vulkan::build_semaphores()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    imageAvailableSemaphore = vulkan_device().createSemaphore();
-    renderFinishedSemaphore = vulkan_device().createSemaphore();
+    imageAvailableSemaphore = _device->createSemaphore();
+    renderFinishedSemaphore = _device->createSemaphore();
 
     // This fence is used to wait for the Window and its Pipelines to be idle.
     // It should therefor be signed at the start so that when no rendering has been
     // done it is still idle.
-    renderFinishedFence = vulkan_device().createFence({vk::FenceCreateFlagBits::eSignaled});
+    renderFinishedFence = _device->createFence({vk::FenceCreateFlagBits::eSignaled});
 }
 
-void gfx_surface_vulkan::teardown_semaphores()
+inline void gfx_surface_vulkan::teardown_semaphores()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    vulkan_device().destroy(renderFinishedSemaphore);
-    vulkan_device().destroy(imageAvailableSemaphore);
-    vulkan_device().destroy(renderFinishedFence);
+    _device->destroy(renderFinishedSemaphore);
+    _device->destroy(imageAvailableSemaphore);
+    _device->destroy(renderFinishedFence);
 }
 
-void gfx_surface_vulkan::build_command_buffers()
+inline void gfx_surface_vulkan::build_command_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
     hilet commandBuffers =
-        vulkan_device().allocateCommandBuffers({_graphics_queue->command_pool, vk::CommandBufferLevel::ePrimary, 1});
+        _device->allocateCommandBuffers({_graphics_queue->command_pool, vk::CommandBufferLevel::ePrimary, 1});
 
     commandBuffer = commandBuffers.at(0);
 }
 
-void gfx_surface_vulkan::teardown_command_buffers()
+inline void gfx_surface_vulkan::teardown_command_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     hilet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
-    vulkan_device().freeCommandBuffers(_graphics_queue->command_pool, commandBuffers);
+    _device->freeCommandBuffers(_graphics_queue->command_pool, commandBuffers);
+}
+
+[[nodiscard]] inline std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window) noexcept
+{
+    hilet lock = std::scoped_lock(gfx_system_mutex);
+
+    auto surface_create_info = vk::Win32SurfaceCreateInfoKHR{
+        vk::Win32SurfaceCreateFlagsKHR(), reinterpret_cast<HINSTANCE>(instance), reinterpret_cast<HWND>(os_window)};
+
+    auto vulkan_surface = vulkan_instance().createWin32SurfaceKHR(surface_create_info);
+
+    auto ptr = std::make_unique<gfx_surface_vulkan>(vulkan_surface);
+    ptr->init();
+    return ptr;
 }
 
 } // namespace hi::inline v1

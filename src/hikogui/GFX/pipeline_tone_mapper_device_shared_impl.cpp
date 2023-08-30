@@ -4,7 +4,7 @@
 
 #include "pipeline_tone_mapper.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "../path/path.hpp"
 #include "../image/module.hpp"
 #include "../macros.hpp"
@@ -12,14 +12,14 @@
 
 namespace hi::inline v1::pipeline_tone_mapper {
 
-device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
+device_shared::device_shared(gfx_device const &device) : device(device)
 {
     buildShaders();
 }
 
 device_shared::~device_shared() {}
 
-void device_shared::destroy(gfx_device_vulkan const *vulkanDevice)
+void device_shared::destroy(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 
@@ -41,7 +41,7 @@ void device_shared::buildShaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}};
 }
 
-void device_shared::teardownShaders(gfx_device_vulkan const*vulkanDevice)
+void device_shared::teardownShaders(gfx_device const*vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 

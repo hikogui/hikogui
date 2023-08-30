@@ -5,30 +5,30 @@
 #include "pipeline_tone_mapper.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
 #include "gfx_surface_vulkan.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1::pipeline_tone_mapper {
 
-pipeline_tone_mapper::pipeline_tone_mapper(gfx_surface const &surface) : pipeline_vulkan(surface) {}
-
 void pipeline_tone_mapper::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
-    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
+    pipeline::draw_in_command_buffer(commandBuffer, context);
 
-    vulkan_device().tone_mapper_pipeline->drawInCommandBuffer(commandBuffer);
+    hi_axiom_not_null(device());
+    device()->tone_mapper_pipeline->drawInCommandBuffer(commandBuffer);
 
     _push_constants.saturation = context.saturation;
     commandBuffer.pushConstants(pipelineLayout, vk::ShaderStageFlagBits::eFragment, 0, sizeof(push_constants), &_push_constants);
 
-    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "tone mapping");
+    device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "tone mapping");
     commandBuffer.draw(3, 1, 0, 0);
-    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
+    device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_tone_mapper::createShaderStages() const
 {
-    return vulkan_device().tone_mapper_pipeline->shaderStages;
+    hi_axiom_not_null(device());
+    return device()->tone_mapper_pipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescriptorSetLayoutBindings() const
@@ -44,7 +44,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescript
 
 std::vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorSet() const
 {
-    hilet &color_descriptor_image_infos = down_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos;
+    hilet &color_descriptor_image_infos = down_cast<gfx_surface_vulkan *>(surface)->colorDescriptorImageInfos;
 
     return {{
         descriptorSet,
@@ -58,7 +58,7 @@ std::vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorS
     }};
 }
 
-ssize_t pipeline_tone_mapper::getDescriptorSetVersion() const
+size_t pipeline_tone_mapper::getDescriptorSetVersion() const
 {
     return 1;
 }

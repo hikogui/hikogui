@@ -13,7 +13,7 @@
 #include "theme.hpp"
 #include "widget_intf.hpp"
 #include "../unicode/unicode.hpp"
-#include "../GFX/module.hpp"
+#include "../GFX/GFX.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
 #include "../l10n/l10n.hpp"

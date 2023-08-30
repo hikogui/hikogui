@@ -19,7 +19,6 @@
 
 namespace hi { inline namespace v1 {
 class gfx_device;
-class gfx_device_vulkan;
 class widget_layout;
 struct paged_image;
 
@@ -208,7 +207,7 @@ concept draw_quad_shape = std::same_as<Context, quad> or std::same_as<Context, r
  */
 class draw_context {
 public:
-    gfx_device_vulkan& device;
+    gfx_device *device;
 
     /** The frame buffer index of the image we are currently rendering.
      */
@@ -241,7 +240,7 @@ public:
     ~draw_context() = default;
 
     draw_context(
-        gfx_device_vulkan& device,
+        gfx_device& device,
         vector_span<pipeline_box::vertex>& box_vertices,
         vector_span<pipeline_image::vertex>& image_vertices,
         vector_span<pipeline_SDF::vertex>& sdf_vertices,

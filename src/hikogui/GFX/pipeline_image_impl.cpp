@@ -4,25 +4,24 @@
 
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1::pipeline_image {
 
-pipeline_image::pipeline_image(gfx_surface const& surface) : pipeline_vulkan(surface) {}
-
 void pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
-    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
+    pipeline::draw_in_command_buffer(commandBuffer, context);
 
-    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
-    vulkan_device().image_pipeline->prepare_atlas_for_rendering();
+    hi_axiom_not_null(device());
+    device()->flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
+    device()->image_pipeline->prepare_atlas_for_rendering();
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
     hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
 
-    vulkan_device().image_pipeline->draw_in_command_buffer(commandBuffer);
+    device()->image_pipeline->draw_in_command_buffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
@@ -40,14 +39,15 @@ void pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, dra
 
     hilet numberOfRectangles = vertexBufferData.size() / 4;
     hilet numberOfTriangles = numberOfRectangles * 2;
-    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw images");
+    device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw images");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
-    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
+    device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_image::createShaderStages() const
 {
-    return vulkan_device().image_pipeline->shader_stages;
+    hi_axiom_not_null(device());
+    return device()->image_pipeline->shader_stages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> pipeline_image::createDescriptorSetLayoutBindings() const
@@ -65,7 +65,8 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_image::createDescriptorSetL
 
 std::vector<vk::WriteDescriptorSet> pipeline_image::createWriteDescriptorSet() const
 {
-    hilet& sharedImagePipeline = vulkan_device().image_pipeline;
+    hi_axiom_not_null(device());
+    hilet& sharedImagePipeline = device()->image_pipeline;
 
     return {
         {
@@ -90,9 +91,10 @@ std::vector<vk::WriteDescriptorSet> pipeline_image::createWriteDescriptorSet() c
         }};
 }
 
-ssize_t pipeline_image::getDescriptorSetVersion() const
+size_t pipeline_image::getDescriptorSetVersion() const
 {
-    return ssize(vulkan_device().image_pipeline->atlas_textures);
+    hi_axiom_not_null(device());
+    return device()->image_pipeline->atlas_textures.size();
 }
 
 std::vector<vk::PushConstantRange> pipeline_image::createPushConstantRanges() const
@@ -125,15 +127,17 @@ void pipeline_image::build_vertex_buffers()
     allocationCreateInfo.pUserData = const_cast<char *>("image-pipeline vertex buffer");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-    std::tie(vertexBuffer, vertexBufferAllocation) = vulkan_device().createBuffer(bufferCreateInfo, allocationCreateInfo);
-    vulkan_device().setDebugUtilsObjectNameEXT(vertexBuffer, "image-pipeline vertex buffer");
-    vertexBufferData = vulkan_device().mapMemory<vertex>(vertexBufferAllocation);
+    hi_axiom_not_null(device());
+    std::tie(vertexBuffer, vertexBufferAllocation) = device()->createBuffer(bufferCreateInfo, allocationCreateInfo);
+    device()->setDebugUtilsObjectNameEXT(vertexBuffer, "image-pipeline vertex buffer");
+    vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
 }
 
 void pipeline_image::teardown_vertex_buffers()
 {
-    vulkan_device().unmapMemory(vertexBufferAllocation);
-    vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
+    hi_axiom_not_null(device());
+    device()->unmapMemory(vertexBufferAllocation);
+    device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
 } // namespace hi::inline v1::pipeline_image

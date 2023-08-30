@@ -216,17 +216,19 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/formula/formula.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/draw_context.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan_impl.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan_intf.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_queue_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_delegate.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_delegate_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_state.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_globals.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/GFX.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/paged_image.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/pipeline.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha.hpp
@@ -459,7 +461,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/telemetry/delayed_format.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/format_check.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/log.hpp
-    ${HIKOGUI_SOURCE_DIR}/telemetry/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/telemetry/telemetry.hpp
     ${HIKOGUI_SOURCE_DIR}/telemetry/trace.hpp
     ${HIKOGUI_SOURCE_DIR}/text/module.hpp
     ${HIKOGUI_SOURCE_DIR}/text/semantic_text_style.hpp

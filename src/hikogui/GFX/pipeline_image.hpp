@@ -16,17 +16,17 @@ namespace hi::inline v1::pipeline_image {
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlas and sharing for all views.
  */
-class pipeline_image : public pipeline_vulkan {
+class pipeline_image : public pipeline {
 public:
     vector_span<vertex> vertexBufferData;
 
-    pipeline_image(gfx_surface const &surface);
-    ~pipeline_image(){};
-
+    ~pipeline_image() = default;
     pipeline_image(const pipeline_image &) = delete;
     pipeline_image &operator=(const pipeline_image &) = delete;
     pipeline_image(pipeline_image &&) = delete;
     pipeline_image &operator=(pipeline_image &&) = delete;
+
+    pipeline_image(gfx_surface *surface) : pipeline(surface) {}
 
     void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
 
@@ -40,7 +40,7 @@ protected:
     [[nodiscard]] std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
     [[nodiscard]] std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
     [[nodiscard]] std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const override;
-    [[nodiscard]] ssize_t getDescriptorSetVersion() const override;
+    [[nodiscard]] size_t getDescriptorSetVersion() const override;
     [[nodiscard]] std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
     [[nodiscard]] vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
     [[nodiscard]] std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;

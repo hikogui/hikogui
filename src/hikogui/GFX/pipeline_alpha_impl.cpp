@@ -4,12 +4,10 @@
 
 #include "pipeline_alpha.hpp"
 #include "pipeline_alpha_device_shared.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1::pipeline_alpha {
-
-pipeline_alpha::pipeline_alpha(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
 /* Do not blend, simply use just the alpha channel and overwrite the pixels in the color attachment directly.
  */
@@ -28,15 +26,16 @@ std::vector<vk::PipelineColorBlendAttachmentState> pipeline_alpha::getPipelineCo
 
 void pipeline_alpha::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
-    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
+    pipeline::draw_in_command_buffer(commandBuffer, context);
 
-    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
+    hi_axiom_not_null(device());
+    device()->flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
     hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
 
-    vulkan_device().alpha_pipeline->drawInCommandBuffer(commandBuffer);
+    device()->alpha_pipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
@@ -52,14 +51,15 @@ void pipeline_alpha::draw_in_command_buffer(vk::CommandBuffer commandBuffer, dra
     hilet numberOfRectangles = vertexBufferData.size() / 4;
     hilet numberOfTriangles = numberOfRectangles * 2;
 
-    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw alpha overlays");
+    device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw alpha overlays");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
-    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
+    device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_alpha::createShaderStages() const
 {
-    return vulkan_device().alpha_pipeline->shaderStages;
+    hi_axiom_not_null(device());
+    return device()->alpha_pipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> pipeline_alpha::createDescriptorSetLayoutBindings() const
@@ -72,7 +72,7 @@ std::vector<vk::WriteDescriptorSet> pipeline_alpha::createWriteDescriptorSet() c
     return {};
 }
 
-ssize_t pipeline_alpha::getDescriptorSetVersion() const
+size_t pipeline_alpha::getDescriptorSetVersion() const
 {
     return 0;
 }
@@ -107,15 +107,17 @@ void pipeline_alpha::build_vertex_buffers()
     allocationCreateInfo.pUserData = const_cast<char *>("alpha-pipeline vertex buffer");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-    std::tie(vertexBuffer, vertexBufferAllocation) = vulkan_device().createBuffer(bufferCreateInfo, allocationCreateInfo);
-    vulkan_device().setDebugUtilsObjectNameEXT(vertexBuffer, "alpha-pipeline vertex buffer");
-    vertexBufferData = vulkan_device().mapMemory<vertex>(vertexBufferAllocation);
+    hi_axiom_not_null(device());
+    std::tie(vertexBuffer, vertexBufferAllocation) = device()->createBuffer(bufferCreateInfo, allocationCreateInfo);
+    device()->setDebugUtilsObjectNameEXT(vertexBuffer, "alpha-pipeline vertex buffer");
+    vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
 }
 
 void pipeline_alpha::teardown_vertex_buffers()
 {
-    vulkan_device().unmapMemory(vertexBufferAllocation);
-    vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
+    hi_axiom_not_null(device());
+    device()->unmapMemory(vertexBufferAllocation);
+    device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
 } // namespace hi::inline v1::pipeline_alpha

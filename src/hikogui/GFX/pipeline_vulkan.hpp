@@ -12,21 +12,21 @@
 #include <vector>
 
 namespace hi::inline v1 {
-class gfx_device_vulkan;
+class gfx_device;
+class gfx_surface;
 
-class pipeline_vulkan : public pipeline {
+class pipeline {
 public:
     vk::Pipeline intrinsic;
+    gfx_surface *surface = nullptr;
 
-    pipeline_vulkan(gfx_surface const &surface);
-    ~pipeline_vulkan();
+    pipeline(gfx_surface *surface) : surface(surface) {}
 
-    pipeline_vulkan(const pipeline_vulkan &) = delete;
-    pipeline_vulkan &operator=(const pipeline_vulkan &) = delete;
-    pipeline_vulkan(pipeline_vulkan &&) = delete;
-    pipeline_vulkan &operator=(pipeline_vulkan &&) = delete;
-
-    gfx_device_vulkan &vulkan_device() const noexcept;
+    virtual ~pipeline() = default;
+    pipeline(const pipeline &) = delete;
+    pipeline &operator=(const pipeline &) = delete;
+    pipeline(pipeline &&) = delete;
+    pipeline &operator=(pipeline &&) = delete;
 
     virtual void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context);
 
@@ -37,31 +37,33 @@ public:
 
 protected:
     vk::DescriptorSet descriptorSet;
-    ssize_t descriptorSetVersion = 0;
+    size_t descriptorSetVersion = 0;
     vk::Extent2D extent;
     vk::DescriptorSetLayout descriptorSetLayout;
     vk::PipelineLayout pipelineLayout;
     vk::DescriptorPool descriptorPool;
 
-    virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const = 0;
-    virtual std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const = 0;
-    virtual std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const = 0;
-    virtual ssize_t getDescriptorSetVersion() const = 0;
-    virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const
+    [[nodiscard]] gfx_device *device() const noexcept;
+
+    [[nodiscard]] virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const = 0;
+    [[nodiscard]] virtual std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const = 0;
+    [[nodiscard]] virtual std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const = 0;
+    [[nodiscard]] virtual size_t getDescriptorSetVersion() const = 0;
+    [[nodiscard]] virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const
     {
         return {};
     }
-    virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const
+    [[nodiscard]] virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const
     {
         return {};
     }
-    virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const
+    [[nodiscard]] virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const
     {
         return {};
     }
 
-    virtual vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const;
-    virtual std::vector<vk::PipelineColorBlendAttachmentState> getPipelineColorBlendAttachmentStates() const;
+    [[nodiscard]] virtual vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const;
+    [[nodiscard]] virtual std::vector<vk::PipelineColorBlendAttachmentState> getPipelineColorBlendAttachmentStates() const;
 
     virtual void build_vertex_buffers(){};
     virtual void teardown_vertex_buffers(){};

@@ -9,7 +9,7 @@
 
 #include "file_file.hpp"
 #include "../utility/utility.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <format>
 

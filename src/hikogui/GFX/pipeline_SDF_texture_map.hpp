@@ -10,7 +10,7 @@
 #include <vulkan/vulkan.hpp>
 
 namespace hi::inline v1 {
-class gfx_device_vulkan;
+class gfx_device;
 
 namespace pipeline_SDF {
 
@@ -21,7 +21,7 @@ struct texture_map {
     hi::pixmap_span<sdf_r8> pixmap;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
-    void transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout);
+    void transitionLayout(const gfx_device &device, vk::Format format, vk::ImageLayout nextLayout);
 };
 
 } // namespace pipeline_SDF

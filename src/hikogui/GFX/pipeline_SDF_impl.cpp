@@ -5,24 +5,23 @@
 #include "pipeline_SDF.hpp"
 #include "pipeline_SDF_device_shared.hpp"
 #include "gfx_surface_vulkan.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1::pipeline_SDF {
 
-pipeline_SDF::pipeline_SDF(gfx_surface const &surface) : pipeline_vulkan(surface) {}
-
 void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
-    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
+    pipeline::draw_in_command_buffer(commandBuffer, context);
 
-    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
+    hi_axiom_not_null(device());
+    device()->flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
     hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
 
-    vulkan_device().SDF_pipeline->drawInCommandBuffer(commandBuffer);
+    device()->SDF_pipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
@@ -30,7 +29,7 @@ void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_
     pushConstants.viewport_scale = scale2{narrow_cast<float>(2.0f / extent.width), narrow_cast<float>(2.0f / extent.height)};
     pushConstants.has_subpixels = context.subpixel_orientation != subpixel_orientation::unknown;
 
-    constexpr float third = 1.0f/3.0f;
+    constexpr float third = 1.0f / 3.0f;
     switch (context.subpixel_orientation) {
     case subpixel_orientation::unknown:
         pushConstants.red_subpixel_offset = vector2{0.0f, 0.0f};
@@ -52,7 +51,8 @@ void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_
         pushConstants.red_subpixel_offset = vector2{0.0f, -third};
         pushConstants.blue_subpixel_offset = vector2{0.0f, third};
         break;
-    default: hi_no_default();
+    default:
+        hi_no_default();
     }
 
     commandBuffer.pushConstants(
@@ -64,14 +64,15 @@ void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_
 
     hilet numberOfRectangles = vertexBufferData.size() / 4;
     hilet numberOfTriangles = numberOfRectangles * 2;
-    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw glyphs");
+    device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw glyphs");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
-    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
+    device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_SDF::createShaderStages() const
 {
-    return vulkan_device().SDF_pipeline->shaderStages;
+    hi_axiom_not_null(device());
+    return device()->SDF_pipeline->shaderStages;
 }
 
 /* Dual-source alpha blending which allows subpixel anti-aliasing.
@@ -79,8 +80,8 @@ std::vector<vk::PipelineShaderStageCreateInfo> pipeline_SDF::createShaderStages(
 std::vector<vk::PipelineColorBlendAttachmentState> pipeline_SDF::getPipelineColorBlendAttachmentStates() const
 {
     bool has_dual_source_blend = false;
-    if (auto device = down_cast<gfx_device_vulkan *>(surface.device())) {
-        has_dual_source_blend = device->device_features.dualSrcBlend;
+    if (auto device_ = device()) {
+        has_dual_source_blend = device_->device_features.dualSrcBlend;
     }
 
     return {
@@ -110,7 +111,8 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_SDF::createDescriptorSetLay
 
 std::vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() const
 {
-    hilet& sharedImagePipeline = vulkan_device().SDF_pipeline;
+    hi_axiom_not_null(device());
+    hilet& sharedImagePipeline = device()->SDF_pipeline;
 
     return {
         {
@@ -136,9 +138,10 @@ std::vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() con
     };
 }
 
-ssize_t pipeline_SDF::getDescriptorSetVersion() const
+size_t pipeline_SDF::getDescriptorSetVersion() const
 {
-    return ssize(vulkan_device().SDF_pipeline->atlasTextures);
+    hi_axiom_not_null(device());
+    return device()->SDF_pipeline->atlasTextures.size();
 }
 
 std::vector<vk::PushConstantRange> pipeline_SDF::createPushConstantRanges() const
@@ -171,15 +174,17 @@ void pipeline_SDF::build_vertex_buffers()
     allocationCreateInfo.pUserData = const_cast<char *>("sdf-pipeline vertex buffer");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-    std::tie(vertexBuffer, vertexBufferAllocation) = vulkan_device().createBuffer(bufferCreateInfo, allocationCreateInfo);
-    vulkan_device().setDebugUtilsObjectNameEXT(vertexBuffer, "sdf-pipeline vertex buffer");
-    vertexBufferData = vulkan_device().mapMemory<vertex>(vertexBufferAllocation);
+    hi_axiom_not_null(device());
+    std::tie(vertexBuffer, vertexBufferAllocation) = device()->createBuffer(bufferCreateInfo, allocationCreateInfo);
+    device()->setDebugUtilsObjectNameEXT(vertexBuffer, "sdf-pipeline vertex buffer");
+    vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
 }
 
 void pipeline_SDF::teardown_vertex_buffers()
 {
-    vulkan_device().unmapMemory(vertexBufferAllocation);
-    vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
+    hi_axiom_not_null(device());
+    device()->unmapMemory(vertexBufferAllocation);
+    device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
 } // namespace hi::inline v1::pipeline_SDF

@@ -11,7 +11,7 @@
 #include "../unicode/unicode.hpp"
 #include "../utility/utility.hpp"
 #include "../font/font.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../container/module.hpp"
 #include "../macros.hpp"
 #include <ostream>

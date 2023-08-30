@@ -5,10 +5,10 @@
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
-#include "../GFX/module.hpp"
+#include "../GFX/GFX.hpp"
 #include "../font/font.hpp"
 #include "../path/path.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../settings/settings.hpp"
 #include "../macros.hpp"
 #include <memory>
@@ -28,8 +28,6 @@ namespace hi::inline v1 {
     auto theme_directories = make_vector(get_paths(path_location::theme_dirs));
     auto theme_book = std::make_unique<hi::theme_book>(std::move(theme_directories));
 
-    auto gfx_system = std::make_unique<hi::gfx_system_vulkan>();
-
     auto keyboard_bindings = std::make_unique<hi::keyboard_bindings>();
     try {
         keyboard_bindings->load_bindings(URL{"resource:win32.keybinds.json"}, true);
@@ -38,7 +36,6 @@ namespace hi::inline v1 {
     }
 
     auto r = std::make_unique<gui_system_win32>(
-        std::move(gfx_system),
         std::move(theme_book),
         std::move(keyboard_bindings),
         std::move(delegate));
@@ -47,12 +44,10 @@ namespace hi::inline v1 {
 }
 
 gui_system_win32::gui_system_win32(
-    std::unique_ptr<gfx_system> gfx,
     std::unique_ptr<hi::theme_book> theme_book,
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) :
     gui_system(
-        std::move(gfx),
         std::move(theme_book),
         std::move(keyboard_bindings),
         std::move(delegate))

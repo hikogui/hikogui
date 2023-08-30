@@ -8,7 +8,7 @@
 
 #include "path_location_intf.hpp"
 #include "../metadata/metadata.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <filesystem>

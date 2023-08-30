@@ -9,7 +9,7 @@
 #include "gui_system_delegate.hpp"
 #include "widget_intf.hpp"
 #include "../unicode/unicode.hpp"
-#include "../GFX/module.hpp"
+#include "../GFX/GFX.hpp"
 #include "../utility/utility.hpp"
 #include "../observer/module.hpp"
 #include "../macros.hpp"
@@ -24,7 +24,6 @@
 
 
 namespace hi::inline v1 {
-class gfx_system;
 class vertical_sync;
 class theme_book;
 class keyboard_bindings;
@@ -33,7 +32,6 @@ class keyboard_bindings;
  */
 class gui_system {
 public:
-    std::unique_ptr<gfx_system> gfx;
     std::unique_ptr<hi::theme_book> theme_book;
     std::unique_ptr<hi::keyboard_bindings> keyboard_bindings;
 
@@ -121,7 +119,6 @@ public:
 
 protected:
     gui_system(
-        std::unique_ptr<gfx_system> gfx,
         std::unique_ptr<hi::theme_book> theme_book,
         std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;

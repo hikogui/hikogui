@@ -8,7 +8,7 @@
 
 #include "crt_utils_intf.hpp"
 #include "terminate.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../console/console.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
