@@ -21,7 +21,7 @@
 
 namespace hi::inline v1 {
 class mat;
-class gfx_device_vulkan;
+class gfx_device;
 struct attributed_glyph;
 
 namespace pipeline_SDF {
@@ -48,7 +48,7 @@ struct device_shared {
     constexpr static float drawBorder = sdf_r8::max_distance;
     constexpr static float scaledDrawBorder = drawBorder / drawfontSize;
 
-    gfx_device_vulkan const& device;
+    gfx_device const& device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
@@ -69,7 +69,7 @@ struct device_shared {
     /// During allocation on a row, we keep track of the tallest glyph.
     int atlasAllocationMaxHeight = 0;
 
-    device_shared(gfx_device_vulkan const& device);
+    device_shared(gfx_device const& device);
     ~device_shared();
 
     device_shared(device_shared const&) = delete;
@@ -78,10 +78,10 @@ struct device_shared {
     device_shared& operator=(device_shared&&) = delete;
 
     /*! Deallocate vulkan resources.
-     * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan>
+     * This is called in the destructor of gfx_device, therefor we can not use our `std::weak_ptr<gfx_device>
      * device`.
      */
-    void destroy(gfx_device_vulkan const *vulkanDevice);
+    void destroy(gfx_device const *vulkanDevice);
 
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
@@ -123,10 +123,10 @@ struct device_shared {
 
 private:
     void buildShaders();
-    void teardownShaders(gfx_device_vulkan const *vulkanDevice);
+    void teardownShaders(gfx_device const *vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(gfx_device_vulkan const *vulkanDevice);
+    void teardownAtlas(gfx_device const *vulkanDevice);
     void add_glyph_to_atlas(hi::font const& font, glyph_id glyph, glyph_atlas_info& info) noexcept;
 
     /**

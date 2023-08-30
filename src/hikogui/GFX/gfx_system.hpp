@@ -48,7 +48,7 @@ public:
         }
     }
 
-    gfx_device *find_best_device_for_surface(gfx_surface const& surface)
+    gfx_device *find_best_device_for_surface(vk::SurfaceKHR surface)
     {
         hilet lock = std::scoped_lock(gfx_system_mutex);
 

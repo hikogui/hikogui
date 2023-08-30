@@ -13,14 +13,14 @@
 
 namespace hi::inline v1::pipeline_box {
 
-device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
+device_shared::device_shared(gfx_device const &device) : device(device)
 {
     buildShaders();
 }
 
 device_shared::~device_shared() {}
 
-void device_shared::destroy(gfx_device_vulkan const *vulkanDevice)
+void device_shared::destroy(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     teardownShaders(vulkanDevice);
@@ -80,7 +80,7 @@ void device_shared::buildShaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}};
 }
 
-void device_shared::teardownShaders(gfx_device_vulkan const*vulkanDevice)
+void device_shared::teardownShaders(gfx_device const*vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);

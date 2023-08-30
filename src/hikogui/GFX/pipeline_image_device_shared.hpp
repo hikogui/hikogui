@@ -19,7 +19,7 @@
 
 
 namespace hi::inline v1 {
-class gfx_device_vulkan;
+class gfx_device;
 
 namespace pipeline_image {
 
@@ -31,7 +31,7 @@ struct device_shared {
     constexpr static std::size_t staging_image_width = 1024;
     constexpr static std::size_t staging_image_height = 1024;
 
-    gfx_device_vulkan const &device;
+    gfx_device const &device;
 
     vk::ShaderModule vertex_shader_module;
     vk::ShaderModule fragment_shader_module;
@@ -44,7 +44,7 @@ struct device_shared {
     vk::Sampler atlas_sampler;
     vk::DescriptorImageInfo atlas_sampler_descriptor_image_info;
 
-    device_shared(gfx_device_vulkan const &device);
+    device_shared(gfx_device const &device);
     ~device_shared();
 
     device_shared(device_shared const &) = delete;
@@ -53,10 +53,10 @@ struct device_shared {
     device_shared &operator=(device_shared &&) = delete;
 
     /*! Deallocate vulkan resources.
-     * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan>
+     * This is called in the destructor of gfx_device, therefor we can not use our `std::weak_ptr<gfx_device>
      * device`.
      */
-    void destroy(gfx_device_vulkan const*vulkanDevice);
+    void destroy(gfx_device const*vulkanDevice);
 
     /** Allocate pages from the atlas.
      */
@@ -132,10 +132,10 @@ private:
     void update_atlas_with_staging_pixmap(paged_image const &image) noexcept;
 
     void build_shaders();
-    void teardown_shaders(gfx_device_vulkan const *vulkan_device);
+    void teardown_shaders(gfx_device const *device);
     void add_atlas_image();
     void build_atlas();
-    void teardown_atlas(gfx_device_vulkan const *vulkan_device);
+    void teardown_atlas(gfx_device const *device);
 
     friend paged_image;
 };

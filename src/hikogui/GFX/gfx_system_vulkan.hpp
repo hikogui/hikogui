@@ -5,9 +5,10 @@
 #pragma once
 
 #include "gfx_system.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
+#include <unordered_set>
 
 hi_export_module(hikogui.GUI : gfx_system_vulkan);
 
@@ -141,7 +142,7 @@ public:
 #endif
 
         for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-            devices.push_back(std::make_shared<gfx_device_vulkan>(*this, _physicalDevice));
+            devices.push_back(std::make_shared<gfx_device>(*this, _physicalDevice));
         }
     }
 

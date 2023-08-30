@@ -16,7 +16,7 @@
 
 namespace hi::inline v1::pipeline_image {
 
-device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
+device_shared::device_shared(gfx_device const &device) : device(device)
 {
     build_shaders();
     build_atlas();
@@ -24,11 +24,11 @@ device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 
 device_shared::~device_shared() {}
 
-void device_shared::destroy(gfx_device_vulkan const*vulkan_device)
+void device_shared::destroy(gfx_device const*device)
 {
-    hi_assert_not_null(vulkan_device);
-    teardown_shaders(vulkan_device);
-    teardown_atlas(vulkan_device);
+    hi_assert_not_null(device);
+    teardown_shaders(device);
+    teardown_atlas(device);
 }
 
 std::vector<std::size_t> device_shared::allocate_pages(std::size_t num_pages) noexcept
@@ -239,7 +239,7 @@ void device_shared::build_shaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragment_shader_module, "main"}};
 }
 
-void device_shared::teardown_shaders(gfx_device_vulkan const *vulkanDevice)
+void device_shared::teardown_shaders(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertex_shader_module);
@@ -365,19 +365,19 @@ void device_shared::build_atlas()
     add_atlas_image();
 }
 
-void device_shared::teardown_atlas(gfx_device_vulkan const *vulkan_device)
+void device_shared::teardown_atlas(gfx_device const *device)
 {
-    hi_assert_not_null(vulkan_device);
-    vulkan_device->destroy(atlas_sampler);
+    hi_assert_not_null(device);
+    device->destroy(atlas_sampler);
 
     for (const auto &atlas_texture : atlas_textures) {
-        vulkan_device->destroy(atlas_texture.view);
-        vulkan_device->destroyImage(atlas_texture.image, atlas_texture.allocation);
+        device->destroy(atlas_texture.view);
+        device->destroyImage(atlas_texture.image, atlas_texture.allocation);
     }
     atlas_textures.clear();
 
-    vulkan_device->unmapMemory(staging_texture.allocation);
-    vulkan_device->destroyImage(staging_texture.image, staging_texture.allocation);
+    device->unmapMemory(staging_texture.allocation);
+    device->destroyImage(staging_texture.image, staging_texture.allocation);
 }
 
 void device_shared::place_vertices(

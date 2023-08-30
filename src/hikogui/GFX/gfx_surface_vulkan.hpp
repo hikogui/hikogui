@@ -91,7 +91,6 @@ public:
 
     void set_device(gfx_device *device) noexcept override;
 
-    gfx_device_vulkan& vulkan_device() const noexcept;
     [[nodiscard]] extent2 size() const noexcept override;
 
     void update(extent2 new_size) noexcept override;

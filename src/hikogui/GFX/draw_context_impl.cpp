@@ -8,19 +8,19 @@
 #include "pipeline_SDF_device_shared.hpp"
 #include "pipeline_alpha_device_shared.hpp"
 #include "paged_image.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device.hpp"
 #include "../text/module.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1 {
 
 draw_context::draw_context(
-    gfx_device_vulkan& device,
+    gfx_device& device,
     vector_span<pipeline_box::vertex>& box_vertices,
     vector_span<pipeline_image::vertex>& image_vertices,
     vector_span<pipeline_SDF::vertex>& sdf_vertices,
     vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept :
-    device(device),
+    device(std::addressof(device)),
     frame_buffer_index(std::numeric_limits<size_t>::max()),
     scissor_rectangle(),
     _box_vertices(&box_vertices),
@@ -86,8 +86,7 @@ draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box
         return false;
     }
 
-    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).image_pipeline;
-    pipeline.place_vertices(*_image_vertices, clipping_rectangle, box, image);
+    device->image_pipeline->place_vertices(*_image_vertices, clipping_rectangle, box, image);
     return true;
 }
 
@@ -99,7 +98,6 @@ void draw_context::_draw_glyph(
     draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
-    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
 
     if (_sdf_vertices->full()) {
         auto box_attributes = attributes;
@@ -109,10 +107,10 @@ void draw_context::_draw_glyph(
         return;
     }
 
-    hilet atlas_was_updated = pipeline.place_vertices(*_sdf_vertices, clipping_rectangle, box, font, glyph, attributes.fill_color);
+    hilet atlas_was_updated = device->SDF_pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, box, font, glyph, attributes.fill_color);
 
     if (atlas_was_updated) {
-        pipeline.prepare_atlas_for_rendering();
+        device->SDF_pipeline->prepare_atlas_for_rendering();
     }
 }
 
@@ -123,7 +121,6 @@ void draw_context::_draw_text(
     draw_attributes const& attributes) const noexcept
 {
     hi_assert_not_null(_sdf_vertices);
-    auto& pipeline = *down_cast<gfx_device_vulkan&>(device).SDF_pipeline;
 
     auto atlas_was_updated = false;
     for (hilet& c : text) {
@@ -141,11 +138,11 @@ void draw_context::_draw_text(
             break;
         }
 
-        atlas_was_updated |= pipeline.place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.ids.front(), color);
+        atlas_was_updated |= device->SDF_pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.ids.front(), color);
     }
 
     if (atlas_was_updated) {
-        pipeline.prepare_atlas_for_rendering();
+        device->SDF_pipeline->prepare_atlas_for_rendering();
     }
 }
 

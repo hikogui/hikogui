@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "pipeline_vulkan.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "gfx_surface.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
@@ -12,18 +12,14 @@
 
 namespace hi::inline v1 {
 
-pipeline_vulkan::pipeline_vulkan(gfx_surface const &surface) : pipeline(surface) {}
-
-pipeline_vulkan::~pipeline_vulkan() {}
-
-gfx_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
+[[nodiscard]] gfx_device *pipeline::device() const noexcept
 {
-    auto device = surface.device();
-    hi_assert_not_null(device);
-    return down_cast<gfx_device_vulkan &>(*device);
+    hi_axiom_not_null(surface);
+    return surface->device();
 }
 
-void pipeline_vulkan::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context)
+
+void pipeline::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context)
 {
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
@@ -31,14 +27,15 @@ void pipeline_vulkan::draw_in_command_buffer(vk::CommandBuffer commandBuffer, dr
         if (descriptorSetVersion < getDescriptorSetVersion()) {
             descriptorSetVersion = getDescriptorSetVersion();
 
-            vulkan_device().updateDescriptorSets(createWriteDescriptorSet(), {});
+            hi_axiom_not_null(device());
+            device()->updateDescriptorSets(createWriteDescriptorSet(), {});
         }
 
         commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, {descriptorSet}, {});
     }
 }
 
-void pipeline_vulkan::build_descriptor_sets()
+void pipeline::build_descriptor_sets()
 {
     hilet descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
@@ -53,14 +50,15 @@ void pipeline_vulkan::build_descriptor_sets()
         narrow_cast<uint32_t>(descriptorSetLayoutBindings.size()),
         descriptorSetLayoutBindings.data()};
 
-    descriptorSetLayout = vulkan_device().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
+    hi_axiom_not_null(device());
+    descriptorSetLayout = device()->createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 
     hilet descriptorPoolSizes =
         transform<std::vector<vk::DescriptorPoolSize>>(descriptorSetLayoutBindings, [](auto x) -> vk::DescriptorPoolSize {
             return {x.descriptorType, narrow_cast<uint32_t>(x.descriptorCount)};
         });
 
-    descriptorPool = vulkan_device().createDescriptorPool(
+    descriptorPool = device()->createDescriptorPool(
         {vk::DescriptorPoolCreateFlags(),
          1, // maxSets
          narrow_cast<uint32_t>(descriptorPoolSizes.size()),
@@ -68,25 +66,26 @@ void pipeline_vulkan::build_descriptor_sets()
 
     hilet descriptorSetLayouts = std::array{descriptorSetLayout};
 
-    hilet descriptorSets = vulkan_device().allocateDescriptorSets(
+    hilet descriptorSets = device()->allocateDescriptorSets(
         {descriptorPool, narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()});
 
     descriptorSet = descriptorSets.at(0);
     descriptorSetVersion = 0;
 }
 
-void pipeline_vulkan::teardown_descriptor_sets()
+void pipeline::teardown_descriptor_sets()
 {
     if (!descriptorSet) {
         return;
     }
 
-    vulkan_device().destroy(descriptorPool);
-    vulkan_device().destroy(descriptorSetLayout);
+    hi_axiom_not_null(device());
+    device()->destroy(descriptorPool);
+    device()->destroy(descriptorSetLayout);
     descriptorSet = nullptr;
 }
 
-vk::PipelineDepthStencilStateCreateInfo pipeline_vulkan::getPipelineDepthStencilStateCreateInfo() const
+vk::PipelineDepthStencilStateCreateInfo pipeline::getPipelineDepthStencilStateCreateInfo() const
 {
     // Reverse-z depth configuration
     return {
@@ -105,7 +104,7 @@ vk::PipelineDepthStencilStateCreateInfo pipeline_vulkan::getPipelineDepthStencil
 
 /* pre-multiplied alpha blending.
  */
-std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineColorBlendAttachmentStates() const
+std::vector<vk::PipelineColorBlendAttachmentState> pipeline::getPipelineColorBlendAttachmentStates() const
 {
     return {
         {VK_TRUE, // blendEnable
@@ -119,7 +118,7 @@ std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineC
              vk::ColorComponentFlagBits::eA}};
 }
 
-void pipeline_vulkan::build_pipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
+void pipeline::build_pipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
     hi_log_info("buildPipeline previous size ({}, {})", extent.width, extent.height);
     extent = _extent;
@@ -134,7 +133,8 @@ void pipeline_vulkan::build_pipeline(vk::RenderPass renderPass, uint32_t renderS
         descriptorSetLayouts.push_back(descriptorSetLayout);
     }
 
-    pipelineLayout = vulkan_device().createPipelineLayout(
+    hi_axiom_not_null(device());
+    pipelineLayout = device()->createPipelineLayout(
         {vk::PipelineLayoutCreateFlags(),
          narrow_cast<uint32_t>(descriptorSetLayouts.size()),
          descriptorSetLayouts.data(),
@@ -233,27 +233,29 @@ void pipeline_vulkan::build_pipeline(vk::RenderPass renderPass, uint32_t renderS
         -1 // basePipelineIndex
     };
 
-    intrinsic = vulkan_device().createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
+    hi_axiom_not_null(device());
+    intrinsic = device()->createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
     hi_log_info("/buildPipeline new size ({}, {})", extent.width, extent.height);
 }
 
-void pipeline_vulkan::teardown_pipeline()
+void pipeline::teardown_pipeline()
 {
-    vulkan_device().destroy(intrinsic);
-    vulkan_device().destroy(pipelineLayout);
+    hi_axiom_not_null(device());
+    device()->destroy(intrinsic);
+    device()->destroy(pipelineLayout);
 }
 
-void pipeline_vulkan::build_for_new_device()
+void pipeline::build_for_new_device()
 {
     build_vertex_buffers();
 }
 
-void pipeline_vulkan::teardown_for_device_lost()
+void pipeline::teardown_for_device_lost()
 {
     teardown_vertex_buffers();
 }
 
-void pipeline_vulkan::build_for_new_swapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
+void pipeline::build_for_new_swapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
     // Input attachments described by the descriptor set will change when a
     // new swap chain is created.
@@ -261,7 +263,7 @@ void pipeline_vulkan::build_for_new_swapchain(vk::RenderPass renderPass, uint32_
     build_pipeline(renderPass, renderSubpass, _extent);
 }
 
-void pipeline_vulkan::teardown_for_swapchain_lost()
+void pipeline::teardown_for_swapchain_lost()
 {
     teardown_pipeline();
     teardown_descriptor_sets();

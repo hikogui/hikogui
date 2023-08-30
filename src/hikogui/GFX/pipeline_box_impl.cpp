@@ -4,24 +4,23 @@
 
 #include "pipeline_box.hpp"
 #include "pipeline_box_device_shared.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device_vulkan_impl.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1::pipeline_box {
 
-pipeline_box::pipeline_box(gfx_surface const &surface) : pipeline_vulkan(surface) {}
-
 void pipeline_box::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
-    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
+    pipeline::draw_in_command_buffer(commandBuffer, context);
 
-    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
+    hi_axiom_not_null(device());
+    device()->flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
     hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
 
-    vulkan_device().box_pipeline->drawInCommandBuffer(commandBuffer);
+    device()->box_pipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
@@ -37,14 +36,15 @@ void pipeline_box::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_
     hilet numberOfRectangles = vertexBufferData.size() / 4;
     hilet numberOfTriangles = numberOfRectangles * 2;
 
-    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw boxes");
+    device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw boxes");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
-    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
+    device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_box::createShaderStages() const
 {
-    return vulkan_device().box_pipeline->shaderStages;
+    hi_axiom_not_null(device());
+    return device()->box_pipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> pipeline_box::createDescriptorSetLayoutBindings() const
@@ -57,7 +57,7 @@ std::vector<vk::WriteDescriptorSet> pipeline_box::createWriteDescriptorSet() con
     return {};
 }
 
-ssize_t pipeline_box::getDescriptorSetVersion() const
+size_t pipeline_box::getDescriptorSetVersion() const
 {
     return 0;
 }
@@ -92,15 +92,17 @@ void pipeline_box::build_vertex_buffers()
     allocationCreateInfo.pUserData = const_cast<char *>("box-pipeline vertex buffer");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-    std::tie(vertexBuffer, vertexBufferAllocation) = vulkan_device().createBuffer(bufferCreateInfo, allocationCreateInfo);
-    vulkan_device().setDebugUtilsObjectNameEXT(vertexBuffer, "box-pipeline vertex buffer");
-    vertexBufferData = vulkan_device().mapMemory<vertex>(vertexBufferAllocation);
+    hi_axiom_not_null(device());
+    std::tie(vertexBuffer, vertexBufferAllocation) = device()->createBuffer(bufferCreateInfo, allocationCreateInfo);
+    device()->setDebugUtilsObjectNameEXT(vertexBuffer, "box-pipeline vertex buffer");
+    vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
 }
 
 void pipeline_box::teardown_vertex_buffers()
 {
-    vulkan_device().unmapMemory(vertexBufferAllocation);
-    vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
+    hi_axiom_not_null(device());
+    device()->unmapMemory(vertexBufferAllocation);
+    device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
 } // namespace hi::inline v1::pipeline_box

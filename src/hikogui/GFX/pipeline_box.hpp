@@ -16,17 +16,17 @@ namespace hi::inline v1::pipeline_box {
 
 /*! Pipeline for rendering simple box shaded quats.
  */
-class pipeline_box : public pipeline_vulkan {
+class pipeline_box : public pipeline {
 public:
     vector_span<vertex> vertexBufferData;
 
-    pipeline_box(gfx_surface const &surface);
-    ~pipeline_box(){};
-
+    ~pipeline_box() = default;
     pipeline_box(const pipeline_box &) = delete;
     pipeline_box &operator=(const pipeline_box &) = delete;
     pipeline_box(pipeline_box &&) = delete;
     pipeline_box &operator=(pipeline_box &&) = delete;
+
+    pipeline_box(gfx_surface *surface) : pipeline(surface) {}
 
     void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context) override;
 
@@ -36,13 +36,13 @@ protected:
     vk::Buffer vertexBuffer;
     VmaAllocation vertexBufferAllocation;
 
-    std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
-    std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
-    std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const override;
-    ssize_t getDescriptorSetVersion() const override;
-    std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
-    vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
-    std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
+    [[nodiscard]] std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
+    [[nodiscard]] std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
+    [[nodiscard]] std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const override;
+    [[nodiscard]] size_t getDescriptorSetVersion() const override;
+    [[nodiscard]] std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
+    [[nodiscard]] vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
+    [[nodiscard]] std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
 
 private:
     void build_vertex_buffers() override;

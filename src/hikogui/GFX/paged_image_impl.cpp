@@ -5,7 +5,7 @@
 #include "paged_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_image_vertex.hpp"
-#include "gfx_device_vulkan.hpp"
+#include "gfx_device.hpp"
 #include "gfx_surface_vulkan.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
@@ -29,10 +29,8 @@ paged_image::paged_image(gfx_surface const *surface, std::size_t width, std::siz
     // In that case also return an empty image.
     hilet lock = std::scoped_lock(gfx_system_mutex);
     if ((this->device = surface->device()) != nullptr) {
-        hilet &vulkan_device = down_cast<gfx_device_vulkan &>(*device);
-
         hilet[num_columns, num_rows] = size_in_int_pages();
-        this->pages = vulkan_device.image_pipeline->allocate_pages(num_columns * num_rows);
+        this->pages = device->image_pipeline->allocate_pages(num_columns * num_rows);
     }
 }
 
@@ -68,8 +66,8 @@ paged_image &paged_image::operator=(paged_image &&other) noexcept
     hi_return_on_self_assignment(other);
 
     // If the old image had pages, free them.
-    if (hilet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
-        vulkan_device->image_pipeline->free_pages(pages);
+    if (device) {
+        device->image_pipeline->free_pages(pages);
     }
 
     state = other.state.exchange(state_type::uninitialized);
@@ -82,8 +80,8 @@ paged_image &paged_image::operator=(paged_image &&other) noexcept
 
 paged_image::~paged_image()
 {
-    if (hilet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
-        vulkan_device->image_pipeline->free_pages(pages);
+    if (device) {
+        device->image_pipeline->free_pages(pages);
     }
 }
 
@@ -91,14 +89,14 @@ void paged_image::upload(png const &image) noexcept
 {
     hi_assert(image.width() == width and image.height() == height);
 
-    if (hilet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
+    if (device) {
         hilet lock = std::scoped_lock(gfx_system_mutex);
 
         state = state_type::drawing;
 
-        auto staging_image = vulkan_device->image_pipeline->get_staging_pixmap(image.width(), image.height());
+        auto staging_image = device->image_pipeline->get_staging_pixmap(image.width(), image.height());
         image.decode_image(staging_image);
-        vulkan_device->image_pipeline->update_atlas_with_staging_pixmap(*this);
+        device->image_pipeline->update_atlas_with_staging_pixmap(*this);
 
         state = state_type::uploaded;
     }
@@ -108,14 +106,14 @@ void paged_image::upload(pixmap_span<sfloat_rgba16 const> image) noexcept
 {
     hi_assert(image.width() == width and image.height() == height);
 
-    if (hilet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
+    if (device) {
         hilet lock = std::scoped_lock(gfx_system_mutex);
 
         state = state_type::drawing;
 
-        auto staging_image = vulkan_device->image_pipeline->get_staging_pixmap(image.width(), image.height());
+        auto staging_image = device->image_pipeline->get_staging_pixmap(image.width(), image.height());
         copy(image, staging_image);
-        vulkan_device->image_pipeline->update_atlas_with_staging_pixmap(*this);
+        device->image_pipeline->update_atlas_with_staging_pixmap(*this);
 
         state = state_type::uploaded;
     }

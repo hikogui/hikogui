@@ -4,26 +4,5 @@
 
 #pragma once
 
-#include "../utility/utility.hpp"
-#include "../macros.hpp"
-#include <memory>
+#include "pipeline_vulkan.hpp" // export
 
-
-
-namespace hi::inline v1 {
-class gfx_surface;
-
-class pipeline {
-public:
-    gfx_surface const &surface;
-
-    pipeline(gfx_surface const &surface) : surface(surface) {}
-
-    virtual ~pipeline() = default;
-    pipeline(const pipeline &) = delete;
-    pipeline &operator=(const pipeline &) = delete;
-    pipeline(pipeline &&) = delete;
-    pipeline &operator=(pipeline &&) = delete;
-};
-
-} // namespace hi::inline v1

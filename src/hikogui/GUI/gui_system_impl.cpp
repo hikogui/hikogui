@@ -37,7 +37,7 @@ std::shared_ptr<gui_window> gui_system::add_window(std::shared_ptr<gui_window> w
 {
     hi_axiom(loop::main().on_thread());
 
-    auto device = gfx->find_best_device_for_surface(*(window->surface));
+    auto device = gfx->find_best_device_for_surface(down_cast<gfx_surface_vulkan *>(window->surface.get())->intrinsic);
     if (not device) {
         throw gui_error("Could not find a vulkan-device matching this window");
     }
