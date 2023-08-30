@@ -24,11 +24,11 @@ device_shared::device_shared(gfx_device const &device) : device(device)
 
 device_shared::~device_shared() {}
 
-void device_shared::destroy(gfx_device const*device)
+void device_shared::destroy(gfx_device const*old_device)
 {
-    hi_assert_not_null(device);
-    teardown_shaders(device);
-    teardown_atlas(device);
+    hi_assert_not_null(old_device);
+    teardown_shaders(old_device);
+    teardown_atlas(old_device);
 }
 
 std::vector<std::size_t> device_shared::allocate_pages(std::size_t num_pages) noexcept
@@ -365,19 +365,19 @@ void device_shared::build_atlas()
     add_atlas_image();
 }
 
-void device_shared::teardown_atlas(gfx_device const *device)
+void device_shared::teardown_atlas(gfx_device const *old_device)
 {
-    hi_assert_not_null(device);
-    device->destroy(atlas_sampler);
+    hi_assert_not_null(old_device);
+    old_device->destroy(atlas_sampler);
 
     for (const auto &atlas_texture : atlas_textures) {
-        device->destroy(atlas_texture.view);
-        device->destroyImage(atlas_texture.image, atlas_texture.allocation);
+        old_device->destroy(atlas_texture.view);
+        old_device->destroyImage(atlas_texture.image, atlas_texture.allocation);
     }
     atlas_textures.clear();
 
-    device->unmapMemory(staging_texture.allocation);
-    device->destroyImage(staging_texture.image, staging_texture.allocation);
+    old_device->unmapMemory(staging_texture.allocation);
+    old_device->destroyImage(staging_texture.image, staging_texture.allocation);
 }
 
 void device_shared::place_vertices(

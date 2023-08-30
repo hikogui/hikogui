@@ -21,7 +21,7 @@
 namespace hi::inline v1 {
 
 
-void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
+inline void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
 {
     hi_assert_not_null(device);
 
@@ -32,7 +32,7 @@ void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
     _graphics_queue = &device->get_graphics_queue(intrinsic);
 }
 
-void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
+inline void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -41,12 +41,11 @@ void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
         _delegates.emplace_back(down_cast<gfx_surface_delegate_vulkan *>(delegate), _device->createSemaphore());
 
     if (state >= gfx_surface_state::has_device) {
-        auto& vulkan_system = down_cast<gfx_system_vulkan&>(_device->system);
         auto& graphics_queue = _device->get_graphics_queue(intrinsic);
 
         delegate_info.delegate->build_for_new_device(
             _device->allocator,
-            vulkan_system.intrinsic,
+            vulkan_instance(),
             _device->intrinsic,
             graphics_queue.queue,
             graphics_queue.family_queue_index);
@@ -62,7 +61,7 @@ void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
     }
 }
 
-void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcept
+inline void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcept
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -83,7 +82,7 @@ void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcep
     _delegates.erase(it);
 }
 
-void gfx_surface_vulkan::init()
+inline void gfx_surface_vulkan::init()
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -95,12 +94,12 @@ void gfx_surface_vulkan::init()
     tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(this);
 }
 
-[[nodiscard]] extent2 gfx_surface_vulkan::size() const noexcept
+[[nodiscard]] inline extent2 gfx_surface_vulkan::size() const noexcept
 {
     return {narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)};
 }
 
-void gfx_surface_vulkan::wait_idle()
+inline void gfx_surface_vulkan::wait_idle()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -112,7 +111,7 @@ void gfx_surface_vulkan::wait_idle()
     hi_log_info("/waitIdle");
 }
 
-std::optional<uint32_t> gfx_surface_vulkan::acquire_next_image_from_swapchain()
+inline std::optional<uint32_t> gfx_surface_vulkan::acquire_next_image_from_swapchain()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -163,7 +162,7 @@ std::optional<uint32_t> gfx_surface_vulkan::acquire_next_image_from_swapchain()
     }
 }
 
-void gfx_surface_vulkan::present_image_to_queue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
+inline void gfx_surface_vulkan::present_image_to_queue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -208,7 +207,7 @@ void gfx_surface_vulkan::present_image_to_queue(uint32_t frameBufferIndex, vk::S
     }
 }
 
-gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
+inline gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
 {
     if (_device->score(intrinsic) <= 0) {
         return gfx_surface_loss::device_lost;
@@ -220,14 +219,13 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
     alpha_pipeline->build_for_new_device();
     tone_mapper_pipeline->build_for_new_device();
 
-    auto& vulkan_system = down_cast<gfx_system_vulkan&>(_device->system);
     auto& graphics_queue = _device->get_graphics_queue(intrinsic);
     for (auto [delegate, semaphore] : _delegates) {
         hi_assert_not_null(delegate);
 
         delegate->build_for_new_device(
             _device->allocator,
-            vulkan_system.intrinsic,
+            vulkan_instance(),
             _device->intrinsic,
             graphics_queue.queue,
             graphics_queue.family_queue_index);
@@ -236,7 +234,7 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
     return gfx_surface_loss::none;
 }
 
-gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2 new_size) noexcept
+inline gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2 new_size) noexcept
 {
     try {
         hilet[clamped_count, clamped_size] = get_image_count_and_size(defaultNumberOfSwapchainImages, new_size);
@@ -292,7 +290,7 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2 new_size) n
     }
 }
 
-void gfx_surface_vulkan::build(extent2 new_size) noexcept
+inline void gfx_surface_vulkan::build(extent2 new_size) noexcept
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     hi_assert(loss == gfx_surface_loss::none);
@@ -319,7 +317,7 @@ void gfx_surface_vulkan::build(extent2 new_size) noexcept
     }
 }
 
-void gfx_surface_vulkan::teardown_for_swapchain_lost() noexcept
+inline void gfx_surface_vulkan::teardown_for_swapchain_lost() noexcept
 {
     hi_log_info("Tearing down because the window lost the swapchain.");
     wait_idle();
@@ -341,7 +339,7 @@ void gfx_surface_vulkan::teardown_for_swapchain_lost() noexcept
     teardown_swapchain();
 }
 
-void gfx_surface_vulkan::teardown_for_device_lost() noexcept
+inline void gfx_surface_vulkan::teardown_for_device_lost() noexcept
 {
     hi_log_info("Tearing down because the window lost the vulkan device.");
     for (auto [delegate, semaphore] : _delegates) {
@@ -356,12 +354,12 @@ void gfx_surface_vulkan::teardown_for_device_lost() noexcept
     _device = nullptr;
 }
 
-void gfx_surface_vulkan::teardown_for_window_lost() noexcept
+inline void gfx_surface_vulkan::teardown_for_window_lost() noexcept
 {
-    down_cast<gfx_system_vulkan&>(system).destroySurfaceKHR(intrinsic);
+    gfx_system::global().destroySurfaceKHR(intrinsic);
 }
 
-void gfx_surface_vulkan::teardown() noexcept
+inline void gfx_surface_vulkan::teardown() noexcept
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -383,7 +381,7 @@ void gfx_surface_vulkan::teardown() noexcept
     loss = gfx_surface_loss::none;
 }
 
-void gfx_surface_vulkan::update(extent2 new_size) noexcept
+inline void gfx_surface_vulkan::update(extent2 new_size) noexcept
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -397,7 +395,7 @@ void gfx_surface_vulkan::update(extent2 new_size) noexcept
     build(new_size);
 }
 
-draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
+inline draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
 {
     // Extent the redraw_rectangle to the render-area-granularity to improve performance on tile based GPUs.
     redraw_rectangle = ceil(redraw_rectangle, _render_area_granularity);
@@ -446,7 +444,7 @@ draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
     return r;
 }
 
-void gfx_surface_vulkan::render_finish(draw_context const& context)
+inline void gfx_surface_vulkan::render_finish(draw_context const& context)
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -498,7 +496,7 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     teardown();
 }
 
-void gfx_surface_vulkan::fill_command_buffer(
+inline void gfx_surface_vulkan::fill_command_buffer(
     swapchain_image_info const& current_image,
     draw_context const& context,
     vk::Rect2D render_area)
@@ -544,7 +542,7 @@ void gfx_surface_vulkan::fill_command_buffer(
     commandBuffer.end();
 }
 
-void gfx_surface_vulkan::submit_command_buffer(vk::Semaphore delegate_semaphore)
+inline void gfx_surface_vulkan::submit_command_buffer(vk::Semaphore delegate_semaphore)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -569,7 +567,7 @@ void gfx_surface_vulkan::submit_command_buffer(vk::Semaphore delegate_semaphore)
     _graphics_queue->queue.submit(submitInfo, vk::Fence());
 }
 
-std::tuple<std::size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(std::size_t new_count, extent2 new_size)
+inline std::tuple<std::size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(std::size_t new_count, extent2 new_size)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -594,7 +592,7 @@ std::tuple<std::size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(st
     return {clamped_count, clamped_size};
 }
 
-gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, extent2 new_size)
+inline gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, extent2 new_size)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -699,7 +697,7 @@ gfx_surface_loss gfx_surface_vulkan::build_swapchain(std::size_t new_count, exte
     return gfx_surface_loss::none;
 }
 
-void gfx_surface_vulkan::teardown_swapchain()
+inline void gfx_surface_vulkan::teardown_swapchain()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -711,7 +709,7 @@ void gfx_surface_vulkan::teardown_swapchain()
     }
 }
 
-void gfx_surface_vulkan::build_frame_buffers()
+inline void gfx_surface_vulkan::build_frame_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -764,7 +762,7 @@ void gfx_surface_vulkan::build_frame_buffers()
     hi_assert(swapchain_image_infos.size() == swapchain_images.size());
 }
 
-void gfx_surface_vulkan::teardown_frame_buffers()
+inline void gfx_surface_vulkan::teardown_frame_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -792,7 +790,7 @@ void gfx_surface_vulkan::teardown_frame_buffers()
  * Rendering is done on a float-16 RGBA color-attachment.
  * In the last subpass the color-attachment is translated to the swap-chain attachment.
  */
-void gfx_surface_vulkan::build_render_passes()
+inline void gfx_surface_vulkan::build_render_passes()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -964,14 +962,14 @@ void gfx_surface_vulkan::build_render_passes()
     _render_area_granularity = extent2{narrow_cast<float>(granularity.width), narrow_cast<float>(granularity.height)};
 }
 
-void gfx_surface_vulkan::teardown_render_passes()
+inline void gfx_surface_vulkan::teardown_render_passes()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
     _device->destroy(renderPass);
 }
 
-void gfx_surface_vulkan::build_semaphores()
+inline void gfx_surface_vulkan::build_semaphores()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -984,7 +982,7 @@ void gfx_surface_vulkan::build_semaphores()
     renderFinishedFence = _device->createFence({vk::FenceCreateFlagBits::eSignaled});
 }
 
-void gfx_surface_vulkan::teardown_semaphores()
+inline void gfx_surface_vulkan::teardown_semaphores()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -993,7 +991,7 @@ void gfx_surface_vulkan::teardown_semaphores()
     _device->destroy(renderFinishedFence);
 }
 
-void gfx_surface_vulkan::build_command_buffers()
+inline void gfx_surface_vulkan::build_command_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -1003,12 +1001,26 @@ void gfx_surface_vulkan::build_command_buffers()
     commandBuffer = commandBuffers.at(0);
 }
 
-void gfx_surface_vulkan::teardown_command_buffers()
+inline void gfx_surface_vulkan::teardown_command_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     hilet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
     _device->freeCommandBuffers(_graphics_queue->command_pool, commandBuffers);
+}
+
+[[nodiscard]] inline std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window) noexcept
+{
+    hilet lock = std::scoped_lock(gfx_system_mutex);
+
+    auto surface_create_info = vk::Win32SurfaceCreateInfoKHR{
+        vk::Win32SurfaceCreateFlagsKHR(), reinterpret_cast<HINSTANCE>(instance), reinterpret_cast<HWND>(os_window)};
+
+    auto vulkan_surface = vulkan_instance().createWin32SurfaceKHR(surface_create_info);
+
+    auto ptr = std::make_unique<gfx_surface_vulkan>(vulkan_surface);
+    ptr->init();
+    return ptr;
 }
 
 } // namespace hi::inline v1

@@ -4,26 +4,19 @@
 
 #pragma once
 
-#include "gfx_system.hpp"
 #include "gfx_device.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <unordered_set>
 
-hi_export_module(hikogui.GUI : gfx_system_vulkan);
+hi_export_module(hikogui.GUI : gfx_system);
 
 namespace hi::inline v1 {
 
 /** Vulkan gfx_device controller.
  * Manages Vulkan device and a set of Windows.
  */
-class gfx_system_vulkan final : public gfx_system {
-protected:
-    //! Vulkan dynamic loader of library functions.
-    vk::DispatchLoaderDynamic _loader;
-
-    vk::DebugUtilsMessengerEXT debugUtilsMessager;
-
+class gfx_system {
 public:
     //! Vulkan instance.
     vk::Instance intrinsic;
@@ -49,7 +42,7 @@ public:
      * Vulkan surface and passed to `Window` constructors.
      *
      */
-    gfx_system_vulkan() : gfx_system()
+    gfx_system()
     {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         requiredExtensions = {VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
@@ -108,24 +101,6 @@ public:
 #else
         _loader = vk::DispatchLoaderDynamic(intrinsic, vkGetInstanceProcAddr);
 #endif
-    }
-
-    ~gfx_system_vulkan()
-    {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
-#ifndef NDEBUG
-        intrinsic.destroy(debugUtilsMessager, nullptr, loader());
-#endif
-    }
-
-    gfx_system_vulkan(const gfx_system_vulkan&) = delete;
-    gfx_system_vulkan& operator=(const gfx_system_vulkan&) = delete;
-    gfx_system_vulkan(gfx_system_vulkan&&) = delete;
-    gfx_system_vulkan& operator=(gfx_system_vulkan&&) = delete;
-
-    void init() override
-    {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
 
 #ifndef NDEBUG
         debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT(
@@ -140,13 +115,46 @@ public:
             nullptr,
             loader());
 #endif
+    }
 
-        for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-            devices.push_back(std::make_shared<gfx_device>(*this, _physicalDevice));
+    ~gfx_system();
+    gfx_system(const gfx_system&) = delete;
+    gfx_system& operator=(const gfx_system&) = delete;
+    gfx_system(gfx_system&&) = delete;
+    gfx_system& operator=(gfx_system&&) = delete;
+
+    [[nodiscard]] static gfx_system &global();
+
+    void log_memory_usage() const noexcept
+    {
+        for (hilet& device : devices) {
+            device->log_memory_usage();
         }
     }
 
-    [[nodiscard]] std::unique_ptr<gfx_surface> make_surface(os_handle instance, void *os_window) const noexcept override;
+    
+    [[nodiscard]] gfx_device *find_best_device_for_surface(vk::SurfaceKHR surface)
+    {
+        enumerate_devices();
+
+        hilet lock = std::scoped_lock(gfx_system_mutex);
+
+        int best_score = -1;
+        gfx_device *best_device = nullptr;
+
+        for (hilet& device : devices) {
+            hilet score = device->score(surface);
+            if (score >= best_score) {
+                best_score = score;
+                best_device = device.get();
+            }
+        }
+
+        if (best_score <= 0) {
+            hi_log_fatal("Could not find a graphics device suitable for presenting this window.");
+        }
+        return best_device;
+    }
 
     vk::DispatchLoaderDynamic loader() const noexcept
     {
@@ -161,6 +169,29 @@ public:
     }
 
 private:
+    inline static std::unique_ptr<gfx_system> _global = {};
+
+    //! List of all devices.
+    std::vector<std::shared_ptr<gfx_device>> devices;
+
+    //! Vulkan dynamic loader of library functions.
+    vk::DispatchLoaderDynamic _loader;
+
+    vk::DebugUtilsMessengerEXT debugUtilsMessager;
+
+    void enumerate_devices() noexcept
+    {
+        hilet lock = std::scoped_lock(gfx_system_mutex);
+
+        if (not devices.empty()) {
+            return;
+        }
+            
+        for (auto physical_device : intrinsic.enumeratePhysicalDevices()) {
+            devices.push_back(std::make_shared<gfx_device>(physical_device));
+        }
+    }
+
     [[nodiscard]] static VkBool32 debug_utils_message_callback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -232,5 +263,15 @@ private:
         return vk::createInstance(instance_create_info);
     }
 };
+
+inline vk::Instance vulkan_instance() noexcept
+{
+    return gfx_system::global().intrinsic;
+}
+
+inline vk::DispatchLoaderDynamic vulkan_loader() noexcept
+{
+    return gfx_system::global().loader();
+}
 
 } // namespace hi::inline v1

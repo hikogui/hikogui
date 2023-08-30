@@ -71,7 +71,7 @@ public:
     std::unique_ptr<pipeline_alpha::pipeline_alpha> alpha_pipeline;
     std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> tone_mapper_pipeline;
 
-    gfx_surface_vulkan(gfx_system& system, vk::SurfaceKHR surface) : gfx_surface(system), intrinsic(surface) {}
+    gfx_surface_vulkan(vk::SurfaceKHR surface) : gfx_surface(), intrinsic(surface) {}
     
     ~gfx_surface_vulkan(){
     if (state != gfx_surface_state::no_window) {
@@ -167,5 +167,7 @@ private:
      */
     std::tuple<std::size_t, extent2> get_image_count_and_size(std::size_t new_count, extent2 new_size);
 };
+
+[[nodiscard]] std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window) noexcept;
 
 } // namespace hi::inline v1

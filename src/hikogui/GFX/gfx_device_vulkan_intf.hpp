@@ -24,8 +24,6 @@ namespace hi::inline v1 {
 
 class gfx_device {
 public:
-    gfx_system& system;
-
     std::string deviceName = "<no device>";
     uint32_t vendorID = 0;
     uint32_t deviceID = 0;
@@ -106,7 +104,7 @@ public:
     gfx_device& operator=(const gfx_device&) = delete;
     gfx_device(gfx_device&&) = delete;
     gfx_device& operator=(gfx_device&&) = delete;
-    gfx_device(gfx_system& system, vk::PhysicalDevice physicalDevice);
+    gfx_device(vk::PhysicalDevice physicalDevice);
 
     std::string string() const noexcept
     {

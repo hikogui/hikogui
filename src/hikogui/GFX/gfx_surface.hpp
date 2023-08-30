@@ -16,28 +16,40 @@ class gfx_surface_delegate;
 
 class gfx_surface {
 public:
-    gfx_system &system;
-
     gfx_surface_state state = gfx_surface_state::has_window;
     gfx_surface_loss loss = gfx_surface_loss::none;
 
     virtual ~gfx_surface() {}
 
-    gfx_surface(const gfx_surface &) = delete;
-    gfx_surface &operator=(const gfx_surface &) = delete;
-    gfx_surface(gfx_surface &&) = delete;
-    gfx_surface &operator=(gfx_surface &&) = delete;
+    gfx_surface(const gfx_surface&) = delete;
+    gfx_surface& operator=(const gfx_surface&) = delete;
+    gfx_surface(gfx_surface&&) = delete;
+    gfx_surface& operator=(gfx_surface&&) = delete;
 
     virtual void init() {}
 
-    gfx_surface(gfx_system &system) : system(system) {}
+    gfx_surface() {}
 
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
      *
-     * @param device The device to use for rendering, may be nullptr.
+     * @param new_device The device to use for rendering, may be nullptr.
      */
-    virtual void set_device(gfx_device *device) noexcept;
+    virtual void set_device(gfx_device *new_device) noexcept
+    {
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
+
+        if (_device == new_device) {
+            return;
+        }
+
+        if (_device) {
+            loss = gfx_surface_loss::device_lost;
+            teardown();
+        }
+
+        _device = new_device;
+    }
 
     [[nodiscard]] gfx_device *device() const noexcept
     {
@@ -57,12 +69,12 @@ public:
     virtual void update(extent2 new_size) noexcept = 0;
 
     [[nodiscard]] virtual draw_context render_start(aarectangle redraw_rectangle) = 0;
-    virtual void render_finish(draw_context const &context) = 0;
+    virtual void render_finish(draw_context const& context) = 0;
 
     /** Add a delegate to handle extra rendering.
-    * 
-    * The delegate can render underneath the HikoGUI user interface.
-    */
+     *
+     * The delegate can render underneath the HikoGUI user interface.
+     */
     virtual void add_delegate(gfx_surface_delegate *delegate) noexcept = 0;
 
     /** Remove a delegate

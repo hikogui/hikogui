@@ -173,7 +173,7 @@ void gui_window_win32::create_window(extent2 new_size)
     }
     dpi = narrow_cast<float>(_dpi);
 
-    surface = gui.gfx->make_surface(crt_application_instance, win32Window);
+    surface = make_unique_gfx_surface(crt_application_instance, win32Window);
 }
 
 gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf> widget) noexcept :

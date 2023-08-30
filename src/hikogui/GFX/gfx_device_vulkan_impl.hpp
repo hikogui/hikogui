@@ -19,11 +19,11 @@
 namespace hi::inline v1 {
 
 
-inline gfx_device::gfx_device(gfx_system& system, vk::PhysicalDevice physicalDevice) :
-    system(system), physicalIntrinsic(std::move(physicalDevice))
+inline gfx_device::gfx_device(vk::PhysicalDevice physicalDevice) :
+    physicalIntrinsic(std::move(physicalDevice))
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(
-        down_cast<gfx_system_vulkan&>(system).loader());
+        vulkan_loader());
 
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
@@ -52,12 +52,12 @@ inline int gfx_device::score(vk::SurfaceKHR surface) const
     auto total_score = 0;
 
     hi_log_info("Scoring device: {}", string());
-    if (!hasRequiredFeatures(physicalIntrinsic, down_cast<gfx_system_vulkan&>(system).requiredFeatures)) {
+    if (not hasRequiredFeatures(physicalIntrinsic, gfx_system::global().requiredFeatures)) {
         hi_log_info(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, down_cast<gfx_system_vulkan&>(system).requiredLimits)) {
+    if (not meetsRequiredLimits(physicalIntrinsic, gfx_system::global().requiredLimits)) {
         hi_log_info(" - Does not meet the required limits.");
         return -1;
     }
@@ -156,7 +156,7 @@ inline void gfx_device::initialize_device()
     hilet available_device_features = physicalIntrinsic.getFeatures();
 
     // Enable optional features.
-    device_features = down_cast<gfx_system_vulkan&>(system).requiredFeatures;
+    device_features = gfx_system::global().requiredFeatures;
     device_features.setDualSrcBlend(available_device_features.dualSrcBlend);
     device_features.setShaderSampledImageArrayDynamicIndexing(VK_TRUE);
     auto physical_device_features = vk::PhysicalDeviceFeatures2{device_features};
@@ -181,7 +181,7 @@ inline void gfx_device::initialize_device()
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.physicalDevice = physicalIntrinsic;
     allocatorCreateInfo.device = intrinsic;
-    allocatorCreateInfo.instance = down_cast<gfx_system_vulkan&>(system).intrinsic;
+    allocatorCreateInfo.instance = vulkan_instance();
     vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 
     VmaAllocationCreateInfo lazyAllocationInfo = {};
@@ -211,21 +211,21 @@ inline void gfx_device::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoE
 {
 #ifndef NDEBUG
     hi_axiom(gfx_system_mutex.recurse_lock_count());
-    return intrinsic.setDebugUtilsObjectNameEXT(name_info, down_cast<gfx_system_vulkan&>(system).loader());
+    return intrinsic.setDebugUtilsObjectNameEXT(name_info, vulkan_loader());
 #endif
 }
 
 inline void gfx_device::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const& create_info) const
 {
 #ifndef NDEBUG
-    buffer.beginDebugUtilsLabelEXT(create_info, down_cast<gfx_system_vulkan&>(system).loader());
+    buffer.beginDebugUtilsLabelEXT(create_info, vulkan_loader());
 #endif
 }
 
 inline void gfx_device::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
 {
 #ifndef NDEBUG
-    buffer.endDebugUtilsLabelEXT(down_cast<gfx_system_vulkan&>(system).loader());
+    buffer.endDebugUtilsLabelEXT(vulkan_loader());
 #endif
 }
 

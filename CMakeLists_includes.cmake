@@ -222,12 +222,11 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_delegate.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_delegate_vulkan.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_state.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_globals.hpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/GFX.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/paged_image.hpp

@@ -175,7 +175,7 @@ hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::aud
             preferences_window(gui, preferences, audio_system);
             break;
         case 1:
-            gui.gfx->log_memory_usage();
+            gfx_system::global().log_memory_usage();
             break;
         case 2:
             hi_log_info("Hello World");
