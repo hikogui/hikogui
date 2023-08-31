@@ -5,7 +5,7 @@
 #include "draw_context.hpp"
 #include "gfx_pipeline_box_vulkan_impl.hpp"
 #include "gfx_pipeline_image_vulkan_impl.hpp"
-#include "gfx_pipeline_SDF_device_shared.hpp"
+#include "gfx_pipeline_SDF_vulkan_impl.hpp"
 #include "gfx_pipeline_alpha_vulkan_impl.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../text/module.hpp"

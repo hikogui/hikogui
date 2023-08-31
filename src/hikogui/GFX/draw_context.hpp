@@ -6,7 +6,7 @@
 
 #include "gfx_pipeline_box_vulkan.hpp"
 #include "gfx_pipeline_image_vulkan.hpp"
-#include "gfx_pipeline_SDF_vertex.hpp"
+#include "gfx_pipeline_SDF_vulkan.hpp"
 #include "gfx_pipeline_alpha_vulkan.hpp"
 #include "../settings/settings.hpp"
 #include "../geometry/module.hpp"

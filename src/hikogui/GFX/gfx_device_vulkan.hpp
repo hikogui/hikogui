@@ -8,7 +8,7 @@
 #include "gfx_queue_vulkan.hpp"
 #include "gfx_pipeline_image_vulkan.hpp"
 #include "gfx_pipeline_box_vulkan.hpp"
-#include "gfx_pipeline_SDF_device_shared.hpp"
+#include "gfx_pipeline_SDF_vulkan.hpp"
 #include "gfx_pipeline_alpha_vulkan.hpp"
 #include "gfx_pipeline_tone_mapper_vulkan.hpp"
 #include "../settings/settings.hpp"

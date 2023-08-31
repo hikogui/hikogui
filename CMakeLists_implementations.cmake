@@ -1,9 +1,6 @@
 
 target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/GFX/draw_context_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_device_shared_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_texture_map_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_vulkan_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GFX/RenderDoc_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GFX/VulkanMemoryAllocator_impl.cpp

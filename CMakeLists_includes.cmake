@@ -231,12 +231,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image_vulkan_impl.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_device_shared.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_push_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_specialization_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_texture_map.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_vertex.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_vulkan.hpp
