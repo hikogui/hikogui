@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "gfx_surface_delegate.hpp"
+#include "gfx_surface_delegate_vulkan.hpp"
 #include "../geometry/module.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
@@ -15,13 +15,33 @@
 namespace hi::inline v1 {
 
 /** A delegate for drawing on a window below the HikoGUI user interface.
- * 
+ *
  * This delegate is used to handle drawing on the window outside the HikoGUI user interface.
  * This means you can draw into the swap-chain before HikoGUI layers the user interface on top of it.
- * 
+ *
  */
-class gfx_surface_delegate_vulkan : public gfx_surface_delegate {
+class gfx_surface_delegate {
 public:
+    virtual ~gfx_surface_delegate() = default;
+    constexpr gfx_surface_delegate() noexcept = default;
+    gfx_surface_delegate(gfx_surface_delegate const&) = delete;
+    gfx_surface_delegate(gfx_surface_delegate&&) = delete;
+    gfx_surface_delegate& operator=(gfx_surface_delegate const&) = delete;
+    gfx_surface_delegate& operator=(gfx_surface_delegate&&) = delete;
+
+    /** The swap-chain is going to be teared-down.
+     *
+     * This function is called just before the swap-chain is being teared down.
+     *
+     * This requires the destruction of any references to the swap-chain's image views, including
+     * the frame-buffers created during `swapchain_build()`.
+     */
+    virtual void teardown_for_swapchain_lost() noexcept {}
+
+    /** The vulkan device is going to be teared-down.
+     */
+    virtual void teardown_for_device_lost() noexcept {}
+
     /** The vulkan device has been initialized.
      *
      * This function is called when either the device has just been build, or when the widget
@@ -38,7 +58,9 @@ public:
         vk::Instance instance,
         vk::Device device,
         vk::Queue graphics_queue,
-        uint32_t graphics_queue_family_index) noexcept = 0;
+        uint32_t graphics_queue_family_index) noexcept
+    {
+    }
 
     /** The swap-chain has been build.
      *
@@ -52,7 +74,9 @@ public:
      * @param format The pixel format and color space of the images in the swap-chain.
      */
     virtual void
-    build_for_new_swapchain(std::vector<vk::ImageView> const& views, vk::Extent2D size, vk::SurfaceFormatKHR format) noexcept = 0;
+    build_for_new_swapchain(std::vector<vk::ImageView> const& views, vk::Extent2D size, vk::SurfaceFormatKHR format) noexcept
+    {
+    }
 
     /** Draw using vulkan API.
      *
@@ -60,15 +84,15 @@ public:
      *  - Set the `initialLayout` of the attachment description to `VK_IMAGE_LAYOUT_PRESENT_SRC_KHR`.
      *  - Set the `renderArea` of the render-pass to @ render_area.
      *  - Ensure with a scissor that no drawing is done outside the @ render_area.
-     * 
+     *
      * See [VkRenderPassBeginInfo](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkRenderPassBeginInfo.html)
-     * 
+     *
      * @param swapchain_index The index of the image-view of the swap-chain to draw into.
      * @param start The semaphore used to signal when the swapchain-image is ready to be drawn.
      * @param finish The semaphore used to signal when finishing drawing into the swapchain-image.
      * @param render_area The area of the window that is being drawn.
      */
-    virtual void draw(uint32_t swapchain_index, vk::Semaphore start, vk::Semaphore finish, vk::Rect2D render_area) noexcept = 0;
+    virtual void draw(uint32_t swapchain_index, vk::Semaphore start, vk::Semaphore finish, vk::Rect2D render_area) noexcept {}
 };
 
 } // namespace hi::inline v1

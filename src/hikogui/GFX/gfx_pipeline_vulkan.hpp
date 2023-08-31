@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "pipeline.hpp"
-#include "draw_context.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <string>
@@ -14,19 +12,20 @@
 namespace hi::inline v1 {
 class gfx_device;
 class gfx_surface;
+class draw_context;
 
-class pipeline {
+class gfx_pipeline {
 public:
     vk::Pipeline intrinsic;
     gfx_surface *surface = nullptr;
 
-    pipeline(gfx_surface *surface) : surface(surface) {}
+    gfx_pipeline(gfx_surface *surface) : surface(surface) {}
 
-    virtual ~pipeline() = default;
-    pipeline(const pipeline &) = delete;
-    pipeline &operator=(const pipeline &) = delete;
-    pipeline(pipeline &&) = delete;
-    pipeline &operator=(pipeline &&) = delete;
+    virtual ~gfx_pipeline() = default;
+    gfx_pipeline(const gfx_pipeline &) = delete;
+    gfx_pipeline &operator=(const gfx_pipeline &) = delete;
+    gfx_pipeline(gfx_pipeline &&) = delete;
+    gfx_pipeline &operator=(gfx_pipeline &&) = delete;
 
     virtual void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context);
 

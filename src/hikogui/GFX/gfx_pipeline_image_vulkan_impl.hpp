@@ -1,37 +1,275 @@
-// Copyright Take Vos 2019, 2021-2022.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "pipeline_image.hpp"
-#include "pipeline_image_device_shared.hpp"
-#include "paged_image.hpp"
+#pragma once
+
+#include "gfx_pipeline_image_vulkan.hpp"
 #include "gfx_device_vulkan_impl.hpp"
-#include "../path/path.hpp"
-#include "../image/module.hpp"
-#include "../utility/utility.hpp"
 #include "../macros.hpp"
-#include <array>
 
+namespace hi { inline namespace v1 {
 
+inline void gfx_pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+{
+    gfx_pipeline::draw_in_command_buffer(commandBuffer, context);
 
-namespace hi::inline v1::pipeline_image {
+    hi_axiom_not_null(device());
+    device()->flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
+    device()->image_pipeline->prepare_atlas_for_rendering();
 
-device_shared::device_shared(gfx_device const &device) : device(device)
+    std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
+    std::vector<vk::DeviceSize> tmpOffsets = {0};
+    hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
+
+    device()->image_pipeline->draw_in_command_buffer(commandBuffer);
+
+    commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
+
+    pushConstants.windowExtent = extent2{narrow_cast<float>(extent.width), narrow_cast<float>(extent.height)};
+    pushConstants.viewportScale = sfloat_rg32{2.0f / extent.width, 2.0f / extent.height};
+    pushConstants.atlasExtent = sfloat_rg32{device_shared::atlas_image_axis_size, device_shared::atlas_image_axis_size};
+    pushConstants.atlasScale =
+        sfloat_rg32{1.0f / device_shared::atlas_image_axis_size, 1.0f / device_shared::atlas_image_axis_size};
+    commandBuffer.pushConstants(
+        pipelineLayout,
+        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+        0,
+        sizeof(push_constants),
+        &pushConstants);
+
+    hilet numberOfRectangles = vertexBufferData.size() / 4;
+    hilet numberOfTriangles = numberOfRectangles * 2;
+    device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw images");
+    commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
+    device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
+}
+
+inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_image::createShaderStages() const
+{
+    hi_axiom_not_null(device());
+    return device()->image_pipeline->shader_stages;
+}
+
+inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_image::createDescriptorSetLayoutBindings() const
+{
+    return {
+        {0, // binding
+         vk::DescriptorType::eSampler,
+         1, // descriptorCount
+         vk::ShaderStageFlagBits::eFragment},
+        {1, // binding
+         vk::DescriptorType::eSampledImage,
+         narrow_cast<uint32_t>(device_shared::atlas_maximum_num_images), // descriptorCount
+         vk::ShaderStageFlagBits::eFragment}};
+}
+
+inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_image::createWriteDescriptorSet() const
+{
+    hi_axiom_not_null(device());
+    hilet& sharedImagePipeline = device()->image_pipeline;
+
+    return {
+        {
+            descriptorSet,
+            0, // destBinding
+            0, // arrayElement
+            1, // descriptorCount
+            vk::DescriptorType::eSampler,
+            &sharedImagePipeline->atlas_sampler_descriptor_image_info,
+            nullptr, // bufferInfo
+            nullptr // texelBufferView
+        },
+        {
+            descriptorSet,
+            1, // destBinding
+            0, // arrayElement
+            narrow_cast<uint32_t>(sharedImagePipeline->atlas_descriptor_image_infos.size()), // descriptorCount
+            vk::DescriptorType::eSampledImage,
+            sharedImagePipeline->atlas_descriptor_image_infos.data(),
+            nullptr, // bufferInfo
+            nullptr // texelBufferView
+        }};
+}
+
+inline size_t gfx_pipeline_image::getDescriptorSetVersion() const
+{
+    hi_axiom_not_null(device());
+    return device()->image_pipeline->atlas_textures.size();
+}
+
+inline std::vector<vk::PushConstantRange> gfx_pipeline_image::createPushConstantRanges() const
+{
+    return push_constants::pushConstantRanges();
+}
+
+inline vk::VertexInputBindingDescription gfx_pipeline_image::createVertexInputBindingDescription() const
+{
+    return vertex::inputBindingDescription();
+}
+
+inline std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_image::createVertexInputAttributeDescriptions() const
+{
+    return vertex::inputAttributeDescriptions();
+}
+
+inline void gfx_pipeline_image::build_vertex_buffers()
+{
+    using vertexIndexType = uint16_t;
+    constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
+
+    vk::BufferCreateInfo const bufferCreateInfo = {
+        vk::BufferCreateFlags(),
+        sizeof(vertex) * numberOfVertices,
+        vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::SharingMode::eExclusive};
+    VmaAllocationCreateInfo allocationCreateInfo = {};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>("image-pipeline vertex buffer");
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+    hi_axiom_not_null(device());
+    std::tie(vertexBuffer, vertexBufferAllocation) = device()->createBuffer(bufferCreateInfo, allocationCreateInfo);
+    device()->setDebugUtilsObjectNameEXT(vertexBuffer, "image-pipeline vertex buffer");
+    vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
+}
+
+inline void gfx_pipeline_image::teardown_vertex_buffers()
+{
+    hi_axiom_not_null(device());
+    device()->unmapMemory(vertexBufferAllocation);
+    device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
+}
+
+inline void
+gfx_pipeline_image::texture_map::transitionLayout(const gfx_device& device, vk::Format format, vk::ImageLayout nextLayout)
+{
+    if (layout != nextLayout) {
+        device.transition_layout(image, format, layout, nextLayout);
+        layout = nextLayout;
+    }
+}
+
+inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, std::size_t width, std::size_t height) noexcept :
+    device(nullptr), width(width), height(height), pages()
+{
+    if (surface == nullptr) {
+        // During initialization of a widget, the window may not have a surface yet.
+        // As it needs to determine the size of the surface based on the size of the containing widgets.
+        // Return an empty image.
+        return;
+    }
+
+    // Like before the surface may not be assigned to a device either.
+    // In that case also return an empty image.
+    hilet lock = std::scoped_lock(gfx_system_mutex);
+    if ((this->device = surface->device()) != nullptr) {
+        hilet[num_columns, num_rows] = size_in_int_pages();
+        this->pages = device->image_pipeline->allocate_pages(num_columns * num_rows);
+    }
+}
+
+inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, pixmap_span<sfloat_rgba16 const> image) noexcept :
+    paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
+{
+    if (this->device) {
+        hilet lock = std::scoped_lock(gfx_system_mutex);
+        this->upload(image);
+    }
+}
+
+inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, png const& image) noexcept :
+    paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
+{
+    if (this->device) {
+        hilet lock = std::scoped_lock(gfx_system_mutex);
+        this->upload(image);
+    }
+}
+
+inline gfx_pipeline_image::paged_image::paged_image(paged_image&& other) noexcept :
+    state(other.state.exchange(state_type::uninitialized)),
+    device(std::exchange(other.device, nullptr)),
+    width(other.width),
+    height(other.height),
+    pages(std::move(other.pages))
+{
+}
+
+inline gfx_pipeline_image::paged_image& gfx_pipeline_image::paged_image::operator=(paged_image&& other) noexcept
+{
+    hi_return_on_self_assignment(other);
+
+    // If the old image had pages, free them.
+    if (device) {
+        device->image_pipeline->free_pages(pages);
+    }
+
+    state = other.state.exchange(state_type::uninitialized);
+    device = std::exchange(other.device, nullptr);
+    width = other.width;
+    height = other.height;
+    pages = std::move(other.pages);
+    return *this;
+}
+
+inline gfx_pipeline_image::paged_image::~paged_image()
+{
+    if (device) {
+        device->image_pipeline->free_pages(pages);
+    }
+}
+
+inline void gfx_pipeline_image::paged_image::upload(png const& image) noexcept
+{
+    hi_assert(image.width() == width and image.height() == height);
+
+    if (device) {
+        hilet lock = std::scoped_lock(gfx_system_mutex);
+
+        state = state_type::drawing;
+
+        auto staging_image = device->image_pipeline->get_staging_pixmap(image.width(), image.height());
+        image.decode_image(staging_image);
+        device->image_pipeline->update_atlas_with_staging_pixmap(*this);
+
+        state = state_type::uploaded;
+    }
+}
+
+inline void gfx_pipeline_image::paged_image::upload(pixmap_span<sfloat_rgba16 const> image) noexcept
+{
+    hi_assert(image.width() == width and image.height() == height);
+
+    if (device) {
+        hilet lock = std::scoped_lock(gfx_system_mutex);
+
+        state = state_type::drawing;
+
+        auto staging_image = device->image_pipeline->get_staging_pixmap(image.width(), image.height());
+        copy(image, staging_image);
+        device->image_pipeline->update_atlas_with_staging_pixmap(*this);
+
+        state = state_type::uploaded;
+    }
+}
+
+inline gfx_pipeline_image::device_shared::device_shared(gfx_device const& device) : device(device)
 {
     build_shaders();
     build_atlas();
 }
 
-device_shared::~device_shared() {}
+inline gfx_pipeline_image::device_shared::~device_shared() {}
 
-void device_shared::destroy(gfx_device const*old_device)
+inline void gfx_pipeline_image::device_shared::destroy(gfx_device const *old_device)
 {
     hi_assert_not_null(old_device);
     teardown_shaders(old_device);
     teardown_atlas(old_device);
 }
 
-std::vector<std::size_t> device_shared::allocate_pages(std::size_t num_pages) noexcept
+inline std::vector<std::size_t> gfx_pipeline_image::device_shared::allocate_pages(std::size_t num_pages) noexcept
 {
     while (num_pages > _atlas_free_pages.size()) {
         add_atlas_image();
@@ -46,12 +284,12 @@ std::vector<std::size_t> device_shared::allocate_pages(std::size_t num_pages) no
     return r;
 }
 
-void device_shared::free_pages(std::vector<std::size_t> const &pages) noexcept
+inline void gfx_pipeline_image::device_shared::free_pages(std::vector<std::size_t> const& pages) noexcept
 {
     _atlas_free_pages.insert(_atlas_free_pages.end(), pages.begin(), pages.end());
 }
 
-hi::pixmap_span<sfloat_rgba16> device_shared::get_staging_pixmap()
+inline hi::pixmap_span<sfloat_rgba16> gfx_pipeline_image::device_shared::get_staging_pixmap()
 {
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
@@ -63,17 +301,17 @@ hi::pixmap_span<sfloat_rgba16> device_shared::get_staging_pixmap()
  * @param page number in the atlas
  * @return x, y pixel coordinate in an atlasTexture and z the atlasTextureIndex. Inside the border.
  */
-[[nodiscard]] static point3 get_atlas_position(std::size_t page) noexcept
+[[nodiscard]] inline point3 get_atlas_position(std::size_t page) noexcept
 {
     // The amount of pixels per page, that is the page plus two borders.
-    constexpr auto page_stride = paged_image::page_size + 2;
+    constexpr auto page_stride = gfx_pipeline_image::paged_image::page_size + 2;
 
-    hilet image_nr = page / device_shared::atlas_num_pages_per_image;
-    hilet image_page = page % device_shared::atlas_num_pages_per_image;
+    hilet image_nr = page / gfx_pipeline_image::device_shared::atlas_num_pages_per_image;
+    hilet image_page = page % gfx_pipeline_image::device_shared::atlas_num_pages_per_image;
 
     return point3{
-        narrow_cast<float>((image_page % device_shared::atlas_num_pages_per_axis) * page_stride + 1),
-        narrow_cast<float>((image_page / device_shared::atlas_num_pages_per_axis) * page_stride + 1),
+        narrow_cast<float>((image_page % gfx_pipeline_image::device_shared::atlas_num_pages_per_axis) * page_stride + 1),
+        narrow_cast<float>((image_page / gfx_pipeline_image::device_shared::atlas_num_pages_per_axis) * page_stride + 1),
         narrow_cast<float>(image_nr)};
 }
 
@@ -83,16 +321,16 @@ hi::pixmap_span<sfloat_rgba16> device_shared::get_staging_pixmap()
  * @param page_index The index of the page of the image.
  * @return The position into the staging map.
  */
-static point2 get_staging_position(const paged_image &image, std::size_t page_index)
+inline point2 get_staging_position(const gfx_pipeline_image::paged_image& image, std::size_t page_index)
 {
-    hilet width_in_pages = (image.width + paged_image::page_size - 1) / paged_image::page_size;
+    hilet width_in_pages = (image.width + gfx_pipeline_image::paged_image::page_size - 1) / gfx_pipeline_image::paged_image::page_size;
 
     return point2{
-        narrow_cast<float>((page_index % width_in_pages) * paged_image::page_size + 1),
-        narrow_cast<float>((page_index / width_in_pages) * paged_image::page_size + 1)};
+        narrow_cast<float>((page_index % width_in_pages) * gfx_pipeline_image::paged_image::page_size + 1),
+        narrow_cast<float>((page_index / width_in_pages) * gfx_pipeline_image::paged_image::page_size + 1)};
 }
 
-void device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
+inline void gfx_pipeline_image::device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
 {
     hilet width = ceil_cast<std::size_t>(border_rectangle.width());
     hilet height = ceil_cast<std::size_t>(border_rectangle.height());
@@ -124,7 +362,9 @@ void device_shared::make_staging_border_transparent(aarectangle border_rectangle
     }
 }
 
-void device_shared::clear_staging_between_border_and_upload(aarectangle border_rectangle, aarectangle upload_rectangle) noexcept
+inline void gfx_pipeline_image::device_shared::clear_staging_between_border_and_upload(
+    aarectangle border_rectangle,
+    aarectangle upload_rectangle) noexcept
 {
     hi_assert(border_rectangle.left() == 0.0f and border_rectangle.bottom() == 0.0f);
     hi_assert(upload_rectangle.left() == 0.0f and upload_rectangle.bottom() == 0.0f);
@@ -153,7 +393,7 @@ void device_shared::clear_staging_between_border_and_upload(aarectangle border_r
     }
 }
 
-void device_shared::prepare_staging_for_upload(paged_image const &image) noexcept
+inline void gfx_pipeline_image::device_shared::prepare_staging_for_upload(paged_image const& image) noexcept
 {
     hilet image_rectangle = aarectangle{point2{1.0f, 1.0f}, image.size()};
     hilet border_rectangle = image_rectangle + 1;
@@ -170,7 +410,7 @@ void device_shared::prepare_staging_for_upload(paged_image const &image) noexcep
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
 }
 
-void device_shared::update_atlas_with_staging_pixmap(paged_image const &image) noexcept
+inline void gfx_pipeline_image::device_shared::update_atlas_with_staging_pixmap(paged_image const& image) noexcept
 {
     prepare_staging_for_upload(image);
 
@@ -190,7 +430,7 @@ void device_shared::update_atlas_with_staging_pixmap(paged_image const &image) n
         hilet dst_y = floor_cast<int32_t>(dst_position.y() - 1.0f);
         hilet dst_z = floor_cast<std::size_t>(dst_position.z());
 
-        auto &regionsToCopy = regions_to_copy_per_atlas_texture.at(dst_z);
+        auto& regionsToCopy = regions_to_copy_per_atlas_texture.at(dst_z);
         regionsToCopy.emplace_back(
             vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
             vk::Offset3D{src_x, src_y, 0},
@@ -200,12 +440,12 @@ void device_shared::update_atlas_with_staging_pixmap(paged_image const &image) n
     }
 
     for (std::size_t atlas_texture_index = 0; atlas_texture_index < size(atlas_textures); atlas_texture_index++) {
-        hilet &regions_to_copy = regions_to_copy_per_atlas_texture.at(atlas_texture_index);
+        hilet& regions_to_copy = regions_to_copy_per_atlas_texture.at(atlas_texture_index);
         if (regions_to_copy.empty()) {
             continue;
         }
 
-        auto &atlas_texture = atlas_textures.at(atlas_texture_index);
+        auto& atlas_texture = atlas_textures.at(atlas_texture_index);
         atlas_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferDstOptimal);
 
         device.copyImage(
@@ -217,36 +457,36 @@ void device_shared::update_atlas_with_staging_pixmap(paged_image const &image) n
     }
 }
 
-void device_shared::prepare_atlas_for_rendering()
+inline void gfx_pipeline_image::device_shared::prepare_atlas_for_rendering()
 {
-    for (auto &atlas_texture : atlas_textures) {
+    for (auto& atlas_texture : atlas_textures) {
         atlas_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
 
-void device_shared::draw_in_command_buffer(vk::CommandBuffer const &commandBuffer)
+inline void gfx_pipeline_image::device_shared::draw_in_command_buffer(vk::CommandBuffer const& commandBuffer)
 {
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
 
-void device_shared::build_shaders()
+inline void gfx_pipeline_image::device_shared::build_shaders()
 {
-    vertex_shader_module = device.loadShader(URL("resource:shaders/pipeline_image.vert.spv"));
-    fragment_shader_module = device.loadShader(URL("resource:shaders/pipeline_image.frag.spv"));
+    vertex_shader_module = device.loadShader(URL("resource:shaders/image.vert.spv"));
+    fragment_shader_module = device.loadShader(URL("resource:shaders/image.frag.spv"));
 
     shader_stages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertex_shader_module, "main"},
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragment_shader_module, "main"}};
 }
 
-void device_shared::teardown_shaders(gfx_device const *vulkanDevice)
+inline void gfx_pipeline_image::device_shared::teardown_shaders(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertex_shader_module);
     vulkanDevice->destroy(fragment_shader_module);
 }
 
-void device_shared::add_atlas_image()
+inline void gfx_pipeline_image::device_shared::add_atlas_image()
 {
     hilet current_image_index = size(atlas_textures);
 
@@ -307,7 +547,7 @@ void device_shared::add_atlas_image()
     }
 }
 
-void device_shared::build_atlas()
+inline void gfx_pipeline_image::device_shared::build_atlas()
 {
     // Create staging image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -365,12 +605,12 @@ void device_shared::build_atlas()
     add_atlas_image();
 }
 
-void device_shared::teardown_atlas(gfx_device const *old_device)
+inline void gfx_pipeline_image::device_shared::teardown_atlas(gfx_device const *old_device)
 {
     hi_assert_not_null(old_device);
     old_device->destroy(atlas_sampler);
 
-    for (const auto &atlas_texture : atlas_textures) {
+    for (const auto& atlas_texture : atlas_textures) {
         old_device->destroy(atlas_texture.view);
         old_device->destroyImage(atlas_texture.image, atlas_texture.allocation);
     }
@@ -380,11 +620,11 @@ void device_shared::teardown_atlas(gfx_device const *old_device)
     old_device->destroyImage(staging_texture.image, staging_texture.allocation);
 }
 
-void device_shared::place_vertices(
-    vector_span<vertex> &vertices,
-    aarectangle const &clipping_rectangle,
-    quad const &box,
-    paged_image const &image) noexcept
+inline void gfx_pipeline_image::device_shared::place_vertices(
+    vector_span<vertex>& vertices,
+    aarectangle const& clipping_rectangle,
+    quad const& box,
+    paged_image const& image) noexcept
 {
     hi_assert(image.state == paged_image::state_type::uploaded);
 
@@ -439,4 +679,4 @@ void device_shared::place_vertices(
     }
 }
 
-} // namespace hi::inline v1::pipeline_image
+}} // namespace hi::v1

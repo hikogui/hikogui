@@ -9,7 +9,7 @@
 #include <cassert>
 
 // Every widget must inherit from hi::widget.
-class triangle_widget : public hi::widget, public hi::gfx_surface_delegate_vulkan {
+class triangle_widget : public hi::widget, public hi::gfx_surface_delegate {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
@@ -198,7 +198,7 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     // Start the RenderDoc server so that the application is easy to debug in RenderDoc.
-    auto doc = hi::RenderDoc{};
+    hi::start_render_doc();
 
     // Start the GUI-system.
     auto gui = hi::gui_system::make_unique();

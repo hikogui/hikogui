@@ -10,6 +10,11 @@
         }
     ],
     "editor.fontFamily": "JetBrains Mono",
+    "[Log]": {
+        "editor.fontSize" : 10
+    },
+    "editor.fontSize": 16,
+    "terminal.integrated.fontSize": 14,
     "editor.fontLigatures": true,
     "files.associations": {
         "new": "cpp",

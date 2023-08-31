@@ -21,7 +21,7 @@ void main() {
 
     } else if (original_color.a < 1.0) {
         // Punch a hole in the user interface.
-        // The alpha was set by the pipeline_alpha shader, which left the color alone,
+        // The alpha was set by the gfx_pipeline_alpha shader, which left the color alone,
         // make sure the color gets pre-multiplied by the alpha before passing to the vulkan-alpha-blending.
         color = vec4(original_color.rgb * original_color.a, original_color.a);
 

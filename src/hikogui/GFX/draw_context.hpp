@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "pipeline_box_vertex.hpp"
-#include "pipeline_image_vertex.hpp"
-#include "pipeline_SDF_vertex.hpp"
-#include "pipeline_alpha_vertex.hpp"
+#include "gfx_pipeline_box_vulkan.hpp"
+#include "gfx_pipeline_image_vulkan.hpp"
+#include "gfx_pipeline_SDF_vulkan.hpp"
+#include "gfx_pipeline_alpha_vulkan.hpp"
 #include "../settings/settings.hpp"
 #include "../geometry/module.hpp"
 #include "../unicode/unicode.hpp"
@@ -20,7 +20,7 @@
 namespace hi { inline namespace v1 {
 class gfx_device;
 class widget_layout;
-struct paged_image;
+struct gfx_pipeline_image::paged_image;
 
 /** The side where the border is drawn.
  */
@@ -241,10 +241,10 @@ public:
 
     draw_context(
         gfx_device& device,
-        vector_span<pipeline_box::vertex>& box_vertices,
-        vector_span<pipeline_image::vertex>& image_vertices,
-        vector_span<pipeline_SDF::vertex>& sdf_vertices,
-        vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept;
+        vector_span<gfx_pipeline_box::vertex>& box_vertices,
+        vector_span<gfx_pipeline_image::vertex>& image_vertices,
+        vector_span<gfx_pipeline_SDF::vertex>& sdf_vertices,
+        vector_span<gfx_pipeline_alpha::vertex>& alpha_vertices) noexcept;
 
     /** Check if the draw_context should be used for rendering.
      */
@@ -345,7 +345,7 @@ public:
      */
     template<std::same_as<widget_layout> WidgetLayout>
     [[nodiscard]] bool
-    draw_image(WidgetLayout const& layout, quad const& box, paged_image& image, draw_attributes const& attributes) const noexcept
+    draw_image(WidgetLayout const& layout, quad const& box, gfx_pipeline_image::paged_image& image, draw_attributes const& attributes) const noexcept
     {
         return _draw_image(layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, image);
     }
@@ -361,7 +361,7 @@ public:
      */
     template<std::same_as<widget_layout> WidgetLayout, draw_attribute... Attributes>
     [[nodiscard]] bool
-    draw_image(WidgetLayout const& layout, draw_quad_shape auto const& box, paged_image& image, Attributes const&...attributes)
+    draw_image(WidgetLayout const& layout, draw_quad_shape auto const& box, gfx_pipeline_image::paged_image& image, Attributes const&...attributes)
         const noexcept
     {
         return draw_image(layout, make_quad(box), image, draw_attributes{attributes...});
@@ -613,10 +613,10 @@ public:
     }
 
 private:
-    vector_span<pipeline_box::vertex> *_box_vertices;
-    vector_span<pipeline_image::vertex> *_image_vertices;
-    vector_span<pipeline_SDF::vertex> *_sdf_vertices;
-    vector_span<pipeline_alpha::vertex> *_alpha_vertices;
+    vector_span<gfx_pipeline_box::vertex> *_box_vertices;
+    vector_span<gfx_pipeline_image::vertex> *_image_vertices;
+    vector_span<gfx_pipeline_SDF::vertex> *_sdf_vertices;
+    vector_span<gfx_pipeline_alpha::vertex> *_alpha_vertices;
 
     template<draw_quad_shape Shape>
     [[nodiscard]] constexpr static quad make_quad(Shape const& shape) noexcept
@@ -735,7 +735,7 @@ private:
         draw_attributes const& attributes) const noexcept;
 
     [[nodiscard]] bool
-    _draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept;
+    _draw_image(aarectangle const& clipping_rectangle, quad const& box, gfx_pipeline_image::paged_image const& image) const noexcept;
 };
 
 }} // namespace hi::v1

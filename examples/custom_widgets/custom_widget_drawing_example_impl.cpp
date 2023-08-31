@@ -99,7 +99,7 @@ public:
         _layout = {};
 
         if (_image_was_modified.exchange(false)) {
-            if (not(_image_backing = hi::paged_image{surface(), _image})) {
+            if (not(_image_backing = hi::gfx_pipeline_image::paged_image{surface(), _image})) {
                 // Could not get an image, retry.
                 _image_was_modified = true;
                 ++hi::global_counter<"drawing_widget:no-backing-image:constrain">;
@@ -308,7 +308,7 @@ private:
     std::atomic<bool> _image_was_modified = true;
     hi::png _image;
     hi::aarectangle _image_rectangle;
-    hi::paged_image _image_backing;
+    hi::gfx_pipeline_image::paged_image _image_backing;
 
     decltype(drawing)::callback_token _drawing_cbt;
     decltype(shape)::callback_token _shape_cbt;
@@ -336,7 +336,7 @@ int hi_main(int argc, char *argv[])
     hi::observer<bool> rounded = false;
 
     // Startup renderdoc for debugging
-    auto render_doc = hi::RenderDoc();
+    hi::start_render_doc();
 
     auto gui = hi::gui_system::make_unique();
     auto [window, widget] = gui->make_window<hi::window_widget>(hi::txt("Drawing Custom Widget"));

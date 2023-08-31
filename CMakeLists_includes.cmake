@@ -215,46 +215,30 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/formula/formula_vector_literal_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/draw_context.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/draw_context_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan_impl.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan_intf.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_queue_vulkan.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_delegate.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_delegate_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_state.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_vulkan_impl.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_globals.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/GFX.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/paged_image.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha_device_shared.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha_push_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_alpha_vertex.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_box.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_box_device_shared.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_box_push_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_box_vertex.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image_device_shared.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image_push_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image_texture_map.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_image_vertex.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF_device_shared.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF_push_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF_specialization_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF_texture_map.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_SDF_vertex.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_tone_mapper.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_tone_mapper_device_shared.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_tone_mapper_push_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/pipeline_vulkan.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/RenderDoc.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_vulkan_impl.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_vulkan_impl.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image_vulkan_impl.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_vulkan_impl.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_vulkan_impl.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_vulkan_impl.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/render_doc.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_type.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_variant.hpp
