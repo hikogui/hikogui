@@ -6,6 +6,7 @@
 #include "gfx_pipeline_SDF_device_shared.hpp"
 #include "gfx_surface_vulkan.hpp"
 #include "gfx_device_vulkan_impl.hpp"
+#include "draw_context.hpp"
 #include "../macros.hpp"
 
 namespace hi::inline v1::gfx_pipeline_SDF {

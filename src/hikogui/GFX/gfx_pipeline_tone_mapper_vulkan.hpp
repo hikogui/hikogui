@@ -5,18 +5,54 @@
 #pragma once
 
 #include "gfx_pipeline_vulkan.hpp"
-#include "gfx_pipeline_tone_mapper_push_constants.hpp"
 #include "../container/module.hpp"
 #include "../macros.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <span>
 
-namespace hi::inline v1::gfx_pipeline_tone_mapper {
+namespace hi { inline namespace v1 {
 
 /*! Pipeline for rendering simple flat shaded quats.
  */
 class gfx_pipeline_tone_mapper : public gfx_pipeline {
 public:
+struct push_constants {
+    float saturation = 1.0;
+
+    static std::vector<vk::PushConstantRange> pushConstantRanges()
+    {
+        return {{vk::ShaderStageFlagBits::eFragment, 0, sizeof(push_constants)}};
+    }
+};
+
+struct device_shared final {
+    gfx_device const &device;
+
+    vk::ShaderModule vertexShaderModule;
+    vk::ShaderModule fragmentShaderModule;
+    std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+
+    device_shared(gfx_device const &device);
+    ~device_shared();
+
+    device_shared(device_shared const &) = delete;
+    device_shared &operator=(device_shared const &) = delete;
+    device_shared(device_shared &&) = delete;
+    device_shared &operator=(device_shared &&) = delete;
+
+    /*! Deallocate vulkan resources.
+     * This is called in the destructor of gfx_device, therefor we can not use our `std::weak_ptr<gfx_device>
+     * device`.
+     */
+    void destroy(gfx_device const *vulkanDevice);
+
+    void drawInCommandBuffer(vk::CommandBuffer const &commandBuffer);
+
+private:
+    void buildShaders();
+    void teardownShaders(gfx_device const*vulkanDevice);
+};
+
     ~gfx_pipeline_tone_mapper() = default;
     gfx_pipeline_tone_mapper(const gfx_pipeline_tone_mapper&) = delete;
     gfx_pipeline_tone_mapper& operator=(const gfx_pipeline_tone_mapper&) = delete;
@@ -38,4 +74,4 @@ protected:
     [[nodiscard]] vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const override;
 };
 
-} // namespace hi::inline v1::gfx_pipeline_tone_mapper
+}} // namespace hi::inline v1::gfx_pipeline_tone_mapper

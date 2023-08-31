@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "draw_context.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <string>
@@ -13,6 +12,7 @@
 namespace hi::inline v1 {
 class gfx_device;
 class gfx_surface;
+class draw_context;
 
 class gfx_pipeline {
 public:

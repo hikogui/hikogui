@@ -6,7 +6,7 @@
 #include "gfx_pipeline_box_device_shared.hpp"
 #include "gfx_pipeline_image_device_shared.hpp"
 #include "gfx_pipeline_SDF_device_shared.hpp"
-#include "gfx_pipeline_alpha_device_shared.hpp"
+#include "gfx_pipeline_alpha_vulkan_impl.hpp"
 #include "paged_image.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../text/module.hpp"

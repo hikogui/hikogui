@@ -226,10 +226,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/GFX.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/paged_image.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_device_shared.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_push_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_vertex.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_device_shared.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_push_constants.hpp
@@ -245,9 +243,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_specialization_constants.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_texture_map.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_SDF_vertex.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_device_shared.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_push_constants.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/RenderDoc.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event.hpp

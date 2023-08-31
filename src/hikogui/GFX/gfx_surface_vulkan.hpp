@@ -11,8 +11,8 @@
 #include "gfx_pipeline_image.hpp"
 #include "gfx_pipeline_box.hpp"
 #include "gfx_pipeline_SDF.hpp"
-#include "gfx_pipeline_alpha.hpp"
-#include "gfx_pipeline_tone_mapper.hpp"
+#include "gfx_pipeline_alpha_vulkan.hpp"
+#include "gfx_pipeline_tone_mapper_vulkan.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
@@ -69,16 +69,16 @@ public:
     std::unique_ptr<gfx_pipeline_image::gfx_pipeline_image> image_pipeline;
     std::unique_ptr<gfx_pipeline_box::gfx_pipeline_box> box_pipeline;
     std::unique_ptr<gfx_pipeline_SDF::gfx_pipeline_SDF> SDF_pipeline;
-    std::unique_ptr<gfx_pipeline_alpha::gfx_pipeline_alpha> alpha_pipeline;
-    std::unique_ptr<gfx_pipeline_tone_mapper::gfx_pipeline_tone_mapper> tone_mapper_pipeline;
+    std::unique_ptr<gfx_pipeline_alpha> alpha_pipeline;
+    std::unique_ptr<gfx_pipeline_tone_mapper> tone_mapper_pipeline;
 
     gfx_surface(vk::SurfaceKHR surface) : intrinsic(surface)
     {
         box_pipeline = std::make_unique<gfx_pipeline_box::gfx_pipeline_box>(this);
         image_pipeline = std::make_unique<gfx_pipeline_image::gfx_pipeline_image>(this);
         SDF_pipeline = std::make_unique<gfx_pipeline_SDF::gfx_pipeline_SDF>(this);
-        alpha_pipeline = std::make_unique<gfx_pipeline_alpha::gfx_pipeline_alpha>(this);
-        tone_mapper_pipeline = std::make_unique<gfx_pipeline_tone_mapper::gfx_pipeline_tone_mapper>(this);
+        alpha_pipeline = std::make_unique<gfx_pipeline_alpha>(this);
+        tone_mapper_pipeline = std::make_unique<gfx_pipeline_tone_mapper>(this);
     }
 
     ~gfx_surface()
