@@ -4,10 +4,9 @@
 
 #include "draw_context.hpp"
 #include "gfx_pipeline_box_vulkan_impl.hpp"
-#include "gfx_pipeline_image_device_shared.hpp"
+#include "gfx_pipeline_image_vulkan_impl.hpp"
 #include "gfx_pipeline_SDF_device_shared.hpp"
 #include "gfx_pipeline_alpha_vulkan_impl.hpp"
-#include "paged_image.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../text/module.hpp"
 #include "../macros.hpp"
@@ -78,11 +77,11 @@ void draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, dr
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image const& image) const noexcept
+draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box, gfx_pipeline_image::paged_image const& image) const noexcept
 {
     hi_assert_not_null(_image_vertices);
 
-    if (image.state != paged_image::state_type::uploaded) {
+    if (image.state != gfx_pipeline_image::paged_image::state_type::uploaded) {
         return false;
     }
 

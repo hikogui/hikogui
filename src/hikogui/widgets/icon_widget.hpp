@@ -82,7 +82,7 @@ public:
                 _icon_type = icon_type::pixmap;
                 _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
-                if (not(_pixmap_backing = paged_image{surface(), *pixmap})) {
+                if (not(_pixmap_backing = gfx_pipeline_image::paged_image{surface(), *pixmap})) {
                     // Could not get an image, retry.
                     _icon_has_modified = true;
                     ++global_counter<"icon_widget:no-backing-image:constrain">;
@@ -165,7 +165,7 @@ private:
 
     icon_type _icon_type;
     font_book::font_glyph_type _glyph;
-    paged_image _pixmap_backing;
+    gfx_pipeline_image::paged_image _pixmap_backing;
     decltype(icon)::callback_token _icon_cbt;
     std::atomic<bool> _icon_has_modified = true;
 

@@ -7,17 +7,13 @@
 #include "gfx_device_vulkan.hpp"
 #include "gfx_system_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
-#include "gfx_pipeline_image.hpp"
-#include "gfx_pipeline_image_device_shared.hpp"
 #include "../file/file.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <span>
 
 
-
 namespace hi::inline v1 {
-
 
 inline gfx_device::gfx_device(vk::PhysicalDevice physicalDevice) :
     physicalIntrinsic(std::move(physicalDevice))

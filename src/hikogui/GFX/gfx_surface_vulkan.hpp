@@ -8,7 +8,7 @@
 #include "gfx_surface_delegate_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "gfx_queue_vulkan.hpp"
-#include "gfx_pipeline_image.hpp"
+#include "gfx_pipeline_image_vulkan.hpp"
 #include "gfx_pipeline_box_vulkan.hpp"
 #include "gfx_pipeline_SDF.hpp"
 #include "gfx_pipeline_alpha_vulkan.hpp"
@@ -66,7 +66,7 @@ public:
     vk::Semaphore renderFinishedSemaphore;
     vk::Fence renderFinishedFence;
 
-    std::unique_ptr<gfx_pipeline_image::gfx_pipeline_image> image_pipeline;
+    std::unique_ptr<gfx_pipeline_image> image_pipeline;
     std::unique_ptr<gfx_pipeline_box> box_pipeline;
     std::unique_ptr<gfx_pipeline_SDF::gfx_pipeline_SDF> SDF_pipeline;
     std::unique_ptr<gfx_pipeline_alpha> alpha_pipeline;
@@ -75,7 +75,7 @@ public:
     gfx_surface(vk::SurfaceKHR surface) : intrinsic(surface)
     {
         box_pipeline = std::make_unique<gfx_pipeline_box>(this);
-        image_pipeline = std::make_unique<gfx_pipeline_image::gfx_pipeline_image>(this);
+        image_pipeline = std::make_unique<gfx_pipeline_image>(this);
         SDF_pipeline = std::make_unique<gfx_pipeline_SDF::gfx_pipeline_SDF>(this);
         alpha_pipeline = std::make_unique<gfx_pipeline_alpha>(this);
         tone_mapper_pipeline = std::make_unique<gfx_pipeline_tone_mapper>(this);
