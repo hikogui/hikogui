@@ -228,10 +228,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GFX/paged_image.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_vulkan_impl.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_device_shared.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_push_constants.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_vertex.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image_device_shared.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image_push_constants.hpp

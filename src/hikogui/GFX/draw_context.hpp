@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "gfx_pipeline_box_vertex.hpp"
+#include "gfx_pipeline_box_vulkan.hpp"
 #include "gfx_pipeline_image_vertex.hpp"
 #include "gfx_pipeline_SDF_vertex.hpp"
 #include "gfx_pipeline_alpha_vulkan.hpp"

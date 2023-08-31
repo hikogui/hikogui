@@ -2,8 +2,6 @@
 target_sources(hikogui PRIVATE
     ${HIKOGUI_SOURCE_DIR}/GFX/draw_context_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GFX/paged_image_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_device_shared_impl.cpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_box_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image_device_shared_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image_impl.cpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_image_texture_map_impl.cpp
