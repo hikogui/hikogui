@@ -5,7 +5,7 @@
 #include "paged_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_image_vertex.hpp"
-#include "gfx_device.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"

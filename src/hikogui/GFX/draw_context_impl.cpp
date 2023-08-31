@@ -8,7 +8,7 @@
 #include "pipeline_SDF_device_shared.hpp"
 #include "pipeline_alpha_device_shared.hpp"
 #include "paged_image.hpp"
-#include "gfx_device.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "../text/module.hpp"
 #include "../macros.hpp"
 

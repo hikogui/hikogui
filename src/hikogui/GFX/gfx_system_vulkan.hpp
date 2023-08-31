@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "gfx_device.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <unordered_set>

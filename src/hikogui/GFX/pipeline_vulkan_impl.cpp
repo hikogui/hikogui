@@ -4,7 +4,7 @@
 
 #include "pipeline_vulkan.hpp"
 #include "gfx_device_vulkan_impl.hpp"
-#include "gfx_surface.hpp"
+#include "gfx_surface_vulkan.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <array>
@@ -18,8 +18,7 @@ namespace hi::inline v1 {
     return surface->device();
 }
 
-
-void pipeline::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context)
+void pipeline::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
@@ -268,6 +267,5 @@ void pipeline::teardown_for_swapchain_lost()
     teardown_pipeline();
     teardown_descriptor_sets();
 }
-
 
 } // namespace hi::inline v1

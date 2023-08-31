@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "gfx_device.hpp"
 #include "gfx_system_globals.hpp"
 #include "gfx_queue_vulkan.hpp"
 #include "pipeline_image_device_shared.hpp"

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "pipeline.hpp"
 #include "draw_context.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>

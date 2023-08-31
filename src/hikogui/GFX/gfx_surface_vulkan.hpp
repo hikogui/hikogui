@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "gfx_surface.hpp"
+#include "gfx_surface_state.hpp"
 #include "gfx_surface_delegate_vulkan.hpp"
-#include "gfx_device.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "gfx_queue_vulkan.hpp"
 #include "pipeline_image.hpp"
 #include "pipeline_box.hpp"
@@ -18,7 +18,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <optional>
 
-hi_export_module(hikogui.GUI : gfx_surface_vulkan);
+hi_export_module(hikogui.GUI : gfx_surface);
 
 namespace hi::inline v1 {
 
@@ -30,9 +30,10 @@ struct swapchain_image_info {
     bool layout_is_present = false;
 };
 
-class gfx_surface_vulkan final : public gfx_surface {
+class gfx_surface {
 public:
-    using super = gfx_surface;
+    gfx_surface_state state = gfx_surface_state::has_window;
+    gfx_surface_loss loss = gfx_surface_loss::none;
 
     vk::SurfaceKHR intrinsic;
 
@@ -71,39 +72,51 @@ public:
     std::unique_ptr<pipeline_alpha::pipeline_alpha> alpha_pipeline;
     std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> tone_mapper_pipeline;
 
-    gfx_surface_vulkan(vk::SurfaceKHR surface) : gfx_surface(), intrinsic(surface) {}
-    
-    ~gfx_surface_vulkan(){
-    if (state != gfx_surface_state::no_window) {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
-        loss = gfx_surface_loss::window_lost;
-        teardown();
-        hi_assert(state == gfx_surface_state::no_window);
+    gfx_surface(vk::SurfaceKHR surface) : intrinsic(surface)
+    {
+        box_pipeline = std::make_unique<pipeline_box::pipeline_box>(this);
+        image_pipeline = std::make_unique<pipeline_image::pipeline_image>(this);
+        SDF_pipeline = std::make_unique<pipeline_SDF::pipeline_SDF>(this);
+        alpha_pipeline = std::make_unique<pipeline_alpha::pipeline_alpha>(this);
+        tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(this);
     }
-}
 
-    gfx_surface_vulkan(const gfx_surface_vulkan&) = delete;
-    gfx_surface_vulkan& operator=(const gfx_surface_vulkan&) = delete;
-    gfx_surface_vulkan(gfx_surface_vulkan&&) = delete;
-    gfx_surface_vulkan& operator=(gfx_surface_vulkan&&) = delete;
+    ~gfx_surface()
+    {
+        if (state != gfx_surface_state::no_window) {
+            hilet lock = std::scoped_lock(gfx_system_mutex);
+            loss = gfx_surface_loss::window_lost;
+            teardown();
+            hi_assert(state == gfx_surface_state::no_window);
+        }
+    }
 
-    void init() override;
+    gfx_surface(const gfx_surface&) = delete;
+    gfx_surface& operator=(const gfx_surface&) = delete;
+    gfx_surface(gfx_surface&&) = delete;
+    gfx_surface& operator=(gfx_surface&&) = delete;
 
-    void set_device(gfx_device *device) noexcept override;
+    /*! Set GPU device to manage this window.
+     * Change of the device may be done at runtime.
+     *
+     * @param new_device The device to use for rendering, may be nullptr.
+     */
+    void set_device(gfx_device *device) noexcept;
 
-    [[nodiscard]] extent2 size() const noexcept override;
+    [[nodiscard]] gfx_device *device() const noexcept
+    {
+        return _device;
+    }
 
-    void update(extent2 new_size) noexcept override;
+    [[nodiscard]] extent2 size() const noexcept;
 
-    [[nodiscard]] draw_context render_start(aarectangle redraw_rectangle) override;
-    void render_finish(draw_context const& context) override;
+    void update(extent2 new_size) noexcept;
 
-    void add_delegate(gfx_surface_delegate *delegate) noexcept override;
-    void remove_delegate(gfx_surface_delegate *delegate) noexcept override;
+    [[nodiscard]] draw_context render_start(aarectangle redraw_rectangle);
+    void render_finish(draw_context const& context);
 
-protected:
-    void teardown() noexcept override;
-    void build(extent2 new_size) noexcept;
+    void add_delegate(gfx_surface_delegate *delegate) noexcept;
+    void remove_delegate(gfx_surface_delegate *delegate) noexcept;
 
 private:
     struct delegate_type {
@@ -111,11 +124,16 @@ private:
         vk::Semaphore semaphore;
     };
 
+    gfx_device *_device = nullptr;
+
     std::vector<delegate_type> _delegates;
 
     gfx_queue_vulkan const *_graphics_queue;
     gfx_queue_vulkan const *_present_queue;
     extent2 _render_area_granularity;
+
+    void teardown() noexcept;
+    void build(extent2 new_size) noexcept;
 
     gfx_surface_loss build_for_new_device() noexcept;
     gfx_surface_loss build_for_new_swapchain(extent2 new_size) noexcept;

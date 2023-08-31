@@ -18,10 +18,10 @@ namespace hi::inline v1::pipeline_tone_mapper {
 class pipeline_tone_mapper : public pipeline {
 public:
     ~pipeline_tone_mapper() = default;
-    pipeline_tone_mapper(const pipeline_tone_mapper &) = delete;
-    pipeline_tone_mapper &operator=(const pipeline_tone_mapper &) = delete;
-    pipeline_tone_mapper(pipeline_tone_mapper &&) = delete;
-    pipeline_tone_mapper &operator=(pipeline_tone_mapper &&) = delete;
+    pipeline_tone_mapper(const pipeline_tone_mapper&) = delete;
+    pipeline_tone_mapper& operator=(const pipeline_tone_mapper&) = delete;
+    pipeline_tone_mapper(pipeline_tone_mapper&&) = delete;
+    pipeline_tone_mapper& operator=(pipeline_tone_mapper&&) = delete;
 
     pipeline_tone_mapper(gfx_surface *surface) : pipeline(surface) {}
 
