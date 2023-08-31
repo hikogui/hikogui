@@ -7,8 +7,8 @@
 #include "gfx_device_vulkan.hpp"
 #include "gfx_system_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
-#include "pipeline_image.hpp"
-#include "pipeline_image_device_shared.hpp"
+#include "gfx_pipeline_image.hpp"
+#include "gfx_pipeline_image_device_shared.hpp"
 #include "../file/file.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -200,11 +200,11 @@ inline void gfx_device::initialize_device()
     initialize_queues(device_queue_create_infos);
     initialize_quad_index_buffer();
 
-    box_pipeline = std::make_unique<pipeline_box::device_shared>(*this);
-    image_pipeline = std::make_unique<pipeline_image::device_shared>(*this);
-    SDF_pipeline = std::make_unique<pipeline_SDF::device_shared>(*this);
-    alpha_pipeline = std::make_unique<pipeline_alpha::device_shared>(*this);
-    tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::device_shared>(*this);
+    box_pipeline = std::make_unique<gfx_pipeline_box::device_shared>(*this);
+    image_pipeline = std::make_unique<gfx_pipeline_image::device_shared>(*this);
+    SDF_pipeline = std::make_unique<gfx_pipeline_SDF::device_shared>(*this);
+    alpha_pipeline = std::make_unique<gfx_pipeline_alpha::device_shared>(*this);
+    tone_mapper_pipeline = std::make_unique<gfx_pipeline_tone_mapper::device_shared>(*this);
 }
 
 inline void gfx_device::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const

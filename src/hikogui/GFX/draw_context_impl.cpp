@@ -3,10 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "draw_context.hpp"
-#include "pipeline_box_device_shared.hpp"
-#include "pipeline_image_device_shared.hpp"
-#include "pipeline_SDF_device_shared.hpp"
-#include "pipeline_alpha_device_shared.hpp"
+#include "gfx_pipeline_box_device_shared.hpp"
+#include "gfx_pipeline_image_device_shared.hpp"
+#include "gfx_pipeline_SDF_device_shared.hpp"
+#include "gfx_pipeline_alpha_device_shared.hpp"
 #include "paged_image.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../text/module.hpp"
@@ -16,10 +16,10 @@ namespace hi::inline v1 {
 
 draw_context::draw_context(
     gfx_device& device,
-    vector_span<pipeline_box::vertex>& box_vertices,
-    vector_span<pipeline_image::vertex>& image_vertices,
-    vector_span<pipeline_SDF::vertex>& sdf_vertices,
-    vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept :
+    vector_span<gfx_pipeline_box::vertex>& box_vertices,
+    vector_span<gfx_pipeline_image::vertex>& image_vertices,
+    vector_span<gfx_pipeline_SDF::vertex>& sdf_vertices,
+    vector_span<gfx_pipeline_alpha::vertex>& alpha_vertices) noexcept :
     device(std::addressof(device)),
     frame_buffer_index(std::numeric_limits<size_t>::max()),
     scissor_rectangle(),
@@ -43,7 +43,7 @@ void draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad b
         return;
     }
 
-    pipeline_alpha::device_shared::place_vertices(*_alpha_vertices, clipping_rectangle, box, attributes.fill_color.p0.a());
+    gfx_pipeline_alpha::device_shared::place_vertices(*_alpha_vertices, clipping_rectangle, box, attributes.fill_color.p0.a());
 }
 
 void draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
@@ -67,7 +67,7 @@ void draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, dr
         return;
     }
 
-    pipeline_box::device_shared::place_vertices(
+    gfx_pipeline_box::device_shared::place_vertices(
         *_box_vertices,
         clipping_rectangle,
         box_,

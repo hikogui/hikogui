@@ -9,7 +9,7 @@
 #include <cassert>
 
 // Every widget must inherit from hi::widget.
-class triangle_widget : public hi::widget, public hi::gfx_surface_delegate_vulkan {
+class triangle_widget : public hi::widget, public hi::gfx_surface_delegate {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.

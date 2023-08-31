@@ -6,11 +6,11 @@
 
 #include "gfx_system_globals.hpp"
 #include "gfx_queue_vulkan.hpp"
-#include "pipeline_image_device_shared.hpp"
-#include "pipeline_box_device_shared.hpp"
-#include "pipeline_SDF_device_shared.hpp"
-#include "pipeline_alpha_device_shared.hpp"
-#include "pipeline_tone_mapper_device_shared.hpp"
+#include "gfx_pipeline_image_device_shared.hpp"
+#include "gfx_pipeline_box_device_shared.hpp"
+#include "gfx_pipeline_SDF_device_shared.hpp"
+#include "gfx_pipeline_alpha_device_shared.hpp"
+#include "gfx_pipeline_tone_mapper_device_shared.hpp"
 #include "../settings/settings.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
@@ -54,11 +54,11 @@ public:
     vk::Buffer quadIndexBuffer;
     VmaAllocation quadIndexBufferAllocation = {};
 
-    std::unique_ptr<pipeline_box::device_shared> box_pipeline;
-    std::unique_ptr<pipeline_image::device_shared> image_pipeline;
-    std::unique_ptr<pipeline_SDF::device_shared> SDF_pipeline;
-    std::unique_ptr<pipeline_alpha::device_shared> alpha_pipeline;
-    std::unique_ptr<pipeline_tone_mapper::device_shared> tone_mapper_pipeline;
+    std::unique_ptr<gfx_pipeline_box::device_shared> box_pipeline;
+    std::unique_ptr<gfx_pipeline_image::device_shared> image_pipeline;
+    std::unique_ptr<gfx_pipeline_SDF::device_shared> SDF_pipeline;
+    std::unique_ptr<gfx_pipeline_alpha::device_shared> alpha_pipeline;
+    std::unique_ptr<gfx_pipeline_tone_mapper::device_shared> tone_mapper_pipeline;
 
     /*! List if extension required on this device.
      */

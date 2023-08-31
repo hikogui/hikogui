@@ -390,16 +390,16 @@ endif()
 add_custom_target(hikogui_shaders)
 add_shader_target(hikogui_shaders
     shaders/utils.glsl
-    shaders/pipeline_image.vert
-    shaders/pipeline_image.frag
-    shaders/pipeline_box.vert
-    shaders/pipeline_box.frag
-    shaders/pipeline_SDF.vert
-    shaders/pipeline_SDF.frag
-    shaders/pipeline_alpha.vert
-    shaders/pipeline_alpha.frag
-    shaders/pipeline_tone_mapper.vert
-    shaders/pipeline_tone_mapper.frag
+    shaders/image.vert
+    shaders/image.frag
+    shaders/box.vert
+    shaders/box.frag
+    shaders/SDF.vert
+    shaders/SDF.frag
+    shaders/alpha.vert
+    shaders/alpha.frag
+    shaders/tone_mapper.vert
+    shaders/tone_mapper.frag
 )
 
 set(hikogui_resource_files

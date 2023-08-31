@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "pipeline_box_vertex.hpp"
-#include "pipeline_image_vertex.hpp"
-#include "pipeline_SDF_vertex.hpp"
-#include "pipeline_alpha_vertex.hpp"
+#include "gfx_pipeline_box_vertex.hpp"
+#include "gfx_pipeline_image_vertex.hpp"
+#include "gfx_pipeline_SDF_vertex.hpp"
+#include "gfx_pipeline_alpha_vertex.hpp"
 #include "../settings/settings.hpp"
 #include "../geometry/module.hpp"
 #include "../unicode/unicode.hpp"
@@ -241,10 +241,10 @@ public:
 
     draw_context(
         gfx_device& device,
-        vector_span<pipeline_box::vertex>& box_vertices,
-        vector_span<pipeline_image::vertex>& image_vertices,
-        vector_span<pipeline_SDF::vertex>& sdf_vertices,
-        vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept;
+        vector_span<gfx_pipeline_box::vertex>& box_vertices,
+        vector_span<gfx_pipeline_image::vertex>& image_vertices,
+        vector_span<gfx_pipeline_SDF::vertex>& sdf_vertices,
+        vector_span<gfx_pipeline_alpha::vertex>& alpha_vertices) noexcept;
 
     /** Check if the draw_context should be used for rendering.
      */
@@ -613,10 +613,10 @@ public:
     }
 
 private:
-    vector_span<pipeline_box::vertex> *_box_vertices;
-    vector_span<pipeline_image::vertex> *_image_vertices;
-    vector_span<pipeline_SDF::vertex> *_sdf_vertices;
-    vector_span<pipeline_alpha::vertex> *_alpha_vertices;
+    vector_span<gfx_pipeline_box::vertex> *_box_vertices;
+    vector_span<gfx_pipeline_image::vertex> *_image_vertices;
+    vector_span<gfx_pipeline_SDF::vertex> *_sdf_vertices;
+    vector_span<gfx_pipeline_alpha::vertex> *_alpha_vertices;
 
     template<draw_quad_shape Shape>
     [[nodiscard]] constexpr static quad make_quad(Shape const& shape) noexcept

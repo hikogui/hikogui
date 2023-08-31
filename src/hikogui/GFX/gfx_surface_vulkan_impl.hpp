@@ -6,11 +6,11 @@
 #include "gfx_surface_delegate_vulkan.hpp"
 #include "gfx_system_vulkan.hpp"
 #include "gfx_device_vulkan_impl.hpp"
-#include "pipeline_box.hpp"
-#include "pipeline_image.hpp"
-#include "pipeline_SDF.hpp"
-#include "pipeline_alpha.hpp"
-#include "pipeline_tone_mapper.hpp"
+#include "gfx_pipeline_box.hpp"
+#include "gfx_pipeline_image.hpp"
+#include "gfx_pipeline_SDF.hpp"
+#include "gfx_pipeline_alpha.hpp"
+#include "gfx_pipeline_tone_mapper.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -46,7 +46,7 @@ inline void gfx_surface::add_delegate(gfx_surface_delegate *delegate) noexcept
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
     hi_assert_not_null(delegate);
-    auto& delegate_info = _delegates.emplace_back(down_cast<gfx_surface_delegate_vulkan *>(delegate), _device->createSemaphore());
+    auto& delegate_info = _delegates.emplace_back(delegate, _device->createSemaphore());
 
     if (state >= gfx_surface_state::has_device) {
         auto& graphics_queue = _device->get_graphics_queue(intrinsic);

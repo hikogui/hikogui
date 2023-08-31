@@ -1,0 +1,143 @@
+// Copyright Take Vos 2019-2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+#include "gfx_pipeline_image.hpp"
+#include "gfx_pipeline_image_device_shared.hpp"
+#include "gfx_device_vulkan_impl.hpp"
+#include "../macros.hpp"
+
+namespace hi::inline v1::gfx_pipeline_image {
+
+void gfx_pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+{
+    gfx_pipeline::draw_in_command_buffer(commandBuffer, context);
+
+    hi_axiom_not_null(device());
+    device()->flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
+    device()->image_pipeline->prepare_atlas_for_rendering();
+
+    std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
+    std::vector<vk::DeviceSize> tmpOffsets = {0};
+    hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
+
+    device()->image_pipeline->draw_in_command_buffer(commandBuffer);
+
+    commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
+
+    pushConstants.windowExtent = extent2{narrow_cast<float>(extent.width), narrow_cast<float>(extent.height)};
+    pushConstants.viewportScale = sfloat_rg32{2.0f / extent.width, 2.0f / extent.height};
+    pushConstants.atlasExtent = sfloat_rg32{device_shared::atlas_image_axis_size, device_shared::atlas_image_axis_size};
+    pushConstants.atlasScale =
+        sfloat_rg32{1.0f / device_shared::atlas_image_axis_size, 1.0f / device_shared::atlas_image_axis_size};
+    commandBuffer.pushConstants(
+        pipelineLayout,
+        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+        0,
+        sizeof(push_constants),
+        &pushConstants);
+
+    hilet numberOfRectangles = vertexBufferData.size() / 4;
+    hilet numberOfTriangles = numberOfRectangles * 2;
+    device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw images");
+    commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
+    device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
+}
+
+std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_image::createShaderStages() const
+{
+    hi_axiom_not_null(device());
+    return device()->image_pipeline->shader_stages;
+}
+
+std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_image::createDescriptorSetLayoutBindings() const
+{
+    return {
+        {0, // binding
+         vk::DescriptorType::eSampler,
+         1, // descriptorCount
+         vk::ShaderStageFlagBits::eFragment},
+        {1, // binding
+         vk::DescriptorType::eSampledImage,
+         narrow_cast<uint32_t>(device_shared::atlas_maximum_num_images), // descriptorCount
+         vk::ShaderStageFlagBits::eFragment}};
+}
+
+std::vector<vk::WriteDescriptorSet> gfx_pipeline_image::createWriteDescriptorSet() const
+{
+    hi_axiom_not_null(device());
+    hilet& sharedImagePipeline = device()->image_pipeline;
+
+    return {
+        {
+            descriptorSet,
+            0, // destBinding
+            0, // arrayElement
+            1, // descriptorCount
+            vk::DescriptorType::eSampler,
+            &sharedImagePipeline->atlas_sampler_descriptor_image_info,
+            nullptr, // bufferInfo
+            nullptr // texelBufferView
+        },
+        {
+            descriptorSet,
+            1, // destBinding
+            0, // arrayElement
+            narrow_cast<uint32_t>(sharedImagePipeline->atlas_descriptor_image_infos.size()), // descriptorCount
+            vk::DescriptorType::eSampledImage,
+            sharedImagePipeline->atlas_descriptor_image_infos.data(),
+            nullptr, // bufferInfo
+            nullptr // texelBufferView
+        }};
+}
+
+size_t gfx_pipeline_image::getDescriptorSetVersion() const
+{
+    hi_axiom_not_null(device());
+    return device()->image_pipeline->atlas_textures.size();
+}
+
+std::vector<vk::PushConstantRange> gfx_pipeline_image::createPushConstantRanges() const
+{
+    return push_constants::pushConstantRanges();
+}
+
+vk::VertexInputBindingDescription gfx_pipeline_image::createVertexInputBindingDescription() const
+{
+    return vertex::inputBindingDescription();
+}
+
+std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_image::createVertexInputAttributeDescriptions() const
+{
+    return vertex::inputAttributeDescriptions();
+}
+
+void gfx_pipeline_image::build_vertex_buffers()
+{
+    using vertexIndexType = uint16_t;
+    constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
+
+    vk::BufferCreateInfo const bufferCreateInfo = {
+        vk::BufferCreateFlags(),
+        sizeof(vertex) * numberOfVertices,
+        vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::SharingMode::eExclusive};
+    VmaAllocationCreateInfo allocationCreateInfo = {};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>("image-pipeline vertex buffer");
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+    hi_axiom_not_null(device());
+    std::tie(vertexBuffer, vertexBufferAllocation) = device()->createBuffer(bufferCreateInfo, allocationCreateInfo);
+    device()->setDebugUtilsObjectNameEXT(vertexBuffer, "image-pipeline vertex buffer");
+    vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
+}
+
+void gfx_pipeline_image::teardown_vertex_buffers()
+{
+    hi_axiom_not_null(device());
+    device()->unmapMemory(vertexBufferAllocation);
+    device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
+}
+
+} // namespace hi::inline v1::gfx_pipeline_image

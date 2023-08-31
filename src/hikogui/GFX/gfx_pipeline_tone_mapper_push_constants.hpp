@@ -1,0 +1,22 @@
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+#pragma once
+
+#include "../image/module.hpp"
+#include "../macros.hpp"
+#include <vulkan/vulkan.hpp>
+
+namespace hi::inline v1::gfx_pipeline_tone_mapper {
+
+struct push_constants {
+    float saturation = 1.0;
+
+    static std::vector<vk::PushConstantRange> pushConstantRanges()
+    {
+        return {{vk::ShaderStageFlagBits::eFragment, 0, sizeof(push_constants)}};
+    }
+};
+
+} // namespace hi::inline v1::gfx_pipeline_tone_mapper
