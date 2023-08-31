@@ -2,6 +2,7 @@
 #pragma once
 
 #include "draw_context.hpp" // export
+#include "draw_context_impl.hpp" // export
 #include "gfx_device_vulkan.hpp" // export
 #include "gfx_device_vulkan_impl.hpp" // export
 #include "gfx_queue_vulkan.hpp" // export
@@ -23,7 +24,8 @@
 #include "gfx_pipeline_tone_mapper_vulkan.hpp" // export
 #include "gfx_pipeline_tone_mapper_vulkan_impl.hpp" // export
 #include "gfx_pipeline_vulkan.hpp" // export
-#include "RenderDoc.hpp" // export
+#include "gfx_pipeline_vulkan_impl.hpp" // export
+#include "render_doc.hpp" // export
 
 hi_export_module(hikogui.GUI);
 

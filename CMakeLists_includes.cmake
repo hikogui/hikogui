@@ -215,6 +215,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/formula/formula_vector_literal_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/draw_context.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/draw_context_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_device_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_queue_vulkan.hpp
@@ -236,7 +237,8 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_tone_mapper_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_vulkan.hpp
-    ${HIKOGUI_SOURCE_DIR}/GFX/RenderDoc.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_vulkan_impl.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/render_doc.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_type.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_variant.hpp

@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "draw_context.hpp"
 #include "gfx_pipeline_box_vulkan_impl.hpp"
 #include "gfx_pipeline_image_vulkan_impl.hpp"
@@ -11,9 +13,9 @@
 #include "../text/module.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
-draw_context::draw_context(
+inline draw_context::draw_context(
     gfx_device& device,
     vector_span<gfx_pipeline_box::vertex>& box_vertices,
     vector_span<gfx_pipeline_image::vertex>& image_vertices,
@@ -33,8 +35,8 @@ draw_context::draw_context(
     _alpha_vertices->clear();
 }
 
-void draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes)
-    const noexcept
+inline void
+draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
 {
     if (_alpha_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
@@ -45,7 +47,8 @@ void draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad b
     gfx_pipeline_alpha::device_shared::place_vertices(*_alpha_vertices, clipping_rectangle, box, attributes.fill_color.p0.a());
 }
 
-void draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
+inline void
+draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
 {
     // clang-format off
     hilet border_radius = attributes.line_width * 0.5f;
@@ -76,8 +79,10 @@ void draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, dr
         corner_radius);
 }
 
-[[nodiscard]] bool
-draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box, gfx_pipeline_image::paged_image const& image) const noexcept
+[[nodiscard]] inline bool draw_context::_draw_image(
+    aarectangle const& clipping_rectangle,
+    quad const& box,
+    gfx_pipeline_image::paged_image const& image) const noexcept
 {
     hi_assert_not_null(_image_vertices);
 
@@ -89,7 +94,7 @@ draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box
     return true;
 }
 
-void draw_context::_draw_glyph(
+inline void draw_context::_draw_glyph(
     aarectangle const& clipping_rectangle,
     quad const& box,
     font const& font,
@@ -106,14 +111,15 @@ void draw_context::_draw_glyph(
         return;
     }
 
-    hilet atlas_was_updated = device->SDF_pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, box, font, glyph, attributes.fill_color);
+    hilet atlas_was_updated =
+        device->SDF_pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, box, font, glyph, attributes.fill_color);
 
     if (atlas_was_updated) {
         device->SDF_pipeline->prepare_atlas_for_rendering();
     }
 }
 
-void draw_context::_draw_text(
+inline void draw_context::_draw_text(
     aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
@@ -137,7 +143,8 @@ void draw_context::_draw_text(
             break;
         }
 
-        atlas_was_updated |= device->SDF_pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.ids.front(), color);
+        atlas_was_updated |= device->SDF_pipeline->place_vertices(
+            *_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.ids.front(), color);
     }
 
     if (atlas_was_updated) {
@@ -145,7 +152,7 @@ void draw_context::_draw_text(
     }
 }
 
-void draw_context::_draw_text_selection(
+inline void draw_context::_draw_text_selection(
     aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
@@ -164,7 +171,7 @@ void draw_context::_draw_text_selection(
     }
 }
 
-void draw_context::_draw_text_insertion_cursor_empty(
+inline void draw_context::_draw_text_insertion_cursor_empty(
     aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
@@ -182,7 +189,7 @@ void draw_context::_draw_text_insertion_cursor_empty(
     _draw_box(clipping_rectangle, transform * shape_I, attributes);
 }
 
-void draw_context::_draw_text_insertion_cursor(
+inline void draw_context::_draw_text_insertion_cursor(
     aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
@@ -232,7 +239,7 @@ void draw_context::_draw_text_insertion_cursor(
     }
 }
 
-void draw_context::_draw_text_overwrite_cursor(
+inline void draw_context::_draw_text_overwrite_cursor(
     aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper::char_const_iterator it,
@@ -242,7 +249,7 @@ void draw_context::_draw_text_overwrite_cursor(
     _draw_box(clipping_rectangle, transform * box, attributes);
 }
 
-void draw_context::_draw_text_cursors(
+inline void draw_context::_draw_text_cursors(
     aarectangle const& clipping_rectangle,
     matrix3 const& transform,
     text_shaper const& text,
@@ -316,4 +323,4 @@ void draw_context::_draw_text_cursors(
     _draw_text_insertion_cursor(clipping_rectangle, transform, text, primary_cursor, draw_flags, attributes);
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

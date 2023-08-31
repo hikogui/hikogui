@@ -198,7 +198,7 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     // Start the RenderDoc server so that the application is easy to debug in RenderDoc.
-    auto doc = hi::RenderDoc{};
+    hi::start_render_doc();
 
     // Start the GUI-system.
     auto gui = hi::gui_system::make_unique();

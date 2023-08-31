@@ -201,7 +201,7 @@ int hi_main(int argc, char *argv[])
 
     // Start the logger system, so logging is done asynchronously.
     log::start_subsystem(global_state_type::log_level_info);
-    auto render_doc = RenderDoc();
+    start_render_doc();
 
     auto preferences = my_preferences(get_path(path_location::preferences_file));
 

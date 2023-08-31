@@ -336,7 +336,7 @@ int hi_main(int argc, char *argv[])
     hi::observer<bool> rounded = false;
 
     // Startup renderdoc for debugging
-    auto render_doc = hi::RenderDoc();
+    hi::start_render_doc();
 
     auto gui = hi::gui_system::make_unique();
     auto [window, widget] = gui->make_window<hi::window_widget>(hi::txt("Drawing Custom Widget"));
