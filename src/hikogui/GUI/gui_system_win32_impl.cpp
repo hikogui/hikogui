@@ -28,16 +28,14 @@ namespace hi::inline v1 {
     auto theme_directories = make_vector(get_paths(path_location::theme_dirs));
     auto theme_book = std::make_unique<hi::theme_book>(std::move(theme_directories));
 
-    auto keyboard_bindings = std::make_unique<hi::keyboard_bindings>();
     try {
-        keyboard_bindings->load_bindings(URL{"resource:win32.keybinds.json"}, true);
+        load_system_keyboard_bindings(URL{"resource:win32.keybinds.json"});
     } catch (std::exception const &e) {
         hi_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
     }
 
     auto r = std::make_unique<gui_system_win32>(
         std::move(theme_book),
-        std::move(keyboard_bindings),
         std::move(delegate));
     r->init();
     return r;
@@ -45,11 +43,9 @@ namespace hi::inline v1 {
 
 gui_system_win32::gui_system_win32(
     std::unique_ptr<hi::theme_book> theme_book,
-    std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) :
     gui_system(
         std::move(theme_book),
-        std::move(keyboard_bindings),
         std::move(delegate))
 {
 }

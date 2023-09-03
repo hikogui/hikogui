@@ -24,11 +24,7 @@
 #include <mutex>
 
 namespace hi::inline v1 {
-class gfx_device;
-class gfx_system;
-class gfx_surface;
 class gui_system;
-class keyboard_bindings;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -102,10 +98,6 @@ public:
     gui_window& operator=(gui_window&&) = delete;
 
     void set_device(gfx_device *device) noexcept;
-
-    /** Get the keyboard binding.
-     */
-    hi::keyboard_bindings const& keyboard_bindings() const noexcept;
 
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.

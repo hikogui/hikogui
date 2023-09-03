@@ -13,7 +13,6 @@ class gui_system_win32 final : public gui_system {
 public:
     gui_system_win32(
         std::unique_ptr<hi::theme_book> theme_book,
-        std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {});
 };
 
