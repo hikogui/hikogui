@@ -16,10 +16,8 @@ namespace hi::inline v1 {
 
 gui_system::gui_system(
     std::unique_ptr<hi::theme_book> theme_book,
-    std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) noexcept :
     theme_book(std::move(theme_book)),
-    keyboard_bindings(std::move(keyboard_bindings)),
     thread_id(current_thread_id()),
     _delegate(delegate)
 {

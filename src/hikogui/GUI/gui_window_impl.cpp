@@ -231,12 +231,6 @@ void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_foc
     return update_keyboard_target(_keyboard_target_id, group, direction);
 }
 
-hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
-{
-    hi_assert_not_null(gui.keyboard_bindings);
-    return *gui.keyboard_bindings;
-}
-
 bool gui_window::process_event(gui_event const& event) noexcept
 {
     using enum gui_event_type;
@@ -316,7 +310,9 @@ bool gui_window::process_event(gui_event const& event) noexcept
         break;
 
     case keyboard_down:
-        keyboard_bindings().translate(event, events);
+        for (auto &e : translate_keyboard_event(event)) {
+            events.push_back(e);
+        }
         break;
 
     default:;
