@@ -290,7 +290,7 @@ constexpr keyboard_virtual_key to_keyboard_virtual_key(std::string_view s)
     return keyboard_virtual_key_metadata[s];
 }
 
-keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers);
+[[nodiscard]] constexpr keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers) noexcept;
 
 constexpr std::string_view to_string_view(keyboard_virtual_key key) noexcept
 {

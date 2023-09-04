@@ -996,7 +996,7 @@ inline void gfx_surface::teardown_command_buffers()
     _device->freeCommandBuffers(_graphics_queue->command_pool, commandBuffers);
 }
 
-[[nodiscard]] inline std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window) noexcept
+[[nodiscard]] inline std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window)
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -1005,7 +1005,17 @@ inline void gfx_surface::teardown_command_buffers()
 
     auto vulkan_surface = vulkan_instance().createWin32SurfaceKHR(surface_create_info);
 
-    return std::make_unique<gfx_surface>(vulkan_surface);
+    auto surface = std::make_unique<gfx_surface>(vulkan_surface);
+    
+    // Now that we have a physical window and render surface it is time to find the gfx-device
+    // for rendering on this surface.
+    auto device = find_best_device_for_surface(surface->intrinsic);
+    if (not device) {
+        throw gfx_error("Could not find a vulkan-device matching this surface");
+    }
+    surface->set_device(device);
+
+    return surface;
 }
 
 } // namespace hi::inline v1

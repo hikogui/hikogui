@@ -242,7 +242,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_type.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_variant.hpp
-    ${HIKOGUI_SOURCE_DIR}/GUI/gui_system.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_window.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_window_size.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/gui_window_win32.hpp>
@@ -254,6 +253,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_modifiers.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_state.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_virtual_key.hpp
+    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/keyboard_virtual_key_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/GUI/module.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/mouse_buttons.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/mouse_cursor.hpp

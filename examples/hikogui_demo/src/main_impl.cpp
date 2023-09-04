@@ -205,7 +205,7 @@ int hi_main(int argc, char *argv[])
 
     auto preferences = my_preferences(get_path(path_location::preferences_file));
 
-    gui_system::global().selected_theme = preferences.selected_theme;
+    theme_book::global().selected_theme = preferences.selected_theme;
 
     auto audio_system = hi::audio_system::make_unique();
 

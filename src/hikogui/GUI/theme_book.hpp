@@ -19,6 +19,10 @@ namespace hi::inline v1 {
  */
 class theme_book {
 public:
+    /** The name of the selected theme.
+     */
+    observer<std::string> selected_theme = "default";
+
     ~theme_book() = default;
     theme_book(theme_book const&) = delete;
     theme_book(theme_book&&) = delete;
@@ -151,6 +155,11 @@ inline void register_theme_directories(R &&r) noexcept
 [[nodiscard]] inline std::vector<std::string> theme_names() noexcept
 {
     return theme_book::global().names();
+}
+
+[[nodiscard]] inline theme const &get_selected_theme() noexcept
+{
+    return find_theme(*theme_book::global().selected_theme, os_settings::theme_mode());
 }
 
 } // namespace hi::inline v1

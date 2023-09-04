@@ -186,6 +186,6 @@ private:
     std::tuple<std::size_t, extent2> get_image_count_and_size(std::size_t new_count, extent2 new_size);
 };
 
-[[nodiscard]] std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window) noexcept;
+[[nodiscard]] std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window);
 
 } // namespace hi::inline v1

@@ -185,6 +185,11 @@ public:
     using std::runtime_error::runtime_error;
 };
 
+class gfx_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
+
 class gui_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
