@@ -5,7 +5,7 @@
 #    ${STL_MODULE_DIR}/std.ixx
 #    ${STL_MODULE_DIR}/std.compat.ixx)
 
-target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES
+#target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES
 #    ${HIKOGUI_SOURCE_DIR}/hikogui.ixx
 #    ${HIKOGUI_SOURCE_DIR}/utility/architecture.ixx
 #    ${HIKOGUI_SOURCE_DIR}/utility/assert.ixx
@@ -23,4 +23,4 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
 #    ${HIKOGUI_SOURCE_DIR}/utility/exception_intf.ixx
 #    ${HIKOGUI_SOURCE_DIR}/utility/exception.ixx
 #    ${HIKOGUI_SOURCE_DIR}/utility/utility.ixx
-)
+#)

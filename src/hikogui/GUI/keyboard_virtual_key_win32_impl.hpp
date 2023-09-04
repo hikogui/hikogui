@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../win32_headers.hpp"
 
 #include "keyboard_virtual_key.hpp"
@@ -10,7 +12,7 @@
 
 namespace hi::inline v1 {
 
-keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers)
+[[nodiscard]] constexpr keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers) noexcept
 {
     switch (key_code) {
     case VK_MENU:

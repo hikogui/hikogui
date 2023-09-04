@@ -15,7 +15,7 @@
 #include "../time/module.hpp"
 #include "../settings/settings.hpp"
 #include "../numeric/module.hpp"
-#include "../GUI/module.hpp"
+#include "../GUI/GUI.hpp"
 #include "../coroutine/module.hpp"
 #include "../macros.hpp"
 #include <memory>

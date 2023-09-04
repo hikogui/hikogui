@@ -338,8 +338,7 @@ int hi_main(int argc, char *argv[])
     // Startup renderdoc for debugging
     hi::start_render_doc();
 
-    auto gui = hi::gui_system::make_unique();
-    auto [window, widget] = gui->make_window<hi::window_widget>(hi::txt("Drawing Custom Widget"));
+    auto [window, widget] = make_unique_window<hi::window_widget>(hi::txt("Drawing Custom Widget"));
 
     auto& custom_widget = widget.content().make_widget<drawing_widget>("A1:D1");
     custom_widget.drawing = drawing;

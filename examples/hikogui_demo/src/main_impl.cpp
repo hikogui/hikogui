@@ -57,7 +57,7 @@ hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferen
     co_await std::suspend_always{};
 }
 
-hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferences, hi::theme_book& theme_book) noexcept
+hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferences) noexcept
 {
     using namespace hi;
 
@@ -65,7 +65,7 @@ hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferen
 
     {
         auto proxy = theme_list.copy();
-        for (hilet& name : theme_book.theme_names()) {
+        for (hilet& name : theme_names()) {
             proxy->emplace_back(name, txt(name));
         }
     }
@@ -123,12 +123,12 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     co_await std::suspend_always{};
 }
 
-hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system& audio_system)
+hi::task<> preferences_window(my_preferences& preferences, hi::audio_system& audio_system)
 {
     using namespace hi;
 
     auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), txt("Preferences")};
-    auto [window, widget] = gui.make_window<window_widget>(window_label);
+    auto [window, widget] = make_unique_window<window_widget>(window_label);
 
     widget.toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 0, label{elusive_icon::Speaker, txt("Audio")});
     widget.toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 1, label{elusive_icon::Key, txt("License")});
@@ -141,17 +141,17 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, 
 
     auto audio_tab = init_audio_tab(audio_tab_grid, preferences, audio_system);
     auto license_tab = init_license_tab(license_tab_grid, preferences);
-    auto theme_tab = init_theme_tab(theme_tab_grid, preferences, *gui.theme_book);
+    auto theme_tab = init_theme_tab(theme_tab_grid, preferences);
 
     co_await window->closing;
 }
 
-hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system& audio_system)
+hi::task<> main_window(my_preferences& preferences, hi::audio_system& audio_system)
 {
     using namespace hi;
 
     auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), txt("HikoGUI demo")};
-    auto [window, widget] = gui.make_window<window_widget>(window_label);
+    auto [window, widget] = make_unique_window<window_widget>(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, txt("Preferences")};
     hilet& preferences_button = widget.toolbar().make_widget<hi::toolbar_button_widget>(preferences_label);
@@ -172,7 +172,7 @@ hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::aud
 
         switch (result.index()) {
         case 0:
-            preferences_window(gui, preferences, audio_system);
+            preferences_window(preferences, audio_system);
             break;
         case 1:
             gfx_system::global().log_memory_usage();
@@ -205,12 +205,11 @@ int hi_main(int argc, char *argv[])
 
     auto preferences = my_preferences(get_path(path_location::preferences_file));
 
-    auto gui = gui_system::make_unique();
-    gui->selected_theme = preferences.selected_theme;
+    theme_book::global().selected_theme = preferences.selected_theme;
 
     auto audio_system = hi::audio_system::make_unique();
 
-    main_window(*gui, preferences, *audio_system);
+    main_window(preferences, *audio_system);
     return loop::main().resume();
 }
 

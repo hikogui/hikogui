@@ -274,4 +274,9 @@ inline vk::DispatchLoaderDynamic vulkan_loader() noexcept
     return gfx_system::global().loader();
 }
 
+[[nodiscard]] inline gfx_device *find_best_device_for_surface(vk::SurfaceKHR surface)
+{
+    return gfx_system::global().find_best_device_for_surface(surface);
+}
+
 } // namespace hi::inline v1
