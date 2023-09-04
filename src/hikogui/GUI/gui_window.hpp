@@ -33,8 +33,6 @@ class gui_system;
  */
 class gui_window {
 public:
-    gui_system& gui;
-
     std::unique_ptr<gfx_surface> surface;
 
     /** The current rectangle of the window relative to the screen.
@@ -88,7 +86,7 @@ public:
      */
     notifier<void()> closing;
 
-    gui_window(gui_system& gui, std::unique_ptr<widget_intf> widget) noexcept : gui(gui), _widget(std::move(widget)) {}
+    gui_window(std::unique_ptr<widget_intf> widget) noexcept : _widget(std::move(widget)) {}
 
     virtual ~gui_window();
 

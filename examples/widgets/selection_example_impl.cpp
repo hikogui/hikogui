@@ -13,8 +13,7 @@ int hi_main(int argc, char *argv[])
     set_application_vendor("HikoGUI");
     set_application_version({1, 0, 0});
 
-    auto gui = gui_system::make_unique();
-    auto [window, widget] = gui->make_window<window_widget>(txt("Selection box example"));
+    auto [window, widget] = make_unique_window<window_widget>(txt("Selection box example"));
     widget.content().make_widget<label_widget>("A1", txt("Selection Box"), alignment::middle_center());
 
     /// [Create selection]

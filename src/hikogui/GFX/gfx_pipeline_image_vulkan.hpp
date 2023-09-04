@@ -166,8 +166,7 @@ public:
         device_shared& operator=(device_shared&&) = delete;
 
         /*! Deallocate vulkan resources.
-         * This is called in the destructor of gfx_device, therefor we can not use our `std::weak_ptr<gfx_device>
-         * device`.
+         * This is called in the destructor of gfx_device, therefor we can not use our gfx_device from this point on.
          */
         void destroy(gfx_device const *vulkanDevice);
 

@@ -5,8 +5,6 @@
 #include "gui_event_type.hpp"
 #include "gui_event_variant.hpp"
 #include "gui_system.hpp"
-#include "gui_system_delegate.hpp"
-#include "gui_system_win32.hpp"
 #include "gui_window.hpp"
 #include "gui_window_size.hpp"
 #include "gui_window_win32.hpp"

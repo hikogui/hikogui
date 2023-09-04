@@ -7,9 +7,9 @@
 
 using namespace hi;
 
-task<void> checkbox_example(gui_system &gui)
+task<void> checkbox_example()
 {
-    auto [window, widget] = gui.make_window<window_widget>(txt("Checkbox example"));
+    auto [window, widget] = make_unique_window<window_widget>(txt("Checkbox example"));
 
     /// [Create a label]
     widget.content().make_widget<label_widget>("A1", txt("checkbox:"));
@@ -33,7 +33,6 @@ int hi_main(int argc, char* argv[])
     set_application_vendor("HikoGUI");
     set_application_version({1, 0, 0});
 
-    auto gui = gui_system::make_unique();
-    checkbox_example(*gui);
+    checkbox_example();
     return loop::main().resume();
 }

@@ -243,8 +243,6 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_type.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_variant.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_system.hpp
-    ${HIKOGUI_SOURCE_DIR}/GUI/gui_system_delegate.hpp
-    $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/gui_system_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_window.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_window_size.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/gui_window_win32.hpp>

@@ -176,15 +176,15 @@ void gui_window_win32::create_window(extent2 new_size)
     surface = make_unique_gfx_surface(crt_application_instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf> widget) noexcept :
-    gui_window(gui, std::move(widget)), track_mouse_leave_event_parameters()
+gui_window_win32::gui_window_win32(std::unique_ptr<widget_intf> widget) noexcept :
+    gui_window(std::move(widget)), track_mouse_leave_event_parameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     _widget->set_window(this);
 
     // Execute a constraint check to determine initial window size.
-    theme = find_theme(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
+    theme = find_theme(*gui_system::global().selected_theme, os_settings::theme_mode()).transform(dpi);
 
     _widget_constraints = _widget->update_constraints();
     hilet new_size = _widget_constraints.preferred;
@@ -202,7 +202,7 @@ gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf>
         callback_flags::main);
 
     // Subscribe on theme changes.
-    _selected_theme_cbt = gui.selected_theme.subscribe(
+    _selected_theme_cbt = gui_system::global().selected_theme.subscribe(
         [this](auto...) {
             ++global_counter<"gui_window:selected_theme:constrain">;
             this->process_event({gui_event_type::window_reconstrain});
