@@ -14,18 +14,11 @@
 
 namespace hi::inline v1 {
 
-gui_system::gui_system(
-    std::unique_ptr<hi::theme_book> theme_book,
-    std::weak_ptr<gui_system_delegate> delegate) noexcept :
-    theme_book(std::move(theme_book)),
-    thread_id(current_thread_id()),
-    _delegate(delegate)
+gui_system::gui_system(std::weak_ptr<gui_system_delegate> delegate) noexcept : thread_id(current_thread_id()), _delegate(delegate)
 {
 }
 
-gui_system::~gui_system()
-{
-}
+gui_system::~gui_system() {}
 
 std::shared_ptr<gui_window> gui_system::add_window(std::shared_ptr<gui_window> window)
 {

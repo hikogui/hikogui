@@ -11,9 +11,7 @@ namespace hi::inline v1 {
 
 class gui_system_win32 final : public gui_system {
 public:
-    gui_system_win32(
-        std::unique_ptr<hi::theme_book> theme_book,
-        std::weak_ptr<gui_system_delegate> delegate = {});
+    gui_system_win32(std::weak_ptr<gui_system_delegate> delegate = {});
 };
 
 } // namespace hi::inline v1

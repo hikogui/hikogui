@@ -25,28 +25,21 @@ namespace hi::inline v1 {
     register_font_file(URL{"resource:fonts/hikogui_icons.ttf"});
     register_font_directories(get_paths(path_location::font_dirs));
 
-    auto theme_directories = make_vector(get_paths(path_location::theme_dirs));
-    auto theme_book = std::make_unique<hi::theme_book>(std::move(theme_directories));
+    register_theme_directories(get_paths(path_location::theme_dirs));
 
     try {
         load_system_keyboard_bindings(URL{"resource:win32.keybinds.json"});
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         hi_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
     }
 
-    auto r = std::make_unique<gui_system_win32>(
-        std::move(theme_book),
-        std::move(delegate));
+    auto r = std::make_unique<gui_system_win32>(std::move(delegate));
     r->init();
     return r;
 }
 
-gui_system_win32::gui_system_win32(
-    std::unique_ptr<hi::theme_book> theme_book,
-    std::weak_ptr<gui_system_delegate> delegate) :
-    gui_system(
-        std::move(theme_book),
-        std::move(delegate))
+gui_system_win32::gui_system_win32(std::weak_ptr<gui_system_delegate> delegate) :
+    gui_system(std::move(delegate))
 {
 }
 

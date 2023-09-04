@@ -58,7 +58,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain) {
         hilet t2 = trace<"window::constrain">();
 
-        theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
+        theme = find_theme(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
         _widget_constraints = _widget->update_constraints();
     }

@@ -32,8 +32,6 @@ class theme_book;
  */
 class gui_system {
 public:
-    std::unique_ptr<hi::theme_book> theme_book;
-
     thread_id const thread_id;
 
     /** The name of the selected theme.
@@ -51,11 +49,11 @@ public:
     [[nodiscard]] static std::unique_ptr<gui_system> make_unique(std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
     virtual ~gui_system();
-
     gui_system(const gui_system&) = delete;
     gui_system& operator=(const gui_system&) = delete;
     gui_system(gui_system&&) = delete;
     gui_system& operator=(gui_system&&) = delete;
+    gui_system(std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
     /** Initialize after construction.
      * Call this function directly after the constructor on the same thread.
@@ -115,11 +113,6 @@ public:
     /** Request all windows to constrain.
      */
     void request_reconstrain() noexcept;
-
-protected:
-    gui_system(
-        std::unique_ptr<hi::theme_book> theme_book,
-        std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
 private:
     std::weak_ptr<gui_system_delegate> _delegate;

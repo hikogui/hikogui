@@ -184,7 +184,7 @@ gui_window_win32::gui_window_win32(gui_system& gui, std::unique_ptr<widget_intf>
     _widget->set_window(this);
 
     // Execute a constraint check to determine initial window size.
-    theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
+    theme = find_theme(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
     _widget_constraints = _widget->update_constraints();
     hilet new_size = _widget_constraints.preferred;
