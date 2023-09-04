@@ -7,8 +7,11 @@ For installing the HikoGUI library as part of an application see the
 example application.
 
 Specific installation manuals for each platform and IDE:
+ - [Visual Studio Code](docs/build_with_visual_studio_code.md)
+
+It is currently not recommended to use Visual Studio nor CLion with HikoGUI
+due to serious issues, however it used to work:
  - [Visual Studio (Preview)](docs/build_with_visual_studio.md)
- - [Visual Studio (Preview) + vcpkg](docs/build_with_visual_studio_and_vcpkg.md)
  - [gcc on Linux](docs/build_with_gcc_on_linux.md)
 
 Bugs impacting HikoGUI
@@ -17,30 +20,35 @@ Bugs impacting HikoGUI
 ### Bugs in Visual Studio
 _Please vote on the following bugs to potentially prioritize fixes by Microsoft_
 
-Components, such as IntelliSense and vcpkgsrv.exe, of Visual Studio will crash very often due to
-the following bug:
+Components, such as IntelliSense and vcpkgsrv.exe, of Visual Studio will crash
+very often due to the many bugs, I've given up on reporting them.
 
- - <https://developercommunity.visualstudio.com/t/Intellisense-and-vcpkgsrvexe-keeps-cras/10159818>
+ - <https://developercommunity.visualstudio.com/t/Find-all-references-not-working-CMake/10353435>
+ - <https://developercommunity.visualstudio.com/t/I-need-help-fixing-all-the-intellisense/10349228>
 
-The following bugs cause thousands of false positive warnings and errors from IntelliSense. You should
-set Error List window to show "Build Only" to ignore IntelliSense.
-
- - <https://developercommunity.visualstudio.com/t/Intellisense-fails-to-keep-track-of-type/1614419>
- - <https://developercommunity.visualstudio.com/t/Intellisense-false-positive-E3244-templa/1614488>
- - <https://developercommunity.visualstudio.com/t/Intellisense-E0028-expression-must-have/1614411>
-
-We also would like to use non-google unit-testing. However Microsoft does plugin system for unit-test does
-not work with CMake, therefor only google and boost unit-testing are supported. We would like to use
-catch2, but that doesn't work:
+We also would like to use non-google unit-testing. However Microsoft plugin
+system for unit-test does not work with CMake, therefor only google and boost
+unit-testing are supported. We would like to use catch2, but that doesn't work:
 
  - <https://developercommunity.visualstudio.com/t/CTest-test-adapter-for-Test-Explorer:-ad/640938>
 
-Test Explorer is almost always broken in Visual Studio one of the problems is the Test Explorer
-cache that get corrupted. This is a feature request to add a button to delete this cache:
+Test Explorer is almost always broken in Visual Studio one of the problems is
+the Test Explorer cache that get corrupted after every update of Visual Studio.
+This is a feature request to add a button to delete this cache, however this
+button does not actually work:
 
  - <https://developercommunity.visualstudio.com/t/Add-Clear-Test-Explorer-Cache-button-t/877480>
 
-The following are some random MSVC compiler errors that needed to be worked around:
 
- - <https://developercommunity.visualstudio.com/t/C2131-templated-static-constexpr-member/1492745>
+The following are some random MSVC compiler errors that needed to be worked
+around:
+
  - <https://developercommunity.visualstudio.com/t/Failure-to-get-decltype-of-previous-ar/10147771>
+ - <https://developercommunity.visualstudio.com/t/C3615-false-positive-when-early-return-f/10395567>
+
+There are also quite a few bugs in the module support of MSVC including crashes
+I am trying to make small bug reports for them since Microsoft ignores large
+bug reports
+
+ - <https://developercommunity.visualstudio.com/t/C1001:-exporting-a-module/10230789>
+ 
