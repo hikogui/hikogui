@@ -18,8 +18,6 @@
 #include <vector>
 #include <algorithm>
 
-
-
 namespace hi::inline v1 {
 
 struct text_sub_style {
@@ -69,8 +67,17 @@ struct text_sub_style {
         return r;
     }
 
-    [[nodiscard]] float cap_height() const noexcept;
-    [[nodiscard]] float x_height() const noexcept;
+    [[nodiscard]] float cap_height() const noexcept
+    {
+        hilet& font = find_font(family_id, variant);
+        return font.metrics.cap_height * size;
+    }
+
+    [[nodiscard]] float x_height() const noexcept
+    {
+        hilet& font = find_font(family_id, variant);
+        return font.metrics.x_height * size;
+    }
 
     [[nodiscard]] bool matches(phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
     {

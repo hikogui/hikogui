@@ -123,21 +123,40 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style const& style, float dpi_scale) noexcept;
+    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style const& style, float dpi_scale) noexcept :
+        grapheme(grapheme),
+        style(style),
+        dpi_scale(dpi_scale),
+        line_nr(std::numeric_limits<size_t>::max()),
+        column_nr(std::numeric_limits<size_t>::max()),
+        general_category(ucd_get_general_category(grapheme.starter()))
+    {
+    }
 
     /** Initialize the glyph based on the grapheme.
      *
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(hi::font const& font) noexcept;
+    void initialize_glyph(hi::font const& font) noexcept
+    {
+        if (not glyph_is_initial) {
+            set_glyph(find_glyph(font, grapheme));
+
+            width = metrics.advance;
+            glyph_is_initial = true;
+        }
+    }
 
     /** Initialize the glyph based on the grapheme.
      *
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph() noexcept;
+    void initialize_glyph() noexcept
+    {
+        return initialize_glyph(find_font(style->family_id, style->variant));
+    }
 
     /** Called by the bidi-algorithm to mirror glyphs.
      *
@@ -147,7 +166,14 @@ public:
      * @post `glyph` and `metrics` are modified. `glyph_is_initial` is set to false.
      * @note The `width` remains based on the original glyph.
      */
-    void replace_glyph(char32_t code_point) noexcept;
+    void replace_glyph(char32_t code_point) noexcept
+    {
+        hi_axiom_not_null(glyphs.font);
+        hilet& font = *glyphs.font;
+        set_glyph(font_book::font_glyphs_type{font, font.find_glyph(code_point)});
+
+        glyph_is_initial = false;
+    }
 
     /** Get the scaled font metrics for this character.
      */
@@ -170,7 +196,13 @@ public:
 private:
     /** Load metrics based on the loaded glyph.
      */
-    void set_glyph(hi::font_book::font_glyphs_type&& new_glyph) noexcept;
+    void set_glyph(hi::font_book::font_glyphs_type&& new_glyphs) noexcept
+    {
+        glyphs = std::move(new_glyphs);
+        hi_axiom_not_null(glyphs.font);
+        scale = glyphs.get_font_metrics().round_scale(dpi_scale * style->size);
+        metrics = scale * glyphs.get_starter_metrics();
+    }
 };
 
 } // namespace hi::inline v1

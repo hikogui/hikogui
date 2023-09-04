@@ -3,7 +3,7 @@ configure_file(
     ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp.in
     ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp @ONLY)
 
-target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES
+target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES
     ${HIKOGUI_SOURCE_DIR}/audio/audio_block.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_channel.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_device.hpp
