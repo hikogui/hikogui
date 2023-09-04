@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "text_delegate.hpp"
-#include "../GUI/module.hpp"
+#include "../GUI/GUI.hpp"
 #include "../text/module.hpp"
 #include "../geometry/module.hpp"
 #include "../l10n/l10n.hpp"

@@ -20,7 +20,7 @@
 #include "geometry/module.hpp"
 #include "GFX/GFX.hpp"
 #include "graphic_path/graphic_path.hpp"
-#include "GUI/module.hpp"
+#include "GUI/GUI.hpp"
 #include "i18n/i18n.hpp"
 #include "image/module.hpp"
 #include "l10n/l10n.hpp"

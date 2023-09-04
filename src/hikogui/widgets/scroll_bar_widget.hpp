@@ -9,7 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/module.hpp"
+#include "../GUI/GUI.hpp"
 #include "../geometry/module.hpp"
 #include "../observer/module.hpp"
 #include "../utility/utility.hpp"

@@ -4,7 +4,7 @@
 
 #include "text_widget.hpp"
 #include "../file/file.hpp"
-#include "../GUI/module.hpp"
+#include "../GUI/GUI.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

@@ -254,7 +254,7 @@ target_sources(hikogui PUBLIC FILE_SET hikogui_include_files TYPE HEADERS BASE_D
     ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_state.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/keyboard_virtual_key.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/keyboard_virtual_key_win32_impl.hpp>
-    ${HIKOGUI_SOURCE_DIR}/GUI/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/GUI/GUI.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/mouse_buttons.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/mouse_cursor.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/theme.hpp
