@@ -38,7 +38,7 @@ public:
 
     virtual ~audio_device_widget() {}
 
-    audio_device_widget(widget *parent, hi::audio_system& audio_system) noexcept : super(parent), _audio_system(&audio_system)
+    audio_device_widget(widget *parent) noexcept : super(parent)
     {
         _grid_widget = std::make_unique<grid_widget>(this);
         _device_selection_widget = &_grid_widget->make_widget<selection_widget>("A1", device_id, _device_list);
@@ -97,8 +97,6 @@ public:
     }
     /// @endprivatesection
 private:
-    hi::audio_system *_audio_system;
-
     /** The grid widget contains all the child widgets.
      */
     std::unique_ptr<grid_widget> _grid_widget;
@@ -119,14 +117,12 @@ private:
             {
                 auto proxy = _device_list.copy();
                 proxy->clear();
-                for (auto& device : _audio_system->devices()) {
-                    if (device.state() == hi::audio_device_state::active and to_bool(device.direction() & *direction)) {
-                        proxy->emplace_back(device.id(), device.label());
-                    }
+                for (auto& device : audio_devices(hi::audio_device_state::active, *direction)) {
+                    proxy->emplace_back(device.id(), device.label());
                 }
             }
 
-            co_await when_any(*_audio_system, direction);
+            co_await when_any(audio_system::global(), direction);
         }
     }
 };

@@ -120,8 +120,10 @@ int hi_main(int argc, char *argv[])
     hi::set_application_vendor("HikoGUI");
     hi::set_application_version({1, 0, 0});
 
-    auto [window, widget] = make_unique_window<hi::window_widget>(hi::txt("Widget with child"));
-    widget.content().make_widget<widget_with_child>("A1", hi::txt("Widget with child"));
+    auto widget = std::make_unique<hi::window_widget>(hi::txt("Widget with child"));
+    widget->content().make_widget<widget_with_child>("A1", hi::txt("Widget with child"));
+
+    auto window = std::make_unique<hi::gui_window>(std::move(widget));
 
     auto close_cbt = window->closing.subscribe(
         [&] {

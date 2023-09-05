@@ -13,22 +13,24 @@ int hi_main(int argc, char *argv[])
     set_application_vendor("HikoGUI");
     set_application_version({1, 0, 0});
 
-    auto [window, widget] = make_unique_window<window_widget>(txt("tab example"));
+    auto widget = std::make_unique<window_widget>(txt("tab example"));
 
     observer<int> value = 0;
 
     /// [Create three tabs]
-    auto& tab_view = widget.content().make_widget<tab_widget>("A1", value);
+    auto& tab_view = widget->content().make_widget<tab_widget>("A1", value);
     tab_view.make_widget<label_widget>(0, txt("one"), alignment::middle_center());
     tab_view.make_widget<label_widget>(1, txt("two"), alignment::middle_center());
     tab_view.make_widget<label_widget>(2, txt("three"), alignment::middle_center());
     /// [Create three tabs]
 
     /// [Create three toolbar tab buttons]
-    widget.toolbar().make_widget<toolbar_tab_button_widget>(value, 0, txt("one"));
-    widget.toolbar().make_widget<toolbar_tab_button_widget>(value, 1, txt("two"));
-    widget.toolbar().make_widget<toolbar_tab_button_widget>(value, 2, txt("three"));
+    widget->toolbar().make_widget<toolbar_tab_button_widget>(value, 0, txt("one"));
+    widget->toolbar().make_widget<toolbar_tab_button_widget>(value, 1, txt("two"));
+    widget->toolbar().make_widget<toolbar_tab_button_widget>(value, 2, txt("three"));
     /// [Create three toolbar tab buttons]
+
+    auto window = std::make_unique<gui_window>(std::move(widget));
 
     auto close_cb = window->closing.subscribe(
         [&] {

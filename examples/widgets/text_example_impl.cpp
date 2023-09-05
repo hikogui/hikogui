@@ -13,7 +13,7 @@ int hi_main(int argc, char *argv[])
     set_application_vendor("HikoGUI");
     set_application_version({1, 0, 0});
 
-    auto [window, widget] = make_unique_window<window_widget>(txt("Label example"));
+    auto widget = std::make_unique<window_widget>(txt("Label example"));
 
     // Start the logger system, so logging is done asynchronously.
     log::start_subsystem(hi::global_state_type::log_level_info);
@@ -75,8 +75,10 @@ int hi_main(int argc, char *argv[])
 
     auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
-    auto& tw = widget.content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
+    auto& tw = widget->content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
     tw.mode = hi::widget_mode::enabled;
+
+    auto window = std::make_unique<gui_window>(std::move(widget));
 
     auto close_cb = window->closing.subscribe(
         [&] {

@@ -226,12 +226,16 @@ private:
     friend class audio_system_win32_notification_client;
 };
 
-hi_export [[nodiscard]] inline std::unique_ptr<audio_system> audio_system::make_unique() noexcept
+hi_export [[nodiscard]] inline audio_system &audio_system::global() noexcept
 {
-    auto tmp = std::make_unique<audio_system_aggregate>();
-    tmp->add_child(std::make_unique<audio_system_win32>());
-    // Possibly add asio here as well.
-    return tmp;
+    if (not _global) {
+        auto tmp = std::make_unique<audio_system_aggregate>();
+        tmp->add_child(std::make_unique<audio_system_win32>());
+        // Possibly add asio here as well.
+
+        _global = std::move(tmp);
+    }
+    return *_global;
 }
 
 }} // namespace hi::inline v1

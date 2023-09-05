@@ -242,7 +242,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_type.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_variant.hpp
-    ${HIKOGUI_SOURCE_DIR}/GUI/gui_window.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_window_size.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/GUI/gui_window_win32.hpp>
     ${HIKOGUI_SOURCE_DIR}/GUI/hitbox.hpp

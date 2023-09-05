@@ -13,17 +13,19 @@ int hi_main(int argc, char *argv[])
     set_application_vendor("HikoGUI");
     set_application_version({1, 0, 0});
 
-    auto [window, widget] = make_unique_window<window_widget>(txt("Toggle example"));
-    widget.content().make_widget<label_widget>("A1", txt("toggle:"));
+    auto widget = std::make_unique<window_widget>(txt("Toggle example"));
+    widget->content().make_widget<label_widget>("A1", txt("toggle:"));
 
     /// [Create a toggle]
     observer<int> value = 0;
 
-    auto& tb = widget.content().make_widget<toggle_widget>("B1", value, 1, 2);
+    auto& tb = widget->content().make_widget<toggle_widget>("B1", value, 1, 2);
     tb.on_label = txt("on");
     tb.off_label = txt("off");
     tb.other_label = txt("other");
     /// [Create a toggle]
+
+    auto window = std::make_unique<gui_window>(std::move(widget));
 
     auto close_cb = window->closing.subscribe(
         [&] {

@@ -134,9 +134,11 @@ int hi_main(int argc, char *argv[])
     hi::set_application_vendor("HikoGUI");
     hi::set_application_version({1, 0, 0});
 
-    auto [window, widget] = make_unique_window<hi::window_widget>(hi::txt("Custom Widget Command"));
-    widget.content().make_widget<command_widget>("A1");
-    widget.content().make_widget<command_widget>("A2");
+    auto widget = std::make_unique<hi::window_widget>(hi::txt("Custom Widget Command"));
+    widget->content().make_widget<command_widget>("A1");
+    widget->content().make_widget<command_widget>("A2");
+
+    auto window = std::make_unique<hi::gui_window>(std::move(widget));
 
     auto close_cbt = window->closing.subscribe(
         [&] {

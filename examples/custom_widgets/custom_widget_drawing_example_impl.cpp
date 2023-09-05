@@ -338,9 +338,9 @@ int hi_main(int argc, char *argv[])
     // Startup renderdoc for debugging
     hi::start_render_doc();
 
-    auto [window, widget] = make_unique_window<hi::window_widget>(hi::txt("Drawing Custom Widget"));
+    auto widget = std::make_unique<hi::window_widget>(hi::txt("Drawing Custom Widget"));
 
-    auto& custom_widget = widget.content().make_widget<drawing_widget>("A1:D1");
+    auto& custom_widget = widget->content().make_widget<drawing_widget>("A1:D1");
     custom_widget.drawing = drawing;
     custom_widget.shape = shape;
     custom_widget.rotating = rotating;
@@ -350,31 +350,33 @@ int hi_main(int argc, char *argv[])
     custom_widget.border_width = border_width;
     custom_widget.rounded = rounded;
 
-    widget.content().make_widget<hi::label_widget>("A2", hi::txt("Drawing type:"));
-    widget.content().make_widget<hi::selection_widget>("B2:D2", drawing, drawing_list);
+    widget->content().make_widget<hi::label_widget>("A2", hi::txt("Drawing type:"));
+    widget->content().make_widget<hi::selection_widget>("B2:D2", drawing, drawing_list);
 
-    widget.content().make_widget<hi::label_widget>("A3", hi::txt("Shape:"));
-    widget.content().make_widget<hi::selection_widget>("B3:D3", shape, shape_list);
+    widget->content().make_widget<hi::label_widget>("A3", hi::txt("Shape:"));
+    widget->content().make_widget<hi::selection_widget>("B3:D3", shape, shape_list);
 
-    widget.content().make_widget<hi::label_widget>("A4", hi::txt("Gradient:"));
-    widget.content().make_widget<hi::selection_widget>("B4:D4", gradient, gradient_list);
+    widget->content().make_widget<hi::label_widget>("A4", hi::txt("Gradient:"));
+    widget->content().make_widget<hi::selection_widget>("B4:D4", gradient, gradient_list);
 
-    widget.content().make_widget<hi::label_widget>("A5", hi::txt("Border side:"));
-    widget.content().make_widget<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::txt("on"));
-    widget.content().make_widget<hi::radio_button_widget>("C5", border_side, hi::border_side::inside, hi::txt("inside"));
-    widget.content().make_widget<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::txt("outside"));
+    widget->content().make_widget<hi::label_widget>("A5", hi::txt("Border side:"));
+    widget->content().make_widget<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::txt("on"));
+    widget->content().make_widget<hi::radio_button_widget>("C5", border_side, hi::border_side::inside, hi::txt("inside"));
+    widget->content().make_widget<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::txt("outside"));
 
-    widget.content().make_widget<hi::label_widget>("A6", hi::txt("Border width:"));
-    widget.content().make_widget<hi::selection_widget>("B6:D6", border_width, border_width_list);
+    widget->content().make_widget<hi::label_widget>("A6", hi::txt("Border width:"));
+    widget->content().make_widget<hi::selection_widget>("B6:D6", border_width, border_width_list);
 
-    widget.content().make_widget<hi::label_widget>("A7", hi::txt("Rotate:"));
-    widget.content().make_widget<hi::toggle_widget>("B7:D7", rotating);
+    widget->content().make_widget<hi::label_widget>("A7", hi::txt("Rotate:"));
+    widget->content().make_widget<hi::toggle_widget>("B7:D7", rotating);
 
-    widget.content().make_widget<hi::label_widget>("A8", hi::txt("Clip:"));
-    widget.content().make_widget<hi::toggle_widget>("B8:D8", clip);
+    widget->content().make_widget<hi::label_widget>("A8", hi::txt("Clip:"));
+    widget->content().make_widget<hi::toggle_widget>("B8:D8", clip);
 
-    widget.content().make_widget<hi::label_widget>("A9", hi::txt("Rounded:"));
-    widget.content().make_widget<hi::toggle_widget>("B9:D9", rounded);
+    widget->content().make_widget<hi::label_widget>("A9", hi::txt("Rounded:"));
+    widget->content().make_widget<hi::toggle_widget>("B9:D9", rounded);
+
+    auto window = std::make_unique<hi::gui_window>(std::move(widget));
 
     auto close_cbt = window->closing.subscribe(
         [&] {
