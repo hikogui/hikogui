@@ -28,6 +28,21 @@ For the best experience install Visual Studio before Visual Studio Code.
    - Test Adapter Convert (Microsoft)
    - Test Explorer UI (Holger Benl)
 
+Setup Visual Studio
+-------------------
+
+We offer a curated list of required Visual Studio components in `.github\.vsconfig`.
+You can import this file using the Visual Studio Installer.
+
+Setup VSCode
+------------
+
+We offer a curated list of C++ project extensions in `.vscode\extensions.json`.
+To activate automatic installation of these recommendations,
+modify `"extensions.ignoreRecommendations"` to `false` in your `.vscode\settings.json`.
+This will allow receiving our extension suggestions.
+After installation, you might want to set it back to `true` to avoid
+continuous recommendation notifications during development.
 
 Clone the HikoGUI project from github
 -------------------------------------

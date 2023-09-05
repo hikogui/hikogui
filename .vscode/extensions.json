@@ -1,0 +1,25 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=827846
+    // for the documentation about the extensions.json format.
+    //
+    // Please set "extensions.ignoreRecommendations": false
+    // in settings.json to get our extension suggestions.
+    //
+    "recommendations": [
+        // EditorConfig
+        "EditorConfig.EditorConfig",
+        // Git + Github
+        "GitHub.vscode-pull-request-github",
+        // C++
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-vscode.cpptools-themes",
+        // CMake
+        "ms-vscode.cmake-tools",
+        "twxs.cmake",
+        // Testing
+        "matepek.vscode-catch2-test-adapter",
+        "ms-vscode.test-adapter-converter",
+        "hbenl.vscode-test-explorer"
+    ]
+}

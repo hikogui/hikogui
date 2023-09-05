@@ -16,6 +16,7 @@
     "editor.fontSize": 16,
     "terminal.integrated.fontSize": 14,
     "editor.fontLigatures": true,
+    "extensions.ignoreRecommendations": true,
     "files.associations": {
         "new": "cpp",
         "unordered_map": "cpp",
