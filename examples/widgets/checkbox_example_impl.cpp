@@ -9,22 +9,23 @@ using namespace hi;
 
 task<void> checkbox_example()
 {
-    auto [window, widget] = make_unique_window<window_widget>(txt("Checkbox example"));
+    auto widget = std::make_unique<window_widget>(txt("Checkbox example"));
 
     /// [Create a label]
-    widget.content().make_widget<label_widget>("A1", txt("checkbox:"));
+    widget->content().make_widget<label_widget>("A1", txt("checkbox:"));
     /// [Create a label]
 
     /// [Create a checkbox]
     observer<int> value = 0;
 
-    auto& cb = widget.content().make_widget<checkbox_widget>("B1", value, 1, 2);
+    auto& cb = widget->content().make_widget<checkbox_widget>("B1", value, 1, 2);
     cb.on_label = txt("on");
     cb.off_label = txt("off");
     cb.other_label = txt("other");
     /// [Create a checkbox]
 
-    co_await window->closing;
+    auto window = gui_window{std::move(widget)};
+    co_await window.closing;
 }
 
 int hi_main(int argc, char* argv[])

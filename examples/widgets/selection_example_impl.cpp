@@ -13,15 +13,17 @@ int hi_main(int argc, char *argv[])
     set_application_vendor("HikoGUI");
     set_application_version({1, 0, 0});
 
-    auto [window, widget] = make_unique_window<window_widget>(txt("Selection box example"));
-    widget.content().make_widget<label_widget>("A1", txt("Selection Box"), alignment::middle_center());
+    auto widget = std::make_unique<window_widget>(txt("Selection box example"));
+    widget->content().make_widget<label_widget>("A1", txt("Selection Box"), alignment::middle_center());
 
     /// [Create selection]
     auto option_list = std::vector<std::pair<int, label>>{{1, txt("one")}, {2, txt("two")}, {3, txt("three")}};
 
     observer<int> value = 0;
-    widget.content().make_widget<selection_widget>("A2", value, option_list);
+    widget->content().make_widget<selection_widget>("A2", value, option_list);
     /// [Create selection]
+
+    auto window = std::make_unique<gui_window>(std::move(widget));
 
     auto close_cb = window->closing.subscribe(
         [&] {

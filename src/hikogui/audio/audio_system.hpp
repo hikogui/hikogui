@@ -10,6 +10,7 @@
 #include "../macros.hpp"
 #include <vector>
 #include <memory>
+#include <concepts>
 
 hi_export_module(hikogui.audio.audio_system);
 
@@ -26,7 +27,7 @@ public:
 
     /** Create an audio system object specific for the current operating system.
      */
-    [[nodiscard]] static std::unique_ptr<audio_system> make_unique() noexcept;
+    [[nodiscard]] static audio_system &global() noexcept;
 
     audio_system() = default;
     virtual ~audio_system() = default;
@@ -59,7 +60,52 @@ public:
     }
 
 protected:
+    inline static std::unique_ptr<audio_system> _global;
+
     notifier_type _notifier;
 };
+
+template<typename Context>
+concept audio_device_filter = std::same_as<Context, audio_device_state> or std::same_as<Context, audio_direction>;
+
+[[nodiscard]] constexpr bool match_audio_device(audio_device const &device) noexcept
+{
+    return true;
+}
+
+template<audio_device_filter FirstFilter, audio_device_filter... Filters>
+[[nodiscard]] inline bool match_audio_device(audio_device const &device, FirstFilter &&first_filter, Filters &&...filters) noexcept
+{
+    if constexpr (std::same_as<FirstFilter, audio_device_state>) {
+        if (device.state() != first_filter) {
+            return false;
+        }
+    } else if constexpr (std::same_as<FirstFilter, audio_direction>) {
+        if (not to_bool(device.direction() & first_filter)) {
+            return false;
+        }
+    } else {
+        hi_static_no_default();
+    }
+
+    return match_audio_device(device, std::forward<Filters>(filters)...);
+}
+
+/** Get audio devices matching the filter arguments.
+ * 
+ * @param filters A list of filters that the audio devices need to match with.
+ *                Filters are of the types `hi::audio_device_state` and
+ *                `hi::audio_direction`.
+ * @return A list of audio devices matching the filters.
+ */
+template<audio_device_filter... Filters>
+[[nodiscard]] generator<audio_device &> audio_devices(Filters &&...filters) noexcept
+{
+    for (auto &device: audio_system::global().devices()) {
+        if (match_audio_device(device, std::forward<Filters>(filters)...)) {
+            co_yield device;
+        }
+    }
+}
 
 }} // namespace hi::inline v1

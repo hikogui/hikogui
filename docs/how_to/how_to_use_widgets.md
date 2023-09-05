@@ -4,41 +4,55 @@ How to use widgets
 Creating Windows
 ----------------
 
-In the following example, a new window is created. The `make_window()` function
-first argument is the `hi::label` of the window. The label consists of both a
+In the following example, a new window is created. First we need to create
+a `std::unique_ptr` to a `hi::window_widget`, it accepts a label or txt
+as an argument for the title of the window. The label may contain both a
 translatable text and an icon.
 
-```cpp
-auto gui = hi::gui_system::make_unique();
-auto &window = gui->make_window(hi::txt("The window title"));
-```
+Then we create a new window, this may be directly creates on the stack or
+on the heap, the window will take ownership of the `hi::window_widget`.
 
-The second optional argument to `make_window()` is a subclass of
-`hi::gui_window_delegate`. The window delegate can be used to store data with
-the window and provide initialization of the widgets.
+```cpp
+auto widget = std::make_unique<hi::window_widget>(hi::txt("The window title"));
+auto window = hi::gui_window(std::move(widget));
+```
 
 Unlike many other GUI libraries, a window is not given a size; its initial,
 minimum and maximum size is determined by the constraints and the layout
 algorithm of the widgets being displayed in the window.
 
-The `hi::gui_system::make_unique()` function returns a `std::unique_ptr`
-to a new instance of a configured GUI system. From this point forward, any
-usage of the GUI system, its windows and their widgets must be done from
-the same thread, called the `gui_thread`.
+From the first construction of a `hi::gui_window`, any usage of the GUI system,
+its windows and their widgets must be done from the same thread,
+called the `main` thread.
 
-After creating at least one window, you should call `hi::gui_system::loop()`
+After creating at least one window, you should call `hi::loop::main().resume()`
 member function. This function will enter the system's GUI-loop, monitor
 keyboard & mouse events and render all the windows. Once all windows are
-closed the `loop()` function will return with a return code, which may be
+closed the `resume()` function will return with a return code, which may be
 returned from the `main()` function.
 
 ```cpp
 int hi_main(int argc, char *argv[])
 {
-    auto gui = hi::gui_system::make_unique();
-    auto &window = gui->make_window(hi::txt("The window title"));
-    window.content().make_widget<momentary_button_widget>("A1", txt("Does nothing"));
-    return gui->loop();
+    hi::set_application_name("Hello World");
+    hi::set_application_vendor("HikoGUI");
+    hi::set_application_version({1, 0, 0});
+
+    auto widget = std::make_unique<hi::window_widget>(hi::txt("The window title"));
+    widget->content().make_widget<hi::momentary_button_widget>("A1", hi::txt("Does nothing"));
+
+    auto window = std::make_unique<hi::gui_window>(std::move(widget));
+
+    auto close_cb = window->closing.subscribe(
+        [&] {
+            // When the close button on the window is clicked this lambda
+            // will destroy the actual window, which will in turn cause the
+            // resume() function to exit.
+            window.reset();
+        },
+        hi::callback_flags::main);
+
+    return hi::loop::main().resume();
 }
 ```
 
@@ -57,25 +71,34 @@ a `hi::toolbar_widget`.
 In the example below we are adding 4 widgets to the content area of the window.
 
 The `hi::window::content()` function returns a reference to the `hi::grid_widget`,
- and we use its `make_widget<>()` function to add new widgets. The template
- argument is the type of widget to instantiate and the first argument is the
- position within the grid widget. The rest of the arguments are passed to the
- constructor of the new widget.
+and we use its `make_widget<>()` function to add new widgets. The template
+argument is the type of widget to instantiate and the first argument is the
+position within the grid widget. The rest of the arguments are passed to the
+constructor of the new widget.
 
 ```cpp
 int hi_main(int argc, char *argv[])
 {
     observer<int> value = 0;
 
-    auto gui = hi::gui_system::make_unique();
-    auto &window = gui->make_window(hi::txt("Radio button example"));
+    set_application_name("Radio button example");
+    set_application_vendor("HikoGUI");
+    set_application_version({1, 0, 0});
 
-    window.content().make_widget<label_widget>("A1", txt("radio buttons:"));
-    window.content().make_widget<radio_button_widget>("B1", value, 1, txt("one"));
-    window.content().make_widget<radio_button_widget>("B2", value, 2, txt("two"));
-    window.content().make_widget<radio_button_widget>("B3", value, 3, txt("three"));
+    auto widget = std::make_unique<window_widget>(txt("Radio button example"));
+    widget->content().make_widget<label_widget>("A1", txt("radio buttons:"));
+    widget->content().make_widget<radio_button_widget>("B1", value, 1, txt("one"));
+    widget->content().make_widget<radio_button_widget>("B2", value, 2, txt("two"));
+    widget->content().make_widget<radio_button_widget>("B3", value, 3, txt("three"));
 
-    return gui->loop();
+    auto window = std::make_unique<gui_window>(std::move(widget));
+
+    auto close_cbt = window->closing.subscribe(
+        [&] {
+            window.reset();
+        },
+        hi::callback_flags::main);
+    return loop::main().resume();
 }
 ```
 
@@ -122,7 +145,7 @@ In the example below a checkbox monitors the observer `my_value`:
 enum class my_type {foo, bar, baz};
 
 observer<my_type> my_value;
-window.content().make_widget<checkbox_widget>("A1", my_value, my_type::bar, my_type::foo);
+widget->content().make_widget<checkbox_widget>("A1", my_value, my_type::bar, my_type::foo);
 ```
 
 As you can see, the `checkbox_widget` will work with custom types. For the checkbox
@@ -142,7 +165,7 @@ enum class my_type {foo, bar, baz};
 
 observer<my_type> my_value;
 observer<my_type> my_chain;
-window.content().make_widget<checkbox_widget>("A1", my_chain, my_type::bar, my_type::foo);
+widget->content().make_widget<checkbox_widget>("A1", my_chain, my_type::bar, my_type::foo);
 
 my_chain = my_value;
 my_value = my_type::bar;
@@ -166,7 +189,7 @@ constructor of the `hi::checkbox_button`. `my_delegate` must inherit from
 
 ```cpp
 auto delegate = std::make_shared<my_delegate>();
-auto button = window.make_widget<checkbox_button>("A1", delegate));
+auto button = widget->make_widget<checkbox_button>("A1", delegate));
 ```
 
 A list of widgets

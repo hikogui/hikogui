@@ -4,7 +4,6 @@
 #include "gui_event.hpp"
 #include "gui_event_type.hpp"
 #include "gui_event_variant.hpp"
-#include "gui_window.hpp"
 #include "gui_window_size.hpp"
 #include "gui_window_win32.hpp"
 #include "hitbox.hpp"
