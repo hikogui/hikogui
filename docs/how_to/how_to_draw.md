@@ -137,7 +137,7 @@ There are three steps for drawing an image:
 Here we load the `mars3.png` file from a resource directory from the constructor:
 
 ```cpp
-drawing_widget(hi::gui_window &window, hi::widget *parent) noexcept :
+drawing_widget(hi::widget *parent) noexcept :
     widget(parent), _image(hi::URL("resource:mars3.png")) {}
 ```
 

@@ -6,11 +6,12 @@ Release Checklist
    - Create release branch
    - Add entry to CHANGELOG.md 
    - Update version in vcpkg.json
+   - (Possibly test and fix hikogui-hello-world in local mode).
    - Merge into main (needed for hikogui/hikogui\_hello\_world test builds)
  * In hikogui/hikogui\_hello\_world:
    - Create release branch
    - Update version in vcpkg.json
-   - Fix hello world application with "hikogui-dev x64-MSVC-Debug" mode.
+   - Fix hello world application with "MSVC-x64-Debug (local)" mode.
    - Run and check both debug and release build
    - Make pull request
    - Check if pull request builds on CI.

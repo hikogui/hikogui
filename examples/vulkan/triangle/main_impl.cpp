@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "triangle.hpp"
-#include "hikogui/module.hpp"
+#include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 #include <ranges>
 #include <cassert>
