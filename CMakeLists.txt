@@ -481,6 +481,7 @@ install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfigVersion.cmake"
     DESTINATION share/hikogui
 )
+
 #-------------------------------------------------------------------
 # Build Target: hikogui_tests                            (executable)
 #-------------------------------------------------------------------

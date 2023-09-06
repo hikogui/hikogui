@@ -15,7 +15,7 @@
  */
 
 #include "triangle.hpp"
-#include "hikogui/module.hpp"
+#include "hikogui/hikogui.hpp"
 #include <format>
 #include <vector>
 #include <exception>

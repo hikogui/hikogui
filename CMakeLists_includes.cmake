@@ -148,6 +148,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${HIKOGUI_SOURCE_DIR}/font/glyph_metrics.hpp
     ${HIKOGUI_SOURCE_DIR}/font/hikogui_icon.hpp
     ${HIKOGUI_SOURCE_DIR}/font/font.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_font.hpp
+    ${HIKOGUI_SOURCE_DIR}/font/font_style.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_cmap.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_glyf.hpp
     ${HIKOGUI_SOURCE_DIR}/font/otype_head.hpp
@@ -204,6 +206,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${HIKOGUI_SOURCE_DIR}/formula/formula_name_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_ne_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_node.hpp
+    ${HIKOGUI_SOURCE_DIR}/formula/formula_parser.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_plus_node.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_post_process_context.hpp
     ${HIKOGUI_SOURCE_DIR}/formula/formula_pow_node.hpp
@@ -225,6 +228,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_surface_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_globals.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/gfx_system_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/GFX.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_alpha_vulkan_impl.hpp
@@ -239,6 +243,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_vulkan.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/gfx_pipeline_vulkan_impl.hpp
     ${HIKOGUI_SOURCE_DIR}/GFX/render_doc.hpp
+    ${HIKOGUI_SOURCE_DIR}/GFX/renderdoc_app.h
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_type.hpp
     ${HIKOGUI_SOURCE_DIR}/GUI/gui_event_variant.hpp
@@ -420,6 +425,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${HIKOGUI_SOURCE_DIR}/settings/theme_mode.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/subpixel_orientation.hpp
     ${HIKOGUI_SOURCE_DIR}/settings/user_settings.hpp
+    ${HIKOGUI_SOURCE_DIR}/settings/user_settings_intf.hpp
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/settings/user_settings_win32_impl.hpp>
     ${HIKOGUI_SOURCE_DIR}/skeleton/module.hpp
     ${HIKOGUI_SOURCE_DIR}/skeleton/skeleton.hpp
@@ -558,7 +564,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     $<$<PLATFORM_ID:Windows>:${HIKOGUI_SOURCE_DIR}/win32/winreg.hpp>
     ${HIKOGUI_SOURCE_DIR}/macros.hpp
     ${HIKOGUI_SOURCE_DIR}/crt.hpp
-    ${HIKOGUI_SOURCE_DIR}/module.hpp
+    ${HIKOGUI_SOURCE_DIR}/hikogui.hpp
     ${HIKOGUI_SOURCE_DIR}/test.hpp
     ${HIKOGUI_SOURCE_DIR}/win32_headers.hpp
 )
