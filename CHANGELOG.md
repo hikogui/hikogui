@@ -6,6 +6,61 @@ All notable changes to this project will be documented in this file.
 
 - Changed things.
 
+## [0.8.0] - 2023-09-06 - Precious Polar Bear
+
+HikoGUI is now temporarily a header-only library. This is in preparation of
+making it a module-only library. This required a lot of work to untangle
+the many circular dependencies.
+
+With modules it is now much easier to switch out different implementations
+of classes and functions, so I've de-virtualized the GFX and GUI parts of
+the library. This means that a win32-window and a X11-window are now both
+called `hi::gui_window`. There are many benefits by fully replacing
+implementations and having them have the same name, including allowing
+implementation to have very different architectures and having them exposing
+implementation specific members.
+
+I've also been working on replacing the global classes with free-functions,
+like the: font-book, theme-book, gui-system, audio-system, gfx-system, etc.
+Right now some of them are still implemented as a class that is instantiated
+as a global variable, but this is an implementation detail.
+
+Another benefit of the header-only work is that the Unicode algorithms and
+Unicode database are now constexpr. This includes improvement of the database
+that now uses a double associative lookup O(1). The database is now stored
+in columns, packed bit-wise, for improved space & cache efficiency.
+
+The main text string type is now a `std::basic_string<hi::grapheme>`
+also known as `hi::gstring`. The `hi::grapheme` contains one or more
+Unicode code-points forming a Grapheme Cluster, a language-tag and a phrasing.
+All of this information is needed to display text properly, and for
+possible features like spell checking and text-to-speech.
+
+I discovered and fixed a security vulnerability with mapping files and parsing,
+in particular with my implementation of true-type files. True-type files are
+designed to be loaded in memory and be directly used as a data structure.
+HikoGUI uses `mmap()` to map a true-type file in memory, check if the data
+is valid, and then use the data directly. However when you memory map a file the
+file can be changed during the execution of the application, bypassing the
+validation check that is only done when the file was first mapped. The fix
+is to simply validate all data read during the execution of the application.
+There is a performance impact, but it is a small price to pay compared to
+loading the true-type file in memory, especially on low memory devices.
+
+Of course I also decided to rewrite the true-type font parser and allow it to
+render runs of text. A run is a piece of text that is part of a single line, and
+uses the same font, style and language. In the future we can use the GPOS
+and GSUB tables to properly handle ligatures and cursive fonts. The text-shaper
+will need to relegate the responsibilities of rendering text to different
+sub-systems.
+
+Added a Vulkan triangle-example, which shows how to use HikoGUI together with
+an application that wants to render graphics. Basically the application
+can directly render into the swap-chain images through a call-back mechanism.
+Then HikoGUI draws the GUI on-top of this drawing using alpha compositing, where
+the widget that shows the drawing punches a hole through the GUI so that the
+drawing stays visible.
+
 ## [0.7.0] - 2022-10-07 - Strange Squirrel
 
 To make it possible to select and configure audio devices this release

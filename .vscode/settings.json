@@ -10,10 +10,10 @@
         }
     ],
     "editor.fontFamily": "JetBrains Mono",
+    "editor.fontSize": 16,
     "[Log]": {
         "editor.fontSize" : 10
     },
-    "editor.fontSize": 16,
     "terminal.integrated.fontSize": 14,
     "editor.fontLigatures": true,
     "extensions.ignoreRecommendations": true,
