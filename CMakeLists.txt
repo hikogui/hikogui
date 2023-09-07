@@ -13,7 +13,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
 include(SetupVcpkg)
 include(SetupCompiler)
-include(SetupCxxModules)
+#include(SetupCxxModules)
 
 #-------------------------------------------------------------------
 # Build Options
