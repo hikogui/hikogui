@@ -13,7 +13,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
 include(SetupVcpkg)
 include(SetupCompiler)
-include(SetupCxxModules)
+#include(SetupCxxModules)
 
 #-------------------------------------------------------------------
 # Build Options
@@ -483,7 +483,16 @@ install(FILES
 )
 
 #-------------------------------------------------------------------
-# Build Target: hikogui_tests                            (executable)
+# Build Target: 
+#-------------------------------------------------------------------
+# A INTERFACE library does not have a build target which means it
+# can not be installed. Therefor we create a dummy target which
+# will make sure the INTERFACE library can be installed.
+add_custom_target(install_hikogui)
+add_dependencies(install_hikogui hikogui)
+
+#-------------------------------------------------------------------
+# Build Target: hikogui_tests
 #-------------------------------------------------------------------
 
 if(BUILD_TESTING)
