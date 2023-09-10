@@ -1,9 +1,13 @@
 
 configure_file(
     ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp.in
-    ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp @ONLY)
+    ${CMAKE_CURRENT_BINARY_DIR}/src/hikogui/metadata/library_metadata.hpp @ONLY)
 
-target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/" FILES
+target_sources(hikogui INTERFACE FILE_SET hikogui_generated_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/src/" FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/src/hikogui/metadata/library_metadata.hpp
+)
+
+target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/"  FILES
     ${HIKOGUI_SOURCE_DIR}/audio/audio_block.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_channel.hpp
     ${HIKOGUI_SOURCE_DIR}/audio/audio_device.hpp
@@ -354,7 +358,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${HIKOGUI_SOURCE_DIR}/memory/memory.hpp
     ${HIKOGUI_SOURCE_DIR}/memory/secure_memory_allocator.hpp
     ${HIKOGUI_SOURCE_DIR}/metadata/application_metadata.hpp
-    ${HIKOGUI_SOURCE_DIR}/metadata/library_metadata.hpp # generated.
     ${HIKOGUI_SOURCE_DIR}/metadata/metadata.hpp
     ${HIKOGUI_SOURCE_DIR}/metadata/semantic_version.hpp
     ${HIKOGUI_SOURCE_DIR}/net/module.hpp

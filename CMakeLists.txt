@@ -161,8 +161,8 @@ endif()
 
 target_include_directories(hikogui INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
-    "$<INSTALL_INTERFACE:include>"
-)
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/src/hikogui/metadata>"
+    "$<INSTALL_INTERFACE:include>")
 
 #
 # We will support the following CPUs:
@@ -442,6 +442,7 @@ if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
         FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILE_SET hikogui_generated_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -451,6 +452,7 @@ else()
     # Install the library and headers.
     install(TARGETS hikogui EXPORT hikogui
         FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILE_SET hikogui_generated_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
