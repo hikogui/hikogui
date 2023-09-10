@@ -23,6 +23,7 @@ option(BUILD_SHARED_LIBS    "Build shared libraries"                            
 option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
 option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" "")
+option(BUILD_EXAMPLES       "Compile the example executables"                    ON)
 
 #-------------------------------------------------------------------
 # Project
@@ -490,8 +491,8 @@ install(FILES
 # A INTERFACE library does not have a build target which means it
 # can not be installed. Therefor we create a dummy target which
 # will make sure the INTERFACE library can be installed.
-add_custom_target(install_hikogui)
-add_dependencies(install_hikogui hikogui)
+add_custom_target(hikogui_dummy ALL)
+add_dependencies(hikogui_dummy hikogui)
 
 #-------------------------------------------------------------------
 # Build Target: hikogui_tests
@@ -504,12 +505,14 @@ endif()
 #-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
-add_custom_target(examples)
-add_subdirectory(examples/codec)
-add_subdirectory(examples/custom_widgets)
-add_subdirectory(examples/hikogui_demo)
-add_subdirectory(examples/vulkan/triangle)
-add_subdirectory(examples/widgets)
+if(BUILD_EXAMPLES)
+    add_custom_target(examples)
+    add_subdirectory(examples/codec)
+    add_subdirectory(examples/custom_widgets)
+    add_subdirectory(examples/hikogui_demo)
+    add_subdirectory(examples/vulkan/triangle)
+    add_subdirectory(examples/widgets)
+endif()
 
 #-------------------------------------------------------------------
 # Display Compiler and Linker properties of Build Targets
