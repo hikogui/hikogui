@@ -13,7 +13,7 @@ include (CMakePushCheckState)
 cmake_push_check_state ()
 
 if(NOT WIN32)
-  set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+  set(CMAKE_REQUIRED_FLAGS "-std=c++11 -lstdc++")
 else()
 # /EHsc catches C++ exceptions only and tells the compiler to assume that
 # extern C functions never throw a C++ exception.
@@ -31,7 +31,7 @@ set(CPUINFO_SOURCE_FILE
 #include <string>
 #include <fstream>
 #include <sstream>
-#ifdef WIN32
+#ifdef _WIN32
 #include <intrin.h>
 #else
 #include <cpuid.h>
