@@ -31,7 +31,7 @@ set(CPUINFO_SOURCE_FILE
 #include <string>
 #include <fstream>
 #include <sstream>
-#ifdef _WIN32
+#ifdef WIN32
 #include <intrin.h>
 #else
 #include <cpuid.h>
