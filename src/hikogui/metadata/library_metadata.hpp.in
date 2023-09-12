@@ -8,6 +8,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <atomic>
+#include <filesystem>
 
 hi_export_module(hikogui.metadata.metadata_library);
 
@@ -47,5 +48,50 @@ hi_export namespace hi { inline namespace v1 {
 {
     return "@HI_LIB_DESC@";
 }
+
+/** The path where HikoGUI source code is located at the time of CMake configuration.
+ */
+[[nodiscard]] inline std::filesystem::path get_library_source_path() noexcept
+{
+    return std::filesystem::canonical(std::filesystem::path{"@CMAKE_CURRENT_SOURCE_DIR@"});
+}
+
+/** The path where HikoGUI build is located at the time of CMake configuration.
+ */
+[[nodiscard]] inline std::filesystem::path get_library_build_path() noexcept
+{
+    return std::filesystem::canonical(std::filesystem::path{"@CMAKE_CURRENT_BINARY_DIR@"});
+}
+
+/** The path where HikoGUI is currently installed.
+ * 
+ * If HikoGUI is not currently installed it will be the same as the build directory.
+ */
+[[nodiscard]] inline std::filesystem::path get_library_install_path() noexcept
+{
+    // path is:
+    //  - /install_dir/include/hikogui/path/path_location_impl.hpp
+    //  - /build_dir/src/hikogui/path/path_location_impl.hpp
+    // becomes:
+    //  - /install_dir/
+    //  - /build_dir/
+    auto path = std::filesystem::path{__FILE__};
+    path.replace_filename("../../..");
+    return std::filesystem::canonical(path);
+}
+
+/** Check if the HikoGUI library is installed.
+ * 
+ * @retval true The HikoGUI library is installed.
+ * @retval false The HikoGUI library is being build.
+ */
+[[nodiscard]] inline bool is_library_installed() noexcept
+{
+    // If the install directory based on `__FILE__` is the same as the build directory
+    // then HikoGUI is located in the build directory.
+    return get_library_install_path() != get_library_build_path();
+}
+
+
 
 }} // namespace hi::v1

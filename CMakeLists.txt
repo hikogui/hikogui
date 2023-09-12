@@ -55,11 +55,12 @@ project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 #-------------------------------------------------------------------
 
 include(FeatureSummary)
-include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
 include(CPUID)
 include(SetupDoxygen)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 # disable adding CTest build targets like "NightlyStart" (before ctest include)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
@@ -351,8 +352,6 @@ elseif (MSVC)
         # Can't exclude unit-test and google-test uses throwing default constructors in the TEST() macro.
         target_compile_options(hikogui INTERFACE -wd26455)
 
-
-
         # Turn off every warning fix one at a time:
         #target_compile_options(hikogui INTERFACE -wd26472)
         #target_compile_options(hikogui INTERFACE -wd26473)
@@ -387,103 +386,15 @@ endif()
 # Copy resources needed by executables
 #-------------------------------------------------------------------
 
-add_custom_target(hikogui_shaders)
-add_shader_target(hikogui_shaders
-    shaders/utils.glsl
-    shaders/image.vert
-    shaders/image.frag
-    shaders/box.vert
-    shaders/box.frag
-    shaders/SDF.vert
-    shaders/SDF.frag
-    shaders/alpha.vert
-    shaders/alpha.frag
-    shaders/tone_mapper.vert
-    shaders/tone_mapper.frag
-)
+set(hikogui_resource_files "")
+include(CMakeLists_resources.cmake)
+include(CMakeLists_shaders.cmake)
 
-set(hikogui_resource_files
-    resources/themes/hikogui_dark.theme.json
-    resources/themes/hikogui_light.theme.json
-    resources/fonts/elusiveicons-webfont.ttf
-    resources/fonts/hikogui_icons.ttf
-    resources/win32.keybinds.json
-)
-
-add_custom_target(hikogui_resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/resources/shaders
-    DEPENDS ${hikogui_resource_files} hikogui_shaders)
-
-add_dependencies(hikogui hikogui_resources)
-
-#-------------------------------------------------------------------
-# Installation Rules: hikogui                               (library)
-#-------------------------------------------------------------------
-
-include(GNUInstallDirs)
-
-install(TARGETS hikogui RESOURCE)
-
-# Copy all header files for the library.
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
-#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#        FILES_MATCHING PATTERN "*.hpp")
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
-#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#        FILES_MATCHING PATTERN "*.h")
-
-# Copy all resource files needing to be added to the resource directory of an application
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources/
-        DESTINATION share/hikogui/resources)
-
-# On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
-get_target_property(target_type hikogui TYPE)
-if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
-    # Install the library and headers.
-    install(TARGETS hikogui EXPORT hikogui
-        FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILE_SET hikogui_generated_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
-    )
-else()
-    # Install the library and headers.
-    install(TARGETS hikogui EXPORT hikogui
-        FILE_SET hikogui_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILE_SET hikogui_generated_include_files DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib
-    )
-endif()
-
-install(
-    EXPORT hikogui
-    DESTINATION share/hikogui
-    NAMESPACE hikogui::
-    FILE "hikoguiTargets.cmake"
-)
-
-include(CMakePackageConfigHelpers)
-
-configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/CMake/packaging/hikoguiConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfig.cmake"
-    INSTALL_DESTINATION lib/cmake/hikogui
-)
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfigVersion.cmake"
-    COMPATIBILITY SameMajorVersion
-)
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfigVersion.cmake"
-    DESTINATION share/hikogui
-)
+set_target_properties(
+    hikogui PROPERTIES
+    FRAMEWORK TRUE
+    MACOSX_FRAMEWORK_IDENTIFIER org.hikogui.hikogui
+    RESOURCE "${hikogui_resource_files}")
 
 #-------------------------------------------------------------------
 # Build Target: 
@@ -521,3 +432,42 @@ endif()
 show_build_target_properties(hikogui)
 
 feature_summary(WHAT PACKAGES_FOUND PACKAGES_NOT_FOUND ENABLED_FEATURES DISABLED_FEATURES)
+
+
+#-------------------------------------------------------------------
+# Installation Rules: hikogui                               (library)
+#-------------------------------------------------------------------
+set(INSTALL_RESOURCEDIR "${CMAKE_INSTALL_DATADIR}/hikogui/resources")
+set(INSTALL_CMAKEDIR "${CMAKE_INSTALL_DATADIR}/hikogui/CMake")
+
+install(TARGETS hikogui EXPORT hikogui
+    FILE_SET hikogui_include_files
+    FILE_SET hikogui_generated_include_files
+    FILE_SET CXX_MODULES
+    RUNTIME
+    ARCHIVE
+    LIBRARY
+    RESOURCE DESTINATION "${INSTALL_RESOURCEDIR}"
+)
+
+install(
+    EXPORT hikogui
+    DESTINATION "${INSTALL_CMAKEDIR}"
+    NAMESPACE hikogui::
+    FILE "hikoguiTargets.cmake"
+)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/CMake/packaging/hikoguiConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfig.cmake"
+    INSTALL_DESTINATION "${INSTALL_CMAKEDIR}"
+)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfigVersion.cmake"
+    COMPATIBILITY SameMajorVersion
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfigVersion.cmake"
+    DESTINATION "${INSTALL_CMAKEDIR}"
+)

@@ -471,8 +471,8 @@ inline void gfx_pipeline_image::device_shared::draw_in_command_buffer(vk::Comman
 
 inline void gfx_pipeline_image::device_shared::build_shaders()
 {
-    vertex_shader_module = device.loadShader(URL("resource:shaders/image.vert.spv"));
-    fragment_shader_module = device.loadShader(URL("resource:shaders/image.frag.spv"));
+    vertex_shader_module = device.loadShader(URL("resource:image_vulkan.vert.spv"));
+    fragment_shader_module = device.loadShader(URL("resource:image_vulkan.frag.spv"));
 
     shader_stages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertex_shader_module, "main"},

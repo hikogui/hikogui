@@ -43,6 +43,18 @@ enum class path_location {
      */
     library_dir,
 
+    /** The single directory where HikoGUI was installed when the application was build.
+     */
+    library_install_dir,
+
+    /** The single directory where HikoGUI was build.
+     */
+    library_build_dir,
+
+    /** The single directory where the HikoGUI source directory was when HikoGUI was build.
+     */
+    library_source_dir,
+
     /** The single directory where the data for the application is stored for the current user account.
      */
     data_dir,
@@ -121,12 +133,22 @@ enum class path_location {
 
     auto path = *it++;
 
-    if (it != last) {
-        throw url_error("More than one path found.");
-    }
-
+    hi_assert(it == last, "More than one path found.");
     return path;
 }
+
+
+/** Check if the application is installed.
+ * 
+ * @retval true The application is installed.
+ * @retval false The application is being build.
+ */
+[[nodiscard]] inline bool is_application_installed() noexcept
+{
+    // If the CMakeFiles directory exists then the executable is located in a build directory.
+    return not std::filesystem::exists(get_path(path_location::executable_dir) / "CMakeFiles");
+}
+
 
 
 }} // namespace hi::v1

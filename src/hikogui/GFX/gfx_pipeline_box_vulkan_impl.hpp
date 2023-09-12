@@ -163,10 +163,10 @@ inline void gfx_pipeline_box::device_shared::place_vertices(
 
 inline void gfx_pipeline_box::device_shared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:shaders/box.vert.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:box_vulkan.vert.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "box-pipeline vertex shader");
 
-    fragmentShaderModule = device.loadShader(URL("resource:shaders/box.frag.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:box_vulkan.frag.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "box-pipeline fragment shader");
 
     shaderStages = {

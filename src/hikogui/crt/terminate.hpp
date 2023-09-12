@@ -38,8 +38,8 @@ inline std::terminate_handler old_terminate_handler;
 
     log_global.flush();
 
-    auto title = std::string_view{};
-    auto message = std::string_view{};
+    auto title = std::string{};
+    auto message = std::string{};
 
     hilet ep = std::current_exception();
     if (ep) {
@@ -47,18 +47,18 @@ inline std::terminate_handler old_terminate_handler;
             std::rethrow_exception(ep);
 
         } catch (std::exception const& e) {
-            title = "Unhandled std::exception."sv;
+            title = "Unhandled std::exception."s;
             message = e.what();
 
         } catch (...) {
-            title = "Unhandled unknown exception."sv;
-            message = "<no data>"sv;
+            title = "Unhandled unknown exception."s;
+            message = "<no data>"s;
         }
 
         std::cerr << std::format("{}\n{}\n", title, message);
 
     } else {
-        title = "Abnormal termination."sv;
+        title = "Abnormal termination."s;
         message = debug_message.exchange(nullptr, std::memory_order::relaxed);
     }
 

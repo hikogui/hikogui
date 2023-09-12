@@ -202,6 +202,7 @@ int hi_main(int argc, char *argv[])
     set_application_name("HikoGUI Demo");
     set_application_vendor("HikoGUI");
     set_application_version({1, 0, 0});
+    set_application_source_path("..");
 
     // Start the logger system, so logging is done asynchronously.
     log::start_subsystem(global_state_type::log_level_info);

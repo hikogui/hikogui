@@ -23,7 +23,7 @@ layout(location = 5) out flat vec4 out_corner_radii;
 layout(location = 6) out flat float out_border_start;
 layout(location = 7) out flat float out_border_end;
 
-#include "utils.glsl"
+#include "utils_vulkan.glsl"
 
 vec4 convert_position_to_viewport(vec3 window_position)
 {

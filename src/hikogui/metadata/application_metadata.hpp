@@ -9,6 +9,8 @@
 #include "../macros.hpp"
 #include <string>
 #include <stdexcept>
+#include <filesystem>
+#include <source_location>
 
 hi_export_module(hikogui.metadata.metadata_application);
 
@@ -18,6 +20,7 @@ inline std::optional<std::string> _application_name = std::nullopt;
 inline std::optional<std::string> _application_slug = std::nullopt;
 inline std::optional<std::string> _application_vendor = std::nullopt;
 inline std::optional<semantic_version> _application_version = std::nullopt;
+inline std::optional<std::filesystem::path> _application_source_path = std::nullopt;
 
 [[nodiscard]] inline std::string const& get_application_name()
 {
@@ -52,6 +55,15 @@ inline std::optional<semantic_version> _application_version = std::nullopt;
         return *_application_version;
     } else {
         throw std::logic_error("set_application_version() should be called at application startup.");
+    }
+}
+
+[[nodiscard]] inline std::filesystem::path get_application_source_path()
+{
+    if (_application_source_path) {
+        return *_application_source_path;
+    } else {
+        throw std::logic_error("set_application_source_path() should be called at application startup.");
     }
 }
 
@@ -99,6 +111,20 @@ inline void set_application_version(semantic_version version) noexcept
 inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
 {
     return set_application_version(semantic_version{major, minor, patch});
+}
+
+/** Set the application's source path.
+ * 
+ * Normally called as follows:
+ * 
+ * If the current source file is in a "source_path/src" directory.
+ * ```
+ * set_application_source_path("..");
+ * ```
+ */
+inline void set_application_source_path(std::filesystem::path const &relative_path, std::source_location source_location = std::source_location::current()) noexcept
+{
+    _application_source_path = std::filesystem::canonical(std::filesystem::path(source_location.file_name()).replace_filename(relative_path));
 }
 
 } // namespace hi::inline v1

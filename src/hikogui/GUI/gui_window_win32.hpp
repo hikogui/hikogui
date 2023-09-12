@@ -90,8 +90,8 @@ std::unique_ptr<gfx_surface> surface;
                 hi_log_fatal("Could not start the os_settings subsystem.");
             }
 
-            register_font_file(URL{"resource:fonts/elusiveicons-webfont.ttf"});
-            register_font_file(URL{"resource:fonts/hikogui_icons.ttf"});
+            register_font_file(URL{"resource:elusiveicons-webfont.ttf"});
+            register_font_file(URL{"resource:hikogui_icons.ttf"});
             register_font_directories(get_paths(path_location::font_dirs));
 
             register_theme_directories(get_paths(path_location::theme_dirs));

@@ -20,7 +20,7 @@ layout(location = 1) out vec3 out_texture_coord;
 layout(location = 2) out vec4 out_color;
 layout(location = 3) out vec4 out_color_sqrt_rgby;
 
-#include "utils.glsl"
+#include "utils_vulkan.glsl"
 
 vec4 convert_position_to_viewport(vec3 window_position)
 {

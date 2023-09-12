@@ -104,8 +104,8 @@ inline void gfx_pipeline_tone_mapper::device_shared::drawInCommandBuffer(vk::Com
 
 inline void gfx_pipeline_tone_mapper::device_shared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:shaders/tone_mapper.vert.spv"));
-    fragmentShaderModule = device.loadShader(URL("resource:shaders/tone_mapper.frag.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:tone_mapper_vulkan.vert.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:tone_mapper_vulkan.frag.spv"));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},
