@@ -14,15 +14,14 @@
 
 hi_export_module(hikogui.metadata.metadata_application);
 
-hi_export namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 inline std::optional<std::string> _application_name = std::nullopt;
 inline std::optional<std::string> _application_slug = std::nullopt;
 inline std::optional<std::string> _application_vendor = std::nullopt;
 inline std::optional<semantic_version> _application_version = std::nullopt;
-inline std::optional<std::filesystem::path> _application_source_path = std::nullopt;
 
-[[nodiscard]] inline std::string const& get_application_name()
+hi_export [[nodiscard]] inline std::string const& get_application_name()
 {
     if (_application_name) {
         return *_application_name;
@@ -31,7 +30,7 @@ inline std::optional<std::filesystem::path> _application_source_path = std::null
     }
 }
 
-[[nodiscard]] inline std::string const& get_application_slug()
+hi_export [[nodiscard]] inline std::string const& get_application_slug()
 {
     if (_application_slug) {
         return *_application_slug;
@@ -40,7 +39,7 @@ inline std::optional<std::filesystem::path> _application_source_path = std::null
     }
 }
 
-[[nodiscard]] inline std::string const& get_application_vendor()
+hi_export [[nodiscard]] inline std::string const& get_application_vendor()
 {
     if (_application_vendor) {
         return *_application_vendor;
@@ -49,7 +48,7 @@ inline std::optional<std::filesystem::path> _application_source_path = std::null
     }
 }
 
-[[nodiscard]] inline semantic_version const& get_application_version()
+hi_export [[nodiscard]] inline semantic_version const& get_application_version()
 {
     if (_application_version) {
         return *_application_version;
@@ -58,16 +57,7 @@ inline std::optional<std::filesystem::path> _application_source_path = std::null
     }
 }
 
-[[nodiscard]] inline std::filesystem::path get_application_source_path()
-{
-    if (_application_source_path) {
-        return *_application_source_path;
-    } else {
-        throw std::logic_error("set_application_source_path() should be called at application startup.");
-    }
-}
-
-inline void set_application_name(std::string_view name, std::string_view slug)
+hi_export inline void set_application_name(std::string_view name, std::string_view slug)
 {
     if (name.empty()) {
         throw std::invalid_argument("application name must not be empty.");
@@ -86,12 +76,12 @@ inline void set_application_name(std::string_view name, std::string_view slug)
     _application_slug = slug;
 }
 
-inline void set_application_name(std::string_view name)
+hi_export inline void set_application_name(std::string_view name)
 {
     return set_application_name(name, make_slug(name));
 }
 
-inline void set_application_vendor(std::string_view name)
+hi_export inline void set_application_vendor(std::string_view name)
 {
     if (name.empty()) {
         throw std::invalid_argument("vendor name must not be empty.");
@@ -103,28 +93,14 @@ inline void set_application_vendor(std::string_view name)
     _application_vendor = name;
 }
 
-inline void set_application_version(semantic_version version) noexcept
+hi_export inline void set_application_version(semantic_version version) noexcept
 {
     _application_version = version;
 }
 
-inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
+hi_export inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
 {
     return set_application_version(semantic_version{major, minor, patch});
 }
 
-/** Set the application's source path.
- * 
- * Normally called as follows:
- * 
- * If the current source file is in a "source_path/src" directory.
- * ```
- * set_application_source_path("..");
- * ```
- */
-inline void set_application_source_path(std::filesystem::path const &relative_path, std::source_location source_location = std::source_location::current()) noexcept
-{
-    _application_source_path = std::filesystem::canonical(std::filesystem::path(source_location.file_name()).replace_filename(relative_path));
-}
-
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

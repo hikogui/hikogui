@@ -111,14 +111,14 @@ hi_export namespace hi::inline v1
             break;
 
         case resource_dirs:
-            if (is_application_installed()) {
+            if (auto source_path = application_source_path(); source_path.empty()) {
                 co_yield get_path(path_location::executable_dir) / "resources" / "";
                 co_yield get_path(path_location::data_dir) / "resources" / "";
 
             } else {
                 // Fallback when the application is executed from its build directory.
                 co_yield get_path(path_location::executable_dir) / "resources" / "";
-                co_yield get_application_source_path() / "resources" / "";
+                co_yield source_path / "resources" / "";
 
                 if (is_library_installed()) {
                     co_yield get_library_install_path() / "resources" / "";

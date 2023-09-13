@@ -6,29 +6,27 @@
 # Build Target: hikogui_demo                             (executable)
 #-------------------------------------------------------------------
 
-add_executable(hikogui_demo WIN32 MACOSX_BUNDLE)
+add_executable(hikogui_demo WIN32)
 add_dependencies(examples hikogui_demo)
+target_link_libraries(hikogui_demo PRIVATE hikogui)
+target_link_resources(hikogui_demo hikogui)
+set_target_properties(hikogui_demo PROPERTIES MACOSX_BUNDLE TRUE)
+set_target_properties(hikogui_demo PROPERTIES MACOSX_FRAMEWORK_IDENTIFIER org.hikogui.hikogui.hikogui_demo)
 
 target_sources(hikogui_demo PRIVATE
     src/main_impl.cpp
-)
+    PUBLIC ${hikogui_demo_resource_files})
 
-target_link_libraries(hikogui_demo PRIVATE hikogui)
-
-set(hikogui_demo_resource_files "")
-set(hikogui_demo_resource_files ${hikogui_demo_resource_files} resources/en.po)
-set(hikogui_demo_resource_files ${hikogui_demo_resource_files} resources/nl.po)
-set(hikogui_demo_resource_files ${hikogui_demo_resource_files} resources/hikogui_demo.png)
-
-set_target_properties(
-    hikogui PROPERTIES
-    MACOSX_BUNDLE TRUE
-    MACOSX_FRAMEWORK_IDENTIFIER org.hikogui.hikogui.hikogui_demo
-    RESOURCE "${hikogui_demo_resource_files}")
+target_resources(hikogui_demo
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/en.po
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/nl.po
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/hikogui_demo.png)
 
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------
 
-install(TARGETS hikogui_demo DESTINATION examples/hikogui_demo RESOURCE DESTINATION examples/hikogui_demo/resources COMPONENT examples EXCLUDE_FROM_ALL)
+install(
+    TARGETS hikogui_demo DESTINATION examples/hikogui_demo
+    RESOURCE DESTINATION examples/hikogui_demo/resources)
 

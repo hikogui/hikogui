@@ -61,6 +61,7 @@ include(CPUID)
 include(SetupDoxygen)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+include(TargetResources)
 
 # disable adding CTest build targets like "NightlyStart" (before ctest include)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
@@ -121,9 +122,14 @@ add_library(hikogui INTERFACE)
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 include(CMakeLists_includes.cmake)
 #include(CMakeLists_modules.cmake)
-set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
+include(CMakeLists_resources.cmake)
+include(CMakeLists_shaders.cmake)
+
 target_compile_features(hikogui INTERFACE cxx_std_23)
+set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 set_target_properties(hikogui PROPERTIES VERSION ${HIKOGUI_PROJECT_VERSION_SHORT} SOVERSION ${HIKOGUI_MAJOR_VERSION})
+set_target_properties(hikogui PROPERTIES FRAMEWORK TRUE)
+set_target_properties(hikogui PROPERTIES MACOSX_FRAMEWORK_IDENTIFIER org.hikogui.hikogui)   
 
 if(APPLE)
     target_link_libraries(hikogui INTERFACE "-framework Foundation -framework AppKit")
@@ -381,20 +387,6 @@ elseif (MSVC)
 
     endif()
 endif()
-
-#-------------------------------------------------------------------
-# Copy resources needed by executables
-#-------------------------------------------------------------------
-
-set(hikogui_resource_files "")
-include(CMakeLists_resources.cmake)
-include(CMakeLists_shaders.cmake)
-
-set_target_properties(
-    hikogui PROPERTIES
-    FRAMEWORK TRUE
-    MACOSX_FRAMEWORK_IDENTIFIER org.hikogui.hikogui
-    RESOURCE "${hikogui_resource_files}")
 
 #-------------------------------------------------------------------
 # Build Target: 

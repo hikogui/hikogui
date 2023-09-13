@@ -31,4 +31,4 @@ endforeach()
 add_custom_target(hikogui_shaders ALL DEPENDS ${hikogui_compiled_shader_files})
 add_dependencies(hikogui hikogui_shaders)
 
-set(hikogui_resource_files ${hikogui_resource_files} ${hikogui_compiled_shader_files})
+target_resources(hikogui ${hikogui_compiled_shader_files})
