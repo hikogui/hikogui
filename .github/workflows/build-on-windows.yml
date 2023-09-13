@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: 🤘 Checkout Code
-        uses: actions/checkout@v3 # https://github.com/actions/checkout
+        uses: actions/checkout@v4 # https://github.com/actions/checkout
 
       # https://community.chocolatey.org/packages/ninja
       # https://community.chocolatey.org/packages/ccache
