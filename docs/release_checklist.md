@@ -4,7 +4,7 @@ Release Checklist
  * Create code name at <https://killercup.github.io/codenamer/> "English Adjectives" "Animals" Alliterate
  * In hikogui/hikogui:
    - Create release branch
-   - Add entry to CHANGELOG.md 
+   - Add entry to CHANGELOG.md and update link section at end of file
    - Update version in vcpkg.json
    - (Possibly test and fix hikogui-hello-world in local mode).
    - Merge into main (needed for hikogui/hikogui\_hello\_world test builds)
@@ -17,7 +17,8 @@ Release Checklist
    - Check if pull request builds on CI.
  * Make release of hikogui/hikogui
    - Copy the release description from CHANGELOG.md
- * In hikogui/hikogui.github.io Run the "Documentation Pipeline"
+ * In hikogui/hikogui.github.io:
+   - Run the "Documentation Pipeline" workflow
  * In hikogui/vcpkg
    - Update ports/hikogui/vcpkg.json
    - Update ports/hikogui/portfile.cmake (update REF, set SHA512 to 0)
