@@ -189,7 +189,8 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # It seems this check should only be used for interopability with swift
     target_compile_options(hikogui INTERFACE -Wno-nullability-completeness)
 
-    target_compile_options(hikogui INTERFACE -march=${HI_ARCHITECTURE})
+    # TODO remove hardcoded architecture and use auto-detected ${HI_ARCHITECTURE}.
+    target_compile_options(hikogui INTERFACE -march=x86-64-v3)
 
     # The Microsoft version of clang does not implement all clang command line arguments.
     if (NOT MSVC)
@@ -485,7 +486,7 @@ install(FILES
 )
 
 #-------------------------------------------------------------------
-# Build Target: 
+# Build Target:
 #-------------------------------------------------------------------
 # A INTERFACE library does not have a build target which means it
 # can not be installed. Therefor we create a dummy target which
