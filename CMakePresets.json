@@ -1,217 +1,544 @@
 {
-    "version": 3,
-    "configurePresets": [
-        {
-            "name": "x64-windows",
-            "hidden": true,
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_VERBOSE_MAKEFILE": "ON"
-            },
-            "architecture": {
-                "value": "x64",
-                "strategy": "external"
-            },
-            "toolset": {
-                "value": "v143,host=x64",
-                "strategy": "external"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": {
-                    "hostOS": [ "Windows" ]
-                }
-            }
-        },
-        {
-            "name": "vc17-x64-windows",
-            "hidden": true,
-            "inherits": "x64-windows",
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "cl",
-                "CMAKE_C_COMPILER": "cl"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": {
-                    "intelliSenseMode": "windows-msvc-x64"
-                }
-            }
-        },
-        {
-            "name": "clang-x64-windows",
-            "hidden": true,
-            "inherits": "x64-windows",
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "clang-cl",
-                "CMAKE_C_COMPILER": "clang-cl"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": {
-                    "intelliSenseMode": "windows-clang-x64"
-                }
-            }
-        },
-        {
-            "name": "vc17-x64-windows-static",
-            "hidden": true,
-            "inherits": "vc17-x64-windows",
-            "cacheVariables": {
-                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
-                "BUILD_SHARED_LIBS": "OFF"
-            }
-        },
-        {
-            "name": "clang-x64-windows-static",
-            "hidden": true,
-            "inherits": "clang-x64-windows",
-            "cacheVariables": {
-                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
-                "BUILD_SHARED_LIBS": "OFF"
-            }
-        },
-        {
-            "name": "vc17-x64-windows-static-ana",
-            "displayName": "MSVC-Analysis",
-            "inherits": "vc17-x64-windows-static",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "HI_ENABLE_ANALYSIS": "ON"
-            }
-        },
-        {
-            "name": "vc17-x64-windows-static-dbg",
-            "displayName": "MSVC-x64-Debug",
-            "inherits": "vc17-x64-windows-static",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "vc17-x64-windows-static-dbg-asan",
-            "hidden": true,
-            "displayName": "MSVC-x64-Debug (ASAN)",
-            "inherits": "vc17-x64-windows-static-dbg",
-            "cacheVariables": {
-                "HI_ENABLE_ASAN": "ON"
-            }
-        },
-        {
-            "name": "vc17-x64-windows-static-rel",
-            "displayName": "MSVC-x64-Release",
-            "inherits": "vc17-x64-windows-static",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        },
-        {
-            "name": "vc17-x64-windows-static-rdi",
-            "displayName": "MSVC-x64-RelWithDebInfo",
-            "inherits": "vc17-x64-windows-static",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-            }
-        },
-        {
-            "name": "clang-x64-windows-static-dbg",
-            "displayName": "ZZ clang-x64-Debug",
-            "inherits": "clang-x64-windows-static",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "vc17-x64-windows-static-rel-ci",
-            "displayName": "ZZ MSVC-x64-Release (for CI)",
-            "inherits": "vc17-x64-windows-static-rel",
-            "binaryDir": "build",
-            "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install",
-                "CMAKE_C_COMPILER_LAUNCHER": "sccache",
-                "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
-            }
-        },
-        {
-            "name": "vc17-x64-windows-static-dbg-ci",
-            "displayName": "ZZ MSVC-x64-Debug (for CI)",
-            "inherits": "vc17-x64-windows-static-dbg",
-            "binaryDir": "build",
-            "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install",
-                "CMAKE_C_COMPILER_LAUNCHER": "sccache",
-                "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
-            }
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "x64-windows",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_VERBOSE_MAKEFILE": "ON"
+      },
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "toolset": {
+        "value": "v143,host=x64",
+        "strategy": "external"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [
+            "Windows"
+          ]
         }
-    ],
-    "buildPresets": [
-        {
-            "name": "vc17-x64-windows-static-dbg-library",
-            "displayName": "Library",
-            "configurePreset": "vc17-x64-windows-static-dbg",
-            "targets": [ "install_hikogui" ]
-        },
-        {
-            "name": "vc17-x64-windows-static-dbg-tests",
-            "displayName": "Library + Tests",
-            "configurePreset": "vc17-x64-windows-static-dbg",
-            "targets": [ "hikogui_all_tests" ]
-        },
-        {
-            "name": "vc17-x64-windows-static-dbg-examples",
-            "displayName": "Library + Examples",
-            "configurePreset": "vc17-x64-windows-static-dbg",
-            "targets": [ "examples" ]
-        },
-        {
-            "name": "vc17-x64-windows-static-dbg-demo",
-            "displayName": "Library + Demo",
-            "configurePreset": "vc17-x64-windows-static-dbg",
-            "targets": [ "hikogui_demo" ]
-        },
-        {
-            "name": "vc17-x64-windows-static-dbg-all",
-            "displayName": "All",
-            "configurePreset": "vc17-x64-windows-static-dbg",
-            "targets": [ "hikogui_all_tests", "hikogui_demo", "examples" ]
-        },
-        {
-            "name": "vc17-x64-windows-static-rel-library",
-            "displayName": "Library",
-            "configurePreset": "vc17-x64-windows-static-rel",
-            "targets": [ "install_hikogui" ]
-        },
-        {
-            "name": "vc17-x64-windows-static-rel-tests",
-            "displayName": "Library + Tests",
-            "configurePreset": "vc17-x64-windows-static-rel",
-            "targets": [ "hikogui_all_tests" ]
-        },
-        {
-            "name": "vc17-x64-windows-static-rel-examples",
-            "displayName": "Library + Examples",
-            "configurePreset": "vc17-x64-windows-static-rel",
-            "targets": [ "examples" ]
-        },
-        {
-            "name": "vc17-x64-windows-static-rel-demo",
-            "displayName": "Library + Demo",
-            "configurePreset": "vc17-x64-windows-static-rel",
-            "targets": [ "hikogui_demo" ]
-        },
-        {
-            "name": "vc17-x64-windows-static-rel-all",
-            "displayName": "All",
-            "configurePreset": "vc17-x64-windows-static-rel",
-            "targets": [ "hikogui_all_tests", "hikogui_demo", "examples" ]
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "vc17-x64-windows",
+      "hidden": true,
+      "inherits": "x64-windows",
+      "cacheVariables": {
+	  "CMAKE_CXX_COMPILER": "cl",
+          "CMAKE_C_COMPILER": "cl"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "windows-msvc-x64"
         }
-    ],
-    "testPresets": [
-        {
-            "name": "vc17-x64-windows-static-dbg-test-base",
-            "displayName": "Generic Tests",
-            "configurePreset": "vc17-x64-windows-static-dbg",
-            "output": {"outputOnFailure": true, "verbosity": "verbose"},
-            "execution": {"noTestsAction": "error", "stopOnFailure": false, "jobs": 8}
+      }
+    },
+    {
+      "name": "clangcl-x64-windows",
+      "hidden": true,
+      "inherits": "x64-windows",
+      "cacheVariables": {
+	  "CMAKE_CXX_COMPILER": "cl",
+          "CMAKE_C_COMPILER": "cl"
+      },
+      "toolset": "ClangCL",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "windows-clang-x64"
         }
-    ]
+      }
+    },
+    {
+      "name": "vc17-x64-windows-static",
+      "hidden": true,
+      "inherits": "vc17-x64-windows",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+        "BUILD_SHARED_LIBS": "OFF"
+      }
+    },
+    {
+      "name": "clangcl-x64-windows-static",
+      "hidden": true,
+      "inherits": "clangcl-x64-windows",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+        "BUILD_SHARED_LIBS": "OFF"
+      }
+    },
+    {
+      "name": "vc17-x64-windows-static-ana",
+      "displayName": "MSVC-Analysis",
+      "inherits": "vc17-x64-windows-static",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "HI_ENABLE_ANALYSIS": "ON"
+      }
+    },
+    {
+      "name": "vc17-x64-windows-static-dbg",
+      "displayName": "MSVC-Debug",
+      "inherits": "vc17-x64-windows-static",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "vc17-x64-windows-static-dbg-asan",
+      "hidden": true,
+      "displayName": "MSVC-Debug (ASAN)",
+      "inherits": "vc17-x64-windows-static-dbg",
+      "cacheVariables": {
+        "HI_ENABLE_ASAN": "ON"
+      }
+    },
+    {
+      "name": "vc17-x64-windows-static-rel",
+      "displayName": "MSVC-Release",
+      "inherits": "vc17-x64-windows-static",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "vc17-x64-windows-static-rdi",
+      "displayName": "MSVC-RelWithDebInfo",
+      "inherits": "vc17-x64-windows-static",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "clangcl-x64-windows-static-dbg",
+      "displayName": "x ClangCL-Debug",
+      "inherits": "clangcl-x64-windows-static",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "vc17-x64-windows-static-rel-ci",
+      "displayName": "x MSVC-Release (for CI)",
+      "inherits": "vc17-x64-windows-static-rel",
+      "binaryDir": "build",
+      "installDir": "install",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "$env{CI}",
+        "rhs": "true"
+      }
+    },
+    {
+      "name": "vc17-x64-windows-static-dbg-ci",
+      "displayName": "x MSVC-Debug (for CI)",
+      "inherits": "vc17-x64-windows-static-dbg",
+      "binaryDir": "build",
+      "installDir": "install",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "$env{CI}",
+        "rhs": "true"
+      }
+    },
+    {
+      "name": "x64-linux",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_VERBOSE_MAKEFILE": "ON"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "linux-gcc-x64"
+        }
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "gcc12-x64-linux",
+      "hidden": true,
+      "inherits": "x64-linux",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++-12"
+      }
+    },
+    {
+      "name": "gcc12-x64-linux-rel",
+      "displayName": "GCC12-Release",
+      "inherits": "gcc12-x64-linux",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "gcc12-x64-linux-rdi",
+      "displayName": "GCC12-RelWithDebInfo",
+      "inherits": "gcc12-x64-linux",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "gcc12-x64-linux-dbg",
+      "displayName": "GCC12-Debug",
+      "inherits": "gcc12-x64-linux",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "clang17-x64-linux",
+      "hidden": true,
+      "inherits": "x64-linux",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang-17"
+      }
+    },
+    {
+      "name": "clang17-x64-linux-rel",
+      "displayName": "Clang17-Release",
+      "inherits": "clang17-x64-linux",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "clang17-x64-linux-rdi",
+      "displayName": "Clang17-RelWithDebInfo",
+      "inherits": "clang17-x64-linux",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "clang17-x64-linux-dbg",
+      "displayName": "Clang17-Debug",
+      "inherits": "clang17-x64-linux",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "vc17-x64-windows-static-dbg-library",
+      "displayName": "Library",
+      "configurePreset": "vc17-x64-windows-static-dbg",
+      "targets": [
+        "install_hikogui"
+      ]
+    },
+    {
+      "name": "vc17-x64-windows-static-dbg-tests",
+      "displayName": "Library + Tests",
+      "configurePreset": "vc17-x64-windows-static-dbg",
+      "targets": [
+        "hikogui_all_tests"
+      ]
+    },
+    {
+      "name": "vc17-x64-windows-static-dbg-examples",
+      "displayName": "Library + Examples",
+      "configurePreset": "vc17-x64-windows-static-dbg",
+      "targets": [
+        "examples"
+      ]
+    },
+    {
+      "name": "vc17-x64-windows-static-dbg-demo",
+      "displayName": "Library + Demo",
+      "configurePreset": "vc17-x64-windows-static-dbg",
+      "targets": [
+        "hikogui_demo"
+      ]
+    },
+    {
+      "name": "vc17-x64-windows-static-dbg-all",
+      "displayName": "All",
+      "configurePreset": "vc17-x64-windows-static-dbg",
+      "targets": [
+        "hikogui_all_tests",
+        "hikogui_demo",
+        "examples"
+      ]
+    },
+    {
+      "name": "vc17-x64-windows-static-rel-library",
+      "displayName": "Library",
+      "configurePreset": "vc17-x64-windows-static-rel",
+      "targets": [
+        "install_hikogui"
+      ]
+    },
+    {
+      "name": "vc17-x64-windows-static-rel-tests",
+      "displayName": "Library + Tests",
+      "configurePreset": "vc17-x64-windows-static-rel",
+      "targets": [
+        "hikogui_all_tests"
+      ]
+    },
+    {
+      "name": "vc17-x64-windows-static-rel-examples",
+      "displayName": "Library + Examples",
+      "configurePreset": "vc17-x64-windows-static-rel",
+      "targets": [
+        "examples"
+      ]
+    },
+    {
+      "name": "vc17-x64-windows-static-rel-demo",
+      "displayName": "Library + Demo",
+      "configurePreset": "vc17-x64-windows-static-rel",
+      "targets": [
+        "hikogui_demo"
+      ]
+    },
+    {
+      "name": "vc17-x64-windows-static-rel-all",
+      "displayName": "All",
+      "configurePreset": "vc17-x64-windows-static-rel",
+      "targets": [
+        "hikogui_all_tests",
+        "hikogui_demo",
+        "examples"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-dbg-library",
+      "displayName": "Library",
+      "configurePreset": "clang17-x64-linux-dbg",
+      "targets": [
+        "install_hikogui"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-dbg-tests",
+      "displayName": "Library + Tests",
+      "configurePreset": "clang17-x64-linux-dbg",
+      "targets": [
+        "hikogui_all_tests"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-dbg-examples",
+      "displayName": "Library + Examples",
+      "configurePreset": "clang17-x64-linux-dbg",
+      "targets": [
+        "examples"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-dbg-demo",
+      "displayName": "Library + Demo",
+      "configurePreset": "clang17-x64-linux-dbg",
+      "targets": [
+        "hikogui_demo"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-dbg-all",
+      "displayName": "All",
+      "configurePreset": "clang17-x64-linux-dbg",
+      "targets": [
+        "hikogui_all_tests",
+        "hikogui_demo",
+        "examples"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-rel-library",
+      "displayName": "Library",
+      "configurePreset": "clang17-x64-linux-rel",
+      "targets": [
+        "install_hikogui"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-rel-tests",
+      "displayName": "Library + Tests",
+      "configurePreset": "clang17-x64-linux-rel",
+      "targets": [
+        "hikogui_all_tests"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-rel-examples",
+      "displayName": "Library + Examples",
+      "configurePreset": "clang17-x64-linux-rel",
+      "targets": [
+        "examples"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-rel-demo",
+      "displayName": "Library + Demo",
+      "configurePreset": "clang17-x64-linux-rel",
+      "targets": [
+        "hikogui_demo"
+      ]
+    },
+    {
+      "name": "clang17-x64-linux-rel-all",
+      "displayName": "All",
+      "configurePreset": "clang17-x64-linux-rel",
+      "targets": [
+        "hikogui_all_tests",
+        "hikogui_demo",
+        "examples"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-dbg-library",
+      "displayName": "Library",
+      "configurePreset": "gcc12-x64-linux-dbg",
+      "targets": [
+        "install_hikogui"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-dbg-tests",
+      "displayName": "Library + Tests",
+      "configurePreset": "gcc12-x64-linux-dbg",
+      "targets": [
+        "hikogui_all_tests"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-dbg-examples",
+      "displayName": "Library + Examples",
+      "configurePreset": "gcc12-x64-linux-dbg",
+      "targets": [
+        "examples"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-dbg-demo",
+      "displayName": "Library + Demo",
+      "configurePreset": "gcc12-x64-linux-dbg",
+      "targets": [
+        "hikogui_demo"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-dbg-all",
+      "displayName": "All",
+      "configurePreset": "gcc12-x64-linux-dbg",
+      "targets": [
+        "hikogui_all_tests",
+        "hikogui_demo",
+        "examples"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-rel-library",
+      "displayName": "Library",
+      "configurePreset": "gcc12-x64-linux-rel",
+      "targets": [
+        "install_hikogui"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-rel-tests",
+      "displayName": "Library + Tests",
+      "configurePreset": "gcc12-x64-linux-rel",
+      "targets": [
+        "hikogui_all_tests"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-rel-examples",
+      "displayName": "Library + Examples",
+      "configurePreset": "gcc12-x64-linux-rel",
+      "targets": [
+        "examples"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-rel-demo",
+      "displayName": "Library + Demo",
+      "configurePreset": "gcc12-x64-linux-rel",
+      "targets": [
+        "hikogui_demo"
+      ]
+    },
+    {
+      "name": "gcc12-x64-linux-rel-all",
+      "displayName": "All",
+      "configurePreset": "gcc12-x64-linux-rel",
+      "targets": [
+        "hikogui_all_tests",
+        "hikogui_demo",
+        "examples"
+      ]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "vc17-x64-windows-static-dbg-test-base",
+      "displayName": "Generic Tests",
+      "configurePreset": "vc17-x64-windows-static-dbg",
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "verbose"
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false,
+        "jobs": 8
+      }
+    },
+    {
+      "name": "clang17-x64-linux-dbg-test-base",
+      "displayName": "Generic Tests",
+      "configurePreset": "clang17-x64-linux-dbg",
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "verbose"
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false,
+        "jobs": 8
+      }
+    },
+    {
+      "name": "gcc12-x64-linux-dbg-test-base",
+      "displayName": "Generic Tests",
+      "configurePreset": "gcc12-x64-linux-dbg",
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "verbose"
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false,
+        "jobs": 8
+      }
+    }
+  ]
 }
