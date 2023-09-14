@@ -6,11 +6,13 @@
 
 #include "../coroutine/module.hpp"
 #include "../utility/utility.hpp"
+#include "../metadata/metadata.hpp"
 #include "../macros.hpp"
 #include <filesystem>
 #include <ranges>
 #include <fstream>
 #include <string>
+#include <ranges>
 
 /** @file path/path_location.hpp functions to locate files and directories.
  * @ingroup path
@@ -20,100 +22,23 @@ hi_export_module(hikogui.path.path_location : intf);
 
 namespace hi { inline namespace v1 {
 
-/** File and Directory locations.
- * @ingroup file
- */
-hi_export enum class path_location {
-    /** The location of application resources.
-     * 
-     * The following directories are returned:
-     * ```
-     * if application is installed
-     *   - application_install_dir / "resources"
-     *   - data_dir / "resources"
-     * else
-     *   - application_build_dir / "resources"
-     *   - application_source_dir / "resources"
-     *   if HikoGUI is installed
-     *     - hikogui_install_dir / "resources"
-     *   else
-     *     - hikogui_build_dir / "resources"
-     *     - hikogui_source_dir / "resources"
-     * ```
-     */
-    resource_dirs,
 
-    /** A single file where the current running executable is located.
-     */
-    executable_file,
-
-    /** The directory where the executable is located.
-     */
-    executable_dir,
-
-    /** A single file where the current running HikoGUI shared library is located.
-     * If HikoGUI is build as a static library then this will return the current executable instead.
-     */
-    library_file,
-
-    /** The single directory where the HikoGUI shared library is located.
-     */
-    library_dir,
-
-    /** The single directory where HikoGUI was installed when the application was build.
-     */
-    library_install_dir,
-
-    /** The single directory where HikoGUI was build.
-     */
-    library_build_dir,
-
-    /** The single directory where the HikoGUI source directory was when HikoGUI was build.
-     */
-    library_source_dir,
-
-    /** The single directory where the data for the application is stored for the current user account.
-     */
-    data_dir,
-
-    /** The single directory where to store the log files.
-     */
-    log_dir,
-
-    /** A single file where to store or load the application preferences file for the current user account.
-     */
-    preferences_file,
-
-    /** The directories where the system fonts are stored.
-     */
-    system_font_dirs,
-
-    /** The directories where the fonts for the system and resource fonts are located.
-     */
-    font_dirs,
-
-    /** The directories where the themes are located.
-     */
-    theme_dirs,
-};
-
-/** Get a set of paths.
- * @ingroup file
- *
- * @param location The location.
- * @return A list of paths belonging to the location.
- */
-hi_export [[nodiscard]] generator<std::filesystem::path> get_paths(path_location location);
+hi_export template<typename Context>
+concept path_range =
+    std::ranges::input_range<Context> and
+    std::convertible_to<std::ranges::range_value_t<std::remove_cvref_t<Context>>, std::filesystem::path> and
+    not std::convertible_to<Context, std::filesystem::path>;
 
 /** Find a path.
  * @ingroup file
  *
- * @param location The location to search for filesystem-object.
+ * @param locations The locations to search for filesystem-object.
  * @param ref A relative path to the filesystem-object.
  * @return The the first full path to the filesystem-object found in the location. Or empty if the path is not found.
  */
-hi_export [[nodiscard]] inline std::optional<std::filesystem::path>
-find_path(path_location location, std::filesystem::path const& ref) noexcept
+hi_export template<path_range Locations>
+[[nodiscard]] inline std::optional<std::filesystem::path>
+find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
 {
     if (ref.is_absolute()) {
         if (std::filesystem::exists(ref)) {
@@ -122,7 +47,7 @@ find_path(path_location location, std::filesystem::path const& ref) noexcept
             return {};
         }
     } else {
-        for (hilet& base : get_paths(location)) {
+        for (hilet& base : locations) {
             auto path = base / ref;
             if (std::filesystem::exists(path)) {
                 return path;
@@ -132,74 +57,58 @@ find_path(path_location location, std::filesystem::path const& ref) noexcept
     }
 }
 
-/** Get the single and only path.
- * @ingroup file
- *
- * @param location The location.
- * @return The path.
- * @throw When there is not exactly one path.
+/** Get the full path to this executable.
  */
-hi_export [[nodiscard]] inline std::filesystem::path get_path(path_location location)
+hi_export [[nodiscard]] std::filesystem::path executable_file() noexcept;
+
+/** Get the full path to the directory when this executable is located.
+ */
+hi_export [[nodiscard]] inline std::filesystem::path executable_dir() noexcept
 {
-    auto range = get_paths(location);
-    auto it = std::ranges::begin(range);
-    hilet last = std::ranges::end(range);
-
-    if (it == last) {
-        throw url_error("No path found.");
-    }
-
-    auto path = *it++;
-
-    hi_assert(it == last, "More than one path found.");
-    return path;
+    auto tmp = executable_file();
+    tmp.remove_filename();
+    return tmp;
 }
 
-/** Get a line from an input string, upto a maximum size.
- * 
- * @post The input stream is read upto and including the line termination.
- * @param in The input stream.
- * @param max_size The maximum number of characters to read.
- * @return A string containing a line of characters, excluding the line termination.
+/** Get the full path to the directory where the application should store its data.
  */
-hi_export template<typename CharT, typename Traits = std::char_traits<CharT>>
-[[nodiscard]] inline std::basic_string<CharT, Traits> getline(std::basic_istream<CharT, Traits>& in, size_t max_size) noexcept
-{
-    auto r = std::basic_string<CharT, Traits>{};
+hi_export [[nodiscard]] std::filesystem::path data_dir() noexcept;
 
-    while (r.size() < max_size) {
-        auto c = in.get();
-        if (c == Traits::eof()) {
-            break;
+/** Get the full path to the directory where the application should store its log files.
+ */
+hi_export [[nodiscard]] std::filesystem::path log_dir() noexcept;
 
-        } else if (c == '\r') {
-            c = in.get();
-            if (c != '\n') {
-                in.unget();
-            }
-            break;
+/** Get the full path to application preferences file.
+ */
+hi_export [[nodiscard]] std::filesystem::path preferences_file() noexcept;
 
-        } else if (c == '\n') {
-            break;
-        }
+/** The directories to search for resource files.
+ */
+hi_export [[nodiscard]] inline generator<std::filesystem::path> resource_dirs() noexcept;
 
-        r += Traits::to_char_type(c);
-    }
+/** The directories to search for system font files.
+ */
+hi_export [[nodiscard]] inline generator<std::filesystem::path> system_font_files() noexcept;
 
-    return r;
-}
+/** The directories to search for font files of both the application and system.
+ */
+hi_export [[nodiscard]] inline generator<std::filesystem::path> font_files() noexcept;
 
-/** Get the application's source path if the application is run from the build directory.
+/** The directories to search for theme files of the application.
+ */
+hi_export [[nodiscard]] inline generator<std::filesystem::path> theme_files() noexcept;
+
+/** Get the full path to source code of this executable.
  *
- * @return The path to the source directory, or empty when the application is not
- *         in the build directory.
+ * @return The path to directory of the source code.
+ * @retval std::nullopt The executable is not located in its build directory.
  */
-hi_export [[nodiscard]] inline std::filesystem::path application_source_path() noexcept
+hi_export [[nodiscard]] inline std::optional<std::filesystem::path> source_dir() noexcept
 {
     using namespace std::literals;
 
     // If the cmake_install.cmake file exists then the executable is located in a build directory.
-    hilet cmake_install_path = get_path(path_location::executable_dir) / "cmake_install.cmake";
+    hilet cmake_install_path = executable_dir() / "cmake_install.cmake";
 
     if (std::filesystem::exists(cmake_install_path)) {
         auto line = std::string{};
@@ -208,27 +117,48 @@ hi_export [[nodiscard]] inline std::filesystem::path application_source_path() n
             line = getline(fd, 512);
             fd.close();
 
-        } catch (std::exception const& e) {
-            hi_log_error("Could not open file {}: {}", cmake_install_path.string(), e.what());
-            return {};
+        } catch (...) {
+            return std::nullopt;
         }
 
         hilet cmake_install_start = "# Install script for directory: "s;
         if (not line.starts_with(cmake_install_start)) {
-            hi_log_error("File {} did not start with '{}'", cmake_install_path.string(), cmake_install_start);
-            return {};
+            return std::nullopt;
         }
 
         auto source_dir = std::filesystem::path{line.substr(cmake_install_start.size())};
         if (not std::filesystem::exists(source_dir)) {
-            hi_log_error("Source directory {} does not exist", source_dir.string());
-            return {};
+            return std::nullopt;
         }
 
         return source_dir;
 
     } else {
-        return {};
+        return std::nullopt;
+    }
+}
+
+/** The full path where HikoGUI is installed during compilation of the application.
+ * 
+ * @return The full path to the install path of HikoGUI.
+ * @retval std::nullopt The HikoGUI library is not installed and is located in its build dir.
+ */
+[[nodiscard]] inline std::optional<std::filesystem::path> library_install_dir() noexcept
+{
+    // path is:
+    //  - /install_dir/include/hikogui/path/path_location_impl.hpp
+    //  - /build_dir/src/hikogui/path/path_location_impl.hpp
+    // becomes:
+    //  - /install_dir/
+    //  - /build_dir/
+    auto path = std::filesystem::path{__FILE__};
+    path.replace_filename("../../..");
+    auto install_path = std::filesystem::canonical(path);
+    
+    if (install_path != library_source_dir()) {
+        return install_path;
+    } else {
+        return std::nullopt;
     }
 }
 

@@ -207,7 +207,7 @@ int hi_main(int argc, char *argv[])
     log::start_subsystem(global_state_type::log_level_info);
     start_render_doc();
 
-    auto preferences = my_preferences(get_path(path_location::preferences_file));
+    auto preferences = my_preferences(preferences_file());
 
     theme_book::global().selected_theme = preferences.selected_theme;
 

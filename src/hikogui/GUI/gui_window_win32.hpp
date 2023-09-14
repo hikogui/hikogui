@@ -92,9 +92,9 @@ std::unique_ptr<gfx_surface> surface;
 
             register_font_file(URL{"resource:elusiveicons-webfont.ttf"});
             register_font_file(URL{"resource:hikogui_icons.ttf"});
-            register_font_directories(get_paths(path_location::font_dirs));
+            register_font_directories(font_dirs());
 
-            register_theme_directories(get_paths(path_location::theme_dirs));
+            register_theme_directories(theme_dirs());
 
             try {
                 load_system_keyboard_bindings(URL{"resource:win32.keybinds.json"});

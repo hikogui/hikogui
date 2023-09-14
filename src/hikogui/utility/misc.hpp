@@ -116,6 +116,40 @@ template<class T, class U>
     }
 }
 
+/** Get a line from an input string, upto a maximum size.
+ * 
+ * @post The input stream is read upto and including the line termination.
+ * @param in The input stream.
+ * @param max_size The maximum number of characters to read.
+ * @return A string containing a line of characters, excluding the line termination.
+ */
+hi_export template<typename CharT, typename Traits = std::char_traits<CharT>>
+[[nodiscard]] inline std::basic_string<CharT, Traits> getline(std::basic_istream<CharT, Traits>& in, size_t max_size) noexcept
+{
+    auto r = std::basic_string<CharT, Traits>{};
+
+    while (r.size() < max_size) {
+        auto c = in.get();
+        if (c == Traits::eof()) {
+            break;
+
+        } else if (c == '\r') {
+            c = in.get();
+            if (c != '\n') {
+                in.unget();
+            }
+            break;
+
+        } else if (c == '\n') {
+            break;
+        }
+
+        r += Traits::to_char_type(c);
+    }
+
+    return r;
+}
+
 }} // namespace hi::v1
 
 hi_warning_pop();

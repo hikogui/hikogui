@@ -460,7 +460,7 @@ TEST(skeleton, Include)
 {
     std::unique_ptr<skeleton_node> t;
 
-    ASSERT_NO_THROW(t = parse_skeleton(std::filesystem::path{"includer.ttt"}));
+    ASSERT_NO_THROW(t = parse_skeleton(library_source_dir() / "tests" / "data" / "includer.ttt"));
     ASSERT_EQ(
         normalize_lf(to_string(*t)),
         "<top "

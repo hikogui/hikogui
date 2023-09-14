@@ -68,8 +68,8 @@ protected:
 
         // Cursor movement (including editing) requires the text to be shaped.
         // text shaping requires fonts and text styles.
-        register_font_directories(get_paths(path_location::font_dirs));
-        theme_book = std::make_unique<hi::theme_book>(make_vector(get_paths(path_location::theme_dirs)));
+        register_font_directories(hi::font_dirs());
+        theme_book = std::make_unique<hi::theme_book>(make_vector(hi::theme_dirs()));
         theme = theme_book->find("default", theme_mode::light);
 
         system = std::make_unique<system_moc>();

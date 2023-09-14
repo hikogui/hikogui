@@ -32,7 +32,7 @@ For example fonts are located in multiple places:
 To iterate over all the font directories:
 
 ```
-for (auto const &path : hi::get_paths(path_location::font_dirs)) {
+for (auto const &path : font_dirs()) {
     std::cout << path.string() << std::endl;
 }
 ```
@@ -40,7 +40,7 @@ for (auto const &path : hi::get_paths(path_location::font_dirs)) {
 To find the first matching file in one of the font directories:
 
 ```
-if (auto const &path : hi::find_path(path_location::font_dirs, "arial.ttf")) {
+if (auto const &path : hi::find_path(font_dirs(), "arial.ttf")) {
     std::cout << path->string() << std::endl;
 }
 ```
@@ -70,7 +70,7 @@ Then the `glob()` function will search for files and directories matching this p
 For example to find all the files in the font directories:
 
 ```
-for (auto const &path : hi::glob(path_location::font_dirs, "**&zwj;/&zwj;
+for (auto const &path : hi::glob(font_dirs(), "**&zwj;/&zwj;
     *.ttf ")) {
     std::cout
     << path.string() << std::endl;
@@ -96,7 +96,7 @@ HikoGUI currently implements dereferencing of the following types of URLs:
    + conversion of drive to a file-share name,
    + the server name may be part of the double-slash "//" path or the authority.
  - **resource-URL**: A relative path that converts into a file-path by searching
-   for the first file in one of the directories of `path_location::resource_dirs`.
+   for the first file in one of the directories of `resource_dirs()`.
 
 Both file: and resource: URLs may be implicitly converted to a `std::filesystem::path`.
 

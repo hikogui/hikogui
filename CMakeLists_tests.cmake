@@ -1,14 +1,9 @@
 
 add_custom_target(hikogui_all_tests)
 
-add_custom_target(hikogui_tests_resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/data ${CMAKE_CURRENT_BINARY_DIR}
-)
-
 add_executable(hikogui_tests)
 target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
 target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-add_dependencies(hikogui_tests hikogui_tests_resources)
 add_dependencies(hikogui_all_tests hikogui_tests)
 
 target_sources(hikogui_tests PRIVATE
@@ -111,7 +106,6 @@ target_sources(hikogui_tests PRIVATE
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_widget_tests.cpp
 )
 
-install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
 show_build_target_properties(hikogui_tests)
 #gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
 add_test(NAME hikogui_tests COMMAND hikogui_tests)
@@ -124,7 +118,6 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
         target_include_directories(hikogui_x64v1_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
         add_dependencies(hikogui_x64v1_tests hikogui_tests_resources)
         add_dependencies(hikogui_all_tests hikogui_x64v1_tests)
-        install(TARGETS hikogui_tests hikogui_x64v1_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
         show_build_target_properties(hikogui_x64v1_tests)
 
         if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")
@@ -151,7 +144,6 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
         target_include_directories(hikogui_x64v2_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
         add_dependencies(hikogui_x64v2_tests hikogui_tests_resources)
         add_dependencies(hikogui_all_tests hikogui_x64v2_tests)
-        install(TARGETS hikogui_tests hikogui_x64v2_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
         show_build_target_properties(hikogui_x64v2_tests)
 
         if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")
@@ -176,9 +168,7 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
         add_test(NAME hikogui_x64v3_tests COMMAND hikogui_x64v3_tests)
         target_link_libraries(hikogui_x64v3_tests PRIVATE gtest_main hikogui)
         target_include_directories(hikogui_x64v3_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-        add_dependencies(hikogui_x64v3_tests hikogui_tests_resources)
         add_dependencies(hikogui_all_tests hikogui_x64v3_tests)
-        install(TARGETS hikogui_tests hikogui_x64v3_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
         show_build_target_properties(hikogui_x64v3_tests)
 
         if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")
@@ -205,9 +195,7 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
         add_test(NAME hikogui_x64v4_tests COMMAND hikogui_x64v4_tests)
         target_link_libraries(hikogui_x64v4_tests PRIVATE gtest_main hikogui)
         target_include_directories(hikogui_x64v4_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-        add_dependencies(hikogui_x64v4_tests hikogui_tests_resources)
         add_dependencies(hikogui_all_tests hikogui_x64v4_tests)
-        install(TARGETS hikogui_tests hikogui_x64v4_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
         show_build_target_properties(hikogui_x64v4_tests)
 
         if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|GCC")

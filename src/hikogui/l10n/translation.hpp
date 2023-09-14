@@ -75,7 +75,9 @@ inline void load_translations(std::filesystem::path path)
 inline void load_translations()
 {
     if (not translations_loaded.exchange(true)) {
-        for (auto &path : glob(path_location::resource_dirs, "**/*.po")) {
+        // XXX Waiting for C++23 to extend life-time of temporaries in for loops.
+        auto resource_paths = resource_dirs();
+        for (auto &path : glob(resource_paths, "**/*.po")) {
             try {
                 load_translations(path);
             } catch (std::exception const &e) {
