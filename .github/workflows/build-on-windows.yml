@@ -183,7 +183,7 @@ jobs:
         uses: wandalen/wretry.action@v1 # https://github.com/wandalen/wretry.action
         with:
           attempt_limit: 10
-          uses: codecov/codecov-action@v3 # https://github.com/codecov/codecov-action
+          action: codecov/codecov-action@v3 # https://github.com/codecov/codecov-action
           with: |
             files: ./hikogui_coverage.xml
 
