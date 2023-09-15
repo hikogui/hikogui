@@ -22,7 +22,7 @@ include(SetupCompiler)
 option(BUILD_SHARED_LIBS    "Build shared libraries"                             OFF)
 option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
-option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" "")
+option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" OFF)
 
 #-------------------------------------------------------------------
 # Project
@@ -67,7 +67,7 @@ include(CTest)
 
 # HI_ARCHITECTURE can be set as a build option.
 # if this build option is not set, default to the auto-detected architecture level.
-if(HI_ARCHITECTURE STREQUAL "")
+if(NOT HI_ARCHITECTURE)
   set(HI_ARCHITECTURE ${CPUINFO_ARCHITECTURE_LEVEL})
 endif()
 
@@ -189,8 +189,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # It seems this check should only be used for interopability with swift
     target_compile_options(hikogui INTERFACE -Wno-nullability-completeness)
 
-    # TODO remove hardcoded architecture and use auto-detected ${HI_ARCHITECTURE}.
-    target_compile_options(hikogui INTERFACE -march=x86-64-v3)
+    target_compile_options(hikogui INTERFACE -march=${HI_ARCHITECTURE})
 
     # The Microsoft version of clang does not implement all clang command line arguments.
     if (NOT MSVC)
