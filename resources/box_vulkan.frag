@@ -14,7 +14,7 @@ layout(location = 7) in flat float in_border_end;
 
 layout(location = 0) out vec4 out_color;
 
-#include "utils.glsl"
+#include "utils_vulkan.glsl"
 
 
 float distance_from_box_outline()

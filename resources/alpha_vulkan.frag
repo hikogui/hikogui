@@ -8,7 +8,7 @@ layout(location = 1) in float in_alpha;
 
 layout(location = 0) out vec4 out_color;
 
-#include "utils.glsl"
+#include "utils_vulkan.glsl"
 
 void main()
 {

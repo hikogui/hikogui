@@ -8,6 +8,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <atomic>
+#include <filesystem>
 
 hi_export_module(hikogui.metadata.metadata_library);
 
@@ -46,6 +47,20 @@ hi_export namespace hi { inline namespace v1 {
 [[nodiscard]] constexpr std::string get_library_description() noexcept
 {
     return "@HI_LIB_DESC@";
+}
+
+/** The full path where HikoGUI source code is located.
+ */
+[[nodiscard]] inline std::filesystem::path library_source_dir() noexcept
+{
+    return std::filesystem::canonical(std::filesystem::path{"@CMAKE_CURRENT_SOURCE_DIR@"});
+}
+
+/** The full path where HikoGUI build directory is located.
+ */
+[[nodiscard]] inline std::filesystem::path library_build_dir() noexcept
+{
+    return std::filesystem::canonical(std::filesystem::path{"@CMAKE_CURRENT_BINARY_DIR@"});
 }
 
 }} // namespace hi::v1

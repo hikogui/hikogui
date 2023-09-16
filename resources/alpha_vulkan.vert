@@ -13,7 +13,7 @@ layout(location = 2) in float in_alpha;
 layout(location = 0) out flat vec4 out_clipping_rectangle;
 layout(location = 1) out flat float out_alpha;
 
-#include "utils.glsl"
+#include "utils_vulkan.glsl"
 
 vec4 convert_position_to_viewport(vec3 window_position)
 {

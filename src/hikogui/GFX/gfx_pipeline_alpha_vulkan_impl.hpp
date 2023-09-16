@@ -151,10 +151,10 @@ inline void gfx_pipeline_alpha::device_shared::place_vertices(vector_span<vertex
 
 inline void gfx_pipeline_alpha::device_shared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:shaders/alpha.vert.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:alpha_vulkan.vert.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "alpha-pipeline vertex shader");
 
-    fragmentShaderModule = device.loadShader(URL("resource:shaders/alpha.frag.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:alpha_vulkan.frag.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "alpha-pipeline fragment shader");
 
     shaderStages = {

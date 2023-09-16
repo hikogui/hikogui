@@ -8,7 +8,7 @@ layout(push_constant) uniform push_constants {
 layout(location = 0) out vec4 out_color;
 layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput in_attachment;
 
-#include "utils.glsl"
+#include "utils_vulkan.glsl"
 
 void main() {
     vec4 original_color = subpassLoad(in_attachment);

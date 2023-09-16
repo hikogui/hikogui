@@ -20,7 +20,7 @@
  */
 hi_export_module(hikogui.path.glob);
 
-hi_export namespace hi { inline namespace v1 {
+namespace hi { inline namespace v1 {
 
 /** A glob pattern.
  * @ingroup file
@@ -40,7 +40,7 @@ hi_export namespace hi { inline namespace v1 {
  *  *              | Matches zero or more code-units except '/'.
  *  / ** /         | Matches A single slash '/' or zero or more code-units between two slashes '/'.
  */
-class glob_pattern {
+hi_export class glob_pattern {
 public:
     constexpr glob_pattern() noexcept = default;
     constexpr glob_pattern(glob_pattern const&) noexcept = default;
@@ -779,7 +779,7 @@ private:
 
     template<bool Left>
     [[nodiscard]] constexpr static bool
-    matches_strip(const_iterator& first, const_iterator & last, std::u32string_view& str) noexcept
+    matches_strip(const_iterator& first, const_iterator& last, std::u32string_view& str) noexcept
     {
         while (first != last) {
             hilet it = Left ? first : last - 1;
@@ -876,16 +876,29 @@ private:
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
  */
-[[nodiscard]] inline generator<std::filesystem::path> glob(glob_pattern pattern)
+hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(glob_pattern pattern) noexcept
 {
     auto path = pattern.base_path();
 
-    hilet first = std::filesystem::recursive_directory_iterator(path);
-    hilet last = std::filesystem::recursive_directory_iterator();
+    hilet last = std::filesystem::recursive_directory_iterator{};
+
+    auto first = last;
+    try {
+        first = std::filesystem::recursive_directory_iterator(path);
+    } catch (...) {
+        co_return;
+    }
+
     for (auto it = first; it != last; ++it) {
-        hilet& iterated_path = it->path();
-        if (pattern.matches(iterated_path)) {
-            co_yield iterated_path;
+        std::filesystem::path const *iterated_path = nullptr;
+        try {
+            iterated_path = std::addressof(it->path());
+        } catch (...) {
+            continue;
+        }
+
+        if (pattern.matches(*iterated_path)) {
+            co_yield *iterated_path;
         }
     }
 }
@@ -896,29 +909,7 @@ private:
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
  */
-[[nodiscard]] inline generator<std::filesystem::path> glob(std::string_view pattern)
-{
-    return glob(glob_pattern{std::move(pattern)});
-}
-
-/** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
- *
- * @param pattern The pattern to search the filesystem for.
- * @return a generator yielding paths to objects on the filesystem that match the pattern.
- */
-[[nodiscard]] inline generator<std::filesystem::path> glob(std::string pattern)
-{
-    return glob(glob_pattern{std::move(pattern)});
-}
-
-/** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
- *
- * @param pattern The pattern to search the filesystem for.
- * @return a generator yielding paths to objects on the filesystem that match the pattern.
- */
-[[nodiscard]] inline generator<std::filesystem::path> glob(char const *pattern)
+hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::string_view pattern) noexcept
 {
     return glob(glob_pattern{pattern});
 }
@@ -929,7 +920,7 @@ private:
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
  */
-[[nodiscard]] inline generator<std::filesystem::path> glob(std::filesystem::path pattern)
+hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::string pattern) noexcept
 {
     return glob(glob_pattern{std::move(pattern)});
 }
@@ -937,13 +928,36 @@ private:
 /** Find paths on the filesystem that match the glob pattern.
  * @ingroup file
  *
- * @param location The path-location to search files in
+ * @param pattern The pattern to search the filesystem for.
+ * @return a generator yielding paths to objects on the filesystem that match the pattern.
+ */
+hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(char const *pattern) noexcept
+{
+    return glob(glob_pattern{pattern});
+}
+
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param pattern The pattern to search the filesystem for.
+ * @return a generator yielding paths to objects on the filesystem that match the pattern.
+ */
+hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::filesystem::path pattern) noexcept
+{
+    return glob(glob_pattern{std::move(pattern)});
+}
+
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param locations The path-locations to search files in
  * @param ref A relative path pattern to search the path-location
  * @return a generator yielding paths to objects in the path-location that match the pattern.
  */
-[[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::filesystem::path ref)
+hi_export template<path_range Locations>
+[[nodiscard]] inline generator<std::filesystem::path> glob(Locations&& locations, std::filesystem::path ref) noexcept
 {
-    for (hilet& directory : get_paths(location)) {
+    for (hilet& directory : locations) {
         for (hilet& path : glob(directory / ref)) {
             co_yield path;
         }
@@ -953,37 +967,40 @@ private:
 /** Find paths on the filesystem that match the glob pattern.
  * @ingroup file
  *
- * @param location The path-location to search files in
+ * @param locations The path-locations to search files in
  * @param ref A relative path pattern to search the path-location
  * @return a generator yielding paths to objects in the path-location that match the pattern.
  */
-[[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::string_view ref)
+hi_export template<path_range Locations>
+[[nodiscard]] inline generator<std::filesystem::path> glob(Locations&& locations, std::string_view ref) noexcept
 {
-    return glob(location, std::filesystem::path{std::move(ref)});
+    return glob(std::forward<Locations>(locations), std::filesystem::path{ref});
 }
 
 /** Find paths on the filesystem that match the glob pattern.
  * @ingroup file
  *
- * @param location The path-location to search files in
+ * @param locations The path-locations to search files in
  * @param ref A relative path pattern to search the path-location
  * @return a generator yielding paths to objects in the path-location that match the pattern.
  */
-[[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::string ref)
+hi_export template<path_range Locations>
+[[nodiscard]] inline generator<std::filesystem::path> glob(Locations&& locations, std::string ref) noexcept
 {
-    return glob(location, std::filesystem::path{std::move(ref)});
+    return glob(std::forward<Locations>(locations), std::filesystem::path{ref});
 }
 
 /** Find paths on the filesystem that match the glob pattern.
  * @ingroup file
  *
- * @param location The path-location to search files in
+ * @param locations The path-locations to search files in
  * @param ref A relative path pattern to search the path-location
  * @return a generator yielding paths to objects in the path-location that match the pattern.
  */
-[[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, char const *ref)
+hi_export template<path_range Locations>
+[[nodiscard]] inline generator<std::filesystem::path> glob(Locations&& locations, char const *ref) noexcept
 {
-    return glob(location, std::filesystem::path{ref});
+    return glob(std::forward<Locations>(locations), std::filesystem::path{ref});
 }
 
 }} // namespace hi::v1

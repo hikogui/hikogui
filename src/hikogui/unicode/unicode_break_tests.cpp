@@ -8,6 +8,7 @@
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_description.hpp"
 #include "../file/file.hpp"
+#include "../path/path.hpp"
 #include "../algorithm/module.hpp"
 #include "../coroutine/module.hpp"
 #include "../utility/utility.hpp"
@@ -62,7 +63,7 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
     return {std::move(r)};
 }
 
-static hi::generator<test_type> parse_tests(std::string_view filename)
+static hi::generator<test_type> parse_tests(std::filesystem::path filename)
 {
     hilet view = hi::file_view(filename);
     hilet test_data = as_string_view(view);
@@ -81,7 +82,7 @@ static hi::generator<test_type> parse_tests(std::string_view filename)
 
 TEST(unicode_break, grapheme_break)
 {
-    for (hilet& test : parse_tests("GraphemeBreakTest.txt")) {
+    for (hilet& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "GraphemeBreakTest.txt")) {
         hilet result = hi::unicode_grapheme_break(test.code_points.begin(), test.code_points.end());
 
         ASSERT_EQ(test.expected, result) << test.comment;
@@ -90,7 +91,7 @@ TEST(unicode_break, grapheme_break)
 
 TEST(unicode_break, word_break)
 {
-    for (hilet& test : parse_tests("WordBreakTest.txt")) {
+    for (hilet& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "WordBreakTest.txt")) {
         hilet result =
             hi::unicode_word_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
                 return code_point;
@@ -102,7 +103,7 @@ TEST(unicode_break, word_break)
 
 TEST(unicode_break, sentence_break)
 {
-    for (hilet& test : parse_tests("SentenceBreakTest.txt")) {
+    for (hilet& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "SentenceBreakTest.txt")) {
         hilet result =
             hi::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
                 return code_point;
@@ -114,7 +115,7 @@ TEST(unicode_break, sentence_break)
 
 TEST(unicode_break, line_break)
 {
-    for (hilet& test : parse_tests("LineBreakTest.txt")) {
+    for (hilet& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "LineBreakTest.txt")) {
         auto result =
             hi::unicode_line_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
                 return code_point;

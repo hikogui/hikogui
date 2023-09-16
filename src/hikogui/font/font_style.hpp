@@ -44,7 +44,7 @@ constexpr auto font_style_metadata = enum_metadata{
 };
 // clang-format on
 
-hi_export [[nodiscard]] inline generator<font_style> alternatives(font_style const &start) noexcept
+hi_export [[nodiscard]] inline generator<font_style> alternatives(font_style start) noexcept
 {
     if (start == font_style::normal) {
         co_yield font_style::normal;

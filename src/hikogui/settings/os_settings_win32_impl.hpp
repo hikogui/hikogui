@@ -363,7 +363,7 @@ namespace hi { inline namespace v1 {
 {
     using namespace std::literals;
 
-    hilet executable_path = get_path(path_location::executable_file).string();
+    hilet executable_path = executable_file().string();
     hilet user_gpu_preferences_key = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
 
     if (hilet result = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_gpu_preferences_key, executable_path)) {

@@ -6,31 +6,27 @@
 # Build Target: hikogui_demo                             (executable)
 #-------------------------------------------------------------------
 
-add_executable(hikogui_demo WIN32 MACOSX_BUNDLE)
+add_executable(hikogui_demo WIN32)
 add_dependencies(examples hikogui_demo)
-
 target_link_libraries(hikogui_demo PRIVATE hikogui)
-target_include_directories(hikogui_demo PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
+target_link_resources(hikogui_demo hikogui)
+set_target_properties(hikogui_demo PROPERTIES MACOSX_BUNDLE TRUE)
+set_target_properties(hikogui_demo PROPERTIES MACOSX_FRAMEWORK_IDENTIFIER org.hikogui.hikogui.hikogui_demo)
 
-add_subdirectory(src)
+target_sources(hikogui_demo PRIVATE
+    src/main_impl.cpp
+    PUBLIC ${hikogui_demo_resource_files})
 
-add_custom_target(hikogui_demo_resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-    DEPENDS
-    hikogui
-    resources/hikogui_demo.png
-    resources/locale/en.po
-    resources/locale/nl.po
-)
-
-add_dependencies(hikogui_demo hikogui_demo_resources)
-
+target_resources(hikogui_demo
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/en.po
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/nl.po
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/hikogui_demo.png)
 
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------
 
-install(TARGETS hikogui_demo DESTINATION examples/hikogui_demo COMPONENT examples EXCLUDE_FROM_ALL)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources  DESTINATION examples/hikogui_demo COMPONENT examples EXCLUDE_FROM_ALL)
+install(
+    TARGETS hikogui_demo DESTINATION examples/hikogui_demo
+    RESOURCE DESTINATION examples/hikogui_demo/resources)
 

@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "file_view.hpp"
+#include "../path/path.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
@@ -16,7 +17,7 @@ using namespace hi;
 
 TEST(file_view, read)
 {
-    hilet view = file_view{"file_view.txt"};
+    hilet view = file_view{library_source_dir() / "tests" / "data" / "file_view.txt"};
 
     ASSERT_EQ(as_string_view(view), "The quick brown fox jumps over the lazy dog.");
 }

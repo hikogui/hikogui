@@ -4,6 +4,7 @@
 
 #include "unicode_bidi.hpp"
 #include "../file/file.hpp"
+#include "../path/path.hpp"
 #include "../utility/utility.hpp"
 #include "../algorithm/module.hpp"
 #include "../coroutine/module.hpp"
@@ -113,7 +114,7 @@ struct unicode_bidi_test {
 
 generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 {
-    hilet view = file_view("BidiTest.txt");
+    hilet view = file_view(library_source_dir() / "tests" / "data" / "BidiTest.txt");
     hilet test_data = as_string_view(view);
 
     auto levels = std::vector<int>{};
@@ -256,7 +257,7 @@ struct unicode_bidi_character_test {
 
 generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_nr = -1)
 {
-    hilet view = file_view("BidiCharacterTest.txt");
+    hilet view = file_view(library_source_dir() / "tests" / "data" / "BidiCharacterTest.txt");
     hilet test_data = as_string_view(view);
 
     int line_nr = 1;

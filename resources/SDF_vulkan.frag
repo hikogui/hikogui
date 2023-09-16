@@ -25,7 +25,7 @@ layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_blend_factor;
 
-#include "utils.glsl"
+#include "utils_vulkan.glsl"
 
 /** Get the horizontal and vertical stride in a texture map from one fragment to the next.
  *

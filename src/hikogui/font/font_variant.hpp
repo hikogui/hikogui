@@ -72,7 +72,7 @@ public:
      * @return Generated font-variants starting with @a start then zig-zag
      *         through weights, followed by zig-zag through styles.
      */
-    [[nodiscard]] friend generator<font_variant> alternatives(font_variant const& start) noexcept
+    [[nodiscard]] friend generator<font_variant> alternatives(font_variant start) noexcept
     {
         for (hilet s : alternatives(start.style())) {
             for (hilet w : alternatives(start.weight())) {
