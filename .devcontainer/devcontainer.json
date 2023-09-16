@@ -1,0 +1,25 @@
+{
+    "name": "HikoGui DevBox",
+    "image": "ghcr.io/jakoch/cpp-devbox:with-vulkansdk-latest",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                // EditorConfig
+                "EditorConfig.EditorConfig",
+                // Git + Github
+                "GitHub.vscode-pull-request-github",
+                // C++
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-vscode.cpptools-themes",
+                // CMake
+                "ms-vscode.cmake-tools",
+                "twxs.cmake",
+                // Testing
+                "matepek.vscode-catch2-test-adapter",
+                "ms-vscode.test-adapter-converter",
+                "hbenl.vscode-test-explorer"
+            ]
+        }
+    }
+}
