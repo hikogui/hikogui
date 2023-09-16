@@ -177,11 +177,15 @@ jobs:
           --cover_children ^
           -- ctest.exe
 
+      # retry uploading to codecov with limit to workaround flaky upload issue
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(matrix.config.PRESET, 'dbg')
-        uses: codecov/codecov-action@v3 # https://github.com/codecov/codecov-action
+        uses: wandalen/wretry.action@v1 # https://github.com/wandalen/wretry.action
         with:
-          files: ./hikogui_coverage.xml
+          attempt_limit: 10
+          action: codecov/codecov-action@v3 # https://github.com/codecov/codecov-action
+          with: |
+            files: ./hikogui_coverage.xml
 
     # In the future we can do this when building dynamic libraries without whole-program-optimization.
     #
