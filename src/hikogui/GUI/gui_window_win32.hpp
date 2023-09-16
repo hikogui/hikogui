@@ -24,7 +24,7 @@ class gui_window {
 public:
     HWND win32Window = nullptr;
 
-std::unique_ptr<gfx_surface> surface;
+    std::unique_ptr<gfx_surface> surface;
 
     /** The current rectangle of the window relative to the screen.
      * The screen rectangle is set by the operating system event loop.
@@ -82,8 +82,7 @@ std::unique_ptr<gfx_surface> surface;
     gui_window(gui_window&&) = delete;
     gui_window& operator=(gui_window&&) = delete;
 
-    gui_window(std::unique_ptr<widget_intf> widget) noexcept :
-        _widget(std::move(widget)), track_mouse_leave_event_parameters()
+    gui_window(std::unique_ptr<widget_intf> widget) noexcept : _widget(std::move(widget)), track_mouse_leave_event_parameters()
     {
         if (_first_window) {
             if (not os_settings::start_subsystem()) {
@@ -558,7 +557,7 @@ std::unique_ptr<gfx_surface> surface;
             SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
     }
 
-void update_mouse_target(widget_id new_target_id, point2 position = {}) noexcept
+    void update_mouse_target(widget_id new_target_id, point2 position = {}) noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -579,8 +578,8 @@ void update_mouse_target(widget_id new_target_id, point2 position = {}) noexcept
             _mouse_target_id = std::nullopt;
         }
     }
-    
-/** Change the keyboard focus to the given widget.
+
+    /** Change the keyboard focus to the given widget.
      * If the group of the widget is incorrect then no widget will be in focus.
      *
      * @param widget The new widget to focus, or empty to remove all keyboard focus.
@@ -656,7 +655,7 @@ void update_mouse_target(widget_id new_target_id, point2 position = {}) noexcept
     {
         return update_keyboard_target(_keyboard_target_id, group, direction);
     }
-    
+
     /** Get text from the clipboard.
      *
      * @note This is part of the window as some operating systems need to know from which window the text was posted.
@@ -664,7 +663,7 @@ void update_mouse_target(widget_id new_target_id, point2 position = {}) noexcept
      * @retval empty When the clipboard is locked by another application, on error, if the data on the clipboard can not
      *               be converted to text or if the clipboard is empty.
      */
-            [[nodiscard]] std::optional<gstring> get_text_from_clipboard() const noexcept
+    [[nodiscard]] std::optional<gstring> get_text_from_clipboard() const noexcept
     {
         if (not OpenClipboard(win32Window)) {
             // Another application could have the clipboard locked.
@@ -718,12 +717,12 @@ void update_mouse_target(widget_id new_target_id, point2 position = {}) noexcept
         return std::nullopt;
     }
 
-        /** Put text on the clipboard.
+    /** Put text on the clipboard.
      *
      * @note This is part of the window as some operating systems need to know from which window the text was posted.
      * @param text The text to place on the clipboard.
      */
-void put_text_on_clipboard(gstring_view text) const noexcept
+    void put_text_on_clipboard(gstring_view text) const noexcept
     {
         if (not OpenClipboard(win32Window)) {
             // Another application could have the clipboard locked.
@@ -779,7 +778,7 @@ void put_text_on_clipboard(gstring_view text) const noexcept
         }
     }
 
-[[nodiscard]] translate2 window_to_screen() const noexcept
+    [[nodiscard]] translate2 window_to_screen() const noexcept
     {
         return translate2{rectangle.left(), rectangle.bottom()};
     }
@@ -983,7 +982,7 @@ private:
 
     bool keymenu_pressed = false;
 
-/** Send event to a target widget.
+    /** Send event to a target widget.
      *
      * The commands are send in order, until the command is handled, then processing stops immediately.
      * All commands are tried in a batch to the following handlers:
@@ -1259,7 +1258,7 @@ private:
         return r;
     }
 
-void create_window(extent2 new_size)
+    void create_window(extent2 new_size)
     {
         // This function should be called during init(), and therefor should not have a lock on the window.
         hi_assert(loop::main().on_thread());

@@ -117,7 +117,10 @@ public:
         using reference = value_type const&;
         using iterator_category = std::input_iterator_tag;
 
-        explicit const_iterator(handle_type coroutine) : _coroutine{coroutine} {}
+        explicit const_iterator(handle_type coroutine) : _coroutine{coroutine}
+        {
+            _coroutine.promise().rethrow();
+        }
 
         /** Resume the generator-function.
          */

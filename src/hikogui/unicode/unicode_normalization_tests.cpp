@@ -4,6 +4,7 @@
 
 #include "unicode_normalization.hpp"
 #include "../file/file.hpp"
+#include "../path/path.hpp"
 #include "../algorithm/module.hpp"
 #include "../coroutine/module.hpp"
 #include "../utility/utility.hpp"
@@ -92,7 +93,7 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
 
 generator<NormalizationTest> parseNormalizationTests()
 {
-    hilet view = file_view(std::filesystem::path{"NormalizationTest.txt"});
+    hilet view = file_view(library_source_dir() / "tests" / "data" / "NormalizationTest.txt");
     hilet test_data = as_string_view(view);
 
     size_t line_nr = 0;
