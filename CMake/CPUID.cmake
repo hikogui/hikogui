@@ -12,11 +12,13 @@ include (CMakePushCheckState)
 
 cmake_push_check_state ()
 
-if(NOT WIN32)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(CMAKE_REQUIRED_FLAGS "-std=c++11 -lstdc++")
-else()
-# /EHsc catches C++ exceptions only and tells the compiler to assume that
-# extern C functions never throw a C++ exception.
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_REQUIRED_FLAGS "-std=c++11 -lstdc++")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # /EHsc catches C++ exceptions only and tells the compiler to assume that
+  # extern C functions never throw a C++ exception.
   set(CMAKE_REQUIRED_FLAGS "/EHsc /W4")
 endif()
 

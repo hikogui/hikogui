@@ -22,8 +22,8 @@ include(SetupCompiler)
 option(BUILD_SHARED_LIBS    "Build shared libraries"                             OFF)
 option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
-option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" "")
 option(BUILD_EXAMPLES       "Compile the example executables"                    ON)
+option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" OFF)
 
 #-------------------------------------------------------------------
 # Project
@@ -70,7 +70,7 @@ include(CTest)
 
 # HI_ARCHITECTURE can be set as a build option.
 # if this build option is not set, default to the auto-detected architecture level.
-if(HI_ARCHITECTURE STREQUAL "")
+if(NOT HI_ARCHITECTURE)
   set(HI_ARCHITECTURE ${CPUINFO_ARCHITECTURE_LEVEL})
 endif()
 
