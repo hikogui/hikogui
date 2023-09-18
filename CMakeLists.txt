@@ -449,7 +449,7 @@ install(
     FILE "hikoguiTargets.cmake"
 )
 
-get_target_property(RESOURCE_FILES hikogui RESOURCE)
+get_target_resources(hikogui RESOURCE_FILES)
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/CMake/packaging/hikoguiResources.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiResources.cmake"
