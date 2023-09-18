@@ -4,7 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Changed things.
+ * Changed things.
+
+## [0.8.1] - 2023-09-18 - Precious Polar Bear Deux
+
+We've updated the CMake files quite a bit to improve installation with vcpkg:
+ 
+ * Use RESOURCE property to install resource files.
+ * Add functions to inherit RESOURCE files from a library, so that they will
+   be installed along side an application.
+ * Change HikoGUI's path module to use separate functions for getting locations
+   to files and directories. `*_file()`, `*_dir()`, `*_dirs()`.
+ * An application and the HikoGUI library can now detect if they are execution
+   from the cmake-build directory instead of the install directory; and will
+   automatically switch where the resource files are located. 
 
 ## [0.8.0] - 2023-09-06 - Precious Polar Bear
 
@@ -210,7 +223,8 @@ The first public release.
 
 <!-- Section for Reference Links -->
 
-[Unreleased]: https://github.com/hikogui/hikogui/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/hikogui/hikogui/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/hikogui/hikogui/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/hikogui/hikogui/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/hikogui/hikogui/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/hikogui/hikogui/compare/v0.5.1...v0.6.0

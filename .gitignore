@@ -13,7 +13,6 @@ xcuserdata/
 *.xccheckout
 
 ## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
-build/
 DerivedData/
 *.moved-aside
 *.pbxuser
@@ -176,3 +175,6 @@ dateTargets.cmake
 CMakeDirectoryInformation.cmake
 CMakeUserPresets.json
 out
+build
+install
+

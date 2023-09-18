@@ -449,6 +449,13 @@ install(
     FILE "hikoguiTargets.cmake"
 )
 
+get_target_property(RESOURCE_FILES hikogui RESOURCE)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/CMake/packaging/hikoguiResources.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiResources.cmake"
+    @ONLY
+)
+
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/CMake/packaging/hikoguiConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfig.cmake"
@@ -461,5 +468,6 @@ write_basic_package_version_file(
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/hikoguiResources.cmake"
     DESTINATION "${INSTALL_CMAKEDIR}"
 )
