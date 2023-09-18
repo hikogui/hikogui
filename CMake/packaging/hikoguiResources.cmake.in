@@ -1,0 +1,31 @@
+
+# Compute the installation prefix relative to this file.
+get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+if(_IMPORT_PREFIX STREQUAL "/")
+  set(_IMPORT_PREFIX "")
+endif()
+
+set(_IMPORT_RESOURCEDIR "${_IMPORT_PREFIX}/@INSTALL_RESOURCEDIR@")
+set(_BUILD_RESOURCE_FILES "@RESOURCE_FILES@")
+
+# Replace the directory of each resource file.
+set(_IMPORT_RESOURCE_FILES "")
+foreach(_BUILD_RESOURCE_FILE IN LISTS _BUILD_RESOURCE_FILES)
+    cmake_path(GET _BUILD_RESOURCE_FILE FILENAME _RESOURCE_FILENAME)
+
+    list(APPEND _IMPORT_RESOURCE_FILES "${_IMPORT_RESOURCEDIR}/${_RESOURCE_FILENAME}")
+endforeach()
+
+set_target_properties(hikogui::hikogui PROPERTIES
+  INTERFACE_RESOURCE "${_IMPORT_RESOURCE_FILES}"
+)
+
+unset(_BUILD_RESOURCE_FILE)
+unset(_BUILD_RESOURCE_FILES)
+unset(_RESOURCE_FILENAME)
+unset(_IMPORT_RESOURCE_FILES)
+unset(_IMPORT_RESOURCEDIR)
+unset(_IMPORT_PREFIX)

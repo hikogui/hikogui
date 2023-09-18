@@ -3,6 +3,7 @@
 find_package(Vulkan REQUIRED)
 
 include("${CMAKE_CURRENT_LIST_DIR}/hikoguiTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/hikoguiResources.cmake")
 
 check_required_components(hikogui)
 
@@ -22,7 +23,7 @@ function(target_link_hikogui target protection)
     endif()
 
     # Make the target depend on HikoGUI's resource files.
-    get_target_property(link_resource_files hikogui::hikogui RESOURCE)
+    get_target_property(link_resource_files hikogui::hikogui INTERFACE_RESOURCE)
     if (link_resource_files STREQUAL "link_resource_files-NOTFOUND")
         set(link_resource_files "")
     endif()
