@@ -46,7 +46,7 @@
 #define HI_PROCESSOR HI_CPU_ARM64
 #elif defined(__i386__) or defined(_M_IX86)
 #define HI_PROCESSOR HI_CPU_X86
-#elif defined(__arm__) or defined(__arm) or defeind(_ARM) or defined(_M_ARM)
+#elif defined(__arm__) or defined(__arm) or defined(_ARM) or defined(_M_ARM)
 #define HI_PROCESSOR HI_CPU_ARM
 #else
 #define HI_PROCESSOR HI_CPU_UNKNOWN
