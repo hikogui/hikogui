@@ -133,7 +133,7 @@ public:
     }
 
     
-    [[nodiscard]] gfx_device *find_best_device_for_surface(vk::SurfaceKHR surface)
+    [[nodiscard]] gfx_device *find_best_device(vk::SurfaceKHR surface)
     {
         enumerate_devices();
 
@@ -274,9 +274,23 @@ inline vk::DispatchLoaderDynamic vulkan_loader() noexcept
     return gfx_system::global().loader();
 }
 
-[[nodiscard]] inline gfx_device *find_best_device_for_surface(vk::SurfaceKHR surface)
+/** Find the best device for a Vulkan surface.
+ * 
+ * @param surface The surface to find the best device for.
+ * @return A pointer to a gfx device.
+ * @retval nullptr Could not find a Vulkan device for this surface.
+ */
+[[nodiscard]] inline gfx_device *find_best_device(vk::SurfaceKHR surface)
 {
-    return gfx_system::global().find_best_device_for_surface(surface);
+    return gfx_system::global().find_best_device(surface);
 }
+
+/** Find the best device for a surface.
+ * 
+ * @param surface The surface to find the best device for.
+ * @return A pointer to a fdx device.
+ * @retval nullptr Could not find a Vulkan device for this surface.
+ */
+[[nodiscard]] gfx_device *find_best_device(gfx_surface const &surface);
 
 } // namespace hi::inline v1
