@@ -83,7 +83,7 @@ namespace hi { inline namespace v1 {
  *
  * Therefor the only option available is to read the language list from the registry.
  */
-[[nodiscard]] inline std::vector<language_tag> os_settings::gather_languages()
+[[nodiscard]] inline std::vector<language_tag> os_settings::gather_languages() noexcept
 {
     auto r = std::vector<language_tag>{};
 
@@ -114,6 +114,39 @@ namespace hi { inline namespace v1 {
     } else {
         return std::unexpected{std::error_code{name.error()}};
     }
+}
+
+[[nodiscard]] inline bool os_settings::gather_left_to_right() noexcept
+{
+    if (auto locale = gather_locale()) {
+        try {
+            // The locale name on windows is the <language-tag>.<collation>.
+            auto locale_name = locale->name();
+
+            // Strip off the optional collation algorithm.
+            if (auto i = locale_name.find('.'); i != locale_name.npos) {
+                locale_name = locale_name.substr(0, i);
+            }
+
+            auto locale_tag = language_tag{locale->name()};
+
+            // Expanding will complete the script part of the tag
+            // that is needed to get left-to-right.
+            return locale_tag.expand().left_to_right();
+
+        } catch (...) {
+            // The locale-name may be different from the language-tag
+            // So fallthrough here.
+        }
+    }
+
+    // Use the left-to-right direction of the first configured language.
+    if (auto languages = gather_languages(); not languages.empty()) {
+        return languages.front().expand().left_to_right();
+    }
+
+    // Most languages are left-to-right so it is a good guess.
+    return true;
 }
 
 [[nodiscard]] inline hi::theme_mode os_settings::gather_theme_mode()
