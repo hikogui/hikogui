@@ -298,15 +298,10 @@ public:
                 language_tags.emplace_back("en-Latn-US");
             }
 
-            auto left_to_right = language_tags.front().left_to_right();
-
             // Add all the variants of languages, for searching into translations.
             language_tags = variants(language_tags);
 
-            auto language_changed = compare_store(_language_tags, language_tags);
-            language_changed |= compare_store(_left_to_right, left_to_right);
-
-            if (language_changed) {
+            if (compare_store(_language_tags, language_tags)) {
                 setting_has_changed = true;
                 hi_log_info("OS language order has changed: {}", _language_tags);
             }
@@ -321,6 +316,11 @@ public:
             }
         } else {
             hi_log_error("Failed to get OS locale: {}", optional_locale.error().message());
+        }
+
+        if (compare_store(_left_to_right, gather_left_to_right())) {
+            setting_has_changed = true;
+            hi_log_info("OS mirrored-GUI has changed: {}", not _left_to_right);
         }
 
         try {
@@ -537,8 +537,9 @@ private:
         }
     }
 
-    [[nodiscard]] static std::vector<language_tag> gather_languages();
+    [[nodiscard]] static std::vector<language_tag> gather_languages() noexcept;
     [[nodiscard]] static std::expected<std::locale, std::error_code> gather_locale() noexcept;
+    [[nodiscard]] static bool gather_left_to_right() noexcept;
     [[nodiscard]] static hi::theme_mode gather_theme_mode();
     [[nodiscard]] static hi::subpixel_orientation gather_subpixel_orientation();
     [[nodiscard]] static bool gather_uniform_HDR();
