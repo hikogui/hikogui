@@ -1009,7 +1009,7 @@ inline void gfx_surface::teardown_command_buffers()
     
     // Now that we have a physical window and render surface it is time to find the gfx-device
     // for rendering on this surface.
-    auto device = find_best_device_for_surface(surface->intrinsic);
+    auto device = find_best_device(*surface);
     if (not device) {
         throw gfx_error("Could not find a vulkan-device matching this surface");
     }
