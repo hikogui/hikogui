@@ -190,6 +190,10 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # this warning is absolutely useless.
     target_compile_options(hikogui INTERFACE -Wno-assume)
 
+    # Clang knows [[no_unique_address]] but since win32-ABI does not
+    # support [[no_unique_address] clang pretends it does not know the attribute.
+    target_compile_options(hikogui INTERFACE -Wno-unknown-attributes)
+
     # Clang will complain about calling hidden-friend-template-functions.
     target_compile_options(hikogui INTERFACE -Wno-unknown-warning-option -Wno-c++20-extensions -Wno-c++2a-extensions)
 

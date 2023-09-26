@@ -303,7 +303,7 @@ template<numeric T>
 }
 
 template<numeric T, byte_like B>
-[[nodiscard]] constexpr void unaligned_store(T src, B *dst) noexcept
+constexpr void unaligned_store(T src, B *dst) noexcept
 {
     using unsigned_type = std::make_unsigned_t<T>;
 
@@ -328,13 +328,13 @@ template<numeric T, byte_like B>
 }
 
 template<numeric T>
-[[nodiscard]] inline void unaligned_store(T src, void *dst) noexcept
+inline void unaligned_store(T src, void *dst) noexcept
 {
     return unaligned_store(src, reinterpret_cast<std::byte *>(dst));
 }
 
 template<numeric T>
-[[nodiscard]] hi_force_inline constexpr void store_or(T src, uint8_t *dst) noexcept
+hi_force_inline constexpr void store_or(T src, uint8_t *dst) noexcept
 {
     hi_axiom_not_null(dst);
 

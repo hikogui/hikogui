@@ -495,7 +495,7 @@ struct native_simd<float, 4> {
         }
     }
 
-    [[nodiscard]] friend native_simd permute(native_simd a, native_simd<int32_t, 4> const& source_elements) noexcept;
+    friend native_simd permute(native_simd a, native_simd<int32_t, 4> const& source_elements) noexcept;
 
     /** Swizzle elements.
      *

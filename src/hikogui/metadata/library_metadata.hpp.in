@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "semantic_version.hpp"
-#include "../utility/utility.hpp"
-#include "../macros.hpp"
+#include "hikogui/metadata/semantic_version.hpp"
+#include "hikogui/utility/utility.hpp"
+#include "hikogui/macros.hpp"
 #include <atomic>
 #include <filesystem>
 

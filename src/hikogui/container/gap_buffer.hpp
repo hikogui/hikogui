@@ -44,7 +44,8 @@ public:
     using const_reference = T const&;
     using pointer = T *;
     using const_pointer = T const *;
-
+    class const_iterator;
+    
     class iterator {
     public:
         static_assert(

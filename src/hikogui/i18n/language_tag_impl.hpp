@@ -2032,7 +2032,7 @@ inline language_tag::language_tag(std::string_view str) : language(), script(), 
     return language_tag{language, script, region};
 }
 
-inline [[nodiscard]] language_tag language_tag::expand() const noexcept
+[[nodiscard]] inline language_tag language_tag::expand() const noexcept
 {
     auto r = *this;
 

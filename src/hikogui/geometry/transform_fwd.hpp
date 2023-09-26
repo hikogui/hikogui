@@ -11,6 +11,10 @@ class aarectangle;
 class scale2;
 class translate2;
 class matrix2;
+class matrix3;
+
+[[nodiscard]] constexpr matrix2 operator*(matrix2 const& lhs, matrix2 const& rhs) noexcept;
+[[nodiscard]] constexpr matrix3 operator*(matrix3 const& lhs, matrix3 const& rhs) noexcept;
 
 [[nodiscard]] constexpr aarectangle operator*(scale2 const& lhs, aarectangle const& rhs) noexcept;
 [[nodiscard]] constexpr matrix2 operator*(translate2 const& lhs, scale2 const& rhs) noexcept;

@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include <version>
+
 #ifndef HI_ASSERT_HPP
 #define HI_ASSERT_HPP
 
@@ -32,6 +34,21 @@
 #define HI_COMPILER HI_CC_GCC
 #else
 #error "Could not detect the compiler."
+#endif
+
+#define HI_STL_MS 'm'
+#define HI_STL_GNU 'g'
+#define HI_STL_LLVM 'l'
+#define HI_STL_UNKNOWN '-'
+
+#if defined(__GLIBCXX__)
+#define HI_CXX_LIBRARY HI_STL_GNU
+#elif defined(_LIBCPP_VERSION)
+#define HI_CXX_LIBRARY HI_STL_LLVM
+#elif defined(_CPPLIB_VER)
+#define HI_CXX_LIBRARY HI_STL_MS
+#else
+#define HI_CXX_LIBRARY HI_STL_UNKNOWN
 #endif
 
 #define HI_CPU_X86 'i'
@@ -270,6 +287,8 @@
  * ```
  */
 #define hi_get_overloaded_macro2(_1, _2, name, ...) name
+
+#define ssizeof(x) (static_cast<ssize_t>(sizeof(x)))
 
 /** Debug-break.
  *

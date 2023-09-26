@@ -142,7 +142,7 @@ public:
         std::string _host = {};
         std::optional<std::string> _port = {};
 
-        [[nodiscard]] constexpr static void validate_host(std::string_view str)
+        constexpr static void validate_host(std::string_view str)
         {
             if (str.starts_with('[') and not str.ends_with(']')) {
                 throw uri_error("The host-component starts with '[' has missing ']' at end");
@@ -151,7 +151,7 @@ public:
             }
         }
 
-        [[nodiscard]] constexpr static void validate_port(std::string_view str)
+        constexpr static void validate_port(std::string_view str)
         {
             for (auto c : str) {
                 if (not(c >= '0' and c <= '9')) {
@@ -843,7 +843,7 @@ private:
         return is_scheme_start(c) or (c >= '0' and c <= '9') or c == '+' or c == '-' or c == '.';
     }
 
-    [[nodiscard]] constexpr static void validate_scheme(std::string_view str)
+    constexpr static void validate_scheme(std::string_view str)
     {
         if (str.empty()) {
             throw uri_error("The scheme-component is not allowed to be empty (it is allowed to not exist).");
@@ -858,7 +858,7 @@ private:
         }
     }
 
-    [[nodiscard]] constexpr static void validate_path(path_type const& path, bool has_authority)
+    constexpr static void validate_path(path_type const& path, bool has_authority)
     {
         if (has_authority) {
             if (not(path.empty() or path.absolute())) {

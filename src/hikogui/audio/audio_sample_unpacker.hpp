@@ -99,7 +99,7 @@ private:
     //[[nodiscard]] std::size_t calculate_num_fast_samples(std::size_t num_samples) const noexcept;
 
     [[nodiscard]] static int32_t load_sample(
-        std::byte const *& src,
+        std::byte const *hi_restrict & src,
         std::size_t stride,
         int num_bytes,
         int direction,
@@ -130,7 +130,7 @@ private:
         return truncate<int32_t>(r);
     }
 
-    [[nodiscard]] static i8x16 load_samples(std::byte const *& src, i8x16 load_shuffle_indices, std::size_t stride) noexcept
+    [[nodiscard]] static i8x16 load_samples(std::byte const *hi_restrict & src, i8x16 load_shuffle_indices, std::size_t stride) noexcept
     {
         hi_axiom(src != nullptr);
         hi_axiom(stride > 0);
@@ -141,7 +141,7 @@ private:
     }
 
     [[nodiscard]] static i32x4 load_samples(
-        std::byte const *& src,
+        std::byte const *hi_restrict & src,
         i8x16 load_shuffle_indices,
         i8x16 concat_shuffle_indices,
         std::size_t num_chunks,
@@ -162,13 +162,13 @@ private:
         return std::bit_cast<i32x4>(int_samples);
     }
 
-    static void store_sample(float *& dst, float sample) noexcept
+    static void store_sample(float *hi_restrict & dst, float sample) noexcept
     {
         hi_axiom(dst != nullptr);
         *(dst++) = sample;
     }
 
-    static void store_samples(float *& dst, f32x4 samples) noexcept
+    static void store_samples(float *hi_restrict & dst, f32x4 samples) noexcept
     {
         hi_axiom(dst != nullptr);
         samples.store(reinterpret_cast<std::byte *>(dst));

@@ -255,8 +255,9 @@ hi_force_inline constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
         return _udiv128(lhs_hi, lhs_lo, rhs, &remainder);
 
 #elif HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC
-        hilet lhs = static_cast<__uint128_t>(lhs_hi) << 64 | static_cast<__uint128_t>(lhs_lo);
-        return narrow_cast<uint64_t>(lhs / rhs);
+        hilet lhs = static_cast<unsigned __int128>(lhs_hi) << 64 | static_cast<unsigned __int128>(lhs_lo);
+        hi_axiom(lhs <= std::numeric_limits<uint64_t>::max());
+        return static_cast<uint64_t>(lhs / rhs);
 #else
 #error "Not implemented"
 #endif

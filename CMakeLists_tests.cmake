@@ -32,7 +32,6 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/rcu_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/gap_buffer_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/packed_int_array_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/small_map_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/tree_tests.cpp

@@ -10,4 +10,3 @@
 #include "interval.hpp"
 #include "polynomial.hpp"
 #include "safe_int.hpp"
-#include "stdint.hpp"

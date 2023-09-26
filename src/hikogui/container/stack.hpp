@@ -25,40 +25,31 @@ template<typename T, std::size_t MaxSize>
 class stack {
 public:
     using value_type = T;
-    using pointer = value_type *;
-    using const_pointer = value_type const *;
-    using reference_type = value_type &;
-    using const_reference_type = value_type const &;
-    using iterator = pointer;
-    using const_iterator = const_pointer;
-    using size_type = std::size_t;
-    using difference_type = ptrdiff_t;
+    using array_type = std::array<value_type, MaxSize>;
+    using pointer = array_type::pointer;
+    using const_pointer = array_type::const_pointer;
+    using reference = array_type::reference;
+    using const_reference = array_type::const_reference;
+    using iterator = array_type::iterator;
+    using const_iterator = array_type::const_iterator;
+    using size_type = array_type::size_type;
+    using difference_type = array_type::difference_type;
 
     /** Construct an empty stack.
      */
-    stack() noexcept : _top(begin()) {}
+    constexpr stack() noexcept : _top(begin()) {}
 
-    /** Construct a stack with the given data.
-     * @param init An initializer_list of items to add to the stack.
-     */
-    stack(std::initializer_list<value_type> init) noexcept : _top(begin())
-    {
-        for (hilet &init_item : init) {
-            push_back(init_item);
-        }
-    }
-
-    ~stack() noexcept
+    constexpr ~stack() noexcept
     {
         clear();
     }
 
-    [[nodiscard]] const_pointer data() const noexcept
+    [[nodiscard]] constexpr const_pointer data() const noexcept
     {
         return reinterpret_cast<const_pointer>(_buffer);
     }
 
-    [[nodiscard]] pointer data() noexcept
+    [[nodiscard]] constexpr pointer data() noexcept
     {
         return reinterpret_cast<pointer>(_buffer);
     }
@@ -255,8 +246,8 @@ public:
     }
 
 private:
-    pointer _top;
-    alignas(T) std::byte _buffer[MaxSize * sizeof(T)];
+    array_type _data;
+    array_type::iterator _top;
 };
 
 } // namespace hi::inline v1

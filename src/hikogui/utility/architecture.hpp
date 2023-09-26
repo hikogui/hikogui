@@ -47,8 +47,11 @@ using uintreg_t = uint64_t;
 #endif
 
 
-#if (HI_COMPILER == HI_CC_GCC || HI_COMPILER == HI_CC_CLANG) && (HI_PROCESSOR == HI_CPU_X64 || HI_PROCESSOR == HI_CPU_ARM64)
+#if (HI_COMPILER == HI_CC_GCC || HI_COMPILER == HI_CC_CLANG)
+#if (HI_PROCESSOR == HI_CPU_X64 || HI_PROCESSOR == HI_CPU_ARM64)
+#if (HI_CXX_LIBRARY == HI_STL_GCC || HI_CXX_LIBRARY == HI_STL_LLVM)
 #define HI_HAS_INT128 1
+
 /** Signed 128 bit integer.
  */
 using int128_t = __int128;
@@ -57,6 +60,8 @@ using int128_t = __int128;
  */
 using uint128_t = unsigned __int128;
 
+#endif
+#endif
 #endif
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS

@@ -18,9 +18,6 @@ hi_export_module(hikogui.utility.concepts);
 hi_export namespace hi { inline namespace v1 {
 
 template<typename T>
-concept numeric_limited = std::numeric_limits<T>::is_specialized;
-
-template<typename T>
 concept numeric = is_numeric_v<T>;
 
 template<typename T>

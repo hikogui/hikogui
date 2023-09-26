@@ -230,7 +230,7 @@ private:
     constexpr static bool _has_write_ascii_chunk16 = true;
 
     template<typename It, typename EndIt>
-    [[nodiscard]] constexpr void _size_ascii(It& it, EndIt last, size_t& count) const noexcept
+    constexpr void _size_ascii(It& it, EndIt last, size_t& count) const noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE2)
