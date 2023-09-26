@@ -480,7 +480,7 @@ public:
         case tag_type::bstring:
             return get<bstring>(*this).empty();
         default:
-            throw std::domain_error(std::format("Type {} can not be checked for empty", *this));
+            throw std::domain_error(std::format("Type {} can not be checked for empty", repr(*this)));
         }
     }
 
@@ -497,7 +497,7 @@ public:
         case tag_type::boolean:
             return static_cast<T>(get<bool>(*this));
         default:
-            throw std::domain_error(std::format("Can't convert {} to floating point", *this));
+            throw std::domain_error(std::format("Can't convert {} to floating point", repr(*this)));
         }
     }
 
@@ -513,7 +513,7 @@ public:
         case tag_type::boolean:
             return decimal(get<bool>(*this));
         default:
-            throw std::domain_error(std::format("Can't convert {} to floating point", *this));
+            throw std::domain_error(std::format("Can't convert {} to floating point", repr(*this)));
         }
     }
 

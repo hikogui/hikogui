@@ -147,7 +147,10 @@ hi_warning_ignore_msvc(26472)
 
 namespace hi::inline v1 {
 
-template<arithmetic T, std::size_t N>
+template<typename T>
+concept simd_value_type = arithmetic<T> or std::same_as<T, float16>;
+
+template<simd_value_type T, std::size_t N>
 struct simd {
     using value_type = T;
     constexpr static size_t size = N;
@@ -187,7 +190,7 @@ struct simd {
     constexpr simd& operator=(simd const& rhs) noexcept = default;
     constexpr simd& operator=(simd&& rhs) noexcept = default;
 
-    template<arithmetic U>
+    template<simd_value_type U>
     [[nodiscard]] constexpr explicit simd(simd<U, N> const& other) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -207,7 +210,7 @@ struct simd {
         }
     }
 
-    template<arithmetic U>
+    template<simd_value_type U>
     [[nodiscard]] constexpr explicit simd(simd<U, size / 2> const& a, simd<U, size / 2> const& b) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -286,7 +289,7 @@ struct simd {
         return native_type{v};
     }
 
-    template<arithmetic O, size_t M>
+    template<simd_value_type O, size_t M>
     [[nodiscard]] constexpr static simd cast_from(simd<O, M> const& rhs) noexcept
         requires(sizeof(simd<O, M>) == sizeof(simd))
     {
@@ -1237,7 +1240,7 @@ using u16x8 = simd<uint16_t, 8>;
 using u16x16 = simd<uint16_t, 16>;
 using u16x32 = simd<uint16_t, 32>;
 
-//using f16x4 = simd<float16, 4>;
+using f16x4 = simd<float16, 4>;
 
 using i32x1 = simd<int32_t, 1>;
 using i32x2 = simd<int32_t, 2>;

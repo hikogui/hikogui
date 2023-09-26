@@ -110,7 +110,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/byte_string.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/function_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/functional.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/gap_buffer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/module.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional.hpp

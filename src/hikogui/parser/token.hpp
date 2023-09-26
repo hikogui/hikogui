@@ -136,7 +136,7 @@ hi_export struct token {
         return from_string<T>(static_cast<std::string_view>(*this));
     }
 
-    operator color() const
+    operator ::hi::color() const
     {
         hi_axiom(kind == kind_type::color);
         return color_from_sRGB(static_cast<std::string_view>(*this));

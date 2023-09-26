@@ -32,7 +32,7 @@ namespace hi::inline v1 {
  *
  * @tparam Ts Awaitable types.
  */
-template<typename... Ts>
+template<awaitable... Ts>
 class when_any {
 public:
     using value_type = std::variant<variant_decay_t<await_resume_result_t<Ts>>...>;

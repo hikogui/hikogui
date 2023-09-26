@@ -60,10 +60,12 @@ public:
     }
 
 protected:
-    inline static std::unique_ptr<audio_system> _global;
-
     notifier_type _notifier;
 };
+
+namespace detail {
+inline std::unique_ptr<audio_system> audio_system_global;
+}
 
 template<typename Context>
 concept audio_device_filter = std::same_as<Context, audio_device_state> or std::same_as<Context, audio_direction>;

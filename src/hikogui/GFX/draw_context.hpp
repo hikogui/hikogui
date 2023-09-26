@@ -20,7 +20,6 @@
 namespace hi { inline namespace v1 {
 class gfx_device;
 class widget_layout;
-struct gfx_pipeline_image::paged_image;
 
 /** The side where the border is drawn.
  */

@@ -251,6 +251,7 @@ public:
                 return style;
             }
         }
+        hi_no_default();
     }
 
 private:

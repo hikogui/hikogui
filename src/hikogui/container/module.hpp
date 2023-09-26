@@ -3,7 +3,6 @@
 
 #include "byte_string.hpp"
 #include "function_fifo.hpp"
-#include "gap_buffer.hpp"
 #include "lean_vector.hpp"
 #include "polymorphic_optional.hpp"
 #include "secure_vector.hpp"

@@ -42,13 +42,13 @@
 #define HI_STL_UNKNOWN '-'
 
 #if defined(__GLIBCXX__)
-#define HI_CXX_LIBRARY HI_STL_GNU
+#define HI_STD_LIBRARY HI_STL_GNU
 #elif defined(_LIBCPP_VERSION)
-#define HI_CXX_LIBRARY HI_STL_LLVM
+#define HI_STD_LIBRARY HI_STL_LLVM
 #elif defined(_CPPLIB_VER)
-#define HI_CXX_LIBRARY HI_STL_MS
+#define HI_STD_LIBRARY HI_STL_MS
 #else
-#define HI_CXX_LIBRARY HI_STL_UNKNOWN
+#define HI_STD_LIBRARY HI_STL_UNKNOWN
 #endif
 
 #define HI_CPU_X86 'i'
@@ -128,7 +128,7 @@
 
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_assume(condition) __builtin_assume(to_bool(condition))
-#define hi_force_inline inline __attribute__((always_inline))
+#define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__
 #define hi_warning_push() _Pragma("warning(push)")
@@ -153,7 +153,7 @@
         if (!(condition)) \
             std::unreachable(); \
     } while (false)
-#define hi_force_inline inline __attribute__((always_inline))
+#define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__
 #define hi_warning_push() _Pragma("warning(push)")
@@ -164,7 +164,7 @@
 
 #else
 #define hi_assume(condition) static_assert(sizeof(condition) == 1)
-#define hi_force_inline inline
+#define hi_force_inline
 #define hi_no_inline
 #define hi_restrict
 #define hi_warning_push()

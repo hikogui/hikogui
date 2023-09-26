@@ -85,7 +85,7 @@ public:
      * @param end_code_point The ending code-point of the range (inclusive).
      * @param start_glyph The starting glyph of the range.
      */
-    [[nodiscard]] constexpr void add(char32_t start_code_point, char32_t end_code_point, uint16_t start_glyph) noexcept
+    constexpr void add(char32_t start_code_point, char32_t end_code_point, uint16_t start_glyph) noexcept
     {
 #ifndef NDEBUG
         _prepared = false;
@@ -196,7 +196,7 @@ private:
             return wide_cast<size_t>(_count) + 1;
         }
 
-        [[nodiscard]] constexpr void set_count(size_t new_count) noexcept
+        constexpr void set_count(size_t new_count) noexcept
         {
             hi_axiom(new_count > 0);
             hi_axiom(new_count <= max_count);

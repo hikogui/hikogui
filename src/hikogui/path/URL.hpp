@@ -222,7 +222,7 @@ public:
                 if (auto path = find_path(resource_dirs(), ref)) {
                     return *path;
                 } else {
-                    throw url_error(std::format("Resource {} not found.", *this));
+                    throw url_error(std::format("Resource {} not found.", to_string(*this)));
                 }
 
             } else if (scheme_ == "file") {

@@ -72,21 +72,21 @@ public:
 
     [[nodiscard]] constexpr explicit color(hi::semantic_color semantic_color, float alpha = 1.0f) noexcept : _v()
     {
-        _v.x() = float16::from_uint16_t(0xf900 + static_cast<uint8_t>(semantic_color));
-        _v.y() = float16::from_uint16_t(0x0000);
-        _v.z() = float16::from_uint16_t(0x0000);
+        _v.x() = float16(intrinsic, 0xf900 + static_cast<uint8_t>(semantic_color));
+        _v.y() = float16(intrinsic, 0x0000);
+        _v.z() = float16(intrinsic, 0x0000);
         _v.w() = float16(1.0f);
     }
 
     [[nodiscard]] constexpr bool is_semantic() const noexcept
     {
-        return (_v.x().get() & 0xf900) == 0xf900;
+        return (_v.x().intrinsic() & 0xf900) == 0xf900;
     }
 
     constexpr explicit operator semantic_color() const noexcept
     {
         hi_axiom(is_semantic());
-        return static_cast<semantic_color>(_v.x().get() & 0xff);
+        return static_cast<semantic_color>(_v.x().intrinsic() & 0xff);
     }
 
     // clang-format off

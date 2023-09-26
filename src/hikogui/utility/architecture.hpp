@@ -49,7 +49,7 @@ using uintreg_t = uint64_t;
 
 #if (HI_COMPILER == HI_CC_GCC || HI_COMPILER == HI_CC_CLANG)
 #if (HI_PROCESSOR == HI_CPU_X64 || HI_PROCESSOR == HI_CPU_ARM64)
-#if (HI_CXX_LIBRARY == HI_STL_GCC || HI_CXX_LIBRARY == HI_STL_LLVM)
+#if (HI_STD_LIBRARY == HI_STL_GCC || HI_STD_LIBRARY == HI_STL_LLVM)
 #define HI_HAS_INT128 1
 
 /** Signed 128 bit integer.
@@ -88,3 +88,15 @@ constexpr std::size_t maximum_num_cpus = CPU_SETSIZE;
 
 
 } // namespace hi::inline v1
+
+namespace std {
+
+// Due to a bug in clang it will emit a undefined symbol to _Literal_zero_is_expected()
+// Which is only called from a consteval function (which should never emit code, ever).
+#if HI_COMPILER == HI_CC_CLANG && HI_STD_LIBRARY == HI_STL_MS
+inline void _Literal_zero_is_expected(void)
+{
+    std::terminate();
+}
+#endif
+}

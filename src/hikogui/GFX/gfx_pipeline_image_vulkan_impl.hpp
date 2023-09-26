@@ -380,7 +380,7 @@ inline void gfx_pipeline_image::device_shared::clear_staging_between_border_and_
     for (auto y = 0_uz; y != border_top; ++y) {
         auto row = staging_texture.pixmap[y];
         for (auto x = border_right; x != upload_right; ++x) {
-            row[x] = {};
+            row[x] = sfloat_rgba16{};
         }
     }
 
@@ -388,7 +388,7 @@ inline void gfx_pipeline_image::device_shared::clear_staging_between_border_and_
     for (auto y = border_top; y != upload_top; ++y) {
         auto row = staging_texture.pixmap[y];
         for (auto x = 0_uz; x != upload_right; ++x) {
-            row[x] = {};
+            row[x] = sfloat_rgba16{};
         }
     }
 }

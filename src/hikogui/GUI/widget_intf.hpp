@@ -69,7 +69,7 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual [[nodiscard]] box_constraints update_constraints() noexcept = 0;
+     [[nodiscard]] virtual box_constraints update_constraints() noexcept = 0;
 
     /** Update the internal layout of the widget.
      * This function is called when the size of this widget must change, or if any of the

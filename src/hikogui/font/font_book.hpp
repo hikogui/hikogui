@@ -84,13 +84,7 @@ public:
         }
     };
 
-    static font_book& global() noexcept
-    {
-        if (not _global) {
-            _global = std::make_unique<font_book>();
-        }
-        return *_global;
-    }
+    static font_book& global() noexcept;
 
     ~font_book() = default;
     font_book(font_book const&) = delete;
@@ -331,8 +325,6 @@ public:
     }
 
 private:
-    inline static std::unique_ptr<font_book> _global = nullptr;
-
     /** Table of font_family_ids index using the family-name.
      */
     std::unordered_map<std::string, font_family_id> _family_names;
@@ -364,6 +356,18 @@ private:
         return r;
     }
 };
+
+namespace detail {
+inline std::unique_ptr<font_book> font_book_global = nullptr;
+}
+
+static font_book& global() noexcept
+{
+    if (not detail::font_book_global) {
+        detail::font_book_global = std::make_unique<font_book>();
+    }
+    return *detail::font_book_global;
+}
 
 /** Register a font.
  * Duplicate registrations will be ignored.

@@ -47,7 +47,7 @@ public:
         if (event == gui_event_type::keyboard_down) {
             hilet i = bindings.find(keyboard_key{event.keyboard_modifiers, event.key()});
             if (i != bindings.cend()) {
-                for (auto &e : i->second.get_events()) {
+                for (auto& e : i->second.get_events()) {
                     co_yield e;
                 }
             }
@@ -194,19 +194,21 @@ private:
         }
     };
 
-    inline static std::unique_ptr<keyboard_bindings> _global;
-
     /** Bindings made by the user which may be saved for the user.
      */
     std::unordered_map<keyboard_key, commands_t> bindings;
 };
 
+namespace detail {
+inline std::unique_ptr<keyboard_bindings> keyboard_bindings_global;
+}
+
 inline keyboard_bindings& keyboard_bindings::global() noexcept
 {
-    if (not _global) {
-        _global = std::make_unique<keyboard_bindings>();
+    if (not detail::keyboard_bindings_global) {
+        detail::keyboard_bindings_global = std::make_unique<keyboard_bindings>();
     }
-    return *_global;
+    return *detail::keyboard_bindings_global;
 }
 
 inline void load_user_keyboard_bindings(std::filesystem::path const& path)
@@ -221,7 +223,7 @@ inline void load_system_keyboard_bindings(std::filesystem::path const& path)
 
 inline generator<gui_event> translate_keyboard_event(gui_event event) noexcept
 {
-    for (auto &e : keyboard_bindings::global().translate(event)) {
+    for (auto& e : keyboard_bindings::global().translate(event)) {
         co_yield e;
     }
 }

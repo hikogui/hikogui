@@ -399,7 +399,7 @@ inline thread_local std::unique_ptr<loop> thread_local_loop;
 
 /** Get or create the thread-local loop.
  */
-[[nodiscard]] hi_no_inline loop& loop::local() noexcept
+[[nodiscard]] hi_no_inline inline loop& loop::local() noexcept
 {
     if (not detail::thread_local_loop) {
         detail::thread_local_loop = std::make_unique<loop>();

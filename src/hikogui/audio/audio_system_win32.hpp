@@ -228,14 +228,14 @@ private:
 
 hi_export [[nodiscard]] inline audio_system &audio_system::global() noexcept
 {
-    if (not _global) {
+    if (not detail::audio_system_global) {
         auto tmp = std::make_unique<audio_system_aggregate>();
         tmp->add_child(std::make_unique<audio_system_win32>());
         // Possibly add asio here as well.
 
-        _global = std::move(tmp);
+        detail::audio_system_global = std::move(tmp);
     }
-    return *_global;
+    return *detail::audio_system_global;
 }
 
 }} // namespace hi::inline v1

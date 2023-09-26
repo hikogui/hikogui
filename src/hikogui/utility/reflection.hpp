@@ -248,10 +248,12 @@ constexpr decltype(auto) get_data_member(Type&& rhs) noexcept
 #undef HI_X_FORWARD
 }
 
+#if HI_COMPILER == HI_CC_MSVC
 template<typename T>
 [[nodiscard]] constexpr auto type_name() noexcept
 {
     return hi_to_fixed_string(detail::type_name<T>());
 }
+#endif
 
 }} // namespace hi::v1

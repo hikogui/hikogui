@@ -148,6 +148,7 @@ TEST(reflection, member_value_lvalueconstref)
     ASSERT_EQ(hi::get_data_member<1>(non_trivial_value), 'z');
 }
 
+#if HI_COMPILER == HI_CC_MSVC
 TEST(reflection, type_name)
 {
     ASSERT_EQ(hi::type_name<int>(), hi::fixed_string{"int"});
@@ -160,3 +161,4 @@ TEST(reflection, type_name)
     // XXX need proper tokenizer for this to be correct.
     //ASSERT_EQ(hi::type_name<std::vector<int *>&>(), hi::fixed_string{"std::vector<int*,std::allocator<int*>>&"});
 }
+#endif

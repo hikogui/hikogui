@@ -124,7 +124,7 @@ private:
 
     static void store_sample(
         int32_t int_sample,
-        std::byte *& dst,
+        std::byte * hi_restrict & dst,
         std::size_t stride,
         int num_bytes,
         int direction,
@@ -144,8 +144,8 @@ private:
         dst += stride;
     }
 
-    [[nodiscard]] static void
-    store_samples(i8x16 int_samples, std::byte *& dst, i8x16 store_shuffle_indices, std::size_t stride) noexcept
+    static void
+    store_samples(i8x16 int_samples, std::byte * hi_restrict & dst, i8x16 store_shuffle_indices, std::size_t stride) noexcept
     {
         hi_axiom(dst != nullptr);
         hi_axiom(stride > 0);
@@ -164,9 +164,9 @@ private:
         dst += stride;
     }
 
-    [[nodiscard]] static void store_samples(
+    static void store_samples(
         i8x16 int_samples,
-        std::byte *& dst,
+        std::byte * hi_restrict & dst,
         i8x16 store_shuffle_indices,
         i8x16 concat_shuffle_indices,
         std::size_t num_chunks,
@@ -183,13 +183,13 @@ private:
         } while (--num_chunks);
     }
 
-    [[nodiscard]] static float load_sample(float const *& src) noexcept
+    [[nodiscard]] static float load_sample(float const * hi_restrict & src) noexcept
     {
         hi_axiom(src != nullptr);
         return *(src++);
     }
 
-    [[nodiscard]] static f32x4 load_samples(float const *& src) noexcept
+    [[nodiscard]] static f32x4 load_samples(float const * hi_restrict & src) noexcept
     {
         hilet r = f32x4::load(src);
         src += 4;

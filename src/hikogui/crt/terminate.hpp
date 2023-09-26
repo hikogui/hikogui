@@ -33,7 +33,7 @@ inline std::terminate_handler old_terminate_handler;
  *
  * @note Use `hi_set_terminate_message()` to set a message.
  */
-[[noreturn]] inline void terminate_handler() noexcept{
+inline void terminate_handler() noexcept{
     using namespace std::literals;
 
     log_global.flush();
@@ -64,7 +64,7 @@ inline std::terminate_handler old_terminate_handler;
 
     dialog_ok(title, message);
 
-    old_terminate_handler();
+    return old_terminate_handler();
 }
 
 }} // namespace hi::v1

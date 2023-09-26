@@ -9,6 +9,7 @@
 #include <string_view>
 #include <cstdint>
 #include <format>
+#include <compare>
 
 hi_export_module(hikogui.i18n.iso_15924 : intf);
 

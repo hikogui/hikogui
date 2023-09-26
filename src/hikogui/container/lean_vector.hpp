@@ -1092,6 +1092,14 @@ private:
 template<std::input_iterator It, std::input_iterator ItEnd>
 lean_vector(It first, ItEnd last) -> lean_vector<typename std::iterator_traits<It>::value_type>;
 
+
+template<typename T, std::convertible_to<T>... Args>
+lean_vector<T> make_lean_vector(Args &&...args) noexcept
+{
+    return lean_vector<T>{std::forward<Args>(args)...};
+}
+
+
 }} // namespace hi::v1
 
 hi_warning_pop();

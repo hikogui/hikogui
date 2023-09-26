@@ -13,10 +13,10 @@ inline gfx_system::~gfx_system()
 
 [[nodiscard]] inline gfx_system& gfx_system::global()
 {
-    if (not _global) {
-        _global = std::make_unique<gfx_system>();
+    if (not detail::gfx_system_global) {
+        detail::gfx_system_global = std::make_unique<gfx_system>();
     }
-    return *_global;
+    return *detail::gfx_system_global;
 }
 
 }} // namespace hi::v1

@@ -82,7 +82,7 @@ namespace detail {
 
     for (int i = 0; i != 65536; ++i) {
         r[i] = round_cast<uint8_t>(
-            std::floor(std::clamp(sRGB_linear_to_gamma(float16::from_uint16_t(narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f));
+            std::floor(std::clamp(sRGB_linear_to_gamma(float16(intrinsic, narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f));
     }
 
     return r;
@@ -114,7 +114,7 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
  */
 [[nodiscard]] inline uint8_t sRGB_linear16_to_gamma8(float16 u) noexcept
 {
-    return detail::sRGB_linear16_to_gamma8_table[u.get()];
+    return detail::sRGB_linear16_to_gamma8_table[u.intrinsic()];
 }
 
 /** sRGB gamma to linear float-16 transfer function.
