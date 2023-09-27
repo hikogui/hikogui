@@ -91,7 +91,7 @@ hi_export inline lean_vector<float> bezierFindT(float P1, float C, float P2, flo
     return solvePolynomial(a, b, c - x);
 }
 
-hi_export hi_force_inline inline lean_vector<float> bezierFindT(float P1, float C1, float C2, float P2, float x) noexcept
+hi_export inline lean_vector<float> bezierFindT(float P1, float C1, float C2, float P2, float x) noexcept
 {
     hilet[a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
     return solvePolynomial(a, b, c, d - x);
@@ -101,7 +101,7 @@ hi_export hi_force_inline inline lean_vector<float> bezierFindT(float P1, float 
  * Used for finding the shortest distance from a point to a curve.
  * The shortest vector from a curve to a point is a normal.
  */
-hi_export hi_force_inline inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
+hi_export inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
 {
     hilet t_above = dot(P - P1, P2 - P1);
     hilet t_below = dot(P2 - P1, P2 - P1);
@@ -116,7 +116,7 @@ hi_export hi_force_inline inline lean_vector<float> bezierFindTForNormalsInterse
  * Used for finding the shortest distance from a point to a curve.
  * The shortest vector from a curve to a point is a normal.
  */
-hi_export hi_force_inline inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 C, point2 P2, point2 P) noexcept
+hi_export inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 C, point2 P2, point2 P) noexcept
 {
     hilet P1_ = static_cast<f32x4>(P1);
     hilet P2_ = static_cast<f32x4>(P2);
