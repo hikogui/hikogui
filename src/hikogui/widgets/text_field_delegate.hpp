@@ -107,7 +107,7 @@ public:
         });
     }
 
-    std::optional<label> validate(text_field_widget& sender, gstring const &text) noexcept override
+    label validate(text_field_widget& sender, gstring const &text) noexcept override
     {
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(to_string(text), 10);
@@ -123,7 +123,7 @@ public:
         return to_gstring(to_string(*value));
     }
 
-    void set_text(text_field_widget& sender, gstring text) noexcept override
+    void set_text(text_field_widget& sender, gstring const &text) noexcept override
     {
         try {
             value = from_string<value_type>(to_string(text), 10);

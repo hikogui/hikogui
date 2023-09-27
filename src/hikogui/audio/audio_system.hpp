@@ -54,7 +54,7 @@ public:
         return _notifier.subscribe(hi_forward(func), flags);
     }
 
-    auto operator co_await() noexcept
+    auto operator co_await() const noexcept
     {
         return _notifier.operator co_await();
     }

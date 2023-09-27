@@ -625,7 +625,10 @@ constexpr std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_
             case unicode_bidi_paired_bracket_type::c:
                 {
                     hilet canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent();
-                    for (auto jt = stack.end() - 1; jt >= stack.begin(); --jt) {
+                    auto jt = stack.end();
+                    while (jt != stack.begin()) {
+                        --jt;
+
                         if (jt->mirrored_bracket == it->code_point or
                             (canonical_equivalent and jt->mirrored_bracket == *canonical_equivalent)) {
                             pairs.emplace_back(jt->it, it);

@@ -361,7 +361,7 @@ namespace detail {
 inline std::unique_ptr<font_book> font_book_global = nullptr;
 }
 
-static font_book& global() noexcept
+inline font_book& font_book::global() noexcept
 {
     if (not detail::font_book_global) {
         detail::font_book_global = std::make_unique<font_book>();

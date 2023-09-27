@@ -256,7 +256,7 @@ private:
         return r;
     }
 
-    [[nodiscard]] __declspec(no_sanitize_address) static vk::Instance vk_create_instance_no_asan(vk::InstanceCreateInfo instance_create_info)
+    [[nodiscard]] hi_no_sanitize_address static vk::Instance vk_create_instance_no_asan(vk::InstanceCreateInfo instance_create_info)
     {
         return vk::createInstance(instance_create_info);
     }

@@ -495,7 +495,7 @@ template<std::integral Out, std::floating_point In>
     hilet highest = static_cast<long double>(std::numeric_limits<Out>::max());
 
     hilet rhs_ = std::round(rhs);
-    hi_axiom(rhs_ > lowest and rhs_ < highest);
+    hi_axiom(rhs_ >= lowest and rhs_ <= highest);
     return static_cast<Out>(rhs_);
 }
 
@@ -506,7 +506,7 @@ template<std::integral Out, std::floating_point In>
     hilet highest = static_cast<long double>(std::numeric_limits<Out>::max());
 
     hilet rhs_ = std::floor(rhs);
-    hi_axiom(rhs_ > lowest and rhs_ < highest);
+    hi_axiom(rhs_ >= lowest and rhs_ <= highest);
     return static_cast<Out>(rhs_);
 }
 
@@ -517,7 +517,7 @@ template<std::integral Out, std::floating_point In>
     hilet highest = static_cast<long double>(std::numeric_limits<Out>::max());
 
     hilet rhs_ = std::ceil(rhs);
-    hi_axiom(rhs_ > lowest and rhs_ < highest);
+    hi_axiom(rhs_ >= lowest and rhs_ <= highest);
     return static_cast<Out>(rhs_);
 }
 

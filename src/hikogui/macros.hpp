@@ -131,6 +131,7 @@
 #define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__
+#define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(push)")
 #define hi_warning_ignore_msvc(code)
@@ -141,6 +142,7 @@
 #define hi_force_inline __forceinline
 #define hi_no_inline __declspec(noinline)
 #define hi_restrict __restrict
+#define hi_no_sanitize_address __declspec(no_sanitize_address)
 #define hi_warning_push() _Pragma("warning( push )")
 #define hi_warning_pop() _Pragma("warning( pop )")
 #define hi_msvc_pragma(a) _Pragma(a)
@@ -156,6 +158,7 @@
 #define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__
+#define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(pop)")
 #define hi_msvc_pragma(a)
@@ -167,6 +170,7 @@
 #define hi_force_inline
 #define hi_no_inline
 #define hi_restrict
+#define hi_no_sanitize_address
 #define hi_warning_push()
 #define hi_warning_pop()
 #define hi_msvc_pragma(a)

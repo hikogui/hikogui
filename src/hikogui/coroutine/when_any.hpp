@@ -17,9 +17,9 @@
 #include <tuple>
 #include <chrono>
 
-
-
 namespace hi::inline v1 {
+
+namespace detail {
 
 /** An awaitable that waits for any of the given awaitables to complete.
  *
@@ -48,10 +48,7 @@ public:
      *
      * @param others The awaitable to wait for.
      */
-    when_any(awaitable auto&&...others) noexcept :
-        _awaiters(awaitable_cast<std::decay_t<decltype(others)>>{}(hi_forward(others))...)
-    {
-    }
+    when_any(Ts const&...args) noexcept : _awaiters(args...) {}
 
     ~when_any() {}
 
@@ -81,10 +78,10 @@ public:
 private:
     std::tuple<Ts...> _awaiters;
     std::tuple<scoped_task<await_resume_result_t<Ts>>...> _tasks;
-    std::tuple<typename notifier<void(await_resume_result_t<Ts>)>::callback_token...> _task_cbts;
+    std::tuple<typename scoped_task<await_resume_result_t<Ts>>::callback_token...> _task_cbts;
     std::optional<value_type> _value;
 
-    template<awaitable_direct Awaiter>
+    template<awaitable Awaiter>
     static scoped_task<await_resume_result_t<Awaiter>> _await_suspend_task(Awaiter& awaiter)
     {
         co_return co_await awaiter;
@@ -152,12 +149,25 @@ private:
             _await_suspend<I + 1>(handle);
         }
     }
-
-    template<typename... Args>
-    friend class when_any;
 };
 
-template<awaitable... Others>
-when_any(Others&&...) -> when_any<awaitable_cast_t<std::decay_t<Others>>...>;
+} // namespace detail
+
+/** await on a set of objects which can be converted to an awaitable.
+ * 
+ * The arguments may be of the following types:
+ *  - An object which can be directly used as an awaitable. Having the member functions:
+ *    `await_ready()`, `await_suspend()` and `await_resume()`.
+ *  - An object that has a `operator co_await()` member function.
+ *  - An object that has a `operator co_await()` free function.
+ *
+ * @param args The object to await on.
+ * @return a new awaitable object that wait for any of the arguments to finish.
+ */
+template<convertible_to_awaitable... Args>
+auto when_any(Args const&...args)
+{
+    return detail::when_any(awaitable_cast<Args>{}(args)...);
+}
 
 } // namespace hi::inline v1
