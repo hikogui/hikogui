@@ -54,6 +54,9 @@ jobs:
       - name: 🔽 Install Ninja
         run: choco install ninja ccache
 
+      - name: 🛠️ Setup Visual Studio Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+    
       - name: 🛠️ Show Tool Versions
         run: |
           date /T
@@ -106,12 +109,14 @@ jobs:
           VULKAN_VERSION: ${{steps.vulkan-version.outputs.VULKAN_VERSION}}
           VULKAN_SDK: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
 
-      - name: 🛠️ Setup Visual Studio Developer Command Prompt
-        uses: ilammy/msvc-dev-cmd@v1
-    
       - name: ✏ CMake ➔ Make Build Directory
         shell: pwsh
         run: mkdir "${{env.BUILD_DIR}}"
+    
+      # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
+      - name: 🔽 Install Vulkan Runtime
+        working-directory: ${{env.BUILD_DIR}}
+        run: copy ${{steps.vulkan-version.outputs.VULKAN_SDK}}\runtime\x64\vulkan-1.* .
 
       - name: ✏ CMake ➔ Configure
         working-directory: ${{env.BUILD_DIR}}
@@ -134,12 +139,6 @@ jobs:
       - name: 📦 CMake ➔ Install
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --install .
-
-      # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
-      - name: 🔽 Install Vulkan Runtime
-        working-directory: ${{env.BUILD_DIR}}
-        run: |
-          copy ${{env.VULKAN_SDK}}\runtime\x64\vulkan-1.* .
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
