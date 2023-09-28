@@ -8,6 +8,7 @@
 #pragma once
 
 #include "../macros.hpp"
+#include "misc.hpp"
 #include <exception>
 #include <stdexcept>
 #include <bit>

@@ -250,6 +250,7 @@ public:
             process_event(
                 gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
             return true;
+        default:;
         }
         return super::handle_event(event);
     }

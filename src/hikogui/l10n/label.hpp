@@ -91,10 +91,10 @@ public:
      */
     constexpr label() noexcept : icon(), text() {}
 
-    constexpr label(label const& other) noexcept = default;
-    constexpr label& operator=(label const& other) noexcept = default;
-    constexpr label(label&& other) noexcept = default;
-    constexpr label& operator=(label&& other) noexcept = default;
+    label(label const& other) noexcept = default;
+    label& operator=(label const& other) noexcept = default;
+    label(label&& other) noexcept = default;
+    label& operator=(label&& other) noexcept = default;
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {

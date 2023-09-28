@@ -32,19 +32,17 @@ hi_export namespace hi { inline namespace v1 {
  */
 using ssize_t = std::ptrdiff_t;
 
-#define ssizeof(x) (static_cast<ssize_t>(sizeof(x)))
-
-constexpr std::size_t operator"" _uz(unsigned long long lhs) noexcept
+constexpr std::size_t operator""_uz(unsigned long long lhs) noexcept
 {
     return static_cast<std::size_t>(lhs);
 }
 
-constexpr std::size_t operator"" _zu(unsigned long long lhs) noexcept
+constexpr std::size_t operator""_zu(unsigned long long lhs) noexcept
 {
     return static_cast<std::size_t>(lhs);
 }
 
-constexpr std::ptrdiff_t operator"" _z(unsigned long long lhs) noexcept
+constexpr std::ptrdiff_t operator""_z(unsigned long long lhs) noexcept
 {
     return static_cast<std::ptrdiff_t>(lhs);
 }

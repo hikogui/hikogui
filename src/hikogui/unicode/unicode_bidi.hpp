@@ -125,12 +125,6 @@ struct unicode_bidi_stack_element {
     int8_t embedding_level;
     unicode_bidi_class override_status;
     bool isolate_status;
-
-    constexpr unicode_bidi_stack_element(int8_t embedding_level, unicode_bidi_class override_status, bool isolate_status) noexcept
-        :
-        embedding_level(embedding_level), override_status(override_status), isolate_status(isolate_status)
-    {
-    }
 };
 
 class unicode_bidi_level_run {
@@ -295,7 +289,8 @@ constexpr void unicode_bidi_X1(
     long long valid_isolate_count = 0;
 
     // X1.
-    auto stack = hi::stack<unicode_bidi_stack_element, max_depth + 2>{{paragraph_embedding_level, ON, false}};
+    auto stack = hi::stack<unicode_bidi_stack_element, max_depth + 2>{};
+    stack.emplace_back(paragraph_embedding_level, ON, false);
 
     for (auto it = first; it != last; ++it) {
         hilet current_embedding_level = stack.back().embedding_level;
@@ -597,11 +592,6 @@ constexpr std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_
     struct bracket_start {
         unicode_bidi_isolated_run_sequence::iterator it;
         char32_t mirrored_bracket;
-
-        bracket_start(unicode_bidi_isolated_run_sequence::iterator it, char32_t mirrored_bracket) noexcept :
-            it(std::move(it)), mirrored_bracket(mirrored_bracket)
-        {
-        }
     };
 
     using enum unicode_bidi_class;
@@ -635,7 +625,10 @@ constexpr std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_
             case unicode_bidi_paired_bracket_type::c:
                 {
                     hilet canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent();
-                    for (auto jt = stack.end() - 1; jt >= stack.begin(); --jt) {
+                    auto jt = stack.end();
+                    while (jt != stack.begin()) {
+                        --jt;
+
                         if (jt->mirrored_bracket == it->code_point or
                             (canonical_equivalent and jt->mirrored_bracket == *canonical_equivalent)) {
                             pairs.emplace_back(jt->it, it);

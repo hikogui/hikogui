@@ -71,6 +71,20 @@ hi_warning_ignore_msvc(26472)
         return r; \
     }
 
+#define HI_X_unary_bit_op(op) \
+    [[nodiscard]] friend constexpr simd operator op(simd rhs) noexcept \
+    { \
+        HI_X_runtime_evaluate_if_valid(simd{op rhs.reg()}); \
+\
+        auto r = simd{}; \
+        for (std::size_t i = 0; i != N; ++i) { \
+            hilet rhs_vi = std::bit_cast<unsigned_type>(rhs[i]); \
+            hilet r_vi = static_cast<unsigned_type>(op rhs_vi); \
+            r[i] = std::bit_cast<value_type>(r_vi); \
+        } \
+        return r; \
+    }
+
 #define HI_X_binary_bit_op(op) \
     [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
     { \
@@ -133,7 +147,10 @@ hi_warning_ignore_msvc(26472)
 
 namespace hi::inline v1 {
 
-template<numeric_limited T, std::size_t N>
+template<typename T>
+concept simd_value_type = arithmetic<T> or std::same_as<T, float16>;
+
+template<simd_value_type T, std::size_t N>
 struct simd {
     using value_type = T;
     constexpr static size_t size = N;
@@ -173,7 +190,7 @@ struct simd {
     constexpr simd& operator=(simd const& rhs) noexcept = default;
     constexpr simd& operator=(simd&& rhs) noexcept = default;
 
-    template<numeric_limited U>
+    template<simd_value_type U>
     [[nodiscard]] constexpr explicit simd(simd<U, N> const& other) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -193,7 +210,7 @@ struct simd {
         }
     }
 
-    template<numeric_limited U>
+    template<simd_value_type U>
     [[nodiscard]] constexpr explicit simd(simd<U, size / 2> const& a, simd<U, size / 2> const& b) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -272,7 +289,7 @@ struct simd {
         return native_type{v};
     }
 
-    template<numeric_limited O, size_t M>
+    template<simd_value_type O, size_t M>
     [[nodiscard]] constexpr static simd cast_from(simd<O, M> const& rhs) noexcept
         requires(sizeof(simd<O, M>) == sizeof(simd))
     {
@@ -453,6 +470,7 @@ struct simd {
     HI_X_binary_cmp_op(<=);
     HI_X_binary_cmp_op(>=);
 
+    HI_X_unary_bit_op(~);
     HI_X_binary_bit_op(^);
     HI_X_binary_bit_op(&);
     HI_X_binary_bit_op(|);
@@ -1094,7 +1112,7 @@ struct simd {
     {
         static_assert(Order.size() <= N);
 
-        HI_X_runtime_evaluate_if_valid(simd{reg().swizzle<Order>()});
+        HI_X_runtime_evaluate_if_valid(simd{reg().template swizzle<Order>()});
 
         auto r = simd{};
         swizzle_detail<0, Order>(r);
@@ -1292,6 +1310,7 @@ inline bool operator!=(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
 #undef HI_X_accessor
 #undef HI_X_binary_cmp_op
 #undef HI_X_binary_math_op
+#undef HI_X_unary_bit_op
 #undef HI_X_binary_bit_op
 #undef HI_X_binary_shift_op
 #undef HI_X_binary_op_broadcast

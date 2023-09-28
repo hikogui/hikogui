@@ -15,9 +15,11 @@ inline namespace v1 {
 \defgroup path Path handling utilities.
 
 This module contains file handling utilities:
- - `path_location`, `get_paths()`, `find_path()` to find files and directories on the system.
+ - `*_dir()`, `*_dirs()`, `*_file()` for getting the configured paths of the
+   system.
+ - `find_path()` to find files in a set of directories.
  - `glob_pattern`, `glob()` to find files and directories based on a glob pattern.
- - `URI`, `URL` for managing URLs for local and remote resources.
+ - `URI` and `URL` for managing URLs for local and remote resources.
 
 Path locations
 --------------

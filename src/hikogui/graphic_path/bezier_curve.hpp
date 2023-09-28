@@ -106,7 +106,7 @@ hi_export struct bezier_curve {
      * \param y y-axis.
      * \return 0 to 3, or infinite number of x values.
      */
-    [[nodiscard]] results<float, 3> solveXByY(float const y) const noexcept
+    [[nodiscard]] lean_vector<float> solveXByY(float const y) const noexcept
     {
         switch (type) {
         case Type::Linear:
@@ -120,7 +120,7 @@ hi_export struct bezier_curve {
         }
     }
 
-    [[nodiscard]] hi_force_inline results<float, 3> solveTForNormalsIntersectingPoint(point2 P) const noexcept
+    [[nodiscard]] hi_force_inline lean_vector<float> solveTForNormalsIntersectingPoint(point2 P) const noexcept
     {
         switch (type) {
         case Type::Linear:

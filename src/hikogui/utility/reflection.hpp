@@ -119,8 +119,47 @@ template<typename T>
 
     return type_name_short_hand(r);
 }
+#elif HI_COMPILER == HI_CC_CLANG
+template<typename T>
+[[nodiscard]] constexpr std::string type_name() noexcept
+{
+    // "std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > __cdecl hi::v1::type_name<T>(void)
+    // noexcept"
+    auto signature = std::string_view{__PRETTY_FUNCTION__ };
+
+    // Extract the type passed to type_name().
+    auto first = signature.find("type_name<");
+    hi_assert(first != std::string_view::npos);
+    first += 10;
+
+    auto last = signature.rfind('>');
+    hi_assert(last != std::string_view::npos);
+
+    signature = signature.substr(first, last - first);
+
+    auto r = std::string{};
+    while (not signature.empty()) {
+        if (signature.starts_with("class ")) {
+            signature = signature.substr(6);
+        } else if (signature.starts_with("struct ")) {
+            signature = signature.substr(7);
+        } else if (signature.starts_with(" >")) {
+            r += '>';
+            signature = signature.substr(2);
+        } else if (signature.starts_with(" *")) {
+            r += '*';
+            signature = signature.substr(2);
+        } else {
+            auto token = type_name_token(signature);
+            r += token;
+            signature = signature.substr(token.size());
+        }
+    }
+
+    return type_name_short_hand(r);
+}
 #else
-#error "_type_name() not implemented for this compiler."
+#error "type_name() not implemented for this compiler."
 #endif
 
 } // namespace detail
@@ -209,10 +248,12 @@ constexpr decltype(auto) get_data_member(Type&& rhs) noexcept
 #undef HI_X_FORWARD
 }
 
+#if HI_COMPILER == HI_CC_MSVC
 template<typename T>
 [[nodiscard]] constexpr auto type_name() noexcept
 {
     return hi_to_fixed_string(detail::type_name<T>());
 }
+#endif
 
 }} // namespace hi::v1

@@ -190,6 +190,10 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # this warning is absolutely useless.
     target_compile_options(hikogui INTERFACE -Wno-assume)
 
+    # Clang knows [[no_unique_address]] but since win32-ABI does not
+    # support [[no_unique_address] clang pretends it does not know the attribute.
+    target_compile_options(hikogui INTERFACE -Wno-unknown-attributes)
+
     # Clang will complain about calling hidden-friend-template-functions.
     target_compile_options(hikogui INTERFACE -Wno-unknown-warning-option -Wno-c++20-extensions -Wno-c++2a-extensions)
 
@@ -199,8 +203,19 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
 
     target_compile_options(hikogui INTERFACE -march=${HI_ARCHITECTURE})
 
-    # The Microsoft version of clang does not implement all clang command line arguments.
-    if (NOT MSVC)
+    # warning: template argument for template type parameter must be a type; omitted 'typename' is a Microsoft extension
+    # Very likely this is because clang does not support C++20 fully "down with typename".
+    target_compile_options(hikogui INTERFACE -Wno-microsoft-template)
+
+    if (MSVC)
+        # Options specific for clang-cl.
+
+        # The hikogui generic tokenizer uses large constexpr tables.
+        target_compile_options(hikogui INTERFACE "SHELL:-Xclang -fconstexpr-steps -Xclang 100000000")
+
+    else()
+        # Normal clang.
+
         # The hikogui generic tokenizer uses large constexpr tables.
         target_compile_options(hikogui INTERFACE -fconstexpr-steps=100000000)
 

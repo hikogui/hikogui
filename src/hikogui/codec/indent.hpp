@@ -17,12 +17,12 @@ namespace hi { inline namespace v1 {
  */
 hi_export class indent {
 public:
-    [[nodiscard]] constexpr ~indent() noexcept = default;
-    [[nodiscard]] constexpr indent() noexcept = default;
-    [[nodiscard]] constexpr indent(indent const& other) noexcept = default;
-    [[nodiscard]] constexpr indent(indent&& other) noexcept = default;
-    [[nodiscard]] constexpr indent& operator=(indent const& other) noexcept = default;
-    [[nodiscard]] constexpr indent& operator=(indent&& other) noexcept = default;
+    constexpr ~indent() noexcept = default;
+    constexpr indent() noexcept = default;
+    constexpr indent(indent const& other) noexcept = default;
+    constexpr indent(indent&& other) noexcept = default;
+    constexpr indent& operator=(indent const& other) noexcept = default;
+    constexpr indent& operator=(indent&& other) noexcept = default;
 
     /** Constructor
      * This constructor will start indentation at depth 0.

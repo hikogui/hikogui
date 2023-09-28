@@ -254,11 +254,50 @@ hi_force_inline constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
         uint64_t remainder;
         return _udiv128(lhs_hi, lhs_lo, rhs, &remainder);
 
+#elif HI_COMPILER == HI_CC_CLANG && HI_STD_LIBRARY == HI_STL_MS
+        // clang-cl does not have udiv128 nor can it do __int128 division.
+        // Implement binary division.
+        asm("divq %[d]"
+            : "+d" (lhs_hi), "+a" (lhs_lo)
+            : [d] "r" (rhs)
+            : "cc"
+        );
+        return lhs_lo;
+
+
 #elif HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC
-        hilet lhs = static_cast<__uint128_t>(lhs_hi) << 64 | static_cast<__uint128_t>(lhs_lo);
-        return narrow_cast<uint64_t>(lhs / rhs);
+        hilet lhs = static_cast<unsigned __int128>(lhs_hi) << 64 | static_cast<unsigned __int128>(lhs_lo);
+        return static_cast<uint64_t>(lhs / rhs);
 #else
 #error "Not implemented"
+
+        //auto quotient_hi = T{0};
+        //for (auto mask = T{1}; mask != 0; mask <<= 1) {
+        //    remainder <<= 1;
+        //    remainder |= (lhs_hi & mask) != 0;
+        //    if (remainder >= rhs) {
+        //        remainder -= rhs;
+        //        quotient_hi |= mask;
+        //    }
+        //    hi_axiom(remainder >> (sizeof(T) * CHAR_BIT - 1) == 0);
+        //}
+//
+        //auto remainder = T{0};
+        //auto quotient_lo = T{0};
+        //for (auto mask = T{1}; mask != 0; mask <<= 1) {
+        //    remainder <<= 1;
+        //    remainder |= (lhs_lo & mask) != 0;
+        //    if (remainder >= rhs) {
+        //        remainder -= rhs;
+        //        quotient_lo |= mask;
+        //    }
+        //    hi_axiom(remainder >> (sizeof(T) * CHAR_BIT - 1) == 0);
+        //}
+//
+//
+        //hi_axiom(quotient_hi == 0);
+        //return static_cast<uint64_t>(quotient);
+
 #endif
     }
 }

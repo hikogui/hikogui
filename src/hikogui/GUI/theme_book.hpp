@@ -114,18 +114,20 @@ public:
     }
 
 private:
-    inline static std::unique_ptr<theme_book> _global;
-
     std::vector<std::filesystem::path> _theme_directories;
     std::vector<std::unique_ptr<theme>> themes;
 };
 
+namespace detail {
+inline std::unique_ptr<theme_book> theme_book_global;
+}
+
 [[nodiscard]] inline theme_book& theme_book::global() noexcept
 {
-    if (not _global) {
-        _global = std::make_unique<theme_book>();
+    if (not detail::theme_book_global) {
+        detail::theme_book_global = std::make_unique<theme_book>();
     }
-    return *_global;
+    return *detail::theme_book_global;
 }
 
 inline void register_theme_directory(std::filesystem::path const &path) noexcept

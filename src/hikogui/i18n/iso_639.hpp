@@ -7,6 +7,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cctype>
+#include <compare>
 
 hi_export_module(hikogui.i18n.iso_639);
 

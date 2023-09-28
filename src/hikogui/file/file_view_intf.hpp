@@ -37,10 +37,10 @@ class file_view {
 public:
     ~file_view() = default;
     constexpr file_view() noexcept = default;
-    constexpr file_view(file_view const& other) noexcept = default;
-    constexpr file_view(file_view&& other) noexcept = default;
-    constexpr file_view& operator=(file_view const& other) noexcept = default;
-    constexpr file_view& operator=(file_view&& other) noexcept = default;
+    file_view(file_view const& other) noexcept = default;
+    file_view(file_view&& other) noexcept = default;
+    file_view& operator=(file_view const& other) noexcept = default;
+    file_view& operator=(file_view&& other) noexcept = default;
 
     /** Create a file-view from a file-mapping.
      *

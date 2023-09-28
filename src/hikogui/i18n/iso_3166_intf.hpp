@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include <cctype>
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <compare>
+#include <cctype>
 
 hi_export_module(hikogui.i18n.iso_3166 : intf);
 

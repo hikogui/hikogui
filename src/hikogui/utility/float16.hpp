@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../macros.hpp"
+#include "misc.hpp"
 #include <cstdint>
 #include <type_traits>
 #include <bit>
@@ -104,6 +105,18 @@ hi_export struct float16 {
     constexpr explicit float16(double other) noexcept : float16(static_cast<float>(other)) {}
     constexpr explicit float16(long double other) noexcept : float16(static_cast<float>(other)) {}
 
+    constexpr float16(intrinsic_t, uint16_t v) noexcept : v(v) {}
+
+    [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
+    {
+        return v;
+    }
+
+    [[nodiscard]] constexpr uint16_t& intrinsic() noexcept
+    {
+        return v;
+    }
+
     constexpr float16& operator=(float other) noexcept
     {
         v = cvtss_sh(other);
@@ -113,24 +126,6 @@ hi_export struct float16 {
     constexpr operator float() const noexcept
     {
         return cvtsh_ss(v);
-    }
-
-    [[nodiscard]] constexpr static float16 from_uint16_t(uint16_t const rhs) noexcept
-    {
-        auto r = float16{};
-        r.v = rhs;
-        return r;
-    }
-
-    [[nodiscard]] constexpr uint16_t get() const noexcept
-    {
-        return v;
-    }
-
-    constexpr float16& set(uint16_t rhs) noexcept
-    {
-        v = rhs;
-        return *this;
     }
 
     [[nodiscard]] std::size_t hash() const noexcept
@@ -173,7 +168,7 @@ hi_export struct float16 {
 #define HI_X_binary_bit_op(op) \
     [[nodiscard]] constexpr friend float16 operator op(float16 const& lhs, float16 const& rhs) noexcept \
     { \
-        return float16::from_uint16_t(lhs.v op rhs.v); \
+        return float16(hi::intrinsic, lhs.v op rhs.v); \
     }
 
         // clang-format off
@@ -240,47 +235,47 @@ struct std::numeric_limits<hi::float16> {
 
     constexpr static value_type min() noexcept
     {
-        return hi::float16::from_uint16_t(0x0400);
+        return hi::float16(hi::intrinsic, 0x0400);
     }
 
     constexpr static value_type lowest() noexcept
     {
-        return hi::float16::from_uint16_t(0xfbff);
+        return hi::float16(hi::intrinsic, 0xfbff);
     }
 
     constexpr static value_type max() noexcept
     {
-        return hi::float16::from_uint16_t(0x7bff);
+        return hi::float16(hi::intrinsic, 0x7bff);
     }
 
     constexpr static value_type epsilon() noexcept
     {
-        return hi::float16::from_uint16_t(0xfbff);
+        return hi::float16(hi::intrinsic, 0xfbff);
     }
 
     constexpr static value_type round_error() noexcept
     {
-        return hi::float16::from_uint16_t(0x3800); // 0.5
+        return hi::float16(hi::intrinsic, 0x3800); // 0.5
     }
 
     constexpr static value_type infinity() noexcept
     {
-        return hi::float16::from_uint16_t(0x7c00);
+        return hi::float16(hi::intrinsic, 0x7c00);
     }
 
     constexpr static value_type quiet_NaN() noexcept
     {
-        return hi::float16::from_uint16_t(0x7c01);
+        return hi::float16(hi::intrinsic, 0x7c01);
     }
 
     constexpr static value_type signaling_NaN() noexcept
     {
-        return hi::float16::from_uint16_t(0x7e01);
+        return hi::float16(hi::intrinsic, 0x7e01);
     }
 
     constexpr static value_type denorm_min() noexcept
     {
-        return hi::float16::from_uint16_t(0x0001);
+        return hi::float16(hi::intrinsic, 0x0001);
     }
 };
 

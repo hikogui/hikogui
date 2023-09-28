@@ -14,7 +14,9 @@ TEST(fixed_string, from_string_literal)
     ASSERT_EQ(s.size(), 11);
 }
 
+#if HI_COMPILER == HI_CC_MSVC
 TEST(fixed_string, to_fixed_string)
 {
     static_assert(hi_to_fixed_string(std::string{"hello"}) == hi::fixed_string{"hello"});
 }
+#endif

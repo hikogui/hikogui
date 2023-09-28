@@ -598,7 +598,7 @@ struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
         }
 
         if constexpr (value_type::is_signed and value_type::num_digits > 0) {
-            r.digits[value_type::num_digits - 1] = truncate<typename value_type::digit_type>(smin);
+            r.digits[value_type::num_digits - 1] = static_cast<typename value_type::digit_type>(smin);
         }
 
         return r;

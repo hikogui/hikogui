@@ -110,11 +110,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/byte_string.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/function_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/functional.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/gap_buffer.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/hash_map.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/module.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/packed_int_array.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/secure_vector.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/small_map.hpp
@@ -385,7 +382,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/module.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/safe_int.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/stdint.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/module.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observable.hpp

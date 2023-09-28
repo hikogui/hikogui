@@ -166,14 +166,14 @@ struct native_simd<float16,8> {
         hi_axiom(mask <= 0b1111'1111);
 
         return native_simd{
-            mask & 0b0000'0001 ? value_type{} : value_type::from_uint16_t(0xffff),
-            mask & 0b0000'0010 ? value_type{} : value_type::from_uint16_t(0xffff),
-            mask & 0b0000'0100 ? value_type{} : value_type::from_uint16_t(0xffff),
-            mask & 0b0000'1000 ? value_type{} : value_type::from_uint16_t(0xffff),
-            mask & 0b0001'0000 ? value_type{} : value_type::from_uint16_t(0xffff),
-            mask & 0b0010'0000 ? value_type{} : value_type::from_uint16_t(0xffff),
-            mask & 0b0100'0000 ? value_type{} : value_type::from_uint16_t(0xffff),
-            mask & 0b1000'0000 ? value_type{} : value_type::from_uint16_t(0xffff)};
+            mask & 0b0000'0001 ? value_type{} : value_type(intrinsic, 0xffff),
+            mask & 0b0000'0010 ? value_type{} : value_type(intrinsic, 0xffff),
+            mask & 0b0000'0100 ? value_type{} : value_type(intrinsic, 0xffff),
+            mask & 0b0000'1000 ? value_type{} : value_type(intrinsic, 0xffff),
+            mask & 0b0001'0000 ? value_type{} : value_type(intrinsic, 0xffff),
+            mask & 0b0010'0000 ? value_type{} : value_type(intrinsic, 0xffff),
+            mask & 0b0100'0000 ? value_type{} : value_type(intrinsic, 0xffff),
+            mask & 0b1000'0000 ? value_type{} : value_type(intrinsic, 0xffff)};
     }
 
     /** Concatonate the top bit of each element.

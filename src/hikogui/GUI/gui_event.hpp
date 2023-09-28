@@ -221,7 +221,7 @@ public:
      * @note If the variant changes of this event the associated data is cleared.
      * @param type The new type for the gui_event.
      */
-    [[nodiscard]] constexpr void set_type(gui_event_type type) noexcept
+    constexpr void set_type(gui_event_type type) noexcept
     {
         hilet previous_variant = variant();
 

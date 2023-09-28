@@ -55,7 +55,7 @@ struct txt_arguments : txt_arguments_base {
             _args);
     }
 
-    [[nodiscard]] virtual bool equal_to(txt_arguments_base const& rhs) const noexcept
+    [[nodiscard]] bool equal_to(txt_arguments_base const& rhs) const noexcept override
     {
         if (auto *rhs_ = dynamic_cast<txt_arguments const *>(std::addressof(rhs))) {
             return _args == rhs_->_args;

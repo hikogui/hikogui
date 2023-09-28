@@ -169,8 +169,6 @@ public:
     }
 
 private:
-    inline static std::unique_ptr<gfx_system> _global = {};
-
     //! List of all devices.
     std::vector<std::shared_ptr<gfx_device>> devices;
 
@@ -258,11 +256,15 @@ private:
         return r;
     }
 
-    [[nodiscard]] __declspec(no_sanitize_address) static vk::Instance vk_create_instance_no_asan(vk::InstanceCreateInfo instance_create_info)
+    [[nodiscard]] hi_no_sanitize_address static vk::Instance vk_create_instance_no_asan(vk::InstanceCreateInfo instance_create_info)
     {
         return vk::createInstance(instance_create_info);
     }
 };
+
+namespace detail {
+inline std::unique_ptr<gfx_system> gfx_system_global = {};
+}
 
 inline vk::Instance vulkan_instance() noexcept
 {

@@ -536,7 +536,7 @@ public:
     template<fixed_string Name>
     [[nodiscard]] auto get() const noexcept
     {
-        using result_type = std::decay_t<decltype(selector<value_type>{}.get<Name>(std::declval<value_type&>()))>;
+        using result_type = std::decay_t<decltype(selector<value_type>{}.template get<Name>(std::declval<value_type&>()))>;
 
         auto new_path = _path;
         new_path.push_back(std::string{Name});
@@ -545,7 +545,7 @@ public:
             _observed,
             std::move(new_path),
             [convert_copy = this->_convert](void *base) -> void * {
-                return std::addressof(selector<value_type>{}.get<Name>(
+                return std::addressof(selector<value_type>{}.template get<Name>(
                     *std::launder(static_cast<value_type *>(convert_copy(base)))));
             });
         // clang-format on

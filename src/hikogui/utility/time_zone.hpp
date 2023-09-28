@@ -24,7 +24,7 @@ namespace detail {
     try {
         return std::chrono::current_zone();
     } catch (...) {
-        hi_debug_abort("std::chrono::current_zone() throws");
+        hi_no_default("std::chrono::current_zone() throws");
     }
 }
 

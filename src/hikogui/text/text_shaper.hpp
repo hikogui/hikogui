@@ -234,7 +234,7 @@ public:
      * @param line_spacing The scaling of the spacing between lines (default: 1.0).
      * @param paragraph_spacing The scaling of the spacing between paragraphs (default: 1.5).
      */
-    [[nodiscard]] void layout(
+    void layout(
         aarectangle rectangle,
         float baseline,
         extent2 sub_pixel_size,

@@ -188,12 +188,19 @@ enum class horizontal_alignment : uint8_t {
         } else {
             return {};
         }
+
     case horizontal_alignment::center:
         if (guideline_left <= guideline_right) {
             return std::clamp(guideline_center, guideline_left, guideline_right);
         } else {
             return {};
         }
+
+    case horizontal_alignment::flush:
+        hi_no_default();
+
+    case horizontal_alignment::justified:
+        hi_no_default();
     }
     hi_no_default();
 }

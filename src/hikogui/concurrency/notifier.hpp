@@ -24,8 +24,7 @@ namespace hi::inline v1 {
  * @tparam Args The argument types of the callback function.
  */
 template<typename T = void()>
-class notifier {
-};
+class notifier;
 
 // The partial template specialization allows the use of a `std::function`-like template
 // argument, that looks like a function prototype.

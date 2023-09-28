@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include <version>
+
 #ifndef HI_ASSERT_HPP
 #define HI_ASSERT_HPP
 
@@ -32,6 +34,21 @@
 #define HI_COMPILER HI_CC_GCC
 #else
 #error "Could not detect the compiler."
+#endif
+
+#define HI_STL_MS 'm'
+#define HI_STL_GNU 'g'
+#define HI_STL_LLVM 'l'
+#define HI_STL_UNKNOWN '-'
+
+#if defined(__GLIBCXX__)
+#define HI_STD_LIBRARY HI_STL_GNU
+#elif defined(_LIBCPP_VERSION)
+#define HI_STD_LIBRARY HI_STL_LLVM
+#elif defined(_CPPLIB_VER)
+#define HI_STD_LIBRARY HI_STL_MS
+#else
+#define HI_STD_LIBRARY HI_STL_UNKNOWN
 #endif
 
 #define HI_CPU_X86 'i'
@@ -110,10 +127,11 @@
 #endif
 
 #if HI_COMPILER == HI_CC_CLANG
-#define hi_assume(condition) __builtin_assume(to_bool(condition))
-#define hi_force_inline inline __attribute__((always_inline))
+#define hi_assume(condition) __builtin_assume(not not (condition))
+#define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__
+#define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(push)")
 #define hi_warning_ignore_msvc(code)
@@ -124,6 +142,7 @@
 #define hi_force_inline __forceinline
 #define hi_no_inline __declspec(noinline)
 #define hi_restrict __restrict
+#define hi_no_sanitize_address __declspec(no_sanitize_address)
 #define hi_warning_push() _Pragma("warning( push )")
 #define hi_warning_pop() _Pragma("warning( pop )")
 #define hi_msvc_pragma(a) _Pragma(a)
@@ -136,9 +155,10 @@
         if (!(condition)) \
             std::unreachable(); \
     } while (false)
-#define hi_force_inline inline __attribute__((always_inline))
+#define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__
+#define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(pop)")
 #define hi_msvc_pragma(a)
@@ -147,9 +167,10 @@
 
 #else
 #define hi_assume(condition) static_assert(sizeof(condition) == 1)
-#define hi_force_inline inline
+#define hi_force_inline
 #define hi_no_inline
 #define hi_restrict
+#define hi_no_sanitize_address
 #define hi_warning_push()
 #define hi_warning_pop()
 #define hi_msvc_pragma(a)
@@ -270,6 +291,8 @@
  * ```
  */
 #define hi_get_overloaded_macro2(_1, _2, name, ...) name
+
+#define ssizeof(x) (static_cast<ssize_t>(sizeof(x)))
 
 /** Debug-break.
  *

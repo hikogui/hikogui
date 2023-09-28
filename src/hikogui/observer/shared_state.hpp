@@ -81,7 +81,7 @@ public:
     template<fixed_string Name>
     [[nodiscard]] auto get() const& noexcept
     {
-        return observer().get<Name>();
+        return observer().template get<Name>();
     }
 
 private:

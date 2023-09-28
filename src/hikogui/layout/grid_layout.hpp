@@ -362,23 +362,23 @@ public:
      */
     [[nodiscard]] constexpr std::tuple<float, float, float> constraints(cell_type const& cell) const noexcept
     {
-        return constraints(cell.first<axis>(), cell.last<axis>());
+        return constraints(cell.template first<axis>(), cell.template last<axis>());
     }
 
     [[nodiscard]] constexpr float position(cell_type const& cell) const noexcept
     {
-        return position(cell.first<axis>(), cell.last<axis>());
+        return position(cell.template first<axis>(), cell.template last<axis>());
     }
 
     [[nodiscard]] constexpr float extent(cell_type const& cell) const noexcept
     {
-        return extent(cell.first<axis>(), cell.last<axis>());
+        return extent(cell.template first<axis>(), cell.template last<axis>());
     }
 
     [[nodiscard]] constexpr std::optional<float> guideline(cell_type const& cell) const noexcept
     {
-        if (cell.span<axis>() == 1) {
-            return guideline(cell.first<axis>());
+        if (cell.template span<axis>() == 1) {
+            return guideline(cell.template first<axis>());
         } else {
             return std::nullopt;
         }
@@ -735,20 +735,20 @@ private:
      */
     constexpr void construct_simple_cell(cell_type const& cell) noexcept
     {
-        inplace_max(_constraints[cell.first<axis>()].margin_before, cell.margin_before<axis>(_forward));
-        inplace_max(_constraints[cell.last<axis>() - 1].margin_after, cell.margin_after<axis>(_forward));
-        inplace_max(_constraints[cell.first<axis>()].padding_before, cell.padding_before<axis>(_forward));
-        inplace_max(_constraints[cell.last<axis>() - 1].padding_after, cell.padding_after<axis>(_forward));
+        inplace_max(_constraints[cell.template first<axis>()].margin_before, cell.template margin_before<axis>(_forward));
+        inplace_max(_constraints[cell.template last<axis>() - 1].margin_after, cell.template margin_after<axis>(_forward));
+        inplace_max(_constraints[cell.template first<axis>()].padding_before, cell.template padding_before<axis>(_forward));
+        inplace_max(_constraints[cell.template last<axis>() - 1].padding_after, cell.template padding_after<axis>(_forward));
 
-        for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
+        for (auto i = cell.template first<axis>(); i != cell.template last<axis>(); ++i) {
             _constraints[i].beyond_maximum |= cell.beyond_maximum;
         }
 
-        if (cell.span<axis>() == 1) {
-            inplace_max(_constraints[cell.first<axis>()].alignment, cell.alignment<axis>());
-            inplace_max(_constraints[cell.first<axis>()].minimum, cell.minimum<axis>());
-            inplace_max(_constraints[cell.first<axis>()].preferred, cell.preferred<axis>());
-            inplace_min(_constraints[cell.first<axis>()].maximum, cell.maximum<axis>());
+        if (cell.template span<axis>() == 1) {
+            inplace_max(_constraints[cell.template first<axis>()].alignment, cell.template alignment<axis>());
+            inplace_max(_constraints[cell.template first<axis>()].minimum, cell.template minimum<axis>());
+            inplace_max(_constraints[cell.template first<axis>()].preferred, cell.template preferred<axis>());
+            inplace_min(_constraints[cell.template first<axis>()].maximum, cell.template maximum<axis>());
         }
     }
 
@@ -760,27 +760,27 @@ private:
      */
     constexpr void construct_span_cell(cell_type const& cell) noexcept
     {
-        auto num_cells = narrow_cast<float>(cell.span<axis>());
+        auto num_cells = narrow_cast<float>(cell.template span<axis>());
 
-        if (cell.span<axis>() > 1) {
+        if (cell.template span<axis>() > 1) {
             hilet[span_minimum, span_preferred, span_maximum] = constraints(cell);
-            if (hilet extra = cell.minimum<axis>() - span_minimum; extra > 0) {
+            if (hilet extra = cell.template minimum<axis>() - span_minimum; extra > 0) {
                 hilet extra_per_cell = std::floor(extra / num_cells);
-                for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
+                for (auto i = cell.template first<axis>(); i != cell.template last<axis>(); ++i) {
                     _constraints[i].minimum += extra_per_cell;
                 }
             }
 
-            if (hilet extra = cell.preferred<axis>() - span_preferred; extra > 0) {
+            if (hilet extra = cell.template preferred<axis>() - span_preferred; extra > 0) {
                 hilet extra_per_cell = std::floor(extra / num_cells);
-                for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
+                for (auto i = cell.template first<axis>(); i != cell.template last<axis>(); ++i) {
                     _constraints[i].preferred += extra_per_cell;
                 }
             }
 
-            if (hilet extra = cell.maximum<axis>() - span_preferred; extra < 0) {
+            if (hilet extra = cell.template maximum<axis>() - span_preferred; extra < 0) {
                 hilet extra_per_cell = std::ceil(extra / num_cells);
-                for (auto i = cell.first<axis>(); i != cell.last<axis>(); ++i) {
+                for (auto i = cell.template first<axis>(); i != cell.template last<axis>(); ++i) {
                     // The maximum could become too low here, fixup() will fix this.
                     _constraints[i].maximum += extra_per_cell;
                 }

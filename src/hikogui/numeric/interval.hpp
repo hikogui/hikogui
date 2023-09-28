@@ -26,7 +26,7 @@ namespace hi::inline v1 {
  *
  * @tparam T A type for which std::numeric_limits<T> is implemented.
  */
-template<numeric_limited T>
+template<arithmetic T>
 struct interval {
 public:
     using value_type = T;
@@ -130,25 +130,25 @@ public:
 
     /** Check if a given type can hold all values in the interval.
      */
-    template<numeric_limited T>
+    template<arithmetic O>
     [[nodiscard]] constexpr bool type_contains_range() const noexcept
     {
-        return std::numeric_limits<T>::lower() <= lower() and upper() <= std::numeric_limits<T>::max();
+        return std::numeric_limits<O>::lowest() <= lower() and upper() <= std::numeric_limits<O>::max();
     }
 
     /** Check if all the values in a type is inside the interval.
      */
-    template<numeric_limited T>
+    template<arithmetic O>
     [[nodiscard]] constexpr bool range_contains_type() const noexcept
     {
-        return lower() <= std::numeric_limits<T>::lower() and std::numeric_limits<T>::max() <= upper();
+        return lower() <= std::numeric_limits<O>::lower() and std::numeric_limits<O>::max() <= upper();
     }
 
     /** Check if the interval is true.
      *
      * @return false if both the lower and upper bound are zero.
      */
-    operator bool() const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return v[0] != 0 or v[1] != 0;
     }
@@ -170,7 +170,7 @@ public:
 
     [[nodiscard]] constexpr interval operator*(interval const &rhs) const noexcept
     {
-        hilet ge_zero = ge(v, bound_type{});
+        hilet ge_zero = v >= bound_type{};
         hilet lt_zero = ~ge_zero;
 
         hilet ac = (ge_zero & rhs.v.xx()) | (lt_zero & -rhs.v.yy());
@@ -198,7 +198,7 @@ public:
             return interval{};
         }
 
-        hilet rhs_ge_zero = ge(rhs.v, bound_type{});
+        hilet rhs_ge_zero = rhs.v >= bound_type{};
         hilet rhs_lt_zero = ~rhs_ge_zero;
 
         hilet b_ma = (rhs_ge_zero & v.yy()) | (rhs_lt_zero & -v.xx());
@@ -224,7 +224,7 @@ public:
         } else if (v[1] > 0) {
             return -rhs_abs;
         } else {
-            return raw(rhs_abs.yy());
+            return raw(rhs_abs.v.yy());
         }
     }
 
@@ -302,7 +302,7 @@ public:
      */
     [[nodiscard]] constexpr bool is_fully_inside(interval const &other) const noexcept
     {
-        return ge(v, other.v) == 0b11;
+        return (v >= other.v).mask() == 0b11;
     }
 };
 

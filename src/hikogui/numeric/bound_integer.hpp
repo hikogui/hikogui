@@ -5,15 +5,12 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "stdint.hpp"
 #include "interval.hpp"
 #include "../macros.hpp"
 
-
-
 namespace hi::inline v1 {
 
-constexpr auto bounds_test = interval<longreg_t>{1, 5};
+constexpr auto bounds_test = interval<long long>{1, 5};
 
 static_assert(
     std::numeric_limits<signed long>::min() <= bounds_test.lower() and
@@ -22,9 +19,9 @@ static_assert(
 /** Bound integer.
  *
  */
-template<interval<longreg_t> Bounds>
+template<interval<long long> Bounds>
 struct bound_integer {
-    using bound_type = interval<longreg_t>;
+    using bound_type = interval<long long>;
 
     constexpr static bound_type bounds = Bounds;
 
@@ -41,9 +38,7 @@ struct bound_integer {
         std::conditional_t<bounds.type_contains_range<unsigned int>(), unsigned int,
         std::conditional_t<bounds.type_contains_range<signed long>(), signed long,
         std::conditional_t<bounds.type_contains_range<unsigned long>(), unsigned long,
-        std::conditional_t<bounds.type_contains_range<signed long long>(), signed long long,
-        std::conditional_t<bounds.type_contains_range<unsigned long long>(), unsigned long long,
-        longreg_t>>>>>>>>>>;
+        signed long long>>>>>>>>;
 
     /** The type that is used as a temporary during calculation.
      */
@@ -52,8 +47,7 @@ struct bound_integer {
         std::conditional_t<bounds.type_contains_range<signed short>(), signed short,
         std::conditional_t<bounds.type_contains_range<signed int>(), signed int,
         std::conditional_t<bounds.type_contains_range<signed long>(), signed long,
-        std::conditional_t<bounds.type_contains_range<signed long long>(), signed long long,
-        longreg_t>>>>>;
+        signed long long>>>>;
 
     // clang-format on
 
@@ -67,7 +61,7 @@ struct bound_integer {
     constexpr bound_integer &operator=(bound_integer const &) noexcept = default;
     constexpr bound_integer &operator=(bound_integer &&) noexcept = default;
 
-    [[nodiscard]] constexpr static bound_integer make_without_check(numeric_limited auto other) noexcept
+    [[nodiscard]] constexpr static bound_integer make_without_check(arithmetic auto other) noexcept
     {
         bound_integer r;
         r.value = static_cast<value_type>(other);
@@ -75,7 +69,7 @@ struct bound_integer {
         return r;
     }
 
-    constexpr bound_integer(numeric_limited auto other) noexcept(bounds.range_contains_type<decltype(other)>()) :
+    constexpr bound_integer(arithmetic auto other) noexcept(bounds.range_contains_type<decltype(other)>()) :
         value(static_cast<value_type>(other))
     {
         if constexpr (not bounds.range_contains_type<decltype(other)>()) {
@@ -86,7 +80,7 @@ struct bound_integer {
         hi_axiom(holds_invariant());
     }
 
-    constexpr bound_integer &operator=(numeric_limited auto other) noexcept(bounds.range_contains_type<decltype(other)>())
+    constexpr bound_integer &operator=(arithmetic auto other) noexcept(bounds.range_contains_type<decltype(other)>())
     {
         if constexpr (not bounds.range_contains_type<decltype(other)>()) {
             if (other != bounds) {
@@ -162,7 +156,7 @@ struct bound_integer {
     template<bound_type RHSBounds>
     [[nodiscard]] constexpr bool operator==(bound_integer<RHSBounds> const &rhs) noexcept
     {
-        if constexpr (bounds.upper() < RHSBounds.lower() or bounds.lower() > RHSBounds.upper) {
+        if constexpr (bounds.upper() < RHSBounds.lower() or bounds.lower() > RHSBounds.upper()) {
             return false;
         } else if (bounds.is_value() and RHSBounds.is_value() and bounds.lower() == RHSBounds.lower()) {
             return true;
@@ -190,10 +184,10 @@ struct bound_integer {
     template<bound_type RHSBounds>
     [[nodiscard]] constexpr auto operator+(bound_integer<RHSBounds> const &rhs) noexcept
     {
-        static_assert(bounds.lower() >= (std::numeric_limits<longreg_t>::min() >> 1), "lhs lower bound overflow");
-        static_assert(bounds.upper() <= (std::numeric_limits<longreg_t>::max() >> 1), "lhs upper bound overflow");
-        static_assert(RHSBounds.lower() >= (std::numeric_limits<longreg_t>::min() >> 1), "rhs lower bound overflow");
-        static_assert(RHSBounds.upper() <= (std::numeric_limits<longreg_t>::max() >> 1), "rhs upper bound overflow");
+        static_assert(bounds.lower() >= (std::numeric_limits<long long>::min() >> 1), "lhs lower bound overflow");
+        static_assert(bounds.upper() <= (std::numeric_limits<long long>::max() >> 1), "lhs upper bound overflow");
+        static_assert(RHSBounds.lower() >= (std::numeric_limits<long long>::min() >> 1), "rhs lower bound overflow");
+        static_assert(RHSBounds.upper() <= (std::numeric_limits<long long>::max() >> 1), "rhs upper bound overflow");
 
         using r_type = bound_integer<bounds + RHSBounds>;
         return r_type::make_without_check(
@@ -203,10 +197,10 @@ struct bound_integer {
     template<bound_type RHSBounds>
     [[nodiscard]] constexpr auto operator-(bound_integer<RHSBounds> const &rhs) noexcept
     {
-        static_assert(bounds.lower() >= (std::numeric_limits<longreg_t>::min() >> 1), "lhs lower bound overflow");
-        static_assert(bounds.upper() <= (std::numeric_limits<longreg_t>::max() >> 1), "lhs upper bound overflow");
-        static_assert(RHSBounds.lower() >= (std::numeric_limits<longreg_t>::min() >> 1), "rhs lower bound overflow");
-        static_assert(RHSBounds.upper() <= (std::numeric_limits<longreg_t>::max() >> 1), "rhs upper bound overflow");
+        static_assert(bounds.lower() >= (std::numeric_limits<long long>::min() >> 1), "lhs lower bound overflow");
+        static_assert(bounds.upper() <= (std::numeric_limits<long long>::max() >> 1), "lhs upper bound overflow");
+        static_assert(RHSBounds.lower() >= (std::numeric_limits<long long>::min() >> 1), "rhs lower bound overflow");
+        static_assert(RHSBounds.upper() <= (std::numeric_limits<long long>::max() >> 1), "rhs upper bound overflow");
 
         using r_type = bound_integer<bounds - RHSBounds>;
         return r_type::make_without_check(
@@ -229,8 +223,8 @@ struct bound_integer {
     template<bound_type RHSBounds>
     [[nodiscard]] constexpr auto operator/(bound_integer<RHSBounds> const &rhs) noexcept(0 != RHSBounds)
     {
-        static_assert(bounds.lower() >= ((std::numeric_limits<longreg_t>::min() + 1)), "lhs lower bound overflow");
-        static_assert(bounds.upper() <= (std::numeric_limits<longreg_t>::max()), "lhs upper bound overflow");
+        static_assert(bounds.lower() >= ((std::numeric_limits<long long>::min() + 1)), "lhs lower bound overflow");
+        static_assert(bounds.upper() <= (std::numeric_limits<long long>::max()), "lhs upper bound overflow");
         static_assert(RHSBounds, "divide by zero");
 
         if constexpr (0 == RHSBounds) {
@@ -260,7 +254,7 @@ struct bound_integer {
     }
 
     /*
-    template<longreg_t lower_bound, longreg_t upper_bound, longreg_t RL, longreg_t RU>
+    template<long long lower_bound, long long upper_bound, long long RL, long long RU>
     [[nodiscard]] constexpr auto
     operator|(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept
     {
@@ -276,7 +270,7 @@ struct bound_integer {
         return rtype{static_cast<t_type>(lhs.value) | static_cast<t_type>(rhs.value)};
     }
 
-    template<longreg_t lower_bound, longreg_t upper_bound, longreg_t RL, longreg_t RU>
+    template<long long lower_bound, long long upper_bound, long long RL, long long RU>
     [[nodiscard]] constexpr auto
     operator&(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept
     {
@@ -292,7 +286,7 @@ struct bound_integer {
         return rtype{static_cast<t_type>(lhs.value) & static_cast<t_type>(rhs.value)};
     }
 
-    template<longreg_t lower_bound, longreg_t upper_bound, longreg_t RL, longreg_t RU>
+    template<long long lower_bound, long long upper_bound, long long RL, long long RU>
     [[nodiscard]] constexpr auto
     operator^(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept
     {
@@ -313,20 +307,20 @@ struct bound_integer {
         return rtype{static_cast<t_type>(lhs.value) ^ static_cast<t_type>(rhs.value)};
     }
 
-    template<longreg_t RL, longreg_t RU>
+    template<long long RL, long long RU>
     bound_integer &operator+=(bound_integer<RL, RU> const &rhs) noexcept(RL == 0 and RU == 0)
     {
         return *this = *this + rhs;
     }
 
-    template<longreg_t RL, longreg_t RU>
+    template<long long RL, long long RU>
     bound_integer &operator-=(bound_integer<RL, RU> const &rhs) noexcept(RL == 0 and RU == 0)
     {
         return *this = *this - rhs;
     }
 
     // clang-format off
-    template<longreg_t RL, longreg_t RU>
+    template<long long RL, long long RU>
     bound_integer &operator*=(bound_integer<RL, RU> const &rhs)
         noexcept(
             (RL == 1 and RU == 1) or
@@ -341,32 +335,32 @@ struct bound_integer {
     }
     // clang-format on
 
-    template<longreg_t RL, longreg_t RU>
+    template<long long RL, long long RU>
     bound_integer &operator/=(bound_integer<RL, RU> const &rhs) noexcept(RL > 0 or (lower_bound == -upper_bound and RU < 0))
     {
         return *this = *this / rhs;
     }
 
-    template<longreg_t RL, longreg_t RU>
+    template<long long RL, long long RU>
     bound_integer &operator%=(bound_integer<RL, RU> const &rhs) noexcept(RL > 0 or RU < 0)
     {
         return *this = *this % rhs;
     }
 
-    template<longreg_t RL, longreg_t RU>
+    template<long long RL, long long RU>
     bound_integer &operator&=(bound_integer<RL, RU> const &rhs) noexcept
     {
         value &= static_cast<value_type>(rhs.value);
         return *this;
     }
 
-    template<longreg_t RL, longreg_t RU>
+    template<long long RL, long long RU>
     bound_integer &operator|=(bound_integer<RL, RU> const &rhs)
     {
         return *this = *this | rhs;
     }
 
-    template<longreg_t RL, longreg_t RU>
+    template<long long RL, long long RU>
     bound_integer &operator^=(bound_integer<RL, RU> const &rhs)
     {
         return *this = *this ^ rhs;
