@@ -57,14 +57,14 @@ jobs:
       - name: 🛠️ Setup Visual Studio Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1
     
-      - name: 🛠️ Show Tool Versions
-        run: |
-          date /T
-          time /T
-          cmake --version
-          vcpkg --version
-          ninja --version
-          ccache --version
+      - name: 🔽 Install Vulkan SDK
+        uses: jakoch/install-vulkan-sdk-action@v1.0.0 # https://github.com/jakoch/install-vulkan-sdk-action/
+        with: 
+          vulkan_version: latest
+          optional_components: com.lunarg.vulkan.vma
+          install_runtime: true
+          cache: true
+          stripdown: true
 
       # Reminder: This step requires that the CMakePresets for CI contain
       # "CMAKE_CXX_COMPILER_LAUNCHER": "sccache".
@@ -91,37 +91,17 @@ jobs:
           echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
           echo "VERSION=$($VERSION)" >> $env:GITHUB_ENV
 
-      - name: 📝 Get Vulkan SDK version number
-        id: vulkan-version
-        uses: hikogui/install-vulkan-sdk-action/sdk-version@v4
-
-      - name: 🎯 Cache VULKAN SDK & Runtime
-        id: cache-vulkan
-        uses: actions/cache@v3
-        with:
-          path: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
-          key: cache-windows-vulkan-${{steps.vulkan-version.outputs.VULKAN_VERSION}}-0
-
-      - name: 🔽 Install Vulkan SDK
-        if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        uses: hikogui/install-vulkan-sdk-action/install-sdk@v4
-        with:
-          VULKAN_VERSION: ${{steps.vulkan-version.outputs.VULKAN_VERSION}}
-          VULKAN_SDK: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
-
       - name: ✏ CMake ➔ Make Build Directory
         shell: pwsh
         run: mkdir "${{env.BUILD_DIR}}"
     
       # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
-      - name: 🔽 Install Vulkan Runtime
+      - name: 🔽 Install Vulkan Runtime in build directory
         working-directory: ${{env.BUILD_DIR}}
-        run: copy ${{steps.vulkan-version.outputs.VULKAN_SDK}}\runtime\x64\vulkan-1.* .
+        run: copy ${{env.VULKAN_SDK}}\runtime\x64\vulkan-1.* .
 
       - name: ✏ CMake ➔ Configure
         working-directory: ${{env.BUILD_DIR}}
-        env:
-          VULKAN_SDK: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
         shell: pwsh
         run: >
           cmake

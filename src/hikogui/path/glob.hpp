@@ -23,7 +23,7 @@ hi_export_module(hikogui.path.glob);
 namespace hi { inline namespace v1 {
 
 /** A glob pattern.
- * @ingroup file
+ * @ingroup path
  *
  * A glob algorithm is used for matching with filenames and directories.
  * Glob may also be used on strings that do not involve the filesystem at all,
@@ -904,7 +904,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(glob_patter
 }
 
 /** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
+ * @ingroup path
  *
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
@@ -915,7 +915,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::string
 }
 
 /** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
+ * @ingroup path
  *
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
@@ -926,7 +926,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::string
 }
 
 /** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
+ * @ingroup path
  *
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
@@ -937,7 +937,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(char const 
 }
 
 /** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
+ * @ingroup path
  *
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
@@ -948,7 +948,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::filesy
 }
 
 /** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
+ * @ingroup path
  *
  * @param locations The path-locations to search files in
  * @param ref A relative path pattern to search the path-location
@@ -965,7 +965,7 @@ hi_export template<path_range Locations>
 }
 
 /** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
+ * @ingroup path
  *
  * @param locations The path-locations to search files in
  * @param ref A relative path pattern to search the path-location
@@ -978,7 +978,7 @@ hi_export template<path_range Locations>
 }
 
 /** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
+ * @ingroup path
  *
  * @param locations The path-locations to search files in
  * @param ref A relative path pattern to search the path-location
@@ -991,7 +991,7 @@ hi_export template<path_range Locations>
 }
 
 /** Find paths on the filesystem that match the glob pattern.
- * @ingroup file
+ * @ingroup path
  *
  * @param locations The path-locations to search files in
  * @param ref A relative path pattern to search the path-location
