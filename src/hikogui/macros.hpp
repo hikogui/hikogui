@@ -127,7 +127,7 @@
 #endif
 
 #if HI_COMPILER == HI_CC_CLANG
-#define hi_assume(condition) __builtin_assume(to_bool(condition))
+#define hi_assume(condition) __builtin_assume(not not (condition))
 #define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__

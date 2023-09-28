@@ -212,14 +212,6 @@
   ],
   "buildPresets": [
     {
-      "name": "msvc-x64-windows-dbg-library",
-      "displayName": "Library",
-      "configurePreset": "msvc-x64-windows-dbg",
-      "targets": [
-        "install_hikogui"
-      ]
-    },
-    {
       "name": "msvc-x64-windows-dbg-tests",
       "displayName": "Library + Tests",
       "configurePreset": "msvc-x64-windows-dbg",
@@ -251,14 +243,6 @@
         "hikogui_all_tests",
         "hikogui_demo",
         "examples"
-      ]
-    },
-    {
-      "name": "msvc-x64-windows-rel-library",
-      "displayName": "Library",
-      "configurePreset": "msvc-x64-windows-rel",
-      "targets": [
-        "install_hikogui"
       ]
     },
     {
@@ -296,14 +280,6 @@
       ]
     },
     {
-      "name": "clangcl-x64-windows-dbg-library",
-      "displayName": "Library",
-      "configurePreset": "clangcl-x64-windows-dbg",
-      "targets": [
-        "install_hikogui"
-      ]
-    },
-    {
       "name": "clangcl-x64-windows-dbg-tests",
       "displayName": "Library + Tests",
       "configurePreset": "clangcl-x64-windows-dbg",
@@ -338,14 +314,6 @@
       ]
     },
     {
-      "name": "clangcl-x64-windows-rel-library",
-      "displayName": "Library",
-      "configurePreset": "clangcl-x64-windows-rel",
-      "targets": [
-        "install_hikogui"
-      ]
-    },
-    {
       "name": "clangcl-x64-windows-rel-tests",
       "displayName": "Library + Tests",
       "configurePreset": "clangcl-x64-windows-rel",
@@ -354,7 +322,7 @@
       ]
     },
     {
-      "name": "clclangclang-x64-windows-rel-examples",
+      "name": "clangcl-x64-windows-rel-examples",
       "displayName": "Library + Examples",
       "configurePreset": "clangcl-x64-windows-rel",
       "targets": [
@@ -377,14 +345,6 @@
         "hikogui_all_tests",
         "hikogui_demo",
         "examples"
-      ]
-    },
-    {
-      "name": "clang17-x64-linux-dbg-library",
-      "displayName": "Library",
-      "configurePreset": "clang17-x64-linux-dbg",
-      "targets": [
-        "install_hikogui"
       ]
     },
     {

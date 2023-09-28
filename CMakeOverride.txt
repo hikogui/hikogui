@@ -46,8 +46,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "M
   #
   # -debug:fastlink causes "Access Violation" on github-actions.
   #
-  set(CMAKE_CXX_FLAGS_DEBUG_INIT           "-Zi -Ob0 -Od")
-  set(CMAKE_C_FLAGS_DEBUG_INIT             "-Zi -Ob0 -Od")
+  set(CMAKE_CXX_FLAGS_DEBUG_INIT           "-Zi -O0 -Od")
+  set(CMAKE_C_FLAGS_DEBUG_INIT             "-Zi -O0 -Od")
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG_INIT    "-debug")
   set(CMAKE_MODULE_LINKER_FLAGS_DEBUG_INIT "-debug")
   set(CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT "-debug")
@@ -59,14 +59,13 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "M
   # assembly of the optimized release build, while having debug information.
   #
   # Zi:     Produce a separate PDB file (debug symbols)
-  # O2:     Maximize Speed
-  # Ob3:    Aggressive Inline Function Expansion
+  # O3:     Maximize Speed
   # NDEBUG: Assertion checks turned off at compile time
   #
   # -debug:fastlink causes "Access Violation" on github-actions.
   #
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT           "-Zi -O2 -Ob3 -DNDEBUG")
-  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT             "-Zi -O2 -Ob3 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT           "-Zi -O2 -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT             "-Zi -O2 -DNDEBUG")
   set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-debug")
   set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-debug")
   set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-debug")
@@ -80,8 +79,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "M
   #
   # -debug:fastlink causes "Access Violation" on github-actions.
   #
-  set(CMAKE_CXX_FLAGS_RELEASE_INIT           "-O2 -Ob3 -DNDEBUG")
-  set(CMAKE_C_FLAGS_RELEASE_INIT             "-O2 -Ob3 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_RELEASE_INIT           "-O2 -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELEASE_INIT             "-O2 -DNDEBUG")
   #set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT    "-INCREMENTAL:NO")
   #set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO")
   #set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO")

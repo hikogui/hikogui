@@ -133,7 +133,7 @@ jobs:
   
       - name: 📦 CMake ➔ Install
         working-directory: ${{env.BUILD_DIR}}
-        run: cmake --install build
+        run: cmake --install .
 
       # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
       - name: 🔽 Install Vulkan Runtime
