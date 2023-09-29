@@ -7,9 +7,9 @@ jobs:
   check-debug:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for Debug Mode (#if 1)
+      - name: Source must not contain Debug code (#if 1)
         run: |
-          if grep -r '#if 1' --include="*.hpp" .; then
+          if grep -q -r '#if 1' --include="*.hpp" .; then
             echo "Debugging code found in .hpp files. Please remove it before pushing."
             exit 1
           fi
