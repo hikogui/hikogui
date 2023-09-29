@@ -4,7 +4,9 @@
 
 #pragma once
 
+#if 1
 #include <gtest/gtest.h>
+#endif
 
 #define STATIC_ASSERT_TRUE(...) \
     static_assert(__VA_ARGS__, "unit test failed"); \
