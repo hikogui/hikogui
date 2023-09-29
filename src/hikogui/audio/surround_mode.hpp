@@ -5,18 +5,18 @@
 #pragma once
 
 #include "speaker_mapping.hpp"
-#include "../font/module.hpp"
+#include "../font/font.hpp"
 #include "../utility/utility.hpp"
 #include "../l10n/l10n.hpp"
 #include "../coroutine/module.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 
+hi_export_module(hikogui.audio.surround_mode);
 
+namespace hi { inline namespace v1 {
 
-namespace hi::inline v1 {
-
-enum class surround_mode : uint64_t {
+hi_export enum class surround_mode : uint64_t {
     none = 0,
     mono_1_0 = uint64_t{1} << 0,
     stereo_2_0 = uint64_t{1} << 1,
@@ -64,7 +64,7 @@ enum class surround_mode : uint64_t {
 };
 
 // clang-format off
-constexpr auto surround_mode_icons = enum_metadata{
+hi_export constexpr auto surround_mode_icons = enum_metadata{
     surround_mode::none, hikogui_icon::none_0_0,
     surround_mode::mono_1_0, hikogui_icon::mono_1_0,
     surround_mode::stereo_2_0, hikogui_icon::stereo_2_0,
@@ -101,7 +101,7 @@ constexpr auto surround_mode_icons = enum_metadata{
     surround_mode::surround_atmos_7_1_4, hikogui_icon::surround_atmos_7_1_4,
 };
 
-constexpr auto surround_mode_names = enum_metadata{
+hi_export constexpr auto surround_mode_names = enum_metadata{
     surround_mode::none, "none",
     surround_mode::mono_1_0, "mono",
     surround_mode::stereo_2_0, "stereo",
@@ -138,7 +138,7 @@ constexpr auto surround_mode_names = enum_metadata{
     surround_mode::surround_atmos_7_1_4, "surround-atmos 7.1.4",
 };
 
-constexpr auto surround_mode_short_names = enum_metadata{
+hi_export constexpr auto surround_mode_short_names = enum_metadata{
     surround_mode::none, "0.0",
     surround_mode::mono_1_0, "1.0",
     surround_mode::stereo_2_0, "2.0",
@@ -175,7 +175,7 @@ constexpr auto surround_mode_short_names = enum_metadata{
     surround_mode::surround_atmos_7_1_4, "7.1.4",
 };
 
-constexpr auto surround_mode_speaker_mappings = enum_metadata{
+hi_export constexpr auto surround_mode_speaker_mappings = enum_metadata{
     surround_mode::mono_1_0, speaker_mapping::mono_1_0,
     surround_mode::stereo_2_0, speaker_mapping::stereo_2_0,
     surround_mode::stereo_2_1, speaker_mapping::stereo_2_1,
@@ -213,32 +213,32 @@ constexpr auto surround_mode_speaker_mappings = enum_metadata{
 
 // clang-format on
 
-[[nodiscard]] constexpr surround_mode operator&(surround_mode const& lhs, surround_mode const& rhs) noexcept
+hi_export [[nodiscard]] constexpr surround_mode operator&(surround_mode const& lhs, surround_mode const& rhs) noexcept
 {
     return static_cast<surround_mode>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr surround_mode operator|(surround_mode const& lhs, surround_mode const& rhs) noexcept
+hi_export [[nodiscard]] constexpr surround_mode operator|(surround_mode const& lhs, surround_mode const& rhs) noexcept
 {
     return static_cast<surround_mode>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
-constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs) noexcept
+hi_export constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs) noexcept
 {
     return lhs = lhs | rhs;
 }
 
-[[nodiscard]] constexpr bool to_bool(surround_mode const& rhs) noexcept
+hi_export [[nodiscard]] constexpr bool to_bool(surround_mode const& rhs) noexcept
 {
     return to_bool(std::to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr speaker_mapping to_speaker_mapping(surround_mode const& rhs) noexcept
+hi_export [[nodiscard]] constexpr speaker_mapping to_speaker_mapping(surround_mode const& rhs) noexcept
 {
     return surround_mode_speaker_mappings[rhs];
 }
 
-[[nodiscard]] inline generator<surround_mode> enumerate_surround_modes() noexcept
+hi_export [[nodiscard]] inline generator<surround_mode> enumerate_surround_modes() noexcept
 {
     hilet begin = std::to_underlying(surround_mode::mono_1_0);
     hilet end = std::to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
@@ -249,12 +249,12 @@ constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs
     }
 }
 
-[[nodiscard]] constexpr std::string_view to_string_view_one(surround_mode const& mode) noexcept
+hi_export [[nodiscard]] constexpr std::string_view to_string_view_one(surround_mode const& mode) noexcept
 {
     return surround_mode_short_names[mode];
 }
 
-[[nodiscard]] constexpr std::string to_string(surround_mode const& mask) noexcept
+hi_export [[nodiscard]] constexpr std::string to_string(surround_mode const& mask) noexcept
 {
     switch (std::popcount(std::to_underlying(mask))) {
     case 0:
@@ -281,11 +281,11 @@ constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs
     }
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
-template<typename CharT>
+hi_export template<typename CharT>
 struct std::formatter<hi::surround_mode, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::surround_mode const& t, auto& fc)
+    auto format(hi::surround_mode const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(hi::to_string(t), fc);
     }

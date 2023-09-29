@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include <version>
+
 #ifndef HI_ASSERT_HPP
 #define HI_ASSERT_HPP
 
@@ -34,6 +36,21 @@
 #error "Could not detect the compiler."
 #endif
 
+#define HI_STL_MS 'm'
+#define HI_STL_GNU 'g'
+#define HI_STL_LLVM 'l'
+#define HI_STL_UNKNOWN '-'
+
+#if defined(__GLIBCXX__)
+#define HI_STD_LIBRARY HI_STL_GNU
+#elif defined(_LIBCPP_VERSION)
+#define HI_STD_LIBRARY HI_STL_LLVM
+#elif defined(_CPPLIB_VER)
+#define HI_STD_LIBRARY HI_STL_MS
+#else
+#define HI_STD_LIBRARY HI_STL_UNKNOWN
+#endif
+
 #define HI_CPU_X86 'i'
 #define HI_CPU_X64 'I'
 #define HI_CPU_ARM 'a'
@@ -46,7 +63,7 @@
 #define HI_PROCESSOR HI_CPU_ARM64
 #elif defined(__i386__) or defined(_M_IX86)
 #define HI_PROCESSOR HI_CPU_X86
-#elif defined(__arm__) or defined(__arm) or defeind(_ARM) or defined(_M_ARM)
+#elif defined(__arm__) or defined(__arm) or defined(_ARM) or defined(_M_ARM)
 #define HI_PROCESSOR HI_CPU_ARM
 #else
 #define HI_PROCESSOR HI_CPU_UNKNOWN
@@ -110,10 +127,11 @@
 #endif
 
 #if HI_COMPILER == HI_CC_CLANG
-#define hi_assume(condition) __builtin_assume(to_bool(condition))
-#define hi_force_inline inline __attribute__((always_inline))
+#define hi_assume(condition) __builtin_assume(not not (condition))
+#define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__
+#define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(push)")
 #define hi_warning_ignore_msvc(code)
@@ -124,6 +142,7 @@
 #define hi_force_inline __forceinline
 #define hi_no_inline __declspec(noinline)
 #define hi_restrict __restrict
+#define hi_no_sanitize_address __declspec(no_sanitize_address)
 #define hi_warning_push() _Pragma("warning( push )")
 #define hi_warning_pop() _Pragma("warning( pop )")
 #define hi_msvc_pragma(a) _Pragma(a)
@@ -136,9 +155,10 @@
         if (!(condition)) \
             std::unreachable(); \
     } while (false)
-#define hi_force_inline inline __attribute__((always_inline))
+#define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__
+#define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(pop)")
 #define hi_msvc_pragma(a)
@@ -147,9 +167,10 @@
 
 #else
 #define hi_assume(condition) static_assert(sizeof(condition) == 1)
-#define hi_force_inline inline
+#define hi_force_inline
 #define hi_no_inline
 #define hi_restrict
+#define hi_no_sanitize_address
 #define hi_warning_push()
 #define hi_warning_pop()
 #define hi_msvc_pragma(a)
@@ -271,35 +292,21 @@
  */
 #define hi_get_overloaded_macro2(_1, _2, name, ...) name
 
-/** Set the message to display when the application terminates.
- *
- * The std::terminate() handler will display the __FILE__, __LINE__
- * number and the message to the console or a popup dialogue.
- *
- * @param ... The message to display.
- */
-#define hi_set_terminate_message(...) \
-    ::hi::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__, std::memory_order::relaxed)
+#define ssizeof(x) (static_cast<ssize_t>(sizeof(x)))
 
 /** Debug-break.
  *
  * This function will break the application in the debugger.
  * Potentially it will start the Just-In-Time debugger if one is configured.
- * Otherwise it will continue execution, in this case the return value of this
- * macro should be checked to determine if `std::terminate()` should be called.
- *
- * @return true if the debugger is attached.
+ * Otherwise it will continue execution.
  */
 #if defined(_WIN32)
 #define hi_debug_break() \
-    []() { \
+    do { \
         if (::hi::prepare_debug_break()) { \
             __debugbreak(); \
-            return true; \
-        } else { \
-            return false; \
         } \
-    }()
+    } while (false)
 #else
 #error Missing implementation of hi_debug_break().
 #endif
@@ -314,13 +321,15 @@
  *
  * @param ... The reason why the abort is done.
  */
+#if defined(_WIN32)
 #define hi_debug_abort(...) \
     do { \
-        if (not hi_debug_break()) { \
-            [[unlikely]] hi_set_terminate_message(__VA_ARGS__); \
-            std::terminate(); \
-        } \
+        ::hi::prepare_debug_break(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__); \
+        __debugbreak(); \
     } while (false)
+#else
+#error Missing implementation of hi_debug_abort().
+#endif
 
 /** Check if the expression is valid, or throw a parse_error.
  *
@@ -424,7 +433,7 @@
 #define hi_assert(expression, ...) \
     do { \
         if (not(expression)) { \
-            hi_debug_abort("assert: " __VA_ARGS__ " (" hi_stringify(expression) ")"); \
+            hi_debug_abort("assert: " __VA_ARGS__ " not (" hi_stringify(expression) ")"); \
         } \
     } while (false)
 
@@ -548,6 +557,14 @@
  */
 #define hi_static_not_implemented(...) hi_static_no_default("Not implemented: " __VA_ARGS__)
 
+/** Format and output text to the console.
+ * This will output the text to the console's std::cout.
+ * During debugging the console will be the debugger's output panel/window.
+ *
+ * @param text The text to display on the console.
+ */
+#define hi_print(fmt, ...) console_output(std::format(fmt __VA_OPT__(, ) __VA_ARGS__))
+
 #define hi_format_argument_check(arg) \
     static_assert( \
         ::std::is_default_constructible_v<std::formatter<std::decay_t<decltype(arg)>>>, \
@@ -586,7 +603,7 @@
 #define hi_log_error(fmt, ...) hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define hi_log_fatal(fmt, ...) \
     hi_log(::hi::global_state_type::log_fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
-    hi_debug_abort();\
+    hi_debug_abort(); \
     std::terminate()
 
 #define hi_log_info_once(name, fmt, ...) \

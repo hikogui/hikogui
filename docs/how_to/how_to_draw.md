@@ -137,16 +137,16 @@ There are three steps for drawing an image:
 Here we load the `mars3.png` file from a resource directory from the constructor:
 
 ```cpp
-drawing_widget(hi::gui_window &window, hi::widget *parent) noexcept :
+drawing_widget(hi::widget *parent) noexcept :
     widget(parent), _image(hi::URL("resource:mars3.png")) {}
 ```
 
-During `set_constraints()`  we try to construct a `hi::paged_image`. In the
+During `set_constraints()`  we try to construct a `hi::gfx_pipeline_image::paged_image`. In the
 `set_constraints()` function this may fail when the window is still being created;
 therefor, we keep reconstraining until it succeeds.
 
-This version of the `hi::paged_image{}` constructor also directly uploads the
-image to the GPU. It is also possible to make a `hi::paged_image` with just
+This version of the `hi::gfx_pipeline_image::paged_image{}` constructor also directly uploads the
+image to the GPU. It is also possible to make a `hi::gfx_pipeline_image::paged_image` with just
 a width and a height and then upload the image at a later time.
 
 ```cpp
@@ -154,7 +154,7 @@ hi::box_constraints const &set_constraints(set_constraints_context const &contex
 {
     _layout = {};
     if (_image_was_modified.exchange(false)) {
-        if (not (_image_backing = hi::paged_image{window.surface.get(), _image})) {
+        if (not (_image_backing = hi::gfx_pipeline_image::paged_image{window.surface.get(), _image})) {
             // Could not get an image, retry.
             _image_was_modified = true;
             request_reconstrain(context);

@@ -19,9 +19,9 @@
 #include <memory>
 #include <ostream>
 
+hi_export_module(hikogui.audio.audio_device);
 
-
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A set of audio channels which can be rendered and/or captures at the same time.
  * On win32 this would be Audio Endpoint gfx_device, which can either render or capture
@@ -31,7 +31,7 @@ namespace hi::inline v1 {
  * aggregate device that can run in the same clock domain, with both render and
  * capture at the same time.
  */
-class audio_device {
+hi_export class audio_device {
 public:
     audio_device() noexcept = default;
     virtual ~audio_device() = default;
@@ -167,4 +167,4 @@ protected:
     std::string _name;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

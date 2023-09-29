@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../observer/module.hpp"
-#include "../codec/module.hpp"
+#include "../codec/codec.hpp"
 #include "../dispatch/dispatch.hpp"
-#include "../file/module.hpp"
+#include "../file/file.hpp"
 #include "../macros.hpp"
 #include <typeinfo>
 #include <filesystem>

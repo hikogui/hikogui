@@ -15,7 +15,7 @@
  */
 
 #include "triangle.hpp"
-#include "hikogui/module.hpp"
+#include "hikogui/hikogui.hpp"
 #include <format>
 #include <vector>
 #include <exception>
@@ -31,7 +31,7 @@
         } \
     } while (false)
 
-[[nodiscard]] constexpr static bool operator==(VkRect2D const& lhs, VkRect2D const& rhs) noexcept
+[[nodiscard]] constexpr bool operator==(VkRect2D const& lhs, VkRect2D const& rhs) noexcept
 {
     return lhs.offset.x == rhs.offset.x and lhs.offset.y == rhs.offset.y and lhs.extent.width == rhs.extent.width and
         lhs.extent.height == rhs.extent.height;
@@ -679,7 +679,7 @@ void TriangleExample::createPipeline()
     // Set pipeline stage for this shader
     shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
     // Load binary SPIR-V shader
-    shaderStages[0].module = loadSPIRVShader(hi::URL{"resource:shaders/triangle.vert.spv"});
+    shaderStages[0].module = loadSPIRVShader(hi::URL{"resource:triangle.vert.spv"});
     // Main entry point for the shader
     shaderStages[0].pName = "main";
     assert(shaderStages[0].module != VK_NULL_HANDLE);
@@ -689,7 +689,7 @@ void TriangleExample::createPipeline()
     // Set pipeline stage for this shader
     shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     // Load binary SPIR-V shader
-    shaderStages[1].module = loadSPIRVShader(hi::URL{"resource:shaders/triangle.frag.spv"});
+    shaderStages[1].module = loadSPIRVShader(hi::URL{"resource:triangle.frag.spv"});
     // Main entry point for the shader
     shaderStages[1].pName = "main";
     assert(shaderStages[1].module != VK_NULL_HANDLE);

@@ -18,7 +18,7 @@ namespace hi::inline v1 {
 template<typename T, int M>
 struct fixed {
     using value_type = T;
-    static constexpr int multiplier = M;
+    constexpr static int multiplier = M;
 
     T value;
 

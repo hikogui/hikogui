@@ -8,9 +8,11 @@
 #include "../geometry/module.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.font.glyph_atlas_info);
+
 namespace hi::inline v1 {
 
-class glyph_atlas_info {
+hi_export class glyph_atlas_info {
 public:
     /** pixel coordinates.
      *
@@ -56,7 +58,7 @@ public:
         position(position),
         size(size),
         border_scale(border_scale),
-        texture_coordinates(aarectangle{texture_coordinate_scale * rectangle{position, size}})
+        texture_coordinates(bounding_rectangle(texture_coordinate_scale * rectangle{position, size}))
     {
         hi_axiom(position == floor(position));
         hi_axiom(size == ceil(size));

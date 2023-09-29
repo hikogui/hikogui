@@ -528,8 +528,11 @@ private:
     [[no_unique_address]] allocator_type _allocator = {};
 };
 
-template<typename T, typename Allocator = std::allocator<std::remove_const_t<T>>>
-pixmap(pixmap_span<T> const& other, Allocator allocator = std::allocator{}) -> pixmap<std::remove_const_t<T>>;
+template<typename T>
+pixmap(pixmap_span<T> const& other) -> pixmap<std::remove_const_t<T>, std::allocator<std::remove_const_t<T>>>;
+
+template<typename T, typename Allocator>
+pixmap(pixmap_span<T> const& other, Allocator allocator) -> pixmap<std::remove_const_t<T>, Allocator>;
 
 }} // namespace hi::v1
 

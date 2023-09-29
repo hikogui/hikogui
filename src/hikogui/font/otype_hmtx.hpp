@@ -10,9 +10,9 @@
 #include <span>
 #include <cstddef>
 
+hi_export_module(hikogui.font.otype_htmx);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline auto
 otype_hmtx_get(std::span<std::byte const> bytes, hi::glyph_id glyph_id, uint16_t num_horizontal_metrics, float em_scale)

@@ -5,20 +5,21 @@
 #pragma once
 
 #include "translation.hpp"
-#include "../i18n/module.hpp"
-#include "../file/module.hpp"
-#include "../parser/module.hpp"
+#include "../i18n/i18n.hpp"
+#include "../file/file.hpp"
+#include "../parser/parser.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <ranges>
 
 hi_export_module(hikogui.l10n.po_parser);
 
 namespace hi::inline v1 {
 
 struct po_translation {
-    std::string msgctxt;
+    std::optional<std::string> msgctxt;
     std::string msgid;
     std::string msgid_plural;
     std::vector<std::string> msgstr;
@@ -26,155 +27,154 @@ struct po_translation {
 
 struct po_translations {
     language_tag language;
-    int nr_plural_forms;
+    size_t nr_plural_forms;
     std::string plural_expression;
     std::vector<po_translation> translations;
 };
 
 namespace detail {
 
-[[nodiscard]] inline parse_result<std::tuple<std::string, int, std::string>> parseLine(token_iterator token)
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::tuple<std::string, size_t, std::string> parse_po_line(It& it, ItEnd last, std::string_view path)
 {
-    std::string name;
-    if ((*token == tokenizer_name_t::Name)) {
-        name = static_cast<std::string>(*token++);
+    hi_assert(it != last);
+
+    auto name = std::string{};
+    if ((*it == token::id)) {
+        name = static_cast<std::string>(*it++);
     } else {
-        throw parse_error(std::format("{}: Expecting a name at start of each line", token->location));
+        throw parse_error(
+            std::format("{}: Expecting a keyword at start of each line, got {}", token_location(it, last, path), *it));
     }
 
-    int index = 0;
-    if ((*token == tokenizer_name_t::Operator) && (*token == "[")) {
-        token++;
+    auto index = 0_uz;
+    if ((*it == '[')) {
+        ++it;
 
-        if ((*token == tokenizer_name_t::IntegerLiteral)) {
-            index = static_cast<int>(*token++);
+        if (it != last and *it == token::integer) {
+            index = static_cast<size_t>(*it++);
         } else {
-            throw parse_error(std::format("{}: Expecting an integer literal as an index for {}", token->location, name));
+            throw parse_error(std::format(
+                "{}: Expecting an integer literal as an index for {}, got {}", token_location(it, last, path), name, *it));
         }
 
-        if ((*token == tokenizer_name_t::Operator) && (*token == "]")) {
-            token++;
+        if (it != last and *it == ']') {
+            ++it;
         } else {
-            throw parse_error(std::format("{}: The index on {} must terminate with a bracket ']'", token->location, name));
+            throw parse_error(std::format(
+                "{}: The index on {} must terminate with a bracket ']', got {}", token_location(it, last, path), name, *it));
         }
     }
 
-    std::string value;
-    if ((*token == tokenizer_name_t::StringLiteral)) {
-        value = static_cast<std::string>(*token++);
+    auto value = std::string{};
+    if (it != last and (*it == token::sstr or *it == token::dstr)) {
+        value = static_cast<std::string>(*it++);
     } else {
-        throw parse_error(std::format("{}: Expecting a value at end of each line", token->location));
+        throw parse_error(
+            std::format("{}: Expecting a string value after {}, got {}", token_location(it, last, path), name, *it));
     }
 
-    while (true) {
-        if ((*token == tokenizer_name_t::StringLiteral)) {
-            value += static_cast<std::string>(*token++);
-        } else {
-            return {std::tuple{name, index, value}, token};
-        }
+    while (it != last and (*it == token::sstr or *it == token::dstr)) {
+        // Concatenating string literals.
+        value += static_cast<std::string>(*it++);
     }
+
+    return {name, index, value};
 }
 
-[[nodiscard]] inline parse_result<po_translation> parse_po_translation(token_iterator token)
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::optional<po_translation> parse_po_translation(It& it, ItEnd last, std::string_view path)
 {
     po_translation r;
 
-    while (true) {
-        if (ssize(r.msgstr) == 0) {
-            if (auto result = parseLine(token)) {
-                token = result.next_token;
+    while (it != last) {
+        if (r.msgstr.empty()) {
+            // If there have been no "msgstr" keywords, then capture information in the translation.
+            auto [name, index, value] = parse_po_line(it, last, path);
 
-                hilet[name, index, value] = *result;
-                if (name == "msgctxt") {
-                    r.msgctxt = value;
+            if (name == "msgctxt") {
+                r.msgctxt = value;
 
-                } else if (name == "msgid") {
-                    r.msgid = value;
+            } else if (name == "msgid") {
+                r.msgid = value;
 
-                } else if (name == "msgid_plural") {
-                    r.msgid_plural = value;
+            } else if (name == "msgid_plural") {
+                r.msgid_plural = value;
 
-                } else if (name == "msgstr") {
-                    while (ssize(r.msgstr) <= index) {
-                        r.msgstr.push_back({});
-                    }
-                    r.msgstr[index] = value;
-
-                } else {
-                    throw parse_error(std::format("{}: Unexpected line {}", token->location, name));
-                }
-
-            } else {
-                return {};
-            }
-
-        } else if ((*token == tokenizer_name_t::Name) && (*token == "msgstr")) {
-            if (auto result = parseLine(token)) {
-                token = result.next_token;
-                hilet[name, index, value] = *result;
-
-                while (ssize(r.msgstr) <= index) {
-                    r.msgstr.push_back({});
+            } else if (name == "msgstr") {
+                if (index >= r.msgstr.size()) {
+                    r.msgstr.resize(index + 1);
                 }
                 r.msgstr[index] = value;
 
             } else {
-                return {};
+                throw parse_error(
+                    std::format("{}: Line starts with unexpected keyword {}", token_location(it, last, path), name));
             }
 
+        } else if ((*it == token::id) and (*it == "msgstr")) {
+            // After the first "msgstr" keyword there may be others, but another keyword will start a new translation.
+            auto [name, index, value] = parse_po_line(it, last, path);
+
+            if (index >= r.msgstr.size()) {
+                r.msgstr.resize(index + 1);
+            }
+            r.msgstr[index] = value;
+
         } else {
-            return {r, token};
+            // The current keyword is not a msgstr, so return the translation captured.
+            return r;
         }
     }
+
+    return std::nullopt;
 }
 
-inline void parse_po_header(po_translations& r, std::string const& header)
+constexpr void parse_po_header(po_translations& r, std::string_view header)
 {
-    for (hilet& line : split(header, '\n')) {
-        if (ssize(line) == 0) {
+    using namespace std::literals;
+
+    for (hilet line : std::views::split(header, "\\n"sv)) {
+        if (line.empty()) {
             // Skip empty header lines.
             continue;
         }
 
-        auto split_line = split(line, ':');
-        if (ssize(split_line) < 2) {
-            throw parse_error(std::format("Unknown header '{}'", line));
+        auto split_line = make_vector<std::string_view>(std::views::split(line, ":"sv));
+        if (split_line.size() < 2) {
+            throw parse_error(std::format("Unknown header '{}'", std::string_view{line}));
         }
 
-        hilet name = split_line.front();
+        hilet name = to_lower(strip(split_line.front()));
         split_line.erase(split_line.begin());
-        hilet value = join(split_line, ":");
+        hilet value = strip(join(split_line, ":"));
 
-        if (name == "Language") {
-            r.language = language_tag{strip(value)};
-        } else if (name == "Plural-Forms") {
-            hilet plural_split = split(value, ';');
+        if (name == "language") {
+            r.language = language_tag{value};
         }
     }
 }
 
 } // namespace detail
 
-[[nodiscard]] inline po_translations parse_po(std::string_view text)
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr po_translations parse_po(It it, ItEnd last, std::string_view path)
 {
     po_translations r;
 
-    auto tokens = parseTokens(text);
-    hi_assert(tokens.back() == tokenizer_name_t::End);
+    auto token_it = lexer<lexer_config::sh_style()>.parse(it, last);
 
-    auto token = tokens.begin();
-    while (*token != tokenizer_name_t::End) {
-        if (auto result = detail::parse_po_translation(token)) {
-            token = result.next_token;
+    while (token_it != std::default_sentinel) {
+        if (auto result = detail::parse_po_translation(token_it, std::default_sentinel, path)) {
+            if (not result->msgid.empty()) {
+                r.translations.push_back(*result);
 
-            if (ssize(result.value.msgid) != 0) {
-                r.translations.push_back(result.value);
-
-            } else if (ssize(result.value.msgstr) == 1) {
-                detail::parse_po_header(r, result.value.msgstr.front());
+            } else if (result->msgstr.size() == 1) {
+                // If a translation has an empty msgid, then the msgstr contain headers.
+                detail::parse_po_header(r, result->msgstr.front());
 
             } else {
-                throw parse_error("Unknown .po header");
+                throw parse_error(std::format("{}: Unknown .po syntax.", token_location(token_it, path)));
             }
         }
     }
@@ -182,9 +182,14 @@ inline void parse_po_header(po_translations& r, std::string const& header)
     return r;
 }
 
+[[nodiscard]] constexpr po_translations parse_po(std::string_view text, std::string_view path)
+{
+    return parse_po(text.begin(), text.end(), path);
+}
+
 [[nodiscard]] inline po_translations parse_po(std::filesystem::path const& path)
 {
-    return parse_po(as_string_view(file_view{path}));
+    return parse_po(as_string_view(file_view{path}), path.string());
 }
 
 } // namespace hi::inline v1

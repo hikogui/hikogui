@@ -7,14 +7,16 @@
 #include "formula_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_binary_operator_node);
 
-struct formula_binary_operator_node : formula_node {
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_binary_operator_node : formula_node {
     std::unique_ptr<formula_node> lhs;
     std::unique_ptr<formula_node> rhs;
 
-    formula_binary_operator_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
-        formula_node(std::move(location)), lhs(std::move(lhs)), rhs(std::move(rhs))
+    formula_binary_operator_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
+        formula_node(line_nr, column_nr), lhs(std::move(lhs)), rhs(std::move(rhs))
     {
     }
 
@@ -30,4 +32,4 @@ struct formula_binary_operator_node : formula_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

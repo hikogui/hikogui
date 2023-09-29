@@ -6,7 +6,7 @@
 
 #include "theme_mode.hpp"
 #include "subpixel_orientation.hpp"
-#include "../i18n/module.hpp"
+#include "../i18n/i18n.hpp"
 #include "../geometry/module.hpp"
 #include "../utility/utility.hpp"
 #include "../numeric/module.hpp"
@@ -15,6 +15,8 @@
 #include "../macros.hpp"
 #include <vector>
 #include <mutex>
+#include <expected>
+#include <system_error>
 
 hi_export_module(hikogui.settings.os_settings : intf);
 
@@ -36,6 +38,18 @@ public:
         hilet lock = std::scoped_lock(_mutex);
         return _language_tags;
     }
+
+    /** Get the current local.
+     *
+     * @return The current locale.
+     */
+    [[nodiscard]] static std::locale locale() noexcept
+    {
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        hilet lock = std::scoped_lock(_mutex);
+        return _locale;
+    }
+
 
     /** Check if the configured writing direction is left-to-right.
      *
@@ -281,20 +295,32 @@ public:
             auto language_tags = gather_languages();
             if (language_tags.empty()) {
                 // If not language is configured on the system, use English as default.
-                language_tags.emplace_back("en");
+                language_tags.emplace_back("en-Latn-US");
             }
 
-            auto left_to_right = language_tags.front().left_to_right();
+            // Add all the variants of languages, for searching into translations.
+            language_tags = variants(language_tags);
 
-            auto language_changed = compare_store(_language_tags, language_tags);
-            language_changed |= compare_store(_left_to_right, left_to_right);
-
-            if (language_changed) {
+            if (compare_store(_language_tags, language_tags)) {
                 setting_has_changed = true;
                 hi_log_info("OS language order has changed: {}", _language_tags);
             }
         } catch (std::exception const& e) {
             hi_log_error("Failed to get OS language: {}", e.what());
+        }
+
+        if (auto optional_locale = gather_locale()) {
+            if (compare_store(_locale, *optional_locale)) {
+                setting_has_changed = true;
+                hi_log_info("OS locale has changed: {}", _locale.name());
+            }
+        } else {
+            hi_log_error("Failed to get OS locale: {}", optional_locale.error().message());
+        }
+
+        if (compare_store(_left_to_right, gather_left_to_right())) {
+            setting_has_changed = true;
+            hi_log_info("OS mirrored-GUI has changed: {}", not _left_to_right);
         }
 
         try {
@@ -463,8 +489,8 @@ public:
     }
 
 private:
-    static constexpr std::chrono::duration gather_interval = std::chrono::seconds(5);
-    static constexpr std::chrono::duration gather_minimum_interval = std::chrono::seconds(1);
+    constexpr static std::chrono::duration gather_interval = std::chrono::seconds(5);
+    constexpr static std::chrono::duration gather_minimum_interval = std::chrono::seconds(1);
 
     static inline std::atomic<bool> _started = false;
     static inline std::atomic<bool> _populated = false;
@@ -475,6 +501,7 @@ private:
     static inline notifier_type _notifier;
 
     static inline std::vector<language_tag> _language_tags = {};
+    static inline std::locale _locale = std::locale{""};
     static inline std::atomic<bool> _left_to_right = true;
     static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
     static inline std::atomic<bool> _uniform_HDR = false;
@@ -510,7 +537,9 @@ private:
         }
     }
 
-    [[nodiscard]] static std::vector<language_tag> gather_languages();
+    [[nodiscard]] static std::vector<language_tag> gather_languages() noexcept;
+    [[nodiscard]] static std::expected<std::locale, std::error_code> gather_locale() noexcept;
+    [[nodiscard]] static bool gather_left_to_right() noexcept;
     [[nodiscard]] static hi::theme_mode gather_theme_mode();
     [[nodiscard]] static hi::subpixel_orientation gather_subpixel_orientation();
     [[nodiscard]] static bool gather_uniform_HDR();

@@ -84,14 +84,12 @@ enum class graphic_character_t {
     }
 }
 
-[[nodiscard]] constexpr uint64_t operator_to_int(char const *s) noexcept
+[[nodiscard]] constexpr uint64_t operator_to_int(std::string_view str) noexcept
 {
-    hi_axiom_not_null(s);
-
     uint64_t r = 0;
-    for (; *s != '\0'; s++) {
+    for (hilet c: str) {
         r <<= 5;
-        r |= static_cast<uint64_t>(char_to_graphic_character(*s));
+        r |= static_cast<uint64_t>(char_to_graphic_character(c));
     }
     return r;
 }
@@ -99,7 +97,7 @@ enum class graphic_character_t {
 /** Binary Operator Precedence according to C++.
  * @return Precedence, left-to-right-associativity
  */
-[[nodiscard]] constexpr std::pair<uint8_t, bool> binary_operator_precedence(char const *str) noexcept
+[[nodiscard]] constexpr std::pair<uint8_t, bool> binary_operator_precedence(std::string_view str) noexcept
 {
     switch (operator_to_int(str)) {
     case operator_to_int("::"): return {uint8_t{1}, true};
@@ -152,7 +150,7 @@ enum class graphic_character_t {
 /** Operator Precedence according to C++.
  * @return Precedence, left-to-right-associativity
  */
-[[nodiscard]] constexpr std::pair<uint8_t, bool> operator_precedence(char const *str, bool binary) noexcept
+[[nodiscard]] constexpr std::pair<uint8_t, bool> operator_precedence(std::string_view str, bool binary) noexcept
 {
     return binary ? binary_operator_precedence(str) : std::pair<uint8_t, bool>{uint8_t{3}, false};
 }

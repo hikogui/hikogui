@@ -14,7 +14,7 @@
 #include "point3.hpp"
 #include "../SIMD/module.hpp"
 #include "../utility/utility.hpp"
-#include "../concurrency/module.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 #include <concepts>
 #include <mutex>
@@ -160,7 +160,7 @@ public:
     }
 
     template<int I>
-    [[nodiscard]] constexpr friend point2 get(aarectangle const& rhs) noexcept
+    [[nodiscard]] constexpr friend point2 get(aarectangle const &rhs) noexcept
     {
         if constexpr (I == 0) {
             return point2{rhs.v.xy01()};
@@ -330,7 +330,7 @@ public:
 
     /** Need to call the hidden friend function from within another class.
      */
-    [[nodiscard]] static constexpr aarectangle _align(aarectangle outside, aarectangle inside, alignment alignment) noexcept
+    [[nodiscard]] constexpr static aarectangle _align(aarectangle outside, aarectangle inside, alignment alignment) noexcept
     {
         return align(outside, inside, alignment);
     }
@@ -497,7 +497,7 @@ template<>
 class std::atomic<hi::aarectangle> {
 public:
     using value_type = hi::aarectangle;
-    static constexpr bool is_always_lock_free = false;
+    constexpr static bool is_always_lock_free = false;
 
     constexpr atomic() noexcept = default;
     atomic(atomic const&) = delete;
@@ -601,7 +601,7 @@ struct std::formatter<hi::aarectangle, CharT> {
         return pc.end();
     }
 
-    auto format(hi::aarectangle const& t, auto& fc)
+    auto format(hi::aarectangle const& t, auto& fc) const
     {
         return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
     }

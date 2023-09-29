@@ -5,128 +5,12 @@
 #pragma once
 
 #include "../utility/utility.hpp"
+#include "../container/module.hpp"
 #include "../macros.hpp"
 #include <numbers>
 #include <array>
 
-
-
 namespace hi::inline v1 {
-
-template<typename T, std::size_t N>
-class results {
-public:
-    using value_type = T;
-    using array_type = std::array<value_type, N>;
-    using const_iterator = typename array_type::const_iterator;
-
-    constexpr results() noexcept : _size(0), _v() {}
-    constexpr results(results const&) noexcept = default;
-    constexpr results(results&&) noexcept = default;
-    constexpr results& operator=(results const&) noexcept = default;
-    constexpr results& operator=(results&&) noexcept = default;
-
-    constexpr results(value_type a) noexcept : _size(1), _v()
-    {
-        _v[0] = a;
-    }
-
-    constexpr results(value_type a, value_type b) noexcept : _size(2), _v()
-    {
-        _v[0] = a;
-        _v[1] = b;
-    }
-
-    constexpr results(value_type a, value_type b, value_type c) noexcept : _size(3), _v()
-    {
-        _v[0] = a;
-        _v[1] = b;
-        _v[2] = c;
-    }
-
-    template<std::size_t O>
-    constexpr results(results<T, O> const& other) noexcept requires(O < N) : _size(other._size), _v()
-    {
-        if constexpr (O > 0) {
-            for (auto i = 0_uz; i < other._size; i++) {
-                _v[i] = other._v[i];
-            }
-        }
-    }
-
-    [[nodiscard]] constexpr std::size_t capacity() const noexcept
-    {
-        return _capacity;
-    }
-
-    [[nodiscard]] constexpr std::size_t size() const noexcept
-    {
-        return _size;
-    }
-
-    [[nodiscard]] constexpr const_iterator begin() const noexcept
-    {
-        return _v.begin();
-    }
-
-    [[nodiscard]] constexpr const_iterator end() const noexcept
-    {
-        return _v.begin() + size();
-    }
-
-    [[nodiscard]] constexpr value_type const& operator[](std::size_t index) const noexcept
-    {
-        hi_axiom(index < _size);
-        return _v[index];
-    }
-
-    [[nodiscard]] constexpr value_type& operator[](std::size_t index) noexcept
-    {
-        hi_axiom(index < _size);
-        return _v[index];
-    }
-
-    constexpr void add(T a) noexcept
-    {
-        hi_axiom(_size < _capacity);
-        _v[_size++] = a;
-    }
-
-    [[nodiscard]] constexpr friend results operator-(results lhs, value_type rhs) noexcept
-    {
-        // For performance reasons work on the whole array. The constructors have
-        // initialized the empty elements to 0.0f.
-        for (auto i = 0_uz; i < lhs._capacity; i++) {
-            lhs._v[i] -= rhs;
-        }
-        return lhs;
-    }
-
-private:
-    static constexpr std::size_t _capacity = N;
-
-    array_type _v;
-    std::size_t _size;
-
-    template<typename O, std::size_t M>
-    friend class results;
-};
-
-
-template<typename T, std::size_t N>
-inline std::ostream& operator<<(std::ostream& os, results<T, N> const& r)
-{
-    os << "[";
-    hi_assert(r.size() <= r.capacity());
-    for (auto i = 0_uz; i < r.size(); i++) {
-        if (i > 0) {
-            os << ", ";
-        }
-        os << r[i];
-    }
-    os << "]";
-    return os;
-}
 
 /*! Solve line function.
  * ax+b=0
@@ -141,7 +25,7 @@ inline std::ostream& operator<<(std::ostream& os, results<T, N> const& r)
  * \f]
  */
 template<typename T>
-hi_force_inline constexpr results<T, 1> solvePolynomial(T const& a, T const& b) noexcept
+hi_force_inline constexpr lean_vector<T> solvePolynomial(T const& a, T const& b) noexcept
 {
     if (a != 0) {
         return {-(b / a)};
@@ -168,7 +52,7 @@ hi_force_inline constexpr results<T, 1> solvePolynomial(T const& a, T const& b) 
  * \f]
  */
 template<typename T>
-hi_force_inline constexpr results<T, 2> solvePolynomial(T const& a, T const& b, T const& c) noexcept
+hi_force_inline constexpr lean_vector<T> solvePolynomial(T const& a, T const& b, T const& c) noexcept
 {
     if (a == 0) {
         return solvePolynomial(b, c);
@@ -188,7 +72,7 @@ hi_force_inline constexpr results<T, 2> solvePolynomial(T const& a, T const& b, 
 /*! Trigonometric solution for three real roots
  */
 template<typename T>
-hi_force_inline results<T, 3> solveDepressedCubicTrig(T const& p, T const& q) noexcept
+hi_force_inline lean_vector<T> solveDepressedCubicTrig(T const& p, T const& q) noexcept
 {
     constexpr T oneThird = static_cast<T>(1) / static_cast<T>(3);
     constexpr T pi2_3 = (static_cast<T>(2) / static_cast<T>(3)) * std::numbers::pi_v<T>;
@@ -204,7 +88,7 @@ hi_force_inline results<T, 3> solveDepressedCubicTrig(T const& p, T const& q) no
 }
 
 template<typename T>
-hi_force_inline results<T, 3> solveDepressedCubicCardano(T const& p, T const& q, T const& D) noexcept
+hi_force_inline lean_vector<T> solveDepressedCubicCardano(T const& p, T const& q, T const& D) noexcept
 {
     hilet sqrtD = sqrt(D);
     hilet minusHalfQ = static_cast<T>(-0.5) * q;
@@ -230,7 +114,7 @@ hi_force_inline results<T, 3> solveDepressedCubicCardano(T const& p, T const& q,
  * \f]
  */
 template<typename T>
-hi_force_inline results<T, 3> solveDepressedCubic(T const& p, T const& q) noexcept
+hi_force_inline lean_vector<T> solveDepressedCubic(T const& p, T const& q) noexcept
 {
     constexpr T oneForth = static_cast<T>(1) / static_cast<T>(4);
     constexpr T oneTwentySeventh = static_cast<T>(1) / static_cast<T>(27);
@@ -267,7 +151,7 @@ hi_force_inline results<T, 3> solveDepressedCubic(T const& p, T const& q) noexce
  * \f[x=\text{solveDepressedCube}(p,q)-\frac{b}{3a}\f]
  */
 template<typename T>
-hi_force_inline constexpr results<T, 3> solvePolynomial(T const& a, T const& b, T const& c, T const& d) noexcept
+hi_force_inline constexpr lean_vector<T> solvePolynomial(T const& a, T const& b, T const& c, T const& d) noexcept
 {
     if (a == 0) {
         return solvePolynomial(b, c, d);
@@ -277,11 +161,14 @@ hi_force_inline constexpr results<T, 3> solvePolynomial(T const& a, T const& b, 
         hilet q = (static_cast<T>(2) * b * b * b - static_cast<T>(9) * a * b * c + static_cast<T>(27) * a * a * d) /
             (static_cast<T>(27) * a * a * a);
 
-        hilet r = solveDepressedCubic(p, q);
-
         hilet b_3a = b / (static_cast<T>(3) * a);
 
-        return r - b_3a;
+        auto r = solveDepressedCubic(p, q);
+        for (auto &x: r) {
+            x -= b_3a;
+        }
+        
+        return r;
     }
 }
 

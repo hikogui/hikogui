@@ -3,8 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_widget.hpp"
-#include "../file/module.hpp"
-#include "../GUI/module.hpp"
+#include "../file/file.hpp"
+#include "../GUI/GUI.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
@@ -52,7 +52,6 @@ protected:
         gui_window *_window;
     };
 
-    std::unique_ptr<hi::font_book> font_book;
     std::unique_ptr<hi::theme_book> theme_book;
     hi::theme theme;
 
@@ -69,11 +68,8 @@ protected:
 
         // Cursor movement (including editing) requires the text to be shaped.
         // text shaping requires fonts and text styles.
-        auto& fb = font_book::global();
-        for (auto const& path : get_paths(path_location::font_dirs)) {
-            fb.register_font_directory(path);
-        }
-        theme_book = std::make_unique<hi::theme_book>(fb, make_vector(get_paths(path_location::theme_dirs)));
+        register_font_directories(hi::font_dirs());
+        theme_book = std::make_unique<hi::theme_book>(make_vector(hi::theme_dirs()));
         theme = theme_book->find("default", theme_mode::light);
 
         system = std::make_unique<system_moc>();

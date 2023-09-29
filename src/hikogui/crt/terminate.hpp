@@ -5,7 +5,11 @@
 /** @file terminate.hpp Utilities for throwing exceptions and terminating the application.
  */
 
+#pragma once
+
 #include "../utility/utility.hpp"
+#include "../console/console.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <exception>
 #include <stdexcept>
@@ -13,9 +17,7 @@
 #include <bit>
 #include <format>
 
-
-
-#pragma once
+hi_export_module(hikogui.crt.terminate);
 
 namespace hi { inline namespace v1 {
 
@@ -31,6 +33,38 @@ inline std::terminate_handler old_terminate_handler;
  *
  * @note Use `hi_set_terminate_message()` to set a message.
  */
-[[noreturn]] void terminate_handler() noexcept;
+inline void terminate_handler() noexcept{
+    using namespace std::literals;
+
+    log_global.flush();
+
+    auto title = std::string{};
+    auto message = std::string{};
+
+    hilet ep = std::current_exception();
+    if (ep) {
+        try {
+            std::rethrow_exception(ep);
+
+        } catch (std::exception const& e) {
+            title = "Unhandled std::exception."s;
+            message = e.what();
+
+        } catch (...) {
+            title = "Unhandled unknown exception."s;
+            message = "<no data>"s;
+        }
+
+        std::cerr << std::format("{}\n{}\n", title, message);
+
+    } else {
+        title = "Abnormal termination."s;
+        message = debug_message.exchange(nullptr, std::memory_order::relaxed);
+    }
+
+    dialog_ok(title, message);
+
+    return old_terminate_handler();
+}
 
 }} // namespace hi::v1

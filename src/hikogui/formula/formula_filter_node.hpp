@@ -9,18 +9,20 @@
 #include "formula_name_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_filter_node);
 
-struct formula_filter_node final : formula_binary_operator_node {
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_filter_node final : formula_binary_operator_node {
     mutable formula_post_process_context::filter_type filter;
     formula_name_node *rhs_name;
 
-    formula_filter_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
-        formula_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs))
+    formula_filter_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
+        formula_binary_operator_node(line_nr, column_nr, std::move(lhs), std::move(rhs))
     {
         rhs_name = dynamic_cast<formula_name_node *>(this->rhs.get());
         if (rhs_name == nullptr) {
-            throw parse_error(std::format("{}: Expecting a name token on the right hand side of a filter operator. got {}.", location, *rhs));
+            throw parse_error(std::format("{}:{}: Expecting a name token on the right hand side of a filter operator. got {}.", line_nr, column_nr, *rhs));
         }
     }
 
@@ -30,7 +32,7 @@ struct formula_filter_node final : formula_binary_operator_node {
 
         filter = context.get_filter(rhs_name->name);
         if (!filter) {
-            throw parse_error(std::format("{}: Could not find filter .{}().", location, rhs_name->name));
+            throw parse_error(std::format("{}:{}: Could not find filter .{}().", line_nr, column_nr, rhs_name->name));
         }
     }
 
@@ -40,7 +42,7 @@ struct formula_filter_node final : formula_binary_operator_node {
         try {
             return datum{filter(static_cast<std::string>(lhs_))};
         } catch (std::exception const &e) {
-            throw operation_error(std::format("{}: Can not evaluate filter.\n{}", location, e.what()));
+            throw operation_error(std::format("{}:{}: Can not evaluate filter.\n{}", line_nr, column_nr, e.what()));
         }
     }
 
@@ -50,4 +52,4 @@ struct formula_filter_node final : formula_binary_operator_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

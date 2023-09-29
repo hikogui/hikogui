@@ -8,7 +8,7 @@
 
 #include "path_location_intf.hpp"
 #include "../metadata/metadata.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <filesystem>
@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.path.path_location : impl);
 
-hi_export namespace hi::inline v1 {
+namespace hi::inline v1 {
 
 /** Convenience function for SHGetKnownFolderPath().
  *  Retrieves a full path of a known folder identified by the folder's KNOWNFOLDERID.
@@ -25,7 +25,7 @@ hi_export namespace hi::inline v1 {
  * @param KNOWNFOLDERID folder_id.
  * @return The path of the folder.
  */
-[[nodiscard]] inline std::filesystem::path get_path_by_id(const KNOWNFOLDERID& folder_id) noexcept
+hi_export [[nodiscard]] inline std::filesystem::path get_path_by_id(const KNOWNFOLDERID& folder_id) noexcept
 {
     PWSTR wpath = nullptr;
     if (SHGetKnownFolderPath(folder_id, 0, nullptr, &wpath) != S_OK) {
@@ -38,7 +38,7 @@ hi_export namespace hi::inline v1 {
     return std::filesystem::path{wpath} / "";
 }
 
-[[nodiscard]] inline std::filesystem::path get_module_path(HMODULE module_handle) noexcept
+hi_export [[nodiscard]] inline std::filesystem::path get_module_path(HMODULE module_handle) noexcept
 {
     std::wstring module_path;
     auto buffer_size = MAX_PATH; // initial default value = 256
@@ -55,102 +55,74 @@ hi_export namespace hi::inline v1 {
             buffer_size *= 2;
         }
     }
-    hi_log_fatal("Could not get executable path. It exceeds the buffer length of 32768 chars.");
+    hi_no_default("Could not get module path. It exceeds the buffer length of 32768 chars.");
 }
 
-[[nodiscard]] inline std::filesystem::path get_executable_path() noexcept
+hi_export [[nodiscard]] inline std::filesystem::path executable_file() noexcept
 {
     return get_module_path(nullptr);
 }
 
-[[nodiscard]] hi_no_inline inline std::filesystem::path get_library_path() noexcept
+hi_export [[nodiscard]] inline std::filesystem::path data_dir() noexcept
 {
-    HMODULE module_handle = nullptr;
-    if (not GetModuleHandleEx(
-            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, reinterpret_cast<LPCTSTR>(get_library_path), &module_handle)) {
-        hi_log_fatal("Could not get a handle to the current module.");
-    }
-    hilet d = defer{[&] {
-        FreeLibrary(module_handle);
-    }};
-
-    return get_module_path(module_handle);
+    // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
+    // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
+    hilet local_app_data = get_path_by_id(FOLDERID_LocalAppData);
+    return local_app_data / get_application_vendor() / get_application_name() / "";
 }
 
-[[nodiscard]] inline generator<std::filesystem::path> get_paths(path_location location)
+hi_export [[nodiscard]] inline std::filesystem::path log_dir() noexcept
 {
-    using enum path_location;
+    // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\Log\"
+    return data_dir() / "Log" / "";
+}
 
-    switch (location) {
-    case executable_file:
-        co_yield get_executable_path();
-        break;
+hi_export [[nodiscard]] inline std::filesystem::path preferences_file() noexcept
+{
+    // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\preferences.json"
+    return data_dir() / "preferences.json";
+}
 
-    case executable_dir:
-        co_yield get_path(executable_file).remove_filename();
-        break;
+hi_export [[nodiscard]] inline generator<std::filesystem::path> resource_dirs() noexcept
+{
+    if (auto source_path = source_dir()) {
+            // Fallback when the application is executed from its build directory.
+            co_yield executable_dir() / "resources" / "";
+            co_yield *source_path / "resources" / "";
 
-    case library_file:
-        co_yield get_library_path();
-        break;
+            if (auto install_path = library_install_dir()) {
+                co_yield *install_path / "resources" / "";
 
-    case library_dir:
-        co_yield get_path(library_file).remove_filename();
-        break;
-
-    case resource_dirs:
-        {
-            hilet executable_path = get_path(path_location::executable_dir);
-            hilet library_path = get_path(path_location::library_dir);
-            co_yield executable_path / "resources/";
-            if (library_path != executable_path) {
-                // XXX use the system-library resource path instead.
-                co_yield library_path / "resources/";
+            } else {
+                // Fallback when HikoGUI is also still in its build directory.
+                co_yield library_source_dir() / "resources" / "";
+                co_yield library_build_dir() / "resources" / "";
             }
+        } else {
+            co_yield executable_dir() / "resources" / "";
+            co_yield data_dir() / "resources" / "";
         }
-        break;
+}
 
-    case data_dir:
-        // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
-        {
-            // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
-            hilet local_app_data = get_path_by_id(FOLDERID_LocalAppData);
-            co_yield local_app_data / get_application_vendor() / get_application_name() / "";
-        }
-        break;
+hi_export [[nodiscard]] inline generator<std::filesystem::path> system_font_dirs() noexcept
+{
+    co_yield get_path_by_id(FOLDERID_Fonts);
+}
 
-    case log_dir:
-        // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\Log\"
-        co_yield get_path(data_dir) / "Log/";
-        break;
+hi_export [[nodiscard]] inline generator<std::filesystem::path> font_dirs() noexcept
+{
+    for (hilet& path : resource_dirs()) {
+        co_yield path;
+    }
+    for (hilet& path : system_font_dirs()) {
+        co_yield path;
+    }
+}
 
-    case preferences_file:
-        co_yield get_path(data_dir) / "preferences.json";
-        break;
-
-    case system_font_dirs:
-        // FOLDERID_Fonts has the default path: %windir%\Fonts
-        co_yield get_path_by_id(FOLDERID_Fonts);
-        break;
-
-    case font_dirs:
-        // Sorted from global to local.
-        for (hilet& path : get_paths(resource_dirs)) {
-            co_yield path / "fonts" / "";
-        }
-        for (hilet& path : get_paths(system_font_dirs)) {
-            co_yield path;
-        }
-        break;
-
-    case theme_dirs:
-        for (hilet& path : get_paths(resource_dirs)) {
-            co_yield path / "themes" / "";
-        }
-        break;
-
-    default:
-        hi_no_default();
+hi_export [[nodiscard]] inline generator<std::filesystem::path> theme_dirs() noexcept
+{
+    for (hilet& path : resource_dirs()) {
+        co_yield path;
     }
 }
 

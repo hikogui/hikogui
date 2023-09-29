@@ -9,8 +9,8 @@
 #include "../container/module.hpp"
 #include "../time/module.hpp"
 #include "../utility/utility.hpp"
-#include "../concurrency/module.hpp"
-#include "../console/module.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../console/console.hpp"
 #include "../macros.hpp"
 #include <chrono>
 #include <format>
@@ -43,7 +43,7 @@ public:
     static_assert(std::popcount(std::to_underlying(Level)) == 1);
 
     // clang-format off
-    static constexpr char const *log_level_name =
+    constexpr static char const *log_level_name =
         Level == global_state_type::log_fatal ? "fatal" :
         Level == global_state_type::log_error ? "error" :
         Level == global_state_type::log_warning ? "warning" :
@@ -194,13 +194,9 @@ private:
      * This will write to the console if one is open.
      * It will also create a log file in the application-data directory.
      */
-    /*! Write to a log file and console.
-     * This will write to the console if one is open.
-     * It will also create a log file in the application-data directory.
-     */
     void write(std::string const& str) const noexcept
     {
-        console_output(str);
+        print("{}", str);
     }
 
     /** The global logger thread.

@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.utility.fixed_string);
 
-hi_export namespace hi { inline namespace v1 {
+namespace hi { inline namespace v1 {
 
 /** A string which may be used as a none-type template parameter.
  *
@@ -37,7 +37,7 @@ hi_export namespace hi { inline namespace v1 {
  *     }
  *     ```
  */
-template<size_t N>
+hi_export template<size_t N>
 struct fixed_string {
     using value_type = char;
 
@@ -248,7 +248,7 @@ struct fixed_string {
     }
 };
 
-template<fixed_string Tag>
+hi_export template<fixed_string Tag>
 [[nodiscard]] consteval uint32_t fourcc() noexcept
 {
     static_assert(Tag.size() == 4, "fourcc must get a 4 character fixed_string");
@@ -257,31 +257,27 @@ template<fixed_string Tag>
         (static_cast<uint32_t>(get<2>(Tag)) << 8) | static_cast<uint32_t>(get<3>(Tag));
 }
 
-template<fixed_string Tag>
+hi_export template<fixed_string Tag>
 consteval uint32_t operator"" _fcc()
 {
     return fourcc<Tag>();
 }
 
-template<std::size_t N>
+hi_export template<std::size_t N>
 fixed_string(char const (&str)[N]) -> fixed_string<N - 1>;
 
-template<std::invocable F>
-fixed_string(F const& f) -> fixed_string<std::ranges::size(F{}())>;
+hi_export template<std::invocable F>
+fixed_string(F const& f) -> fixed_string<F{}().size()>;
 
-#define hi_to_fixed_string(x) \
-    ::hi::fixed_string \
-    { \
-        [] { \
-            return x; \
-        } \
-    }
+// clang-format off
+#define hi_to_fixed_string(x) ::hi::fixed_string{[]{ return x; }}
+// clang-format on
 
-}} // namespace hi::inline v1
+}} // namespace hi::v1
 
 hi_export template<std::size_t N, typename CharT>
 struct std::formatter<hi::fixed_string<N>, CharT> : std::formatter<std::string_view, CharT> {
-    constexpr auto format(hi::fixed_string<N> const& t, auto& fc)
+    constexpr auto format(hi::fixed_string<N> const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(static_cast<std::string_view>(t), fc);
     }

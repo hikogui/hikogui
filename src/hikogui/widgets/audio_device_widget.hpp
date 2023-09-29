@@ -10,7 +10,7 @@
 
 #include "selection_widget.hpp"
 #include "grid_widget.hpp"
-#include "../audio/module.hpp"
+#include "../audio/audio.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <memory>
@@ -38,7 +38,7 @@ public:
 
     virtual ~audio_device_widget() {}
 
-    audio_device_widget(widget *parent, hi::audio_system& audio_system) noexcept : super(parent), _audio_system(&audio_system)
+    audio_device_widget(widget *parent) noexcept : super(parent)
     {
         _grid_widget = std::make_unique<grid_widget>(this);
         _device_selection_widget = &_grid_widget->make_widget<selection_widget>("A1", device_id, _device_list);
@@ -51,12 +51,14 @@ public:
     {
         co_yield *_grid_widget;
     }
+
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _layout = {};
         _grid_constraints = _grid_widget->update_constraints();
         return _grid_constraints;
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
@@ -66,12 +68,14 @@ public:
 
         _grid_widget->set_layout(context.transform(_grid_shape));
     }
+
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             _grid_widget->draw(context);
         }
     }
+
     hitbox hitbox_test(point2 position) const noexcept override
     {
         if (*mode >= widget_mode::partial) {
@@ -82,6 +86,7 @@ public:
             return hitbox{};
         }
     }
+    
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         if (*mode >= widget_mode::partial) {
@@ -92,8 +97,6 @@ public:
     }
     /// @endprivatesection
 private:
-    hi::audio_system *_audio_system;
-
     /** The grid widget contains all the child widgets.
      */
     std::unique_ptr<grid_widget> _grid_widget;
@@ -114,14 +117,12 @@ private:
             {
                 auto proxy = _device_list.copy();
                 proxy->clear();
-                for (auto& device : _audio_system->devices()) {
-                    if (device.state() == hi::audio_device_state::active and to_bool(device.direction() & *direction)) {
-                        proxy->emplace_back(device.id(), device.label());
-                    }
+                for (auto& device : audio_devices(hi::audio_device_state::active, *direction)) {
+                    proxy->emplace_back(device.id(), device.label());
                 }
             }
 
-            co_await when_any(*_audio_system, direction);
+            co_await when_any(audio_system::global(), direction);
         }
     }
 };

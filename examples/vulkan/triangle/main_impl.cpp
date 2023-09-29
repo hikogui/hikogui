@@ -3,13 +3,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "triangle.hpp"
-#include "hikogui/module.hpp"
+#include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 #include <ranges>
 #include <cassert>
 
 // Every widget must inherit from hi::widget.
-class triangle_widget : public hi::widget, public hi::gfx_surface_delegate_vulkan {
+class triangle_widget : public hi::widget, public hi::gfx_surface_delegate {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
@@ -173,21 +173,26 @@ private:
 };
 
 // This is a co-routine that manages the main window.
-hi::task<> main_window(hi::gui_system& gui)
+hi::task<> main_window()
 {
     // Load the icon to show in the upper left top of the window.
     auto icon = hi::icon(hi::png::load(hi::URL{"resource:vulkan_triangle.png"}));
 
     // Create a window, when `window` gets out-of-scope the window is destroyed.
-    auto [window, widget] = gui.make_window<hi::window_widget>(hi::label{std::move(icon), hi::tr("Vulkan Triangle")});
+    auto widget_ptr = std::make_unique<hi::window_widget>(hi::label{std::move(icon), hi::txt("Vulkan Triangle")});
+    auto &widget = *widget_ptr;
+
+    // Create the window before we add the triangle widget as we need to get
+    // the gfx_surface of the window to let the widget register itself to it.
+    auto window = hi::gui_window{std::move(widget_ptr)};
 
     // Create the vulkan triangle-widget as the content of the window. The content
     // of the window is a grid, we only use the cell "A1" for this widget.
-    widget.content().make_widget<triangle_widget>("A1", *window->surface);
+    widget.content().make_widget<triangle_widget>("A1", *window.surface);
 
     // Wait until the window is "closing" because the operating system says so, or when
     // the X is pressed.
-    co_await window->closing;
+    co_await window.closing;
 }
 
 // The main (platform independent) entry point of the application.
@@ -198,13 +203,10 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     // Start the RenderDoc server so that the application is easy to debug in RenderDoc.
-    auto doc = hi::RenderDoc{};
-
-    // Start the GUI-system.
-    auto gui = hi::gui_system::make_unique();
+    hi::start_render_doc();
 
     // Create and manage the main-window.
-    main_window(*gui);
+    main_window();
 
     // Start the main-loop until the main-window is closed.
     return hi::loop::main().resume();

@@ -7,18 +7,20 @@
 #include "formula_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_ternary_operator_node);
 
-struct formula_ternary_operator_node final : formula_node {
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_ternary_operator_node final : formula_node {
     std::unique_ptr<formula_node> lhs;
     std::unique_ptr<formula_node> rhs_true;
     std::unique_ptr<formula_node> rhs_false;
 
     formula_ternary_operator_node(
-        parse_location location,
+        size_t line_nr, size_t column_nr,
         std::unique_ptr<formula_node> lhs,
         formula_node &pair) :
-        formula_node(std::move(location)), lhs(std::move(lhs))
+        formula_node(line_nr, column_nr), lhs(std::move(lhs))
     {
         formula_arguments &pair_ = dynamic_cast<formula_arguments &>(pair);
         hi_assert(pair_.args.size() == 2);
@@ -51,4 +53,4 @@ struct formula_ternary_operator_node final : formula_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

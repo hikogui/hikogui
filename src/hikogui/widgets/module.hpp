@@ -30,9 +30,10 @@
 #include "toolbar_button_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"
 #include "toolbar_widget.hpp"
-#include "widget.hpp"
 #include "widget_mode.hpp"
-#include "window_traffic_lights_widget.hpp"
+#include "widget.hpp"
+#include "window_controls_macos_widget.hpp"
+#include "window_controls_win32_widget.hpp"
 #include "window_widget.hpp"
 
 
@@ -68,12 +69,12 @@ int hi_main(int argc, char *argv[])
     observer<int> value = 0;
 
     auto gui = gui_system::make_unique();
-    auto &window = gui->make_window(tr("Radio button example"));
+    auto &window = gui->make_window(txt("Radio button example"));
 
-    window.content().make_widget<label_widget>("A1", tr("radio buttons:"));
-    window.content().make_widget<radio_button_widget>("B1", value, 1, tr("one"));
-    window.content().make_widget<radio_button_widget>("B2", value, 2, tr("two"));
-    window.content().make_widget<radio_button_widget>("B3", value, 3, tr("three"));
+    window.content().make_widget<label_widget>("A1", txt("radio buttons:"));
+    window.content().make_widget<radio_button_widget>("B1", value, 1, txt("one"));
+    window.content().make_widget<radio_button_widget>("B2", value, 2, txt("two"));
+    window.content().make_widget<radio_button_widget>("B3", value, 3, txt("three"));
 
     return gui->loop();
 }

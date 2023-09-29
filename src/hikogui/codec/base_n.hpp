@@ -14,7 +14,7 @@
 #include <string_view>
 #include <bit>
 
-
+hi_export_module(hikogui.codec.base_n);
 
 namespace hi::inline v1 {
 namespace detail {
@@ -116,22 +116,22 @@ constexpr auto base85_btoa_alphabet =
 template<detail::base_n_alphabet Alphabet, int CharsPerBlock, int BytesPerBlock>
 class base_n {
 public:
-    static constexpr detail::base_n_alphabet alphabet = Alphabet;
-    static constexpr char padding_char = alphabet.padding_char;
-    static constexpr long long radix = alphabet.radix;
-    static constexpr long long bytes_per_block = BytesPerBlock;
-    static constexpr long long chars_per_block = CharsPerBlock;
+    constexpr static detail::base_n_alphabet alphabet = Alphabet;
+    constexpr static char padding_char = alphabet.padding_char;
+    constexpr static long long radix = alphabet.radix;
+    constexpr static long long bytes_per_block = BytesPerBlock;
+    constexpr static long long chars_per_block = CharsPerBlock;
     static_assert(bytes_per_block != 0, "radix must be 16, 32, 64 or 85");
     static_assert(chars_per_block != 0, "radix must be 16, 32, 64 or 85");
 
     template<typename T>
-    static constexpr T int_from_char(char c) noexcept
+    constexpr static T int_from_char(char c) noexcept
     {
         return narrow_cast<T>(alphabet.int_from_char(c));
     }
 
     template<typename T>
-    static constexpr char char_from_int(T x) noexcept
+    constexpr static char char_from_int(T x) noexcept
     {
         return alphabet.char_from_int(narrow_cast<int8_t>(x));
     }
@@ -143,7 +143,7 @@ public:
      * @param output
      */
     template<typename ItIn, typename ItOut>
-    static constexpr void encode(ItIn ptr, ItIn last, ItOut output)
+    constexpr static void encode(ItIn ptr, ItIn last, ItOut output)
     {
         long long byte_index_in_block = 0;
         long long block = 0;
@@ -184,7 +184,7 @@ public:
      * @param bytes A span of bytes to encode.
      * @return The data encoded as a string.
      */
-    static constexpr std::string encode(std::span<std::byte const> bytes) noexcept
+    constexpr static std::string encode(std::span<std::byte const> bytes) noexcept
     {
         return encode(begin(bytes), end(bytes));
     }
@@ -197,7 +197,7 @@ public:
      * @return An iterator pointing on the first invalid character or last.
      */
     template<typename ItIn, typename ItOut>
-    static constexpr ItIn decode(ItIn ptr, ItIn last, ItOut output)
+    constexpr static ItIn decode(ItIn ptr, ItIn last, ItOut output)
     {
         int char_index_in_block = 0;
         long long block = 0;
@@ -269,7 +269,7 @@ private:
     }
 
     template<typename ItOut>
-    static constexpr void decode_block(long long block, long long nr_chars, ItOut output)
+    constexpr static void decode_block(long long block, long long nr_chars, ItOut output)
     {
         hilet padding = chars_per_block - nr_chars;
 
@@ -290,14 +290,14 @@ private:
 };
 
 // Alphabet, CharsPerBlock, BytesPerBlock
-using base2 = base_n<detail::base2_alphabet, 8, 1>;
-using base8 = base_n<detail::base8_alphabet, 8, 3>;
-using base16 = base_n<detail::base16_alphabet, 2, 1>;
-using base32 = base_n<detail::base32_rfc4648_alphabet, 8, 5>;
-using base32hex = base_n<detail::base32hex_rfc4648_alphabet, 8, 5>;
-using base64 = base_n<detail::base64_rfc4648_alphabet, 4, 3>;
-using base64url = base_n<detail::base64url_rfc4648_alphabet, 4, 3>;
-using base85 = base_n<detail::base85_rfc1924_alphabet, 5, 4>;
-using ascii85 = base_n<detail::base85_btoa_alphabet, 5, 4>;
+hi_export using base2 = base_n<detail::base2_alphabet, 8, 1>;
+hi_export using base8 = base_n<detail::base8_alphabet, 8, 3>;
+hi_export using base16 = base_n<detail::base16_alphabet, 2, 1>;
+hi_export using base32 = base_n<detail::base32_rfc4648_alphabet, 8, 5>;
+hi_export using base32hex = base_n<detail::base32hex_rfc4648_alphabet, 8, 5>;
+hi_export using base64 = base_n<detail::base64_rfc4648_alphabet, 4, 3>;
+hi_export using base64url = base_n<detail::base64url_rfc4648_alphabet, 4, 3>;
+hi_export using base85 = base_n<detail::base85_rfc1924_alphabet, 5, 4>;
+hi_export using ascii85 = base_n<detail::base85_btoa_alphabet, 5, 4>;
 
 } // namespace hi::inline v1

@@ -141,7 +141,7 @@ template<typename T>
 class default_toggle_button_delegate : public button_delegate {
 public:
     using value_type = T;
-    static constexpr bool can_make_defaults =
+    constexpr static bool can_make_defaults =
         std::is_same_v<value_type, bool> or std::is_integral_v<value_type> or std::is_enum_v<value_type>;
 
     observer<value_type> value;

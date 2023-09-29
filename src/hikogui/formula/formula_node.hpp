@@ -7,31 +7,22 @@
 #include "formula_post_process_context.hpp"
 #include "formula_evaluation_context.hpp"
 #include "../utility/utility.hpp"
-#include "../parser/module.hpp"
-#include "../codec/module.hpp"
+#include "../parser/parser.hpp"
+#include "../codec/codec.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <memory>
 #include <string>
 
+hi_export_module(hikogui.formula.formula_node);
 
-
-namespace hi::inline v1 {
-struct formula_node;
-}
-
-template<typename CharT>
-struct std::formatter<hi::formula_node, CharT> : std::formatter<string_view, CharT> {
-    auto format(hi::formula_node const& t, auto& fc) const
-        -> decltype(std::formatter<string_view, CharT>{}.format(std::string{}, fc));
-};
-
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 struct formula_node {
     using formula_vector = std::vector<std::unique_ptr<formula_node>>;
 
-    parse_location location;
+    size_t line_nr;
+    size_t column_nr;
 
     virtual ~formula_node() {}
     formula_node() = delete;
@@ -40,7 +31,7 @@ struct formula_node {
     formula_node& operator=(formula_node const&) = delete;
     formula_node& operator=(formula_node&&) = delete;
 
-    formula_node(parse_location location) : location(location) {}
+    formula_node(size_t line_nr, size_t column_nr) : line_nr(line_nr), column_nr(column_nr) {}
 
     /** Resolve function and method pointers.
      * At all call-formulas resolve the function pointers from the parse_context.
@@ -68,7 +59,7 @@ struct formula_node {
      */
     virtual datum& evaluate_lvalue(formula_evaluation_context& context) const
     {
-        throw operation_error(std::format("{}: Expression is not a modifiable value.", location));
+        throw operation_error(std::format("{}:{}: Expression is not a modifiable value.", line_nr, column_nr));
     }
 
     virtual bool has_evaluate_xvalue() const
@@ -80,7 +71,7 @@ struct formula_node {
      */
     virtual datum const& evaluate_xvalue(formula_evaluation_context const& context) const
     {
-        throw operation_error(std::format("{}: Expression is not a xvalue.", location));
+        throw operation_error(std::format("{}:{}: Expression is not a xvalue.", line_nr, column_nr));
     }
 
     /** Assign to a non-existing or existing lvalue.
@@ -102,14 +93,14 @@ struct formula_node {
      */
     virtual datum call(formula_evaluation_context& context, datum::vector_type const& arguments) const
     {
-        throw operation_error(std::format("{}: Expression is not callable.", location));
+        throw operation_error(std::format("{}:{}: Expression is not callable.", line_nr, column_nr));
     }
 
     /** Get the name of a formula_name_node.
      */
     virtual std::string get_name() const
     {
-        throw parse_error(std::format("{}: Expect a name got {})", location, *this));
+        throw parse_error(std::format("{}:{}: Expect a name, got {})", line_nr, column_nr, to_string(*this)));
     }
 
     /** Get name and argument names from a function declaration.
@@ -117,7 +108,7 @@ struct formula_node {
      */
     virtual std::vector<std::string> get_name_and_argument_names() const
     {
-        throw parse_error(std::format("{}: Expect a function definition got {})", location, *this));
+        throw parse_error(std::format("{}:{}: Expect a function definition, got {})", line_nr, column_nr, to_string(*this)));
     }
 
     virtual std::string string() const noexcept = 0;
@@ -126,18 +117,23 @@ struct formula_node {
     {
         return rhs.string();
     }
+};
 
-    friend std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept
+}} // namespace hi::v1
+
+template<class CharT>
+struct std::formatter<hi::formula_node, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::formula_node const& t, auto& fc) const
     {
-        return lhs << to_string(rhs);
+        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
 };
 
-} // namespace hi::inline v1
+namespace hi { inline namespace v1 {
 
-template<typename CharT>
-auto std::formatter<hi::formula_node, CharT>::format(hi::formula_node const& t, auto& fc) const
-    -> decltype(std::formatter<string_view, CharT>{}.format(std::string{}, fc))
+inline std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept
 {
-    return std::formatter<string_view, CharT>{}.format(to_string(t), fc);
+    return lhs << std::format("{}", rhs);
 }
+
+}} // namespace hi::v1

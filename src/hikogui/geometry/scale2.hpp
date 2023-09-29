@@ -43,7 +43,7 @@ public:
      * @param dst_extent The extent to scale to.
      * @return a scale to transform the src_extent to the dst_extent.
      */
-    [[nodiscard]] static constexpr scale2 uniform(extent2 src_extent, extent2 dst_extent) noexcept
+    [[nodiscard]] constexpr static scale2 uniform(extent2 src_extent, extent2 dst_extent) noexcept
     {
         hilet non_uniform_scale = f32x4{dst_extent}.xyxy() / f32x4{src_extent}.xyxy();
         hilet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());

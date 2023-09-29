@@ -43,6 +43,8 @@ hi_warning_ignore_msvc(26466);
 // C26474: Don't cast between pointer types when the conversion could be implicit (type.1).
 // Since these functions are templates this happens.
 hi_warning_ignore_msvc(26474);
+// C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
+hi_warning_ignore_msvc(4702);
 
 hi_export namespace hi { inline namespace v1 {
 
@@ -489,24 +491,33 @@ template<std::integral Out, std::floating_point In>
 template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr Out round_cast(In rhs) noexcept
 {
+    hilet lowest = static_cast<long double>(std::numeric_limits<Out>::lowest());
+    hilet highest = static_cast<long double>(std::numeric_limits<Out>::max());
+
     hilet rhs_ = std::round(rhs);
-    hi_axiom(rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max());
+    hi_axiom(rhs_ >= lowest and rhs_ <= highest);
     return static_cast<Out>(rhs_);
 }
 
 template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr Out floor_cast(In rhs) noexcept
 {
+    hilet lowest = static_cast<long double>(std::numeric_limits<Out>::lowest());
+    hilet highest = static_cast<long double>(std::numeric_limits<Out>::max());
+
     hilet rhs_ = std::floor(rhs);
-    hi_axiom(rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max());
+    hi_axiom(rhs_ >= lowest and rhs_ <= highest);
     return static_cast<Out>(rhs_);
 }
 
 template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr Out ceil_cast(In rhs) noexcept
 {
+    hilet lowest = static_cast<long double>(std::numeric_limits<Out>::lowest());
+    hilet highest = static_cast<long double>(std::numeric_limits<Out>::max());
+
     hilet rhs_ = std::ceil(rhs);
-    hi_axiom(rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max());
+    hi_axiom(rhs_ >= lowest and rhs_ <= highest);
     return static_cast<Out>(rhs_);
 }
 

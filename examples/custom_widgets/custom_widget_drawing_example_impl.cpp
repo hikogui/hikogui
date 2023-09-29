@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/module.hpp"
+#include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 #include <numbers>
 
@@ -15,39 +15,39 @@ enum class drawing_type {
 };
 
 auto drawing_list = std::vector<std::pair<drawing_type, hi::label>>{
-    {drawing_type::box, hi::tr("Box")},
-    {drawing_type::lines, hi::tr("Lines")},
-    {drawing_type::circle, hi::tr("Circle")},
-    {drawing_type::glyph, hi::tr("Glyph")},
-    {drawing_type::image, hi::tr("Image")},
+    {drawing_type::box, hi::txt("Box")},
+    {drawing_type::lines, hi::txt("Lines")},
+    {drawing_type::circle, hi::txt("Circle")},
+    {drawing_type::glyph, hi::txt("Glyph")},
+    {drawing_type::image, hi::txt("Image")},
 };
 
 enum class shape_type { square, rectangle, convex, concave, glyph_aspect_ratio, image_aspect_ratio };
 
 auto shape_list = std::vector<std::pair<shape_type, hi::label>>{
-    {shape_type::square, hi::tr("Square")},
-    {shape_type::rectangle, hi::tr("Rectangle")},
-    {shape_type::convex, hi::tr("Convex")},
-    {shape_type::concave, hi::tr("Concave")},
-    {shape_type::glyph_aspect_ratio, hi::tr("Glyph Aspect Ratio")},
-    {shape_type::image_aspect_ratio, hi::tr("Image Aspect Ratio")},
+    {shape_type::square, hi::txt("Square")},
+    {shape_type::rectangle, hi::txt("Rectangle")},
+    {shape_type::convex, hi::txt("Convex")},
+    {shape_type::concave, hi::txt("Concave")},
+    {shape_type::glyph_aspect_ratio, hi::txt("Glyph Aspect Ratio")},
+    {shape_type::image_aspect_ratio, hi::txt("Image Aspect Ratio")},
 };
 
 enum class gradient_type { solid, horizontal, vertical, corners };
 
 auto gradient_list = std::vector<std::pair<gradient_type, hi::label>>{
-    {gradient_type::solid, hi::tr("Solid")},
-    {gradient_type::horizontal, hi::tr("Horizontal")},
-    {gradient_type::vertical, hi::tr("Vertical")},
-    {gradient_type::corners, hi::tr("Corners")},
+    {gradient_type::solid, hi::txt("Solid")},
+    {gradient_type::horizontal, hi::txt("Horizontal")},
+    {gradient_type::vertical, hi::txt("Vertical")},
+    {gradient_type::corners, hi::txt("Corners")},
 };
 
 auto border_width_list = std::vector<std::pair<float, hi::label>>{
-    {0.0f, hi::tr("no border")},
-    {1.0f, hi::tr("1 px")},
-    {2.0f, hi::tr("2 px")},
-    {4.0f, hi::tr("4 px")},
-    {8.0f, hi::tr("8 px")},
+    {0.0f, hi::txt("no border")},
+    {1.0f, hi::txt("1 px")},
+    {2.0f, hi::txt("2 px")},
+    {4.0f, hi::txt("4 px")},
+    {8.0f, hi::txt("8 px")},
 };
 
 // Every widget must inherit from hi::widget.
@@ -99,7 +99,7 @@ public:
         _layout = {};
 
         if (_image_was_modified.exchange(false)) {
-            if (not(_image_backing = hi::paged_image{surface(), _image})) {
+            if (not(_image_backing = hi::gfx_pipeline_image::paged_image{surface(), _image})) {
                 // Could not get an image, retry.
                 _image_was_modified = true;
                 ++hi::global_counter<"drawing_widget:no-backing-image:constrain">;
@@ -132,7 +132,7 @@ public:
 
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
             // In this case we make two rectangles which are used in the `draw()` function.
-            auto const glyph_size = _glyph.get_bounding_box().size();
+            auto const glyph_size = _glyph.get_metrics().bounding_rectangle.size();
             auto const glyph_scale = hi::scale2::uniform(glyph_size, max_size);
             auto const new_glyph_size = glyph_scale * glyph_size;
             _glyph_rectangle = align(max_rectangle, new_glyph_size, hi::alignment::middle_center());
@@ -303,12 +303,12 @@ public:
     }
 
 private:
-    hi::glyph_ids _glyph;
+    hi::font_book::font_glyph_type _glyph;
     hi::aarectangle _glyph_rectangle;
     std::atomic<bool> _image_was_modified = true;
     hi::png _image;
     hi::aarectangle _image_rectangle;
-    hi::paged_image _image_backing;
+    hi::gfx_pipeline_image::paged_image _image_backing;
 
     decltype(drawing)::callback_token _drawing_cbt;
     decltype(shape)::callback_token _shape_cbt;
@@ -336,12 +336,11 @@ int hi_main(int argc, char *argv[])
     hi::observer<bool> rounded = false;
 
     // Startup renderdoc for debugging
-    auto render_doc = hi::RenderDoc();
+    hi::start_render_doc();
 
-    auto gui = hi::gui_system::make_unique();
-    auto [window, widget] = gui->make_window<hi::window_widget>(hi::tr("Drawing Custom Widget"));
+    auto widget = std::make_unique<hi::window_widget>(hi::txt("Drawing Custom Widget"));
 
-    auto& custom_widget = widget.content().make_widget<drawing_widget>("A1:D1");
+    auto& custom_widget = widget->content().make_widget<drawing_widget>("A1:D1");
     custom_widget.drawing = drawing;
     custom_widget.shape = shape;
     custom_widget.rotating = rotating;
@@ -351,31 +350,33 @@ int hi_main(int argc, char *argv[])
     custom_widget.border_width = border_width;
     custom_widget.rounded = rounded;
 
-    widget.content().make_widget<hi::label_widget>("A2", hi::tr("Drawing type:"));
-    widget.content().make_widget<hi::selection_widget>("B2:D2", drawing, drawing_list);
+    widget->content().make_widget<hi::label_widget>("A2", hi::txt("Drawing type:"));
+    widget->content().make_widget<hi::selection_widget>("B2:D2", drawing, drawing_list);
 
-    widget.content().make_widget<hi::label_widget>("A3", hi::tr("Shape:"));
-    widget.content().make_widget<hi::selection_widget>("B3:D3", shape, shape_list);
+    widget->content().make_widget<hi::label_widget>("A3", hi::txt("Shape:"));
+    widget->content().make_widget<hi::selection_widget>("B3:D3", shape, shape_list);
 
-    widget.content().make_widget<hi::label_widget>("A4", hi::tr("Gradient:"));
-    widget.content().make_widget<hi::selection_widget>("B4:D4", gradient, gradient_list);
+    widget->content().make_widget<hi::label_widget>("A4", hi::txt("Gradient:"));
+    widget->content().make_widget<hi::selection_widget>("B4:D4", gradient, gradient_list);
 
-    widget.content().make_widget<hi::label_widget>("A5", hi::tr("Border side:"));
-    widget.content().make_widget<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::tr("on"));
-    widget.content().make_widget<hi::radio_button_widget>("C5", border_side, hi::border_side::inside, hi::tr("inside"));
-    widget.content().make_widget<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::tr("outside"));
+    widget->content().make_widget<hi::label_widget>("A5", hi::txt("Border side:"));
+    widget->content().make_widget<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::txt("on"));
+    widget->content().make_widget<hi::radio_button_widget>("C5", border_side, hi::border_side::inside, hi::txt("inside"));
+    widget->content().make_widget<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::txt("outside"));
 
-    widget.content().make_widget<hi::label_widget>("A6", hi::tr("Border width:"));
-    widget.content().make_widget<hi::selection_widget>("B6:D6", border_width, border_width_list);
+    widget->content().make_widget<hi::label_widget>("A6", hi::txt("Border width:"));
+    widget->content().make_widget<hi::selection_widget>("B6:D6", border_width, border_width_list);
 
-    widget.content().make_widget<hi::label_widget>("A7", hi::tr("Rotate:"));
-    widget.content().make_widget<hi::toggle_widget>("B7:D7", rotating);
+    widget->content().make_widget<hi::label_widget>("A7", hi::txt("Rotate:"));
+    widget->content().make_widget<hi::toggle_widget>("B7:D7", rotating);
 
-    widget.content().make_widget<hi::label_widget>("A8", hi::tr("Clip:"));
-    widget.content().make_widget<hi::toggle_widget>("B8:D8", clip);
+    widget->content().make_widget<hi::label_widget>("A8", hi::txt("Clip:"));
+    widget->content().make_widget<hi::toggle_widget>("B8:D8", clip);
 
-    widget.content().make_widget<hi::label_widget>("A9", hi::tr("Rounded:"));
-    widget.content().make_widget<hi::toggle_widget>("B9:D9", rounded);
+    widget->content().make_widget<hi::label_widget>("A9", hi::txt("Rounded:"));
+    widget->content().make_widget<hi::toggle_widget>("B9:D9", rounded);
+
+    auto window = std::make_unique<hi::gui_window>(std::move(widget));
 
     auto close_cbt = window->closing.subscribe(
         [&] {

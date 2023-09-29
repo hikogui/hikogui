@@ -6,32 +6,45 @@
 # Build Target: hikogui_demo                             (executable)
 #-------------------------------------------------------------------
 
-add_executable(vulkan_triangle WIN32 MACOSX_BUNDLE)
+add_executable(vulkan_triangle WIN32)
 add_dependencies(examples vulkan_triangle)
 
 target_link_libraries(vulkan_triangle PRIVATE hikogui)
+target_link_resources(vulkan_triangle hikogui)
+set_target_properties(vulkan_triangle PROPERTIES MACOSX_BUNDLE TRUE)
+set_target_properties(vulkan_triangle PROPERTIES MACOSX_FRAMEWORK_IDENTIFIER org.hikogui.hikogui.vulkan_triangle)
+
 target_sources(vulkan_triangle PRIVATE main_impl.cpp triangle_impl.cpp triangle.hpp)
 
-add_custom_target(vulkan_triangle_shaders)
-add_shader_target(vulkan_triangle_shaders
-    shaders/triangle.vert
-    shaders/triangle.frag
-)
+target_resources(vulkan_triangle "${CMAKE_CURRENT_SOURCE_DIR}/resources/vulkan_triangle.png")
 
-add_custom_target(vulkan_triangle_resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/resources/shaders
-    DEPENDS
-    hikogui vulkan_triangle_shaders
-    resources/vulkan_triangle.png
-)
+set(vulkan_triangle_shader_sources
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle.frag
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle.vert)
 
-add_dependencies(vulkan_triangle vulkan_triangle_resources)
+set(vulkan_triangle_compiled_shader_files "")
+foreach(shader_file ${vulkan_triangle_shader_sources})
+    set(input_file "${shader_file}")
+    cmake_path(RELATIVE_PATH shader_file BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    set(output_file "${CMAKE_CURRENT_BINARY_DIR}/${shader_file}.spv")
 
+    add_custom_command(
+        OUTPUT "${output_file}"
+        COMMAND Vulkan::glslc -o "${output_file}" "${input_file}"
+        DEPENDS "${input_file}"
+        VERBATIM)
+
+    set(vulkan_triangle_compiled_shader_files ${vulkan_triangle_compiled_shader_files} "${output_file}")
+endforeach()
+
+add_custom_target(vulkan_triangle_shaders ALL DEPENDS ${vulkan_triangle_compiled_shader_files})
+add_dependencies(vulkan_triangle vulkan_triangle_shaders)
+
+target_resources(vulkan_triangle ${vulkan_triangle_compiled_shader_files})
 
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------
-install(TARGETS vulkan_triangle DESTINATION examples/vulkan/triangle COMPONENT examples EXCLUDE_FROM_ALL)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources DESTINATION examples/vulkan/triangle COMPONENT examples EXCLUDE_FROM_ALL)
+install(
+    TARGETS vulkan_triangle DESTINATION examples/vulkan/triangle
+    RESOURCE DESTINATION examples/vulkan/triangle/resources)

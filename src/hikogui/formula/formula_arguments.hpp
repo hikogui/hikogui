@@ -7,17 +7,19 @@
 #include "formula_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_arguments);
+
+namespace hi { inline namespace v1 {
 
 /** A temporary node used during parsing.
  */
-struct formula_arguments final : formula_node {
+hi_export struct formula_arguments final : formula_node {
     formula_vector args;
 
-    formula_arguments(parse_location location, formula_vector args) : formula_node(std::move(location)), args(std::move(args)) {}
+    formula_arguments(size_t line_nr, size_t column_nr, formula_vector args) : formula_node(line_nr, column_nr), args(std::move(args)) {}
 
-    formula_arguments(parse_location location, std::unique_ptr<formula_node> arg1, std::unique_ptr<formula_node> arg2) :
-        formula_node(std::move(location))
+    formula_arguments(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> arg1, std::unique_ptr<formula_node> arg2) :
+        formula_node(line_nr, column_nr)
     {
         args.push_back(std::move(arg1));
         args.push_back(std::move(arg2));
@@ -42,4 +44,4 @@ struct formula_arguments final : formula_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

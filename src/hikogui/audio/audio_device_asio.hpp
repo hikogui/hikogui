@@ -6,11 +6,13 @@
 #include "audio_device.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.audio.audio_device_asio);
 
-/*! A class representing an audio device on the system.
+namespace hi { inline namespace v1 {
+
+/** A class representing an audio device on the system.
  */
-class audio_device_asio : public audio_device {
+hi_export class audio_device_asio : public audio_device {
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

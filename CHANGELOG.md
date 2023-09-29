@@ -1,8 +1,81 @@
-Change log
-==========
+# Changelog
 
-0.7 Strange Squirrel
---------------------
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+ * Changed things.
+
+## [0.8.1] - 2023-09-18 - Precious Polar Bear Deux
+
+We've updated the CMake files quite a bit to improve installation with vcpkg:
+ 
+ * Use RESOURCE property to install resource files.
+ * Add functions to inherit RESOURCE files from a library, so that they will
+   be installed along side an application.
+ * Change HikoGUI's path module to use separate functions for getting locations
+   to files and directories. `*_file()`, `*_dir()`, `*_dirs()`.
+ * An application and the HikoGUI library can now detect if they are execution
+   from the cmake-build directory instead of the install directory; and will
+   automatically switch where the resource files are located. 
+
+## [0.8.0] - 2023-09-06 - Precious Polar Bear
+
+HikoGUI is now temporarily a header-only library. This is in preparation of
+making it a module-only library. This required a lot of work to untangle
+the many circular dependencies.
+
+With modules it is now much easier to switch out different implementations
+of classes and functions, so I've de-virtualized the GFX and GUI parts of
+the library. This means that a win32-window and a X11-window are now both
+called `hi::gui_window`. There are many benefits by fully replacing
+implementations and having them have the same name, including allowing
+implementation to have very different architectures and having them exposing
+implementation specific members.
+
+I've also been working on replacing the global classes with free-functions,
+like the: font-book, theme-book, gui-system, audio-system, gfx-system, etc.
+Right now some of them are still implemented as a class that is instantiated
+as a global variable, but this is an implementation detail.
+
+Another benefit of the header-only work is that the Unicode algorithms and
+Unicode database are now constexpr. This includes improvement of the database
+that now uses a double associative lookup O(1). The database is now stored
+in columns, packed bit-wise, for improved space & cache efficiency.
+
+The main text string type is now a `std::basic_string<hi::grapheme>`
+also known as `hi::gstring`. The `hi::grapheme` contains one or more
+Unicode code-points forming a Grapheme Cluster, a language-tag and a phrasing.
+All of this information is needed to display text properly, and for
+possible features like spell checking and text-to-speech.
+
+I discovered and fixed a security vulnerability with mapping files and parsing,
+in particular with my implementation of true-type files. True-type files are
+designed to be loaded in memory and be directly used as a data structure.
+HikoGUI uses `mmap()` to map a true-type file in memory, check if the data
+is valid, and then use the data directly. However when you memory map a file the
+file can be changed during the execution of the application, bypassing the
+validation check that is only done when the file was first mapped. The fix
+is to simply validate all data read during the execution of the application.
+There is a performance impact, but it is a small price to pay compared to
+loading the true-type file in memory, especially on low memory devices.
+
+Of course I also decided to rewrite the true-type font parser and allow it to
+render runs of text. A run is a piece of text that is part of a single line, and
+uses the same font, style and language. In the future we can use the GPOS
+and GSUB tables to properly handle ligatures and cursive fonts. The text-shaper
+will need to relegate the responsibilities of rendering text to different
+sub-systems.
+
+Added a Vulkan triangle-example, which shows how to use HikoGUI together with
+an application that wants to render graphics. Basically the application
+can directly render into the swap-chain images through a call-back mechanism.
+Then HikoGUI draws the GUI on-top of this drawing using alpha compositing, where
+the widget that shows the drawing punches a hole through the GUI so that the
+drawing stays visible.
+
+## [0.7.0] - 2022-10-07 - Strange Squirrel
+
 To make it possible to select and configure audio devices this release
 is a start to make composable shared-state, composable preferences and
 composable widgets.
@@ -26,8 +99,8 @@ There are also a few other systems that have been updated:
  * Rewritten `file` and `file_view` to function as copyable and movable value types.
  * Split INSTALL documentation between different IDEs.
 
-0.6 Dizzy Donkey
-----------------
+## [0.6.0] - 2022-04-12 - Dizzy Donkey
+
 The changes in this version are pretty random, but there is a theme
 of improving how to create custom widgets.
 
@@ -50,19 +123,19 @@ of improving how to create custom widgets.
    improving animations even in debug builds.
  * Improved localization support with language\_tags that have access to
    ISO-codes for language, script and region.
- 
 
-0.5.1 Bad Butterfly
--------------------
- * Fix bug; pre-main initialization order of global\_counter. 
+
+## [0.5.1] - 2021-10-11 - Bad Butterfly
+
+ * Fix bug; pre-main initialization order of global\_counter.
  * Make it easier to build out-of-tree application without vcpkg.
  * vcpkg builds are not recommended at the moment due to future
    changes of std::format and std::ranges to the c++20 standard.
    Please build using non-vcpkg to ensure equal versions of CMake
    and the compiler.
 
-0.5.0 Eager Elephant
---------------------
+## [0.5.0] - 2021-09-29 - Eager Elephant
+
 The changes in this version are pretty random, but there is a theme
 of improving the application developer's view of the API.
 
@@ -95,8 +168,8 @@ of improving the application developer's view of the API.
  * Add address-sanitizer builds.
  * Finalize BON8 (Binary Object Notation 8) specification.
 
-0.4.0 Lovely Lizard
--------------------
+## [0.4.0] - 2021-07-10 - Lovely Lizard
+
 This version is focused on making it practical for application developers to
 start using the ttauri framework to create GUI application.
 
@@ -127,8 +200,8 @@ Here are some of the important changes for this release:
   - RenderDoc
   - vcpkg
 
-0.3.0 Fancy Frog
-----------------
+## [0.3.0] - 2021-03-17 - Fancy Frog
+
 In this version we concentrated on making it easy for developers
 to install ttauri as a dependency for their own projects through vcpkg.
 
@@ -144,3 +217,19 @@ Here are some of the important changes for this release:
  * Made several documentation improvements.
  * Improved the pull-request work flow with continuous integration requirements before merging.
 
+## [0.2.0] - 2021-02-17 - First Public Release
+
+The first public release.
+
+<!-- Section for Reference Links -->
+
+[Unreleased]: https://github.com/hikogui/hikogui/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/hikogui/hikogui/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/hikogui/hikogui/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/hikogui/hikogui/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/hikogui/hikogui/compare/v0.5.1...v0.6.0
+[0.5.1]: https://github.com/hikogui/hikogui/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/hikogui/hikogui/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/hikogui/hikogui/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/hikogui/hikogui/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/hikogui/hikogui/releases/tag/v0.2.0

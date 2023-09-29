@@ -28,7 +28,7 @@ struct observable_msg {
  */
 class observable : public enable_group_ptr<observable, void(observable_msg)> {
 public:
-    constexpr virtual ~observable() = default;
+    virtual ~observable() = default;
     observable(observable const&) = delete;
     observable(observable&&) = delete;
     observable& operator=(observable const&) = delete;

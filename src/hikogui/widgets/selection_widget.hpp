@@ -270,7 +270,7 @@ public:
             }
 
             _chevrons_glyph = find_glyph(elusive_icon::ChevronUp);
-            hilet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box() * theme().icon_size();
+            hilet chevrons_glyph_bbox = _chevrons_glyph.get_metrics().bounding_rectangle * theme().icon_size();
             _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox, alignment::middle_center());
         }
 
@@ -394,7 +394,7 @@ private:
 
     aarectangle _left_box_rectangle;
 
-    glyph_ids _chevrons_glyph;
+    font_book::font_glyph_type _chevrons_glyph;
     aarectangle _chevrons_rectangle;
 
     bool _selecting = false;

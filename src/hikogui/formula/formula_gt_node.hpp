@@ -7,11 +7,13 @@
 #include "formula_binary_operator_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_gt_node);
 
-struct formula_gt_node final : formula_binary_operator_node {
-    formula_gt_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
-        formula_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs))
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_gt_node final : formula_binary_operator_node {
+    formula_gt_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
+        formula_binary_operator_node(line_nr, column_nr, std::move(lhs), std::move(rhs))
     {
     }
 
@@ -26,4 +28,4 @@ struct formula_gt_node final : formula_binary_operator_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

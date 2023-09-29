@@ -56,11 +56,11 @@ int hi_main(int argc, char *argv[])
     observer<int> value = 0;
 
     auto gui = hi::gui_system::make_unique();
-    auto &window = gui.make_window(tr("Radio button example"));
-    window.content().make_widget<label_widget>("A1", tr("radio buttons:"));
-    window.content().make_widget<radio_button_widget>("B1", tr("one"), value, 1);
-    window.content().make_widget<radio_button_widget>("B2", tr("two"), value, 2);
-    window.content().make_widget<radio_button_widget>("B3", tr("three"), value, 3);
+    auto &window = gui.make_window(txt("Radio button example"));
+    window.content().make_widget<label_widget>("A1", txt("radio buttons:"));
+    window.content().make_widget<radio_button_widget>("B1", txt("one"), value, 1);
+    window.content().make_widget<radio_button_widget>("B2", txt("two"), value, 2);
+    window.content().make_widget<radio_button_widget>("B3", txt("three"), value, 3);
 
     return gui->loop();
 }

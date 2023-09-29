@@ -39,7 +39,7 @@ public:
 
     /** The number of enum values.
      */
-    static constexpr std::size_t count = N;
+    constexpr static std::size_t count = N;
 
     /** The numeric values in the enum do not contain a gap.
      */

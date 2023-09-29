@@ -72,59 +72,59 @@ public:
 
     [[nodiscard]] constexpr explicit color(hi::semantic_color semantic_color, float alpha = 1.0f) noexcept : _v()
     {
-        _v.x() = float16::from_uint16_t(0xf900 + static_cast<uint8_t>(semantic_color));
-        _v.y() = float16::from_uint16_t(0x0000);
-        _v.z() = float16::from_uint16_t(0x0000);
+        _v.x() = float16(intrinsic, 0xf900 + static_cast<uint8_t>(semantic_color));
+        _v.y() = float16(intrinsic, 0x0000);
+        _v.z() = float16(intrinsic, 0x0000);
         _v.w() = float16(1.0f);
     }
 
     [[nodiscard]] constexpr bool is_semantic() const noexcept
     {
-        return (_v.x().get() & 0xf900) == 0xf900;
+        return (_v.x().intrinsic() & 0xf900) == 0xf900;
     }
 
     constexpr explicit operator semantic_color() const noexcept
     {
         hi_axiom(is_semantic());
-        return static_cast<semantic_color>(_v.x().get() & 0xff);
+        return static_cast<semantic_color>(_v.x().intrinsic() & 0xff);
     }
 
     // clang-format off
-    [[nodiscard]] static constexpr color blue() noexcept { return color{semantic_color::blue}; }
-    [[nodiscard]] static constexpr color green() noexcept { return color{semantic_color::green}; }
-    [[nodiscard]] static constexpr color indigo() noexcept { return color{semantic_color::indigo}; }
-    [[nodiscard]] static constexpr color orange() noexcept { return color{semantic_color::orange}; }
-    [[nodiscard]] static constexpr color pink() noexcept { return color{semantic_color::pink}; }
-    [[nodiscard]] static constexpr color purple() noexcept { return color{semantic_color::purple}; }
-    [[nodiscard]] static constexpr color red() noexcept { return color{semantic_color::red}; }
-    [[nodiscard]] static constexpr color teal() noexcept { return color{semantic_color::teal}; }
-    [[nodiscard]] static constexpr color yellow() noexcept { return color{semantic_color::yellow}; }
-    [[nodiscard]] static constexpr color gray() noexcept { return color{semantic_color::gray}; }
-    [[nodiscard]] static constexpr color gray2() noexcept { return color{semantic_color::gray2}; }
-    [[nodiscard]] static constexpr color gray3() noexcept { return color{semantic_color::gray3}; }
-    [[nodiscard]] static constexpr color gray4() noexcept { return color{semantic_color::gray4}; }
-    [[nodiscard]] static constexpr color gray5() noexcept { return color{semantic_color::gray5}; }
-    [[nodiscard]] static constexpr color gray6() noexcept { return color{semantic_color::gray6}; }
-    [[nodiscard]] static constexpr color foreground() noexcept { return color{semantic_color::foreground}; }
-    [[nodiscard]] static constexpr color border() noexcept { return color{semantic_color::border}; }
-    [[nodiscard]] static constexpr color fill() noexcept { return color{semantic_color::fill}; }
-    [[nodiscard]] static constexpr color accent() noexcept { return color{semantic_color::accent}; }
-    [[nodiscard]] static constexpr color text_select() noexcept { return color{semantic_color::text_select}; }
-    [[nodiscard]] static constexpr color primary_cursor() noexcept { return color{semantic_color::primary_cursor}; }
-    [[nodiscard]] static constexpr color secondary_cursor() noexcept { return color{semantic_color::secondary_cursor}; }
+    [[nodiscard]] constexpr static color blue() noexcept { return color{semantic_color::blue}; }
+    [[nodiscard]] constexpr static color green() noexcept { return color{semantic_color::green}; }
+    [[nodiscard]] constexpr static color indigo() noexcept { return color{semantic_color::indigo}; }
+    [[nodiscard]] constexpr static color orange() noexcept { return color{semantic_color::orange}; }
+    [[nodiscard]] constexpr static color pink() noexcept { return color{semantic_color::pink}; }
+    [[nodiscard]] constexpr static color purple() noexcept { return color{semantic_color::purple}; }
+    [[nodiscard]] constexpr static color red() noexcept { return color{semantic_color::red}; }
+    [[nodiscard]] constexpr static color teal() noexcept { return color{semantic_color::teal}; }
+    [[nodiscard]] constexpr static color yellow() noexcept { return color{semantic_color::yellow}; }
+    [[nodiscard]] constexpr static color gray() noexcept { return color{semantic_color::gray}; }
+    [[nodiscard]] constexpr static color gray2() noexcept { return color{semantic_color::gray2}; }
+    [[nodiscard]] constexpr static color gray3() noexcept { return color{semantic_color::gray3}; }
+    [[nodiscard]] constexpr static color gray4() noexcept { return color{semantic_color::gray4}; }
+    [[nodiscard]] constexpr static color gray5() noexcept { return color{semantic_color::gray5}; }
+    [[nodiscard]] constexpr static color gray6() noexcept { return color{semantic_color::gray6}; }
+    [[nodiscard]] constexpr static color foreground() noexcept { return color{semantic_color::foreground}; }
+    [[nodiscard]] constexpr static color border() noexcept { return color{semantic_color::border}; }
+    [[nodiscard]] constexpr static color fill() noexcept { return color{semantic_color::fill}; }
+    [[nodiscard]] constexpr static color accent() noexcept { return color{semantic_color::accent}; }
+    [[nodiscard]] constexpr static color text_select() noexcept { return color{semantic_color::text_select}; }
+    [[nodiscard]] constexpr static color primary_cursor() noexcept { return color{semantic_color::primary_cursor}; }
+    [[nodiscard]] constexpr static color secondary_cursor() noexcept { return color{semantic_color::secondary_cursor}; }
     // clang-format on
 
-    [[nodiscard]] static constexpr color transparent() noexcept
+    [[nodiscard]] constexpr static color transparent() noexcept
     {
         return {0.0f, 0.0f, 0.0f, 0.0f};
     }
 
-    [[nodiscard]] static constexpr color white() noexcept
+    [[nodiscard]] constexpr static color white() noexcept
     {
         return {1.0f, 1.0f, 1.0f, 1.0f};
     }
 
-    [[nodiscard]] static constexpr color black() noexcept
+    [[nodiscard]] constexpr static color black() noexcept
     {
         return {0.0f, 0.0f, 0.0f, 1.0f};
     }

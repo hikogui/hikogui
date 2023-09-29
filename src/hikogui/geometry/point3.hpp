@@ -306,7 +306,7 @@ struct std::formatter<hi::point3, CharT> {
         return pc.end();
     }
 
-    auto format(hi::point3 const& t, auto& fc)
+    auto format(hi::point3 const& t, auto& fc) const
     {
         return std::vformat_to(fc.out(), "<{}, {}, {}>", std::make_format_args(t.x(), t.y(), t.z()));
     }

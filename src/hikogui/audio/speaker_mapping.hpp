@@ -5,18 +5,18 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../codec/module.hpp"
-#include "../font/module.hpp"
+#include "../codec/codec.hpp"
+#include "../font/font.hpp"
 #include "../macros.hpp"
 #include <array>
 #include <string>
 #include <iostream>
 
+hi_export_module(hikogui.audio.speaker_mapping);
 
+namespace hi { inline namespace v1 {
 
-namespace hi::inline v1 {
-
-enum class speaker_mapping : uint32_t {
+hi_export enum class speaker_mapping : uint32_t {
     none = 0,
     front_left = 0x0'0001,
     front_right = 0x0'0002,
@@ -83,37 +83,37 @@ enum class speaker_mapping : uint32_t {
     surround_atmos_7_1_4 = surround_7_1 | top_front_left | top_front_right | top_back_left | top_back_right,
 };
 
-[[nodiscard]] constexpr bool to_bool(speaker_mapping const& rhs) noexcept
+hi_export [[nodiscard]] constexpr bool to_bool(speaker_mapping const& rhs) noexcept
 {
     return to_bool(std::to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr unsigned int popcount(speaker_mapping const &rhs) noexcept
+hi_export [[nodiscard]] constexpr unsigned int popcount(speaker_mapping const &rhs) noexcept
 {
     return std::popcount(std::to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr speaker_mapping operator|(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
+hi_export [[nodiscard]] constexpr speaker_mapping operator|(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
 {
     return static_cast<speaker_mapping>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr speaker_mapping operator&(speaker_mapping const& lhs, speaker_mapping const& rhs) noexcept
+hi_export [[nodiscard]] constexpr speaker_mapping operator&(speaker_mapping const& lhs, speaker_mapping const& rhs) noexcept
 {
     return static_cast<speaker_mapping>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
-constexpr speaker_mapping &operator|=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
+hi_export constexpr speaker_mapping &operator|=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
 {
     return lhs = lhs | rhs;
 }
 
-constexpr speaker_mapping &operator&=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
+hi_export constexpr speaker_mapping &operator&=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
 {
     return lhs = lhs & rhs;
 }
 
-template<>
+hi_export template<>
 struct pickle<speaker_mapping> {
     [[nodiscard]] datum encode(speaker_mapping const &rhs) const noexcept
     {
@@ -136,6 +136,73 @@ struct pickle<speaker_mapping> {
     }
 };
 
-[[nodiscard]] std::string to_string(speaker_mapping rhs) noexcept;
+hi_export [[nodiscard]] inline std::string to_string(speaker_mapping rhs) noexcept{
+    auto r = std::string{};
 
-} // namespace hi::inline v1
+    if (to_bool(rhs & speaker_mapping::front_left)) {
+        r += ",fl";
+    }
+    if (to_bool(rhs & speaker_mapping::front_right)) {
+        r += ",fr";
+    }
+    if (to_bool(rhs & speaker_mapping::front_center)) {
+        r += ",fc";
+    }
+    if (to_bool(rhs & speaker_mapping::low_frequency)) {
+        r += ",lfe";
+    }
+    if (to_bool(rhs & speaker_mapping::back_left)) {
+        r += ",bl";
+    }
+    if (to_bool(rhs & speaker_mapping::back_right)) {
+        r += ",br";
+    }
+    if (to_bool(rhs & speaker_mapping::front_left_of_center)) {
+        r += ",flc";
+    }
+    if (to_bool(rhs & speaker_mapping::front_right_of_center)) {
+        r += ",frc";
+    }
+    if (to_bool(rhs & speaker_mapping::back_center)) {
+        r += ",bc";
+    }
+    if (to_bool(rhs & speaker_mapping::side_left)) {
+        r += ",sl";
+    }
+    if (to_bool(rhs & speaker_mapping::side_right)) {
+        r += ",sr";
+    }
+    if (to_bool(rhs & speaker_mapping::top_center)) {
+        r += ",tc";
+    }
+    if (to_bool(rhs & speaker_mapping::top_front_left)) {
+        r += ",tfl";
+    }
+    if (to_bool(rhs & speaker_mapping::top_front_center)) {
+        r += ",tfc";
+    }
+    if (to_bool(rhs & speaker_mapping::top_front_right)) {
+        r += ",tfr";
+    }
+    if (to_bool(rhs & speaker_mapping::top_back_left)) {
+        r += ",tbl";
+    }
+    if (to_bool(rhs & speaker_mapping::top_back_center)) {
+        r += ",tbc";
+    }
+    if (to_bool(rhs & speaker_mapping::top_back_right)) {
+        r += ",tbr";
+    }
+
+    if (r.empty()) {
+        r += '[';
+    } else {
+        // replace the first comma.
+        r[0] = '[';
+    }
+
+    r += ']';
+    return r;
+}
+
+}} // namespace hi::inline v1

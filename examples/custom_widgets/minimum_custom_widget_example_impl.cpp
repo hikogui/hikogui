@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/module.hpp"
+#include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 
 // Every widget must inherit from hi::widget.
@@ -74,9 +74,10 @@ int hi_main(int argc, char *argv[])
     hi::set_application_vendor("HikoGUI");
     hi::set_application_version({1, 0, 0});
 
-    auto gui = hi::gui_system::make_unique();
-    auto [window, widget] = gui->make_window<hi::window_widget>(hi::tr("Minimum Custom Widget"));
-    widget.content().make_widget<minimum_widget>("A1");
+    auto widget = std::make_unique<hi::window_widget>(hi::txt("Minimum Custom Widget"));
+    widget->content().make_widget<minimum_widget>("A1");
+
+    auto window = std::make_unique<hi::gui_window>(std::move(widget));
 
     auto close_cbt = window->closing.subscribe(
         [&] {

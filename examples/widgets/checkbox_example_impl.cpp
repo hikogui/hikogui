@@ -2,29 +2,30 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/module.hpp"
+#include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 
 using namespace hi;
 
-task<void> checkbox_example(gui_system &gui)
+task<void> checkbox_example()
 {
-    auto [window, widget] = gui.make_window<window_widget>(tr("Checkbox example"));
+    auto widget = std::make_unique<window_widget>(txt("Checkbox example"));
 
     /// [Create a label]
-    widget.content().make_widget<label_widget>("A1", tr("checkbox:"));
+    widget->content().make_widget<label_widget>("A1", txt("checkbox:"));
     /// [Create a label]
 
     /// [Create a checkbox]
     observer<int> value = 0;
 
-    auto& cb = widget.content().make_widget<checkbox_widget>("B1", value, 1, 2);
-    cb.on_label = tr("on");
-    cb.off_label = tr("off");
-    cb.other_label = tr("other");
+    auto& cb = widget->content().make_widget<checkbox_widget>("B1", value, 1, 2);
+    cb.on_label = txt("on");
+    cb.off_label = txt("off");
+    cb.other_label = txt("other");
     /// [Create a checkbox]
 
-    co_await window->closing;
+    auto window = gui_window{std::move(widget)};
+    co_await window.closing;
 }
 
 int hi_main(int argc, char* argv[])
@@ -33,7 +34,6 @@ int hi_main(int argc, char* argv[])
     set_application_vendor("HikoGUI");
     set_application_version({1, 0, 0});
 
-    auto gui = gui_system::make_unique();
-    checkbox_example(*gui);
+    checkbox_example();
     return loop::main().resume();
 }

@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/module.hpp"
+#include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 
 using namespace hi;
@@ -13,14 +13,13 @@ int hi_main(int argc, char *argv[])
     set_application_vendor("HikoGUI");
     set_application_version({1, 0, 0});
 
-    auto gui = gui_system::make_unique();
-    auto [window, widget] = gui->make_window<window_widget>(tr("Label example"));
+    auto widget = std::make_unique<window_widget>(txt("Label example"));
 
     // Start the logger system, so logging is done asynchronously.
-    hi::log::start_subsystem(hi::global_state_type::log_level_info);
+    log::start_subsystem(hi::global_state_type::log_level_info);
 
     // Startup renderdoc for debugging
-    auto render_doc = hi::RenderDoc();
+    start_render_doc();
 
     auto latin_text = std::string(
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
@@ -76,8 +75,10 @@ int hi_main(int argc, char *argv[])
 
     auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
-    auto& tw = widget.content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
+    auto& tw = widget->content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
     tw.mode = hi::widget_mode::enabled;
+
+    auto window = std::make_unique<gui_window>(std::move(widget));
 
     auto close_cb = window->closing.subscribe(
         [&] {

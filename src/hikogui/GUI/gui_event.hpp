@@ -17,7 +17,7 @@
 #include "keyboard_focus_group.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "mouse_buttons.hpp"
-#include "../unicode/module.hpp"
+#include "../unicode/unicode.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
 #include "../macros.hpp"
@@ -221,7 +221,7 @@ public:
      * @note If the variant changes of this event the associated data is cleared.
      * @param type The new type for the gui_event.
      */
-    [[nodiscard]] constexpr void set_type(gui_event_type type) noexcept
+    constexpr void set_type(gui_event_type type) noexcept
     {
         hilet previous_variant = variant();
 
@@ -417,7 +417,7 @@ private:
 
 template<typename CharT>
 struct std::formatter<hi::gui_event, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::gui_event const& t, auto& fc)
+    auto format(hi::gui_event const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(hi::gui_event_type_metadata[t.type()], fc);
     }

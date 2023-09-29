@@ -107,12 +107,12 @@ public:
         });
     }
 
-    std::optional<label> validate(text_field_widget& sender, gstring const &text) noexcept override
+    label validate(text_field_widget& sender, gstring const &text) noexcept override
     {
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(to_string(text), 10);
         } catch (parse_error const&) {
-            return {tr{"Invalid integer"}};
+            return {txt("Invalid integer")};
         }
 
         return {};
@@ -123,7 +123,7 @@ public:
         return to_gstring(to_string(*value));
     }
 
-    void set_text(text_field_widget& sender, gstring text) noexcept override
+    void set_text(text_field_widget& sender, gstring const &text) noexcept override
     {
         try {
             value = from_string<value_type>(to_string(text), 10);
@@ -163,7 +163,7 @@ public:
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(to_string(text));
         } catch (parse_error const&) {
-            return {elusive_icon::WarningSign, tr{"Invalid floating point number"}};
+            return {elusive_icon::WarningSign, txt("Invalid floating point number")};
         }
 
         return {};

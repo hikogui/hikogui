@@ -59,7 +59,7 @@ private:
     uint8_t _value;
 };
 
-[[nodiscard]] inline void unicode_sentence_break_SB1_SB4(
+inline void unicode_sentence_break_SB1_SB4(
     unicode_break_vector &r,
     std::vector<unicode_sentence_break_info> &infos) noexcept
 {
@@ -87,7 +87,7 @@ private:
     }
 }
 
-[[nodiscard]] inline void unicode_sentence_break_SB5(
+inline void unicode_sentence_break_SB5(
     unicode_break_vector &r,
     std::vector<unicode_sentence_break_info> &infos) noexcept
 {
@@ -109,7 +109,7 @@ private:
     }
 }
 
-[[nodiscard]] inline void unicode_sentence_break_SB6_SB998(
+inline void unicode_sentence_break_SB6_SB998(
     unicode_break_vector &r,
     std::vector<unicode_sentence_break_info> &infos) noexcept
 {

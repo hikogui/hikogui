@@ -188,12 +188,19 @@ enum class horizontal_alignment : uint8_t {
         } else {
             return {};
         }
+
     case horizontal_alignment::center:
         if (guideline_left <= guideline_right) {
             return std::clamp(guideline_center, guideline_left, guideline_right);
         } else {
             return {};
         }
+
+    case horizontal_alignment::flush:
+        hi_no_default();
+
+    case horizontal_alignment::justified:
+        hi_no_default();
     }
     hi_no_default();
 }
@@ -263,67 +270,67 @@ public:
         hi_axiom(std::to_underlying(h) <= 0xf);
     }
 
-    [[nodiscard]] static constexpr alignment top_flush() noexcept
+    [[nodiscard]] constexpr static alignment top_flush() noexcept
     {
         return {horizontal_alignment::flush, vertical_alignment::top};
     }
 
-    [[nodiscard]] static constexpr alignment top_left() noexcept
+    [[nodiscard]] constexpr static alignment top_left() noexcept
     {
         return {horizontal_alignment::left, vertical_alignment::top};
     }
 
-    [[nodiscard]] static constexpr alignment top_center() noexcept
+    [[nodiscard]] constexpr static alignment top_center() noexcept
     {
         return {horizontal_alignment::center, vertical_alignment::top};
     }
 
-    [[nodiscard]] static constexpr alignment top_justified() noexcept
+    [[nodiscard]] constexpr static alignment top_justified() noexcept
     {
         return {horizontal_alignment::justified, vertical_alignment::top};
     }
 
-    [[nodiscard]] static constexpr alignment top_right() noexcept
+    [[nodiscard]] constexpr static alignment top_right() noexcept
     {
         return {horizontal_alignment::right, vertical_alignment::top};
     }
 
-    [[nodiscard]] static constexpr alignment middle_flush() noexcept
+    [[nodiscard]] constexpr static alignment middle_flush() noexcept
     {
         return {horizontal_alignment::flush, vertical_alignment::middle};
     }
 
-    [[nodiscard]] static constexpr alignment middle_left() noexcept
+    [[nodiscard]] constexpr static alignment middle_left() noexcept
     {
         return {horizontal_alignment::left, vertical_alignment::middle};
     }
 
-    [[nodiscard]] static constexpr alignment middle_center() noexcept
+    [[nodiscard]] constexpr static alignment middle_center() noexcept
     {
         return {horizontal_alignment::center, vertical_alignment::middle};
     }
 
-    [[nodiscard]] static constexpr alignment middle_justified() noexcept
+    [[nodiscard]] constexpr static alignment middle_justified() noexcept
     {
         return {horizontal_alignment::justified, vertical_alignment::middle};
     }
 
-    [[nodiscard]] static constexpr alignment middle_right() noexcept
+    [[nodiscard]] constexpr static alignment middle_right() noexcept
     {
         return {horizontal_alignment::right, vertical_alignment::middle};
     }
 
-    [[nodiscard]] static constexpr alignment bottom_left() noexcept
+    [[nodiscard]] constexpr static alignment bottom_left() noexcept
     {
         return {horizontal_alignment::left, vertical_alignment::bottom};
     }
 
-    [[nodiscard]] static constexpr alignment bottom_center() noexcept
+    [[nodiscard]] constexpr static alignment bottom_center() noexcept
     {
         return {horizontal_alignment::center, vertical_alignment::bottom};
     }
 
-    [[nodiscard]] static constexpr alignment bottom_right() noexcept
+    [[nodiscard]] constexpr static alignment bottom_right() noexcept
     {
         return {horizontal_alignment::right, vertical_alignment::bottom};
     }

@@ -37,7 +37,7 @@
 #include "../win32_headers.hpp"
 
 #include "loop_intf.hpp"
-#include "../telemetry/module.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <vector>

@@ -4,31 +4,23 @@
 
 #pragma once
 
-#include "gfx_surface.hpp"
+#include "gfx_surface_state.hpp"
+#include "gfx_surface_delegate_vulkan.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "gfx_queue_vulkan.hpp"
+#include "gfx_pipeline_image_vulkan.hpp"
+#include "gfx_pipeline_box_vulkan.hpp"
+#include "gfx_pipeline_SDF_vulkan.hpp"
+#include "gfx_pipeline_alpha_vulkan.hpp"
+#include "gfx_pipeline_tone_mapper_vulkan.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <optional>
 
+hi_export_module(hikogui.GUI : gfx_surface);
+
 namespace hi::inline v1 {
-class gfx_surface_delegate_vulkan;
-class gfx_device_vulkan;
-namespace pipeline_image {
-class pipeline_image;
-}
-namespace pipeline_box {
-class pipeline_box;
-}
-namespace pipeline_SDF {
-class pipeline_SDF;
-}
-namespace pipeline_alpha {
-class pipeline_alpha;
-}
-namespace pipeline_tone_mapper {
-class pipeline_tone_mapper;
-}
 
 struct swapchain_image_info {
     vk::Image image;
@@ -38,15 +30,16 @@ struct swapchain_image_info {
     bool layout_is_present = false;
 };
 
-class gfx_surface_vulkan final : public gfx_surface {
+class gfx_surface {
 public:
-    using super = gfx_surface;
+    gfx_surface_state state = gfx_surface_state::has_window;
+    gfx_surface_loss loss = gfx_surface_loss::none;
 
     vk::SurfaceKHR intrinsic;
 
     vk::SwapchainKHR swapchain;
 
-    static constexpr uint32_t defaultNumberOfSwapchainImages = 2;
+    constexpr static uint32_t defaultNumberOfSwapchainImages = 2;
 
     uint32_t nrSwapchainImages;
     vk::Extent2D swapchainImageExtent;
@@ -73,50 +66,74 @@ public:
     vk::Semaphore renderFinishedSemaphore;
     vk::Fence renderFinishedFence;
 
-    std::unique_ptr<pipeline_image::pipeline_image> image_pipeline;
-    std::unique_ptr<pipeline_box::pipeline_box> box_pipeline;
-    std::unique_ptr<pipeline_SDF::pipeline_SDF> SDF_pipeline;
-    std::unique_ptr<pipeline_alpha::pipeline_alpha> alpha_pipeline;
-    std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> tone_mapper_pipeline;
+    std::unique_ptr<gfx_pipeline_image> image_pipeline;
+    std::unique_ptr<gfx_pipeline_box> box_pipeline;
+    std::unique_ptr<gfx_pipeline_SDF> SDF_pipeline;
+    std::unique_ptr<gfx_pipeline_alpha> alpha_pipeline;
+    std::unique_ptr<gfx_pipeline_tone_mapper> tone_mapper_pipeline;
 
-    gfx_surface_vulkan(gfx_system& system, vk::SurfaceKHR surface);
-    ~gfx_surface_vulkan();
+    gfx_surface(vk::SurfaceKHR surface) : intrinsic(surface)
+    {
+        box_pipeline = std::make_unique<gfx_pipeline_box>(this);
+        image_pipeline = std::make_unique<gfx_pipeline_image>(this);
+        SDF_pipeline = std::make_unique<gfx_pipeline_SDF>(this);
+        alpha_pipeline = std::make_unique<gfx_pipeline_alpha>(this);
+        tone_mapper_pipeline = std::make_unique<gfx_pipeline_tone_mapper>(this);
+    }
 
-    gfx_surface_vulkan(const gfx_surface_vulkan&) = delete;
-    gfx_surface_vulkan& operator=(const gfx_surface_vulkan&) = delete;
-    gfx_surface_vulkan(gfx_surface_vulkan&&) = delete;
-    gfx_surface_vulkan& operator=(gfx_surface_vulkan&&) = delete;
+    ~gfx_surface()
+    {
+        if (state != gfx_surface_state::no_window) {
+            hilet lock = std::scoped_lock(gfx_system_mutex);
+            loss = gfx_surface_loss::window_lost;
+            teardown();
+            hi_assert(state == gfx_surface_state::no_window);
+        }
+    }
 
-    void init() override;
+    gfx_surface(const gfx_surface&) = delete;
+    gfx_surface& operator=(const gfx_surface&) = delete;
+    gfx_surface(gfx_surface&&) = delete;
+    gfx_surface& operator=(gfx_surface&&) = delete;
 
-    void set_device(gfx_device *device) noexcept override;
+    /*! Set GPU device to manage this window.
+     * Change of the device may be done at runtime.
+     *
+     * @param new_device The device to use for rendering, may be nullptr.
+     */
+    void set_device(gfx_device *device) noexcept;
 
-    gfx_device_vulkan& vulkan_device() const noexcept;
-    [[nodiscard]] extent2 size() const noexcept override;
+    [[nodiscard]] gfx_device *device() const noexcept
+    {
+        return _device;
+    }
 
-    void update(extent2 new_size) noexcept override;
+    [[nodiscard]] extent2 size() const noexcept;
 
-    [[nodiscard]] draw_context render_start(aarectangle redraw_rectangle) override;
-    void render_finish(draw_context const& context) override;
+    void update(extent2 new_size) noexcept;
 
-    void add_delegate(gfx_surface_delegate *delegate) noexcept override;
-    void remove_delegate(gfx_surface_delegate *delegate) noexcept override;
+    [[nodiscard]] draw_context render_start(aarectangle redraw_rectangle);
+    void render_finish(draw_context const& context);
 
-protected:
-    void teardown() noexcept override;
-    void build(extent2 new_size) noexcept;
+    void add_delegate(gfx_surface_delegate *delegate) noexcept;
+    void remove_delegate(gfx_surface_delegate *delegate) noexcept;
 
 private:
     struct delegate_type {
-        gfx_surface_delegate_vulkan *delegate;
+        gfx_surface_delegate *delegate;
         vk::Semaphore semaphore;
     };
+
+    gfx_device *_device = nullptr;
 
     std::vector<delegate_type> _delegates;
 
     gfx_queue_vulkan const *_graphics_queue;
     gfx_queue_vulkan const *_present_queue;
     extent2 _render_area_granularity;
+
+    void teardown() noexcept;
+    void build(extent2 new_size) noexcept;
 
     gfx_surface_loss build_for_new_device() noexcept;
     gfx_surface_loss build_for_new_swapchain(extent2 new_size) noexcept;
@@ -168,5 +185,12 @@ private:
      */
     std::tuple<std::size_t, extent2> get_image_count_and_size(std::size_t new_count, extent2 new_size);
 };
+
+[[nodiscard]] std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window);
+
+[[nodiscard]] inline gfx_device *find_best_device(gfx_surface const &surface)
+{
+    return find_best_device(surface.intrinsic);
+}
 
 } // namespace hi::inline v1

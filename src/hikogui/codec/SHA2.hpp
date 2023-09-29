@@ -12,123 +12,125 @@
 #include <cstdint>
 #include <span>
 
-
+hi_export_module(hikogui.codec.SHA2);
 
 hi_warning_push();
 // C26429: Symbol '' is never tested for nullness, it can be marked as not_null (f.23)
 // False positive reported: https://developercommunity.visualstudio.com/t/C26429-false-positive-on-reference-to-po/10262151
 hi_warning_ignore_msvc(26429);
 
-namespace hi::inline v1 {
-namespace detail::SHA2 {
+namespace hi { inline namespace v1 {
 
-template<typename T>
-struct state {
-    T a;
-    T b;
-    T c;
-    T d;
-    T e;
-    T f;
-    T g;
-    T h;
-
-    constexpr state(T a, T b, T c, T d, T e, T f, T g, T h) noexcept : a(a), b(b), c(c), d(d), e(e), f(f), g(g), h(h) {}
-
-    [[nodiscard]] constexpr T get_word(std::size_t i) const noexcept
-    {
-        switch (i) {
-        case 0: return a;
-        case 1: return b;
-        case 2: return c;
-        case 3: return d;
-        case 4: return e;
-        case 5: return f;
-        case 6: return g;
-        case 7: return h;
-        default: hi_no_default();
-        }
-    }
-
-    [[nodiscard]] constexpr std::byte get_byte(std::size_t i) const noexcept
-    {
-        hi_axiom(i < 8 * sizeof(T));
-        hilet word_nr = i / sizeof(T);
-        hilet byte_nr = i % sizeof(T);
-        hilet word = get_word(word_nr);
-        return static_cast<std::byte>(word >> (sizeof(T) - 1 - byte_nr) * 8);
-    }
-
-    template<std::size_t N>
-    [[nodiscard]] bstring get_bytes() const noexcept
-    {
-        auto r = bstring{};
-        r.reserve(N);
-
-        for (std::size_t i = 0; i != N; ++i) {
-            r += get_byte(i);
-        }
-        return r;
-    }
-
-    constexpr state &operator+=(state const &rhs) noexcept
-    {
-        a += rhs.a;
-        b += rhs.b;
-        c += rhs.c;
-        d += rhs.d;
-        e += rhs.e;
-        f += rhs.f;
-        g += rhs.g;
-        h += rhs.h;
-        return *this;
-    }
-};
-
-template<typename T>
-struct block {
-    std::array<T, 16> v;
-
-    static constexpr std::size_t size = sizeof(v);
-
-    constexpr void set_byte(std::size_t i, std::byte value) noexcept
-    {
-        hilet word_nr = i / sizeof(T);
-        hilet byte_nr = i % sizeof(T);
-        auto &word = v[word_nr];
-
-        hilet valueT = static_cast<T>(static_cast<uint8_t>(value));
-        word |= valueT << (sizeof(T) - 1 - byte_nr) * 8;
-    }
-
-    constexpr block(std::byte const *ptr) noexcept : v()
-    {
-        for (std::size_t i = 0; i != size; ++i) {
-            set_byte(i, *(ptr++));
-        }
-    }
-
-    constexpr T const &operator[](std::size_t i) const noexcept
-    {
-        return v[i % 16];
-    }
-
-    constexpr T &operator[](std::size_t i) noexcept
-    {
-        return v[i % 16];
-    }
-};
-
-} // namespace detail::SHA2
-
-template<typename T, std::size_t Bits>
+hi_export template<typename T, std::size_t Bits>
 class SHA2 {
     static_assert(Bits % 8 == 0);
-    static constexpr std::size_t nr_rounds = (sizeof(T) == 4) ? 64 : 80;
-    static constexpr std::size_t pad_length_of_length = (sizeof(T) == 4) ? 8 : 16;
+    constexpr static std::size_t nr_rounds = (sizeof(T) == 4) ? 64 : 80;
+    constexpr static std::size_t pad_length_of_length = (sizeof(T) == 4) ? 8 : 16;
 
-    using state_type = detail::SHA2::state<T>;
-    using block_type = detail::SHA2::block<T>;
+    struct state_type {
+        T a;
+        T b;
+        T c;
+        T d;
+        T e;
+        T f;
+        T g;
+        T h;
+
+        constexpr state_type(T a, T b, T c, T d, T e, T f, T g, T h) noexcept : a(a), b(b), c(c), d(d), e(e), f(f), g(g), h(h) {}
+
+        [[nodiscard]] constexpr T get_word(std::size_t i) const noexcept
+        {
+            switch (i) {
+            case 0:
+                return a;
+            case 1:
+                return b;
+            case 2:
+                return c;
+            case 3:
+                return d;
+            case 4:
+                return e;
+            case 5:
+                return f;
+            case 6:
+                return g;
+            case 7:
+                return h;
+            default:
+                hi_no_default();
+            }
+        }
+
+        [[nodiscard]] constexpr std::byte get_byte(std::size_t i) const noexcept
+        {
+            hi_axiom(i < 8 * sizeof(T));
+            hilet word_nr = i / sizeof(T);
+            hilet byte_nr = i % sizeof(T);
+            hilet word = get_word(word_nr);
+            return static_cast<std::byte>(word >> (sizeof(T) - 1 - byte_nr) * 8);
+        }
+
+        template<std::size_t N>
+        [[nodiscard]] bstring get_bytes() const noexcept
+        {
+            auto r = bstring{};
+            r.reserve(N);
+
+            for (std::size_t i = 0; i != N; ++i) {
+                r += get_byte(i);
+            }
+            return r;
+        }
+
+        constexpr state_type& operator+=(state_type const& rhs) noexcept
+        {
+            a += rhs.a;
+            b += rhs.b;
+            c += rhs.c;
+            d += rhs.d;
+            e += rhs.e;
+            f += rhs.f;
+            g += rhs.g;
+            h += rhs.h;
+            return *this;
+        }
+    };
+
+    struct block_type {
+        std::array<T, 16> v;
+
+        constexpr static std::size_t size = sizeof(v);
+
+        constexpr void set_byte(std::size_t i, std::byte value) noexcept
+        {
+            hilet word_nr = i / sizeof(T);
+            hilet byte_nr = i % sizeof(T);
+            auto& word = v[word_nr];
+
+            hilet valueT = static_cast<T>(static_cast<uint8_t>(value));
+            word |= valueT << (sizeof(T) - 1 - byte_nr) * 8;
+        }
+
+        constexpr block_type(std::byte const *ptr) noexcept : v()
+        {
+            for (std::size_t i = 0; i != size; ++i) {
+                set_byte(i, *(ptr++));
+            }
+        }
+
+        constexpr T const& operator[](std::size_t i) const noexcept
+        {
+            return v[i % 16];
+        }
+
+        constexpr T& operator[](std::size_t i) noexcept
+        {
+            return v[i % 16];
+        }
+    };
+
     using byteptr = std::byte *;
     using cbyteptr = std::byte const *;
     state_type state;
@@ -139,7 +141,7 @@ class SHA2 {
 
     std::size_t size;
 
-    [[nodiscard]] static constexpr T K(std::size_t i) noexcept
+    [[nodiscard]] constexpr static T K(std::size_t i) noexcept
     {
         constexpr std::array<uint32_t, 64> K32 = {
             0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -176,29 +178,29 @@ class SHA2 {
         }
     }
 
-    [[nodiscard]] static constexpr T Maj(T x, T y, T z) noexcept
+    [[nodiscard]] constexpr static T Maj(T x, T y, T z) noexcept
     {
         return (x & y) ^ (x & z) ^ (y & z);
     }
 
-    [[nodiscard]] static constexpr T Ch(T x, T y, T z) noexcept
+    [[nodiscard]] constexpr static T Ch(T x, T y, T z) noexcept
     {
         return (x & y) ^ (~x & z);
     }
 
     template<int A, int B, int C>
-    [[nodiscard]] static constexpr T S(T x) noexcept
+    [[nodiscard]] constexpr static T S(T x) noexcept
     {
         return std::rotr(x, A) ^ std::rotr(x, B) ^ std::rotr(x, C);
     }
 
     template<int A, int B, int C>
-    [[nodiscard]] static constexpr T s(T x) noexcept
+    [[nodiscard]] constexpr static T s(T x) noexcept
     {
         return std::rotr(x, A) ^ std::rotr(x, B) ^ x >> C;
     }
 
-    [[nodiscard]] static constexpr T S0(T x) noexcept
+    [[nodiscard]] constexpr static T S0(T x) noexcept
     {
         if constexpr (std::is_same_v<T, uint32_t>) {
             return S<2, 13, 22>(x);
@@ -207,7 +209,7 @@ class SHA2 {
         }
     }
 
-    [[nodiscard]] static constexpr T S1(T x)
+    [[nodiscard]] constexpr static T S1(T x)
     {
         if constexpr (std::is_same_v<T, uint32_t>) {
             return S<6, 11, 25>(x);
@@ -216,7 +218,7 @@ class SHA2 {
         }
     }
 
-    [[nodiscard]] static constexpr T s0(T x)
+    [[nodiscard]] constexpr static T s0(T x)
     {
         if constexpr (std::is_same_v<T, uint32_t>) {
             return s<7, 18, 3>(x);
@@ -225,7 +227,7 @@ class SHA2 {
         }
     }
 
-    [[nodiscard]] static constexpr T s1(T x)
+    [[nodiscard]] constexpr static T s1(T x)
     {
         if constexpr (std::is_same_v<T, uint32_t>) {
             return s<17, 19, 10>(x);
@@ -234,7 +236,7 @@ class SHA2 {
         }
     }
 
-    static constexpr state_type round(state_type const &tmp, T K, T W) noexcept
+    constexpr static state_type round(state_type const& tmp, T K, T W) noexcept
     {
         hilet T1 = tmp.h + S1(tmp.e) + Ch(tmp.e, tmp.f, tmp.g) + K + W;
 
@@ -260,7 +262,7 @@ class SHA2 {
         state += tmp;
     }
 
-    constexpr void add_to_overflow(cbyteptr &ptr, std::byte const *last) noexcept
+    constexpr void add_to_overflow(cbyteptr& ptr, std::byte const *last) noexcept
     {
         hi_axiom_not_null(ptr);
         hi_axiom_not_null(last);
@@ -309,7 +311,7 @@ public:
     {
     }
 
-    constexpr SHA2 &add(std::byte const *ptr, std::byte const *last, bool finish = true) noexcept
+    constexpr SHA2& add(std::byte const *ptr, std::byte const *last, bool finish = true) noexcept
     {
         size += last - ptr;
 
@@ -341,28 +343,28 @@ public:
         return *this;
     }
 
-    constexpr SHA2 &add(bstring const &str, bool finish = true) noexcept
+    constexpr SHA2& add(bstring const& str, bool finish = true) noexcept
     {
         hilet first = str.data();
         hilet last = first + str.size();
         return add(first, last, finish);
     }
 
-    constexpr SHA2 &add(bstring_view str, bool finish = true) noexcept
+    constexpr SHA2& add(bstring_view str, bool finish = true) noexcept
     {
         hilet first = str.data();
         hilet last = first + str.size();
         return add(first, last, finish);
     }
 
-    constexpr SHA2 &add(std::string const &str, bool finish = true) noexcept
+    constexpr SHA2& add(std::string const& str, bool finish = true) noexcept
     {
         hilet first = reinterpret_cast<std::byte const *>(str.data());
         hilet last = first + str.size();
         return add(first, last, finish);
     }
 
-    constexpr SHA2 &add(std::string_view str, bool finish = true) noexcept
+    constexpr SHA2& add(std::string_view str, bool finish = true) noexcept
     {
         hilet first = reinterpret_cast<std::byte const *>(str.data());
         hilet last = first + str.size();
@@ -382,26 +384,25 @@ public:
     }
 };
 
-class SHA224 final : public SHA2<uint32_t, 224> {
+hi_export class SHA224 final : public SHA2<uint32_t, 224> {
 public:
-    SHA224()
-    noexcept : SHA2<uint32_t, 224>(0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4)
+    SHA224() noexcept :
+        SHA2<uint32_t, 224>(0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4)
     {
     }
 };
 
-class SHA256 final : public SHA2<uint32_t, 256> {
+hi_export class SHA256 final : public SHA2<uint32_t, 256> {
 public:
-    SHA256()
-    noexcept : SHA2<uint32_t, 256>(0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19)
+    SHA256() noexcept :
+        SHA2<uint32_t, 256>(0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19)
     {
     }
 };
 
-class SHA384 final : public SHA2<uint64_t, 384> {
+hi_export class SHA384 final : public SHA2<uint64_t, 384> {
 public:
-    SHA384()
-    noexcept :
+    SHA384() noexcept :
         SHA2<uint64_t, 384>(
             0xcbbb9d5dc1059ed8,
             0x629a292a367cd507,
@@ -415,10 +416,9 @@ public:
     }
 };
 
-class SHA512 final : public SHA2<uint64_t, 512> {
+hi_export class SHA512 final : public SHA2<uint64_t, 512> {
 public:
-    SHA512()
-    noexcept :
+    SHA512() noexcept :
         SHA2<uint64_t, 512>(
             0x6a09e667f3bcc908,
             0xbb67ae8584caa73b,
@@ -432,10 +432,9 @@ public:
     }
 };
 
-class SHA512_224 final : public SHA2<uint64_t, 224> {
+hi_export class SHA512_224 final : public SHA2<uint64_t, 224> {
 public:
-    SHA512_224()
-    noexcept :
+    SHA512_224() noexcept :
         SHA2<uint64_t, 224>(
             0x8C3D37C819544DA2,
             0x73E1996689DCD4D6,
@@ -449,10 +448,9 @@ public:
     }
 };
 
-class SHA512_256 final : public SHA2<uint64_t, 256> {
+hi_export class SHA512_256 final : public SHA2<uint64_t, 256> {
 public:
-    SHA512_256()
-    noexcept :
+    SHA512_256() noexcept :
         SHA2<uint64_t, 256>(
             0x22312194FC2BF72C,
             0x9F555FA3C84C64C2,
@@ -466,6 +464,6 @@ public:
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
 
 hi_warning_pop();

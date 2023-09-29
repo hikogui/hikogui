@@ -118,7 +118,7 @@ unicode_LB1(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
     return r;
 }
 
-[[nodiscard]] constexpr void unicode_LB2_3(unicode_break_vector& opportunities) noexcept
+constexpr void unicode_LB2_3(unicode_break_vector& opportunities) noexcept
 {
     hi_axiom(not opportunities.empty());
     // LB2

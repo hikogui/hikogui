@@ -29,7 +29,7 @@ constexpr auto policy_metadata = enum_metadata{
 
 template<typename CharT>
 struct std::formatter<hi::policy, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::policy const& t, auto& fc)
+    auto format(hi::policy const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>::format(hi::policy_metadata[t], fc);
     }

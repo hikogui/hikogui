@@ -8,7 +8,7 @@
 #include "../geometry/module.hpp"
 #include "../macros.hpp"
 
-
+hi_export_module(hikogui.font.glyph_metrics);
 
 namespace hi::inline v1 {
 
@@ -16,7 +16,7 @@ namespace hi::inline v1 {
  * This information is used to position glyphs next to each other
  * and determinate the size of a shaped text.
  */
-struct glyph_metrics {
+hi_export struct glyph_metrics {
     /*! Bounding box of the path.
      */
     aarectangle bounding_rectangle = {};

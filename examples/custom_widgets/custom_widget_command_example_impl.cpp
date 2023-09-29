@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/module.hpp"
+#include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 
 // Every widget must inherit from hi::widget.
@@ -108,7 +108,7 @@ public:
             break;
 
         case hi::gui_event_type::keyboard_grapheme:
-            hi_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(get<0>(event.grapheme())));
+            hi_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(event.grapheme().starter()));
             return true;
 
         case hi::gui_event_type::mouse_up:
@@ -134,10 +134,11 @@ int hi_main(int argc, char *argv[])
     hi::set_application_vendor("HikoGUI");
     hi::set_application_version({1, 0, 0});
 
-    auto gui = hi::gui_system::make_unique();
-    auto [window, widget] = gui->make_window<hi::window_widget>(hi::tr("Custom Widget Command"));
-    widget.content().make_widget<command_widget>("A1");
-    widget.content().make_widget<command_widget>("A2");
+    auto widget = std::make_unique<hi::window_widget>(hi::txt("Custom Widget Command"));
+    widget->content().make_widget<command_widget>("A1");
+    widget->content().make_widget<command_widget>("A2");
+
+    auto window = std::make_unique<hi::gui_window>(std::move(widget));
 
     auto close_cbt = window->closing.subscribe(
         [&] {

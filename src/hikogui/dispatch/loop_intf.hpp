@@ -117,6 +117,7 @@ public:
     /** Construct a loop.
      *
      */
+    ~loop() = default;
     loop();
     loop(loop const&) = delete;
     loop(loop&&) noexcept = default;
@@ -125,13 +126,7 @@ public:
 
     /** Get or create the thread-local loop.
      */
-    [[nodiscard]] hi_no_inline static loop& local() noexcept
-    {
-        if (not _local) {
-            _local = std::make_unique<loop>();
-        }
-        return *_local;
-    }
+    [[nodiscard]] static loop& local() noexcept;
 
     /** Get or create the main-loop.
      *
@@ -385,8 +380,6 @@ private:
         }
     }
 
-    inline static thread_local std::unique_ptr<loop> _local;
-
     /** Pointer to the main-loop.
      */
     inline static std::atomic<loop *> _main;
@@ -399,6 +392,20 @@ private:
 
     std::unique_ptr<impl_type> _pimpl;
 };
+
+namespace detail {
+inline thread_local std::unique_ptr<loop> thread_local_loop;
+}
+
+/** Get or create the thread-local loop.
+ */
+[[nodiscard]] hi_no_inline inline loop& loop::local() noexcept
+{
+    if (not detail::thread_local_loop) {
+        detail::thread_local_loop = std::make_unique<loop>();
+    }
+    return *detail::thread_local_loop;
+}
 
 template<typename Result, typename... Args>
 template<typename F>

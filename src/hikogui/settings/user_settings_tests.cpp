@@ -4,7 +4,7 @@
 
 #include "user_settings.hpp"
 #include "../path/path.hpp"
-#include "../concurrency/module.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <format>
@@ -27,7 +27,9 @@ protected:
 
 TEST_F(user_settings_tests, is_null)
 {
-    ASSERT_EQ(hi::get_user_setting<int>("foo"), std::nullopt);
+    auto result = hi::get_user_setting<int>("foo");
+    ASSERT_FALSE(result);
+    ASSERT_EQ(result.error(), std::errc::no_such_file_or_directory);
 }
 
 TEST_F(user_settings_tests, set_int_value)
@@ -52,5 +54,7 @@ TEST_F(user_settings_tests, delete_int_value)
     ASSERT_EQ(hi::get_user_setting<int>("foo"), 1);
 
     hi::delete_user_setting("foo");
-    ASSERT_EQ(hi::get_user_setting<int>("foo"), std::nullopt);
+    auto result = hi::get_user_setting<int>("foo");
+    ASSERT_FALSE(result);
+    ASSERT_EQ(result.error(), std::errc::no_such_file_or_directory);
 }

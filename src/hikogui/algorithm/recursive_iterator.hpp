@@ -30,7 +30,7 @@ class recursive_iterator {
     using pointer = typename std::iterator_traits<child_iterator>::pointer;
 
 public:
-    constexpr recursive_iterator() noexcept = delete;
+    constexpr recursive_iterator() noexcept = default;
     constexpr recursive_iterator(recursive_iterator const& other) noexcept = default;
     constexpr recursive_iterator(recursive_iterator&& other) noexcept = default;
     constexpr recursive_iterator& operator=(recursive_iterator const& other) noexcept = default;

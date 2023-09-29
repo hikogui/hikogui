@@ -219,10 +219,10 @@ public:
             if (scheme_ == "resource") {
                 // Always used std::u8string with std::filesystem::path.
                 hilet ref = std::filesystem::path{filesystem_path_generic_u8string(false)};
-                if (auto path = find_path(path_location::resource_dirs, ref)) {
+                if (auto path = find_path(resource_dirs(), ref)) {
                     return *path;
                 } else {
-                    throw url_error(std::format("Resource {} not found.", *this));
+                    throw url_error(std::format("Resource {} not found.", to_string(*this)));
                 }
 
             } else if (scheme_ == "file") {
@@ -318,7 +318,7 @@ struct std::hash<hi::URL> {
 
 template<typename CharT>
 struct std::formatter<hi::URL, CharT> : std::formatter<hi::URI, CharT> {
-    auto format(hi::URL const& t, auto& fc)
+    auto format(hi::URL const& t, auto& fc) const
     {
         return std::formatter<hi::URI, CharT>::format(t, fc);
     }

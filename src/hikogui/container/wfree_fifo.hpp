@@ -41,9 +41,9 @@ public:
     using value_type = T;
     using slot_type = polymorphic_optional<value_type, SlotSize, SlotSize>;
 
-    static constexpr std::size_t fifo_size = 65536;
-    static constexpr std::size_t slot_size = SlotSize;
-    static constexpr std::size_t num_slots = fifo_size / slot_size;
+    constexpr static std::size_t fifo_size = 65536;
+    constexpr static std::size_t slot_size = SlotSize;
+    constexpr static std::size_t num_slots = fifo_size / slot_size;
 
     constexpr wfree_fifo() noexcept = default;
     wfree_fifo(wfree_fifo const&) = delete;

@@ -7,11 +7,13 @@
 #include "formula_binary_operator_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.formula.formula_shl_node);
 
-struct formula_shl_node final : formula_binary_operator_node {
-    formula_shl_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
-        formula_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs))
+namespace hi { inline namespace v1 {
+
+hi_export struct formula_shl_node final : formula_binary_operator_node {
+    formula_shl_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
+        formula_binary_operator_node(line_nr, column_nr, std::move(lhs), std::move(rhs))
     {
     }
 
@@ -22,7 +24,7 @@ struct formula_shl_node final : formula_binary_operator_node {
         try {
             return lhs_ << rhs_;
         } catch (std::exception const &e) {
-            throw operation_error(std::format("{}: Can not evaluate shift-left.\n{}", location, e.what()));
+            throw operation_error(std::format("{}:{}: Can not evaluate shift-left.\n{}", line_nr, column_nr, e.what()));
         }
     }
 
@@ -32,4 +34,4 @@ struct formula_shl_node final : formula_binary_operator_node {
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

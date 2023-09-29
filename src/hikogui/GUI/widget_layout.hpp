@@ -41,7 +41,7 @@ public:
      *
      * Widgets are allowed to draw inside their margins, in most cases this will just be a border.
      */
-    static constexpr int redraw_overhang = 2;
+    constexpr static int redraw_overhang = 2;
 
     /** Shape of the widget.
      * Since a widget_layout is always in local coordinates, the `left` and `bottom` values are zero.

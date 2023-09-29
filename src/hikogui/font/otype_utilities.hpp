@@ -5,13 +5,13 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../parser/module.hpp"
+#include "../parser/parser.hpp"
 #include "../macros.hpp"
 #include <concepts>
 
+hi_export_module(hikogui.font.otype_utilities);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Open-type 16.16 signed fixed point, range between -32768.0 and 32767.999
  */

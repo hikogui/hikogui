@@ -5,11 +5,13 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../i18n/module.hpp"
-#include "../container/module.hpp"
-#include "../telemetry/module.hpp"
+#include "../i18n/i18n.hpp"
+#include "../telemetry/telemetry.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "unicode_normalization.hpp"
 #include "ucd_general_categories.hpp"
+#include "ucd_canonical_combining_classes.hpp"
+#include "ucd_scripts.hpp"
 #include "phrasing.hpp"
 #include "../macros.hpp"
 #include <cstdint>
@@ -20,13 +22,125 @@
 #include <vector>
 #include <algorithm>
 #include <bit>
-
-
+#include <array>
+#include <atomic>
 
 namespace hi::inline v1 {
 namespace detail {
 
-inline auto long_graphemes = ::hi::stable_set<std::u32string>{};
+class long_grapheme_table {
+public:
+    long_grapheme_table() = default;
+    long_grapheme_table(long_grapheme_table const&) = delete;
+    long_grapheme_table(long_grapheme_table&&) = delete;
+    long_grapheme_table& operator=(long_grapheme_table const&) = delete;
+    long_grapheme_table& operator=(long_grapheme_table&&) = delete;
+
+    /** Get the grapheme from the table.
+     *
+     * @param start The start position of the grapheme in the table.
+     *              If the start value came from another thread it is
+     *              important that this was transferred properly, as this
+     *              the only way that this function becomes thread safe.
+     * @return The code-points of the grapheme.
+     */
+    [[nodiscard]] std::u32string get_grapheme(uint32_t start) const noexcept
+    {
+        // If `start` came from another thread it will have been transferred
+        // to this thread pr
+        auto src = std::addressof(_table[start]);
+        hilet length = *src >> 21;
+
+        auto r = std::u32string{};
+        r.resize_and_overwrite(length, [&](char32_t *dst, size_t count) {
+            std::copy_n(src, count, dst);
+            *dst &= 0x1f'ffff;
+            return count;
+        });
+        return r;
+    }
+
+    /** Get the size of the grapheme.
+     *
+     * @param start The start position of the grapheme in the table.
+     *              If the start value came from another thread it is
+     *              important that this was transferred properly, as this
+     *              the only way that this function becomes thread safe.
+     * @return The number of code-points of the grapheme.
+     */
+    [[nodiscard]] size_t get_grapheme_size(uint32_t start) const noexcept
+    {
+        return _table[start] >> 21;
+    }
+
+    /** Get the starter (first) code-point of a grapheme.
+     *
+     * @param start The start position of the grapheme in the table.
+     *              If the start value came from another thread it is
+     *              important that this was transferred properly, as this
+     *              the only way that this function becomes thread safe.
+     * @return The starter (first) code-point of the a grapheme.
+     */
+    [[nodiscard]] char32_t get_grapheme_starter(uint32_t start) const noexcept
+    {
+        return char32_t{_table[start] & 0x1f'ffff};
+    }
+
+    /** Find or insert a grapheme in the table.
+     *
+     * @param code_points The code-points forming a grapheme. The grapheme must
+     *                 be NFC normalized. The grapheme must be no more than
+     *                 31 code-points (stream-safe).
+     * @return Index where the grapheme is in the table. -1 if the table is full.
+     */
+    template<typename CodePoints>
+    [[nodiscard]] int32_t add_grapheme(CodePoints&& code_points) noexcept
+    {
+        static_assert(std::is_same_v<typename std::remove_cvref_t<CodePoints>::value_type, char32_t>);
+
+        hi_axiom(code_points.size() >= 2);
+        hi_axiom(unicode_is_NFC_grapheme(code_points.cbegin(), code_points.cend()));
+
+        hilet lock = std::scoped_lock(_mutex);
+
+        // See if this grapheme already exists and return its index.
+        if (hilet it = _indices.find(code_points); it != _indices.end()) {
+            return it->second;
+        }
+
+        // Check if there is enough room in the table to add the code-points.
+        if (_head + code_points.size() >= _table.size()) {
+            return -1;
+        }
+
+        hilet insert_index = _head;
+        _head += narrow_cast<uint32_t>(code_points.size());
+
+        // Copy the grapheme into the table, and set the size on the first entry.
+        std::copy(code_points.cbegin(), code_points.cend(), _table.begin() + insert_index);
+        _table[insert_index] |= char_cast<char32_t>(code_points.size() << 21);
+
+        // Add the grapheme to the quickly searchable index table.
+        _indices.emplace(std::forward<CodePoints>(code_points), insert_index);
+
+        return insert_index;
+    }
+
+private:
+    mutable unfair_mutex _mutex = {};
+    uint32_t _head = {};
+
+    /** Table of code-points for graphemes.
+     *
+     * - [7:0] number of code-point of the grapheme (only on the first code-point).
+     * - [28:8] code-point.
+     */
+    std::array<char32_t, 0x0f'0000> _table = {};
+
+    std::unordered_map<std::u32string, uint32_t> _indices = {};
+};
+
+inline long_grapheme_table long_graphemes = {};
 
 } // namespace detail
 
@@ -83,18 +197,26 @@ struct grapheme {
     constexpr grapheme(char32_t code_point) noexcept : _value(char_cast<value_type>(code_point))
     {
         hi_axiom(code_point <= 0x10'ffff);
+        hi_axiom(ucd_get_canonical_combining_class(code_point) == 0, "Single code-point must be a starter");
+        set_script();
     }
 
     constexpr grapheme(char ascii_char) noexcept : _value(char_cast<value_type>(ascii_char))
     {
         hi_axiom(ascii_char >= 0 and ascii_char <= 0x7f);
+        // All ASCII characters are starters.
+        set_script();
     }
 
     /** Encode a single code-point.
      */
     constexpr grapheme& operator=(char32_t code_point) noexcept
     {
+        hi_axiom(code_point <= 0x10'ffff);
+        hi_axiom(ucd_get_canonical_combining_class(code_point) == 0, "Single code-point must be a starter");
+
         _value = char_cast<value_type>(code_point);
+        set_script();
         return *this;
     }
 
@@ -103,7 +225,10 @@ struct grapheme {
     constexpr grapheme& operator=(char ascii_char) noexcept
     {
         hi_axiom(ascii_char >= 0 and ascii_char <= 0x7f);
+        // All ASCII characters are starters.
+
         _value = char_cast<value_type>(ascii_char);
+        set_script();
         return *this;
     }
 
@@ -111,19 +236,21 @@ struct grapheme {
      *
      * @param code_points The NFC/NKFC normalized and composed code-point of this grapheme.
      */
-    constexpr grapheme(composed_t, std::u32string_view code_points) noexcept
+    template<typename CodePoints>
+    constexpr grapheme(composed_t, CodePoints&& code_points) noexcept
     {
-        switch (code_points.size()) {
-        case 0:
-            hi_no_default();
+        static_assert(std::is_same_v<typename std::remove_cvref_t<CodePoints>::value_type, char32_t>);
 
-        case 1:
-            _value = char_cast<value_type>(code_points[0]);
-            break;
+        hi_axiom(not code_points.empty());
+        if (code_points.size() == 1) {
+            hilet code_point = code_points.front();
+            hi_axiom(code_point <= 0x10'ffff);
+            hi_axiom(ucd_get_canonical_combining_class(code_point) == 0);
+            _value = char_cast<value_type>(code_point);
 
-        default:
-            hilet index = detail::long_graphemes.insert(std::u32string{code_points});
-            if (index < 0x0f'0000) {
+        } else {
+            hilet index = detail::long_graphemes.add_grapheme(std::forward<CodePoints>(code_points));
+            if (index >= 0) {
                 _value = narrow_cast<value_type>(index + 0x11'0000);
 
             } else {
@@ -132,6 +259,7 @@ struct grapheme {
                 _value = char_cast<value_type>(U'\ufffd');
             }
         }
+        set_script();
     }
 
     /** Encode a grapheme from a list of code-points.
@@ -164,18 +292,58 @@ struct grapheme {
         _value |= wide_cast<value_type>(rhs.intrinsic()) << 21;
     }
 
+    /** Get the script of the starter code-point.
+     *
+     * @return The script for the starter code-point retrieved from the Unicode
+     *         Datastarter.
+     */
+    [[nodiscard]] constexpr iso_15924 starter_script() const noexcept
+    {
+        return ucd_get_script(starter());
+    }
+
+    /** Get the script of the starter code-point.
+     *
+     * @param default_script The
+     * @return The script for the starter code-point retrieved from the Unicode
+     *         Datastarter; or the @a default_script if the starter-script is
+     *         common or inherinted.
+     */
+    [[nodiscard]] constexpr iso_15924 starter_script(iso_15924 default_script) const noexcept
+    {
+        hilet starter_script_ = starter_script();
+        if (starter_script_ == iso_15924::common() and starter_script_ == iso_15924::inherited()) {
+            return default_script;
+        } else {
+            return starter_script_;
+        }
+    }
+
     [[nodiscard]] constexpr iso_15924 script() const noexcept
     {
         return iso_15924{intrinsic_t{}, narrow_cast<uint16_t>((_value >> 36) & 0x3ff)};
     }
 
+    /** Set the script of the grapheme.
+     *
+     * @param rhs The new script for the grapheme, if the starter-script is
+     *            common or inherinted.
+     */
     constexpr void set_script(iso_15924 rhs) noexcept
     {
-        hi_axiom(rhs.intrinsic() < 1000);
+        hilet new_script = starter_script(rhs);
+        hi_axiom(new_script.intrinsic() < 1000);
 
         constexpr auto mask = ~(value_type{0x3ff} << 36);
         _value &= mask;
-        _value |= wide_cast<value_type>(rhs.intrinsic()) << 36;
+        _value |= wide_cast<value_type>(new_script.intrinsic()) << 36;
+    }
+
+    /** Get the script of the grapheme to the starter script.
+     */
+    constexpr void set_script() noexcept
+    {
+        set_script(starter_script());
     }
 
     [[nodiscard]] constexpr iso_3166 region() const noexcept
@@ -199,25 +367,27 @@ struct grapheme {
         hilet language_ = iso_639{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x7fff)};
         tmp >>= 15;
         hilet script_ = iso_15924{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
-        tmp >>= 15;
+        tmp >>= 10;
         hilet region_ = iso_3166{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
         return hi::language_tag{language_, script_, region_};
     }
 
     constexpr void set_language_tag(hi::language_tag rhs) noexcept
     {
-        hi_axiom(rhs.region.intrinsic() <= 0x7fff);
-        hi_axiom(rhs.script.intrinsic() < 1000);
-        hi_axiom(rhs.language.intrinsic() < 1000);
+        hi_axiom(rhs.region.intrinsic() < 1000);
+        hi_axiom(rhs.language.intrinsic() <= 0x7fff);
+
+        hilet new_script = starter_script(rhs.script);
+        hi_axiom(new_script.intrinsic() < 1000);
 
         auto tmp = wide_cast<value_type>(rhs.region.intrinsic());
         tmp <<= 10;
-        tmp |= rhs.script.intrinsic();
+        tmp |= new_script.intrinsic();
         tmp <<= 15;
         tmp |= rhs.language.intrinsic();
         tmp <<= 21;
 
-        constexpr auto mask = ~(uint64_t{0x7'ffff} << 21);
+        constexpr auto mask = ~(uint64_t{0x7'ffff'ffff} << 21);
         _value &= mask;
         _value |= tmp;
     }
@@ -236,66 +406,39 @@ struct grapheme {
         _value |= static_cast<value_type>(rhs) << 56;
     }
 
-    [[nodiscard]] std::u32string const& long_grapheme() const noexcept
-    {
-        hilet i = index();
-        hi_axiom(i > 0x10'ffff and i <= 0x1f'ffff);
-        return detail::long_graphemes[i - 0x11'0000];
-    }
-
     /** Return the number of code-points encoded in the grapheme.
      */
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        return index() <= 0x10'ffff ? 1_uz : long_grapheme().size();
-    }
-
-    /** Get the code-point at the given index.
-     *
-     * @note It is undefined-behaviour to index beyond the number of encoded code-points.
-     * @param i Index of code-point in the grapheme.
-     * @return code-point at the given index.
-     */
-    [[nodiscard]] constexpr char32_t operator[](size_t i) const noexcept
-    {
-        if (hilet code_point = index(); code_point <= 0x10'ffff) {
-            hi_axiom(i == 0);
-            return char_cast<char32_t>(code_point);
+        if (auto i = index(); i <= 0x10'ffff) {
+            return 1_uz;
         } else {
-            hi_axiom_bounds(i, *this);
-            return long_grapheme()[i];
+            return detail::long_graphemes.get_grapheme_size(i - 0x11'0000);
         }
     }
 
-    /** Get the code-point at the given index.
-     *
-     * @note It is undefined-behaviour to index beyond the number of encoded code-points.
-     * @tparam I Index of code-point in the grapheme.
-     * @param rhs The grapheme to query.
-     * @return code-point at the given index.
-     */
-    template<size_t I>
-    [[nodiscard]] friend constexpr char32_t get(grapheme const& rhs) noexcept
+    [[nodiscard]] constexpr char32_t starter() const noexcept
     {
-        if (hilet code_point = rhs.index(); code_point <= 0x10'ffff) {
-            hi_axiom(I == 0);
-            return code_point;
-
+        if (auto i = index(); i <= 0x10'ffff) {
+            return char_cast<char32_t>(i);
         } else {
-            hi_axiom_bounds(I, rhs);
-            return rhs.long_grapheme()[I];
+            return detail::long_graphemes.get_grapheme_starter(i - 0x11'0000);
         }
+    }
+
+    [[nodiscard]] constexpr bool is_ascii() const noexcept
+    {
+        return index() <= 127;
     }
 
     /** Get a list of code-point normalized to NFC.
      */
     [[nodiscard]] constexpr std::u32string composed() const noexcept
     {
-        if (hilet code_point = index(); code_point <= 0x10'ffff) {
-            return std::u32string{char_cast<char32_t>(code_point)};
-
+        if (hilet i = index(); i <= 0x10'ffff) {
+            return std::u32string{char_cast<char32_t>(i)};
         } else {
-            return long_grapheme();
+            return detail::long_graphemes.get_grapheme(i - 0x11'0000);
         }
     }
 

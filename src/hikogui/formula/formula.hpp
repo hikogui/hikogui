@@ -1,55 +1,57 @@
-// Copyright Take Vos 2020-2021.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "formula_node.hpp"
-#include "formula_post_process_context.hpp"
-#include "formula_parse_context.hpp"
-#include "../macros.hpp"
-#include <string>
-#include <string_view>
-#include <memory>
+#include "formula_parser.hpp" // export
+#include "formula_add_node.hpp" // export
+#include "formula_arguments.hpp" // export
+#include "formula_assign_node.hpp" // export
+#include "formula_binary_operator_node.hpp" // export
+#include "formula_bit_and_node.hpp" // export
+#include "formula_bit_or_node.hpp" // export
+#include "formula_bit_xor_node.hpp" // export
+#include "formula_call_node.hpp" // export
+#include "formula_decrement_node.hpp" // export
+#include "formula_div_node.hpp" // export
+#include "formula_eq_node.hpp" // export
+#include "formula_evaluation_context.hpp" // export
+#include "formula_filter_node.hpp" // export
+#include "formula_ge_node.hpp" // export
+#include "formula_gt_node.hpp" // export
+#include "formula_increment_node.hpp" // export
+#include "formula_index_node.hpp" // export
+#include "formula_inplace_add_node.hpp" // export
+#include "formula_inplace_and_node.hpp" // export
+#include "formula_inplace_div_node.hpp" // export
+#include "formula_inplace_mod_node.hpp" // export
+#include "formula_inplace_mul_node.hpp" // export
+#include "formula_inplace_or_node.hpp" // export
+#include "formula_inplace_shl_node.hpp" // export
+#include "formula_inplace_shr_node.hpp" // export
+#include "formula_inplace_sub_node.hpp" // export
+#include "formula_inplace_xor_node.hpp" // export
+#include "formula_invert_node.hpp" // export
+#include "formula_le_node.hpp" // export
+#include "formula_literal_node.hpp" // export
+#include "formula_logical_and_node.hpp" // export
+#include "formula_logical_not_node.hpp" // export
+#include "formula_logical_or_node.hpp" // export
+#include "formula_lt_node.hpp" // export
+#include "formula_map_literal_node.hpp" // export
+#include "formula_member_node.hpp" // export
+#include "formula_minus_node.hpp" // export
+#include "formula_mod_node.hpp" // export
+#include "formula_mul_node.hpp" // export
+#include "formula_name_node.hpp" // export
+#include "formula_ne_node.hpp" // export
+#include "formula_node.hpp" // export
+#include "formula_plus_node.hpp" // export
+#include "formula_post_process_context.hpp" // export
+#include "formula_pow_node.hpp" // export
+#include "formula_shl_node.hpp" // export
+#include "formula_shr_node.hpp" // export
+#include "formula_sub_node.hpp" // export
+#include "formula_ternary_operator_node.hpp" // export
+#include "formula_unary_operator_node.hpp" // export
+#include "formula_vector_literal_node.hpp" // export
 
-namespace hi::inline v1 {
-
-/** Parse an formula.
- * Parses an formula until EOF, ')', ',', '}'
- */
-std::unique_ptr<formula_node> parse_formula(formula_parse_context &context);
-
-/** Parse an formula.
- * Parses an formula until EOF, ')', ',', '}'
- */
-inline std::unique_ptr<formula_node> parse_formula(std::string_view::const_iterator first, std::string_view::const_iterator last)
-{
-    auto parse_context = formula_parse_context(first, last);
-    auto e = parse_formula(parse_context);
-
-    auto post_process_context = formula_post_process_context();
-    e->post_process(post_process_context);
-    return e;
-}
-
-/** Parse an formula.
- * Parses an formula until EOF, ')', ',', '}'
- */
-inline std::unique_ptr<formula_node> parse_formula(std::string_view text)
-{
-    return parse_formula(text.cbegin(), text.cend());
-}
-
-/** Find the end of an formula.
- * This function will track nested brackets and strings, until the terminating_character is found.
- * @param first Iterator to the first character of the formula.
- * @param last Iterator to beyond the last character of the text.
- * @param terminating_string The string to find, which is not part of the formula.
- * @return Iterator to the terminating character if found, or last.
- */
-std::string_view::const_iterator find_end_of_formula(
-    std::string_view::const_iterator first,
-    std::string_view::const_iterator last,
-    std::string_view terminating_string);
-
-} // namespace hi::inline v1
+hi_export_module(hikogui.formula);

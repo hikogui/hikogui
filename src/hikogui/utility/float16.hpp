@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../macros.hpp"
+#include "misc.hpp"
 #include <cstdint>
 #include <type_traits>
 #include <bit>
@@ -104,6 +105,18 @@ hi_export struct float16 {
     constexpr explicit float16(double other) noexcept : float16(static_cast<float>(other)) {}
     constexpr explicit float16(long double other) noexcept : float16(static_cast<float>(other)) {}
 
+    constexpr float16(intrinsic_t, uint16_t v) noexcept : v(v) {}
+
+    [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
+    {
+        return v;
+    }
+
+    [[nodiscard]] constexpr uint16_t& intrinsic() noexcept
+    {
+        return v;
+    }
+
     constexpr float16& operator=(float other) noexcept
     {
         v = cvtss_sh(other);
@@ -113,24 +126,6 @@ hi_export struct float16 {
     constexpr operator float() const noexcept
     {
         return cvtsh_ss(v);
-    }
-
-    [[nodiscard]] static constexpr float16 from_uint16_t(uint16_t const rhs) noexcept
-    {
-        auto r = float16{};
-        r.v = rhs;
-        return r;
-    }
-
-    [[nodiscard]] constexpr uint16_t get() const noexcept
-    {
-        return v;
-    }
-
-    constexpr float16& set(uint16_t rhs) noexcept
-    {
-        v = rhs;
-        return *this;
     }
 
     [[nodiscard]] std::size_t hash() const noexcept
@@ -173,7 +168,7 @@ hi_export struct float16 {
 #define HI_X_binary_bit_op(op) \
     [[nodiscard]] constexpr friend float16 operator op(float16 const& lhs, float16 const& rhs) noexcept \
     { \
-        return float16::from_uint16_t(lhs.v op rhs.v); \
+        return float16(hi::intrinsic, lhs.v op rhs.v); \
     }
 
         // clang-format off
@@ -207,7 +202,7 @@ struct std::hash<hi::float16> {
 
 hi_export template<typename CharT>
 struct std::formatter<hi::float16, CharT> : std::formatter<float, CharT> {
-    constexpr auto format(hi::float16 const& t, auto& fc)
+    constexpr auto format(hi::float16 const& t, auto& fc) const
     {
         return std::formatter<float, CharT>::format(static_cast<float>(t), fc);
     }
@@ -217,70 +212,70 @@ hi_export template<>
 struct std::numeric_limits<hi::float16> {
     using value_type = hi::float16;
 
-    static constexpr bool is_specialized = true;
-    static constexpr bool is_signed = true;
-    static constexpr bool is_integer = false;
-    static constexpr bool is_exact = false;
-    static constexpr bool has_infinity = true;
-    static constexpr bool has_quiet_NaN = true;
-    static constexpr bool has_signaling_NaN = false;
-    static constexpr float_round_style round_style = std::round_to_nearest;
-    static constexpr bool is_iec559 = true;
-    static constexpr bool is_bounded = true;
-    static constexpr bool is_modulo = false;
-    static constexpr int digits = 10;
-    static constexpr int digits10 = 4;
-    static constexpr int max_digits10 = 4;
-    static constexpr int min_exponent = -14;
-    static constexpr int min_exponent10 = -3;
-    static constexpr int max_exponent = 15;
-    static constexpr int max_exponent10 = 3;
-    static constexpr bool traps = false;
-    static constexpr bool tinyness_before = false;
+    constexpr static bool is_specialized = true;
+    constexpr static bool is_signed = true;
+    constexpr static bool is_integer = false;
+    constexpr static bool is_exact = false;
+    constexpr static bool has_infinity = true;
+    constexpr static bool has_quiet_NaN = true;
+    constexpr static bool has_signaling_NaN = false;
+    constexpr static float_round_style round_style = std::round_to_nearest;
+    constexpr static bool is_iec559 = true;
+    constexpr static bool is_bounded = true;
+    constexpr static bool is_modulo = false;
+    constexpr static int digits = 10;
+    constexpr static int digits10 = 4;
+    constexpr static int max_digits10 = 4;
+    constexpr static int min_exponent = -14;
+    constexpr static int min_exponent10 = -3;
+    constexpr static int max_exponent = 15;
+    constexpr static int max_exponent10 = 3;
+    constexpr static bool traps = false;
+    constexpr static bool tinyness_before = false;
 
-    static constexpr value_type min() noexcept
+    constexpr static value_type min() noexcept
     {
-        return hi::float16::from_uint16_t(0x0400);
+        return hi::float16(hi::intrinsic, 0x0400);
     }
 
-    static constexpr value_type lowest() noexcept
+    constexpr static value_type lowest() noexcept
     {
-        return hi::float16::from_uint16_t(0xfbff);
+        return hi::float16(hi::intrinsic, 0xfbff);
     }
 
-    static constexpr value_type max() noexcept
+    constexpr static value_type max() noexcept
     {
-        return hi::float16::from_uint16_t(0x7bff);
+        return hi::float16(hi::intrinsic, 0x7bff);
     }
 
-    static constexpr value_type epsilon() noexcept
+    constexpr static value_type epsilon() noexcept
     {
-        return hi::float16::from_uint16_t(0xfbff);
+        return hi::float16(hi::intrinsic, 0xfbff);
     }
 
-    static constexpr value_type round_error() noexcept
+    constexpr static value_type round_error() noexcept
     {
-        return hi::float16::from_uint16_t(0x3800); // 0.5
+        return hi::float16(hi::intrinsic, 0x3800); // 0.5
     }
 
-    static constexpr value_type infinity() noexcept
+    constexpr static value_type infinity() noexcept
     {
-        return hi::float16::from_uint16_t(0x7c00);
+        return hi::float16(hi::intrinsic, 0x7c00);
     }
 
-    static constexpr value_type quiet_NaN() noexcept
+    constexpr static value_type quiet_NaN() noexcept
     {
-        return hi::float16::from_uint16_t(0x7c01);
+        return hi::float16(hi::intrinsic, 0x7c01);
     }
 
-    static constexpr value_type signaling_NaN() noexcept
+    constexpr static value_type signaling_NaN() noexcept
     {
-        return hi::float16::from_uint16_t(0x7e01);
+        return hi::float16(hi::intrinsic, 0x7e01);
     }
 
-    static constexpr value_type denorm_min() noexcept
+    constexpr static value_type denorm_min() noexcept
     {
-        return hi::float16::from_uint16_t(0x0001);
+        return hi::float16(hi::intrinsic, 0x0001);
     }
 };
 

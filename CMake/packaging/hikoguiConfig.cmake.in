@@ -1,0 +1,41 @@
+@PACKAGE_INIT@
+
+find_package(Vulkan REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/hikoguiTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/hikoguiResources.cmake")
+
+check_required_components(hikogui)
+
+function(target_link_hikogui target protection)
+    target_link_libraries(${target} ${protection} hikogui::hikogui)
+
+    # Make the target depend on HikoGUI's module sources.
+    get_target_property(module_files hikogui::hikogui CXX_MODULE_SET)
+    get_target_property(module_dirs hikogui::hikogui CXX_MODULE_DIRS)
+
+    if (NOT module_files STREQUAL "module_files-NOTFOUND")
+        target_sources(${target} ${protection}
+            FILE_SET "CXX_MODULES"
+            TYPE "CXX_MODULES"
+            BASE_DIRS ${module_dirs}
+            FILES ${module_files})
+    endif()
+
+    # Make the target depend on HikoGUI's resource files.
+    get_target_property(link_resource_files hikogui::hikogui INTERFACE_RESOURCE)
+    if (link_resource_files STREQUAL "link_resource_files-NOTFOUND")
+        set(link_resource_files "")
+    endif()
+
+    get_target_property(resource_files ${target} RESOURCE)
+    if (resource_files STREQUAL "resource_files-NOTFOUND")
+        set(resource_files "")
+    endif()
+
+    foreach(resource_file IN LISTS link_resource_files)
+        list(APPEND resource_files "${resource_file}")
+    endforeach()
+
+    set_target_properties(${target} PROPERTIES RESOURCE "${resource_files}")
+endfunction()

@@ -290,7 +290,7 @@ constexpr keyboard_virtual_key to_keyboard_virtual_key(std::string_view s)
     return keyboard_virtual_key_metadata[s];
 }
 
-keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers);
+[[nodiscard]] constexpr keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers) noexcept;
 
 constexpr std::string_view to_string_view(keyboard_virtual_key key) noexcept
 {
@@ -319,7 +319,7 @@ struct std::hash<hi::keyboard_virtual_key> {
 
 template<typename CharT>
 struct std::formatter<hi::keyboard_virtual_key, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::keyboard_virtual_key const& t, auto& fc)
+    auto format(hi::keyboard_virtual_key const& t, auto& fc) const
     {
         return std::formatter<std::string_view, CharT>{}.format(hi::to_string_view(t), fc);
     }

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/module.hpp"
+#include "../GUI/GUI.hpp"
 #include "../geometry/module.hpp"
 #include "../observer/module.hpp"
 #include "../utility/utility.hpp"
@@ -38,7 +38,7 @@ class scroll_bar_widget final : public widget {
 public:
     using super = widget;
 
-    static constexpr hi::axis axis = Axis;
+    constexpr static hi::axis axis = Axis;
 
     observer<float> offset;
     observer<float> aperture;

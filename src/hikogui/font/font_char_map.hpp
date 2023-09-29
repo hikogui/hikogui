@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <string>
 
-
+hi_export_module(hikogui.font.font_char_map);
 
 namespace hi { inline namespace v1 {
 
@@ -31,7 +31,7 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup font
  */
-class font_char_map {
+hi_export class font_char_map {
 public:
     constexpr font_char_map() noexcept = default;
     constexpr font_char_map(font_char_map const&) noexcept = default;
@@ -85,7 +85,7 @@ public:
      * @param end_code_point The ending code-point of the range (inclusive).
      * @param start_glyph The starting glyph of the range.
      */
-    [[nodiscard]] constexpr void add(char32_t start_code_point, char32_t end_code_point, uint16_t start_glyph) noexcept
+    constexpr void add(char32_t start_code_point, char32_t end_code_point, uint16_t start_glyph) noexcept
     {
 #ifndef NDEBUG
         _prepared = false;
@@ -93,7 +93,7 @@ public:
         hi_axiom(start_code_point <= end_code_point);
         auto todo = wide_cast<size_t>(end_code_point - start_code_point + 1);
         _count += todo;
-        hi_axiom(start_glyph + todo < 0xffff, "Only glyph_ids 0 through 0xfffe are valid");
+        hi_axiom(start_glyph + todo < 0xffff, "Only glyph-ids 0 through 0xfffe are valid");
 
         while (todo != 0) {
             hilet doing = std::min(todo, entry_type::max_count);
@@ -196,7 +196,7 @@ private:
             return wide_cast<size_t>(_count) + 1;
         }
 
-        [[nodiscard]] constexpr void set_count(size_t new_count) noexcept
+        constexpr void set_count(size_t new_count) noexcept
         {
             hi_axiom(new_count > 0);
             hi_axiom(new_count <= max_count);

@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <string>
 
-
+hi_export_module(hikogui.codec.BON8);
 
 hi_warning_push();
 // C26429: Symbol '' is never tested for nullness, it can be marked as not_null (f.23)
@@ -778,7 +778,7 @@ void inline BON8_encoder::add(datum const& value)
  * @param buffer A buffer to a BON8 encoded message.
  * @return The decoded message.
  */
-[[nodiscard]] inline datum decode_BON8(std::span<const std::byte> buffer)
+hi_export [[nodiscard]] inline datum decode_BON8(std::span<const std::byte> buffer)
 {
     auto *ptr = buffer.data();
     auto *last = ptr + buffer.size();
@@ -789,7 +789,7 @@ void inline BON8_encoder::add(datum const& value)
  * @param buffer A buffer to a BON8 encoded message.
  * @return The decoded message.
  */
-[[nodiscard]] inline datum decode_BON8(bstring const& buffer)
+hi_export [[nodiscard]] inline datum decode_BON8(bstring const& buffer)
 {
     auto *ptr = buffer.data();
     auto *last = ptr + buffer.size();
@@ -800,7 +800,7 @@ void inline BON8_encoder::add(datum const& value)
  * @param buffer A buffer to a BON8 encoded message.
  * @return The decoded message.
  */
-[[nodiscard]] inline datum decode_BON8(bstring_view buffer)
+hi_export [[nodiscard]] inline datum decode_BON8(bstring_view buffer)
 {
     auto *ptr = buffer.data();
     auto *last = ptr + buffer.size();
@@ -811,7 +811,7 @@ void inline BON8_encoder::add(datum const& value)
  * @param value The data to encode
  * @return The encoded message as a byte_string.
  */
-[[nodiscard]] inline bstring encode_BON8(datum const& value)
+hi_export [[nodiscard]] inline bstring encode_BON8(datum const& value)
 {
     auto encoder = detail::BON8_encoder{};
     encoder.add(value);

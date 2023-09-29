@@ -74,7 +74,7 @@ private:
     uint8_t _value;
 };
 
-[[nodiscard]] inline void
+inline void
 unicode_word_break_WB1_WB3d(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
 {
     using enum unicode_break_opportunity;
@@ -107,7 +107,7 @@ unicode_word_break_WB1_WB3d(unicode_break_vector& r, std::vector<unicode_word_br
     }
 }
 
-[[nodiscard]] inline void unicode_word_break_WB4(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
+inline void unicode_word_break_WB4(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
 {
     using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
@@ -127,7 +127,7 @@ unicode_word_break_WB1_WB3d(unicode_break_vector& r, std::vector<unicode_word_br
     }
 }
 
-[[nodiscard]] inline void
+inline void
 unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
 {
     using enum unicode_break_opportunity;

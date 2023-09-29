@@ -214,7 +214,7 @@ public:
 
     /// @endprivatesection
 private:
-    static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
+    constexpr static std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
     box_constraints _label_constraints;
 

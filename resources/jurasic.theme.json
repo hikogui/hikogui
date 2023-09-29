@@ -1,0 +1,120 @@
+{
+    "name": "Jurasic",
+    "mode": "dark",
+
+    // Distance between widgets and between widgets and the border of the container.
+    "margin": 5,
+
+    // The line-width of a border.
+    "border-width": 1,
+
+    // The rounding radius of boxes with rounded corners.
+    "rounding-radius": 4,
+
+    // The size of small square widgets.
+    "size": 11,
+
+    // The size of large widgets. Such as the minimum scroll bar size.
+    "large-size": 19,
+
+    // Size of icons inside a widget.
+    "icon-size": 7,
+
+    // Size of icons representing the length of am average word of a label's text.
+    "large-icon-size": 23,
+
+    // Size of icons being inline with a label's text.
+    "label-icon-size": 15,
+
+    // The colors values are either:
+    // - integers are in sRGB
+    // - floats are in linear-extended-sRGB
+    // - string name of an color in the theme.
+
+    // Bright colors, fitting theme.
+    "blue"       : [ 10, 132, 255],
+    "green"      : [ 48, 209,  88],
+    "indigo"     : [ 94,  92, 230],
+    "orange"     : [255, 159,  10],
+    "pink"       : [255,  55,  95],
+    "purple"     : [191,  90, 242],
+    "red"        : [255,  69,  58],
+    "teal"       : [100, 210, 255],
+    "yellow"     : [255, 214,  10],
+
+    "gray"       : [142, 142, 147],
+    "gray2"      : [ 99,  99, 102],
+    "gray3"      : [ 72,  72,  74],
+    "gray4"      : [ 58,  58,  60],
+    "gray5"      : [ 44,  44,  46],
+    "gray6"      : [ 28,  28,  30],
+
+    // Colors used by widgets, to show nesting inside containers,
+    "fill-color": [
+        [ 31,  22,  20],
+        [ 41,  32,  30],
+        [ 52,  42,  40],
+        [ 61,  51,  49]
+    ],
+    
+    // Colors used by widgets for internal elements and disabled icons.
+    "border-color": [
+        [ 71,  34,  22],
+        [ 81,  43,  30],
+        [ 94,  54,  40],
+        [114,  72,  58]
+    ],
+
+    // Color for textual or primary elements like icons.
+    "foreground-color":       [234, 207, 103],
+
+    // Accent color used by widgets, to show icons, hover and keyboard focus
+    "accent-color":           [185, 49,  62],
+    "text-select-color":      [ 31, 105, 29],
+    "primary-cursor-color":   [211, 181,  51],
+    "secondary-cursor-color": [162, 124,  44],
+
+    "small-label-style": {
+        "family": "Candara",
+        "weight": "regular",
+        "size": 10,
+        "color": "foreground"
+    },
+
+    "label-style": {
+        "family": "Candara",
+        "weight": "regular",
+        "size": 12,
+        "color": "foreground"
+    },
+    "warning-label-style": {
+        "family": "Candara",
+        "weight": "regular",
+        "size": 12,
+        "color": "foreground"
+    },
+    "error-label-style": {
+        "family": "Candara",
+        "weight": "regular",
+        "size": 12,
+        "color": "orange"
+    },
+    "help-label-style": {
+        "family": "Candara",
+        "weight": "regular",
+        "size": 12,
+        "color": [88, 86, 214]
+    },
+    "placeholder-label-style": {
+        "family": "Candara",
+        "weight": "regular",
+        "size": 12,
+        "color": [142, 142, 147]
+    },
+    "link-label-style": {
+        "family": "Candara",
+        "weight": "regular",
+        "size": 12,
+        "color": [0, 122, 255]
+    }
+}

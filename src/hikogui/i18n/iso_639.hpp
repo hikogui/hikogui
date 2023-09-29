@@ -7,8 +7,9 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cctype>
+#include <compare>
 
-
+hi_export_module(hikogui.i18n.iso_639);
 
 namespace hi::inline v1 {
 
@@ -22,7 +23,7 @@ namespace hi::inline v1 {
  *
  * This class compresses this 2 or 3 character language code inside 15 bits.
  */
-class iso_639 {
+hi_export class iso_639 {
 public:
     /** Set the letter at a specific position.
      *
@@ -162,6 +163,11 @@ public:
         return r;
     }
 
+    [[nodiscard]] constexpr friend std::string to_string(iso_639 const &rhs) noexcept
+    {
+        return rhs.code();
+    }
+
     /** Compare two language codes.
      */
     [[nodiscard]] constexpr friend bool operator==(iso_639 const& lhs, iso_639 const& rhs) noexcept = default;
@@ -196,7 +202,7 @@ private:
 
 } // namespace hi::inline v1
 
-template<>
+hi_export template<>
 struct std::hash<hi::iso_639> {
     [[nodiscard]] size_t operator()(hi::iso_639 const& rhs) const noexcept
     {

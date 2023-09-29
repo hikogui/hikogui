@@ -19,7 +19,9 @@
 #pragma intrinsic(_mul128)
 #endif
 
-
+hi_warning_push();
+// C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
+hi_warning_ignore_msvc(4702);
 
 namespace hi::inline v1 {
 
@@ -132,3 +134,4 @@ inline bool mul_overflow(T lhs, T rhs, T *r) noexcept
 
 } // namespace hi::inline v1
 
+hi_warning_pop();

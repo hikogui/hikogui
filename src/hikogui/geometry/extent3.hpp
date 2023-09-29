@@ -87,7 +87,7 @@ public:
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] static constexpr extent3 infinity() noexcept
+    [[nodiscard]] constexpr static extent3 infinity() noexcept
     {
         return extent3{
             std::numeric_limits<float>::infinity(),
@@ -95,12 +95,12 @@ public:
             std::numeric_limits<float>::infinity()};
     }
 
-    [[nodiscard]] static constexpr extent3 large() noexcept
+    [[nodiscard]] constexpr static extent3 large() noexcept
     {
         return extent3{large_number_v<float>, large_number_v<float>, large_number_v<float>};
     }
 
-    [[nodiscard]] static constexpr extent3 nan() noexcept
+    [[nodiscard]] constexpr static extent3 nan() noexcept
     {
         auto r = extent3{};
         r._v.x() = std::numeric_limits<float>::signaling_NaN();
@@ -394,7 +394,7 @@ struct std::formatter<hi::extent3, CharT> {
         return pc.end();
     }
 
-    auto format(hi::extent3 const& t, auto& fc)
+    auto format(hi::extent3 const& t, auto& fc) const
     {
         return std::vformat_to(fc.out(), "[{}, {}, {}]", std::make_format_args(t.width(), t.height(), t.depth()));
     }
