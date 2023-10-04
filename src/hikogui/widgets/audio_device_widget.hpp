@@ -41,7 +41,7 @@ public:
     audio_device_widget(widget *parent) noexcept : super(parent)
     {
         _grid_widget = std::make_unique<grid_widget>(this);
-        _device_selection_widget = &_grid_widget->make_widget<selection_widget>("A1", device_id, _device_list);
+        _device_selection_widget = &_grid_widget->emplace<selection_widget>("A1", device_id, _device_list);
 
         _sync_device_list_task = sync_device_list();
     }

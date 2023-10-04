@@ -73,7 +73,7 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget& make_widget(Args&&...args) noexcept
+    Widget& emplace(Args&&...args) noexcept
     {
         hi_axiom(loop::main().on_thread());
         hi_assert(_content == nullptr);

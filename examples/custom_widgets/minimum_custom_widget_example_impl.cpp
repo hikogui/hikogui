@@ -9,7 +9,7 @@
 class minimum_widget : public hi::widget {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
-    // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
+    // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
     minimum_widget(hi::widget *parent) noexcept : widget(parent) {}
 
     // The set_constraints() function is called when the window is first initialized,
@@ -75,7 +75,7 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     auto widget = std::make_unique<hi::window_widget>(hi::txt("Minimum Custom Widget"));
-    widget->content().make_widget<minimum_widget>("A1");
+    widget->content().emplace<minimum_widget>("A1");
 
     auto window = std::make_unique<hi::gui_window>(std::move(widget));
 

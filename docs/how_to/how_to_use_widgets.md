@@ -39,7 +39,7 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     auto widget = std::make_unique<hi::window_widget>(hi::txt("The window title"));
-    widget->content().make_widget<hi::momentary_button_widget>("A1", hi::txt("Does nothing"));
+    widget->content().emplace<hi::momentary_button_widget>("A1", hi::txt("Does nothing"));
 
     auto window = std::make_unique<hi::gui_window>(std::move(widget));
 
@@ -71,7 +71,7 @@ a `hi::toolbar_widget`.
 In the example below we are adding 4 widgets to the content area of the window.
 
 The `hi::window::content()` function returns a reference to the `hi::grid_widget`,
-and we use its `make_widget<>()` function to add new widgets. The template
+and we use its `emplace<>()` function to add new widgets. The template
 argument is the type of widget to instantiate and the first argument is the
 position within the grid widget. The rest of the arguments are passed to the
 constructor of the new widget.
@@ -86,10 +86,10 @@ int hi_main(int argc, char *argv[])
     set_application_version({1, 0, 0});
 
     auto widget = std::make_unique<window_widget>(txt("Radio button example"));
-    widget->content().make_widget<label_widget>("A1", txt("radio buttons:"));
-    widget->content().make_widget<radio_button_widget>("B1", value, 1, txt("one"));
-    widget->content().make_widget<radio_button_widget>("B2", value, 2, txt("two"));
-    widget->content().make_widget<radio_button_widget>("B3", value, 3, txt("three"));
+    widget->content().emplace<label_widget>("A1", txt("radio buttons:"));
+    widget->content().emplace<radio_button_widget>("B1", value, 1, txt("one"));
+    widget->content().emplace<radio_button_widget>("B2", value, 2, txt("two"));
+    widget->content().emplace<radio_button_widget>("B3", value, 3, txt("three"));
 
     auto window = std::make_unique<gui_window>(std::move(widget));
 
@@ -110,10 +110,10 @@ radio buttons to act as a set.
 ### Layout using the grid widget
 
 The `hi::grid_widget` is a powerful layout widget which allows adding of new widgets
-using the `hi::grid_widget::make_widget<>()` member function.
+using the `hi::grid_widget::emplace<>()` member function.
 
-The template parameter for `make_widget()` specifies the widget class to allocate and construct.
-The first argument to `make_widget()` is a string specifying the location where the
+The template parameter for `emplace()` specifies the widget class to allocate and construct.
+The first argument to `emplace()` is a string specifying the location where the
 new widget should be positioned. The rest of the arguments are passed to the constructor of
 the new widget.
 
@@ -145,7 +145,7 @@ In the example below a checkbox monitors the observer `my_value`:
 enum class my_type {foo, bar, baz};
 
 observer<my_type> my_value;
-widget->content().make_widget<checkbox_widget>("A1", my_value, my_type::bar, my_type::foo);
+widget->content().emplace<checkbox_widget>("A1", my_value, my_type::bar, my_type::foo);
 ```
 
 As you can see, the `checkbox_widget` will work with custom types. For the checkbox
@@ -165,7 +165,7 @@ enum class my_type {foo, bar, baz};
 
 observer<my_type> my_value;
 observer<my_type> my_chain;
-widget->content().make_widget<checkbox_widget>("A1", my_chain, my_type::bar, my_type::foo);
+widget->content().emplace<checkbox_widget>("A1", my_chain, my_type::bar, my_type::foo);
 
 my_chain = my_value;
 my_value = my_type::bar;
@@ -189,7 +189,7 @@ constructor of the `hi::checkbox_button`. `my_delegate` must inherit from
 
 ```cpp
 auto delegate = std::make_shared<my_delegate>();
-auto button = widget->make_widget<checkbox_button>("A1", delegate));
+auto button = widget->emplace<checkbox_button>("A1", delegate));
 ```
 
 A list of widgets
@@ -202,7 +202,6 @@ A list of widgets
 
 - **Container widgets**
   - `hi::grid_widget`: Lays out children in a grid of variable sized cells.
-  - `hi::row_column_widget`: Lays out children in a row or column.
   - `hi::tab_widget`: Shows one child at a time.
   - `hi::scroll_widget`: Allows a larger child to be shown in less space.
   - `hi::overlay_widget`: Shows a child anywhere on the window, overlaying above

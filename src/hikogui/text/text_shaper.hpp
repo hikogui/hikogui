@@ -8,7 +8,7 @@
 #include "text_shaper_line.hpp"
 #include "text_cursor.hpp"
 #include "text_style.hpp"
-#include "../layout/module.hpp"
+#include "../layout/layout.hpp"
 #include "../font/font.hpp"
 #include "../geometry/module.hpp"
 #include "../unicode/unicode.hpp"

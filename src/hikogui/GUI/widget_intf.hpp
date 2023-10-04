@@ -6,7 +6,7 @@
 #include "widget_layout.hpp"
 #include "widget_id.hpp"
 #include "keyboard_focus_group.hpp"
-#include "../layout/module.hpp"
+#include "../layout/layout.hpp"
 #include "../GFX/GFX.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
