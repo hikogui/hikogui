@@ -9,7 +9,7 @@
 #pragma once
 
 #include "gui_window_size.hpp"
-#include "../layout/module.hpp"
+#include "../layout/layout.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
 #include "../utility/utility.hpp"

@@ -9,7 +9,7 @@
 class widget_with_child : public hi::widget {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
-    // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
+    // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
     template<typename Label>
     widget_with_child(hi::widget *parent, Label&& label) noexcept : widget(parent)
     {
@@ -121,7 +121,7 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     auto widget = std::make_unique<hi::window_widget>(hi::txt("Widget with child"));
-    widget->content().make_widget<widget_with_child>("A1", hi::txt("Widget with child"));
+    widget->content().emplace<widget_with_child>("A1", hi::txt("Widget with child"));
 
     auto window = std::make_unique<hi::gui_window>(std::move(widget));
 

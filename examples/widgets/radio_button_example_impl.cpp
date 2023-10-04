@@ -14,14 +14,14 @@ int hi_main(int argc, char *argv[])
     set_application_version({1, 0, 0});
 
     auto widget = std::make_unique<window_widget>(txt("Radio button example"));
-    widget->content().make_widget<label_widget>("A1", txt("radio buttons:"));
+    widget->content().emplace<label_widget>("A1", txt("radio buttons:"));
 
     /// [Create three radio buttons]
     observer<int> value = 0;
 
-    widget->content().make_widget<radio_button_widget>("B1", value, 1, txt("one"));
-    widget->content().make_widget<radio_button_widget>("B2", value, 2, txt("two"));
-    widget->content().make_widget<radio_button_widget>("B3", value, 3, txt("three"));
+    widget->content().emplace<radio_button_widget>("B1", value, 1, txt("one"));
+    widget->content().emplace<radio_button_widget>("B2", value, 2, txt("two"));
+    widget->content().emplace<radio_button_widget>("B3", value, 3, txt("three"));
     /// [Create three radio buttons]
 
     auto window = std::make_unique<gui_window>(std::move(widget));

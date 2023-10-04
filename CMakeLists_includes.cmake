@@ -357,7 +357,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/box_constraints.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/box_shape.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/grid_layout.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/layout.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/row_column_layout.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/spreadsheet_address.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/memory/locked_memory_allocator.hpp
@@ -545,7 +545,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/momentary_button_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/overlay_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/radio_button_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/row_column_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/scroll_aperture_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/scroll_bar_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/scroll_widget.hpp

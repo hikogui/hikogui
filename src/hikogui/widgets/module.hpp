@@ -12,7 +12,6 @@
 #include "momentary_button_widget.hpp"
 #include "overlay_widget.hpp"
 #include "radio_button_widget.hpp"
-#include "row_column_widget.hpp"
 #include "scroll_aperture_widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_widget.hpp"
@@ -58,7 +57,7 @@ at the top of the window.
 In the example below we are adding 4 widgets to the content area of the window.
 
 The `gui_window::content()` function returns a reference to the `grid_widget`,
-and we use its `make_widget<>()` function to add new widgets. The template
+and we use its `emplace<>()` function to add new widgets. The template
 argument is the type of widget to instantiate and the first argument is the
 spreadsheet-like coordinate within the `grid_widget`. The rest of the arguments
 are passed to the constructor of the new widget.
@@ -71,10 +70,10 @@ int hi_main(int argc, char *argv[])
     auto gui = gui_system::make_unique();
     auto &window = gui->make_window(txt("Radio button example"));
 
-    window.content().make_widget<label_widget>("A1", txt("radio buttons:"));
-    window.content().make_widget<radio_button_widget>("B1", value, 1, txt("one"));
-    window.content().make_widget<radio_button_widget>("B2", value, 2, txt("two"));
-    window.content().make_widget<radio_button_widget>("B3", value, 3, txt("three"));
+    window.content().emplace<label_widget>("A1", txt("radio buttons:"));
+    window.content().emplace<radio_button_widget>("B1", value, 1, txt("one"));
+    window.content().emplace<radio_button_widget>("B2", value, 2, txt("two"));
+    window.content().emplace<radio_button_widget>("B3", value, 3, txt("three"));
 
     return gui->loop();
 }

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "widget_mode.hpp"
-#include "../layout/module.hpp"
+#include "../layout/layout.hpp"
 #include "../geometry/module.hpp"
 #include "../observer/module.hpp"
 #include "../time/module.hpp"

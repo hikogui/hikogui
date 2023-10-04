@@ -12,7 +12,7 @@
 class triangle_widget : public hi::widget, public hi::gfx_surface_delegate {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
-    // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
+    // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
     triangle_widget(hi::widget *parent, hi::gfx_surface& surface) noexcept : widget(parent), _surface(surface)
     {
         _surface.add_delegate(this);
@@ -188,7 +188,7 @@ hi::task<> main_window()
 
     // Create the vulkan triangle-widget as the content of the window. The content
     // of the window is a grid, we only use the cell "A1" for this widget.
-    widget.content().make_widget<triangle_widget>("A1", *window.surface);
+    widget.content().emplace<triangle_widget>("A1", *window.surface);
 
     // Wait until the window is "closing" because the operating system says so, or when
     // the X is pressed.

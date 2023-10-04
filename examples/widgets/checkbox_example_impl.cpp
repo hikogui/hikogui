@@ -12,13 +12,13 @@ task<void> checkbox_example()
     auto widget = std::make_unique<window_widget>(txt("Checkbox example"));
 
     /// [Create a label]
-    widget->content().make_widget<label_widget>("A1", txt("checkbox:"));
+    widget->content().emplace<label_widget>("A1", txt("checkbox:"));
     /// [Create a label]
 
     /// [Create a checkbox]
     observer<int> value = 0;
 
-    auto& cb = widget->content().make_widget<checkbox_widget>("B1", value, 1, 2);
+    auto& cb = widget->content().emplace<checkbox_widget>("B1", value, 1, 2);
     cb.on_label = txt("on");
     cb.off_label = txt("off");
     cb.other_label = txt("other");

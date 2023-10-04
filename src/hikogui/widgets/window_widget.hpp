@@ -36,12 +36,12 @@ public:
         _toolbar = std::make_unique<toolbar_widget>(this);
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-        _system_menu = &_toolbar->make_widget<system_menu_widget>();
+        _system_menu = &_toolbar->emplace<system_menu_widget>();
         this->_system_menu->icon = this->title.get<"icon">();
-        _toolbar->make_widget<window_controls_win32_widget, horizontal_alignment::right>();
+        _toolbar->emplace<window_controls_win32_widget, horizontal_alignment::right>();
 
 #elif HI_OPERATING_SYSTEM == HI_OS_MACOS
-        _toolbar->make_widget<window_controls_macos_widget>();
+        _toolbar->emplace<window_controls_macos_widget>();
 
 #else
 #error "Not implemented"
