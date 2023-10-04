@@ -242,8 +242,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_system_vulkan.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_system_vulkan_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/GFX.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_alpha_vulkan.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_alpha_vulkan_impl.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_override_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_override_vulkan_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_box_vulkan.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_box_vulkan_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_image_vulkan.hpp

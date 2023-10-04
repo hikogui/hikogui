@@ -19,8 +19,8 @@ target_sources(vulkan_triangle PRIVATE main_impl.cpp triangle_impl.cpp triangle.
 target_resources(vulkan_triangle "${CMAKE_CURRENT_SOURCE_DIR}/resources/vulkan_triangle.png")
 
 set(vulkan_triangle_shader_sources
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle.frag
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle.vert)
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/triangle.frag
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/triangle.vert)
 
 set(vulkan_triangle_compiled_shader_files "")
 foreach(shader_file ${vulkan_triangle_shader_sources})

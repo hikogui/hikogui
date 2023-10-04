@@ -9,7 +9,7 @@
 #include "gfx_pipeline_image_vulkan.hpp"
 #include "gfx_pipeline_box_vulkan.hpp"
 #include "gfx_pipeline_SDF_vulkan.hpp"
-#include "gfx_pipeline_alpha_vulkan.hpp"
+#include "gfx_pipeline_override_vulkan.hpp"
 #include "gfx_pipeline_tone_mapper_vulkan.hpp"
 #include "../settings/settings.hpp"
 #include "../macros.hpp"
@@ -57,7 +57,7 @@ public:
     std::unique_ptr<gfx_pipeline_box::device_shared> box_pipeline;
     std::unique_ptr<gfx_pipeline_image::device_shared> image_pipeline;
     std::unique_ptr<gfx_pipeline_SDF::device_shared> SDF_pipeline;
-    std::unique_ptr<gfx_pipeline_alpha::device_shared> alpha_pipeline;
+    std::unique_ptr<gfx_pipeline_override::device_shared> override_pipeline;
     std::unique_ptr<gfx_pipeline_tone_mapper::device_shared> tone_mapper_pipeline;
 
     /*! List if extension required on this device.
@@ -75,8 +75,8 @@ public:
 
             tone_mapper_pipeline->destroy(this);
             tone_mapper_pipeline = nullptr;
-            alpha_pipeline->destroy(this);
-            alpha_pipeline = nullptr;
+            override_pipeline->destroy(this);
+            override_pipeline = nullptr;
             SDF_pipeline->destroy(this);
             SDF_pipeline = nullptr;
             image_pipeline->destroy(this);

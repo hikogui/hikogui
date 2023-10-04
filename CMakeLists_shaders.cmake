@@ -2,8 +2,8 @@
 set(hikogui_shader_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/box_vulkan.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/box_vulkan.vert
-    ${CMAKE_CURRENT_SOURCE_DIR}/resources/alpha_vulkan.frag
-    ${CMAKE_CURRENT_SOURCE_DIR}/resources/alpha_vulkan.vert
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/override_vulkan.frag
+    ${CMAKE_CURRENT_SOURCE_DIR}/resources/override_vulkan.vert
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/image_vulkan.frag
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/image_vulkan.vert
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/SDF_vulkan.frag

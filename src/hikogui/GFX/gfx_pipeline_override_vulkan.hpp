@@ -14,7 +14,7 @@ namespace hi { inline namespace v1 {
 
 /*! Pipeline for rendering simple alpha shaded quats.
  */
-class gfx_pipeline_alpha : public gfx_pipeline {
+class gfx_pipeline_override : public gfx_pipeline {
 public:
     /*! A vertex defining a rectangle on a window.
      * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
@@ -29,12 +29,16 @@ public:
          */
         sfloat_rgba32 clipping_rectangle;
 
-        /** The alpha value of the resulting pixels inside the quad.
+        /** The color value of the resulting pixels inside the quad.
          */
-        float alpha;
+        sfloat_rgba16 color;
 
-        vertex(sfloat_rgba32 position, sfloat_rgba32 clipping_rectangle, float alpha) noexcept :
-            position(position), clipping_rectangle(clipping_rectangle), alpha(alpha)
+        /** The blend-factor value of the resulting pixels inside the quad.
+         */
+        sfloat_rgba16 blend_factor;
+
+        vertex(sfloat_rgba32 position, sfloat_rgba32 clipping_rectangle, sfloat_rgba16 color, sfloat_rgba16 blend_factor) noexcept :
+            position(position), clipping_rectangle(clipping_rectangle), color(color), blend_factor(blend_factor)
         {
         }
 
@@ -48,7 +52,8 @@ public:
             return {
                 {0, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, position)},
                 {1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clipping_rectangle)},
-                {2, 0, vk::Format::eR32Sfloat, offsetof(vertex, alpha)},
+                {2, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, color)},
+                {3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, blend_factor)},
             };
         }
     };
@@ -85,7 +90,7 @@ public:
 
         void drawInCommandBuffer(vk::CommandBuffer const& commandBuffer);
 
-        static void place_vertices(vector_span<vertex>& vertices, aarectangle clipping_rectangle, quad box, float alpha);
+        static void place_vertices(vector_span<vertex>& vertices, aarectangle clipping_rectangle, quad box, quad_color color, quad_color blend_factor);
 
     private:
         void buildShaders();
@@ -94,13 +99,13 @@ public:
 
     vector_span<vertex> vertexBufferData;
 
-    ~gfx_pipeline_alpha() = default;
-    gfx_pipeline_alpha(const gfx_pipeline_alpha&) = delete;
-    gfx_pipeline_alpha& operator=(const gfx_pipeline_alpha&) = delete;
-    gfx_pipeline_alpha(gfx_pipeline_alpha&&) = delete;
-    gfx_pipeline_alpha& operator=(gfx_pipeline_alpha&&) = delete;
+    ~gfx_pipeline_override() = default;
+    gfx_pipeline_override(const gfx_pipeline_override&) = delete;
+    gfx_pipeline_override& operator=(const gfx_pipeline_override&) = delete;
+    gfx_pipeline_override(gfx_pipeline_override&&) = delete;
+    gfx_pipeline_override& operator=(gfx_pipeline_override&&) = delete;
 
-    gfx_pipeline_alpha(gfx_surface *surface) : gfx_pipeline(surface) {}
+    gfx_pipeline_override(gfx_surface *surface) : gfx_pipeline(surface) {}
 
     void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context) override;
 
