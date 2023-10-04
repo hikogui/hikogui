@@ -9,7 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../layout/module.hpp"
+#include "../layout/layout.hpp"
 #include "../geometry/module.hpp"
 #include "../macros.hpp"
 #include <memory>
@@ -66,10 +66,10 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
-    Widget& make_widget(Args&&...args)
+    Widget& emplace(Args&&...args)
     {
         auto widget = std::make_unique<Widget>(this, std::forward<Args>(args)...);
-        return static_cast<Widget&>(add_widget(Alignment, std::move(widget)));
+        return static_cast<Widget&>(insert(Alignment, std::move(widget)));
     }
 
     /// @privatesection
@@ -173,7 +173,7 @@ private:
 
     /** Add a widget directly to this widget.
      */
-    widget& add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
+    widget& insert(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
     {
         auto& ref = *widget;
         switch (alignment) {

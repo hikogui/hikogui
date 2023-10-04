@@ -12,7 +12,7 @@
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
 #include "../geometry/module.hpp"
-#include "../layout/module.hpp"
+#include "../layout/layout.hpp"
 #include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
@@ -103,9 +103,9 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget& make_widget(Args&&...args) noexcept
+    Widget& emplace(Args&&...args) noexcept
     {
-        return _aperture->make_widget<Widget>(std::forward<Args>(args)...);
+        return _aperture->emplace<Widget>(std::forward<Args>(args)...);
     }
 
     /// @privatesection

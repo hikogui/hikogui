@@ -97,7 +97,7 @@ public:
         this->delegate->init(*this);
 
         _scroll_widget = std::make_unique<scroll_widget<axis::none>>(this);
-        _text_widget = &_scroll_widget->make_widget<text_widget>(_text, alignment, text_style);
+        _text_widget = &_scroll_widget->emplace<text_widget>(_text, alignment, text_style);
         _text_widget->mode = widget_mode::partial;
 
         _error_label_widget =

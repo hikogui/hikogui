@@ -12,7 +12,7 @@
 #include "label_widget.hpp"
 #include "overlay_widget.hpp"
 #include "scroll_widget.hpp"
-#include "row_column_widget.hpp"
+#include "grid_widget.hpp"
 #include "menu_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "../observer/module.hpp"
@@ -99,8 +99,8 @@ public:
 
         _overlay_widget = std::make_unique<overlay_widget>(this);
         _overlay_widget->mode = widget_mode::invisible;
-        _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget>();
-        _column_widget = &_scroll_widget->make_widget<column_widget>();
+        _scroll_widget = &_overlay_widget->emplace<vertical_scroll_widget>();
+        _grid_widget = &_scroll_widget->emplace<grid_widget>();
 
         _off_label_cbt = this->off_label.subscribe([&](auto...) {
             ++global_counter<"selection_widget:off_label:constrain">;
@@ -405,7 +405,7 @@ private:
     box_shape _overlay_shape;
 
     vertical_scroll_widget *_scroll_widget = nullptr;
-    column_widget *_column_widget = nullptr;
+    grid_widget *_grid_widget = nullptr;
 
     decltype(off_label)::callback_token _off_label_cbt;
     std::vector<menu_button_widget *> _menu_button_widgets;
@@ -479,7 +479,7 @@ private:
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(delegate);
 
-        _column_widget->clear();
+        _grid_widget->clear();
         _menu_button_widgets.clear();
         _menu_button_tokens.clear();
 
@@ -495,7 +495,7 @@ private:
 
         decltype(selected) index = 0;
         for (hilet& label : options) {
-            auto menu_button = &_column_widget->make_widget<menu_button_widget>(selected, index, label, alignment, text_style);
+            auto menu_button = &_grid_widget->emplace_bottom<menu_button_widget>(selected, index, label, alignment, text_style);
 
             _menu_button_tokens.push_back(menu_button->pressed.subscribe(
                 [this, index] {

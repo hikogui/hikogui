@@ -90,7 +90,7 @@ public:
      * @param args The arguments to pass to the constructor of widget to add.
      */
     template<typename WidgetType, typename Key, typename... Args>
-    WidgetType& make_widget(Key const& key, Args&&...args)
+    WidgetType& emplace(Key const& key, Args&&...args)
     {
         hi_axiom(loop::main().on_thread());
 
@@ -100,7 +100,7 @@ public:
         hi_assert_not_null(delegate);
         delegate->add_tab(*this, static_cast<std::size_t>(key), size(_children));
         _children.push_back(std::move(tmp));
-        ++global_counter<"tab_widget:make_widget:constrain">;
+        ++global_counter<"tab_widget:emplace:constrain">;
         process_event({gui_event_type::window_reconstrain});
         return ref;
     }

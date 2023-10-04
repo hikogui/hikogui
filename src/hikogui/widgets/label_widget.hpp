@@ -12,7 +12,7 @@
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
 #include "../geometry/module.hpp"
-#include "../layout/module.hpp"
+#include "../layout/layout.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <memory>

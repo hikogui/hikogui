@@ -44,13 +44,13 @@ hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferen
 {
     using namespace hi;
 
-    grid.make_widget<label_widget>("A1", txt("Input audio device:"), alignment::top_right());
-    auto& input_config = grid.make_widget<audio_device_widget>("B1");
+    grid.emplace<label_widget>("A1", txt("Input audio device:"), alignment::top_right());
+    auto& input_config = grid.emplace<audio_device_widget>("B1");
     input_config.direction = audio_direction::input;
     input_config.device_id = preferences.audio_input_device_id;
 
-    grid.make_widget<label_widget>("A2", txt("Output audio device:"), alignment::top_right());
-    auto& output_config = grid.make_widget<audio_device_widget>("B2");
+    grid.emplace<label_widget>("A2", txt("Output audio device:"), alignment::top_right());
+    auto& output_config = grid.emplace<audio_device_widget>("B2");
     output_config.direction = audio_direction::output;
     output_config.device_id = preferences.audio_output_device_id;
 
@@ -70,8 +70,8 @@ hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferen
         }
     }
 
-    grid.make_widget<label_widget>("A1", txt("Theme:"), alignment::top_right());
-    grid.make_widget<selection_widget>("B1", preferences.selected_theme, theme_list);
+    grid.emplace<label_widget>("A1", txt("Theme:"), alignment::top_right());
+    grid.emplace<selection_widget>("B1", preferences.selected_theme, theme_list);
 
     co_await std::suspend_always{};
 }
@@ -80,20 +80,20 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
 {
     using namespace hi;
 
-    grid.make_widget<label_widget>(
+    grid.emplace<label_widget>(
         "A1",
         txt("This is a [he-IL]\xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92[.].\nAnd another sentence. One more:"),
         alignment::top_right());
-    grid.make_widget<toggle_widget>("B1", preferences.toggle_value, txt("true"), txt("false"), txt("other"));
+    grid.emplace<toggle_widget>("B1", preferences.toggle_value, txt("true"), txt("false"), txt("other"));
 
-    grid.make_widget<label_widget>("A2", txt("These is a disabled checkbox:"), alignment::top_right());
-    auto& checkbox2 = grid.make_widget<checkbox_widget>(
+    grid.emplace<label_widget>("A2", txt("These is a disabled checkbox:"), alignment::top_right());
+    auto& checkbox2 = grid.emplace<checkbox_widget>(
         "B2", preferences.radio_value, 2, txt("Checkbox, with a pretty large label."), txt("off"), txt("other"));
 
-    grid.make_widget<label_widget>("A3", txt("These are radio buttons:"), alignment::top_right());
-    grid.make_widget<radio_button_widget>("B3", preferences.radio_value, 0, txt("Radio 1"));
-    grid.make_widget<radio_button_widget>("B4", preferences.radio_value, 1, txt("Radio 2 (on)"), txt("Radio 2 (off)"));
-    grid.make_widget<radio_button_widget>("B5", preferences.radio_value, 2, txt("Radio 3"));
+    grid.emplace<label_widget>("A3", txt("These are radio buttons:"), alignment::top_right());
+    grid.emplace<radio_button_widget>("B3", preferences.radio_value, 0, txt("Radio 1"));
+    grid.emplace<radio_button_widget>("B4", preferences.radio_value, 1, txt("Radio 2 (on)"), txt("Radio 2 (off)"));
+    grid.emplace<radio_button_widget>("B5", preferences.radio_value, 2, txt("Radio 3"));
 
     auto option_list = std::vector{
         std::pair{0, label{txt("first")}},
@@ -104,11 +104,11 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
         std::pair{5, label{txt("six")}},
         std::pair{6, label{txt("seven")}}};
 
-    grid.make_widget<label_widget>("A6", txt("This is a selection box at the bottom:"), alignment::top_right());
-    auto& selection3 = grid.make_widget<selection_widget>("B6", preferences.radio_value, option_list);
+    grid.emplace<label_widget>("A6", txt("This is a selection box at the bottom:"), alignment::top_right());
+    auto& selection3 = grid.emplace<selection_widget>("B6", preferences.radio_value, option_list);
 
-    grid.make_widget<label_widget>("A7", txt("Sample Rate:"), alignment::top_right());
-    grid.make_widget<text_field_widget>("B7", preferences.audio_output_sample_rate);
+    grid.emplace<label_widget>("A7", txt("Sample Rate:"), alignment::top_right());
+    grid.emplace<text_field_widget>("B7", preferences.audio_output_sample_rate);
 
     auto toggle_value_cbt = preferences.toggle_value.subscribe(
         [&](bool value) {
@@ -117,7 +117,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
         },
         callback_flags::main);
 
-    grid.make_widget<label_widget>("A8:B8", txt("This is large number locale formatted: {:L}", 1234.56));
+    grid.emplace<label_widget>("A8:B8", txt("This is large number locale formatted: {:L}", 1234.56));
 
 
     co_await std::suspend_always{};
@@ -130,14 +130,14 @@ hi::task<> preferences_window(my_preferences& preferences)
     auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), txt("Preferences")};
     auto top = std::make_unique<window_widget>(window_label);
 
-    top->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 0, label{elusive_icon::Speaker, txt("Audio")});
-    top->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 1, label{elusive_icon::Key, txt("License")});
-    top->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 2, label{elusive_icon::Brush, txt("Theme")});
+    top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 0, label{elusive_icon::Speaker, txt("Audio")});
+    top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 1, label{elusive_icon::Key, txt("License")});
+    top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 2, label{elusive_icon::Brush, txt("Theme")});
 
-    auto& tabs = top->content().make_widget<tab_widget>("A1", preferences.tab_index);
-    auto& audio_tab_grid = tabs.make_widget<grid_widget>(0);
-    auto& license_tab_grid = tabs.make_widget<scroll_widget<axis::both>>(1).make_widget<grid_widget>();
-    auto& theme_tab_grid = tabs.make_widget<grid_widget>(2);
+    auto& tabs = top->content().emplace<tab_widget>("A1", preferences.tab_index);
+    auto& audio_tab_grid = tabs.emplace<grid_widget>(0);
+    auto& license_tab_grid = tabs.emplace<scroll_widget<axis::both>>(1).emplace<grid_widget>();
+    auto& theme_tab_grid = tabs.emplace<grid_widget>(2);
 
     auto audio_tab = init_audio_tab(audio_tab_grid, preferences);
     auto license_tab = init_license_tab(license_tab_grid, preferences);
@@ -156,13 +156,11 @@ hi::task<> main_window(my_preferences& preferences)
     auto top = std::make_unique<window_widget>(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, txt("Preferences")};
-    hilet& preferences_button = top->toolbar().make_widget<hi::toolbar_button_widget>(preferences_label);
+    hilet& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
 
-    auto& column = top->content().make_widget<column_widget>("A1");
-    column.make_widget<toggle_widget>(preferences.toggle_value);
-    hilet& hello_world_button = column.make_widget<momentary_button_widget>(txt("Hello world AV"));
-
-    hilet& vma_dump_button = column.make_widget<momentary_button_widget>(txt("vma\ncalculate stats"));
+    top->content().emplace_bottom<toggle_widget>(preferences.toggle_value);
+    hilet& hello_world_button = top->content().emplace_bottom<momentary_button_widget>(txt("Hello world AV"));
+    hilet& vma_dump_button = top->content().emplace_bottom<momentary_button_widget>(txt("vma\ncalculate stats"));
 
     auto window = gui_window{std::move(top)}; 
 

@@ -25,7 +25,7 @@
 #include "image/module.hpp"
 #include "l10n/l10n.hpp"
 #include "dispatch/dispatch.hpp"
-#include "layout/module.hpp"
+#include "layout/layout.hpp"
 #include "memory/memory.hpp"
 #include "net/module.hpp"
 #include "numeric/module.hpp"

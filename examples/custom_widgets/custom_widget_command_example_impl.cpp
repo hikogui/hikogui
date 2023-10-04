@@ -12,7 +12,7 @@ public:
     hi::observer<bool> value;
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
-    // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
+    // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
     command_widget(hi::widget *parent) noexcept : hi::widget(parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
@@ -135,8 +135,8 @@ int hi_main(int argc, char *argv[])
     hi::set_application_version({1, 0, 0});
 
     auto widget = std::make_unique<hi::window_widget>(hi::txt("Custom Widget Command"));
-    widget->content().make_widget<command_widget>("A1");
-    widget->content().make_widget<command_widget>("A2");
+    widget->content().emplace<command_widget>("A1");
+    widget->content().emplace<command_widget>("A2");
 
     auto window = std::make_unique<hi::gui_window>(std::move(widget));
 
