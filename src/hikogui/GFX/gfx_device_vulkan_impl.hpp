@@ -199,7 +199,7 @@ inline void gfx_device::initialize_device()
     box_pipeline = std::make_unique<gfx_pipeline_box::device_shared>(*this);
     image_pipeline = std::make_unique<gfx_pipeline_image::device_shared>(*this);
     SDF_pipeline = std::make_unique<gfx_pipeline_SDF::device_shared>(*this);
-    alpha_pipeline = std::make_unique<gfx_pipeline_alpha::device_shared>(*this);
+    override_pipeline = std::make_unique<gfx_pipeline_override::device_shared>(*this);
     tone_mapper_pipeline = std::make_unique<gfx_pipeline_tone_mapper::device_shared>(*this);
 }
 

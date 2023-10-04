@@ -7,7 +7,7 @@
 #include "gfx_pipeline_box_vulkan.hpp"
 #include "gfx_pipeline_image_vulkan.hpp"
 #include "gfx_pipeline_SDF_vulkan.hpp"
-#include "gfx_pipeline_alpha_vulkan.hpp"
+#include "gfx_pipeline_override_vulkan.hpp"
 #include "../settings/settings.hpp"
 #include "../geometry/module.hpp"
 #include "../unicode/unicode.hpp"
@@ -243,7 +243,7 @@ public:
         vector_span<gfx_pipeline_box::vertex>& box_vertices,
         vector_span<gfx_pipeline_image::vertex>& image_vertices,
         vector_span<gfx_pipeline_SDF::vertex>& sdf_vertices,
-        vector_span<gfx_pipeline_alpha::vertex>& alpha_vertices) noexcept;
+        vector_span<gfx_pipeline_override::vertex>& override_vertices) noexcept;
 
     /** Check if the draw_context should be used for rendering.
      */
@@ -366,7 +366,7 @@ public:
         return draw_image(layout, make_quad(box), image, draw_attributes{attributes...});
     }
 
-/** Draw a glyph.
+    /** Draw a glyph.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param box The size and position of the glyph.
@@ -577,9 +577,12 @@ public:
      * @param attributes The drawing attributes to use.
      */
     template<std::same_as<widget_layout> WidgetLayout>
-    void draw_hole(WidgetLayout const& layout, quad const& box, draw_attributes const& attributes) const noexcept
+    void draw_hole(WidgetLayout const& layout, quad const& box, draw_attributes attributes) const noexcept
     {
-        return _override_alpha(
+        // Override alpha channel.
+        attributes.fill_color = color{0.0f, 0.0f, 0.0f, 0.0f};
+        attributes.line_color = color{0.0f, 0.0f, 0.0f, 1.0f};
+        return _draw_override(
             layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, attributes);
     }
 
@@ -615,7 +618,7 @@ private:
     vector_span<gfx_pipeline_box::vertex> *_box_vertices;
     vector_span<gfx_pipeline_image::vertex> *_image_vertices;
     vector_span<gfx_pipeline_SDF::vertex> *_sdf_vertices;
-    vector_span<gfx_pipeline_alpha::vertex> *_alpha_vertices;
+    vector_span<gfx_pipeline_override::vertex> *_override_vertices;
 
     template<draw_quad_shape Shape>
     [[nodiscard]] constexpr static quad make_quad(Shape const& shape) noexcept
@@ -680,7 +683,7 @@ private:
         return corner_radii{f32x4{circle}.wwww()};
     }
 
-    void _override_alpha(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
+    void _draw_override(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
 
     void _draw_box(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept;
 

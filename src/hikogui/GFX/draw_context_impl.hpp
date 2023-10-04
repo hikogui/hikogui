@@ -8,7 +8,7 @@
 #include "gfx_pipeline_box_vulkan_impl.hpp"
 #include "gfx_pipeline_image_vulkan_impl.hpp"
 #include "gfx_pipeline_SDF_vulkan_impl.hpp"
-#include "gfx_pipeline_alpha_vulkan_impl.hpp"
+#include "gfx_pipeline_override_vulkan_impl.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "../text/module.hpp"
 #include "../macros.hpp"
@@ -20,31 +20,31 @@ inline draw_context::draw_context(
     vector_span<gfx_pipeline_box::vertex>& box_vertices,
     vector_span<gfx_pipeline_image::vertex>& image_vertices,
     vector_span<gfx_pipeline_SDF::vertex>& sdf_vertices,
-    vector_span<gfx_pipeline_alpha::vertex>& alpha_vertices) noexcept :
+    vector_span<gfx_pipeline_override::vertex>& override_vertices) noexcept :
     device(std::addressof(device)),
     frame_buffer_index(std::numeric_limits<size_t>::max()),
     scissor_rectangle(),
     _box_vertices(&box_vertices),
     _image_vertices(&image_vertices),
     _sdf_vertices(&sdf_vertices),
-    _alpha_vertices(&alpha_vertices)
+    _override_vertices(&override_vertices)
 {
     _box_vertices->clear();
     _image_vertices->clear();
     _sdf_vertices->clear();
-    _alpha_vertices->clear();
+    _override_vertices->clear();
 }
 
 inline void
-draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
+draw_context::_draw_override(aarectangle const& clipping_rectangle, quad box, draw_attributes const& attributes) const noexcept
 {
-    if (_alpha_vertices->full()) {
+    if (_override_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
-        ++global_counter<"override_alpha::overflow">;
+        ++global_counter<"override::overflow">;
         return;
     }
 
-    gfx_pipeline_alpha::device_shared::place_vertices(*_alpha_vertices, clipping_rectangle, box, attributes.fill_color.p0.a());
+    gfx_pipeline_override::device_shared::place_vertices(*_override_vertices, clipping_rectangle, box, attributes.fill_color, attributes.line_color);
 }
 
 inline void

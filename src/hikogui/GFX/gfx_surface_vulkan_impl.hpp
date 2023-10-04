@@ -11,7 +11,7 @@
 #include "gfx_pipeline_box_vulkan.hpp"
 #include "gfx_pipeline_image_vulkan.hpp"
 #include "gfx_pipeline_SDF_vulkan.hpp"
-#include "gfx_pipeline_alpha_vulkan.hpp"
+#include "gfx_pipeline_override_vulkan.hpp"
 #include "gfx_pipeline_tone_mapper_vulkan.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
@@ -210,7 +210,7 @@ inline gfx_surface_loss gfx_surface::build_for_new_device() noexcept
     box_pipeline->build_for_new_device();
     image_pipeline->build_for_new_device();
     SDF_pipeline->build_for_new_device();
-    alpha_pipeline->build_for_new_device();
+    override_pipeline->build_for_new_device();
     tone_mapper_pipeline->build_for_new_device();
 
     auto& graphics_queue = _device->get_graphics_queue(intrinsic);
@@ -252,12 +252,12 @@ inline gfx_surface_loss gfx_surface::build_for_new_swapchain(extent2 new_size) n
         hi_assert_not_null(box_pipeline);
         hi_assert_not_null(image_pipeline);
         hi_assert_not_null(SDF_pipeline);
-        hi_assert_not_null(alpha_pipeline);
+        hi_assert_not_null(override_pipeline);
         hi_assert_not_null(tone_mapper_pipeline);
         box_pipeline->build_for_new_swapchain(renderPass, 0, swapchainImageExtent);
         image_pipeline->build_for_new_swapchain(renderPass, 1, swapchainImageExtent);
         SDF_pipeline->build_for_new_swapchain(renderPass, 2, swapchainImageExtent);
-        alpha_pipeline->build_for_new_swapchain(renderPass, 3, swapchainImageExtent);
+        override_pipeline->build_for_new_swapchain(renderPass, 3, swapchainImageExtent);
         tone_mapper_pipeline->build_for_new_swapchain(renderPass, 4, swapchainImageExtent);
 
         auto image_views = std::vector<vk::ImageView>{};
@@ -318,7 +318,7 @@ inline void gfx_surface::teardown_for_swapchain_lost() noexcept
     }
 
     tone_mapper_pipeline->teardown_for_swapchain_lost();
-    alpha_pipeline->teardown_for_swapchain_lost();
+    override_pipeline->teardown_for_swapchain_lost();
     SDF_pipeline->teardown_for_swapchain_lost();
     image_pipeline->teardown_for_swapchain_lost();
     box_pipeline->teardown_for_swapchain_lost();
@@ -337,7 +337,7 @@ inline void gfx_surface::teardown_for_device_lost() noexcept
         delegate->teardown_for_device_lost();
     }
     tone_mapper_pipeline->teardown_for_device_lost();
-    alpha_pipeline->teardown_for_device_lost();
+    override_pipeline->teardown_for_device_lost();
     SDF_pipeline->teardown_for_device_lost();
     image_pipeline->teardown_for_device_lost();
     box_pipeline->teardown_for_device_lost();
@@ -397,7 +397,7 @@ inline draw_context gfx_surface::render_start(aarectangle redraw_rectangle)
         box_pipeline->vertexBufferData,
         image_pipeline->vertexBufferData,
         SDF_pipeline->vertexBufferData,
-        alpha_pipeline->vertexBufferData};
+        override_pipeline->vertexBufferData};
 
     // Bail out when the window is not yet ready to be rendered, or if there is nothing to render.
     if (state != gfx_surface_state::has_swapchain or not redraw_rectangle) {
@@ -524,7 +524,7 @@ inline void gfx_surface::fill_command_buffer(
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
     SDF_pipeline->draw_in_command_buffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    alpha_pipeline->draw_in_command_buffer(commandBuffer, context);
+    override_pipeline->draw_in_command_buffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
     tone_mapper_pipeline->draw_in_command_buffer(commandBuffer, context);
 

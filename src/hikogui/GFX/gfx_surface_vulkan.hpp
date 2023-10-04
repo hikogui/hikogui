@@ -11,7 +11,7 @@
 #include "gfx_pipeline_image_vulkan.hpp"
 #include "gfx_pipeline_box_vulkan.hpp"
 #include "gfx_pipeline_SDF_vulkan.hpp"
-#include "gfx_pipeline_alpha_vulkan.hpp"
+#include "gfx_pipeline_override_vulkan.hpp"
 #include "gfx_pipeline_tone_mapper_vulkan.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
@@ -69,7 +69,7 @@ public:
     std::unique_ptr<gfx_pipeline_image> image_pipeline;
     std::unique_ptr<gfx_pipeline_box> box_pipeline;
     std::unique_ptr<gfx_pipeline_SDF> SDF_pipeline;
-    std::unique_ptr<gfx_pipeline_alpha> alpha_pipeline;
+    std::unique_ptr<gfx_pipeline_override> override_pipeline;
     std::unique_ptr<gfx_pipeline_tone_mapper> tone_mapper_pipeline;
 
     gfx_surface(vk::SurfaceKHR surface) : intrinsic(surface)
@@ -77,7 +77,7 @@ public:
         box_pipeline = std::make_unique<gfx_pipeline_box>(this);
         image_pipeline = std::make_unique<gfx_pipeline_image>(this);
         SDF_pipeline = std::make_unique<gfx_pipeline_SDF>(this);
-        alpha_pipeline = std::make_unique<gfx_pipeline_alpha>(this);
+        override_pipeline = std::make_unique<gfx_pipeline_override>(this);
         tone_mapper_pipeline = std::make_unique<gfx_pipeline_tone_mapper>(this);
     }
 

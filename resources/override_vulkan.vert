@@ -8,10 +8,12 @@ layout(push_constant) uniform push_constants {
 
 layout(location = 0) in vec4 in_position;
 layout(location = 1) in vec4 in_clipping_rectangle;
-layout(location = 2) in float in_alpha;
+layout(location = 2) in vec4 in_color;
+layout(location = 3) in vec4 in_blend_factor;
 
 layout(location = 0) out flat vec4 out_clipping_rectangle;
-layout(location = 1) out flat float out_alpha;
+layout(location = 1) out vec4 out_color;
+layout(location = 2) out vec4 out_blend_factor;
 
 #include "utils_vulkan.glsl"
 
@@ -37,5 +39,6 @@ void main()
 {
     gl_Position = convert_position_to_viewport(in_position.xyz);
     out_clipping_rectangle = convert_clipping_rectangle_to_screen(in_clipping_rectangle);
-    out_alpha = in_alpha;
+    out_color = in_color;
+    out_blend_factor = in_blend_factor;
 }
