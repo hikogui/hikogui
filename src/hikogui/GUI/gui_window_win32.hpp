@@ -796,13 +796,11 @@ public:
      *
      * It may also be called from within the `event_handle()` of widgets.
      */
-    bool process_event(gui_event const& event) noexcept
+    bool process_event(gui_event event) noexcept
     {
         using enum gui_event_type;
 
         hi_axiom(loop::main().on_thread());
-
-        auto events = std::vector<gui_event>{event};
 
         switch (event.type()) {
         case window_redraw:
@@ -862,25 +860,28 @@ public:
             update_mouse_target({});
             break;
 
+        case mouse_up:
+        case mouse_drag:
         case mouse_down:
         case mouse_move:
-            {
-                hilet hitbox = _widget->hitbox_test(event.mouse().position);
-                update_mouse_target(hitbox.widget_id, event.mouse().position);
-
-                if (event == mouse_down) {
-                    update_keyboard_target(hitbox.widget_id, keyboard_focus_group::all);
-                }
+            event.mouse().hitbox = _widget->hitbox_test(event.mouse().position);
+            if (event == mouse_down or event == mouse_move) {
+                update_mouse_target(event.mouse().hitbox.widget_id, event.mouse().position);
             }
-            break;
-
-        case keyboard_down:
-            for (auto& e : translate_keyboard_event(event)) {
-                events.push_back(e);
+            if (event == mouse_down) {
+                update_keyboard_target(event.mouse().hitbox.widget_id, keyboard_focus_group::all);
             }
             break;
 
         default:;
+        }
+
+        // Translate keyboard events, using the keybindings.
+        auto events = std::vector<gui_event>{event};
+        if (event.type() == keyboard_down) {
+            for (auto& e : translate_keyboard_event(event)) {
+                events.push_back(e);
+            }
         }
 
         for (auto& event_ : events) {
@@ -893,10 +894,9 @@ public:
             }
         }
 
-        hilet handled = [&] {
-            hilet target_id = event.variant() == gui_event_variant::mouse ? _mouse_target_id : _keyboard_target_id;
-            return send_events_to_widget(target_id, events);
-        }();
+        // Send the event to the correct widget.
+        hilet handled = send_events_to_widget(
+            events.front().variant() == gui_event_variant::mouse ? _mouse_target_id : _keyboard_target_id, events);
 
         // Intercept the keyboard generated escape.
         // A keyboard generated escape should always remove keyboard focus.

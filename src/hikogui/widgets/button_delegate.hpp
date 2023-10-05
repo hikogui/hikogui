@@ -50,17 +50,17 @@ public:
 
     virtual ~button_delegate() = default;
 
-    virtual void init(abstract_button_widget& sender) noexcept {}
+    virtual void init(widget& sender) noexcept {}
 
-    virtual void deinit(abstract_button_widget& sender) noexcept {}
+    virtual void deinit(widget& sender) noexcept {}
 
     /** Called when the button is pressed by the user.
      */
-    virtual void activate(abstract_button_widget& sender) noexcept {};
+    virtual void activate(widget& sender) noexcept {};
 
     /** Used by the widget to check the state of the button.
      */
-    [[nodiscard]] virtual button_state state(abstract_button_widget const& sender) const noexcept
+    [[nodiscard]] virtual button_state state(widget const& sender) const noexcept
     {
         return button_state::off;
     }
@@ -110,7 +110,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(abstract_button_widget const& sender) const noexcept override
+    [[nodiscard]] button_state state(widget const& sender) const noexcept override
     {
         if (*value == *on_value) {
             return button_state::on;
@@ -119,7 +119,7 @@ public:
         }
     }
 
-    void activate(abstract_button_widget& sender) noexcept override
+    void activate(widget& sender) noexcept override
     {
         value = *on_value;
     }
@@ -174,8 +174,9 @@ public:
      */
     default_toggle_button_delegate(
         forward_of<observer<value_type>> auto&& value,
-        forward_of<observer<value_type>> auto&& on_value) noexcept requires can_make_defaults :
-        default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), value_type{})
+        forward_of<observer<value_type>> auto&& on_value) noexcept
+        requires can_make_defaults
+        : default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), value_type{})
     {
     }
 
@@ -183,13 +184,14 @@ public:
      *
      * @param value A value or observer-value used as a representation of the state.
      */
-    default_toggle_button_delegate(forward_of<observer<value_type>> auto&& value) noexcept requires can_make_defaults :
-        default_toggle_button_delegate(hi_forward(value), value_type{1}, value_type{})
+    default_toggle_button_delegate(forward_of<observer<value_type>> auto&& value) noexcept
+        requires can_make_defaults
+        : default_toggle_button_delegate(hi_forward(value), value_type{1}, value_type{})
     {
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(abstract_button_widget const& sender) const noexcept override
+    [[nodiscard]] button_state state(widget const& sender) const noexcept override
     {
         if (*value == *on_value) {
             return button_state::on;
@@ -200,7 +202,7 @@ public:
         }
     }
 
-    void activate(abstract_button_widget& sender) noexcept override
+    void activate(widget& sender) noexcept override
     {
         if (*value == *off_value) {
             value = *on_value;
@@ -223,11 +225,10 @@ private:
  * @param on_value The value or observer-value that mean 'on'.
  * @return A shared_ptr to a button delegate.
  */
-[[nodiscard]] std::shared_ptr<button_delegate>
-make_default_radio_button_delegate(auto&& value, auto&& on_value) noexcept requires requires
-{
-    default_radio_button_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(on_value)};
-}
+[[nodiscard]] std::shared_ptr<button_delegate> make_default_radio_button_delegate(auto&& value, auto&& on_value) noexcept
+    requires requires {
+        default_radio_button_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(on_value)};
+    }
 {
     return std::make_shared<default_radio_button_delegate<observer_decay_t<decltype(value)>>>(
         hi_forward(value), hi_forward(on_value));
@@ -241,14 +242,29 @@ make_default_radio_button_delegate(auto&& value, auto&& on_value) noexcept requi
  * @param args an optional on-value followed by an optional off-value.
  * @return A shared_ptr to a button delegate.
  */
-[[nodiscard]] std::shared_ptr<button_delegate>
-make_default_toggle_button_delegate(auto&& value, auto&&...args) noexcept requires requires
-{
-    default_toggle_button_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
-}
+[[nodiscard]] std::shared_ptr<button_delegate> make_default_toggle_button_delegate(auto&& value, auto&&...args) noexcept
+    requires requires {
+        default_toggle_button_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
+    }
 {
     return std::make_shared<default_toggle_button_delegate<observer_decay_t<decltype(value)>>>(
         hi_forward(value), hi_forward(args)...);
+}
+
+/** Make a shared_ptr to a delegate.
+ * 
+ * @tparam Delegate A class template to instantiate with `observer_decay_t<Value>` as template argument.
+ * @param value The value or observer to a value to monitor.
+ * @param arg Optional arguments with the same value or observer to a value types.
+ * @return A new shared_ptr to a default delegate.
+ */
+template<template<typename> typename Delegate, typename Value, typename... Args>
+[[nodiscard]] auto make_shared_default_delegate(Value&& value, Args&&...args) noexcept
+    requires requires {
+        Delegate<observer_decay_t<Value>>{std::forward<Value>(value), std::forward<Args>(args)...};
+    }
+{
+    return std::make_shared<Delegate<observer_decay_t<Value>>>(std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
 }} // namespace hi::v1

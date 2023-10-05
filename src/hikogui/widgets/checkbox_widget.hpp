@@ -8,11 +8,17 @@
 
 #pragma once
 
-#include "abstract_button_widget.hpp"
+#include "widget.hpp"
+#include "with_label_widget.hpp"
+#include "button_delegate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
+
+template<typename Context>
+concept checkbox_widget_attribute =
+    forward_of<Context, observer<hi::alignment>>;
 
 /** A GUI widget that permits the user to make a binary choice.
  * @ingroup widgets
@@ -40,28 +46,47 @@ namespace hi { inline namespace v1 {
  *
  * @snippet widgets/checkbox_example_impl.cpp Create a checkbox
  */
-class checkbox_widget final : public abstract_button_widget {
+class checkbox_widget final : public widget {
 public:
-    using super = abstract_button_widget;
-    using delegate_type = typename super::delegate_type;
+    using super = widget;
+    using delegate_type = button_delegate;
+    template<typename T>
+    using default_delegate_type = default_toggle_button_delegate<T>;
+
+    /** The delegate that controls the button widget.
+     */
+    std::shared_ptr<delegate_type> delegate;
+
+    /** The alignment of the button and on/off/other label.
+     */
+    observer<alignment> alignment;
+
+    /** Notifier to await or callback on when the button was activated.
+     */
+    notifier<> activated;
+
+    ~checkbox_widget()
+    {
+        this->delegate->deinit(*this);
+    }
 
     /** Construct a checkbox widget.
      *
      * @param parent The parent widget that owns this checkbox widget.
      * @param delegate The delegate to use to manage the state of the checkbox button.
-     * @param attributes Different attributes used to configure the label's on the checkbox button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
-     *                   passed it will be shown in all states. If two or three labels are passed
-     *                   the labels are shown in on-state, off-state and other-state in that order.
      */
+    template<checkbox_widget_attribute... Attributes>
     checkbox_widget(
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
-        button_widget_attribute auto&&...attributes) noexcept :
-        super(parent, std::move(delegate))
+        Attributes &&...attributes) noexcept :
+        super(parent), delegate(std::move(delegate))
     {
+        hi_assert_not_null(this->delegate);
         alignment = alignment::top_left();
-        set_attributes<0>(hi_forward(attributes)...);
+        set_attributes<0>(std::forward<Attributes>(attributes)...);
+
+        this->delegate->init(*this);
     }
 
     /** Construct a checkbox widget with a default button delegate.
@@ -69,18 +94,15 @@ public:
      * @see default_button_delegate
      * @param parent The parent widget that owns this checkbox widget.
      * @param value The value or `observer` value which represents the state of the checkbox.
-     * @param attributes Different attributes used to configure the label's on the checkbox button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
-     *                   passed it will be shown in all states. If two or three labels are passed
-     *                   the labels are shown in on-state, off-state and other-state in that order.
      */
+    template<different_from<std::shared_ptr<delegate_type>> Value, checkbox_widget_attribute... Attributes>
     checkbox_widget(
         widget *parent,
-        different_from<std::shared_ptr<delegate_type>> auto&& value,
-        button_widget_attribute auto&&...attributes) noexcept requires requires
+        Value&& value,
+        Attributes &&...attributes) noexcept requires requires (Value a)
     {
-        make_default_toggle_button_delegate(hi_forward(value));
-    } : checkbox_widget(parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...) {}
+        make_default_toggle_button_delegate(a);
+    } : checkbox_widget(parent, make_default_toggle_button_delegate(std::forward<Value>(value)), std::forward<Attributes>(attributes)...) {}
 
     /** Construct a checkbox widget with a default button delegate.
      *
@@ -88,24 +110,23 @@ public:
      * @param parent The parent widget that owns this checkbox widget.
      * @param value The value or `observer` value which represents the state of the checkbox.
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
-     * @param attributes Different attributes used to configure the label's on the checkbox button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
-     *                   passed it will be shown in all states. If two or three labels are passed
-     *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     template<
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
-        button_widget_attribute... Attributes>
-    checkbox_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires
+        checkbox_widget_attribute... Attributes>
+    checkbox_widget(
+        widget *parent,
+        Value&& value,
+        OnValue&& on_value,
+        Attributes &&...attributes) noexcept
+        requires requires (Value a, OnValue b)
     {
-        make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value));
+        make_default_toggle_button_delegate(a, b);
     } :
         checkbox_widget(
             parent,
-            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)),
-            hi_forward(attributes)...)
+            make_default_toggle_button_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)), std::forward<Attributes>(attributes)...)
     {
     }
 
@@ -116,71 +137,49 @@ public:
      * @param value The value or `observer` value which represents the state of the checkbox.
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
      * @param off_value The off-value. This value is used to determine which value yields an 'off' state.
-     * @param attributes Different attributes used to configure the label's on the checkbox button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
-     *                   passed it will be shown in all states. If two or three labels are passed
-     *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     template<
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         forward_of<observer<observer_decay_t<Value>>> OffValue,
-        button_widget_attribute... Attributes>
+        checkbox_widget_attribute... Attributes>
     checkbox_widget(
         widget *parent,
         Value&& value,
         OnValue&& on_value,
         OffValue&& off_value,
-        Attributes&&...attributes) noexcept requires requires
+        Attributes &&...attributes) noexcept requires requires (Value a, OnValue b, OffValue c)
     {
-        make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value));
+        make_default_toggle_button_delegate(a, b, c);
     } :
         checkbox_widget(
             parent,
-            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
+            make_default_toggle_button_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value), std::forward<Attributes>(attributes)...),
             hi_forward(attributes)...)
     {
+    }
+
+    /** Get the current state of the button.
+     * @return The state of the button: on / off / other.
+     */
+    [[nodiscard]] button_state state() const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+        hi_assert_not_null(delegate);
+        return delegate->state(*this);
     }
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _label_constraints = super::update_constraints();
-
         _button_size = {theme().size(), theme().size()};
-        hilet extra_size = extent2{theme().margin<float>() + _button_size.width(), 0};
-
-        auto constraints = max(_label_constraints + extra_size, _button_size);
-        constraints.margins = theme().margin();
-        constraints.alignment = *alignment;
-        return constraints;
+        return box_constraints{_button_size, _button_size, _button_size, *alignment, theme().margin(), {}};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
-
-            if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
-                _button_rectangle = align(context.rectangle(), _button_size, alignment_);
-            } else {
-                hi_not_implemented();
-            }
-
-            hilet label_width = context.width() - (_button_rectangle.width() + theme().margin<float>());
-            if (alignment_ == horizontal_alignment::left) {
-                hilet label_left = _button_rectangle.right() + theme().margin<float>();
-                hilet label_rectangle = aarectangle{label_left, 0.0f, label_width, context.height()};
-                _on_label_shape = _off_label_shape = _other_label_shape =
-                    box_shape(_label_constraints, label_rectangle, theme().baseline_adjustment());
-
-            } else if (alignment_ == horizontal_alignment::right) {
-                hilet label_rectangle = aarectangle{0.0f, 0.0f, label_width, context.height()};
-                _on_label_shape = _off_label_shape = _other_label_shape =
-                    box_shape(_label_constraints, label_rectangle, theme().baseline_adjustment());
-            } else {
-                hi_not_implemented();
-            }
+            _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*alignment));
 
             _check_glyph = find_glyph(elusive_icon::Ok);
             hilet check_glyph_bb = _check_glyph.get_metrics().bounding_rectangle * theme().icon_size();
@@ -198,19 +197,108 @@ public:
         if (*mode > widget_mode::invisible and overlaps(context, layout())) {
             draw_check_box(context);
             draw_check_mark(context);
-            draw_button(context);
         }
     }
-    /// @endprivatesection
-private:
-    box_constraints _label_constraints;
 
+    [[nodiscard]] color background_color() const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+        if (_pressed) {
+            return theme().color(semantic_color::fill, semantic_layer + 2);
+        } else {
+            return super::background_color();
+        }
+    }
+
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (*mode >= widget_mode::partial and layout().contains(position)) {
+            return {id, _layout.elevation, hitbox_type::button};
+        } else {
+            return {};
+        }
+    }
+
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+    }
+
+    bool handle_event(gui_event const& event) noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+
+        switch (event.type()) {
+        case gui_event_type::gui_activate:
+            if (*mode >= widget_mode::partial) {
+                hi_assert_not_null(delegate);
+                delegate->activate(*this);
+                activated();
+                ++global_counter<"checkbox_widget:handle_event:relayout">;
+                process_event({gui_event_type::window_relayout});
+                return true;
+            }
+            break;
+
+        case gui_event_type::mouse_down:
+            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
+                _pressed = true;
+                request_redraw();
+                return true;
+            }
+            break;
+
+        case gui_event_type::mouse_up:
+            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
+                _pressed = false;
+
+                // with_label_widget or other widgets may have accepted the hitbox
+                // for this widget. Which means the widget_id in the mouse-event
+                // may match up with the checkbox.
+                if (event.mouse().hitbox.widget_id == id) {
+                    handle_event(gui_event_type::gui_activate);
+                }
+                request_redraw();
+                return true;
+            }
+            break;
+
+        default:;
+        }
+
+        return super::handle_event(event);
+    }
+    /// @endprivatesection
+
+private:
     extent2 _button_size;
     aarectangle _button_rectangle;
     font_book::font_glyph_type _check_glyph;
     aarectangle _check_glyph_rectangle;
     font_book::font_glyph_type _minus_glyph;
     aarectangle _minus_glyph_rectangle;
+    bool _pressed = false;
+    notifier<>::callback_token _delegate_cbt;
+
+    template<size_t I>
+    void set_attributes() noexcept
+    {
+    }
+
+    template<size_t I>
+    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+            set_attributes<I>(hi_forward(rest)...);
+
+        } else {
+            hi_static_no_default();
+        }
+    }
 
     void draw_check_box(draw_context const& context) noexcept
     {
@@ -234,5 +322,7 @@ private:
         }
     }
 };
+
+using checkbox_with_label_widget = with_label_widget<checkbox_widget>;
 
 }} // namespace hi::v1

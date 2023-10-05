@@ -87,8 +87,10 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     grid.emplace<toggle_widget>("B1", preferences.toggle_value, txt("true"), txt("false"), txt("other"));
 
     grid.emplace<label_widget>("A2", txt("These is a disabled checkbox:"), alignment::top_right());
-    auto& checkbox2 = grid.emplace<checkbox_widget>(
+    auto& checkbox2 = grid.emplace<checkbox_with_label_widget>(
         "B2", preferences.radio_value, 2, txt("Checkbox, with a pretty large label."), txt("off"), txt("other"));
+    //auto& checkbox2 = grid.emplace<checkbox_widget>(
+    //    "B2", preferences.radio_value, 2);
 
     grid.emplace<label_widget>("A3", txt("These are radio buttons:"), alignment::top_right());
     grid.emplace<radio_button_widget>("B3", preferences.radio_value, 0, txt("Radio 1"));

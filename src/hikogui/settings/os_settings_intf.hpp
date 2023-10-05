@@ -61,6 +61,26 @@ public:
         return _left_to_right.load(std::memory_order::relaxed);
     }
 
+    /** Get the alignment based on the writing direction.
+     * 
+     * @param rhs The alignment that may need to be flipped to match the writing direction.
+     * @retval The alignment, possibly flipped.
+     */
+    [[nodiscard]] static hi::alignment alignment(hi::alignment rhs) noexcept
+    {
+        return left_to_right() ? rhs : mirror(rhs);
+    }
+
+    /** Get the alignment based on the writing direction.
+     * 
+     * @param rhs The alignment that may need to be flipped to match the writing direction.
+     * @retval The alignment, possibly flipped.
+     */
+    [[nodiscard]] static hi::horizontal_alignment alignment(hi::horizontal_alignment rhs) noexcept
+    {
+        return left_to_right() ? rhs : mirror(rhs);
+    }
+
     /** Get the configured light/dark theme mode
      */
     [[nodiscard]] static hi::theme_mode theme_mode() noexcept

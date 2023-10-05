@@ -567,6 +567,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_macos_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_win32_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_widget.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/with_label_widget.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/base.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/win32.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winnls.hpp>

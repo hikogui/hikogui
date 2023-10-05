@@ -34,7 +34,7 @@
 #include "window_controls_macos_widget.hpp"
 #include "window_controls_win32_widget.hpp"
 #include "window_widget.hpp"
-
+#include "with_label_widget.hpp"
 
 namespace hi {
 inline namespace v1 {

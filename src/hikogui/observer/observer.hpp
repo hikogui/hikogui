@@ -791,7 +791,7 @@ private:
  */
 template<typename T>
 struct observer_decay {
-    using type = std::decay_t<T>;
+    using type = std::remove_cvref_t<T>;
 };
 
 // clang-format off
@@ -808,5 +808,9 @@ using observer_decay_t = observer_decay<T>::type;
 template<typename Context, typename Expected>
 struct is_forward_of<Context, observer<Expected>> :
     std::conditional_t<std::is_convertible_v<Context, observer<Expected>>, std::true_type, std::false_type> {};
+
+
+template<typename Context, typename Expected>
+concept forward_observer = forward_of<Context, observer<observer_decay_t<Expected>>>;
 
 } // namespace hi::inline v1
