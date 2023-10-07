@@ -89,13 +89,12 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     grid.emplace<label_widget>("A2", txt("These is a disabled checkbox:"), alignment::top_right());
     auto& checkbox2 = grid.emplace<checkbox_with_label_widget>(
         "B2", preferences.radio_value, 2, txt("Checkbox, with a pretty large label."), txt("off"), txt("other"));
-    //auto& checkbox2 = grid.emplace<checkbox_widget>(
-    //    "B2", preferences.radio_value, 2);
+    //auto& checkbox2 = grid.emplace<checkbox_widget>("B2", preferences.radio_value, 2);
 
     grid.emplace<label_widget>("A3", txt("These are radio buttons:"), alignment::top_right());
-    grid.emplace<radio_button_widget>("B3", preferences.radio_value, 0, txt("Radio 1"));
-    grid.emplace<radio_button_widget>("B4", preferences.radio_value, 1, txt("Radio 2 (on)"), txt("Radio 2 (off)"));
-    grid.emplace<radio_button_widget>("B5", preferences.radio_value, 2, txt("Radio 3"));
+    grid.emplace<radio_button_with_label_widget>("B3", preferences.radio_value, 0, txt("Radio 1"));
+    grid.emplace<radio_button_with_label_widget>("B4", preferences.radio_value, 1, txt("Radio 2 (on)"), txt("Radio 2 (off)"));
+    grid.emplace<radio_button_with_label_widget>("B5", preferences.radio_value, 2, txt("Radio 3"));
 
     auto option_list = std::vector{
         std::pair{0, label{txt("first")}},

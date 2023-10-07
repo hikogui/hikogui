@@ -38,8 +38,6 @@ public:
     using super = widget;
     using button_widget_type = ButtonWidget;
     using delegate_type = button_widget_type::delegate_type;
-    template<typename T>
-    using default_delegate_type = button_widget_type::template default_delegate_type<T>;
 
     /** The label to show when the button is in the 'on' state.
      */
@@ -67,6 +65,8 @@ public:
     with_label_widget(widget *parent, std::shared_ptr<delegate_type> delegate, Attributes&&...attributes) noexcept :
         super(parent)
     {
+        hi_assert_not_null(_button_widget);
+
         alignment = alignment::top_left();
         set_attributes<0>(std::forward<Attributes>(attributes)...);
 
@@ -82,13 +82,14 @@ public:
 
     template<different_from<std::shared_ptr<delegate_type>> Value, with_label_widget_attribute... Attributes>
     with_label_widget(widget *parent, Value&& value, Attributes&&...attributes) noexcept
-        requires requires { make_shared_default_delegate<default_delegate_type>(std::forward<Value>(value)); }
+        requires requires { button_widget_type::make_default_delegate(std::forward<Value>(value)); }
         :
         with_label_widget(
             parent,
-            make_shared_default_delegate<default_delegate_type>(std::forward<Value>(value)),
+            button_widget_type::make_default_delegate(std::forward<Value>(value)),
             std::forward<Attributes>(attributes)...)
     {
+        _button_widget->alignment = alignment;
     }
 
     template<
@@ -97,14 +98,15 @@ public:
         with_label_widget_attribute... Attributes>
     with_label_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires {
-            make_shared_default_delegate<default_delegate_type>(std::forward<Value>(value), std::forward<OnValue>(on_value));
+            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
         }
         :
         with_label_widget(
             parent,
-            make_shared_default_delegate<default_delegate_type>(std::forward<Value>(value), std::forward<OnValue>(on_value)),
+            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)),
             std::forward<Attributes>(attributes)...)
     {
+        _button_widget->alignment = alignment;
     }
 
     template<
@@ -114,14 +116,15 @@ public:
         with_label_widget_attribute... Attributes>
     with_label_widget(widget *parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
         requires requires {
-            make_shared_default_delegate<default_delegate_type>(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
+            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
         }
         :
         with_label_widget(
             parent,
-            make_shared_default_delegate<default_delegate_type>(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value)),
+            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value)),
             std::forward<Attributes>(attributes)...)
     {
+        _button_widget->alignment = alignment;
     }
 
     /** Get the current state of the button.

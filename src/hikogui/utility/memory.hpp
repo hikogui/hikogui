@@ -28,6 +28,32 @@ hi_warning_ignore_msvc(26472);
 
 hi_export namespace hi::inline v1 {
 
+/** make_unique with CTAD (Class Template Argument Deduction)
+ * 
+ * @tparam T A class template type.
+ * @param args The arguments forwarded to the constructor.
+ * @return A std::unique_ptr<ctad_t<T>> to an object.
+ */
+template<template<typename...> typename T, typename... Args>
+[[nodiscard]] auto make_unique_ctad(Args &&...args)
+{
+    using deduced_type = decltype(T{std::forward<Args>(args)...});
+    return std::make_unique<deduced_type>(std::forward<Args>(args)...);
+}
+
+/** make_shared with CTAD (Class Template Argument Deduction)
+ * 
+ * @tparam T A class template type.
+ * @param args The arguments forwarded to the constructor.
+ * @return A std::shared_ptr<ctad_t<T>> to an object.
+ */
+template<template<typename...> typename T, typename... Args>
+[[nodiscard]] auto make_shared_ctad(Args &&...args)
+{
+    using deduced_type = decltype(T{std::forward<Args>(args)...});
+    return std::make_shared<deduced_type>(std::forward<Args>(args)...);
+}
+
 [[nodiscard]] bool equal_ptr(auto *p1, auto *p2) noexcept
 {
     return static_cast<void *>(p1) == static_cast<void *>(p2);

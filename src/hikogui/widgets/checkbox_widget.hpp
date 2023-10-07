@@ -50,8 +50,6 @@ class checkbox_widget final : public widget {
 public:
     using super = widget;
     using delegate_type = button_delegate;
-    template<typename T>
-    using default_delegate_type = default_toggle_button_delegate<T>;
 
     /** The delegate that controls the button widget.
      */
@@ -89,6 +87,13 @@ public:
         this->delegate->init(*this);
     }
 
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args &&...args)
+        requires requires { default_toggle_button_delegate{std::forward<Args>(args)...}; }
+    {
+        return make_shared_ctad<default_toggle_button_delegate>(std::forward<Args>(args)...);
+    }
+
     /** Construct a checkbox widget with a default button delegate.
      *
      * @see default_button_delegate
@@ -99,10 +104,15 @@ public:
     checkbox_widget(
         widget *parent,
         Value&& value,
-        Attributes &&...attributes) noexcept requires requires (Value a)
+        Attributes &&...attributes) requires requires
     {
-        make_default_toggle_button_delegate(a);
-    } : checkbox_widget(parent, make_default_toggle_button_delegate(std::forward<Value>(value)), std::forward<Attributes>(attributes)...) {}
+        make_default_delegate(std::forward<Value>(value));
+    } : checkbox_widget(
+            parent,
+            make_default_delegate(std::forward<Value>(value)),
+            std::forward<Attributes>(attributes)...)
+    {
+    }
 
     /** Construct a checkbox widget with a default button delegate.
      *
@@ -120,13 +130,14 @@ public:
         Value&& value,
         OnValue&& on_value,
         Attributes &&...attributes) noexcept
-        requires requires (Value a, OnValue b)
+        requires requires
     {
-        make_default_toggle_button_delegate(a, b);
+        make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
     } :
         checkbox_widget(
             parent,
-            make_default_toggle_button_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)), std::forward<Attributes>(attributes)...)
+            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)),
+            std::forward<Attributes>(attributes)...)
     {
     }
 
@@ -148,14 +159,14 @@ public:
         Value&& value,
         OnValue&& on_value,
         OffValue&& off_value,
-        Attributes &&...attributes) noexcept requires requires (Value a, OnValue b, OffValue c)
+        Attributes &&...attributes) noexcept requires requires
     {
-        make_default_toggle_button_delegate(a, b, c);
+        make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
     } :
         checkbox_widget(
             parent,
-            make_default_toggle_button_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value), std::forward<Attributes>(attributes)...),
-            hi_forward(attributes)...)
+            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value)),
+            std::forward<Attributes>(attributes)...)
     {
     }
 
@@ -195,8 +206,18 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-            draw_check_box(context);
-            draw_check_mark(context);
+            context.draw_box(
+                layout(), _button_rectangle, background_color(), focus_color(), theme().border_width(), border_side::inside);
+
+            switch (state()) {
+            case hi::button_state::on:
+                context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, accent_color());
+                break;
+            case hi::button_state::off:
+                break;
+            default:
+                context.draw_glyph(layout(), translate_z(0.1f) * _minus_glyph_rectangle, _minus_glyph, accent_color());
+            }
         }
     }
 
@@ -297,28 +318,6 @@ private:
 
         } else {
             hi_static_no_default();
-        }
-    }
-
-    void draw_check_box(draw_context const& context) noexcept
-    {
-        context.draw_box(
-            layout(), _button_rectangle, background_color(), focus_color(), theme().border_width(), border_side::inside);
-    }
-
-    void draw_check_mark(draw_context const& context) noexcept
-    {
-        auto state_ = state();
-
-        // Checkmark or tristate.
-        if (state_ == hi::button_state::on) {
-            context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, accent_color());
-
-        } else if (state_ == hi::button_state::off) {
-            ;
-
-        } else {
-            context.draw_glyph(layout(), translate_z(0.1f) * _minus_glyph_rectangle, _minus_glyph, accent_color());
         }
     }
 };

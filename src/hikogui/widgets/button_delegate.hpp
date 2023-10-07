@@ -129,6 +129,9 @@ private:
     typename decltype(on_value)::callback_token _on_value_cbt;
 };
 
+template<typename Value, typename OnValue>
+default_radio_button_delegate(Value &&, OnValue &&) -> default_radio_button_delegate<observer_decay_t<Value>>;
+
 /** A default toggle button delegate.
  *
  * The default toggle button delegate manages the state of a button widget using
@@ -217,6 +220,15 @@ private:
     typename decltype(off_value)::callback_token _off_value_cbt;
 };
 
+template<typename Value>
+default_toggle_button_delegate(Value &&) -> default_toggle_button_delegate<observer_decay_t<Value>>;
+
+template<typename Value, typename OnValue>
+default_toggle_button_delegate(Value &&, OnValue &&) -> default_toggle_button_delegate<observer_decay_t<Value>>;
+
+template<typename Value, typename OnValue, typename OffValue>
+default_toggle_button_delegate(Value &&, OnValue &&, OffValue &&) -> default_toggle_button_delegate<observer_decay_t<Value>>;
+
 /** Make a shared pointer to a radio-button delegate.
  *
  * @ingroup widget_delegates
@@ -249,22 +261,6 @@ private:
 {
     return std::make_shared<default_toggle_button_delegate<observer_decay_t<decltype(value)>>>(
         hi_forward(value), hi_forward(args)...);
-}
-
-/** Make a shared_ptr to a delegate.
- * 
- * @tparam Delegate A class template to instantiate with `observer_decay_t<Value>` as template argument.
- * @param value The value or observer to a value to monitor.
- * @param arg Optional arguments with the same value or observer to a value types.
- * @return A new shared_ptr to a default delegate.
- */
-template<template<typename> typename Delegate, typename Value, typename... Args>
-[[nodiscard]] auto make_shared_default_delegate(Value&& value, Args&&...args) noexcept
-    requires requires {
-        Delegate<observer_decay_t<Value>>{std::forward<Value>(value), std::forward<Args>(args)...};
-    }
-{
-    return std::make_shared<Delegate<observer_decay_t<Value>>>(std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
 }} // namespace hi::v1

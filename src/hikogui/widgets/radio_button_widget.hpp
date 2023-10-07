@@ -8,131 +8,142 @@
 
 #pragma once
 
-#include "abstract_button_widget.hpp"
+#include "widget.hpp"
+#include "with_label_widget.hpp"
+#include "button_delegate.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 
-/** A graphical control element that allows the user to choose only one of a
- * predefined set of mutually exclusive options.
+template<typename Context>
+concept radio_button_widget_attribute =
+    forward_of<Context, observer<hi::alignment>>;
+
+/** A GUI widget that permits the user to make a binary choice.
  * @ingroup widgets
  *
- * A radio-button has two different states with different visual representation:
- *  - **on**: The radio button shows a solid circle inside it
- *  - **other**: The radio button shows empty.
+ * A radio_button is a button with three different states with different visual
+ * representation:
+ *  - **on**: A check-mark is shown inside the box, and the `radio_button_widget::on_label` is shown.
+ *  - **off**: An empty box is shown, and the `radio_button_widget::off_label` is shown.
+ *  - **other**: A dash is shown inside the box, and the `radio_button_widget::other_label` is shown.
  *
  * @image html radio_button_widget.gif
  *
- * Each time a user activates the radio-button it switches its state to 'on'.
+ * Each time a user activates the radio_button-button it toggles between the 'on' and 'off' states.
+ * If the radio_button is in the 'other' state an activation will switch it to
+ * the 'off' state.
  *
- * A radio button cannot itself switch state to 'other', this state may be
- * caused by external factors. The canonical example is another radio button in
- * a set, which is configured with a different `on_value`.
+ * A radio_button cannot itself switch state to 'other', this state may be
+ * caused by external factors. The canonical example is a tree structure
+ * of radio_buttones; when child radio_buttones have different values from each other
+ * the parent radio_button state is set to 'other'.
  *
- * In the following example we create three radio button widgets on the window
- * which observes the same `value`. Each radio button is configured with a
- * different `on_value`: 1, 2 and 3. Initially the value is 0, and therefor none
- * of the radio buttons is selected when the application is started.
+ * In the following example we create a radio_button widget on the window
+ * which observes `value`. When the value is 1 the radio_button is 'on',
+ * when the value is 2 the radio_button is 'off'.
  *
- * @snippet widgets/radio_button_example_impl.cpp Create three radio buttons
- *
- * @note Unlike some other GUI toolkits a radio button is a singular widget.
- *       Multiple radio buttons may share a delegate or an observer which
- *       allows radio buttons to act as a set.
+ * @snippet widgets/radio_button_example_impl.cpp Create a radio_button
  */
-class radio_button_widget final : public abstract_button_widget {
+class radio_button_widget final : public widget {
 public:
-    using super = abstract_button_widget;
-    using delegate_type = typename super::delegate_type;
+    using super = widget;
+    using delegate_type = button_delegate;
+    template<typename T>
+    using default_delegate_type = default_radio_button_delegate<T>;
 
-    /** Construct a radio button widget.
-     *
-     * @param parent The parent widget that owns this radio button widget.
-     * @param delegate The delegate to use to manage the state of the radio button.
-     * @param attributes Different attributes used to configure the label's on the radio button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
-     *                   passed it will be shown in all states. If two labels are passed
-     *                   the first label is shown in on-state and the second for off-state.
+    /** The delegate that controls the button widget.
      */
+    std::shared_ptr<delegate_type> delegate;
+
+    /** The alignment of the button and on/off/other label.
+     */
+    observer<alignment> alignment;
+
+    /** Notifier to await or callback on when the button was activated.
+     */
+    notifier<> activated;
+
+    ~radio_button_widget()
+    {
+        this->delegate->deinit(*this);
+    }
+
+    /** Construct a radio_button widget.
+     *
+     * @param parent The parent widget that owns this radio_button widget.
+     * @param delegate The delegate to use to manage the state of the radio_button button.
+     */
+    template<radio_button_widget_attribute... Attributes>
     radio_button_widget(
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
-        button_widget_attribute auto&&...attributes) noexcept :
-        super(parent, std::move(delegate))
+        Attributes &&...attributes) noexcept :
+        super(parent), delegate(std::move(delegate))
     {
+        hi_assert_not_null(this->delegate);
         alignment = alignment::top_left();
-        set_attributes<0>(hi_forward(attributes)...);
+        set_attributes<0>(std::forward<Attributes>(attributes)...);
+
+        this->delegate->init(*this);
     }
 
-    /** Construct a radio button widget with a default button delegate.
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args &&...args)
+        requires requires { default_radio_button_delegate{std::forward<Args>(args)...}; }
+    {
+        return make_shared_ctad<default_radio_button_delegate>(std::forward<Args>(args)...);
+    }
+
+    /** Construct a radio_button widget with a default button delegate.
      *
-     * @param parent The parent widget that owns this radio button widget.
-     * @param value The value or `observer` value which represents the state
-     *              of the radio button.
-     * @param on_value An optional on-value. This value is used to determine which
-     *             value yields an 'on' state.
-     * @param attributes Different attributes used to configure the label's on the radio button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
-     *                   passed it will be shown in all states. If two labels are passed
-     *                   the first label is shown in on-state and the second for off-state.
+     * @see default_button_delegate
+     * @param parent The parent widget that owns this radio_button widget.
+     * @param value The value or `observer` value which represents the state of the radio_button.
+     * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
      */
     template<
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
-        button_widget_attribute... Attributes>
-    radio_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+        radio_button_widget_attribute... Attributes>
+    radio_button_widget(
+        widget *parent,
+        Value&& value,
+        OnValue&& on_value,
+        Attributes &&...attributes) noexcept
         requires requires
     {
-        make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
+        make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
     } :
         radio_button_widget(
             parent,
-            make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
-            hi_forward(attributes)...)
+            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)),
+            std::forward<Attributes>(attributes)...)
     {
+    }
+
+    /** Get the current state of the button.
+     * @return The state of the button: on / off / other.
+     */
+    [[nodiscard]] button_state state() const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+        hi_assert_not_null(delegate);
+        return delegate->state(*this);
     }
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _label_constraints = super::update_constraints();
-
-        // Make room for button and margin.
         _button_size = {theme().size(), theme().size()};
-        hilet extra_size = extent2{theme().margin<float>() + _button_size.width(), 0.0f};
-
-        auto constraints = max(_label_constraints + extra_size, _button_size);
-        constraints.margins = theme().margin();
-        constraints.alignment = *alignment;
-        return constraints;
+        return box_constraints{_button_size, _button_size, _button_size, *alignment, theme().margin(), {}};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
-
-            if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
-                _button_rectangle = align(context.rectangle(), _button_size, alignment_);
-            } else {
-                hi_not_implemented();
-            }
-
-            hilet label_width = context.width() - (_button_rectangle.width() + theme().margin<float>());
-            if (alignment_ == horizontal_alignment::left) {
-                hilet label_left = _button_rectangle.right() + theme().margin<float>();
-                hilet label_rectangle = aarectangle{label_left, 0.0f, label_width, context.height()};
-                _on_label_shape = _off_label_shape = _other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
-
-            } else if (alignment_ == horizontal_alignment::right) {
-                hilet label_rectangle = aarectangle{0.0f, 0.0f, label_width, context.height()};
-                _on_label_shape = _off_label_shape = _other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
-
-            } else {
-                hi_not_implemented();
-            }
+            _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*alignment));
 
             _button_circle = circle{_button_rectangle};
 
@@ -144,42 +155,127 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-            draw_radio_button(context);
-            draw_radio_pip(context);
-            draw_button(context);
+            context.draw_circle(
+                layout(), _button_circle * 1.02f, background_color(), focus_color(), theme().border_width(), border_side::inside);
+
+            _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
+            if (_animated_value.is_animating()) {
+                request_redraw();
+            }
+
+            // draw pip
+            auto float_value = _animated_value.current_value();
+            if (float_value > 0.0) {
+                context.draw_circle(layout(), _pip_circle * 1.02f * float_value, accent_color());
+            }
         }
     }
+
+    [[nodiscard]] color background_color() const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+        if (_pressed) {
+            return theme().color(semantic_color::fill, semantic_layer + 2);
+        } else {
+            return super::background_color();
+        }
+    }
+
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
+    {
+        hi_axiom(loop::main().on_thread());
+
+        if (*mode >= widget_mode::partial and layout().contains(position)) {
+            return {id, _layout.elevation, hitbox_type::button};
+        } else {
+            return {};
+        }
+    }
+
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+    }
+
+    bool handle_event(gui_event const& event) noexcept override
+    {
+        hi_axiom(loop::main().on_thread());
+
+        switch (event.type()) {
+        case gui_event_type::gui_activate:
+            if (*mode >= widget_mode::partial) {
+                hi_assert_not_null(delegate);
+                delegate->activate(*this);
+                activated();
+                ++global_counter<"radio_button_widget:handle_event:relayout">;
+                process_event({gui_event_type::window_relayout});
+                return true;
+            }
+            break;
+
+        case gui_event_type::mouse_down:
+            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
+                _pressed = true;
+                request_redraw();
+                return true;
+            }
+            break;
+
+        case gui_event_type::mouse_up:
+            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
+                _pressed = false;
+
+                // with_label_widget or other widgets may have accepted the hitbox
+                // for this widget. Which means the widget_id in the mouse-event
+                // may match up with the radio_button.
+                if (event.mouse().hitbox.widget_id == id) {
+                    handle_event(gui_event_type::gui_activate);
+                }
+                request_redraw();
+                return true;
+            }
+            break;
+
+        default:;
+        }
+
+        return super::handle_event(event);
+    }
     /// @endprivatesection
+
 private:
     constexpr static std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    box_constraints _label_constraints;
-
     extent2 _button_size;
     aarectangle _button_rectangle;
+
     circle _button_circle;
 
     animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
 
-    void draw_radio_button(draw_context const& context) noexcept
-    {
-        context.draw_circle(
-            layout(), _button_circle * 1.02f, background_color(), focus_color(), theme().border_width(), border_side::inside);
-    }
-    void draw_radio_pip(draw_context const& context) noexcept
-    {
-        _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
-        if (_animated_value.is_animating()) {
-            request_redraw();
-        }
+    bool _pressed = false;
+    notifier<>::callback_token _delegate_cbt;
 
-        // draw pip
-        auto float_value = _animated_value.current_value();
-        if (float_value > 0.0) {
-            context.draw_circle(layout(), _pip_circle * 1.02f * float_value, accent_color());
+    template<size_t I>
+    void set_attributes() noexcept
+    {
+    }
+
+    template<size_t I>
+    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+            set_attributes<I>(hi_forward(rest)...);
+
+        } else {
+            hi_static_no_default();
         }
     }
 };
+
+using radio_button_with_label_widget = with_label_widget<radio_button_widget>;
 
 }} // namespace hi::v1
