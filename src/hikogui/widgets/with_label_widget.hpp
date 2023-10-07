@@ -65,7 +65,7 @@ public:
     with_label_widget(widget *parent, std::shared_ptr<delegate_type> delegate, Attributes&&...attributes) noexcept :
         super(parent)
     {
-        hi_assert_not_null(_button_widget);
+        hi_assert_not_null(delegate);
 
         alignment = alignment::top_left();
         set_attributes<0>(std::forward<Attributes>(attributes)...);
@@ -76,8 +76,16 @@ public:
         _other_label_widget = std::make_unique<label_widget>(this, other_label, alignment, text_style);
 
         _button_widget_activated_cbt = _button_widget->activated.subscribe([&] {
+            auto state_ = state();
+            _on_label_widget->mode = state_ == button_state::on ? widget_mode::display : widget_mode::invisible;
+            _off_label_widget->mode = state_ == button_state::off ? widget_mode::display : widget_mode::invisible;
+            _other_label_widget->mode = state_ == button_state::other ? widget_mode::display : widget_mode::invisible;
+
+            this->request_redraw();
             this->activated();
         });
+
+        (*_button_widget_activated_cbt)();
     }
 
     template<different_from<std::shared_ptr<delegate_type>> Value, with_label_widget_attribute... Attributes>
@@ -190,11 +198,6 @@ public:
         if (compare_store(_layout, context)) {
             _grid.set_layout(context.shape, theme().baseline_adjustment());
         }
-
-        auto state_ = state();
-        _on_label_widget->mode = state_ == button_state::on ? widget_mode::display : widget_mode::invisible;
-        _off_label_widget->mode = state_ == button_state::off ? widget_mode::display : widget_mode::invisible;
-        _other_label_widget->mode = state_ == button_state::other ? widget_mode::display : widget_mode::invisible;
 
         for (hilet& cell : _grid) {
             if (cell.value == grid_cell_type::button) {

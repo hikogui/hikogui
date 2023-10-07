@@ -84,7 +84,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
         "A1",
         txt("This is a [he-IL]\xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92[.].\nAnd another sentence. One more:"),
         alignment::top_right());
-    grid.emplace<toggle_widget>("B1", preferences.toggle_value, txt("true"), txt("false"), txt("other"));
+    grid.emplace<toggle_with_label_widget>("B1", preferences.toggle_value, txt("true"), txt("false"), txt("other"));
 
     grid.emplace<label_widget>("A2", txt("These is a disabled checkbox:"), alignment::top_right());
     auto& checkbox2 = grid.emplace<checkbox_with_label_widget>(
@@ -159,7 +159,7 @@ hi::task<> main_window(my_preferences& preferences)
     auto preferences_label = label{elusive_icon::Wrench, txt("Preferences")};
     hilet& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
 
-    top->content().emplace_bottom<toggle_widget>(preferences.toggle_value);
+    top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
     hilet& hello_world_button = top->content().emplace_bottom<momentary_button_widget>(txt("Hello world AV"));
     hilet& vma_dump_button = top->content().emplace_bottom<momentary_button_widget>(txt("vma\ncalculate stats"));
 

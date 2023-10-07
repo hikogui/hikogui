@@ -86,6 +86,11 @@ public:
         alignment = alignment::top_left();
         set_attributes<0>(std::forward<Attributes>(attributes)...);
 
+        _delegate_cbt = this->delegate->subscribe([&]{
+            this->request_redraw();
+            activated();
+        });
+
         this->delegate->init(*this);
     }
 
@@ -207,7 +212,6 @@ public:
             if (*mode >= widget_mode::partial) {
                 hi_assert_not_null(delegate);
                 delegate->activate(*this);
-                activated();
                 ++global_counter<"radio_button_widget:handle_event:relayout">;
                 process_event({gui_event_type::window_relayout});
                 return true;
