@@ -113,10 +113,10 @@ struct callback_impl : callback_base<R, Args...> {
 
 } // namespace detail
 
-template<typename T>
+template<typename T = void()>
 class weak_callback;
 
-template<typename T>
+template<typename T = void()>
 class callback;
 
 template<typename R, typename... Args>
