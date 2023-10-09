@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "callback.hpp" // export
 #include "atomic.hpp" // export
 #include "callback_flags.hpp" // export
 #include "global_state.hpp" // export
