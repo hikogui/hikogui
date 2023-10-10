@@ -968,10 +968,6 @@ private:
      */
     widget_id _keyboard_target_id;
 
-    notifier<>::callback_token _setting_change_cbt;
-    observer<std::string>::callback_token _selected_theme_cbt;
-    loop::render_callback_token _render_cbt;
-
     TRACKMOUSEEVENT track_mouse_leave_event_parameters;
     bool tracking_mouse_leave_event = false;
     char32_t high_surrogate = 0;
@@ -981,6 +977,10 @@ private:
     uint8_t multi_click_count;
 
     bool keymenu_pressed = false;
+
+    callback<void()> _setting_change_cbt;
+    callback<void(std::string)> _selected_theme_cbt;
+    callback<void(utc_nanoseconds)> _render_cbt;
 
     /** Send event to a target widget.
      *

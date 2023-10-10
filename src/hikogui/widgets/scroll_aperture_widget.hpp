@@ -234,13 +234,13 @@ private:
     box_constraints _content_constraints;
     box_shape _content_shape;
     std::unique_ptr<widget> _content;
-    decltype(content_width)::callback_token _content_width_cbt;
-    decltype(content_height)::callback_token _content_height_cbt;
-    decltype(aperture_width)::callback_token _aperture_width_cbt;
-    decltype(aperture_height)::callback_token _aperture_height_cbt;
-    decltype(offset_x)::callback_token _offset_x_cbt;
-    decltype(offset_y)::callback_token _offset_y_cbt;
-    decltype(minimum)::callback_token _minimum_cbt;
+    callback<void(float)> _content_width_cbt;
+    callback<void(float)> _content_height_cbt;
+    callback<void(float)> _aperture_width_cbt;
+    callback<void(float)> _aperture_height_cbt;
+    callback<void(float)> _offset_x_cbt;
+    callback<void(float)> _offset_y_cbt;
+    callback<void(extent2)> _minimum_cbt;
 };
 
 }} // namespace hi::v1

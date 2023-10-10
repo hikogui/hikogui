@@ -310,14 +310,17 @@ private:
     hi::aarectangle _image_rectangle;
     hi::gfx_pipeline_image::paged_image _image_backing;
 
-    decltype(drawing)::callback_token _drawing_cbt;
-    decltype(shape)::callback_token _shape_cbt;
-    decltype(gradient)::callback_token _gradient_cbt;
-    decltype(rotating)::callback_token _rotating_cbt;
-    decltype(clip)::callback_token _clip_cbt;
-    decltype(border_side)::callback_token _border_side_cbt;
-    decltype(border_width)::callback_token _border_width_cbt;
-    decltype(rounded)::callback_token _rounded_cbt;
+    // The callback objects should be declared as the last member variables,
+    // so that they will get destroyed first, to delay the destruction of the
+    // widget when a callback is in-flight.
+    hi::callback<void(drawing_type)> _drawing_cbt;
+    hi::callback<void(shape_type)> _shape_cbt;
+    hi::callback<void(gradient_type)> _gradient_cbt;
+    hi::callback<void(bool)> _rotating_cbt;
+    hi::callback<void(bool)> _clip_cbt;
+    hi::callback<void(hi::border_side)> _border_side_cbt;
+    hi::callback<void(float)> _border_width_cbt;
+    hi::callback<void(bool)> _rounded_cbt;
 };
 
 int hi_main(int argc, char *argv[])

@@ -772,16 +772,11 @@ private:
 
     mutable box_constraints _constraints_cache;
 
-    delegate_type::callback_token _delegate_cbt;
-
-    decltype(text_style)::callback_token _text_style_cbt;
-
     text_selection _selection;
 
     scoped_task<> _blink_cursor;
 
     observer<cursor_state_type> _cursor_state = cursor_state_type::none;
-    decltype(_cursor_state)::callback_token _cursor_state_cbt;
 
     /** After layout request scroll from the parent widgets.
      */
@@ -817,6 +812,10 @@ private:
     std::optional<grapheme> _has_dead_character = std::nullopt;
 
     undo_stack<undo_type> _undo_stack = {1000};
+
+    callback<void()> _delegate_cbt;
+    callback<void(semantic_text_style)> _text_style_cbt;
+    callback<void(cursor_state_type)> _cursor_state_cbt;
 
     void set_attributes() noexcept {}
     void set_attributes(text_widget_attribute auto&& first, text_widget_attribute auto&&...rest) noexcept

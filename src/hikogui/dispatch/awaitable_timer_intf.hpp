@@ -17,6 +17,18 @@ namespace hi::inline v1 {
 
 class awaitable_timer {
 public:
+    awaitable_timer(awaitable_timer &&) noexcept = default;
+    awaitable_timer &operator=(awaitable_timer &&) noexcept = default;
+
+    awaitable_timer(awaitable_timer const &other) noexcept : _deadline(other._deadline) {}
+
+    awaitable_timer &operator=(awaitable_timer const &other) noexcept
+    {
+        _callback = nullptr;
+        _deadline = other._deadline;
+        return *this;
+    }
+
     template<typename Duration>
     awaitable_timer(std::chrono::time_point<std::chrono::utc_clock, Duration> deadline) noexcept : _deadline(deadline)
     {
@@ -38,7 +50,7 @@ public:
 
 private:
     utc_nanoseconds _deadline;
-    std::shared_ptr<std::function<void()>> _token;
+    callback<void()> _callback;
 };
 
 template<typename Rep, typename Period>

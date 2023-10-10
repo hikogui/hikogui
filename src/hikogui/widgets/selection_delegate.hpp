@@ -23,10 +23,6 @@ class selection_widget;
  */
 class selection_delegate {
 public:
-    using notifier_type = notifier<>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
-
     virtual ~selection_delegate() = default;
 
     virtual void init(selection_widget& sender) noexcept {}
@@ -51,14 +47,14 @@ public:
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    callback_token
-    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void()> Func>
+    callback<void()> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _notifier.subscribe(hi_forward(callback), flags);
+        return _notifier.subscribe(std::forward<Func>(func), flags);
     }
 
 protected:
-    notifier_type _notifier;
+    notifier<void()> _notifier;
 };
 
 /** A delegate that control the state of a selection_widget.
@@ -136,9 +132,9 @@ public:
     }
 
 private:
-    typename decltype(value)::callback_token _value_cbt;
-    typename decltype(options)::callback_token _options_cbt;
-    typename decltype(off_value)::callback_token _off_value_cbt;
+    callback<void(value_type)> _value_cbt;
+    callback<void(options_type)> _options_cbt;
+    callback<void(value_type)> _off_value_cbt;
 };
 
 /** Create a shared pointer to a default selection delegate.

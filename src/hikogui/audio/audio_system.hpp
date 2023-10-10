@@ -21,10 +21,6 @@ namespace hi { inline namespace v1 {
  */
 hi_export class audio_system {
 public:
-    using notifier_type = notifier<>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
-
     /** Create an audio system object specific for the current operating system.
      */
     [[nodiscard]] static audio_system &global() noexcept;
@@ -49,9 +45,10 @@ public:
      *
      * @return A callback token, a RAII object which when destroyed removes the subscription.
      */
-    callback_token subscribe(forward_of<callback_proto> auto&& func, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _notifier.subscribe(hi_forward(func), flags);
+        return _notifier.subscribe(std::forward<Func>(func), flags);
     }
 
     auto operator co_await() const noexcept
@@ -60,7 +57,7 @@ public:
     }
 
 protected:
-    notifier_type _notifier;
+    notifier<void()> _notifier;
 };
 
 namespace detail {

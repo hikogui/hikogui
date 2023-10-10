@@ -21,10 +21,6 @@ namespace hi::inline v1 {
 
 class loop {
 public:
-    using timer_callback_token = function_timer<>::callback_token;
-    using render_callback_type = std::function<void(utc_nanoseconds)>;
-    using render_callback_token = std::shared_ptr<render_callback_type>;
-
     class impl_type {
     public:
         bool is_main = false;
@@ -40,55 +36,61 @@ public:
         virtual void set_maximum_frame_rate(double frame_rate) noexcept = 0;
         virtual void set_vsync_monitor_id(uintptr_t id) noexcept = 0;
         
-        void wfree_post_function(auto&& func) noexcept
+        template<forward_of<void()> Func>
+        void wfree_post_function(Func&& func) noexcept
         {
-            return _function_fifo.add_function(hi_forward(func));
+            return _function_fifo.add_function(std::forward<Func>(func));
         }
 
-        void post_function(auto&& func) noexcept
+        template<forward_of<void()> Func>
+        void post_function(Func&& func) noexcept
         {
-            _function_fifo.add_function(hi_forward(func));
+            _function_fifo.add_function(std::forward<Func>(func));
             notify_has_send();
         }
 
-        [[nodiscard]] auto async_function(auto&& func) noexcept
+        template<typename Func>
+        [[nodiscard]] auto async_function(Func&& func) noexcept
         {
-            auto future = _function_fifo.add_async_function(hi_forward(func));
+            auto future = _function_fifo.add_async_function(std::forward<Func>(func));
             notify_has_send();
             return future;
         }
 
-        timer_callback_token delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+        template<forward_of<void()> Func>
+        callback<void()> delay_function(utc_nanoseconds time_point, Func&& func) noexcept
         {
-            auto [token, first_to_call] = _function_timer.delay_function(time_point, hi_forward(func));
+            auto [callback, first_to_call] = _function_timer.delay_function(time_point, std::forward<Func>(func));
             if (first_to_call) {
                 // Notify if the added function is the next function to call.
                 notify_has_send();
             }
-            return token;
+            return std::move(callback);
         }
 
-        timer_callback_token repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
+        template<forward_of<void()> Func>
+        callback<void()> repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, Func&& func) noexcept
         {
-            auto [token, first_to_call] = _function_timer.repeat_function(period, time_point, hi_forward(func));
+            auto [callback, first_to_call] = _function_timer.repeat_function(period, time_point, std::forward<Func>(func));
             if (first_to_call) {
                 // Notify if the added function is the next function to call.
                 notify_has_send();
             }
-            return token;
+            return std::move(callback);
         }
 
-        timer_callback_token repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+        template<forward_of<void()> Func>
+        callback<void()> repeat_function(std::chrono::nanoseconds period, Func&& func) noexcept
         {
-            auto [token, first_to_call] = _function_timer.repeat_function(period, hi_forward(func));
+            auto [callback, first_to_call] = _function_timer.repeat_function(period, std::forward<Func>(func));
             if (first_to_call) {
                 // Notify if the added function is the next function to call.
                 notify_has_send();
             }
-            return token;
+            return std::move(callback);
         }
 
-        virtual void subscribe_render(std::weak_ptr<render_callback_type> f) noexcept = 0;
+        virtual void subscribe_render(weak_callback<void(utc_nanoseconds)> callback) noexcept = 0;
         virtual void add_socket(int fd, socket_event event_mask, std::function<void(int, socket_events const&)> f) = 0;
         virtual void remove_socket(int fd) = 0;
         virtual int resume(std::stop_token stop_token) noexcept = 0;
@@ -105,13 +107,13 @@ public:
         virtual void notify_has_send() noexcept = 0;
 
         function_fifo<> _function_fifo;
-        function_timer<> _function_timer;
+        function_timer _function_timer;
 
         std::optional<int> _exit_code = {};
         double _maximum_frame_rate = 30.0;
         std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
         thread_id _thread_id;
-        std::vector<std::weak_ptr<render_callback_type>> _render_functions;
+        std::vector<weak_callback<void(utc_nanoseconds)>> _render_functions;
     };
 
     /** Construct a loop.
@@ -228,10 +230,11 @@ public:
      * @param time_point The time at which to call the function.
      * @param func The function to be called.
      */
-    [[nodiscard]] timer_callback_token delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> delay_function(utc_nanoseconds time_point, Func&& func) noexcept
     {
         hi_assert_not_null(_pimpl);
-        return _pimpl->delay_function(time_point, hi_forward(func));
+        return _pimpl->delay_function(time_point, std::forward<Func>(func));
     }
 
     /** Call a function repeatedly.
@@ -240,11 +243,12 @@ public:
      * @param time_point The time at which to call the function.
      * @param func The function to be called.
      */
-    [[nodiscard]] timer_callback_token
-    repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()>
+    repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, Func&& func) noexcept
     {
         hi_assert_not_null(_pimpl);
-        return _pimpl->repeat_function(period, time_point, hi_forward(func));
+        return _pimpl->repeat_function(period, time_point, std::forward<Func>(func));
     }
 
     /** Call a function repeatedly.
@@ -252,33 +256,24 @@ public:
      * @param period The period between calls to the function.
      * @param func The function to be called.
      */
-    [[nodiscard]] timer_callback_token repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> repeat_function(std::chrono::nanoseconds period, Func&& func) noexcept
     {
         hi_assert_not_null(_pimpl);
-        return _pimpl->repeat_function(period, hi_forward(func));
-    }
-
-    /** Subscribe a render function to be called on vsync.
-     *
-     * @param f A weak pointer to a function to be called when vsync occurs.
-     */
-    void subscribe_render(std::weak_ptr<render_callback_type> f) noexcept
-    {
-        hi_assert_not_null(_pimpl);
-        return _pimpl->subscribe_render(std::move(f));
+        return _pimpl->repeat_function(period, std::forward<Func>(func));
     }
 
     /** Subscribe a render function to be called on vsync.
      *
      * @param f A function to be called when vsync occurs.
      */
-    template<std::invocable<utc_nanoseconds> F>
-    render_callback_token subscribe_render(F &&f) noexcept
+    template<forward_of<void(utc_nanoseconds)> Func>
+    callback<void(utc_nanoseconds)> subscribe_render(Func &&func) noexcept
     {
         hi_assert_not_null(_pimpl);
-        auto ptr = std::make_shared<render_callback_type>(std::forward<F>(f));
-        _pimpl->subscribe_render(ptr);
-        return ptr;
+        auto cb = callback<void(utc_nanoseconds)>{std::forward<Func>(func)};
+        _pimpl->subscribe_render(cb);
+        return cb;
     }
 
     /** Add a callback that reacts on a socket.
@@ -407,25 +402,25 @@ inline thread_local std::unique_ptr<loop> thread_local_loop;
     return *detail::thread_local_loop;
 }
 
-template<typename Result, typename... Args>
-template<typename F>
-void notifier<Result(Args...)>::loop_local_post_function(F&& f) const noexcept
+template<typename R, typename... Args>
+template<forward_of<void()> Func>
+void notifier<R(Args...)>::loop_local_post_function(Func&& func) const noexcept
 {
-    return loop::local().post_function(std::forward<F>(f));
+    return loop::local().post_function(std::forward<Func>(func));
 }
 
-template<typename Result, typename... Args>
-template<typename F>
-void notifier<Result(Args...)>::loop_main_post_function(F&& f) const noexcept
+template<typename R, typename... Args>
+template<forward_of<void()> Func>
+void notifier<R(Args...)>::loop_main_post_function(Func&& func) const noexcept
 {
-    return loop::main().post_function(std::forward<F>(f));
+    return loop::main().post_function(std::forward<Func>(func));
 }
 
-template<typename Result, typename... Args>
-template<typename F>
-void notifier<Result(Args...)>::loop_timer_post_function(F&& f) const noexcept
+template<typename R, typename... Args>
+template<forward_of<void()> Func>
+void notifier<R(Args...)>::loop_timer_post_function(Func&& func) const noexcept
 {
-    return loop::timer().post_function(std::forward<F>(f));
+    return loop::timer().post_function(std::forward<Func>(func));
 }
 
 } // namespace hi::inline v1
