@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../concurrency/concurrency.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <atomic>
@@ -64,6 +64,14 @@ struct callback_base {
             // Notify a callback object that is delaying destruction.
             count.notify_one();
         }
+    }
+
+    /** Destruct the callback objects without delaying.
+     */
+    void unsafe_destruct() const noexcept
+    {
+        hilet prev_count = count.fetch_sub(1, std::memory_order::relaxed);
+        hi_axiom((prev_count & 1) == 1);
     }
 
     /** Delay the destruction of the callback object, when calls are in flight.
@@ -152,6 +160,13 @@ public:
         }
     }
 
+    /** Make the weak_callback expired, so that it can no longer be called.
+     */
+    void reset() noexcept
+    {
+        _impl.reset();
+    }
+
     /** Lock before calling the callback-function.
      *
      * This will delay the destruction of the callback object and in turn
@@ -188,7 +203,7 @@ public:
      * @throws std::bad_function_call if *this does not store a callable function target.
      * @throws Any exception thrown from the callback function.
      */
-    result_type operator()(Args... args)
+    result_type operator()(Args... args) const
     {
         if (not _impl) {
             throw std::bad_function_call();
@@ -243,18 +258,14 @@ public:
      */
     ~callback()
     {
-        if (_impl) {
-            _impl->delay_destruct();
-        }
+        unsubscribe();
     }
 
     callback(callback&& other) noexcept : _impl(std::exchange(other._impl, nullptr)) {}
 
     callback& operator=(callback&& other) noexcept
     {
-        if (_impl) {
-            _impl->delay_destruct();
-        }
+        unsubscribe();
         _impl = std::exchange(other._impl, nullptr);
         return *this;
     }
@@ -263,16 +274,50 @@ public:
 
     callback& operator=(nullptr_t) noexcept
     {
-        if (_impl) {
-            _impl->delay_destruct();
-        }
-        _impl = nullptr;
+        unsubscribe();
         return *this;
     }
 
     template<typename Func>
-    callback(Func&& func) : _impl(std::make_shared<impl_type<Func>>(std::forward<Func>(func)))
+    explicit callback(Func&& func) : _impl(std::make_shared<impl_type<Func>>(std::forward<Func>(func)))
     {
+    }
+
+    /** Unsafe unsubscribe the callback.
+     * 
+     * This function can be called from within the current inflight call,
+     * to be able to destroy the owner of the callback and the callback itself
+     * from within the executing callback.
+     * 
+     * The unsubscribe is lazy, although the callback can no longer be called,
+     * the actual deallocation of the callback may happen at a later timer.
+     * 
+     * @return A shared_ptr of the actual function implementation. You should
+     *         capture this so that the frame of the lambda remains available
+     *         until it terminates.
+     */
+    [[nodiscard]] std::shared_ptr<base_impl_type> unsafe_unsubscribe() noexcept
+    {
+        if (_impl) {
+            _impl->unsafe_destruct();
+        }
+        return std::exchange(_impl, nullptr);
+    }
+
+    /** Unsubscribe the callback.
+     * 
+     * Unsubscribe will block until there are no more inflight calls to this
+     * callback.
+     * 
+     * The unsubscribe is lazy, although the callback can no longer be called,
+     * the actual deallocation of the callback may happen at a later timer.
+     */
+    void unsubscribe() noexcept
+    {
+        if (_impl) {
+            _impl->delay_destruct();
+        }
+        _impl = nullptr;
     }
 
     [[nodiscard]] operator bool() const noexcept
@@ -287,7 +332,7 @@ public:
      * @throws std::bad_function_call if *this does not store a callable function target.
      * @throws Any exception thrown from the callback function.
      */
-    R operator()(Args... args)
+    R operator()(Args... args) const
     {
         if (not _impl) {
             throw std::bad_function_call();

@@ -286,8 +286,6 @@ public:
     }
     /// @endprivatesection
 private:
-    notifier<>::callback_token _delegate_cbt;
-
     /** The scroll widget embeds the text widget.
      */
     std::unique_ptr<scroll_widget<axis::none>> _scroll_widget;
@@ -309,10 +307,11 @@ private:
     box_constraints _error_label_constraints;
     box_shape _error_label_shape;
 
-    typename decltype(continues)::callback_token _continues_cbt;
-    typename decltype(text_style)::callback_token _text_style_cbt;
-    typename decltype(_text)::callback_token _text_cbt;
-    typename decltype(_error_label)::callback_token _error_label_cbt;
+    callback<void()> _delegate_cbt;
+    callback<void(bool)> _continues_cbt;
+    callback<void(semantic_text_style)> _text_style_cbt;
+    callback<void(gstring)> _text_cbt;
+    callback<void(label)> _error_label_cbt;
 
     void set_attributes() noexcept {}
     void set_attributes(text_field_widget_attribute auto&& first, text_field_widget_attribute auto&&...rest) noexcept

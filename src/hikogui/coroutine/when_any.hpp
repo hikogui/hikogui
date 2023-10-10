@@ -78,7 +78,7 @@ public:
 private:
     std::tuple<Ts...> _awaiters;
     std::tuple<scoped_task<await_resume_result_t<Ts>>...> _tasks;
-    std::tuple<typename scoped_task<await_resume_result_t<Ts>>::callback_token...> _task_cbts;
+    std::tuple<typename scoped_task<await_resume_result_t<Ts>>::callback_type...> _task_cbts;
     std::optional<value_type> _value;
 
     template<awaitable Awaiter>
@@ -130,6 +130,12 @@ private:
             std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe(
                 [this, handle]() {
                     this->_value = value_type{std::in_place_index<I>, std::monostate{}};
+
+                    // Unsubscribe the current callback and make sure it will
+                    // survive the current call by taking ownership.
+                    auto self_frame = std::get<I>(_task_cbts).unsafe_unsubscribe();
+
+                    // Unsubscribe all the other tasks and callbacks.
                     this->_destroy_tasks<0>();
                     handle.resume();
                 },
@@ -139,6 +145,12 @@ private:
             std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe(
                 [this, handle](arg_type const& arg) {
                     this->_value = value_type{std::in_place_index<I>, arg};
+
+                    // Unsubscribe the current callback and make sure it will
+                    // survive the current call by taking ownership.
+                    auto self_frame = std::get<I>(_task_cbts).unsafe_unsubscribe();
+
+                    // Unsubscribe all the other tasks and callbacks.
                     this->_destroy_tasks<0>();
                     handle.resume();
                 },

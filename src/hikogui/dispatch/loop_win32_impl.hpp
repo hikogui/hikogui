@@ -118,10 +118,10 @@ public:
         _selected_monitor_id.store(id, std::memory_order::relaxed);
     }
 
-    void subscribe_render(std::weak_ptr<loop::render_callback_type> f) noexcept override
+    void subscribe_render(weak_callback<void(utc_nanoseconds)> callback) noexcept override
     {
         hi_axiom(on_thread());
-        _render_functions.push_back(std::move(f));
+        _render_functions.push_back(std::move(callback));
 
         // Startup the vsync thread once there is a window.
         if (not _vsync_thread.joinable()) {
@@ -408,8 +408,9 @@ private:
         hilet display_time = _vsync_time.load(std::memory_order::relaxed) + std::chrono::milliseconds(30);
 
         for (auto& render_function : _render_functions) {
-            if (auto render_function_ = render_function.lock()) {
-                (*render_function_)(display_time);
+            if (render_function.lock()) {
+                render_function(display_time);
+                render_function.unlock();
             }
         }
 

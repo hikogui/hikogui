@@ -93,7 +93,7 @@ TEST(notifier, local_coroutine)
     ASSERT_EQ(a, 0);
     ASSERT_EQ(b, 0);
 
-    // Start a coroutine, the first part of the coroutine is immediatly executed.
+    // Start a coroutine, the first part of the coroutine is immediately executed.
     auto cr = local_coroutine_func(a, b, n);
     ASSERT_EQ(a, 1);
     ASSERT_EQ(b, 0);

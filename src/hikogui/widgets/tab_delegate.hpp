@@ -21,31 +21,27 @@ class tab_widget;
  */
 class tab_delegate {
 public:
-    using notifier_type = notifier<>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
-
     virtual ~tab_delegate() = default;
     virtual void init(tab_widget& sender) noexcept {}
     virtual void deinit(tab_widget& sender) noexcept {}
 
     virtual void add_tab(tab_widget& sender, std::size_t key, std::size_t index) noexcept {}
 
-    virtual ssize_t index(tab_widget& sender) noexcept
+    virtual std::ptrdiff_t index(tab_widget& sender) noexcept
     {
         return -1;
     }
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    callback_token
-    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _notifier.subscribe(hi_forward(callback), flags);
+        return _notifier.subscribe(std::forward<Func>(func), flags);
     }
 
 protected:
-    notifier_type _notifier;
+    notifier<void()> _notifier;
 };
 
 /** A delegate that control the state of a tab_widget.
@@ -79,18 +75,18 @@ public:
         tab_indices[key] = index;
     }
 
-    [[nodiscard]] ssize_t index(tab_widget& sender) noexcept override
+    [[nodiscard]] std::ptrdiff_t index(tab_widget& sender) noexcept override
     {
         auto it = tab_indices.find(*value);
         if (it == tab_indices.end()) {
             return -1;
         } else {
-            return static_cast<ssize_t>(it->second);
+            return static_cast<std::ptrdiff_t>(it->second);
         }
     }
 
 private:
-    typename decltype(value)::callback_token _value_cbt;
+    callback<void(value_type)> _value_cbt;
 };
 
 /** Create a shared pointer to a default tab delegate.
@@ -100,10 +96,8 @@ private:
  * @param value The observer value which represents the selected tab.
  * @return shared pointer to a tab delegate
  */
-std::shared_ptr<tab_delegate> make_default_tab_delegate(auto&& value) noexcept requires requires
-{
-    default_tab_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)};
-}
+std::shared_ptr<tab_delegate> make_default_tab_delegate(auto&& value) noexcept
+    requires requires { default_tab_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)}; }
 {
     using value_type = observer_decay_t<decltype(value)>;
     return std::make_shared<default_tab_delegate<value_type>>(hi_forward(value));

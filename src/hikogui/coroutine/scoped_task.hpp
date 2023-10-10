@@ -30,8 +30,7 @@ class scoped_task {
 public:
     using value_type = T;
     using notifier_type = notifier<void(value_type)>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
+    using callback_type = notifier_type::callback_type;
 
     struct promise_type {
         notifier_type notifier;
@@ -158,9 +157,10 @@ public:
      *                 has a non-void expression then the callback must accept the expression as an argument.
      * @return The callback token used to manage the lifetime of the callback
      */
-    callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void(value_type)> Func>
+    [[nodiscard]] callback<void(value_type)> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _coroutine.promise().notifier.subscribe(hi_forward(callback), flags);
+        return _coroutine.promise().notifier.subscribe(std::forward<Func>(func), flags);
     }
 
 private:
@@ -175,9 +175,8 @@ template<>
 class scoped_task<void> {
 public:
     using value_type = void;
-    using notifier_type = notifier<>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
+    using notifier_type = notifier<void()>;
+    using callback_type = notifier_type::callback_type;
 
     struct promise_type {
         notifier_type notifier;
@@ -268,9 +267,10 @@ public:
     /**
      * @sa notifier<>::subscribe()
      */
-    callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _coroutine.promise().notifier.subscribe(hi_forward(callback), flags);
+        return _coroutine.promise().notifier.subscribe(std::forward<Func>(func), flags);
     }
 
 private:

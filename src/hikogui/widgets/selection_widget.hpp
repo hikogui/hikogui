@@ -381,7 +381,6 @@ public:
 
     /// @endprivatesection
 private:
-    notifier<>::callback_token _delegate_cbt;
     std::atomic<bool> _notification_from_delegate = true;
 
     std::unique_ptr<label_widget> _current_label_widget;
@@ -407,9 +406,11 @@ private:
     vertical_scroll_widget *_scroll_widget = nullptr;
     grid_widget *_grid_widget = nullptr;
 
-    decltype(off_label)::callback_token _off_label_cbt;
     std::vector<menu_button_widget *> _menu_button_widgets;
-    std::vector<notifier<>::callback_token> _menu_button_tokens;
+
+    callback<void()> _delegate_cbt;
+    callback<void(label)> _off_label_cbt;
+    std::vector<callback<void()>> _menu_button_tokens;
 
     void set_attributes() noexcept {}
     void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept

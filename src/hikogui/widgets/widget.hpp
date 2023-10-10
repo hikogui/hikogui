@@ -493,7 +493,7 @@ public:
 protected:
     widget_layout _layout;
 
-    decltype(mode)::callback_token _mode_cbt;
+    callback<void(widget_mode)> _mode_cbt;
 
     /** Make an overlay rectangle.
      *
