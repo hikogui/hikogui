@@ -18,7 +18,7 @@ task<void> checkbox_example()
     /// [Create a checkbox]
     observer<int> value = 0;
 
-    auto& cb = widget->content().emplace<checkbox_widget>("B1", value, 1, 2);
+    auto& cb = widget->content().emplace<checkbox_with_label_widget>("B1", value, 1, 2);
     cb.on_label = txt("on");
     cb.off_label = txt("off");
     cb.other_label = txt("other");

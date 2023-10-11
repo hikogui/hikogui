@@ -363,21 +363,21 @@ int hi_main(int argc, char *argv[])
     widget->content().emplace<hi::selection_widget>("B4:D4", gradient, gradient_list);
 
     widget->content().emplace<hi::label_widget>("A5", hi::txt("Border side:"));
-    widget->content().emplace<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::txt("on"));
-    widget->content().emplace<hi::radio_button_widget>("C5", border_side, hi::border_side::inside, hi::txt("inside"));
-    widget->content().emplace<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::txt("outside"));
+    widget->content().emplace<hi::radio_button_with_label_widget>("B5", border_side, hi::border_side::on, hi::txt("on"));
+    widget->content().emplace<hi::radio_button_with_label_widget>("C5", border_side, hi::border_side::inside, hi::txt("inside"));
+    widget->content().emplace<hi::radio_button_with_label_widget>("D5", border_side, hi::border_side::outside, hi::txt("outside"));
 
     widget->content().emplace<hi::label_widget>("A6", hi::txt("Border width:"));
     widget->content().emplace<hi::selection_widget>("B6:D6", border_width, border_width_list);
 
     widget->content().emplace<hi::label_widget>("A7", hi::txt("Rotate:"));
-    widget->content().emplace<hi::toggle_widget>("B7:D7", rotating);
+    widget->content().emplace<hi::toggle_with_label_widget>("B7:D7", rotating);
 
     widget->content().emplace<hi::label_widget>("A8", hi::txt("Clip:"));
-    widget->content().emplace<hi::toggle_widget>("B8:D8", clip);
+    widget->content().emplace<hi::toggle_with_label_widget>("B8:D8", clip);
 
     widget->content().emplace<hi::label_widget>("A9", hi::txt("Rounded:"));
-    widget->content().emplace<hi::toggle_widget>("B9:D9", rounded);
+    widget->content().emplace<hi::toggle_with_label_widget>("B9:D9", rounded);
 
     auto window = std::make_unique<hi::gui_window>(std::move(widget));
 

@@ -85,7 +85,7 @@ public:
             this->activated();
         });
 
-        (*_button_widget_activated_cbt)();
+        _button_widget_activated_cbt();
     }
 
     template<different_from<std::shared_ptr<delegate_type>> Value, with_label_widget_attribute... Attributes>
@@ -265,11 +265,12 @@ protected:
     grid_layout<grid_cell_type> _grid;
 
     std::unique_ptr<button_widget_type> _button_widget;
-    notifier<>::callback_token _button_widget_activated_cbt;
 
     std::unique_ptr<label_widget> _on_label_widget;
     std::unique_ptr<label_widget> _off_label_widget;
     std::unique_ptr<label_widget> _other_label_widget;
+
+    callback<void()> _button_widget_activated_cbt;
 
     template<size_t I>
     void set_attributes() noexcept

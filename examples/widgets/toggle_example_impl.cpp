@@ -19,7 +19,7 @@ int hi_main(int argc, char *argv[])
     /// [Create a toggle]
     observer<int> value = 0;
 
-    auto& tb = widget->content().emplace<toggle_widget>("B1", value, 1, 2);
+    auto& tb = widget->content().emplace<toggle_with_label_widget>("B1", value, 1, 2);
     tb.on_label = txt("on");
     tb.off_label = txt("off");
     tb.other_label = txt("other");

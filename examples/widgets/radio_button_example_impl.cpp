@@ -19,9 +19,9 @@ int hi_main(int argc, char *argv[])
     /// [Create three radio buttons]
     observer<int> value = 0;
 
-    widget->content().emplace<radio_button_widget>("B1", value, 1, txt("one"));
-    widget->content().emplace<radio_button_widget>("B2", value, 2, txt("two"));
-    widget->content().emplace<radio_button_widget>("B3", value, 3, txt("three"));
+    widget->content().emplace<radio_button_with_label_widget>("B1", value, 1, txt("one"));
+    widget->content().emplace<radio_button_with_label_widget>("B2", value, 2, txt("two"));
+    widget->content().emplace<radio_button_with_label_widget>("B3", value, 3, txt("three"));
     /// [Create three radio buttons]
 
     auto window = std::make_unique<gui_window>(std::move(widget));

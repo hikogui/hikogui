@@ -306,7 +306,8 @@ private:
     font_book::font_glyph_type _minus_glyph;
     aarectangle _minus_glyph_rectangle;
     bool _pressed = false;
-    notifier<>::callback_token _delegate_cbt;
+    
+    callback<void()> _delegate_cbt;
 
     template<size_t I>
     void set_attributes() noexcept

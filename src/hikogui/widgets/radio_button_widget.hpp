@@ -260,7 +260,8 @@ private:
     circle _pip_circle;
 
     bool _pressed = false;
-    notifier<>::callback_token _delegate_cbt;
+    
+    callback<void()> _delegate_cbt;
 
     template<size_t I>
     void set_attributes() noexcept
