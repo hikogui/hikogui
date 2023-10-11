@@ -56,11 +56,9 @@ public:
     notifier<void()> activated;
 
     template<menu_button_widget_attribute... Attributes>
-    menu_button_widget(widget *parent, std::shared_ptr<delegate_type> delegate, Attributes&&...attributes) noexcept :
+    menu_button_widget(not_null<widget *> parent, not_null<std::shared_ptr<delegate_type>> delegate, Attributes&&...attributes) noexcept :
         super(parent)
     {
-        hi_assert_not_null(delegate);
-
         alignment = alignment::middle_left();
         set_attributes<0>(std::forward<Attributes>(attributes)...);
 
@@ -82,7 +80,7 @@ public:
     }
 
     template<different_from<std::shared_ptr<delegate_type>> Value, menu_button_widget_attribute... Attributes>
-    menu_button_widget(widget *parent, Attributes&&...attributes) noexcept
+    menu_button_widget(not_null<widget *> parent, Attributes&&...attributes) noexcept
         requires requires { button_widget_type::make_default_delegate(); }
         :
         menu_button_widget(
@@ -94,7 +92,7 @@ public:
     }
 
     template<different_from<std::shared_ptr<delegate_type>> Value, menu_button_widget_attribute... Attributes>
-    menu_button_widget(widget *parent, Value&& value, Attributes&&...attributes) noexcept
+    menu_button_widget(not_null<widget *> parent, Value&& value, Attributes&&...attributes) noexcept
         requires requires { button_widget_type::make_default_delegate(std::forward<Value>(value)); }
         :
         menu_button_widget(
@@ -109,7 +107,7 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_observer<Value> OnValue,
         menu_button_widget_attribute... Attributes>
-    menu_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    menu_button_widget(not_null<widget *> parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
         }
@@ -127,7 +125,7 @@ public:
         forward_observer<Value> OnValue,
         forward_observer<Value> OffValue,
         menu_button_widget_attribute... Attributes>
-    menu_button_widget(widget *parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
+    menu_button_widget(not_null<widget *> parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
         }

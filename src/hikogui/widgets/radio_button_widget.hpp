@@ -56,7 +56,7 @@ public:
 
     /** The delegate that controls the button widget.
      */
-    std::shared_ptr<delegate_type> delegate;
+    not_null<std::shared_ptr<delegate_type>> delegate;
 
     /** The alignment of the button and on/off/other label.
      */
@@ -78,12 +78,11 @@ public:
      */
     template<radio_button_widget_attribute... Attributes>
     radio_button_widget(
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate,
+        not_null<widget *> parent,
+        not_null<std::shared_ptr<delegate_type>> delegate,
         Attributes &&...attributes) noexcept :
         super(parent), delegate(std::move(delegate))
     {
-        hi_assert_not_null(this->delegate);
         alignment = alignment::top_left();
         set_attributes<0>(std::forward<Attributes>(attributes)...);
 
@@ -114,7 +113,7 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         radio_button_widget_attribute... Attributes>
     radio_button_widget(
-        widget *parent,
+        not_null<widget *> parent,
         Value&& value,
         OnValue&& on_value,
         Attributes &&...attributes) noexcept
@@ -135,7 +134,6 @@ public:
     [[nodiscard]] button_state state() const noexcept
     {
         hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(delegate);
         return delegate->state(*this);
     }
 
@@ -213,7 +211,6 @@ public:
         switch (event.type()) {
         case gui_event_type::gui_activate:
             if (*mode >= widget_mode::partial) {
-                hi_assert_not_null(delegate);
                 delegate->activate(*this);
                 ++global_counter<"radio_button_widget:handle_event:relayout">;
                 process_event({gui_event_type::window_relayout});

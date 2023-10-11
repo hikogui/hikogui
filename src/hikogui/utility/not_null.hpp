@@ -62,6 +62,13 @@ public:
         return *_p;
     }
 
+    bool operator==(nullptr_t) const = delete;
+
+    [[nodiscard]] constexpr bool operator==(std::remove_const_t<T> const *rhs) const noexcept
+    {
+        return _p == rhs;
+    }
+
 private:
     pointer _p;
 };
@@ -117,6 +124,16 @@ public:
         return *_p;
     }
 
+    [[nodiscard]] bool operator==(nullptr_t) const = delete;
+    
+    [[nodiscard]] bool operator==(std::remove_const_t<T> const *rhs) const noexcept
+    {
+        return _p == rhs;
+    }
+
+    [[nodiscard]] bool operator==(std::unique_ptr<std::remove_const_t<T>> rhs) const = delete;
+    [[nodiscard]] bool operator==(std::unique_ptr<std::remove_const_t<T> const> rhs) const = delete;
+
 private:
     std::unique_ptr<T> _p;
 
@@ -138,21 +155,22 @@ public:
     not_null(nullptr_t) = delete;
     not_null& operator=(nullptr_t) = delete;
 
-    constexpr not_null(not_null<std::unique_ptr<std::remove_const_t<T>>> other) noexcept : _p(std::move(other._p))
-    {
-    }
+    constexpr not_null(not_null<std::unique_ptr<std::remove_const_t<T>>> other) noexcept : _p(std::move(other._p)) {}
 
-    constexpr not_null& operator=(not_null<std::unique_ptr<std::remove_const_t<T>>> other) noexcept 
+    constexpr not_null& operator=(not_null<std::unique_ptr<std::remove_const_t<T>>> other) noexcept
     {
         _p = std::move(other._p);
         return *this;
     }
 
-    constexpr not_null(not_null<std::unique_ptr<std::remove_const_t<T> const>> other) noexcept requires (std::is_const_v<T>): _p(std::move(other._p))
+    constexpr not_null(not_null<std::unique_ptr<std::remove_const_t<T> const>> other) noexcept
+        requires(std::is_const_v<T>)
+        : _p(std::move(other._p))
     {
     }
 
-    constexpr not_null& operator=(not_null<std::unique_ptr<std::remove_const_t<T> const>> other) noexcept requires (std::is_const_v<T>)
+    constexpr not_null& operator=(not_null<std::unique_ptr<std::remove_const_t<T> const>> other) noexcept
+        requires(std::is_const_v<T>)
     {
         _p = std::move(other._p);
         return *this;
@@ -193,6 +211,23 @@ public:
     constexpr reference operator*() const noexcept
     {
         return *_p;
+    }
+
+    [[nodiscard]] bool operator==(nullptr_t) const = delete;
+    
+    [[nodiscard]] bool operator==(std::remove_const_t<T> const *rhs) const noexcept
+    {
+        return _p == rhs;
+    }
+
+    [[nodiscard]] bool operator==(std::shared_ptr<std::remove_const_t<T>> const &rhs) const noexcept
+    {
+        return _p == rhs;
+    }
+
+    [[nodiscard]] bool operator==(std::shared_ptr<std::remove_const_t<T> const> const &rhs) const noexcept
+    {
+        return _p == rhs;
     }
 
 private:
