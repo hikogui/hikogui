@@ -13,7 +13,7 @@
 #include "overlay_widget.hpp"
 #include "scroll_widget.hpp"
 #include "grid_widget.hpp"
-#include "menu_button_widget.hpp"
+#include "radio_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "../observer/module.hpp"
 #include "../macros.hpp"
@@ -53,25 +53,7 @@ public:
      */
     observer<label> off_label;
 
-    /** How the label and icon are aligned. Different layouts:
-     *  - `alignment::top_left`: icon and text are inline with each other, with
-     *    the icon in the top-left corner.
-     *  - `alignment::top_right`: icon and text are inline with each other, with
-     *    the icon in the top-right corner.
-     *  - `alignment::middle_left`: icon and text are inline with each other, with
-     *    the icon in the middle-left.
-     *  - `alignment::middle_right`: icon and text are inline with each other, with
-     *    the icon in the middle-right.
-     *  - `alignment::bottom_left`: icon and text are inline with each other, with
-     *    the icon in the bottom-left.
-     *  - `alignment::bottom_right`: icon and text are inline with each other, with
-     *    the icon in the bottom-right.
-     *  - `alignment::top_center`: Larger icon above the text, both center aligned.
-     *  - `alignment::bottom_center`: Larger icon below the text, both center aligned.
-     *  - `alignment::middle_center`: text drawn across a large icon. Should only be
-     *    used with a `pixmap` icon.
-     */
-    observer<alignment> alignment = hi::alignment::middle_flush();
+    observer<alignment> alignment = hi::alignment::middle_left();
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
@@ -406,11 +388,11 @@ private:
     vertical_scroll_widget *_scroll_widget = nullptr;
     grid_widget *_grid_widget = nullptr;
 
-    std::vector<menu_button_widget *> _menu_button_widgets;
+    std::vector<radio_menu_button_widget *> _menu_button_widgets;
 
     callback<void()> _delegate_cbt;
     callback<void(label)> _off_label_cbt;
-    std::vector<callback<void()>> _menu_button_tokens;
+    std::vector<callback<void()>> _menu_button_callbacks;
 
     void set_attributes() noexcept {}
     void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
@@ -428,7 +410,7 @@ private:
         set_attributes(hi_forward(rest)...);
     }
 
-    [[nodiscard]] menu_button_widget const *get_first_menu_button() const noexcept
+    [[nodiscard]] radio_menu_button_widget const *get_first_menu_button() const noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -439,7 +421,7 @@ private:
         }
     }
 
-    [[nodiscard]] menu_button_widget const *get_selected_menu_button() const noexcept
+    [[nodiscard]] radio_menu_button_widget const *get_selected_menu_button() const noexcept
     {
         hi_axiom(loop::main().on_thread());
 
@@ -458,10 +440,10 @@ private:
         _selecting = true;
         _overlay_widget->mode = widget_mode::enabled;
         if (auto selected_menu_button = get_selected_menu_button()) {
-            process_event(gui_event::window_set_keyboard_target(selected_menu_button->id, keyboard_focus_group::menu));
+            process_event(gui_event::window_set_keyboard_target(selected_menu_button->focus_id(), keyboard_focus_group::menu));
 
         } else if (auto first_menu_button = get_first_menu_button()) {
-            process_event(gui_event::window_set_keyboard_target(first_menu_button->id, keyboard_focus_group::menu));
+            process_event(gui_event::window_set_keyboard_target(first_menu_button->focus_id(), keyboard_focus_group::menu));
         }
 
         request_redraw();
@@ -482,7 +464,7 @@ private:
 
         _grid_widget->clear();
         _menu_button_widgets.clear();
-        _menu_button_tokens.clear();
+        _menu_button_callbacks.clear();
 
         auto [options, selected] = delegate->options_and_selected(*this);
 
@@ -496,9 +478,9 @@ private:
 
         decltype(selected) index = 0;
         for (hilet& label : options) {
-            auto menu_button = &_grid_widget->emplace_bottom<menu_button_widget>(selected, index, label, alignment, text_style);
+            auto menu_button = &_grid_widget->emplace_bottom<radio_menu_button_widget>(selected, index, label, alignment, text_style);
 
-            _menu_button_tokens.push_back(menu_button->pressed.subscribe(
+            _menu_button_callbacks.push_back(menu_button->subscribe(
                 [this, index] {
                     hi_assert_not_null(delegate);
                     delegate->set_selected(*this, index);

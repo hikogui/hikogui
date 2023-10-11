@@ -306,7 +306,7 @@ private:
     font_book::font_glyph_type _minus_glyph;
     aarectangle _minus_glyph_rectangle;
     bool _pressed = false;
-    
+
     callback<void()> _delegate_cbt;
 
     template<size_t I>
@@ -328,5 +328,6 @@ private:
 };
 
 using checkbox_with_label_widget = with_label_widget<checkbox_widget>;
+using checkbox_menu_button_widget = menu_button_widget<checkbox_widget>;
 
 }} // namespace hi::v1

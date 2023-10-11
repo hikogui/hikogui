@@ -408,6 +408,11 @@ public:
         return aarectangle{lhs.v + neg<0b0011>(array_type::broadcast(rhs))};
     }
 
+    friend constexpr aarectangle &operator+=(aarectangle &lhs, value_type rhs) noexcept
+    {
+        return lhs = lhs + rhs;
+    }
+
     /** Shrink the rectangle for the same amount in all directions.
      * @param lhs The original rectangle.
      * @param rhs How much should be added on each side of the rectangle,
@@ -417,6 +422,11 @@ public:
     [[nodiscard]] friend constexpr aarectangle operator-(aarectangle const& lhs, value_type rhs) noexcept
     {
         return lhs + -rhs;
+    }
+
+    friend constexpr aarectangle &operator-=(aarectangle &lhs, value_type rhs) noexcept
+    {
+        return lhs = lhs - rhs;
     }
 
     [[nodiscard]] friend constexpr aarectangle round(aarectangle const& rhs) noexcept

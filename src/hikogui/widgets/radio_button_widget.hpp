@@ -10,6 +10,7 @@
 
 #include "widget.hpp"
 #include "with_label_widget.hpp"
+#include "menu_button_widget.hpp"
 #include "button_delegate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
@@ -18,7 +19,7 @@ namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept radio_button_widget_attribute =
-    forward_of<Context, observer<hi::alignment>>;
+    forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
 
 /** A GUI widget that permits the user to make a binary choice.
  * @ingroup widgets
@@ -160,8 +161,10 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-            context.draw_circle(
-                layout(), _button_circle * 1.02f, background_color(), focus_color(), theme().border_width(), border_side::inside);
+            if (_focus_group != keyboard_focus_group::menu) {
+                context.draw_circle(
+                    layout(), _button_circle * 1.02f, background_color(), focus_color(), theme().border_width(), border_side::inside);
+            }
 
             _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
             if (_animated_value.is_animating()) {
@@ -200,7 +203,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+        return *mode >= widget_mode::partial and to_bool(group & _focus_group);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -259,8 +262,10 @@ private:
     animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
 
+    keyboard_focus_group _focus_group = keyboard_focus_group::normal;
+
     bool _pressed = false;
-    
+
     callback<void()> _delegate_cbt;
 
     template<size_t I>
@@ -268,19 +273,24 @@ private:
     {
     }
 
-    template<size_t I>
-    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    template<size_t I, radio_button_widget_attribute First, radio_button_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&...rest) noexcept
     {
-        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-            set_attributes<I>(hi_forward(rest)...);
+        if constexpr (forward_of<First, observer<hi::alignment>>) {
+            alignment = std::forward<First>(first);
+
+        } else if constexpr (forward_of<First, keyboard_focus_group>) {
+            _focus_group = std::forward<First>(first);
 
         } else {
             hi_static_no_default();
         }
+
+        set_attributes<I>(std::forward<Rest>(rest)...);
     }
 };
 
 using radio_button_with_label_widget = with_label_widget<radio_button_widget>;
+using radio_menu_button_widget = menu_button_widget<radio_button_widget>;
 
 }} // namespace hi::v1

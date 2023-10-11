@@ -636,12 +636,15 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        auto tmp = _widget->find_next_widget(start_widget, group, direction);
-        if (tmp == start_widget) {
-            // Could not a next widget, loop around.
+        if (auto tmp = _widget->find_next_widget(start_widget, group, direction); tmp != start_widget) {
+            update_keyboard_target(tmp, group);
+
+        } else if (group == keyboard_focus_group::normal) {
+            // Could not find a next widget, loop around.
+            // menu items should not loop back.
             tmp = _widget->find_next_widget({}, group, direction);
+            update_keyboard_target(tmp, group);
         }
-        update_keyboard_target(tmp, group);
     }
 
     /** Change the keyboard focus to the given, previous or next widget.

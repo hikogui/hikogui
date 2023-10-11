@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021-2022.
+// Copyright Take Vos 2023.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -8,203 +8,313 @@
 
 #pragma once
 
+#include "widget.hpp"
+#include "button_delegate.hpp"
+#include "label_widget.hpp"
+#include "../algorithm/module.hpp"
+#include "../l10n/l10n.hpp"
+#include "../observer/module.hpp"
 #include "../macros.hpp"
-#include "abstract_button_widget.hpp"
+#include <memory>
+#include <string>
+#include <array>
+#include <optional>
+#include <future>
 
 namespace hi { inline namespace v1 {
 
-/** A button that is part of a menu.
- * @ingroup widgets
- *
- * A menu-button has two different states with different visual
- * representation:
- *  - **on**: The menu button shows a check mark next to the label.
- *  - **off**: The menu button shows just the label.
- *
- * Each time a user activates the menu-button it switches its state to 'on'.
- * Most menus will close the menu after the menu button was activated.
- *
- * A menu button cannot itself switch state to 'off', this state may be
- * caused by external factors. The canonical example is another menu button in
- * a set, which is configured with a different `on_value`.
- */
-class menu_button_widget final : public abstract_button_widget {
-public:
-    using super = abstract_button_widget;
-    using delegate_type = typename super::delegate_type;
+template<typename Context>
+concept menu_button_widget_attribute = label_widget_attribute<Context>;
 
-    /** Construct a menu button widget.
-     *
-     * @param parent The parent widget that owns this menu button widget.
-     * @param delegate The delegate to use to manage the state of the menu button.
-     * @param attributes Different attributes used to configure the label's on the menu button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
-     *                   passed it will be shown in all states. If two labels are passed
-     *                   the first label is shown in on-state and the second for off-state.
+/** Add labels to a button.
+ *
+ * @ingroup widgets
+ */
+template<std::derived_from<widget> ButtonWidget>
+class menu_button_widget : public widget {
+public:
+    using super = widget;
+    using button_widget_type = ButtonWidget;
+    using delegate_type = button_widget_type::delegate_type;
+
+    /** The label to show when the button is in the 'on' state.
      */
-    menu_button_widget(
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        button_widget_attribute auto&&...attributes) noexcept :
-        super(parent, std::move(delegate))
+    observer<hi::label> label = txt("on");
+
+    /** The label to for the shortcut.
+     */
+    observer<hi::label> shortcut = hi::label{};
+
+    /** The alignment of the button and on/off/other label.
+     */
+    observer<alignment> alignment;
+
+    /** The text style to button's label.
+     */
+    observer<semantic_text_style> text_style = semantic_text_style::label;
+
+    notifier<void()> activated;
+
+    template<menu_button_widget_attribute... Attributes>
+    menu_button_widget(widget *parent, std::shared_ptr<delegate_type> delegate, Attributes&&...attributes) noexcept :
+        super(parent)
     {
-        alignment = alignment::middle_flush();
-        set_attributes<0>(hi_forward(attributes)...);
+        hi_assert_not_null(delegate);
+
+        alignment = alignment::middle_left();
+        set_attributes<0>(std::forward<Attributes>(attributes)...);
+
+        _button_widget = std::make_unique<button_widget_type>(this, std::move(delegate), alignment, keyboard_focus_group::menu);
+        _label_widget = std::make_unique<label_widget>(this, label, alignment, text_style);
+        _shortcut_widget = std::make_unique<label_widget>(this, shortcut, alignment, text_style);
+
+        // Link the focus from the button, so that we can draw a focus ring
+        // around the whole menu item.
+        _button_widget->focus = focus;
+        _button_widget->hover = hover;
+
+        _button_widget_activated_cbt = _button_widget->activated.subscribe([&] {
+            this->request_redraw();
+            this->activated();
+        });
+
+        _button_widget_activated_cbt();
     }
 
-    /** Construct a menu button widget with a default button delegate.
-     *
-     * @param parent The parent widget that owns this menu button widget.
-     * @param value The value or `observer` value which represents the state
-     *              of the menu button.
-     * @param on_value An optional on-value. This value is used to determine which
-     *             value yields an 'on' state.
-     * @param attributes Different attributes used to configure the label's on the menu button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
-     *                   passed it will be shown in all states. If two labels are passed
-     *                   the first label is shown in on-state and the second for off-state.
-     */
-    template<
-        different_from<std::shared_ptr<delegate_type>> Value,
-        forward_of<observer<observer_decay_t<Value>>> OnValue,
-        button_widget_attribute... Attributes>
-    menu_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires
-    {
-        make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
-    } :
+    template<different_from<std::shared_ptr<delegate_type>> Value, menu_button_widget_attribute... Attributes>
+    menu_button_widget(widget *parent, Attributes&&...attributes) noexcept
+        requires requires { button_widget_type::make_default_delegate(); }
+        :
         menu_button_widget(
             parent,
-            make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
-            hi_forward(attributes)...)
+            button_widget_type::make_default_delegate(),
+            std::forward<Attributes>(attributes)...)
     {
+        _button_widget->alignment = alignment;
+    }
+
+    template<different_from<std::shared_ptr<delegate_type>> Value, menu_button_widget_attribute... Attributes>
+    menu_button_widget(widget *parent, Value&& value, Attributes&&...attributes) noexcept
+        requires requires { button_widget_type::make_default_delegate(std::forward<Value>(value)); }
+        :
+        menu_button_widget(
+            parent,
+            button_widget_type::make_default_delegate(std::forward<Value>(value)),
+            std::forward<Attributes>(attributes)...)
+    {
+        _button_widget->alignment = alignment;
+    }
+
+    template<
+        different_from<std::shared_ptr<delegate_type>> Value,
+        forward_observer<Value> OnValue,
+        menu_button_widget_attribute... Attributes>
+    menu_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+        requires requires {
+            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
+        }
+        :
+        menu_button_widget(
+            parent,
+            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)),
+            std::forward<Attributes>(attributes)...)
+    {
+        _button_widget->alignment = alignment;
+    }
+
+    template<
+        different_from<std::shared_ptr<delegate_type>> Value,
+        forward_observer<Value> OnValue,
+        forward_observer<Value> OffValue,
+        menu_button_widget_attribute... Attributes>
+    menu_button_widget(widget *parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
+        requires requires {
+            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
+        }
+        :
+        menu_button_widget(
+            parent,
+            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value)),
+            std::forward<Attributes>(attributes)...)
+    {
+        _button_widget->alignment = alignment;
+    }
+
+    /** Get the current state of the button.
+     * @return The state of the button: on / off / other.
+     */
+    [[nodiscard]] button_state state() const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+        return _button_widget->state();
+    }
+
+    /** Get the id of the widget that takes keyboard focus
+     */
+    [[nodiscard]] widget_id focus_id() const noexcept
+    {
+        return _button_widget->id;
+    }
+
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
+    {
+        return activated.subscribe(std::forward<Func>(func), flags);
+    }
+
+    [[nodiscard]] auto operator co_await() noexcept
+    {
+        return activated.operator co_await();
     }
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _label_constraints = super::update_constraints();
+        _layout = {};
 
-        // Make room for button and margin.
-        _check_size = {theme().size(), theme().size()};
-        _short_cut_size = {theme().size(), theme().size()};
+        _grid.clear();
+        _grid.add_cell(0, 0, grid_cell_type::button);
+        _grid.add_cell(1, 0, grid_cell_type::label, true);
+        _grid.add_cell(2, 0, grid_cell_type::shortcut);
 
-        // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet extra_size = extent2{
-            theme().margin<float>() * 4.0f + _check_size.width() + _short_cut_size.width(), theme().margin<float>() * 2.0f};
+        for (auto& cell : _grid) {
+            if (cell.value == grid_cell_type::button) {
+                auto constraints = _button_widget->update_constraints();
+                inplace_max(constraints.minimum.width(), theme().size() * 2.0f);
+                inplace_max(constraints.preferred.width(), theme().size() * 2.0f);
+                inplace_max(constraints.maximum.width(), theme().size() * 2.0f);
+                cell.set_constraints(constraints);
 
-        auto constraints = _label_constraints + extra_size;
-        constraints.margins = 0;
+            } else if (cell.value == grid_cell_type::label) {
+                cell.set_constraints(_label_widget->update_constraints());
+
+            } else if (cell.value == grid_cell_type::shortcut) {
+                auto constraints = _shortcut_widget->update_constraints();
+                inplace_max(constraints.minimum.width(), theme().size() * 3.0f);
+                inplace_max(constraints.preferred.width(), theme().size() * 3.0f);
+                inplace_max(constraints.maximum.width(), theme().size() * 3.0f);
+                cell.set_constraints(constraints);
+
+            } else {
+                hi_no_default();
+            }
+        }
+
+        auto constraints = _grid.constraints(os_settings::left_to_right());
+        constraints.minimum += extent2{theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
+        constraints.preferred += extent2{theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
+        constraints.maximum += extent2{theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
+        constraints.margins = {};
         return constraints;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hilet inside_rectangle = context.rectangle() - theme().margin<float>();
-
-            if (os_settings::left_to_right()) {
-                _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left());
-                _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
-                hilet label_rectangle = aarectangle{
-                    point2{_check_rectangle.right() + theme().margin<float>(), 0.0f},
-                    point2{_short_cut_rectangle.left() - theme().margin<float>(), context.height()}};
-                _on_label_shape = _off_label_shape = _other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
-
-            } else {
-                _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_left());
-                _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_right());
-                hilet label_rectangle = aarectangle{
-                    point2{_short_cut_rectangle.right() + theme().margin<float>(), 0.0f},
-                    point2{_check_rectangle.left() - theme().margin<float>(), context.height()}};
-                _on_label_shape = _off_label_shape = _other_label_shape =
-                    box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
-            }
-
-            _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb = _check_glyph.get_metrics().bounding_rectangle * theme().icon_size();
-            _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb, alignment::middle_center());
+            auto shape = context.shape;
+            shape.rectangle -= theme().margin<float>();
+            _grid.set_layout(shape, theme().baseline_adjustment());
         }
 
-        super::set_layout(context);
+        for (hilet& cell : _grid) {
+            if (cell.value == grid_cell_type::button) {
+                _button_widget->set_layout(context.transform(cell.shape, 0.0f));
+
+            } else if (cell.value == grid_cell_type::label) {
+                _label_widget->set_layout(context.transform(cell.shape));
+
+            } else if (cell.value == grid_cell_type::shortcut) {
+                _shortcut_widget->set_layout(context.transform(cell.shape));
+
+            } else {
+                hi_no_default();
+            }
+        }
     }
 
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-            draw_menu_button(context);
-            draw_check_mark(context);
-            draw_button(context);
+            auto outline_color = *focus ? focus_color() : background_color();
+            context.draw_box(
+                layout(), layout().rectangle(), background_color(), outline_color, theme().border_width(), border_side::inside);
+
+            for (hilet& cell : _grid) {
+                if (cell.value == grid_cell_type::button) {
+                    _button_widget->draw(context);
+
+                } else if (cell.value == grid_cell_type::label) {
+                    _label_widget->draw(context);
+
+                } else if (cell.value == grid_cell_type::shortcut) {
+                    _shortcut_widget->draw(context);
+
+                } else {
+                    hi_no_default();
+                }
+            }
         }
     }
 
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::menu);
+        co_yield *_button_widget;
+        co_yield *_label_widget;
+        co_yield *_shortcut_widget;
     }
 
-    bool handle_event(gui_event const& event) noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
     {
-        using enum gui_event_type;
+        hi_axiom(loop::main().on_thread());
 
-        switch (event.type()) {
-        case gui_menu_next:
-            if (*mode >= widget_mode::partial and not is_last(keyboard_focus_group::menu)) {
-                process_event(gui_event::window_set_keyboard_target(
-                    nullptr, keyboard_focus_group::menu, keyboard_focus_direction::forward));
-                return true;
-            }
-            break;
-
-        case gui_menu_prev:
-            if (*mode >= widget_mode::partial and not is_first(keyboard_focus_group::menu)) {
-                process_event(gui_event::window_set_keyboard_target(
-                    nullptr, keyboard_focus_group::menu, keyboard_focus_direction::backward));
-                return true;
-            }
-            break;
-
-        case gui_activate:
-            if (*mode >= widget_mode::partial) {
-                activate();
-                process_event(gui_event::window_set_keyboard_target(
-                    nullptr, keyboard_focus_group::normal, keyboard_focus_direction::forward));
-                process_event(gui_event::window_set_keyboard_target(
-                    nullptr, keyboard_focus_group::normal, keyboard_focus_direction::backward));
-                return true;
-            }
-            break;
-
-        default:;
+        if (*mode >= widget_mode::partial and layout().contains(position)) {
+            // Accept the hitbox of the menu_button_widget on behalf of the button_widget.
+            return {focus_id(), _layout.elevation, hitbox_type::button};
+        } else {
+            return {};
         }
-
-        return super::handle_event(event);
     }
     /// @endprivatesection
-private:
-    box_constraints _label_constraints;
+protected:
+    enum class grid_cell_type { button, label, shortcut };
 
-    font_book::font_glyph_type _check_glyph;
-    extent2 _check_size;
-    aarectangle _check_rectangle;
-    aarectangle _check_glyph_rectangle;
-    extent2 _short_cut_size;
-    aarectangle _short_cut_rectangle;
+    grid_layout<grid_cell_type> _grid;
 
-    void draw_menu_button(draw_context const& context) noexcept
+    std::unique_ptr<button_widget_type> _button_widget;
+
+    std::unique_ptr<label_widget> _label_widget;
+    std::unique_ptr<label_widget> _shortcut_widget;
+
+    callback<void()> _button_widget_activated_cbt;
+
+    template<size_t I>
+    void set_attributes() noexcept
     {
-        hilet border_color = *focus ? focus_color() : color::transparent();
-        context.draw_box(
-            layout(), layout().rectangle(), background_color(), border_color, theme().border_width(), border_side::inside);
     }
-    void draw_check_mark(draw_context const& context) noexcept
-    {
-        auto state_ = state();
 
-        // Checkmark or tristate.
-        if (state_ == hi::button_state::on) {
-            context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, accent_color());
+    template<size_t I, menu_button_widget_attribute First, menu_button_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&...rest) noexcept
+    {
+        if constexpr (forward_of<First, observer<hi::label>>) {
+            if constexpr (I == 0) {
+                label = std::forward<First>(first);
+            } else if constexpr (I == 1) {
+                shortcut = std::forward<First>(first);
+            } else {
+                hi_static_no_default();
+            }
+            set_attributes<I + 1>(std::forward<Rest>(rest)...);
+
+        } else if constexpr (forward_of<First, observer<hi::alignment>>) {
+            alignment = std::forward<First>(first);
+            set_attributes<I>(std::forward<Rest>(rest)...);
+
+        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
+            text_style = std::forward<First>(first);
+            set_attributes<I>(std::forward<Rest>(rest)...);
+
+        } else {
+            hi_static_no_default();
         }
     }
 };

@@ -106,6 +106,7 @@ enum class gui_event_type {
     gui_toolbar_next,
     gui_toolbar_prev,
     gui_activate,
+    gui_activate_stay,
     gui_activate_next,
     gui_cancel,
 };
@@ -185,6 +186,7 @@ constexpr auto gui_event_type_metadata = enum_metadata{
     gui_event_type::gui_toolbar_next, "gui_toolbar_next",
     gui_event_type::gui_toolbar_prev, "gui_toolbar_prev",
     gui_event_type::gui_activate, "gui_activate",
+    gui_event_type::gui_activate_stay, "gui_activate_stay",
     gui_event_type::gui_activate_next, "gui_activate_next",
     gui_event_type::gui_cancel, "gui_cancel"
 };

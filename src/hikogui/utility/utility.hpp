@@ -27,6 +27,7 @@
 #include "math.hpp" // export
 #include "memory.hpp" // export
 #include "misc.hpp" // export
+#include "not_null.hpp" // export
 #include "numbers.hpp" // export
 #include "policy.hpp" // export
 #include "reflection.hpp" // export

@@ -97,6 +97,16 @@ public:
             ++global_counter<"widget:mode:constrain">;
             process_event({gui_event_type::window_reconstrain});
         });
+
+        _focus_cbt = focus.subscribe([&](auto...) {
+            ++global_counter<"widget:focus:redraw">;
+            request_redraw();
+        });
+
+        _hover_cbt = hover.subscribe([&](auto...) {
+            ++global_counter<"widget:hover:redraw">;
+            request_redraw();
+        });
     }
 
     virtual ~widget() {}
@@ -106,7 +116,7 @@ public:
     widget& operator=(widget&&) = delete;
 
     using widget_intf::children;
-    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         co_return;
     }
@@ -200,49 +210,73 @@ public:
         hi_axiom(loop::main().on_thread());
 
         switch (event.type()) {
-            using enum hi::gui_event_type;
-        case keyboard_enter:
+        case gui_event_type::keyboard_enter:
             focus = true;
             this->scroll_to_show();
             ++global_counter<"widget:keyboard_enter:redraw">;
             request_redraw();
             return true;
 
-        case keyboard_exit:
+        case gui_event_type::keyboard_exit:
             focus = false;
             ++global_counter<"widget:keyboard_exit:redraw">;
             request_redraw();
             return true;
 
-        case mouse_enter:
+        case gui_event_type::mouse_enter:
             hover = true;
             ++global_counter<"widget:mouse_enter:redraw">;
             request_redraw();
             return true;
 
-        case mouse_exit:
+        case gui_event_type::mouse_exit:
             hover = false;
             ++global_counter<"widget:mouse_exit:redraw">;
             request_redraw();
             return true;
 
-        case gui_widget_next:
+        case gui_event_type::gui_activate_stay:
+            process_event(gui_event_type::gui_activate);
+            if (accepts_keyboard_focus(keyboard_focus_group::menu)) {
+                // By going forward and backward we select the current parent,
+                // the widget that opened the menu-stack. 
+                process_event(gui_event_type::gui_widget_next);
+                process_event(gui_event_type::gui_widget_prev);
+            }
+            return true;
+
+        case gui_event_type::gui_activate_next:
+            process_event(gui_event_type::gui_activate);
+            return process_event(gui_event_type::gui_widget_next);
+
+        case gui_event_type::gui_widget_next:
             process_event(
                 gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::forward));
             return true;
 
-        case gui_widget_prev:
+        case gui_event_type::gui_widget_prev:
             process_event(
                 gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::backward));
             return true;
 
-        case gui_activate_next:
-            process_event(gui_activate);
-            return process_event(gui_widget_next);
+        case gui_event_type::gui_menu_next:
+            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
+                process_event(
+                    gui_event::window_set_keyboard_target(id, keyboard_focus_group::menu, keyboard_focus_direction::forward));
+                return true;
+            }
+            break;
+
+        case gui_event_type::gui_menu_prev:
+            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
+                process_event(
+                    gui_event::window_set_keyboard_target(id, keyboard_focus_group::menu, keyboard_focus_direction::backward));
+                return true;
+            }
+            break;
 
         case gui_event_type::gui_toolbar_next:
-            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
-                not is_last(keyboard_focus_group::toolbar)) {
+            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
                 return true;
@@ -250,8 +284,7 @@ public:
             break;
 
         case gui_event_type::gui_toolbar_prev:
-            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
-                not is_first(keyboard_focus_group::toolbar)) {
+            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
                 return true;
@@ -345,48 +378,6 @@ public:
         return std::nullopt;
     }
 
-    [[nodiscard]] widget_id find_first_widget(keyboard_focus_group group) const noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
-
-        for (auto& child : children(false)) {
-            if (child.accepts_keyboard_focus(group)) {
-                return child.id;
-            }
-        }
-        return std::nullopt;
-    }
-
-    [[nodiscard]] widget_id find_last_widget(keyboard_focus_group group) const noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
-
-        auto found = widget_id{};
-        for (auto& child : children(false)) {
-            if (child.accepts_keyboard_focus(group)) {
-                found = child.id;
-            }
-        }
-
-        return found;
-    }
-
-    /** Is this widget the first widget in the parent container.
-     */
-    [[nodiscard]] bool is_first(keyboard_focus_group group) const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        return parent->find_first_widget(group) == id;
-    }
-
-    /** Is this widget the last widget in the parent container.
-     */
-    [[nodiscard]] bool is_last(keyboard_focus_group group) const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        return parent->find_last_widget(group) == id;
-    }
-
     using widget_intf::scroll_to_show;
     void scroll_to_show(hi::aarectangle rectangle) noexcept override
     {
@@ -415,7 +406,7 @@ public:
         }
     }
 
-    [[nodiscard]] hi::theme const &theme() const noexcept
+    [[nodiscard]] hi::theme const& theme() const noexcept
     {
         hilet w = window();
         hi_assert_not_null(w);
@@ -494,6 +485,8 @@ protected:
     widget_layout _layout;
 
     callback<void(widget_mode)> _mode_cbt;
+    callback<void(bool)> _focus_cbt;
+    callback<void(bool)> _hover_cbt;
 
     /** Make an overlay rectangle.
      *

@@ -526,6 +526,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/memory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/misc.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/utility.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/not_null.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/numbers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/policy.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection.hpp

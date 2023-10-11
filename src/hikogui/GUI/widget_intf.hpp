@@ -162,10 +162,6 @@ public:
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept = 0;
 
-    [[nodiscard]] virtual widget_id find_first_widget(keyboard_focus_group group) const noexcept = 0;
-
-    [[nodiscard]] virtual widget_id find_last_widget(keyboard_focus_group group) const noexcept = 0;
-
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
