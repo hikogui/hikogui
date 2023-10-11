@@ -91,7 +91,7 @@ protected:
 private:
     T _init;
     observer<T> _value;
-    typename decltype(_value)::callback_token _value_cbt;
+    callback<void(T)> _value_cbt;
 };
 
 } // namespace detail
@@ -245,11 +245,11 @@ private:
      */
     mutable bool _modified = false;
 
-    loop::timer_callback_token _check_modified_cbt;
-
     /** List of registered items.
      */
     std::vector<std::unique_ptr<detail::preference_item_base>> _items;
+
+    callback<void()> _check_modified_cbt;
 
     void _load() noexcept
     {

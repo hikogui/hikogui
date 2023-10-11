@@ -27,6 +27,7 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/JSON_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/SHA2_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/notifier_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/rcu_tests.cpp

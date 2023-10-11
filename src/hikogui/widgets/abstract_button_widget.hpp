@@ -208,7 +208,7 @@ protected:
     box_shape _other_label_shape;
 
     bool _pressed = false;
-    notifier<>::callback_token _delegate_cbt;
+    callback<void()> _delegate_cbt;
 
     template<size_t I>
     void set_attributes() noexcept

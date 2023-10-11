@@ -25,9 +25,7 @@ class text_field_widget;
  */
 class text_field_delegate {
 public:
-    using notifier_type = notifier<>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
+    using notifier_type = notifier<void()>;
 
     virtual ~text_field_delegate() = default;
     virtual void init(text_field_widget const& sender) noexcept {}
@@ -39,7 +37,7 @@ public:
      * @param text The text entered by the user into the text field.
      * @return no-value when valid, or a label to display to the user when invalid.
      */
-    virtual label validate(text_field_widget& sender, gstring const &text) noexcept
+    virtual label validate(text_field_widget& sender, gstring const& text) noexcept
     {
         return {};
     }
@@ -66,12 +64,12 @@ public:
      * @param sender The widget that called this function.
      * @param text The text entered by the user.
      */
-    virtual void set_text(text_field_widget& sender, gstring const &text) noexcept {}
+    virtual void set_text(text_field_widget& sender, gstring const& text) noexcept {}
 
-    callback_token
-    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void()> Func>
+    callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _notifier.subscribe(hi_forward(callback), flags);
+        return _notifier.subscribe(std::forward<Func>(func), flags);
     }
 
 protected:
@@ -107,7 +105,7 @@ public:
         });
     }
 
-    label validate(text_field_widget& sender, gstring const &text) noexcept override
+    label validate(text_field_widget& sender, gstring const& text) noexcept override
     {
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(to_string(text), 10);
@@ -123,7 +121,7 @@ public:
         return to_gstring(to_string(*value));
     }
 
-    void set_text(text_field_widget& sender, gstring const &text) noexcept override
+    void set_text(text_field_widget& sender, gstring const& text) noexcept override
     {
         try {
             value = from_string<value_type>(to_string(text), 10);
@@ -134,7 +132,7 @@ public:
     }
 
 private:
-    typename decltype(value)::callback_token _value_cbt;
+    callback<void(value_type)> _value_cbt;
 };
 
 /** A default text delegate specialization for `std::floating_point<T>`.
@@ -158,7 +156,7 @@ public:
         });
     }
 
-    label validate(text_field_widget& sender, gstring const &text) noexcept override
+    label validate(text_field_widget& sender, gstring const& text) noexcept override
     {
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(to_string(text));
@@ -174,7 +172,7 @@ public:
         return to_gstring(to_string(*value));
     }
 
-    void set_text(text_field_widget& sender, gstring const &text) noexcept override
+    void set_text(text_field_widget& sender, gstring const& text) noexcept override
     {
         try {
             value = from_string<value_type>(to_string(text));
@@ -185,7 +183,7 @@ public:
     }
 
 private:
-    typename decltype(value)::callback_token _value_cbt;
+    callback<void(value_type)> _value_cbt;
 };
 
 /** Create a shared pointer to a default text delegate.
@@ -195,10 +193,8 @@ private:
  * @param value The observer value which is editable by the text field widget.
  * @return shared pointer to a text field delegate
  */
-[[nodiscard]] std::shared_ptr<text_field_delegate> make_default_text_field_delegate(auto&& value) noexcept requires requires
-{
-    default_text_field_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)};
-}
+[[nodiscard]] std::shared_ptr<text_field_delegate> make_default_text_field_delegate(auto&& value) noexcept
+    requires requires { default_text_field_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)}; }
 {
     using value_type = observer_decay_t<decltype(value)>;
     return std::make_shared<default_text_field_delegate<value_type>>(hi_forward(value));

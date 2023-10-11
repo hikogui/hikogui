@@ -6,6 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "unfair_mutex.hpp"
+#include "callback.hpp"
 #include "callback_flags.hpp"
 #include "../macros.hpp"
 #include <vector>
@@ -13,8 +14,6 @@
 #include <functional>
 #include <coroutine>
 #include <mutex>
-
-
 
 namespace hi::inline v1 {
 
@@ -28,17 +27,16 @@ class notifier;
 
 // The partial template specialization allows the use of a `std::function`-like template
 // argument, that looks like a function prototype.
-template<typename Result, typename... Args>
-class notifier<Result(Args...)> {
+template<typename R, typename... Args>
+class notifier<R(Args...)> {
 public:
-    static_assert(std::is_same_v<Result, void>, "Result of a notifier must be void.");
+    static_assert(std::is_same_v<R, void>, "Result of a notifier must be void.");
 
-    using result_type = Result;
-    using callback_proto = Result(Args...);
-    using function_type = std::function<callback_proto>;
+    using result_type = R;
+    using callback_proto = R(Args...);
 
-    using callback_token = std::shared_ptr<function_type>;
-    using weak_callback_token = std::weak_ptr<function_type>;
+    using callback_type = callback<R(Args...)>;
+    using weak_callback_type = weak_callback<R(Args...)>;
 
     /** An awaiter object which can wait on a notifier.
      *
@@ -49,10 +47,27 @@ public:
     class awaiter_type {
     public:
         constexpr awaiter_type() noexcept = default;
-        constexpr awaiter_type(awaiter_type const&) noexcept = default;
         constexpr awaiter_type(awaiter_type&&) noexcept = default;
-        constexpr awaiter_type& operator=(awaiter_type const&) noexcept = default;
-        constexpr awaiter_type& operator=(awaiter_type&&) noexcept = default;
+        constexpr awaiter_type& operator=(awaiter_type const&) noexcept = delete;
+
+        /** Copy the awaitable.
+         *
+         * This only copies the pointer to the notifier. The arguments to the
+         * notifier and the callback object are unset.
+         */
+        constexpr awaiter_type(awaiter_type const& other) noexcept : _notifier(other._notifier) {}
+
+        /** Copy the awaitable.
+         *
+         * This only copies the pointer to the notifier. The arguments to the
+         * notifier and the callback object are reset.
+         */
+        constexpr awaiter_type& operator=(awaiter_type&&other) noexcept
+        {
+            _cbt = nullptr;
+            _args = {};
+            _notifier = other._notifier;
+        }
 
         constexpr awaiter_type(notifier& notifier) noexcept : _notifier(&notifier) {}
 
@@ -68,10 +83,18 @@ public:
             // We can use the this pointer in the callback, as `await_suspend()` is called by
             // the co-routine on the same object as `await_resume()`.
             _cbt = _notifier->subscribe(
-                [this, handle](Args const&...args) {
+                [this, handle](Args... args) {
                     // Copy the arguments received from the notifier into the awaitable object
                     // So that it can be read using `await_resume()`.
-                    _args = {args...};
+                    _args = {std::forward<Args>(args)...};
+
+                    // Take ownership of the awaiter's callback and
+                    // unsubscribe, so that the awaiter can be destroyed when
+                    // its co-routine is resumed.
+                    //
+                    // We can unsubscribe unsafely here as this is the only
+                    // one call inflight due to callback_flags::once.
+                    auto my_frame = std::exchange(this->_cbt, nullptr).unsafe_unsubscribe();
 
                     // Resume the co-routine.
                     handle.resume();
@@ -79,21 +102,26 @@ public:
                 callback_flags::main | callback_flags::once);
         }
 
-        constexpr void await_resume() const noexcept requires(sizeof...(Args) == 0) {}
+        constexpr void await_resume() const noexcept
+            requires(sizeof...(Args) == 0)
+        {
+        }
 
-        constexpr auto await_resume() const noexcept requires(sizeof...(Args) == 1)
+        constexpr auto await_resume() const noexcept
+            requires(sizeof...(Args) == 1)
         {
             return std::get<0>(_args);
         }
 
-        constexpr auto await_resume() const noexcept requires(sizeof...(Args) > 1)
+        constexpr auto await_resume() const noexcept
+            requires(sizeof...(Args) > 1)
         {
             return _args;
         }
 
     private:
         notifier *_notifier = nullptr;
-        callback_token _cbt;
+        callback<R(Args...)> _cbt;
         std::tuple<Args...> _args;
     };
 
@@ -113,29 +141,31 @@ public:
     }
 
     /** Add a callback to the notifier.
-     * Ownership of the callback belongs with the caller of `subscribe()`. The
-     * caller will receive a token, a move-only RAII object that will unsubscribe the callback
-     * when the token is destroyed.
+     *
+     * After the call the caller will take ownership of the returned callback
+     * object.
+     *
+     * The `callback` object is a move-only RAII object that will automatically
+     * unsubscribe the callback when the token is destroyed.
      *
      * @param flags The callback-flags used to determine how the @a callback is called.
      * @param callback A function object to call when being notified.
      * @return A RAII object which when destroyed will unsubscribe the callback.
      */
-    [[nodiscard]] callback_token
-    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<callback_proto> Func>
+    [[nodiscard]] callback_type subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        auto token = std::make_shared<function_type>(hi_forward(callback));
-
+        auto callback = callback_type{std::forward<Func>(func)};
         hilet lock = std::scoped_lock(_mutex);
-        _callbacks.emplace_back(token, flags);
-        return token;
+        _callbacks.emplace_back(callback, flags);
+        return callback;
     }
 
-    template<typename F>
+    template<forward_of<void()> F>
     void loop_local_post_function(F&&) const noexcept;
-    template<typename F>
+    template<forward_of<void()> F>
     void loop_main_post_function(F&&) const noexcept;
-    template<typename F>
+    template<forward_of<void()> F>
     void loop_timer_post_function(F&&) const noexcept;
 
     /** Call the subscribed callbacks with the given arguments.
@@ -143,34 +173,50 @@ public:
      * @note This function is not reentrant.
      * @param args The arguments to pass with the invocation of the callback
      */
-    void operator()(Args const&...args) const noexcept
+    void operator()(Args... args) const noexcept
     {
         hilet lock = std::scoped_lock(_mutex);
 
-        for (auto& callback : _callbacks) {
-            if (is_synchronous(callback.flags)) {
-                if (auto func = callback.lock()) {
-                    (*func)(args...);
+        for (auto& [callback, flags] : _callbacks) {
+            if (is_synchronous(flags)) {
+                if (callback.lock()) {
+                    callback(std::forward<Args>(args)...);
+                    callback.unlock();
                 }
 
-            } else if (is_local(callback.flags)) {
+            } else if (is_local(flags)) {
                 loop_local_post_function([=] {
-                    if (auto func = callback.lock()) {
-                        (*func)(args...);
+                    // The callback object here is captured by-copy, so that
+                    // the loop can check if it was expired.
+                    if (callback.lock()) {
+                        // The captured arguments are now plain copies so we do
+                        // not forward them in the call.
+                        callback(args...);
+                        callback.unlock();
                     }
                 });
 
-            } else if (is_main(callback.flags)) {
+            } else if (is_main(flags)) {
                 loop_main_post_function([=] {
-                    if (auto func = callback.lock()) {
-                        (*func)(args...);
+                    // The callback object here is captured by-copy, so that
+                    // the loop can check if it was expired.
+                    if (callback.lock()) {
+                        // The captured arguments are now plain copies so we do
+                        // not forward them in the call.
+                        callback(args...);
+                        callback.unlock();
                     }
                 });
 
-            } else if (is_timer(callback.flags)) {
+            } else if (is_timer(flags)) {
                 loop_timer_post_function([=] {
-                    if (auto func = callback.lock()) {
-                        (*func)(args...);
+                    // The callback object here is captured by-copy, so that
+                    // the loop can check if it was expired.
+                    if (callback.lock()) {
+                        // The captured arguments are now plain copies so we do
+                        // not forward them in the call.
+                        callback(args...);
+                        callback.unlock();
                     }
                 });
 
@@ -182,7 +228,7 @@ public:
             // Then reset the weak_ptr in _callbacks so that it will be cleaned up.
             // In the lambda above the weak_ptr is copied first so that it callback will get executed
             // as long as the shared_ptr's use count does not go to zero.
-            if (is_once(callback.flags)) {
+            if (is_once(flags)) {
                 callback.reset();
             }
         }
@@ -190,31 +236,11 @@ public:
     }
 
 private:
-    struct callback_type {
-        weak_callback_token token;
-        callback_flags flags;
-
-        [[nodiscard]] bool expired() const noexcept
-        {
-            return token.expired();
-        }
-
-        void reset() noexcept
-        {
-            token.reset();
-        }
-
-        [[nodiscard]] callback_token lock() const noexcept
-        {
-            return token.lock();
-        }
-    };
-
     mutable unfair_mutex _mutex;
 
     /** A list of callbacks and it's associated token.
      */
-    mutable std::vector<callback_type> _callbacks;
+    mutable std::vector<std::pair<weak_callback_type, callback_flags>> _callbacks;
 
     void clean_up() const noexcept
     {
@@ -222,7 +248,7 @@ private:
 
         // Cleanup all callbacks that have expired, or when they may only be triggered once.
         std::erase_if(_callbacks, [](hilet& item) {
-            return item.expired();
+            return item.first.expired();
         });
     }
 

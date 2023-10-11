@@ -24,10 +24,6 @@ namespace hi::inline v1 {
 
 class os_settings {
 public:
-    using notifier_type = notifier<>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
-
     /** Get the language tags for the configured languages.
      *
      * @return A list of language tags in order of priority.
@@ -282,11 +278,11 @@ public:
      */
     [[nodiscard]] static std::vector<uuid> preferred_gpus(hi::policy performance_policy) noexcept;
 
-    [[nodiscard]] static callback_token
-    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] static callback<void()> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
     {
         hilet lock = std::scoped_lock(_mutex);
-        return _notifier.subscribe(hi_forward(callback), flags);
+        return _notifier.subscribe(std::forward<Func>(func), flags);
     }
 
     /** Get the global os_settings instance.
@@ -515,10 +511,9 @@ private:
     static inline std::atomic<bool> _started = false;
     static inline std::atomic<bool> _populated = false;
     static inline unfair_mutex _mutex;
-    static inline loop::timer_callback_token _gather_cbt;
     static inline utc_nanoseconds _gather_last_time;
 
-    static inline notifier_type _notifier;
+    static inline notifier<void()> _notifier;
 
     static inline std::vector<language_tag> _language_tags = {};
     static inline std::locale _locale = std::locale{""};
@@ -540,6 +535,8 @@ private:
     static inline aarectangle _primary_monitor_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
     static inline aarectangle _desktop_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
     static inline std::atomic<hi::policy> _gpu_policy = policy::unspecified;
+
+    static inline callback<void()> _gather_cbt;
 
     [[nodiscard]] static bool subsystem_init() noexcept
     {

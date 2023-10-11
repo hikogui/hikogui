@@ -44,10 +44,6 @@ enum class button_state {
  */
 class button_delegate {
 public:
-    using notifier_type = notifier<>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
-
     virtual ~button_delegate() = default;
 
     virtual void init(widget& sender) noexcept {}
@@ -67,14 +63,14 @@ public:
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    [[nodiscard]] callback_token
-    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _notifier.subscribe(hi_forward(callback), flags);
+        return _notifier.subscribe(std::forward<Func>(func), flags);
     }
 
 protected:
-    notifier_type _notifier;
+    notifier<void()> _notifier;
 };
 
 /** A default radio button delegate.
@@ -125,8 +121,8 @@ public:
     }
     /// @endprivatesection
 private:
-    typename decltype(value)::callback_token _value_cbt;
-    typename decltype(on_value)::callback_token _on_value_cbt;
+    callback<void(value_type)> _value_cbt;
+    callback<void(value_type)> _on_value_cbt;
 };
 
 template<typename Value, typename OnValue>
@@ -215,9 +211,9 @@ public:
     }
     /// @endprivatesection
 private:
-    typename decltype(value)::callback_token _value_cbt;
-    typename decltype(on_value)::callback_token _on_value_cbt;
-    typename decltype(off_value)::callback_token _off_value_cbt;
+    callback<void(value_type)> _value_cbt;
+    callback<void(value_type)> _on_value_cbt;
+    callback<void(value_type)> _off_value_cbt;
 };
 
 template<typename Value>

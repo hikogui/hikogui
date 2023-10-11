@@ -166,11 +166,12 @@ private:
     icon_type _icon_type;
     font_book::font_glyph_type _glyph;
     gfx_pipeline_image::paged_image _pixmap_backing;
-    decltype(icon)::callback_token _icon_cbt;
     std::atomic<bool> _icon_has_modified = true;
 
     extent2 _icon_size;
     aarectangle _icon_rectangle;
+
+    callback<void(hi::icon)> _icon_cbt;
 
     icon_widget(widget *parent) noexcept : super(parent)
     {

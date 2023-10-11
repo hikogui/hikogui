@@ -175,7 +175,7 @@ public:
 private:
     widget const *_previous_selected_child = nullptr;
     std::vector<std::unique_ptr<widget>> _children;
-    notifier<>::callback_token _delegate_cbt;
+    callback<void()> _delegate_cbt;
 
     using const_iterator = decltype(_children)::const_iterator;
 

@@ -176,13 +176,13 @@ private:
     float _icon_size;
     float _inner_margin;
 
-    decltype(label)::callback_token _label_cbt;
-    decltype(text_style)::callback_token _text_style_cbt;
-    decltype(alignment)::callback_token _alignment_cbt;
-
     std::unique_ptr<icon_widget> _icon_widget;
     std::unique_ptr<text_widget> _text_widget;
     grid_layout<widget *> _grid;
+
+    callback<void(hi::label)> _label_cbt;
+    callback<void(semantic_text_style)> _text_style_cbt;
+    callback<void(hi::alignment)> _alignment_cbt;
 
     void set_attributes() noexcept {}
     void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
@@ -217,7 +217,7 @@ private:
                 _icon_widget->alignment = *alignment;
             }
         });
-        (*_alignment_cbt)(*alignment);
+        _alignment_cbt(*alignment);
 
         _text_style_cbt = text_style.subscribe([this](auto...) {
             switch (*text_style) {

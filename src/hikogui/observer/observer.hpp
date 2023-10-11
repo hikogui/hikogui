@@ -27,8 +27,7 @@ class observer {
 public:
     using value_type = T;
     using notifier_type = notifier<void(value_type)>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
+    using callback_type = notifier_type::callback_type;
     using awaiter_type = notifier_type::awaiter_type;
     using path_type = observable_msg::path_type;
 
@@ -498,10 +497,10 @@ public:
      * @param function The function used as callback in the form `void(value_type const &old_value, value_type const &new_value)`
      * @return A callback-token used to extend the lifetime of the callback function.
      */
-    [[nodiscard]] callback_token
-    subscribe(forward_of<callback_proto> auto&& function, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void(value_type)> Func>
+    [[nodiscard]] callback<void(value_type)> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _notifier.subscribe(hi_forward(function), flags);
+        return _notifier.subscribe(std::forward<Func>(func), flags);
     }
 
     awaiter_type operator co_await() const noexcept

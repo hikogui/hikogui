@@ -6,6 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "../time/module.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <algorithm>
@@ -16,21 +17,10 @@ hi_export_module(hikogui.dispatch.function_timer);
 
 namespace hi::inline v1 {
 
-/** A time that calls functions.
- *
- * @tparam Proto the prototype of the function passed.
- * @tparam Size the size of the function object.
+/** A timer that calls functions.
  */
-template<typename Proto = void()>
 class function_timer {
 public:
-    using callback_proto = Proto;
-    using function_type = std::function<callback_proto>;
-    using callback_token = std::shared_ptr<function_type>;
-    using weak_callback_token = std::weak_ptr<function_type>;
-
-    using result_type = function_type::result_type;
-
     constexpr function_timer() noexcept = default;
 
     [[nodiscard]] constexpr bool empty() const noexcept
@@ -44,8 +34,8 @@ public:
      * @param callback The function to be called.
      * @return token, next to call.
      */
-    std::pair<callback_token, bool>
-    delay_function(utc_nanoseconds time_point, forward_of<callback_proto> auto&& callback) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] std::pair<callback<void()>, bool> delay_function(utc_nanoseconds time_point, Func &&func) noexcept
     {
         hilet it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](hilet& x, hilet& time_point) {
             return x.time_point > time_point;
@@ -53,7 +43,7 @@ public:
 
         hilet next_to_call = it == _functions.end();
 
-        auto token = std::make_shared<function_type>(hi_forward(callback));
+        auto token = callback<void()>{std::forward<Func>(func)};
         _functions.emplace(it, time_point, std::chrono::nanoseconds::max(), token);
         return {std::move(token), next_to_call};
     }
@@ -65,16 +55,17 @@ public:
      * @param callback The function to be called.
      * @return token, next to call.
      */
-    std::pair<callback_token, bool> repeat_function(
+    template<forward_of<void()> Func>
+    [[nodiscard]] std::pair<callback<void()>, bool> repeat_function(
         std::chrono::nanoseconds period,
         utc_nanoseconds time_point,
-        forward_of<callback_proto> auto&& callback) noexcept
+        Func &&func) noexcept
     {
         auto it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](hilet& x, hilet& time_point) {
             return x.time_point > time_point;
         });
 
-        auto token = std::make_shared<function_type>(hi_forward(callback));
+        auto token = callback<void()>{std::forward<Func>(func)};
         it = _functions.emplace(it, time_point, period, token);
         return {std::move(token), it + 1 == _functions.end()};
     }
@@ -85,17 +76,17 @@ public:
      * @param callback The function to be called.
      * @return token, next to call.
      */
-    std::pair<callback_token, bool>
-    repeat_function(std::chrono::nanoseconds period, forward_of<callback_proto> auto&& callback) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] std::pair<callback<void()>, bool> repeat_function(std::chrono::nanoseconds period, Func &&func) noexcept
     {
-        return repeat_function(period, std::chrono::utc_clock::now(), hi_forward(callback));
+        return repeat_function(period, std::chrono::utc_clock::now(), std::forward<Func>(func));
     }
 
     /** Get the deadline of the next function to call.
      *
      * @return The deadline of the next function to call, or far/max into the future.
      */
-    utc_nanoseconds current_deadline() const noexcept
+    [[nodiscard]] utc_nanoseconds current_deadline() const noexcept
     {
         if (_functions.empty()) {
             return utc_nanoseconds::max();
@@ -120,7 +111,7 @@ private:
     struct timer_type {
         utc_nanoseconds time_point;
         std::chrono::nanoseconds period;
-        weak_callback_token token;
+        weak_callback<void()> callback;
 
         timer_type() noexcept = default;
         timer_type(timer_type const&) noexcept = default;
@@ -128,18 +119,18 @@ private:
         timer_type& operator=(timer_type const&) noexcept = default;
         timer_type& operator=(timer_type&&) noexcept = default;
 
-        timer_type(utc_nanoseconds time_point, std::chrono::nanoseconds period, weak_callback_token token) noexcept :
-            time_point(time_point), period(period), token(std::move(token))
+        timer_type(utc_nanoseconds time_point, std::chrono::nanoseconds period, weak_callback<void()> callback) noexcept :
+            time_point(time_point), period(period), callback(std::move(callback))
         {
         }
 
-        timer_type(utc_nanoseconds time_point, weak_callback_token token) noexcept :
-            timer_type(time_point, std::chrono::nanoseconds::max(), std::move(token))
+        timer_type(utc_nanoseconds time_point, weak_callback<void()> callback) noexcept :
+            timer_type(time_point, std::chrono::nanoseconds::max(), std::move(callback))
         {
         }
 
-        timer_type(std::chrono::nanoseconds period, weak_callback_token token) noexcept :
-            timer_type(std::chrono::utc_clock::now(), period, std::move(token))
+        timer_type(std::chrono::nanoseconds period, weak_callback<void()> callback) noexcept :
+            timer_type(std::chrono::utc_clock::now(), period, std::move(callback))
         {
         }
 
@@ -153,7 +144,7 @@ private:
     {
         hi_assert(not _functions.empty());
 
-        if (_functions.back().repeats() and not _functions.back().token.expired()) {
+        if (_functions.back().repeats() and not _functions.back().callback.expired()) {
             // When the function is repeating, calculate the new.
             auto item = std::move(_functions.back());
             _functions.pop_back();
@@ -181,28 +172,17 @@ private:
      *
      * @note it is undefined behavior to call this function if the current_deadline() has not passed.
      * @param current_time The current time, this is used when reinserting periodic function to handle starvation issues.
-     * @param args The arguments to pass to the function.
-     * @return The return value of the function.
      */
-    result_type run_one(utc_nanoseconds current_time, auto&&...args)
+    void run_one(utc_nanoseconds current_time)
     {
         hi_assert(not _functions.empty());
 
-        if constexpr (std::is_same_v<result_type, void>) {
-            if (auto token = _functions.back().token.lock()) {
-                (*token)(hi_forward(args)...);
-            }
-            remove_or_reinsert(current_time);
-            return;
-        } else {
-            if (auto token = _functions.back().token.lock()) {
-                auto result = (*token)(hi_forward(args)...);
-                remove_or_reinsert(current_time);
-                return result;
-            } else {
-                return {};
-            }
+        auto &callback = _functions.back().callback;
+        if (callback.lock()) {
+            callback();
+            callback.unlock();
         }
+        remove_or_reinsert(current_time);
     }
 
     /** Functions, sorted by descending time.

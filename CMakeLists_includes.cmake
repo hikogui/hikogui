@@ -85,6 +85,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/semantic_color.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/sRGB.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/atomic.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_flags.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/global_state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/concurrency.hpp

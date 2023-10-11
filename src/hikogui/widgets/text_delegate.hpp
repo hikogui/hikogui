@@ -25,10 +25,6 @@ class text_widget;
  */
 class text_delegate {
 public:
-    using notifier_type = notifier<>;
-    using callback_token = notifier_type::callback_token;
-    using callback_proto = notifier_type::callback_proto;
-
     virtual ~text_delegate() = default;
 
     virtual void init(text_widget& sender) noexcept {}
@@ -44,14 +40,14 @@ public:
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    [[nodiscard]] callback_token
-    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _notifier.subscribe(hi_forward(callback), flags);
+        return _notifier.subscribe(std::forward<Func>(func), flags);
     }
 
 protected:
-    notifier_type _notifier;
+    notifier<void()> _notifier;
 };
 
 /** A default text delegate.
@@ -95,7 +91,7 @@ public:
     }
 
 private:
-    typename decltype(value)::callback_token _value_cbt;
+    callback<void(value_type)> _value_cbt;
 };
 
 /** A default text delegate specialization for `std::string`.
@@ -131,7 +127,7 @@ public:
     }
 
 private:
-    typename decltype(value)::callback_token _value_cbt;
+    callback<void(value_type)> _value_cbt;
 };
 
 /** A default text delegate specialization for `gstring`.
@@ -167,7 +163,7 @@ public:
     }
 
 private:
-    typename decltype(value)::callback_token _value_cbt;
+    callback<void(value_type)> _value_cbt;
 };
 
 /** A default text delegate specialization for `translate`.
@@ -203,7 +199,7 @@ public:
     }
 
 private:
-    typename decltype(value)::callback_token _value_cbt;
+    callback<void(value_type)> _value_cbt;
 };
 
 /** Create a shared pointer to a default text delegate.
@@ -213,10 +209,8 @@ private:
  * @param value The observer value which represents the displayed text.
  * @return shared pointer to a text delegate
  */
-std::shared_ptr<text_delegate> make_default_text_delegate(auto&& value) noexcept requires requires
-{
-    default_text_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)};
-}
+std::shared_ptr<text_delegate> make_default_text_delegate(auto&& value) noexcept
+    requires requires { default_text_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)}; }
 {
     return std::make_shared<default_text_delegate<observer_decay_t<decltype(value)>>>(hi_forward(value));
 }

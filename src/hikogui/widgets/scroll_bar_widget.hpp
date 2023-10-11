@@ -185,9 +185,9 @@ private:
 
     float _offset_before_drag;
 
-    typename decltype(content)::callback_token _content_cbt;
-    typename decltype(aperture)::callback_token _aperture_cbt;
-    typename decltype(offset)::callback_token _offset_cbt;
+    callback<void(float)> _content_cbt;
+    callback<void(float)> _aperture_cbt;
+    callback<void(float)> _offset_cbt;
 
     /** Create a new offset value.
      *
