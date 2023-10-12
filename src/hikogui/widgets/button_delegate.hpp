@@ -15,8 +15,6 @@
 
 namespace hi { inline namespace v1 {
 
-class abstract_button_widget;
-
 /** The state of a button.
  * @ingroup widget_delegates
  */
