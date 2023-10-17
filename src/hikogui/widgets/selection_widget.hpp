@@ -126,7 +126,7 @@ public:
 
         _delegate_cbt = this->delegate->subscribe([&] {
             update_options();
-        });
+        }, callback_flags::main);
         _delegate_cbt();
 
         this->delegate->init(*this);
@@ -272,7 +272,7 @@ public:
     {
         switch (event.type()) {
         case gui_event_type::mouse_up:
-            if (*mode >= widget_mode::partial and _has_options and layout().rectangle().contains(event.mouse().position)) {
+            if (*mode >= widget_mode::partial and delegate->has_options() and layout().rectangle().contains(event.mouse().position)) {
                 return handle_event(gui_event_type::gui_activate);
             }
             return true;
@@ -281,7 +281,7 @@ public:
             // Handle gui_active_next so that the next widget will NOT get keyboard focus.
             // The previously selected item needs the get keyboard focus instead.
         case gui_event_type::gui_activate:
-            if (*mode >= widget_mode::partial and _has_options and not _selecting) {
+            if (*mode >= widget_mode::partial and delegate->has_options() and not _selecting) {
                 start_selecting();
             } else {
                 stop_selecting();
@@ -291,7 +291,7 @@ public:
             return true;
 
         case gui_event_type::gui_cancel:
-            if (*mode >= widget_mode::partial and _has_options and _selecting) {
+            if (*mode >= widget_mode::partial and delegate->has_options() and _selecting) {
                 stop_selecting();
             }
             ++global_counter<"selection_widget:gui_cancel:relayout">;
@@ -312,7 +312,7 @@ public:
             auto r = _overlay_widget->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{id, _layout.elevation, _has_options ? hitbox_type::button : hitbox_type::_default});
+                r = std::max(r, hitbox{id, _layout.elevation, delegate->has_options() ? hitbox_type::button : hitbox_type::_default});
             }
 
             return r;
@@ -324,14 +324,14 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and _has_options;
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and delegate->has_options();
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and _has_options and _selecting) {
+        if (*mode >= widget_mode::partial and delegate->has_options() and _selecting) {
             return theme().color(semantic_color::accent);
         } else {
             return super::focus_color();
@@ -356,7 +356,6 @@ private:
     aarectangle _chevrons_rectangle;
 
     bool _selecting = false;
-    bool _has_options = false;
 
     std::unique_ptr<overlay_widget> _overlay_widget;
     box_constraints _overlay_constraints;

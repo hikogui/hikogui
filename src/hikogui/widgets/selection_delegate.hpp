@@ -36,6 +36,16 @@ public:
         return std::nullopt;
     }
 
+    [[nodiscard]] virtual size_t number_of_options() const noexcept
+    {
+        return 0;
+    }
+
+    [[nodiscard]] bool has_options() const noexcept
+    {
+        return number_of_options() != 0;
+    }
+
     [[nodiscard]] virtual std::optional<label> selected(widget_intf const& sender) const noexcept
     {
         return std::nullopt;
@@ -67,8 +77,8 @@ public:
         value(std::forward<Value>(value)), options(std::forward<Options>(options))
     {
         // clang-format off
-        _value_cbt = this->value.subscribe([&](auto...){ _options_modified = true; this->_notifier(); });
-        _options_cbt = this->options.subscribe([&](auto...){ this->_notifier(); });
+        _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });
+        _options_cbt = this->options.subscribe([&](auto...){ _options_modified = true; this->_notifier(); });
         // clang-format on
     }
 
@@ -105,6 +115,11 @@ public:
         if (it != _senders.end() and it->id == sender.id) {
             value = it->value;
         }
+    }
+
+    [[nodiscard]] size_t number_of_options() const noexcept override
+    {
+        return options->size();
     }
 
     [[nodiscard]] std::optional<label> selected(widget_intf const& sender) const noexcept override
