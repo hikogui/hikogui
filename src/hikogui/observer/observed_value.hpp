@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "observable.hpp"
+#include "observed.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -12,20 +12,20 @@
 
 
 namespace hi::inline v1 {
-template<typename>
+template<std::equality_comparable>
 class observer;
 
-template<typename T>
-class observable_value final : public observable {
+template<std::equality_comparable T>
+class observed_value final : public observed {
 public:
     using value_type = T;
     using path_type = observable_msg::path_type;
 
-    ~observable_value() = default;
+    ~observed_value() = default;
 
     /** Construct the shared state and default initialize the value.
      */
-    constexpr observable_value() noexcept : _rcu()
+    constexpr observed_value() noexcept : _rcu()
     {
         _rcu.emplace(value_type{});
     }
@@ -35,7 +35,7 @@ public:
      * @param args The arguments passed to the constructor of the value.
      */
     template<typename... Args>
-    constexpr observable_value(Args&&...args) noexcept : _rcu()
+    constexpr observed_value(Args&&...args) noexcept : _rcu()
     {
         _rcu.emplace(std::forward<Args>(args)...);
     }

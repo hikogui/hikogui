@@ -167,9 +167,9 @@ hi::task<> main_window(my_preferences& preferences)
 
     while (true) {
         hilet result = co_await when_any(
-            preferences_button.pressed,
-            vma_dump_button.pressed,
-            hello_world_button.pressed,
+            preferences_button,
+            vma_dump_button,
+            hello_world_button,
             preferences.toggle_value,
             window.closing);
 

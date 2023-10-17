@@ -47,21 +47,58 @@ public:
     using super = widget;
     using delegate_type = selection_delegate;
 
-    std::shared_ptr<delegate_type> delegate;
+    struct attributes_type {
+        /** The label to show when nothing is selected.
+         */
+        observer<label> off_label;
 
-    /** The label to show when nothing is selected.
-     */
-    observer<label> off_label;
+        observer<alignment> alignment = hi::alignment::middle_left();
 
-    observer<alignment> alignment = hi::alignment::middle_left();
+        /** The text style to display the label's text in and color of the label's (non-color) icon.
+         */
+        observer<semantic_text_style> text_style = semantic_text_style::label;
 
-    /** The text style to display the label's text in and color of the label's (non-color) icon.
-     */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
+        attributes_type(attributes_type const&) noexcept = default;
+        attributes_type(attributes_type&&) noexcept = default;
+        attributes_type& operator=(attributes_type const&) noexcept = default;
+        attributes_type& operator=(attributes_type&&) noexcept = default;
+
+        template<selection_widget_attribute... Attributes>
+        explicit attributes_type(Attributes&&...attributes) noexcept
+        {
+            set_attributes(std::forward<Attributes>(attributes)...);
+        }
+
+        void set_attributes() noexcept {}
+        void set_attributes(selection_widget_attribute auto&& first, selection_widget_attribute auto&&...rest) noexcept
+        {
+            if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+                off_label = hi_forward(first);
+            } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+                alignment = hi_forward(first);
+            } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+                text_style = hi_forward(first);
+            } else {
+                hi_static_no_default();
+            }
+
+            set_attributes(hi_forward(rest)...);
+        }
+    };
+
+    attributes_type attributes;
+
+    not_null<std::shared_ptr<delegate_type>> delegate;
+
+    template<typename... Args>
+    [[nodiscard]] static not_null<std::shared_ptr<delegate_type>> make_default_delegate(Args &&...args)
+        requires requires { make_shared_ctad_not_null<default_selection_delegate>(std::forward<Args>(args)...); }
+    {
+        return make_shared_ctad_not_null<default_selection_delegate>(std::forward<Args>(args)...);
+    }
 
     ~selection_widget()
     {
-        hi_assert_not_null(delegate);
         delegate->deinit(*this);
     }
 
@@ -70,53 +107,31 @@ public:
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      */
-    selection_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), delegate(std::move(delegate))
+    selection_widget(widget *parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+        super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        hi_assert_not_null(this->delegate);
-
-        _current_label_widget = std::make_unique<label_widget>(this, alignment, text_style);
+        _current_label_widget = std::make_unique<label_widget>(this, this->attributes.alignment, this->attributes.text_style);
         _current_label_widget->mode = widget_mode::invisible;
-        _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, semantic_text_style::placeholder);
+        _off_label_widget = std::make_unique<label_widget>(this, this->attributes.off_label, this->attributes.alignment, semantic_text_style::placeholder);
 
         _overlay_widget = std::make_unique<overlay_widget>(this);
         _overlay_widget->mode = widget_mode::invisible;
         _scroll_widget = &_overlay_widget->emplace<vertical_scroll_widget>();
         _grid_widget = &_scroll_widget->emplace<grid_widget>();
 
-        _off_label_cbt = this->off_label.subscribe([&](auto...) {
+        _off_label_cbt = this->attributes.off_label.subscribe([&](auto...) {
             ++global_counter<"selection_widget:off_label:constrain">;
             process_event({gui_event_type::window_reconstrain});
         });
 
         _delegate_cbt = this->delegate->subscribe([&] {
-            _notification_from_delegate = true;
-            ++global_counter<"selection_widget:delegate:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            update_options();
         });
+        _delegate_cbt();
 
         this->delegate->init(*this);
     }
 
-    /** Construct a selection widget with a delegate.
-     *
-     * @param parent The owner of the selection widget.
-     * @param delegate The delegate which will control the selection widget.
-     * @param first_attribute First of @a attributes.
-     * @param attributes Different attributes used to configure the label's on the selection box:
-     *                   a `label`, `alignment` or `semantic_text_style`. If an label is passed
-     *                   it is used as the label to show in the off-state.
-     */
-    selection_widget(
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        selection_widget_attribute auto&& first_attribute,
-        selection_widget_attribute auto&&...attributes) noexcept :
-        selection_widget(parent, std::move(delegate))
-    {
-        set_attributes(hi_forward(first_attribute), hi_forward(attributes)...);
-    }
-
     /** Construct a selection widget which will monitor an option list and a
      * value.
      *
@@ -130,7 +145,7 @@ public:
      *                   it is used as the label to show in the off-state.
      */
     template<
-        different_from<std::shared_ptr<delegate_type>> Value,
+        incompatible_with<attributes_type> Value,
         forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
         selection_widget_attribute... Attributes>
     selection_widget(
@@ -139,47 +154,13 @@ public:
         OptionList&& option_list,
         Attributes&&...attributes) noexcept requires requires
     {
-        make_default_selection_delegate(hi_forward(value), hi_forward(option_list));
+        make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list));
+        attributes_type{std::forward<Attributes>(attributes)...};
     } :
         selection_widget(
             parent,
-            make_default_selection_delegate(hi_forward(value), hi_forward(option_list)),
-            hi_forward(attributes)...)
-    {
-    }
-
-    /** Construct a selection widget which will monitor an option list and a
-     * value.
-     *
-     * @param parent The owner of the selection widget.
-     * @param value The value or observer value to monitor.
-     * @param option_list An vector or an observer vector of pairs of keys and
-     *                    labels. The keys are of the same type as the @a value.
-     *                    The labels are of type `label`.
-     * @param off_value An optional off-value. This value is used to determine which
-     *             value yields an 'off' state.
-     * @param attributes Different attributes used to configure the label's on the selection box:
-     *                   a `label`, `alignment` or `semantic_text_style`. If an label is passed
-     *                   it is used as the label to show in the off-state.
-     */
-    template<
-        different_from<std::shared_ptr<delegate_type>> Value,
-        forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
-        forward_of<observer<observer_decay_t<Value>>> OffValue,
-        selection_widget_attribute... Attributes>
-    selection_widget(
-        widget *parent,
-        Value&& value,
-        OptionList&& option_list,
-        OffValue&& off_value,
-        Attributes&&...attributes) noexcept requires requires
-    {
-        make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value));
-    } :
-        selection_widget(
-            parent,
-            make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value)),
-            hi_forward(attributes)...)
+            attributes_type{std::forward<Attributes>(attributes)...},
+            make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list)))
     {
     }
 
@@ -196,10 +177,6 @@ public:
         hi_assert_not_null(_off_label_widget);
         hi_assert_not_null(_current_label_widget);
         hi_assert_not_null(_overlay_widget);
-
-        if (_notification_from_delegate.exchange(false)) {
-            repopulate_options();
-        }
 
         _layout = {};
         _off_label_constraints = _off_label_widget->update_constraints();
@@ -218,7 +195,7 @@ public:
         r.maximum.width() = std::max(r.maximum.width(), _overlay_constraints.maximum.width() + extra_size.width());
         r.margins = theme().margin();
         r.padding = theme().margin();
-        r.alignment = resolve(*alignment, os_settings::left_to_right());
+        r.alignment = resolve(*attributes.alignment, os_settings::left_to_right());
         hi_axiom(r.holds_invariant());
         return r;
     }
@@ -363,7 +340,7 @@ public:
 
     /// @endprivatesection
 private:
-    std::atomic<bool> _notification_from_delegate = true;
+    bool _notification_from_delegate = true;
 
     std::unique_ptr<label_widget> _current_label_widget;
     box_constraints _current_label_constraints;
@@ -388,62 +365,18 @@ private:
     vertical_scroll_widget *_scroll_widget = nullptr;
     grid_widget *_grid_widget = nullptr;
 
-    std::vector<radio_menu_button_widget *> _menu_button_widgets;
-
     callback<void()> _delegate_cbt;
     callback<void(label)> _off_label_cbt;
     std::vector<callback<void()>> _menu_button_callbacks;
-
-    void set_attributes() noexcept {}
-    void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
-    {
-        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
-            off_label = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
-        } else {
-            hi_static_no_default();
-        }
-
-        set_attributes(hi_forward(rest)...);
-    }
-
-    [[nodiscard]] radio_menu_button_widget const *get_first_menu_button() const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-
-        if (ssize(_menu_button_widgets) != 0) {
-            return _menu_button_widgets.front();
-        } else {
-            return nullptr;
-        }
-    }
-
-    [[nodiscard]] radio_menu_button_widget const *get_selected_menu_button() const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-
-        for (hilet& button : _menu_button_widgets) {
-            if (button->state() == button_state::on) {
-                return button;
-            }
-        }
-        return nullptr;
-    }
 
     void start_selecting() noexcept
     {
         hi_axiom(loop::main().on_thread());
 
-        _selecting = true;
-        _overlay_widget->mode = widget_mode::enabled;
-        if (auto selected_menu_button = get_selected_menu_button()) {
-            process_event(gui_event::window_set_keyboard_target(selected_menu_button->focus_id(), keyboard_focus_group::menu));
-
-        } else if (auto first_menu_button = get_first_menu_button()) {
-            process_event(gui_event::window_set_keyboard_target(first_menu_button->focus_id(), keyboard_focus_group::menu));
+        if (auto focus_id = delegate->keyboard_focus_id(*this)) {
+            _selecting = true;
+            _overlay_widget->mode = widget_mode::enabled;
+            process_event(gui_event::window_set_keyboard_target(*focus_id, keyboard_focus_group::menu));
         }
 
         request_redraw();
@@ -457,50 +390,36 @@ private:
         request_redraw();
     }
 
-    void repopulate_options() noexcept
+    void update_options() noexcept
     {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(delegate);
+        if (auto new_buttons = delegate->make_button_widgets(*this)) {
+            _grid_widget->clear();
+            _menu_button_callbacks.clear();
 
-        _grid_widget->clear();
-        _menu_button_widgets.clear();
-        _menu_button_callbacks.clear();
+            for (auto &new_button : *new_buttons) {
+                auto &new_button_ref = _grid_widget->push_bottom(std::move(new_button));
 
-        auto [options, selected] = delegate->options_and_selected(*this);
-
-        _has_options = size(options) > 0;
-
-        // If any of the options has a an icon, all of the options should show the icon.
-        auto show_icon = false;
-        for (hilet& label : options) {
-            show_icon |= to_bool(label.icon);
+                _menu_button_callbacks.push_back(new_button_ref.subscribe(
+                    [&] {
+                        stop_selecting();
+                    },
+                    callback_flags::main));
+            }
+            
+            ++global_counter<"selection_widget:update_options:constrain">;
+            process_event({gui_event_type::window_reconstrain});
+       } else {
+            // The options have not changed.
         }
 
-        decltype(selected) index = 0;
-        for (hilet& label : options) {
-            auto menu_button = &_grid_widget->emplace_bottom<radio_menu_button_widget>(selected, index, label, alignment, text_style);
-
-            _menu_button_callbacks.push_back(menu_button->subscribe(
-                [this, index] {
-                    hi_assert_not_null(delegate);
-                    delegate->set_selected(*this, index);
-                    stop_selecting();
-                },
-                callback_flags::main));
-
-            _menu_button_widgets.push_back(menu_button);
-
-            ++index;
-        }
-
-        if (selected == -1) {
-            _off_label_widget->mode = widget_mode::display;
-            _current_label_widget->mode = widget_mode::invisible;
+        if (auto selected_label = delegate->selected(*this)) {
+            _off_label_widget->mode = widget_mode::invisible;
+            _current_label_widget->label = *selected_label;
+            _current_label_widget->mode = widget_mode::display;
 
         } else {
-            _off_label_widget->mode = widget_mode::invisible;
-            _current_label_widget->label = options[selected];
-            _current_label_widget->mode = widget_mode::display;
+            _off_label_widget->mode = widget_mode::display;
+            _current_label_widget->mode = widget_mode::invisible;
         }
     }
 

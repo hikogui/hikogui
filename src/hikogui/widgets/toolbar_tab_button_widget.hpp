@@ -81,7 +81,7 @@ public:
      *                   the first label is shown in on-state and the second for off-state.
      */
     template<
-        different_from<std::shared_ptr<delegate_type>> Value,
+        incompatible_with<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
     toolbar_tab_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "observable_value.hpp"
+#include "observed_value.hpp"
 #include "observer.hpp"
 #include "../macros.hpp"
 #include <memory>
@@ -50,7 +50,7 @@ public:
      */
     template<typename... Args>
     constexpr shared_state(Args&&...args) noexcept :
-        _pimpl(std::make_shared<observable_value<value_type>>(std::forward<Args>(args)...))
+        _pimpl(std::make_shared<observed_value<value_type>>(std::forward<Args>(args)...))
     {
     }
 
@@ -85,7 +85,7 @@ public:
     }
 
 private:
-    std::shared_ptr<observable_value<value_type>> _pimpl;
+    std::shared_ptr<observed_value<value_type>> _pimpl;
 };
 
 }

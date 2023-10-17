@@ -40,21 +40,21 @@ enum class button_state {
 /** A button delegate controls the state of a button widget.
  * @ingroup widget_delegates
  */
-class button_delegate {
+class button_delegate : public std::enable_shared_from_this<button_delegate> {
 public:
     virtual ~button_delegate() = default;
 
-    virtual void init(widget& sender) noexcept {}
+    virtual void init(widget_intf const& sender) noexcept {}
 
-    virtual void deinit(widget& sender) noexcept {}
+    virtual void deinit(widget_intf const& sender) noexcept {}
 
     /** Called when the button is pressed by the user.
      */
-    virtual void activate(widget& sender) noexcept {};
+    virtual void activate(widget_intf const& sender) noexcept {}
 
     /** Used by the widget to check the state of the button.
      */
-    [[nodiscard]] virtual button_state state(widget const& sender) const noexcept
+    [[nodiscard]] virtual button_state state(widget_intf const& sender) const noexcept
     {
         return button_state::off;
     }
@@ -79,7 +79,7 @@ protected:
  * @ingroup widget_delegates
  * @tparam T The type of the observer value.
  */
-template<typename T>
+template<std::equality_comparable T>
 class default_radio_button_delegate : public button_delegate {
 public:
     using value_type = T;
@@ -104,7 +104,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(widget const& sender) const noexcept override
+    [[nodiscard]] button_state state(widget_intf const& sender) const noexcept override
     {
         if (*value == *on_value) {
             return button_state::on;
@@ -113,7 +113,7 @@ public:
         }
     }
 
-    void activate(widget& sender) noexcept override
+    void activate(widget_intf const& sender) noexcept override
     {
         value = *on_value;
     }
@@ -124,7 +124,7 @@ private:
 };
 
 template<typename Value, typename OnValue>
-default_radio_button_delegate(Value &&, OnValue &&) -> default_radio_button_delegate<observer_decay_t<Value>>;
+default_radio_button_delegate(Value&&, OnValue&&) -> default_radio_button_delegate<observer_decay_t<Value>>;
 
 /** A default toggle button delegate.
  *
@@ -134,7 +134,7 @@ default_radio_button_delegate(Value &&, OnValue &&) -> default_radio_button_dele
  * @ingroup widget_delegates
  * @tparam T The type of the observer value.
  */
-template<typename T>
+template<std::equality_comparable T>
 class default_toggle_button_delegate : public button_delegate {
 public:
     using value_type = T;
@@ -188,7 +188,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(widget const& sender) const noexcept override
+    [[nodiscard]] button_state state(widget_intf const& sender) const noexcept override
     {
         if (*value == *on_value) {
             return button_state::on;
@@ -199,7 +199,7 @@ public:
         }
     }
 
-    void activate(widget& sender) noexcept override
+    void activate(widget_intf const& sender) noexcept override
     {
         if (*value == *off_value) {
             value = *on_value;
@@ -215,13 +215,13 @@ private:
 };
 
 template<typename Value>
-default_toggle_button_delegate(Value &&) -> default_toggle_button_delegate<observer_decay_t<Value>>;
+default_toggle_button_delegate(Value&&) -> default_toggle_button_delegate<observer_decay_t<Value>>;
 
 template<typename Value, typename OnValue>
-default_toggle_button_delegate(Value &&, OnValue &&) -> default_toggle_button_delegate<observer_decay_t<Value>>;
+default_toggle_button_delegate(Value&&, OnValue&&) -> default_toggle_button_delegate<observer_decay_t<Value>>;
 
 template<typename Value, typename OnValue, typename OffValue>
-default_toggle_button_delegate(Value &&, OnValue &&, OffValue &&) -> default_toggle_button_delegate<observer_decay_t<Value>>;
+default_toggle_button_delegate(Value&&, OnValue&&, OffValue&&) -> default_toggle_button_delegate<observer_decay_t<Value>>;
 
 /** Make a shared pointer to a radio-button delegate.
  *

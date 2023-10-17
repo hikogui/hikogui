@@ -283,8 +283,16 @@ public:
             draw_context.subpixel_orientation = subpixel_orientation();
             draw_context.active = active;
 
-            if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
+            switch (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
+            case animator_state::idle:
+                break;
+            case animator_state::running:
                 this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
+                break;
+            case animator_state::end:
+                break;
+            default:
+                hi_no_default();
             }
             draw_context.saturation = _animated_active.current_value();
 

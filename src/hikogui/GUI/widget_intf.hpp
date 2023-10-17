@@ -27,9 +27,28 @@ public:
      */
     widget_intf *parent = nullptr;
 
+    /** Notifier which is called after an action is completed by a widget.
+     */
+    hi::notifier<void()> notifier;
+
     virtual ~widget_intf() = default;
 
     widget_intf(widget_intf *parent) noexcept : id(narrow_cast<uint32_t>(++global_counter<"widget::id">)), parent(parent) {}
+
+    /** Subscribe a callback to be called when an action is completed by the widget.
+    */
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
+    {
+        return notifier.subscribe(std::forward<Func>(func), flags);
+    }
+
+    /** Await until an action is completed by the widget.
+     */
+    [[nodiscard]] auto operator co_await() const noexcept
+    {
+        return notifier.operator co_await();
+    }
 
     /** Set the window for this tree of widgets.
      *

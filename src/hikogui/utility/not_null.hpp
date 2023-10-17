@@ -5,233 +5,167 @@
 #pragma once
 
 #include "assert.hpp"
+#include "type_traits.hpp"
+#include "concepts.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <memory>
+#include <concepts>
 
 hi_export_module(utility.not_null);
 
 namespace hi { inline namespace v1 {
 
-template<typename T>
-class not_null;
-
-template<typename T>
-class not_null<T *> {
+template<nullable_pointer T>
+class not_null {
 public:
-    using pointer = T *;
-    using reference = T&;
+    using element_type = std::pointer_traits<T>::element_type;
+    using pointer = element_type *;
+    using reference = element_type &;
 
-    constexpr not_null(not_null const&) noexcept = default;
-    constexpr not_null(not_null&&) noexcept = default;
-    constexpr not_null& operator=(not_null const&) noexcept = default;
-    constexpr not_null& operator=(not_null&&) noexcept = default;
+    ~not_null() = default;
     not_null() = delete;
     not_null(nullptr_t) = delete;
-    not_null& operator=(nullptr_t) = delete;
+    not_null &operator=(nullptr_t) = delete;
 
-    constexpr not_null(pointer other) noexcept : _p(other)
+    not_null(intrinsic_t, T &&o) noexcept : _p(std::move(o)) {}
+
+    template<nullable_pointer O>
+    not_null(not_null<O> const &o) noexcept
+        requires requires { this->_p = o._p; }
+     : _p(o._p)
     {
-        hi_assert_not_null(other);
     }
 
-    constexpr not_null& operator=(pointer other) noexcept
+    template<nullable_pointer O>
+    not_null &operator=(not_null<O> const &o) noexcept
+        requires requires { this->_p = o._p; }
     {
-        hi_assert_not_null(other);
-        _p = other;
+        if constexpr (std::same_as<std::remove_cvref_t<decltype(*this)>, std::remove_cvref_t<decltype(o)>>) {
+            if (this == std::addressof(o)) {
+                return *this;
+            } 
+        }
+
+        _p = o._p;
         return *this;
     }
 
-    constexpr operator pointer() const noexcept
+    template<nullable_pointer O>
+    not_null(not_null<O> &&o) noexcept
+        requires requires { this->_p = std::move(o._p); }
+     : _p(std::move(o._p))
     {
-        return _p;
     }
 
-    constexpr pointer get() const noexcept
+    template<nullable_pointer O>
+    not_null &operator=(not_null<O> &&o) noexcept
+        requires requires { this->_p = std::move(o._p); }
     {
-        return _p;
+         if constexpr (std::same_as<std::remove_cvref_t<decltype(*this)>, std::remove_cvref_t<decltype(o)>>) {
+            if (this == std::addressof(o)) {
+                return *this;
+            } 
+        }
+        
+        _p = std::move(o._p);
+        return *this;
     }
 
-    constexpr pointer operator->() const noexcept
-    {
-        return _p;
-    }
-
-    constexpr reference operator*() const noexcept
-    {
-        return *_p;
-    }
-
-    bool operator==(nullptr_t) const = delete;
-
-    [[nodiscard]] constexpr bool operator==(std::remove_const_t<T> const *rhs) const noexcept
-    {
-        return _p == rhs;
-    }
-
-private:
-    pointer _p;
-};
-
-template<typename T>
-class not_null<std::unique_ptr<T>> {
-public:
-    using pointer = T *;
-    using reference = T&;
-
-    not_null(not_null const&) noexcept = delete;
-    not_null(not_null&&) noexcept = default;
-    not_null& operator=(not_null const&) noexcept = delete;
-    not_null& operator=(not_null&&) noexcept = default;
-    not_null() = delete;
-    not_null(nullptr_t) = delete;
-    not_null& operator=(nullptr_t) = delete;
-
-    not_null(std::unique_ptr<T> other) noexcept : _p(std::move(other))
+    template<nullable_pointer O>
+    not_null(O &&o) noexcept
+        requires requires { this->_p = std::forward<O>(o); } :
+        _p(std::forward<O>(o))
     {
         hi_assert_not_null(_p);
     }
 
-    not_null& operator=(std::unique_ptr<T> other) noexcept
+    template<nullable_pointer O>
+    not_null &operator=(O &&o) noexcept
+        requires requires { this->_p = std::forward<O>(o); }
     {
-        hi_assert_not_null(other);
-        _p = std::move(other);
+        hi_assert_not_null(o);
+        _p = std::forward<O>(o);
         return *this;
     }
 
-    operator std::unique_ptr<T> const &() const noexcept
+    // XXX: due to a bug in the standard you can not create a reference
+    //      qualifier overload set (ambiguity). To be able to properly use
+    //      not_null<std::unique_ptr<T>> we will need return a rvalue reference
+    //      when this is a rvalue reference, this can only be done using
+    //      C++23 deducing this.
+
+    operator T() const noexcept
     {
         return _p;
     }
 
-    operator std::unique_ptr<T> &() noexcept
+    [[nodiscard]] pointer get() const noexcept
     {
-        return _p;
+        hilet r = [this]{
+            if constexpr (std::is_pointer_v<T>) {
+                return _p;
+            } else {
+                return _p.get();
+            }
+        }();
+
+        hi_assume(r != nullptr);
+        return r;
     }
 
-    pointer get() const noexcept
+    [[deprecated("not_null<> pointers are always true")]] explicit operator bool() const noexcept
     {
-        return _p.get();
+        return true;
     }
 
-    pointer operator->() const noexcept
+    [[deprecated("not_null<> pointers are never equal to nullptr")]] [[nodiscard]] bool operator==(nullptr_t) const noexcept
     {
-        return _p.get();
+        return false;
     }
 
-    reference operator*() const noexcept
+    [[nodiscard]] reference operator*() const noexcept
     {
         return *_p;
     }
 
-    [[nodiscard]] bool operator==(nullptr_t) const = delete;
-    
-    [[nodiscard]] bool operator==(std::remove_const_t<T> const *rhs) const noexcept
+    [[nodiscard]] pointer operator->() const noexcept
     {
-        return _p == rhs;
+        return get();
     }
 
-    [[nodiscard]] bool operator==(std::unique_ptr<std::remove_const_t<T>> rhs) const = delete;
-    [[nodiscard]] bool operator==(std::unique_ptr<std::remove_const_t<T> const> rhs) const = delete;
-
 private:
-    std::unique_ptr<T> _p;
+    T _p;
 
-    friend not_null<std::shared_ptr<std::remove_const_t<T>>>;
-    friend not_null<std::shared_ptr<std::remove_const_t<T> const>>;
+    template<nullable_pointer T>
+    friend class not_null;
 };
+
+template<typename T, typename... Args>
+[[nodiscard]] not_null<std::unique_ptr<T>> make_unique_not_null(Args &&... args)
+{
+    return not_null<std::unique_ptr<T>>{intrinsic, std::make_unique<T>(std::forward<Args>(args)...)};
+}
+
+template<typename T, typename... Args>
+[[nodiscard]] not_null<std::shared_ptr<T>> make_shared_not_null(Args &&... args)
+{
+    return not_null<std::shared_ptr<T>>{intrinsic, std::make_shared<T>(std::forward<Args>(args)...)};
+}
 
 template<typename T>
-class not_null<std::shared_ptr<T>> {
-public:
-    using pointer = T *;
-    using reference = T&;
+[[nodiscard]] not_null<T *> make_not_null(T *ptr) noexcept
+{
+    return not_null<T *>{ptr};
+}
 
-    constexpr not_null(not_null const&) noexcept = default;
-    constexpr not_null(not_null&&) noexcept = default;
-    constexpr not_null& operator=(not_null const&) noexcept = default;
-    constexpr not_null& operator=(not_null&&) noexcept = default;
-    not_null() = delete;
-    not_null(nullptr_t) = delete;
-    not_null& operator=(nullptr_t) = delete;
+template<typename T>
+[[nodiscard]] not_null<T *> make_not_null(T &ptr) noexcept
+{
+    return not_null<T *>{intrinsic, std::addressof(ptr)};
+}
 
-    constexpr not_null(not_null<std::unique_ptr<std::remove_const_t<T>>> other) noexcept : _p(std::move(other._p)) {}
-
-    constexpr not_null& operator=(not_null<std::unique_ptr<std::remove_const_t<T>>> other) noexcept
-    {
-        _p = std::move(other._p);
-        return *this;
-    }
-
-    constexpr not_null(not_null<std::unique_ptr<std::remove_const_t<T> const>> other) noexcept
-        requires(std::is_const_v<T>)
-        : _p(std::move(other._p))
-    {
-    }
-
-    constexpr not_null& operator=(not_null<std::unique_ptr<std::remove_const_t<T> const>> other) noexcept
-        requires(std::is_const_v<T>)
-    {
-        _p = std::move(other._p);
-        return *this;
-    }
-
-    constexpr not_null(std::shared_ptr<T> other) noexcept : _p(std::move(other))
-    {
-        hi_assert_not_null(_p);
-    }
-
-    constexpr not_null& operator=(std::shared_ptr<T> other) noexcept
-    {
-        hi_assert_not_null(other);
-        _p = std::move(other);
-        return *this;
-    }
-
-    operator std::shared_ptr<T> const &() const noexcept
-    {
-        return _p;
-    }
-
-    operator std::shared_ptr<T> &() noexcept
-    {
-        return _p;
-    }
-
-    constexpr pointer get() const noexcept
-    {
-        return _p.get();
-    }
-
-    constexpr pointer operator->() const noexcept
-    {
-        return _p.get();
-    }
-
-    constexpr reference operator*() const noexcept
-    {
-        return *_p;
-    }
-
-    [[nodiscard]] bool operator==(nullptr_t) const = delete;
-    
-    [[nodiscard]] bool operator==(std::remove_const_t<T> const *rhs) const noexcept
-    {
-        return _p == rhs;
-    }
-
-    [[nodiscard]] bool operator==(std::shared_ptr<std::remove_const_t<T>> const &rhs) const noexcept
-    {
-        return _p == rhs;
-    }
-
-    [[nodiscard]] bool operator==(std::shared_ptr<std::remove_const_t<T> const> const &rhs) const noexcept
-    {
-        return _p == rhs;
-    }
-
-private:
-    std::shared_ptr<T> _p;
-};
+template<typename T>
+[[nodiscard]] not_null<T *> make_not_null(T &&ptr) noexcept = delete;
 
 }} // namespace hi::v1

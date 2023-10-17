@@ -427,12 +427,6 @@ struct is_decayed_derived_from : is_decayed_base_of<BaseType,DerivedType> {};
 template<typename DerivedType, typename BaseType>
 constexpr bool is_decayed_derived_from_v = is_decayed_derived_from<DerivedType,BaseType>::value;
 
-/** If the types are different.
-* The two types are checked after removing const, volatile and reference qualifiers.
- */
-template<typename Context, typename Expected>
-constexpr bool is_different_v = not std::is_same_v<std::decay_t<Context>,std::decay_t<Expected>>;
-
 template<typename T>
 struct is_atomic : std::false_type {};
 
@@ -449,43 +443,6 @@ struct use_first {
 
 template<typename First, typename Second>
 using use_first_t = use_first<First,Second>;
-
-/** Smart pointer traits.
- *
- * @note Applications may make specializations for their own types.
- * @param T the type.
- */
-template<typename T>
-struct smart_pointer_traits {
-    /** If true this is a pointer or shared_ptr.
-     */
-    constexpr static bool value = false;
-
-    /** The type the pointer points to.
-     */
-    using type = void;
-};
-
-template<typename T> struct smart_pointer_traits<std::shared_ptr<T>> {constexpr static bool value = true; using type = T;};
-template<typename T> struct smart_pointer_traits<std::weak_ptr<T>> {constexpr static bool value = true; using type = T;};
-template<typename T> struct smart_pointer_traits<std::unique_ptr<T>> {constexpr static bool value = true; using type = T;};
-template<typename T> struct smart_pointer_traits<T *> {constexpr static bool value = true; using type = T;};
-
-/** Call a method on a reference or a pointer object.
- *
- * @param object A reference or pointer to an object with a method.
- * @param method The name of the method to call.
- * @param ... Argument passed to the method.
- * @return The return value of the method.
- */
-#define hi_call_method(object, method, ...) \
-    [&]() { \
-        if constexpr (smart_pointer_traits<std::decay_t<decltype(object)>>::value) { \
-            return object->method(__VA_ARGS__); \
-        } else { \
-            return object.method(__VA_ARGS__); \
-        } \
-    }()
 
 /** All values of numeric type `In` can be represented without loss of range by numeric type `Out`.
  */

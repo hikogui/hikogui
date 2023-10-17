@@ -22,29 +22,29 @@ struct observable_msg {
     path_type const& path;
 };
 
-/** An abstract observable object.
+/** An abstract observed object.
  *
  * This type is referenced by `observer`s
  */
-class observable : public enable_group_ptr<observable, void(observable_msg)> {
+class observed : public enable_group_ptr<observed, void(observable_msg)> {
 public:
-    virtual ~observable() = default;
-    observable(observable const&) = delete;
-    observable(observable&&) = delete;
-    observable& operator=(observable const&) = delete;
-    observable& operator=(observable&&) = delete;
-    constexpr observable() noexcept = default;
+    virtual ~observed() = default;
+    observed(observed const&) = delete;
+    observed(observed&&) = delete;
+    observed& operator=(observed const&) = delete;
+    observed& operator=(observed&&) = delete;
+    constexpr observed() noexcept = default;
 
     /** Get a pointer to the current value.
      *
-     * @note `read()` does not `read_lock()` the observable and should be done before `read()`.
+     * @note `read()` does not `read_lock()` the observed and should be done before `read()`.
      * @return A const pointer to the value. The `observer` should cast this to a pointer to the value-type.
      */
     [[nodiscard]] virtual void const *read() const noexcept = 0;
 
     /** Allocate and make a copy of the value.
      *
-     * @note `copy()` does not `write_lock()` the observable and should be done before `read()`.
+     * @note `copy()` does not `write_lock()` the observed and should be done before `read()`.
      * @param ptr A pointer to the value that was `read()`.
      * @return A pointer to a newly allocated copy of the value.
      */

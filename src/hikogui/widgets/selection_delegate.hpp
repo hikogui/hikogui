@@ -10,6 +10,7 @@
 
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
+#include "radio_button_widget.hpp"
 #include <memory>
 #include <functional>
 #include <vector>
@@ -21,40 +22,24 @@ class selection_widget;
  *
  * @ingroup widget_delegates
  */
-class selection_delegate {
+class selection_delegate : public button_delegate {
 public:
     virtual ~selection_delegate() = default;
 
-    virtual void init(selection_widget& sender) noexcept {}
-
-    virtual void deinit(selection_widget& sender) noexcept {}
-
-    /** Called when an option is selected by the user.
-     *
-     * @param sender The widget that called this function.
-     * @param index The index of the option selected, -1 if no option is selected.
-     */
-    virtual void set_selected(selection_widget& sender, ssize_t index) noexcept {};
-
-    /** Retrieve the label of an option.
-     *
-     * @param sender The widget that called this function.
-     */
-    virtual std::pair<std::vector<label>, ssize_t> options_and_selected(selection_widget const& sender) const noexcept
+    [[nodiscard]] virtual std::optional<std::vector<std::unique_ptr<widget>>> make_button_widgets(widget& sender) noexcept
     {
-        return {{}, -1};
+        return std::nullopt;
     }
 
-    /** Subscribe a callback for notifying the widget of a data change.
-     */
-    template<forward_of<void()> Func>
-    callback<void()> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
+    [[nodiscard]] virtual std::optional<widget_id> keyboard_focus_id(widget_intf const& sender) const noexcept
     {
-        return _notifier.subscribe(std::forward<Func>(func), flags);
+        return std::nullopt;
     }
 
-protected:
-    notifier<void()> _notifier;
+    [[nodiscard]] virtual std::optional<label> selected(widget_intf const& sender) const noexcept
+    {
+        return std::nullopt;
+    }
 };
 
 /** A delegate that control the state of a selection_widget.
@@ -71,92 +56,134 @@ public:
 
     observer<value_type> value;
     observer<options_type> options;
-    observer<value_type> off_value;
 
     /** Construct a default selection delegate.
      *
      * @param value The observer value which represents the selected option.
      * @param options An observer std::vector<std::pair<value_type,label>> of all possible options.
-     * @param off_value The value used when none of the available options are selected.
      */
-    default_selection_delegate(
-        forward_of<observer<value_type>> auto&& value,
-        forward_of<observer<options_type>> auto&& options,
-        forward_of<observer<value_type>> auto&& off_value) noexcept :
-        value(hi_forward(value)), options(hi_forward(options)), off_value(hi_forward(off_value))
+    template<forward_of<observer<value_type>> Value, forward_of<observer<options_type>> Options>
+    default_selection_delegate(Value&& value, Options&& options) noexcept :
+        value(std::forward<Value>(value)), options(std::forward<Options>(options))
     {
         // clang-format off
-        _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });
+        _value_cbt = this->value.subscribe([&](auto...){ _options_modified = true; this->_notifier(); });
         _options_cbt = this->options.subscribe([&](auto...){ this->_notifier(); });
-        _off_value_cbt = this->off_value.subscribe([&](auto...){ this->_notifier(); });
         // clang-format on
     }
 
-    /** Construct a default selection delegate.
-     *
-     * @param value The observer value which represents the selected option.
-     * @param options An observer std::vector<std::pair<value_type,label>> of all possible options.
-     */
-    default_selection_delegate(
-        forward_of<observer<value_type>> auto&& value,
-        forward_of<observer<options_type>> auto&& options) noexcept :
-        default_selection_delegate(hi_forward(value), hi_forward(options), value_type{})
+    void init(widget_intf const& sender) noexcept override
     {
+        _last_init_id = sender.id;
     }
 
-    void set_selected(selection_widget& sender, ptrdiff_t index) noexcept override
+    void deinit(widget_intf const& sender) noexcept override
     {
-        if (index == -1 || index >= std::ssize(*options)) {
-            value = *off_value;
+        hilet it = std::lower_bound(_senders.begin(), _senders.end(), sender.id);
+        if (it != _senders.end() and it->id == sender.id) {
+            _senders.erase(it);
+        }
+    }
+
+    [[nodiscard]] button_state state(widget_intf const& sender) const noexcept override
+    {
+        hilet it = std::lower_bound(_senders.begin(), _senders.end(), sender.id);
+
+        if (it != _senders.end() and it->id == sender.id) {
+            return *value == it->value ? button_state::on : button_state::off;
+
         } else {
-            value = (*options)[index].first;
+            // button-button was not yet registered.
+            return button_state::off;
         }
     }
 
-    std::pair<std::vector<label>, ptrdiff_t> options_and_selected(selection_widget const& sender) const noexcept override
+    void activate(widget_intf const& sender) noexcept override
     {
-        auto labels = std::vector<label>{};
-        labels.reserve(options->size());
+        hilet it = std::lower_bound(_senders.begin(), _senders.end(), sender.id);
 
-        auto index = 0_z;
-        auto selected_index = -1_z;
+        if (it != _senders.end() and it->id == sender.id) {
+            value = it->value;
+        }
+    }
+
+    [[nodiscard]] std::optional<label> selected(widget_intf const& sender) const noexcept override
+    {
         for (auto&& option : *options) {
-            if (*value == option.first) {
-                selected_index = index;
+            if (option.first == *value) {
+                return option.second;
             }
-            labels.push_back(option.second);
-            ++index;
+        }
+        return std::nullopt;
+    }
+
+    [[nodiscard]] std::optional<widget_id> keyboard_focus_id(widget_intf const& sender) const noexcept override
+    {
+        if (_senders.empty()) {
+            return std::nullopt;
         }
 
-        return {std::move(labels), selected_index};
+        for (hilet& sender : _senders) {
+            if (sender.value == *value) {
+                return sender.id;
+            }
+        }
+        return _senders.front().id;
+    }
+
+    [[nodiscard]] std::optional<std::vector<std::unique_ptr<widget>>> make_button_widgets(widget& sender) noexcept override
+    {
+        using button_widget = radio_menu_button_widget;
+        using button_attributes = radio_menu_button_widget::attributes_type;
+
+        if (not std::exchange(_options_modified, false)) {
+            return std::nullopt;
+        }
+
+        auto r = std::vector<std::unique_ptr<widget>>{};
+        for (auto& option : *options) {
+            r.push_back(
+                std::make_unique<button_widget>(make_not_null(sender), button_attributes{option.second}, shared_from_this()));
+            last_init_was_button(option.first);
+        }
+        return r;
     }
 
 private:
+    struct sender_info_type {
+        widget_id id = {};
+        value_type value;
+
+        [[nodiscard]] friend bool operator==(sender_info_type const& lhs, widget_id const& rhs) noexcept
+        {
+            return lhs.id == rhs;
+        }
+
+        [[nodiscard]] friend auto operator<=>(sender_info_type const& lhs, widget_id const& rhs) noexcept
+        {
+            return lhs.id <=> rhs;
+        }
+    };
+
     callback<void(value_type)> _value_cbt;
     callback<void(options_type)> _options_cbt;
-    callback<void(value_type)> _off_value_cbt;
+
+    bool _options_modified = true;
+    widget_id _last_init_id = 0;
+    std::vector<sender_info_type> _senders;
+
+    void last_init_was_button(value_type value) noexcept
+    {
+        hi_assert(_last_init_id != 0);
+
+        hilet it = std::lower_bound(_senders.begin(), _senders.end(), _last_init_id);
+        hi_assert(it == _senders.end() or it->id != _last_init_id, "button was already registered with selection-delegate.");
+        _senders.emplace(it, _last_init_id, value);
+        _last_init_id = 0;
+    }
 };
 
-/** Create a shared pointer to a default selection delegate.
- *
- * @ingroup widget_delegates
- * @see default_selection_delegate
- * @param value The observer value which represents the selected option.
- * @param options An observer std::vector<std::pair<value_type,label>> of all possible options.
- * @param off_value The optional off-value used when none of the available options are selected.
- * @return shared pointer to a selection delegate
- */
-[[nodiscard]] std::shared_ptr<selection_delegate>
-    make_default_selection_delegate(auto&& value, auto&& options, auto&&...off_value) noexcept
-    requires(sizeof...(off_value) <= 1) and
-    requires
-{
-    default_selection_delegate<observer_decay_t<decltype(value)>>{
-        hi_forward(value), hi_forward(options), hi_forward(off_value)...};
-}
-{
-    return std::make_shared<default_selection_delegate<observer_decay_t<decltype(value)>>>(
-        hi_forward(value), hi_forward(options), hi_forward(off_value)...);
-}
+template<typename Value, typename Options>
+default_selection_delegate(Value&&, Options&&) -> default_selection_delegate<observer_decay_t<Value>>;
 
 }} // namespace hi::v1

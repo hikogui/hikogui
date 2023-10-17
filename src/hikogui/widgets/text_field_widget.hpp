@@ -138,7 +138,7 @@ public:
      */
     text_field_widget(
         widget *parent,
-        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        incompatible_with<std::shared_ptr<delegate_type>> auto&& value,
         text_field_widget_attribute auto&&...attributes) noexcept requires requires
     {
         make_default_text_field_delegate(hi_forward(value));

@@ -51,20 +51,55 @@ class radio_button_widget final : public widget {
 public:
     using super = widget;
     using delegate_type = button_delegate;
-    template<typename T>
-    using default_delegate_type = default_radio_button_delegate<T>;
+
+    struct attributes_type {
+        observer<alignment> alignment = alignment::top_left();
+        keyboard_focus_group focus_group = keyboard_focus_group::normal;
+
+        attributes_type(attributes_type const &) noexcept = default;
+        attributes_type(attributes_type &&) noexcept = default;
+        attributes_type &operator=(attributes_type const &) noexcept = default;
+        attributes_type &operator=(attributes_type &&) noexcept = default;
+
+        template<radio_button_widget_attribute... Attributes>
+        explicit attributes_type(Attributes &&...attributes) noexcept
+        {
+            set_attributes(std::forward<Attributes>(attributes)...);
+        }
+
+        void set_attributes() noexcept
+        {
+        }
+
+        template<radio_button_widget_attribute First, radio_button_widget_attribute... Rest>
+        void set_attributes(First&& first, Rest&&...rest) noexcept
+        {
+            if constexpr (forward_of<First, observer<hi::alignment>>) {
+                alignment = std::forward<First>(first);
+
+            } else if constexpr (forward_of<First, keyboard_focus_group>) {
+                focus_group = std::forward<First>(first);
+
+            } else {
+                hi_static_no_default();
+            }
+
+            set_attributes(std::forward<Rest>(rest)...);
+        }
+    };
+
+    attributes_type attributes;
 
     /** The delegate that controls the button widget.
      */
     not_null<std::shared_ptr<delegate_type>> delegate;
 
-    /** The alignment of the button and on/off/other label.
-     */
-    observer<alignment> alignment;
-
-    /** Notifier to await or callback on when the button was activated.
-     */
-    notifier<> activated;
+    template<typename... Args>
+    [[nodiscard]] static not_null<std::shared_ptr<button_delegate>> make_default_delegate(Args &&...args)
+        requires requires { make_shared_ctad_not_null<default_radio_button_delegate>(std::forward<Args>(args)...); }
+    {
+        return make_shared_ctad_not_null<default_radio_button_delegate>(std::forward<Args>(args)...);
+    }
 
     ~radio_button_widget()
     {
@@ -76,29 +111,17 @@ public:
      * @param parent The parent widget that owns this radio_button widget.
      * @param delegate The delegate to use to manage the state of the radio_button button.
      */
-    template<radio_button_widget_attribute... Attributes>
     radio_button_widget(
         not_null<widget *> parent,
-        not_null<std::shared_ptr<delegate_type>> delegate,
-        Attributes &&...attributes) noexcept :
-        super(parent), delegate(std::move(delegate))
+        attributes_type attributes,
+        not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+        super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        alignment = alignment::top_left();
-        set_attributes<0>(std::forward<Attributes>(attributes)...);
-
         _delegate_cbt = this->delegate->subscribe([&]{
             this->request_redraw();
-            activated();
         });
 
         this->delegate->init(*this);
-    }
-
-    template<typename... Args>
-    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args &&...args)
-        requires requires { default_radio_button_delegate{std::forward<Args>(args)...}; }
-    {
-        return make_shared_ctad<default_radio_button_delegate>(std::forward<Args>(args)...);
     }
 
     /** Construct a radio_button widget with a default button delegate.
@@ -109,7 +132,7 @@ public:
      * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
      */
     template<
-        different_from<std::shared_ptr<delegate_type>> Value,
+        incompatible_with<attributes_type> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         radio_button_widget_attribute... Attributes>
     radio_button_widget(
@@ -120,11 +143,12 @@ public:
         requires requires
     {
         make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
+        attributes_type{std::forward<Attributes>(attributes)...};
     } :
         radio_button_widget(
             parent,
-            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)),
-            std::forward<Attributes>(attributes)...)
+            attributes_type{std::forward<Attributes>(attributes)...},
+            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)))
     {
     }
 
@@ -141,13 +165,13 @@ public:
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _button_size = {theme().size(), theme().size()};
-        return box_constraints{_button_size, _button_size, _button_size, *alignment, theme().margin(), {}};
+        return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin(), {}};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*alignment));
+            _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*attributes.alignment));
 
             _button_circle = circle{_button_rectangle};
 
@@ -159,14 +183,22 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-            if (_focus_group != keyboard_focus_group::menu) {
+            if (attributes.focus_group != keyboard_focus_group::menu) {
                 context.draw_circle(
                     layout(), _button_circle * 1.02f, background_color(), focus_color(), theme().border_width(), border_side::inside);
             }
 
-            _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
-            if (_animated_value.is_animating()) {
+            switch (_animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point)) {
+            case animator_state::idle:
+                break;
+            case animator_state::running:
                 request_redraw();
+                break;
+            case animator_state::end:
+                notifier();
+                break;
+            default:
+                hi_no_default();
             }
 
             // draw pip
@@ -201,7 +233,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return *mode >= widget_mode::partial and to_bool(group & _focus_group);
+        return *mode >= widget_mode::partial and to_bool(group & attributes.focus_group);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -259,32 +291,9 @@ private:
     animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
 
-    keyboard_focus_group _focus_group = keyboard_focus_group::normal;
-
     bool _pressed = false;
 
     callback<void()> _delegate_cbt;
-
-    template<size_t I>
-    void set_attributes() noexcept
-    {
-    }
-
-    template<size_t I, radio_button_widget_attribute First, radio_button_widget_attribute... Rest>
-    void set_attributes(First&& first, Rest&&...rest) noexcept
-    {
-        if constexpr (forward_of<First, observer<hi::alignment>>) {
-            alignment = std::forward<First>(first);
-
-        } else if constexpr (forward_of<First, keyboard_focus_group>) {
-            _focus_group = std::forward<First>(first);
-
-        } else {
-            hi_static_no_default();
-        }
-
-        set_attributes<I>(std::forward<Rest>(rest)...);
-    }
 };
 
 using radio_button_with_label_widget = with_label_widget<radio_button_widget>;

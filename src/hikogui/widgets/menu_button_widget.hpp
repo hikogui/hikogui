@@ -35,107 +35,164 @@ class menu_button_widget : public widget {
 public:
     using super = widget;
     using button_widget_type = ButtonWidget;
+    using button_attributes_type = button_widget_type::attributes_type;
     using delegate_type = button_widget_type::delegate_type;
 
-    /** The label to show when the button is in the 'on' state.
-     */
-    observer<hi::label> label = txt("on");
+    struct attributes_type {
+        /** The label to show when the button is in the 'on' state.
+         */
+        observer<hi::label> label = txt("on");
 
-    /** The label to for the shortcut.
-     */
-    observer<hi::label> shortcut = hi::label{};
+        /** The label to for the shortcut.
+         */
+        observer<hi::label> shortcut = hi::label{};
 
-    /** The alignment of the button and on/off/other label.
-     */
-    observer<alignment> alignment;
+        /** The alignment of the button and on/off/other label.
+         */
+        observer<alignment> alignment = hi::alignment::middle_left();
 
-    /** The text style to button's label.
-     */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
+        /** The text style to button's label.
+         */
+        observer<semantic_text_style> text_style = semantic_text_style::label;
 
-    notifier<void()> activated;
+        attributes_type(attributes_type const&) noexcept = default;
+        attributes_type(attributes_type&&) noexcept = default;
+        attributes_type& operator=(attributes_type const&) noexcept = default;
+        attributes_type& operator=(attributes_type&&) noexcept = default;
 
-    template<menu_button_widget_attribute... Attributes>
-    menu_button_widget(not_null<widget *> parent, not_null<std::shared_ptr<delegate_type>> delegate, Attributes&&...attributes) noexcept :
-        super(parent)
+        template<menu_button_widget_attribute... Attributes>
+        explicit attributes_type(Attributes&&...attributes) noexcept
+        {
+            set_attributes<0>(std::forward<Attributes>(attributes)...);
+        }
+
+        template<size_t I>
+        void set_attributes() noexcept
+        {
+        }
+
+        template<size_t I, menu_button_widget_attribute First, menu_button_widget_attribute... Rest>
+        void set_attributes(First&& first, Rest&&...rest) noexcept
+        {
+            if constexpr (forward_of<First, observer<hi::label>>) {
+                if constexpr (I == 0) {
+                    label = std::forward<First>(first);
+                } else if constexpr (I == 1) {
+                    shortcut = std::forward<First>(first);
+                } else {
+                    hi_static_no_default();
+                }
+                set_attributes<I + 1>(std::forward<Rest>(rest)...);
+
+            } else if constexpr (forward_of<First, observer<hi::alignment>>) {
+                alignment = std::forward<First>(first);
+                set_attributes<I>(std::forward<Rest>(rest)...);
+
+            } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
+                text_style = std::forward<First>(first);
+                set_attributes<I>(std::forward<Rest>(rest)...);
+
+            } else {
+                hi_static_no_default();
+            }
+        }
+    };
+
+    attributes_type attributes;
+
+    menu_button_widget(
+        not_null<widget *> parent,
+        attributes_type attributes,
+        not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+        super(parent), attributes(std::move(attributes))
     {
-        alignment = alignment::middle_left();
-        set_attributes<0>(std::forward<Attributes>(attributes)...);
-
-        _button_widget = std::make_unique<button_widget_type>(this, std::move(delegate), alignment, keyboard_focus_group::menu);
-        _label_widget = std::make_unique<label_widget>(this, label, alignment, text_style);
-        _shortcut_widget = std::make_unique<label_widget>(this, shortcut, alignment, text_style);
+        _button_widget = std::make_unique<button_widget_type>(
+            this, button_attributes_type{this->attributes.alignment, keyboard_focus_group::menu}, std::move(delegate));
+        _label_widget =
+            std::make_unique<label_widget>(this, this->attributes.label, this->attributes.alignment, this->attributes.text_style);
+        _shortcut_widget = std::make_unique<label_widget>(
+            this, this->attributes.shortcut, this->attributes.alignment, this->attributes.text_style);
 
         // Link the focus from the button, so that we can draw a focus ring
         // around the whole menu item.
         _button_widget->focus = focus;
         _button_widget->hover = hover;
 
-        _button_widget_activated_cbt = _button_widget->activated.subscribe([&] {
+        _button_widget_cbt = _button_widget->subscribe([&] {
             this->request_redraw();
-            this->activated();
+            this->notifier();
         });
 
-        _button_widget_activated_cbt();
+        _button_widget_cbt();
     }
 
-    template<different_from<std::shared_ptr<delegate_type>> Value, menu_button_widget_attribute... Attributes>
+    template<menu_button_widget_attribute... Attributes>
     menu_button_widget(not_null<widget *> parent, Attributes&&...attributes) noexcept
-        requires requires { button_widget_type::make_default_delegate(); }
+        requires requires {
+            button_widget_type::make_default_delegate();
+            attributes_type{std::forward<Attributes>(attributes)...};
+        }
         :
         menu_button_widget(
             parent,
-            button_widget_type::make_default_delegate(),
-            std::forward<Attributes>(attributes)...)
+            attributes_type{std::forward<Attributes>(attributes)...},
+            button_widget_type::make_default_delegate())
     {
-        _button_widget->alignment = alignment;
     }
 
-    template<different_from<std::shared_ptr<delegate_type>> Value, menu_button_widget_attribute... Attributes>
+    template<typename Value, menu_button_widget_attribute... Attributes>
     menu_button_widget(not_null<widget *> parent, Value&& value, Attributes&&...attributes) noexcept
-        requires requires { button_widget_type::make_default_delegate(std::forward<Value>(value)); }
+        requires requires {
+            button_widget_type::make_default_delegate(std::forward<Value>(value));
+            attributes_type{std::forward<Attributes>(attributes)...};
+        }
         :
         menu_button_widget(
             parent,
-            button_widget_type::make_default_delegate(std::forward<Value>(value)),
-            std::forward<Attributes>(attributes)...)
+            attributes_type{std::forward<Attributes>(attributes)...},
+            button_widget_type::make_default_delegate(std::forward<Value>(value)))
     {
-        _button_widget->alignment = alignment;
     }
 
-    template<
-        different_from<std::shared_ptr<delegate_type>> Value,
-        forward_observer<Value> OnValue,
-        menu_button_widget_attribute... Attributes>
+    template<typename Value, forward_observer<Value> OnValue, menu_button_widget_attribute... Attributes>
     menu_button_widget(not_null<widget *> parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
+            attributes_type{std::forward<Attributes>(attributes)...};
         }
         :
         menu_button_widget(
             parent,
-            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)),
-            std::forward<Attributes>(attributes)...)
+            attributes_type{std::forward<Attributes>(attributes)...},
+            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)))
     {
-        _button_widget->alignment = alignment;
     }
 
     template<
-        different_from<std::shared_ptr<delegate_type>> Value,
+        typename Value,
         forward_observer<Value> OnValue,
         forward_observer<Value> OffValue,
         menu_button_widget_attribute... Attributes>
-    menu_button_widget(not_null<widget *> parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
+    menu_button_widget(
+        not_null<widget *> parent,
+        Value&& value,
+        OnValue&& on_value,
+        OffValue&& off_value,
+        Attributes&&...attributes) noexcept
         requires requires {
-            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
+            button_widget_type::make_default_delegate(
+                std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
+            attributes_type{std::forward<Attributes>(attributes)...};
         }
         :
         menu_button_widget(
             parent,
-            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value)),
-            std::forward<Attributes>(attributes)...)
+            attributes_type{std::forward<Attributes>(attributes)...},
+            button_widget_type::make_default_delegate(
+                std::forward<Value>(value),
+                std::forward<OnValue>(on_value),
+                std::forward<OffValue>(off_value)))
     {
-        _button_widget->alignment = alignment;
     }
 
     /** Get the current state of the button.
@@ -145,24 +202,6 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         return _button_widget->state();
-    }
-
-    /** Get the id of the widget that takes keyboard focus
-     */
-    [[nodiscard]] widget_id focus_id() const noexcept
-    {
-        return _button_widget->id;
-    }
-
-    template<forward_of<void()> Func>
-    [[nodiscard]] callback<void()> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
-    {
-        return activated.subscribe(std::forward<Func>(func), flags);
-    }
-
-    [[nodiscard]] auto operator co_await() noexcept
-    {
-        return activated.operator co_await();
     }
 
     /// @privatesection
@@ -199,9 +238,9 @@ public:
         }
 
         auto constraints = _grid.constraints(os_settings::left_to_right());
-        constraints.minimum += extent2{theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
-        constraints.preferred += extent2{theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
-        constraints.maximum += extent2{theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
+        constraints.minimum += extent2{theme().template margin<float>() * 2.0f, theme().template margin<float>() * 2.0f};
+        constraints.preferred += extent2{theme().template margin<float>() * 2.0f, theme().template margin<float>() * 2.0f};
+        constraints.maximum += extent2{theme().template margin<float>() * 2.0f, theme().template margin<float>() * 2.0f};
         constraints.margins = {};
         return constraints;
     }
@@ -210,7 +249,7 @@ public:
     {
         if (compare_store(_layout, context)) {
             auto shape = context.shape;
-            shape.rectangle -= theme().margin<float>();
+            shape.rectangle -= theme().template margin<float>();
             _grid.set_layout(shape, theme().baseline_adjustment());
         }
 
@@ -267,7 +306,7 @@ public:
 
         if (*mode >= widget_mode::partial and layout().contains(position)) {
             // Accept the hitbox of the menu_button_widget on behalf of the button_widget.
-            return {focus_id(), _layout.elevation, hitbox_type::button};
+            return {_button_widget->id, _layout.elevation, hitbox_type::button};
         } else {
             return {};
         }
@@ -283,38 +322,7 @@ protected:
     std::unique_ptr<label_widget> _label_widget;
     std::unique_ptr<label_widget> _shortcut_widget;
 
-    callback<void()> _button_widget_activated_cbt;
-
-    template<size_t I>
-    void set_attributes() noexcept
-    {
-    }
-
-    template<size_t I, menu_button_widget_attribute First, menu_button_widget_attribute... Rest>
-    void set_attributes(First&& first, Rest&&...rest) noexcept
-    {
-        if constexpr (forward_of<First, observer<hi::label>>) {
-            if constexpr (I == 0) {
-                label = std::forward<First>(first);
-            } else if constexpr (I == 1) {
-                shortcut = std::forward<First>(first);
-            } else {
-                hi_static_no_default();
-            }
-            set_attributes<I + 1>(std::forward<Rest>(rest)...);
-
-        } else if constexpr (forward_of<First, observer<hi::alignment>>) {
-            alignment = std::forward<First>(first);
-            set_attributes<I>(std::forward<Rest>(rest)...);
-
-        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-            text_style = std::forward<First>(first);
-            set_attributes<I>(std::forward<Rest>(rest)...);
-
-        } else {
-            hi_static_no_default();
-        }
-    }
+    callback<void()> _button_widget_cbt;
 };
 
 }} // namespace hi::v1

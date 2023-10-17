@@ -59,8 +59,6 @@ public:
      */
     observer<semantic_text_style> text_style = semantic_text_style::label;
 
-    notifier<void()> pressed;
-
     ~abstract_button_widget()
     {
         hi_assert_not_null(delegate);
@@ -153,7 +151,7 @@ public:
         hi_assert_not_null(delegate);
         delegate->activate(*this);
 
-        this->pressed();
+        notifier();
     }
 
     bool handle_event(gui_event const& event) noexcept override

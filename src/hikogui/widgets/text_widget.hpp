@@ -150,7 +150,7 @@ public:
      */
     text_widget(
         widget *parent,
-        different_from<std::shared_ptr<delegate_type>> auto&& text,
+        incompatible_with<std::shared_ptr<delegate_type>> auto&& text,
         text_widget_attribute auto&&...attributes) noexcept
         requires requires { make_default_text_delegate(hi_forward(text)); }
         : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...)
