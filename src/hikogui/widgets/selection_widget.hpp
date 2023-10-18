@@ -124,10 +124,15 @@ public:
             process_event({gui_event_type::window_reconstrain});
         });
 
-        _delegate_cbt = this->delegate->subscribe([&] {
+        _delegate_options_cbt = this->delegate->subscribe_on_options([&] {
             update_options();
         }, callback_flags::main);
-        _delegate_cbt();
+        _delegate_options_cbt();
+
+        _delegate_value_cbt = this->delegate->subscribe_on_value([&] {
+            update_value();
+        }, callback_flags::main);
+        _delegate_value_cbt();
 
         this->delegate->init(*this);
     }
@@ -253,6 +258,8 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
+        animate_overlay(context.display_time_point);
+
         if (*mode > widget_mode::invisible) {
             if (overlaps(context, layout())) {
                 draw_outline(context);
@@ -272,7 +279,7 @@ public:
     {
         switch (event.type()) {
         case gui_event_type::mouse_up:
-            if (*mode >= widget_mode::partial and delegate->has_options() and layout().rectangle().contains(event.mouse().position)) {
+            if (*mode >= widget_mode::partial and not delegate->empty(*this) and layout().rectangle().contains(event.mouse().position)) {
                 return handle_event(gui_event_type::gui_activate);
             }
             return true;
@@ -281,21 +288,17 @@ public:
             // Handle gui_active_next so that the next widget will NOT get keyboard focus.
             // The previously selected item needs the get keyboard focus instead.
         case gui_event_type::gui_activate:
-            if (*mode >= widget_mode::partial and delegate->has_options() and not _selecting) {
-                start_selecting();
+            if (*mode >= widget_mode::partial and not delegate->empty(*this) and overlay_closed()) {
+                open_overlay();
             } else {
-                stop_selecting();
+                close_overlay();
             }
             ++global_counter<"selection_widget:gui_activate:relayout">;
             process_event({gui_event_type::window_relayout});
             return true;
 
         case gui_event_type::gui_cancel:
-            if (*mode >= widget_mode::partial and delegate->has_options() and _selecting) {
-                stop_selecting();
-            }
-            ++global_counter<"selection_widget:gui_cancel:relayout">;
-            process_event({gui_event_type::window_relayout});
+            force_close_overlay();
             return true;
 
         default:;
@@ -312,7 +315,7 @@ public:
             auto r = _overlay_widget->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{id, _layout.elevation, delegate->has_options() ? hitbox_type::button : hitbox_type::_default});
+                r = std::max(r, hitbox{id, _layout.elevation, not delegate->empty(*this) ? hitbox_type::button : hitbox_type::_default});
             }
 
             return r;
@@ -324,14 +327,14 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and delegate->has_options();
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and not delegate->empty(*this);
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and delegate->has_options() and _selecting) {
+        if (*mode >= widget_mode::partial and not overlay_closed()) {
             return theme().color(semantic_color::accent);
         } else {
             return super::focus_color();
@@ -340,6 +343,17 @@ public:
 
     /// @endprivatesection
 private:
+    enum class overlay_state_type {
+        open,
+        closing,
+        closed
+    };
+
+    constexpr static std::chrono::nanoseconds _overlay_close_delay = std::chrono::milliseconds(200);
+
+    overlay_state_type _overlay_state = overlay_state_type::closed;
+    utc_nanoseconds _overlay_close_start = {};
+
     bool _notification_from_delegate = true;
 
     std::unique_ptr<label_widget> _current_label_widget;
@@ -355,8 +369,6 @@ private:
     font_book::font_glyph_type _chevrons_glyph;
     aarectangle _chevrons_rectangle;
 
-    bool _selecting = false;
-
     std::unique_ptr<overlay_widget> _overlay_widget;
     box_constraints _overlay_constraints;
     box_shape _overlay_shape;
@@ -364,54 +376,82 @@ private:
     vertical_scroll_widget *_scroll_widget = nullptr;
     grid_widget *_grid_widget = nullptr;
 
-    callback<void()> _delegate_cbt;
+    callback<void()> _delegate_options_cbt;
+    callback<void()> _delegate_value_cbt;
     callback<void(label)> _off_label_cbt;
-    std::vector<callback<void()>> _menu_button_callbacks;
 
-    void start_selecting() noexcept
+    [[nodiscard]] bool overlay_closed() const noexcept
+    {
+        return _overlay_state == overlay_state_type::closed;
+    }
+
+    void open_overlay() noexcept
     {
         hi_axiom(loop::main().on_thread());
 
         if (auto focus_id = delegate->keyboard_focus_id(*this)) {
-            _selecting = true;
+            _overlay_state = overlay_state_type::open;
             _overlay_widget->mode = widget_mode::enabled;
             process_event(gui_event::window_set_keyboard_target(*focus_id, keyboard_focus_group::menu));
+            request_redraw();
         }
-
-        request_redraw();
     }
 
-    void stop_selecting() noexcept
+    void close_overlay() noexcept
     {
         hi_axiom(loop::main().on_thread());
-        _selecting = false;
-        _overlay_widget->mode = widget_mode::invisible;
-        request_redraw();
+
+        if (_overlay_state == overlay_state_type::open) {
+            _overlay_state = overlay_state_type::closing;
+            _overlay_close_start = std::chrono::utc_clock::now();
+            request_redraw();
+        }
+    }
+
+    void force_close_overlay() noexcept
+    {
+        if (_overlay_state != overlay_state_type::closed) {
+            _overlay_state = overlay_state_type::closed;
+            _overlay_widget->mode = widget_mode::invisible;
+            request_redraw();
+        }
+    }
+
+    void animate_overlay(utc_nanoseconds display_time_point) noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+
+        switch (_overlay_state) {
+        case overlay_state_type::open:
+            break;
+        case overlay_state_type::closing:
+            if (display_time_point >= _overlay_close_start + _overlay_close_delay) {
+                force_close_overlay();
+            } else {
+                request_redraw();
+            }
+            break;
+        case overlay_state_type::closed:
+            break;
+        default:
+            hi_no_default();
+        }
     }
 
     void update_options() noexcept
     {
-        if (auto new_buttons = delegate->make_button_widgets(*this)) {
-            _grid_widget->clear();
-            _menu_button_callbacks.clear();
-
-            for (auto &new_button : *new_buttons) {
-                auto &new_button_ref = _grid_widget->push_bottom(std::move(new_button));
-
-                _menu_button_callbacks.push_back(new_button_ref.subscribe(
-                    [&] {
-                        stop_selecting();
-                    },
-                    callback_flags::main));
-            }
-            
-            ++global_counter<"selection_widget:update_options:constrain">;
-            process_event({gui_event_type::window_reconstrain});
-       } else {
-            // The options have not changed.
+        _grid_widget->clear();
+        for (auto i = 0_uz; i != delegate->size(*this); ++i) {
+            _grid_widget->push_bottom(delegate->make_option_widget(*this, i));
         }
 
-        if (auto selected_label = delegate->selected(*this)) {
+        ++global_counter<"selection_widget:update_options:constrain">;
+        process_event({gui_event_type::window_reconstrain});
+    }
+
+    void update_value() noexcept
+    {
+        if (auto selected_label = delegate->selected_label(*this)) {
             _off_label_widget->mode = widget_mode::invisible;
             _current_label_widget->label = *selected_label;
             _current_label_widget->mode = widget_mode::display;
@@ -420,6 +460,8 @@ private:
             _off_label_widget->mode = widget_mode::display;
             _current_label_widget->mode = widget_mode::invisible;
         }
+
+        close_overlay();
     }
 
     void draw_outline(draw_context const& context) noexcept

@@ -121,14 +121,14 @@
             <Item Name="[7]">v[7],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::point&lt;*,2&gt;">
+    <Type Name="hi::v1::point2">
         <DisplayString>&lt;{_v.v[0],g}, {_v.v[1],g}&gt;</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
             <Item Name="[y]">_v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::point&lt;*,3&gt;">
+    <Type Name="hi::v1::point3">
         <DisplayString>&lt;{_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g}&gt;</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
@@ -151,14 +151,14 @@
             <Item Name="[z]">_v.v[2],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::extent&lt;*,2&gt;">
+    <Type Name="hi::v1::extent2">
         <DisplayString>[{_v.v[0],g}, {_v.v[1],g}]</DisplayString>
         <Expand>
             <Item Name="[width]">_v.v[0],g</Item>
             <Item Name="[height]">_v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::extent&lt;*,3&gt;">
+    <Type Name="hi::v1::extent3">
         <DisplayString>[{_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g}]</DisplayString>
         <Expand>
             <Item Name="[width]">_v.v[0],g</Item>
@@ -166,7 +166,7 @@
             <Item Name="[depth]">_v.v[2],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::geo::matrix&lt;3&gt;">
+    <Type Name="hi::v1::matrix3">
         <DisplayString>({_col0.v[0],g}, {_col0.v[1],g}, {_col0.v[2],g}, {_col0.v[3],g}), ({_col1.v[0],g}, {_col1.v[1],g}, {_col1.v[2],g}, {_col1.v[3],g}), ({_col2.v[0],g}, {_col2.v[1],g}, {_col2.v[2],g}, {_col2.v[3],g}), ({_col3.v[0],g}, {_col3.v[1],g}, {_col3.v[2],g}, {_col3.v[3],g})</DisplayString>
     </Type>
     <Type Name="hi::v1::color">
@@ -246,8 +246,8 @@
     <Type Name="hi::v1::label">
         <DisplayString>label({text._msg_id})</DisplayString>
     </Type>
-    <Type Name="hi::v1::label_widget">
-        <DisplayString>{{ label_widget {label} }}</DisplayString>
+    <Type Name="hi::v1::tagged_id&lt;*,*,*&rt;">
+        <DisplayString>id({value})</DisplayString>
     </Type>
     <Type Name="hi::v1::gui_event">
         <DisplayString Condition="_type == hi::v1::gui_event_type::keyboard_down">{_type,en}: {_key,en}</DisplayString>

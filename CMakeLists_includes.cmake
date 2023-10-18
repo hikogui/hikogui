@@ -88,6 +88,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_flags.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/global_state.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/id_factory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/concurrency.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/notifier.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/rcu.hpp

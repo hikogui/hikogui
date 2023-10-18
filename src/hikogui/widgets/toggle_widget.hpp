@@ -144,7 +144,7 @@ public:
         toggle_widget(
             parent,
             attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value)), )
+            make_default_delegate(std::forward<Value>(value)))
     {
     }
 

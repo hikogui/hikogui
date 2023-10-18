@@ -140,7 +140,7 @@ public:
         attributes_type{std::forward<Attributes>(attributes)...};
     } : checkbox_widget(
             parent,
-            attributes_type{std::forward<Attributes>(attributes)...,
+            attributes_type{std::forward<Attributes>(attributes)...},
             make_default_delegate(std::forward<Value>(value)))
     {
     }
@@ -310,7 +310,7 @@ public:
                 // for this widget. Which means the widget_id in the mouse-event
                 // may match up with the checkbox.
                 if (event.mouse().hitbox.widget_id == id) {
-                    handle_event(gui_event_type::gui_activate);
+                    handle_event(gui_event_type::gui_activate_stay);
                 }
                 request_redraw();
                 return true;

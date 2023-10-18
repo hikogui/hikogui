@@ -4,15 +4,44 @@
 
 #pragma once
 
-#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 #include <cstdint>
+#include <utility>
+#include <concepts>
+#include <compare>
 
+namespace hi { inline namespace v1 {
+namespace detail {
+inline id_factory<uint32_t> widget_id_factory;
+}
 
+enum class widget_id : uint32_t {};
 
-namespace hi {
-inline namespace v1 {
+[[nodiscard]] inline widget_id make_widget_id() noexcept
+{
+    return static_cast<widget_id>(detail::widget_id_factory.acquire());
+}
 
-using widget_id = tagged_id<uint32_t, "widget">;
+inline void release_widget_id(widget_id id) noexcept
+{
+    detail::widget_id_factory.release(std::to_underlying(id));
+}
 
-}}
+[[nodiscard]] constexpr bool operator==(widget_id const& lhs, std::integral auto const& rhs) noexcept
+{
+    return std::cmp_equal(std::to_underlying(lhs), rhs);
+}
+
+[[nodiscard]] constexpr std::strong_ordering operator<=>(widget_id const& lhs, std::integral auto const& rhs) noexcept
+{
+    if (std::cmp_equal(std::to_underlying(lhs), rhs)) {
+        return std::strong_ordering::equal;
+    } else if (std::cmp_less(std::to_underlying(lhs), rhs)) {
+        return std::strong_ordering::less;
+    } else {
+        return std::strong_ordering::greater;
+    }
+}
+
+}} // namespace hi::v1

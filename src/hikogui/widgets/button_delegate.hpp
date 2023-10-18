@@ -40,7 +40,7 @@ enum class button_state {
 /** A button delegate controls the state of a button widget.
  * @ingroup widget_delegates
  */
-class button_delegate : public std::enable_shared_from_this<button_delegate> {
+class button_delegate {
 public:
     virtual ~button_delegate() = default;
 

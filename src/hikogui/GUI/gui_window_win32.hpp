@@ -569,7 +569,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (_mouse_target_id) {
+        if (_mouse_target_id != 0) {
             if (new_target_id == _mouse_target_id) {
                 // Focus does not change.
                 return;
@@ -579,11 +579,11 @@ public:
             send_events_to_widget(_mouse_target_id, std::vector{gui_event{gui_event_type::mouse_exit}});
         }
 
-        if (new_target_id) {
+        if (new_target_id != 0) {
             _mouse_target_id = new_target_id;
             send_events_to_widget(new_target_id, std::vector{gui_event::make_mouse_enter(position)});
         } else {
-            _mouse_target_id = std::nullopt;
+            _mouse_target_id = {};
         }
     }
 
@@ -628,7 +628,7 @@ public:
             _keyboard_target_id = new_target_widget->id;
             send_events_to_widget(_keyboard_target_id, std::vector{gui_event{gui_event_type::keyboard_enter}});
         } else {
-            _keyboard_target_id = std::nullopt;
+            _keyboard_target_id = {};
         }
     }
 
@@ -853,7 +853,7 @@ public:
         case window_set_keyboard_target:
             {
                 hilet& target = event.keyboard_target();
-                if (target.widget_id == nullptr) {
+                if (target.widget_id == 0) {
                     update_keyboard_target(target.group, target.direction);
                 } else if (target.direction == keyboard_focus_direction::here) {
                     update_keyboard_target(target.widget_id, target.group);
@@ -1003,7 +1003,7 @@ private:
      */
     bool send_events_to_widget(widget_id target_id, std::vector<gui_event> const& events) noexcept
     {
-        if (not target_id) {
+        if (target_id == 0) {
             // If there was no target, send the event to the window's widget.
             target_id = _widget->id;
         }

@@ -1,7 +1,12 @@
+// Copyright Take Vos 2021-2023.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
 
-#include "fixed_string.hpp"
+#include "unfair_mutex.hpp"
 #include "../macros.hpp"
+#include <mutex>
 
 namespace hi { inline namespace v1 {
 
@@ -13,15 +18,15 @@ namespace hi { inline namespace v1 {
  *
  */
 template<std::unsigned_integral T>
-class id_factory_t {
+class id_factory {
 public:
     using value_type = T;
 
-    id_factory_t() = default;
-    id_factory_t(id_factory_t const &) = delete;
-    id_factory_t(id_factory_t &&) = delete;
-    id_factory_t &operator=(id_factory_t const &) = delete;
-    id_factory_t &operator=(id_factory_t &&) = delete;
+    id_factory() = default;
+    id_factory(id_factory const &) = delete;
+    id_factory(id_factory &&) = delete;
+    id_factory &operator=(id_factory const &) = delete;
+    id_factory &operator=(id_factory &&) = delete;
   
     /** Get the next ID.
      *
@@ -57,7 +62,9 @@ public:
             }
         }
 
-        return _v.fetch_add(1, std::memory_order::relaxed) + 1;
+        hilet tmp = _v.fetch_add(1, std::memory_order::relaxed) + 1;
+        hi_assert(tmp != 0, "id_factory overflow.");
+        return tmp;
     }
 
     /** Release an ID for reuse.
@@ -89,11 +96,6 @@ private:
     std::atomic<size_t> _released_count = 0;
     std::vector<value_type> _released = {};
 };
-
-template<std::unsigned_integral T, fixed_string>
-inline auto id_factory_t = id_factory_t<T>;
-
-
 
 }}
 

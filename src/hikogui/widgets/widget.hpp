@@ -327,7 +327,7 @@ public:
 
         auto found = false;
 
-        if (not current_keyboard_widget and accepts_keyboard_focus(group)) {
+        if (current_keyboard_widget == 0 and accepts_keyboard_focus(group)) {
             // If there was no current_keyboard_widget, then return this if it accepts focus.
             return id;
 
@@ -349,7 +349,7 @@ public:
 
             if (found) {
                 // Find the first focus accepting widget.
-                if (auto tmp = child->find_next_widget({}, group, direction)) {
+                if (auto tmp = child->find_next_widget({}, group, direction); tmp != 0) {
                     return tmp;
                 }
 
@@ -360,7 +360,7 @@ public:
                     // Try the first widget that does accept keyboard focus.
                     found = true;
 
-                } else if (tmp != nullptr) {
+                } else if (tmp != 0) {
                     // Return the next widget that was found in the child-widget.
                     return tmp;
                 }
@@ -375,7 +375,7 @@ public:
             return current_keyboard_widget;
         }
 
-        return std::nullopt;
+        return {};
     }
 
     using widget_intf::scroll_to_show;

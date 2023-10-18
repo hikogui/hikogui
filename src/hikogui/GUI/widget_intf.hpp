@@ -31,9 +31,12 @@ public:
      */
     hi::notifier<void()> notifier;
 
-    virtual ~widget_intf() = default;
+    virtual ~widget_intf()
+    {
+        release_widget_id(id);
+    }
 
-    widget_intf(widget_intf *parent) noexcept : id(narrow_cast<uint32_t>(++global_counter<"widget::id">)), parent(parent) {}
+    widget_intf(widget_intf *parent) noexcept : id(make_widget_id()), parent(parent) {}
 
     /** Subscribe a callback to be called when an action is completed by the widget.
     */
