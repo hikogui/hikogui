@@ -29,7 +29,7 @@ hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_Get
         return std::unexpected{code};
     }
 
-    return win32_WideCharToMultiByte(name);;
+    return win32_WideCharToMultiByte(name);
 }
 
 }}

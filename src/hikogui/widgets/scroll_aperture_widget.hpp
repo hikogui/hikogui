@@ -31,13 +31,9 @@ public:
     observer<float> offset_x;
     observer<float> offset_y;
 
-    scroll_aperture_widget(widget *parent) noexcept : super(parent)
+    scroll_aperture_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(parent);
-
-        // The aperture-widget will not draw itself, only its selected content.
-        semantic_layer = parent->semantic_layer;
 
         _content_width_cbt = content_width.subscribe([&](auto...) {
             ++global_counter<"scroll_aperture_widget:content_width:relayout">;
@@ -143,7 +139,7 @@ public:
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
-        _content->set_layout(context.transform(_content_shape, 1.0f, context.rectangle()));
+        _content->set_layout(context.transform(_content_shape, transform_command::level, context.rectangle()));
     }
 
     void draw(draw_context const& context) noexcept override

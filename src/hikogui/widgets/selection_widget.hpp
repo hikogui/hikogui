@@ -13,7 +13,7 @@
 #include "overlay_widget.hpp"
 #include "scroll_widget.hpp"
 #include "grid_widget.hpp"
-#include "menu_button_widget.hpp"
+#include "radio_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "../observer/module.hpp"
 #include "../macros.hpp"
@@ -47,39 +47,58 @@ public:
     using super = widget;
     using delegate_type = selection_delegate;
 
-    std::shared_ptr<delegate_type> delegate;
+    struct attributes_type {
+        /** The label to show when nothing is selected.
+         */
+        observer<label> off_label;
 
-    /** The label to show when nothing is selected.
-     */
-    observer<label> off_label;
+        observer<alignment> alignment = hi::alignment::middle_left();
 
-    /** How the label and icon are aligned. Different layouts:
-     *  - `alignment::top_left`: icon and text are inline with each other, with
-     *    the icon in the top-left corner.
-     *  - `alignment::top_right`: icon and text are inline with each other, with
-     *    the icon in the top-right corner.
-     *  - `alignment::middle_left`: icon and text are inline with each other, with
-     *    the icon in the middle-left.
-     *  - `alignment::middle_right`: icon and text are inline with each other, with
-     *    the icon in the middle-right.
-     *  - `alignment::bottom_left`: icon and text are inline with each other, with
-     *    the icon in the bottom-left.
-     *  - `alignment::bottom_right`: icon and text are inline with each other, with
-     *    the icon in the bottom-right.
-     *  - `alignment::top_center`: Larger icon above the text, both center aligned.
-     *  - `alignment::bottom_center`: Larger icon below the text, both center aligned.
-     *  - `alignment::middle_center`: text drawn across a large icon. Should only be
-     *    used with a `pixmap` icon.
-     */
-    observer<alignment> alignment = hi::alignment::middle_flush();
+        /** The text style to display the label's text in and color of the label's (non-color) icon.
+         */
+        observer<semantic_text_style> text_style = semantic_text_style::label;
 
-    /** The text style to display the label's text in and color of the label's (non-color) icon.
-     */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
+        attributes_type(attributes_type const&) noexcept = default;
+        attributes_type(attributes_type&&) noexcept = default;
+        attributes_type& operator=(attributes_type const&) noexcept = default;
+        attributes_type& operator=(attributes_type&&) noexcept = default;
+
+        template<selection_widget_attribute... Attributes>
+        explicit attributes_type(Attributes&&...attributes) noexcept
+        {
+            set_attributes(std::forward<Attributes>(attributes)...);
+        }
+
+        void set_attributes() noexcept {}
+        void set_attributes(selection_widget_attribute auto&& first, selection_widget_attribute auto&&...rest) noexcept
+        {
+            if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+                off_label = hi_forward(first);
+            } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+                alignment = hi_forward(first);
+            } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+                text_style = hi_forward(first);
+            } else {
+                hi_static_no_default();
+            }
+
+            set_attributes(hi_forward(rest)...);
+        }
+    };
+
+    attributes_type attributes;
+
+    not_null<std::shared_ptr<delegate_type>> delegate;
+
+    template<typename... Args>
+    [[nodiscard]] static not_null<std::shared_ptr<delegate_type>> make_default_delegate(Args &&...args)
+        requires requires { make_shared_ctad_not_null<default_selection_delegate>(std::forward<Args>(args)...); }
+    {
+        return make_shared_ctad_not_null<default_selection_delegate>(std::forward<Args>(args)...);
+    }
 
     ~selection_widget()
     {
-        hi_assert_not_null(delegate);
         delegate->deinit(*this);
     }
 
@@ -88,53 +107,36 @@ public:
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      */
-    selection_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), delegate(std::move(delegate))
+    selection_widget(not_null<widget_intf const *> parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+        super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        hi_assert_not_null(this->delegate);
-
-        _current_label_widget = std::make_unique<label_widget>(this, alignment, text_style);
+        _current_label_widget = std::make_unique<label_widget>(this, this->attributes.alignment, this->attributes.text_style);
         _current_label_widget->mode = widget_mode::invisible;
-        _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, semantic_text_style::placeholder);
+        _off_label_widget = std::make_unique<label_widget>(this, this->attributes.off_label, this->attributes.alignment, semantic_text_style::placeholder);
 
         _overlay_widget = std::make_unique<overlay_widget>(this);
         _overlay_widget->mode = widget_mode::invisible;
         _scroll_widget = &_overlay_widget->emplace<vertical_scroll_widget>();
         _grid_widget = &_scroll_widget->emplace<grid_widget>();
 
-        _off_label_cbt = this->off_label.subscribe([&](auto...) {
+        _off_label_cbt = this->attributes.off_label.subscribe([&](auto...) {
             ++global_counter<"selection_widget:off_label:constrain">;
             process_event({gui_event_type::window_reconstrain});
         });
 
-        _delegate_cbt = this->delegate->subscribe([&] {
-            _notification_from_delegate = true;
-            ++global_counter<"selection_widget:delegate:constrain">;
-            process_event({gui_event_type::window_reconstrain});
-        });
+        _delegate_options_cbt = this->delegate->subscribe_on_options([&] {
+            update_options();
+        }, callback_flags::main);
+        _delegate_options_cbt();
+
+        _delegate_value_cbt = this->delegate->subscribe_on_value([&] {
+            update_value();
+        }, callback_flags::main);
+        _delegate_value_cbt();
 
         this->delegate->init(*this);
     }
 
-    /** Construct a selection widget with a delegate.
-     *
-     * @param parent The owner of the selection widget.
-     * @param delegate The delegate which will control the selection widget.
-     * @param first_attribute First of @a attributes.
-     * @param attributes Different attributes used to configure the label's on the selection box:
-     *                   a `label`, `alignment` or `semantic_text_style`. If an label is passed
-     *                   it is used as the label to show in the off-state.
-     */
-    selection_widget(
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        selection_widget_attribute auto&& first_attribute,
-        selection_widget_attribute auto&&...attributes) noexcept :
-        selection_widget(parent, std::move(delegate))
-    {
-        set_attributes(hi_forward(first_attribute), hi_forward(attributes)...);
-    }
-
     /** Construct a selection widget which will monitor an option list and a
      * value.
      *
@@ -148,56 +150,22 @@ public:
      *                   it is used as the label to show in the off-state.
      */
     template<
-        different_from<std::shared_ptr<delegate_type>> Value,
+        incompatible_with<attributes_type> Value,
         forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
         selection_widget_attribute... Attributes>
     selection_widget(
-        widget *parent,
+        not_null<widget_intf const *> parent,
         Value&& value,
         OptionList&& option_list,
         Attributes&&...attributes) noexcept requires requires
     {
-        make_default_selection_delegate(hi_forward(value), hi_forward(option_list));
+        make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list));
+        attributes_type{std::forward<Attributes>(attributes)...};
     } :
         selection_widget(
             parent,
-            make_default_selection_delegate(hi_forward(value), hi_forward(option_list)),
-            hi_forward(attributes)...)
-    {
-    }
-
-    /** Construct a selection widget which will monitor an option list and a
-     * value.
-     *
-     * @param parent The owner of the selection widget.
-     * @param value The value or observer value to monitor.
-     * @param option_list An vector or an observer vector of pairs of keys and
-     *                    labels. The keys are of the same type as the @a value.
-     *                    The labels are of type `label`.
-     * @param off_value An optional off-value. This value is used to determine which
-     *             value yields an 'off' state.
-     * @param attributes Different attributes used to configure the label's on the selection box:
-     *                   a `label`, `alignment` or `semantic_text_style`. If an label is passed
-     *                   it is used as the label to show in the off-state.
-     */
-    template<
-        different_from<std::shared_ptr<delegate_type>> Value,
-        forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
-        forward_of<observer<observer_decay_t<Value>>> OffValue,
-        selection_widget_attribute... Attributes>
-    selection_widget(
-        widget *parent,
-        Value&& value,
-        OptionList&& option_list,
-        OffValue&& off_value,
-        Attributes&&...attributes) noexcept requires requires
-    {
-        make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value));
-    } :
-        selection_widget(
-            parent,
-            make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value)),
-            hi_forward(attributes)...)
+            attributes_type{std::forward<Attributes>(attributes)...},
+            make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list)))
     {
     }
 
@@ -214,10 +182,6 @@ public:
         hi_assert_not_null(_off_label_widget);
         hi_assert_not_null(_current_label_widget);
         hi_assert_not_null(_overlay_widget);
-
-        if (_notification_from_delegate.exchange(false)) {
-            repopulate_options();
-        }
 
         _layout = {};
         _off_label_constraints = _off_label_widget->update_constraints();
@@ -236,7 +200,7 @@ public:
         r.maximum.width() = std::max(r.maximum.width(), _overlay_constraints.maximum.width() + extra_size.width());
         r.margins = theme().margin();
         r.padding = theme().margin();
-        r.alignment = resolve(*alignment, os_settings::left_to_right());
+        r.alignment = resolve(*attributes.alignment, os_settings::left_to_right());
         hi_axiom(r.holds_invariant());
         return r;
     }
@@ -286,7 +250,7 @@ public:
         hilet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
         hilet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
         _overlay_shape = box_shape{_overlay_constraints, overlay_rectangle, theme().baseline_adjustment()};
-        _overlay_widget->set_layout(context.transform(_overlay_shape, 20.0f));
+        _overlay_widget->set_layout(context.transform(_overlay_shape, transform_command::overlay));
 
         _off_label_widget->set_layout(context.transform(_off_label_shape));
         _current_label_widget->set_layout(context.transform(_current_label_shape));
@@ -294,6 +258,8 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
+        animate_overlay(context.display_time_point);
+
         if (*mode > widget_mode::invisible) {
             if (overlaps(context, layout())) {
                 draw_outline(context);
@@ -313,7 +279,7 @@ public:
     {
         switch (event.type()) {
         case gui_event_type::mouse_up:
-            if (*mode >= widget_mode::partial and _has_options and layout().rectangle().contains(event.mouse().position)) {
+            if (*mode >= widget_mode::partial and not delegate->empty(*this) and layout().rectangle().contains(event.mouse().position)) {
                 return handle_event(gui_event_type::gui_activate);
             }
             return true;
@@ -322,21 +288,17 @@ public:
             // Handle gui_active_next so that the next widget will NOT get keyboard focus.
             // The previously selected item needs the get keyboard focus instead.
         case gui_event_type::gui_activate:
-            if (*mode >= widget_mode::partial and _has_options and not _selecting) {
-                start_selecting();
+            if (*mode >= widget_mode::partial and not delegate->empty(*this) and overlay_closed()) {
+                open_overlay();
             } else {
-                stop_selecting();
+                close_overlay();
             }
             ++global_counter<"selection_widget:gui_activate:relayout">;
             process_event({gui_event_type::window_relayout});
             return true;
 
         case gui_event_type::gui_cancel:
-            if (*mode >= widget_mode::partial and _has_options and _selecting) {
-                stop_selecting();
-            }
-            ++global_counter<"selection_widget:gui_cancel:relayout">;
-            process_event({gui_event_type::window_relayout});
+            close_overlay();
             return true;
 
         default:;
@@ -353,7 +315,7 @@ public:
             auto r = _overlay_widget->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{id, _layout.elevation, _has_options ? hitbox_type::button : hitbox_type::_default});
+                r = std::max(r, hitbox{id, _layout.elevation, not delegate->empty(*this) ? hitbox_type::button : hitbox_type::_default});
             }
 
             return r;
@@ -365,14 +327,14 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and _has_options;
+        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and not delegate->empty(*this);
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and _has_options and _selecting) {
+        if (*mode >= widget_mode::partial and not overlay_closed()) {
             return theme().color(semantic_color::accent);
         } else {
             return super::focus_color();
@@ -381,7 +343,18 @@ public:
 
     /// @endprivatesection
 private:
-    std::atomic<bool> _notification_from_delegate = true;
+    enum class overlay_state_type {
+        open,
+        closing,
+        closed
+    };
+
+    constexpr static std::chrono::nanoseconds _overlay_close_delay = std::chrono::milliseconds(200);
+
+    overlay_state_type _overlay_state = overlay_state_type::closed;
+    utc_nanoseconds _overlay_close_start = {};
+
+    bool _notification_from_delegate = true;
 
     std::unique_ptr<label_widget> _current_label_widget;
     box_constraints _current_label_constraints;
@@ -396,9 +369,6 @@ private:
     font_book::font_glyph_type _chevrons_glyph;
     aarectangle _chevrons_rectangle;
 
-    bool _selecting = false;
-    bool _has_options = false;
-
     std::unique_ptr<overlay_widget> _overlay_widget;
     box_constraints _overlay_constraints;
     box_shape _overlay_shape;
@@ -406,120 +376,92 @@ private:
     vertical_scroll_widget *_scroll_widget = nullptr;
     grid_widget *_grid_widget = nullptr;
 
-    std::vector<menu_button_widget *> _menu_button_widgets;
-
-    callback<void()> _delegate_cbt;
+    callback<void()> _delegate_options_cbt;
+    callback<void()> _delegate_value_cbt;
     callback<void(label)> _off_label_cbt;
-    std::vector<callback<void()>> _menu_button_tokens;
 
-    void set_attributes() noexcept {}
-    void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
+    [[nodiscard]] bool overlay_closed() const noexcept
     {
-        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
-            off_label = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
-        } else {
-            hi_static_no_default();
-        }
-
-        set_attributes(hi_forward(rest)...);
+        return _overlay_state == overlay_state_type::closed;
     }
 
-    [[nodiscard]] menu_button_widget const *get_first_menu_button() const noexcept
+    void open_overlay() noexcept
     {
         hi_axiom(loop::main().on_thread());
 
-        if (ssize(_menu_button_widgets) != 0) {
-            return _menu_button_widgets.front();
-        } else {
-            return nullptr;
+        if (auto focus_id = delegate->keyboard_focus_id(*this)) {
+            _overlay_state = overlay_state_type::open;
+            _overlay_widget->mode = widget_mode::enabled;
+            process_event(gui_event::window_set_keyboard_target(*focus_id, keyboard_focus_group::menu));
+            request_redraw();
         }
     }
 
-    [[nodiscard]] menu_button_widget const *get_selected_menu_button() const noexcept
+    void close_overlay() noexcept
     {
         hi_axiom(loop::main().on_thread());
 
-        for (hilet& button : _menu_button_widgets) {
-            if (button->state() == button_state::on) {
-                return button;
+        if (_overlay_state == overlay_state_type::open) {
+            _overlay_state = overlay_state_type::closing;
+            _overlay_close_start = std::chrono::utc_clock::now();
+            request_redraw();
+        }
+    }
+
+    void force_close_overlay() noexcept
+    {
+        if (_overlay_state != overlay_state_type::closed) {
+            _overlay_state = overlay_state_type::closed;
+            _overlay_widget->mode = widget_mode::invisible;
+            request_redraw();
+        }
+    }
+
+    void animate_overlay(utc_nanoseconds display_time_point) noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+
+        switch (_overlay_state) {
+        case overlay_state_type::open:
+            break;
+        case overlay_state_type::closing:
+            if (display_time_point >= _overlay_close_start + _overlay_close_delay) {
+                force_close_overlay();
+            } else {
+                request_redraw();
             }
+            break;
+        case overlay_state_type::closed:
+            break;
+        default:
+            hi_no_default();
         }
-        return nullptr;
     }
 
-    void start_selecting() noexcept
+    void update_options() noexcept
     {
-        hi_axiom(loop::main().on_thread());
-
-        _selecting = true;
-        _overlay_widget->mode = widget_mode::enabled;
-        if (auto selected_menu_button = get_selected_menu_button()) {
-            process_event(gui_event::window_set_keyboard_target(selected_menu_button->id, keyboard_focus_group::menu));
-
-        } else if (auto first_menu_button = get_first_menu_button()) {
-            process_event(gui_event::window_set_keyboard_target(first_menu_button->id, keyboard_focus_group::menu));
-        }
-
-        request_redraw();
-    }
-
-    void stop_selecting() noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        _selecting = false;
-        _overlay_widget->mode = widget_mode::invisible;
-        request_redraw();
-    }
-
-    void repopulate_options() noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(delegate);
-
         _grid_widget->clear();
-        _menu_button_widgets.clear();
-        _menu_button_tokens.clear();
-
-        auto [options, selected] = delegate->options_and_selected(*this);
-
-        _has_options = size(options) > 0;
-
-        // If any of the options has a an icon, all of the options should show the icon.
-        auto show_icon = false;
-        for (hilet& label : options) {
-            show_icon |= to_bool(label.icon);
+        for (auto i = 0_uz; i != delegate->size(*this); ++i) {
+            _grid_widget->push_bottom(delegate->make_option_widget(*this, i));
         }
 
-        decltype(selected) index = 0;
-        for (hilet& label : options) {
-            auto menu_button = &_grid_widget->emplace_bottom<menu_button_widget>(selected, index, label, alignment, text_style);
+        ++global_counter<"selection_widget:update_options:constrain">;
+        process_event({gui_event_type::window_reconstrain});
+    }
 
-            _menu_button_tokens.push_back(menu_button->pressed.subscribe(
-                [this, index] {
-                    hi_assert_not_null(delegate);
-                    delegate->set_selected(*this, index);
-                    stop_selecting();
-                },
-                callback_flags::main));
+    void update_value() noexcept
+    {
+        if (auto selected_label = delegate->selected_label(*this)) {
+            _off_label_widget->mode = widget_mode::invisible;
+            _current_label_widget->label = *selected_label;
+            _current_label_widget->mode = widget_mode::display;
 
-            _menu_button_widgets.push_back(menu_button);
-
-            ++index;
-        }
-
-        if (selected == -1) {
+        } else {
             _off_label_widget->mode = widget_mode::display;
             _current_label_widget->mode = widget_mode::invisible;
-
-        } else {
-            _off_label_widget->mode = widget_mode::invisible;
-            _current_label_widget->label = options[selected];
-            _current_label_widget->mode = widget_mode::display;
         }
+
+        close_overlay();
     }
 
     void draw_outline(draw_context const& context) noexcept

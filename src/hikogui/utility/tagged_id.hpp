@@ -83,6 +83,8 @@ public:
         return std::hash<value_type>{}(value);
     }
 
+    [[nodiscard]] constexpr auto operator<=>(tagged_id const &) const noexcept = default;
+
     [[nodiscard]] constexpr bool operator==(tagged_id const&) const noexcept = default;
 
     [[nodiscard]] constexpr bool operator==(nullptr_t) const noexcept

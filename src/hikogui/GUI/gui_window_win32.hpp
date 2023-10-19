@@ -283,8 +283,16 @@ public:
             draw_context.subpixel_orientation = subpixel_orientation();
             draw_context.active = active;
 
-            if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
+            switch (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
+            case animator_state::idle:
+                break;
+            case animator_state::running:
                 this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
+                break;
+            case animator_state::end:
+                break;
+            default:
+                hi_no_default();
             }
             draw_context.saturation = _animated_active.current_value();
 
@@ -561,7 +569,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (_mouse_target_id) {
+        if (_mouse_target_id != 0) {
             if (new_target_id == _mouse_target_id) {
                 // Focus does not change.
                 return;
@@ -571,11 +579,11 @@ public:
             send_events_to_widget(_mouse_target_id, std::vector{gui_event{gui_event_type::mouse_exit}});
         }
 
-        if (new_target_id) {
+        if (new_target_id != 0) {
             _mouse_target_id = new_target_id;
             send_events_to_widget(new_target_id, std::vector{gui_event::make_mouse_enter(position)});
         } else {
-            _mouse_target_id = std::nullopt;
+            _mouse_target_id = {};
         }
     }
 
@@ -620,7 +628,7 @@ public:
             _keyboard_target_id = new_target_widget->id;
             send_events_to_widget(_keyboard_target_id, std::vector{gui_event{gui_event_type::keyboard_enter}});
         } else {
-            _keyboard_target_id = std::nullopt;
+            _keyboard_target_id = {};
         }
     }
 
@@ -636,12 +644,15 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        auto tmp = _widget->find_next_widget(start_widget, group, direction);
-        if (tmp == start_widget) {
-            // Could not a next widget, loop around.
+        if (auto tmp = _widget->find_next_widget(start_widget, group, direction); tmp != start_widget) {
+            update_keyboard_target(tmp, group);
+
+        } else if (group == keyboard_focus_group::normal) {
+            // Could not find a next widget, loop around.
+            // menu items should not loop back.
             tmp = _widget->find_next_widget({}, group, direction);
+            update_keyboard_target(tmp, group);
         }
-        update_keyboard_target(tmp, group);
     }
 
     /** Change the keyboard focus to the given, previous or next widget.
@@ -796,13 +807,11 @@ public:
      *
      * It may also be called from within the `event_handle()` of widgets.
      */
-    bool process_event(gui_event const& event) noexcept
+    bool process_event(gui_event event) noexcept
     {
         using enum gui_event_type;
 
         hi_axiom(loop::main().on_thread());
-
-        auto events = std::vector<gui_event>{event};
 
         switch (event.type()) {
         case window_redraw:
@@ -844,7 +853,7 @@ public:
         case window_set_keyboard_target:
             {
                 hilet& target = event.keyboard_target();
-                if (target.widget_id == nullptr) {
+                if (target.widget_id == 0) {
                     update_keyboard_target(target.group, target.direction);
                 } else if (target.direction == keyboard_focus_direction::here) {
                     update_keyboard_target(target.widget_id, target.group);
@@ -862,25 +871,28 @@ public:
             update_mouse_target({});
             break;
 
+        case mouse_up:
+        case mouse_drag:
         case mouse_down:
         case mouse_move:
-            {
-                hilet hitbox = _widget->hitbox_test(event.mouse().position);
-                update_mouse_target(hitbox.widget_id, event.mouse().position);
-
-                if (event == mouse_down) {
-                    update_keyboard_target(hitbox.widget_id, keyboard_focus_group::all);
-                }
+            event.mouse().hitbox = _widget->hitbox_test(event.mouse().position);
+            if (event == mouse_down or event == mouse_move) {
+                update_mouse_target(event.mouse().hitbox.widget_id, event.mouse().position);
             }
-            break;
-
-        case keyboard_down:
-            for (auto& e : translate_keyboard_event(event)) {
-                events.push_back(e);
+            if (event == mouse_down) {
+                update_keyboard_target(event.mouse().hitbox.widget_id, keyboard_focus_group::all);
             }
             break;
 
         default:;
+        }
+
+        // Translate keyboard events, using the keybindings.
+        auto events = std::vector<gui_event>{event};
+        if (event.type() == keyboard_down) {
+            for (auto& e : translate_keyboard_event(event)) {
+                events.push_back(e);
+            }
         }
 
         for (auto& event_ : events) {
@@ -893,10 +905,9 @@ public:
             }
         }
 
-        hilet handled = [&] {
-            hilet target_id = event.variant() == gui_event_variant::mouse ? _mouse_target_id : _keyboard_target_id;
-            return send_events_to_widget(target_id, events);
-        }();
+        // Send the event to the correct widget.
+        hilet handled = send_events_to_widget(
+            events.front().variant() == gui_event_variant::mouse ? _mouse_target_id : _keyboard_target_id, events);
 
         // Intercept the keyboard generated escape.
         // A keyboard generated escape should always remove keyboard focus.
@@ -992,7 +1003,7 @@ private:
      */
     bool send_events_to_widget(widget_id target_id, std::vector<gui_event> const& events) noexcept
     {
-        if (not target_id) {
+        if (target_id == 0) {
             // If there was no target, send the event to the window's widget.
             target_id = _widget->id;
         }

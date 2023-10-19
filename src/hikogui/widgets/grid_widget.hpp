@@ -47,13 +47,8 @@ public:
      *
      * @param parent The parent widget.
      */
-    grid_widget(widget *parent) noexcept : widget(parent)
+    grid_widget(not_null<widget_intf const *> parent) noexcept : widget(parent)
     {
-        hi_axiom(loop::main().on_thread());
-
-        if (parent) {
-            semantic_layer = parent->semantic_layer;
-        }
     }
 
     /* Add a widget to the grid.
@@ -304,7 +299,7 @@ public:
         }
 
         for (hilet& cell : _grid) {
-            cell.value->set_layout(context.transform(cell.shape, 0.0f));
+            cell.value->set_layout(context.transform(cell.shape, transform_command::level));
         }
     }
 

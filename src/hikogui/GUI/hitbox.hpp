@@ -56,7 +56,7 @@ public:
 
     [[nodiscard]] constexpr friend std::strong_ordering operator<=>(hitbox const& lhs, hitbox const& rhs) noexcept
     {
-        if ((lhs.widget_id == nullptr) == (rhs.widget_id == nullptr)) {
+        if ((lhs.widget_id == 0) == (rhs.widget_id == 0)) {
             // Either both are widgets, or both are not widgets.
             hilet elevation_ordering = lhs._elevation <=> rhs._elevation;
             if (elevation_ordering == std::partial_ordering::equivalent) {
@@ -68,7 +68,7 @@ public:
             } else {
                 hi_no_default();
             }
-        } else if (lhs.widget_id == nullptr) {
+        } else if (lhs.widget_id == 0) {
             // If lhs is not a widget than it is less.
             return std::strong_ordering::less;
         } else {

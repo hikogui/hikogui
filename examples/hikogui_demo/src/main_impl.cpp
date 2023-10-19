@@ -84,16 +84,17 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
         "A1",
         txt("This is a [he-IL]\xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92[.].\nAnd another sentence. One more:"),
         alignment::top_right());
-    grid.emplace<toggle_widget>("B1", preferences.toggle_value, txt("true"), txt("false"), txt("other"));
+    grid.emplace<toggle_with_label_widget>("B1", preferences.toggle_value, txt("true"), txt("false"), txt("other"));
 
     grid.emplace<label_widget>("A2", txt("These is a disabled checkbox:"), alignment::top_right());
-    auto& checkbox2 = grid.emplace<checkbox_widget>(
+    auto& checkbox2 = grid.emplace<checkbox_with_label_widget>(
         "B2", preferences.radio_value, 2, txt("Checkbox, with a pretty large label."), txt("off"), txt("other"));
+    //auto& checkbox2 = grid.emplace<checkbox_widget>("B2", preferences.radio_value, 2);
 
     grid.emplace<label_widget>("A3", txt("These are radio buttons:"), alignment::top_right());
-    grid.emplace<radio_button_widget>("B3", preferences.radio_value, 0, txt("Radio 1"));
-    grid.emplace<radio_button_widget>("B4", preferences.radio_value, 1, txt("Radio 2 (on)"), txt("Radio 2 (off)"));
-    grid.emplace<radio_button_widget>("B5", preferences.radio_value, 2, txt("Radio 3"));
+    grid.emplace<radio_button_with_label_widget>("B3", preferences.radio_value, 0, txt("Radio 1"));
+    grid.emplace<radio_button_with_label_widget>("B4", preferences.radio_value, 1, txt("Radio 2 (on)"), txt("Radio 2 (off)"));
+    grid.emplace<radio_button_with_label_widget>("B5", preferences.radio_value, 2, txt("Radio 3"));
 
     auto option_list = std::vector{
         std::pair{0, label{txt("first")}},
@@ -158,7 +159,7 @@ hi::task<> main_window(my_preferences& preferences)
     auto preferences_label = label{elusive_icon::Wrench, txt("Preferences")};
     hilet& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
 
-    top->content().emplace_bottom<toggle_widget>(preferences.toggle_value);
+    top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
     hilet& hello_world_button = top->content().emplace_bottom<momentary_button_widget>(txt("Hello world AV"));
     hilet& vma_dump_button = top->content().emplace_bottom<momentary_button_widget>(txt("vma\ncalculate stats"));
 
@@ -166,9 +167,9 @@ hi::task<> main_window(my_preferences& preferences)
 
     while (true) {
         hilet result = co_await when_any(
-            preferences_button.pressed,
-            vma_dump_button.pressed,
-            hello_world_button.pressed,
+            preferences_button,
+            vma_dump_button,
+            hello_world_button,
             preferences.toggle_value,
             window.closing);
 

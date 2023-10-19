@@ -27,16 +27,16 @@ class text_delegate {
 public:
     virtual ~text_delegate() = default;
 
-    virtual void init(text_widget& sender) noexcept {}
-    virtual void deinit(text_widget& sender) noexcept {}
+    virtual void init(widget_intf const& sender) noexcept {}
+    virtual void deinit(widget_intf const& sender) noexcept {}
 
     /** Read text as a string of graphemes.
      */
-    [[nodiscard]] virtual gstring read(text_widget& sender) noexcept = 0;
+    [[nodiscard]] virtual gstring read(widget_intf const& sender) noexcept = 0;
 
     /** Write text from a string of graphemes.
      */
-    virtual void write(text_widget& sender, gstring const& text) noexcept = 0;
+    virtual void write(widget_intf const& sender, gstring const& text) noexcept = 0;
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
@@ -80,12 +80,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    [[nodiscard]] gstring read(widget_intf const& sender) noexcept override
     {
         return to_gstring(std::string{*value});
     }
 
-    void write(text_widget& sender, gstring const& text) noexcept override
+    void write(widget_intf const& sender, gstring const& text) noexcept override
     {
         hi_no_default();
     }
@@ -116,12 +116,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    [[nodiscard]] gstring read(widget_intf const& sender) noexcept override
     {
         return to_gstring(*value);
     }
 
-    void write(text_widget& sender, gstring const& text) noexcept override
+    void write(widget_intf const& sender, gstring const& text) noexcept override
     {
         *value.copy() = to_string(text);
     }
@@ -152,12 +152,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    [[nodiscard]] gstring read(widget_intf const& sender) noexcept override
     {
         return *value;
     }
 
-    void write(text_widget& sender, gstring const& text) noexcept override
+    void write(widget_intf const& sender, gstring const& text) noexcept override
     {
         *value.copy() = text;
     }
@@ -188,12 +188,12 @@ public:
         });
     }
 
-    [[nodiscard]] gstring read(text_widget& sender) noexcept override
+    [[nodiscard]] gstring read(widget_intf const& sender) noexcept override
     {
         return value.read()->translate();
     }
 
-    void write(text_widget& sender, gstring const& text) noexcept override
+    void write(widget_intf const& sender, gstring const& text) noexcept override
     {
         hi_no_default();
     }

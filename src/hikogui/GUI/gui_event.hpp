@@ -17,6 +17,7 @@
 #include "keyboard_focus_group.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "mouse_buttons.hpp"
+#include "hitbox.hpp"
 #include "../unicode/unicode.hpp"
 #include "../geometry/module.hpp"
 #include "../time/module.hpp"
@@ -30,6 +31,10 @@ namespace hi { inline namespace v1 {
  * @ingroup GUI
  */
 struct mouse_event_data {
+    /** Information about which widget is underneath the mouse pointer.
+     */ 
+    hi::hitbox hitbox = {};
+
     /** The current position of the mouse pointer.
      *
      * @note The event system will convert these in widget-local coordinates.

@@ -15,6 +15,7 @@
 #include <atomic>
 #include <memory>
 #include <format>
+#include <mutex>
 
 hi_export_module(hikogui.concurrency.unfair_mutex : impl);
 

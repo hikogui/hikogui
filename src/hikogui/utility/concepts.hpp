@@ -33,12 +33,6 @@ template<typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
 
 template<typename T>
-concept pointer = std::is_pointer_v<T>;
-
-template<typename T>
-concept reference = std::is_reference_v<T>;
-
-template<typename T>
 concept lvalue_reference = std::is_lvalue_reference_v<T>;
 
 template<typename T>
@@ -47,8 +41,19 @@ concept rvalue_reference = std::is_rvalue_reference_v<T>;
 template<typename T>
 concept trivially_copyable = std::is_trivially_copyable_v<T>;
 
+/** Different from
+ * 
+ * Not std::same_as.
+ */
 template<typename Context, typename Expected>
-concept different_from = is_different_v<Context, Expected>;
+concept different_from = not std::same_as<Context, Expected>;
+
+/** Incompatible with another type
+ * 
+ * Not std::convertible_to.
+ */
+template<typename Context, typename Expected>
+concept incompatible_with = not std::convertible_to<Context, Expected>;
 
 template<typename BaseType, typename DerivedType>
 concept base_of = std::is_base_of_v<BaseType, DerivedType>;
@@ -133,5 +138,26 @@ concept forward_of = is_forward_of_v<Context, Expected, OtherExpected...>;
  */
 template<typename Context>
 concept byte_like = is_byte_like_v<Context>;
+
+/** True if T can be assigned with a nullptr.
+ */
+template<typename T>
+concept nullable = requires (T &a) { a = nullptr; };
+
+/** True if T is dereferenceable.
+ * 
+ * Either it is a pointer, or it implements both operator*() and operator->().
+ */
+template<typename T>
+concept dereferenceable = std::is_pointer_v<T> or requires (T &a)
+{
+    a.operator*();
+    a.operator->();
+};
+
+/** True if T is both nullable and dereferenceable.
+ */
+template<typename T>
+concept nullable_pointer = nullable<T> and dereferenceable<T>;
 
 }} // namespace hi::v1

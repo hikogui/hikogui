@@ -38,7 +38,7 @@ public:
 
     virtual ~audio_device_widget() {}
 
-    audio_device_widget(widget *parent) noexcept : super(parent)
+    audio_device_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
         _grid_widget = std::make_unique<grid_widget>(this);
         _device_selection_widget = &_grid_widget->emplace<selection_widget>("A1", device_id, _device_list);
@@ -66,7 +66,7 @@ public:
             _grid_shape = {_grid_constraints, grid_rectangle, theme().baseline_adjustment()};
         }
 
-        _grid_widget->set_layout(context.transform(_grid_shape));
+        _grid_widget->set_layout(context.transform(_grid_shape, transform_command::level));
     }
 
     void draw(draw_context const& context) noexcept override

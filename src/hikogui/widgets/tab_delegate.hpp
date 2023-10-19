@@ -22,12 +22,12 @@ class tab_widget;
 class tab_delegate {
 public:
     virtual ~tab_delegate() = default;
-    virtual void init(tab_widget& sender) noexcept {}
-    virtual void deinit(tab_widget& sender) noexcept {}
+    virtual void init(widget_intf const& sender) noexcept {}
+    virtual void deinit(widget_intf const& sender) noexcept {}
 
-    virtual void add_tab(tab_widget& sender, std::size_t key, std::size_t index) noexcept {}
+    virtual void add_tab(widget_intf const& sender, std::size_t key, std::size_t index) noexcept {}
 
-    virtual std::ptrdiff_t index(tab_widget& sender) noexcept
+    virtual std::ptrdiff_t index(widget_intf const& sender) noexcept
     {
         return -1;
     }
@@ -69,13 +69,13 @@ public:
     }
 
     // XXX key should really be of value_type, not sure how to handle that with the tab_widget not knowing the type of key.
-    void add_tab(tab_widget& sender, std::size_t key, std::size_t index) noexcept override
+    void add_tab(widget_intf const& sender, std::size_t key, std::size_t index) noexcept override
     {
         hi_assert(not tab_indices.contains(key));
         tab_indices[key] = index;
     }
 
-    [[nodiscard]] std::ptrdiff_t index(tab_widget& sender) noexcept override
+    [[nodiscard]] std::ptrdiff_t index(widget_intf const& sender) noexcept override
     {
         auto it = tab_indices.find(*value);
         if (it == tab_indices.end()) {

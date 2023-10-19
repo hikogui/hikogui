@@ -86,7 +86,7 @@ public:
         delegate->deinit(*this);
     }
 
-    text_field_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    text_field_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), delegate(std::move(delegate)), _text()
     {
         hi_assert_not_null(this->delegate);
@@ -122,7 +122,7 @@ public:
     }
 
     text_field_widget(
-        widget *parent,
+        not_null<widget_intf const *> parent,
         std::shared_ptr<delegate_type> delegate,
         text_field_widget_attribute auto&&...attributes) noexcept :
         text_field_widget(parent, std::move(delegate))
@@ -137,8 +137,8 @@ public:
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
     text_field_widget(
-        widget *parent,
-        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        not_null<widget_intf const *> parent,
+        incompatible_with<std::shared_ptr<delegate_type>> auto&& value,
         text_field_widget_attribute auto&&...attributes) noexcept requires requires
     {
         make_default_text_field_delegate(hi_forward(value));
@@ -275,13 +275,13 @@ public:
             } else if (*_text_widget->focus) {
                 return theme().color(semantic_color::accent);
             } else if (*hover) {
-                return theme().color(semantic_color::border, semantic_layer + 1);
+                return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
-                return theme().color(semantic_color::border, semantic_layer);
+                return theme().color(semantic_color::border, _layout.layer);
             }
 
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
     /// @endprivatesection

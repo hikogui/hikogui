@@ -57,7 +57,7 @@ public:
     [[nodiscard]] color background_color() noexcept
     {
         hi_axiom(loop::main().on_thread());
-        return theme().color(semantic_color::fill, semantic_layer);
+        return theme().color(semantic_color::fill, _layout.layer);
     }
 
     /** Get a reference to the window's content widget.
@@ -110,24 +110,24 @@ public:
             _content_constraints.margins.left() + _content_constraints.maximum.width() + _content_constraints.margins.right());
 
         // clang-format off
-    r.minimum.height() =
-        _toolbar_constraints.margins.top() +
-        _toolbar_constraints.preferred.height() +
-        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
-        _content_constraints.minimum.height() +
-        _content_constraints.margins.bottom();
-    r.preferred.height() =
-        _toolbar_constraints.margins.top() +
-        _toolbar_constraints.preferred.height() +
-        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
-        _content_constraints.preferred.height() +
-        _content_constraints.margins.bottom();
-    r.maximum.height() =
-        _toolbar_constraints.margins.top() +
-        _toolbar_constraints.preferred.height() +
-        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
-        _content_constraints.maximum.height() +
-        _content_constraints.margins.bottom();
+        r.minimum.height() =
+            _toolbar_constraints.margins.top() +
+            _toolbar_constraints.preferred.height() +
+            std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
+            _content_constraints.minimum.height() +
+            _content_constraints.margins.bottom();
+        r.preferred.height() =
+            _toolbar_constraints.margins.top() +
+            _toolbar_constraints.preferred.height() +
+            std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
+            _content_constraints.preferred.height() +
+            _content_constraints.margins.bottom();
+        r.maximum.height() =
+            _toolbar_constraints.margins.top() +
+            _toolbar_constraints.preferred.height() +
+            std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
+            _content_constraints.maximum.height() +
+            _content_constraints.margins.bottom();
         // clang-format on
 
         // The operating system also has a minimum and maximum size, these sizes
@@ -146,6 +146,7 @@ public:
 
         return r;
     }
+    
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {

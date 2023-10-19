@@ -27,9 +27,31 @@ public:
      */
     widget_intf *parent = nullptr;
 
-    virtual ~widget_intf() = default;
+    /** Notifier which is called after an action is completed by a widget.
+     */
+    hi::notifier<void()> notifier;
 
-    widget_intf(widget_intf *parent) noexcept : id(narrow_cast<uint32_t>(++global_counter<"widget::id">)), parent(parent) {}
+    virtual ~widget_intf()
+    {
+        release_widget_id(id);
+    }
+
+    widget_intf(widget_intf const *parent) noexcept : id(make_widget_id()), parent(const_cast<widget_intf *>(parent)) {}
+
+    /** Subscribe a callback to be called when an action is completed by the widget.
+    */
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
+    {
+        return notifier.subscribe(std::forward<Func>(func), flags);
+    }
+
+    /** Await until an action is completed by the widget.
+     */
+    [[nodiscard]] auto operator co_await() const noexcept
+    {
+        return notifier.operator co_await();
+    }
 
     /** Set the window for this tree of widgets.
      *
@@ -161,10 +183,6 @@ public:
         widget_id current_keyboard_widget,
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept = 0;
-
-    [[nodiscard]] virtual widget_id find_first_widget(keyboard_focus_group group) const noexcept = 0;
-
-    [[nodiscard]] virtual widget_id find_last_widget(keyboard_focus_group group) const noexcept = 0;
 
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.

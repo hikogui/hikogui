@@ -59,7 +59,7 @@ public:
      *                   the first label is shown in on-state and the second for off-state.
      */
     toolbar_tab_button_widget(
-        widget *parent,
+        not_null<widget_intf const *> parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
         super(parent, std::move(delegate))
@@ -81,10 +81,10 @@ public:
      *                   the first label is shown in on-state and the second for off-state.
      */
     template<
-        different_from<std::shared_ptr<delegate_type>> Value,
+        incompatible_with<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
-    toolbar_tab_button_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    toolbar_tab_button_widget(not_null<widget_intf const *> parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires { make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)); }
         :
         toolbar_tab_button_widget(
@@ -158,8 +158,8 @@ private:
 
         // clang-format off
         auto button_color = (*hover or state() == button_state::on) ?
-            theme().color(semantic_color::fill, semantic_layer - 1) :
-            theme().color(semantic_color::fill, semantic_layer);
+            theme().color(semantic_color::fill, _layout.layer - 1) :
+            theme().color(semantic_color::fill, _layout.layer);
         // clang-format on
 
         hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());

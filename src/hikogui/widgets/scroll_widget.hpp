@@ -58,13 +58,9 @@ public:
      *
      * @param parent The parent widget.
      */
-    scroll_widget(widget *parent) noexcept : super(parent)
+    scroll_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(parent);
-
-        // The scroll-widget will not draw itself, only its selected content.
-        semantic_layer = parent->semantic_layer;
 
         auto aperture = std::make_unique<scroll_aperture_widget>(this);
         auto horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_type>(
@@ -148,7 +144,7 @@ public:
                 }
             }
 
-            cell.value->set_layout(context.transform(shape, 0.0f));
+            cell.value->set_layout(context.transform(shape, transform_command::level));
         }
     }
 

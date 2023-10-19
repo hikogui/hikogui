@@ -83,7 +83,7 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate to use to control the widget's data.
      */
-    text_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
+    text_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
     {
         mode = widget_mode::select;
 
@@ -136,7 +136,7 @@ public:
         this->delegate->init(*this);
     }
 
-    text_widget(widget *parent, std::shared_ptr<delegate_type> delegate, text_widget_attribute auto&&...attributes) noexcept :
+    text_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate, text_widget_attribute auto&&...attributes) noexcept :
         text_widget(parent, std::move(delegate))
     {
         set_attributes(hi_forward(attributes)...);
@@ -149,8 +149,8 @@ public:
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
     text_widget(
-        widget *parent,
-        different_from<std::shared_ptr<delegate_type>> auto&& text,
+        not_null<widget_intf const *> parent,
+        incompatible_with<std::shared_ptr<delegate_type>> auto&& text,
         text_widget_attribute auto&&...attributes) noexcept
         requires requires { make_default_text_delegate(hi_forward(text)); }
         : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...)

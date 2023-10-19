@@ -10,7 +10,7 @@ class minimum_widget : public hi::widget {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
-    minimum_widget(hi::widget *parent) noexcept : widget(parent) {}
+    minimum_widget(hi::not_null<widget_intf const *> parent) noexcept : widget(parent) {}
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.

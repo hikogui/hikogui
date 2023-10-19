@@ -46,14 +46,8 @@ public:
      *
      * @param parent The parent widget.
      */
-    overlay_widget(widget *parent) noexcept : super(parent)
+    overlay_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
-        if (parent) {
-            // The overlay-widget will reset the semantic_layer as it is the bottom
-            // layer of this virtual-window. However the draw-layer should be above
-            // any other widget drawn.
-            semantic_layer = 0;
-        }
     }
 
     void set_widget(std::unique_ptr<widget> new_widget) noexcept
@@ -107,7 +101,7 @@ public:
         _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment()};
 
         // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
-        _content->set_layout(_layout.transform(_content_shape, 1.0f, context.rectangle()));
+        _content->set_layout(_layout.transform(_content_shape, context.rectangle()));
     }
     void draw(draw_context const& context) noexcept override
     {
@@ -120,11 +114,11 @@ public:
     }
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme().color(semantic_color::fill, semantic_layer + 1);
+        return theme().color(semantic_color::fill, _layout.layer + 1);
     }
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        return theme().color(semantic_color::border, semantic_layer + 1);
+        return theme().color(semantic_color::border, _layout.layer + 1);
     }
     void scroll_to_show(hi::aarectangle rectangle) noexcept override
     {

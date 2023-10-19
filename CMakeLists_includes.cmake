@@ -88,6 +88,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_flags.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/global_state.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/id_factory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/concurrency.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/notifier.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/rcu.hpp
@@ -385,8 +386,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/safe_int.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/module.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observable.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observable_value.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed_value.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/shared_state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lexer.hpp
@@ -526,6 +527,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/memory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/misc.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/utility.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/not_null.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/numbers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/policy.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection.hpp
@@ -542,7 +544,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/icon_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/label_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/menu_button_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/widgets.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/momentary_button_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/overlay_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/radio_button_widget.hpp
@@ -568,6 +570,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_macos_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_win32_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_widget.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/with_label_widget.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/base.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/win32.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winnls.hpp>

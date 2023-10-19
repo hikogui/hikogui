@@ -52,13 +52,9 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate that will control this widget.
      */
-    tab_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
+    tab_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
     {
         hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(parent);
-
-        // The tab-widget will not draw itself, only its selected child.
-        semantic_layer = parent->semantic_layer;
 
         hi_assert_not_null(this->delegate);
         _delegate_cbt = this->delegate->subscribe([&] {
@@ -75,7 +71,7 @@ public:
      * @param value The value or observer value to monitor for which child widget
      *              to display.
      */
-    tab_widget(widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept
+    tab_widget(not_null<widget_intf const *> parent, incompatible_with<std::shared_ptr<delegate_type>> auto&& value) noexcept
         requires requires { make_default_tab_delegate(hi_forward(value)); }
         : tab_widget(parent, make_default_tab_delegate(hi_forward(value)))
     {

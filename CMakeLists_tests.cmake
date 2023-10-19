@@ -99,6 +99,7 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float16_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/math_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/not_null_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/type_traits_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/units_tests.cpp

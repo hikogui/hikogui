@@ -61,6 +61,7 @@
     {"key": "ctrl+a",           "command": "text_select_document"},
 
     // General GUI
+    {"key": "space",            "command": "gui_activate_stay"},
     {"key": "space",            "command": "gui_activate"},
     {"key": "enter",            "command": "gui_activate_next"},
     {"key": "enter",            "command": "gui_activate"},

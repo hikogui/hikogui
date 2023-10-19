@@ -78,7 +78,7 @@ public:
      * @param attributes Different attributes used to configure the label widget:
      *                   a `label`, `alignment` or `text_style`
      */
-    label_widget(widget *parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
+    label_widget(not_null<widget_intf const *> parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
     {
         set_attributes(hi_forward(attributes)...);
     }
@@ -150,7 +150,7 @@ public:
         }
 
         for (hilet& cell : _grid) {
-            cell.value->set_layout(context.transform(cell.shape, 0.0f));
+            cell.value->set_layout(context.transform(cell.shape, transform_command::level));
         }
     }
     void draw(draw_context const& context) noexcept override
@@ -200,7 +200,7 @@ private:
         set_attributes(hi_forward(rest)...);
     }
 
-    label_widget(widget *parent) noexcept : super(parent)
+    label_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
         mode = widget_mode::select;
 

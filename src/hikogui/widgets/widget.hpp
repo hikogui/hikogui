@@ -49,31 +49,6 @@ public:
      */
     observer<bool> focus = false;
 
-    /** The draw layer of the widget.
-     * The semantic layer is used mostly by the `draw()` function
-     * for selecting colors from the theme, to denote nesting widgets
-     * inside other widgets.
-     *
-     * Semantic layers start at 0 for the window-widget and for any pop-up
-     * widgets.
-     *
-     * The semantic layer is increased by one, whenever a user of the
-     * user-interface would understand the next layer to begin.
-     *
-     * In most cases it would mean that a container widget that does not
-     * draw itself will not increase the semantic_layer number.
-     */
-    int semantic_layer = 0;
-
-    /** The logical layer of the widget.
-     * The logical layer can be used to determine how far away
-     * from the window-widget (root) the current widget is.
-     *
-     * Logical layers start at 0 for the window-widget.
-     * Each child widget increases the logical layer by 1.
-     */
-    int logical_layer = 0;
-
     /** The minimum size this widget is allowed to be.
      */
     observer<extent2> minimum = extent2{};
@@ -84,18 +59,23 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    explicit widget(widget *parent) noexcept : widget_intf(parent), logical_layer(0), semantic_layer(0)
+    explicit widget(widget_intf const * parent) noexcept : widget_intf(parent)
     {
         hi_axiom(loop::main().on_thread());
-
-        if (parent) {
-            logical_layer = parent->logical_layer + 1;
-            semantic_layer = parent->semantic_layer + 1;
-        }
 
         _mode_cbt = mode.subscribe([&](auto...) {
             ++global_counter<"widget:mode:constrain">;
             process_event({gui_event_type::window_reconstrain});
+        });
+
+        _focus_cbt = focus.subscribe([&](auto...) {
+            ++global_counter<"widget:focus:redraw">;
+            request_redraw();
+        });
+
+        _hover_cbt = hover.subscribe([&](auto...) {
+            ++global_counter<"widget:hover:redraw">;
+            request_redraw();
         });
     }
 
@@ -106,7 +86,7 @@ public:
     widget& operator=(widget&&) = delete;
 
     using widget_intf::children;
-    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         co_return;
     }
@@ -200,49 +180,73 @@ public:
         hi_axiom(loop::main().on_thread());
 
         switch (event.type()) {
-            using enum hi::gui_event_type;
-        case keyboard_enter:
+        case gui_event_type::keyboard_enter:
             focus = true;
             this->scroll_to_show();
             ++global_counter<"widget:keyboard_enter:redraw">;
             request_redraw();
             return true;
 
-        case keyboard_exit:
+        case gui_event_type::keyboard_exit:
             focus = false;
             ++global_counter<"widget:keyboard_exit:redraw">;
             request_redraw();
             return true;
 
-        case mouse_enter:
+        case gui_event_type::mouse_enter:
             hover = true;
             ++global_counter<"widget:mouse_enter:redraw">;
             request_redraw();
             return true;
 
-        case mouse_exit:
+        case gui_event_type::mouse_exit:
             hover = false;
             ++global_counter<"widget:mouse_exit:redraw">;
             request_redraw();
             return true;
 
-        case gui_widget_next:
+        case gui_event_type::gui_activate_stay:
+            process_event(gui_event_type::gui_activate);
+            if (accepts_keyboard_focus(keyboard_focus_group::menu)) {
+                // By going forward and backward we select the current parent,
+                // the widget that opened the menu-stack. 
+                process_event(gui_event_type::gui_widget_next);
+                process_event(gui_event_type::gui_widget_prev);
+            }
+            return true;
+
+        case gui_event_type::gui_activate_next:
+            process_event(gui_event_type::gui_activate);
+            return process_event(gui_event_type::gui_widget_next);
+
+        case gui_event_type::gui_widget_next:
             process_event(
                 gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::forward));
             return true;
 
-        case gui_widget_prev:
+        case gui_event_type::gui_widget_prev:
             process_event(
                 gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::backward));
             return true;
 
-        case gui_activate_next:
-            process_event(gui_activate);
-            return process_event(gui_widget_next);
+        case gui_event_type::gui_menu_next:
+            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
+                process_event(
+                    gui_event::window_set_keyboard_target(id, keyboard_focus_group::menu, keyboard_focus_direction::forward));
+                return true;
+            }
+            break;
+
+        case gui_event_type::gui_menu_prev:
+            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
+                process_event(
+                    gui_event::window_set_keyboard_target(id, keyboard_focus_group::menu, keyboard_focus_direction::backward));
+                return true;
+            }
+            break;
 
         case gui_event_type::gui_toolbar_next:
-            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
-                not is_last(keyboard_focus_group::toolbar)) {
+            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
                 return true;
@@ -250,8 +254,7 @@ public:
             break;
 
         case gui_event_type::gui_toolbar_prev:
-            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
-                not is_first(keyboard_focus_group::toolbar)) {
+            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
                 return true;
@@ -294,7 +297,7 @@ public:
 
         auto found = false;
 
-        if (not current_keyboard_widget and accepts_keyboard_focus(group)) {
+        if (current_keyboard_widget == 0 and accepts_keyboard_focus(group)) {
             // If there was no current_keyboard_widget, then return this if it accepts focus.
             return id;
 
@@ -316,7 +319,7 @@ public:
 
             if (found) {
                 // Find the first focus accepting widget.
-                if (auto tmp = child->find_next_widget({}, group, direction)) {
+                if (auto tmp = child->find_next_widget({}, group, direction); tmp != 0) {
                     return tmp;
                 }
 
@@ -327,7 +330,7 @@ public:
                     // Try the first widget that does accept keyboard focus.
                     found = true;
 
-                } else if (tmp != nullptr) {
+                } else if (tmp != 0) {
                     // Return the next widget that was found in the child-widget.
                     return tmp;
                 }
@@ -342,49 +345,7 @@ public:
             return current_keyboard_widget;
         }
 
-        return std::nullopt;
-    }
-
-    [[nodiscard]] widget_id find_first_widget(keyboard_focus_group group) const noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
-
-        for (auto& child : children(false)) {
-            if (child.accepts_keyboard_focus(group)) {
-                return child.id;
-            }
-        }
-        return std::nullopt;
-    }
-
-    [[nodiscard]] widget_id find_last_widget(keyboard_focus_group group) const noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
-
-        auto found = widget_id{};
-        for (auto& child : children(false)) {
-            if (child.accepts_keyboard_focus(group)) {
-                found = child.id;
-            }
-        }
-
-        return found;
-    }
-
-    /** Is this widget the first widget in the parent container.
-     */
-    [[nodiscard]] bool is_first(keyboard_focus_group group) const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        return parent->find_first_widget(group) == id;
-    }
-
-    /** Is this widget the last widget in the parent container.
-     */
-    [[nodiscard]] bool is_last(keyboard_focus_group group) const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        return parent->find_last_widget(group) == id;
+        return {};
     }
 
     using widget_intf::scroll_to_show;
@@ -415,7 +376,7 @@ public:
         }
     }
 
-    [[nodiscard]] hi::theme const &theme() const noexcept
+    [[nodiscard]] hi::theme const& theme() const noexcept
     {
         hilet w = window();
         hi_assert_not_null(w);
@@ -435,12 +396,12 @@ public:
     {
         if (*mode >= widget_mode::partial) {
             if (*hover) {
-                return theme().color(semantic_color::fill, semantic_layer + 1);
+                return theme().color(semantic_color::fill, _layout.layer + 1);
             } else {
-                return theme().color(semantic_color::fill, semantic_layer);
+                return theme().color(semantic_color::fill, _layout.layer);
             }
         } else {
-            return theme().color(semantic_color::fill, semantic_layer - 1);
+            return theme().color(semantic_color::fill, _layout.layer - 1);
         }
     }
 
@@ -448,12 +409,12 @@ public:
     {
         if (*mode >= widget_mode::partial) {
             if (*hover) {
-                return theme().color(semantic_color::border, semantic_layer + 1);
+                return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
-                return theme().color(semantic_color::border, semantic_layer);
+                return theme().color(semantic_color::border, _layout.layer);
             }
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
 
@@ -463,12 +424,12 @@ public:
             if (*focus) {
                 return theme().color(semantic_color::accent);
             } else if (*hover) {
-                return theme().color(semantic_color::border, semantic_layer + 1);
+                return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
-                return theme().color(semantic_color::border, semantic_layer);
+                return theme().color(semantic_color::border, _layout.layer);
             }
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
 
@@ -477,7 +438,7 @@ public:
         if (*mode >= widget_mode::partial) {
             return theme().color(semantic_color::accent);
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
 
@@ -486,7 +447,7 @@ public:
         if (*mode >= widget_mode::partial) {
             return theme().text_style(semantic_text_style::label)->color;
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
 
@@ -494,6 +455,8 @@ protected:
     widget_layout _layout;
 
     callback<void(widget_mode)> _mode_cbt;
+    callback<void(bool)> _focus_cbt;
+    callback<void(bool)> _hover_cbt;
 
     /** Make an overlay rectangle.
      *

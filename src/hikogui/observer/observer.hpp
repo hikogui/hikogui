@@ -4,25 +4,25 @@
 
 #pragma once
 
-#include "observable_value.hpp"
-#include "observable.hpp"
+#include "observed_value.hpp"
+#include "observed.hpp"
 #include "../coroutine/module.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
-
+#include <concepts>
 
 
 namespace hi::inline v1 {
 
-/** A observer pointing to the whole or part of a observable.
+/** A observer pointing to the whole or part of a observed.
  *
- * A observer will point to a observable that was created, or possibly
- * an anonymous observable, which is created when a observer is created
+ * A observer will point to a observed that was created, or possibly
+ * an anonymous observed, which is created when a observer is created
  * as empty.
  *
  * @tparam T The type of observer.
  */
-template<typename T>
+template<std::equality_comparable T>
 class observer {
 public:
     using value_type = T;
@@ -367,14 +367,15 @@ public:
 
     constexpr ~observer() = default;
 
-    // static_assert(is_forward_of_v<std::shared_ptr<observable>, group_ptr<observable,observable_msg>>);
+    // static_assert(is_forward_of_v<std::shared_ptr<observed>, group_ptr<observed,observable_msg>>);
 
-    /** Create an observer from an observable.
+    /** Create an observer from an observed.
      *
-     * @param observed The `observable` which will be observed by this observer.
+     * @param observed The `observed` which will be observed by this observer.
      */
-    observer(forward_of<std::shared_ptr<observable>> auto&& observed) noexcept :
-        observer(group_ptr<observable>{hi_forward(observed)}, path_type{}, [](void *base) {
+    template<forward_of<std::shared_ptr<hi::observed>> Observed>
+    observer(Observed&& observed) noexcept :
+        observer(group_ptr<hi::observed>{std::forward<Observed>(observed)}, path_type{}, [](void *base) {
             return base;
         })
     {
@@ -384,12 +385,12 @@ public:
      *
      * @note marked 'explicit' so that accidental assignment with {} is not allowed.
      */
-    constexpr explicit observer() noexcept : observer(std::make_shared<observable_value<value_type>>()) {}
+    constexpr explicit observer() noexcept : observer(std::make_shared<observed_value<value_type>>()) {}
 
     /** Create a observer linked to an anonymous observed-value.
      */
     constexpr observer(std::convertible_to<value_type> auto&& value) noexcept :
-        observer(std::make_shared<observable_value<value_type>>(hi_forward(value)))
+        observer(std::make_shared<observed_value<value_type>>(hi_forward(value)))
     {
     }
 
@@ -455,11 +456,11 @@ public:
 
     /** Reset the observer.
      *
-     * This will link the observer with an anonymous observable with a default initialized value.
+     * This will link the observer with an anonymous observed with a default initialized value.
      */
     void reset() noexcept
     {
-        _observed = std::make_shared<observable_value<value_type>>();
+        _observed = std::make_shared<observed_value<value_type>>();
         _path = {};
         _convert = [](void *base) {
             return base;
@@ -690,7 +691,7 @@ public:
     // clang-format on
 
 private:
-    using observed_type = group_ptr<observable>;
+    using observed_type = group_ptr<observed>;
     observed_type _observed = {};
     path_type _path = {};
     std::function<void *(void *)> _convert = {};
@@ -699,7 +700,7 @@ private:
     value_type _debug_value;
 #endif
 
-    /** Construct an observer from an observable.
+    /** Construct an observer from an observed.
      */
     observer(
         forward_of<observed_type> auto&& observed,
@@ -772,7 +773,7 @@ private:
     }
 
     // It is possible to make sub-observables.
-    template<typename>
+    template<std::equality_comparable>
     friend class observer;
 };
 
@@ -790,14 +791,14 @@ private:
  */
 template<typename T>
 struct observer_decay {
-    using type = std::decay_t<T>;
+    using type = std::remove_cvref_t<T>;
 };
 
 // clang-format off
-template<typename T> struct observer_decay<observer<T>> { using type = T; };
-template<typename T> struct observer_decay<observer<T> &> { using type = T; };
-template<typename T> struct observer_decay<observer<T> const &> { using type = T; };
-template<typename T> struct observer_decay<observer<T> &&> { using type = T; };
+template<std::equality_comparable T> struct observer_decay<observer<T>> { using type = T; };
+template<std::equality_comparable T> struct observer_decay<observer<T> &> { using type = T; };
+template<std::equality_comparable T> struct observer_decay<observer<T> const &> { using type = T; };
+template<std::equality_comparable T> struct observer_decay<observer<T> &&> { using type = T; };
 
 // clang-format on
 
@@ -807,5 +808,9 @@ using observer_decay_t = observer_decay<T>::type;
 template<typename Context, typename Expected>
 struct is_forward_of<Context, observer<Expected>> :
     std::conditional_t<std::is_convertible_v<Context, observer<Expected>>, std::true_type, std::false_type> {};
+
+
+template<typename Context, typename Expected>
+concept forward_observer = forward_of<Context, observer<observer_decay_t<Expected>>>;
 
 } // namespace hi::inline v1

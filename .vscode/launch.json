@@ -4,12 +4,31 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        //{
+        //    "name": "C++ Launch (Windows)",
+        //    "type": "cppvsdbg",
+        //    "request": "launch",
+        //    //"program": "${fileDirname}/${fileBasenameNoExtension}",
+        //    "program": "${workspaceRoot}/out/build/clangcl-x64-windows-dbg/examples/hikogui_demo/hikogui_demo.exe",
+        //    "cwd": "${workspaceRoot}/out/build/clangcl-x64-windows-dbg/examples/hikogui_demo",
+        //    "externalConsole": false,
+        //    "logging": {
+        //        "moduleLoad": false,
+        //        "trace": true,
+        //        "traceResponse": true,
+        //        "engineLogging": true
+        //    },
+        //    //"visualizerFile": "C:/Program Files/Microsoft Visual Studio/2022/Preview/Common7/Packages/Debugger/Visualizers/stl.natvis",
+        //    "visualizerFile": "${workspaceFolder}/hikogui.natvis",
+        //    "showDisplayString": true
+        //},
         {
             "name": "C++ Launch (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "cwd": "${workspaceRoot}",
+            //"program": "${fileDirname}/${fileBasenameNoExtension}",
+            "program": "${workspaceRoot}/out/build/msvc-x64-windows-dbg/examples/hikogui_demo/hikogui_demo.exe",
+            "cwd": "${workspaceRoot}/out/build/msvc-x64-windows-dbg/examples/hikogui_demo",
             "externalConsole": false,
             "logging": {
                 "moduleLoad": false,
@@ -17,6 +36,7 @@
                 "traceResponse": true,
                 "engineLogging": true
             },
+            //"visualizerFile": "C:/Program Files/Microsoft Visual Studio/2022/Preview/Common7/Packages/Debugger/Visualizers/stl.natvis",
             "visualizerFile": "${workspaceFolder}/hikogui.natvis",
             "showDisplayString": true
         }
