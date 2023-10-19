@@ -28,7 +28,7 @@ class window_controls_macos_widget final : public widget {
 public:
     using super = widget;
 
-    window_controls_macos_widget(widget *parent) noexcept : super(parent) {}
+    window_controls_macos_widget(not_null<widget_intf const *> parent) noexcept : super(parent) {}
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override

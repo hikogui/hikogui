@@ -40,13 +40,9 @@ public:
      *
      * @param parent The parent widget.
      */
-    toolbar_widget(widget *parent) noexcept : super(parent)
+    toolbar_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
-
-        // The toolbar is a top level widget, which draws its background as the next level.
-        semantic_layer = 0;
-
         _children.push_back(std::make_unique<spacer_widget>(this));
     }
 
@@ -121,7 +117,7 @@ public:
     {
         if (*mode > widget_mode::invisible) {
             if (overlaps(context, layout())) {
-                context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, semantic_layer + 1));
+                context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, semantic_layer() + 1));
 
                 if (tab_button_has_focus()) {
                     // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
@@ -160,7 +156,7 @@ public:
         if (*mode >= widget_mode::partial) {
             return theme().color(semantic_color::accent);
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, semantic_layer() - 1);
         }
     }
     /// @endprivatesection

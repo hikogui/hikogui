@@ -65,7 +65,7 @@ public:
         delegate->deinit(*this);
     }
 
-    abstract_button_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    abstract_button_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), delegate(std::move(delegate))
     {
         hi_assert_not_null(this->delegate);
@@ -123,7 +123,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (_pressed) {
-            return theme().color(semantic_color::fill, semantic_layer + 2);
+            return theme().color(semantic_color::fill, semantic_layer() + 2);
         } else {
             return super::background_color();
         }

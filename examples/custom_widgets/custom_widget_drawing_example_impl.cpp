@@ -73,7 +73,7 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
-    drawing_widget(hi::widget *parent) noexcept :
+    drawing_widget(hi::not_null<widget_intf const *> parent) noexcept :
         widget(parent), _image(hi::URL("resource:mars3.png"))
     {
         // clang-format off

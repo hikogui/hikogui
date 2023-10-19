@@ -31,13 +31,9 @@ public:
     observer<float> offset_x;
     observer<float> offset_y;
 
-    scroll_aperture_widget(widget *parent) noexcept : super(parent)
+    scroll_aperture_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(parent);
-
-        // The aperture-widget will not draw itself, only its selected content.
-        semantic_layer = parent->semantic_layer;
 
         _content_width_cbt = content_width.subscribe([&](auto...) {
             ++global_counter<"scroll_aperture_widget:content_width:relayout">;

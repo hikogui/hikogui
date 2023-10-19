@@ -78,7 +78,7 @@ public:
      * @param attributes Different attributes used to configure the label widget:
      *                   a `label`, `alignment` or `text_style`
      */
-    label_widget(widget *parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
+    label_widget(not_null<widget_intf const *> parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
     {
         set_attributes(hi_forward(attributes)...);
     }
@@ -200,7 +200,7 @@ private:
         set_attributes(hi_forward(rest)...);
     }
 
-    label_widget(widget *parent) noexcept : super(parent)
+    label_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
         mode = widget_mode::select;
 

@@ -57,7 +57,7 @@ public:
     [[nodiscard]] color background_color() noexcept
     {
         hi_axiom(loop::main().on_thread());
-        return theme().color(semantic_color::fill, semantic_layer);
+        return theme().color(semantic_color::fill, semantic_layer());
     }
 
     /** Get a reference to the window's content widget.

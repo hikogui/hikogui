@@ -47,13 +47,8 @@ public:
      *
      * @param parent The parent widget.
      */
-    grid_widget(widget *parent) noexcept : widget(parent)
+    grid_widget(not_null<widget_intf const *> parent) noexcept : widget(parent)
     {
-        hi_axiom(loop::main().on_thread());
-
-        if (parent) {
-            semantic_layer = parent->semantic_layer;
-        }
     }
 
     /* Add a widget to the grid.

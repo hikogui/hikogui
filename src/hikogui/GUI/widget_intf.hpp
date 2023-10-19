@@ -36,7 +36,7 @@ public:
         release_widget_id(id);
     }
 
-    widget_intf(widget_intf *parent) noexcept : id(make_widget_id()), parent(parent) {}
+    widget_intf(widget_intf const *parent) noexcept : id(make_widget_id()), parent(const_cast<widget_intf *>(parent)) {}
 
     /** Subscribe a callback to be called when an action is completed by the widget.
     */

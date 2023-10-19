@@ -58,7 +58,7 @@ public:
      * @param index The index in the list of options.
      * @return The widgets to be displayed.
      */
-    [[nodiscard]] virtual std::unique_ptr<widget> make_option_widget(widget& sender, size_t index) noexcept = 0;
+    [[nodiscard]] virtual std::unique_ptr<widget> make_option_widget(widget_intf const& sender, size_t index) noexcept = 0;
 
     /** Get the label of the selected option.
      *
@@ -143,7 +143,7 @@ public:
         return _option_delegate->keyboard_focus_id();
     }
 
-    [[nodiscard]] std::unique_ptr<widget> make_option_widget(widget& sender, size_t index) noexcept override
+    [[nodiscard]] std::unique_ptr<widget> make_option_widget(widget_intf const& sender, size_t index) noexcept override
     {
         auto& [option_value, option_label] = options->at(index);
         return _option_delegate->make_option_widget(sender, option_value, option_label, _option_delegate);
@@ -193,14 +193,14 @@ private:
         }
 
         [[nodiscard]] std::unique_ptr<widget>
-        make_option_widget(widget &parent, value_type const& value, label const& label, std::shared_ptr<option_delegate_type> shared_this) noexcept
+        make_option_widget(widget_intf const& sender, value_type const& value, label const& label, std::shared_ptr<option_delegate_type> shared_this) noexcept
         {
             using button_widget = radio_menu_button_widget;
             using button_attributes = radio_menu_button_widget::attributes_type;
 
             // Prepare the value for the next widget, so that the widget immediately can retrieve its value.
             _next_value = value;
-            return make_unique<button_widget>(std::addressof(parent), button_attributes{label}, std::move(shared_this));
+            return make_unique<button_widget>(make_not_null(sender), button_attributes{label}, std::move(shared_this));
         }
 
         [[nodiscard]] button_state state(widget_intf const& sender) const noexcept override

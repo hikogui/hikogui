@@ -118,7 +118,7 @@ public:
      * @param parent The parent widget that owns this toggle widget.
      * @param delegate The delegate to use to manage the state of the toggle button.
      */
-    toggle_widget(widget *parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+    toggle_widget(not_null<widget_intf const *> parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         _delegate_cbt = this->delegate->subscribe([&] {
@@ -135,7 +135,7 @@ public:
      * @param value The value or `observer` value which represents the state of the toggle.
      */
     template<incompatible_with<attributes_type> Value, toggle_widget_attribute... Attributes>
-    toggle_widget(widget *parent, Value&& value, Attributes&&...attributes)
+    toggle_widget(not_null<widget_intf const *> parent, Value&& value, Attributes&&...attributes)
         requires requires {
             make_default_delegate(std::forward<Value>(value));
             attributes_type{std::forward<Attributes>(attributes)...};
@@ -159,7 +159,7 @@ public:
         incompatible_with<attributes_type> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         toggle_widget_attribute... Attributes>
-    toggle_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    toggle_widget(not_null<widget_intf const *> parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires {
             make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
             attributes_type{std::forward<Attributes>(attributes)...};
@@ -185,7 +185,7 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         toggle_widget_attribute... Attributes>
-    toggle_widget(widget *parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
+    toggle_widget(not_null<widget_intf const *> parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
         requires requires {
             make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
             attributes_type{std::forward<Attributes>(attributes)...};
@@ -266,7 +266,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (_pressed) {
-            return theme().color(semantic_color::fill, semantic_layer + 2);
+            return theme().color(semantic_color::fill, semantic_layer() + 2);
         } else {
             return super::background_color();
         }

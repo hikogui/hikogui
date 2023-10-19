@@ -32,12 +32,12 @@ public:
 
     ~system_menu_widget() {}
 
-    system_menu_widget(widget *parent) noexcept : super(parent)
+    system_menu_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
         _icon_widget = std::make_unique<icon_widget>(this, icon);
     }
 
-    system_menu_widget(widget *parent, forward_of<observer<hi::icon>> auto&& icon) noexcept :
+    system_menu_widget(not_null<widget_intf const *> parent, forward_of<observer<hi::icon>> auto&& icon) noexcept :
         system_menu_widget(parent)
     {
         this->icon = hi_forward(icon);

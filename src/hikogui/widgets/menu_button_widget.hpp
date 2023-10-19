@@ -101,7 +101,7 @@ public:
     attributes_type attributes;
 
     menu_button_widget(
-        not_null<widget *> parent,
+        not_null<widget_intf const *> parent,
         attributes_type attributes,
         not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes))
@@ -127,7 +127,7 @@ public:
     }
 
     template<menu_button_widget_attribute... Attributes>
-    menu_button_widget(not_null<widget *> parent, Attributes&&...attributes) noexcept
+    menu_button_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate();
             attributes_type{std::forward<Attributes>(attributes)...};
@@ -141,7 +141,7 @@ public:
     }
 
     template<typename Value, menu_button_widget_attribute... Attributes>
-    menu_button_widget(not_null<widget *> parent, Value&& value, Attributes&&...attributes) noexcept
+    menu_button_widget(not_null<widget_intf const *> parent, Value&& value, Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate(std::forward<Value>(value));
             attributes_type{std::forward<Attributes>(attributes)...};
@@ -155,7 +155,11 @@ public:
     }
 
     template<typename Value, forward_observer<Value> OnValue, menu_button_widget_attribute... Attributes>
-    menu_button_widget(not_null<widget *> parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    menu_button_widget(
+        not_null<widget_intf const *> parent,
+        Value&& value,
+        OnValue&& on_value,
+        Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
             attributes_type{std::forward<Attributes>(attributes)...};
@@ -174,7 +178,7 @@ public:
         forward_observer<Value> OffValue,
         menu_button_widget_attribute... Attributes>
     menu_button_widget(
-        not_null<widget *> parent,
+        not_null<widget_intf const *> parent,
         Value&& value,
         OnValue&& on_value,
         OffValue&& off_value,

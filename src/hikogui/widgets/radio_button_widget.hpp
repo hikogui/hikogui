@@ -213,7 +213,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (_pressed) {
-            return theme().color(semantic_color::fill, semantic_layer + 2);
+            return theme().color(semantic_color::fill, semantic_layer() + 2);
         } else {
             return super::background_color();
         }

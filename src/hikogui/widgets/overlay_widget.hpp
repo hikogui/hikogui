@@ -46,14 +46,8 @@ public:
      *
      * @param parent The parent widget.
      */
-    overlay_widget(widget *parent) noexcept : super(parent)
+    overlay_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
-        if (parent) {
-            // The overlay-widget will reset the semantic_layer as it is the bottom
-            // layer of this virtual-window. However the draw-layer should be above
-            // any other widget drawn.
-            semantic_layer = 0;
-        }
     }
 
     void set_widget(std::unique_ptr<widget> new_widget) noexcept
@@ -120,11 +114,11 @@ public:
     }
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme().color(semantic_color::fill, semantic_layer + 1);
+        return theme().color(semantic_color::fill, semantic_layer() + 1);
     }
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        return theme().color(semantic_color::border, semantic_layer + 1);
+        return theme().color(semantic_color::border, semantic_layer() + 1);
     }
     void scroll_to_show(hi::aarectangle rectangle) noexcept override
     {

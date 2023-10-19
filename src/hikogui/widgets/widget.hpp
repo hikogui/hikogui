@@ -49,31 +49,6 @@ public:
      */
     observer<bool> focus = false;
 
-    /** The draw layer of the widget.
-     * The semantic layer is used mostly by the `draw()` function
-     * for selecting colors from the theme, to denote nesting widgets
-     * inside other widgets.
-     *
-     * Semantic layers start at 0 for the window-widget and for any pop-up
-     * widgets.
-     *
-     * The semantic layer is increased by one, whenever a user of the
-     * user-interface would understand the next layer to begin.
-     *
-     * In most cases it would mean that a container widget that does not
-     * draw itself will not increase the semantic_layer number.
-     */
-    int semantic_layer = 0;
-
-    /** The logical layer of the widget.
-     * The logical layer can be used to determine how far away
-     * from the window-widget (root) the current widget is.
-     *
-     * Logical layers start at 0 for the window-widget.
-     * Each child widget increases the logical layer by 1.
-     */
-    int logical_layer = 0;
-
     /** The minimum size this widget is allowed to be.
      */
     observer<extent2> minimum = extent2{};
@@ -84,14 +59,9 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    explicit widget(widget *parent) noexcept : widget_intf(parent), logical_layer(0), semantic_layer(0)
+    explicit widget(widget_intf const * parent) noexcept : widget_intf(parent)
     {
         hi_axiom(loop::main().on_thread());
-
-        if (parent) {
-            logical_layer = parent->logical_layer + 1;
-            semantic_layer = parent->semantic_layer + 1;
-        }
 
         _mode_cbt = mode.subscribe([&](auto...) {
             ++global_counter<"widget:mode:constrain">;
@@ -422,16 +392,21 @@ public:
         }
     }
 
+    [[nodiscard]] int semantic_layer() const noexcept
+    {
+        return round_cast<int>(_layout.elevation);
+    }
+
     [[nodiscard]] virtual color background_color() const noexcept
     {
         if (*mode >= widget_mode::partial) {
             if (*hover) {
-                return theme().color(semantic_color::fill, semantic_layer + 1);
+                return theme().color(semantic_color::fill, semantic_layer() + 1);
             } else {
-                return theme().color(semantic_color::fill, semantic_layer);
+                return theme().color(semantic_color::fill, semantic_layer());
             }
         } else {
-            return theme().color(semantic_color::fill, semantic_layer - 1);
+            return theme().color(semantic_color::fill, semantic_layer() - 1);
         }
     }
 
@@ -439,12 +414,12 @@ public:
     {
         if (*mode >= widget_mode::partial) {
             if (*hover) {
-                return theme().color(semantic_color::border, semantic_layer + 1);
+                return theme().color(semantic_color::border, semantic_layer() + 1);
             } else {
-                return theme().color(semantic_color::border, semantic_layer);
+                return theme().color(semantic_color::border, semantic_layer());
             }
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, semantic_layer() - 1);
         }
     }
 
@@ -454,12 +429,12 @@ public:
             if (*focus) {
                 return theme().color(semantic_color::accent);
             } else if (*hover) {
-                return theme().color(semantic_color::border, semantic_layer + 1);
+                return theme().color(semantic_color::border, semantic_layer() + 1);
             } else {
-                return theme().color(semantic_color::border, semantic_layer);
+                return theme().color(semantic_color::border, semantic_layer());
             }
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, semantic_layer() - 1);
         }
     }
 
@@ -468,7 +443,7 @@ public:
         if (*mode >= widget_mode::partial) {
             return theme().color(semantic_color::accent);
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, semantic_layer() - 1);
         }
     }
 
@@ -477,7 +452,7 @@ public:
         if (*mode >= widget_mode::partial) {
             return theme().text_style(semantic_text_style::label)->color;
         } else {
-            return theme().color(semantic_color::border, semantic_layer - 1);
+            return theme().color(semantic_color::border, semantic_layer() - 1);
         }
     }
 

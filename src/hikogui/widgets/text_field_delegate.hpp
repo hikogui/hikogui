@@ -28,8 +28,8 @@ public:
     using notifier_type = notifier<void()>;
 
     virtual ~text_field_delegate() = default;
-    virtual void init(text_field_widget const& sender) noexcept {}
-    virtual void deinit(text_field_widget const& sender) noexcept {}
+    virtual void init(widget_intf const& sender) noexcept {}
+    virtual void deinit(widget_intf const& sender) noexcept {}
 
     /** Validate the text field.
      *
@@ -37,7 +37,7 @@ public:
      * @param text The text entered by the user into the text field.
      * @return no-value when valid, or a label to display to the user when invalid.
      */
-    virtual label validate(text_field_widget& sender, gstring const& text) noexcept
+    virtual label validate(widget_intf const& sender, gstring const& text) noexcept
     {
         return {};
     }
@@ -49,7 +49,7 @@ public:
      * @param sender The widget that called this function.
      * @return The text to show in the text field.
      */
-    virtual gstring text(text_field_widget& sender) noexcept
+    virtual gstring text(widget_intf const& sender) noexcept
     {
         return {};
     }
@@ -64,7 +64,7 @@ public:
      * @param sender The widget that called this function.
      * @param text The text entered by the user.
      */
-    virtual void set_text(text_field_widget& sender, gstring const& text) noexcept {}
+    virtual void set_text(widget_intf const& sender, gstring const& text) noexcept {}
 
     template<forward_of<void()> Func>
     callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
@@ -105,7 +105,7 @@ public:
         });
     }
 
-    label validate(text_field_widget& sender, gstring const& text) noexcept override
+    label validate(widget_intf const& sender, gstring const& text) noexcept override
     {
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(to_string(text), 10);
@@ -116,12 +116,12 @@ public:
         return {};
     }
 
-    gstring text(text_field_widget& sender) noexcept override
+    gstring text(widget_intf const& sender) noexcept override
     {
         return to_gstring(to_string(*value));
     }
 
-    void set_text(text_field_widget& sender, gstring const& text) noexcept override
+    void set_text(widget_intf const& sender, gstring const& text) noexcept override
     {
         try {
             value = from_string<value_type>(to_string(text), 10);
@@ -156,7 +156,7 @@ public:
         });
     }
 
-    label validate(text_field_widget& sender, gstring const& text) noexcept override
+    label validate(widget_intf const& sender, gstring const& text) noexcept override
     {
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(to_string(text));
@@ -167,12 +167,12 @@ public:
         return {};
     }
 
-    gstring text(text_field_widget& sender) noexcept override
+    gstring text(widget_intf const& sender) noexcept override
     {
         return to_gstring(to_string(*value));
     }
 
-    void set_text(text_field_widget& sender, gstring const& text) noexcept override
+    void set_text(widget_intf const& sender, gstring const& text) noexcept override
     {
         try {
             value = from_string<value_type>(to_string(text));

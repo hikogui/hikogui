@@ -112,7 +112,7 @@ public:
      * @param delegate The delegate to use to manage the state of the checkbox button.
      */
     checkbox_widget(
-        widget *parent,
+        not_null<widget_intf const *> parent,
         attributes_type attributes,
         not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
@@ -132,7 +132,7 @@ public:
      */
     template<incompatible_with<attributes_type> Value, checkbox_widget_attribute... Attributes>
     checkbox_widget(
-        widget *parent,
+        not_null<widget_intf const *> parent,
         Value&& value,
         Attributes &&...attributes) requires requires
     {
@@ -157,7 +157,7 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         checkbox_widget_attribute... Attributes>
     checkbox_widget(
-        widget *parent,
+        not_null<widget_intf const *> parent,
         Value&& value,
         OnValue&& on_value,
         Attributes &&...attributes) noexcept
@@ -187,7 +187,7 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OffValue,
         checkbox_widget_attribute... Attributes>
     checkbox_widget(
-        widget *parent,
+        not_null<widget_intf const *> parent,
         Value&& value,
         OnValue&& on_value,
         OffValue&& off_value,
@@ -257,7 +257,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (_pressed) {
-            return theme().color(semantic_color::fill, semantic_layer + 2);
+            return theme().color(semantic_color::fill, semantic_layer() + 2);
         } else {
             return super::background_color();
         }

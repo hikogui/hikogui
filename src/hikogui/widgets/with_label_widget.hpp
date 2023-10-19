@@ -112,7 +112,7 @@ public:
 
     attributes_type attributes;
 
-    with_label_widget(widget *parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+    with_label_widget(not_null<widget_intf const *> parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes))
     {
         _button_widget =
@@ -138,7 +138,7 @@ public:
     }
 
     template<with_label_widget_attribute... Attributes>
-    with_label_widget(widget *parent, Attributes&&...attributes) noexcept
+    with_label_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate();
             attributes_type{std::forward<Attributes>(attributes)...};
@@ -153,7 +153,7 @@ public:
     }
 
     template<typename Value, with_label_widget_attribute... Attributes>
-    with_label_widget(widget *parent, Value&& value, Attributes&&...attributes) noexcept
+    with_label_widget(not_null<widget_intf const *> parent, Value&& value, Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate(std::forward<Value>(value));
             attributes_type{std::forward<Attributes>(attributes)...};
@@ -168,7 +168,7 @@ public:
     }
 
     template<typename Value, forward_observer<Value> OnValue, with_label_widget_attribute... Attributes>
-    with_label_widget(widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+    with_label_widget(not_null<widget_intf const *> parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
             attributes_type{std::forward<Attributes>(attributes)...};
@@ -187,7 +187,7 @@ public:
         forward_observer<Value> OnValue,
         forward_observer<Value> OffValue,
         with_label_widget_attribute... Attributes>
-    with_label_widget(widget *parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
+    with_label_widget(not_null<widget_intf const *> parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate(
                 std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
