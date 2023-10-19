@@ -145,6 +145,10 @@ endif()
 # Add the Vulkan libraries.
 target_link_libraries(hikogui INTERFACE ${Vulkan_LIBRARIES})
 target_include_directories(hikogui INTERFACE ${Vulkan_INCLUDE_DIRS})
+
+# HikoGUI only uses Vulkan-1.2; we can limit VMA to that version as well.
+# This solves a common issue with: "Cant find entrypoint for vkGetDeviceBufferMemoryRequirements procedure"
+target_compile_definitions(hikogui INTERFACE -DVMA_VULKAN_VERSION=1002000)
 if (WIN32)
     # Add vulkan win32 surface support.
     target_compile_definitions(hikogui INTERFACE -DVK_USE_PLATFORM_WIN32_KHR)
