@@ -110,14 +110,14 @@ public:
             hilet child_clipping_rectangle =
                 aarectangle{child.shape.x() - overhang, 0, child.shape.width() + overhang * 2, context.height() + overhang * 2};
 
-            child.value->set_layout(context.transform(child.shape, 1.0f, child_clipping_rectangle));
+            child.value->set_layout(context.transform(child.shape, transform_command::menu_item, child_clipping_rectangle));
         }
     }
     void draw(draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible) {
             if (overlaps(context, layout())) {
-                context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, semantic_layer() + 1));
+                context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, _layout.layer));
 
                 if (tab_button_has_focus()) {
                     // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
@@ -156,7 +156,7 @@ public:
         if (*mode >= widget_mode::partial) {
             return theme().color(semantic_color::accent);
         } else {
-            return theme().color(semantic_color::border, semantic_layer() - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
     /// @endprivatesection

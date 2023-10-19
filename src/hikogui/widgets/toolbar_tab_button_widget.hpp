@@ -158,8 +158,8 @@ private:
 
         // clang-format off
         auto button_color = (*hover or state() == button_state::on) ?
-            theme().color(semantic_color::fill, semantic_layer() - 1) :
-            theme().color(semantic_color::fill, semantic_layer());
+            theme().color(semantic_color::fill, _layout.layer - 1) :
+            theme().color(semantic_color::fill, _layout.layer);
         // clang-format on
 
         hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());

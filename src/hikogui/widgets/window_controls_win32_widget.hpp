@@ -82,23 +82,23 @@ public:
             } else if (hoverClose) {
                 context.draw_box(layout(), closeRectangle, color{0.5f, 0.0f, 0.0f});
             } else {
-                context.draw_box(layout(), closeRectangle, theme().color(semantic_color::fill, semantic_layer()));
+                context.draw_box(layout(), closeRectangle, theme().color(semantic_color::fill, _layout.layer));
             }
 
             if (pressedMinimize) {
-                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer() + 2));
+                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, _layout.layer + 2));
             } else if (hoverMinimize) {
-                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer() + 1));
+                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, _layout.layer + 1));
             } else {
-                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer()));
+                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, _layout.layer));
             }
 
             if (pressedMaximize) {
-                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer() + 2));
+                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer + 2));
             } else if (hoverMaximize) {
-                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer() + 1));
+                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer + 1));
             } else {
-                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer()));
+                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer));
             }
 
             hilet glyph_color = context.active ? label_color() : foreground_color();

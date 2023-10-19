@@ -139,7 +139,7 @@ public:
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
-        _content->set_layout(context.transform(_content_shape, 1.0f, context.rectangle()));
+        _content->set_layout(context.transform(_content_shape, transform_command::level, context.rectangle()));
     }
 
     void draw(draw_context const& context) noexcept override

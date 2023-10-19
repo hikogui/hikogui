@@ -250,7 +250,7 @@ public:
         hilet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
         hilet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
         _overlay_shape = box_shape{_overlay_constraints, overlay_rectangle, theme().baseline_adjustment()};
-        _overlay_widget->set_layout(context.transform(_overlay_shape, 20.0f));
+        _overlay_widget->set_layout(context.transform(_overlay_shape, transform_command::overlay));
 
         _off_label_widget->set_layout(context.transform(_off_label_shape));
         _current_label_widget->set_layout(context.transform(_current_label_shape));

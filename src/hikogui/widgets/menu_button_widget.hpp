@@ -259,7 +259,7 @@ public:
 
         for (hilet& cell : _grid) {
             if (cell.value == grid_cell_type::button) {
-                _button_widget->set_layout(context.transform(cell.shape, 0.0f));
+                _button_widget->set_layout(context.transform(cell.shape, transform_command::level));
 
             } else if (cell.value == grid_cell_type::label) {
                 _label_widget->set_layout(context.transform(cell.shape));

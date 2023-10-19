@@ -299,7 +299,7 @@ public:
         }
 
         for (hilet& cell : _grid) {
-            cell.value->set_layout(context.transform(cell.shape, 0.0f));
+            cell.value->set_layout(context.transform(cell.shape, transform_command::level));
         }
     }
 

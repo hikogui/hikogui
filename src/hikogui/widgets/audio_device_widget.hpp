@@ -66,7 +66,7 @@ public:
             _grid_shape = {_grid_constraints, grid_rectangle, theme().baseline_adjustment()};
         }
 
-        _grid_widget->set_layout(context.transform(_grid_shape));
+        _grid_widget->set_layout(context.transform(_grid_shape, transform_command::level));
     }
 
     void draw(draw_context const& context) noexcept override

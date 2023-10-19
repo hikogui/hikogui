@@ -275,13 +275,13 @@ public:
             } else if (*_text_widget->focus) {
                 return theme().color(semantic_color::accent);
             } else if (*hover) {
-                return theme().color(semantic_color::border, semantic_layer() + 1);
+                return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
-                return theme().color(semantic_color::border, semantic_layer());
+                return theme().color(semantic_color::border, _layout.layer);
             }
 
         } else {
-            return theme().color(semantic_color::border, semantic_layer() - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
     /// @endprivatesection

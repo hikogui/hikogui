@@ -16,9 +16,25 @@
 #include "../settings/settings.hpp"
 #include "../macros.hpp"
 
-
-
 namespace hi { inline namespace v1 {
+
+enum class transform_command {
+    /** The child widget stays at the same elevation and layer.
+     */
+    level,
+
+    /** The child widget increments to the next elevation and layer.
+     */
+    increment,
+
+    /** The child widget increments to the next elevation but layer stays the same.
+     */
+    menu_item,
+
+    /** The child widget increases the elevation by 20 and resets the layer.
+     */
+    overlay
+};
 
 /** The layout of a widget.
  *
@@ -75,6 +91,18 @@ public:
     /** The elevation of the widget above the window.
      */
     float elevation = 0.0f;
+
+    /** The number of visible layers above the window.
+     *
+     * The layer value is used to determine what colors are used
+     * for drawing the widget, in a nice step-pattern.
+     *
+     * Layer is set as followed:
+     * - Widgets that draw anything increment the layer by 1.
+     * - Many container widgets do not increment the layer.
+     * - Overlays will reset the layer to 0.
+     */
+    int layer = 0;
 
     /** The clipping rectangle.
      *
@@ -198,12 +226,12 @@ public:
     /** Create a new widget_layout for the child widget.
      *
      * @param child_shape The location and size of the child widget, relative to the current widget.
-     * @param child_elevation The elevation of the child widget, relative to the current widget.
+     * @param command Command to how the elevation and layer are transformed.
      * @param new_clipping_rectangle The new clipping rectangle of the child widget, relative to the current widget.
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout
-    transform(box_shape const& child_shape, float child_elevation, aarectangle new_clipping_rectangle) const noexcept
+    transform(box_shape const& child_shape, transform_command command, aarectangle new_clipping_rectangle) const noexcept
     {
         widget_layout r = *this;
         r.shape.rectangle = aarectangle{child_shape.size()};
@@ -229,19 +257,52 @@ public:
         r.to_window = r.to_parent * this->to_window;
         r.from_window = r.from_parent * this->from_window;
         r.clipping_rectangle = r.from_parent * intersect(this->clipping_rectangle, new_clipping_rectangle);
-        r.elevation += child_elevation;
+
+        switch (command) {
+        case transform_command::level:
+            r.elevation += 0.0f;
+            r.layer += 0;
+            break;
+        case transform_command::increment:
+            r.elevation += 1.0f;
+            r.layer += 1;
+            break;
+        case transform_command::menu_item:
+            r.elevation += 1.0f;
+            r.layer += 0;
+            break;
+        case transform_command::overlay:
+            r.elevation += 20.0f;
+            r.layer = 0;
+            break;
+        default:
+            hi_no_default();
+        }
         return r;
     }
 
     /** Create a new widget_layout for the child widget.
      *
      * @param child_shape The location and size of the child widget, relative to the current widget.
-     * @param child_elevation The elevation of the child widget, relative to the current widget.
+     * @param command Command to how the elevation and layer are transformed.
      * @return A new widget_layout for use by the child widget.
      */
-    [[nodiscard]] constexpr widget_layout transform(box_shape const& child_shape, float child_elevation = 1.0f) const noexcept
+    [[nodiscard]] constexpr widget_layout
+    transform(box_shape const& child_shape, transform_command command = transform_command::increment) const noexcept
     {
-        return transform(child_shape, child_elevation, child_shape.rectangle + redraw_overhang);
+        return transform(child_shape, command, child_shape.rectangle + redraw_overhang);
+    }
+
+    /** Create a new widget_layout for the child widget.
+     *
+     * @param child_shape The location and size of the child widget, relative to the current widget.
+     * @param new_clipping_rectangle The new clipping rectangle of the child widget, relative to the current widget.
+     * @return A new widget_layout for use by the child widget.
+     */
+    [[nodiscard]] constexpr widget_layout
+    transform(box_shape const& child_shape, aarectangle new_clipping_rectangle) const noexcept
+    {
+        return transform(child_shape, transform_command::increment, new_clipping_rectangle);
     }
 
     /** Override e context with the new clipping rectangle.

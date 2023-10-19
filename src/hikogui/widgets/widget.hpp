@@ -392,21 +392,16 @@ public:
         }
     }
 
-    [[nodiscard]] int semantic_layer() const noexcept
-    {
-        return round_cast<int>(_layout.elevation);
-    }
-
     [[nodiscard]] virtual color background_color() const noexcept
     {
         if (*mode >= widget_mode::partial) {
             if (*hover) {
-                return theme().color(semantic_color::fill, semantic_layer() + 1);
+                return theme().color(semantic_color::fill, _layout.layer + 1);
             } else {
-                return theme().color(semantic_color::fill, semantic_layer());
+                return theme().color(semantic_color::fill, _layout.layer);
             }
         } else {
-            return theme().color(semantic_color::fill, semantic_layer() - 1);
+            return theme().color(semantic_color::fill, _layout.layer - 1);
         }
     }
 
@@ -414,12 +409,12 @@ public:
     {
         if (*mode >= widget_mode::partial) {
             if (*hover) {
-                return theme().color(semantic_color::border, semantic_layer() + 1);
+                return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
-                return theme().color(semantic_color::border, semantic_layer());
+                return theme().color(semantic_color::border, _layout.layer);
             }
         } else {
-            return theme().color(semantic_color::border, semantic_layer() - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
 
@@ -429,12 +424,12 @@ public:
             if (*focus) {
                 return theme().color(semantic_color::accent);
             } else if (*hover) {
-                return theme().color(semantic_color::border, semantic_layer() + 1);
+                return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
-                return theme().color(semantic_color::border, semantic_layer());
+                return theme().color(semantic_color::border, _layout.layer);
             }
         } else {
-            return theme().color(semantic_color::border, semantic_layer() - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
 
@@ -443,7 +438,7 @@ public:
         if (*mode >= widget_mode::partial) {
             return theme().color(semantic_color::accent);
         } else {
-            return theme().color(semantic_color::border, semantic_layer() - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
 
@@ -452,7 +447,7 @@ public:
         if (*mode >= widget_mode::partial) {
             return theme().text_style(semantic_text_style::label)->color;
         } else {
-            return theme().color(semantic_color::border, semantic_layer() - 1);
+            return theme().color(semantic_color::border, _layout.layer - 1);
         }
     }
 

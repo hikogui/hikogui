@@ -144,7 +144,7 @@ public:
                 }
             }
 
-            cell.value->set_layout(context.transform(shape, 0.0f));
+            cell.value->set_layout(context.transform(shape, transform_command::level));
         }
     }
 

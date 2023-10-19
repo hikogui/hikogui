@@ -42,7 +42,7 @@
 #include "time/module.hpp"
 #include "unicode/unicode.hpp"
 #include "utility/utility.hpp"
-#include "widgets/module.hpp"
+#include "widgets/widgets.hpp"
 
 //#include "command_line.hpp"
 // Never include "crt.hpp"
