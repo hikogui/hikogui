@@ -288,8 +288,7 @@ public:
         case gui_event_type::gui_activate:
             if (*mode >= widget_mode::partial) {
                 delegate->activate(*this);
-                ++global_counter<"checkbox_widget:handle_event:relayout">;
-                process_event({gui_event_type::window_relayout});
+                request_redraw();
                 return true;
             }
             break;
@@ -310,7 +309,7 @@ public:
                 // for this widget. Which means the widget_id in the mouse-event
                 // may match up with the checkbox.
                 if (event.mouse().hitbox.widget_id == id) {
-                    handle_event(gui_event_type::gui_activate_stay);
+                    handle_event(gui_event_type::gui_activate);
                 }
                 request_redraw();
                 return true;

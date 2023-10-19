@@ -265,7 +265,8 @@ public:
                 // for this widget. Which means the widget_id in the mouse-event
                 // may match up with the radio_button.
                 if (event.mouse().hitbox.widget_id == id) {
-                    handle_event(gui_event_type::gui_activate);
+                    // By staying we can give focus to the parent widget.
+                    handle_event(gui_event_type::gui_activate_stay);
                 }
                 request_redraw();
                 return true;

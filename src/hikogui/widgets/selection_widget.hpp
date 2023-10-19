@@ -298,7 +298,7 @@ public:
             return true;
 
         case gui_event_type::gui_cancel:
-            force_close_overlay();
+            close_overlay();
             return true;
 
         default:;
