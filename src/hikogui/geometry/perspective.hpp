@@ -8,7 +8,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
-
+hi_export_module(hikogui.geometry : perspective);
 
 namespace hi { inline namespace v1 {
 

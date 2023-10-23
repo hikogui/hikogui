@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "../coroutine/module.hpp"
-#include "../time/module.hpp"
+#include "../coroutine/coroutine.hpp"
+#include "../time/time.hpp"
 #include "../macros.hpp"
 #include <chrono>
 #include <coroutine>

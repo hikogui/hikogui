@@ -9,6 +9,8 @@
 #include <limits>
 #include <tuple>
 
+hi_export_module(hikogui.parser.operator);
+
 namespace hi::inline v1 {
 
 enum class graphic_character_t {

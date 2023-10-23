@@ -11,6 +11,7 @@
 #include <array>
 #include <ostream>
 
+hi_export_module(hikogui.SIMD : native_f64x4_avx);
 
 
 namespace hi { inline namespace v1 {

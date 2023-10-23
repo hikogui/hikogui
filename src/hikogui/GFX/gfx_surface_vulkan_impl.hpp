@@ -4,19 +4,21 @@
 
 #pragma once
 
-#include "gfx_surface_vulkan.hpp"
+#include "gfx_surface_vulkan_intf.hpp"
 #include "gfx_surface_delegate_vulkan.hpp"
-#include "gfx_system_vulkan.hpp"
+#include "gfx_system_vulkan_intf.hpp"
 #include "gfx_device_vulkan_impl.hpp"
-#include "gfx_pipeline_box_vulkan.hpp"
-#include "gfx_pipeline_image_vulkan.hpp"
-#include "gfx_pipeline_SDF_vulkan.hpp"
-#include "gfx_pipeline_override_vulkan.hpp"
-#include "gfx_pipeline_tone_mapper_vulkan.hpp"
+#include "gfx_pipeline_box_vulkan_intf.hpp"
+#include "gfx_pipeline_image_vulkan_intf.hpp"
+#include "gfx_pipeline_SDF_vulkan_intf.hpp"
+#include "gfx_pipeline_override_vulkan_intf.hpp"
+#include "gfx_pipeline_tone_mapper_vulkan_intf.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <vector>
+
+hi_export_module(hikogui.GUI : gfx_surface_impl);
 
 namespace hi::inline v1 {
 

@@ -10,10 +10,12 @@
 
 #include "widget.hpp"
 #include "../layout/layout.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <ranges>
+
+hi_export_module(hikogui.widgets.toolbar_widget);
 
 namespace hi { inline namespace v1 {
 

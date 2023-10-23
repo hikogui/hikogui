@@ -8,7 +8,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 
 hi_export_module(hikogui.font.font_style);
 

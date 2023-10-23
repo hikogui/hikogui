@@ -12,7 +12,7 @@
 #include <memory>
 #include <exception>
 
-
+hi_export_module(hikogui.coroutine.scoped_task);
 
 namespace hi::inline v1 {
 

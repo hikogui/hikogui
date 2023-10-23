@@ -25,6 +25,8 @@
 #include <array>
 #include <atomic>
 
+hi_export_module(hikogui.unicode.grapheme);
+
 namespace hi::inline v1 {
 namespace detail {
 

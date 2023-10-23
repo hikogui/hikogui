@@ -1,27 +1,29 @@
 
 #pragma once
 
-#include "gui_event.hpp"
-#include "gui_event_type.hpp"
-#include "gui_event_variant.hpp"
-#include "gui_window_size.hpp"
-#include "gui_window_win32.hpp"
-#include "hitbox.hpp"
-#include "keyboard_bindings.hpp"
-#include "keyboard_focus_direction.hpp"
-#include "keyboard_focus_group.hpp"
-#include "keyboard_key.hpp"
-#include "keyboard_modifiers.hpp"
-#include "keyboard_state.hpp"
-#include "keyboard_virtual_key.hpp"
-#include "keyboard_virtual_key_win32_impl.hpp"
-#include "mouse_buttons.hpp"
-#include "mouse_cursor.hpp"
-#include "theme.hpp"
-#include "theme_book.hpp"
-#include "widget_id.hpp"
-#include "widget_intf.hpp"
-#include "widget_layout.hpp"
+#include "gui_event.hpp" // export
+#include "gui_event_type.hpp" // export
+#include "gui_event_variant.hpp" // export
+#include "gui_window_size.hpp" // export
+#include "gui_window_win32.hpp" // export
+#include "hitbox.hpp" // export
+#include "keyboard_bindings.hpp" // export
+#include "keyboard_focus_direction.hpp" // export
+#include "keyboard_focus_group.hpp" // export
+#include "keyboard_key.hpp" // export
+#include "keyboard_modifiers.hpp" // export
+#include "keyboard_state.hpp" // export
+#include "keyboard_virtual_key_intf.hpp" // export
+#include "keyboard_virtual_key_win32_impl.hpp" // export
+#include "mouse_buttons.hpp" // export
+#include "mouse_cursor.hpp" // export
+#include "theme.hpp" // export
+#include "theme_book.hpp" // export
+#include "widget_id.hpp" // export
+#include "widget_intf.hpp" // export
+#include "widget_layout.hpp" // export
+
+hi_export_module(hikogui.GUI);
 
 namespace hi { inline namespace v1 {
 /**

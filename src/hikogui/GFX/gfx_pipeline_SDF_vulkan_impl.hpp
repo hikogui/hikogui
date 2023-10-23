@@ -4,11 +4,13 @@
 
 #pragma once
 
-#include "gfx_pipeline_SDF_vulkan.hpp"
-#include "gfx_surface_vulkan.hpp"
+#include "gfx_pipeline_SDF_vulkan_intf.hpp"
+#include "gfx_surface_vulkan_intf.hpp"
 #include "gfx_device_vulkan_impl.hpp"
-#include "draw_context.hpp"
+#include "draw_context_intf.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.GUI : gfx_pipeline_SDF_impl);
 
 namespace hi { inline namespace v1 {
 

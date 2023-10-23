@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <future>
 
+hi_export_module(hikogui.container.functional);
 
 
 namespace hi::inline v1 {

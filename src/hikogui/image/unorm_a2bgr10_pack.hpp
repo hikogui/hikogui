@@ -8,9 +8,11 @@
 
 #pragma once
 
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+
+hi_export_module(hikogui.image.unorm_a2bgr10_pack);
 
 namespace hi::inline v1 {
 

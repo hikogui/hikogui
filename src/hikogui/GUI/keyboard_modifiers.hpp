@@ -5,11 +5,11 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 
-
+hi_export_module(hikogui.GUI : keyboard_modifiers);
 
 namespace hi::inline v1 {
 

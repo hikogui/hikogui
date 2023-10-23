@@ -7,13 +7,15 @@
 #include "skeleton_top_node.hpp"
 #include "skeleton_string_node.hpp"
 #include "skeleton_do_node.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../formula/formula.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string_view>
 #include <optional>
 #include <filesystem>
+
+hi_export_module(hikogui.skeleton.parse_context);
 
 namespace hi::inline v1 {
 

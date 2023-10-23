@@ -9,7 +9,7 @@
 #include <atomic>
 #include <cstdint>
 
-
+hi_export_module(hikogui.concurrency.wfree_idle_count);
 
 namespace hi::inline v1 {
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include <string>
 #include <unordered_map>
 #include <ostream>

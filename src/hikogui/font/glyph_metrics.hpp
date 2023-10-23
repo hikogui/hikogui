@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 
 hi_export_module(hikogui.font.glyph_metrics);

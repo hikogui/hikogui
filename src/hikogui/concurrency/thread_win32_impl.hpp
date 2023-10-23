@@ -2,19 +2,21 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../win32_headers.hpp"
 
 #include "thread_intf.hpp"
 #include "unfair_mutex.hpp"
 #include "../utility/utility.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include "../macros.hpp"
 #include <intrin.h>
 #include <mutex>
 #include <string>
 #include <unordered_map>
 
-hi_export_module(hikogui.conurrency.thread);
+hi_export_module(hikogui.conurrency.thread : impl);
 
 namespace hi::inline v1 {
 

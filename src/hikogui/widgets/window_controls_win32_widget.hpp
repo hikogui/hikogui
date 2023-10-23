@@ -15,6 +15,8 @@
 #include <string>
 #include <array>
 
+hi_export_module(hikogui.widgets.window_controls_win32_widget);
+
 namespace hi { inline namespace v1 {
 
 /** Window control button widget.

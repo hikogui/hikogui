@@ -6,9 +6,11 @@
 
 #include "aarectangle.hpp"
 #include "alignment.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <array>
+
+hi_export_module(hikogui.geometry : rectangle);
 
 namespace hi { inline namespace v1 {
 

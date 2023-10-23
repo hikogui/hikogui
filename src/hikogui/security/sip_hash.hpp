@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../random/random.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -9,7 +11,7 @@
 #include <string>
 #include <span>
 
-
+hi_export_module(hikogui.security.sip_hash);
 
 namespace hi::inline v1 {
 namespace detail {

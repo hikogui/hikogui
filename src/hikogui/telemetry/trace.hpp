@@ -5,13 +5,13 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../time/module.hpp"
+#include "../time/time.hpp"
 #include "counters.hpp"
 #include "../macros.hpp"
 #include <array>
 #include <tuple>
 
-
+hi_export_module(hikogui.telemetry : trace);
 
 namespace hi::inline v1 {
 

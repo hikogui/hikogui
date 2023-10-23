@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <string_view>
 
-
+hi_export_module(hikogui.container.void_span);
 
 namespace hi::inline v1 {
 

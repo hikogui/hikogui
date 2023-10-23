@@ -13,6 +13,7 @@
 #include <mutex>
 #include <memory>
 
+hi_export_module(hikogui.concurrency.rcu);
 
 
 namespace hi::inline v1 {

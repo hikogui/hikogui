@@ -9,6 +9,9 @@
 #pragma once
 
 #include "../macros.hpp"
+
+hi_export_module(hikogui.geometry : corner_radii);
+
 namespace hi {
 inline namespace v1 {
 

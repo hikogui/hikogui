@@ -4,8 +4,10 @@
 
 #pragma once
 
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.geometry : vector2);
 
 namespace hi { inline namespace v1 {
 

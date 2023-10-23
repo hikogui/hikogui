@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "../time/module.hpp"
+#include "../time/time.hpp"
 #include "../utility/utility.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <span>
 

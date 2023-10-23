@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "../image/module.hpp"
-#include "../geometry/module.hpp"
+#include "../image/image.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "bezier.hpp"
 #include "bezier_point.hpp"

@@ -11,6 +11,8 @@
 #include "char_converter.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.char_maps.utf_32);
+
 hi_warning_push();
 // C26490: Don't use reinterpret_cast.
 // Needed for SIMD intrinsics.

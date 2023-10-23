@@ -13,6 +13,8 @@
 #include "../macros.hpp"
 #include <memory>
 
+hi_export_module(hikogui.widgets.grid_widget);
+
 namespace hi { inline namespace v1 {
 
 /** A GUI widget that lays out child-widgets in a grid with variable sized cells.

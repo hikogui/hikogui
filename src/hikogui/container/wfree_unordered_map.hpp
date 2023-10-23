@@ -13,7 +13,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-
+hi_export_module(hikogui.container.wfree_unordered_map);
 
 namespace hi::inline v1 {
 

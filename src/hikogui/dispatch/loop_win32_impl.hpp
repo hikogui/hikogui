@@ -34,6 +34,8 @@
  *
  */
 
+#pragma once
+
 #include "../win32_headers.hpp"
 
 #include "loop_intf.hpp"

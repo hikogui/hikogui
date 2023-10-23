@@ -7,7 +7,7 @@
 #include "box_constraints.hpp"
 #include "box_shape.hpp"
 #include "spreadsheet_address.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cstdint>
@@ -17,7 +17,7 @@
 #include <utility>
 #include <cmath>
 
-
+hi_export_module(hikogui.layout.grid_layout);
 
 namespace hi { inline namespace v1 {
 namespace detail {

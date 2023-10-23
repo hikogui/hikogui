@@ -5,7 +5,7 @@
 #include "SHA2.hpp"
 #include "base_n.hpp"
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

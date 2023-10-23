@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "widget_id.hpp"
 #include "../macros.hpp"
@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <compare>
 
-
+hi_export_module(hikogui.GUI : hitbox);
 
 namespace hi::inline v1 {
 

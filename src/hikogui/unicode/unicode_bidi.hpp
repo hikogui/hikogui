@@ -10,10 +10,11 @@
 #include "ucd_decompositions.hpp"
 #include "ucd_general_categories.hpp"
 #include "../utility/utility.hpp"
-#include "../container/module.hpp"
-#include "../algorithm/module.hpp"
+#include "../container/container.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.unicode.unicode_bidi);
 
 
 namespace hi::inline v1 {

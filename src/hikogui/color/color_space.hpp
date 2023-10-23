@@ -8,8 +8,10 @@
  * @ingroup color
  */
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.color.color_space);
 
 namespace hi {
 inline namespace v1 {

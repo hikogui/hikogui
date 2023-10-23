@@ -9,6 +9,8 @@
 #include "extent3.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.geometry : scale3);
+
 namespace hi { inline namespace v1 {
 
 class scale3 {

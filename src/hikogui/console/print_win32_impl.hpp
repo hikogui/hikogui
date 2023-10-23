@@ -8,7 +8,7 @@
 
 #include "print_intf.hpp"
 #include "../utility/utility.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string_view>

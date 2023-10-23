@@ -7,6 +7,8 @@
 #include "../macros.hpp"
 #include <random>
 
+hi_export_module(hikogui.char_maps.random_char);
+
 namespace hi {
 inline namespace v1 {
 

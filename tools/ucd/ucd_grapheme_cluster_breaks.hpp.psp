@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include <cstdint>
 #include <optional>
 
@@ -11,7 +11,7 @@
 #undef small
 #endif
 
-import hikogui_utility;
+hi_export_module(hikogui.unicode.ucd_bidi_classes);
 
 namespace hi {
 inline namespace v1 {

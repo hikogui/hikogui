@@ -5,6 +5,8 @@
 #include "native_simd_utility.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.SIMD : native_i16x8_sse2);
+
 namespace hi {
 inline namespace v1 {
 

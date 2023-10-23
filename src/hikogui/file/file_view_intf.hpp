@@ -10,7 +10,7 @@
 
 #include "file_file.hpp"
 #include "file_view_win32_impl.hpp"
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../macros.hpp"
 #include <span>
 #include <filesystem>

@@ -8,7 +8,7 @@
 #include "../macros.hpp"
 #include <map>
 
-
+hi_export_module(hikogui.container.tree);
 
 namespace hi::inline v1 {
 

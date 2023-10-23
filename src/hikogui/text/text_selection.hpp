@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <algorithm>
 
+hi_export_module(hikogui.text.text_selection);
 
 
 namespace hi::inline v1 {

@@ -10,13 +10,13 @@
 
 #include "vector3.hpp"
 #include "extent2.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <compare>
 #include <concepts>
 
-
+hi_export_module(hikogui.geometry : extent3);
 
 namespace hi { inline namespace v1 {
 

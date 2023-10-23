@@ -6,8 +6,8 @@
 
 #include "delayed_format.hpp"
 #include "format_check.hpp"
-#include "../container/module.hpp"
-#include "../time/module.hpp"
+#include "../container/container.hpp"
+#include "../time/time.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../console/console.hpp"
@@ -23,6 +23,7 @@
 #include <thread>
 #include <filesystem>
 
+hi_export_module(hikogui.telemetry : log);
 
 
 namespace hi { inline namespace v1 {

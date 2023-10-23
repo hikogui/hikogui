@@ -11,7 +11,7 @@
 #include <memory>
 #include <new>
 
-
+hi_export_module(hikogui.container.vector_span);
 
 namespace hi::inline v1 {
 

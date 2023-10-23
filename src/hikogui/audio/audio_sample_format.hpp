@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <bit>
 

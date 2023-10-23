@@ -8,13 +8,14 @@
 #include "ucd_compositions.hpp"
 #include "ucd_canonical_combining_classes.hpp"
 #include "unicode_description.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>
 
+hi_export_module(hikogui.unicode.unicode_normalization);
 
 
 namespace hi::inline v1 {

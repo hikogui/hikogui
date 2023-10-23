@@ -7,10 +7,10 @@
 #include "theme_mode.hpp"
 #include "subpixel_orientation.hpp"
 #include "../i18n/i18n.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
-#include "../numeric/module.hpp"
-#include "../observer/module.hpp"
+#include "../numeric/numeric.hpp"
+#include "../observer/observer.hpp"
 #include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <vector>

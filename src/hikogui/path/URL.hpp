@@ -10,7 +10,7 @@
 
 #include "URI.hpp"
 #include "path_location.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <string>

@@ -12,11 +12,20 @@
 #include "scale2.hpp"
 #include "rotate2.hpp"
 #include "aarectangle.hpp"
-#include "transform_fwd.hpp"
 #include "../macros.hpp"
 #include <array>
 
+hi_export_module(hikogui.geometry : matrix2);
+
 namespace hi { inline namespace v1 {
+class aarectangle;
+class scale2;
+class translate2;
+class matrix2;
+
+[[nodiscard]] constexpr matrix2 operator*(matrix2 const& lhs, matrix2 const& rhs) noexcept;
+[[nodiscard]] constexpr aarectangle operator*(scale2 const& lhs, aarectangle const& rhs) noexcept;
+[[nodiscard]] constexpr matrix2 operator*(translate2 const& lhs, scale2 const& rhs) noexcept;
 
 /** A 2D or 3D homogenius matrix for transforming homogenious vectors and points.
  *

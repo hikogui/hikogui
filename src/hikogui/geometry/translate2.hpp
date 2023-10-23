@@ -9,6 +9,8 @@
 #include "../macros.hpp"
 #include <concepts>
 
+hi_export_module(hikogui.geometry : translate2);
+
 namespace hi { inline namespace v1 {
 
 class translate2 {

@@ -6,8 +6,11 @@
  * @ingroup widget_utilities
  */
 
-#include "../macros.hpp"
 #pragma once
+
+#include "../macros.hpp"
+
+hi_export_module(hikogui.widgets.widget_mode);
 
 namespace hi { inline namespace v1 {
 

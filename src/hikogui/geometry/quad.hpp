@@ -13,6 +13,8 @@
 #include "../macros.hpp"
 #include <tuple>
 
+hi_export_module(hikogui.geometry : quad);
+
 namespace hi::inline v1 {
 
 class quad {

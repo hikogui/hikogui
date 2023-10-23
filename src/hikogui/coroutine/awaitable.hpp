@@ -9,6 +9,8 @@
 #include <coroutine>
 #include <type_traits>
 
+hi_export_module(hikogui.coroutine.awaitable);
+
 namespace hi::inline v1 {
 
 /** Check if type can be directly co_await on.

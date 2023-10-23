@@ -5,10 +5,12 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../color/module.hpp"
+#include "../color/color.hpp"
 #include <format>
 #include <filesystem>
 #include <iterator>
+
+hi_export_module(hikogui.parser.token);
 
 namespace hi { inline namespace v1 {
 

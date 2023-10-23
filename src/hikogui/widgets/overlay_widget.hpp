@@ -11,6 +11,8 @@
 #include "widget.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.widgets.overlay_widget);
+
 namespace hi { inline namespace v1 {
 
 /** A GUI widget which may exist anywhere on a window overlaid above any other widget.

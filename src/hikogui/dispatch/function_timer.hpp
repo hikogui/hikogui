@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../time/module.hpp"
+#include "../time/time.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 #include <vector>

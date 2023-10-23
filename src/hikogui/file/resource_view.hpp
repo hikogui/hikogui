@@ -9,7 +9,7 @@
 #pragma once
 
 #include "file_view.hpp"
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../macros.hpp"
 #include <span>
 #include <variant>
@@ -17,6 +17,8 @@
 #include <cstddef>
 #include <string_view>
 #include <type_traits>
+
+hi_export_module(hikogui.file.resource_view : impl);
 
 namespace hi { inline namespace v1 {
 

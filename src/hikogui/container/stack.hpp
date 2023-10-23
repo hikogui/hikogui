@@ -10,6 +10,8 @@
 #include <memory>
 #include <initializer_list>
 
+hi_export_module(hikogui.container.stack);
+
 namespace hi::inline v1 {
 
 /** A static sized stack.

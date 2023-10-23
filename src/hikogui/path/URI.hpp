@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <optional>

@@ -9,6 +9,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.observer : observed_value);
 
 
 namespace hi::inline v1 {

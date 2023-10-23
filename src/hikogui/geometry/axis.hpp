@@ -8,6 +8,9 @@
 #pragma once
 
 #include "../macros.hpp"
+
+hi_export_module(hikogui.geometry : axis);
+
 namespace hi {
 inline namespace v1 {
 

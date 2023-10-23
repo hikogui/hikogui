@@ -22,6 +22,8 @@
 #include <immintrin.h>
 #endif
 
+hi_export_module(hikogui.numeric.int_carry);
+
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
 hi_warning_ignore_msvc(4702);

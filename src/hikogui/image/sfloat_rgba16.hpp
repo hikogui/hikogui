@@ -9,16 +9,16 @@
 #pragma once
 
 #include "pixmap_span.hpp"
-#include "../color/module.hpp"
-#include "../geometry/module.hpp"
-#include "../SIMD/module.hpp"
+#include "../color/color.hpp"
+#include "../geometry/geometry.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <algorithm>
 #include <bit>
 #include <array>
 
-
+hi_export_module(hikogui.image.sfloat_rgba16);
 
 namespace hi::inline v1 {
 

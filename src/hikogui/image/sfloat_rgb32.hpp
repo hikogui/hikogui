@@ -8,9 +8,11 @@
 
 #pragma once
 
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+
+hi_export_module(hikogui.image.sfloat_rgb32);
 
 namespace hi::inline v1 {
 

@@ -4,10 +4,12 @@
 
 #pragma once
 
-#include "gfx_pipeline_box_vulkan.hpp"
+#include "gfx_pipeline_box_vulkan_intf.hpp"
 #include "gfx_device_vulkan_impl.hpp"
-#include "draw_context.hpp"
+#include "draw_context_intf.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.GUI : gfx_pipeline_box_impl);
 
 namespace hi { inline namespace v1 {
 

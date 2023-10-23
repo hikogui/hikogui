@@ -10,9 +10,9 @@
 #include "elusive_icon.hpp"
 #include "hikogui_icon.hpp"
 #include "../unicode/unicode.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../path/path.hpp"
 #include <limits>
 #include <array>

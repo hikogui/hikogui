@@ -9,15 +9,16 @@
 #pragma once
 
 #include "../l10n/l10n.hpp"
-#include "../observer/module.hpp"
+#include "../observer/observer.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <optional>
 #include <concepts>
 
+hi_export_module(hikogui.widgets.text_field_delegate);
+
 namespace hi { inline namespace v1 {
-class text_field_widget;
 
 /** A delegate that controls the state of a text_field_widget.
  *

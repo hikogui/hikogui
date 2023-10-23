@@ -8,6 +8,7 @@
 #include "../macros.hpp"
 #include <span>
 
+hi_export_module(hikogui.parser.placement);
 
 
 hi_warning_push();

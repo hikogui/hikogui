@@ -10,7 +10,7 @@
 #include "log.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
-#include "../time/module.hpp"
+#include "../time/time.hpp"
 #include "../macros.hpp"
 #include <span>
 #include <typeinfo>
@@ -21,6 +21,7 @@
 #include <memory>
 #include <mutex>
 
+hi_export_module(hikogui.telemetry : counters);
 
 
 namespace hi::inline v1 {

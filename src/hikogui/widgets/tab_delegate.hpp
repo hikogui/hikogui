@@ -12,6 +12,8 @@
 #include <memory>
 #include <functional>
 
+hi_export_module(hikogui.widgets.tab_delegate);
+
 namespace hi { inline namespace v1 {
 class tab_widget;
 

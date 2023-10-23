@@ -20,6 +20,8 @@
 #include <optional>
 #include <future>
 
+hi_export_module(hikogui.widgets.text_field_widget);
+
 namespace hi { inline namespace v1 {
 
 template<typename Context>

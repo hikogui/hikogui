@@ -8,9 +8,11 @@
 
 #pragma once
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+
+hi_export_module(hikogui.image.uint_abgr8_pack);
 
 namespace hi::inline v1 {
 

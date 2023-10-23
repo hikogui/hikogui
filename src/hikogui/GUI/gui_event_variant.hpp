@@ -11,6 +11,8 @@
 #include "gui_event_type.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.GUI : gui_event_variant);
+
 namespace hi { inline namespace v1 {
 
 /** A granular gui event type.

@@ -10,6 +10,7 @@
 #include <ostream>
 #include <vector>
 
+hi_export_module(hikogui.unicode.unicode_break_opportunity);
 
 
 namespace hi::inline v1 {

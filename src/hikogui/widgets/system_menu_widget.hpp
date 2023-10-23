@@ -16,6 +16,8 @@
 #include <string>
 #include <array>
 
+hi_export_module(hikogui.widgets.system_menu_widget);
+
 namespace hi { inline namespace v1 {
 
 /** The system menu widget.

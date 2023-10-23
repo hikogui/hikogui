@@ -15,13 +15,15 @@
 #include "grid_widget.hpp"
 #include "radio_button_widget.hpp"
 #include "selection_delegate.hpp"
-#include "../observer/module.hpp"
+#include "../observer/observer.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+
+hi_export_module(hikogui.widgets.selection_widget);
 
 namespace hi { inline namespace v1 {
 

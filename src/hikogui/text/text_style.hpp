@@ -6,17 +6,19 @@
 
 #include "text_decoration.hpp"
 #include "semantic_text_style.hpp"
-#include "../color/module.hpp"
+#include "../color/color.hpp"
 #include "../i18n/i18n.hpp"
 #include "../unicode/unicode.hpp"
 #include "../utility/utility.hpp"
 #include "../font/font.hpp"
 #include "../telemetry/telemetry.hpp"
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../macros.hpp"
 #include <ostream>
 #include <vector>
 #include <algorithm>
+
+hi_export_module(hikogui.text.text_style);
 
 namespace hi::inline v1 {
 

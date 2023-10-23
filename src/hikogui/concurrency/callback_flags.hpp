@@ -7,7 +7,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
-
+hi_export_module(hikogui.concurrency.callback_flags);
 
 namespace hi::inline v1 {
 

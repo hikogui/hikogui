@@ -15,6 +15,8 @@
 #include <utility>
 #include <cstddef>
 
+hi_export_module(hikogui.char_maps.utf_8);
+
 hi_warning_push();
 // C26490: Don't use reinterpret_cast.
 // Needed for SIMD intrinsics.

@@ -13,7 +13,7 @@
 #include <vector>
 #include <exception>
 
-
+hi_export_module(hikogui.algorithm.ranges);
 
 namespace hi::inline v1 {
 

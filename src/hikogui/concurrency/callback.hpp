@@ -10,6 +10,8 @@
 #include <atomic>
 #include <functional>
 
+hi_export_module(hikogui.concurrency.callback);
+
 namespace hi { inline namespace v1 {
 namespace detail {
 

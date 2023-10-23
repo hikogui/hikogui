@@ -5,12 +5,14 @@
 #pragma once
 
 #include "gfx_surface_delegate_vulkan.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <vector>
 #include <cstdint>
+
+hi_export_module(hikogui.GUI : gfx_surface_delegate);
 
 namespace hi::inline v1 {
 

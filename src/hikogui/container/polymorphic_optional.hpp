@@ -13,7 +13,7 @@
 #include <concepts>
 #include <thread>
 
-
+hi_export_module(hikogui.container.polymorphic_optional);
 
 hi_warning_push();
 // C26432: If you define or delete any default operation in the type '...', define or delete them all (c.21).

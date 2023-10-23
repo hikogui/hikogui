@@ -10,7 +10,7 @@
 #include <thread>
 #include <chrono>
 
-
+hi_export_module(hikogui.concurrency.atomic);
 
 hi_warning_push();
 // C26403: Reset or explicitly delete and owner<T> pointer '...' (r.3).: ...

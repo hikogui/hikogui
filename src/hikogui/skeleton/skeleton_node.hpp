@@ -4,12 +4,14 @@
 
 #pragma once
 
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../formula/formula.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string_view>
 #include <optional>
+
+hi_export_module(hikogui.skeleton.node);
 
 namespace hi::inline v1 {
 

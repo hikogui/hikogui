@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <cstddef>
 
+hi_export_module(hikogui.unicode.unicode_plural);
 
 
 namespace hi { inline namespace v1 {

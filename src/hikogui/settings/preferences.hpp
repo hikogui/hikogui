@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../telemetry/telemetry.hpp"
-#include "../observer/module.hpp"
+#include "../observer/observer.hpp"
 #include "../codec/codec.hpp"
 #include "../dispatch/dispatch.hpp"
 #include "../file/file.hpp"

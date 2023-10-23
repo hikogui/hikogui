@@ -12,14 +12,14 @@
 #include "extent2.hpp"
 #include "point2.hpp"
 #include "point3.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 #include <concepts>
 #include <mutex>
 
-
+hi_export_module(hikogui.geometry : aarectangle);
 
 namespace hi { inline namespace v1 {
 

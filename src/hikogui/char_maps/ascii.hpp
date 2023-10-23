@@ -15,7 +15,7 @@
 #include <utility>
 #include <tuple>
 
-
+hi_export_module(hikogui.char_maps.ascii);
 
 namespace hi { inline namespace v1 {
 

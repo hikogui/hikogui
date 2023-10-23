@@ -16,6 +16,8 @@
 #include <memory>
 #include <functional>
 
+hi_export_module(hikogui.widgets.text_delegate);
+
 namespace hi { inline namespace v1 {
 class text_widget;
 

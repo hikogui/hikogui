@@ -6,8 +6,8 @@
 #include "../file/file.hpp"
 #include "../path/path.hpp"
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
-#include "../coroutine/module.hpp"
+#include "../algorithm/algorithm.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

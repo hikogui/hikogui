@@ -12,6 +12,7 @@
 #include <limits>
 #include <concepts>
 
+hi_export_module(hikogui.numeric.safe_int);
 
 
 namespace hi::inline v1 {

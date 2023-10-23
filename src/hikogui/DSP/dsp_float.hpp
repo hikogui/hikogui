@@ -1,7 +1,9 @@
 
+#pragma once
+
 #include "../macros.hpp"
 
-#pragma once
+hi_export_module(hikogui.DSP.dsp_float);
 
 namespace hi {
 inline namespace v1 {

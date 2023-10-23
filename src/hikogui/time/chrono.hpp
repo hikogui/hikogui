@@ -7,6 +7,8 @@
 #include <chrono>
 #include "../macros.hpp"
 
+hi_export_module(hikogui.time.chrono);
+
 namespace hi::inline v1 {
 
 using utc_nanoseconds = std::chrono::utc_time<std::chrono::nanoseconds>;

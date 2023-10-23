@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "file.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
@@ -12,7 +14,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-
+hi_export_module(hikogui.file.file : impl);
 
 namespace hi::inline v1 {
 

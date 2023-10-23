@@ -10,6 +10,7 @@
 #include <array>
 #include <ostream>
 
+hi_export_module(hikogui.SIMD : native_u32x4_sse2);
 
 
 hi_warning_push();

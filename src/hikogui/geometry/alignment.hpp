@@ -12,7 +12,7 @@
 #include "../macros.hpp"
 #include <optional>
 
-
+hi_export_module(hikogui.geometry : alignment);
 
 namespace hi { inline namespace v1 {
 

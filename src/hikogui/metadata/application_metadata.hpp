@@ -5,7 +5,7 @@
 #pragma once
 
 #include "semantic_version.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <stdexcept>

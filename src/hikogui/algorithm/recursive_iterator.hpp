@@ -9,6 +9,8 @@
 #include <compare>
 #include <iterator>
 
+hi_export_module(hikogui.algorithm.recursive_iterator);
+
 namespace hi {
 inline namespace v1 {
 

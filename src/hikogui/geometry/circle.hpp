@@ -12,6 +12,8 @@
 #include "quad.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.geometry : circle);
+
 namespace hi { inline namespace v1 {
 
 /** A type defining a 2D circle.

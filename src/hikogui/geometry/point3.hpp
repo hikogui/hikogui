@@ -7,13 +7,13 @@
 #include "point2.hpp"
 #include "vector3.hpp"
 #include "extent3.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <format>
 #include <concepts>
 
-
+hi_export_module(hikogui.geometry : point3);
 
 namespace hi::inline v1 {
 

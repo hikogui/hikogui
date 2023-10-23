@@ -7,6 +7,8 @@
 #include "skeleton_node.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.skeleton.expression_node);
+
 namespace hi::inline v1 {
 
 struct skeleton_expression_node final : skeleton_node {

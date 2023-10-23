@@ -9,6 +9,9 @@
 #pragma once
 
 #include "../macros.hpp"
+
+hi_export_module(hikogui.geometry : line_end_cap);
+
 namespace hi {
 inline namespace v1 {
 

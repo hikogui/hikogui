@@ -9,7 +9,7 @@
 #include <format>
 #include <tuple>
 
-
+hi_export_module(hikogui.telemetry.delayed_format);
 
 namespace hi::inline v1 {
 

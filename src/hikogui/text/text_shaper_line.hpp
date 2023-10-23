@@ -7,9 +7,11 @@
 #include "text_shaper_char.hpp"
 #include "../font/font.hpp"
 #include "../unicode/unicode.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <vector>
+
+hi_export_module(hikogui.text.text_shaper_line);
 
 namespace hi::inline v1 {
 

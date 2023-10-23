@@ -14,7 +14,7 @@
 #include <memory>
 #include <span>
 
-
+hi_export_module(hikogui.image.pixmap);
 
 hi_warning_push();
 // C26439: This kind of function should not throw. Declare it 'noexcept' (f.6)

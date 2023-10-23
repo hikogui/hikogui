@@ -11,9 +11,11 @@
 #include "widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.widgets.scroll_widget);
 
 namespace hi { inline namespace v1 {
 

@@ -11,7 +11,7 @@
 #include "widget_id.hpp"
 #include "gui_event_type.hpp"
 #include "gui_event_variant.hpp"
-#include "keyboard_virtual_key.hpp"
+#include "keyboard_virtual_key_intf.hpp"
 #include "keyboard_state.hpp"
 #include "keyboard_modifiers.hpp"
 #include "keyboard_focus_group.hpp"
@@ -19,11 +19,13 @@
 #include "mouse_buttons.hpp"
 #include "hitbox.hpp"
 #include "../unicode/unicode.hpp"
-#include "../geometry/module.hpp"
-#include "../time/module.hpp"
+#include "../geometry/geometry.hpp"
+#include "../time/time.hpp"
 #include "../macros.hpp"
 #include <chrono>
 #include <memory>
+
+hi_export_module(hikogui.GUI : gui_event);
 
 namespace hi { inline namespace v1 {
 

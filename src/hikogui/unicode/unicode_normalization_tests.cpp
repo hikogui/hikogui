@@ -5,8 +5,8 @@
 #include "unicode_normalization.hpp"
 #include "../file/file.hpp"
 #include "../path/path.hpp"
-#include "../algorithm/module.hpp"
-#include "../coroutine/module.hpp"
+#include "../algorithm/algorithm.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>

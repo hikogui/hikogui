@@ -10,6 +10,7 @@
 #include <string>
 #include <ostream>
 
+hi_export_module(hikogui.text.text_decoration);
 
 
 namespace hi::inline v1 {

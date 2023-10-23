@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include <functional>
 
-
+hi_export_module(hikogui.container.stable_set);
 
 namespace hi::inline v1 {
 

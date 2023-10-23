@@ -12,7 +12,7 @@
 #include "../macros.hpp"
 #include <algorithm>
 
-
+hi_export_module(hikogui.image.snorm_r8);
 
 namespace hi::inline v1 {
 

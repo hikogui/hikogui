@@ -11,7 +11,7 @@
 #include <limits>
 #include <concepts>
 
-
+hi_export_module(hikogui.numeric.fixed);
 
 namespace hi::inline v1 {
 

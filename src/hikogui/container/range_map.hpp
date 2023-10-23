@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <set>
 
-
+hi_export_module(hikogui.container.range_map);
 
 namespace hi::inline v1 {
 

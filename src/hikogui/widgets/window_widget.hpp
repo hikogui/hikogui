@@ -17,6 +17,8 @@
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.widgets.window_widget);
+
 namespace hi { inline namespace v1 {
 
 /** The top-level window widget.

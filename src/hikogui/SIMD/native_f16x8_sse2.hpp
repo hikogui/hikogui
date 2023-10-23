@@ -6,6 +6,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.SIMD : native_f16x8_sse2);
 
 
 namespace hi {

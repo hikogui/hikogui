@@ -14,6 +14,8 @@
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.widgets.toggle_widget);
+
 namespace hi { inline namespace v1 {
 
 template<typename Context>

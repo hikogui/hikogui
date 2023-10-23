@@ -15,9 +15,12 @@
 #include "../macros.hpp"
 #include <array>
 
+hi_export_module(hikogui.geometry : matrix3);
+
 namespace hi { inline namespace v1 {
 
 class matrix3;
+[[nodiscard]] constexpr matrix3 operator*(matrix3 const& lhs, matrix3 const& rhs) noexcept;
 [[nodiscard]] constexpr matrix3 operator*(translate3 const& lhs, scale3 const& rhs) noexcept;
 [[nodiscard]] constexpr matrix3 operator*(translate3 const& lhs, rotate3 const& rhs) noexcept;
 

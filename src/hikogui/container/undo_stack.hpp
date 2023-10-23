@@ -9,7 +9,7 @@
 #include <vector>
 #include <cstddef>
 
-
+hi_export_module(hikogui.container.undo_stack);
 
 namespace hi::inline v1 {
 

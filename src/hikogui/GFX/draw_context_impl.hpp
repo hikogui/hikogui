@@ -4,14 +4,16 @@
 
 #pragma once
 
-#include "draw_context.hpp"
+#include "draw_context_intf.hpp"
 #include "gfx_pipeline_box_vulkan_impl.hpp"
 #include "gfx_pipeline_image_vulkan_impl.hpp"
 #include "gfx_pipeline_SDF_vulkan_impl.hpp"
 #include "gfx_pipeline_override_vulkan_impl.hpp"
-#include "gfx_device_vulkan.hpp"
-#include "../text/module.hpp"
+#include "gfx_device_vulkan_intf.hpp"
+#include "../text/text.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.GUI : draw_context_impl);
 
 namespace hi { inline namespace v1 {
 

@@ -9,13 +9,13 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "color.hpp"
 #include "../macros.hpp"
 #include <cmath>
 #include <array>
 
-
+hi_export_module(hikogui.color.sRGB);
 
 hi_warning_push();
 // C26426: Global initializer calls a non-constexpr function '...' (i.22).

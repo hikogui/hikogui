@@ -7,8 +7,10 @@
 #include "algorithm.hpp"
 #include "../macros.hpp"
 #include "../utility/utility.hpp"
-#include "../time/module.hpp"
+#include "../time/time.hpp"
 #include <cmath>
+
+hi_export_module(hikogui.algorithm.animator);
 
 namespace hi::inline v1 {
 

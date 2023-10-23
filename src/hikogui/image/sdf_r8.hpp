@@ -12,7 +12,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
-
+hi_export_module(hikogui.image.sdf_r8);
 
 hi_warning_push();
 // C26434: Function '...' hides a non-virtual function '...'.

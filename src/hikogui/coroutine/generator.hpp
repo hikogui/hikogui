@@ -13,7 +13,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
-
+hi_export_module(hikogui.coroutine.generator);
 
 namespace hi::inline v1 {
 

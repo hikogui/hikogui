@@ -6,7 +6,7 @@
 
 #include "audio_sample_format.hpp"
 #include "../utility/utility.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../random/random.hpp"
 #include "../macros.hpp"
 #include <cstddef>

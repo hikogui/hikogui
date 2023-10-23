@@ -11,15 +11,17 @@
 #include "widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../l10n/l10n.hpp"
-#include "../observer/module.hpp"
+#include "../observer/observer.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+
+hi_export_module(hikogui.widgets.abstract_button_widget);
 
 namespace hi { inline namespace v1 {
 

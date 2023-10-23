@@ -8,8 +8,8 @@
 #include "bezier_curve.hpp" // export
 #include "bezier.hpp" // export
 #include "../utility/utility.hpp"
-#include "../geometry/module.hpp"
-#include "../image/module.hpp"
+#include "../geometry/geometry.hpp"
+#include "../image/image.hpp"
 #include "../macros.hpp"
 #include <vector>
 

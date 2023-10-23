@@ -9,6 +9,9 @@
 #pragma once
 
 #include "../macros.hpp"
+
+hi_export_module(hikogui.geometry : line_join_style);
+
 namespace hi {
 inline namespace v1 {
 

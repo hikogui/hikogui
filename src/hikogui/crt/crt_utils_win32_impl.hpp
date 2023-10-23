@@ -12,8 +12,8 @@
 #include "../console/console.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
-#include "../char_maps/module.hpp"
-#include "../time/module.hpp"
+#include "../char_maps/char_maps.hpp"
+#include "../time/time.hpp"
 #include "../macros.hpp"
 
 hi_export_module(hikogui.crt.crt_utils : impl);

@@ -5,16 +5,18 @@
 #pragma once
 
 #include "../settings/settings.hpp"
-#include "../text/module.hpp"
+#include "../text/text.hpp"
 #include "../utility/utility.hpp"
-#include "../color/module.hpp"
-#include "../geometry/module.hpp"
+#include "../color/color.hpp"
+#include "../geometry/geometry.hpp"
 #include "../codec/codec.hpp"
 #include "../macros.hpp"
 #include <array>
 #include <filesystem>
 #include <string>
 #include <vector>
+
+hi_export_module(hikogui.GUI : theme);
 
 namespace hi::inline v1 {
 

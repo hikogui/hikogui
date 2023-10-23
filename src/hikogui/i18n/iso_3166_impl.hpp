@@ -6,7 +6,7 @@
 
 #include "iso_3166_intf.hpp"
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <array>
 

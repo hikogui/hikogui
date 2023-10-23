@@ -9,7 +9,7 @@
 #pragma once
 
 #include "glyph_id.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <bitset>

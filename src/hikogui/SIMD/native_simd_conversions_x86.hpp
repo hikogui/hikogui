@@ -12,6 +12,8 @@
 #include "native_simd_utility.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.SIMD : native_simd_conversions_x86);
+
 namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_SSE2

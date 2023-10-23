@@ -10,11 +10,13 @@
 
 #include "gui_window_size.hpp"
 #include "../layout/layout.hpp"
-#include "../geometry/module.hpp"
-#include "../time/module.hpp"
+#include "../geometry/geometry.hpp"
+#include "../time/time.hpp"
 #include "../utility/utility.hpp"
 #include "../settings/settings.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.GUI : widget_layout);
 
 namespace hi { inline namespace v1 {
 

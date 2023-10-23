@@ -33,6 +33,7 @@
 #include <immintrin.h>
 #endif
 
+hi_export_module(hikogui.SIMD : native_simd_utility);
 
 
 namespace hi { inline namespace v1 {

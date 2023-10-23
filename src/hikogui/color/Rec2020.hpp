@@ -13,6 +13,8 @@
 #include <cmath>
 #include <array>
 
+hi_export_module(hikogui.color.Rec2020);
+
 namespace hi {
 inline namespace v1 {
 

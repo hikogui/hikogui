@@ -7,6 +7,8 @@
 #include "skeleton_node.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.skeleton.placeholder_node);
+
 namespace hi::inline v1 {
 
 struct skeleton_placeholder_node final : skeleton_node {

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "file_file_win32_impl.hpp"
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include "access_mode.hpp"

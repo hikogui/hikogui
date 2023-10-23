@@ -11,6 +11,8 @@
 #include "../macros.hpp"
 #include <tuple>
 
+hi_export_module(hikogui.unicode.unicode_sentence_break);
+
 namespace hi::inline v1 {
 
 namespace detail {

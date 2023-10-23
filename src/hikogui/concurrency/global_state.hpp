@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <bit>
 
+hi_export_module(hikogui.concurrency.global_state);
 
 
 hi_warning_push();

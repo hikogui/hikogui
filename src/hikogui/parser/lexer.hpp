@@ -7,7 +7,7 @@
 #include "token.hpp"
 #include "../utility/utility.hpp"
 #include "../unicode/unicode.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include <ranges>
 #include <iterator>
 #include <cstdint>
@@ -15,6 +15,8 @@
 #include <string_view>
 #include <format>
 #include <ostream>
+
+hi_export_module(hikogui.parser.lexer);
 
 namespace hi { inline namespace v1 {
 

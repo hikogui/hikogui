@@ -16,7 +16,7 @@
 #include <emmintrin.h>
 #endif
 
-
+hi_export_module(hikogui.char_maps.char_converter);
 
 namespace hi { inline namespace v1 {
 

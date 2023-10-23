@@ -5,8 +5,10 @@
 #pragma once
 
 #include "grid_layout.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.layout.box_constraints);
 
 namespace hi { inline namespace v1 {
 

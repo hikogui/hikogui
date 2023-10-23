@@ -10,18 +10,20 @@
 
 #include "widget_mode.hpp"
 #include "../layout/layout.hpp"
-#include "../geometry/module.hpp"
-#include "../observer/module.hpp"
-#include "../time/module.hpp"
+#include "../geometry/geometry.hpp"
+#include "../observer/observer.hpp"
+#include "../time/time.hpp"
 #include "../settings/settings.hpp"
-#include "../numeric/module.hpp"
+#include "../numeric/numeric.hpp"
 #include "../GUI/GUI.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <vector>
 #include <string>
 #include <ranges>
+
+hi_export_module(hikogui.widgets.widget);
 
 namespace hi { inline namespace v1 {
 

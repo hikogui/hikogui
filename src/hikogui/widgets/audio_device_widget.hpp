@@ -19,6 +19,8 @@
 #include <optional>
 #include <future>
 
+hi_export_module(hikogui.widgets.audio_device_widget);
+
 namespace hi { inline namespace v1 {
 
 /** Audio device configuration widget.

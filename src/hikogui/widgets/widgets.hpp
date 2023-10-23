@@ -1,40 +1,42 @@
 
 #pragma once
 
-#include "abstract_button_widget.hpp"
-#include "audio_device_widget.hpp"
-#include "button_delegate.hpp"
-#include "checkbox_widget.hpp"
-#include "grid_widget.hpp"
-#include "icon_widget.hpp"
-#include "label_widget.hpp"
-#include "menu_button_widget.hpp"
-#include "momentary_button_widget.hpp"
-#include "overlay_widget.hpp"
-#include "radio_button_widget.hpp"
-#include "scroll_aperture_widget.hpp"
-#include "scroll_bar_widget.hpp"
-#include "scroll_widget.hpp"
-#include "selection_delegate.hpp"
-#include "selection_widget.hpp"
-#include "spacer_widget.hpp"
-#include "system_menu_widget.hpp"
-#include "tab_delegate.hpp"
-#include "tab_widget.hpp"
-#include "text_delegate.hpp"
-#include "text_field_delegate.hpp"
-#include "text_field_widget.hpp"
-#include "text_widget.hpp"
-#include "toggle_widget.hpp"
-#include "toolbar_button_widget.hpp"
-#include "toolbar_tab_button_widget.hpp"
-#include "toolbar_widget.hpp"
-#include "widget_mode.hpp"
-#include "widget.hpp"
-#include "window_controls_macos_widget.hpp"
-#include "window_controls_win32_widget.hpp"
-#include "window_widget.hpp"
-#include "with_label_widget.hpp"
+#include "abstract_button_widget.hpp" // export
+#include "audio_device_widget.hpp" // export
+#include "button_delegate.hpp" // export
+#include "checkbox_widget.hpp" // export
+#include "grid_widget.hpp" // export
+#include "icon_widget.hpp" // export
+#include "label_widget.hpp" // export
+#include "menu_button_widget.hpp" // export
+#include "momentary_button_widget.hpp" // export
+#include "overlay_widget.hpp" // export
+#include "radio_button_widget.hpp" // export
+#include "scroll_aperture_widget.hpp" // export
+#include "scroll_bar_widget.hpp" // export
+#include "scroll_widget.hpp" // export
+#include "selection_delegate.hpp" // export
+#include "selection_widget.hpp" // export
+#include "spacer_widget.hpp" // export
+#include "system_menu_widget.hpp" // export
+#include "tab_delegate.hpp" // export
+#include "tab_widget.hpp" // export
+#include "text_delegate.hpp" // export
+#include "text_field_delegate.hpp" // export
+#include "text_field_widget.hpp" // export
+#include "text_widget.hpp" // export
+#include "toggle_widget.hpp" // export
+#include "toolbar_button_widget.hpp" // export
+#include "toolbar_tab_button_widget.hpp" // export
+#include "toolbar_widget.hpp" // export
+#include "widget_mode.hpp" // export
+#include "widget.hpp" // export
+#include "window_controls_macos_widget.hpp" // export
+#include "window_controls_win32_widget.hpp" // export
+#include "window_widget.hpp" // export
+#include "with_label_widget.hpp" // export
+
+hi_export_module(hikogui.widgets);
 
 namespace hi {
 inline namespace v1 {

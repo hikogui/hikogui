@@ -6,7 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
-#include "../numeric/module.hpp"
+#include "../numeric/numeric.hpp"
 #include "../macros.hpp"
 #include <atomic>
 #include <array>
@@ -18,6 +18,7 @@
 #include <x86intrin.h>
 #endif
 
+hi_export_module(hikogui.time.time_stamp_count);
 
 
 namespace hi::inline v1 {

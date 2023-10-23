@@ -4,9 +4,11 @@
 
 #pragma once
 
-#include "gfx_pipeline_image_vulkan.hpp"
+#include "gfx_pipeline_image_vulkan_intf.hpp"
 #include "gfx_device_vulkan_impl.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.GUI : gfx_pipeline_image_impl);
 
 namespace hi { inline namespace v1 {
 

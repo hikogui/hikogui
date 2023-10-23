@@ -9,6 +9,7 @@
 #include <string_view>
 #include <type_traits>
 
+hi_export_module(hikogui.telemetry.format_check);
 
 
 namespace hi::inline v1 {

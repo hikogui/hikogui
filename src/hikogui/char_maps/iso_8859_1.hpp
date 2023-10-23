@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <utility>
 
-
+hi_export_module(hikogui.char_maps.iso_8859_1);
 
 namespace hi { inline namespace v1 {
 

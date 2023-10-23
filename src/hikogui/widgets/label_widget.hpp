@@ -11,7 +11,7 @@
 #include "widget.hpp"
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
@@ -20,6 +20,8 @@
 #include <array>
 #include <optional>
 #include <future>
+
+hi_export_module(hikogui.widgets.label_widget);
 
 namespace hi { inline namespace v1 {
 

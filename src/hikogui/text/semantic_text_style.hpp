@@ -7,6 +7,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.text.semantic_text_style);
 
 
 namespace hi::inline v1 {

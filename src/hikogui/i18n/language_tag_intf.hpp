@@ -8,8 +8,8 @@
 #include "iso_3166.hpp"
 #include "iso_639.hpp"
 #include "../utility/utility.hpp"
-#include "../coroutine/module.hpp"
-#include "../algorithm/module.hpp"
+#include "../coroutine/coroutine.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <string_view>

@@ -13,7 +13,7 @@
 #include <memory>
 #include <array>
 
-
+hi_export_module(hikogui.container.wfree_fifo);
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).

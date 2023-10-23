@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "../numeric/module.hpp"
-#include "../SIMD/module.hpp"
-#include "../geometry/module.hpp"
+#include "../numeric/numeric.hpp"
+#include "../SIMD/SIMD.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <array>
 #include <optional>

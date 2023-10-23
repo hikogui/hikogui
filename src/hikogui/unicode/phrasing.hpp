@@ -14,6 +14,7 @@
 #include <optional>
 #include <bit>
 
+hi_export_module(hikogui.unicode.phrasing);
 
 
 namespace hi::inline v1 {

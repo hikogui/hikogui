@@ -6,7 +6,7 @@
 
 #include "audio_direction.hpp"
 #include "audio_format_range.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../utility/utility.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"

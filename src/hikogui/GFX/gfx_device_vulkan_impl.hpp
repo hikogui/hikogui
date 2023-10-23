@@ -4,14 +4,15 @@
 
 #pragma once
 
-#include "gfx_device_vulkan.hpp"
-#include "gfx_system_vulkan.hpp"
-#include "gfx_surface_vulkan.hpp"
+#include "gfx_device_vulkan_intf.hpp"
+#include "gfx_system_vulkan_intf.hpp"
+#include "gfx_surface_vulkan_intf.hpp"
 #include "../file/file.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <span>
 
+hi_export_module(hikogui.GUI : gfx_device_impl);
 
 namespace hi::inline v1 {
 

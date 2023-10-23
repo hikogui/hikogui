@@ -11,6 +11,8 @@
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.GUI : widget_intf);
+
 namespace hi { inline namespace v1 {
 class gui_window;
 

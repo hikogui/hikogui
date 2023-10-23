@@ -13,6 +13,8 @@
 #include "../macros.hpp"
 #include <thread>
 
+hi_export_module(hikogui.concurrency.unfair_recursive_mutex);
+
 namespace hi { inline namespace v1 {
 
 /** An unfair recursive-mutex

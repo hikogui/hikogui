@@ -16,6 +16,8 @@
 #include <string_view>
 #include <climits>
 
+hi_export_module(hikogui.char_maps.to_string);
+
 namespace hi { inline namespace v1 {
 
 /** Identity conversion from UTF-32 to UTF-32.

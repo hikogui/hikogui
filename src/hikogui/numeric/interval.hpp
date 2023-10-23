@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <limits>
@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <compare>
 
+hi_export_module(hikogui.numeric.interval);
 
 
 namespace hi::inline v1 {

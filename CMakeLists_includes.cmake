@@ -48,7 +48,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/animator.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/lookahead_iterator.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm_misc.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/ranges.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/recursive_iterator.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/strings.hpp
@@ -56,7 +56,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/char_converter.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/cp_1252.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/iso_8859_1.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/char_maps.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/random_char.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/to_string.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/utf_16.hpp
@@ -78,7 +78,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/zlib.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/quad_color.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/Rec2020.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/Rec2100.hpp
@@ -113,7 +113,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/function_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/functional.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/container.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/secure_vector.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/small_map.hpp
@@ -128,7 +128,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/wfree_unordered_map.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/awaitable.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/generator.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/coroutine.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/scoped_task.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/task.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/when_any.hpp
@@ -231,30 +231,30 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_unary_operator_node.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_vector_literal_node.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/draw_context.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/draw_context_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/draw_context_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_device_vulkan_impl.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_device_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_device_vulkan_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_queue_vulkan.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_surface_delegate_vulkan.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_surface_state.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_surface_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_surface_vulkan_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_surface_vulkan_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_system_globals.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_system_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_system_vulkan_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_system_vulkan_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/GFX.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_override_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_override_vulkan_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_override_vulkan_impl.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_box_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_box_vulkan_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_box_vulkan_impl.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_image_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_image_vulkan_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_image_vulkan_impl.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_SDF_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_SDF_vulkan_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_SDF_vulkan_impl.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_tone_mapper_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_tone_mapper_vulkan_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_tone_mapper_vulkan_impl.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_vulkan.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_vulkan_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_pipeline_vulkan_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/render_doc.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/renderdoc_app.h
@@ -270,7 +270,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/keyboard_key.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/keyboard_modifiers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/keyboard_state.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/keyboard_virtual_key.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/keyboard_virtual_key_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/keyboard_virtual_key_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/GUI.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/mouse_buttons.hpp
@@ -294,7 +294,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/margins.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/matrix2.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/matrix3.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/geometry.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/perspective.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point2.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point3.hpp
@@ -305,7 +305,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/scale2.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/scale3.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/transform.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/transform_fwd.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/translate2.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/translate3.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector2.hpp
@@ -326,7 +325,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/language_tag_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/language_tag_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/i18n.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/image.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/pixmap.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/pixmap_span.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/sdf_r8.hpp
@@ -370,7 +369,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/metadata/application_metadata.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/metadata/metadata.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/metadata/semantic_version.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/net/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/net/net.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/net/packet.hpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/net/packet_buffer.hpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/net/stream.hpp
@@ -381,11 +380,11 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/interval.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_carry.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_overflow.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/numeric.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/safe_int.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observer_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed_value.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observer.hpp
@@ -411,7 +410,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/seed_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/xorshift128p.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float16_sse4_1.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/SIMD.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f16x8_sse2.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f32x4_sse.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f64x4_avx.hpp
@@ -422,10 +421,10 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_conversions_x86.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_utility.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_u32x4_sse2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_test_utility.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/module.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/sip_hash.hpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/cpu_id.hpp
@@ -439,7 +438,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings_win32_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/parser.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_block_node.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_break_node.hpp
@@ -462,7 +461,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/log.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/telemetry.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/trace.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/text.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/semantic_text_style.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/text_cursor.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/text_decoration.hpp
@@ -472,7 +471,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/text_shaper_line.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/text_style.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/time/chrono.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/time/module.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/time/time.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/time/time_stamp_count.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/time/time_stamp_utc.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/grapheme.hpp

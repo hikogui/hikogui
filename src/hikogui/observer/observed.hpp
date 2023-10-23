@@ -5,11 +5,13 @@
 #pragma once
 
 #include "group_ptr.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <vector>
 #include <string>
+
+hi_export_module(hikogui.observer : observed);
 
 namespace hi::inline v1 {
 

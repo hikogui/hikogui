@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <vector>
 
+hi_export_module(hikogui.unicode.unicode_word_break);
 
 
 namespace hi::inline v1 {

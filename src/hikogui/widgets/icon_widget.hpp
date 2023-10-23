@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "../GFX/GFX.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <memory>
@@ -18,6 +18,8 @@
 #include <array>
 #include <optional>
 #include <future>
+
+hi_export_module(hikogui.widgets.icon_widget);
 
 namespace hi { inline namespace v1 {
 

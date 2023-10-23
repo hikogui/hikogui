@@ -6,9 +6,9 @@
 
 #include "../file/file.hpp"
 #include "../utility/utility.hpp"
-#include "../image/module.hpp"
-#include "../geometry/module.hpp"
-#include "../container/module.hpp"
+#include "../image/image.hpp"
+#include "../geometry/geometry.hpp"
+#include "../container/container.hpp"
 #include "../parser/parser.hpp"
 #include "../macros.hpp"
 #include "zlib.hpp"

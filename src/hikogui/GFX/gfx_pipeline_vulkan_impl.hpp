@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include "gfx_pipeline_vulkan.hpp"
+#include "gfx_pipeline_vulkan_intf.hpp"
 #include "gfx_device_vulkan_impl.hpp"
-#include "gfx_surface_vulkan.hpp"
+#include "gfx_surface_vulkan_intf.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <array>
 #include <vector>
+
+hi_export_module(hikogui.GUI : gfx_pipeline_impl);
 
 namespace hi { inline namespace v1 {
 

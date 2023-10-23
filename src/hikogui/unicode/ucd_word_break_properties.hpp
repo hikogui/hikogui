@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <optional>
 
+hi_export_module(hikogui.unicode.ucd_bidi_classes);
+
 // Windows.h defines small as a macro.
 #ifdef small
 #undef small

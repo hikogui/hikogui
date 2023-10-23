@@ -5,8 +5,8 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../numeric/module.hpp"
-#include "../container/module.hpp"
+#include "../numeric/numeric.hpp"
+#include "../container/container.hpp"
 #include "../macros.hpp"
 #include "base_n.hpp"
 #include "jsonpath.hpp"

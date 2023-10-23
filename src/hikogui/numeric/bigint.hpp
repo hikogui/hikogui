@@ -12,7 +12,7 @@
 #include <ostream>
 #include <concepts>
 
-
+hi_export_module(hikogui.numeric.bigint);
 
 namespace hi::inline v1 {
 

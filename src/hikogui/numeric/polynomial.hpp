@@ -5,10 +5,12 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../macros.hpp"
 #include <numbers>
 #include <array>
+
+hi_export_module(hikogui.numeric.polynomial);
 
 namespace hi::inline v1 {
 

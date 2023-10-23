@@ -12,6 +12,8 @@
 #include "vector3.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.geometry : line_segment);
+
 namespace hi {
 inline namespace v1 {
 

@@ -9,6 +9,8 @@
 #include "../macros.hpp"
 #include <cstdint>
 
+hi_export_module(hikogui.unicode.unicode_grapheme_cluster_break);
+
 namespace hi { inline namespace v1 {
 namespace detail {
 

@@ -11,6 +11,8 @@
 #include "color.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.color.quad_color);
+
 namespace hi {
 inline namespace v1 {
 

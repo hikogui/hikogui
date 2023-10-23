@@ -9,7 +9,7 @@
 #include <coroutine>
 #include <type_traits>
 
-
+hi_export_module(hikogui.coroutine.task);
 
 namespace hi::inline v1 {
 

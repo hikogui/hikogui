@@ -1,11 +1,13 @@
 
 #pragma once
 
-#include "box_constraints.hpp"
-#include "box_shape.hpp"
-#include "grid_layout.hpp"
-#include "row_column_layout.hpp"
-#include "spreadsheet_address.hpp"
+#include "box_constraints.hpp" // export
+#include "box_shape.hpp" // export
+#include "grid_layout.hpp" // export
+#include "row_column_layout.hpp" // export
+#include "spreadsheet_address.hpp" // export
+
+hi_export_module(hikogui.layout);
 
 namespace hi {
 inline namespace v1 {

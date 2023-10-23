@@ -19,6 +19,7 @@
 #include <type_traits>
 #include <mutex>
 
+hi_export_module(hikogui.concurrency.subsystem);
 
 
 namespace hi { inline namespace v1 {

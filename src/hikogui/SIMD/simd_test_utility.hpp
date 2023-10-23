@@ -8,7 +8,7 @@
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 
-
+hi_export_module(hikogui.simd.test_utility);
 
 namespace hi { inline namespace v1 { namespace detail {
 

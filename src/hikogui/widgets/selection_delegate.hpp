@@ -15,6 +15,8 @@
 #include <functional>
 #include <vector>
 
+hi_export_module(hikogui.widgets.selection_delegate);
+
 namespace hi { inline namespace v1 {
 class selection_widget;
 

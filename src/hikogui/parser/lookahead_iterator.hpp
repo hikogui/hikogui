@@ -13,6 +13,8 @@
 #include <optional>
 #include <string>
 
+hi_export_module(hikogui.parser.lookahead_iterator);
+
 namespace hi {
 inline namespace v1 {
 

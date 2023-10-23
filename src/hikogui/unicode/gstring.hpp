@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <iterator>
 
+hi_export_module(hikogui.unicode.gstring);
 
 hi_export template<>
 struct std::char_traits<hi::grapheme> {

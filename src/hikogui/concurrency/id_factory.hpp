@@ -8,6 +8,8 @@
 #include "../macros.hpp"
 #include <mutex>
 
+hi_export_module(hikogui.concurrency.id_factory);
+
 namespace hi { inline namespace v1 {
 
 /** A factory for unique IDs.

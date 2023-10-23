@@ -6,7 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "../parser/parser.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <variant>

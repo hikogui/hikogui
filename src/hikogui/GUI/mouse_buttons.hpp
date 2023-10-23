@@ -7,6 +7,8 @@
 #include "../macros.hpp"
 #include <cstdint>
 
+hi_export_module(hikogui.GUI : mouse_buttons);
+
 namespace hi::inline v1 {
 
 struct mouse_buttons {

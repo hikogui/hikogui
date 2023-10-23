@@ -29,6 +29,8 @@
 #include <type_traits>
 #include <functional>
 
+hi_export_module(hikogui.geometry : transform);
+
 namespace hi { inline namespace v1 {
 
 template<typename T>

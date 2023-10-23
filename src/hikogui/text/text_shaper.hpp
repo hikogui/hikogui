@@ -10,11 +10,13 @@
 #include "text_style.hpp"
 #include "../layout/layout.hpp"
 #include "../font/font.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../unicode/unicode.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <tuple>
+
+hi_export_module(hikogui.text.text_shaper);
 
 namespace hi::inline v1 {
 

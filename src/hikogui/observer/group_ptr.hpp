@@ -12,6 +12,7 @@
 #include <functional>
 #include <tuple>
 
+hi_export_module(hikogui.observer.group_ptr);
 
 
 namespace hi::inline v1 {

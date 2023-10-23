@@ -8,11 +8,13 @@
 #include "gui_event.hpp"
 #include "../utility/utility.hpp"
 #include "../codec/codec.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <unordered_map>
 #include <tuple>
 #include <filesystem>
+
+hi_export_module(hikogui.GUI : keyboard_bindings);
 
 namespace hi { inline namespace v1 {
 

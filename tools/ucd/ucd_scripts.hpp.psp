@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include "../i18n/i18n.hpp"
 #include <cstdint>
 #include <optional>
 
-import hikogui_utility;
+hi_export_module(hikogui.unicode.ucd_bidi_classes);
 
 namespace hi {
 inline namespace v1 {

@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <numeric>
 
+hi_export_module(hikogui.unicode.unicode_line_break);
 
 
 namespace hi::inline v1 {

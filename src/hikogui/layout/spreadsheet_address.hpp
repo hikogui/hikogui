@@ -26,12 +26,12 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <tuple>
 #include <string_view>
 
-
+hi_export_module(hikogui.layout.spreadsheet_address);
 
 namespace hi::inline v1 {
 

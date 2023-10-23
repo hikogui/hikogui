@@ -11,6 +11,7 @@
 #include <optional>
 #include <type_traits>
 
+hi_export_module(hikogui.container.small_map);
 
 
 namespace hi::inline v1 {

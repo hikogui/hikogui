@@ -7,7 +7,7 @@
 #include "../file/file.hpp"
 #include "../parser/parser.hpp"
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "datum.hpp"
 #include "indent.hpp"
 #include "../macros.hpp"

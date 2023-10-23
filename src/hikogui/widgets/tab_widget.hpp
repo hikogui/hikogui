@@ -13,6 +13,8 @@
 #include "tab_delegate.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.widgets.tab_widget);
+
 namespace hi { inline namespace v1 {
 
 /** A graphical element that shows only one of a predefined set of mutually

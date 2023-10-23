@@ -8,7 +8,7 @@
 
 #include "dialog_intf.hpp"
 #include "../utility/utility.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include "../macros.hpp"
 
 hi_export_module(hikogui.console.dialog : impl);

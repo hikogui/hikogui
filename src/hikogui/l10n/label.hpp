@@ -9,7 +9,7 @@
 
 #include "../utility/utility.hpp"
 #include "../unicode/unicode.hpp"
-#include "../image/module.hpp"
+#include "../image/image.hpp"
 #include "../font/font.hpp"
 #include "txt.hpp"
 #include "../macros.hpp"

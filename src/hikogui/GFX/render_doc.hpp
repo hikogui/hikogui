@@ -12,6 +12,8 @@
 #include <type_traits>
 #include <filesystem>
 
+hi_export_module(hikogui.GUI.render_doc);
+
 namespace hi { inline namespace v1 {
 
 inline void *render_doc_api = nullptr;

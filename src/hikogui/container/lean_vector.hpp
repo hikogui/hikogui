@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <iterator>
 
+hi_export_module(hikogui.container.lean_vector);
 
 
 hi_warning_push();

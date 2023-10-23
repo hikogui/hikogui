@@ -6,7 +6,7 @@
 
 #include "algorithm.hpp"
 #include "../utility/utility.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>
@@ -17,7 +17,7 @@
 #include <cstdlib>
 #include <bit>
 
-
+hi_export_module(hikogui.algorithm.strings);
 
 hi_warning_push();
 // C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).

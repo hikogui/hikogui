@@ -9,9 +9,11 @@
 #pragma once
 
 #include "sfloat_rgba16.hpp"
-#include "../color/module.hpp"
+#include "../color/color.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+
+hi_export_module(hikogui.image.srgb_abgr8_pack);
 
 namespace hi::inline v1 {
 

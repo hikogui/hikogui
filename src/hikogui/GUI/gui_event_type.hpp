@@ -14,7 +14,7 @@
 #include <string_view>
 #include <ostream>
 
-
+hi_export_module(hikogui.GUI : gui_event_type);
 
 namespace hi { inline namespace v1 {
 

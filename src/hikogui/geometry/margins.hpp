@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <concepts>
 
-
+hi_export_module(hikogui.geometry : margins);
 
 namespace hi { inline namespace v1 {
 

@@ -8,10 +8,12 @@
 
 #pragma once
 
-#include "../observer/module.hpp"
+#include "../observer/observer.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <memory>
+
+hi_export_module(hikogui.widgets.button_delegate);
 
 namespace hi { inline namespace v1 {
 
