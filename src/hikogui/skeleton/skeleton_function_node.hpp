@@ -7,7 +7,7 @@
 #include "skeleton_node.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.skeleton.function_node);
+hi_export_module(hikogui.skeleton : function_node);
 
 namespace hi::inline v1 {
 

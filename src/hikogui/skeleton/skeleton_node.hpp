@@ -11,7 +11,7 @@
 #include <string_view>
 #include <optional>
 
-hi_export_module(hikogui.skeleton.node);
+hi_export_module(hikogui.skeleton : node);
 
 namespace hi::inline v1 {
 

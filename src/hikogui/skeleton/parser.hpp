@@ -25,7 +25,7 @@
 #include "../file/file.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.skeleton.parser);
+hi_export_module(hikogui.skeleton : parser);
 
 namespace hi::inline v1 {
 

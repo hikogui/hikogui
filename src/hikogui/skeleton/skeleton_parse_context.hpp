@@ -15,7 +15,7 @@
 #include <optional>
 #include <filesystem>
 
-hi_export_module(hikogui.skeleton.parse_context);
+hi_export_module(hikogui.skeleton : parse_context);
 
 namespace hi::inline v1 {
 
