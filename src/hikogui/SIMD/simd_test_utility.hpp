@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "simd.hpp"
+#include "simd_intf.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 
