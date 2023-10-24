@@ -47,7 +47,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/win32_wave_device.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/animator.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/lookahead_iterator.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm_misc.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/ranges.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/recursive_iterator.hpp
