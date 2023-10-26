@@ -5,6 +5,8 @@
 #pragma once
 
 #include "../macros.hpp"
+#include <algorithm>
+#include <cmath>
 
 hi_export_module(hikogui.font.font_metrics);
 

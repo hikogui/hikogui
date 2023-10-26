@@ -5,11 +5,11 @@
 #pragma once
 
 #include "observed_value.hpp"
-#include "observer.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <memory>
 
-hi_export_module(hikogui.observer.shared_state);
+hi_export_module(hikogui.observer : shared_state);
 
 namespace hi::inline v1 {
 

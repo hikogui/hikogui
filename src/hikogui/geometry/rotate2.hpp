@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <cmath>
 
 hi_export_module(hikogui.geometry : rotate2);
 

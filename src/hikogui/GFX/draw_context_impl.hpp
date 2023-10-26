@@ -13,7 +13,7 @@
 #include "../text/text.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.GUI : draw_context_impl);
+hi_export_module(hikogui.GFX : draw_context_impl);
 
 namespace hi { inline namespace v1 {
 

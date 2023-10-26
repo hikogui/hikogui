@@ -10,7 +10,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <span>
 
-hi_export_module(hikogui.GUI : gfx_pipeline_override_intf);
+hi_export_module(hikogui.GFX : gfx_pipeline_override_intf);
 
 namespace hi { inline namespace v1 {
 

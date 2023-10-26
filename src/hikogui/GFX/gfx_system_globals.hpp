@@ -7,7 +7,7 @@
 #include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.GUI : gfx_system_globals);
+hi_export_module(hikogui.GFX : gfx_system_globals);
 
 namespace hi::inline v1 {
 

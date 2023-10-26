@@ -18,7 +18,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <optional>
 
-hi_export_module(hikogui.GUI : gfx_surface_intf);
+hi_export_module(hikogui.GFX : gfx_surface_intf);
 
 namespace hi::inline v1 {
 

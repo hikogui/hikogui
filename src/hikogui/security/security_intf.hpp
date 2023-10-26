@@ -9,7 +9,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.security.security : intf);
+hi_export_module(hikogui.security : intf);
 
 
 namespace hi::inline v1 {

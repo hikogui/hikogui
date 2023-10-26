@@ -19,7 +19,7 @@
 #include <unordered_set>
 #include <string>
 
-hi_export_module(hikogui.GUI : gfx_device_intf);
+hi_export_module(hikogui.GFX : gfx_device_intf);
 
 namespace hi::inline v1 {
 

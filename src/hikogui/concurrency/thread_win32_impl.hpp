@@ -16,7 +16,7 @@
 #include <string>
 #include <unordered_map>
 
-hi_export_module(hikogui.conurrency.thread : impl);
+hi_export_module(hikogui.concurrency.thread : impl);
 
 namespace hi::inline v1 {
 

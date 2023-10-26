@@ -11,7 +11,7 @@
 #undef small
 #endif
 
-hi_export_module(hikogui.unicode.ucd_bidi_classes);
+hi_export_module(hikogui.unicode.ucd_canonical_combining_classes);
 
 namespace hi {
 inline namespace v1 {

@@ -12,7 +12,7 @@
 #include <array>
 #include <vector>
 
-hi_export_module(hikogui.GUI : gfx_pipeline_impl);
+hi_export_module(hikogui.GFX : gfx_pipeline_impl);
 
 namespace hi { inline namespace v1 {
 

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "true_type_font.hpp"
 #include "../geometry/geometry.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"

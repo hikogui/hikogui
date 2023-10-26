@@ -6,7 +6,7 @@
 
 #include "../macros.hpp"
 
-hi_export_module(hikogui.GUI : gfx_surface_state);
+hi_export_module(hikogui.GFX : gfx_surface_state);
 
 namespace hi::inline v1 {
 

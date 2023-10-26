@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 
 hi_export_module(hikogui.geometry : corner_radii);

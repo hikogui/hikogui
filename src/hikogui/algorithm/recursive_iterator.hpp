@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <compare>

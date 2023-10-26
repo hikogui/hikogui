@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "gfx_surface_delegate_vulkan.hpp"
 #include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
@@ -12,7 +11,7 @@
 #include <vector>
 #include <cstdint>
 
-hi_export_module(hikogui.GUI : gfx_surface_delegate);
+hi_export_module(hikogui.GFX : gfx_surface_delegate);
 
 namespace hi::inline v1 {
 

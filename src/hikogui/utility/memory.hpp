@@ -9,12 +9,15 @@
 #include "concepts.hpp"
 #include "exception.hpp"
 #include "not_null.hpp"
+#include "debugger.hpp"
+#include "cast.hpp"
 #include <concepts>
 #include <memory>
 #include <vector>
 #include <map>
 #include <unordered_map>
 #include <type_traits>
+#include <bit>
 #include <string.h>
 
 hi_export_module(hikogui.utility.memory);

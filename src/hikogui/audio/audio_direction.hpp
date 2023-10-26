@@ -6,6 +6,9 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <string_view>
+#include <utility>
+#include <format>
 
 hi_export_module(hikogui.audio.audio_direction);
 

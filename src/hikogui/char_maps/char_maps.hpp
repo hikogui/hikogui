@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.char_maps);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 /**
 \defgroup char_maps Character Maps

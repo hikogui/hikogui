@@ -3,7 +3,7 @@
 
 #include "gfx_system_vulkan_intf.hpp"
 
-hi_export_module(hikogui.GUI : gfx_system_impl);
+hi_export_module(hikogui.GFX : gfx_system_impl);
 
 namespace hi { inline namespace v1 {
 

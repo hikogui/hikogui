@@ -10,6 +10,10 @@
 #include <tuple>
 #include <cmath>
 #include <iterator>
+#include <bit>
+#include <span>
+#include <vector>
+#include <cstddef>
 
 hi_export_module(hikogui.algorithm.algorithm_misc);
 

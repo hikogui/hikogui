@@ -17,20 +17,20 @@
 
 hi_export_module(hikogui.utility.exception : intf);
 
-hi_export namespace hi { inline namespace v1 {
+namespace hi { inline namespace v1 {
 
 /** Get the error message from an error code.
  *
  * @param error_code The error code returned by an os call.
  * @return A formatted message.
  */
-[[nodiscard]] std::string get_last_error_message(uint32_t error_code);
+hi_export [[nodiscard]] std::string get_last_error_message(uint32_t error_code);
 
 /** Get the OS error message from the last error received on this thread.
  *
  * @return A formatted message.
  */
-[[nodiscard]] std::string get_last_error_message();
+hi_export [[nodiscard]] std::string get_last_error_message();
 
 /** Exception thrown during parsing on an error.
  * This exception is often thrown due to an error in the syntax
@@ -45,7 +45,7 @@ hi_export namespace hi { inline namespace v1 {
  * If there are nested errors, such as an error in an included file, then the what-string may be multiple-lines, where the
  * nested error appears later in the what-string.
  */
-class parse_error : public std::runtime_error {
+hi_export class parse_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 
@@ -146,7 +146,7 @@ private:
 
 /** Exception thrown when an item was not found.
  */
-class not_found_error : public std::runtime_error {
+hi_export class not_found_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
@@ -158,7 +158,7 @@ public:
  * For example a datum object may contain floating point number for which
  * a shift-right or shift-left would be an invalid operation.
  */
-class operation_error : public std::runtime_error {
+hi_export class operation_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
@@ -170,7 +170,7 @@ public:
  * Followed after ": " with a user-friendly error message. Optionally followed between single quotes
  * the operating system error string.
  */
-class io_error : public std::runtime_error {
+hi_export class io_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
@@ -181,32 +181,32 @@ public:
  * The what-string should start with a user-friendly error message.
  * Optionally followed between single quotes the operating system error string.
  */
-class os_error : public std::runtime_error {
+hi_export class os_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
 
-class gfx_error : public std::runtime_error {
+hi_export class gfx_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
 
-class gui_error : public std::runtime_error {
+hi_export class gui_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
 
-class key_error : public std::runtime_error {
+hi_export class key_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
 
-class url_error : public std::runtime_error {
+hi_export class url_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
 
-class uri_error : public parse_error {
+hi_export class uri_error : public parse_error {
 public:
     using parse_error::parse_error;
 };
@@ -215,7 +215,7 @@ public:
  * Cancels can be cause by a local user pressing cancel in a dialog box,
  * or by a remote user through a network connection.
  */
-class cancel_error : public std::runtime_error {
+hi_export class cancel_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };

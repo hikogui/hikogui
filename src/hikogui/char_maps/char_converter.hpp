@@ -12,13 +12,15 @@
 #include "../macros.hpp"
 #include <string>
 #include <string_view>
+#include <bit>
+#include <compare>
 #if defined(HI_HAS_SSE2)
 #include <emmintrin.h>
 #endif
 
 hi_export_module(hikogui.char_maps.char_converter);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Character encoder/decoder template.
  * @ingroup char_maps

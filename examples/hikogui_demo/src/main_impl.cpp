@@ -2,9 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/hikogui.hpp"
+//#include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 #include <memory>
+
+import hikogui;
 
 class my_preferences : public hi::preferences {
 public:

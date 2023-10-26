@@ -10,6 +10,12 @@
 
 #include "char_converter.hpp"
 #include "../macros.hpp"
+#include <bit>
+#include <cstdint>
+#include <compare>
+#if defined(HI_HAS_SSE2)
+#include <emmintrin.h>
+#endif
 
 hi_export_module(hikogui.char_maps.utf_32);
 
@@ -18,7 +24,7 @@ hi_warning_push();
 // Needed for SIMD intrinsics.
 hi_warning_ignore_msvc(26490);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Unicode UTF-32 encoding.
  *

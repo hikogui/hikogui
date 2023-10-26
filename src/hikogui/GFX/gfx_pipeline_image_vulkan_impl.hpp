@@ -8,7 +8,7 @@
 #include "gfx_device_vulkan_impl.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.GUI : gfx_pipeline_image_impl);
+hi_export_module(hikogui.GFX : gfx_pipeline_image_impl);
 
 namespace hi { inline namespace v1 {
 

@@ -16,6 +16,7 @@
 #include "debugger.hpp"
 #include "exception.hpp"
 #include <type_traits>
+#include <typeinfo>
 #include <concepts>
 #include <limits>
 #include <span>

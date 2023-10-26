@@ -6,6 +6,8 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <string>
+#include <cstddef>
 
 hi_export_module(hikogui.codec.indent);
 

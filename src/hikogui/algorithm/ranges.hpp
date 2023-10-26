@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <vector>
 #include <exception>
+#include <stdexcept>
 
 hi_export_module(hikogui.algorithm.ranges);
 

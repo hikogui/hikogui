@@ -11,6 +11,8 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <array>
+#include <string_view>
+#include <format>
 
 hi_export_module(hikogui.color.semantic_color);
 

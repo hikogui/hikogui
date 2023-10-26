@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-hi_export_module(hikogui.GUI : gfx_pipeline_intf);
+hi_export_module(hikogui.GFX : gfx_pipeline_intf);
 
 namespace hi::inline v1 {
 class gfx_device;

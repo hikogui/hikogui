@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "thread.hpp"
 #include "unfair_mutex.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -23,7 +22,7 @@
 #include <mutex>
 #include <bit>
 
-hi_export_module(hikogui.conurrency.thread : intf);
+hi_export_module(hikogui.concurrency.thread : intf);
 
 hi_export namespace hi { inline namespace v1 {
 namespace detail {

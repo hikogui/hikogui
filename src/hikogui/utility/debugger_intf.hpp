@@ -17,7 +17,7 @@ hi_export namespace hi { inline namespace v1 {
 
 /** Message to show when the application is terminated because of a debug_abort.
  */
-inline std::atomic<char const *> debug_message = nullptr;
+hi_inline std::atomic<char const *> debug_message = nullptr;
 
 /** Prepare for breaking in the debugger.
  *
@@ -37,7 +37,7 @@ bool prepare_debug_break() noexcept;
  * 
  * @param msg The message to print to the console and dialogue window.
  */
-hi_no_inline inline void prepare_debug_break(char const *msg) noexcept
+hi_no_inline hi_inline void prepare_debug_break(char const *msg) noexcept
 {
     if (not prepare_debug_break()) {
         std::cerr << std::format("Abnormal termination.\n{}\n", msg);

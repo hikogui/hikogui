@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "algorithm.hpp"
 #include "../macros.hpp"
 #include "../utility/utility.hpp"
 #include "../time/time.hpp"

@@ -4,17 +4,18 @@
 
 #pragma once
 
-#include <string>
-#include <string_view>
-#include <format>
-#include <array>
-#include <ranges>
 #include "../macros.hpp"
 #include "assert.hpp"
 #include "cast.hpp"
 #include "debugger.hpp"
 #include "exception.hpp"
 #include "misc.hpp"
+#include <string>
+#include <string_view>
+#include <format>
+#include <array>
+#include <ranges>
+#include <compare>
 
 hi_export_module(hikogui.utility.fixed_string);
 

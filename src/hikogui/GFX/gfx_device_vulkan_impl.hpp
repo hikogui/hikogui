@@ -12,7 +12,7 @@
 #include "../macros.hpp"
 #include <span>
 
-hi_export_module(hikogui.GUI : gfx_device_impl);
+hi_export_module(hikogui.GFX : gfx_device_impl);
 
 namespace hi::inline v1 {
 

@@ -9,7 +9,7 @@
 #include "draw_context_intf.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.GUI : gfx_pipeline_box_impl);
+hi_export_module(hikogui.GFX : gfx_pipeline_box_impl);
 
 namespace hi { inline namespace v1 {
 

@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <utility>
 
 hi_export_module(hikogui.GUI : keyboard_focus_group);
 

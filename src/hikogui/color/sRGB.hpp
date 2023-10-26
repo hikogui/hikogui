@@ -10,7 +10,7 @@
 
 #include "../utility/utility.hpp"
 #include "../geometry/geometry.hpp"
-#include "color.hpp"
+#include "color_intf.hpp"
 #include "../macros.hpp"
 #include <cmath>
 #include <array>

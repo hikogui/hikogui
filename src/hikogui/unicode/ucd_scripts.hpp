@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <optional>
 
-hi_export_module(hikogui.unicode.ucd_bidi_classes);
+hi_export_module(hikogui.unicode.ucd_scripts);
 
 namespace hi {
 inline namespace v1 {

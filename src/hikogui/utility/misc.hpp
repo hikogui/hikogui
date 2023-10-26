@@ -26,7 +26,8 @@ hi_warning_ignore_msvc(26472);
 // hi_forward need to specifically cast a value to a reference using static_cast.
 hi_warning_ignore_msvc(26473);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** Signed size/index into an array.
  */
@@ -96,7 +97,7 @@ struct unusable_t {
 };
 
 template<class T, class U>
-[[nodiscard]] constexpr auto&& forward_like(U && x) noexcept
+[[nodiscard]] constexpr auto&& forward_like(U&& x) noexcept
 {
     constexpr bool is_adding_const = std::is_const_v<std::remove_reference_t<T>>;
     if constexpr (std::is_lvalue_reference_v<T&&>) {
@@ -115,14 +116,14 @@ template<class T, class U>
 }
 
 /** Get a line from an input string, upto a maximum size.
- * 
+ *
  * @post The input stream is read upto and including the line termination.
  * @param in The input stream.
  * @param max_size The maximum number of characters to read.
  * @return A string containing a line of characters, excluding the line termination.
  */
-hi_export template<typename CharT, typename Traits = std::char_traits<CharT>>
-[[nodiscard]] inline std::basic_string<CharT, Traits> getline(std::basic_istream<CharT, Traits>& in, size_t max_size) noexcept
+template<typename CharT, typename Traits = std::char_traits<CharT>>
+[[nodiscard]] hi_inline std::basic_string<CharT, Traits> getline(std::basic_istream<CharT, Traits>& in, size_t max_size) noexcept
 {
     auto r = std::basic_string<CharT, Traits>{};
 
@@ -148,6 +149,7 @@ hi_export template<typename CharT, typename Traits = std::char_traits<CharT>>
     return r;
 }
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1
 
 hi_warning_pop();

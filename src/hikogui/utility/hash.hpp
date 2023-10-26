@@ -6,9 +6,11 @@
 
 #include "../macros.hpp"
 #include "assert.hpp"
+#include "debugger.hpp"
 #include <utility>
 #include <array>
 #include <type_traits>
+#include <exception>
 
 hi_export_module(hikogui.utility.hash);
 

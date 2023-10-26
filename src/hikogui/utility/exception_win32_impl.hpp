@@ -16,10 +16,9 @@
 
 hi_export_module(hikogui.utility.exception : impl);
 
-hi_export namespace hi {
-inline namespace v1 {
+namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline std::string get_last_error_message(uint32_t error_code)
+hi_export [[nodiscard]] inline std::string get_last_error_message(uint32_t error_code)
 {
     if (auto msg = win32_FormatMessage(static_cast<win32_error>(error_code))) {
         return *msg;
@@ -28,7 +27,8 @@ inline namespace v1 {
     }
 }
 
-[[nodiscard]] inline std::string get_last_error_message() {
+hi_export [[nodiscard]] inline std::string get_last_error_message()
+{
     if (auto msg = win32_FormatMessage(win32_GetLastError())) {
         return *msg;
     } else {
@@ -36,4 +36,4 @@ inline namespace v1 {
     }
 }
 
-}}
+}} // namespace hi::v1

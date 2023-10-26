@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <optional>
 
-hi_export_module(hikogui.unicode.ucd_bidi_classes);
+hi_export_module(hikogui.unicode.ucd_sentence_break_properties);
 
 namespace hi {
 inline namespace v1 {

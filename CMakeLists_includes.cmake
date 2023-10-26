@@ -421,10 +421,9 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_utility.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_u32x4_sse2.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_intf.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_test_utility.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/sip_hash.hpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/cpu_id.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/settings.hpp

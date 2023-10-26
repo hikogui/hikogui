@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "security.hpp"
+#include "security_intf.hpp"
 #include "../macros.hpp"
 #include <windows.h>
 
-hi_export_module(hikogui.security.security : impl);
+hi_export_module(hikogui.security : impl);
 
 namespace tt::inline v1 {
 

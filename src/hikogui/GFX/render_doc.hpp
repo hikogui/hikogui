@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <filesystem>
 
-hi_export_module(hikogui.GUI.render_doc);
+hi_export_module(hikogui.GFX.render_doc);
 
 namespace hi { inline namespace v1 {
 

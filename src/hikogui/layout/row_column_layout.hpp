@@ -8,7 +8,7 @@
 #include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.layout.box_constraints);
+hi_export_module(hikogui.layout.row_column_layout);
 
 namespace hi { inline namespace v1 {
 

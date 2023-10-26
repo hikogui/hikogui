@@ -18,7 +18,7 @@
 #include "../macros.hpp"
 #include <vector>
 
-hi_export_module(hikogui.GUI : gfx_surface_impl);
+hi_export_module(hikogui.GFX : gfx_surface_impl);
 
 namespace hi::inline v1 {
 

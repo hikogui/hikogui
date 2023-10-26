@@ -7,7 +7,6 @@
 #include "file.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
-#include "strings.hpp"
 #include "../macros.hpp"
 #include <fcntl.h>
 #include <sys/types.h>

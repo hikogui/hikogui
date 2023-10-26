@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "color.hpp"
+#include "color_intf.hpp"
 #include "../macros.hpp"
 
 hi_export_module(hikogui.color.quad_color);

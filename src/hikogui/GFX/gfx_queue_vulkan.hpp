@@ -8,7 +8,7 @@
 #include <vulkan/vulkan.hpp>
 #include <cstdint>
 
-hi_export_module(hikogui.GUI : gfx_queue);
+hi_export_module(hikogui.GFX : gfx_queue);
 
 namespace hi::inline v1 {
 

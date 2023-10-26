@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <limits>
 #include <tuple>
+#include <string_view>
 
 hi_export_module(hikogui.parser.operator);
 

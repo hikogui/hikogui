@@ -27,7 +27,7 @@
 #include "gfx_pipeline_vulkan_impl.hpp" // export
 #include "render_doc.hpp" // export
 
-hi_export_module(hikogui.GUI);
+hi_export_module(hikogui.GFX);
 
 namespace hi { inline namespace v1 {
 /**

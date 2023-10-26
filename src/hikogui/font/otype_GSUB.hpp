@@ -4,13 +4,9 @@
 
 #pragma once
 
-#include "true_type_font.hpp"
-#include "../unicode/module.hpp"
 #include "../geometry/geometry.hpp"
-#include "../placement.hpp"
-#include "../strings.hpp"
-#include "../log.hpp"
-#include "../utility/module.hpp"
+#include "../parser/parser.hpp"
+#include "../utility/utility.hpp"
 #include <cstddef>
 #include <span>
 

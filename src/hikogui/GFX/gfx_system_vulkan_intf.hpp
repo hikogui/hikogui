@@ -9,7 +9,7 @@
 #include <vulkan/vulkan.hpp>
 #include <unordered_set>
 
-hi_export_module(hikogui.GUI : gfx_system_intf);
+hi_export_module(hikogui.GFX : gfx_system_intf);
 
 namespace hi::inline v1 {
 

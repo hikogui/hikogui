@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../macros.hpp"
+#include <concepts>
 
 /** @file utility/value_traits.hpp Utility functions to determine information about values.
  * @ingroup utility

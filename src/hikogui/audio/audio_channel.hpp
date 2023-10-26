@@ -6,6 +6,8 @@
 
 #include "../macros.hpp"
 #include "audio_direction.hpp"
+#include <cstddef>
+#include <string>
 
 hi_export_module(hikogui.audio.audio_channel);
 

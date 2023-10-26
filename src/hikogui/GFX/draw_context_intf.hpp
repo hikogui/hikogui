@@ -17,7 +17,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.GUI : draw_context_intf);
+hi_export_module(hikogui.GFX : draw_context_intf);
 
 namespace hi { inline namespace v1 {
 class gfx_device;

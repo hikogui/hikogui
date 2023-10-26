@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "../GUI/GUI.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <functional>
@@ -15,7 +16,6 @@
 hi_export_module(hikogui.widgets.tab_delegate);
 
 namespace hi { inline namespace v1 {
-class tab_widget;
 
 /** A delegate that controls the state of a tab_widget.
  *
