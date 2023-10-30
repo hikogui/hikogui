@@ -284,21 +284,21 @@ private:
 
     /** The period in nanoseconds/cycle as Q32.32
      */
-    inline static std::atomic<uint64_t> _period = 0;
+    hi_inline static std::atomic<uint64_t> _period = 0;
 
-    inline static std::atomic<bool> _aux_is_cpu_id = false;
+    hi_inline static std::atomic<bool> _aux_is_cpu_id = false;
 
     /** The number of CPU ids we know of.
      */
-    inline static std::atomic<std::size_t> _num_aux_values = 0;
+    hi_inline static std::atomic<std::size_t> _num_aux_values = 0;
 
     /** A list of known CPU ids.
      */
-    inline static std::array<uint32_t, maximum_num_cpus> _aux_values;
+    hi_inline static std::array<uint32_t, maximum_num_cpus> _aux_values;
 
     /** A list of CPU ids that match the _aux_values list.
      */
-    inline static std::array<std::size_t, maximum_num_cpus> _cpu_ids;
+    hi_inline static std::array<std::size_t, maximum_num_cpus> _cpu_ids;
 
     /** Get the CPU id.
      * This is logical CPU id that the operating system uses.

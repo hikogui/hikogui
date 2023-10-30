@@ -12,6 +12,8 @@ module;
 #include <cstdint>
 #include <optional>
 #include <bit>
+#include <string_view>
+#include <format>
 
 export module hikogui_unicode_phrasing;
 import hikogui_utility;

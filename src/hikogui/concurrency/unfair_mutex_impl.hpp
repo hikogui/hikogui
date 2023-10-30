@@ -24,18 +24,18 @@ hi_export_module(hikogui.concurrency.unfair_mutex : impl);
 hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
-inline unfair_mutex_impl<false> unfair_mutex_deadlock_mutex;
+hi_inline unfair_mutex_impl<false> unfair_mutex_deadlock_mutex;
 
-thread_local inline std::vector<void *> unfair_mutex_deadlock_stack;
+thread_local hi_inline std::vector<void *> unfair_mutex_deadlock_stack;
 
 /** The order in which objects where locked.
  * Each pair gives a first before second order.
  *
  * When accessing lock_order unfair_mutex_deadlock_mutex must be locked.
  */
-inline std::vector<std::pair<void *, void *>> unfair_mutex_deadlock_lock_graph;
+hi_inline std::vector<std::pair<void *, void *>> unfair_mutex_deadlock_lock_graph;
 
-[[nodiscard]] inline void *unfair_mutex_deadlock_check_graph(void *object) noexcept
+[[nodiscard]] hi_inline void *unfair_mutex_deadlock_check_graph(void *object) noexcept
 {
     hi_assert_not_null(object);
 
@@ -72,7 +72,7 @@ inline std::vector<std::pair<void *, void *>> unfair_mutex_deadlock_lock_graph;
  * @return nullptr on success, object if the mutex was already locked, a pointer to
  *         another mutex if potential dead-lock is found.
  */
-hi_export inline void *unfair_mutex_deadlock_lock(void *object) noexcept
+hi_export hi_inline void *unfair_mutex_deadlock_lock(void *object) noexcept
 {
     if (is_system_shutting_down()) {
         // thread_local variables used by `stack` do not work on MSVC after main() returns.
@@ -99,7 +99,7 @@ hi_export inline void *unfair_mutex_deadlock_lock(void *object) noexcept
  * @param object The object that is being locked.
  * @return true on success, false on failure.
  */
-hi_export inline bool unfair_mutex_deadlock_unlock(void *object) noexcept
+hi_export hi_inline bool unfair_mutex_deadlock_unlock(void *object) noexcept
 {
     if (is_system_shutting_down()) {
         // thread_local variables used by `stack` do not work on MSVC when main() returns.
@@ -128,7 +128,7 @@ hi_export inline bool unfair_mutex_deadlock_unlock(void *object) noexcept
  *
  * @param object The object to remove from the lock order graph.
  */
-hi_export inline void unfair_mutex_deadlock_remove_object(void *object) noexcept
+hi_export hi_inline void unfair_mutex_deadlock_remove_object(void *object) noexcept
 {
     hi_assert_not_null(object);
 
@@ -146,7 +146,7 @@ hi_export inline void unfair_mutex_deadlock_remove_object(void *object) noexcept
 /** Clear the stack.
  * Is used in unit-tests.
  */
-hi_export inline void unfair_mutex_deadlock_clear_stack() noexcept
+hi_export hi_inline void unfair_mutex_deadlock_clear_stack() noexcept
 {
     if (is_system_shutting_down()) {
         // thread_local variables used by `stack` do not work on MSVC when main() returns.
@@ -159,7 +159,7 @@ hi_export inline void unfair_mutex_deadlock_clear_stack() noexcept
 /** Clear the graph.
  * Is used in unit-tests.
  */
-hi_export inline void unfair_mutex_deadlock_clear_graph() noexcept
+hi_export hi_inline void unfair_mutex_deadlock_clear_graph() noexcept
 {
     if (is_system_shutting_down()) {
         // thread_local variables used by `lock_graph` do not work on MSVC when main() returns.
@@ -171,7 +171,7 @@ hi_export inline void unfair_mutex_deadlock_clear_graph() noexcept
 }
 
 template<bool UseDeadLockDetector>
-inline unfair_mutex_impl<UseDeadLockDetector>::~unfair_mutex_impl()
+hi_inline unfair_mutex_impl<UseDeadLockDetector>::~unfair_mutex_impl()
 {
     hi_axiom(not is_locked());
     if constexpr (UseDeadLockDetector) {
@@ -180,13 +180,13 @@ inline unfair_mutex_impl<UseDeadLockDetector>::~unfair_mutex_impl()
 }
 
 template<bool UseDeadLockDetector>
-inline bool unfair_mutex_impl<UseDeadLockDetector>::is_locked() const noexcept
+hi_inline bool unfair_mutex_impl<UseDeadLockDetector>::is_locked() const noexcept
 {
     return semaphore.load(std::memory_order::relaxed) != 0;
 }
 
 template<bool UseDeadLockDetector>
-inline void unfair_mutex_impl<UseDeadLockDetector>::lock() noexcept
+hi_inline void unfair_mutex_impl<UseDeadLockDetector>::lock() noexcept
 {
     if constexpr (UseDeadLockDetector) {
         hilet other = unfair_mutex_deadlock_lock(this);
@@ -213,7 +213,7 @@ inline void unfair_mutex_impl<UseDeadLockDetector>::lock() noexcept
  * meaning that no priority inversion will take place.
  */
 template<bool UseDeadLockDetector>
-[[nodiscard]] inline bool unfair_mutex_impl<UseDeadLockDetector>::try_lock() noexcept
+[[nodiscard]] hi_inline bool unfair_mutex_impl<UseDeadLockDetector>::try_lock() noexcept
 {
     if constexpr (UseDeadLockDetector) {
         hilet other = unfair_mutex_deadlock_lock(this);
@@ -240,7 +240,7 @@ template<bool UseDeadLockDetector>
 }
 
 template<bool UseDeadLockDetector>
-inline void unfair_mutex_impl<UseDeadLockDetector>::unlock() noexcept
+hi_inline void unfair_mutex_impl<UseDeadLockDetector>::unlock() noexcept
 {
     if constexpr (UseDeadLockDetector) {
         hi_assert(unfair_mutex_deadlock_unlock(this), "Unlock is not done in reverse order.");
@@ -260,13 +260,13 @@ inline void unfair_mutex_impl<UseDeadLockDetector>::unlock() noexcept
 }
 
 template<bool UseDeadLockDetector>
-[[nodiscard]] inline bool unfair_mutex_impl<UseDeadLockDetector>::holds_invariant() const noexcept
+[[nodiscard]] hi_inline bool unfair_mutex_impl<UseDeadLockDetector>::holds_invariant() const noexcept
 {
     return semaphore.load(std::memory_order::relaxed) <= 2;
 }
 
 template<bool UseDeadLockDetector>
-hi_no_inline inline void unfair_mutex_impl<UseDeadLockDetector>::lock_contended(semaphore_value_type expected) noexcept
+hi_no_inline hi_inline void unfair_mutex_impl<UseDeadLockDetector>::lock_contended(semaphore_value_type expected) noexcept
 {
     hi_axiom(holds_invariant());
 

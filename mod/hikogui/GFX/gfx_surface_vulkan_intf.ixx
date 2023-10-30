@@ -10,15 +10,15 @@ module;
 #include <optional>
 
 export module hikogui_GFX : gfx_surface_intf;
-import : gfx_queue;
-import : gfx_surface_state;
 import : gfx_pipeline_SDF_intf;
-import : gfx_pipeline_override_intf;
 import : gfx_pipeline_tone_mapper_intf;
-import : gfx_surface_delegate;
 import : gfx_pipeline_box_intf;
+import : gfx_surface_delegate;
+import : gfx_pipeline_override_intf;
+import : gfx_surface_state;
 import : gfx_pipeline_image_intf;
 import : gfx_device_intf;
+import : gfx_queue;
 
 export namespace hi::inline v1 {
 
@@ -188,7 +188,7 @@ private:
 
 [[nodiscard]] std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window);
 
-[[nodiscard]] inline gfx_device *find_best_device(gfx_surface const &surface)
+[[nodiscard]] gfx_device *find_best_device(gfx_surface const &surface)
 {
     return find_best_device(surface.intrinsic);
 }

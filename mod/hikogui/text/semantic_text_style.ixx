@@ -5,6 +5,7 @@
 module;
 #include "../macros.hpp"
 
+#include <string_view>
 
 export module hikogui_text_semantic_text_style;
 import hikogui_utility;

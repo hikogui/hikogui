@@ -14,7 +14,7 @@ import : intf;
 
 export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline std::string user_setting_registry_path()
+[[nodiscard]] std::string user_setting_registry_path()
 {
     return std::format("Software\\{}\\{}", get_application_vendor(), get_application_name());
 }
@@ -23,7 +23,7 @@ export namespace hi { inline namespace v1 {
  * 
  * @return A string value, or std::errc::file_not_found if entry not found, or other error.
  */
-[[nodiscard]] inline std::expected<std::string, std::error_code> get_user_setting_string(std::string_view name) noexcept
+[[nodiscard]] std::expected<std::string, std::error_code> get_user_setting_string(std::string_view name) noexcept
 {
     // First check the registry of the current-user.
     if (hilet value = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_setting_registry_path(), name)) {
@@ -41,7 +41,7 @@ export namespace hi { inline namespace v1 {
     }
 }
 
-[[nodiscard]] inline std::expected<long long, std::error_code> get_user_setting_integral(std::string_view name) noexcept
+[[nodiscard]] std::expected<long long, std::error_code> get_user_setting_integral(std::string_view name) noexcept
 {
     // First check the registry of the current-user.
     if (hilet value = win32_RegGetValue<long long>(HKEY_CURRENT_USER, user_setting_registry_path(), name)) {
@@ -59,22 +59,22 @@ export namespace hi { inline namespace v1 {
     }
 }
 
-inline std::error_code set_user_setting(std::string_view name, std::string_view value) noexcept
+std::error_code set_user_setting(std::string_view name, std::string_view value) noexcept
 {
     return win32_RegSetKeyValue(HKEY_CURRENT_USER, user_setting_registry_path(), name, value);
 }
 
-inline std::error_code set_user_setting(std::string_view name, long long value) noexcept
+std::error_code set_user_setting(std::string_view name, long long value) noexcept
 {
     return win32_RegSetKeyValue(HKEY_CURRENT_USER, user_setting_registry_path(), name, narrow_cast<uint32_t>(value));
 }
 
-inline std::error_code delete_user_setting(std::string_view name) noexcept
+std::error_code delete_user_setting(std::string_view name) noexcept
 {
     return win32_RegDeleteKeyValue(HKEY_CURRENT_USER, user_setting_registry_path(), name);
 }
 
-inline std::error_code delete_user_settings() noexcept
+std::error_code delete_user_settings() noexcept
 {
     return win32_RegDeleteKey(HKEY_CURRENT_USER, user_setting_registry_path());
 }

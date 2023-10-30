@@ -189,7 +189,7 @@ struct std::formatter<hi::token, CharT> : std::formatter<std::string, CharT> {
 
 export namespace hi { inline namespace v1 {
 
-export inline std::ostream& operator<<(std::ostream& lhs, token const& rhs)
+export std::ostream& operator<<(std::ostream& lhs, token const& rhs)
 {
     return lhs << std::format("{}", rhs);
 }

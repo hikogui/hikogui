@@ -234,7 +234,7 @@ hi_export [[nodiscard]] constexpr datum parse_JSON(char const *text, std::string
  * @param path A path pointing to the file to parse.
  * @return A datum representing the parsed object.
  */
-hi_export [[nodiscard]] inline datum parse_JSON(std::filesystem::path const& path)
+hi_export [[nodiscard]] hi_inline datum parse_JSON(std::filesystem::path const& path)
 {
     return parse_JSON(as_string_view(file_view(path)), path.string());
 }

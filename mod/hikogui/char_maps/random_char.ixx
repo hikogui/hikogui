@@ -13,7 +13,7 @@ import hikogui_utility;
 export namespace hi {
 inline namespace v1 {
 
-inline char32_t random_char() noexcept
+char32_t random_char() noexcept
 {
     static auto rand = std::mt19937();
     static auto size_dist = std::uniform_int_distribution(0, 99);

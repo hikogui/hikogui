@@ -113,9 +113,9 @@ struct time_stamp_utc {
     static void adjust_for_drift() noexcept;
 
 private:
-    static inline std::jthread subsystem_thread;
-    static inline unfair_mutex mutex;
-    static inline std::array<std::atomic<utc_nanoseconds>, maximum_num_cpus> tsc_epochs = {};
+    static std::jthread subsystem_thread;
+    static unfair_mutex mutex;
+    static std::array<std::atomic<utc_nanoseconds>, maximum_num_cpus> tsc_epochs = {};
 
     static void subsystem_proc_frequency_calibration(std::stop_token stop_token)
     {

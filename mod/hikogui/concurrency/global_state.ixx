@@ -200,7 +200,7 @@ export namespace hi { inline namespace v1 {
  *
  * @ingroup concurrency
  */
-inline std::atomic<global_state_type> global_state = global_state_type::log_level_default;
+std::atomic<global_state_type> global_state = global_state_type::log_level_default;
 
 /** Check if the HikoGUI system is running.
  *
@@ -208,7 +208,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
  *
  * @ingroup concurrency
  */
-[[nodiscard]] inline bool is_system_running() noexcept
+[[nodiscard]] bool is_system_running() noexcept
 {
     return is_system_running(global_state.load(std::memory_order::relaxed));
 }
@@ -219,7 +219,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
  *
  * @ingroup concurrency
  */
-[[nodiscard]] inline bool is_system_shutting_down() noexcept
+[[nodiscard]] bool is_system_shutting_down() noexcept
 {
     return is_system_shutting_down(global_state.load(std::memory_order::relaxed));
 }
@@ -229,7 +229,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
  * @ingroup concurrency
  * @param log_level A mask of which log levels should be logged.
  */
-inline void set_log_level(global_state_type log_level) noexcept
+void set_log_level(global_state_type log_level) noexcept
 {
     // Only the log_* bits should be set.
     hi_assert(not to_bool(log_level & ~global_state_type::log_mask));
@@ -246,7 +246,7 @@ inline void set_log_level(global_state_type log_level) noexcept
  * @param order Memory order to use on the global_state variable.
  * @return True if the subsystem was enabled.
  */
-inline bool global_state_disable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
+bool global_state_disable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
 {
     hi_assert(std::popcount(std::to_underlying(subsystem)) == 1);
     return to_bool(global_state.fetch_and(~subsystem, order) & subsystem);
@@ -259,7 +259,7 @@ inline bool global_state_disable(global_state_type subsystem, std::memory_order 
  * @param order Memory order to use on the global_state variable.
  * @return True if the subsystem was enabled.
  */
-inline bool global_state_enable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
+bool global_state_enable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
 {
     hi_assert(std::popcount(std::to_underlying(subsystem)) == 1);
     return to_bool(global_state.fetch_or(subsystem, order) & subsystem);

@@ -97,7 +97,7 @@ export [[nodiscard]] constexpr int to_int(font_weight const& x) noexcept
     return (x_ == 1000) ? 950 : x_;
 }
 
-export inline std::ostream& operator<<(std::ostream& lhs, font_weight const& rhs)
+export std::ostream& operator<<(std::ostream& lhs, font_weight const& rhs)
 {
     return lhs << to_string(rhs);
 }
@@ -113,7 +113,7 @@ export constexpr bool almost_equal(font_weight const& lhs, font_weight const& rh
  * @param start The starting font-weight.
  * @return Generated font weights, starting at start, then zig-zag toward thin and extra-black.
  */
-export [[nodiscard]] inline generator<font_weight> alternatives(font_weight start) noexcept
+export [[nodiscard]] generator<font_weight> alternatives(font_weight start) noexcept
 {
     co_yield start;
 

@@ -13,7 +13,7 @@ import hikogui_audio_speaker_mapping_win32;
 
 export namespace hi { inline namespace v1 {
 
-export [[nodiscard]] inline bool win32_use_extensible(audio_stream_format x) noexcept{
+export [[nodiscard]] bool win32_use_extensible(audio_stream_format x) noexcept{
     if (to_bool(x.speaker_mapping)) {
         // If we have an non-direct speaker mapping we MUST use extensible as it requires the
         // extra dwChannelMask field.
@@ -23,7 +23,7 @@ export [[nodiscard]] inline bool win32_use_extensible(audio_stream_format x) noe
     return false;
 }
 
-export [[nodiscard]] inline WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format stream_format, bool extensible) noexcept{
+export [[nodiscard]] WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format stream_format, bool extensible) noexcept{
     hi_axiom(stream_format.holds_invariant());
     hi_axiom(not win32_use_extensible(stream_format) or extensible);
 
@@ -53,7 +53,7 @@ export [[nodiscard]] inline WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(au
     return r;
 }
 
-export [[nodiscard]] inline audio_stream_format audio_stream_format_from_win32(WAVEFORMATEXTENSIBLE const& wave_format){
+export [[nodiscard]] audio_stream_format audio_stream_format_from_win32(WAVEFORMATEXTENSIBLE const& wave_format){
     auto r = audio_stream_format{};
 
     hi_check(wave_format.Format.wBitsPerSample % 8 == 0, "wBitsPerSample is not multiple of 8");
@@ -87,7 +87,7 @@ export [[nodiscard]] inline audio_stream_format audio_stream_format_from_win32(W
     return r;
 }
 
-export [[nodiscard]] inline audio_stream_format audio_stream_format_from_win32(WAVEFORMATEX const& wave_format){
+export [[nodiscard]] audio_stream_format audio_stream_format_from_win32(WAVEFORMATEX const& wave_format){
     auto r = audio_stream_format{};
     hi_check(wave_format.wBitsPerSample > 0, "wBitsPerSample is zero");
     hi_check(wave_format.wBitsPerSample % 8 == 0, "wBitsPerSample is not multiple of 8");

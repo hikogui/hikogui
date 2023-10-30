@@ -7,6 +7,7 @@ module;
 
 #include <type_traits>
 #include <cstddef>
+#include <memory>
 
 export module hikogui_memory_secure_memory_allocator;
 import hikogui_security;

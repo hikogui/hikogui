@@ -14,7 +14,7 @@ import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline auto
+[[nodiscard]] auto
 otype_hmtx_get(std::span<std::byte const> bytes, hi::glyph_id glyph_id, uint16_t num_horizontal_metrics, float em_scale)
 {
     struct entry_type {

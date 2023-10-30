@@ -25,7 +25,7 @@ hi_export namespace hi::inline v1 {
  * @return Output container containing the transformed elements.
  */
 template<typename T, typename U, typename F>
-inline T transform(const U& input, F operation)
+hi_inline T transform(const U& input, F operation)
 {
     T result = {};
     result.reserve(input.size());
@@ -184,7 +184,7 @@ constexpr std::pair<It, It> bifind_cluster(ConstIt first, ConstIt last, It start
  * A cluster does not include the separator itself.
  */
 template<typename It, typename S, typename F>
-inline void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
+hi_inline void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
 {
     if (first == last) {
         return;
@@ -205,7 +205,7 @@ inline void for_each_cluster(It first, It last, S IsClusterSeperator, F Function
 }
 
 template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
-inline std::pair<InputIt1, InputIt2>
+hi_inline std::pair<InputIt1, InputIt2>
 rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, BinaryPredicate predicate) noexcept
 {
     auto i1 = last1;
@@ -227,7 +227,7 @@ rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Bina
 }
 
 template<typename InputIt1, typename InputIt2>
-inline std::pair<InputIt1, InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) noexcept
+hi_inline std::pair<InputIt1, InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) noexcept
 {
     return rmismatch(first1, last1, first2, last2, [&](auto a, auto b) {
         return a == b;

@@ -13,7 +13,7 @@ hi_export_module(hikogui.security : impl);
 namespace tt::inline v1 {
 
 
-inline void secure_clear(void *ptr, size_t size) noexcept
+hi_inline void secure_clear(void *ptr, size_t size) noexcept
 {
     SecureZeroMemory(ptr, size);
 }

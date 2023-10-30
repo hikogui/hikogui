@@ -79,19 +79,19 @@ hi_export constexpr vector2 bezierTangentAt(point2 P1, point2 C1, point2 C2, poi
     return vector2{3 * t * t * (P2_ - 3 * C2_ + 3 * C1_ - P1_) + 6 * t * (C2_ - 2 * C1_ + P1_) + 3 * (C1_ - P1_)};
 }
 
-hi_export inline lean_vector<float> bezierFindT(float P1, float P2, float x) noexcept
+hi_export hi_inline lean_vector<float> bezierFindT(float P1, float P2, float x) noexcept
 {
     hilet[a, b] = bezierToPolynomial(P1, P2);
     return solvePolynomial(a, b - x);
 }
 
-hi_export inline lean_vector<float> bezierFindT(float P1, float C, float P2, float x) noexcept
+hi_export hi_inline lean_vector<float> bezierFindT(float P1, float C, float P2, float x) noexcept
 {
     hilet[a, b, c] = bezierToPolynomial(P1, C, P2);
     return solvePolynomial(a, b, c - x);
 }
 
-hi_export inline lean_vector<float> bezierFindT(float P1, float C1, float C2, float P2, float x) noexcept
+hi_export hi_inline lean_vector<float> bezierFindT(float P1, float C1, float C2, float P2, float x) noexcept
 {
     hilet[a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
     return solvePolynomial(a, b, c, d - x);
@@ -101,7 +101,7 @@ hi_export inline lean_vector<float> bezierFindT(float P1, float C1, float C2, fl
  * Used for finding the shortest distance from a point to a curve.
  * The shortest vector from a curve to a point is a normal.
  */
-hi_export inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
+hi_export hi_inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
 {
     hilet t_above = dot(P - P1, P2 - P1);
     hilet t_below = dot(P2 - P1, P2 - P1);
@@ -116,7 +116,7 @@ hi_export inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point
  * Used for finding the shortest distance from a point to a curve.
  * The shortest vector from a curve to a point is a normal.
  */
-hi_export inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 C, point2 P2, point2 P) noexcept
+hi_export hi_inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 C, point2 P2, point2 P) noexcept
 {
     hilet P1_ = static_cast<f32x4>(P1);
     hilet P2_ = static_cast<f32x4>(P2);
@@ -140,7 +140,7 @@ hi_export inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point
  * So we compare with less than to the end-anchor point to remove
  * it from the result.
  */
-hi_export inline lean_vector<float> bezierFindX(point2 P1, point2 P2, float y) noexcept
+hi_export hi_inline lean_vector<float> bezierFindX(point2 P1, point2 P2, float y) noexcept
 {
     if (y < std::min({P1.y(), P2.y()}) || y > std::max({P1.y(), P2.y()})) {
         return {};
@@ -163,7 +163,7 @@ hi_export inline lean_vector<float> bezierFindX(point2 P1, point2 P2, float y) n
  * So we compare with less than to the end-anchor point to remove
  * it from the result.
  */
-hi_export inline lean_vector<float> bezierFindX(point2 P1, point2 C, point2 P2, float y) noexcept
+hi_export hi_inline lean_vector<float> bezierFindX(point2 P1, point2 C, point2 P2, float y) noexcept
 {
     auto r = lean_vector<float>{};
 
@@ -187,7 +187,7 @@ hi_export inline lean_vector<float> bezierFindX(point2 P1, point2 C, point2 P2, 
  * So we compare with less than to the end-anchor point to remove
  * it from the result.
  */
-hi_export inline lean_vector<float> bezierFindX(point2 P1, point2 C1, point2 C2, point2 P2, float y) noexcept
+hi_export hi_inline lean_vector<float> bezierFindX(point2 P1, point2 C1, point2 C2, point2 P2, float y) noexcept
 {
     auto r = lean_vector<float>{};
 
@@ -207,7 +207,7 @@ hi_export inline lean_vector<float> bezierFindX(point2 P1, point2 C1, point2 C2,
 /*! Return the flatness of a curve.
  * \return 1.0 when completely flat, < 1.0 when curved.
  */
-hi_export inline float bezierFlatness(point2 P1, point2 P2) noexcept
+hi_export hi_inline float bezierFlatness(point2 P1, point2 P2) noexcept
 {
     return 1.0f;
 }
@@ -215,7 +215,7 @@ hi_export inline float bezierFlatness(point2 P1, point2 P2) noexcept
 /*! Return the flatness of a curve.
  * \return 1.0 when completely flat, < 1.0 when curved.
  */
-hi_export inline float bezierFlatness(point2 P1, point2 C, point2 P2) noexcept
+hi_export hi_inline float bezierFlatness(point2 P1, point2 C, point2 P2) noexcept
 {
     hilet P1P2 = hypot(P2 - P1);
     if (P1P2 == 0.0f) {
@@ -230,7 +230,7 @@ hi_export inline float bezierFlatness(point2 P1, point2 C, point2 P2) noexcept
 /*! Return the flatness of a curve.
  * \return 1.0 when completely flat, < 1.0 when curved.
  */
-hi_export inline float bezierFlatness(point2 P1, point2 C1, point2 C2, point2 P2) noexcept
+hi_export hi_inline float bezierFlatness(point2 P1, point2 C1, point2 C2, point2 P2) noexcept
 {
     hilet P1P2 = hypot(P2 - P1);
     if (P1P2 == 0.0f) {
@@ -243,7 +243,7 @@ hi_export inline float bezierFlatness(point2 P1, point2 C1, point2 C2, point2 P2
     return P1P2 / (P1C1 + C1C2 + C2P2);
 }
 
-hi_export inline std::pair<point2, point2> parallelLine(point2 P1, point2 P2, float distance) noexcept
+hi_export hi_inline std::pair<point2, point2> parallelLine(point2 P1, point2 P2, float distance) noexcept
 {
     hilet v = P2 - P1;
     hilet n = normal(v);
@@ -252,7 +252,7 @@ hi_export inline std::pair<point2, point2> parallelLine(point2 P1, point2 P2, fl
 
 /*! Find the intersect points between two line segments.
  */
-hi_export inline std::optional<point2> getIntersectionPoint(point2 A1, point2 A2, point2 B1, point2 B2) noexcept
+hi_export hi_inline std::optional<point2> getIntersectionPoint(point2 A1, point2 A2, point2 B1, point2 B2) noexcept
 {
     // convert points to vectors.
     hilet p = A1;
@@ -283,7 +283,7 @@ hi_export inline std::optional<point2> getIntersectionPoint(point2 A1, point2 A2
 
 /*! Find the intersect points between two line segments.
  */
-hi_export inline std::optional<point2> getExtrapolatedIntersectionPoint(point2 A1, point2 A2, point2 B1, point2 B2) noexcept
+hi_export hi_inline std::optional<point2> getExtrapolatedIntersectionPoint(point2 A1, point2 A2, point2 B1, point2 B2) noexcept
 {
     // convert points to vectors.
     hilet p = A1;

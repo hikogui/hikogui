@@ -25,7 +25,7 @@ export namespace hi::inline v1 {
  * @param KNOWNFOLDERID folder_id.
  * @return The path of the folder.
  */
-export [[nodiscard]] inline std::filesystem::path get_path_by_id(const KNOWNFOLDERID& folder_id) noexcept
+export [[nodiscard]] std::filesystem::path get_path_by_id(const KNOWNFOLDERID& folder_id) noexcept
 {
     PWSTR wpath = nullptr;
     if (SHGetKnownFolderPath(folder_id, 0, nullptr, &wpath) != S_OK) {
@@ -38,7 +38,7 @@ export [[nodiscard]] inline std::filesystem::path get_path_by_id(const KNOWNFOLD
     return std::filesystem::path{wpath} / "";
 }
 
-export [[nodiscard]] inline std::filesystem::path get_module_path(HMODULE module_handle) noexcept
+export [[nodiscard]] std::filesystem::path get_module_path(HMODULE module_handle) noexcept
 {
     std::wstring module_path;
     auto buffer_size = MAX_PATH; // initial default value = 256
@@ -58,12 +58,12 @@ export [[nodiscard]] inline std::filesystem::path get_module_path(HMODULE module
     hi_no_default("Could not get module path. It exceeds the buffer length of 32768 chars.");
 }
 
-export [[nodiscard]] inline std::filesystem::path executable_file() noexcept
+export [[nodiscard]] std::filesystem::path executable_file() noexcept
 {
     return get_module_path(nullptr);
 }
 
-export [[nodiscard]] inline std::filesystem::path data_dir() noexcept
+export [[nodiscard]] std::filesystem::path data_dir() noexcept
 {
     // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
     // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
@@ -71,19 +71,19 @@ export [[nodiscard]] inline std::filesystem::path data_dir() noexcept
     return local_app_data / get_application_vendor() / get_application_name() / "";
 }
 
-export [[nodiscard]] inline std::filesystem::path log_dir() noexcept
+export [[nodiscard]] std::filesystem::path log_dir() noexcept
 {
     // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\Log\"
     return data_dir() / "Log" / "";
 }
 
-export [[nodiscard]] inline std::filesystem::path preferences_file() noexcept
+export [[nodiscard]] std::filesystem::path preferences_file() noexcept
 {
     // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\preferences.json"
     return data_dir() / "preferences.json";
 }
 
-export [[nodiscard]] inline generator<std::filesystem::path> resource_dirs() noexcept
+export [[nodiscard]] generator<std::filesystem::path> resource_dirs() noexcept
 {
     if (auto source_path = source_dir()) {
             // Fallback when the application is executed from its build directory.
@@ -104,12 +104,12 @@ export [[nodiscard]] inline generator<std::filesystem::path> resource_dirs() noe
         }
 }
 
-export [[nodiscard]] inline generator<std::filesystem::path> system_font_dirs() noexcept
+export [[nodiscard]] generator<std::filesystem::path> system_font_dirs() noexcept
 {
     co_yield get_path_by_id(FOLDERID_Fonts);
 }
 
-export [[nodiscard]] inline generator<std::filesystem::path> font_dirs() noexcept
+export [[nodiscard]] generator<std::filesystem::path> font_dirs() noexcept
 {
     for (hilet& path : resource_dirs()) {
         co_yield path;
@@ -119,7 +119,7 @@ export [[nodiscard]] inline generator<std::filesystem::path> font_dirs() noexcep
     }
 }
 
-export [[nodiscard]] inline generator<std::filesystem::path> theme_dirs() noexcept
+export [[nodiscard]] generator<std::filesystem::path> theme_dirs() noexcept
 {
     for (hilet& path : resource_dirs()) {
         co_yield path;

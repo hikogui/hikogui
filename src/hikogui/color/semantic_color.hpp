@@ -81,7 +81,7 @@ constexpr auto semantic_color_metadata = enum_metadata{
  *
  * @ingroup color
  */
-[[nodiscard]] inline std::string_view to_string(semantic_color rhs) noexcept
+[[nodiscard]] hi_inline std::string_view to_string(semantic_color rhs) noexcept
 {
     return semantic_color_metadata[rhs];
 }
@@ -91,7 +91,7 @@ constexpr auto semantic_color_metadata = enum_metadata{
  *
  * @ingroup color
  */
-[[nodiscard]] inline semantic_color semantic_color_from_string(std::string_view str)
+[[nodiscard]] hi_inline semantic_color semantic_color_from_string(std::string_view str)
 {
     return semantic_color_metadata[str];
 }

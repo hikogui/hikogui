@@ -21,7 +21,7 @@ export namespace hi::inline v1 {
 
 
 export template<typename... Args>
-inline void print(std::format_string<Args...> fmt, Args&&... args) noexcept
+void print(std::format_string<Args...> fmt, Args&&... args) noexcept
 {
     auto msg = std::format(fmt, std::forward<Args>(args)...);
 
@@ -35,7 +35,7 @@ inline void print(std::format_string<Args...> fmt, Args&&... args) noexcept
 }
 
 export template<typename... Args>
-inline void println(std::format_string<Args...> fmt, Args&&... args) noexcept
+void println(std::format_string<Args...> fmt, Args&&... args) noexcept
 {
     auto msg = std::format(fmt, std::forward<Args>(args)...);
     msg += '\n';

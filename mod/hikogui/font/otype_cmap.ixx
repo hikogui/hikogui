@@ -12,7 +12,7 @@ import hikogui_font_otype_utilities;
 
 export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline std::span<std::byte const>
+[[nodiscard]] std::span<std::byte const>
 otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t platform_specific_id)
 {
     struct header_type {
@@ -41,7 +41,7 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
     }
 }
 
-[[nodiscard]] inline font_char_map otype_cmap_parse_map_4(std::span<std::byte const> over_sized_bytes)
+[[nodiscard]] font_char_map otype_cmap_parse_map_4(std::span<std::byte const> over_sized_bytes)
 {
     struct header_type {
         big_uint16_buf_t format;
@@ -127,7 +127,7 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
     return r;
 }
 
-[[nodiscard]] inline font_char_map otype_cmap_parse_map_6(std::span<std::byte const> over_sized_bytes)
+[[nodiscard]] font_char_map otype_cmap_parse_map_6(std::span<std::byte const> over_sized_bytes)
 {
     struct header_type {
         big_uint16_buf_t format;
@@ -159,7 +159,7 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
     return r;
 }
 
-[[nodiscard]] inline font_char_map otype_cmap_parse_map_12(std::span<std::byte const> over_sized_bytes)
+[[nodiscard]] font_char_map otype_cmap_parse_map_12(std::span<std::byte const> over_sized_bytes)
 {
     struct header_type {
         big_uint16_buf_t format;
@@ -201,7 +201,7 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
     return r;
 }
 
-[[nodiscard]] inline font_char_map otype_cmap_parse_map(std::span<std::byte const> bytes)
+[[nodiscard]] font_char_map otype_cmap_parse_map(std::span<std::byte const> bytes)
 {
     // The first 16 bits of a cmap sub-table always contain the format.
     hilet format = *implicit_cast<big_uint16_buf_t>(bytes);
@@ -219,7 +219,7 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
     }
 }
 
-[[nodiscard]] inline font_char_map otype_cmap_parse(std::span<std::byte const> bytes)
+[[nodiscard]] font_char_map otype_cmap_parse(std::span<std::byte const> bytes)
 {
     constexpr auto search_order = std::array{
         std::pair{uint16_t{0}, uint16_t{4}}, // Unicode - Unicode 2.0 non-BMP

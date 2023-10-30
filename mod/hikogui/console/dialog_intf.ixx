@@ -24,17 +24,17 @@ export enum class dialog_type { ok, yes_no, yes_no_cancel };
  */
 export bool dialog(dialog_type type, std::string_view title, std::string_view text);
 
-export inline void dialog_ok(std::string_view title, std::string_view message) noexcept
+export void dialog_ok(std::string_view title, std::string_view message) noexcept
 {
     dialog(dialog_type::ok, title, message);
 }
 
-export [[nodiscard]] inline bool dialog_yes_no(std::string_view title, std::string_view message) noexcept
+export [[nodiscard]] bool dialog_yes_no(std::string_view title, std::string_view message) noexcept
 {
     return dialog(dialog_type::yes_no, title, message);
 }
 
-export [[nodiscard]] inline bool dialog_yes_no_cancel(std::string_view title, std::string_view message)
+export [[nodiscard]] bool dialog_yes_no_cancel(std::string_view title, std::string_view message)
 {
     return dialog(dialog_type::yes_no_cancel, title, message);
 }

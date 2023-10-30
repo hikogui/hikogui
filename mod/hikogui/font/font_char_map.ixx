@@ -163,7 +163,7 @@ public:
      * @param code_point The code-point to find in the character map.
      * @return The corrosponding glyph found representing the code-point, or an empty glyph if not found.
      */
-    [[nodiscard]] inline glyph_id find(char32_t code_point) const noexcept
+    [[nodiscard]] glyph_id find(char32_t code_point) const noexcept
     {
 #ifndef NDEBUG
         hi_assert(_prepared);

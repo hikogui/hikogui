@@ -7,12 +7,12 @@ module;
 
 
 export module hikogui_GFX : gfx_pipeline_image_impl;
-import : gfx_pipeline_image_intf;
 import : gfx_device_impl;
+import : gfx_pipeline_image_intf;
 
 export namespace hi { inline namespace v1 {
 
-inline void gfx_pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+void gfx_pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
     gfx_pipeline::draw_in_command_buffer(commandBuffer, context);
 
@@ -47,13 +47,13 @@ inline void gfx_pipeline_image::draw_in_command_buffer(vk::CommandBuffer command
     device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
-inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_image::createShaderStages() const
+std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_image::createShaderStages() const
 {
     hi_axiom_not_null(device());
     return device()->image_pipeline->shader_stages;
 }
 
-inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_image::createDescriptorSetLayoutBindings() const
+std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_image::createDescriptorSetLayoutBindings() const
 {
     return {
         {0, // binding
@@ -66,7 +66,7 @@ inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_image::createDes
          vk::ShaderStageFlagBits::eFragment}};
 }
 
-inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_image::createWriteDescriptorSet() const
+std::vector<vk::WriteDescriptorSet> gfx_pipeline_image::createWriteDescriptorSet() const
 {
     hi_axiom_not_null(device());
     hilet& sharedImagePipeline = device()->image_pipeline;
@@ -94,28 +94,28 @@ inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_image::createWriteDescri
         }};
 }
 
-inline size_t gfx_pipeline_image::getDescriptorSetVersion() const
+size_t gfx_pipeline_image::getDescriptorSetVersion() const
 {
     hi_axiom_not_null(device());
     return device()->image_pipeline->atlas_textures.size();
 }
 
-inline std::vector<vk::PushConstantRange> gfx_pipeline_image::createPushConstantRanges() const
+std::vector<vk::PushConstantRange> gfx_pipeline_image::createPushConstantRanges() const
 {
     return push_constants::pushConstantRanges();
 }
 
-inline vk::VertexInputBindingDescription gfx_pipeline_image::createVertexInputBindingDescription() const
+vk::VertexInputBindingDescription gfx_pipeline_image::createVertexInputBindingDescription() const
 {
     return vertex::inputBindingDescription();
 }
 
-inline std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_image::createVertexInputAttributeDescriptions() const
+std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_image::createVertexInputAttributeDescriptions() const
 {
     return vertex::inputAttributeDescriptions();
 }
 
-inline void gfx_pipeline_image::build_vertex_buffers()
+void gfx_pipeline_image::build_vertex_buffers()
 {
     using vertexIndexType = uint16_t;
     constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
@@ -136,14 +136,14 @@ inline void gfx_pipeline_image::build_vertex_buffers()
     vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
 }
 
-inline void gfx_pipeline_image::teardown_vertex_buffers()
+void gfx_pipeline_image::teardown_vertex_buffers()
 {
     hi_axiom_not_null(device());
     device()->unmapMemory(vertexBufferAllocation);
     device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
-inline void
+void
 gfx_pipeline_image::texture_map::transitionLayout(const gfx_device& device, vk::Format format, vk::ImageLayout nextLayout)
 {
     if (layout != nextLayout) {
@@ -152,7 +152,7 @@ gfx_pipeline_image::texture_map::transitionLayout(const gfx_device& device, vk::
     }
 }
 
-inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, std::size_t width, std::size_t height) noexcept :
+gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, std::size_t width, std::size_t height) noexcept :
     device(nullptr), width(width), height(height), pages()
 {
     if (surface == nullptr) {
@@ -171,7 +171,7 @@ inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, 
     }
 }
 
-inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, pixmap_span<sfloat_rgba16 const> image) noexcept :
+gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, pixmap_span<sfloat_rgba16 const> image) noexcept :
     paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
 {
     if (this->device) {
@@ -180,7 +180,7 @@ inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, 
     }
 }
 
-inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, png const& image) noexcept :
+gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, png const& image) noexcept :
     paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
 {
     if (this->device) {
@@ -189,7 +189,7 @@ inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surface, 
     }
 }
 
-inline gfx_pipeline_image::paged_image::paged_image(paged_image&& other) noexcept :
+gfx_pipeline_image::paged_image::paged_image(paged_image&& other) noexcept :
     state(other.state.exchange(state_type::uninitialized)),
     device(std::exchange(other.device, nullptr)),
     width(other.width),
@@ -198,7 +198,7 @@ inline gfx_pipeline_image::paged_image::paged_image(paged_image&& other) noexcep
 {
 }
 
-inline gfx_pipeline_image::paged_image& gfx_pipeline_image::paged_image::operator=(paged_image&& other) noexcept
+gfx_pipeline_image::paged_image& gfx_pipeline_image::paged_image::operator=(paged_image&& other) noexcept
 {
     hi_return_on_self_assignment(other);
 
@@ -215,14 +215,14 @@ inline gfx_pipeline_image::paged_image& gfx_pipeline_image::paged_image::operato
     return *this;
 }
 
-inline gfx_pipeline_image::paged_image::~paged_image()
+gfx_pipeline_image::paged_image::~paged_image()
 {
     if (device) {
         device->image_pipeline->free_pages(pages);
     }
 }
 
-inline void gfx_pipeline_image::paged_image::upload(png const& image) noexcept
+void gfx_pipeline_image::paged_image::upload(png const& image) noexcept
 {
     hi_assert(image.width() == width and image.height() == height);
 
@@ -239,7 +239,7 @@ inline void gfx_pipeline_image::paged_image::upload(png const& image) noexcept
     }
 }
 
-inline void gfx_pipeline_image::paged_image::upload(pixmap_span<sfloat_rgba16 const> image) noexcept
+void gfx_pipeline_image::paged_image::upload(pixmap_span<sfloat_rgba16 const> image) noexcept
 {
     hi_assert(image.width() == width and image.height() == height);
 
@@ -256,22 +256,22 @@ inline void gfx_pipeline_image::paged_image::upload(pixmap_span<sfloat_rgba16 co
     }
 }
 
-inline gfx_pipeline_image::device_shared::device_shared(gfx_device const& device) : device(device)
+gfx_pipeline_image::device_shared::device_shared(gfx_device const& device) : device(device)
 {
     build_shaders();
     build_atlas();
 }
 
-inline gfx_pipeline_image::device_shared::~device_shared() {}
+gfx_pipeline_image::device_shared::~device_shared() {}
 
-inline void gfx_pipeline_image::device_shared::destroy(gfx_device const *old_device)
+void gfx_pipeline_image::device_shared::destroy(gfx_device const *old_device)
 {
     hi_assert_not_null(old_device);
     teardown_shaders(old_device);
     teardown_atlas(old_device);
 }
 
-inline std::vector<std::size_t> gfx_pipeline_image::device_shared::allocate_pages(std::size_t num_pages) noexcept
+std::vector<std::size_t> gfx_pipeline_image::device_shared::allocate_pages(std::size_t num_pages) noexcept
 {
     while (num_pages > _atlas_free_pages.size()) {
         add_atlas_image();
@@ -286,12 +286,12 @@ inline std::vector<std::size_t> gfx_pipeline_image::device_shared::allocate_page
     return r;
 }
 
-inline void gfx_pipeline_image::device_shared::free_pages(std::vector<std::size_t> const& pages) noexcept
+void gfx_pipeline_image::device_shared::free_pages(std::vector<std::size_t> const& pages) noexcept
 {
     _atlas_free_pages.insert(_atlas_free_pages.end(), pages.begin(), pages.end());
 }
 
-inline hi::pixmap_span<sfloat_rgba16> gfx_pipeline_image::device_shared::get_staging_pixmap()
+hi::pixmap_span<sfloat_rgba16> gfx_pipeline_image::device_shared::get_staging_pixmap()
 {
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
@@ -303,7 +303,7 @@ inline hi::pixmap_span<sfloat_rgba16> gfx_pipeline_image::device_shared::get_sta
  * @param page number in the atlas
  * @return x, y pixel coordinate in an atlasTexture and z the atlasTextureIndex. Inside the border.
  */
-[[nodiscard]] inline point3 get_atlas_position(std::size_t page) noexcept
+[[nodiscard]] point3 get_atlas_position(std::size_t page) noexcept
 {
     // The amount of pixels per page, that is the page plus two borders.
     constexpr auto page_stride = gfx_pipeline_image::paged_image::page_size + 2;
@@ -323,7 +323,7 @@ inline hi::pixmap_span<sfloat_rgba16> gfx_pipeline_image::device_shared::get_sta
  * @param page_index The index of the page of the image.
  * @return The position into the staging map.
  */
-inline point2 get_staging_position(const gfx_pipeline_image::paged_image& image, std::size_t page_index)
+point2 get_staging_position(const gfx_pipeline_image::paged_image& image, std::size_t page_index)
 {
     hilet width_in_pages = (image.width + gfx_pipeline_image::paged_image::page_size - 1) / gfx_pipeline_image::paged_image::page_size;
 
@@ -332,7 +332,7 @@ inline point2 get_staging_position(const gfx_pipeline_image::paged_image& image,
         narrow_cast<float>((page_index / width_in_pages) * gfx_pipeline_image::paged_image::page_size + 1)};
 }
 
-inline void gfx_pipeline_image::device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
+void gfx_pipeline_image::device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
 {
     hilet width = ceil_cast<std::size_t>(border_rectangle.width());
     hilet height = ceil_cast<std::size_t>(border_rectangle.height());
@@ -364,7 +364,7 @@ inline void gfx_pipeline_image::device_shared::make_staging_border_transparent(a
     }
 }
 
-inline void gfx_pipeline_image::device_shared::clear_staging_between_border_and_upload(
+void gfx_pipeline_image::device_shared::clear_staging_between_border_and_upload(
     aarectangle border_rectangle,
     aarectangle upload_rectangle) noexcept
 {
@@ -395,7 +395,7 @@ inline void gfx_pipeline_image::device_shared::clear_staging_between_border_and_
     }
 }
 
-inline void gfx_pipeline_image::device_shared::prepare_staging_for_upload(paged_image const& image) noexcept
+void gfx_pipeline_image::device_shared::prepare_staging_for_upload(paged_image const& image) noexcept
 {
     hilet image_rectangle = aarectangle{point2{1.0f, 1.0f}, image.size()};
     hilet border_rectangle = image_rectangle + 1;
@@ -412,7 +412,7 @@ inline void gfx_pipeline_image::device_shared::prepare_staging_for_upload(paged_
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
 }
 
-inline void gfx_pipeline_image::device_shared::update_atlas_with_staging_pixmap(paged_image const& image) noexcept
+void gfx_pipeline_image::device_shared::update_atlas_with_staging_pixmap(paged_image const& image) noexcept
 {
     prepare_staging_for_upload(image);
 
@@ -459,19 +459,19 @@ inline void gfx_pipeline_image::device_shared::update_atlas_with_staging_pixmap(
     }
 }
 
-inline void gfx_pipeline_image::device_shared::prepare_atlas_for_rendering()
+void gfx_pipeline_image::device_shared::prepare_atlas_for_rendering()
 {
     for (auto& atlas_texture : atlas_textures) {
         atlas_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
 
-inline void gfx_pipeline_image::device_shared::draw_in_command_buffer(vk::CommandBuffer const& commandBuffer)
+void gfx_pipeline_image::device_shared::draw_in_command_buffer(vk::CommandBuffer const& commandBuffer)
 {
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
 
-inline void gfx_pipeline_image::device_shared::build_shaders()
+void gfx_pipeline_image::device_shared::build_shaders()
 {
     vertex_shader_module = device.loadShader(URL("resource:image_vulkan.vert.spv"));
     fragment_shader_module = device.loadShader(URL("resource:image_vulkan.frag.spv"));
@@ -481,14 +481,14 @@ inline void gfx_pipeline_image::device_shared::build_shaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragment_shader_module, "main"}};
 }
 
-inline void gfx_pipeline_image::device_shared::teardown_shaders(gfx_device const *vulkanDevice)
+void gfx_pipeline_image::device_shared::teardown_shaders(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertex_shader_module);
     vulkanDevice->destroy(fragment_shader_module);
 }
 
-inline void gfx_pipeline_image::device_shared::add_atlas_image()
+void gfx_pipeline_image::device_shared::add_atlas_image()
 {
     hilet current_image_index = size(atlas_textures);
 
@@ -549,7 +549,7 @@ inline void gfx_pipeline_image::device_shared::add_atlas_image()
     }
 }
 
-inline void gfx_pipeline_image::device_shared::build_atlas()
+void gfx_pipeline_image::device_shared::build_atlas()
 {
     // Create staging image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -607,7 +607,7 @@ inline void gfx_pipeline_image::device_shared::build_atlas()
     add_atlas_image();
 }
 
-inline void gfx_pipeline_image::device_shared::teardown_atlas(gfx_device const *old_device)
+void gfx_pipeline_image::device_shared::teardown_atlas(gfx_device const *old_device)
 {
     hi_assert_not_null(old_device);
     old_device->destroy(atlas_sampler);
@@ -622,7 +622,7 @@ inline void gfx_pipeline_image::device_shared::teardown_atlas(gfx_device const *
     old_device->destroyImage(staging_texture.image, staging_texture.allocation);
 }
 
-inline void gfx_pipeline_image::device_shared::place_vertices(
+void gfx_pipeline_image::device_shared::place_vertices(
     vector_span<vertex>& vertices,
     aarectangle const& clipping_rectangle,
     quad const& box,

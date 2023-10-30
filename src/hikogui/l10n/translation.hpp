@@ -47,16 +47,16 @@ struct std::hash<hi::translation_key> {
 hi_export namespace hi {
 inline namespace v1 {
 
-inline std::unordered_map<translation_key, std::vector<std::string>> translations;
-inline std::atomic<bool> translations_loaded = false;
+hi_inline std::unordered_map<translation_key, std::vector<std::string>> translations;
+hi_inline std::atomic<bool> translations_loaded = false;
 
-inline void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept
+hi_inline void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept
 {
     auto key = translation_key{std::string{msgid}, language};
     translations[key] = plural_forms;
 }
 
-inline void add_translations(po_translations const &po_translations) noexcept
+hi_inline void add_translations(po_translations const &po_translations) noexcept
 {
     for (hilet &translation : po_translations.translations) {
         auto msgid = translation.msgctxt ? *translation.msgctxt + '|' + translation.msgid : translation.msgid;

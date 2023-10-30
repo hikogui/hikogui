@@ -39,34 +39,34 @@ hi_export_module(hikogui.SIMD : native_simd_conversions_x86);
 hi_export namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_SSE2
-[[nodiscard]] inline native_simd<float, 4>::native_simd(native_simd<int32_t, 4> const& a) noexcept : v(_mm_cvtepi32_ps(a.v)) {}
-[[nodiscard]] inline native_simd<int32_t, 4>::native_simd(native_simd<float, 4> const& a) noexcept : v(_mm_cvtps_epi32(a.v)) {}
-[[nodiscard]] inline native_simd<int32_t, 4>::native_simd(native_simd<uint32_t, 4> const& a) noexcept : v(a.v) {}
-[[nodiscard]] inline native_simd<uint32_t, 4>::native_simd(native_simd<int32_t, 4> const& a) noexcept : v(a.v) {}
+[[nodiscard]] hi_inline native_simd<float, 4>::native_simd(native_simd<int32_t, 4> const& a) noexcept : v(_mm_cvtepi32_ps(a.v)) {}
+[[nodiscard]] hi_inline native_simd<int32_t, 4>::native_simd(native_simd<float, 4> const& a) noexcept : v(_mm_cvtps_epi32(a.v)) {}
+[[nodiscard]] hi_inline native_simd<int32_t, 4>::native_simd(native_simd<uint32_t, 4> const& a) noexcept : v(a.v) {}
+[[nodiscard]] hi_inline native_simd<uint32_t, 4>::native_simd(native_simd<int32_t, 4> const& a) noexcept : v(a.v) {}
 #endif
 #ifdef HI_HAS_AVX
-[[nodiscard]] inline native_simd<float, 4>::native_simd(native_simd<double, 4> const& a) noexcept : v(_mm256_cvtpd_ps(a.v)) {}
-[[nodiscard]] inline native_simd<double, 4>::native_simd(native_simd<float, 4> const& a) noexcept : v(_mm256_cvtps_pd(a.v)) {}
-[[nodiscard]] inline native_simd<double, 4>::native_simd(native_simd<int32_t, 4> const& a) noexcept : v(_mm256_cvtepi32_pd(a.v))
+[[nodiscard]] hi_inline native_simd<float, 4>::native_simd(native_simd<double, 4> const& a) noexcept : v(_mm256_cvtpd_ps(a.v)) {}
+[[nodiscard]] hi_inline native_simd<double, 4>::native_simd(native_simd<float, 4> const& a) noexcept : v(_mm256_cvtps_pd(a.v)) {}
+[[nodiscard]] hi_inline native_simd<double, 4>::native_simd(native_simd<int32_t, 4> const& a) noexcept : v(_mm256_cvtepi32_pd(a.v))
 {
 }
-[[nodiscard]] inline native_simd<int32_t, 4>::native_simd(native_simd<double, 4> const& a) noexcept : v(_mm256_cvtpd_epi32(a.v))
+[[nodiscard]] hi_inline native_simd<int32_t, 4>::native_simd(native_simd<double, 4> const& a) noexcept : v(_mm256_cvtpd_epi32(a.v))
 {
 }
 #endif
 #ifdef HI_HAS_AVX2
-[[nodiscard]] inline native_simd<int64_t, 4>::native_simd(native_simd<int32_t, 4> const& a) noexcept :
+[[nodiscard]] hi_inline native_simd<int64_t, 4>::native_simd(native_simd<int32_t, 4> const& a) noexcept :
     v(_mm256_cvtepi32_epi64(a.v))
 {
 }
-[[nodiscard]] inline native_simd<int64_t, 4>::native_simd(native_simd<uint32_t, 4> const& a) noexcept :
+[[nodiscard]] hi_inline native_simd<int64_t, 4>::native_simd(native_simd<uint32_t, 4> const& a) noexcept :
     v(_mm256_cvtepu32_epi64(a.v))
 {
 }
 #endif
 
 
-//[[nodiscard]] inline native_f32x4 permute(native_f32x4 a, native_i32x4 const &source_elements) noexcept
+//[[nodiscard]] hi_inline native_f32x4 permute(native_f32x4 a, native_i32x4 const &source_elements) noexcept
 //{
 //    return native_f32x4{_mm_shufflevar_ps(a.v, source_elements.v)};
 //}

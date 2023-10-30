@@ -10,8 +10,10 @@
 
 #include "unfair_mutex.hpp"
 #include "thread.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <thread>
+#include <atomic>
 
 hi_export_module(hikogui.concurrency.unfair_recursive_mutex);
 

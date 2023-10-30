@@ -202,17 +202,17 @@ private:
 
     /** The global logger thread.
      */
-    static inline std::jthread _log_thread;
+    static std::jthread _log_thread;
 
     /** The function of the logger thread.
      *
      * @note implementation is in counters.hpp
      */
-    inline static void log_thread_main(std::stop_token stop_token) noexcept;
+    static void log_thread_main(std::stop_token stop_token) noexcept;
 
     /** Deinitalize the logger system.
      */
-    inline static void subsystem_deinit() noexcept;
+    static void subsystem_deinit() noexcept;
 
     /** Initialize the log system.
      * This will start the logging threads which periodically
@@ -226,11 +226,11 @@ private:
     }
 };
 
-inline log log_global;
+log log_global;
 
 /** Deinitalize the logger system.
  */
-inline void log::subsystem_deinit() noexcept
+void log::subsystem_deinit() noexcept
 {
     if (global_state_disable(global_state_type::log_is_running)) {
         if (_log_thread.joinable()) {

@@ -15,7 +15,7 @@ hi_export_module(hikogui.memory.locked_memory_allocator : impl);
 
 hi_export namespace hi::inline v1 {
 
-[[nodiscard]] inline std::byte *locked_memory_allocator_allocate(std::size_t n) noexcept
+[[nodiscard]] hi_inline std::byte *locked_memory_allocator_allocate(std::size_t n) noexcept
 {
     auto p = VirtualAlloc(NULL, n, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (p == NULL) {
@@ -48,7 +48,7 @@ hi_export namespace hi::inline v1 {
     return static_cast<std::byte *>(p);
 }
 
-inline void locked_memory_allocator_deallocate(std::byte *p, std::size_t n) noexcept
+hi_inline void locked_memory_allocator_deallocate(std::byte *p, std::size_t n) noexcept
 {
     if (not VirtualUnlock(p, n)) {
         hi_log_warning("Could not unlock memory. '{}'", get_last_error_message());

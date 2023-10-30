@@ -131,7 +131,7 @@ struct std::formatter<hi::formula_node, CharT> : std::formatter<std::string_view
 
 hi_export namespace hi { inline namespace v1 {
 
-inline std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept
+hi_inline std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept
 {
     return lhs << std::format("{}", rhs);
 }

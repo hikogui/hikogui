@@ -31,7 +31,7 @@ void secure_clear(void *ptr, size_t size) noexcept;
  *
  * @param object The object to securely clear to zeroes.
  */
-inline void secure_clear(trivially_copyable auto &object) noexcept
+hi_inline void secure_clear(trivially_copyable auto &object) noexcept
 {
     secure_clear(&object, sizeof(object));
 }

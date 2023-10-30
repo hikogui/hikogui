@@ -75,7 +75,7 @@ private:
     uint8_t _value;
 };
 
-inline void
+void
 unicode_word_break_WB1_WB3d(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
 {
     using enum unicode_break_opportunity;
@@ -108,7 +108,7 @@ unicode_word_break_WB1_WB3d(unicode_break_vector& r, std::vector<unicode_word_br
     }
 }
 
-inline void unicode_word_break_WB4(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
+void unicode_word_break_WB4(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
 {
     using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
@@ -128,7 +128,7 @@ inline void unicode_word_break_WB4(unicode_break_vector& r, std::vector<unicode_
     }
 }
 
-inline void
+void
 unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
 {
     using enum unicode_break_opportunity;
@@ -236,7 +236,7 @@ unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_b
  * @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename CodePointFunc>
-[[nodiscard]] inline unicode_break_vector unicode_word_break(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
+[[nodiscard]] unicode_break_vector unicode_word_break(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
 {
     auto size = narrow_cast<size_t>(std::distance(first, last));
     auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};

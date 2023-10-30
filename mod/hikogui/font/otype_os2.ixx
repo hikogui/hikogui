@@ -14,7 +14,7 @@ import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline auto otype_parse_os2(std::span<std::byte const> bytes, float em_scale)
+[[nodiscard]] auto otype_parse_os2(std::span<std::byte const> bytes, float em_scale)
 {
     struct panose_table {
         uint8_t family_type;

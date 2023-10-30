@@ -5,9 +5,12 @@
 module;
 #include "../macros.hpp"
 
+#include <format>
+#include <ostream>
 
 export module hikogui_geometry : vector2;
 import hikogui_SIMD;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 

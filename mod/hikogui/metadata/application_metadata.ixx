@@ -16,12 +16,12 @@ import hikogui_metadata_semantic_version;
 
 export namespace hi { inline namespace v1 {
 
-inline std::optional<std::string> _application_name = std::nullopt;
-inline std::optional<std::string> _application_slug = std::nullopt;
-inline std::optional<std::string> _application_vendor = std::nullopt;
-inline std::optional<semantic_version> _application_version = std::nullopt;
+std::optional<std::string> _application_name = std::nullopt;
+std::optional<std::string> _application_slug = std::nullopt;
+std::optional<std::string> _application_vendor = std::nullopt;
+std::optional<semantic_version> _application_version = std::nullopt;
 
-export [[nodiscard]] inline std::string const& get_application_name()
+export [[nodiscard]] std::string const& get_application_name()
 {
     if (_application_name) {
         return *_application_name;
@@ -30,7 +30,7 @@ export [[nodiscard]] inline std::string const& get_application_name()
     }
 }
 
-export [[nodiscard]] inline std::string const& get_application_slug()
+export [[nodiscard]] std::string const& get_application_slug()
 {
     if (_application_slug) {
         return *_application_slug;
@@ -39,7 +39,7 @@ export [[nodiscard]] inline std::string const& get_application_slug()
     }
 }
 
-export [[nodiscard]] inline std::string const& get_application_vendor()
+export [[nodiscard]] std::string const& get_application_vendor()
 {
     if (_application_vendor) {
         return *_application_vendor;
@@ -48,7 +48,7 @@ export [[nodiscard]] inline std::string const& get_application_vendor()
     }
 }
 
-export [[nodiscard]] inline semantic_version const& get_application_version()
+export [[nodiscard]] semantic_version const& get_application_version()
 {
     if (_application_version) {
         return *_application_version;
@@ -57,7 +57,7 @@ export [[nodiscard]] inline semantic_version const& get_application_version()
     }
 }
 
-export inline void set_application_name(std::string_view name, std::string_view slug)
+export void set_application_name(std::string_view name, std::string_view slug)
 {
     if (name.empty()) {
         throw std::invalid_argument("application name must not be empty.");
@@ -76,12 +76,12 @@ export inline void set_application_name(std::string_view name, std::string_view 
     _application_slug = slug;
 }
 
-export inline void set_application_name(std::string_view name)
+export void set_application_name(std::string_view name)
 {
     return set_application_name(name, make_slug(name));
 }
 
-export inline void set_application_vendor(std::string_view name)
+export void set_application_vendor(std::string_view name)
 {
     if (name.empty()) {
         throw std::invalid_argument("vendor name must not be empty.");
@@ -93,12 +93,12 @@ export inline void set_application_vendor(std::string_view name)
     _application_vendor = name;
 }
 
-export inline void set_application_version(semantic_version version) noexcept
+export void set_application_version(semantic_version version) noexcept
 {
     _application_version = version;
 }
 
-export inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
+export void set_application_version(int major, int minor = 0, int patch = 0) noexcept
 {
     return set_application_version(semantic_version{major, minor, patch});
 }

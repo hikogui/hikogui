@@ -4,6 +4,9 @@ module;
 
 #include <cstdint>
 #include <optional>
+#include <bit>
+#include <string_view>
+#include <string>
 
 // Windows.h defines small as a macro.
 #ifdef small
@@ -294,21 +297,21 @@ constexpr uint8_t ucd_canonical_combining_classes_bytes[4240] = {
     constexpr auto max_code_point_hi = detail::ucd_canonical_combining_classes_indices_size - 1;
 
     auto code_point_hi = code_point / detail::ucd_canonical_combining_classes_chunk_size;
-    hilet code_point_lo = code_point % detail::ucd_canonical_combining_classes_chunk_size;
+    auto const code_point_lo = code_point % detail::ucd_canonical_combining_classes_chunk_size;
 
     if (code_point_hi > max_code_point_hi) {
         code_point_hi = max_code_point_hi;
     }
 
-    hilet chunk_index = load_bits_be<detail::ucd_canonical_combining_classes_index_width>(
+    auto const chunk_index = load_bits_be<detail::ucd_canonical_combining_classes_index_width>(
         detail::ucd_canonical_combining_classes_indices_bytes,
         code_point_hi * detail::ucd_canonical_combining_classes_index_width);
 
     // Add back in the lower-bits of the code-point.
-    hilet index = (chunk_index * detail::ucd_canonical_combining_classes_chunk_size) + code_point_lo;
+    auto const index = (chunk_index * detail::ucd_canonical_combining_classes_chunk_size) + code_point_lo;
 
     // Get the canonical combining class from the table.
-    hilet value = load_bits_be<detail::ucd_canonical_combining_class_width>(
+    auto const value = load_bits_be<detail::ucd_canonical_combining_class_width>(
         detail::ucd_canonical_combining_classes_bytes, index * detail::ucd_canonical_combining_class_width);
 
     return narrow_cast<uint8_t>(value);

@@ -28,7 +28,7 @@ export namespace hi { inline namespace v1 {
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-export [[nodiscard]] inline char *make_cstr(char const *c_str, std::size_t size = -1) noexcept
+export [[nodiscard]] char *make_cstr(char const *c_str, std::size_t size = -1) noexcept
 {
     if (size == -1) {
         size = std::strlen(c_str);
@@ -42,12 +42,12 @@ export [[nodiscard]] inline char *make_cstr(char const *c_str, std::size_t size 
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-export [[nodiscard]] inline char *make_cstr(std::string const& s) noexcept
+export [[nodiscard]] char *make_cstr(std::string const& s) noexcept
 {
     return make_cstr(s.c_str(), s.size());
 }
 
-export inline void console_start() noexcept
+export void console_start() noexcept
 {
     auto out_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -80,7 +80,7 @@ export inline void console_start() noexcept
     }
 }
 
-export inline std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
+export std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
     // Switch out the terminate handler with one that can print an error message.
     old_terminate_handler = std::set_terminate(terminate_handler);
@@ -129,7 +129,7 @@ export inline std::pair<int, char **> crt_start(int, char **, void *instance, in
     return {argc, argv};
 }
 
-inline int crt_finish(int argc, char **argv, int exit_code)
+int crt_finish(int argc, char **argv, int exit_code)
 {
     hi_assert_not_null(argv);
 

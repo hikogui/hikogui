@@ -14,7 +14,7 @@ import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline std::optional<float>
+[[nodiscard]] std::optional<float>
 otype_kern_sub0_find(size_t &offset, std::span<std::byte const> bytes, glyph_id first_glyph_id, glyph_id second_glyph_id, float em_scale)
 {
     struct header_type {
@@ -46,7 +46,7 @@ otype_kern_sub0_find(size_t &offset, std::span<std::byte const> bytes, glyph_id 
  * 'kern' version 0 is used by Microsoft and is not in use anymore by Apple.
  * However it is part of open-type.
  */
-[[nodiscard]] inline vector2
+[[nodiscard]] vector2
 otype_kern_v0_find(std::span<std::byte const> bytes, glyph_id first_glyph_id, glyph_id second_glyph_id, float em_scale)
 {
     struct header_type {
@@ -111,7 +111,7 @@ otype_kern_v0_find(std::span<std::byte const> bytes, glyph_id first_glyph_id, gl
     return r;
 }
 
-[[nodiscard]] inline vector2
+[[nodiscard]] vector2
 otype_kern_v1_find(std::span<std::byte const> bytes, glyph_id first_glyph_id, glyph_id second_glyph_id, float em_scale)
 {
     struct header_type {
@@ -181,7 +181,7 @@ otype_kern_v1_find(std::span<std::byte const> bytes, glyph_id first_glyph_id, gl
     return r;
 }
 
-[[nodiscard]] inline vector2
+[[nodiscard]] vector2
 otype_kern_find(std::span<std::byte const> bytes, glyph_id first_glyph_id, glyph_id second_glyph_id, float em_scale)
 {
     if (bytes.empty()) {

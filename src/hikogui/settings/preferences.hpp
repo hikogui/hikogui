@@ -346,7 +346,7 @@ private:
     friend class detail::preference_item;
 };
 
-inline void detail::preference_item_base::load() noexcept
+hi_inline void detail::preference_item_base::load() noexcept
 {
     hilet value = this->_parent.read(_path);
     if (value.is_undefined()) {

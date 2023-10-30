@@ -15,7 +15,7 @@ import : intf;
 
 export namespace hi::inline v1 {
 
-inline void generate_seed(void *ptr, size_t size)
+void generate_seed(void *ptr, size_t size)
 {
     auto status = BCryptGenRandom(NULL, static_cast<PUCHAR>(ptr), narrow_cast<ULONG>(size), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
     if (not SUCCEEDED(status)) {

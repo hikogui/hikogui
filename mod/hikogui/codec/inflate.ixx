@@ -16,7 +16,7 @@ import hikogui_utility;
 export namespace hi { inline namespace v1 {
 namespace detail {
 
-inline void inflate_copy_block(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t max_size, bstring& r)
+void inflate_copy_block(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t max_size, bstring& r)
 {
     auto offset = (bit_offset + 7) / 8;
 
@@ -30,7 +30,7 @@ inline void inflate_copy_block(std::span<std::byte const> bytes, std::size_t& bi
     bit_offset = offset * 8;
 }
 
-[[nodiscard]] inline std::size_t
+[[nodiscard]] std::size_t
 inflate_decode_length(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t symbol)
 {
     switch (symbol) {
@@ -97,7 +97,7 @@ inflate_decode_length(std::span<std::byte const> bytes, std::size_t& bit_offset,
     }
 }
 
-[[nodiscard]] inline std::size_t
+[[nodiscard]] std::size_t
 inflate_decode_distance(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t symbol)
 {
     switch (symbol) {
@@ -166,7 +166,7 @@ inflate_decode_distance(std::span<std::byte const> bytes, std::size_t& bit_offse
     }
 }
 
-inline void inflate_block(
+void inflate_block(
     std::span<std::byte const> bytes,
     std::size_t& bit_offset,
     std::size_t max_size,
@@ -216,7 +216,7 @@ inline void inflate_block(
     }
 }
 
-inline huffman_tree<int16_t> deflate_fixed_literal_tree = []() {
+huffman_tree<int16_t> deflate_fixed_literal_tree = []() {
     std::vector<uint8_t> lengths;
 
     for (int i = 0; i <= 143; ++i) {
@@ -235,7 +235,7 @@ inline huffman_tree<int16_t> deflate_fixed_literal_tree = []() {
     return huffman_tree<int16_t>::from_lengths(lengths);
 }();
 
-inline huffman_tree<int16_t> deflate_fixed_distance_tree = []() {
+huffman_tree<int16_t> deflate_fixed_distance_tree = []() {
     std::vector<uint8_t> lengths;
 
     for (int i = 0; i <= 31; ++i) {
@@ -245,12 +245,12 @@ inline huffman_tree<int16_t> deflate_fixed_distance_tree = []() {
     return huffman_tree<int16_t>::from_lengths(lengths);
 }();
 
-inline void inflate_fixed_block(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t max_size, bstring& r)
+void inflate_fixed_block(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t max_size, bstring& r)
 {
     inflate_block(bytes, bit_offset, max_size, deflate_fixed_literal_tree, deflate_fixed_distance_tree, r);
 }
 
-[[nodiscard]] inline huffman_tree<int16_t>
+[[nodiscard]] huffman_tree<int16_t>
 inflate_code_lengths(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t nr_symbols)
 {
     // The symbols are in different order in the table.
@@ -266,7 +266,7 @@ inflate_code_lengths(std::span<std::byte const> bytes, std::size_t& bit_offset, 
     return huffman_tree<int16_t>::from_lengths(std::move(lengths));
 }
 
-inline std::vector<uint8_t> inflate_lengths(
+std::vector<uint8_t> inflate_lengths(
     std::span<std::byte const> bytes,
     std::size_t& bit_offset,
     std::size_t nr_symbols,
@@ -317,7 +317,7 @@ inline std::vector<uint8_t> inflate_lengths(
     return r;
 }
 
-inline void inflate_dynamic_block(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t max_size, bstring& r)
+void inflate_dynamic_block(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t max_size, bstring& r)
 {
     // Test all lengths, the trailer is at least 32 bits (Checksum)
     // - 14 bits lengths
@@ -354,7 +354,7 @@ inline void inflate_dynamic_block(std::span<std::byte const> bytes, std::size_t&
  *   in the byte array passed to inflate anyway.
  * - png IDAT chunks include the full zlib-format, including the 32 bit check value.
  */
-export [[nodiscard]] inline bstring
+export [[nodiscard]] bstring
 inflate(std::span<std::byte const> bytes, std::size_t& offset, std::size_t max_size = 0x0100'0000)
 {
     std::size_t bit_offset = offset * 8;

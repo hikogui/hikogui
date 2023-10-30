@@ -24,7 +24,7 @@ export namespace hi { inline namespace v1 {
  * @param buffer The buffer of bytes to extract the bit from.
  * @param index The index of the bit in the byte span.
  */
-[[nodiscard]] inline bool get_bit(std::span<std::byte const> buffer, std::size_t &index) noexcept
+[[nodiscard]] bool get_bit(std::span<std::byte const> buffer, std::size_t &index) noexcept
 {
     hilet byte_index = index >> 3;
     hilet bit_index = index & 7;
@@ -52,7 +52,7 @@ export namespace hi { inline namespace v1 {
  * @param index The index of the bit in the byte span.
  * @param length the number of bits to return.
  */
-[[nodiscard]] inline std::size_t get_bits(std::span<std::byte const> buffer, std::size_t &index, std::size_t length) noexcept
+[[nodiscard]] std::size_t get_bits(std::span<std::byte const> buffer, std::size_t &index, std::size_t length) noexcept
 {
     hi_axiom(length <= sizeof(std::size_t) * CHAR_BIT);
 

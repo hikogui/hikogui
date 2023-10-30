@@ -297,12 +297,12 @@ constexpr std::string_view to_string_view(keyboard_virtual_key key) noexcept
     return keyboard_virtual_key_metadata[key];
 }
 
-inline std::string to_string(keyboard_virtual_key key) noexcept
+hi_inline std::string to_string(keyboard_virtual_key key) noexcept
 {
     return std::string{to_string_view(key)};
 }
 
-inline std::ostream& operator<<(std::ostream& lhs, keyboard_virtual_key const& rhs)
+hi_inline std::ostream& operator<<(std::ostream& lhs, keyboard_virtual_key const& rhs)
 {
     return lhs << to_string_view(rhs);
 }

@@ -226,7 +226,7 @@ private:
     friend class audio_system_win32_notification_client;
 };
 
-hi_export [[nodiscard]] inline audio_system &audio_system::global() noexcept
+hi_export [[nodiscard]] hi_inline audio_system &audio_system::global() noexcept
 {
     if (not detail::audio_system_global) {
         auto tmp = std::make_unique<audio_system_aggregate>();

@@ -26,7 +26,7 @@ using unicode_break_vector = std::vector<unicode_break_opportunity>;
 using unicode_break_iterator = unicode_break_vector::iterator;
 using unicode_break_const_iterator = unicode_break_vector::const_iterator;
 
-inline std::ostream &operator<<(std::ostream &lhs, unicode_break_opportunity const &rhs) {
+std::ostream &operator<<(std::ostream &lhs, unicode_break_opportunity const &rhs) {
     hilet *s = [&] () {
         switch (rhs) {
             using enum unicode_break_opportunity;

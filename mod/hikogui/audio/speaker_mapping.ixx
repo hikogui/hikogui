@@ -136,7 +136,7 @@ struct pickle<speaker_mapping> {
     }
 };
 
-export [[nodiscard]] inline std::string to_string(speaker_mapping rhs) noexcept{
+export [[nodiscard]] std::string to_string(speaker_mapping rhs) noexcept{
     auto r = std::string{};
 
     if (to_bool(rhs & speaker_mapping::front_left)) {

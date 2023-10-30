@@ -5,7 +5,7 @@ module;
 export module hikogui_console_dialog : impl;
 import : intf;
 
-export inline void dialog_output(char const *title, char const *message)
+export void dialog_output(char const *title, char const *message)
 {
     @autoreleasepool {
         NSString *title_s = [NSString stringWithCString:title encoding:NSUTF8StringEncoding];

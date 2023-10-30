@@ -4,6 +4,9 @@ module;
 
 #include <cstdint>
 #include <optional>
+#include <bit>
+#include <string_view>
+#include <string>
 
 export module hikogui_unicode_ucd_bidi_paired_bracket_types;
 import hikogui_utility;
@@ -63,21 +66,21 @@ enum class unicode_bidi_paired_bracket_type : uint8_t {
     constexpr auto max_code_point_hi = detail::ucd_bidi_paired_bracket_types_indices_size - 1;
 
     auto code_point_hi = code_point / detail::ucd_bidi_paired_bracket_types_chunk_size;
-    hilet code_point_lo = code_point % detail::ucd_bidi_paired_bracket_types_chunk_size;
+    auto const code_point_lo = code_point % detail::ucd_bidi_paired_bracket_types_chunk_size;
 
     if (code_point_hi > max_code_point_hi) {
         code_point_hi = max_code_point_hi;
     }
 
-    hilet chunk_index = load_bits_be<detail::ucd_bidi_paired_bracket_types_index_width>(
+    auto const chunk_index = load_bits_be<detail::ucd_bidi_paired_bracket_types_index_width>(
         detail::ucd_bidi_paired_bracket_types_indices_bytes,
         code_point_hi * detail::ucd_bidi_paired_bracket_types_index_width);
 
     // Add back in the lower-bits of the code-point.
-    hilet index = (chunk_index * detail::ucd_bidi_paired_bracket_types_chunk_size) + code_point_lo;
+    auto const index = (chunk_index * detail::ucd_bidi_paired_bracket_types_chunk_size) + code_point_lo;
 
     // Get the canonical combining class from the table.
-    hilet value = load_bits_be<detail::ucd_bidi_paired_bracket_type_width>(
+    auto const value = load_bits_be<detail::ucd_bidi_paired_bracket_type_width>(
         detail::ucd_bidi_paired_bracket_types_bytes, index * detail::ucd_bidi_paired_bracket_type_width);
 
     return static_cast<unicode_bidi_paired_bracket_type>(value);

@@ -21,7 +21,7 @@ struct otype_name_language_entry_type {
     big_uint16_buf_t offset;
 };
 
-[[nodiscard]] inline language_tag otype_name_get_language_tag(
+[[nodiscard]] language_tag otype_name_get_language_tag(
     std::span<std::byte const> storage_bytes,
     std::span<otype_name_language_entry_type const> language_tag_table,
     uint16_t language_id)
@@ -32,7 +32,7 @@ struct otype_name_language_entry_type {
     return language_tag{std::string_view{reinterpret_cast<char const *>(tag_bytes.data()), tag_bytes.size()}};
 }
 
-[[nodiscard]] inline language_tag otype_name_get_language_unicode(
+[[nodiscard]] language_tag otype_name_get_language_unicode(
     std::span<std::byte const> storage_bytes,
     std::span<otype_name_language_entry_type const> language_tag_table,
     uint16_t language_id)
@@ -51,7 +51,7 @@ struct otype_name_language_entry_type {
     }
 }
 
-[[nodiscard]] inline language_tag
+[[nodiscard]] language_tag
 otype_name_get_language_quickdraw(std::span<std::byte const> storage_bytes, uint16_t platform_specific_id, uint16_t language_id)
 {
     if (platform_specific_id == 0 and language_id == 0) {
@@ -62,7 +62,7 @@ otype_name_get_language_quickdraw(std::span<std::byte const> storage_bytes, uint
     }
 }
 
-[[nodiscard]] inline language_tag otype_name_get_language_microsoft(
+[[nodiscard]] language_tag otype_name_get_language_microsoft(
     std::span<std::byte const> storage_bytes,
     std::span<otype_name_language_entry_type const> language_tag_table,
     uint16_t language_id)
@@ -76,7 +76,7 @@ otype_name_get_language_quickdraw(std::span<std::byte const> storage_bytes, uint
     }
 }
 
-[[nodiscard]] inline language_tag otype_name_get_language(
+[[nodiscard]] language_tag otype_name_get_language(
     std::span<std::byte const> storage_bytes,
     std::span<otype_name_language_entry_type const> language_tag_table,
     uint16_t platform_id,
@@ -104,7 +104,7 @@ otype_name_get_language_quickdraw(std::span<std::byte const> storage_bytes, uint
  * @param language The language to find the string for (default "en").
  * @return The string of the name was found, or std::nullopt if not found.
  */
-[[nodiscard]] inline std::optional<std::string>
+[[nodiscard]] std::optional<std::string>
 otype_name_search(std::span<std::byte const> bytes, uint16_t name_id, language_tag language = language_tag{"en"})
 {
     struct header_type_0 {
@@ -169,7 +169,7 @@ otype_name_search(std::span<std::byte const> bytes, uint16_t name_id, language_t
     return std::nullopt;
 }
 
-[[nodiscard]] inline auto otype_name_get_family(std::span<std::byte const> bytes)
+[[nodiscard]] auto otype_name_get_family(std::span<std::byte const> bytes)
 {
     struct return_type {
         std::string family_name;

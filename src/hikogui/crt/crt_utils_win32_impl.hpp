@@ -28,7 +28,7 @@ hi_export namespace hi { inline namespace v1 {
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-hi_export [[nodiscard]] inline char *make_cstr(char const *c_str, std::size_t size = -1) noexcept
+hi_export [[nodiscard]] hi_inline char *make_cstr(char const *c_str, std::size_t size = -1) noexcept
 {
     if (size == -1) {
         size = std::strlen(c_str);
@@ -42,12 +42,12 @@ hi_export [[nodiscard]] inline char *make_cstr(char const *c_str, std::size_t si
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-hi_export [[nodiscard]] inline char *make_cstr(std::string const& s) noexcept
+hi_export [[nodiscard]] hi_inline char *make_cstr(std::string const& s) noexcept
 {
     return make_cstr(s.c_str(), s.size());
 }
 
-hi_export inline void console_start() noexcept
+hi_export hi_inline void console_start() noexcept
 {
     auto out_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -80,7 +80,7 @@ hi_export inline void console_start() noexcept
     }
 }
 
-hi_export inline std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
+hi_export hi_inline std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
     // Switch out the terminate handler with one that can print an error message.
     old_terminate_handler = std::set_terminate(terminate_handler);
@@ -129,7 +129,7 @@ hi_export inline std::pair<int, char **> crt_start(int, char **, void *instance,
     return {argc, argv};
 }
 
-inline int crt_finish(int argc, char **argv, int exit_code)
+hi_inline int crt_finish(int argc, char **argv, int exit_code)
 {
     hi_assert_not_null(argv);
 

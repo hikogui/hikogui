@@ -5,6 +5,9 @@
 #include "../utility/utility.hpp"
 #include <cstdint>
 #include <optional>
+#include <bit>
+#include <string_view>
+#include <string>
 
 // Windows.h defines small as a macro.
 #ifdef small
@@ -4768,8 +4771,8 @@ struct ucd_decomposition_info {
     [[nodiscard]] constexpr std::u32string decompose() const noexcept
     {
         auto r = std::u32string{};
-        hilet first = cp_index() * detail::ucd_decompositions_code_point_width;
-        hilet last = first + cp_size() * detail::ucd_decompositions_code_point_width;
+        auto const first = cp_index() * detail::ucd_decompositions_code_point_width;
+        auto const last = first + cp_size() * detail::ucd_decompositions_code_point_width;
 
         for (auto i = first; i != last; i += detail::ucd_decompositions_code_point_width) {
             r += wide_cast<char32_t>(load_bits_be<detail::ucd_decompositions_code_point_width>(
@@ -4787,7 +4790,7 @@ struct ucd_decomposition_info {
     [[nodiscard]] constexpr std::optional<char32_t> canonical_equivalent() const noexcept
     {
         if (type() == unicode_decomposition_type::canonical and cp_size() == 1) {
-            hilet offset = cp_index() * detail::ucd_decompositions_code_point_width;
+            auto const offset = cp_index() * detail::ucd_decompositions_code_point_width;
             return char_cast<char32_t>(load_bits_be<detail::ucd_decompositions_code_point_width>(detail::ucd_decomposition_code_points_bytes, offset));
         } else {
             return std::nullopt;
@@ -4802,22 +4805,22 @@ struct ucd_decomposition_info {
     constexpr auto max_code_point_hi = detail::ucd_decompositions_indices_size - 1;
 
     auto code_point_hi = code_point / detail::ucd_decompositions_chunk_size;
-    hilet code_point_lo = code_point % detail::ucd_decompositions_chunk_size;
+    auto const code_point_lo = code_point % detail::ucd_decompositions_chunk_size;
 
     if (code_point_hi > max_code_point_hi) {
         code_point_hi = max_code_point_hi;
     }
 
     // The index in the chunk-index table based on the upper-bits of the code-point.
-    hilet chunk_index = load_bits_be<detail::ucd_decompositions_index_width>(
+    auto const chunk_index = load_bits_be<detail::ucd_decompositions_index_width>(
         detail::ucd_decompositions_indices_bytes,
         code_point_hi * detail::ucd_decompositions_index_width);
 
     // Add back in the lower-bits of the code-point.
-    hilet index = (chunk_index * detail::ucd_decompositions_chunk_size) + code_point_lo;
+    auto const index = (chunk_index * detail::ucd_decompositions_chunk_size) + code_point_lo;
 
     // Get the decomposition value from the decomposition table by index.
-    hilet value = load_bits_be<detail::ucd_decomposition_width>(
+    auto const value = load_bits_be<detail::ucd_decomposition_width>(
         detail::ucd_decompositions_bytes, index * detail::ucd_decomposition_width);
 
     return ucd_decomposition_info{narrow_cast<ucd_decomposition_info::value_type>(value)};

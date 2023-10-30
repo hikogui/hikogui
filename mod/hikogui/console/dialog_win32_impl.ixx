@@ -17,7 +17,7 @@ import : intf;
 
 export namespace hi { inline namespace v1 {
 
-export inline bool dialog(dialog_type type, std::string_view title, std::string_view text)
+export bool dialog(dialog_type type, std::string_view title, std::string_view text)
 {
     UINT type_;
 

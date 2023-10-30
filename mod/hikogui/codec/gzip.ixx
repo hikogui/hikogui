@@ -27,7 +27,7 @@ struct gzip_member_header {
     uint8_t OS;
 };
 
-[[nodiscard]] inline bstring gzip_decompress_member(std::span<std::byte const> bytes, std::size_t &offset, std::size_t max_size)
+[[nodiscard]] bstring gzip_decompress_member(std::span<std::byte const> bytes, std::size_t &offset, std::size_t max_size)
 {
     hilet header = make_placement_ptr<gzip_member_header>(bytes, offset);
 
@@ -80,7 +80,7 @@ struct gzip_member_header {
 
 }
 
-export [[nodiscard]] inline bstring gzip_decompress(std::span<std::byte const> bytes, std::size_t max_size)
+export [[nodiscard]] bstring gzip_decompress(std::span<std::byte const> bytes, std::size_t max_size)
 {
     auto r = bstring{};
 
@@ -94,7 +94,7 @@ export [[nodiscard]] inline bstring gzip_decompress(std::span<std::byte const> b
     return r;
 }
 
-export [[nodiscard]] inline bstring gzip_decompress(std::filesystem::path const &path, std::size_t max_size = 0x01000000)
+export [[nodiscard]] bstring gzip_decompress(std::filesystem::path const &path, std::size_t max_size = 0x01000000)
 {
     return gzip_decompress(as_span<std::byte const>(file_view{path}), max_size);
 }

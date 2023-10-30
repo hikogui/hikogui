@@ -6,6 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <string_view>
 
 hi_export_module(hikogui.text.semantic_text_style);
 

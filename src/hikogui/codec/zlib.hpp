@@ -16,7 +16,7 @@ hi_export_module(hikogui.codec.zlib);
 
 hi_export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline bstring zlib_decompress(std::span<std::byte const> bytes, std::size_t max_size)
+[[nodiscard]] hi_inline bstring zlib_decompress(std::span<std::byte const> bytes, std::size_t max_size)
 {
     struct zlib_header {
         uint8_t CMF;
@@ -45,7 +45,7 @@ hi_export namespace hi { inline namespace v1 {
     return r;
 }
 
-[[nodiscard]] inline bstring zlib_decompress(std::filesystem::path const& path, std::size_t max_size = 0x01000000)
+[[nodiscard]] hi_inline bstring zlib_decompress(std::filesystem::path const& path, std::size_t max_size = 0x01000000)
 {
     return zlib_decompress(as_span<std::byte const>(file_view(path)), max_size);
 }

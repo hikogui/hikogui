@@ -10,21 +10,21 @@ export module hikogui_skeleton : parser;
 import hikogui_algorithm;
 import hikogui_file;
 import hikogui_formula;
-import : continue_node;
-import : function_node;
+import : if_node;
 import : top_node;
-import : break_node;
-import : expression_node;
-import : block_node;
-import : do_node;
-import : return_node;
-import : parse_context;
+import : placeholder_node;
 import : for_node;
 import : while_node;
+import : do_node;
+import : break_node;
+import : expression_node;
 import : string_node;
-import : if_node;
-import : placeholder_node;
+import : parse_context;
 import : node;
+import : return_node;
+import : function_node;
+import : block_node;
+import : continue_node;
 
 export namespace hi::inline v1 {
 
@@ -226,7 +226,7 @@ constexpr void parse_skeleton_escape(skeleton_parse_context &context)
     return top;
 }
 
-[[nodiscard]] inline std::unique_ptr<skeleton_node>
+[[nodiscard]] std::unique_ptr<skeleton_node>
 parse_skeleton(std::filesystem::path path, std::string_view::const_iterator first, std::string_view::const_iterator last)
 {
     auto context = skeleton_parse_context(std::move(path), first, last);
@@ -234,12 +234,12 @@ parse_skeleton(std::filesystem::path path, std::string_view::const_iterator firs
     return e;
 }
 
-[[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path, std::string_view text)
+[[nodiscard]] std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path, std::string_view text)
 {
     return parse_skeleton(std::move(path), text.cbegin(), text.cend());
 }
 
-[[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path)
+[[nodiscard]] std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path)
 {
     hilet fv = file_view(path);
     hilet sv = as_string_view(fv);

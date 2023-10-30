@@ -194,7 +194,7 @@ constexpr auto gui_event_type_metadata = enum_metadata{
 
 /** Convert a GUI event type to a string.
  */
-inline std::string_view to_string(gui_event_type rhs) noexcept
+hi_inline std::string_view to_string(gui_event_type rhs) noexcept
 {
     return gui_event_type_metadata[rhs];
 }

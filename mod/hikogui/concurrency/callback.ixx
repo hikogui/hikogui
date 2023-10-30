@@ -354,7 +354,7 @@ private:
 };
 
 template<typename R, typename... Args>
-inline weak_callback<R(Args...)>::weak_callback(callback<R(Args...)> const& other) noexcept : weak_callback(other._impl)
+weak_callback<R(Args...)>::weak_callback(callback<R(Args...)> const& other) noexcept : weak_callback(other._impl)
 {
 }
 

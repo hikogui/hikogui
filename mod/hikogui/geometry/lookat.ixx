@@ -11,8 +11,8 @@ module;
 
 
 export module hikogui_geometry : lookat;
-import : point3;
 import : matrix3;
+import : point3;
 
 export namespace hi { inline namespace v1 {
 

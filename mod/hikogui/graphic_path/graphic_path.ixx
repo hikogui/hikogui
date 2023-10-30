@@ -664,7 +664,7 @@ export struct graphic_path {
  * \param color color to composit.
  * \param mask mask where the color will be composited on the destination.
  */
-export inline void composit(pixmap_span<sfloat_rgba16> dst, hi::color color, graphic_path const& mask) noexcept
+export void composit(pixmap_span<sfloat_rgba16> dst, hi::color color, graphic_path const& mask) noexcept
 {
     hi_assert(not mask.hasLayers());
     hi_assert(not mask.isContourOpen());
@@ -683,7 +683,7 @@ export inline void composit(pixmap_span<sfloat_rgba16> dst, hi::color color, gra
  * \param dst destination image.
  * \param mask mask where the color will be composited on the destination.
  */
-export inline void composit(pixmap_span<sfloat_rgba16> dst, graphic_path const& mask) noexcept
+export void composit(pixmap_span<sfloat_rgba16> dst, graphic_path const& mask) noexcept
 {
     hi_assert(mask.hasLayers() and not mask.isLayerOpen());
 
@@ -698,7 +698,7 @@ export inline void composit(pixmap_span<sfloat_rgba16> dst, graphic_path const& 
  * @param dst An signed-distance-field which show distance toward the closest curve
  * @param path A path.
  */
-export inline void fill(pixmap_span<sdf_r8> dst, graphic_path const& path) noexcept
+export void fill(pixmap_span<sdf_r8> dst, graphic_path const& path) noexcept
 {
     fill(dst, path.getBeziers());
 }

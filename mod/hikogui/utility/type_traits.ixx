@@ -42,7 +42,7 @@ struct is_numeric_signed_integral<signed long long> : std::true_type {};
 /** @sa is_numeric_signed_integral
  */
 template<typename T>
-inline constexpr bool is_numeric_signed_integral_v = is_numeric_signed_integral<T>::value;
+constexpr bool is_numeric_signed_integral_v = is_numeric_signed_integral<T>::value;
 
 /** Is a numeric unsigned integer.
  *
@@ -67,7 +67,7 @@ struct is_numeric_unsigned_integral<unsigned long long> : std::true_type {};
 /** @sa is_numeric_unsigned_integral
  */
 template<typename T>
-inline constexpr bool is_numeric_unsigned_integral_v = is_numeric_unsigned_integral<T>::value;
+constexpr bool is_numeric_unsigned_integral_v = is_numeric_unsigned_integral<T>::value;
 
 /** Is a numeric integer.
  *
@@ -103,7 +103,7 @@ struct is_numeric_integral<signed long long> : std::true_type {};
 /** @sa is_numeric_integral
  */
 template<typename T>
-inline constexpr bool is_numeric_integral_v = is_numeric_integral<T>::value;
+constexpr bool is_numeric_integral_v = is_numeric_integral<T>::value;
 
 /** Is a numeric.
  *
@@ -146,7 +146,7 @@ struct is_numeric<long double> : std::true_type {};
 /** @sa is_numeric
  */
 template<typename T>
-inline constexpr bool is_numeric_v = is_numeric<T>::value;
+constexpr bool is_numeric_v = is_numeric<T>::value;
 
 template<typename T>
 struct is_character : std::false_type {};
@@ -175,7 +175,7 @@ struct is_character<char32_t const> : std::true_type {};
  * This distinguishes between integer characters and integer numbers.
  */
 template<typename T>
-inline constexpr bool is_character_v = is_character<T>::value;
+constexpr bool is_character_v = is_character<T>::value;
 
 /** An array of this type will implicitly create objects within that array.
  *
@@ -201,7 +201,7 @@ struct is_byte_like<std::byte const> : std::true_type {};
  * P059R6: Implicit creation of objects for low-level object manipulation.
  */
 template<typename T>
-inline constexpr bool is_byte_like_v = is_byte_like<T>::value;
+constexpr bool is_byte_like_v = is_byte_like<T>::value;
 
 /** type-trait to convert a character to a string type.
  */
@@ -560,7 +560,7 @@ struct has_value_type {
 };
 
 template<typename T>
-inline constexpr bool has_value_type_v = has_value_type<T>::value;
+constexpr bool has_value_type_v = has_value_type<T>::value;
 
 template<typename T>
 struct has_add_callback {
@@ -573,7 +573,7 @@ struct has_add_callback {
 };
 
 template<typename T>
-inline constexpr bool has_add_callback_v = has_add_callback<T>::value;
+constexpr bool has_add_callback_v = has_add_callback<T>::value;
 
 template<typename BaseType, typename DerivedType>
 struct is_decayed_base_of : std::is_base_of<std::decay_t<BaseType>, std::decay_t<DerivedType>> {};

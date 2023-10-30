@@ -636,6 +636,6 @@ private:
     }
 };
 
-inline loop::loop() : _pimpl(std::make_unique<loop_impl_win32>()) {}
+loop::loop() : _pimpl(std::make_unique<loop_impl_win32>()) {}
 
 } // namespace hi::inline v1

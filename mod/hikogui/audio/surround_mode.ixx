@@ -238,7 +238,7 @@ export [[nodiscard]] constexpr speaker_mapping to_speaker_mapping(surround_mode 
     return surround_mode_speaker_mappings[rhs];
 }
 
-export [[nodiscard]] inline generator<surround_mode> enumerate_surround_modes() noexcept
+export [[nodiscard]] generator<surround_mode> enumerate_surround_modes() noexcept
 {
     hilet begin = std::to_underlying(surround_mode::mono_1_0);
     hilet end = std::to_underlying(surround_mode::surround_atmos_7_1_4) << 1;

@@ -25,7 +25,7 @@ export namespace hi { inline namespace v1 {
  *
  * This is the handler returned by `std::set_terminate()`.
  */
-inline std::terminate_handler old_terminate_handler;
+std::terminate_handler old_terminate_handler;
 
 /** The HikoGUI terminate handler.
  *
@@ -33,7 +33,7 @@ inline std::terminate_handler old_terminate_handler;
  *
  * @note Use `hi_set_terminate_message()` to set a message.
  */
-inline void terminate_handler() noexcept{
+void terminate_handler() noexcept{
     using namespace std::literals;
 
     log_global.flush();

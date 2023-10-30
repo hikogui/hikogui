@@ -572,7 +572,7 @@ private:
 
 template<>
 struct std::hash<hi::decimal> {
-    inline std::size_t operator()(hi::decimal const& value) const noexcept
+    std::size_t operator()(hi::decimal const& value) const noexcept
     {
         return value.hash();
     }

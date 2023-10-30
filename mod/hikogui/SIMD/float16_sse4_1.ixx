@@ -27,7 +27,7 @@ import hikogui_utility;
 
 export namespace hi::inline v1 {
 
-inline __m128 _mm_cvtph_ps_sse2(__m128i value) noexcept
+__m128 _mm_cvtph_ps_sse2(__m128i value) noexcept
 {
     hilet f32_to_f16_constants = _mm_set_epi32(0, f32_to_f16_adjustment, f32_to_f16_infinite, f32_to_f16_lowest_normal - 1);
 
@@ -57,7 +57,7 @@ inline __m128 _mm_cvtph_ps_sse2(__m128i value) noexcept
     return _mm_castsi128_ps(u); // SSE2
 }
 
-inline __m128i _mm_cvtps_ph_sse4_1(__m128 value) noexcept
+__m128i _mm_cvtps_ph_sse4_1(__m128 value) noexcept
 {
     hilet f32_to_f16_constants = _mm_set_epi32(0, f32_to_f16_adjustment, f32_to_f16_infinite, f32_to_f16_lowest_normal - 1);
 

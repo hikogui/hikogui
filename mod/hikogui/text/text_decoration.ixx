@@ -37,12 +37,12 @@ constexpr auto text_decoration_metadata = enum_metadata{
 };
 // clang-format on
 
-[[nodiscard]] inline std::string_view to_string(text_decoration const &rhs) noexcept
+[[nodiscard]] std::string_view to_string(text_decoration const &rhs) noexcept
 {
     return text_decoration_metadata[rhs];
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, text_decoration const &rhs)
+std::ostream &operator<<(std::ostream &lhs, text_decoration const &rhs)
 {
     return lhs << text_decoration_metadata[rhs];
 }

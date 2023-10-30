@@ -17,7 +17,7 @@ import : intf;
 
 export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline std::vector<uuid> os_settings::preferred_gpus(hi::policy performance_policy) noexcept
+[[nodiscard]] std::vector<uuid> os_settings::preferred_gpus(hi::policy performance_policy) noexcept
 {
     auto r = std::vector<uuid>{};
 
@@ -83,7 +83,7 @@ export namespace hi { inline namespace v1 {
  *
  * Therefor the only option available is to read the language list from the registry.
  */
-[[nodiscard]] inline std::vector<language_tag> os_settings::gather_languages() noexcept
+[[nodiscard]] std::vector<language_tag> os_settings::gather_languages() noexcept
 {
     auto r = std::vector<language_tag>{};
 
@@ -106,7 +106,7 @@ export namespace hi { inline namespace v1 {
     return r;
 }
 
-[[nodiscard]] inline std::expected<std::locale, std::error_code> os_settings::gather_locale() noexcept
+[[nodiscard]] std::expected<std::locale, std::error_code> os_settings::gather_locale() noexcept
 {
     if (auto name = win32_GetUserDefaultLocaleName()) {
         return std::locale(*name);
@@ -116,7 +116,7 @@ export namespace hi { inline namespace v1 {
     }
 }
 
-[[nodiscard]] inline bool os_settings::gather_left_to_right() noexcept
+[[nodiscard]] bool os_settings::gather_left_to_right() noexcept
 {
     if (auto locale = gather_locale()) {
         try {
@@ -149,7 +149,7 @@ export namespace hi { inline namespace v1 {
     return true;
 }
 
-[[nodiscard]] inline hi::theme_mode os_settings::gather_theme_mode()
+[[nodiscard]] hi::theme_mode os_settings::gather_theme_mode()
 {
     if (hilet result = win32_RegGetValue<uint32_t>(
             HKEY_CURRENT_USER,
@@ -163,7 +163,7 @@ export namespace hi { inline namespace v1 {
     }
 }
 
-[[nodiscard]] inline hi::subpixel_orientation os_settings::gather_subpixel_orientation()
+[[nodiscard]] hi::subpixel_orientation os_settings::gather_subpixel_orientation()
 {
     {
         BOOL has_font_smoothing;
@@ -220,19 +220,19 @@ export namespace hi { inline namespace v1 {
     }
 }
 
-[[nodiscard]] inline bool os_settings::gather_uniform_HDR()
+[[nodiscard]] bool os_settings::gather_uniform_HDR()
 {
     // Microsoft Windows 10 switches display mode when getting a HDR surface
     // The switching causes all application to display using a different color and brightness calibration.
     return false;
 }
 
-[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_double_click_interval()
+[[nodiscard]] std::chrono::milliseconds os_settings::gather_double_click_interval()
 {
     return std::chrono::milliseconds{GetDoubleClickTime()};
 }
 
-[[nodiscard]] inline float os_settings::gather_double_click_distance()
+[[nodiscard]] float os_settings::gather_double_click_distance()
 {
     hilet width = GetSystemMetrics(SM_CXDOUBLECLK);
     if (width <= 0) {
@@ -248,7 +248,7 @@ export namespace hi { inline namespace v1 {
     return diameter * 0.5f;
 }
 
-[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_keyboard_repeat_delay()
+[[nodiscard]] std::chrono::milliseconds os_settings::gather_keyboard_repeat_delay()
 {
     using namespace std::literals::chrono_literals;
 
@@ -264,7 +264,7 @@ export namespace hi { inline namespace v1 {
     return bias + r * gain;
 }
 
-[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_keyboard_repeat_interval()
+[[nodiscard]] std::chrono::milliseconds os_settings::gather_keyboard_repeat_interval()
 {
     using namespace std::literals::chrono_literals;
 
@@ -280,7 +280,7 @@ export namespace hi { inline namespace v1 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(1000ms / rate);
 }
 
-[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_cursor_blink_interval()
+[[nodiscard]] std::chrono::milliseconds os_settings::gather_cursor_blink_interval()
 {
     using namespace std::literals::chrono_literals;
 
@@ -297,13 +297,13 @@ export namespace hi { inline namespace v1 {
     }
 }
 
-[[nodiscard]] inline std::chrono::milliseconds os_settings::gather_cursor_blink_delay()
+[[nodiscard]] std::chrono::milliseconds os_settings::gather_cursor_blink_delay()
 {
     // The blink delay is not available in the OS, we can use the keyboard repeat delay.
     return std::max(gather_keyboard_repeat_delay(), gather_keyboard_repeat_interval());
 }
 
-[[nodiscard]] inline float os_settings::gather_minimum_window_width()
+[[nodiscard]] float os_settings::gather_minimum_window_width()
 {
     hilet width = GetSystemMetrics(SM_CXMINTRACK);
     if (width == 0) {
@@ -312,7 +312,7 @@ export namespace hi { inline namespace v1 {
     return narrow_cast<float>(width);
 }
 
-[[nodiscard]] inline float os_settings::gather_minimum_window_height()
+[[nodiscard]] float os_settings::gather_minimum_window_height()
 {
     hilet height = GetSystemMetrics(SM_CYMINTRACK);
     if (height == 0) {
@@ -322,7 +322,7 @@ export namespace hi { inline namespace v1 {
     return narrow_cast<float>(height);
 }
 
-[[nodiscard]] inline float os_settings::gather_maximum_window_width()
+[[nodiscard]] float os_settings::gather_maximum_window_width()
 {
     hilet width = GetSystemMetrics(SM_CXMAXTRACK);
     if (width == 0) {
@@ -331,7 +331,7 @@ export namespace hi { inline namespace v1 {
     return narrow_cast<float>(width);
 }
 
-[[nodiscard]] inline float os_settings::gather_maximum_window_height()
+[[nodiscard]] float os_settings::gather_maximum_window_height()
 {
     hilet height = GetSystemMetrics(SM_CYMAXTRACK);
     if (height == 0) {
@@ -341,14 +341,14 @@ export namespace hi { inline namespace v1 {
     return narrow_cast<float>(height);
 }
 
-[[nodiscard]] inline uintptr_t os_settings::gather_primary_monitor_id()
+[[nodiscard]] uintptr_t os_settings::gather_primary_monitor_id()
 {
     hilet origin = POINT{0, 0};
     hilet monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
     return std::bit_cast<uintptr_t>(monitor);
 }
 
-[[nodiscard]] inline aarectangle os_settings::gather_primary_monitor_rectangle()
+[[nodiscard]] aarectangle os_settings::gather_primary_monitor_rectangle()
 {
     hilet width = GetSystemMetrics(SM_CXSCREEN);
     if (width == 0) {
@@ -364,7 +364,7 @@ export namespace hi { inline namespace v1 {
     return aarectangle{extent2{narrow_cast<float>(width), narrow_cast<float>(height)}};
 }
 
-[[nodiscard]] inline aarectangle os_settings::gather_desktop_rectangle()
+[[nodiscard]] aarectangle os_settings::gather_desktop_rectangle()
 {
     hilet primary_monitor_height = GetSystemMetrics(SM_CYSCREEN);
     if (primary_monitor_height == 0) {
@@ -392,7 +392,7 @@ export namespace hi { inline namespace v1 {
         narrow_cast<float>(left), narrow_cast<float>(inv_bottom), narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
-[[nodiscard]] inline policy os_settings::gather_gpu_policy()
+[[nodiscard]] policy os_settings::gather_gpu_policy()
 {
     using namespace std::literals;
 

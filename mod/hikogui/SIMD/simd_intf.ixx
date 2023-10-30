@@ -18,12 +18,12 @@ module;
 
 export module hikogui_SIMD : intf;
 import hikogui_utility;
-import : native_u32x4_sse2;
-import : native_f64x4_avx;
-import : native_f32x4_sse;
 import : native_simd_conversions_x86;
 import : native_i32x4_sse2;
+import : native_f64x4_avx;
 import : native_i64x4_avx2;
+import : native_u32x4_sse2;
+import : native_f32x4_sse;
 
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
@@ -139,7 +139,8 @@ hi_warning_ignore_msvc(26472)
     }
 
 #define HI_X_inplace_op(long_op, short_op) \
-    constexpr simd& operator long_op(auto rhs) noexcept \
+    template<typename Rhs> \
+    constexpr simd& operator long_op(Rhs rhs) noexcept \
         requires(requires { *this short_op rhs; }) \
     { \
         return *this = *this short_op rhs; \
@@ -1295,14 +1296,14 @@ struct std::equal_to<::hi::simd<T, N>> {
 
 // Add equality operator to Google-test internal namespace so that ASSERT_EQ() work.
 template<typename T, size_t N>
-inline bool operator==(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
+bool operator==(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
 {
     return std::equal_to{}(lhs, rhs);
 }
 
 // Add equality operator to Google-test internal namespace so that ASSERT_NE() work.
 template<typename T, size_t N>
-inline bool operator!=(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
+bool operator!=(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
 {
     return not std::equal_to<::hi::simd<T, N>>{}(lhs, rhs);
 }

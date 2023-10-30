@@ -377,24 +377,24 @@ private:
 
     /** Pointer to the main-loop.
      */
-    inline static std::atomic<loop *> _main;
+    hi_inline static std::atomic<loop *> _main;
 
     /** Pointer to the timer-loop.
      */
-    inline static std::atomic<loop *> _timer;
+    hi_inline static std::atomic<loop *> _timer;
 
-    inline static std::jthread _timer_thread;
+    hi_inline static std::jthread _timer_thread;
 
     std::unique_ptr<impl_type> _pimpl;
 };
 
 namespace detail {
-inline thread_local std::unique_ptr<loop> thread_local_loop;
+hi_inline thread_local std::unique_ptr<loop> thread_local_loop;
 }
 
 /** Get or create the thread-local loop.
  */
-[[nodiscard]] hi_no_inline inline loop& loop::local() noexcept
+[[nodiscard]] hi_no_inline hi_inline loop& loop::local() noexcept
 {
     if (not detail::thread_local_loop) {
         detail::thread_local_loop = std::make_unique<loop>();

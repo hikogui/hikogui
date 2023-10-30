@@ -12,10 +12,10 @@ module;
 #include <array>
 
 export module hikogui_geometry : matrix2;
+import : rotate2;
+import : scale2;
 import : translate2;
 import : aarectangle;
-import : scale2;
-import : rotate2;
 
 export namespace hi { inline namespace v1 {
 class aarectangle;

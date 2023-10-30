@@ -176,14 +176,14 @@ namespace testing::internal {
 
 // Add equality operator to Google-test internal namespace so that ASSERT_EQ() work.
 template<typename T, size_t N>
-inline bool operator==(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
+bool operator==(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
 {
     return std::equal_to<::hi::native_simd<T, N>>{}(lhs, rhs);
 }
 
 // Add equality operator to Google-test internal namespace so that ASSERT_NE() work.
 template<typename T, size_t N>
-inline bool operator!=(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
+bool operator!=(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
 {
     return not std::equal_to<::hi::native_simd<T, N>>{}(lhs, rhs);
 }

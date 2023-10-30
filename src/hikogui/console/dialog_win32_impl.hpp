@@ -17,7 +17,7 @@ hi_export_module(hikogui.console.dialog : impl);
 
 hi_export namespace hi { inline namespace v1 {
 
-hi_export inline bool dialog(dialog_type type, std::string_view title, std::string_view text)
+hi_export hi_inline bool dialog(dialog_type type, std::string_view title, std::string_view text)
 {
     UINT type_;
 

@@ -4,8 +4,11 @@
 
 #pragma once
 
+#include "../utility/utility.hpp"
 #include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <format>
+#include <ostream>
 
 hi_export_module(hikogui.geometry : vector2);
 

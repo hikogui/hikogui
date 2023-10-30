@@ -10,6 +10,7 @@
 
 #include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <cstddef>
 
 hi_export_module(hikogui.geometry : corner_radii);
 

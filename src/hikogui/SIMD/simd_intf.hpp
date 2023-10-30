@@ -139,7 +139,8 @@ hi_warning_ignore_msvc(26472)
     }
 
 #define HI_X_inplace_op(long_op, short_op) \
-    constexpr simd& operator long_op(auto rhs) noexcept \
+    template<typename Rhs> \
+    constexpr simd& operator long_op(Rhs rhs) noexcept \
         requires(requires { *this short_op rhs; }) \
     { \
         return *this = *this short_op rhs; \
@@ -1295,14 +1296,14 @@ struct std::equal_to<::hi::simd<T, N>> {
 
 // Add equality operator to Google-test internal namespace so that ASSERT_EQ() work.
 template<typename T, size_t N>
-inline bool operator==(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
+hi_inline bool operator==(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
 {
     return std::equal_to{}(lhs, rhs);
 }
 
 // Add equality operator to Google-test internal namespace so that ASSERT_NE() work.
 template<typename T, size_t N>
-inline bool operator!=(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
+hi_inline bool operator!=(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
 {
     return not std::equal_to<::hi::simd<T, N>>{}(lhs, rhs);
 }

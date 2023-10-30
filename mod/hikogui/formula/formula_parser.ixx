@@ -80,7 +80,7 @@ std::unique_ptr<formula_node> parse_formula(It& it, ItEnd last);
     }
 }
 
-[[nodiscard]] inline std::unique_ptr<formula_node>
+[[nodiscard]] std::unique_ptr<formula_node>
 parse_operation_formula(std::unique_ptr<formula_node> lhs, token const& op, std::unique_ptr<formula_node> rhs)
 {
     if (lhs) {
@@ -450,7 +450,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 /** Parse an formula.
  * Parses an formula until EOF, ')', ',', '}'
  */
-[[nodiscard]] inline std::unique_ptr<formula_node> parse_formula_without_post_processing(std::string_view text)
+[[nodiscard]] std::unique_ptr<formula_node> parse_formula_without_post_processing(std::string_view text)
 {
     auto token_it = lexer<lexer_config::c_style()>.parse(text.begin(), text.end());
     return parse_formula(token_it, std::default_sentinel);
@@ -459,7 +459,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 /** Parse an formula.
  * Parses an formula until EOF, ')', ',', '}'
  */
-[[nodiscard]] inline std::unique_ptr<formula_node> parse_formula(std::string_view text, formula_post_process_context post_process_context = {})
+[[nodiscard]] std::unique_ptr<formula_node> parse_formula(std::string_view text, formula_post_process_context post_process_context = {})
 {
     auto e = parse_formula_without_post_processing(text);
     e->post_process(post_process_context);

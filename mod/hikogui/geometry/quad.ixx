@@ -9,11 +9,11 @@ module;
 #include <tuple>
 
 export module hikogui_geometry : quad;
-import : point3;
-import : extent3;
-import : aarectangle;
 import : vector3;
 import : rectangle;
+import : extent3;
+import : point3;
+import : aarectangle;
 
 export namespace hi::inline v1 {
 

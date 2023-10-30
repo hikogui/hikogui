@@ -14,7 +14,7 @@ import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline auto otype_maxp_parse(std::span<std::byte const> bytes)
+[[nodiscard]] auto otype_maxp_parse(std::span<std::byte const> bytes)
 {
     struct header_type_05 {
         big_uint32_buf_t version;

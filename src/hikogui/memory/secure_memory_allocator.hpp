@@ -8,6 +8,7 @@
 #include "../macros.hpp"
 #include <type_traits>
 #include <cstddef>
+#include <memory>
 
 hi_export_module(hikogui.memory.secure_memory_allocator);
 

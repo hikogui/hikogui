@@ -49,7 +49,7 @@ struct otype_glyf_header {
  *
  * @note Only call this function when `otype_glyf_is_compound() == false`.
  */
-[[nodiscard]] inline graphic_path
+[[nodiscard]] hi_inline graphic_path
 otype_glyf_get_path(std::span<std::byte const> bytes, float em_scale)
 {
     auto r = graphic_path{};
@@ -190,7 +190,7 @@ struct otype_glyf_component {
  *
  * @note Only call this function when `otype_glyf_is_compound() == true`.
  */
-[[nodiscard]] inline generator<otype_glyf_component> otype_glyf_get_compound(std::span<std::byte const> bytes, float em_scale)
+[[nodiscard]] hi_inline generator<otype_glyf_component> otype_glyf_get_compound(std::span<std::byte const> bytes, float em_scale)
 {
     if (bytes.empty()) {
         // Empty glyphs have no path, and therefor an empty bounding rectangle.
@@ -260,7 +260,7 @@ struct otype_glyf_component {
 /** Check if this glyph is a compound or simple glyph.
  *
  */
-[[nodiscard]] inline bool otype_glyf_is_compound(std::span<std::byte const> bytes)
+[[nodiscard]] hi_inline bool otype_glyf_is_compound(std::span<std::byte const> bytes)
 {
     struct header_type {
         big_int16_buf_t num_contours;
@@ -284,7 +284,7 @@ struct otype_glyf_component {
  *
  * @note Only call this function when `otype_glyf_is_compound() == false`.
  */
-[[nodiscard]] inline aarectangle otype_glyf_get_bounding_box(std::span<std::byte const> bytes, float em_scale)
+[[nodiscard]] hi_inline aarectangle otype_glyf_get_bounding_box(std::span<std::byte const> bytes, float em_scale)
 {
     struct header_type {
         big_int16_buf_t num_contours;

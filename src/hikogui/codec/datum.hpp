@@ -2374,7 +2374,7 @@ private:
 
 hi_export template<>
 struct std::hash<hi::datum> {
-    [[nodiscard]] inline std::size_t operator()(hi::datum const& rhs) const noexcept
+    [[nodiscard]] hi_inline std::size_t operator()(hi::datum const& rhs) const noexcept
     {
         return rhs.hash();
     }

@@ -121,10 +121,10 @@ private:
 };
 
 namespace detail {
-inline std::unique_ptr<theme_book> theme_book_global;
+std::unique_ptr<theme_book> theme_book_global;
 }
 
-[[nodiscard]] inline theme_book& theme_book::global() noexcept
+[[nodiscard]] theme_book& theme_book::global() noexcept
 {
     if (not detail::theme_book_global) {
         detail::theme_book_global = std::make_unique<theme_book>();
@@ -132,18 +132,18 @@ inline std::unique_ptr<theme_book> theme_book_global;
     return *detail::theme_book_global;
 }
 
-inline void register_theme_directory(std::filesystem::path const &path) noexcept
+void register_theme_directory(std::filesystem::path const &path) noexcept
 {
     return theme_book::global().register_directory(path);
 }
 
-inline void reload_themes() noexcept
+void reload_themes() noexcept
 {
     return theme_book::global().reload();
 }
 
 template<std::ranges::range R>
-inline void register_theme_directories(R &&r) noexcept
+void register_theme_directories(R &&r) noexcept
 {
     for (auto &path: r) {
         register_theme_directory(path);
@@ -151,17 +151,17 @@ inline void register_theme_directories(R &&r) noexcept
     reload_themes();
 }
 
-[[nodiscard]] inline theme const& find_theme(std::string_view name, theme_mode mode) noexcept
+[[nodiscard]] theme const& find_theme(std::string_view name, theme_mode mode) noexcept
 {
     return theme_book::global().find(name, mode);
 }
 
-[[nodiscard]] inline std::vector<std::string> theme_names() noexcept
+[[nodiscard]] std::vector<std::string> theme_names() noexcept
 {
     return theme_book::global().names();
 }
 
-[[nodiscard]] inline theme const &get_selected_theme() noexcept
+[[nodiscard]] theme const &get_selected_theme() noexcept
 {
     return find_theme(*theme_book::global().selected_theme, os_settings::theme_mode());
 }

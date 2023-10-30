@@ -10,10 +10,12 @@ module;
 #include "../macros.hpp"
 
 #include <thread>
+#include <atomic>
 
 export module hikogui_concurrency_unfair_recursive_mutex;
 import hikogui_concurrency_thread;
 import hikogui_concurrency_unfair_mutex;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 

@@ -14,7 +14,7 @@ hi_export_module(hikogui.font.otype_hhea);
 
 hi_export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline auto otype_hhea_parse(std::span<std::byte const> bytes, float em_scale)
+[[nodiscard]] hi_inline auto otype_hhea_parse(std::span<std::byte const> bytes, float em_scale)
 {
     struct header_type {
         big_int16_buf_t major_version;

@@ -8,10 +8,10 @@ export module hikogui_GUI : widget_intf;
 import hikogui_GFX;
 import hikogui_layout;
 import hikogui_telemetry;
-import : widget_layout;
-import : widget_id;
 import : keyboard_focus_group;
+import : widget_layout;
 import : hitbox;
+import : widget_id;
 
 export namespace hi { inline namespace v1 {
 class gui_window;
@@ -219,7 +219,7 @@ public:
     }
 };
 
-inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept
+widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept
 {
     hi_assert_not_null(start);
 
@@ -234,7 +234,7 @@ inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisi
     return nullptr;
 }
 
-inline widget_intf& get(widget_intf& start, widget_id id, bool include_invisible)
+widget_intf& get(widget_intf& start, widget_id id, bool include_invisible)
 {
     if (auto r = get_if(std::addressof(start), id, include_invisible); r != nullptr) {
         return *r;

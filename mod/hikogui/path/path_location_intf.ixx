@@ -37,7 +37,7 @@ concept path_range =
  * @return The the first full path to the filesystem-object found in the location. Or empty if the path is not found.
  */
 export template<path_range Locations>
-[[nodiscard]] inline std::optional<std::filesystem::path>
+[[nodiscard]] std::optional<std::filesystem::path>
 find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
 {
     if (ref.is_absolute()) {
@@ -65,7 +65,7 @@ export [[nodiscard]] std::filesystem::path executable_file() noexcept;
 /** Get the full path to the directory when this executable is located.
  * @ingroup path
  */
-export [[nodiscard]] inline std::filesystem::path executable_dir() noexcept
+export [[nodiscard]] std::filesystem::path executable_dir() noexcept
 {
     auto tmp = executable_file();
     tmp.remove_filename();
@@ -90,22 +90,22 @@ export [[nodiscard]] std::filesystem::path preferences_file() noexcept;
 /** The directories to search for resource files.
  * @ingroup path
  */
-export [[nodiscard]] inline generator<std::filesystem::path> resource_dirs() noexcept;
+export [[nodiscard]] generator<std::filesystem::path> resource_dirs() noexcept;
 
 /** The directories to search for system font files.
  * @ingroup path
  */
-export [[nodiscard]] inline generator<std::filesystem::path> system_font_dirs() noexcept;
+export [[nodiscard]] generator<std::filesystem::path> system_font_dirs() noexcept;
 
 /** The directories to search for font files of both the application and system.
  * @ingroup path
  */
-export [[nodiscard]] inline generator<std::filesystem::path> font_files() noexcept;
+export [[nodiscard]] generator<std::filesystem::path> font_files() noexcept;
 
 /** The directories to search for theme files of the application.
  * @ingroup path
  */
-export [[nodiscard]] inline generator<std::filesystem::path> theme_files() noexcept;
+export [[nodiscard]] generator<std::filesystem::path> theme_files() noexcept;
 
 /** Get the full path to source code of this executable.
  *
@@ -113,7 +113,7 @@ export [[nodiscard]] inline generator<std::filesystem::path> theme_files() noexc
  * @return The path to directory of the source code.
  * @retval std::nullopt The executable is not located in its build directory.
  */
-export [[nodiscard]] inline std::optional<std::filesystem::path> source_dir() noexcept
+export [[nodiscard]] std::optional<std::filesystem::path> source_dir() noexcept
 {
     using namespace std::literals;
 
@@ -154,7 +154,7 @@ export [[nodiscard]] inline std::optional<std::filesystem::path> source_dir() no
  * @return The full path to the install path of HikoGUI.
  * @retval std::nullopt The HikoGUI library is not installed and is located in its build dir.
  */
-[[nodiscard]] inline std::optional<std::filesystem::path> library_install_dir() noexcept
+[[nodiscard]] std::optional<std::filesystem::path> library_install_dir() noexcept
 {
     // path is:
     //  - /install_dir/include/hikogui/path/path_location_impl.hpp

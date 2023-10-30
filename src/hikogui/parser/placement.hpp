@@ -26,7 +26,7 @@ hi_warning_ignore_msvc(26460);
 
 hi_export namespace hi::inline v1 {
 template<typename T>
-inline bool check_alignment(void const *ptr) noexcept
+hi_inline bool check_alignment(void const *ptr) noexcept
 {
     return std::bit_cast<uintptr_t>(ptr) % alignof(T) == 0;
 }

@@ -10,8 +10,8 @@ module;
 export module hikogui_observer : observer_intf;
 import hikogui_coroutine;
 import hikogui_utility;
-import : observed_value;
 import : observed;
+import : observed_value;
 
 export namespace hi::inline v1 {
 

@@ -16,7 +16,7 @@ export namespace hi {
 inline namespace v1 {
 
 template<fixed_string Name>
-[[nodiscard]] inline std::span<std::byte const> otype_sfnt_search(std::span<std::byte const> bytes)
+[[nodiscard]] std::span<std::byte const> otype_sfnt_search(std::span<std::byte const> bytes)
 {
     struct header_type {
         big_uint32_buf_t scaler_type;

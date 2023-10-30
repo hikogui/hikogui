@@ -8,8 +8,11 @@
 #pragma once
 
 #include "ucd_sentence_break_properties.hpp"
+#include "unicode_break_opportunity.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <tuple>
+#include <vector>
 
 hi_export_module(hikogui.unicode.unicode_sentence_break);
 
@@ -61,7 +64,7 @@ private:
     uint8_t _value;
 };
 
-inline void unicode_sentence_break_SB1_SB4(
+hi_inline void unicode_sentence_break_SB1_SB4(
     unicode_break_vector &r,
     std::vector<unicode_sentence_break_info> &infos) noexcept
 {
@@ -89,7 +92,7 @@ inline void unicode_sentence_break_SB1_SB4(
     }
 }
 
-inline void unicode_sentence_break_SB5(
+hi_inline void unicode_sentence_break_SB5(
     unicode_break_vector &r,
     std::vector<unicode_sentence_break_info> &infos) noexcept
 {
@@ -111,7 +114,7 @@ inline void unicode_sentence_break_SB5(
     }
 }
 
-inline void unicode_sentence_break_SB6_SB998(
+hi_inline void unicode_sentence_break_SB6_SB998(
     unicode_break_vector &r,
     std::vector<unicode_sentence_break_info> &infos) noexcept
 {
@@ -249,7 +252,7 @@ inline void unicode_sentence_break_SB6_SB998(
 * @return A list of unicode_break_opportunity before each character.
  */
 template<typename It, typename ItEnd, typename CodePointFunc>
-[[nodiscard]] inline unicode_break_vector
+[[nodiscard]] hi_inline unicode_break_vector
 unicode_sentence_break(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
 {
     auto size = narrow_cast<size_t>(std::distance(first, last));

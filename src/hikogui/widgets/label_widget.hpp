@@ -51,17 +51,17 @@ public:
     observer<label> label;
 
     /** How the label and icon are aligned. Different layouts:
-     *  - `alignment::top_left`: icon and text are inline with each other, with
+     *  - `alignment::top_left`: icon and text are hi_inline with each other, with
      *    the icon in the top-left corner.
-     *  - `alignment::top_right`: icon and text are inline with each other, with
+     *  - `alignment::top_right`: icon and text are hi_inline with each other, with
      *    the icon in the top-right corner.
-     *  - `alignment::middle_left`: icon and text are inline with each other, with
+     *  - `alignment::middle_left`: icon and text are hi_inline with each other, with
      *    the icon in the middle-left.
-     *  - `alignment::middle_right`: icon and text are inline with each other, with
+     *  - `alignment::middle_right`: icon and text are hi_inline with each other, with
      *    the icon in the middle-right.
-     *  - `alignment::bottom_left`: icon and text are inline with each other, with
+     *  - `alignment::bottom_left`: icon and text are hi_inline with each other, with
      *    the icon in the bottom-left.
-     *  - `alignment::bottom_right`: icon and text are inline with each other, with
+     *  - `alignment::bottom_right`: icon and text are hi_inline with each other, with
      *    the icon in the bottom-right.
      *  - `alignment::top_center`: Larger icon above the text, both center aligned.
      *  - `alignment::bottom_center`: Larger icon below the text, both center aligned.

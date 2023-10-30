@@ -115,7 +115,7 @@ public:
         return _large_icon_size;
     }
 
-    /** Size of icons being inline with a label's text.
+    /** Size of icons being hi_inline with a label's text.
      */
     [[nodiscard]] constexpr float label_icon_size() const noexcept
     {
@@ -227,7 +227,7 @@ private:
      */
     float _large_icon_size = 23.0f;
 
-    /** Size of icons being inline with a label's text.
+    /** Size of icons being hi_inline with a label's text.
      */
     float _label_icon_size = 15.0f;
 

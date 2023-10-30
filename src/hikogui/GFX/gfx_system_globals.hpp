@@ -15,6 +15,6 @@ class gfx_system;
 
 /** Global mutex for GUI elements, like gfx_system, gfx_device, Windows and Widgets.
  */
-inline unfair_recursive_mutex gfx_system_mutex;
+hi_inline unfair_recursive_mutex gfx_system_mutex;
 
 } // namespace hi::inline v1

@@ -13,9 +13,9 @@ module;
 
 export module hikogui_geometry : matrix3;
 import : rotate3;
+import : matrix2;
 import : translate3;
 import : scale3;
-import : matrix2;
 
 export namespace hi { inline namespace v1 {
 

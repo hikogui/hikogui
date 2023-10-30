@@ -227,7 +227,7 @@ constexpr void parse_skeleton_escape(skeleton_parse_context &context)
     return top;
 }
 
-[[nodiscard]] inline std::unique_ptr<skeleton_node>
+[[nodiscard]] hi_inline std::unique_ptr<skeleton_node>
 parse_skeleton(std::filesystem::path path, std::string_view::const_iterator first, std::string_view::const_iterator last)
 {
     auto context = skeleton_parse_context(std::move(path), first, last);
@@ -235,12 +235,12 @@ parse_skeleton(std::filesystem::path path, std::string_view::const_iterator firs
     return e;
 }
 
-[[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path, std::string_view text)
+[[nodiscard]] hi_inline std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path, std::string_view text)
 {
     return parse_skeleton(std::move(path), text.cbegin(), text.cend());
 }
 
-[[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path)
+[[nodiscard]] hi_inline std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path)
 {
     hilet fv = file_view(path);
     hilet sv = as_string_view(fv);

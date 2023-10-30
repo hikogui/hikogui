@@ -9,27 +9,27 @@ module;
 #include <functional>
 
 export module hikogui_geometry : transform;
-import : extent2;
-import : corner_radii;
-import : vector3;
-import : rectangle;
-import : scale3;
-import : point3;
-import : rotate3;
-import : point2;
-import : aarectangle;
-import : scale2;
-import : translate2;
-import : line_segment;
 import : perspective;
-import : matrix2;
-import : extent3;
-import : translate3;
-import : matrix3;
-import : circle;
-import : rotate2;
 import : vector2;
+import : point3;
+import : scale3;
+import : corner_radii;
+import : extent2;
+import : matrix3;
+import : matrix2;
+import : translate2;
+import : circle;
+import : vector3;
+import : point2;
+import : scale2;
 import : quad;
+import : line_segment;
+import : extent3;
+import : rotate2;
+import : translate3;
+import : rectangle;
+import : rotate3;
+import : aarectangle;
 
 export namespace hi { inline namespace v1 {
 
@@ -146,7 +146,7 @@ concept transformer = transformer2<T> or transformer3<T>;
  * The floating point number is transformed into a vector laying on the x-axis,
  * then transformed, then extracting the hypot from it.
  */
-[[nodiscard]] inline float operator*(matrix2 const& lhs, float const& rhs) noexcept
+[[nodiscard]] float operator*(matrix2 const& lhs, float const& rhs) noexcept
 {
     // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
     hilet abs_scale = hypot<0b0011>(get<0>(lhs) * f32x4::broadcast(rhs));
@@ -160,7 +160,7 @@ concept transformer = transformer2<T> or transformer3<T>;
  * The floating point number is transformed into a vector laying on the x-axis,
  * then transformed, then extracting the hypot from it.
  */
-[[nodiscard]] inline float operator*(matrix3 const &lhs, float const& rhs) noexcept
+[[nodiscard]] float operator*(matrix3 const &lhs, float const& rhs) noexcept
 {
     // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
     hilet abs_scale = hypot<0b0111>(get<0>(lhs) * f32x4::broadcast(rhs));

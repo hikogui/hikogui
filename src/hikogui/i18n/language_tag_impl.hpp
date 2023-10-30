@@ -1931,7 +1931,7 @@ namespace detail {
 
 constexpr auto language_tag_expansions = language_tag_expansions_init();
 
-inline std::optional<std::string_view> expand_language_tag(std::string_view from) noexcept
+hi_inline std::optional<std::string_view> expand_language_tag(std::string_view from) noexcept
 {
     hilet from_lower = to_lower(from);
     hilet it = std::lower_bound(language_tag_expansions.begin(), language_tag_expansions.end(), std::string_view{from_lower}, [](hilet& item, hilet& value) {
@@ -1947,7 +1947,7 @@ inline std::optional<std::string_view> expand_language_tag(std::string_view from
 
 } // namespace detail
 
-inline language_tag::language_tag(std::string_view str) : language(), script(), region()
+hi_inline language_tag::language_tag(std::string_view str) : language(), script(), region()
 {
     // First do an initial pass over the expansion table to convert likely languages.
     // For example "nl" -> "nl-Latn-NL", "nl-BE" -> "nl-BE".
@@ -1958,7 +1958,7 @@ inline language_tag::language_tag(std::string_view str) : language(), script(), 
     *this = parse(str).expand();
 }
 
-[[nodiscard]] inline language_tag language_tag::parse(std::string_view str)
+[[nodiscard]] hi_inline language_tag language_tag::parse(std::string_view str)
 {
     auto language = iso_639{};
     auto script = iso_15924{};
@@ -2032,7 +2032,7 @@ inline language_tag::language_tag(std::string_view str) : language(), script(), 
     return language_tag{language, script, region};
 }
 
-[[nodiscard]] inline language_tag language_tag::expand() const noexcept
+[[nodiscard]] hi_inline language_tag language_tag::expand() const noexcept
 {
     auto r = *this;
 
@@ -2066,7 +2066,7 @@ inline language_tag::language_tag(std::string_view str) : language(), script(), 
     return r;
 }
 
-[[nodiscard]] inline std::vector<language_tag> variants(std::vector<language_tag> languages)
+[[nodiscard]] hi_inline std::vector<language_tag> variants(std::vector<language_tag> languages)
 {
     auto tmp = std::vector<std::vector<language_tag>>{};
 

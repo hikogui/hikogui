@@ -15,17 +15,17 @@ import hikogui_concurrency;
 
 export namespace hi { inline namespace v1 {
 namespace detail {
-inline id_factory<uint32_t> widget_id_factory;
+id_factory<uint32_t> widget_id_factory;
 }
 
 enum class widget_id : uint32_t {};
 
-[[nodiscard]] inline widget_id make_widget_id() noexcept
+[[nodiscard]] widget_id make_widget_id() noexcept
 {
     return static_cast<widget_id>(detail::widget_id_factory.acquire());
 }
 
-inline void release_widget_id(widget_id id) noexcept
+void release_widget_id(widget_id id) noexcept
 {
     detail::widget_id_factory.release(std::to_underlying(id));
 }

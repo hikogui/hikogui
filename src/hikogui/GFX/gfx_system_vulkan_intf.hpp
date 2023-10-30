@@ -263,15 +263,15 @@ private:
 };
 
 namespace detail {
-inline std::unique_ptr<gfx_system> gfx_system_global = {};
+hi_inline std::unique_ptr<gfx_system> gfx_system_global = {};
 }
 
-inline vk::Instance vulkan_instance() noexcept
+hi_inline vk::Instance vulkan_instance() noexcept
 {
     return gfx_system::global().intrinsic;
 }
 
-inline vk::DispatchLoaderDynamic vulkan_loader() noexcept
+hi_inline vk::DispatchLoaderDynamic vulkan_loader() noexcept
 {
     return gfx_system::global().loader();
 }
@@ -282,7 +282,7 @@ inline vk::DispatchLoaderDynamic vulkan_loader() noexcept
  * @return A pointer to a gfx device.
  * @retval nullptr Could not find a Vulkan device for this surface.
  */
-[[nodiscard]] inline gfx_device *find_best_device(vk::SurfaceKHR surface)
+[[nodiscard]] hi_inline gfx_device *find_best_device(vk::SurfaceKHR surface)
 {
     return gfx_system::global().find_best_device(surface);
 }

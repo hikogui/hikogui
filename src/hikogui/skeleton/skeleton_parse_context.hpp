@@ -45,7 +45,7 @@ struct skeleton_parse_context {
     skeleton_parse_context& operator=(skeleton_parse_context&& other) = delete;
     ~skeleton_parse_context() = default;
 
-    inline skeleton_parse_context(std::filesystem::path const& path, const_iterator first, const_iterator last) :
+    hi_inline skeleton_parse_context(std::filesystem::path const& path, const_iterator first, const_iterator last) :
         location(path.string()), index(first), last(last)
     {
         push<skeleton_top_node>(location);
@@ -232,7 +232,7 @@ struct skeleton_parse_context {
         }
     }
 
-    inline void include(parse_location statement_location, formula_node& expression)
+    hi_inline void include(parse_location statement_location, formula_node& expression)
     {
         auto tmp_post_process_context = formula_post_process_context();
         expression.post_process(tmp_post_process_context);

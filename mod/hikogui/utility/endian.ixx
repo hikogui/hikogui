@@ -107,7 +107,7 @@ template<std::integral Out, std::endian Endian = std::endian::native, typename I
  * @return The numeric value after endian conversion.
  */
 template<std::integral T, std::endian Endian = std::endian::native>
-[[nodiscard]] inline T load(void const *src) noexcept
+[[nodiscard]] T load(void const *src) noexcept
 {
     auto value = unaligned_load<T>(src);
     if constexpr (Endian != std::endian::native) {
@@ -147,7 +147,7 @@ template<std::integral T, byte_like B>
  * @return The numeric value after endian conversion.
  */
 template<std::integral T>
-[[nodiscard]] inline T load_le(void const *src) noexcept
+[[nodiscard]] T load_le(void const *src) noexcept
 {
     return load<T, std::endian::little>(src);
 }
@@ -183,7 +183,7 @@ template<std::integral T, byte_like B>
  * @return The numeric value after endian conversion.
  */
 template<std::integral T>
-[[nodiscard]] inline T load_be(void const *src) noexcept
+[[nodiscard]] T load_be(void const *src) noexcept
 {
     return load<T, std::endian::big>(src);
 }
@@ -280,7 +280,7 @@ constexpr void store_le(T value, B const *dst) noexcept
 }
 
 template<std::integral T>
-inline void store_le(T value, void const *dst) noexcept
+void store_le(T value, void const *dst) noexcept
 {
     store<std::endian::little>(value, dst);
 }
@@ -292,7 +292,7 @@ constexpr void store_be(T value, B const *dst) noexcept
 }
 
 template<std::integral T>
-inline void store_be(T value, void const *dst) noexcept
+void store_be(T value, void const *dst) noexcept
 {
     store<std::endian::big>(value, dst);
 }

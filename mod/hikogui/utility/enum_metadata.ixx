@@ -11,6 +11,7 @@ module;
 #include <algorithm>
 #include <string_view>
 #include <stdexcept>
+#include <concepts>
 
 export module hikogui_utility_enum_metadata;
 import hikogui_utility_cast;
@@ -104,9 +105,10 @@ public:
      * @param name The name to lookup in the enum.
      * @return True if the name is found.
      */
-    [[nodiscard]] constexpr bool contains(std::convertible_to<name_type> auto&& name) const noexcept
+    template<std::convertible_to<name_type> Name>
+    [[nodiscard]] constexpr bool contains(Name&& name) const noexcept
     {
-        return find(name_type{hi_forward(name)}) != nullptr;
+        return find(name_type{std::forward<Name>(name)}) != nullptr;
     }
 
     /** Check if the enum has a value.
@@ -125,9 +127,10 @@ public:
      * @return The enum-value belonging with the name.
      * @throws std::out_of_range When the name does not exist.
      */
-    [[nodiscard]] constexpr value_type at(std::convertible_to<name_type> auto&& name) const
+    template<std::convertible_to<name_type> Name>
+    [[nodiscard]] constexpr value_type at(Name&& name) const
     {
-        if (hilet *value = find(name_type{hi_forward(name)})) {
+        if (hilet *value = find(name_type{std::forward<Name>(name)})) {
             return *value;
         } else {
             throw std::out_of_range{"enum_metadata::at"};
@@ -154,9 +157,10 @@ public:
      * @param name The name to lookup in the enum.
      * @return The enum-value belonging with the name or std::nullopt if name is not found.
      */
-    [[nodiscard]] constexpr std::optional<value_type> at_if(std::convertible_to<name_type> auto&& name) const noexcept
+    template<std::convertible_to<name_type> Name>
+    [[nodiscard]] constexpr std::optional<value_type> at_if(Name&& name) const noexcept
     {
-        if (hilet *value = find(name_type{hi_forward(name)})) {
+        if (hilet *value = find(name_type{std::forward<Name>(name)})) {
             return *value;
         } else {
             return std::nullopt;
@@ -169,9 +173,10 @@ public:
      * @param default_value The default value to return when the name is not found.
      * @return The enum-value belonging with the name.
      */
-    [[nodiscard]] constexpr value_type at(std::convertible_to<name_type> auto&& name, value_type default_value) const noexcept
+    template<std::convertible_to<name_type> Name>
+    [[nodiscard]] constexpr value_type at(Name&& name, value_type default_value) const noexcept
     {
-        if (hilet *value = find(name_type{hi_forward(name)})) {
+        if (hilet *value = find(name_type{std::forward<Name>(name)})) {
             return *value;
         } else {
             return default_value;
@@ -184,12 +189,13 @@ public:
      * @param default_name The default name to return when value is not found.
      * @return The name belonging with the enum value.
      */
-    [[nodiscard]] constexpr name_type at(value_type value, std::convertible_to<name_type> auto&& default_name) const noexcept
+    template<std::convertible_to<name_type> Name>
+    [[nodiscard]] constexpr name_type at(value_type value, Name&& default_name) const noexcept
     {
         if (hilet *name = find(value)) {
             return *name;
         } else {
-            return hi_forward(default_name);
+            return std::forward<Name>(default_name);
         }
     }
 
@@ -199,9 +205,10 @@ public:
      * @param name The name to lookup in the enum.
      * @return The enum-value belonging with the name.
      */
-    [[nodiscard]] constexpr value_type operator[](std::convertible_to<name_type> auto&& name) const noexcept
+    template<std::convertible_to<name_type> Name>
+    [[nodiscard]] constexpr value_type operator[](Name&& name) const noexcept
     {
-        auto *value = find(name_type{hi_forward(name)});
+        auto *value = find(name_type{std::forward<Name>(name)});
         hi_assert_not_null(value);
         return *value;
     }

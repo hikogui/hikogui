@@ -127,7 +127,7 @@ export namespace hi::inline v1 {
     return (c >= 'a' and c <= 'z') ? (c - 'a') + 'A' : c;
 }
 
-[[nodiscard]] inline std::string to_lower(std::string_view str) noexcept
+[[nodiscard]] std::string to_lower(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -139,7 +139,7 @@ export namespace hi::inline v1 {
     return r;
 }
 
-[[nodiscard]] inline std::string to_upper(std::string_view str) noexcept
+[[nodiscard]] std::string to_upper(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -202,7 +202,7 @@ template<size_t N>
 
 /** Normalize string to use only line-feeds.
  */
-[[nodiscard]] inline std::string normalize_lf(std::string_view str) noexcept
+[[nodiscard]] std::string normalize_lf(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -234,7 +234,7 @@ template<size_t N>
 /** Encode a string to be usable as an id.
  * An id has the following format: [_a-zA-Z][_a-zA-Z0-9]*
  */
-[[nodiscard]] inline std::string make_identifier(std::string_view str) noexcept
+[[nodiscard]] std::string make_identifier(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -285,7 +285,7 @@ template<size_t N>
  * or form a separate word, digits are not counted as the start of a word for
  * capitalization.
  */
-[[nodiscard]] inline std::string make_title(std::string_view str) noexcept
+[[nodiscard]] std::string make_title(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -345,7 +345,7 @@ template<typename T, size_t N>
         char_cast<uint32_t>(txt[3]);
 }
 
-[[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept
+[[nodiscard]] std::string fourcc_to_string(uint32_t x) noexcept
 {
     auto r = std::string{};
     r += truncate<char>((x >> 24) & 0xff);
@@ -412,7 +412,7 @@ template<typename... Needles>
     return _split<std::string>(haystack, needles...);
 }
 
-[[nodiscard]] inline std::vector<std::string> split(std::string_view haystack) noexcept
+[[nodiscard]] std::vector<std::string> split(std::string_view haystack) noexcept
 {
     return split(haystack, ' ');
 }
@@ -423,7 +423,7 @@ template<typename... Needles>
     return _split<std::string_view>(haystack, needles...);
 }
 
-[[nodiscard]] inline std::vector<std::string_view> split_view(std::string_view haystack) noexcept
+[[nodiscard]] std::vector<std::string_view> split_view(std::string_view haystack) noexcept
 {
     return split_view(haystack, ' ');
 }
@@ -465,7 +465,7 @@ template<typename CharT>
     return join(list, std::basic_string_view<CharT>{joiner});
 }
 
-[[nodiscard]] inline std::string join(std::vector<std::string_view> const& list, std::string_view const joiner = {}) noexcept
+[[nodiscard]] std::string join(std::vector<std::string_view> const& list, std::string_view const joiner = {}) noexcept
 {
     std::string r;
 
@@ -490,7 +490,7 @@ template<typename CharT>
 /*! Return line and column count at the end iterator.
  */
 template<typename It>
-[[nodiscard]] inline std::pair<int, int> count_line_and_columns(It begin, It const end)
+[[nodiscard]] std::pair<int, int> count_line_and_columns(It begin, It const end)
 {
     int line = 1;
     int column = 1;
@@ -539,19 +539,19 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
     return r;
 }
 
-[[nodiscard]] inline std::string lstrip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
+[[nodiscard]] std::string lstrip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
 {
     auto first = front_strip(begin(haystack), end(haystack), begin(needle), end(needle));
     return std::string{first, end(haystack)};
 }
 
-[[nodiscard]] inline std::string rstrip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
+[[nodiscard]] std::string rstrip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
 {
     auto last = back_strip(begin(haystack), end(haystack), begin(needle), end(needle));
     return std::string{begin(haystack), last};
 }
 
-[[nodiscard]] inline std::string strip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
+[[nodiscard]] std::string strip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
 {
     auto first = front_strip(begin(haystack), end(haystack), begin(needle), end(needle));
     auto last = back_strip(first, end(haystack), begin(needle), end(needle));

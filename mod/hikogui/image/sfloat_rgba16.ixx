@@ -98,7 +98,7 @@ constexpr void fill(pixmap_span<sfloat_rgba16> image, f32x4 color) noexcept
     }
 }
 
-inline void composit(pixmap_span<sfloat_rgba16> under, pixmap_span<sfloat_rgba16 const> over) noexcept
+void composit(pixmap_span<sfloat_rgba16> under, pixmap_span<sfloat_rgba16 const> over) noexcept
 {
     hi_assert(over.height() >= under.height());
     hi_assert(over.width() >= under.width());
@@ -115,7 +115,7 @@ inline void composit(pixmap_span<sfloat_rgba16> under, pixmap_span<sfloat_rgba16
     }
 }
 
-inline void composit(pixmap_span<sfloat_rgba16> under, color over, pixmap_span<uint8_t const> mask) noexcept
+void composit(pixmap_span<sfloat_rgba16> under, color over, pixmap_span<uint8_t const> mask) noexcept
 {
     hi_assert(mask.height() >= under.height());
     hi_assert(mask.width() >= under.width());

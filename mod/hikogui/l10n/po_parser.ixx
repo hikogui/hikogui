@@ -187,18 +187,18 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     return parse_po(text.begin(), text.end(), path);
 }
 
-[[nodiscard]] inline po_translations parse_po(std::filesystem::path const& path)
+[[nodiscard]] po_translations parse_po(std::filesystem::path const& path)
 {
     return parse_po(as_string_view(file_view{path}), path.string());
 }
 
-inline void load_translations(std::filesystem::path path)
+void load_translations(std::filesystem::path path)
 {
     hi_log_info("Loading translation file {}.", path.string());
     return add_translations(parse_po(path));
 }
 
-inline void load_translations()
+void load_translations()
 {
     if (not translations_loaded.exchange(true)) {
         // XXX Waiting for C++23 to extend life-time of temporaries in for loops.
@@ -213,7 +213,7 @@ inline void load_translations()
     }
 }
 
-[[nodiscard]] inline std::pair<std::string_view, language_tag>
+[[nodiscard]] std::pair<std::string_view, language_tag>
 get_translation(std::string_view msgid, long long n, std::vector<language_tag> const &languages) noexcept
 {
     load_translations();

@@ -11,7 +11,7 @@ import hikogui_audio_speaker_mapping;
 
 export namespace hi { inline namespace v1 {
 
-export [[nodiscard]] inline speaker_mapping speaker_mapping_from_win32(DWORD from){
+export [[nodiscard]] speaker_mapping speaker_mapping_from_win32(DWORD from){
     auto r = speaker_mapping{0};
 
     constexpr DWORD valid_mask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY |
@@ -80,7 +80,7 @@ export [[nodiscard]] inline speaker_mapping speaker_mapping_from_win32(DWORD fro
     return r;
 }
 
-export [[nodiscard]] inline DWORD speaker_mapping_to_win32(speaker_mapping from) noexcept{
+export [[nodiscard]] DWORD speaker_mapping_to_win32(speaker_mapping from) noexcept{
     auto r = DWORD{0};
 
     if (to_bool(from & speaker_mapping::front_left)) {

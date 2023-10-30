@@ -16,9 +16,9 @@ hi_export_module(hikogui.GFX.render_doc);
 
 hi_export namespace hi { inline namespace v1 {
 
-inline void *render_doc_api = nullptr;
+hi_inline void *render_doc_api = nullptr;
 
-inline void render_doc_set_overlay(bool frameRate, bool frameNumber, bool captureList) noexcept
+hi_inline void render_doc_set_overlay(bool frameRate, bool frameNumber, bool captureList) noexcept
 {
     if (not render_doc_api) {
         return;
@@ -57,7 +57,7 @@ inline void render_doc_set_overlay(bool frameRate, bool frameNumber, bool captur
     api_.MaskOverlayBits(and_mask, or_mask);
 }
 
-inline void start_render_doc() noexcept
+hi_inline void start_render_doc() noexcept
 {
 #ifndef NDEBUG
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
