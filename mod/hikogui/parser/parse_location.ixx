@@ -13,7 +13,7 @@ module;
 export module hikogui_parser_parse_location;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /*! Location inside a configuration file.
  */

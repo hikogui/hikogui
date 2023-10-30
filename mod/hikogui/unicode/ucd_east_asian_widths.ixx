@@ -8,7 +8,7 @@ module;
 export module hikogui_unicode_ucd_east_asian_widths;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 namespace detail {
 

@@ -8,14 +8,14 @@ module;
 
 export module hikogui_GFX : draw_context_impl;
 import hikogui_text;
+import : gfx_pipeline_SDF_impl;
+import : gfx_pipeline_image_impl;
+import : gfx_device_intf;
+import : draw_context_intf;
 import : gfx_pipeline_box_impl;
 import : gfx_pipeline_override_impl;
-import : gfx_device_intf;
-import : gfx_pipeline_SDF_impl;
-import : draw_context_intf;
-import : gfx_pipeline_image_impl;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 inline draw_context::draw_context(
     gfx_device& device,

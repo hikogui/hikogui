@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.widgets.toolbar_tab_button_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive views of a `tab_widget`.

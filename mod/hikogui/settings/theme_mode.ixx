@@ -11,7 +11,7 @@ module;
 export module hikogui_settings_theme_mode;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class theme_mode { light, dark };
 

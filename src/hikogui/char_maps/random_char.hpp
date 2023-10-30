@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.char_maps.random_char);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 inline char32_t random_char() noexcept

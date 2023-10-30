@@ -23,7 +23,7 @@ hi_warning_push();
 // We need to convert bytes to chars to get a string_view from the byte buffer.
 hi_warning_ignore_msvc(26490);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Map a file into virtual memory.
  * @ingroup file

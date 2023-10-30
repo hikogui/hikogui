@@ -12,7 +12,7 @@ export module hikogui_parser_token;
 import hikogui_color;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export struct token {
     enum class kind_type : uint8_t {
@@ -187,7 +187,7 @@ struct std::formatter<hi::token, CharT> : std::formatter<std::string, CharT> {
     }
 };
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export inline std::ostream& operator<<(std::ostream& lhs, token const& rhs)
 {

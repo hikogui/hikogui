@@ -15,7 +15,7 @@ import hikogui_concurrency;
 import hikogui_time;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A timer that calls functions.
  */

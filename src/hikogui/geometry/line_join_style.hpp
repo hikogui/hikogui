@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.geometry : line_join_style);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** The way two lines should be joined.

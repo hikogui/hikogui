@@ -12,7 +12,7 @@ export module hikogui_font_font_style;
 import hikogui_coroutine;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** The different styles a font-family comes with.

@@ -14,7 +14,7 @@ import hikogui_audio_audio_sample_format;
 import hikogui_random;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export class audio_sample_packer {
 public:

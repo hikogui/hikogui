@@ -14,7 +14,7 @@ import hikogui_codec;
 import hikogui_font;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export enum class speaker_mapping : uint32_t {
     none = 0,

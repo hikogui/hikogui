@@ -7,7 +7,7 @@ module;
 
 export module hikogui_audio_audio_stream_config;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export struct audio_stream_config {
     double sample_rate;

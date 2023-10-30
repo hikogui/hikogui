@@ -11,7 +11,7 @@ export module hikogui_unicode_unicode_grapheme_cluster_break;
 import hikogui_unicode_ucd_grapheme_cluster_breaks;
 import hikogui_unicode_unicode_break_opportunity;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 struct grapheme_break_state {

@@ -11,10 +11,10 @@ module;
 export module hikogui_geometry : point2;
 import hikogui_SIMD;
 import hikogui_utility;
-import : extent2;
 import : vector2;
+import : extent2;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A high-level geometric point
  * Part of the high-level vec, point, mat and color types.

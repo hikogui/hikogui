@@ -14,7 +14,7 @@ import hikogui_container;
 import hikogui_file;
 import hikogui_parser;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 struct gzip_member_header {

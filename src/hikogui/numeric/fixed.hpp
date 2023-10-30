@@ -10,10 +10,12 @@
 #include <type_traits>
 #include <limits>
 #include <concepts>
+#include <string>
+#include <ostream>
 
 hi_export_module(hikogui.numeric.fixed);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename T, int M>
 struct fixed {

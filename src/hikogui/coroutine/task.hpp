@@ -8,10 +8,11 @@
 #include "../macros.hpp"
 #include <coroutine>
 #include <type_traits>
+#include <exception>
 
 hi_export_module(hikogui.coroutine.task);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename T>
 class task;

@@ -21,7 +21,7 @@
 hi_export_module(hikogui.time.time_stamp_count);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /**
  * Since Window's 10 QueryPerformanceCounter() counts at only 10MHz which

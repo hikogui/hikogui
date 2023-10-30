@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.concurrency.notifier);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A notifier which can be used to call a set of registered callbacks.
  *

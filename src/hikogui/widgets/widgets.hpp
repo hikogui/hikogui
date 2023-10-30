@@ -38,7 +38,7 @@
 
 hi_export_module(hikogui.widgets);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 /**
 \defgroup widgets Widgets

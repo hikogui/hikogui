@@ -12,7 +12,7 @@ module;
 export module hikogui_geometry : axis;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** An enumeration of the 3 axis for 3D geometry.

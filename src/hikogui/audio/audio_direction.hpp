@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.audio.audio_direction);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class audio_direction : unsigned char { none = 0b00, input = 0b01, output = 0b10, bidirectional = 0b11 };
 

@@ -13,7 +13,7 @@ module;
 export module hikogui_widgets_overlay_widget;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A GUI widget which may exist anywhere on a window overlaid above any other widget.
  * @ingroup widgets

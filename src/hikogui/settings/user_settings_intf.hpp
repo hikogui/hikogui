@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.settings.user_settings : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] std::expected<std::string, std::error_code> get_user_setting_string(std::string_view key) noexcept;
 [[nodiscard]] std::expected<long long, std::error_code> get_user_setting_integral(std::string_view key) noexcept;

@@ -10,7 +10,7 @@ export module hikogui_layout_row_column_layout;
 import hikogui_geometry;
 import hikogui_layout_grid_layout;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<axis Axis, typename T>
 class row_column_layout {

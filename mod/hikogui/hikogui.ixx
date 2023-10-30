@@ -45,6 +45,7 @@ export import hikogui_time;
 export import hikogui_unicode;
 export import hikogui_utility;
 export import hikogui_widgets;
+export import hikogui_win32;
 
 //#include "command_line.hpp"
 // Never include "crt.hpp"
@@ -64,7 +65,7 @@ export import hikogui_widgets;
 
 /** @namespace hi The HikoGUI namespace.
  */
-namespace hi {
+export namespace hi {
 
 /** @namespace hi::v1 The HikoGUI API version 1.
  */

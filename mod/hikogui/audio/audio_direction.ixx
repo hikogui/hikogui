@@ -12,7 +12,7 @@ module;
 export module hikogui_audio_audio_direction;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export enum class audio_direction : unsigned char { none = 0b00, input = 0b01, output = 0b10, bidirectional = 0b11 };
 

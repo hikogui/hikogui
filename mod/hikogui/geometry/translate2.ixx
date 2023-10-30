@@ -11,7 +11,7 @@ export module hikogui_geometry : translate2;
 import : aarectangle;
 import : point2;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 class translate2 {
 public:

@@ -10,6 +10,7 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <utility>
 #include <atomic>
 #include <type_traits>
 #include <bit>
@@ -22,7 +23,7 @@ hi_warning_push();
 // Need it for allow the use of enum in an atomic operation.
 hi_warning_ignore_msvc(26490);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The flag-type used for global state.
  *
@@ -186,7 +187,7 @@ struct std::atomic<hi::global_state_type> {
     }
 };
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The global state of the hikogui framework.
  *

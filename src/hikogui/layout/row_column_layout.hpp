@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.layout.row_column_layout);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<axis Axis, typename T>
 class row_column_layout {

@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.color.semantic_color);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Semantic colors.

@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.observer : shared_state);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Shared state of an application.
  *

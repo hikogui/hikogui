@@ -15,11 +15,11 @@ import hikogui_text;
 import hikogui_unicode;
 import hikogui_utility;
 import : gfx_pipeline_SDF_intf;
-import : gfx_pipeline_image_intf;
-import : gfx_pipeline_box_intf;
 import : gfx_pipeline_override_intf;
+import : gfx_pipeline_box_intf;
+import : gfx_pipeline_image_intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 class gfx_device;
 class widget_layout;
 

@@ -9,7 +9,7 @@ export import hikogui_layout_grid_layout;
 export import hikogui_layout_row_column_layout;
 export import hikogui_layout_spreadsheet_address;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 /**
 \defgroup layout 2D layout algorithms

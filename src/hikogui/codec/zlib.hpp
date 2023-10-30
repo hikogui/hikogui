@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.codec.zlib);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline bstring zlib_decompress(std::span<std::byte const> bytes, std::size_t max_size)
 {

@@ -16,7 +16,7 @@ import hikogui_formula_formula_post_process_context;
 import hikogui_parser;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 struct formula_node {
     using formula_vector = std::vector<std::unique_ptr<formula_node>>;
@@ -129,7 +129,7 @@ struct std::formatter<hi::formula_node, CharT> : std::formatter<std::string_view
     }
 };
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 inline std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept
 {

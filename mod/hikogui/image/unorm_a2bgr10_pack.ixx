@@ -14,7 +14,7 @@ module;
 export module hikogui_image_unorm_a2bgr10_pack;
 import hikogui_SIMD;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 //[[nodiscard]] constexpr uint32_t make_unorm_a2bgr10_pack_value(f32x4 const &rhs) noexcept
 //{

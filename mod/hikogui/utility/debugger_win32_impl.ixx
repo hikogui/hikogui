@@ -17,7 +17,7 @@ hi_warning_push();
 // This might mask exceptions that were not intended to be handled.
 hi_warning_ignore_msvc(6320);
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 void launch_just_in_time_debugger(unsigned int v, _EXCEPTION_POINTERS *p)

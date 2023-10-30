@@ -26,7 +26,7 @@
 hi_export_module(hikogui.telemetry : log);
 
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 class log_message_base {

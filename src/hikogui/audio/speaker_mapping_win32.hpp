@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.audio.speaker_mapping_win32);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export [[nodiscard]] inline speaker_mapping speaker_mapping_from_win32(DWORD from){
     auto r = speaker_mapping{0};

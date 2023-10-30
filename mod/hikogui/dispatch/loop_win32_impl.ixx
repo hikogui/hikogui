@@ -50,7 +50,7 @@ import hikogui_telemetry;
 import hikogui_utility;
 import : intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class loop_impl_win32 final : public loop::impl_type {
 public:

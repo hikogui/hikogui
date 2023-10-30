@@ -23,7 +23,7 @@ import hikogui_widgets_icon_widget;
 import hikogui_widgets_text_widget;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept label_widget_attribute =

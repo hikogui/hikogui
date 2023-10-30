@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.concurrency.unfair_recursive_mutex);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** An unfair recursive-mutex
  * This is a fast implementation of a recursive-mutex which does not fairly

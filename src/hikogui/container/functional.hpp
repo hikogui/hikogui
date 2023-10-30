@@ -12,7 +12,7 @@
 hi_export_module(hikogui.container.functional);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename Proto>
 class function;

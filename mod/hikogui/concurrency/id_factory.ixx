@@ -6,11 +6,13 @@ module;
 #include "../macros.hpp"
 
 #include <mutex>
+#include <vector>
 
 export module hikogui_concurrency_id_factory;
 import hikogui_concurrency_unfair_mutex;
+import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A factory for unique IDs.
  *

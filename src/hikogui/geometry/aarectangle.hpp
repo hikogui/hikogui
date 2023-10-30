@@ -21,7 +21,7 @@
 
 hi_export_module(hikogui.geometry : aarectangle);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Class which represents an axis-aligned rectangle.
  * @ingroup geometry

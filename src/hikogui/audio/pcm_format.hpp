@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.audio.pcm_format);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class pcm_format {
 public:

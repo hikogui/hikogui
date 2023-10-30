@@ -9,10 +9,10 @@ module;
 
 
 export module hikogui_GUI : keyboard_virtual_key_impl;
-import : keyboard_modifiers;
 import : keyboard_virtual_key_intf;
+import : keyboard_modifiers;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers) noexcept
 {

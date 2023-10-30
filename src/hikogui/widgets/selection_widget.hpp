@@ -25,7 +25,7 @@
 
 hi_export_module(hikogui.widgets.selection_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept selection_widget_attribute = label_widget_attribute<Context>;

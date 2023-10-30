@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.dispatch.loop : intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class loop {
 public:

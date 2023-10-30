@@ -14,7 +14,7 @@ export module hikogui_GUI : theme_book;
 import hikogui_settings;
 import : theme;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** theme_book keeps track of multiple themes.
  *

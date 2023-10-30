@@ -16,7 +16,7 @@ import hikogui_telemetry;
 import hikogui_utility;
 import : intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Convenience function for SHGetKnownFolderPath().
  *  Retrieves a full path of a known folder identified by the folder's KNOWNFOLDERID.

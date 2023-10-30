@@ -12,7 +12,7 @@ import hikogui_algorithm;
 import hikogui_utility;
 import : intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 namespace detail {
 
 struct iso_3166_info {

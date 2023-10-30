@@ -5,7 +5,7 @@ module;
 export module hikogui_GFX : gfx_system_impl;
 import : gfx_system_intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 inline gfx_system::~gfx_system()
 {

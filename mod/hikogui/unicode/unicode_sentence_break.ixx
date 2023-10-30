@@ -13,7 +13,7 @@ module;
 export module hikogui_unicode_unicode_sentence_break;
 import hikogui_unicode_ucd_sentence_break_properties;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 namespace detail {
 

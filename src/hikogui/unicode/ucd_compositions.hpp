@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.unicode.ucd_compositions);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 namespace detail {
 

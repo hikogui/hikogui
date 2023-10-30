@@ -15,7 +15,7 @@ module;
 export module hikogui_utility_concepts;
 import hikogui_utility_type_traits;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export template<typename T>
 concept numeric = is_numeric_v<T>;

@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.image.srgb_abgr8_pack);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** 4 x uint8_t pixel packed format with sRGB transfer function.
  *

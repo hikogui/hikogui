@@ -145,7 +145,7 @@ hi_warning_ignore_msvc(26472)
         return *this = *this short_op rhs; \
     }
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename T>
 concept simd_value_type = arithmetic<T> or std::same_as<T, float16>;

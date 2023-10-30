@@ -13,7 +13,7 @@ import hikogui_codec_base_n;
 import hikogui_codec_datum;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Encode and decode a type to and from a UTF-8 string.
  *

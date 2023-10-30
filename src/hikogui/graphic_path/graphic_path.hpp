@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.graphic_path);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A path is a vector graphics object.
  * It represents:

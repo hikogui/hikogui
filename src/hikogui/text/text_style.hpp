@@ -20,7 +20,7 @@
 
 hi_export_module(hikogui.text.text_style);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct text_sub_style {
     phrasing_mask phrasing_mask;
@@ -108,7 +108,7 @@ struct std::hash<hi::text_sub_style> {
     }
 };
 
-namespace hi::inline v1::detail {
+hi_export namespace hi::inline v1::detail {
 
 struct text_style_impl {
     using value_type = text_sub_style;
@@ -175,7 +175,7 @@ struct std::hash<hi::detail::text_style_impl> {
     }
 };
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 inline auto text_styles = stable_set<text_style_impl>{};
 }

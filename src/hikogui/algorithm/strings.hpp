@@ -6,6 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "../char_maps/char_maps.hpp"
+#include "algorithm_misc.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>
@@ -24,7 +25,7 @@ hi_warning_push();
 // those using new/delete.
 hi_warning_ignore_msvc(26409);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr bool is_upper(char c) noexcept
 {

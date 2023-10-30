@@ -13,11 +13,11 @@ module;
 
 export module hikogui_geometry : matrix3;
 import : rotate3;
-import : matrix2;
-import : scale3;
 import : translate3;
+import : scale3;
+import : matrix2;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 class matrix3;
 [[nodiscard]] constexpr matrix3 operator*(matrix3 const& lhs, matrix3 const& rhs) noexcept;

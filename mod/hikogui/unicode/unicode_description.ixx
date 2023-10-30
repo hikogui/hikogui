@@ -10,7 +10,7 @@ export module hikogui_unicode_unicode_description;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 constexpr char32_t unicode_replacement_character = U'\ufffd';
 constexpr char32_t unicode_LF = U'\n';

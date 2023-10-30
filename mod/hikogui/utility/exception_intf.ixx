@@ -17,7 +17,7 @@ module;
 export module hikogui_utility_exception : intf;
 import hikogui_utility_misc;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Get the error message from an error code.
  *

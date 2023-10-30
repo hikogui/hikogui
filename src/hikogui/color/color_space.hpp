@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.color.color_space);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Create a color space conversion matrix.

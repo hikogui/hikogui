@@ -13,7 +13,7 @@ module;
 export module hikogui_color_color_space;
 import hikogui_geometry;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** Create a color space conversion matrix.

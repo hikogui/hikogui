@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.codec.gzip);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 struct gzip_member_header {

@@ -23,7 +23,7 @@
 hi_export_module(hikogui.widgets.scroll_bar_widget);
 
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Scroll bar widget
  * This widget is used in a pair of a vertical and horizontal scrollbar as

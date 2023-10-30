@@ -7,12 +7,12 @@ module;
 
 
 export module hikogui_GFX : gfx_pipeline_tone_mapper_impl;
-import : gfx_surface_intf;
-import : gfx_pipeline_tone_mapper_intf;
 import : gfx_device_impl;
+import : gfx_pipeline_tone_mapper_intf;
+import : gfx_surface_intf;
 import : draw_context_intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 inline void gfx_pipeline_tone_mapper::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {

@@ -20,7 +20,7 @@ import hikogui_coroutine;
 import hikogui_metadata;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 
 export template<typename Context>

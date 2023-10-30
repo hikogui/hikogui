@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.file);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /**

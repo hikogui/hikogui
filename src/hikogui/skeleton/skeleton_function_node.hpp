@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.skeleton : function_node);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct skeleton_function_node final : skeleton_node {
     std::string name;

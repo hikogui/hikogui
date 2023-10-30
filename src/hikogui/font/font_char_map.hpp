@@ -21,7 +21,7 @@
 
 hi_export_module(hikogui.font.font_char_map);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Character map of a font.
  *

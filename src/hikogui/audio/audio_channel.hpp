@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.audio.audio_channel);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class audio_channel {
 public:

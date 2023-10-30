@@ -21,7 +21,7 @@ import hikogui_unicode;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A variant of icon.
  *

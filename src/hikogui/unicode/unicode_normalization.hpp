@@ -18,7 +18,7 @@
 hi_export_module(hikogui.unicode.unicode_normalization);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct unicode_normalize_config {
     /** The types of decompositions, that should be used when decomposing.

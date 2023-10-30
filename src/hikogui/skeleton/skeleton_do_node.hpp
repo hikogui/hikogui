@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.skeleton : do_node);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct skeleton_do_node final : skeleton_node {
     statement_vector children;

@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.codec.base_n);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 struct base_n_alphabet {

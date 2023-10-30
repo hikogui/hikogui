@@ -12,7 +12,7 @@ import hikogui_geometry;
 import hikogui_text_text_style;
 import hikogui_unicode;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class text_shaper_char {
 public:

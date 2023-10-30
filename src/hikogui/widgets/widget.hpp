@@ -25,7 +25,7 @@
 
 hi_export_module(hikogui.widgets.widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** An interactive graphical object as part of the user-interface.
  *

@@ -9,12 +9,34 @@ module;
 #include <array>
 #include <ostream>
 
+#ifdef HI_HAS_SSE
+#include <xmmintrin.h>
+#endif
+#ifdef HI_HAS_SSE2
+#include <emmintrin.h>
+#endif
+#ifdef HI_HAS_SSE3
+#include <pmmintrin.h>
+#endif
+#ifdef HI_HAS_SSSE3
+#include <tmmintrin.h>
+#endif
+#ifdef HI_HAS_SSE4_1
+#include <smmintrin.h>
+#endif
+#ifdef HI_HAS_SSE4_2
+#include <nmmintrin.h>
+#endif
+#ifdef HI_HAS_AVX
+#include <immintrin.h>
+#endif
+
 export module hikogui_SIMD : native_f64x4_avx;
 import hikogui_utility;
 import : native_simd_utility;
 
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_AVX
 

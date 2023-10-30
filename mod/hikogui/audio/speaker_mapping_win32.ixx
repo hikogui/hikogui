@@ -9,7 +9,7 @@ module;
 export module hikogui_audio_speaker_mapping_win32;
 import hikogui_audio_speaker_mapping;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export [[nodiscard]] inline speaker_mapping speaker_mapping_from_win32(DWORD from){
     auto r = speaker_mapping{0};

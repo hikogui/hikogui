@@ -31,7 +31,7 @@
 
 hi_export_module(hikogui.geometry : transform);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<typename T>
 struct transform2 : public std::false_type {};

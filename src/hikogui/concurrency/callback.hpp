@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.concurrency.callback);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 template<typename R, typename... Args>

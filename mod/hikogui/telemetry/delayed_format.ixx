@@ -11,7 +11,7 @@ module;
 export module hikogui_telemetry_delayed_format;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Delayed formatting.
  * This class will capture all the arguments so that it may be passed

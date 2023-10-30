@@ -17,7 +17,7 @@ import hikogui_dispatch_function_timer;
 import hikogui_dispatch_socket_event;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class loop {
 public:

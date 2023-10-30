@@ -16,7 +16,7 @@
 
 hi_export_module(utility.not_null);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<nullable_pointer T>
 class not_null {

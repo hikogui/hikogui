@@ -18,7 +18,7 @@ hi_warning_push();
 // False positive reported: https://developercommunity.visualstudio.com/t/C26429-false-positive-on-reference-to-po/10262151
 hi_warning_ignore_msvc(26429);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 constexpr auto BON8_code_array_count0 = uint8_t{0x80};
 constexpr auto BON8_code_array_count1 = uint8_t{0x81};

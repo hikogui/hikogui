@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.algorithm.ranges);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename Value, typename Range>
 [[nodiscard]] constexpr Value get_first(Range &&range)

@@ -27,7 +27,7 @@ import hikogui_unicode_ucd_scripts;
 import hikogui_unicode_unicode_normalization;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 namespace detail {
 
 class long_grapheme_table {

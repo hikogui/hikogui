@@ -13,7 +13,7 @@ import hikogui_SIMD;
 import hikogui_audio_audio_sample_format;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export class audio_sample_unpacker {
 public:

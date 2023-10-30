@@ -27,7 +27,7 @@
 
 hi_export_module(hikogui.GUI : gui_event);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Information for a mouse event.
  * @ingroup GUI

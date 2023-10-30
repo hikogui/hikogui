@@ -11,7 +11,7 @@ export module hikogui_audio_audio_sample_format;
 import hikogui_SIMD;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Audio sample format.
  * Audio samples described by this type can be in three different formats.

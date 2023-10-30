@@ -12,7 +12,7 @@ export module hikogui_i18n_language_tag : impl;
 import hikogui_utility;
 import : intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 /** Table of likely expansions.

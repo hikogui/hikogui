@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.algorithm.algorithm_misc);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Transform an input container to the output container.
  * @param input Input container.

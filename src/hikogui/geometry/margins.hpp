@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.geometry : margins);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The left, bottom, right and top margins.
  * @ingroup geometry

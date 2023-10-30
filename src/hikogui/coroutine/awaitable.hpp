@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.coroutine.awaitable);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Check if type can be directly co_await on.
  *

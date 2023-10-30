@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.parser.parse_location);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /*! Location inside a configuration file.
  */

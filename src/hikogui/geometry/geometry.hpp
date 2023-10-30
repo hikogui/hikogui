@@ -35,7 +35,7 @@
 
 hi_export_module(hikogui.geometry);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 /**
 \defgroup geometry Geometry

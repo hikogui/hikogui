@@ -11,7 +11,7 @@ export module hikogui_graphic_path_bezier_point;
 import hikogui_geometry;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /*! A point or control-point on contour of bezier curves.
  * The bezier curves can be linear (a line), quadratic or cubic.

@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.widgets.widget_mode);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The mode that the widget is operating at.
  *

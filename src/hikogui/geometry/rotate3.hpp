@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.geometry : rotate3);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 class rotate3 {
 public:

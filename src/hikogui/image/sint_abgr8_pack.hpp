@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.image.sint_abgr8_pack);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** 4 x int8_t packed pixel format.
  *

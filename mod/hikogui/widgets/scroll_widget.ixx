@@ -17,7 +17,7 @@ import hikogui_widgets_scroll_aperture_widget;
 import hikogui_widgets_scroll_bar_widget;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The scroll widget allows a content widget to be shown in less space than is
  * required.

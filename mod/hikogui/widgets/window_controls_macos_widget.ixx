@@ -17,7 +17,7 @@ export module hikogui_widgets_window_controls_macos_widget;
 import hikogui_font;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Window control button widget.
  * This widget will display a set of buttons to control the

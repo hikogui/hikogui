@@ -20,7 +20,7 @@ hi_warning_push();
 // Implementing a container.
 hi_warning_ignore_msvc(26490);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A wait-free multiple-producer/single-consumer fifo designed for absolute performance.
  * Because of performance reasons the ring-buffer is 64kByte.

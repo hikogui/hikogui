@@ -3,7 +3,7 @@ module;
 
 
 export module hikogui_console_dialog : impl;
-import hikogui_console_dialogue : intf;
+import : intf;
 
 export inline void dialog_output(char const *title, char const *message)
 {

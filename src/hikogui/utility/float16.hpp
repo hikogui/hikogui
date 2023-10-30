@@ -20,7 +20,7 @@ hi_warning_push();
 // static_cast here is used to extract bits and cause sign-extension.
 hi_warning_ignore_msvc(26472);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 constexpr uint32_t float16_bias = 15;
 constexpr uint32_t float32_bias = 127;

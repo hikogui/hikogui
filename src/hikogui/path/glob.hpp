@@ -20,7 +20,7 @@
  */
 hi_export_module(hikogui.path.glob);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A glob pattern.
  * @ingroup path

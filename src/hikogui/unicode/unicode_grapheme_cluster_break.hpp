@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.unicode.unicode_grapheme_cluster_break);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 struct grapheme_break_state {

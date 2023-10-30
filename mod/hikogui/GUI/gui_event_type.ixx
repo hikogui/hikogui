@@ -16,7 +16,7 @@ module;
 export module hikogui_GUI : gui_event_type;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** GUI event type.
  * @ingroup GUI

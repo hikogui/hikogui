@@ -10,7 +10,7 @@ export module hikogui_geometry : scale2;
 import : extent2;
 import : vector2;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 class scale2 {
 public:

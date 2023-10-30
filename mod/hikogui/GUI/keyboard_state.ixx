@@ -10,7 +10,7 @@ module;
 export module hikogui_GUI : keyboard_state;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class keyboard_state : uint8_t {
     idle = 0x00,

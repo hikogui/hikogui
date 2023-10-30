@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.geometry : line_end_cap);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** The way two lines should be joined.

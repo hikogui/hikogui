@@ -12,7 +12,7 @@ module;
 
 export module hikogui_widgets_widget_mode;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The mode that the widget is operating at.
  *

@@ -17,7 +17,7 @@ hi_warning_push();
 // The static analyser is very confused about the get_or_make() function.
 hi_warning_ignore_msvc(26403);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Lock-free fetch-then-max operation on an atomic.
  */

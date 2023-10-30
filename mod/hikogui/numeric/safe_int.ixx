@@ -15,7 +15,7 @@ import hikogui_numeric_int_overflow;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class on_overflow_t {
     //! On overflow throw an exception.

@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.l10n);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** @defgroup l10n Localization.

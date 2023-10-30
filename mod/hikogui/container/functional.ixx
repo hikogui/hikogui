@@ -12,7 +12,7 @@ export module hikogui_container_functional;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename Proto>
 class function;

@@ -10,11 +10,12 @@ module;
 #include "../macros.hpp"
 
 #include <optional>
+#include <algorithm>
 
 export module hikogui_geometry : alignment;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Vertical alignment.
  * @ingroup geometry

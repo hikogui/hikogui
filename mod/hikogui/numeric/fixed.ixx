@@ -8,12 +8,14 @@ module;
 #include <type_traits>
 #include <limits>
 #include <concepts>
+#include <string>
+#include <ostream>
 
 export module hikogui_numeric_fixed;
 import hikogui_numeric_safe_int;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename T, int M>
 struct fixed {

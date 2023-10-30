@@ -33,7 +33,7 @@ inline namespace v1 {
  */
 using ssize_t = std::ptrdiff_t;
 
-constexpr std::size_t operator""_uz(unsigned long long lhs) noexcept
+constexpr std::size_t operator ""_uz(unsigned long long lhs) noexcept
 {
     return static_cast<std::size_t>(lhs);
 }

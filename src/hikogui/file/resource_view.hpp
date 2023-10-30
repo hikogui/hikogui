@@ -20,7 +20,7 @@
 
 hi_export_module(hikogui.file.resource_view : impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 namespace detail {
 

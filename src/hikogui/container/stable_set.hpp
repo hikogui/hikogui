@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.container.stable_set);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** This is a set of object with stable indices.
  *

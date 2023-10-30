@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.parser.lexer);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 struct lexer_config {
     /** A zero starts in octal number.

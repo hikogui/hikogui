@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.utility.concepts);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export template<typename T>
 concept numeric = is_numeric_v<T>;

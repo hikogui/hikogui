@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.GFX : gfx_surface_delegate);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A delegate for drawing on a window below the HikoGUI user interface.
  *

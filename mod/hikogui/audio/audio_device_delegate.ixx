@@ -9,7 +9,7 @@ module;
 export module hikogui_audio_audio_device_delegate;
 import hikogui_audio_audio_block;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export class audio_device_delegate {
 public:

@@ -10,7 +10,7 @@ module;
  */
 export module hikogui_utility_value_traits;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Check if a value is integral.
  *

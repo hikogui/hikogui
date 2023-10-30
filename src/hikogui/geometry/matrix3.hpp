@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.geometry : matrix3);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 class matrix3;
 [[nodiscard]] constexpr matrix3 operator*(matrix3 const& lhs, matrix3 const& rhs) noexcept;

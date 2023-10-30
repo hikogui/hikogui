@@ -13,7 +13,7 @@ export module hikogui_formula_formula_evaluation_context;
 import hikogui_codec;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export struct formula_evaluation_context {
     using scope = std::unordered_map<std::string, datum>;

@@ -15,7 +15,7 @@ module;
 export module hikogui_container_wfree_unordered_map;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename K, typename V>
 struct wfree_unordered_map_item {

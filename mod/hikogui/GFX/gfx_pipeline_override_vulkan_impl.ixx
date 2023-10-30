@@ -10,7 +10,7 @@ export module hikogui_GFX : gfx_pipeline_override_impl;
 import : gfx_pipeline_override_intf;
 import : gfx_device_impl;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /* Do not blend, simply use just the alpha channel and overwrite the pixels in the color attachment directly.
  */

@@ -8,7 +8,7 @@ module;
 
 export module hikogui_font_elusive_icon;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 export enum class elusive_icon : char32_t {
     AddressBook = 0xf102,

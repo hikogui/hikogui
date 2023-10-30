@@ -12,10 +12,12 @@
 #include "../macros.hpp"
 #include <memory>
 #include <string_view>
+#include <format>
+#include <iostream>
 
 hi_export_module(hikogui.console.print : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 
 hi_export template<typename... Args>

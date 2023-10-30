@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.settings.user_settings : impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline std::string user_setting_registry_path()
 {

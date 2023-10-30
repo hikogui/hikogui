@@ -12,7 +12,7 @@ export module hikogui_file_file_view : impl;
 import hikogui_file_file_view;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, std::size_t offset, std::size_t size) :
     _file_mapping_object(_file_mapping_object), _offset(offset)

@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.audio.audio_system_aggregate);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class audio_system_aggregate : public audio_system {
 public:

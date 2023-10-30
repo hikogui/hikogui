@@ -12,7 +12,7 @@ module;
 export module hikogui_codec_huffman;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export template<typename T>
 class huffman_tree {

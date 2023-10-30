@@ -17,7 +17,7 @@
 hi_export_module(hikogui.unicode.unicode_bidi);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct unicode_bidi_context {
     enum class mode_type : uint8_t { LTR, RTL, auto_LTR, auto_RTL };

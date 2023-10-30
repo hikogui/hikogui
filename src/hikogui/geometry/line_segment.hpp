@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.geometry : line_segment);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Line segment.

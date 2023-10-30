@@ -23,7 +23,7 @@
 
 hi_export_module(hikogui.widgets.abstract_button_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept button_widget_attribute = label_widget_attribute<Context>;

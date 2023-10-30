@@ -19,7 +19,7 @@ export import hikogui_font_glyph_metrics;
 export import hikogui_font_hikogui_icon;
 export import hikogui_font_true_type_font;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** #defgroup font Font file handler.

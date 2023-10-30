@@ -107,7 +107,7 @@ struct std::common_type<hi::unit<Tag, T1, Ratio1>, hi::unit<Tag, T2, Ratio2>> {
     // clang-format on
 };
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio2>
 [[nodiscard]] constexpr bool operator==(unit<Tag, T1, Ratio1> const& lhs, unit<Tag, T2, Ratio2> const& rhs) noexcept

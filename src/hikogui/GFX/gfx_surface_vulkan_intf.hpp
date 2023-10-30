@@ -20,7 +20,7 @@
 
 hi_export_module(hikogui.GFX : gfx_surface_intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct swapchain_image_info {
     vk::Image image;

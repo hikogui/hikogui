@@ -12,7 +12,7 @@ import hikogui_path;
 import hikogui_win32;
 import : intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline std::string user_setting_registry_path()
 {

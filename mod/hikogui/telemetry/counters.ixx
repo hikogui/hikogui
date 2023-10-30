@@ -24,7 +24,7 @@ import hikogui_utility;
 import : log;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 namespace detail {
 
 class counter {

@@ -13,7 +13,7 @@ module;
 export module hikogui_container_range_map;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename Key, typename Value>
 class range_map {

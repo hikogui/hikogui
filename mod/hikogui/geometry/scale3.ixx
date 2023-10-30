@@ -7,11 +7,11 @@ module;
 
 
 export module hikogui_geometry : scale3;
-import : extent3;
 import : vector3;
 import : scale2;
+import : extent3;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 class scale3 {
 public:

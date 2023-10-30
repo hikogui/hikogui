@@ -10,7 +10,7 @@ module;
 
 export module hikogui_font_font_metrics;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** The metrics of a font.
  *

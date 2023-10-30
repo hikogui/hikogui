@@ -6,6 +6,10 @@ module;
 #include "../macros.hpp"
 
 #include <span>
+#include <bit>
+#include <stdexcept>
+#include <memory>
+#include <new>
 
 export module hikogui_parser_placement;
 import hikogui_utility;
@@ -20,7 +24,7 @@ hi_warning_ignore_msvc(26492);
 hi_warning_ignore_msvc(26403);
 hi_warning_ignore_msvc(26460);
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 template<typename T>
 inline bool check_alignment(void const *ptr) noexcept
 {

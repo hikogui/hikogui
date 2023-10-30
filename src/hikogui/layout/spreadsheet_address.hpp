@@ -33,7 +33,7 @@
 
 hi_export_module(hikogui.layout.spreadsheet_address);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 inline std::tuple<bool, std::size_t, bool, std::size_t> _parse_spreadsheet_address(std::string_view& address)
 {

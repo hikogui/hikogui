@@ -16,10 +16,12 @@
 #include <memory>
 #include <format>
 #include <mutex>
+#include <vector>
+#include <algorithm>
 
 hi_export_module(hikogui.concurrency.unfair_mutex : impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 inline unfair_mutex_impl<false> unfair_mutex_deadlock_mutex;

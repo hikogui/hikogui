@@ -11,6 +11,7 @@ module;
 #include <atomic>
 #include <concepts>
 #include <thread>
+#include <optional>
 
 export module hikogui_container_polymorphic_optional;
 import hikogui_utility;
@@ -26,7 +27,7 @@ hi_warning_ignore_msvc(26495);
 // We can't use std::allocator because we can't hold a size and be compatible with unique_ptr at the same time.
 hi_warning_ignore_msvc(26403);
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Polymorphic optional.
  * This optional container can hold an polymorphic value.

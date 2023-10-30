@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.geometry : matrix2);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 class aarectangle;
 class scale2;
 class translate2;

@@ -5,12 +5,14 @@
 #pragma once
 
 #include "unfair_mutex.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <mutex>
+#include <vector>
 
 hi_export_module(hikogui.concurrency.id_factory);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A factory for unique IDs.
  *

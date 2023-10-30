@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.font.font_variant);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A font variant is one of 16 different fonts that can be part of a family.
  * It only contains the font-weight and if it is italic/oblique.

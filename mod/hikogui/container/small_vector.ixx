@@ -10,7 +10,7 @@ module;
 export module hikogui_container_small_vector;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename T, std::size_t N>
 class small_vector {

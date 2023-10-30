@@ -16,7 +16,7 @@ import hikogui_unicode_gstring;
 import hikogui_unicode_phrasing;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** @file unicode/markup.hpp
  *

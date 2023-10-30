@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.layout.box_shape);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 struct box_shape {
     aarectangle rectangle;

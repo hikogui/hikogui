@@ -27,7 +27,7 @@
 
 hi_export_module(hikogui.unicode.grapheme);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 class long_grapheme_table {

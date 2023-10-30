@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.codec.inflate);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 inline void inflate_copy_block(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t max_size, bstring& r)

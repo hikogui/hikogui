@@ -12,7 +12,7 @@ import hikogui_audio_audio_stream_format;
 import hikogui_audio_pcm_format;
 import hikogui_audio_surround_mode;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export class audio_format_range {
 public:

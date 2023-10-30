@@ -17,7 +17,7 @@ import hikogui_geometry;
 import hikogui_utility;
 
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** This is a RGBA floating point color.
  * The color can be converted between different color spaces using the matrix-class.

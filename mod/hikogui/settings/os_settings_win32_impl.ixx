@@ -15,7 +15,7 @@ import hikogui_utility;
 import hikogui_win32;
 import : intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline std::vector<uuid> os_settings::preferred_gpus(hi::policy performance_policy) noexcept
 {

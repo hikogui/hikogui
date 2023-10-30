@@ -13,7 +13,7 @@ module;
 export module hikogui_widgets_spacer_widget;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** This GUI widget is used as a spacer between other widget for layout purposes.
  * @ingroup widgets

@@ -21,7 +21,7 @@
 
 hi_export_module(hikogui.GFX : gfx_device_intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class gfx_device {
 public:

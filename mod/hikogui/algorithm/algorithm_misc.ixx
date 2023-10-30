@@ -17,7 +17,7 @@ module;
 export module hikogui_algorithm_algorithm_misc;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Transform an input container to the output container.
  * @param input Input container.

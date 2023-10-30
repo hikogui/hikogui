@@ -4,11 +4,13 @@
 module;
 #include "../macros.hpp"
 
+#include <cstdint>
+#include <compare>
 
 export module hikogui_font_font_family_id;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 export using font_family_id = tagged_id<uint16_t, "font_family_id">;
 

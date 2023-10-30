@@ -13,7 +13,7 @@ export module hikogui_observer : observed;
 import hikogui_coroutine;
 import hikogui_observer_group_ptr;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct observable_msg {
     /** The type of the path used for notifying observers.

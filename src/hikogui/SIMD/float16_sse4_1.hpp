@@ -25,7 +25,7 @@
 hi_export_module(hikogui.SIMD : float16_sse4_1);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 inline __m128 _mm_cvtph_ps_sse2(__m128i value) noexcept
 {

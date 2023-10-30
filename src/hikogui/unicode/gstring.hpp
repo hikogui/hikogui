@@ -139,7 +139,7 @@ struct std::char_traits<hi::grapheme> {
     }
 };
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 hi_export using gstring = std::basic_string<grapheme>;
 hi_export using gstring_view = std::basic_string_view<grapheme>;

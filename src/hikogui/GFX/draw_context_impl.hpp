@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.GFX : draw_context_impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 inline draw_context::draw_context(
     gfx_device& device,

@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.net.packet);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A network message or stream buffer.
  */

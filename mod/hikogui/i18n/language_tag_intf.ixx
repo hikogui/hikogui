@@ -16,7 +16,7 @@ import hikogui_i18n_iso_3166;
 import hikogui_i18n_iso_639;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The IETF BCP 47 language tag.
  *

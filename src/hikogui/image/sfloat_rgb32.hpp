@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.image.sfloat_rgb32);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** 3 x float32 pixel format.
  *

@@ -16,18 +16,18 @@ export module hikogui_GUI : gui_event;
 import hikogui_geometry;
 import hikogui_time;
 import hikogui_unicode;
-import : keyboard_focus_direction;
-import : hitbox;
-import : mouse_buttons;
 import : keyboard_virtual_key_intf;
-import : keyboard_modifiers;
-import : keyboard_focus_group;
-import : keyboard_state;
-import : widget_id;
 import : gui_event_variant;
+import : widget_id;
+import : keyboard_focus_group;
+import : hitbox;
+import : keyboard_modifiers;
 import : gui_event_type;
+import : keyboard_focus_direction;
+import : keyboard_state;
+import : mouse_buttons;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Information for a mouse event.
  * @ingroup GUI

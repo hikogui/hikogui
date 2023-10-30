@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.GFX : gfx_pipeline_image_impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 inline void gfx_pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {

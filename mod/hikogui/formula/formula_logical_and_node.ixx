@@ -9,7 +9,7 @@ module;
 export module hikogui_formula_formula_logical_and_node;
 import hikogui_formula_formula_binary_operator_node;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export struct formula_logical_and_node final : formula_binary_operator_node {
     formula_logical_and_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :

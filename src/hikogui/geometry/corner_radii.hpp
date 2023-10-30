@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.geometry : corner_radii);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** The 4 radii of the corners of a quad or rectangle.

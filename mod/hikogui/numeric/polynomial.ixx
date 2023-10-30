@@ -12,7 +12,7 @@ export module hikogui_numeric_polynomial;
 import hikogui_container;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /*! Solve line function.
  * ax+b=0

@@ -13,7 +13,7 @@ import hikogui_container;
 import hikogui_parser;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 inline void inflate_copy_block(std::span<std::byte const> bytes, std::size_t& bit_offset, std::size_t max_size, bstring& r)

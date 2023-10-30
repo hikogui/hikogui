@@ -14,7 +14,7 @@ import hikogui_text_text_cursor;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class text_selection {
 public:

@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.win32.base);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class win32_error : uint32_t {
     success = ERROR_SUCCESS,
@@ -26,7 +26,7 @@ hi_export enum class win32_error : uint32_t {
 hi_export template<>
 struct std::is_error_code_enum<hi::win32_error> : std::true_type {};
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct win32_error_category : std::error_category {
     char const *name() const noexcept override

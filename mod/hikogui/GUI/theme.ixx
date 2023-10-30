@@ -18,7 +18,7 @@ import hikogui_settings;
 import hikogui_text;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class theme {
 public:

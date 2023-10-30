@@ -31,7 +31,7 @@ hi_warning_ignore_msvc(4702);
 // int_carry does many static_casts on purpose.
 hi_warning_ignore_msvc(26472)
 
-namespace hi {
+export namespace hi {
 
 /** Get a bit from an array of unsigned integers.
  * The integers are arranged in little-endian order.

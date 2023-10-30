@@ -14,6 +14,7 @@ module;
 #include <memory>
 #include <algorithm>
 #include <iterator>
+#include <stdexcept>
 
 export module hikogui_container_lean_vector;
 import hikogui_utility;
@@ -24,7 +25,7 @@ hi_warning_push();
 // Using an iterator requires a lot of code which will not make it safer.
 hi_warning_ignore_msvc(26459);
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Lean-vector with (SVO) short-vector-optimization.
  *

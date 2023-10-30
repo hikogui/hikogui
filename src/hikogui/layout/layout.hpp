@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.layout);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 /**
 \defgroup layout 2D layout algorithms

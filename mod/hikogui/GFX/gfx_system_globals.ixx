@@ -9,7 +9,7 @@ export module hikogui_GFX : gfx_system_globals;
 import hikogui_concurrency;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class gfx_system;
 

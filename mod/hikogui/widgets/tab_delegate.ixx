@@ -15,7 +15,7 @@ module;
 export module hikogui_widgets_tab_delegate;
 import hikogui_GUI;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A delegate that controls the state of a tab_widget.
  *

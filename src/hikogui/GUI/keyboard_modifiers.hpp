@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.GUI : keyboard_modifiers);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Key modification keys pressed at the same time as another key.
  *

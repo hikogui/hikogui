@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.i18n.iso_3166 : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 struct iso_3166_info {

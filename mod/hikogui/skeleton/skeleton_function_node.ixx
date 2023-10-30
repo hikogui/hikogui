@@ -9,7 +9,7 @@ module;
 export module hikogui_skeleton : function_node;
 import : node;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct skeleton_function_node final : skeleton_node {
     std::string name;

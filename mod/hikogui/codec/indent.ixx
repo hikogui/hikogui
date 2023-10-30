@@ -11,7 +11,7 @@ module;
 export module hikogui_codec_indent;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Indentation for writing out text files.
  * This type is used to pass indentation information recursivly to

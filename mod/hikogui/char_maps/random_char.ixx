@@ -10,7 +10,7 @@ module;
 export module hikogui_char_maps_random_char;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 inline char32_t random_char() noexcept

@@ -12,7 +12,7 @@ export module hikogui_GFX : gfx_pipeline_tone_mapper_intf;
 import hikogui_container;
 import : gfx_pipeline_intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /*! Pipeline for rendering simple flat shaded quats.
  */

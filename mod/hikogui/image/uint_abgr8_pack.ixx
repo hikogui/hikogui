@@ -14,7 +14,7 @@ module;
 export module hikogui_image_uint_abgr8_pack;
 import hikogui_geometry;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** 4 x uint8_t pixel packed format.
  *

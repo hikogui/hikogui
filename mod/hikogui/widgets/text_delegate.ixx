@@ -17,7 +17,7 @@ export module hikogui_widgets_text_delegate;
 import hikogui_l10n;
 import hikogui_unicode;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 class text_widget;
 
 /** A delegate that controls the state of a text_widget.

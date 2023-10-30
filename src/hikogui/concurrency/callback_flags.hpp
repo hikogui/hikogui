@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.concurrency.callback_flags);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class callback_flags {
     /** Call the function synchronously.

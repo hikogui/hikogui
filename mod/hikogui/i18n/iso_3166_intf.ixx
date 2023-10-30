@@ -7,11 +7,14 @@ module;
 
 #include <compare>
 #include <cctype>
+#include <string_view>
+#include <string>
+#include <format>
 
 export module hikogui_i18n_iso_3166 : intf;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** ISO-3166 country code.
  */

@@ -16,7 +16,7 @@ import hikogui_concurrency_wfree_idle_count;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Read-copy-update.
  *

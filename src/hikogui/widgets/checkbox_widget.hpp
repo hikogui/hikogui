@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.widgets.checkbox_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept checkbox_widget_attribute =

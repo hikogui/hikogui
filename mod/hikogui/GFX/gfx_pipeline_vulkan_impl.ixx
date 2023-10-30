@@ -14,7 +14,7 @@ import : gfx_pipeline_intf;
 import : gfx_surface_intf;
 import : gfx_device_impl;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline gfx_device *gfx_pipeline::device() const noexcept
 {

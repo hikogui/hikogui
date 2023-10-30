@@ -13,7 +13,7 @@ export module hikogui_random_seed : impl;
 import hikogui_utility;
 import : intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 inline void generate_seed(void *ptr, size_t size)
 {

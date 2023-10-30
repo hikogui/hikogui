@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.widgets.scroll_aperture_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A scroll aperture widget.
  *

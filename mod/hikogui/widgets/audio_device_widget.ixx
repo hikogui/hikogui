@@ -21,7 +21,7 @@ import hikogui_l10n;
 import hikogui_widgets_grid_widget;
 import hikogui_widgets_selection_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Audio device configuration widget.
  * @ingroup widgets

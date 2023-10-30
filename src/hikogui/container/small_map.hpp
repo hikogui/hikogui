@@ -14,7 +14,7 @@
 hi_export_module(hikogui.container.small_map);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename K, typename V, int N>
 class small_map {

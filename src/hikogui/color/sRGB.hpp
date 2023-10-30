@@ -22,7 +22,7 @@ hi_warning_push();
 // std::pow() is not constexpr and needed to fill in the gamma conversion tables.
 hi_warning_ignore_msvc(26426);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Matrix to convert sRGB to XYZ.
  * @ingroup color

@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.dispatch.awaitable_timer : intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class awaitable_timer {
 public:

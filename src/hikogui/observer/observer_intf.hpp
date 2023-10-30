@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.observer : observer_intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A observer pointing to the whole or part of a observed.
  *

@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.i18n.language_tag : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The IETF BCP 47 language tag.
  *

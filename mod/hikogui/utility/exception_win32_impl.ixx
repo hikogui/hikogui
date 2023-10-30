@@ -16,9 +16,9 @@ import hikogui_utility_defer;
 import hikogui_win32;
 import : intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
-export [[nodiscard]] inline std::string get_last_error_message(uint32_t error_code)
+export [[nodiscard]] std::string get_last_error_message(uint32_t error_code)
 {
     if (auto msg = win32_FormatMessage(static_cast<win32_error>(error_code))) {
         return *msg;
@@ -27,7 +27,7 @@ export [[nodiscard]] inline std::string get_last_error_message(uint32_t error_co
     }
 }
 
-export [[nodiscard]] inline std::string get_last_error_message()
+export [[nodiscard]] std::string get_last_error_message()
 {
     if (auto msg = win32_FormatMessage(win32_GetLastError())) {
         return *msg;

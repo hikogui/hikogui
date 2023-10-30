@@ -9,10 +9,11 @@
 #include <type_traits>
 #include <memory>
 #include <initializer_list>
+#include <stdexcept>
 
 hi_export_module(hikogui.container.stack);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A static sized stack.
  *

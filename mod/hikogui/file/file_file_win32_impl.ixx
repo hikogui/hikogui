@@ -13,8 +13,9 @@ export module hikogui_file_file : impl;
 import hikogui_file_access_mode;
 import hikogui_file_seek_whence;
 import hikogui_utility;
+import : intf;
 
-namespace hi { inline namespace v1 { namespace detail {
+export namespace hi { inline namespace v1 { namespace detail {
 
 export class file_impl {
 public:

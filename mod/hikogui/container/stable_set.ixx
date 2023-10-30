@@ -16,7 +16,7 @@ export module hikogui_container_stable_set;
 import hikogui_concurrency;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** This is a set of object with stable indices.
  *

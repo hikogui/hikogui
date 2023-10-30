@@ -13,7 +13,7 @@ export module hikogui_security_sip_hash;
 import hikogui_random;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 namespace detail {
 
 struct sip_hash_seed_type {

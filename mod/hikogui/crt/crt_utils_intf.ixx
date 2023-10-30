@@ -13,7 +13,7 @@ module;
 export module hikogui_crt_crt_utils : intf;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** The application instance identified by the operating system.
 *

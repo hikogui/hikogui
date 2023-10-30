@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.audio.audio_block);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class audio_block_state { normal, silent, corrupt };
 

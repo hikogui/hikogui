@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.GFX : gfx_pipeline_SDF_impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 inline void gfx_pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {

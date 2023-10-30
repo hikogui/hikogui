@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.settings.os_settings : impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline std::vector<uuid> os_settings::preferred_gpus(hi::policy performance_policy) noexcept
 {

@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.graphic_path.bezier);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 // B(t)=(P_{2}-P_{1})t+P_{1}
 hi_export template<typename T>

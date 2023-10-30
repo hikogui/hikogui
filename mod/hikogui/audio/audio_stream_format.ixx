@@ -12,7 +12,7 @@ export module hikogui_audio_audio_stream_format;
 import hikogui_audio_pcm_format;
 import hikogui_audio_speaker_mapping;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export constexpr auto common_sample_rates = std::array{
     uint32_t{8000},

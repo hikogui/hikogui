@@ -12,7 +12,7 @@
 hi_export_module(hikogui.telemetry.format_check);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Count arguments of a std::format format string.
  *

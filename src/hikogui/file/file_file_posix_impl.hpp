@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.file.file : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 File::File(std::filesystem::path const &path, AccessMode accessMode) : accessMode(accessMode), location(location)
 {

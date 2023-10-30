@@ -32,7 +32,7 @@ hi_warning_ignore_msvc(26492);
 
 hi_export_module(hikogui.codec.datum);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 /** Promotion result.

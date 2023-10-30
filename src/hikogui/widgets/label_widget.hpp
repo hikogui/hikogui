@@ -23,7 +23,7 @@
 
 hi_export_module(hikogui.widgets.label_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept label_widget_attribute =

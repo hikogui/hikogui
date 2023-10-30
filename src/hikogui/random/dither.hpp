@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.random.dither);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** An object that create dither values to add to samples before rounding.
  *

@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.skeleton : for_node);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct skeleton_for_node final : skeleton_node {
     std::unique_ptr<formula_node> name_expression;

@@ -25,7 +25,7 @@ import hikogui_widgets_scroll_widget;
 import hikogui_widgets_selection_delegate;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept selection_widget_attribute = label_widget_attribute<Context>;

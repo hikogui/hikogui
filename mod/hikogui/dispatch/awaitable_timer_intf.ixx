@@ -13,7 +13,7 @@ export module hikogui_dispatch_awaitable_timer : intf;
 import hikogui_coroutine;
 import hikogui_time;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class awaitable_timer {
 public:

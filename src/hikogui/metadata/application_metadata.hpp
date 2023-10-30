@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.metadata.metadata_application);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 inline std::optional<std::string> _application_name = std::nullopt;
 inline std::optional<std::string> _application_slug = std::nullopt;

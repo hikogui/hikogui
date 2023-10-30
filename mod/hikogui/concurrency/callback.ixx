@@ -12,7 +12,7 @@ module;
 export module hikogui_concurrency_callback;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 template<typename R, typename... Args>

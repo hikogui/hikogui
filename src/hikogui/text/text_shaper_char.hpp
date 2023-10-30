@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.text.text_shaper_char);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class text_shaper_char {
 public:

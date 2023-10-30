@@ -15,7 +15,7 @@
 hi_export_module(hikogui.observer.group_ptr);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename>
 class group_ptr;

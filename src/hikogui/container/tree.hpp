@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.container.tree);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A tree container.
  *

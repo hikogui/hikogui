@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.skeleton : parse_context);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path);
 

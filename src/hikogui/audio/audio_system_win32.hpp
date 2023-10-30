@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.audio.audio_system_win32);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 class audio_system_win32;
 
 hi_export struct audio_system_win32_event {

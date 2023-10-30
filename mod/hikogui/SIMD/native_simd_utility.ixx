@@ -6,6 +6,9 @@ module;
 #include "../macros.hpp"
 
 #include <type_traits>
+#include <bit>
+#include <climits>
+#include <functional>
 
 #ifdef HI_HAS_SSE
 #include <xmmintrin.h>
@@ -28,15 +31,12 @@ module;
 #ifdef HI_HAS_AVX
 #include <immintrin.h>
 #endif
-#ifdef HI_HAS_AVX512F
-#include <immintrin.h>
-#endif
 
 export module hikogui_SIMD : native_simd_utility;
 import hikogui_utility;
 
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_SSE
 enum class native_rounding_mode : int {

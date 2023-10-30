@@ -9,29 +9,29 @@ module;
 #include <functional>
 
 export module hikogui_geometry : transform;
-import : point2;
-import : vector3;
-import : vector2;
-import : point3;
-import : extent3;
-import : corner_radii;
-import : scale3;
-import : rotate3;
-import : circle;
-import : translate2;
-import : perspective;
-import : rotate2;
-import : rectangle;
-import : quad;
-import : line_segment;
-import : matrix3;
-import : translate3;
-import : aarectangle;
-import : matrix2;
 import : extent2;
+import : corner_radii;
+import : vector3;
+import : rectangle;
+import : scale3;
+import : point3;
+import : rotate3;
+import : point2;
+import : aarectangle;
 import : scale2;
+import : translate2;
+import : line_segment;
+import : perspective;
+import : matrix2;
+import : extent3;
+import : translate3;
+import : matrix3;
+import : circle;
+import : rotate2;
+import : vector2;
+import : quad;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<typename T>
 struct transform2 : public std::false_type {};

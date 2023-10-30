@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.widgets.overlay_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A GUI widget which may exist anywhere on a window overlaid above any other widget.
  * @ingroup widgets

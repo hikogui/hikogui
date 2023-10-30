@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.GUI : widget_layout);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 enum class transform_command {
     /** The child widget stays at the same elevation and layer.

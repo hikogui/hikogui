@@ -11,10 +11,11 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+#include <cmath>
 
 hi_export_module(hikogui.image.snorm_r8);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr int8_t make_snorm_r8_value(float rhs) noexcept
 {

@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.algorithm.animator);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class animator_state {
     uninitialized, idle, running, end

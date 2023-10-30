@@ -11,7 +11,7 @@ module;
 export module hikogui_container_undo_stack;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename T>
 class undo_stack {

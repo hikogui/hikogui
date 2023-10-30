@@ -10,7 +10,7 @@ module;
 export module hikogui_container_tree;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A tree container.
  *

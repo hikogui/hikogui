@@ -22,7 +22,7 @@ import hikogui_widgets_scroll_widget;
 import hikogui_widgets_text_field_delegate;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept text_field_widget_attribute = text_widget_attribute<Context>;

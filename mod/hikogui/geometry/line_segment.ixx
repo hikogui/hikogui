@@ -14,7 +14,7 @@ export module hikogui_geometry : line_segment;
 import : point3;
 import : vector3;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** Line segment.

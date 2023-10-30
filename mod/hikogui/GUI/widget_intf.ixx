@@ -9,11 +9,11 @@ import hikogui_GFX;
 import hikogui_layout;
 import hikogui_telemetry;
 import : widget_layout;
-import : hitbox;
-import : keyboard_focus_group;
 import : widget_id;
+import : keyboard_focus_group;
+import : hitbox;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 class gui_window;
 
 class widget_intf {

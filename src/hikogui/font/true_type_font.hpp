@@ -27,7 +27,7 @@
 
 hi_export_module(hikogui.font.true_type_font);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 hi_export class true_type_font final : public font {
 public:

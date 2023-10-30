@@ -12,11 +12,13 @@ module;
 #include <string>
 #include <string_view>
 #include <climits>
+#include <array>
 
 export module hikogui_char_maps_to_string;
 import hikogui_char_maps_utf_16;
 import hikogui_char_maps_utf_32;
 import hikogui_char_maps_utf_8;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 

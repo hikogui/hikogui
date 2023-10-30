@@ -10,23 +10,23 @@ export module hikogui_skeleton : parser;
 import hikogui_algorithm;
 import hikogui_file;
 import hikogui_formula;
-import : function_node;
-import : parse_context;
-import : string_node;
-import : block_node;
-import : for_node;
 import : continue_node;
-import : return_node;
-import : node;
-import : while_node;
-import : placeholder_node;
-import : do_node;
-import : if_node;
+import : function_node;
 import : top_node;
-import : expression_node;
 import : break_node;
+import : expression_node;
+import : block_node;
+import : do_node;
+import : return_node;
+import : parse_context;
+import : for_node;
+import : while_node;
+import : string_node;
+import : if_node;
+import : placeholder_node;
+import : node;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 constexpr void parse_skeleton_hash(skeleton_parse_context &context)
 {

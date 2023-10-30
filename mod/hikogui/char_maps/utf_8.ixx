@@ -20,6 +20,7 @@ module;
 export module hikogui_char_maps_utf_8;
 import hikogui_char_maps_char_converter;
 import hikogui_char_maps_cp_1252;
+import hikogui_utility;
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast.

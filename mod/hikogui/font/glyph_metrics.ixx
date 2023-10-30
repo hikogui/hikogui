@@ -10,7 +10,7 @@ export module hikogui_font_glyph_metrics;
 import hikogui_geometry;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /*! Metrics of a glyph.
  * This information is used to position glyphs next to each other

@@ -11,7 +11,7 @@ module;
 
 export module hikogui_console_print : intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Output text to the console.
  * This will output the text to the console.

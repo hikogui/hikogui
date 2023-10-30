@@ -13,13 +13,15 @@ module;
 #include <memory>
 #include <format>
 #include <mutex>
+#include <vector>
+#include <algorithm>
 
 export module hikogui_concurrency_unfair_mutex : impl;
 import hikogui_concurrency_global_state;
 import hikogui_utility;
 import : intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 inline unfair_mutex_impl<false> unfair_mutex_deadlock_mutex;

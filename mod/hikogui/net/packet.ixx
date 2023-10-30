@@ -10,7 +10,7 @@ module;
 export module hikogui_net_packet;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A network message or stream buffer.
  */

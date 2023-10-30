@@ -15,7 +15,7 @@ export module hikogui_container_void_span;
 import hikogui_container_byte_string;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class void_span {
 public:

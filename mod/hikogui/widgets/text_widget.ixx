@@ -28,7 +28,7 @@ import hikogui_text;
 import hikogui_widgets_text_delegate;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_style>>;

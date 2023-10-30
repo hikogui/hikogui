@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.GUI : keyboard_virtual_key_intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class keyboard_virtual_key : uint8_t {
     nul = 0,

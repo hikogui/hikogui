@@ -19,7 +19,7 @@ import hikogui_utility_debugger;
 import hikogui_utility_exception;
 import hikogui_utility_misc;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A string which may be used as a none-type template parameter.
  *

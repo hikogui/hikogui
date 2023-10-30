@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.unicode.ucd_bidi_paired_bracket_types);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 namespace detail {
 

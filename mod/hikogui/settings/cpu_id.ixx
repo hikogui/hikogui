@@ -18,7 +18,7 @@ module;
 export module hikogui_settings_cpu_id;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 class cpu_id {

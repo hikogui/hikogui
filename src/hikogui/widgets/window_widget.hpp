@@ -19,7 +19,7 @@
 
 hi_export_module(hikogui.widgets.window_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The top-level window widget.
  * This widget is the top-level widget that is owned by the `gui_window`.

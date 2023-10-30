@@ -11,7 +11,7 @@ export module hikogui_font_glyph_id;
 import hikogui_unicode;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 export using glyph_id = tagged_id<uint16_t, "glyph_id">;
 

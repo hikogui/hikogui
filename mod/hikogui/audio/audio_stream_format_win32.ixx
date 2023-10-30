@@ -11,7 +11,7 @@ export module hikogui_audio_audio_stream_format_win32;
 import hikogui_audio_audio_stream_format;
 import hikogui_audio_speaker_mapping_win32;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export [[nodiscard]] inline bool win32_use_extensible(audio_stream_format x) noexcept{
     if (to_bool(x.speaker_mapping)) {

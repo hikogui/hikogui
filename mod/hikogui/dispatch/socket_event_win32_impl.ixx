@@ -7,12 +7,13 @@ module;
 #include "../win32_headers.hpp"
 
 
+#include <exception>
 
-export module hikogui_dipatch_socket_event : impl;
+export module hikogui_dispatch_socket_event : impl;
 import hikogui_utility;
-import hikogui_dispatch_socket_event : intf;
+import : intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr socket_event socket_event_from_win32(long rhs) noexcept
 {

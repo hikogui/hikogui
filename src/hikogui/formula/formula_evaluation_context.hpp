@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.formula.formula_evaluation_context);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_evaluation_context {
     using scope = std::unordered_map<std::string, datum>;

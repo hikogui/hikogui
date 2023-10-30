@@ -13,7 +13,7 @@ import hikogui_utility;
 import : observed_value;
 import : observed;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A observer pointing to the whole or part of a observed.
  *

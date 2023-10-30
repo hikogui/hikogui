@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.concurrency.thread : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 [[nodiscard]] inline thread_id current_thread_id() noexcept
 {

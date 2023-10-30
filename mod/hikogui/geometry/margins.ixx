@@ -15,7 +15,7 @@ export module hikogui_geometry : margins;
 import hikogui_SIMD;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The left, bottom, right and top margins.
  * @ingroup geometry

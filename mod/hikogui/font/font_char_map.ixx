@@ -21,7 +21,7 @@ import hikogui_algorithm;
 import hikogui_font_glyph_id;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Character map of a font.
  *

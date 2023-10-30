@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.widgets.toolbar_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A toolbar widget is located at the top of a window and lays out its children
  * horizontally.

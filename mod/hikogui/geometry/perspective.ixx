@@ -10,7 +10,7 @@ export module hikogui_geometry : perspective;
 import hikogui_utility;
 import : matrix3;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Perspective transform.
  * @ingroup geometry

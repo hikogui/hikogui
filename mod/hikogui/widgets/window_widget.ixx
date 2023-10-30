@@ -19,7 +19,7 @@ import hikogui_widgets_widget;
 import hikogui_widgets_window_controls_macos_widget;
 import hikogui_widgets_window_controls_win32_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The top-level window widget.
  * This widget is the top-level widget that is owned by the `gui_window`.

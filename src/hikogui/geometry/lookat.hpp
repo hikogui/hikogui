@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.geometry : lookat);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Perspective transform.
  * @ingroup geometry

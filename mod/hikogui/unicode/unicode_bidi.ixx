@@ -17,7 +17,7 @@ import hikogui_unicode_ucd_general_categories;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct unicode_bidi_context {
     enum class mode_type : uint8_t { LTR, RTL, auto_LTR, auto_RTL };

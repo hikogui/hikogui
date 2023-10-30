@@ -10,7 +10,7 @@ export module hikogui_dispatch_awaitable_timer : impl;
 import hikogui_dispatch_loop;
 import : intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 inline void awaitable_timer::await_suspend(std::coroutine_handle<> handle) noexcept
 {

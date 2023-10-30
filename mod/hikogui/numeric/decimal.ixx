@@ -16,7 +16,7 @@ export module hikogui_numeric_decimal;
 import hikogui_numeric_int_overflow;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class decimal {
 private:

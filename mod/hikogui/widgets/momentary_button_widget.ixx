@@ -13,7 +13,7 @@ module;
 export module hikogui_widgets_momentary_button_widget;
 import hikogui_widgets_abstract_button_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A momentary button widget.
  * @ingroup widgets

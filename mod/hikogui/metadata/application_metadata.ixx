@@ -14,7 +14,7 @@ export module hikogui_metadata_metadata_application;
 import hikogui_algorithm;
 import hikogui_metadata_semantic_version;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 inline std::optional<std::string> _application_name = std::nullopt;
 inline std::optional<std::string> _application_slug = std::nullopt;

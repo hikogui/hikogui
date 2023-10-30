@@ -7,7 +7,7 @@ module;
 
 export module hikogui_GUI : gui_window_size;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class gui_window_size { normal, minimized, maximized, fullscreen };
 

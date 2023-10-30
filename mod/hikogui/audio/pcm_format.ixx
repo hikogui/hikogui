@@ -13,7 +13,7 @@ module;
 export module hikogui_audio_pcm_format;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export class pcm_format {
 public:

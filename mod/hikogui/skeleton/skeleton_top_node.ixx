@@ -9,7 +9,7 @@ module;
 export module hikogui_skeleton : top_node;
 import : node;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct skeleton_top_node final : skeleton_node {
     statement_vector children;

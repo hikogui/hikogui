@@ -24,7 +24,7 @@
 hi_export_module(hikogui.telemetry : counters);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 class counter {

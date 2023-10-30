@@ -17,7 +17,7 @@ import hikogui_widgets_menu_button_widget;
 import hikogui_widgets_widget;
 import hikogui_widgets_with_label_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept radio_button_widget_attribute =

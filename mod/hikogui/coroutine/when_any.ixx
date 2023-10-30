@@ -19,7 +19,7 @@ import hikogui_coroutine_awaitable;
 import hikogui_coroutine_scoped_task;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 namespace detail {
 

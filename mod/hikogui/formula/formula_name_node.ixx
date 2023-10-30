@@ -9,7 +9,7 @@ module;
 export module hikogui_formula_formula_name_node;
 import hikogui_formula_formula_node;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export struct formula_name_node final : formula_node {
     std::string name;

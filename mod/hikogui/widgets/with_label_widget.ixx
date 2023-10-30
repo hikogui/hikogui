@@ -25,7 +25,7 @@ import hikogui_widgets_button_delegate;
 import hikogui_widgets_label_widget;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept with_label_widget_attribute = label_widget_attribute<Context>;

@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.GFX : gfx_system_intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Vulkan gfx_device controller.
  * Manages Vulkan device and a set of Windows.

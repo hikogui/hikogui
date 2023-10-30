@@ -15,7 +15,7 @@ module;
 export module hikogui_color_Rec2020;
 import hikogui_color_color_space;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** Rec.2020 to XYZ color space conversion matrix.

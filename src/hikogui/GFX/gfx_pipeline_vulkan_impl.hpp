@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.GFX : gfx_pipeline_impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] inline gfx_device *gfx_pipeline::device() const noexcept
 {

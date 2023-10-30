@@ -17,7 +17,7 @@ import hikogui_SIMD;
 import hikogui_utility;
 import : vector2;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A high-level geometric extent
  * @ingroup geometry

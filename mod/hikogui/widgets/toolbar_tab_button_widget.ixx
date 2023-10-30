@@ -13,7 +13,7 @@ module;
 export module hikogui_widgets_toolbar_tab_button_widget;
 import hikogui_widgets_abstract_button_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive views of a `tab_widget`.

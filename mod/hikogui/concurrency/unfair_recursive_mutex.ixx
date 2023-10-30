@@ -15,7 +15,7 @@ export module hikogui_concurrency_unfair_recursive_mutex;
 import hikogui_concurrency_thread;
 import hikogui_concurrency_unfair_mutex;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** An unfair recursive-mutex
  * This is a fast implementation of a recursive-mutex which does not fairly

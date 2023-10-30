@@ -16,7 +16,7 @@ import hikogui_SIMD;
 import hikogui_color;
 import hikogui_geometry;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** 4 x float32 pixel format.
  *

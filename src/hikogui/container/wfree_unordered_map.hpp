@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.container.wfree_unordered_map);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename K, typename V>
 struct wfree_unordered_map_item {

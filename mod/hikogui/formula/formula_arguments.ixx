@@ -9,7 +9,7 @@ module;
 export module hikogui_formula_formula_arguments;
 import hikogui_formula_formula_node;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A temporary node used during parsing.
  */

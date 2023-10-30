@@ -18,7 +18,7 @@ import hikogui_parser_token;
 import hikogui_unicode;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 struct lexer_config {
     /** A zero starts in octal number.

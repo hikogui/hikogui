@@ -20,7 +20,7 @@
 
 hi_export_module(hikogui.path.path_location : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 
 hi_export template<typename Context>

@@ -18,7 +18,7 @@ import hikogui_l10n;
 import hikogui_widgets_icon_widget;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The system menu widget.
  * This widget displays an icon in the menu bar of the window and is used to call-up

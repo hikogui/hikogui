@@ -19,7 +19,7 @@ import hikogui_telemetry;
 import hikogui_unicode;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 struct translation_key {
@@ -44,7 +44,7 @@ struct std::hash<hi::translation_key> {
     }
 };
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 inline std::unordered_map<translation_key, std::vector<std::string>> translations;

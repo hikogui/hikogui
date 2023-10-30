@@ -22,7 +22,7 @@
 
 hi_export_module(hikogui.font.font_book);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** font_book keeps track of multiple fonts.
  * The font_book is instantiated during application startup

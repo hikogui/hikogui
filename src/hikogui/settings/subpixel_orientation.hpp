@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.settings.subpixel_orientation);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** The orientation of the RGB sub-pixels of and LCD/LED panel.
  */

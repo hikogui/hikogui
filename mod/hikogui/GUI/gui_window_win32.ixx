@@ -12,15 +12,15 @@ module;
 export module hikogui_GUI : gui_window;
 import hikogui_GFX;
 import hikogui_crt;
-import : gui_event;
-import : theme_book;
-import : widget_intf;
+import : mouse_cursor;
 import : hitbox;
 import : keyboard_bindings;
+import : theme_book;
+import : widget_intf;
 import : gui_window_size;
-import : mouse_cursor;
+import : gui_event;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class gui_window {
 public:

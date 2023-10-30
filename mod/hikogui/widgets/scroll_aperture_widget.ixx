@@ -13,7 +13,7 @@ module;
 export module hikogui_widgets_scroll_aperture_widget;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A scroll aperture widget.
  *

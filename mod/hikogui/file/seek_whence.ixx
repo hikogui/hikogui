@@ -6,7 +6,7 @@ module;
 
 export module hikogui_file_seek_whence;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The position in the file to seek from.
  * @ingroup file

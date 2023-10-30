@@ -20,9 +20,11 @@ import hikogui_container;
 import hikogui_file_access_mode;
 import hikogui_file_seek_whence;
 import hikogui_utility;
-import : impl;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
+namespace detail {
+class file_impl;
+}
 
 /** A File object.
  * @ingroup file

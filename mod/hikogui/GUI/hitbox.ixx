@@ -14,7 +14,7 @@ import hikogui_geometry;
 import hikogui_utility;
 import : widget_id;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class hitbox_type : uint8_t {
     outside,

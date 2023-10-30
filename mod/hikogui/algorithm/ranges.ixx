@@ -16,7 +16,7 @@ module;
 export module hikogui_algorithm_ranges;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename Value, typename Range>
 [[nodiscard]] constexpr Value get_first(Range &&range)

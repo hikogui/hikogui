@@ -21,7 +21,7 @@
 
 hi_export_module(hikogui.widgets.audio_device_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Audio device configuration widget.
  * @ingroup widgets

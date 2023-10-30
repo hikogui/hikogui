@@ -10,7 +10,7 @@
 hi_export_module(hikogui.text.semantic_text_style);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class semantic_text_style : unsigned char { label, small_label, warning, error, help, placeholder, link };
 

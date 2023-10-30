@@ -19,7 +19,7 @@ export import hikogui_concurrency_unfair_mutex;
 export import hikogui_concurrency_unfair_recursive_mutex;
 export import hikogui_concurrency_wfree_idle_count;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** @defgroup concurrency Concurrency.

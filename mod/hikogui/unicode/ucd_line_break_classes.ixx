@@ -13,7 +13,7 @@ module;
 export module hikogui_unicode_ucd_line_break_classes;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 namespace detail {
 

@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.observer : observed);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct observable_msg {
     /** The type of the path used for notifying observers.

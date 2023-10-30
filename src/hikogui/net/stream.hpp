@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.net.stream);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class Socketstream {
 protected:

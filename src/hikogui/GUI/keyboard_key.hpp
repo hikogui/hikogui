@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.GUI : keyboard_key);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A key in combination with modifiers.
  * This key is based on the actual symbol on the keyboard.

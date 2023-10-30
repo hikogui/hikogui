@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.settings.theme_mode);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class theme_mode { light, dark };
 

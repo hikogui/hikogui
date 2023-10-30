@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.geometry : translate3);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 class translate3;
 [[nodiscard]] constexpr point3 operator*(translate3 const& lhs, point3 const& rhs) noexcept;

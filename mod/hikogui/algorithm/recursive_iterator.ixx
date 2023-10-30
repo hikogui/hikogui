@@ -12,7 +12,7 @@ module;
 export module hikogui_algorithm_recursive_iterator;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** An iterator which recursively iterates through nested containers.

@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.widgets.text_field_delegate);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A delegate that controls the state of a text_field_widget.
  *

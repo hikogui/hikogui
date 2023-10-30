@@ -12,7 +12,7 @@ module;
 
 export module hikogui_geometry : line_join_style;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** The way two lines should be joined.

@@ -13,7 +13,7 @@ export module hikogui_skeleton : node;
 import hikogui_algorithm;
 import hikogui_formula;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct skeleton_node {
     using statement_vector = typename std::vector<std::unique_ptr<skeleton_node>>;

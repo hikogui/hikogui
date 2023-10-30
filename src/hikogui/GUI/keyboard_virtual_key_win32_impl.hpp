@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.GUI : keyboard_virtual_key_impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers) noexcept
 {

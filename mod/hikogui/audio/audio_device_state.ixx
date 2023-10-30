@@ -11,7 +11,7 @@ module;
 export module hikogui_audio_audio_device_state;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export enum class audio_device_state { uninitialized, active, disabled, not_present, unplugged };
 

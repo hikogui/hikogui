@@ -8,11 +8,12 @@ module;
 #include <type_traits>
 #include <memory>
 #include <initializer_list>
+#include <stdexcept>
 
 export module hikogui_container_stack;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A static sized stack.
  *

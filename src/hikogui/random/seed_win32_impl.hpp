@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.random.seed : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 inline void generate_seed(void *ptr, size_t size)
 {

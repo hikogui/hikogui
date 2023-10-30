@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.audio.audio_stream_format_win32);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export [[nodiscard]] inline bool win32_use_extensible(audio_stream_format x) noexcept{
     if (to_bool(x.speaker_mapping)) {

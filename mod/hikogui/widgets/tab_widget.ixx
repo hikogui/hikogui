@@ -15,7 +15,7 @@ import hikogui_widgets_grid_widget;
 import hikogui_widgets_tab_delegate;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A graphical element that shows only one of a predefined set of mutually
  * exclusive child widgets.

@@ -7,7 +7,7 @@ module;
 export module hikogui_file_access_mode;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The mode in which way to open a file.
  * @ingroup file

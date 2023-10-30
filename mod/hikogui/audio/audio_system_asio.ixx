@@ -8,7 +8,7 @@ module;
 export module hikogui_audio_audio_system_asio;
 import hikogui_audio_audio_system;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export class audio_system_asio : public audio_system {
 };

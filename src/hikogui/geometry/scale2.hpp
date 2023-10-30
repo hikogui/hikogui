@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.geometry : scale2);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 class scale2 {
 public:

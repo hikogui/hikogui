@@ -15,6 +15,7 @@ module;
 #include <bit>
 
 export module hikogui_algorithm_strings;
+import hikogui_algorithm_algorithm_misc;
 import hikogui_char_maps;
 import hikogui_utility;
 
@@ -24,7 +25,7 @@ hi_warning_push();
 // those using new/delete.
 hi_warning_ignore_msvc(26409);
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr bool is_upper(char c) noexcept
 {

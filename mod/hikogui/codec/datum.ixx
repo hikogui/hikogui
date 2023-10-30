@@ -32,7 +32,7 @@ import hikogui_container;
 import hikogui_numeric;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 /** Promotion result.

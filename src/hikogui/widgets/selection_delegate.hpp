@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.widgets.selection_delegate);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 class selection_widget;
 
 /** A delegate that controls the state of a selection_widget.

@@ -15,7 +15,7 @@ module;
 export module hikogui_coroutine_generator;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A return value for a generator-function.
  * A generator-function is a coroutine which co_yields zero or more values.

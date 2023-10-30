@@ -5,7 +5,7 @@ module;
 
 export module hikogui_DSP_dsp_float;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 template<typename Context>

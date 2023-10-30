@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.coroutine.scoped_task);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A scoped_task.
  *

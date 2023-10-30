@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.color);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /**
 \defgroup color Color

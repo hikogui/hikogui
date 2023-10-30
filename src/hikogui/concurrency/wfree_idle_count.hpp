@@ -6,12 +6,13 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <limits>
 #include <atomic>
 #include <cstdint>
 
 hi_export_module(hikogui.concurrency.wfree_idle_count);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Counts how many times a critical section was idle.
  *

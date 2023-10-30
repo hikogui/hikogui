@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.path.path_location : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Convenience function for SHGetKnownFolderPath().
  *  Retrieves a full path of a known folder identified by the folder's KNOWNFOLDERID.

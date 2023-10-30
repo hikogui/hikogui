@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.widgets.radio_button_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept radio_button_widget_attribute =

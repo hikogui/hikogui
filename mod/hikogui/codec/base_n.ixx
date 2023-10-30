@@ -16,7 +16,7 @@ export module hikogui_codec_base_n;
 import hikogui_container;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 namespace detail {
 
 struct base_n_alphabet {

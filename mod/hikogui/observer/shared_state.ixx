@@ -11,7 +11,7 @@ export module hikogui_observer : shared_state;
 import hikogui_utility;
 import : observed_value;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Shared state of an application.
  *

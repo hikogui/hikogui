@@ -18,7 +18,7 @@ import hikogui_settings;
 import hikogui_unicode;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 namespace detail {
 

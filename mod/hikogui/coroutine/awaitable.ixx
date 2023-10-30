@@ -11,7 +11,7 @@ module;
 export module hikogui_coroutine_awaitable;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Check if type can be directly co_await on.
  *

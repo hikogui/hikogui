@@ -11,7 +11,7 @@ module;
 export module hikogui_audio_audio_channel;
 import hikogui_audio_audio_direction;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export class audio_channel {
 public:

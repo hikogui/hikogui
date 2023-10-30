@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.container.small_vector);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename T, std::size_t N>
 class small_vector {

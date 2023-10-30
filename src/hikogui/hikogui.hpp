@@ -43,6 +43,7 @@
 #include "unicode/unicode.hpp" // export
 #include "utility/utility.hpp" // export
 #include "widgets/widgets.hpp" // export
+#include "win32/win32.hpp" // export
 
 hi_export_module(hikogui);
 
@@ -64,7 +65,7 @@ hi_export_module(hikogui);
 
 /** @namespace hi The HikoGUI namespace.
  */
-namespace hi {
+hi_export namespace hi {
 
 /** @namespace hi::v1 The HikoGUI API version 1.
  */

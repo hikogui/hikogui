@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.codec.pickle);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Encode and decode a type to and from a UTF-8 string.
  *

@@ -15,7 +15,7 @@ import hikogui_color_sRGB;
 import hikogui_color_semantic_color;
 import hikogui_color_intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /**
 \defgroup color Color

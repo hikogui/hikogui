@@ -23,7 +23,7 @@ import hikogui_utility;
 import hikogui_widgets_widget;
 
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Scroll bar widget
  * This widget is used in a pair of a vertical and horizontal scrollbar as

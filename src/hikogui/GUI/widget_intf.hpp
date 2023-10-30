@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.GUI : widget_intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 class gui_window;
 
 class widget_intf {

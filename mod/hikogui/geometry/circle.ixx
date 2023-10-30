@@ -14,7 +14,7 @@ import : aarectangle;
 import : point2;
 import : quad;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A type defining a 2D circle.
  */

@@ -9,7 +9,7 @@ module;
 export module hikogui_skeleton : if_node;
 import : node;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct skeleton_if_node final : skeleton_node {
     std::vector<statement_vector> children_groups;

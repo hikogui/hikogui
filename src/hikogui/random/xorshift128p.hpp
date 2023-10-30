@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.random.xorshift128p);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** xorshift128+
  */

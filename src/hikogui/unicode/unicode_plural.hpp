@@ -20,7 +20,7 @@
 hi_export_module(hikogui.unicode.unicode_plural);
 
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The plurality value of a cardinal or ordinal number.
  */

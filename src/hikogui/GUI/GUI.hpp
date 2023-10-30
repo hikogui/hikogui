@@ -25,7 +25,7 @@
 
 hi_export_module(hikogui.GUI);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 /**
 \defgroup GUI Graphical User Interface
 \brief Operating System interface to windows, keyboard and mouse handling

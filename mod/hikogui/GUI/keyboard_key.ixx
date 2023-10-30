@@ -10,10 +10,10 @@ module;
 
 export module hikogui_GUI : keyboard_key;
 import hikogui_utility;
-import : keyboard_modifiers;
 import : keyboard_virtual_key_intf;
+import : keyboard_modifiers;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A key in combination with modifiers.
  * This key is based on the actual symbol on the keyboard.

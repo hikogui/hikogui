@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.audio.win32_wave_device);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class win32_wave_device {
 public:

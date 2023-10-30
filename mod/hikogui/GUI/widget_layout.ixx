@@ -18,7 +18,7 @@ import hikogui_time;
 import hikogui_utility;
 import : gui_window_size;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 enum class transform_command {
     /** The child widget stays at the same elevation and layer.

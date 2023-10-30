@@ -6,16 +6,19 @@
 */
 
 module;
+#include "../macros.hpp"
 
 #include <iterator>
 #include <bit>
 #include <optional>
 #include <string>
+#include <stdexcept>
+#include <array>
 
 export module hikogui_parser_lookahead_iterator;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** Lookahead iterator.

@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.geometry : extent3);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A high-level geometric extent
  * @ingroup geometry

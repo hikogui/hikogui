@@ -19,7 +19,7 @@ import hikogui_audio_win32_device_interface;
 import hikogui_audio_win32_wave_device;
 import hikogui_coroutine;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /*! A class representing an audio device on the system.
  */

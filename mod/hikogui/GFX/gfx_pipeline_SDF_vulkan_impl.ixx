@@ -8,11 +8,11 @@ module;
 
 export module hikogui_GFX : gfx_pipeline_SDF_impl;
 import : gfx_pipeline_SDF_intf;
+import : draw_context_intf;
 import : gfx_surface_intf;
 import : gfx_device_impl;
-import : draw_context_intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 inline void gfx_pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {

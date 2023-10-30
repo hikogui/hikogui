@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.telemetry : trace);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class trace_base {
 public:

@@ -22,7 +22,7 @@ import hikogui_concurrency_unfair_recursive_mutex;
 import hikogui_utility;
 
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 /** A list of deinit function to be called on shutdown.

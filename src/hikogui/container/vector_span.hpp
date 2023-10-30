@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.container.vector_span);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename T>
 class vector_span_iterator {

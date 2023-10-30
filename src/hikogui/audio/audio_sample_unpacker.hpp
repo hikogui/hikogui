@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.audio.audio_sample_unpacker);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class audio_sample_unpacker {
 public:

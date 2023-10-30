@@ -19,7 +19,7 @@ hi_warning_push();
 // We need to hide those functions.
 hi_warning_ignore_msvc(26434);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A pixel of a single channel signed distance field.
  * https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf

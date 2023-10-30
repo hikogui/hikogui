@@ -5,13 +5,14 @@
 module;
 #include "../macros.hpp"
 
+#include <limits>
 #include <atomic>
 #include <cstdint>
 
 export module hikogui_concurrency_wfree_idle_count;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Counts how many times a critical section was idle.
  *

@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.parser.operator);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class graphic_character_t {
     none = 0x00,

@@ -6,36 +6,36 @@ module;
 
 
 export module hikogui_geometry;
-export import : vector2;
-export import : point3;
-export import : point2;
 export import : vector3;
-export import : margins;
-export import : transform;
-export import : extent3;
-export import : scale3;
 export import : corner_radii;
+export import : point3;
+export import : rectangle;
+export import : scale3;
+export import : scale2;
+export import : transform;
 export import : rotate3;
+export import : translate2;
+export import : point2;
+export import : axis;
+export import : aarectangle;
+export import : line_segment;
 export import : lookat;
 export import : line_end_cap;
-export import : translate2;
-export import : axis;
-export import : circle;
 export import : perspective;
-export import : alignment;
-export import : line_join_style;
-export import : rectangle;
-export import : quad;
-export import : rotate2;
-export import : line_segment;
-export import : matrix3;
-export import : aarectangle;
-export import : translate3;
-export import : extent2;
-export import : scale2;
 export import : matrix2;
+export import : extent3;
+export import : line_join_style;
+export import : translate3;
+export import : matrix3;
+export import : rotate2;
+export import : vector2;
+export import : margins;
+export import : circle;
+export import : quad;
+export import : alignment;
+export import : extent2;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 /**
 \defgroup geometry Geometry

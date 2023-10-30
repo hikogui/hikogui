@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.GFX : gfx_pipeline_box_intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /*! Pipeline for rendering simple box shaded quats.
  */

@@ -14,7 +14,7 @@ module;
 export module hikogui_image_sfloat_rgb32;
 import hikogui_SIMD;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** 3 x float32 pixel format.
  *

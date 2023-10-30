@@ -15,7 +15,7 @@ module;
 export module hikogui_concurrency_unfair_mutex : intf;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** An unfair mutex
  * This is a fast implementation of a mutex which does not fairly arbitrate

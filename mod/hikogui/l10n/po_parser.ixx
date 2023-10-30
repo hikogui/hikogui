@@ -16,7 +16,7 @@ import hikogui_i18n;
 import hikogui_l10n_translation;
 import hikogui_parser;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct po_translation {
     std::optional<std::string> msgctxt;

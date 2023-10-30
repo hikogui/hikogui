@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.color.Rec2100);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Rec.2100 to XYZ color space conversion matrix.
  * @ingroup color

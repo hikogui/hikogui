@@ -20,7 +20,7 @@ import hikogui_geometry;
 import hikogui_image_pixmap_span;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** 4 x float16 pixel format.
  *

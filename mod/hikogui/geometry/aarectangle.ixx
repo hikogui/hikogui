@@ -16,12 +16,12 @@ export module hikogui_geometry : aarectangle;
 import hikogui_SIMD;
 import hikogui_concurrency;
 import hikogui_utility;
-import : point2;
-import : point3;
-import : alignment;
 import : extent2;
+import : point3;
+import : point2;
+import : alignment;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Class which represents an axis-aligned rectangle.
  * @ingroup geometry

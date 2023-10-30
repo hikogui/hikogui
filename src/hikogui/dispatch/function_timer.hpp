@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.dispatch.function_timer);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A timer that calls functions.
  */

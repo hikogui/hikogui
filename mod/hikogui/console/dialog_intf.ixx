@@ -9,9 +9,9 @@ module;
 #include <iostream>
 #include <format>
 
-export module hikogui_console_dialogue : intf;
+export module hikogui_console_dialog : intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export enum class dialog_type { ok, yes_no, yes_no_cancel };
 

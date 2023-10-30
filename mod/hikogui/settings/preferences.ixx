@@ -15,7 +15,7 @@ import hikogui_file;
 import hikogui_observer;
 import hikogui_telemetry;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 class preferences;
 
 namespace detail {

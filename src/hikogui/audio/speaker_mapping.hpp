@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.audio.speaker_mapping);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class speaker_mapping : uint32_t {
     none = 0,

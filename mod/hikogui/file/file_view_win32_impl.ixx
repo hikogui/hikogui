@@ -15,7 +15,7 @@ import hikogui_file_file;
 import hikogui_telemetry;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 class file_view_impl {

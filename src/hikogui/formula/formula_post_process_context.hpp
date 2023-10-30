@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.formula.formula_post_process_context);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 [[nodiscard]] constexpr datum function_float(formula_evaluation_context& context, datum::vector_type const& args)

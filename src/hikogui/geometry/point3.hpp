@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.geometry : point3);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A high-level geometric point
  * Part of the high-level vec, point, mat and color types.

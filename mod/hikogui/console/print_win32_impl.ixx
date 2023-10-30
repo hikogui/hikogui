@@ -9,13 +9,15 @@ module;
 
 #include <memory>
 #include <string_view>
+#include <format>
+#include <iostream>
 
 export module hikogui_console_print : impl;
 import hikogui_char_maps;
 import hikogui_utility;
 import : intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 
 export template<typename... Args>

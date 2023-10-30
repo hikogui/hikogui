@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.l10n.txt);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 namespace detail {
 

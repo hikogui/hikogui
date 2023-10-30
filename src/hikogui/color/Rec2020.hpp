@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.color.Rec2020);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Rec.2020 to XYZ color space conversion matrix.

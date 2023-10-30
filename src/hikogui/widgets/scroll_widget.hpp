@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.widgets.scroll_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The scroll widget allows a content widget to be shown in less space than is
  * required.

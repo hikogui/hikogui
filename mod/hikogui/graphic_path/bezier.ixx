@@ -13,7 +13,7 @@ import hikogui_SIMD;
 import hikogui_geometry;
 import hikogui_numeric;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 // B(t)=(P_{2}-P_{1})t+P_{1}
 export template<typename T>

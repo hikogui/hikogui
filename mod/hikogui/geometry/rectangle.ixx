@@ -9,10 +9,10 @@ module;
 
 export module hikogui_geometry : rectangle;
 import hikogui_SIMD;
-import : aarectangle;
 import : alignment;
+import : aarectangle;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A rectangle / parallelogram in 3D space.
  *

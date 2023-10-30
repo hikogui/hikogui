@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.i18n.language_tag : impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 /** Table of likely expansions.

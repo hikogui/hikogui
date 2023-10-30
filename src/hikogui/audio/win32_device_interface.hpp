@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.audio.win32_device_interface);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class win32_device_interface {
 public:

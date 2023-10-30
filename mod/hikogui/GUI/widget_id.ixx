@@ -13,7 +13,7 @@ module;
 export module hikogui_GUI : widget_id;
 import hikogui_concurrency;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 inline id_factory<uint32_t> widget_id_factory;
 }

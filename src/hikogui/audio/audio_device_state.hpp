@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.audio.audio_device_state);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class audio_device_state { uninitialized, active, disabled, not_present, unplugged };
 

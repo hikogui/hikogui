@@ -20,7 +20,7 @@ import hikogui_char_maps;
 import hikogui_path_path_location;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A glob pattern.
  * @ingroup path

@@ -10,7 +10,7 @@ module;
 export module hikogui_geometry : rotate2;
 import hikogui_SIMD;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 class rotate2 {
 public:

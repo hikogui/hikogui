@@ -20,7 +20,7 @@ hi_warning_push();
 // "C26472: Don't use a static_cast for arithmetic", asserts use static_cast specifically for savety.
 hi_warning_ignore_msvc(26472);
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Check if an unsigned index is less than the bound.
  *

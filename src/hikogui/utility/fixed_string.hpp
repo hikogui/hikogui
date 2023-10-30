@@ -19,7 +19,7 @@
 
 hi_export_module(hikogui.utility.fixed_string);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A string which may be used as a none-type template parameter.
  *

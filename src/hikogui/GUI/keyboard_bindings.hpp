@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.GUI : keyboard_bindings);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 class keyboard_bindings {
 public:

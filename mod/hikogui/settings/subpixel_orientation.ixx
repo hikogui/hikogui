@@ -14,7 +14,7 @@ export module hikogui_settings_subpixel_orientation;
 import hikogui_geometry;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** The orientation of the RGB sub-pixels of and LCD/LED panel.
  */

@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.skeleton : node);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct skeleton_node {
     using statement_vector = typename std::vector<std::unique_ptr<skeleton_node>>;

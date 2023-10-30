@@ -9,11 +9,13 @@ module;
 #include <cstdint>
 #include <format>
 #include <compare>
+#include <string>
+#include <string_view>
 
 export module hikogui_i18n_iso_15924 : intf;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** ISO-15924 script code.
  * A 4 letter title case script code:

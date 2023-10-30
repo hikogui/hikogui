@@ -11,7 +11,7 @@ export module hikogui_algorithm_animator;
 import hikogui_time;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class animator_state {
     uninitialized, idle, running, end

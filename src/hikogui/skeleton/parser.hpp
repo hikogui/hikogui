@@ -27,7 +27,7 @@
 
 hi_export_module(hikogui.skeleton : parser);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 constexpr void parse_skeleton_hash(skeleton_parse_context &context)
 {

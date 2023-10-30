@@ -7,6 +7,8 @@ module;
 
 
 #include <type_traits>
+#include <limits>
+#include <exception>
 #include <cmath>
 
 #if HI_PROCESSOR == HI_CPU_X64
@@ -25,7 +27,7 @@ hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
 hi_warning_ignore_msvc(4702);
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename T, typename U>
 inline bool convert_overflow(T x, U *r)

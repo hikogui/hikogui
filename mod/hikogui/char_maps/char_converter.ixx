@@ -13,6 +13,7 @@ module;
 #include <string_view>
 #include <bit>
 #include <compare>
+#include <array>
 #if defined(HI_HAS_SSE2)
 #include <emmintrin.h>
 #endif

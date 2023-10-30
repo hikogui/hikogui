@@ -14,7 +14,7 @@ import hikogui_audio_audio_system;
 import hikogui_container;
 import hikogui_memory;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 class audio_system_win32;
 
 export struct audio_system_win32_event {

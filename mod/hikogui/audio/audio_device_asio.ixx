@@ -8,7 +8,7 @@ module;
 export module hikogui_audio_audio_device_asio;
 import hikogui_audio_audio_device;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A class representing an audio device on the system.
  */

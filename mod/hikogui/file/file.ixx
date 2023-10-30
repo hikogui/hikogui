@@ -12,7 +12,7 @@ export import hikogui_file_file_view;
 export import hikogui_file_seek_whence;
 export import hikogui_file_resource_view : impl;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /**

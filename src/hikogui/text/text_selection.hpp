@@ -14,7 +14,7 @@
 hi_export_module(hikogui.text.text_selection);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class text_selection {
 public:

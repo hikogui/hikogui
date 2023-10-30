@@ -15,7 +15,7 @@ export module hikogui_image_srgb_abgr8_pack;
 import hikogui_color;
 import hikogui_image_sfloat_rgba16;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** 4 x uint8_t pixel packed format with sRGB transfer function.
  *

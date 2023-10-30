@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.container.function_fifo);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A fifo (First-in, Firts-out) for asynchronous calls.
  *

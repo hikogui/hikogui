@@ -22,7 +22,7 @@
 
 hi_export_module(hikogui.codec.png);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class png {
 public:

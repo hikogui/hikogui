@@ -14,7 +14,7 @@ module;
 export module hikogui_GFX_render_doc;
 import hikogui_telemetry;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 inline void *render_doc_api = nullptr;
 

@@ -10,7 +10,7 @@ export module hikogui_GFX : gfx_pipeline_image_impl;
 import : gfx_pipeline_image_intf;
 import : gfx_device_impl;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 inline void gfx_pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {

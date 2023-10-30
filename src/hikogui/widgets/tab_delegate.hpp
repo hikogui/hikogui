@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.widgets.tab_delegate);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A delegate that controls the state of a tab_widget.
  *

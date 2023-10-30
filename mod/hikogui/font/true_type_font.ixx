@@ -27,7 +27,7 @@ import hikogui_graphic_path;
 import hikogui_telemetry;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 export class true_type_font final : public font {
 public:

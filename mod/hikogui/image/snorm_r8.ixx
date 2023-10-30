@@ -10,11 +10,12 @@ module;
 #include "../macros.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 export module hikogui_image_snorm_r8;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr int8_t make_snorm_r8_value(float rhs) noexcept
 {

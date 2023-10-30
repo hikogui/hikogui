@@ -22,7 +22,7 @@ import hikogui_image;
 import hikogui_parser;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export class png {
 public:

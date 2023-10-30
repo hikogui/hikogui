@@ -13,7 +13,7 @@ export module hikogui_unicode_unicode_break_opportunity;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class unicode_break_opportunity : uint8_t {
     no,

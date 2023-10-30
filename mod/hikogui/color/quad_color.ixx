@@ -13,7 +13,7 @@ module;
 export module hikogui_color_quad_color;
 import hikogui_color_intf;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** A color for each corner of a quad.

@@ -29,7 +29,7 @@
 
 hi_export_module(hikogui.GFX);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 /**
 \defgroup GFX Graphics
 \ingroup GUI

@@ -34,7 +34,7 @@ export import hikogui_unicode_unicode_plural;
 export import hikogui_unicode_unicode_sentence_break;
 export import hikogui_unicode_unicode_word_break;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** @defgroup unicode Unicode character database and algorithms

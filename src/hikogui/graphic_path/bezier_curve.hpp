@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.graphic_path.bezier_curve);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /*! Bezier Curve
  * A linear, quadratic or cubic bezier curve.

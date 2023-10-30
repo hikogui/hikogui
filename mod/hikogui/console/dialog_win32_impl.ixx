@@ -7,13 +7,15 @@ module;
 #include "../win32_headers.hpp"
 
 
+#include <exception>
+#include <string_view>
 
 export module hikogui_console_dialog : impl;
 import hikogui_char_maps;
 import hikogui_utility;
-import hikogui_console_dialogue : intf;
+import : intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export inline bool dialog(dialog_type type, std::string_view title, std::string_view text)
 {

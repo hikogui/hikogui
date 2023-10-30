@@ -8,7 +8,7 @@ module;
 
 export module hikogui_net_packet_buffer;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class packet_buffer {
     std::list<packet> packets;

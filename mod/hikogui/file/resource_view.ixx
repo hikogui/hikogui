@@ -20,7 +20,7 @@ export module hikogui_file_resource_view : impl;
 import hikogui_container;
 import hikogui_file_file_view;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 namespace detail {
 

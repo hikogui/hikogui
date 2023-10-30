@@ -11,10 +11,10 @@ module;
 
 
 export module hikogui_geometry : lookat;
-import : matrix3;
 import : point3;
+import : matrix3;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Perspective transform.
  * @ingroup geometry

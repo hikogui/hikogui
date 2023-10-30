@@ -11,7 +11,7 @@ export module hikogui_geometry : translate3;
 import : point3;
 import : translate2;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 class translate3;
 [[nodiscard]] constexpr point3 operator*(translate3 const& lhs, point3 const& rhs) noexcept;

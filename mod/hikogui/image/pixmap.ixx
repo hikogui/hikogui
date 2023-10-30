@@ -24,7 +24,7 @@ hi_warning_ignore_msvc(26439);
 // Writing iterators instead of using raw pointers will require a lot of code without any added safety.
 hi_warning_ignore_msvc(26459);
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 template<typename T>
 class pixmap_span;
 

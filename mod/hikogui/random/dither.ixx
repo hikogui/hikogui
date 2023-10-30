@@ -10,7 +10,7 @@ export module hikogui_random_dither;
 import hikogui_random_xorshift128p;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** An object that create dither values to add to samples before rounding.
  *

@@ -7,12 +7,14 @@ module;
 #include "../win32_headers.hpp"
 
 
+#include <iterator>
+#include <memory>
 
 export module hikogui_security : intf;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Securely clear memory.
  *

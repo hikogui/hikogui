@@ -21,7 +21,7 @@
 hi_export_module(hikogui.l10n.label);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A variant of icon.
  *

@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.container.void_span);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class void_span {
 public:

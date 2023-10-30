@@ -5,7 +5,7 @@
 
 hi_export_module(hikogui.GFX : gfx_system_impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 inline gfx_system::~gfx_system()
 {

@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.file.file_view : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, std::size_t offset, std::size_t size) :
     _file_mapping_object(_file_mapping_object), _offset(offset)

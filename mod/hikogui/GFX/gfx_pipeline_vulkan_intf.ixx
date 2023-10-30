@@ -11,7 +11,7 @@ module;
 
 export module hikogui_GFX : gfx_pipeline_intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 class gfx_device;
 class gfx_surface;
 class draw_context;

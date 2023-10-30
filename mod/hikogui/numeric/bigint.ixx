@@ -14,7 +14,7 @@ export module hikogui_numeric_bigint;
 import hikogui_numeric_int_carry;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** High performance big integer implementation.
  * The bigint is a fixed width integer which will allow the compiler

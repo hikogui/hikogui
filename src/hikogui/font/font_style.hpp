@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.font.font_style);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** The different styles a font-family comes with.

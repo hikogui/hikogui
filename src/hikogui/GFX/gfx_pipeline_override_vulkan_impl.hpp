@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.GFX : gfx_pipeline_override_impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /* Do not blend, simply use just the alpha channel and overwrite the pixels in the color attachment directly.
  */

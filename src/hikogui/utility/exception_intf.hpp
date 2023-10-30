@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.utility.exception : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Get the error message from an error code.
  *

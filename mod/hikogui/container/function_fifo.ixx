@@ -11,7 +11,7 @@ export module hikogui_container_function_fifo;
 import hikogui_container_functional;
 import hikogui_container_wfree_fifo;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A fifo (First-in, Firts-out) for asynchronous calls.
  *

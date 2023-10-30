@@ -20,7 +20,7 @@
 
 hi_export_module(hikogui.settings.os_settings : intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class os_settings {
 public:

@@ -9,7 +9,7 @@ module;
 export module hikogui_skeleton : continue_node;
 import : node;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct skeleton_continue_node final : skeleton_node {
     skeleton_continue_node(parse_location location) noexcept : skeleton_node(std::move(location)) {}

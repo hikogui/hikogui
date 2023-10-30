@@ -13,7 +13,7 @@ export module hikogui_text_text_decoration;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Describes how a grapheme should be underlined when rendering the text.
  * It is carried with the grapheme and glyphs, so that the text render engine

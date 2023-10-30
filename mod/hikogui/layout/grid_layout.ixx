@@ -19,7 +19,7 @@ import hikogui_layout_box_shape;
 import hikogui_layout_spreadsheet_address;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 template<typename T>

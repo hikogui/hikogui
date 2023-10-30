@@ -17,7 +17,7 @@
 hi_export_module(hikogui.unicode.phrasing);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Phrasing.
  * @ingroup unicode

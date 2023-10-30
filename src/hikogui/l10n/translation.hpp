@@ -19,7 +19,7 @@
 
 hi_export_module(hikogui.l10n.translation);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 struct translation_key {
@@ -44,7 +44,7 @@ struct std::hash<hi::translation_key> {
     }
 };
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 inline std::unordered_map<translation_key, std::vector<std::string>> translations;

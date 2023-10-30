@@ -17,7 +17,7 @@ import hikogui_formula_formula_evaluation_context;
 import hikogui_path;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 
 [[nodiscard]] constexpr datum function_float(formula_evaluation_context& context, datum::vector_type const& args)

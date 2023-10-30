@@ -14,7 +14,7 @@ export module hikogui_container_small_map;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename K, typename V, int N>
 class small_map {

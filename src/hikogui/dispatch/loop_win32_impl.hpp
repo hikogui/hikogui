@@ -50,7 +50,7 @@
 
 hi_export_module(hikogui.dispatch.loop : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class loop_impl_win32 final : public loop::impl_type {
 public:

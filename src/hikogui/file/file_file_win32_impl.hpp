@@ -6,6 +6,7 @@
 
 #include "../win32_headers.hpp"
 
+#include "file_file_intf.hpp"
 #include "access_mode.hpp"
 #include "seek_whence.hpp"
 #include "../utility/utility.hpp"
@@ -14,7 +15,7 @@
 
 hi_export_module(hikogui.file.file : impl);
 
-namespace hi { inline namespace v1 { namespace detail {
+hi_export namespace hi { inline namespace v1 { namespace detail {
 
 hi_export class file_impl {
 public:

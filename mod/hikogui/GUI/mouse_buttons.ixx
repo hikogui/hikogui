@@ -9,7 +9,7 @@ module;
 
 export module hikogui_GUI : mouse_buttons;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct mouse_buttons {
     uint8_t left_button : 1;

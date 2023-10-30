@@ -6,15 +6,37 @@ module;
 #include "../macros.hpp"
 
 
-export module hikogui_SIMD : native_simd_conversions_x86;
-import : native_i32x4_sse2;
-import : native_f32x4_sse;
-import : native_f64x4_avx;
-import : native_u32x4_sse2;
-import : native_i64x4_avx2;
-import : native_simd_utility;
+#ifdef HI_HAS_SSE
+#include <xmmintrin.h>
+#endif
+#ifdef HI_HAS_SSE2
+#include <emmintrin.h>
+#endif
+#ifdef HI_HAS_SSE3
+#include <pmmintrin.h>
+#endif
+#ifdef HI_HAS_SSSE3
+#include <tmmintrin.h>
+#endif
+#ifdef HI_HAS_SSE4_1
+#include <smmintrin.h>
+#endif
+#ifdef HI_HAS_SSE4_2
+#include <nmmintrin.h>
+#endif
+#ifdef HI_HAS_AVX
+#include <immintrin.h>
+#endif
 
-namespace hi { inline namespace v1 {
+export module hikogui_SIMD : native_simd_conversions_x86;
+import : native_simd_utility;
+import : native_u32x4_sse2;
+import : native_f64x4_avx;
+import : native_f32x4_sse;
+import : native_i32x4_sse2;
+import : native_i64x4_avx2;
+
+export namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_SSE2
 [[nodiscard]] inline native_simd<float, 4>::native_simd(native_simd<int32_t, 4> const& a) noexcept : v(_mm_cvtepi32_ps(a.v)) {}

@@ -10,7 +10,7 @@ module;
 
 export module hikogui_GFX : gfx_queue;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 struct gfx_queue_vulkan {
     uint32_t family_queue_index;

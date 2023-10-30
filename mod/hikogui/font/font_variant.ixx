@@ -9,7 +9,7 @@ export module hikogui_font_font_variant;
 import hikogui_font_font_style;
 import hikogui_font_font_weight;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A font variant is one of 16 different fonts that can be part of a family.
  * It only contains the font-weight and if it is italic/oblique.

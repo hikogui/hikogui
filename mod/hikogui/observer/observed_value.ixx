@@ -12,7 +12,7 @@ import hikogui_utility;
 import : observed;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 template<std::equality_comparable>
 class observer;
 

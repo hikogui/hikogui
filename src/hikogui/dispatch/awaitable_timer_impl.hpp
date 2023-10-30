@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.dispatch.awaitable_timer : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 inline void awaitable_timer::await_suspend(std::coroutine_handle<> handle) noexcept
 {

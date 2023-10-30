@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.parser.token);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct token {
     enum class kind_type : uint8_t {
@@ -187,7 +187,7 @@ struct std::formatter<hi::token, CharT> : std::formatter<std::string, CharT> {
     }
 };
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export inline std::ostream& operator<<(std::ostream& lhs, token const& rhs)
 {

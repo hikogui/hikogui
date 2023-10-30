@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.GUI : theme);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class theme {
 public:

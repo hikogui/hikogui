@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.audio.audio_format_range);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class audio_format_range {
 public:

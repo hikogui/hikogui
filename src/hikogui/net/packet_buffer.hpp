@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.net.packet_buffer);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class packet_buffer {
     std::list<packet> packets;

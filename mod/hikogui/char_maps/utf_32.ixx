@@ -11,6 +11,7 @@ module;
 
 #include <bit>
 #include <cstdint>
+#include <utility>
 #include <compare>
 #if defined(HI_HAS_SSE2)
 #include <emmintrin.h>
@@ -18,6 +19,7 @@ module;
 
 export module hikogui_char_maps_utf_32;
 import hikogui_char_maps_char_converter;
+import hikogui_utility;
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast.

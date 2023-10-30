@@ -13,7 +13,7 @@ import hikogui_container;
 import hikogui_image;
 import : gfx_pipeline_intf;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /*! Pipeline for rendering simple box shaded quats.
  */

@@ -16,7 +16,7 @@ module;
 export module hikogui_color_semantic_color;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** Semantic colors.

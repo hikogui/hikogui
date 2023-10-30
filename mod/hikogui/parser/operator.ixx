@@ -12,7 +12,7 @@ module;
 
 export module hikogui_parser_operator;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class graphic_character_t {
     none = 0x00,

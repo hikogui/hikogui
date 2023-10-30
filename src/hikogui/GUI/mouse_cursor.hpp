@@ -7,7 +7,7 @@
 
 hi_export_module(hikogui.GUI : mouse_cursor);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class mouse_cursor { None, Default, TextEdit, Button };
 

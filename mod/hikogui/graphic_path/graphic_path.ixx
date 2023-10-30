@@ -15,7 +15,7 @@ export import hikogui_graphic_path_bezier_point;
 import hikogui_image;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A path is a vector graphics object.
  * It represents:

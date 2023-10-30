@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.audio.surround_mode);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class surround_mode : uint64_t {
     none = 0,

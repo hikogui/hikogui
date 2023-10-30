@@ -22,7 +22,7 @@ import hikogui_i18n;
 import hikogui_unicode;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /*! A font.
  * This class has information on how to shape text and

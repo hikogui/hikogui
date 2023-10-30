@@ -22,7 +22,7 @@
 hi_export_module(hikogui.unicode.unicode_line_break);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 /** Combined unicode_line_break_class and unicode_line_break_opportunity.

@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.path.URI);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 #define HI_SUB_DELIM '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='
 #define HI_PCHAR HI_SUB_DELIM, ':', '@'

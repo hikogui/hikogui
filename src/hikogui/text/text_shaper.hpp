@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.text.text_shaper);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Text shaper.
  *

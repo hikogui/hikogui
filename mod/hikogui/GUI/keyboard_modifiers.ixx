@@ -11,7 +11,7 @@ export module hikogui_GUI : keyboard_modifiers;
 import hikogui_algorithm;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Key modification keys pressed at the same time as another key.
  *

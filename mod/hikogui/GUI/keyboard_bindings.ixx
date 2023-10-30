@@ -13,10 +13,10 @@ export module hikogui_GUI : keyboard_bindings;
 import hikogui_codec;
 import hikogui_coroutine;
 import hikogui_utility;
-import : gui_event;
 import : keyboard_key;
+import : gui_event;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 class keyboard_bindings {
 public:

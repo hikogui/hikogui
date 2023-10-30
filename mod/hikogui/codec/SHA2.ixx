@@ -19,7 +19,7 @@ hi_warning_push();
 // False positive reported: https://developercommunity.visualstudio.com/t/C26429-false-positive-on-reference-to-po/10262151
 hi_warning_ignore_msvc(26429);
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export template<typename T, std::size_t Bits>
 class SHA2 {

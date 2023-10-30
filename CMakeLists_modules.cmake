@@ -414,7 +414,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/seed_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/seed_win32_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/xorshift128p.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/float16_sse4_1.ixx
+    #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/float16_sse4_1.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/SIMD.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_f16x8_sse2.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_f32x4_sse.ixx

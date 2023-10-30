@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.settings.preferences);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 class preferences;
 
 namespace detail {

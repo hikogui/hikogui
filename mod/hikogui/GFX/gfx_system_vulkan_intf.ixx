@@ -11,7 +11,7 @@ module;
 export module hikogui_GFX : gfx_system_intf;
 import : gfx_device_intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Vulkan gfx_device controller.
  * Manages Vulkan device and a set of Windows.

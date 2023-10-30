@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.color.quad_color);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** A color for each corner of a quad.

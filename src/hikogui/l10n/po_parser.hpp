@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.l10n.po_parser);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct po_translation {
     std::optional<std::string> msgctxt;

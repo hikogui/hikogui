@@ -10,7 +10,7 @@ module;
 export module hikogui_concurrency_callback_flags;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class callback_flags {
     /** Call the function synchronously.

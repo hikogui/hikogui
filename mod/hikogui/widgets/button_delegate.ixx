@@ -15,7 +15,7 @@ module;
 export module hikogui_widgets_button_delegate;
 import hikogui_observer;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The state of a button.
  * @ingroup widget_delegates

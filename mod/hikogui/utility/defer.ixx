@@ -10,7 +10,7 @@ module;
 
 export module hikogui_utility_defer;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Defer execution of a lambda to the end of the scope.
 * 

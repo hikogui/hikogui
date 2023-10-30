@@ -20,7 +20,7 @@
 
 hi_export_module(hikogui.GFX : gfx_surface_impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 inline void gfx_surface::set_device(gfx_device *new_device) noexcept
 {

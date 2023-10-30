@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.geometry : vector2);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A high-level geometric vector
  * Part of the high-level vector, point, mat and color types.

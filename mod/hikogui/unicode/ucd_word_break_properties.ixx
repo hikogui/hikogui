@@ -13,7 +13,7 @@ import hikogui_utility;
 #undef small
 #endif
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 namespace detail {
 

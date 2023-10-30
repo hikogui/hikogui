@@ -13,7 +13,7 @@ module;
 export module hikogui_settings_user_settings : intf;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 [[nodiscard]] std::expected<std::string, std::error_code> get_user_setting_string(std::string_view key) noexcept;
 [[nodiscard]] std::expected<long long, std::error_code> get_user_setting_integral(std::string_view key) noexcept;

@@ -10,7 +10,7 @@
 
 hi_export_module(hikogui.numeric.bound_integer);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 constexpr auto bounds_test = interval<long long>{1, 5};
 

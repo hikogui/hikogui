@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.formula.formula_gt_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_gt_node final : formula_binary_operator_node {
     formula_gt_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :

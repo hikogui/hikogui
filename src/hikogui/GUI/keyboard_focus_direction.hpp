@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.GUI : keyboard_focus_direction);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** The keyboard focus group used for finding a widget that will accept a particular focus.
  */

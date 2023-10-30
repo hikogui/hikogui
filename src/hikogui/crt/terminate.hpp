@@ -19,7 +19,7 @@
 
 hi_export_module(hikogui.crt.terminate);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The old terminate handler.
  *

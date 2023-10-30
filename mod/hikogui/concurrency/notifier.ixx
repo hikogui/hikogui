@@ -17,7 +17,7 @@ import hikogui_concurrency_callback_flags;
 import hikogui_concurrency_unfair_mutex;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A notifier which can be used to call a set of registered callbacks.
  *

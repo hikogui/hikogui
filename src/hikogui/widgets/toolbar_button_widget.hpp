@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.widgets.toolbar_button_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A momentary button used as a child in the toolbar.
  *

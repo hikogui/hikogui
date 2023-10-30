@@ -19,7 +19,7 @@
 
 hi_export_module(hikogui.GFX : draw_context_intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 class gfx_device;
 class widget_layout;
 

@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.GFX : gfx_system_globals);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class gfx_system;
 

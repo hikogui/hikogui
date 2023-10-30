@@ -10,7 +10,7 @@ export module hikogui_geometry : vector3;
 import hikogui_SIMD;
 import : vector2;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A high-level geometric vector
  * Part of the high-level vector, point, mat and color types.

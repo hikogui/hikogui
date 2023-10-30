@@ -12,7 +12,7 @@ import hikogui_SIMD;
 import hikogui_time;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export enum class audio_block_state { normal, silent, corrupt };
 

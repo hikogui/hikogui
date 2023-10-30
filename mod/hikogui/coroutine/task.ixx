@@ -7,11 +7,12 @@ module;
 
 #include <coroutine>
 #include <type_traits>
+#include <exception>
 
 export module hikogui_coroutine_task;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename T>
 class task;

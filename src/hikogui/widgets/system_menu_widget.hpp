@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.widgets.system_menu_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The system menu widget.
  * This widget displays an icon in the menu bar of the window and is used to call-up

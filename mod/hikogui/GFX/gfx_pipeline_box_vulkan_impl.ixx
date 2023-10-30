@@ -7,11 +7,11 @@ module;
 
 
 export module hikogui_GFX : gfx_pipeline_box_impl;
-import : gfx_device_impl;
-import : gfx_pipeline_box_intf;
 import : draw_context_intf;
+import : gfx_pipeline_box_intf;
+import : gfx_device_impl;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 inline void gfx_pipeline_box::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {

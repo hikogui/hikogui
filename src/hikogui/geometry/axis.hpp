@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.geometry : axis);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** An enumeration of the 3 axis for 3D geometry.

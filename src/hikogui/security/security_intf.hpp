@@ -8,11 +8,13 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <iterator>
+#include <memory>
 
 hi_export_module(hikogui.security : intf);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Securely clear memory.
  *

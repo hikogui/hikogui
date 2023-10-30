@@ -16,7 +16,7 @@ import hikogui_widgets_button_delegate;
 import hikogui_widgets_widget;
 import hikogui_widgets_with_label_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept toggle_widget_attribute = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;

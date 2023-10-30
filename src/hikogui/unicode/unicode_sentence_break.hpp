@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.unicode.unicode_sentence_break);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 namespace detail {
 

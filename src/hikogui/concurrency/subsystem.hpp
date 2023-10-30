@@ -22,7 +22,7 @@
 hi_export_module(hikogui.concurrency.subsystem);
 
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 /** A list of deinit function to be called on shutdown.

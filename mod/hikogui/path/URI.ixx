@@ -17,7 +17,7 @@ export module hikogui_path_URI;
 import hikogui_algorithm;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 #define HI_SUB_DELIM '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='
 #define HI_PCHAR HI_SUB_DELIM, ':', '@'

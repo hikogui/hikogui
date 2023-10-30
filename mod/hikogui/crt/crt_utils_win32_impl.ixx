@@ -23,7 +23,7 @@ hi_warning_push();
 // For compatibility reasons we work with raw pointers here.
 hi_warning_ignore_msvc(26400);
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.

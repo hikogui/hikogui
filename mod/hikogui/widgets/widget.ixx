@@ -25,7 +25,7 @@ import hikogui_settings;
 import hikogui_time;
 import hikogui_widgets_widget_mode;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** An interactive graphical object as part of the user-interface.
  *

@@ -13,7 +13,7 @@ import hikogui_time;
 import hikogui_utility;
 import : counters;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class trace_base {
 public:

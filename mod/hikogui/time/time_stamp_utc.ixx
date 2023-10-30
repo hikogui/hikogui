@@ -16,7 +16,7 @@ import hikogui_time_time_stamp_count;
 import hikogui_utility;
 
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** Timestamp
  */

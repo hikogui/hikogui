@@ -13,7 +13,7 @@ export module hikogui_font_font_weight;
 import hikogui_coroutine;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 export enum class font_weight {
     thin, ///< 100: Thin / Hairline

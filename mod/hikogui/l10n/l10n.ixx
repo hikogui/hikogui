@@ -9,7 +9,7 @@ export import hikogui_l10n_po_parser;
 export import hikogui_l10n_translation;
 export import hikogui_l10n_txt;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** @defgroup l10n Localization.

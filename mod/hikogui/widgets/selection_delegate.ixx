@@ -17,7 +17,7 @@ export module hikogui_widgets_selection_delegate;
 import hikogui_l10n;
 import hikogui_widgets_radio_button_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 class selection_widget;
 
 /** A delegate that controls the state of a selection_widget.

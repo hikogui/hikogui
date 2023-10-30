@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../macros.hpp"
+#include "../utility/utility.hpp"
 #include "char_converter.hpp"
 #include "cp_1252.hpp"
 #include <bit>

@@ -15,7 +15,7 @@ import hikogui_file;
 import hikogui_telemetry;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 File::File(std::filesystem::path const &path, AccessMode accessMode) : accessMode(accessMode), location(location)
 {

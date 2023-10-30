@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.GFX.render_doc);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 inline void *render_doc_api = nullptr;
 

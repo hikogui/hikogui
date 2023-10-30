@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.GFX : gfx_device_impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 inline gfx_device::gfx_device(vk::PhysicalDevice physicalDevice) :
     physicalIntrinsic(std::move(physicalDevice))

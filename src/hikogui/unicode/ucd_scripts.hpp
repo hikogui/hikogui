@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.unicode.ucd_scripts);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 namespace detail {
 

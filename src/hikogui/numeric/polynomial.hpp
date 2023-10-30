@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.numeric.polynomial);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /*! Solve line function.
  * ax+b=0

@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.widgets.text_delegate);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 class text_widget;
 
 /** A delegate that controls the state of a text_widget.

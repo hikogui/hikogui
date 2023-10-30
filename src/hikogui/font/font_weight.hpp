@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.font.font_weight);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 hi_export enum class font_weight {
     thin, ///< 100: Thin / Hairline

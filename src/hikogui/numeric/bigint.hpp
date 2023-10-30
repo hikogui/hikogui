@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.numeric.bigint);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** High performance big integer implementation.
  * The bigint is a fixed width integer which will allow the compiler

@@ -10,7 +10,7 @@ module;
 export module hikogui_font_glyph_atlas_info;
 import hikogui_geometry;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 export class glyph_atlas_info {
 public:

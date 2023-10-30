@@ -38,7 +38,7 @@ export import hikogui_widgets_window_controls_win32_widget;
 export import hikogui_widgets_window_widget;
 export import hikogui_widgets_with_label_widget;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 /**
 \defgroup widgets Widgets

@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.i18n.iso_15924 : impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 struct iso_15924_info {

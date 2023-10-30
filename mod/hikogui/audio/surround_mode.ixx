@@ -14,7 +14,7 @@ import hikogui_font;
 import hikogui_l10n;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 export enum class surround_mode : uint64_t {
     none = 0,

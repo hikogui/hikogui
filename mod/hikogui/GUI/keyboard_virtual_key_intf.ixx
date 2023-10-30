@@ -11,7 +11,7 @@ export module hikogui_GUI : keyboard_virtual_key_intf;
 import hikogui_utility;
 import : keyboard_modifiers;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 enum class keyboard_virtual_key : uint8_t {
     nul = 0,

@@ -14,7 +14,7 @@ export module hikogui_coroutine_scoped_task;
 import hikogui_concurrency;
 import hikogui_utility;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 /** A scoped_task.
  *

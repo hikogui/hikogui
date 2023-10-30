@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.GUI : widget_id);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 inline id_factory<uint32_t> widget_id_factory;
 }

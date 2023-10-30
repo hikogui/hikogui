@@ -22,7 +22,7 @@
 
 hi_export_module(hikogui.font.font);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /*! A font.
  * This class has information on how to shape text and

@@ -9,9 +9,9 @@
 #include <iostream>
 #include <format>
 
-hi_export_module(hikogui.console.dialogue : intf);
+hi_export_module(hikogui.console.dialog : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class dialog_type { ok, yes_no, yes_no_cancel };
 

@@ -10,11 +10,11 @@ module;
 export module hikogui_GFX : gfx_device_impl;
 import hikogui_file;
 import hikogui_utility;
-import : gfx_device_intf;
-import : gfx_surface_intf;
 import : gfx_system_intf;
+import : gfx_surface_intf;
+import : gfx_device_intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 inline gfx_device::gfx_device(vk::PhysicalDevice physicalDevice) :
     physicalIntrinsic(std::move(physicalDevice))

@@ -13,7 +13,7 @@ module;
 export module hikogui_geometry : corner_radii;
 import hikogui_SIMD;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /** The 4 radii of the corners of a quad or rectangle.

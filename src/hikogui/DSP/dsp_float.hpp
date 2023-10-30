@@ -5,7 +5,7 @@
 
 hi_export_module(hikogui.DSP.dsp_float);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 template<typename Context>

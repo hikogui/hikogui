@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.GFX : gfx_pipeline_image_intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlas and sharing for all views.

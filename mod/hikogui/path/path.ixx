@@ -8,7 +8,7 @@ export import hikogui_path_URL;
 export import hikogui_path_glob;
 export import hikogui_path_path_location;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 
 /**

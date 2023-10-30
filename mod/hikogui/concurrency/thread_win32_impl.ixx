@@ -18,7 +18,7 @@ import hikogui_concurrency_unfair_mutex;
 import hikogui_utility;
 import : intf;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 [[nodiscard]] inline thread_id current_thread_id() noexcept
 {

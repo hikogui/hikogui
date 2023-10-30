@@ -20,7 +20,7 @@ export import hikogui_image_srgb_abgr8_pack;
 export import hikogui_image_uint_abgr8_pack;
 export import hikogui_image_unorm_a2bgr10_pack;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 /**
 \defgroup image Image

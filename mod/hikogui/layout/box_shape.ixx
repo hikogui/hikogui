@@ -13,7 +13,7 @@ import hikogui_geometry;
 import hikogui_layout_box_constraints;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 struct box_shape {
     aarectangle rectangle;

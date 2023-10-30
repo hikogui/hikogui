@@ -8,7 +8,7 @@ module;
 
 export module hikogui_net_stream;
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 class Socketstream {
 protected:

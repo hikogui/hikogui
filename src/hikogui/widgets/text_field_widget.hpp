@@ -22,7 +22,7 @@
 
 hi_export_module(hikogui.widgets.text_field_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept text_field_widget_attribute = text_widget_attribute<Context>;

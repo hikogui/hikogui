@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.crt.crt_utils : intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** The application instance identified by the operating system.
 *

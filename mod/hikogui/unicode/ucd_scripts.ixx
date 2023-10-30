@@ -9,7 +9,7 @@ export module hikogui_unicode_ucd_scripts;
 import hikogui_i18n;
 import hikogui_utility;
 
-namespace hi {
+export namespace hi {
 inline namespace v1 {
 namespace detail {
 

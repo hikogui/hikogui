@@ -21,7 +21,7 @@ import hikogui_l10n;
 import hikogui_numeric;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A set of audio channels which can be rendered and/or captures at the same time.
  * On win32 this would be Audio Endpoint gfx_device, which can either render or capture

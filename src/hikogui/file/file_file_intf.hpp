@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "file_file_win32_impl.hpp"
 #include "../container/container.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -22,7 +21,10 @@
 
 hi_export_module(hikogui.file.file : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
+namespace detail {
+class file_impl;
+}
 
 /** A File object.
  * @ingroup file

@@ -16,7 +16,7 @@ import hikogui_utility_debugger;
 import hikogui_utility_misc;
 import hikogui_utility_type_traits;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 template<nullable_pointer T>
 class not_null {

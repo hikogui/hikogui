@@ -18,11 +18,11 @@ module;
 
 export module hikogui_SIMD : intf;
 import hikogui_utility;
+import : native_u32x4_sse2;
+import : native_f64x4_avx;
+import : native_f32x4_sse;
 import : native_simd_conversions_x86;
 import : native_i32x4_sse2;
-import : native_f32x4_sse;
-import : native_f64x4_avx;
-import : native_u32x4_sse2;
 import : native_i64x4_avx2;
 
 hi_warning_push();
@@ -145,7 +145,7 @@ hi_warning_ignore_msvc(26472)
         return *this = *this short_op rhs; \
     }
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 template<typename T>
 concept simd_value_type = arithmetic<T> or std::same_as<T, float16>;

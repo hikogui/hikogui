@@ -9,9 +9,11 @@
 #pragma once
 
 #include "char_converter.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <bit>
 #include <cstdint>
+#include <utility>
 #include <compare>
 #if defined(HI_HAS_SSE2)
 #include <emmintrin.h>

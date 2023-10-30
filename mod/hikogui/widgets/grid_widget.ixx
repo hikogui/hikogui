@@ -15,7 +15,7 @@ export module hikogui_widgets_grid_widget;
 import hikogui_layout;
 import hikogui_widgets_widget;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A GUI widget that lays out child-widgets in a grid with variable sized cells.
  * @ingroup widgets

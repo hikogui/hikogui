@@ -5,7 +5,7 @@
 #pragma once
 
 #include "simd_intf.hpp" // export
-#include "float16_sse4_1.hpp" // export
+//#include "float16_sse4_1.hpp" // export
 #include "native_f16x8_sse2.hpp" // export
 #include "native_f32x4_sse.hpp" // export
 #include "native_f64x4_avx.hpp" // export

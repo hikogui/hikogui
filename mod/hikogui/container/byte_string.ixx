@@ -20,7 +20,7 @@ hi_warning_push();
 // Need to call strlen() and friends with a `char *`.
 hi_warning_ignore_msvc(26490);
 
-namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 using byteptr = std::byte *;
 using cbyteptr = std::byte const *;

@@ -13,7 +13,7 @@ module;
 export module hikogui_GUI : gui_event_variant;
 import : gui_event_type;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** A granular gui event type.
  * @ingroup GUI

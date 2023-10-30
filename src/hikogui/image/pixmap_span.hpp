@@ -21,7 +21,7 @@ hi_warning_push();
 // Using iterators adds a lot of code without any extra safety.
 hi_warning_ignore_msvc(26459);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 template<typename T, typename Allocator>
 class pixmap;
 

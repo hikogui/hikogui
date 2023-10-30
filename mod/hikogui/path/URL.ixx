@@ -30,7 +30,7 @@ hi_warning_push();
 // False positive reported: https://developercommunity.visualstudio.com/t/C26434-false-positive-with-conversion-op/10262199
 hi_warning_ignore_msvc(26434);
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** Universal Resource Locator.
  * @ingroup file

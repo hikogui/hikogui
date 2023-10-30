@@ -16,7 +16,7 @@
 hi_export_module(hikogui.numeric.interval);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Interval arithmetic.
  *

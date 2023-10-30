@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.geometry : rectangle);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A rectangle / parallelogram in 3D space.
  *

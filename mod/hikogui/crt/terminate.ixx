@@ -19,7 +19,7 @@ import hikogui_console;
 import hikogui_telemetry;
 import hikogui_utility;
 
-namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 
 /** The old terminate handler.
  *

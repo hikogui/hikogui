@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.widgets.momentary_button_widget);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A momentary button widget.
  * @ingroup widgets
