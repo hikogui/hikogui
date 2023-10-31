@@ -10,8 +10,9 @@ module;
 
 #include <format>
 
-export module hikogui_file_file_view : impl;
+export module hikogui_file_file_view_impl;
 import hikogui_file_file;
+import hikogui_file_file_impl;
 import hikogui_telemetry;
 import hikogui_utility;
 

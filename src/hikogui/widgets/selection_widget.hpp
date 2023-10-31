@@ -16,12 +16,14 @@
 #include "radio_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "../observer/observer.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
 hi_export_module(hikogui.widgets.selection_widget);
 

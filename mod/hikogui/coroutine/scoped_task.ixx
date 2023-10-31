@@ -9,6 +9,7 @@ module;
 #include <type_traits>
 #include <memory>
 #include <exception>
+#include <optional>
 
 export module hikogui_coroutine_scoped_task;
 import hikogui_concurrency;

@@ -5,6 +5,9 @@
 module;
 #include "../macros.hpp"
 
+#include <exception>
+#include <format>
+#include <ostream>
 
 export module hikogui_geometry : vector3;
 import hikogui_SIMD;

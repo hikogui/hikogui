@@ -12,13 +12,13 @@ module;
 export module hikogui_GUI : gui_window;
 import hikogui_GFX;
 import hikogui_crt;
-import : mouse_cursor;
-import : theme_book;
-import : keyboard_bindings;
-import : widget_intf;
-import : gui_event;
 import : hitbox;
+import : theme_book;
+import : widget_intf;
+import : mouse_cursor;
+import : gui_event;
 import : gui_window_size;
+import : keyboard_bindings;
 
 export namespace hi::inline v1 {
 
@@ -928,11 +928,11 @@ private:
     constexpr static UINT_PTR move_and_resize_timer_id = 2;
     constexpr static std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    static bool _first_window = true;
-    static const wchar_t *win32WindowClassName = nullptr;
-    static WNDCLASSW win32WindowClass = {};
-    static bool win32WindowClassIsRegistered = false;
-    static bool firstWindowHasBeenOpened = false;
+    inline static bool _first_window = true;
+    inline static const wchar_t *win32WindowClassName = nullptr;
+    inline static WNDCLASSW win32WindowClass = {};
+    inline static bool win32WindowClassIsRegistered = false;
+    inline static bool firstWindowHasBeenOpened = false;
 
     /** The label of the window that is passed to the operating system.
      */

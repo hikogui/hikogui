@@ -9,8 +9,10 @@
 module;
 #include "../macros.hpp"
 
+#include <coroutine>
 
 export module hikogui_widgets_tab_widget;
+import hikogui_coroutine;
 import hikogui_widgets_grid_widget;
 import hikogui_widgets_tab_delegate;
 import hikogui_widgets_widget;

@@ -5,6 +5,7 @@
 module;
 #include "../macros.hpp"
 
+#include <vulkan/vulkan.hpp>
 
 export module hikogui_GFX : gfx_pipeline_override_impl;
 import : gfx_device_impl;

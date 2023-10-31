@@ -7,6 +7,7 @@
 #include "path_location.hpp"
 #include "../char_maps/char_maps.hpp"
 #include "../utility/utility.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <string>
@@ -14,6 +15,7 @@
 #include <filesystem>
 #include <variant>
 #include <type_traits>
+#include <coroutine>
 
 /** @file path/glob.hpp Defines utilities for handling glob patterns.
  * @ingroup path

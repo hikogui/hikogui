@@ -9,7 +9,9 @@
 #pragma once
 
 #include "widget.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
+#include <coroutine>
 
 hi_export_module(hikogui.widgets.overlay_widget);
 

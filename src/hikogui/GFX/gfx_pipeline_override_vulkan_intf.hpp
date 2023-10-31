@@ -6,9 +6,13 @@
 
 #include "gfx_pipeline_vulkan_intf.hpp"
 #include "../container/container.hpp"
+#include "../color/color.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <vma/vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 #include <span>
+#include <vector>
 
 hi_export_module(hikogui.GFX : gfx_pipeline_override_intf);
 

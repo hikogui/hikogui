@@ -12,8 +12,10 @@ module;
 #include <memory>
 #include <string>
 #include <array>
+#include <coroutine>
 
 export module hikogui_widgets_system_menu_widget;
+import hikogui_coroutine;
 import hikogui_l10n;
 import hikogui_widgets_icon_widget;
 import hikogui_widgets_widget;

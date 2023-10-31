@@ -8,6 +8,7 @@ module;
 #include <vector>
 #include <memory>
 #include <concepts>
+#include <coroutine>
 
 export module hikogui_audio_audio_system;
 import hikogui_audio_audio_device;

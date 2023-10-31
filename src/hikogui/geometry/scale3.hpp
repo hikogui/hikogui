@@ -8,6 +8,7 @@
 #include "vector3.hpp"
 #include "extent3.hpp"
 #include "../macros.hpp"
+#include <algorithm>
 
 hi_export_module(hikogui.geometry : scale3);
 

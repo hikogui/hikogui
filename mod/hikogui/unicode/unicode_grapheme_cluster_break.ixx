@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <cstdint>
+#include <vector>
 
 export module hikogui_unicode_unicode_grapheme_cluster_break;
 import hikogui_unicode_ucd_grapheme_cluster_breaks;

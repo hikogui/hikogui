@@ -10,8 +10,8 @@ module;
 
 export module hikogui_GUI : keyboard_key;
 import hikogui_utility;
-import : keyboard_virtual_key_intf;
 import : keyboard_modifiers;
+import : keyboard_virtual_key_intf;
 
 export namespace hi::inline v1 {
 

@@ -7,8 +7,10 @@ module;
 
 #include <vector>
 #include <tuple>
+#include <coroutine>
 
 export module hikogui_text_text_shaper;
+import hikogui_coroutine;
 import hikogui_font;
 import hikogui_geometry;
 import hikogui_layout;

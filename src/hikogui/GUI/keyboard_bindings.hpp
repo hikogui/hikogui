@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <tuple>
 #include <filesystem>
+#include <coroutine>
 
 hi_export_module(hikogui.GUI : keyboard_bindings);
 

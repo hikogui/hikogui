@@ -11,6 +11,7 @@ module;
 #include <vector>
 #include <limits>
 #include <format>
+#include <coroutine>
 
 export module hikogui_codec_jsonpath;
 import hikogui_coroutine;

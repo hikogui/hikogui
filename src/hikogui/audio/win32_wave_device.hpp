@@ -9,6 +9,7 @@
 #include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <string>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.win32_wave_device);
 

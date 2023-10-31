@@ -10,8 +10,10 @@ module;
 #include "../macros.hpp"
 
 #include <algorithm>
+#include <array>
 
 export module hikogui_image_uint_abgr8_pack;
+import hikogui_SIMD;
 import hikogui_geometry;
 
 export namespace hi::inline v1 {

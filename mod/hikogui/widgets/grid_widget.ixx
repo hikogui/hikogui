@@ -10,8 +10,10 @@ module;
 #include "../macros.hpp"
 
 #include <memory>
+#include <coroutine>
 
 export module hikogui_widgets_grid_widget;
+import hikogui_coroutine;
 import hikogui_layout;
 import hikogui_widgets_widget;
 

@@ -4,8 +4,10 @@
 
 module;
 
+#include <coroutine>
 
 export module hikogui_font_font_variant;
+import hikogui_coroutine;
 import hikogui_font_font_style;
 import hikogui_font_font_weight;
 

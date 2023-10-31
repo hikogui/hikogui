@@ -3,7 +3,7 @@ module;
 
 
 export module hikogui_observer;
-import : shared_state;
+import : observer_intf;
 import : observed;
 import : observed_value;
-import : observer_intf;
+import : shared_state;

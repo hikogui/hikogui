@@ -8,13 +8,14 @@ module;
 #include <unordered_map>
 #include <tuple>
 #include <filesystem>
+#include <coroutine>
 
 export module hikogui_GUI : keyboard_bindings;
 import hikogui_codec;
 import hikogui_coroutine;
 import hikogui_utility;
-import : keyboard_key;
 import : gui_event;
+import : keyboard_key;
 
 export namespace hi { inline namespace v1 {
 

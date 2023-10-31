@@ -9,26 +9,26 @@ module;
 #include <functional>
 
 export module hikogui_geometry : transform;
-import : perspective;
-import : vector2;
-import : point3;
-import : scale3;
 import : corner_radii;
-import : extent2;
-import : matrix3;
-import : matrix2;
-import : translate2;
+import : point3;
 import : circle;
-import : vector3;
-import : point2;
-import : scale2;
+import : matrix3;
 import : quad;
 import : line_segment;
-import : extent3;
 import : rotate2;
+import : rotate3;
+import : vector3;
+import : vector2;
+import : point2;
+import : scale3;
+import : matrix2;
+import : extent3;
+import : translate2;
 import : translate3;
 import : rectangle;
-import : rotate3;
+import : scale2;
+import : extent2;
+import : perspective;
 import : aarectangle;
 
 export namespace hi { inline namespace v1 {

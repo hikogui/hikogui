@@ -11,6 +11,7 @@
 #include "../macros.hpp"
 #include "../win32_headers.hpp"
 #include <memory>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.audio_system_win32);
 

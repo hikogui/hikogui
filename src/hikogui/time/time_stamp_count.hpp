@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "chrono.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../numeric/numeric.hpp"
@@ -11,6 +12,9 @@
 #include <atomic>
 #include <array>
 #include <cstdint>
+#include <chrono>
+#include <utility>
+#include <thread>
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <intrin.h>
@@ -284,21 +288,21 @@ private:
 
     /** The period in nanoseconds/cycle as Q32.32
      */
-    hi_inline static std::atomic<uint64_t> _period = 0;
+    inline static std::atomic<uint64_t> _period = 0;
 
-    hi_inline static std::atomic<bool> _aux_is_cpu_id = false;
+    inline static std::atomic<bool> _aux_is_cpu_id = false;
 
     /** The number of CPU ids we know of.
      */
-    hi_inline static std::atomic<std::size_t> _num_aux_values = 0;
+    inline static std::atomic<std::size_t> _num_aux_values = 0;
 
     /** A list of known CPU ids.
      */
-    hi_inline static std::array<uint32_t, maximum_num_cpus> _aux_values;
+    inline static std::array<uint32_t, maximum_num_cpus> _aux_values;
 
     /** A list of CPU ids that match the _aux_values list.
      */
-    hi_inline static std::array<std::size_t, maximum_num_cpus> _cpu_ids;
+    inline static std::array<std::size_t, maximum_num_cpus> _cpu_ids;
 
     /** Get the CPU id.
      * This is logical CPU id that the operating system uses.

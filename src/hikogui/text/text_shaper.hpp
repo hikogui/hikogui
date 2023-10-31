@@ -12,9 +12,11 @@
 #include "../font/font.hpp"
 #include "../geometry/geometry.hpp"
 #include "../unicode/unicode.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <tuple>
+#include <coroutine>
 
 hi_export_module(hikogui.text.text_shaper);
 

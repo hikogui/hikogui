@@ -11,6 +11,7 @@
 #include "../macros.hpp"
 #include <array>
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 hi_export_module(hikogui.GFX : gfx_pipeline_impl);
 

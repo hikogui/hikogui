@@ -9,8 +9,10 @@
 module;
 #include "../macros.hpp"
 
+#include <coroutine>
 
 export module hikogui_widgets_scroll_widget;
+import hikogui_coroutine;
 import hikogui_geometry;
 import hikogui_layout;
 import hikogui_widgets_scroll_aperture_widget;

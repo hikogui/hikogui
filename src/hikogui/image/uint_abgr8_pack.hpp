@@ -9,8 +9,10 @@
 #pragma once
 
 #include "../geometry/geometry.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+#include <array>
 
 hi_export_module(hikogui.image.uint_abgr8_pack);
 

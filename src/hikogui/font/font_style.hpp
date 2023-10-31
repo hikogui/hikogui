@@ -9,6 +9,8 @@
 
 #include "../utility/utility.hpp"
 #include "../coroutine/coroutine.hpp"
+#include <string_view>
+#include <coroutine>
 
 hi_export_module(hikogui.font.font_style);
 

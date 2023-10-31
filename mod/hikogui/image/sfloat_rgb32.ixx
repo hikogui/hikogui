@@ -10,9 +10,11 @@ module;
 #include "../macros.hpp"
 
 #include <algorithm>
+#include <array>
 
 export module hikogui_image_sfloat_rgb32;
 import hikogui_SIMD;
+import hikogui_geometry;
 
 export namespace hi::inline v1 {
 

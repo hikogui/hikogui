@@ -8,6 +8,7 @@ module;
 
 #include <algorithm>
 #include <vector>
+#include <coroutine>
 
 export module hikogui_audio_audio_device_win32;
 import hikogui_algorithm;

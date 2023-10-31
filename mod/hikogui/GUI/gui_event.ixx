@@ -16,16 +16,16 @@ export module hikogui_GUI : gui_event;
 import hikogui_geometry;
 import hikogui_time;
 import hikogui_unicode;
+import : hitbox;
+import : keyboard_modifiers;
+import : keyboard_state;
 import : keyboard_focus_group;
 import : mouse_buttons;
-import : keyboard_modifiers;
 import : keyboard_virtual_key_intf;
-import : keyboard_state;
 import : gui_event_variant;
-import : hitbox;
-import : widget_id;
 import : keyboard_focus_direction;
 import : gui_event_type;
+import : widget_id;
 
 export namespace hi { inline namespace v1 {
 

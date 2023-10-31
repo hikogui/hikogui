@@ -9,6 +9,7 @@
 #include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <variant>
+#include <coroutine>
 
 hi_export_module(hikogui.font.otype_glyf);
 

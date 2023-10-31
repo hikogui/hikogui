@@ -9,8 +9,10 @@
 module;
 #include "../macros.hpp"
 
+#include <coroutine>
 
 export module hikogui_widgets_overlay_widget;
+import hikogui_coroutine;
 import hikogui_widgets_widget;
 
 export namespace hi { inline namespace v1 {

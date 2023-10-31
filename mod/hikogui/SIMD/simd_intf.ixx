@@ -18,12 +18,12 @@ module;
 
 export module hikogui_SIMD : intf;
 import hikogui_utility;
-import : native_simd_conversions_x86;
 import : native_i32x4_sse2;
-import : native_f64x4_avx;
+import : native_f32x4_sse;
+import : native_simd_conversions_x86;
 import : native_i64x4_avx2;
 import : native_u32x4_sse2;
-import : native_f32x4_sse;
+import : native_f64x4_avx;
 
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()

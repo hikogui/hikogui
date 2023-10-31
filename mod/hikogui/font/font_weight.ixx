@@ -3,11 +3,14 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 module;
+#include "../macros.hpp"
 
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <ostream>
 #include <array>
+#include <coroutine>
 
 export module hikogui_font_font_weight;
 import hikogui_coroutine;
@@ -67,9 +70,9 @@ export [[nodiscard]] constexpr font_weight font_weight_from_int(numeric_integral
 
 export [[nodiscard]] constexpr font_weight font_weight_from_string(std::string_view rhs)
 {
-    try {
-        return font_weight_metadata.at(rhs);
-    } catch (...) {
+    if (auto weight = font_weight_metadata.at_if(rhs)) {
+        return *weight;
+    } else {
         throw parse_error(std::format("Unknown font-weight {}", rhs));
     }
 }

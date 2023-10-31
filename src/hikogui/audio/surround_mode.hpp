@@ -11,6 +11,7 @@
 #include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <cstdint>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.surround_mode);
 

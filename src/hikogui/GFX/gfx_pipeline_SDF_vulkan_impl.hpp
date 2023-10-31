@@ -9,6 +9,7 @@
 #include "gfx_device_vulkan_impl.hpp"
 #include "draw_context_intf.hpp"
 #include "../macros.hpp"
+#include <vulkan/vulkan.hpp>
 
 hi_export_module(hikogui.GFX : gfx_pipeline_SDF_impl);
 

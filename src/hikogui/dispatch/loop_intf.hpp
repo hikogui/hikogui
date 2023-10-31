@@ -377,13 +377,13 @@ private:
 
     /** Pointer to the main-loop.
      */
-    hi_inline static std::atomic<loop *> _main;
+    inline static std::atomic<loop *> _main;
 
     /** Pointer to the timer-loop.
      */
-    hi_inline static std::atomic<loop *> _timer;
+    inline static std::atomic<loop *> _timer;
 
-    hi_inline static std::jthread _timer_thread;
+    inline static std::jthread _timer_thread;
 
     std::unique_ptr<impl_type> _pimpl;
 };

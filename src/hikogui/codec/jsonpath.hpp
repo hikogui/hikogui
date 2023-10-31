@@ -14,6 +14,7 @@
 #include <vector>
 #include <limits>
 #include <format>
+#include <coroutine>
 
 hi_export_module(hikogui.codec.jsonpath);
 

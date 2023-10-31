@@ -13,12 +13,12 @@ module;
 
 export module hikogui_GFX : gfx_device_intf;
 import hikogui_settings;
-import : gfx_pipeline_SDF_intf;
-import : gfx_pipeline_tone_mapper_intf;
-import : gfx_pipeline_box_intf;
-import : gfx_pipeline_override_intf;
-import : gfx_system_globals;
 import : gfx_pipeline_image_intf;
+import : gfx_pipeline_SDF_intf;
+import : gfx_system_globals;
+import : gfx_pipeline_box_intf;
+import : gfx_pipeline_tone_mapper_intf;
+import : gfx_pipeline_override_intf;
 import : gfx_queue;
 
 export namespace hi::inline v1 {

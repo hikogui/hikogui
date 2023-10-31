@@ -7,6 +7,9 @@
 #include "vector2.hpp"
 #include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <exception>
+#include <format>
+#include <ostream>
 
 hi_export_module(hikogui.geometry : vector3);
 

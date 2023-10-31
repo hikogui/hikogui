@@ -14,9 +14,11 @@ module;
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
 export module hikogui_widgets_audio_device_widget;
 import hikogui_audio;
+import hikogui_coroutine;
 import hikogui_l10n;
 import hikogui_widgets_grid_widget;
 import hikogui_widgets_selection_widget;

@@ -6,10 +6,14 @@ module;
 #include "../macros.hpp"
 
 #include <vma/vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 #include <span>
+#include <vector>
 
 export module hikogui_GFX : gfx_pipeline_override_intf;
+import hikogui_color;
 import hikogui_container;
+import hikogui_geometry;
 import : gfx_pipeline_intf;
 
 export namespace hi { inline namespace v1 {

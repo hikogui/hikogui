@@ -5,6 +5,7 @@
 module;
 #include "../macros.hpp"
 
+#include <exception>
 #include <format>
 #include <ostream>
 

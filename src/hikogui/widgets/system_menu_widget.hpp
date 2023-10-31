@@ -11,10 +11,12 @@
 #include "widget.hpp"
 #include "icon_widget.hpp"
 #include "../l10n/l10n.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
+#include <coroutine>
 
 hi_export_module(hikogui.widgets.system_menu_widget);
 

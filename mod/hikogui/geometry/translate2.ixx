@@ -8,8 +8,8 @@ module;
 #include <concepts>
 
 export module hikogui_geometry : translate2;
-import : point2;
 import : aarectangle;
+import : point2;
 
 export namespace hi { inline namespace v1 {
 

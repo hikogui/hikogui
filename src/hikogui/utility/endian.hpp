@@ -6,6 +6,7 @@
 
 #include "memory.hpp"
 #include "reflection.hpp"
+#include "cast.hpp"
 #include "../macros.hpp"
 
 #ifdef HI_HAS_SSE

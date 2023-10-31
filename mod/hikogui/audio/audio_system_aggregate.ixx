@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <algorithm>
+#include <coroutine>
 
 export module hikogui_audio_audio_system_aggregate;
 import hikogui_algorithm;

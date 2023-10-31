@@ -5,7 +5,7 @@
 #pragma once
 
 #include "access_mode.hpp" // export
-#include "file_file.hpp" // export
+#include "file_intf.hpp" // export
 #include "file_view.hpp" // export
 #include "resource_view.hpp" // export
 #include "seek_whence.hpp" // export

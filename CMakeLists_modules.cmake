@@ -144,14 +144,12 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_win32_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/terminate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/access_mode.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_file_intf.ixx
-    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_file_posix_impl.ixx>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_file_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_file.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_view_intf.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_intf.ixx
+    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_posix_impl.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_win32_impl.ixx>
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_view.ixx
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_view_posix_impl.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_view_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_view.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/resource_view.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/seek_whence.ixx

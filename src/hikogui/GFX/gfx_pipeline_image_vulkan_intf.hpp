@@ -9,6 +9,7 @@
 #include "../image/image.hpp"
 #include "../codec/codec.hpp"
 #include "../macros.hpp"
+#include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 
 hi_export_module(hikogui.GFX : gfx_pipeline_image_intf);

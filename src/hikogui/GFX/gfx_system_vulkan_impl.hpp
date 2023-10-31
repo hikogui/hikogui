@@ -2,6 +2,7 @@
 #pragma once
 
 #include "gfx_system_vulkan_intf.hpp"
+#include <vulkan/vulkan.hpp>
 
 hi_export_module(hikogui.GFX : gfx_system_impl);
 

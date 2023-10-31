@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <string>
+#include <coroutine>
 
 export module hikogui_audio_win32_device_interface;
 import hikogui_audio_audio_direction;

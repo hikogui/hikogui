@@ -8,6 +8,9 @@ module;
 #include <atomic>
 #include <array>
 #include <cstdint>
+#include <chrono>
+#include <utility>
+#include <thread>
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <intrin.h>
@@ -18,6 +21,7 @@ module;
 export module hikogui_time_time_stamp_count;
 import hikogui_concurrency;
 import hikogui_numeric;
+import hikogui_time_chrono;
 import hikogui_utility;
 
 
@@ -284,21 +288,21 @@ private:
 
     /** The period in nanoseconds/cycle as Q32.32
      */
-    static std::atomic<uint64_t> _period = 0;
+    inline static std::atomic<uint64_t> _period = 0;
 
-    static std::atomic<bool> _aux_is_cpu_id = false;
+    inline static std::atomic<bool> _aux_is_cpu_id = false;
 
     /** The number of CPU ids we know of.
      */
-    static std::atomic<std::size_t> _num_aux_values = 0;
+    inline static std::atomic<std::size_t> _num_aux_values = 0;
 
     /** A list of known CPU ids.
      */
-    static std::array<uint32_t, maximum_num_cpus> _aux_values;
+    inline static std::array<uint32_t, maximum_num_cpus> _aux_values;
 
     /** A list of CPU ids that match the _aux_values list.
      */
-    static std::array<std::size_t, maximum_num_cpus> _cpu_ids;
+    inline static std::array<std::size_t, maximum_num_cpus> _cpu_ids;
 
     /** Get the CPU id.
      * This is logical CPU id that the operating system uses.

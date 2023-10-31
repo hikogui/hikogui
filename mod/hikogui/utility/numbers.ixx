@@ -11,6 +11,7 @@ module;
 #include "../macros.hpp"
 
 #include <concepts>
+#include <limits>
 
 export module hikogui_utility_numbers;
 import hikogui_utility_concepts;

@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <variant>
+#include <coroutine>
 
 export module hikogui_font_otype_glyf;
 import hikogui_coroutine;

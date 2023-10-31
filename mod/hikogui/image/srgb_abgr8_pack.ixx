@@ -10,6 +10,7 @@ module;
 #include "../macros.hpp"
 
 #include <algorithm>
+#include <array>
 
 export module hikogui_image_srgb_abgr8_pack;
 import hikogui_color;

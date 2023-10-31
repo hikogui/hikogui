@@ -7,6 +7,8 @@
 
 module;
 
+#include <string_view>
+#include <coroutine>
 
 export module hikogui_font_font_style;
 import hikogui_coroutine;

@@ -7,13 +7,14 @@
 
 #include "../win32_headers.hpp"
 
-#include "file_file.hpp"
+#include "file_intf.hpp"
+#include "file_win32_impl.hpp"
 #include "../utility/utility.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <format>
 
-hi_export_module(hikogui.file.file_view : impl);
+hi_export_module(hikogui.file.file_view_impl);
 
 hi_export namespace hi { inline namespace v1 {
 namespace detail {

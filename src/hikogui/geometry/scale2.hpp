@@ -7,6 +7,7 @@
 #include "vector2.hpp"
 #include "extent2.hpp"
 #include "../macros.hpp"
+#include <algorithm>
 
 hi_export_module(hikogui.geometry : scale2);
 

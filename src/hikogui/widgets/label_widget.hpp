@@ -14,12 +14,14 @@
 #include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
 #include "../l10n/l10n.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
 hi_export_module(hikogui.widgets.label_widget);
 

@@ -6,17 +6,18 @@ module;
 #include "../macros.hpp"
 
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 export module hikogui_GFX : gfx_surface_impl;
 import hikogui_telemetry;
 import hikogui_utility;
+import : gfx_pipeline_image_intf;
 import : gfx_pipeline_SDF_intf;
-import : gfx_pipeline_tone_mapper_intf;
 import : gfx_pipeline_box_intf;
+import : gfx_pipeline_tone_mapper_intf;
+import : gfx_pipeline_override_intf;
 import : gfx_surface_delegate;
 import : gfx_system_intf;
-import : gfx_pipeline_override_intf;
-import : gfx_pipeline_image_intf;
 import : gfx_surface_intf;
 import : gfx_device_impl;
 

@@ -6,22 +6,23 @@
  * @ingroup file
  */
 
-#pragma once
-
-#include "../container/container.hpp"
-#include "../utility/utility.hpp"
+module;
 #include "../macros.hpp"
-#include "access_mode.hpp"
-#include "seek_whence.hpp"
+
 #include <mutex>
 #include <cstdint>
 #include <map>
 #include <span>
 #include <filesystem>
 
-hi_export_module(hikogui.file.file : intf);
+export module hikogui_file_file;
+import hikogui_container;
+import hikogui_file_access_mode;
+import hikogui_file_file_impl;
+import hikogui_file_seek_whence;
+import hikogui_utility;
 
-hi_export namespace hi { inline namespace v1 {
+export namespace hi { inline namespace v1 {
 namespace detail {
 class file_impl;
 }
@@ -29,7 +30,7 @@ class file_impl;
 /** A File object.
  * @ingroup file
  */
-hi_export class file {
+export class file {
 public:
     ~file() = default;
     file(file const& other) noexcept = default;

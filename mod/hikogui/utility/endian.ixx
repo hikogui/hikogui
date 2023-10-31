@@ -23,6 +23,7 @@ module;
 #include <concepts>
 
 export module hikogui_utility_endian;
+import hikogui_utility_cast;
 import hikogui_utility_memory;
 import hikogui_utility_reflection;
 

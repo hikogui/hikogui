@@ -11,8 +11,8 @@ module;
 export module hikogui_geometry : point2;
 import hikogui_SIMD;
 import hikogui_utility;
-import : extent2;
 import : vector2;
+import : extent2;
 
 export namespace hi::inline v1 {
 

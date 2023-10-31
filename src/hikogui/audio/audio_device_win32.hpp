@@ -16,6 +16,7 @@
 #include "../win32_headers.hpp"
 #include <algorithm>
 #include <vector>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.audio_device_win32);
 

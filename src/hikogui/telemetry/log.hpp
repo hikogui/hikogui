@@ -208,11 +208,11 @@ private:
      *
      * @note implementation is in counters.hpp
      */
-    hi_inline static void log_thread_main(std::stop_token stop_token) noexcept;
+    inline static void log_thread_main(std::stop_token stop_token) noexcept;
 
     /** Deinitalize the logger system.
      */
-    hi_inline static void subsystem_deinit() noexcept;
+    inline static void subsystem_deinit() noexcept;
 
     /** Initialize the log system.
      * This will start the logging threads which periodically

@@ -16,10 +16,10 @@ export module hikogui_geometry : aarectangle;
 import hikogui_SIMD;
 import hikogui_concurrency;
 import hikogui_utility;
-import : extent2;
-import : alignment;
 import : point2;
 import : point3;
+import : extent2;
+import : alignment;
 
 export namespace hi { inline namespace v1 {
 

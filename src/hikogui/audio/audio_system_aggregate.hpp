@@ -8,6 +8,7 @@
 #include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.audio_system_aggregate);
 

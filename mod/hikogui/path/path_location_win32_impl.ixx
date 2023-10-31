@@ -9,8 +9,10 @@ module;
 
 #include <filesystem>
 #include <string>
+#include <coroutine>
 
 export module hikogui_path_path_location : impl;
+import hikogui_coroutine;
 import hikogui_metadata;
 import hikogui_telemetry;
 import hikogui_utility;

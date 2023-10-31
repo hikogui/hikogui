@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <vma/vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 #include <span>
 
 export module hikogui_GFX : gfx_pipeline_tone_mapper_intf;

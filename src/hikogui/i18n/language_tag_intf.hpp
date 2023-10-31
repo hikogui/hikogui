@@ -13,6 +13,7 @@
 #include "../macros.hpp"
 #include <vector>
 #include <string_view>
+#include <coroutine>
 
 hi_export_module(hikogui.i18n.language_tag : intf);
 

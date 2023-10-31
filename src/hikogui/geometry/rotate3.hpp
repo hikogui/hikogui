@@ -6,6 +6,7 @@
 
 #include "vector3.hpp"
 #include "../macros.hpp"
+#include <cmath>
 
 hi_export_module(hikogui.geometry : rotate3);
 

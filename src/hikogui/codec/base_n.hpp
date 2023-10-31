@@ -13,6 +13,8 @@
 #include <string>
 #include <string_view>
 #include <bit>
+#include <iterator>
+#include <format>
 
 hi_export_module(hikogui.codec.base_n);
 

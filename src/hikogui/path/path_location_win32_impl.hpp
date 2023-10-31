@@ -10,9 +10,11 @@
 #include "../metadata/metadata.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <filesystem>
 #include <string>
+#include <coroutine>
 
 hi_export_module(hikogui.path.path_location : impl);
 

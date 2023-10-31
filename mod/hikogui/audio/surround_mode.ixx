@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <cstdint>
+#include <coroutine>
 
 export module hikogui_audio_surround_mode;
 import hikogui_audio_speaker_mapping;

@@ -5,6 +5,9 @@
 module;
 #include "../macros.hpp"
 
+#include <type_traits>
+#include <compare>
+#include <stdexcept>
 
 export module hikogui_numeric_bound_integer;
 import hikogui_numeric_interval;

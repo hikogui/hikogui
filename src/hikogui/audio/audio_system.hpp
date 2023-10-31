@@ -11,6 +11,7 @@
 #include <vector>
 #include <memory>
 #include <concepts>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.audio_system);
 

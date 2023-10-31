@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <memory>
 #include <exception>
+#include <optional>
 
 hi_export_module(hikogui.coroutine.scoped_task);
 

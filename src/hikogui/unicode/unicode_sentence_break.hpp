@@ -13,6 +13,8 @@
 #include "../macros.hpp"
 #include <tuple>
 #include <vector>
+#include <iterator>
+#include <algorithm>
 
 hi_export_module(hikogui.unicode.unicode_sentence_break);
 

@@ -5,11 +5,12 @@
 module;
 #include "../macros.hpp"
 
+#include <algorithm>
 
 export module hikogui_geometry : scale3;
-import : extent3;
 import : scale2;
 import : vector3;
+import : extent3;
 
 export namespace hi { inline namespace v1 {
 

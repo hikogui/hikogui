@@ -11,12 +11,14 @@ module;
 #include <filesystem>
 #include <variant>
 #include <type_traits>
+#include <coroutine>
 
 /** @file path/glob.hpp Defines utilities for handling glob patterns.
  * @ingroup path
  */
 export module hikogui_path_glob;
 import hikogui_char_maps;
+import hikogui_coroutine;
 import hikogui_path_path_location;
 import hikogui_utility;
 

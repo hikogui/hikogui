@@ -1,6 +1,7 @@
 
 module;
 
+#include <vulkan/vulkan.hpp>
 
 export module hikogui_GFX : gfx_system_impl;
 import : gfx_system_intf;

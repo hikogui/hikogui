@@ -11,8 +11,10 @@ module;
 
 #include <memory>
 #include <ranges>
+#include <coroutine>
 
 export module hikogui_widgets_toolbar_widget;
+import hikogui_coroutine;
 import hikogui_geometry;
 import hikogui_layout;
 import hikogui_widgets_widget;

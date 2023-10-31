@@ -15,6 +15,8 @@
 #include "../macros.hpp"
 #include <compare>
 #include <concepts>
+#include <format>
+#include <ostream>
 
 hi_export_module(hikogui.geometry : extent3);
 

@@ -7,6 +7,7 @@
 #include "gfx_pipeline_override_vulkan_intf.hpp"
 #include "gfx_device_vulkan_impl.hpp"
 #include "../macros.hpp"
+#include <vulkan/vulkan.hpp>
 
 hi_export_module(hikogui.GFX : gfx_pipeline_override_impl);
 

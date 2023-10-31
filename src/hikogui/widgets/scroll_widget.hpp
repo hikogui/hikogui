@@ -13,7 +13,9 @@
 #include "scroll_aperture_widget.hpp"
 #include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
+#include <coroutine>
 
 hi_export_module(hikogui.widgets.scroll_widget);
 

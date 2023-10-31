@@ -5,6 +5,7 @@
 module;
 #include "../macros.hpp"
 
+#include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 
 export module hikogui_GFX : gfx_pipeline_image_intf;

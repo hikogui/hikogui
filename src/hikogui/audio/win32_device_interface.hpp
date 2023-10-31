@@ -11,6 +11,7 @@
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <string>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.win32_device_interface);
 

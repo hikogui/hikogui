@@ -10,6 +10,8 @@ module;
 
 #include <tuple>
 #include <vector>
+#include <iterator>
+#include <algorithm>
 
 export module hikogui_unicode_unicode_sentence_break;
 import hikogui_unicode_ucd_sentence_break_properties;

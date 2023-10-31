@@ -11,6 +11,7 @@
 #include <vector>
 #include <functional>
 #include <tuple>
+#include <mutex>
 
 hi_export_module(hikogui.observer.group_ptr);
 

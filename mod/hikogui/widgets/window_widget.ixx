@@ -9,8 +9,10 @@
 module;
 #include "../macros.hpp"
 
+#include <coroutine>
 
 export module hikogui_widgets_window_widget;
+import hikogui_coroutine;
 import hikogui_l10n;
 import hikogui_widgets_grid_widget;
 import hikogui_widgets_system_menu_widget;

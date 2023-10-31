@@ -10,6 +10,7 @@ module;
 
 #include <algorithm>
 #include <vector>
+#include <iterator>
 
 export module hikogui_unicode_unicode_word_break;
 import hikogui_unicode_ucd_general_categories;

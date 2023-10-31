@@ -9,6 +9,7 @@ module;
 #include <vector>
 #include <functional>
 #include <tuple>
+#include <mutex>
 
 export module hikogui_observer_group_ptr;
 import hikogui_concurrency;

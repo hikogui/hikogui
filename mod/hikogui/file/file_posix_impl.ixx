@@ -2,20 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#pragma once
-
-#include "file.hpp"
-#include "../telemetry/telemetry.hpp"
-#include "../utility/utility.hpp"
+module;
 #include "../macros.hpp"
+
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-hi_export_module(hikogui.file.file : impl);
+export module hikogui_file_file_impl;
+import hikogui_telemetry;
+import hikogui_utility;
 
-hi_export namespace hi::inline v1 {
+export namespace hi::inline v1 {
 
 File::File(std::filesystem::path const &path, AccessMode accessMode) : accessMode(accessMode), location(location)
 {

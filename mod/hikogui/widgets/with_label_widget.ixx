@@ -16,9 +16,11 @@ module;
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
 export module hikogui_widgets_with_label_widget;
 import hikogui_algorithm;
+import hikogui_coroutine;
 import hikogui_l10n;
 import hikogui_observer;
 import hikogui_widgets_button_delegate;

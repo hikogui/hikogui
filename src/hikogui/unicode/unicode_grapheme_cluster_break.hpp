@@ -8,6 +8,7 @@
 #include "unicode_break_opportunity.hpp"
 #include "../macros.hpp"
 #include <cstdint>
+#include <vector>
 
 hi_export_module(hikogui.unicode.unicode_grapheme_cluster_break);
 

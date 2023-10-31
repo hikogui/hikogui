@@ -7,6 +7,9 @@
 #include "../utility/utility.hpp"
 #include "interval.hpp"
 #include "../macros.hpp"
+#include <type_traits>
+#include <compare>
+#include <stdexcept>
 
 hi_export_module(hikogui.numeric.bound_integer);
 

@@ -6,10 +6,13 @@
 
 #include "../utility/utility.hpp"
 #include "../coroutine/coroutine.hpp"
+#include "../macros.hpp"
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <ostream>
 #include <array>
+#include <coroutine>
 
 hi_export_module(hikogui.font.font_weight);
 
@@ -67,9 +70,9 @@ hi_export [[nodiscard]] constexpr font_weight font_weight_from_int(numeric_integ
 
 hi_export [[nodiscard]] constexpr font_weight font_weight_from_string(std::string_view rhs)
 {
-    try {
-        return font_weight_metadata.at(rhs);
-    } catch (...) {
+    if (auto weight = font_weight_metadata.at_if(rhs)) {
+        return *weight;
+    } else {
         throw parse_error(std::format("Unknown font-weight {}", rhs));
     }
 }

@@ -15,6 +15,7 @@
 #include "../macros.hpp"
 #include <algorithm>
 #include <vector>
+#include <iterator>
 
 hi_export_module(hikogui.unicode.unicode_word_break);
 

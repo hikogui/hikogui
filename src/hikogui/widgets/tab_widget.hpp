@@ -11,7 +11,9 @@
 #include "widget.hpp"
 #include "grid_widget.hpp"
 #include "tab_delegate.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
+#include <coroutine>
 
 hi_export_module(hikogui.widgets.tab_widget);
 

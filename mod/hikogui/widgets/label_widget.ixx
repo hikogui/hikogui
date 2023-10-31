@@ -14,8 +14,10 @@ module;
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
 export module hikogui_widgets_label_widget;
+import hikogui_coroutine;
 import hikogui_geometry;
 import hikogui_l10n;
 import hikogui_layout;

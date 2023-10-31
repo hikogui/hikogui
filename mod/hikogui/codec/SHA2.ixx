@@ -9,6 +9,9 @@ module;
 #include <array>
 #include <cstdint>
 #include <span>
+#include <string_view>
+#include <exception>
+#include <string>
 
 export module hikogui_codec_SHA2;
 import hikogui_container;

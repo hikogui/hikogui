@@ -11,6 +11,8 @@ module;
 #include <string>
 #include <string_view>
 #include <bit>
+#include <iterator>
+#include <format>
 
 export module hikogui_codec_base_n;
 import hikogui_container;

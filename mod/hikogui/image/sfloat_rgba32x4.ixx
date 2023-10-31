@@ -9,6 +9,7 @@
 module;
 #include "../macros.hpp"
 
+#include <algorithm>
 #include <array>
 
 export module hikogui_image_sfloat_rgba32x4;

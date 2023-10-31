@@ -17,6 +17,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 hi_export_module(hikogui.GFX : gfx_surface_impl);
 

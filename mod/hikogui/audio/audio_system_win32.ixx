@@ -7,6 +7,7 @@ module;
 #include "../win32_headers.hpp"
 
 #include <memory>
+#include <coroutine>
 
 export module hikogui_audio_audio_system_win32;
 import hikogui_audio_audio_device_win32;

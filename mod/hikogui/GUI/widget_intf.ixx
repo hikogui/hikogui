@@ -3,15 +3,17 @@
 module;
 #include "../macros.hpp"
 
+#include <coroutine>
 
 export module hikogui_GUI : widget_intf;
 import hikogui_GFX;
+import hikogui_coroutine;
 import hikogui_layout;
 import hikogui_telemetry;
+import : widget_id;
+import : hitbox;
 import : keyboard_focus_group;
 import : widget_layout;
-import : hitbox;
-import : widget_id;
 
 export namespace hi { inline namespace v1 {
 class gui_window;

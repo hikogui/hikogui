@@ -8,6 +8,7 @@
 #include "../container/container.hpp"
 #include "../image/image.hpp"
 #include "../macros.hpp"
+#include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <span>
 

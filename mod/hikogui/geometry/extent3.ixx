@@ -11,6 +11,8 @@ module;
 
 #include <compare>
 #include <concepts>
+#include <format>
+#include <ostream>
 
 export module hikogui_geometry : extent3;
 import hikogui_SIMD;

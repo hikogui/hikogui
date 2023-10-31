@@ -32,7 +32,7 @@ public:
     virtual void log() const noexcept = 0;
 
 protected:
-    hi_inline static thread_local trace_base *_top = nullptr;
+    inline static thread_local trace_base *_top = nullptr;
 
     time_stamp_count _time_stamp;
     trace_base *_next = nullptr;

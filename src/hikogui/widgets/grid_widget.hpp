@@ -10,8 +10,10 @@
 
 #include "widget.hpp"
 #include "../layout/layout.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
+#include <coroutine>
 
 hi_export_module(hikogui.widgets.grid_widget);
 

@@ -7,6 +7,7 @@
 #include "../utility/utility.hpp"
 #include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <exception>
 #include <format>
 #include <ostream>
 

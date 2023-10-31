@@ -10,6 +10,7 @@
 #include "../file/file.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <vulkan/vulkan.hpp>
 #include <span>
 
 hi_export_module(hikogui.GFX : gfx_device_impl);

@@ -11,6 +11,9 @@
 #include <array>
 #include <cstdint>
 #include <span>
+#include <string_view>
+#include <exception>
+#include <string>
 
 hi_export_module(hikogui.codec.SHA2);
 

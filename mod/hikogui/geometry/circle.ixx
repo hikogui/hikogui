@@ -10,9 +10,9 @@ module;
 
 
 export module hikogui_geometry : circle;
-import : point2;
 import : quad;
 import : aarectangle;
+import : point2;
 
 export namespace hi { inline namespace v1 {
 

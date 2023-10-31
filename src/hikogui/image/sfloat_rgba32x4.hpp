@@ -11,6 +11,7 @@
 #include "../SIMD/SIMD.hpp"
 #include "../geometry/geometry.hpp"
 #include "../macros.hpp"
+#include <algorithm>
 #include <array>
 
 hi_export_module(hikogui.image.sfloat_rgba32x4);

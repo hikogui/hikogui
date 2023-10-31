@@ -5,6 +5,7 @@
 module;
 #include "../macros.hpp"
 
+#include <cmath>
 
 export module hikogui_geometry : rotate3;
 import : vector3;

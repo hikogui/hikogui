@@ -8,6 +8,7 @@
 #include "../container/container.hpp"
 #include "../macros.hpp"
 #include <vma/vk_mem_alloc.h>
+#include <vulkan/vulkan.hpp>
 #include <span>
 
 hi_export_module(hikogui.GFX : gfx_pipeline_tone_mapper_intf);
