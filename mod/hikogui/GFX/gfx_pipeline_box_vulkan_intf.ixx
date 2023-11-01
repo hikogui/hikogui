@@ -10,9 +10,9 @@ module;
 #include <span>
 
 export module hikogui_GFX : gfx_pipeline_box_intf;
+import : gfx_pipeline_intf;
 import hikogui_container;
 import hikogui_image;
-import : gfx_pipeline_intf;
 
 export namespace hi { inline namespace v1 {
 

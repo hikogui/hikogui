@@ -9,9 +9,9 @@ module;
 #include <unordered_map>
 
 export module hikogui_GUI : keyboard_key;
-import hikogui_utility;
 import : keyboard_modifiers;
 import : keyboard_virtual_key_intf;
+import hikogui_utility;
 
 export namespace hi::inline v1 {
 

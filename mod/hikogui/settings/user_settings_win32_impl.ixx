@@ -8,9 +8,9 @@ module;
 #include <system_error>
 
 export module hikogui_settings_user_settings : impl;
+import : intf;
 import hikogui_path;
 import hikogui_win32;
-import : intf;
 
 export namespace hi { inline namespace v1 {
 

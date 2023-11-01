@@ -10,27 +10,27 @@ module;
 #include <exception>
 
 export module hikogui_geometry : transform;
-import : point2;
-import : extent3;
 import : aarectangle;
 import : circle;
-import : vector3;
-import : translate2;
-import : matrix2;
-import : line_segment;
-import : translate3;
-import : vector2;
-import : rotate3;
+import : corner_radii;
 import : extent2;
-import : quad;
+import : extent3;
+import : line_segment;
+import : matrix2;
+import : matrix3;
 import : perspective;
-import : scale3;
+import : point2;
+import : point3;
+import : quad;
 import : rectangle;
 import : rotate2;
-import : point3;
-import : corner_radii;
-import : matrix3;
+import : rotate3;
 import : scale2;
+import : scale3;
+import : translate2;
+import : translate3;
+import : vector2;
+import : vector3;
 
 export namespace hi { inline namespace v1 {
 

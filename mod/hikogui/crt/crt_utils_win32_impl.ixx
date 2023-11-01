@@ -9,6 +9,7 @@ module;
 
 
 export module hikogui_crt_crt_utils : impl;
+import : intf;
 import hikogui_char_maps;
 import hikogui_concurrency;
 import hikogui_console;
@@ -16,7 +17,6 @@ import hikogui_crt_terminate;
 import hikogui_telemetry;
 import hikogui_time;
 import hikogui_utility;
-import : intf;
 
 hi_warning_push();
 // C26400: Do not assign the result of an allocation or a function cal with an owner<T> return value to... (i11)

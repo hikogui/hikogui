@@ -7,8 +7,8 @@ module;
 
 
 export module hikogui_dispatch_awaitable_timer : impl;
-import hikogui_dispatch_loop;
 import : intf;
+import hikogui_dispatch_loop;
 
 export namespace hi::inline v1 {
 

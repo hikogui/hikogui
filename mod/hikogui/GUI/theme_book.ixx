@@ -11,8 +11,8 @@ module;
 #include <filesystem>
 
 export module hikogui_GUI : theme_book;
-import hikogui_settings;
 import : theme;
+import hikogui_settings;
 
 export namespace hi::inline v1 {
 

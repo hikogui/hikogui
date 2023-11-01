@@ -9,9 +9,9 @@ module;
 
 
 export module hikogui_memory_locked_memory_allocator : impl;
+import : intf;
 import hikogui_telemetry;
 import hikogui_utility;
-import : intf;
 
 export namespace hi::inline v1 {
 

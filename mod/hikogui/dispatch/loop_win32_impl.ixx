@@ -46,9 +46,9 @@ module;
 #include <chrono>
 
 export module hikogui_dispatch_loop : impl;
+import : intf;
 import hikogui_telemetry;
 import hikogui_utility;
-import : intf;
 
 export namespace hi::inline v1 {
 

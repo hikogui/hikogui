@@ -32,8 +32,8 @@ module;
 #endif
 
 export module hikogui_SIMD : native_i64x4_avx2;
-import hikogui_utility;
 import : native_simd_utility;
+import hikogui_utility;
 
 
 export namespace hi { inline namespace v1 {

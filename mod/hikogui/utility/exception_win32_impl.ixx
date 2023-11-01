@@ -12,9 +12,9 @@ module;
 #include <format>
 
 export module hikogui_utility_exception : impl;
+import : intf;
 import hikogui_utility_defer;
 import hikogui_win32;
-import : intf;
 
 export namespace hi { inline namespace v1 {
 

@@ -11,9 +11,9 @@ module;
 #include <string_view>
 
 export module hikogui_console_dialog : impl;
+import : intf;
 import hikogui_char_maps;
 import hikogui_utility;
-import : intf;
 
 export namespace hi { inline namespace v1 {
 

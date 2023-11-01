@@ -29,12 +29,12 @@ module;
 #endif
 
 export module hikogui_SIMD : native_simd_conversions_x86;
-import : native_i32x4_sse2;
 import : native_f32x4_sse;
-import : native_u32x4_sse2;
-import : native_simd_utility;
 import : native_f64x4_avx;
+import : native_i32x4_sse2;
 import : native_i64x4_avx2;
+import : native_simd_utility;
+import : native_u32x4_sse2;
 
 export namespace hi { inline namespace v1 {
 

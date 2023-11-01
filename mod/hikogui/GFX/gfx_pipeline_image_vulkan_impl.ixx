@@ -8,8 +8,8 @@ module;
 #include <vulkan/vulkan.hpp>
 
 export module hikogui_GFX : gfx_pipeline_image_impl;
-import : gfx_pipeline_image_intf;
 import : gfx_device_impl;
+import : gfx_pipeline_image_intf;
 
 export namespace hi { inline namespace v1 {
 

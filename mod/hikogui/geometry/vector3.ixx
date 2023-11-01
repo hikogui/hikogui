@@ -10,8 +10,8 @@ module;
 #include <ostream>
 
 export module hikogui_geometry : vector3;
-import hikogui_SIMD;
 import : vector2;
+import hikogui_SIMD;
 
 export namespace hi { inline namespace v1 {
 

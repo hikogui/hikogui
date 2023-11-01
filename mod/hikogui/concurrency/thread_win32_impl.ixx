@@ -13,10 +13,10 @@ module;
 #include <unordered_map>
 
 export module hikogui_concurrency_thread : impl;
+import : intf;
 import hikogui_char_maps;
 import hikogui_concurrency_unfair_mutex;
 import hikogui_utility;
-import : intf;
 
 export namespace hi::inline v1 {
 

@@ -13,8 +13,8 @@ module;
 #include <exception>
 
 export module hikogui_geometry : matrix2;
-import : rotate2;
 import : aarectangle;
+import : rotate2;
 import : scale2;
 import : translate2;
 

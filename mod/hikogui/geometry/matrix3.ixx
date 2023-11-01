@@ -13,10 +13,10 @@ module;
 #include <exception>
 
 export module hikogui_geometry : matrix3;
-import : translate3;
-import : scale3;
 import : matrix2;
 import : rotate3;
+import : scale3;
+import : translate3;
 
 export namespace hi { inline namespace v1 {
 

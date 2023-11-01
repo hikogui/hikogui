@@ -12,11 +12,11 @@ module;
 #include <coroutine>
 
 export module hikogui_path_path_location : impl;
+import : intf;
 import hikogui_coroutine;
 import hikogui_metadata;
 import hikogui_telemetry;
 import hikogui_utility;
-import : intf;
 
 export namespace hi::inline v1 {
 

@@ -87,7 +87,8 @@ class SourceCode (object):
                     else:
                         fd.write("export module {};{}".format(module_name_str, self.nl))
 
-                    sorted_imports = sorted(self.imports, key = lambda x: "{}:{}:{}".format("0" if x[1] is None else "1", x[0], x[1] and ""))
+                    sorted_imports = list(self.imports)
+                    sorted_imports.sort(key = lambda x: (x[1] is None, x[0], x[1] or ""))
                     for module_name, fragment_name, export in sorted_imports:
                         export_str = "export " if export else ""
                         module_name_str = module_name.replace(".", "_")

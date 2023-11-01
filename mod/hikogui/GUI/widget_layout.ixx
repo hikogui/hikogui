@@ -11,12 +11,12 @@ module;
 
 
 export module hikogui_GUI : widget_layout;
+import : gui_window_size;
 import hikogui_geometry;
 import hikogui_layout;
 import hikogui_settings;
 import hikogui_time;
 import hikogui_utility;
-import : gui_window_size;
 
 export namespace hi { inline namespace v1 {
 

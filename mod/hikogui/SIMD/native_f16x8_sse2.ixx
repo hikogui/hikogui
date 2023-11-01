@@ -30,8 +30,8 @@ module;
 #endif
 
 export module hikogui_SIMD : native_f16x8_sse2;
-import hikogui_utility;
 import : native_simd_utility;
+import hikogui_utility;
 
 
 export namespace hi {

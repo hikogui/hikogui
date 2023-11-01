@@ -5,6 +5,7 @@
 module;
 #include "../macros.hpp"
 
+#include <compare>
 #include <utility>
 #include <array>
 #include <atomic>
@@ -13,6 +14,7 @@ module;
 #include <algorithm>
 #include <numeric>
 #include <mutex>
+#include <chrono>
 
 export module hikogui_time_time_stamp_utc;
 import hikogui_concurrency;

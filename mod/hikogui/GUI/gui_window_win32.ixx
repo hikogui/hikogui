@@ -10,15 +10,15 @@ module;
 #include <unordered_map>
 
 export module hikogui_GUI : gui_window;
-import hikogui_GFX;
-import hikogui_crt;
-import : keyboard_bindings;
-import : hitbox;
 import : gui_event;
 import : gui_window_size;
+import : hitbox;
+import : keyboard_bindings;
+import : mouse_cursor;
 import : theme_book;
 import : widget_intf;
-import : mouse_cursor;
+import hikogui_GFX;
+import hikogui_crt;
 
 export namespace hi::inline v1 {
 

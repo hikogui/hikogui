@@ -9,8 +9,8 @@ module;
 #include <exception>
 
 export module hikogui_utility_debugger : impl;
-import hikogui_utility_exception;
 import : intf;
+import hikogui_utility_exception;
 
 hi_warning_push();
 // C6320: Exception-filter expression is the constant EXCEPTION_EXECUTE_HANDLER.

@@ -13,9 +13,9 @@ module;
 #include <iostream>
 
 export module hikogui_console_print : impl;
+import : intf;
 import hikogui_char_maps;
 import hikogui_utility;
-import : intf;
 
 export namespace hi::inline v1 {
 

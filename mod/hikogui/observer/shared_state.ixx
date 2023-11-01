@@ -8,8 +8,8 @@ module;
 #include <memory>
 
 export module hikogui_observer : shared_state;
-import hikogui_utility;
 import : observed_value;
+import hikogui_utility;
 
 export namespace hi::inline v1 {
 

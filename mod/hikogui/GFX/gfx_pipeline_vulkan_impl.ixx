@@ -10,10 +10,10 @@ module;
 #include <vulkan/vulkan.hpp>
 
 export module hikogui_GFX : gfx_pipeline_impl;
-import hikogui_telemetry;
-import : gfx_surface_intf;
 import : gfx_device_impl;
 import : gfx_pipeline_intf;
+import : gfx_surface_intf;
+import hikogui_telemetry;
 
 export namespace hi { inline namespace v1 {
 

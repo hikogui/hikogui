@@ -10,9 +10,9 @@ module;
 #include <span>
 
 export module hikogui_GFX : gfx_pipeline_SDF_intf;
+import : gfx_pipeline_intf;
 import hikogui_container;
 import hikogui_font;
-import : gfx_pipeline_intf;
 
 export namespace hi { inline namespace v1 {
 

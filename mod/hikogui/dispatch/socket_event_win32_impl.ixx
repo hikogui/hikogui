@@ -10,8 +10,8 @@ module;
 #include <exception>
 
 export module hikogui_dispatch_socket_event : impl;
-import hikogui_utility;
 import : intf;
+import hikogui_utility;
 
 export namespace hi::inline v1 {
 

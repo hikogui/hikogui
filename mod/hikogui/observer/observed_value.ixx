@@ -9,9 +9,9 @@ module;
 #include <memory>
 
 export module hikogui_observer : observed_value;
+import : observed;
 import hikogui_concurrency;
 import hikogui_utility;
-import : observed;
 
 
 export namespace hi::inline v1 {

@@ -9,8 +9,8 @@ module;
 #include <numeric>
 
 export module hikogui_i18n_language_tag : impl;
-import hikogui_utility;
 import : intf;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 namespace detail {

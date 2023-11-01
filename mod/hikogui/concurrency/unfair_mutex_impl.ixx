@@ -17,9 +17,9 @@ module;
 #include <algorithm>
 
 export module hikogui_concurrency_unfair_mutex : impl;
+import : intf;
 import hikogui_concurrency_global_state;
 import hikogui_utility;
-import : intf;
 
 export namespace hi { inline namespace v1 {
 namespace detail {

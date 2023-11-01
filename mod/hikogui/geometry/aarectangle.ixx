@@ -14,14 +14,13 @@ module;
 #include <exception>
 
 export module hikogui_geometry : aarectangle;
-import hikogui_SIMD;
-import hikogui_concurrency_unfair_mutex;
-import hikogui_concurrency;
-import hikogui_utility;
+import : alignment;
 import : extent2;
 import : point2;
-import : alignment;
 import : point3;
+import hikogui_SIMD;
+import hikogui_concurrency;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 

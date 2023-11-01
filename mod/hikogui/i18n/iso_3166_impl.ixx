@@ -8,9 +8,9 @@ module;
 #include <array>
 
 export module hikogui_i18n_iso_3166 : impl;
+import : intf;
 import hikogui_algorithm;
 import hikogui_utility;
-import : intf;
 
 export namespace hi::inline v1 {
 namespace detail {

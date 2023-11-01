@@ -9,9 +9,9 @@ module;
 #include <exception>
 
 export module hikogui_geometry : rectangle;
-import hikogui_SIMD;
-import : alignment;
 import : aarectangle;
+import : alignment;
+import hikogui_SIMD;
 
 export namespace hi { inline namespace v1 {
 

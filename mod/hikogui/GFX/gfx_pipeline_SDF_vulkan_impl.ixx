@@ -8,10 +8,10 @@ module;
 #include <vulkan/vulkan.hpp>
 
 export module hikogui_GFX : gfx_pipeline_SDF_impl;
-import : gfx_surface_intf;
 import : draw_context_intf;
 import : gfx_device_impl;
 import : gfx_pipeline_SDF_intf;
+import : gfx_surface_intf;
 
 export namespace hi { inline namespace v1 {
 

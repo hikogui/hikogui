@@ -10,8 +10,8 @@ module;
 #include <format>
 
 export module hikogui_random_seed : impl;
-import hikogui_utility;
 import : intf;
+import hikogui_utility;
 
 export namespace hi::inline v1 {
 

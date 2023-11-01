@@ -9,11 +9,11 @@ module;
 
 
 export module hikogui_settings_os_settings : impl;
+import : intf;
 import hikogui_path;
 import hikogui_telemetry;
 import hikogui_utility;
 import hikogui_win32;
-import : intf;
 
 export namespace hi { inline namespace v1 {
 

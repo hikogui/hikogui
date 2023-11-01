@@ -9,9 +9,9 @@ module;
 #include <tuple>
 
 export module hikogui_telemetry : trace;
+import : counters;
 import hikogui_time;
 import hikogui_utility;
-import : counters;
 
 export namespace hi::inline v1 {
 

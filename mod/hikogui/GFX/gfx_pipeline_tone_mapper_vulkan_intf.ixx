@@ -10,8 +10,8 @@ module;
 #include <span>
 
 export module hikogui_GFX : gfx_pipeline_tone_mapper_intf;
-import hikogui_container;
 import : gfx_pipeline_intf;
+import hikogui_container;
 
 export namespace hi { inline namespace v1 {
 

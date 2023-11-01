@@ -10,9 +10,9 @@ module;
 #include <compare>
 
 export module hikogui_GUI : hitbox;
+import : widget_id;
 import hikogui_geometry;
 import hikogui_utility;
-import : widget_id;
 
 export namespace hi::inline v1 {
 

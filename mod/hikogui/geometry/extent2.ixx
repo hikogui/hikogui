@@ -16,9 +16,9 @@ module;
 #include <exception>
 
 export module hikogui_geometry : extent2;
+import : vector2;
 import hikogui_SIMD;
 import hikogui_utility;
-import : vector2;
 
 export namespace hi { inline namespace v1 {
 

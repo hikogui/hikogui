@@ -9,8 +9,8 @@ module;
 #include <exception>
 
 export module hikogui_geometry : scale2;
-import : vector2;
 import : extent2;
+import : vector2;
 
 export namespace hi { inline namespace v1 {
 

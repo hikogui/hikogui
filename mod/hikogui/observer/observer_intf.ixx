@@ -13,10 +13,10 @@ module;
 #include <memory>
 
 export module hikogui_observer : observer_intf;
-import hikogui_coroutine;
-import hikogui_utility;
 import : observed;
 import : observed_value;
+import hikogui_coroutine;
+import hikogui_utility;
 
 export namespace hi::inline v1 {
 

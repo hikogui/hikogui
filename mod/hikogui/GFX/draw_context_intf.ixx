@@ -7,6 +7,10 @@ module;
 
 
 export module hikogui_GFX : draw_context_intf;
+import : gfx_pipeline_SDF_intf;
+import : gfx_pipeline_box_intf;
+import : gfx_pipeline_image_intf;
+import : gfx_pipeline_override_intf;
 import hikogui_color;
 import hikogui_container;
 import hikogui_geometry;
@@ -14,10 +18,6 @@ import hikogui_settings;
 import hikogui_text;
 import hikogui_unicode;
 import hikogui_utility;
-import : gfx_pipeline_box_intf;
-import : gfx_pipeline_override_intf;
-import : gfx_pipeline_SDF_intf;
-import : gfx_pipeline_image_intf;
 
 export namespace hi { inline namespace v1 {
 class gfx_device;

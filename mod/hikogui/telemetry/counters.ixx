@@ -18,10 +18,10 @@ module;
 #include <mutex>
 
 export module hikogui_telemetry : counters;
+import : log;
 import hikogui_concurrency;
 import hikogui_time;
 import hikogui_utility;
-import : log;
 
 
 export namespace hi::inline v1 {

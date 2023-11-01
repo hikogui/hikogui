@@ -13,19 +13,19 @@ module;
 #include <memory>
 
 export module hikogui_GUI : gui_event;
+import : gui_event_type;
+import : gui_event_variant;
+import : hitbox;
+import : keyboard_focus_direction;
+import : keyboard_focus_group;
+import : keyboard_modifiers;
+import : keyboard_state;
+import : keyboard_virtual_key_intf;
+import : mouse_buttons;
+import : widget_id;
 import hikogui_geometry;
 import hikogui_time;
 import hikogui_unicode;
-import : gui_event_variant;
-import : hitbox;
-import : widget_id;
-import : keyboard_state;
-import : keyboard_modifiers;
-import : gui_event_type;
-import : keyboard_focus_group;
-import : keyboard_focus_direction;
-import : keyboard_virtual_key_intf;
-import : mouse_buttons;
 
 export namespace hi { inline namespace v1 {
 

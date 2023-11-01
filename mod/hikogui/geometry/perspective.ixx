@@ -8,8 +8,8 @@ module;
 #include <exception>
 
 export module hikogui_geometry : perspective;
-import hikogui_utility;
 import : matrix3;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 
