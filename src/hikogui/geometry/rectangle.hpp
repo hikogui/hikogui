@@ -9,6 +9,7 @@
 #include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <array>
+#include <exception>
 
 hi_export_module(hikogui.geometry : rectangle);
 

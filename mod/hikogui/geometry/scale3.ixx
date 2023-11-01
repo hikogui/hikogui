@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <algorithm>
+#include <exception>
 
 export module hikogui_geometry : scale3;
 import : scale2;

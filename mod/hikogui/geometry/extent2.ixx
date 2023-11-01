@@ -13,6 +13,7 @@ module;
 #include <concepts>
 #include <format>
 #include <ostream>
+#include <exception>
 
 export module hikogui_geometry : extent2;
 import hikogui_SIMD;

@@ -9,10 +9,12 @@
 module;
 #include "../macros.hpp"
 
+#include <cstddef>
+#include <exception>
 
 export module hikogui_geometry : line_segment;
-import : vector3;
 import : point3;
+import : vector3;
 
 export namespace hi {
 inline namespace v1 {

@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <concepts>
+#include <exception>
 
 export module hikogui_geometry : translate2;
 import : aarectangle;

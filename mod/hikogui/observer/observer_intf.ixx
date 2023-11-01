@@ -6,6 +6,11 @@ module;
 #include "../macros.hpp"
 
 #include <concepts>
+#include <utility>
+#include <format>
+#include <new>
+#include <algorithm>
+#include <memory>
 
 export module hikogui_observer : observer_intf;
 import hikogui_coroutine;

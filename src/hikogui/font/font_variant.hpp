@@ -6,8 +6,15 @@
 
 #include "font_weight.hpp"
 #include "font_style.hpp"
+#include "../utility/utility.hpp"
 #include "../coroutine/coroutine.hpp"
+#include "../macros.hpp"
 #include <coroutine>
+#include <string>
+#include <ostream>
+#include <format>
+#include <utility>
+#include <cstddef>
 
 hi_export_module(hikogui.font.font_variant);
 

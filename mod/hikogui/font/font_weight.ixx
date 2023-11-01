@@ -11,6 +11,7 @@ module;
 #include <ostream>
 #include <array>
 #include <coroutine>
+#include <format>
 
 export module hikogui_font_font_weight;
 import hikogui_coroutine;

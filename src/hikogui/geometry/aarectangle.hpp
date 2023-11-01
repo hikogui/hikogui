@@ -18,6 +18,7 @@
 #include "../macros.hpp"
 #include <concepts>
 #include <mutex>
+#include <exception>
 
 hi_export_module(hikogui.geometry : aarectangle);
 

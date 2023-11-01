@@ -5,9 +5,14 @@
 module;
 #include "../macros.hpp"
 
+#include <utility>
 #include <array>
 #include <atomic>
 #include <thread>
+#include <ranges>
+#include <algorithm>
+#include <numeric>
+#include <mutex>
 
 export module hikogui_time_time_stamp_utc;
 import hikogui_concurrency;
@@ -113,9 +118,9 @@ struct time_stamp_utc {
     static void adjust_for_drift() noexcept;
 
 private:
-    static std::jthread subsystem_thread;
-    static unfair_mutex mutex;
-    static std::array<std::atomic<utc_nanoseconds>, maximum_num_cpus> tsc_epochs = {};
+    inline static std::jthread subsystem_thread;
+    inline static unfair_mutex mutex;
+    inline static std::array<std::atomic<utc_nanoseconds>, maximum_num_cpus> tsc_epochs = {};
 
     static void subsystem_proc_frequency_calibration(std::stop_token stop_token)
     {

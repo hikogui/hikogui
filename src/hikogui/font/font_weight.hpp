@@ -13,6 +13,7 @@
 #include <ostream>
 #include <array>
 #include <coroutine>
+#include <format>
 
 hi_export_module(hikogui.font.font_weight);
 

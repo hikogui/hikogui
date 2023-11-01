@@ -9,9 +9,16 @@
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"
+#include <compare>
+#include <utility>
 #include <array>
 #include <atomic>
 #include <thread>
+#include <ranges>
+#include <algorithm>
+#include <numeric>
+#include <mutex>
+#include <chrono>
 
 hi_export_module(hikogui.time.time_stamp_utc);
 
@@ -113,9 +120,9 @@ struct time_stamp_utc {
     static void adjust_for_drift() noexcept;
 
 private:
-    static hi_inline std::jthread subsystem_thread;
-    static hi_inline unfair_mutex mutex;
-    static hi_inline std::array<std::atomic<utc_nanoseconds>, maximum_num_cpus> tsc_epochs = {};
+    inline static std::jthread subsystem_thread;
+    inline static unfair_mutex mutex;
+    inline static std::array<std::atomic<utc_nanoseconds>, maximum_num_cpus> tsc_epochs = {};
 
     static void subsystem_proc_frequency_calibration(std::stop_token stop_token)
     {

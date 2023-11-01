@@ -11,6 +11,8 @@
 #include "point3.hpp"
 #include "vector3.hpp"
 #include "../macros.hpp"
+#include <cstddef>
+#include <exception>
 
 hi_export_module(hikogui.geometry : line_segment);
 

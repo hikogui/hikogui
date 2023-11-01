@@ -8,6 +8,7 @@
 #include "point3.hpp"
 #include "../macros.hpp"
 #include <concepts>
+#include <exception>
 
 hi_export_module(hikogui.geometry : translate3);
 

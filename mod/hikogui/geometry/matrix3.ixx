@@ -10,12 +10,13 @@ module;
 #include "../macros.hpp"
 
 #include <array>
+#include <exception>
 
 export module hikogui_geometry : matrix3;
-import : scale3;
-import : rotate3;
-import : matrix2;
 import : translate3;
+import : scale3;
+import : matrix2;
+import : rotate3;
 
 export namespace hi { inline namespace v1 {
 

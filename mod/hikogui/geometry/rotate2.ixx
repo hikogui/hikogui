@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <cmath>
+#include <exception>
 
 export module hikogui_geometry : rotate2;
 import hikogui_SIMD;

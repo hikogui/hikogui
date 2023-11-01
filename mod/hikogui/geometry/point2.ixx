@@ -7,6 +7,7 @@ module;
 
 #include <format>
 #include <concepts>
+#include <exception>
 
 export module hikogui_geometry : point2;
 import hikogui_SIMD;

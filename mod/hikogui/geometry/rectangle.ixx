@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <array>
+#include <exception>
 
 export module hikogui_geometry : rectangle;
 import hikogui_SIMD;

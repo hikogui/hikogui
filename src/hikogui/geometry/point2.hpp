@@ -11,6 +11,7 @@
 #include "../macros.hpp"
 #include <format>
 #include <concepts>
+#include <exception>
 
 hi_export_module(hikogui.geometry : point2);
 

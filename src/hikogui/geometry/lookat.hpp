@@ -11,6 +11,7 @@
 #include "matrix3.hpp"
 #include "point3.hpp"
 #include "../macros.hpp"
+#include <exception>
 
 hi_export_module(hikogui.geometry : lookat);
 

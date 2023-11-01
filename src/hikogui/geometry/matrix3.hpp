@@ -14,6 +14,7 @@
 #include "rotate3.hpp"
 #include "../macros.hpp"
 #include <array>
+#include <exception>
 
 hi_export_module(hikogui.geometry : matrix3);
 

@@ -28,6 +28,7 @@
 #include "../macros.hpp"
 #include <type_traits>
 #include <functional>
+#include <exception>
 
 hi_export_module(hikogui.geometry : transform);
 

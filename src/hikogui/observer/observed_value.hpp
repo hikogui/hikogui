@@ -8,6 +8,8 @@
 #include "../concurrency/concurrency.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <concepts>
+#include <memory>
 
 hi_export_module(hikogui.observer : observed_value);
 

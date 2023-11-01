@@ -7,6 +7,7 @@
 #include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <cmath>
+#include <exception>
 
 hi_export_module(hikogui.geometry : rotate2);
 

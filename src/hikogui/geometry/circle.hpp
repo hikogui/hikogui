@@ -11,6 +11,7 @@
 #include "aarectangle.hpp"
 #include "quad.hpp"
 #include "../macros.hpp"
+#include <exception>
 
 hi_export_module(hikogui.geometry : circle);
 

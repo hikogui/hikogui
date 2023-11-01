@@ -8,8 +8,8 @@ module;
 #include <vulkan/vulkan.hpp>
 
 export module hikogui_GFX : gfx_pipeline_tone_mapper_impl;
-import : draw_context_intf;
 import : gfx_surface_intf;
+import : draw_context_intf;
 import : gfx_device_impl;
 import : gfx_pipeline_tone_mapper_intf;
 

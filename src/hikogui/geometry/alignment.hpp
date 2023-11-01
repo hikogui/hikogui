@@ -12,6 +12,7 @@
 #include "../macros.hpp"
 #include <optional>
 #include <algorithm>
+#include <exception>
 
 hi_export_module(hikogui.geometry : alignment);
 

@@ -8,10 +8,11 @@
 module;
 #include "../macros.hpp"
 
+#include <exception>
 
 export module hikogui_geometry : circle;
-import : quad;
 import : aarectangle;
+import : quad;
 import : point2;
 
 export namespace hi { inline namespace v1 {

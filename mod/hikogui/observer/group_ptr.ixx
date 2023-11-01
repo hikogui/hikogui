@@ -12,6 +12,7 @@ module;
 #include <mutex>
 
 export module hikogui_observer_group_ptr;
+import hikogui_concurrency_unfair_mutex;
 import hikogui_concurrency;
 import hikogui_utility;
 

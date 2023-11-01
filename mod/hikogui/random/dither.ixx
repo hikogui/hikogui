@@ -5,8 +5,10 @@
 module;
 #include "../macros.hpp"
 
+#include <iterator>
 
 export module hikogui_random_dither;
+import hikogui_SIMD;
 import hikogui_random_xorshift128p;
 import hikogui_utility;
 

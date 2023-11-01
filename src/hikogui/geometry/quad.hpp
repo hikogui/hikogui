@@ -12,6 +12,7 @@
 #include "rectangle.hpp"
 #include "../macros.hpp"
 #include <tuple>
+#include <exception>
 
 hi_export_module(hikogui.geometry : quad);
 

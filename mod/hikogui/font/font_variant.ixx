@@ -3,13 +3,20 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 module;
+#include "../macros.hpp"
 
 #include <coroutine>
+#include <string>
+#include <ostream>
+#include <format>
+#include <utility>
+#include <cstddef>
 
 export module hikogui_font_font_variant;
 import hikogui_coroutine;
 import hikogui_font_font_style;
 import hikogui_font_font_weight;
+import hikogui_utility;
 
 export namespace hi::inline v1 {
 

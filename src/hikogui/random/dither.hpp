@@ -5,8 +5,10 @@
 #pragma once
 
 #include "xorshift128p.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <iterator>
 
 hi_export_module(hikogui.random.dither);
 

@@ -6,10 +6,11 @@ module;
 #include "../macros.hpp"
 
 #include <concepts>
+#include <exception>
 
 export module hikogui_geometry : translate3;
-import : translate2;
 import : point3;
+import : translate2;
 
 export namespace hi { inline namespace v1 {
 

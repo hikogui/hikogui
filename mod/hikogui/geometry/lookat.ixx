@@ -9,10 +9,11 @@
 module;
 #include "../macros.hpp"
 
+#include <exception>
 
 export module hikogui_geometry : lookat;
-import : matrix3;
 import : point3;
+import : matrix3;
 
 export namespace hi { inline namespace v1 {
 

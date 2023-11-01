@@ -10,6 +10,7 @@ module;
 #include "../macros.hpp"
 
 #include <cstddef>
+#include <exception>
 
 export module hikogui_geometry : corner_radii;
 import hikogui_SIMD;

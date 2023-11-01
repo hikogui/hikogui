@@ -17,6 +17,7 @@
 #include <concepts>
 #include <format>
 #include <ostream>
+#include <exception>
 
 hi_export_module(hikogui.geometry : extent3);
 

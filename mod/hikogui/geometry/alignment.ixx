@@ -11,6 +11,7 @@ module;
 
 #include <optional>
 #include <algorithm>
+#include <exception>
 
 export module hikogui_geometry : alignment;
 import hikogui_utility;

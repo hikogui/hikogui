@@ -13,9 +13,9 @@ module;
 export module hikogui_skeleton : parse_context;
 import hikogui_algorithm;
 import hikogui_formula;
-import : top_node;
 import : string_node;
 import : do_node;
+import : top_node;
 
 export namespace hi::inline v1 {
 

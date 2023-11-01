@@ -7,6 +7,7 @@
 #include "matrix3.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <exception>
 
 hi_export_module(hikogui.geometry : perspective);
 

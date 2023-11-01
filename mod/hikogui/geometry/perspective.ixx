@@ -5,6 +5,7 @@
 module;
 #include "../macros.hpp"
 
+#include <exception>
 
 export module hikogui_geometry : perspective;
 import hikogui_utility;

@@ -7,13 +7,14 @@ module;
 #include "../macros.hpp"
 
 #include <tuple>
+#include <exception>
 
 export module hikogui_geometry : quad;
 import : extent3;
-import : point3;
-import : rectangle;
 import : aarectangle;
 import : vector3;
+import : rectangle;
+import : point3;
 
 export namespace hi::inline v1 {
 

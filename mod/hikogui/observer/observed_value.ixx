@@ -5,6 +5,8 @@
 module;
 #include "../macros.hpp"
 
+#include <concepts>
+#include <memory>
 
 export module hikogui_observer : observed_value;
 import hikogui_concurrency;

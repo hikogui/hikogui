@@ -7,12 +7,13 @@ module;
 
 #include <format>
 #include <concepts>
+#include <exception>
 
 export module hikogui_geometry : point3;
 import hikogui_SIMD;
 import hikogui_utility;
-import : extent3;
 import : point2;
+import : extent3;
 import : vector3;
 
 export namespace hi::inline v1 {

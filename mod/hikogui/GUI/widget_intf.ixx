@@ -10,10 +10,10 @@ import hikogui_GFX;
 import hikogui_coroutine;
 import hikogui_layout;
 import hikogui_telemetry;
-import : widget_id;
 import : hitbox;
-import : keyboard_focus_group;
 import : widget_layout;
+import : keyboard_focus_group;
+import : widget_id;
 
 export namespace hi { inline namespace v1 {
 class gui_window;

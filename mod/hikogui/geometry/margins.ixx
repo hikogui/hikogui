@@ -10,6 +10,7 @@ module;
 #include "../macros.hpp"
 
 #include <concepts>
+#include <exception>
 
 export module hikogui_geometry : margins;
 import hikogui_SIMD;

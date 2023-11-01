@@ -10,6 +10,11 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <concepts>
+#include <utility>
+#include <format>
+#include <new>
+#include <algorithm>
+#include <memory>
 
 hi_export_module(hikogui.observer : observer_intf);
 
