@@ -9,6 +9,7 @@ module;
 
 export module hikogui_observer : shared_state;
 import : observed_value;
+import hikogui_concurrency_thread; // XXX #616
 import hikogui_utility;
 
 export namespace hi::inline v1 {

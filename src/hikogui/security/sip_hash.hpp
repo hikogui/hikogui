@@ -10,6 +10,7 @@
 #include <string_view>
 #include <string>
 #include <span>
+#include <bit>
 
 hi_export_module(hikogui.security.sip_hash);
 
@@ -238,7 +239,7 @@ private:
 
 namespace detail {
 template<size_t C, size_t D>
-static hi_inline sip_hash sip_hash_prototype = sip_hash<C, D>(sip_hash_seed_tag{});
+hi_inline sip_hash sip_hash_prototype = sip_hash<C, D>(sip_hash_seed_tag{});
 }
 
 template<size_t C, size_t D>

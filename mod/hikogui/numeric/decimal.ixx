@@ -578,10 +578,11 @@ struct std::hash<hi::decimal> {
     }
 };
 
-template<typename CharT>
-struct std::formatter<hi::decimal, CharT> : std::formatter<double, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::decimal, char> : std::formatter<double, char> {
     auto format(hi::decimal const& t, auto& fc) const
     {
-        return std::formatter<double, CharT>::format(static_cast<double>(t), fc);
+        return std::formatter<double, char>::format(static_cast<double>(t), fc);
     }
 };

@@ -10,11 +10,15 @@ module;
 #include <concepts>
 #include <vector>
 #include <memory>
+#include <chrono>
+#include <thread>
 
 export module hikogui_dispatch_loop : intf;
+import hikogui_concurrency;
 import hikogui_container;
 import hikogui_dispatch_function_timer;
 import hikogui_dispatch_socket_event;
+import hikogui_time;
 import hikogui_utility;
 
 export namespace hi::inline v1 {

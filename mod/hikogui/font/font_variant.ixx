@@ -25,7 +25,7 @@ export namespace hi::inline v1 {
  *
  * monospace, serif, condensed, expanded & optical-size are all part of the font family.
  */
-export class font_variant {
+class font_variant {
 public:
     [[nodiscard]] constexpr static size_t size() noexcept
     {

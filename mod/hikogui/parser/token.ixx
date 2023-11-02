@@ -176,11 +176,12 @@ export template<std::input_iterator It>
 
 }} // namespace hi::v1
 
-export template<typename CharT>
-struct std::formatter<hi::token, CharT> : std::formatter<std::string, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::token, char> : std::formatter<std::string, char> {
     auto format(hi::token const& t, auto& fc) const
     {
-        return std::formatter<std::string, CharT>::format(
+        return std::formatter<std::string, char>::format(
             std::format(
                 "{} \"{}\" {}:{}", hi::token::kind_type_metadata[t.kind], static_cast<std::string>(t), t.line_nr, t.column_nr),
             fc);

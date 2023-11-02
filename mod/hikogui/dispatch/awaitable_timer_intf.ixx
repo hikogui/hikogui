@@ -10,6 +10,7 @@ module;
 #include <functional>
 
 export module hikogui_dispatch_awaitable_timer : intf;
+import hikogui_concurrency;
 import hikogui_coroutine;
 import hikogui_time;
 

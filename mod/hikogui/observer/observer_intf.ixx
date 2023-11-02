@@ -15,6 +15,7 @@ module;
 export module hikogui_observer : observer_intf;
 import : observed;
 import : observed_value;
+import hikogui_concurrency_thread; // XXX #616
 import hikogui_coroutine;
 import hikogui_utility;
 

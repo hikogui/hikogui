@@ -14,6 +14,7 @@
 #include <concepts>
 #include <type_traits>
 #include <bit>
+#include <array>
 
 hi_export_module(hikogui.random.seed : intf);
 

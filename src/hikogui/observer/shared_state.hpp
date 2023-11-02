@@ -6,6 +6,7 @@
 
 #include "observed_value.hpp"
 #include "../utility/utility.hpp"
+#include "../concurrency/thread.hpp" // XXX #616
 #include "../macros.hpp"
 #include <memory>
 

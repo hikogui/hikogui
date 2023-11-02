@@ -29,10 +29,11 @@ std::ostream &operator<<(std::ostream &lhs, theme_mode rhs)
 
 } // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::theme_mode, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::theme_mode, char> : std::formatter<std::string_view, char> {
     auto format(hi::theme_mode const &t, auto &fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::theme_mode_metadata[t], fc);
+        return std::formatter<std::string_view, char>::format(hi::theme_mode_metadata[t], fc);
     }
 };

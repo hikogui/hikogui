@@ -17,6 +17,7 @@ module;
 #include <filesystem>
 
 export module hikogui_telemetry : log;
+import hikogui_char_maps; // XXX #619
 import hikogui_concurrency;
 import hikogui_console;
 import hikogui_container;
@@ -208,11 +209,11 @@ private:
      *
      * @note implementation is in counters.hpp
      */
-    inline static void log_thread_main(std::stop_token stop_token) noexcept;
+    static void log_thread_main(std::stop_token stop_token) noexcept;
 
     /** Deinitalize the logger system.
      */
-    inline static void subsystem_deinit() noexcept;
+    static void subsystem_deinit() noexcept;
 
     /** Initialize the log system.
      * This will start the logging threads which periodically

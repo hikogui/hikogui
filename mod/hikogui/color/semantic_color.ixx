@@ -98,11 +98,12 @@ constexpr auto semantic_color_metadata = enum_metadata{
 
 }} // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::semantic_color, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::semantic_color, char> : std::formatter<std::string_view, char> {
     auto format(hi::semantic_color const &t, auto &fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::semantic_color_metadata[t], fc);
+        return std::formatter<std::string_view, char>::format(hi::semantic_color_metadata[t], fc);
     }
 };
 

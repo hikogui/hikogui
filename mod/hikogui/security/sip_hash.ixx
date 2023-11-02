@@ -8,6 +8,7 @@ module;
 #include <string_view>
 #include <string>
 #include <span>
+#include <bit>
 
 export module hikogui_security_sip_hash;
 import hikogui_random;
@@ -238,7 +239,7 @@ private:
 
 namespace detail {
 template<size_t C, size_t D>
-static sip_hash sip_hash_prototype = sip_hash<C, D>(sip_hash_seed_tag{});
+sip_hash sip_hash_prototype = sip_hash<C, D>(sip_hash_seed_tag{});
 }
 
 template<size_t C, size_t D>

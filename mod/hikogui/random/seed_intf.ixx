@@ -12,6 +12,7 @@ module;
 #include <concepts>
 #include <type_traits>
 #include <bit>
+#include <array>
 
 export module hikogui_random_seed : intf;
 import hikogui_SIMD;

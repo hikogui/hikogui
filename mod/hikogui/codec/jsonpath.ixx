@@ -541,10 +541,11 @@ private:
 
 }} // namespace hi::v1
 
-export template<typename CharT>
-struct std::formatter<hi::jsonpath, CharT> : std::formatter<char const *, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::jsonpath, char> : std::formatter<char const *, char> {
     auto format(hi::jsonpath const& t, auto& fc) const
     {
-        return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
+        return std::formatter<std::string, char>{}.format(to_string(t), fc);
     }
 };

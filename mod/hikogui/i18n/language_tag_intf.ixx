@@ -226,17 +226,19 @@ struct std::hash<hi::language_tag> {
     }
 };
 
-export template<typename CharT>
-struct std::formatter<hi::language_tag, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::language_tag, char> : std::formatter<std::string_view, char> {
     auto format(hi::language_tag const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<std::string_view, char>::format(to_string(t), fc);
     }
 };
 
-// XXX C++23 should have this fixed?
-export template<typename CharT>
-struct std::formatter<std::vector<hi::language_tag>, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #618 C++23 should have this fixed?
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<std::vector<hi::language_tag>, char> : std::formatter<std::string_view, char> {
     auto format(std::vector<hi::language_tag> const& t, auto& fc) const
     {
         auto r = std::string{};
@@ -246,6 +248,6 @@ struct std::formatter<std::vector<hi::language_tag>, CharT> : std::formatter<std
             }
             r += std::format("{}", language);
         }
-        return std::formatter<std::string_view, CharT>::format(r, fc);
+        return std::formatter<std::string_view, char>::format(r, fc);
     }
 };

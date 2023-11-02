@@ -7,6 +7,8 @@
 #include "function_timer.hpp"
 #include "socket_event.hpp"
 #include "../container/container.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../time/time.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <functional>
@@ -14,6 +16,8 @@
 #include <concepts>
 #include <vector>
 #include <memory>
+#include <chrono>
+#include <thread>
 
 hi_export_module(hikogui.dispatch.loop : intf);
 

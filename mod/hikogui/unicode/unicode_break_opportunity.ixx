@@ -42,8 +42,9 @@ std::ostream &operator<<(std::ostream &lhs, unicode_break_opportunity const &rhs
 
 }
 
-template<typename CharT>
-struct std::formatter<hi::unicode_break_opportunity, CharT> : std::formatter<char const *, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::unicode_break_opportunity, char> : std::formatter<char const *, char> {
     auto format(hi::unicode_break_opportunity const &t, auto &fc) const
     {
         hilet *s = [&]() {
@@ -56,6 +57,6 @@ struct std::formatter<hi::unicode_break_opportunity, CharT> : std::formatter<cha
             default: hi_no_default();
             }
         }();
-        return std::formatter<char const *, CharT>::format(s, fc);
+        return std::formatter<char const *, char>::format(s, fc);
     }
 };

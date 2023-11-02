@@ -284,10 +284,11 @@ export [[nodiscard]] constexpr std::string to_string(surround_mode const& mask) 
 
 }} // namespace hi::inline v1
 
-export template<typename CharT>
-struct std::formatter<hi::surround_mode, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::surround_mode, char> : std::formatter<std::string_view, char> {
     auto format(hi::surround_mode const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::to_string(t), fc);
+        return std::formatter<std::string_view, char>::format(hi::to_string(t), fc);
     }
 };

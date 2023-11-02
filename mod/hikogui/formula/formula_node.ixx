@@ -121,11 +121,12 @@ struct formula_node {
 
 }} // namespace hi::v1
 
-template<class CharT>
-struct std::formatter<hi::formula_node, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::formula_node, char> : std::formatter<std::string_view, char> {
     auto format(hi::formula_node const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<std::string_view, char>::format(to_string(t), fc);
     }
 };
 

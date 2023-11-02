@@ -20,6 +20,8 @@ import : point2;
 import : point3;
 import hikogui_SIMD;
 import hikogui_concurrency;
+import hikogui_concurrency_thread; // XXX #616
+import hikogui_concurrency_unfair_mutex; // XXX #616
 import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
@@ -605,8 +607,9 @@ private:
     mutable hi::unfair_mutex _mutex;
 };
 
-template<typename CharT>
-struct std::formatter<hi::aarectangle, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::aarectangle, char> {
     auto parse(auto& pc)
     {
         return pc.end();

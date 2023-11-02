@@ -2380,11 +2380,12 @@ struct std::hash<hi::datum> {
     }
 };
 
-export template<typename CharT>
-struct std::formatter<hi::datum, CharT> : std::formatter<std::string, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+export template<>
+struct std::formatter<hi::datum, char> : std::formatter<std::string, char> {
     auto format(hi::datum const& t, auto& fc) const
     {
-        return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
+        return std::formatter<std::string, char>{}.format(to_string(t), fc);
     }
 };
 

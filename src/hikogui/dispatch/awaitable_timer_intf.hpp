@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../coroutine/coroutine.hpp"
+#include "../concurrency/concurrency.hpp"
 #include "../time/time.hpp"
 #include "../macros.hpp"
 #include <chrono>

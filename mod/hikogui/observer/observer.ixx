@@ -1,6 +1,7 @@
 
 module;
 
+#include <memory> // XXX #619
 
 export module hikogui_observer;
 export import : observed;

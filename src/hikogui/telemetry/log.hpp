@@ -10,6 +10,7 @@
 #include "../time/time.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #619
 #include "../console/console.hpp"
 #include "../macros.hpp"
 #include <chrono>
@@ -208,11 +209,11 @@ private:
      *
      * @note implementation is in counters.hpp
      */
-    inline static void log_thread_main(std::stop_token stop_token) noexcept;
+    static void log_thread_main(std::stop_token stop_token) noexcept;
 
     /** Deinitalize the logger system.
      */
-    inline static void subsystem_deinit() noexcept;
+    static void subsystem_deinit() noexcept;
 
     /** Initialize the log system.
      * This will start the logging threads which periodically

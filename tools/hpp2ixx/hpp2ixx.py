@@ -71,10 +71,12 @@ def write_module_files(modules, source_dir):
 
 def copy_files(files_to_copy):
     for source_path, destination_path in files_to_copy:
-        print("Copy file '{}' to '{}'".format(source_path, destination_path))
         os.makedirs(os.path.dirname(destination_path), exist_ok=True)
         text = open(source_path, "rb").read()
-        open(destination_path, "wb").write(text)
+
+        if not os.path.exists(destination_path) or open(destination_path, "rb").read() != text:
+            print("Copy file '{}' to '{}'".format(source_path, destination_path))
+            open(destination_path, "wb").write(text)
 
 
 def main():

@@ -8,6 +8,7 @@
 #include "observed.hpp"
 #include "../coroutine/coroutine.hpp"
 #include "../utility/utility.hpp"
+#include "../concurrency/thread.hpp" // XXX #616
 #include "../macros.hpp"
 #include <concepts>
 #include <utility>

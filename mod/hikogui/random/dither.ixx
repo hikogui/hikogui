@@ -6,6 +6,7 @@ module;
 #include "../macros.hpp"
 
 #include <iterator>
+#include <exception>
 
 export module hikogui_random_dither;
 import hikogui_SIMD;
