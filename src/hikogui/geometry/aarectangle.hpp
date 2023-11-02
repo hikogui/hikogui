@@ -605,8 +605,9 @@ private:
     mutable hi::unfair_mutex _mutex;
 };
 
-template<typename CharT>
-struct std::formatter<hi::aarectangle, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::aarectangle, char> {
     auto parse(auto& pc)
     {
         return pc.end();

@@ -6,6 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
+#include "../concurrency/unfair_mutex.hpp" // XXX #616
 #include "../macros.hpp"
 #include <memory>
 #include <vector>

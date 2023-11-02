@@ -276,10 +276,11 @@ fixed_string(F const& f) -> fixed_string<F{}().size()>;
 
 }} // namespace hi::v1
 
-hi_export template<std::size_t N, typename CharT>
-struct std::formatter<hi::fixed_string<N>, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<std::size_t N>
+struct std::formatter<hi::fixed_string<N>, char> : std::formatter<std::string_view, char> {
     constexpr auto format(hi::fixed_string<N> const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(static_cast<std::string_view>(t), fc);
+        return std::formatter<std::string_view, char>::format(static_cast<std::string_view>(t), fc);
     }
 };

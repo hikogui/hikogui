@@ -316,11 +316,12 @@ struct std::hash<hi::URL> {
     }
 };
 
-template<typename CharT>
-struct std::formatter<hi::URL, CharT> : std::formatter<hi::URI, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::URL, char> : std::formatter<hi::URI, char> {
     auto format(hi::URL const& t, auto& fc) const
     {
-        return std::formatter<hi::URI, CharT>::format(t, fc);
+        return std::formatter<hi::URI, char>::format(t, fc);
     }
 };
 

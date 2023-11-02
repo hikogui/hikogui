@@ -390,8 +390,9 @@ private:
 
 }} // namespace hi::v1
 
-template<typename CharT>
-struct std::formatter<hi::extent3, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::extent3, char> {
     auto parse(auto& pc)
     {
         return pc.end();

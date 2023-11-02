@@ -9,6 +9,7 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <iterator>
+#include <exception>
 
 hi_export_module(hikogui.random.dither);
 

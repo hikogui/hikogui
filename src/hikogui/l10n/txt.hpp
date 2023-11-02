@@ -222,10 +222,11 @@ private:
 
 }} // namespace hi::v1
 
-template<typename CharT>
-struct std::formatter<hi::txt, CharT> : std::formatter<std::string, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::txt, char> : std::formatter<std::string, CharT> {
     auto format(hi::txt const& t, auto& fc) const
     {
-        return std::formatter<std::string, CharT>::format(std::string{t}, fc);
+        return std::formatter<std::string, char>::format(std::string{t}, fc);
     }
 };

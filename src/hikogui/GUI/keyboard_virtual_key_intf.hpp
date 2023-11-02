@@ -317,10 +317,11 @@ struct std::hash<hi::keyboard_virtual_key> {
     }
 };
 
-template<typename CharT>
-struct std::formatter<hi::keyboard_virtual_key, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::keyboard_virtual_key, char> : std::formatter<std::string_view, char> {
     auto format(hi::keyboard_virtual_key const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>{}.format(hi::to_string_view(t), fc);
+        return std::formatter<std::string_view, char>{}.format(hi::to_string_view(t), fc);
     }
 };

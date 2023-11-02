@@ -266,10 +266,11 @@ private:
 
 } // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::font, CharT> : formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::font, char> : formatter<std::string_view, char> {
     auto format(hi::font const& t, auto& fc) const
     {
-        return formatter<string_view, CharT>::format(to_string(t), fc);
+        return formatter<string_view, char>::format(to_string(t), fc);
     }
 };

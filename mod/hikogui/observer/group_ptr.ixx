@@ -13,6 +13,7 @@ module;
 
 export module hikogui_observer_group_ptr;
 import hikogui_concurrency;
+import hikogui_concurrency_unfair_mutex; // XXX #616
 import hikogui_utility;
 
 

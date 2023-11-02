@@ -52,8 +52,21 @@ class SourceCode (object):
 
                 elif line.startswith("#include \""):
                     header_name, rest = line[10:].split("\"")
+                    rest = rest.strip()
+
+                    export = False
+                    comment = None
+                    if rest.startswith("//"):
+                        rest = rest[2:].strip()
+                        if rest.startswith("export"):
+                            export = True
+                            rest = rest[6:].strip()
+
+                        if rest:
+                            comment = rest
+
                     header_path = os.path.normpath(os.path.join(dirname, header_name))
-                    self.includes.add((header_path, "export" in rest))
+                    self.includes.add((header_path, export, comment))
 
                 else:
                     self.lines.append(line)
@@ -70,40 +83,46 @@ class SourceCode (object):
         module_dir = os.path.dirname(self.module_path)
         header_dir = os.path.dirname(self.header_path)
 
-        os.makedirs(module_dir, exist_ok=True)
-        with open(self.module_path, "w") as fd:
-            for line in self.lines:
-                if isinstance(line, PragmaOnce):
-                    fd.write("module;{}".format(self.nl))
+        text = []
+        for line in self.lines:
+            if isinstance(line, PragmaOnce):
+                text.append("module;{}".format(self.nl))
 
-                    for include_path, export in sorted(self.includes):
-                        relative_include_path = os.path.relpath(include_path, header_dir).replace("\\", "/")
-                        fd.write("#include \"{}\"{}".format(relative_include_path, self.nl))
+                for include_path, export, comment in sorted(self.includes):
+                    relative_include_path = os.path.relpath(include_path, header_dir).replace("\\", "/")
+                    comment_str = " // {}".format(comment) if comment else ""
+                    text.append("#include \"{}\"{}{}".format(relative_include_path, comment_str, self.nl))
 
-                elif isinstance(line, ExportModule):
-                    module_name_str = self.module_name.replace(".", "_")
-                    if self.fragment_name is not None:
-                        fd.write("export module {} : {};{}".format(module_name_str, self.fragment_name, self.nl))
-                    else:
-                        fd.write("export module {};{}".format(module_name_str, self.nl))
-
-                    sorted_imports = list(self.imports)
-                    sorted_imports.sort(key = lambda x: (x[1] is None, x[0], x[1] or ""))
-                    for module_name, fragment_name, export in sorted_imports:
-                        export_str = "export " if export else ""
-                        module_name_str = module_name.replace(".", "_")
-
-                        if fragment_name is not None:
-                            if module_name == self.module_name:
-                                fd.write("{}import : {};{}".format(export_str, fragment_name, self.nl))
-                            else:
-                                fd.write("{}import {} : {};{}".format(export_str, module_name_str, fragment_name, self.nl))
-                        else:
-                            fd.write("{}import {};{}".format(export_str, module_name_str, self.nl))
-
+            elif isinstance(line, ExportModule):
+                module_name_str = self.module_name.replace(".", "_")
+                if self.fragment_name is not None:
+                    text.append("export module {} : {};{}".format(module_name_str, self.fragment_name, self.nl))
                 else:
-                    line = line.replace("hi_export ", "export ")
-                    line = line.replace("hi_inline ", "")
-                    fd.write(line)
-                            
+                    text.append("export module {};{}".format(module_name_str, self.nl))
 
+                sorted_imports = list(self.imports)
+                sorted_imports.sort(key = lambda x: (x[1] is None, x[0], x[1] or ""))
+                for module_name, fragment_name, export, comment in sorted_imports:
+                    export_str = "export " if export else ""
+                    comment_str = " // {}".format(comment) if comment else ""
+                    module_name_str = module_name.replace(".", "_")
+
+                    if fragment_name is not None:
+                        if module_name == self.module_name:
+                            text.append("{}import : {};{}{}".format(export_str, fragment_name, comment_str, self.nl))
+                        else:
+                            text.append("{}import {} : {};{}{}".format(export_str, module_name_str, fragment_name, comment_str, self.nl))
+                    else:
+                        text.append("{}import {};{}{}".format(export_str, module_name_str, comment_str, self.nl))
+
+            else:
+                line = line.replace("hi_export ", "export ")
+                line = line.replace("hi_inline ", "")
+                text.append(line)
+
+        text = "".join(text)
+
+        os.makedirs(module_dir, exist_ok=True)
+        if not os.path.exists(self.module_path) or open(self.module_path, "r").read() != text:
+            print("Writing file {}".format(self.module_path))
+            open(self.module_path, "w").write(text)

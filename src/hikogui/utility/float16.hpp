@@ -200,11 +200,12 @@ struct std::hash<hi::float16> {
     }
 };
 
-hi_export template<typename CharT>
-struct std::formatter<hi::float16, CharT> : std::formatter<float, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::float16, char> : std::formatter<float, char> {
     constexpr auto format(hi::float16 const& t, auto& fc) const
     {
-        return std::formatter<float, CharT>::format(static_cast<float>(t), fc);
+        return std::formatter<float, char>::format(static_cast<float>(t), fc);
     }
 };
 

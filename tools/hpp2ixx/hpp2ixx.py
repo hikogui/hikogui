@@ -42,15 +42,15 @@ def resolve_imports(modules, source_dir, macro_headers):
 
     for module in modules:
         includes = module.includes.copy()
-        for path, export in includes:
+        for path, export, comment in includes:
             if path in modules_by_path:
                 import_module = modules_by_path[path]
-                module.imports.add((import_module.module_name, import_module.fragment_name, export))
-                module.includes.remove((path, export))
+                module.imports.add((import_module.module_name, import_module.fragment_name, export, comment))
+                module.includes.remove((path, export, comment))
 
             elif export and path == os.path.join(source_dir, "hikogui", "metadata", "library_metadata.hpp"):
-                module.imports.add(("hikogui.metadata.library_metadata", None, True))
-                module.includes.remove((path, export))
+                module.imports.add(("hikogui.metadata.library_metadata", None, export, comment))
+                module.includes.remove((path, export, comment))
 
             elif export:
                 print("ERROR: Expect '{}' to be module to export, included from '{}'".format(path, module.header_path))
@@ -67,7 +67,6 @@ def resolve_imports(modules, source_dir, macro_headers):
 
 def write_module_files(modules, source_dir):
     for module in modules:
-        print("Writing file {}".format(module.module_path))
         module.write(source_dir)
 
 def copy_files(files_to_copy):
