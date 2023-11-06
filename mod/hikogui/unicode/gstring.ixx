@@ -22,6 +22,7 @@ import hikogui_unicode_grapheme;
 import hikogui_unicode_unicode_grapheme_cluster_break;
 import hikogui_unicode_unicode_normalization;
 import hikogui_utility;
+import hikogui_time;
 
 export namespace std {
 
