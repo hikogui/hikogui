@@ -41,7 +41,7 @@ public:
     [[nodiscard]] uint64_t next() noexcept
     {
         auto s = _state[0];
-        hilet t = _state[1];
+        auto const t = _state[1];
 
         s ^= s << 23; // a
         s ^= s >> 17; // b
@@ -74,7 +74,7 @@ public:
         s ^= (s >> 17);
 
         // scalar: x ^= y_ ^ (y_ >> 26)
-        hilet tmp = s ^ t ^ (t >> 26);
+        auto const tmp = s ^ t ^ (t >> 26);
 
         // scalar: auto x_ = x;
         // scalar: t.y() = tmp.x();

@@ -235,7 +235,7 @@ struct native_i8x16 {
 
     [[nodiscard]] static native_i8x16 ones() noexcept
     {
-        hilet tmp = _mm_undefined_si128();
+        auto const tmp = _mm_undefined_si128();
         return native_i8x16{_mm_cmpeq_epi32(tmp, tmp)};
     }
 
@@ -328,7 +328,7 @@ struct native_i8x16 {
 #if HI_HAS_SSE4_1
         return native_i8x16{_mm_min_epi8(a.v, b.v)};
 #else
-        hilet mask = a < b;
+        auto const mask = a < b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -338,7 +338,7 @@ struct native_i8x16 {
 #if HI_HAS_SSE4_1
         return native_i8x16{_mm_max_epi8(a.v, b.v)};
 #else
-        hilet mask = a > b;
+        auto const mask = a > b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -348,7 +348,7 @@ struct native_i8x16 {
 #if HI_HAS_SSSE3
         return native_i8x16{_mm_abs_epi8(a.v)};
 #else
-        hilet mask = a > native_i8x16{};
+        auto const mask = a > native_i8x16{};
         return (mask & a) | not_and(mask, -a);
 #endif
     }
@@ -366,7 +366,7 @@ struct native_i8x16 {
 #ifdef HI_HAS_SSE4_1
         return native_i8x16{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(a.v), _mm_castsi128_ps(a.v), Mask))};
 #else
-        hilet mask = from_mask<Mask>();
+        auto const mask = from_mask<Mask>();
         return not_and(mask, a);
 #endif
     }
@@ -386,7 +386,7 @@ struct native_i8x16 {
 #ifdef HI_HAS_SSE4_1
         return native_i8x16{_mm_insert_epi8(a.v, b, Index)};
 #else
-        hilet mask = from_mask<1_uz << Index>();
+        auto const mask = from_mask<1_uz << Index>();
         return not_and(mask, a) | (mask & broadcast(b));
 #endif
     }

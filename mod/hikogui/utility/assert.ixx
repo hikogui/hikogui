@@ -32,8 +32,8 @@ export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto inde
 {
     using value_type = common_integer_t<decltype(index), decltype(upper)>;
 
-    hilet index_ = static_cast<value_type>(index);
-    hilet upper_ = static_cast<value_type>(upper);
+    auto const index_ = static_cast<value_type>(index);
+    auto const upper_ = static_cast<value_type>(upper);
     return index_ < upper_;
 }
 

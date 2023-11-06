@@ -304,31 +304,31 @@ struct native_simd<int64_t,4> {
         return native_simd{_mm256_srai_epi64(a.v, b)};
 
 #else
-        hilet shifted_value = _mm256_srli_epi64(a.v, b);
-        hilet zero = _mm256_setzero_si256();
-        hilet ones = _mm256_cmpeq_epi64(zero, zero);
-        hilet shifted_ones = _mm256_slli_epi64(ones, 63 - b);
-        hilet is_negative = _mm256_cmpgt_epi64(zero, a.v);
-        hilet masked_shifted_ones = _mm256_and_si256(is_negative, shifted_ones);
+        auto const shifted_value = _mm256_srli_epi64(a.v, b);
+        auto const zero = _mm256_setzero_si256();
+        auto const ones = _mm256_cmpeq_epi64(zero, zero);
+        auto const shifted_ones = _mm256_slli_epi64(ones, 63 - b);
+        auto const is_negative = _mm256_cmpgt_epi64(zero, a.v);
+        auto const masked_shifted_ones = _mm256_and_si256(is_negative, shifted_ones);
         return native_simd{_mm256_or_si256(shifted_value, masked_shifted_ones)};
 #endif
     }
 
     [[nodiscard]] friend native_simd min(native_simd a, native_simd b) noexcept
     {
-        hilet mask = a < b;
+        auto const mask = a < b;
         return (mask & a) | not_and(mask, b);
     }
 
     [[nodiscard]] friend native_simd max(native_simd a, native_simd b) noexcept
     {
-        hilet mask = a > b;
+        auto const mask = a > b;
         return (mask & a) | not_and(mask, b);
     }
 
     [[nodiscard]] friend native_simd abs(native_simd a) noexcept
     {
-        hilet mask = a >= native_simd{};
+        auto const mask = a >= native_simd{};
         return (mask & a) | not_and(mask, -a);
     }
 
@@ -463,13 +463,13 @@ struct native_simd<int64_t,4> {
 #ifdef HI_HAS_SSE4_1
         } else if constexpr (number_mask == zero_mask) {
             // Swizzle was /[^1][^1][^1][^1]/.
-            hilet ordered = permute<SourceElements>(a);
+            auto const ordered = permute<SourceElements>(a);
             return set_zero<zero_mask>(ordered);
 #endif
 
         } else {
-            hilet ordered = permute<SourceElements>(a);
-            hilet numbers = swizzle_numbers<SourceElements>();
+            auto const ordered = permute<SourceElements>(a);
+            auto const numbers = swizzle_numbers<SourceElements>();
             return blend<number_mask>(ordered, numbers);
         }
     }

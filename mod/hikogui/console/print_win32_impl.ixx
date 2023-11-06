@@ -26,7 +26,7 @@ void print(std::format_string<Args...> fmt, Args&&... args) noexcept
     auto msg = std::format(fmt, std::forward<Args>(args)...);
 
     if (IsDebuggerPresent()) {
-        hilet text_ = to_wstring(msg);
+        auto const text_ = to_wstring(msg);
         OutputDebugStringW(text_.c_str());
 
     } else {
@@ -41,7 +41,7 @@ void println(std::format_string<Args...> fmt, Args&&... args) noexcept
     msg += '\n';
 
     if (IsDebuggerPresent()) {
-        hilet text_ = to_wstring(msg);
+        auto const text_ = to_wstring(msg);
         OutputDebugStringW(text_.c_str());
 
     } else {

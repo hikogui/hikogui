@@ -306,7 +306,7 @@ struct native_i16x8 {
     [[nodiscard]] friend native_i16x8 set_zero(native_i16x8 a) noexcept
     {
         static_assert(Mask <= 0b1111'1111);
-        hilet mask = from_mask(Mask);
+        auto const mask = from_mask(Mask);
         return not_and(mask, a);
     }
 
@@ -350,7 +350,7 @@ struct native_i16x8 {
 #ifdef HI_HAS_SSE4_1
         return native_i16x8{_mm_blend_epi16(a, b, Mask)};
 #else
-        hilet mask = from_mask(Mask);
+        auto const mask = from_mask(Mask);
         return not_and(mask, a) | (mask & b);
 #endif
     }
@@ -413,13 +413,13 @@ struct native_i16x8 {
 #ifdef HI_HAS_SSE4_1
         } else if constexpr (number_mask == zero_mask) {
             // Swizzle was /[^1][^1][^1][^1]/.
-            hilet ordered = permute<SourceElements>(a);
+            auto const ordered = permute<SourceElements>(a);
             return set_zero<zero_mask>(ordered);
 #endif
 
         } else {
-            hilet ordered = permute<SourceElements>(a);
-            hilet numbers = swizzle_numbers<SourceElements>();
+            auto const ordered = permute<SourceElements>(a);
+            auto const numbers = swizzle_numbers<SourceElements>();
             return blend<number_mask>(ordered, numbers);
         }
     }

@@ -104,7 +104,7 @@ public:
 
     [[nodiscard]] pointer get() const noexcept
     {
-        hilet r = [this]{
+        auto const r = [this]{
             if constexpr (std::is_pointer_v<T>) {
                 return _p;
             } else {

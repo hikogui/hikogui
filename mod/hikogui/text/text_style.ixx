@@ -71,13 +71,13 @@ struct text_sub_style {
 
     [[nodiscard]] float cap_height() const noexcept
     {
-        hilet& font = find_font(family_id, variant);
+        auto const& font = find_font(family_id, variant);
         return font.metrics.cap_height * size;
     }
 
     [[nodiscard]] float x_height() const noexcept
     {
-        hilet& font = find_font(family_id, variant);
+        auto const& font = find_font(family_id, variant);
         return font.metrics.x_height * size;
     }
 
@@ -141,7 +141,7 @@ struct text_style_impl {
     [[nodiscard]] size_t hash() const noexcept
     {
         auto r = 0_uz;
-        for (hilet& sub_style : _sub_styles) {
+        for (auto const& sub_style : _sub_styles) {
             r ^= std::hash<text_sub_style>{}(sub_style);
         }
         return r;
@@ -195,7 +195,7 @@ public:
 
     text_style(std::vector<text_sub_style> rhs) noexcept
     {
-        hilet index = detail::text_styles.emplace(std::move(rhs));
+        auto const index = detail::text_styles.emplace(std::move(rhs));
         if (index < 0xff00) {
             _value = narrow_cast<uint16_t>(index);
         } else {
@@ -248,7 +248,7 @@ public:
 
     text_sub_style const& sub_style(phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
     {
-        for (hilet& style : detail::text_styles[_value]) {
+        for (auto const& style : detail::text_styles[_value]) {
             if (style.matches(phrasing, language, script)) {
                 return style;
             }

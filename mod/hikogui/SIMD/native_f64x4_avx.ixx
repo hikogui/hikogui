@@ -166,7 +166,7 @@ struct native_simd<double,4> {
 #ifdef HI_HAS_AVX2
         return native_simd{_mm256_permute4x64_pd(a.v, 0b00'00'00'00)}; 
 #else
-        hilet tmp = _mm256_permute_pd(a.v, 0b0000);
+        auto const tmp = _mm256_permute_pd(a.v, 0b0000);
         return native_simd{_mm256_permute2f128_pd(tmp, tmp, 0b0000'0000)};
 #endif
     }
@@ -417,8 +417,8 @@ struct native_simd<double,4> {
         constexpr auto hi_index = Index / (size / 2);
         constexpr auto lo_index = Index % (size / 2);
 
-        hilet hi = _mm256_extractf128_pd(a.v, hi_index);
-        hilet lo = _mm_permute_pd(hi, lo_index);
+        auto const hi = _mm256_extractf128_pd(a.v, hi_index);
+        auto const lo = _mm_permute_pd(hi, lo_index);
         return _mm_cvtsd_f64(lo);
 #endif
     }
@@ -491,19 +491,19 @@ struct native_simd<double,4> {
         } else if constexpr (hi_order == 0b1100) {
             return native_simd{_mm256_permute_pd(a.v, lo_order)};
         } else if constexpr (hi_order == 0b0011) {
-            hilet tmp = _mm256_permute2f128_pd(a.v, a.v, 0b0000'0001);
+            auto const tmp = _mm256_permute2f128_pd(a.v, a.v, 0b0000'0001);
             return native_simd{_mm256_permute_pd(tmp, lo_order)};
         } else if constexpr (hi_order == 0b1111) {
-            hilet tmp = _mm256_permute2f128_pd(a.v, a.v, 0b0001'0001);
+            auto const tmp = _mm256_permute2f128_pd(a.v, a.v, 0b0001'0001);
             return native_simd{_mm256_permute_pd(tmp, lo_order)};
         } else if constexpr (hi_order == 0b0000) {
-            hilet tmp = _mm256_permute2f128_pd(a.v, a.v, 0b0000'0000);
+            auto const tmp = _mm256_permute2f128_pd(a.v, a.v, 0b0000'0000);
             return native_simd{_mm256_permute_pd(tmp, lo_order)};
         } else {
-            hilet hi_0 = _mm256_permute2f128_pd(a.v, a.v, 0b0000'0000);
-            hilet hi_1 = _mm256_permute2f128_pd(a.v, a.v, 0b0001'0001);
-            hilet lo_0 = _mm256_permute_pd(hi_0, lo_order);
-            hilet lo_1 = _mm256_permute_pd(hi_1, lo_order);
+            auto const hi_0 = _mm256_permute2f128_pd(a.v, a.v, 0b0000'0000);
+            auto const hi_1 = _mm256_permute2f128_pd(a.v, a.v, 0b0001'0001);
+            auto const lo_0 = _mm256_permute_pd(hi_0, lo_order);
+            auto const lo_1 = _mm256_permute_pd(hi_1, lo_order);
             return native_simd{_mm256_blend_pd(lo_0, lo_1, hi_order)};
         }
 #endif
@@ -544,13 +544,13 @@ struct native_simd<double,4> {
 #ifdef HI_HAS_SSE4_1
         } else if constexpr (number_mask == zero_mask) {
             // Swizzle was /[^1][^1][^1][^1]/.
-            hilet ordered = permute<SourceElements>(a);
+            auto const ordered = permute<SourceElements>(a);
             return set_zero<zero_mask>(ordered);
 #endif
 
         } else {
-            hilet ordered = permute<SourceElements>(a);
-            hilet numbers = swizzle_numbers<SourceElements>();
+            auto const ordered = permute<SourceElements>(a);
+            auto const numbers = swizzle_numbers<SourceElements>();
             return blend<number_mask>(ordered, numbers);
         }
     }
@@ -593,7 +593,7 @@ struct native_simd<double,4> {
      */
     [[nodiscard]] friend native_simd horizontal_sum(native_simd a) noexcept
     {
-        hilet tmp = horizontal_add(a, a);
+        auto const tmp = horizontal_add(a, a);
         return native_simd{_mm256_hadd_pd(tmp.v, tmp.v)};
     }
 

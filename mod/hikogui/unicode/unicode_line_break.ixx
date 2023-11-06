@@ -87,13 +87,13 @@ unicode_LB1(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
     r.reserve(std::distance(first, last));
 
     for (auto it = first; it != last; ++it) {
-        hilet code_point = code_point_func(*it);
-        hilet east_asian_width = ucd_get_east_asian_width(code_point);
-        hilet break_class = ucd_get_line_break_class(code_point);
-        hilet general_category = ucd_get_general_category(code_point);
-        hilet grapheme_cluster_break = ucd_get_grapheme_cluster_break(code_point);
+        auto const code_point = code_point_func(*it);
+        auto const east_asian_width = ucd_get_east_asian_width(code_point);
+        auto const break_class = ucd_get_line_break_class(code_point);
+        auto const general_category = ucd_get_general_category(code_point);
+        auto const grapheme_cluster_break = ucd_get_grapheme_cluster_break(code_point);
 
-        hilet resolved_break_class = [&]() {
+        auto const resolved_break_class = [&]() {
             switch (break_class) {
                 using enum unicode_line_break_class;
             case AI:
@@ -141,8 +141,8 @@ constexpr void unicode_LB_walk(
     }
 
     auto cur = infos.begin();
-    hilet last = infos.end() - 1;
-    hilet last2 = infos.end();
+    auto const last = infos.end() - 1;
+    auto const last2 = infos.end();
     auto opportunity = opportunities.begin() + 1;
 
     auto cur_sp_class = XX;
@@ -150,9 +150,9 @@ constexpr void unicode_LB_walk(
     auto prev_class = XX;
     auto num_ri = 0_uz;
     while (cur != last) {
-        hilet next = cur + 1;
-        hilet cur_class = unicode_line_break_class{*cur};
-        hilet next2_class = cur + 2 == last2 ? XX : unicode_line_break_class{*(cur + 2)};
+        auto const next = cur + 1;
+        auto const cur_class = unicode_line_break_class{*cur};
+        auto const next2_class = cur + 2 == last2 ? XX : unicode_line_break_class{*(cur + 2)};
 
         // Keep track of classes followed by zero or more SP.
         if (cur_class != SP) {
@@ -193,7 +193,7 @@ constexpr void unicode_LB_walk(
 constexpr void unicode_LB4_8a(unicode_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
 {
     unicode_LB_walk(
-        opportunities, infos, [](hilet prev, hilet cur, hilet next, hilet next2, hilet cur_sp, hilet cur_nu, hilet num_ri) {
+        opportunities, infos, [](auto const prev, auto const cur, auto const next, auto const next2, auto const cur_sp, auto const cur_nu, auto const num_ri) {
             using enum unicode_break_opportunity;
             using enum unicode_line_break_class;
             if (*cur == BK) {
@@ -226,12 +226,12 @@ constexpr void unicode_LB9(unicode_break_vector& opportunities, std::vector<unic
     }
 
     auto cur = infos.begin();
-    hilet last = infos.end() - 1;
+    auto const last = infos.end() - 1;
     auto opportunity = opportunities.begin() + 1;
 
     auto X = XX;
     while (cur != last) {
-        hilet next = cur + 1;
+        auto const next = cur + 1;
 
         if ((*cur == CM or *cur == ZWJ) and X != XX) {
             // Treat all CM/ZWJ as X (if there is an X).
@@ -271,7 +271,7 @@ constexpr void unicode_LB10(std::vector<unicode_line_break_info>& infos) noexcep
 constexpr void unicode_LB11_31(unicode_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
 {
     unicode_LB_walk(
-        opportunities, infos, [&](hilet prev, hilet cur, hilet next, hilet next2, hilet cur_sp, hilet cur_nu, hilet num_ri) {
+        opportunities, infos, [&](auto const prev, auto const cur, auto const next, auto const next2, auto const cur_sp, auto const cur_nu, auto const num_ri) {
             using enum unicode_break_opportunity;
             using enum unicode_line_break_class;
             using enum unicode_east_asian_width;
@@ -375,10 +375,10 @@ unicode_LB_width(std::vector<float>::const_iterator first, std::vector<float>::c
     auto rfirst = std::make_reverse_iterator(last);
     auto rlast = std::make_reverse_iterator(first);
 
-    auto it = std::find_if(rfirst, rlast, [](hilet& width) {
+    auto it = std::find_if(rfirst, rlast, [](auto const& width) {
         return width >= 0.0;
     });
-    return std::accumulate(it, rlast, 0.0f, [](float acc, hilet& width) {
+    return std::accumulate(it, rlast, 0.0f, [](float acc, auto const& width) {
         return acc + abs(width);
     });
 }
@@ -501,8 +501,8 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
     // Carefully look forward for a break opportunity.
     auto it = end_of_line;
     while (true) {
-        hilet num_characters = std::distance(first, it + 1);
-        hilet line_width = unicode_LB_width(first_width, first_width + num_characters);
+        auto const num_characters = std::distance(first, it + 1);
+        auto const line_width = unicode_LB_width(first_width, first_width + num_characters);
 
         if (line_width <= maximum_line_width) {
             if (*it == mandatory) {
@@ -561,7 +561,7 @@ unicode_LB_finish_fit_line(unicode_break_const_iterator first, unicode_break_con
         opportunity_eol = unicode_LB_slow_fit_line(opportunity_it, opportunity_eol, width_it, maximum_line_width);
         opportunity_eol = unicode_LB_finish_fit_line(opportunity_it, opportunity_eol);
 
-        hilet num_characters = std::distance(opportunity_it, opportunity_eol);
+        auto const num_characters = std::distance(opportunity_it, opportunity_eol);
         r.push_back(num_characters);
         opportunity_it += num_characters;
         width_it += num_characters;
@@ -582,7 +582,7 @@ unicode_LB_finish_fit_line(unicode_break_const_iterator first, unicode_break_con
 unicode_LB_maximum_width(unicode_break_vector const& opportunities, std::vector<float> const& char_widths)
 {
     auto line_lengths = detail::unicode_LB_mandatory_lines(opportunities);
-    hilet width = detail::unicode_LB_width(char_widths, line_lengths);
+    auto const width = detail::unicode_LB_width(char_widths, line_lengths);
     return {width, std::move(line_lengths)};
 }
 
@@ -598,7 +598,7 @@ unicode_LB_maximum_width(unicode_break_vector const& opportunities, std::vector<
 unicode_LB_minimum_width(unicode_break_vector const& opportunities, std::vector<float> const& char_widths)
 {
     auto line_lengths = detail::unicode_LB_optional_lines(opportunities);
-    hilet width = detail::unicode_LB_width(char_widths, line_lengths);
+    auto const width = detail::unicode_LB_width(char_widths, line_lengths);
     return {width, std::move(line_lengths)};
 }
 
@@ -615,7 +615,7 @@ unicode_LB_minimum_width(unicode_break_vector const& opportunities, std::vector<
 unicode_LB_width(unicode_break_vector const& opportunities, std::vector<float> const& char_widths, float maximum_line_width)
 {
     auto line_lengths = detail::unicode_LB_fit_lines(opportunities, char_widths, maximum_line_width);
-    hilet width = detail::unicode_LB_width(char_widths, line_lengths);
+    auto const width = detail::unicode_LB_width(char_widths, line_lengths);
     return {width, std::move(line_lengths)};
 }
 

@@ -63,7 +63,7 @@ struct bigint {
         }
 
         // Sign extent the most-siginificant-digit.
-        hilet sign = rhs.is_negative() ? min1_digit : zero_digit;
+        auto const sign = rhs.is_negative() ? min1_digit : zero_digit;
         for (; i != num_digits; ++i) {
             digits[i] = sign;
         }
@@ -83,7 +83,7 @@ struct bigint {
         }
 
         // Sign extent the most-siginificant-digit.
-        hilet sign = rhs.is_negative() ? min1_digit : zero_digit;
+        auto const sign = rhs.is_negative() ? min1_digit : zero_digit;
         for (; i != num_digits; ++i) {
             digits[i] = sign;
         }
@@ -103,7 +103,7 @@ struct bigint {
         }
 
         // Sign extent to the rest of the digits.
-        hilet sign = value < 0 ? min1_digit : zero_digit;
+        auto const sign = value < 0 ? min1_digit : zero_digit;
         for (std::size_t i = 1; i != num_digits; ++i) {
             digits[i] = sign;
         }
@@ -122,7 +122,7 @@ struct bigint {
         }
 
         // Sign extent to the rest of the digits.
-        hilet sign = value < 0 ? min1_digit : zero_digit;
+        auto const sign = value < 0 ? min1_digit : zero_digit;
         for (std::size_t i = 1; i != num_digits; ++i) {
             digits[i] = sign;
         }
@@ -131,7 +131,7 @@ struct bigint {
 
     constexpr explicit bigint(std::string_view str, int base = 10) : bigint()
     {
-        for (hilet c : str) {
+        for (auto const c : str) {
             *this *= base;
 
             if (c >= '0' and c <= '9') {
@@ -211,7 +211,7 @@ struct bigint {
     {
         auto r = bigint<digit_type, N, S>{};
 
-        hilet sign = is_negative() ? min1_digit : zero_digit;
+        auto const sign = is_negative() ? min1_digit : zero_digit;
         for (auto i = 0; i != N; ++i) {
             r.digits[i] = i < num_digits ? digits[i] : sign;
         }
@@ -362,7 +362,7 @@ struct bigint {
     [[nodiscard]] constexpr friend bigint crc(bigint const& lhs, bigint const& rhs) noexcept
         requires(not is_signed)
     {
-        hilet polynomialOrder = bsr_carry_chain(rhs.digits, rhs.num_digits);
+        auto const polynomialOrder = bsr_carry_chain(rhs.digits, rhs.num_digits);
         hi_assert(polynomialOrder >= 0);
 
         auto tmp = static_cast<bigint<digit_type, 2 * num_digits, is_signed>>(lhs) << polynomialOrder;
@@ -370,7 +370,7 @@ struct bigint {
 
         auto tmp_highest_bit = bsr_carry_chain(tmp.digits, tmp.num_digits);
         while (tmp_highest_bit >= polynomialOrder) {
-            hilet divident = rhs_ << (tmp_highest_bit - polynomialOrder);
+            auto const divident = rhs_ << (tmp_highest_bit - polynomialOrder);
 
             tmp ^= divident;
             tmp_highest_bit = bsr_carry_chain(tmp.digits, tmp.num_digits);

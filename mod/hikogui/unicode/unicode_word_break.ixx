@@ -88,8 +88,8 @@ unicode_word_break_WB1_WB3d(unicode_break_vector& r, std::vector<unicode_word_br
     r.back() = yes; // WB2
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
-        hilet prev = infos[i - 1];
-        hilet next = infos[i];
+        auto const prev = infos[i - 1];
+        auto const next = infos[i];
 
         r[i] = [&]() {
             if (prev == CR and next == LF) {
@@ -117,7 +117,7 @@ void unicode_word_break_WB4(unicode_break_vector& r, std::vector<unicode_word_br
     hi_axiom(r.size() == infos.size() + 1);
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
-        hilet prev = infos[i - 1];
+        auto const prev = infos[i - 1];
         auto& next = infos[i];
 
         if ((prev != Newline and prev != CR and prev != LF) and (next == Extend or next == Format or next == ZWJ)) {
@@ -142,7 +142,7 @@ unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_b
             continue;
         }
 
-        hilet& next = infos[i];
+        auto const& next = infos[i];
 
         // WB4: (Extend | Format | ZWJ)* is assigned to no-break.
         hi_axiom(not next.is_skip());
@@ -244,10 +244,10 @@ template<typename It, typename ItEnd, typename CodePointFunc>
 
     auto infos = std::vector<detail::unicode_word_break_info>{};
     infos.reserve(size);
-    std::transform(first, last, std::back_inserter(infos), [&](hilet& item) {
-        hilet code_point = code_point_func(item);
-        hilet word_break_property = ucd_get_word_break_property(code_point);
-        hilet grapheme_cluster_break = ucd_get_grapheme_cluster_break(code_point);
+    std::transform(first, last, std::back_inserter(infos), [&](auto const& item) {
+        auto const code_point = code_point_func(item);
+        auto const word_break_property = ucd_get_word_break_property(code_point);
+        auto const grapheme_cluster_break = ucd_get_grapheme_cluster_break(code_point);
         return detail::unicode_word_break_info{
             word_break_property, grapheme_cluster_break == unicode_grapheme_cluster_break::Extended_Pictographic};
     });
@@ -282,8 +282,8 @@ void wrap_lines(auto first, auto last, float max_width, auto get_width, auto get
     float current_width = 0.0;
 
     for (auto it = first; it != last; ++it) {
-        hilet code_point = get_code_point(*it);
-        hilet general_category = ucd_get_general_category(code_point);
+        auto const code_point = get_code_point(*it);
+        auto const general_category = ucd_get_general_category(code_point);
 
         if (general_category == Zp || general_category == Zl) {
             // Reset the line on existing line and paragraph separator.

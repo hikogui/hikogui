@@ -64,11 +64,6 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(TargetResources)
 
-# disable adding CTest build targets like "NightlyStart" (before ctest include)
-set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
-configure_file("${CMAKE_SOURCE_DIR}/cmake/ctest/CTestCustom.cmake.in" "CTestCustom.cmake" @ONLY)
-include(CTest)
-
 # HI_ARCHITECTURE can be set as a build option.
 # if this build option is not set, default to the auto-detected architecture level.
 if(NOT HI_ARCHITECTURE)
@@ -79,38 +74,6 @@ endif()
 # Find Dependencies
 #-------------------------------------------------------------------
 
-if(BUILD_TESTING)
-    #
-    # GoogleTest - non-vcpkg, directly build from externals
-    #
-    set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
-    set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
-    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG v1.13.0)
-    FetchContent_MakeAvailable(googletest)
-
-    include(GoogleTest)
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-    set_target_properties(gtest      PROPERTIES FOLDER extern)
-    set_target_properties(gtest_main PROPERTIES FOLDER extern)
-endif()
-
-#
-# Vulkan SDK Headers
-#
-if(NOT DEFINED ENV{VULKAN_SDK})
-    message(FATAL_ERROR
-        "Please set the VULKAN_SDK environment variable to the directory in which the SDK is installed.\n"
-        "It looks like C:\\VulkanSDK\\1.0.0.0, but with the version number being the version that was installed.\n"
-        "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
-endif()
-find_package(Vulkan REQUIRED)
-
-#
-# Vulkan Memory Allocator - installed as part of Vulkan SDK headers
-#
-if(NOT EXISTS "${Vulkan_INCLUDE_DIRS}/vma")
-    message(FATAL_ERROR "Please make sure to include VMA (Vulkan Memory Allocator) with the installation of VulkanSDK.\n")
-endif()
 
 #-------------------------------------------------------------------
 # Setup Build Targets
@@ -134,7 +97,6 @@ else()
     include(CMakeLists_includes.cmake)
 endif()
 include(CMakeLists_resources.cmake)
-include(CMakeLists_shaders.cmake)
 
 target_compile_features(hikogui ${HI_SCOPE} cxx_std_23)
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
@@ -153,17 +115,7 @@ if(WIN32)
 	target_link_libraries(hikogui ${HI_SCOPE} "dwmapi")
 endif()
 
-# Add the Vulkan libraries.
-target_link_libraries(hikogui ${HI_SCOPE} ${Vulkan_LIBRARIES})
-target_include_directories(hikogui ${HI_SCOPE} ${Vulkan_INCLUDE_DIRS})
-
-# HikoGUI only uses Vulkan-1.2; we can limit VMA to that version as well.
-# This solves a common issue with: "Cant find entrypoint for vkGetDeviceBufferMemoryRequirements procedure"
-target_compile_definitions(hikogui ${HI_SCOPE} -DVMA_VULKAN_VERSION=1002000)
 if (WIN32)
-    # Add vulkan win32 surface support.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DVK_USE_PLATFORM_WIN32_KHR)
-
     # vulkan.h will include the windows headers, so we must define all sorts of stuff on the command line.
     target_compile_definitions(hikogui ${HI_SCOPE} -DUNICODE)
     target_compile_definitions(hikogui ${HI_SCOPE} -D_UNICODE)
@@ -175,10 +127,6 @@ if (WIN32)
     # Minimum Windows 10.
     target_compile_definitions(hikogui ${HI_SCOPE} -DWINVER=0x0a00)
     target_compile_definitions(hikogui ${HI_SCOPE} -D_WIN32_WINNT=0x0a00)
-
-elseif (APPLE)
-    # Add vulkan apple's Metal surface support.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DVK_USE_PLATFORM_METAL_EXT)
 endif()
 
 if(HI_ENABLE_MODULES)
@@ -356,7 +304,6 @@ elseif (MSVC)
         message(NOTICE "The following environment variables need to be set for the core guidelines checker to work:")
         message(NOTICE "    esp.extensions=cppcorecheck.dll")
         message(NOTICE "    esp.annotationbuildlevel=ignore")
-        message(NOTICE "    CAExcludePath=C:\\VulkanSDK;C:\\Program Files;C:\\Users\\Tjienta\\Projects\\hikogui\\out\\build\\vc17-x64-windows-static-ana\\_deps")
         message(NOTICE "")
         target_compile_options(hikogui ${HI_SCOPE} -analyze:plugin EspXEngine.dll)
 
@@ -442,23 +389,11 @@ add_custom_target(hikogui_dummy ALL)
 add_dependencies(hikogui_dummy hikogui)
 
 #-------------------------------------------------------------------
-# Build Target: hikogui_tests
-#-------------------------------------------------------------------
-
-if(BUILD_TESTING)
-    include(CMakeLists_tests.cmake)
-endif()
-
-#-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
 if(BUILD_EXAMPLES)
     add_custom_target(examples)
-    add_subdirectory(examples/codec)
-    add_subdirectory(examples/custom_widgets)
     add_subdirectory(examples/hikogui_demo)
-    add_subdirectory(examples/vulkan/triangle)
-    add_subdirectory(examples/widgets)
 endif()
 
 #-------------------------------------------------------------------

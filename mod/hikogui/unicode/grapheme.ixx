@@ -57,7 +57,7 @@ public:
         // If `start` came from another thread it will have been transferred
         // to this thread pr
         auto src = std::addressof(_table[start]);
-        hilet length = *src >> 21;
+        auto const length = *src >> 21;
 
         auto r = std::u32string{};
         r.resize_and_overwrite(length, [&](char32_t *dst, size_t count) {
@@ -109,10 +109,10 @@ public:
         hi_axiom(code_points.size() >= 2);
         hi_axiom(unicode_is_NFC_grapheme(code_points.cbegin(), code_points.cend()));
 
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
 
         // See if this grapheme already exists and return its index.
-        if (hilet it = _indices.find(code_points); it != _indices.end()) {
+        if (auto const it = _indices.find(code_points); it != _indices.end()) {
             return it->second;
         }
 
@@ -121,7 +121,7 @@ public:
             return -1;
         }
 
-        hilet insert_index = _head;
+        auto const insert_index = _head;
         _head += narrow_cast<uint32_t>(code_points.size());
 
         // Copy the grapheme into the table, and set the size on the first entry.
@@ -251,13 +251,13 @@ struct grapheme {
 
         hi_axiom(not code_points.empty());
         if (code_points.size() == 1) {
-            hilet code_point = code_points.front();
+            auto const code_point = code_points.front();
             hi_axiom(code_point <= 0x10'ffff);
             hi_axiom(ucd_get_canonical_combining_class(code_point) == 0);
             _value = char_cast<value_type>(code_point);
 
         } else {
-            hilet index = detail::long_graphemes.add_grapheme(std::forward<CodePoints>(code_points));
+            auto const index = detail::long_graphemes.add_grapheme(std::forward<CodePoints>(code_points));
             if (index >= 0) {
                 _value = narrow_cast<value_type>(index + 0x11'0000);
 
@@ -319,7 +319,7 @@ struct grapheme {
      */
     [[nodiscard]] constexpr iso_15924 starter_script(iso_15924 default_script) const noexcept
     {
-        hilet starter_script_ = starter_script();
+        auto const starter_script_ = starter_script();
         if (starter_script_ == iso_15924::common() and starter_script_ == iso_15924::inherited()) {
             return default_script;
         } else {
@@ -339,7 +339,7 @@ struct grapheme {
      */
     constexpr void set_script(iso_15924 rhs) noexcept
     {
-        hilet new_script = starter_script(rhs);
+        auto const new_script = starter_script(rhs);
         hi_axiom(new_script.intrinsic() < 1000);
 
         constexpr auto mask = ~(value_type{0x3ff} << 36);
@@ -372,11 +372,11 @@ struct grapheme {
     {
         auto tmp = _value;
         tmp >>= 21;
-        hilet language_ = iso_639{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x7fff)};
+        auto const language_ = iso_639{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x7fff)};
         tmp >>= 15;
-        hilet script_ = iso_15924{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
+        auto const script_ = iso_15924{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
         tmp >>= 10;
-        hilet region_ = iso_3166{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
+        auto const region_ = iso_3166{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
         return hi::language_tag{language_, script_, region_};
     }
 
@@ -385,7 +385,7 @@ struct grapheme {
         hi_axiom(rhs.region.intrinsic() < 1000);
         hi_axiom(rhs.language.intrinsic() <= 0x7fff);
 
-        hilet new_script = starter_script(rhs.script);
+        auto const new_script = starter_script(rhs.script);
         hi_axiom(new_script.intrinsic() < 1000);
 
         auto tmp = wide_cast<value_type>(rhs.region.intrinsic());
@@ -443,7 +443,7 @@ struct grapheme {
      */
     [[nodiscard]] constexpr std::u32string composed() const noexcept
     {
-        if (hilet i = index(); i <= 0x10'ffff) {
+        if (auto const i = index(); i <= 0x10'ffff) {
             return std::u32string{char_cast<char32_t>(i)};
         } else {
             return detail::long_graphemes.get_grapheme(i - 0x11'0000);

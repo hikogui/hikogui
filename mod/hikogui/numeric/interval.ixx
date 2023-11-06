@@ -171,14 +171,14 @@ public:
 
     [[nodiscard]] constexpr interval operator*(interval const &rhs) const noexcept
     {
-        hilet ge_zero = v >= bound_type{};
-        hilet lt_zero = ~ge_zero;
+        auto const ge_zero = v >= bound_type{};
+        auto const lt_zero = ~ge_zero;
 
-        hilet ac = (ge_zero & rhs.v.xx()) | (lt_zero & -rhs.v.yy());
-        hilet db = (ge_zero & rhs.v.yy()) | (lt_zero & -rhs.v.xx());
+        auto const ac = (ge_zero & rhs.v.xx()) | (lt_zero & -rhs.v.yy());
+        auto const db = (ge_zero & rhs.v.yy()) | (lt_zero & -rhs.v.xx());
 
-        hilet ac_mul = ac * v;
-        hilet db_mul = db * v;
+        auto const ac_mul = ac * v;
+        auto const db_mul = db * v;
 
         return raw(min(ac_mul, db_mul.yx()));
     }
@@ -199,14 +199,14 @@ public:
             return interval{};
         }
 
-        hilet rhs_ge_zero = rhs.v >= bound_type{};
-        hilet rhs_lt_zero = ~rhs_ge_zero;
+        auto const rhs_ge_zero = rhs.v >= bound_type{};
+        auto const rhs_lt_zero = ~rhs_ge_zero;
 
-        hilet b_ma = (rhs_ge_zero & v.yy()) | (rhs_lt_zero & -v.xx());
-        hilet a_mb = -b_ma.yx();
+        auto const b_ma = (rhs_ge_zero & v.yy()) | (rhs_lt_zero & -v.xx());
+        auto const a_mb = -b_ma.yx();
 
-        hilet a_mb_mul = a_mb / rhs.v;
-        hilet b_ma_mul = b_ma / rhs.v;
+        auto const a_mb_mul = a_mb / rhs.v;
+        auto const b_ma_mul = b_ma / rhs.v;
 
         return raw(min(a_mb, b_ma));
     }
@@ -219,7 +219,7 @@ public:
         }
 
         // In C++ the sign of the modulo operator's result is the same as the left operand.
-        hilet rhs_abs = abs(rhs);
+        auto const rhs_abs = abs(rhs);
         if (v[0] > 0) {
             return rhs_abs;
         } else if (v[1] > 0) {
@@ -249,7 +249,7 @@ public:
 
     [[nodiscard]] friend constexpr interval square(interval const &rhs) noexcept
     {
-        hilet abs_rhs = abs(rhs);
+        auto const abs_rhs = abs(rhs);
         return abs_rhs.positive_mul(abs_rhs);
     }
 

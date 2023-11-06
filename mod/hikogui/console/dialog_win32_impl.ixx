@@ -39,9 +39,9 @@ export bool dialog(dialog_type type, std::string_view title, std::string_view te
     default: hi_no_default();
     }
 
-    hilet title_ = hi::to_wstring(title);
-    hilet text_ = hi::to_wstring(text);
-    hilet r = MessageBoxW(nullptr, text_.c_str(), title_.c_str(), type_);
+    auto const title_ = hi::to_wstring(title);
+    auto const text_ = hi::to_wstring(text);
+    auto const r = MessageBoxW(nullptr, text_.c_str(), title_.c_str(), type_);
 
     switch (r) {
     case IDABORT:

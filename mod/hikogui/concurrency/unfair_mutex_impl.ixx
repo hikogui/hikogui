@@ -39,11 +39,11 @@ std::vector<std::pair<void *, void *>> unfair_mutex_deadlock_lock_graph;
 {
     hi_assert_not_null(object);
 
-    hilet lock = std::scoped_lock(detail::unfair_mutex_deadlock_mutex);
+    auto const lock = std::scoped_lock(detail::unfair_mutex_deadlock_mutex);
 
-    for (hilet before : unfair_mutex_deadlock_stack) {
+    for (auto const before : unfair_mutex_deadlock_stack) {
         auto correct_order = std::make_pair(before, object);
-        hilet reverse_order = std::make_pair(object, before);
+        auto const reverse_order = std::make_pair(object, before);
 
         if (std::binary_search(
                 unfair_mutex_deadlock_lock_graph.cbegin(), unfair_mutex_deadlock_lock_graph.cend(), correct_order)) {
@@ -58,7 +58,7 @@ std::vector<std::pair<void *, void *>> unfair_mutex_deadlock_lock_graph;
         }
 
         // Insert the new 'correct' order in the sorted lock_graph.
-        hilet it =
+        auto const it =
             std::upper_bound(unfair_mutex_deadlock_lock_graph.cbegin(), unfair_mutex_deadlock_lock_graph.cend(), correct_order);
         unfair_mutex_deadlock_lock_graph.insert(it, std::move(correct_order));
     }
@@ -137,8 +137,8 @@ export void unfair_mutex_deadlock_remove_object(void *object) noexcept
         return;
     }
 
-    hilet lock = std::scoped_lock(detail::unfair_mutex_deadlock_mutex);
-    std::erase_if(detail::unfair_mutex_deadlock_lock_graph, [object](hilet& item) {
+    auto const lock = std::scoped_lock(detail::unfair_mutex_deadlock_mutex);
+    std::erase_if(detail::unfair_mutex_deadlock_lock_graph, [object](auto const& item) {
         return item.first == object or item.second == object;
     });
 }
@@ -166,7 +166,7 @@ export void unfair_mutex_deadlock_clear_graph() noexcept
         return;
     }
 
-    hilet lock = std::scoped_lock(detail::unfair_mutex_deadlock_mutex);
+    auto const lock = std::scoped_lock(detail::unfair_mutex_deadlock_mutex);
     detail::unfair_mutex_deadlock_lock_graph.clear();
 }
 
@@ -189,7 +189,7 @@ template<bool UseDeadLockDetector>
 void unfair_mutex_impl<UseDeadLockDetector>::lock() noexcept
 {
     if constexpr (UseDeadLockDetector) {
-        hilet other = unfair_mutex_deadlock_lock(this);
+        auto const other = unfair_mutex_deadlock_lock(this);
         hi_assert(other != this, "This mutex is already locked.");
         hi_assert(other == nullptr, "Potential dead-lock because of different lock ordering of mutexes.");
     }
@@ -216,7 +216,7 @@ template<bool UseDeadLockDetector>
 [[nodiscard]] bool unfair_mutex_impl<UseDeadLockDetector>::try_lock() noexcept
 {
     if constexpr (UseDeadLockDetector) {
-        hilet other = unfair_mutex_deadlock_lock(this);
+        auto const other = unfair_mutex_deadlock_lock(this);
         hi_assert(other != this, "This mutex is already locked.");
         hi_assert(other == nullptr, "Potential dead-lock because of different lock ordering of mutexes.");
     }
@@ -271,7 +271,7 @@ hi_no_inline void unfair_mutex_impl<UseDeadLockDetector>::lock_contended(semapho
     hi_axiom(holds_invariant());
 
     do {
-        hilet should_wait = expected == 2;
+        auto const should_wait = expected == 2;
 
         // Set to 2 when we are waiting.
         expected = 1;

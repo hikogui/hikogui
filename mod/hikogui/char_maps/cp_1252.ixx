@@ -107,7 +107,7 @@ struct char_map<"cp-1252"> {
     {
         // clang-format off
         hi_axiom(it != last);
-        hilet c = char_cast<char8_t>(*it++);
+        auto const c = char_cast<char8_t>(*it++);
         switch (c) {
         case 0x80: return {0x20ac, true};
         case 0x81: return {0x81, true};

@@ -130,7 +130,7 @@ public:
     {
         using namespace std::chrono_literals;
 
-        hilet[lo, hi] = mul_carry(count, _period.load(std::memory_order::relaxed));
+        auto const[lo, hi] = mul_carry(count, _period.load(std::memory_order::relaxed));
         return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
     }
 
@@ -171,9 +171,9 @@ public:
         // With three samples gathered on the same CPU we should
         // have a TSC/UTC/TSC combination that was run inside a single time-slice.
         for (auto i = 0; i != 10; ++i) {
-            hilet tmp_tsc1 = time_stamp_count::now();
-            hilet tmp_tp = std::chrono::utc_clock::now();
-            hilet tmp_tsc2 = time_stamp_count::now();
+            auto const tmp_tsc1 = time_stamp_count::now();
+            auto const tmp_tp = std::chrono::utc_clock::now();
+            auto const tmp_tsc2 = time_stamp_count::now();
 
             if (tmp_tsc1.cpu_id() != tmp_tsc2.cpu_id()) {
                 throw os_error("CPU Switch detected during get_sample(), which should never happen");
@@ -186,7 +186,7 @@ public:
                 continue;
             }
 
-            hilet diff = tmp_tsc2.count() - tmp_tsc1.count();
+            auto const diff = tmp_tsc2.count() - tmp_tsc1.count();
 
             if (diff < shortest_diff) {
                 shortest_diff = diff;
@@ -215,11 +215,11 @@ public:
         using namespace std::chrono_literals;
 
         // Only sample the frequency of one of the TSC clocks.
-        hilet prev_mask = set_thread_affinity(current_cpu_id());
+        auto const prev_mask = set_thread_affinity(current_cpu_id());
 
-        hilet [tp1, tsc1] = time_stamp_utc_sample();
+        auto const [tp1, tsc1] = time_stamp_utc_sample();
         std::this_thread::sleep_for(sample_duration);
-        hilet [tp2, tsc2] = time_stamp_utc_sample();
+        auto const [tp2, tsc2] = time_stamp_utc_sample();
 
         // Reset the mask back.
         set_thread_affinity_mask(prev_mask);
@@ -246,14 +246,14 @@ public:
         // Calculate the frequency by dividing the delta-tsc by the duration.
         // We scale both the delta-tsc and duration by 1'000'000'000 before the
         // division. The duration is scaled by 1'000'000'000 by dividing by 1ns.
-        hilet[delta_tsc_lo, delta_tsc_hi] = mul_carry(tsc2.count() - tsc1.count(), uint64_t{1'000'000'000});
+        auto const[delta_tsc_lo, delta_tsc_hi] = mul_carry(tsc2.count() - tsc1.count(), uint64_t{1'000'000'000});
         auto duration = narrow_cast<uint64_t>((tp2 - tp1) / 1ns);
         return wide_div(delta_tsc_lo, delta_tsc_hi, duration);
     }
 
     static void set_frequency(uint64_t frequency) noexcept
     {
-        hilet period = (uint64_t{1'000'000'000} << 32) / frequency;
+        auto const period = (uint64_t{1'000'000'000} << 32) / frequency;
         _period.store(period, std::memory_order_relaxed);
     }
 
@@ -265,8 +265,8 @@ public:
      */
     static std::pair<uint64_t, bool> start_subsystem()
     {
-        hilet frequency = configure_frequency();
-        hilet aux_is_cpu_id = populate_aux_values();
+        auto const frequency = configure_frequency();
+        auto const aux_is_cpu_id = populate_aux_values();
         return {frequency, aux_is_cpu_id};
     }
 
@@ -315,17 +315,17 @@ private:
     {
         auto aux_value_ = _mm_set1_epi32(_aux);
 
-        hilet num_aux_values = _num_aux_values.load(std::memory_order_acquire);
+        auto const num_aux_values = _num_aux_values.load(std::memory_order_acquire);
         hi_assert(_aux_values.size() == _cpu_ids.size());
         hi_assert_bounds(num_aux_values, _aux_values);
 
         for (std::size_t i = 0; i < num_aux_values; i += 4) {
-            hilet row = _mm_loadu_si128(reinterpret_cast<__m128i const *>(_aux_values.data() + i));
-            hilet row_result = _mm_cmpeq_epi32(row, aux_value_);
-            hilet row_result_ = _mm_castsi128_ps(row_result);
-            hilet row_result_mask = _mm_movemask_ps(row_result_);
+            auto const row = _mm_loadu_si128(reinterpret_cast<__m128i const *>(_aux_values.data() + i));
+            auto const row_result = _mm_cmpeq_epi32(row, aux_value_);
+            auto const row_result_ = _mm_castsi128_ps(row_result);
+            auto const row_result_mask = _mm_movemask_ps(row_result_);
             if (to_bool(row_result_mask)) {
-                hilet j = i + std::countr_zero(narrow_cast<unsigned int>(row_result_mask));
+                auto const j = i + std::countr_zero(narrow_cast<unsigned int>(row_result_mask));
                 if (j < num_aux_values) {
                     return _cpu_ids[j];
                 }
@@ -379,7 +379,7 @@ private:
         uint64_t frequency = 0;
         uint64_t num_samples = 0;
         for (int i = 0; i != 4; ++i) {
-            hilet f = time_stamp_count::measure_frequency(25ms);
+            auto const f = time_stamp_count::measure_frequency(25ms);
             if (f != 0) {
                 frequency += f;
                 ++num_samples;

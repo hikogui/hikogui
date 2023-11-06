@@ -87,7 +87,7 @@ constexpr It rfind_if(It const first, It const last, UnaryPredicate predicate)
 template<typename It, typename UnaryPredicate>
 constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicate)
 {
-    return rfind_if(first, last, [&](hilet& x) {
+    return rfind_if(first, last, [&](auto const& x) {
         return !predicate(x);
     });
 }
@@ -95,7 +95,7 @@ constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicat
 template<typename It, typename T>
 constexpr It rfind(It const first, It const last, T const& value)
 {
-    return rfind_if(first, last, [&](hilet& x) {
+    return rfind_if(first, last, [&](auto const& x) {
         return x == value;
     });
 }
@@ -110,8 +110,8 @@ constexpr It rfind(It const first, It const last, T const& value)
 template<typename It, typename ItAny>
 [[nodiscard]] constexpr It find_any(It data_first, It data_last, ItAny value_first, ItAny value_last) noexcept
 {
-    return std::find_if(data_first, data_last, [value_first, value_last](hilet& data) {
-        return std::any_of(value_first, value_last, [&data](hilet& value) {
+    return std::find_if(data_first, data_last, [value_first, value_last](auto const& data) {
+        return std::any_of(value_first, value_last, [&data](auto const& value) {
             return data == value;
         });
     });
@@ -126,7 +126,7 @@ template<typename It, typename ItAny>
 template<typename ConstIt, typename It, typename UnaryPredicate>
 constexpr It find_cluster(ConstIt last, It start, UnaryPredicate predicate)
 {
-    hilet cluster_id = predicate(*start);
+    auto const cluster_id = predicate(*start);
 
     for (auto i = start + 1; i != last; ++i) {
         if (predicate(*i) != cluster_id) {
@@ -145,7 +145,7 @@ constexpr It find_cluster(ConstIt last, It start, UnaryPredicate predicate)
 template<typename ConstIt, typename It, typename UnaryPredicate>
 constexpr It rfind_cluster(ConstIt first, It start, UnaryPredicate predicate)
 {
-    hilet cluster_id = predicate(*start);
+    auto const cluster_id = predicate(*start);
 
     if (start == first) {
         return first;
@@ -275,7 +275,7 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
 
     std::size_t dst = 0;
     for (auto it = indices_first; it != indices_last; ++it, ++dst) {
-        hilet index = index_op(*it);
+        auto const index = index_op(*it);
         hi_assert_bounds(index, src_indices);
 
         auto src = [&src_indices, index]() {
@@ -310,7 +310,7 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
  */
 auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_last) noexcept
 {
-    return shuffle_by_index(first, last, indices_first, indices_last, [](hilet& x) {
+    return shuffle_by_index(first, last, indices_first, indices_last, [](auto const& x) {
         return narrow_cast<std::size_t>(x);
     });
 }
@@ -377,7 +377,7 @@ template<std::endian Endian = std::endian::native, typename T, std::unsigned_int
     while (len > 1) {
         hi_axiom_not_null(base);
 
-        hilet half = len / 2;
+        auto const half = len / 2;
 
         if (load<Key, Endian>(base + half - 1) < key) {
             base += half;
@@ -395,7 +395,7 @@ template<std::endian Endian = std::endian::native, typename T, std::unsigned_int
 template<std::endian Endian = std::endian::native, typename T, std::unsigned_integral Key>
 [[nodiscard]] constexpr T *fast_binary_search_eq(std::span<T> table, Key const& key) noexcept
 {
-    hilet ptr = fast_lower_bound<Endian>(table, key);
+    auto const ptr = fast_lower_bound<Endian>(table, key);
     if (ptr == nullptr) {
         return nullptr;
     }

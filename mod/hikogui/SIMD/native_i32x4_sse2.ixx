@@ -186,7 +186,7 @@ struct native_simd<int32_t, 4> {
 
     [[nodiscard]] static native_simd ones() noexcept
     {
-        hilet tmp = _mm_undefined_si128();
+        auto const tmp = _mm_undefined_si128();
         return native_simd{_mm_cmpeq_epi32(tmp, tmp)};
     }
 
@@ -327,7 +327,7 @@ struct native_simd<int32_t, 4> {
 #if HI_HAS_SSE4_1
         return native_simd{_mm_min_epi32(a.v, b.v)};
 #else
-        hilet mask = a < b;
+        auto const mask = a < b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -337,7 +337,7 @@ struct native_simd<int32_t, 4> {
 #if HI_HAS_SSE4_1
         return native_simd{_mm_max_epi32(a.v, b.v)};
 #else
-        hilet mask = a > b;
+        auto const mask = a > b;
         return (mask & a) | not_and(mask, b);
 #endif
     }
@@ -347,7 +347,7 @@ struct native_simd<int32_t, 4> {
 #if HI_HAS_SSSE3
         return native_simd{_mm_abs_epi32(a.v)};
 #else
-        hilet mask = a >= native_simd{};
+        auto const mask = a >= native_simd{};
         return (mask & a) | not_and(mask, -a);
 #endif
     }
@@ -365,7 +365,7 @@ struct native_simd<int32_t, 4> {
 #ifdef HI_HAS_SSE4_1
         return native_simd{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(a.v), _mm_castsi128_ps(a.v), Mask))};
 #else
-        hilet mask = from_mask<Mask>();
+        auto const mask = from_mask<Mask>();
         return not_and(mask, a);
 #endif
     }
@@ -385,7 +385,7 @@ struct native_simd<int32_t, 4> {
 #ifdef HI_HAS_SSE4_1
         return native_simd{_mm_insert_epi32(a.v, b, Index)};
 #else
-        hilet mask = from_mask<1_uz << Index>();
+        auto const mask = from_mask<1_uz << Index>();
         return not_and(mask, a) | (mask & broadcast(b));
 #endif
     }
@@ -421,7 +421,7 @@ struct native_simd<int32_t, 4> {
 #ifdef HI_HAS_SSE4_1
         return native_simd{_mm_blend_epi32(a.v, b.v, Mask)};
 #else
-        hilet mask = from_mask<Mask>();
+        auto const mask = from_mask<Mask>();
         return not_and(mask, a) | (mask & b);
 #endif
     }
@@ -486,13 +486,13 @@ struct native_simd<int32_t, 4> {
 #ifdef HI_HAS_SSE4_1
         } else if constexpr (number_mask == zero_mask) {
             // Swizzle was /[^1][^1][^1][^1]/.
-            hilet ordered = permute<SourceElements>(a);
+            auto const ordered = permute<SourceElements>(a);
             return set_zero<zero_mask>(ordered);
 #endif
 
         } else {
-            hilet ordered = permute<SourceElements>(a);
-            hilet numbers = swizzle_numbers<SourceElements>();
+            auto const ordered = permute<SourceElements>(a);
+            auto const numbers = swizzle_numbers<SourceElements>();
             return blend<number_mask>(ordered, numbers);
         }
     }

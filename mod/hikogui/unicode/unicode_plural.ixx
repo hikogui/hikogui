@@ -110,10 +110,10 @@ struct plurality {
     {
         hi_assert(n != 0);
 
-        hilet value_as_mask = (1 << (std::to_underlying(value) + 1)) - 1;
+        auto const value_as_mask = (1 << (std::to_underlying(value) + 1)) - 1;
         // Get the index based on the number of '1' bits that are set from the
         // plurality position to lsb.
-        hilet i = std::popcount(narrow_cast<uint8_t>(value_as_mask & std::to_underlying(mask))) - 1;
+        auto const i = std::popcount(narrow_cast<uint8_t>(value_as_mask & std::to_underlying(mask))) - 1;
         if (i < n) {
             return i;
         } else {
@@ -171,7 +171,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_cebuano(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (
             (op.v == 0 and op.i >= 1 and op.i <= 3) or
             (op.v == 0 and op.i % 10 != 4 and op.i % 10 != 6 and op.i % 10 != 9) or
@@ -187,7 +187,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_central_atlas_tamazight(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 0 or op.n == 1 or (op.n >= 11 and op.n <= 99)) {
             return plurality_value::one;
         } else {
@@ -200,7 +200,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_icelandic(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if ((op.t == 0 and op.i % 10 == 1 and op.i % 100 != 11) or op.t != 0) {
             return plurality_value::one;
         } else {
@@ -213,7 +213,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_akan(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 0 or op.n == 1) {
             return plurality_value::one;
         } else {
@@ -226,7 +226,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_afrikaans(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 1) {
             return plurality_value::one;
         } else {
@@ -239,7 +239,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_latvian(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (
             op.n == 0 or
             (op.n % 100 >= 11 and op.n % 100 <= 19) or
@@ -260,7 +260,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_colognian(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 0) {
             return plurality_value::zero;
         } else if (op.n == 1) {
@@ -275,7 +275,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_inari_sami(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 1) {
             return plurality_value::one;
         } else if (op.n == 2) {
@@ -290,7 +290,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_belarusian(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n % 10 == 1 and op.n % 100 != 11) {
             return plurality_value::one;
         } else if (op.n % 10 >= 2 and op.n % 10 <= 4 and not (op.n % 100 >= 12 and op.n % 100 <= 14)) {
@@ -310,7 +310,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_polish(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         // The specification uses op.i (number of digits) instead of op.n (absolute value)
         if (op.n == 1 and op.v == 0) {
             return plurality_value::one;
@@ -331,7 +331,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_lithuanian(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n % 10 == 1 and not (op.n % 100 >= 11 and op.n % 100 <= 19)) {
             return plurality_value::one;
         } else if (op.n % 10 >= 2 and op.n % 10 <= 9 and not (op.n % 100 >= 11 and op.n % 100 <= 19)) {
@@ -348,7 +348,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_bosnian(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         // The specification uses op.i (number of digits) instead of op.n (absolute value)
         if (
             (op.v == 0 and op.n % 10 == 1 and op.n % 100 != 11) or
@@ -368,7 +368,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_tachelhit(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.i == 0 or op.n == 1) {
             return plurality_value::one;
         } else if (op.n >= 2 and op.n <= 10) {
@@ -383,7 +383,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_moldavian(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         // The specification uses op.i (number of digits) for determining 'one'
         // which is wrong.
         if (op.n == 1 and op.v == 0) {
@@ -403,7 +403,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_czech(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         // The specification uses op.i (number of digits) instead of
         // op.n (absolute value).
         if (op.n == 1 and op.v == 0) {
@@ -422,7 +422,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_manx(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         // The specification uses op.i (number of digits) instead of
         // op.n (absolute value).
         if (op.v == 0 and op.n % 10 == 1) {
@@ -444,7 +444,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_scottish_gaelic(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 1 or op.n == 11) {
             return plurality_value::one;
         } else if (op.n == 2 or op.n == 12) {
@@ -461,7 +461,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_breton(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n % 10 == 1 and op.n % 100 != 11 and op.n % 100 != 71 and op.n % 100 != 91) {
             return plurality_value::one;
         } else if (op.n % 10 == 2 and op.n % 100 != 12 and op.n % 100 != 72 and op.n % 100 != 92) {
@@ -484,7 +484,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_lower_sorbian(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         // The specification use op.i (number of digits) instead of
         // op.n (absolute value).
         if (
@@ -509,7 +509,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_hebrew(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         // The specification use op.i (number of digits) instead of
         // op.n (absolute value).
         if (op.n == 1 and op.v == 0) {
@@ -528,7 +528,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_maltese(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 1) {
             return plurality_value::one;
         } else if (op.n == 0 or (op.n % 100 >= 2 and op.n % 100 <= 10)) {
@@ -545,7 +545,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_irish(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 1) {
             return plurality_value::one;
         } else if (op.n == 2) {
@@ -564,7 +564,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_arabic(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 0) {
             return plurality_value::zero;
         } else if (op.n == 1) {
@@ -588,7 +588,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_welsh(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 0) {
             return plurality_value::zero;
         } else if (op.n == 1) {
@@ -612,7 +612,7 @@ struct plural_operand {
 
 [[nodiscard]] constexpr plurality cardinal_plural_cornish(plural_operand op) noexcept
 {
-    hilet value = [&] {
+    auto const value = [&] {
         if (op.n == 0) {
             return plurality_value::zero;
         } else if (op.n == 1) {
@@ -935,7 +935,7 @@ constexpr auto cardinal_plural_table = cardinal_plural_table_init();
         return cardinal_plural_afrikaans(detail::plural_operand(n));
     }
 
-    hilet language_index = language.region.intrinsic();
+    auto const language_index = language.region.intrinsic();
     hi_axiom_bounds(language_index, detail::cardinal_plural_table);
     return detail::cardinal_plural_table[language_index](detail::plural_operand(n));
 }

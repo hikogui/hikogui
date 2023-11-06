@@ -35,9 +35,6 @@ hi_warning_ignore_msvc(4701);
 hi_warning_ignore_msvc(4703);
 hi_warning_ignore_msvc(4189);
 
-#define VMA_IMPLEMENTATION
-#include <vma/vk_mem_alloc.h>
-
 hi_warning_pop();
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS

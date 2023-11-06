@@ -87,7 +87,7 @@ template<fixed_string SourceElements, size_t NumElements>
     }
 
     for (; i != 0; --i) {
-        hilet c = SourceElements[i - 1];
+        auto const c = SourceElements[i - 1];
 
         r <<= shift;
         if (c >= '0' and c <= '9') {
@@ -139,7 +139,7 @@ template<fixed_string SourceElements, size_t NumElements, char Value>
     }
 
     for (; i != 0; --i) {
-        hilet c = SourceElements[i - 1];
+        auto const c = SourceElements[i - 1];
 
         r <<= 1;
         r |= wide_cast<size_t>(c == Value);

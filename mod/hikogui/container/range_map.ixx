@@ -46,7 +46,7 @@ class range_map {
      */
     auto find(Key const &key) noexcept
     {
-        return std::lower_bound(items.begin(), items.end(), key, [](hilet &a, hilet &b) {
+        return std::lower_bound(items.begin(), items.end(), key, [](auto const &a, auto const &b) {
             return a.first < b;
         });
     }
@@ -68,13 +68,13 @@ public:
         // Find all (partially) overlapping items.
         auto first_ = find(first);
         auto last_ = find(last);
-        hilet delta = std::distance(first_, last_);
+        auto const delta = std::distance(first_, last_);
         hi_axiom(delta >= 0);
 
         hi_axiom(first_ != items.end());
         if (first_->first != first) {
             // Split the first element.
-            hilet tmp_last = first_->last;
+            auto const tmp_last = first_->last;
             first_->last = first;
 
             first_ = items.emplace(first_ + 1, first, tmp_last, first_->values);
@@ -84,7 +84,7 @@ public:
         hi_axiom(last_ != items.end());
         if (last_->last != last) {
             // Split the last element.
-            hilet tmp_first = last_->first;
+            auto const tmp_first = last_->first;
             last_->first = last;
 
             last_ = items.emplace(last_, tmp_first, last, first_->values);
@@ -104,7 +104,7 @@ public:
     {
         std::set<
             std::shared_ptr<values>,
-            [](hilet &lhs, hilet &rhs) {
+            [](auto const &lhs, auto const &rhs) {
                 return *lhs < *rhs;
             }>
             values_set;
@@ -113,7 +113,7 @@ public:
         values_set.insert(p->values);
         for (auto i = p + 1; i != items.end(); p = i++) {
             // De-duplicate value-sets.
-            hilet[deduplicated_values, dummy] = values_set.insert(i->values);
+            auto const[deduplicated_values, dummy] = values_set.insert(i->values);
             i->values = *deduplicated_values;
 
             if (can_be_merged(*p, *i)) {

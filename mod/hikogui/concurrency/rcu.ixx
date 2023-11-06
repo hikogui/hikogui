@@ -98,7 +98,7 @@ public:
      */
     [[nodiscard]] size_t capacity() const noexcept
     {
-        hilet lock = std::scoped_lock(_old_ptrs_mutex);
+        auto const lock = std::scoped_lock(_old_ptrs_mutex);
         return _old_ptrs.size() + not empty();
     }
 
@@ -185,7 +185,7 @@ public:
 
         lock();
         auto *const old_ptr = exchange(new_ptr);
-        hilet old_version = version();
+        auto const old_version = version();
         unlock();
 
         add_old_copy(old_version, old_ptr);
@@ -205,7 +205,7 @@ public:
     {
         lock();
         auto *const old_ptr = _ptr.exchange(nullptr, std::memory_order::release);
-        hilet old_version = *_idle_count;
+        auto const old_version = *_idle_count;
         unlock();
 
         add_old_copy(old_version, old_ptr);
@@ -232,9 +232,9 @@ public:
             return;
         }
 
-        hilet new_version = version();
+        auto const new_version = version();
 
-        hilet lock = std::scoped_lock(_old_ptrs_mutex);
+        auto const lock = std::scoped_lock(_old_ptrs_mutex);
         _old_ptrs.emplace_back(old_version, old_ptr);
 
         // Destroy all objects from previous idle-count versions.

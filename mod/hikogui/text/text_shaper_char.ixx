@@ -171,7 +171,7 @@ public:
     void replace_glyph(char32_t code_point) noexcept
     {
         hi_axiom_not_null(glyphs.font);
-        hilet& font = *glyphs.font;
+        auto const& font = *glyphs.font;
         set_glyph(font_book::font_glyphs_type{font, font.find_glyph(code_point)});
 
         glyph_is_initial = false;

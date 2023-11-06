@@ -198,10 +198,10 @@ static_assert(
 {
     auto r = phrasing_mask{};
 
-    for (hilet c : str) {
+    for (auto const c : str) {
         if (c == '*') {
             r = phrasing_mask::all;
-        } else if (hilet p = to_phrasing(c)) {
+        } else if (auto const p = to_phrasing(c)) {
             r = r | to_phrasing_mask(*p);
         } else {
             throw parse_error(std::format("Unknown character '{}' in text-phrasing-mask", c));

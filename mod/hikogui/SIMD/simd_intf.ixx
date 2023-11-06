@@ -79,8 +79,8 @@ hi_warning_ignore_msvc(26472)
 \
         auto r = simd{}; \
         for (std::size_t i = 0; i != N; ++i) { \
-            hilet rhs_vi = std::bit_cast<unsigned_type>(rhs[i]); \
-            hilet r_vi = static_cast<unsigned_type>(op rhs_vi); \
+            auto const rhs_vi = std::bit_cast<unsigned_type>(rhs[i]); \
+            auto const r_vi = static_cast<unsigned_type>(op rhs_vi); \
             r[i] = std::bit_cast<value_type>(r_vi); \
         } \
         return r; \
@@ -93,9 +93,9 @@ hi_warning_ignore_msvc(26472)
 \
         auto r = simd{}; \
         for (std::size_t i = 0; i != N; ++i) { \
-            hilet lhs_vi = std::bit_cast<unsigned_type>(lhs[i]); \
-            hilet rhs_vi = std::bit_cast<unsigned_type>(rhs[i]); \
-            hilet r_vi = static_cast<unsigned_type>(lhs_vi op rhs_vi); \
+            auto const lhs_vi = std::bit_cast<unsigned_type>(lhs[i]); \
+            auto const rhs_vi = std::bit_cast<unsigned_type>(rhs[i]); \
+            auto const r_vi = static_cast<unsigned_type>(lhs_vi op rhs_vi); \
             r[i] = std::bit_cast<value_type>(r_vi); \
         } \
         return r; \
@@ -223,7 +223,7 @@ struct simd {
         }
 
         for (std::size_t i = 0; i != size; ++i) {
-            hilet tmp = i < (size / 2) ? a[i] : b[i];
+            auto const tmp = i < (size / 2) ? a[i] : b[i];
             if constexpr (std::is_integral_v<T> and std::is_floating_point_v<U>) {
                 // SSE conversion round floats before converting to integer.
                 v[i] = static_cast<value_type>(std::round(tmp));
@@ -763,7 +763,7 @@ struct simd {
     {
         HI_X_runtime_evaluate_if_valid(simd{rhs * rcp_sqrt(dot<Mask>(rhs.reg(), rhs.reg()))});
 
-        hilet rcp_hypot_ = rcp_hypot<Mask>(rhs);
+        auto const rcp_hypot_ = rcp_hypot<Mask>(rhs);
 
         auto r = simd{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -782,7 +782,7 @@ struct simd {
     {
         hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
 
-        hilet remainder = narrow_cast<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
+        auto const remainder = narrow_cast<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
 
         return (lhs << rhs) | (lhs >> remainder);
     }
@@ -795,7 +795,7 @@ struct simd {
     {
         hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
 
-        hilet remainder = narrow_cast<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
+        auto const remainder = narrow_cast<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
 
         return (lhs >> rhs) | (lhs << remainder);
     }
@@ -910,9 +910,9 @@ struct simd {
     [[nodiscard]] friend constexpr float cross_2D(simd const& lhs, simd const& rhs) noexcept
         requires(N >= 2)
     {
-        hilet tmp1 = rhs.yxwz();
-        hilet tmp2 = lhs * tmp1;
-        hilet tmp3 = hsub(tmp2, tmp2);
+        auto const tmp1 = rhs.yxwz();
+        auto const tmp2 = lhs * tmp1;
+        auto const tmp3 = hsub(tmp2, tmp2);
         return get<0>(tmp3);
     }
 
@@ -923,13 +923,13 @@ struct simd {
     [[nodiscard]] constexpr friend simd cross_3D(simd const& lhs, simd const& rhs) noexcept
         requires(N == 4)
     {
-        hilet a_left = lhs.yzxw();
-        hilet b_left = rhs.zxyw();
-        hilet left = a_left * b_left;
+        auto const a_left = lhs.yzxw();
+        auto const b_left = rhs.zxyw();
+        auto const left = a_left * b_left;
 
-        hilet a_right = lhs.zxyw();
-        hilet b_right = rhs.yzxw();
-        hilet right = a_right * b_right;
+        auto const a_right = lhs.zxyw();
+        auto const b_right = rhs.yzxw();
+        auto const right = a_right * b_right;
         return left - right;
     }
 
@@ -1011,7 +1011,7 @@ struct simd {
 
         if (not std::is_constant_evaluated()) {
             if constexpr (requires { transpose(columns.reg()...); }) {
-                hilet tmp = transpose(columns.reg()...);
+                auto const tmp = transpose(columns.reg()...);
                 auto r = std::array<simd, size>{};
                 for (auto i = 0_uz; i != size; ++i) {
                     r[i] = simd{tmp[i]};
@@ -1048,13 +1048,13 @@ struct simd {
             return over;
         }
 
-        hilet over_alpha = over.wwww();
-        hilet under_alpha = under.wwww();
+        auto const over_alpha = over.wwww();
+        auto const under_alpha = under.wwww();
 
-        hilet over_color = over.xyz1();
-        hilet under_color = under.xyz1();
+        auto const over_color = over.xyz1();
+        auto const under_color = under.xyz1();
 
-        hilet output_color = over_color * over_alpha + under_color * under_alpha * (T{1} - over_alpha);
+        auto const output_color = over_color * over_alpha + under_color * under_alpha * (T{1} - over_alpha);
 
         return output_color / output_color.www1();
     }

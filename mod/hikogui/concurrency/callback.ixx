@@ -73,7 +73,7 @@ struct callback_base {
      */
     void unsafe_destruct() const noexcept
     {
-        hilet prev_count = count.fetch_sub(1, std::memory_order::relaxed);
+        auto const prev_count = count.fetch_sub(1, std::memory_order::relaxed);
         hi_axiom((prev_count & 1) == 1);
     }
 

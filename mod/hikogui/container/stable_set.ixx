@@ -53,7 +53,7 @@ public:
 
     [[nodiscard]] size_t size() const noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         return _vector.size();
     }
 
@@ -75,7 +75,7 @@ public:
      */
     [[nodiscard]] const_reference operator[](size_t index) const noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         hi_assert_bounds(index, _vector);
         return *_vector[index];
     }
@@ -92,9 +92,9 @@ public:
     template<typename Arg>
     [[nodiscard]] size_t insert(Arg&& arg) noexcept requires(std::is_same_v<std::decay_t<Arg>, value_type>)
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
 
-        hilet[it, is_inserted] = _map.emplace(std::forward<Arg>(arg), _vector.size());
+        auto const[it, is_inserted] = _map.emplace(std::forward<Arg>(arg), _vector.size());
         if (is_inserted) {
             _vector.push_back(std::addressof(it->first));
         }
@@ -113,9 +113,9 @@ public:
     template<typename... Args>
     [[nodiscard]] size_t emplace(Args&&...args) noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
 
-        hilet[it, is_inserted] = _map.emplace(value_type{std::forward<Args>(args)...}, _vector.size());
+        auto const[it, is_inserted] = _map.emplace(value_type{std::forward<Args>(args)...}, _vector.size());
         if (is_inserted) {
             _vector.push_back(std::addressof(it->first));
         }

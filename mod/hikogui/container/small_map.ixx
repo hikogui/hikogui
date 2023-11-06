@@ -42,7 +42,7 @@ public:
     {
         hi_axiom(this != &other);
         _end = items.begin();
-        for (hilet &other_item : other) {
+        for (auto const &other_item : other) {
             auto &this_item = *(_end++);
             this_item = other_item;
         }
@@ -65,7 +65,7 @@ public:
     {
         hi_return_on_self_assignment(other);
         _end = items.begin();
-        for (hilet &other_item : other) {
+        for (auto const &other_item : other) {
             auto &this_item = *(_end++);
             this_item = other_item;
         }
@@ -76,7 +76,7 @@ public:
     {
         hi_return_on_self_assignment(other);
         _end = items.begin();
-        for (hilet &other_item : other) {
+        for (auto const &other_item : other) {
             auto &this_item = *(_end++);
             this_item = std::move(other_item);
         }
@@ -118,7 +118,7 @@ public:
 
     V get(K const &key, V const &default_value) const noexcept
     {
-        if (hilet &value = get(key)) {
+        if (auto const &value = get(key)) {
             return *value;
         } else {
             return default_value;

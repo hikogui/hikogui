@@ -56,7 +56,7 @@ template<typename T, typename... C>
 [[nodiscard]] constexpr std::string_view type_name_token(std::string_view str) noexcept
 {
     for (auto i = 0_uz; i != str.size(); ++i) {
-        hilet c = str[i];
+        auto const c = str[i];
 
         if (not((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '0' and c <= '9') or c == '_')) {
             // End of token.

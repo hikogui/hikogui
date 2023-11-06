@@ -29,10 +29,10 @@ export namespace hi::inline v1 {
 
 void set_thread_name(std::string_view name) noexcept
 {
-    hilet wname = hi::to_wstring(name);
+    auto const wname = hi::to_wstring(name);
     SetThreadDescription(GetCurrentThread(), wname.c_str());
 
-    hilet lock = std::scoped_lock(detail::thread_names_mutex);
+    auto const lock = std::scoped_lock(detail::thread_names_mutex);
     detail::thread_names.emplace(current_thread_id(), std::string{name});
 }
 
@@ -73,11 +73,11 @@ void set_thread_name(std::string_view name) noexcept
 
 std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
 {
-    hilet mask_ = mask_vec_to_int(mask);
+    auto const mask_ = mask_vec_to_int(mask);
 
-    hilet thread_handle = GetCurrentThread();
+    auto const thread_handle = GetCurrentThread();
 
-    hilet old_mask = SetThreadAffinityMask(thread_handle, mask_);
+    auto const old_mask = SetThreadAffinityMask(thread_handle, mask_);
     if (old_mask == 0) {
         throw os_error(std::format("Could not set the thread affinity. '{}'", get_last_error_message()));
     }
@@ -87,7 +87,7 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
 
 [[nodiscard]] std::size_t current_cpu_id() noexcept
 {
-    hilet index = GetCurrentProcessorNumber();
+    auto const index = GetCurrentProcessorNumber();
     hi_assert(index < 64);
     return index;
 }

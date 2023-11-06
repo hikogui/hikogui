@@ -45,8 +45,8 @@ template<std::unsigned_integral T>
 {
     constexpr std::size_t bits_per_digit = sizeof(T) * CHAR_BIT;
 
-    hilet digit_count = index / bits_per_digit;
-    hilet bit_count = index % bits_per_digit;
+    auto const digit_count = index / bits_per_digit;
+    auto const bit_count = index % bits_per_digit;
 
     return (lhs[digit_count] >> bit_count) & 1;
 }
@@ -65,11 +65,11 @@ constexpr void set_bit(T *r, std::size_t index, T value = T{1}) noexcept
 
     constexpr std::size_t bits_per_digit = sizeof(T) * CHAR_BIT;
 
-    hilet digit_count = index / bits_per_digit;
-    hilet bit_count = index % bits_per_digit;
+    auto const digit_count = index / bits_per_digit;
+    auto const bit_count = index % bits_per_digit;
 
     value <<= bit_count;
-    hilet mask = ~(T{1} << bit_count);
+    auto const mask = ~(T{1} << bit_count);
     r[digit_count] = (r[digit_count] & mask) | value;
 }
 
@@ -83,7 +83,7 @@ template<std::unsigned_integral T>
 hi_force_inline constexpr std::pair<T, T> sll_carry(T lhs, std::size_t rhs, T carry = T{0}) noexcept
 {
     constexpr auto num_bits = sizeof(T) * CHAR_BIT;
-    hilet reverse_count = num_bits - rhs;
+    auto const reverse_count = num_bits - rhs;
 
     return {(lhs << rhs) | carry, lhs >> reverse_count};
 }
@@ -98,7 +98,7 @@ template<std::unsigned_integral T>
 hi_force_inline constexpr std::pair<T, T> srl_carry(T lhs, std::size_t rhs, T carry = T{0}) noexcept
 {
     constexpr auto num_bits = sizeof(T) * CHAR_BIT;
-    hilet reverse_count = num_bits - rhs;
+    auto const reverse_count = num_bits - rhs;
 
     return {(lhs >> rhs) | carry, lhs << reverse_count};
 }
@@ -114,7 +114,7 @@ hi_force_inline constexpr std::pair<T, T> sra_carry(T lhs, std::size_t rhs) noex
     using S = std::make_signed_t<T>;
 
     constexpr auto num_bits = sizeof(T) * CHAR_BIT;
-    hilet reverse_count = num_bits - rhs;
+    auto const reverse_count = num_bits - rhs;
 
     return {(static_cast<S>(lhs) >> rhs), lhs << reverse_count};
 }
@@ -136,20 +136,20 @@ hi_force_inline constexpr std::pair<T, T> add_carry(T lhs, T rhs, T carry = T{0}
         // We can use a native type that has double the size.
         using U = make_uintxx_t<num_bits * 2>;
 
-        hilet r = static_cast<U>(lhs) + static_cast<U>(rhs) + static_cast<U>(carry);
+        auto const r = static_cast<U>(lhs) + static_cast<U>(rhs) + static_cast<U>(carry);
         return {static_cast<T>(r), static_cast<T>(r >> num_bits)};
 
     } else if (not std::is_constant_evaluated()) {
 #if HI_COMPILER == HI_CC_MSVC
         uint64_t r;
-        hilet c = _addcarry_u64(static_cast<unsigned char>(carry), lhs, rhs, &r);
+        auto const c = _addcarry_u64(static_cast<unsigned char>(carry), lhs, rhs, &r);
         return {r, static_cast<T>(c)};
 #endif
     }
 
     // Carry can directly be added the sum without a double overflow.
-    hilet r = static_cast<T>(lhs + rhs + carry);
-    hilet c = static_cast<T>(r < lhs or r < rhs);
+    auto const r = static_cast<T>(lhs + rhs + carry);
+    auto const c = static_cast<T>(r < lhs or r < rhs);
     return {r, c};
 }
 
@@ -173,7 +173,7 @@ hi_force_inline constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = T{0}
         // We can use a native type that has double the size.
         using U = make_uintxx_t<num_bits * 2>;
 
-        hilet r = static_cast<U>(lhs) * static_cast<U>(rhs) + static_cast<U>(carry) + static_cast<U>(accumulator);
+        auto const r = static_cast<U>(lhs) * static_cast<U>(rhs) + static_cast<U>(carry) + static_cast<U>(accumulator);
         return {static_cast<T>(r), static_cast<T>(r >> num_bits)};
 
     } else if (not std::is_constant_evaluated()) {
@@ -194,14 +194,14 @@ hi_force_inline constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = T{0}
     constexpr std::size_t num_half_bits = num_bits / 2;
     constexpr T half_mask = (T{1} << num_half_bits) - T{1};
 
-    hilet A = lhs >> num_half_bits;
-    hilet B = lhs & half_mask;
-    hilet C = rhs >> num_half_bits;
-    hilet D = rhs & half_mask;
-    hilet AC = A * C;
-    hilet AD = A * D;
-    hilet BC = B * C;
-    hilet BD = B * D;
+    auto const A = lhs >> num_half_bits;
+    auto const B = lhs & half_mask;
+    auto const C = rhs >> num_half_bits;
+    auto const D = rhs & half_mask;
+    auto const AC = A * C;
+    auto const AD = A * D;
+    auto const BC = B * C;
+    auto const BD = B * D;
 
     // Provisional result.
     auto hi = AC;
@@ -209,10 +209,10 @@ hi_force_inline constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = T{0}
     auto c = T{0};
 
     // AD and BC are shifted half way across the lo and hi of the result.
-    hilet AD_lo = AD << num_half_bits;
-    hilet AD_hi = AD >> num_half_bits;
-    hilet BC_lo = BC << num_half_bits;
-    hilet BC_hi = BC >> num_half_bits;
+    auto const AD_lo = AD << num_half_bits;
+    auto const AD_hi = AD >> num_half_bits;
+    auto const BC_lo = BC << num_half_bits;
+    auto const BC_hi = BC >> num_half_bits;
 
     std::tie(lo, c) = add_carry(lo, AD_lo, T{0});
     std::tie(hi, c) = add_carry(hi, AD_hi, c);
@@ -240,15 +240,15 @@ template<std::unsigned_integral T>
 hi_force_inline constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
 {
     if constexpr (sizeof(T) == 1) {
-        hilet lhs = static_cast<uint16_t>(lhs_hi) << 8 | static_cast<uint16_t>(lhs_lo);
+        auto const lhs = static_cast<uint16_t>(lhs_hi) << 8 | static_cast<uint16_t>(lhs_lo);
         return narrow_cast<uint8_t>(lhs / rhs);
 
     } else if constexpr (sizeof(T) == 2) {
-        hilet lhs = static_cast<uint32_t>(lhs_hi) << 16 | static_cast<uint32_t>(lhs_lo);
+        auto const lhs = static_cast<uint32_t>(lhs_hi) << 16 | static_cast<uint32_t>(lhs_lo);
         return narrow_cast<uint16_t>(lhs / rhs);
 
     } else if constexpr (sizeof(T) == 4) {
-        hilet lhs = static_cast<uint64_t>(lhs_hi) << 32 | static_cast<uint64_t>(lhs_lo);
+        auto const lhs = static_cast<uint64_t>(lhs_hi) << 32 | static_cast<uint64_t>(lhs_lo);
         return narrow_cast<uint32_t>(lhs / rhs);
 
     } else if constexpr (sizeof(T) == 8) {
@@ -268,7 +268,7 @@ hi_force_inline constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
 
 
 #elif HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC
-        hilet lhs = static_cast<unsigned __int128>(lhs_hi) << 64 | static_cast<unsigned __int128>(lhs_lo);
+        auto const lhs = static_cast<unsigned __int128>(lhs_hi) << 64 | static_cast<unsigned __int128>(lhs_lo);
         return static_cast<uint64_t>(lhs / rhs);
 #else
 #error "Not implemented"
@@ -351,8 +351,8 @@ hi_force_inline constexpr void sll_carry_chain(T *r, T const *lhs, std::size_t r
 {
     constexpr std::size_t bits_per_digit = sizeof(T) * CHAR_BIT;
 
-    hilet digit_count = static_cast<ssize_t>(rhs / bits_per_digit);
-    hilet bit_count = rhs % bits_per_digit;
+    auto const digit_count = static_cast<ssize_t>(rhs / bits_per_digit);
+    auto const bit_count = rhs % bits_per_digit;
 
     if (r != lhs or digit_count > 0) {
         ssize_t i;
@@ -384,8 +384,8 @@ hi_force_inline constexpr void srl_carry_chain(T *r, T const *lhs, std::size_t r
 {
     constexpr std::size_t bits_per_digit = sizeof(T) * CHAR_BIT;
 
-    hilet digit_count = rhs / bits_per_digit;
-    hilet bit_count = rhs % bits_per_digit;
+    auto const digit_count = rhs / bits_per_digit;
+    auto const bit_count = rhs % bits_per_digit;
 
     if (r != lhs or digit_count > 0) {
         std::size_t i = 0;
@@ -420,8 +420,8 @@ hi_force_inline constexpr void sra_carry_chain(T *r, T const *lhs, std::size_t r
     using S = std::make_signed_t<T>;
     constexpr std::size_t bits_per_digit = sizeof(T) * CHAR_BIT;
 
-    hilet digit_count = rhs / bits_per_digit;
-    hilet bit_count = rhs % bits_per_digit;
+    auto const digit_count = rhs / bits_per_digit;
+    auto const bit_count = rhs % bits_per_digit;
 
     if (r != lhs or digit_count > 0) {
         hi_axiom(digit_count < n);
@@ -432,7 +432,7 @@ hi_force_inline constexpr void sra_carry_chain(T *r, T const *lhs, std::size_t r
         }
 
         // Sign extent the digits that are unused after a large shift.
-        hilet sign = lhs[n - 1] < 0 ? S{-1} : S{0};
+        auto const sign = lhs[n - 1] < 0 ? S{-1} : S{0};
         for (; i != n; ++i) {
             r[i] = sign;
         }
@@ -521,7 +521,7 @@ template<std::unsigned_integral T>
 cmp_unsigned_carry_chain(T const *lhs, T const *rhs, std::size_t n) noexcept
 {
     for (ssize_t i = static_cast<ssize_t>(n) - 1; i >= 0; --i) {
-        hilet r = lhs[i] <=> rhs[i];
+        auto const r = lhs[i] <=> rhs[i];
         if (r != std::strong_ordering::equal) {
             return r;
         }
@@ -536,7 +536,7 @@ template<std::unsigned_integral T>
 
     // Compare the ms-digit using signed comparison, because it includes the sign-bit
     if (n > 0) {
-        hilet r = static_cast<S>(lhs[n - 1]) <=> static_cast<S>(rhs[n - 1]);
+        auto const r = static_cast<S>(lhs[n - 1]) <=> static_cast<S>(rhs[n - 1]);
         if (r != std::strong_ordering::equal) {
             return r;
         }
@@ -545,7 +545,7 @@ template<std::unsigned_integral T>
     // At this point both values have the same sign, and since the rest of the digits
     // do not have a sign bit, use unsigned comparison.
     for (ssize_t i = static_cast<ssize_t>(n) - 2; i >= 0; --i) {
-        hilet r = lhs[i] <=> rhs[i];
+        auto const r = lhs[i] <=> rhs[i];
         if (r != std::strong_ordering::equal) {
             return r;
         }
@@ -639,11 +639,11 @@ hi_force_inline constexpr void mul_carry_chain(T *hi_restrict r, T const *lhs, T
     hi_axiom(r != lhs and r != rhs);
 
     for (auto rhs_index = 0; rhs_index < n; rhs_index++) {
-        hilet rhs_digit = rhs[rhs_index];
+        auto const rhs_digit = rhs[rhs_index];
 
         T carry = 0;
         for (auto lhs_index = 0; (lhs_index + rhs_index) < n; lhs_index++) {
-            hilet lhs_digit = lhs[lhs_index];
+            auto const lhs_digit = lhs[lhs_index];
 
             T result;
             T accumulator = r[rhs_index + lhs_index];
@@ -669,7 +669,7 @@ constexpr void div_carry_chain(T *hi_restrict quotient, T *hi_restrict remainder
     hi_axiom(quotient != lhs and quotient != rhs and quotient != remainder);
     hi_axiom(remainder != lhs and remainder != rhs);
 
-    hilet nr_bits = static_cast<ssize_t>(n * sizeof(T) * CHAR_BIT);
+    auto const nr_bits = static_cast<ssize_t>(n * sizeof(T) * CHAR_BIT);
 
     for (ssize_t i = nr_bits - 1; i >= 0; i--) {
         sll_carry_chain(remainder, remainder, 1, n);
@@ -702,8 +702,8 @@ signed_div_carry_chain(T *hi_restrict quotient, T *hi_restrict remainder, T cons
 
     using signed_type = std::make_signed_t<T>;
 
-    hilet lhs_is_negative = static_cast<signed_type>(lhs[n - 1]) < 0;
-    hilet rhs_is_negative = static_cast<signed_type>(rhs[n - 1]) < 0;
+    auto const lhs_is_negative = static_cast<signed_type>(lhs[n - 1]) < 0;
+    auto const rhs_is_negative = static_cast<signed_type>(rhs[n - 1]) < 0;
 
     auto tmp = std::vector<T>{};
     if (lhs_is_negative or rhs_is_negative) {

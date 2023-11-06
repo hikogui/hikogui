@@ -78,8 +78,8 @@ public:
      */
     lean_vector(lean_vector const& other)
     {
-        hilet other_size = other.size();
-        hilet update = _reserve<false>(other_size);
+        auto const other_size = other.size();
+        auto const update = _reserve<false>(other_size);
         std::uninitialized_copy_n(other.begin(), other_size, update.ptr);
         _reserve_update(update, other_size);
     }
@@ -94,7 +94,7 @@ public:
     lean_vector(lean_vector&& other) noexcept(std::is_nothrow_move_constructible_v<value_type>)
     {
         if (other._is_short()) {
-            hilet other_size = other._short_size();
+            auto const other_size = other._short_size();
             std::uninitialized_move_n(other.begin(), other_size, begin());
             other._set_short_size(0);
             _set_short_size(other_size);
@@ -117,10 +117,10 @@ public:
     {
         hi_return_on_self_assignment(other);
 
-        hilet other_size = other.size();
+        auto const other_size = other.size();
 
         clear();
-        hilet update = _reserve<false>(other_size);
+        auto const update = _reserve<false>(other_size);
         std::uninitialized_copy_n(other.begin(), other_size, update.ptr);
         _reserve_update(update, other_size);
 
@@ -149,7 +149,7 @@ public:
             shrink_to_fit();
 
             if (other._is_short()) {
-                hilet other_size = other._short_size();
+                auto const other_size = other._short_size();
                 std::uninitialized_move_n(other.begin(), other_size, _short_data());
                 _set_short_size(other_size);
 
@@ -165,8 +165,8 @@ public:
 
     void swap(lean_vector& other) noexcept
     {
-        hilet this_is_short = this->_is_short();
-        hilet other_is_short = other._is_short();
+        auto const this_is_short = this->_is_short();
+        auto const other_is_short = other._is_short();
         if (this_is_short) {
             // By moving other to tmp, we make other short.
             lean_vector tmp = std::move(other);
@@ -193,7 +193,7 @@ public:
             _set_short_size(count);
 
         } else {
-            hilet update = _reserve<false>(count);
+            auto const update = _reserve<false>(count);
             std::uninitialized_value_construct_n(update.ptr, count);
             _reserve_update(update, count);
         }
@@ -206,7 +206,7 @@ public:
             _set_short_size(count);
 
         } else {
-            hilet update = _reserve<false>(count);
+            auto const update = _reserve<false>(count);
             std::uninitialized_fill_n(update.ptr, count, value);
             _reserve_update(update, count);
         }
@@ -361,8 +361,8 @@ public:
      */
     [[nodiscard]] reference at(size_type index)
     {
-        hilet is_short = _is_short();
-        hilet size_ = is_short ? _short_size() : _long_size();
+        auto const is_short = _is_short();
+        auto const size_ = is_short ? _short_size() : _long_size();
         if (index < size_) {
             return _begin_data(is_short)[index];
         } else {
@@ -506,7 +506,7 @@ public:
      */
     void clear() noexcept
     {
-        hilet is_short = _is_short();
+        auto const is_short = _is_short();
         std::destroy(_begin_data(is_short), _end_data(is_short));
         _set_size(0, is_short);
     }
@@ -521,7 +521,7 @@ public:
      */
     void reserve(size_type new_capacity)
     {
-        hilet update = _reserve<false>(new_capacity);
+        auto const update = _reserve<false>(new_capacity);
         _reserve_update(update);
     }
 
@@ -539,9 +539,9 @@ public:
             return;
         }
 
-        hilet old_ptr = _ptr;
-        hilet old_size = size();
-        hilet old_capacity = capacity();
+        auto const old_ptr = _ptr;
+        auto const old_size = size();
+        auto const old_capacity = capacity();
 
         if (old_size <= short_capacity()) {
             _set_short_size(old_size);
@@ -570,14 +570,14 @@ public:
     template<typename... Args>
     iterator emplace(const_iterator pos, Args&&...args)
     {
-        hilet index = pos - begin();
-        hilet new_size = size() + 1;
+        auto const index = pos - begin();
+        auto const new_size = size() + 1;
 
-        hilet update = _reserve<true>(new_size);
+        auto const update = _reserve<true>(new_size);
         std::construct_at(update.end, std::forward<Args>(args)...);
         _reserve_update(update, new_size);
 
-        hilet new_pos = begin() + index;
+        auto const new_pos = begin() + index;
         std::rotate(new_pos, end() - 1, end());
         return new_pos;
     }
@@ -593,14 +593,14 @@ public:
      */
     iterator insert(const_iterator pos, value_type const& value)
     {
-        hilet index = pos - begin();
-        hilet new_size = size() + 1;
+        auto const index = pos - begin();
+        auto const new_size = size() + 1;
 
-        hilet update = _reserve<true>(new_size);
+        auto const update = _reserve<true>(new_size);
         std::uninitialized_copy_n(std::addressof(value), 1, update.end);
         _reserve_update(update, new_size);
 
-        hilet new_pos = begin() + index;
+        auto const new_pos = begin() + index;
         std::rotate(new_pos, end() - 1, end());
         return new_pos;
     }
@@ -616,14 +616,14 @@ public:
      */
     iterator insert(const_iterator pos, value_type&& value)
     {
-        hilet index = pos - begin();
-        hilet new_size = size() + 1;
+        auto const index = pos - begin();
+        auto const new_size = size() + 1;
 
-        hilet update = _reserve<true>(new_size);
+        auto const update = _reserve<true>(new_size);
         std::uninitialized_move_n(std::addressof(value), 1, update.end);
         _reserve_update(update, new_size);
 
-        hilet new_pos = begin() + index;
+        auto const new_pos = begin() + index;
         std::rotate(new_pos, end() - 1, end());
         return new_pos;
     }
@@ -640,14 +640,14 @@ public:
      */
     iterator insert(const_iterator pos, size_type count, value_type const& value)
     {
-        hilet index = pos - begin();
-        hilet new_size = size() + count;
+        auto const index = pos - begin();
+        auto const new_size = size() + count;
 
-        hilet update = _reserve<true>(new_size);
+        auto const update = _reserve<true>(new_size);
         std::uninitialized_fill_n(update.end, count, value);
         _reserve_update(update, new_size);
 
-        hilet new_pos = begin() + index;
+        auto const new_pos = begin() + index;
         std::rotate(new_pos, end() - count, end());
         return new_pos;
     }
@@ -666,16 +666,16 @@ public:
     iterator insert(const_iterator pos, First first, Last last)
     {
         if constexpr (requires { std::distance(first, last); }) {
-            hilet n = std::distance(first, last);
+            auto const n = std::distance(first, last);
 
-            hilet index = pos - begin();
-            hilet new_size = size() + n;
+            auto const index = pos - begin();
+            auto const new_size = size() + n;
 
-            hilet update = _reserve<true>(new_size);
+            auto const update = _reserve<true>(new_size);
             std::uninitialized_move_n(first, n, update.end);
             _reserve_update(update, new_size);
 
-            hilet new_pos = begin() + index;
+            auto const new_pos = begin() + index;
             std::rotate(new_pos, end() - n, end());
             return new_pos;
 
@@ -715,10 +715,10 @@ public:
     iterator erase(const_iterator pos)
     {
         hi_axiom(pos >= begin() and pos <= end());
-        hilet new_pos = begin() + std::distance(cbegin(), pos);
+        auto const new_pos = begin() + std::distance(cbegin(), pos);
         std::move(new_pos + 1, end(), new_pos);
 
-        hilet is_short = _is_short();
+        auto const is_short = _is_short();
         _set_size(size() - 1, is_short);
         std::destroy_at(_end_data(is_short));
         return new_pos;
@@ -738,9 +738,9 @@ public:
      */
     iterator erase(const_iterator first, const_iterator last)
     {
-        hilet first_ = begin() + std::distance(cbegin(), first);
-        hilet last_ = begin() + std::distance(cbegin(), last);
-        hilet n = std::distance(first_, last_);
+        auto const first_ = begin() + std::distance(cbegin(), first);
+        auto const last_ = begin() + std::distance(cbegin(), last);
+        auto const n = std::distance(first_, last_);
         std::move(last_, end(), first_);
         std::destroy(end() - n, end());
         _set_size(size() - n, _is_short());
@@ -757,10 +757,10 @@ public:
     template<typename... Args>
     reference emplace_back(Args&&...args)
     {
-        hilet new_size = size() + 1;
+        auto const new_size = size() + 1;
 
-        hilet update = _reserve<true>(new_size);
-        hilet obj = std::construct_at(update.end, std::forward<Args>(args)...);
+        auto const update = _reserve<true>(new_size);
+        auto const obj = std::construct_at(update.end, std::forward<Args>(args)...);
         _reserve_update(update, new_size);
 
         return *obj;
@@ -772,9 +772,9 @@ public:
      */
     void push_back(value_type const& value)
     {
-        hilet new_size = size() + 1;
+        auto const new_size = size() + 1;
 
-        hilet update = _reserve<true>(new_size);
+        auto const update = _reserve<true>(new_size);
         std::uninitialized_copy_n(std::addressof(value), 1, update.end);
         _reserve_update(update, new_size);
     }
@@ -785,9 +785,9 @@ public:
      */
     void push_back(value_type&& value)
     {
-        hilet new_size = size() + 1;
+        auto const new_size = size() + 1;
 
-        hilet update = _reserve<true>(new_size);
+        auto const update = _reserve<true>(new_size);
         std::uninitialized_move_n(std::addressof(value), 1, update.end);
         _reserve_update(update, new_size);
     }
@@ -802,7 +802,7 @@ public:
     {
         hi_axiom(not empty());
 
-        hilet is_short = _is_short();
+        auto const is_short = _is_short();
         _set_size(size() - 1, is_short);
         std::destroy_at(_end_data(is_short));
     }
@@ -819,16 +819,16 @@ public:
      */
     void resize(size_type new_size)
     {
-        if (hilet old_size = size(); new_size > old_size) {
-            hilet n = new_size - old_size;
+        if (auto const old_size = size(); new_size > old_size) {
+            auto const n = new_size - old_size;
 
-            hilet update = _reserve<true>(new_size);
+            auto const update = _reserve<true>(new_size);
             std::uninitialized_value_construct_n(update.end, n);
             _reserve_update(update, new_size);
 
         } else {
-            hilet is_short = _is_short();
-            hilet n = old_size - new_size;
+            auto const is_short = _is_short();
+            auto const n = old_size - new_size;
             std::destroy(_end_data(is_short) - n, _end_data(is_short));
             _set_size(new_size, is_short);
         }
@@ -847,16 +847,16 @@ public:
      */
     void resize(size_type new_size, value_type const& value)
     {
-        if (hilet old_size = size(); new_size > old_size) {
-            hilet n = new_size - old_size;
+        if (auto const old_size = size(); new_size > old_size) {
+            auto const n = new_size - old_size;
 
-            hilet update = _reserve<true>(new_size);
+            auto const update = _reserve<true>(new_size);
             std::uninitialized_fill_n(update.end, n, value);
             _reserve_update(update, new_size);
 
         } else {
-            hilet is_short = _is_short();
-            hilet n = old_size - new_size;
+            auto const is_short = _is_short();
+            auto const n = old_size - new_size;
             std::destroy(end() - n, end());
             _set_size(new_size, is_short);
         }
@@ -1041,8 +1041,8 @@ private:
     template<bool ForInsert>
     [[nodiscard]] _reserve_type _reserve(size_type new_capacity) const
     {
-        hilet is_short = _is_short();
-        hilet capacity = is_short ? short_capacity() : _long_capacity();
+        auto const is_short = _is_short();
+        auto const capacity = is_short ? short_capacity() : _long_capacity();
         if (new_capacity <= capacity) {
             [[likely]] return {_begin_data(is_short), _end_data(is_short), nullptr, false, is_short};
         }
@@ -1056,9 +1056,9 @@ private:
         }
 
         auto a = get_allocator();
-        hilet new_ptr = std::allocator_traits<allocator_type>::allocate(a, new_capacity);
+        auto const new_ptr = std::allocator_traits<allocator_type>::allocate(a, new_capacity);
 
-        hilet size_ = is_short ? _short_size() : _long_size();
+        auto const size_ = is_short ? _short_size() : _long_size();
         return {new_ptr, new_ptr + size_, new_ptr + new_capacity, true, false};
     }
 
@@ -1068,9 +1068,9 @@ private:
             return;
         }
 
-        hilet is_short = _is_short();
-        hilet old_size = is_short ? _short_size() : _long_size();
-        hilet old_ptr = is_short ? _short_data() : _long_data();
+        auto const is_short = _is_short();
+        auto const old_size = is_short ? _short_size() : _long_size();
+        auto const old_ptr = is_short ? _short_data() : _long_data();
 
         std::uninitialized_move_n(old_ptr, old_size, update.ptr);
         std::destroy_n(old_ptr, old_size);

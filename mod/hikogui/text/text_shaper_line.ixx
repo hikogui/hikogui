@@ -146,7 +146,7 @@ public:
         advance_glyphs(columns, y);
 
         // Calculate the precise width of the line.
-        hilet[visible_width, num_internal_white_space] = calculate_precise_width(columns, paragraph_direction);
+        auto const[visible_width, num_internal_white_space] = calculate_precise_width(columns, paragraph_direction);
 
         // Align the glyphs for a given width. But keep the left side at x=0.0.
         align_glyphs(columns, alignment, paragraph_direction, max_x - min_x, visible_width, num_internal_white_space);
@@ -179,7 +179,7 @@ public:
             return {last, false};
         }
 
-        auto column_it = std::lower_bound(columns.begin(), columns.end(), position.x(), [](hilet& char_it, hilet& x) {
+        auto column_it = std::lower_bound(columns.begin(), columns.end(), position.x(), [](auto const& char_it, auto const& x) {
             return char_it->rectangle.right() < x;
         });
         if (column_it == columns.end()) {
@@ -206,7 +206,7 @@ public:
             }
         }
 
-        hilet after = (char_it->direction == unicode_bidi_class::L) == position.x() > char_it->rectangle.center();
+        auto const after = (char_it->direction == unicode_bidi_class::L) == position.x() > char_it->rectangle.center();
         return {char_it, after};
     }
 
@@ -218,10 +218,10 @@ private:
     {
         hi_axiom(first != last);
 
-        hilet char_it = *first;
-        hilet& font = *char_it->glyphs.font;
-        hilet script = char_it->script;
-        hilet language = iso_639{};
+        auto const char_it = *first;
+        auto const& font = *char_it->glyphs.font;
+        auto const script = char_it->script;
+        auto const language = iso_639{};
 
         auto run = gstring{};
         run.reserve(std::distance(first, last));
@@ -254,14 +254,14 @@ private:
 
         auto run_start = columns.begin();
         for (auto it = run_start + 1; it != columns.end(); ++it) {
-            hilet start_char_it = *run_start;
-            hilet char_it = *it;
+            auto const start_char_it = *run_start;
+            auto const char_it = *it;
 
-            hilet same_font = start_char_it->glyphs.font == char_it->glyphs.font;
-            hilet same_style = start_char_it->style == char_it->style;
-            hilet same_size = start_char_it->scale == char_it->scale;
-            hilet same_language = true;
-            hilet same_script = start_char_it->script == char_it->script;
+            auto const same_font = start_char_it->glyphs.font == char_it->glyphs.font;
+            auto const same_style = start_char_it->style == char_it->style;
+            auto const same_size = start_char_it->scale == char_it->scale;
+            auto const same_language = true;
+            auto const same_script = start_char_it->script == char_it->script;
 
             if (not(same_font and same_style and same_size and same_language and same_script)) {
                 advance_glyphs_run(p, run_start, it);
@@ -284,7 +284,7 @@ private:
                 break;
             }
         }
-        hilet left_x = (*it)->position.x();
+        auto const left_x = (*it)->position.x();
 
         auto right_x = left_x;
         auto num_white_space = 0_uz;
@@ -300,7 +300,7 @@ private:
             }
         }
 
-        hilet width = right_x - left_x;
+        auto const width = right_x - left_x;
 
         // Adjust the offset to left align on the first visible character.
         for (auto& char_it : columns) {
@@ -312,7 +312,7 @@ private:
 
     static void move_glyphs(text_shaper_line::column_vector& columns, float offset) noexcept
     {
-        for (hilet& char_it : columns) {
+        for (auto const& char_it : columns) {
             char_it->position.x() += offset;
         }
     }
@@ -327,14 +327,14 @@ private:
             return false;
         }
 
-        hilet extra_space = max_line_width - visible_width;
+        auto const extra_space = max_line_width - visible_width;
         if (extra_space > max_line_width * 0.25f) {
             return false;
         }
 
-        hilet extra_space_per_whitespace = extra_space / num_internal_white_space;
+        auto const extra_space_per_whitespace = extra_space / num_internal_white_space;
         auto offset = 0.0f;
-        for (hilet& char_it : columns) {
+        for (auto const& char_it : columns) {
             char_it->position.x() += offset;
 
             // Add extra space for each white space in the visible part of the line. Leave the
@@ -366,7 +366,7 @@ private:
         }
 
         // clang-format off
-    hilet offset =
+    auto const offset =
         alignment == horizontal_alignment::left ? 0.0f :
         alignment == horizontal_alignment::right ? max_line_width - visible_width :
         (max_line_width - visible_width) * 0.5f;
@@ -377,7 +377,7 @@ private:
 
     static void round_glyph_positions(text_shaper_line::column_vector& columns, float sub_pixel_width) noexcept
     {
-        hilet rcp_sub_pixel_width = 1.0f / sub_pixel_width;
+        auto const rcp_sub_pixel_width = 1.0f / sub_pixel_width;
         for (auto it : columns) {
             it->position.x() = std::round(it->position.x() * rcp_sub_pixel_width) * sub_pixel_width;
         }
@@ -387,14 +387,14 @@ private:
     create_bounding_rectangles(text_shaper_line::column_vector& columns, float y, float ascender, float descender) noexcept
     {
         for (auto it = columns.begin(); it != columns.end(); ++it) {
-            hilet next_it = it + 1;
-            hilet char_it = *it;
+            auto const next_it = it + 1;
+            auto const char_it = *it;
             if (next_it == columns.end()) {
                 char_it->rectangle = {
                     point2{char_it->position.x(), y - descender},
                     point2{char_it->position.x() + char_it->metrics.advance, y + ascender}};
             } else {
-                hilet next_char_it = *next_it;
+                auto const next_char_it = *next_it;
 
                 if (next_char_it->position.x() <= char_it->position.x()) {
                     // Somehow the next character is overlapping with the current character, use the advance instead.

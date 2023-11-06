@@ -61,8 +61,8 @@ void set_thread_name(std::string_view name) noexcept;
  */
 [[nodiscard]] std::string get_thread_name(thread_id id) noexcept
 {
-    hilet lock = std::scoped_lock(detail::thread_names_mutex);
-    hilet it = detail::thread_names.find(id);
+    auto const lock = std::scoped_lock(detail::thread_names_mutex);
+    auto const it = detail::thread_names.find(id);
     if (it != detail::thread_names.end()) {
         return it->second;
     } else {

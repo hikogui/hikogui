@@ -40,7 +40,7 @@ struct char_map<"ascii"> {
     {
         hi_axiom(it != last);
 
-        hilet c = char_cast<char32_t>(*it++);
+        auto const c = char_cast<char32_t>(*it++);
         if (c < 0x80) {
             return {c, true};
         } else {

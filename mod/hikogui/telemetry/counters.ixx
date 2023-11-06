@@ -41,9 +41,9 @@ public:
      */
     [[nodiscard]] static counter *get_if(std::string const& name) noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
-        hilet& map_ = _map.get_or_make();
-        hilet it = map_.find(name);
+        auto const lock = std::scoped_lock(_mutex);
+        auto const& map_ = _map.get_or_make();
+        auto const it = map_.find(name);
         if (it == map_.cend()) {
             return nullptr;
         } else {
@@ -66,9 +66,9 @@ public:
 
     static void log() noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         log_header();
-        for (hilet & [ string, counter ] : _map.get_or_make()) {
+        for (auto const & [ string, counter ] : _map.get_or_make()) {
             hi_assert(counter);
             counter->log(string);
         }
@@ -87,22 +87,22 @@ public:
      */
     void log(std::string const& tag) noexcept
     {
-        hilet total_count = _total_count.load(std::memory_order::relaxed);
-        hilet prev_count = _prev_count.exchange(_total_count, std::memory_order::relaxed);
-        hilet delta_count = total_count - prev_count;
+        auto const total_count = _total_count.load(std::memory_order::relaxed);
+        auto const prev_count = _prev_count.exchange(_total_count, std::memory_order::relaxed);
+        auto const delta_count = total_count - prev_count;
         if (delta_count != 0) {
-            hilet duration_max = time_stamp_count::duration_from_count(_duration_max.exchange(0, std::memory_order::relaxed));
-            hilet duration_min = time_stamp_count::duration_from_count(
+            auto const duration_max = time_stamp_count::duration_from_count(_duration_max.exchange(0, std::memory_order::relaxed));
+            auto const duration_min = time_stamp_count::duration_from_count(
                 _duration_min.exchange(std::numeric_limits<uint64_t>::max(), std::memory_order::relaxed));
 
-            hilet duration_avg = _duration_avg.exchange(0, std::memory_order::relaxed);
+            auto const duration_avg = _duration_avg.exchange(0, std::memory_order::relaxed);
             if (duration_avg == 0) {
                 hi_log_statistics("{:>18} {:>+9} {:10} {:10} {:10} {}", total_count, delta_count, "", "", "", tag);
 
             } else {
-                hilet avg_count = duration_avg & 0xffff;
-                hilet avg_sum = duration_avg >> 16;
-                hilet average = time_stamp_count::duration_from_count(avg_sum / avg_count);
+                auto const avg_count = duration_avg & 0xffff;
+                auto const avg_sum = duration_avg >> 16;
+                auto const average = time_stamp_count::duration_from_count(avg_sum / avg_count);
 
                 hi_log_statistics(
                     "{:18d} {:+9d} {:>10} {:>10} {:>10} {}",
@@ -178,7 +178,7 @@ class tagged_counter : public counter {
 public:
     tagged_counter() noexcept : counter()
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         _map.get_or_make()[std::string{Tag}] = this;
     }
 };
@@ -205,7 +205,7 @@ void log::log_thread_main(std::stop_token stop_token) noexcept
     while (not stop_token.stop_requested()) {
         log_global.flush();
 
-        hilet now = std::chrono::utc_clock::now();
+        auto const now = std::chrono::utc_clock::now();
         if (now >= counter_statistics_deadline) {
             counter_statistics_deadline = now + 1min;
             detail::counter::log();

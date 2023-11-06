@@ -73,7 +73,7 @@ T safe_convert(U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     T r;
     // Optimized away when is_same_v<T,U>
-    hilet overflow = convert_overflow(rhs, &r);
+    auto const overflow = convert_overflow(rhs, &r);
     return safe_handle_overflow<T, OnOverflow>(r, overflow, rhs >= 0);
 }
 
@@ -81,10 +81,10 @@ template<on_overflow_t OnOverflow, typename T, typename U>
 make_promote_t<T, U> safe_add(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T, U> r;
-    hilet lhs_ = static_cast<make_promote_t<T, U>>(lhs);
-    hilet rhs_ = static_cast<make_promote_t<T, U>>(rhs);
+    auto const lhs_ = static_cast<make_promote_t<T, U>>(lhs);
+    auto const rhs_ = static_cast<make_promote_t<T, U>>(rhs);
 
-    hilet overflow = add_overflow(lhs_, rhs_, &r);
+    auto const overflow = add_overflow(lhs_, rhs_, &r);
     return safe_handle_overflow<T, OnOverflow>(r, overflow, rhs_ >= 0);
 }
 
@@ -92,10 +92,10 @@ template<on_overflow_t OnOverflow, typename T, typename U>
 make_promote_t<T, U> safe_sub(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T, U> r;
-    hilet lhs_ = static_cast<make_promote_t<T, U>>(lhs);
-    hilet rhs_ = static_cast<make_promote_t<T, U>>(rhs);
+    auto const lhs_ = static_cast<make_promote_t<T, U>>(lhs);
+    auto const rhs_ = static_cast<make_promote_t<T, U>>(rhs);
 
-    hilet overflow = sub_overflow(lhs_, rhs_, &r);
+    auto const overflow = sub_overflow(lhs_, rhs_, &r);
     return safe_handle_overflow<T, OnOverflow>(r, overflow, rhs_ >= 0);
 }
 
@@ -103,10 +103,10 @@ template<on_overflow_t OnOverflow, typename T, typename U>
 make_promote_t<T, U> safe_mul(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T, U> r;
-    hilet lhs_ = static_cast<make_promote_t<T, U>>(lhs);
-    hilet rhs_ = static_cast<make_promote_t<T, U>>(rhs);
+    auto const lhs_ = static_cast<make_promote_t<T, U>>(lhs);
+    auto const rhs_ = static_cast<make_promote_t<T, U>>(rhs);
 
-    hilet overflow = mul_overflow(lhs_, rhs_, &r);
+    auto const overflow = mul_overflow(lhs_, rhs_, &r);
     return safe_handle_overflow<T, OnOverflow>(r, overflow, rhs_ >= 0);
 }
 

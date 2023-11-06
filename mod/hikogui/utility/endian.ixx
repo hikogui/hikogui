@@ -222,8 +222,8 @@ template<unsigned int NumBits, byte_like B>
 
     constexpr auto value_bits = sizeof(value_type) * CHAR_BIT;
 
-    hilet byte_offset = bit_index / CHAR_BIT;
-    hilet bit_offset = bit_index % CHAR_BIT;
+    auto const byte_offset = bit_index / CHAR_BIT;
+    auto const bit_offset = bit_index % CHAR_BIT;
 
     // Optimization of reading a byte, aligned to a byte.
     if constexpr (num_bits == CHAR_BIT) {

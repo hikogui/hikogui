@@ -37,7 +37,7 @@ constexpr float cvtsh_ss(uint16_t value) noexcept
     uint32_t u = value;
 
     // Extract the sign bit.
-    hilet sign = (u >> 15) << 31;
+    auto const sign = (u >> 15) << 31;
 
     // Strip the sign bit and align the exponent/mantissa boundary to a float 32.
     u = (u << 17) >> 4;
@@ -46,7 +46,7 @@ constexpr float cvtsh_ss(uint16_t value) noexcept
     u = u + f32_to_f16_adjustment;
 
     // Get a mask of '1' bits when the half-float would be normal or infinite.
-    hilet is_normal = u > (f32_to_f16_lowest_normal - 1);
+    auto const is_normal = u > (f32_to_f16_lowest_normal - 1);
 
     // Add the sign bit back in.
     u = u | sign;
@@ -63,13 +63,13 @@ constexpr uint16_t cvtss_sh(float value) noexcept
     auto u = std::bit_cast<uint32_t>(value);
 
     // Get the sign of the floating point number as a bit mask of the upper 17 bits.
-    hilet sign = static_cast<uint32_t>(static_cast<int32_t>(u) >> 31) << 15;
+    auto const sign = static_cast<uint32_t>(static_cast<int32_t>(u) >> 31) << 15;
 
     // Strip sign bit.
     u = (u << 1) >> 1;
 
     // Get a mask of '1' bits when the half-float would be normal or infinite.
-    hilet is_normal = u > (f32_to_f16_lowest_normal - 1);
+    auto const is_normal = u > (f32_to_f16_lowest_normal - 1);
 
     // Clamp the floating point number to where the half-float would be infinite.
     u = std::min(u, f32_to_f16_infinite); // SSE4.1
@@ -159,9 +159,9 @@ export struct float16 {
 
     //[[nodiscard]] constexpr friend float16 operator%(float16 const& lhs, float16 const& rhs) noexcept
     //{
-    //    hilet lhs_ = static_cast<float>(lhs);
-    //    hilet rhs_ = static_cast<float>(rhs);
-    //    hilet div_result = std::floor(lhs_ / rhs_);
+    //    auto const lhs_ = static_cast<float>(lhs);
+    //    auto const rhs_ = static_cast<float>(rhs);
+    //    auto const div_result = std::floor(lhs_ / rhs_);
     //    return float16{lhs_ - (div_result * rhs_)};
     //}
 

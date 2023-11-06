@@ -17,41 +17,7 @@ else()
     set(LIBRARY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/metadata/library_metadata.ixx.in
-    ${CMAKE_CURRENT_BINARY_DIR}/mod/hikogui/metadata/library_metadata.ixx @ONLY)
-
-target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/mod/" FILES
-${CMAKE_CURRENT_BINARY_DIR}/mod/hikogui/metadata/library_metadata.ixx
-)
-
 target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/mod/" FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_block.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_channel.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_device.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_device_asio.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_device_delegate.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_device_state.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_device_win32.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_direction.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_format_range.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_sample_format.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_sample_packer.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_sample_unpacker.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_stream_config.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_stream_format.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_stream_format_win32.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_system.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_system_aggregate.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_system_asio.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio_system_win32.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/audio.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/pcm_format.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/speaker_mapping.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/speaker_mapping_win32.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/surround_mode.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/win32_device_interface.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/audio/win32_wave_device.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/algorithm/algorithm.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/algorithm/animator.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/algorithm/algorithm_misc.ixx
@@ -68,28 +34,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/char_maps/utf_16.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/char_maps/utf_32.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/char_maps/utf_8.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/base_n.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/BON8.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/datum.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/gzip.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/huffman.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/indent.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/inflate.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/JSON.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/jsonpath.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/codec.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/pickle.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/png.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/SHA2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/codec/zlib.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/color/color.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/color/color_space.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/color/color_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/color/quad_color.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/color/Rec2020.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/color/Rec2100.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/color/semantic_color.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/color/sRGB.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/atomic.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/callback.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/callback_flags.ixx
@@ -120,7 +64,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/lean_vector.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/container.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/polymorphic_optional.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/secure_vector.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/small_map.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/small_vector.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/stable_set.ixx
@@ -135,197 +78,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/generator.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/coroutine.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/task.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/terminate.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/dispatch.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/function_timer.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/notifier.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/scoped_task.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/when_any.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/access_mode.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_intf.ixx
-    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_posix_impl.ixx>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_view.ixx
-    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_view_posix_impl.ixx>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_view_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/resource_view.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/seek_whence.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/elusive_icon.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font_book.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font_char_map.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font_family_id.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font_metrics.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font_variant.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font_weight.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/glyph_atlas_info.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/glyph_id.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/glyph_metrics.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/hikogui_icon.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font_font.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/font_style.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_cmap.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_glyf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_head.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_hhea.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_hmtx.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_kern.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_loca.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_maxp.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_name.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_os2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_sfnt.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_utilities.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/true_type_font.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_add_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_arguments.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_assign_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_binary_operator_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_bit_and_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_bit_or_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_bit_xor_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_call_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_decrement_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_div_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_eq_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_evaluation_context.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_filter_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_ge_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_gt_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_increment_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_index_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_add_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_and_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_div_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_mod_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_mul_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_or_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_shl_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_shr_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_sub_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_xor_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_invert_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_le_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_literal_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_logical_and_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_logical_not_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_logical_or_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_lt_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_map_literal_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_member_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_minus_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_mod_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_mul_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_name_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_ne_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_parser.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_plus_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_post_process_context.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_pow_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_shl_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_shr_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_sub_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_ternary_operator_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_unary_operator_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_vector_literal_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/draw_context_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/draw_context_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_device_vulkan_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_device_vulkan_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_queue_vulkan.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_surface_delegate_vulkan.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_surface_state.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_surface_vulkan_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_surface_vulkan_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_system_globals.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_system_vulkan_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_system_vulkan_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/GFX.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_override_vulkan_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_override_vulkan_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_box_vulkan_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_box_vulkan_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_image_vulkan_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_image_vulkan_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_SDF_vulkan_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_SDF_vulkan_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_tone_mapper_vulkan_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_tone_mapper_vulkan_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_vulkan_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_pipeline_vulkan_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/render_doc.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/gui_event.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/gui_event_type.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/gui_event_variant.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/gui_window_size.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/gui_window_win32.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/hitbox.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/keyboard_bindings.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/keyboard_focus_direction.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/keyboard_focus_group.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/keyboard_key.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/keyboard_modifiers.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/keyboard_state.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/keyboard_virtual_key_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/keyboard_virtual_key_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/GUI.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/mouse_buttons.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/mouse_cursor.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/theme.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/theme_book.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_id.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_layout.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/aarectangle.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/alignment.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/axis.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/circle.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/corner_radii.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/extent2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/extent3.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/line_end_cap.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/line_join_style.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/line_segment.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/lookat.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/margins.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/matrix2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/matrix3.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/geometry.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/perspective.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/point2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/point3.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/quad.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/rectangle.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/rotate2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/rotate3.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/scale2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/scale3.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/transform.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/translate2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/translate3.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/vector2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/vector3.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/graphic_path/bezier.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/graphic_path/bezier_curve.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/graphic_path/bezier_point.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/graphic_path/graphic_path.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/graphic_path/graphic_path.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/i18n/iso_15924.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/i18n/iso_15924_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/i18n/iso_15924_impl.ixx
@@ -337,43 +89,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/i18n/language_tag_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/i18n/language_tag_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/i18n/i18n.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/image.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/pixmap.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/pixmap_span.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/sdf_r8.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/sfloat_rg32.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/sfloat_rgb32.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/sfloat_rgba16.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/sfloat_rgba32.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/sfloat_rgba32x4.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/sint_abgr8_pack.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/snorm_r8.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/srgb_abgr8_pack.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/uint_abgr8_pack.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/image/unorm_a2bgr10_pack.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/label.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/l10n.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/po_parser.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/txt.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/translation.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/box_constraints.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/box_shape.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/grid_layout.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/layout.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/row_column_layout.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/spreadsheet_address.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/memory/locked_memory_allocator.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/memory/locked_memory_allocator_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/memory/locked_memory_allocator_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/memory/memory.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/memory/secure_memory_allocator.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/metadata/application_metadata.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/metadata/metadata.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/metadata/semantic_version.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/net/net.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/net/packet.ixx
-    #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/net/packet_buffer.ixx
-    #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/net/stream.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/bigint.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/bound_integer.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/decimal.ixx
@@ -384,32 +99,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/numeric.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/polynomial.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/safe_int.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/group_ptr.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observer_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observed.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observed_value.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observer.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/shared_state.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/lexer.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/lookahead_iterator.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/operator.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/parse_location.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/parser.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/placement.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/token.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/path/glob.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/path/path.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/path/path_location.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/path/path_location_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/path/path_location_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/path/URI.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/path/URL.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/dither.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/random.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/seed.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/seed_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/seed_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/xorshift128p.ixx
     #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/float16_sse4_1.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/SIMD.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_f16x8_sse2.ixx
@@ -423,53 +112,12 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_simd_utility.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_u32x4_sse2.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/simd_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/sip_hash.ixx
-    #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/cpu_id.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/settings.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/os_settings.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/os_settings_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/os_settings_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/preferences.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/theme_mode.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/subpixel_orientation.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/user_settings.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/user_settings_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/user_settings_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/parser.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_block_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_break_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_continue_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_do_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_expression_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_for_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_function_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_if_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_parse_context.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_placeholder_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_return_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_string_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_top_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_while_node.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/telemetry/counters.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/telemetry/delayed_format.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/telemetry/format_check.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/telemetry/log.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/telemetry/telemetry.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/telemetry/trace.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/text/text.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/text/semantic_text_style.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/text/text_cursor.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/text/text_decoration.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/text/text_selection.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/text/text_shaper.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/text/text_shaper_char.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/text/text_shaper_line.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/text/text_style.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/time/chrono.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/time/time.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/time/time_stamp_count.ixx
@@ -535,41 +183,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/type_traits.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/units.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/value_traits.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/abstract_button_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/audio_device_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/button_delegate.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/checkbox_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/grid_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/icon_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/label_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/menu_button_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/widgets.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/momentary_button_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/overlay_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/radio_button_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/scroll_aperture_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/scroll_bar_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/scroll_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/selection_delegate.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/selection_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/spacer_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/system_menu_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/tab_delegate.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/tab_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_delegate.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_field_delegate.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_field_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toggle_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_button_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_tab_button_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/widget_mode.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_controls_macos_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_controls_win32_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/with_label_widget.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/base.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/win32.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/winnls.ixx>
@@ -578,7 +191,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
 )
 
 target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/mod/"  FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/renderdoc_app.h
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/macros.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/test.hpp

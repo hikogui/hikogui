@@ -45,9 +45,9 @@ struct char_map<"utf-8"> {
 
     [[nodiscard]] constexpr std::pair<char32_t, bool> read_fallback(char const cu) const noexcept
     {
-        hilet str = std::string_view(&cu, 1_uz);
+        auto const str = std::string_view(&cu, 1_uz);
         auto first = str.begin();
-        hilet[code_point, valid] = fallback_encoder_type{}.read(first, str.end());
+        auto const[code_point, valid] = fallback_encoder_type{}.read(first, str.end());
         return {code_point, false};
     }
 
@@ -60,7 +60,7 @@ struct char_map<"utf-8"> {
             return read_fallback(char_cast<char>(first_cu));
 
         } else {
-            hilet length = narrow_cast<uint8_t>(std::countl_one(char_cast<uint8_t>(first_cu)));
+            auto const length = narrow_cast<uint8_t>(std::countl_one(char_cast<uint8_t>(first_cu)));
             hi_axiom(length >= 2);
 
             // First part of the code-point.
@@ -147,7 +147,7 @@ struct char_map<"utf-8"> {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
-        hilet num_cu = truncate<uint8_t>((code_point > 0x7f) + (code_point > 0x7ff) + (code_point > 0xffff));
+        auto const num_cu = truncate<uint8_t>((code_point > 0x7f) + (code_point > 0x7ff) + (code_point > 0xffff));
 
         auto leading_ones = char_cast<int8_t>(uint8_t{0x80});
         leading_ones >>= num_cu;

@@ -99,7 +99,7 @@ export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr bool is_digit(std::string_view str) noexcept
 {
-    for (hilet c : str) {
+    for (auto const c : str) {
         if (not is_digit(c)) {
             return false;
         }
@@ -109,7 +109,7 @@ export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr bool is_alpha(std::string_view str) noexcept
 {
-    for (hilet c : str) {
+    for (auto const c : str) {
         if (not is_alpha(c)) {
             return false;
         }
@@ -132,7 +132,7 @@ export namespace hi::inline v1 {
     std::string r;
     r.reserve(size(str));
 
-    for (hilet c : str) {
+    for (auto const c : str) {
         r += to_lower(c);
     }
 
@@ -144,7 +144,7 @@ export namespace hi::inline v1 {
     std::string r;
     r.reserve(size(str));
 
-    for (hilet c : str) {
+    for (auto const c : str) {
         r += to_upper(c);
     }
 
@@ -208,7 +208,7 @@ template<size_t N>
     r.reserve(size(str));
 
     auto found_cr = false;
-    for (hilet c : str) {
+    for (auto const c : str) {
         if (found_cr) {
             // This is Microsoft or old-Apple, we replace the previous carriage-return
             // with a line-feed and emit the current character.
@@ -240,7 +240,7 @@ template<size_t N>
     r.reserve(size(str));
 
     r += is_name_first(str.front()) ? str.front() : '_';
-    for (hilet c : str.substr(1)) {
+    for (auto const c : str.substr(1)) {
         r += is_name_next(c) ? c : '_';
     }
 
@@ -257,7 +257,7 @@ template<size_t N>
     r.reserve(size(str));
 
     std::size_t dash_count = 0;
-    for (hilet c : str) {
+    for (auto const c : str) {
         if (is_alpha_num(c)) {
             dash_count = 0;
             r += to_lower(c);
@@ -271,7 +271,7 @@ template<size_t N>
 
 [[nodiscard]] constexpr bool is_slug(std::string_view str) noexcept
 {
-    for (hilet c : str) {
+    for (auto const c : str) {
         if (not (is_alpha_num(c) or c == '-')) {
             return false;
         }
@@ -293,7 +293,7 @@ template<size_t N>
     // Do not start with a space.
     std::size_t space_count = 1;
     std::size_t letter_count = 0;
-    for (hilet c : str) {
+    for (auto const c : str) {
         if (is_alpha_num(c)) {
             if (is_digit(c)) {
                 r += c;
@@ -380,7 +380,7 @@ string_find_any(std::string_view haystack, std::size_t pos, FirstNeedle const& f
     }
 
     if constexpr (sizeof...(Needles) != 0) {
-        hilet[other_first, other_last] = string_find_any(haystack, pos, needles...);
+        auto const[other_first, other_last] = string_find_any(haystack, pos, needles...);
         if (other_first < first) {
             first = other_first;
             last = other_last;
@@ -398,7 +398,7 @@ template<typename StringType, typename... Needles>
     std::string_view::size_type current_pos = 0;
 
     while (current_pos < size(haystack)) {
-        hilet[needle_first, needle_last] = string_find_any(haystack, current_pos, needles...);
+        auto const[needle_first, needle_last] = string_find_any(haystack, current_pos, needles...);
         r.push_back(StringType{haystack.substr(current_pos, needle_first - current_pos)});
         current_pos = needle_last;
     }
@@ -436,14 +436,14 @@ join(std::vector<std::basic_string<CharT>> const& list, std::basic_string_view<C
 
     if (list.size() > 1) {
         std::size_t final_size = (list.size() - 1) * joiner.size();
-        for (hilet& item : list) {
+        for (auto const& item : list) {
             final_size += item.size();
         }
         r.reserve(final_size);
     }
 
     std::size_t i = 0;
-    for (hilet& item : list) {
+    for (auto const& item : list) {
         if (i++ != 0) {
             r += joiner;
         }
@@ -471,14 +471,14 @@ template<typename CharT>
 
     if (list.size() > 1) {
         std::size_t final_size = (list.size() - 1) * joiner.size();
-        for (hilet item : list) {
+        for (auto const item : list) {
             final_size += item.size();
         }
         r.reserve(final_size);
     }
 
     int64_t i = 0;
-    for (hilet item : list) {
+    for (auto const item : list) {
         if (i++ > 0) {
             r += joiner;
         }

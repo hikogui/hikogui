@@ -67,7 +67,7 @@ public:
     [[nodiscard]] constexpr friend char get(iso_639 const& rhs) noexcept
     {
         constexpr auto shift = I * 5;
-        hilet x = (rhs._v >> shift) & 0x1f;
+        auto const x = (rhs._v >> shift) & 0x1f;
         if (x == 0) {
             return 0;
         } else if (x <= 26) {
@@ -127,7 +127,7 @@ public:
      */
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        hilet tmp = _v & 0x7fff;
+        auto const tmp = _v & 0x7fff;
         // clang-format off
         return
             tmp == 0 ? 0 :

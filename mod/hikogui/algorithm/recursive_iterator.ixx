@@ -149,7 +149,7 @@ public:
         }
 
         do {
-            hilet left_in_child = std::distance(_child_it, std::end(*_parent_it));
+            auto const left_in_child = std::distance(_child_it, std::end(*_parent_it));
 
             if (left_in_child <= rhs) {
                 ++_parent_it;
@@ -175,7 +175,7 @@ public:
         }
 
         do {
-            hilet left_in_child = !at_end() ? std::distance(std::begin(*_parent_it), _child_it) + 1 : 0;
+            auto const left_in_child = !at_end() ? std::distance(std::begin(*_parent_it), _child_it) + 1 : 0;
 
             if (left_in_child < rhs) {
                 --_parent_it;
