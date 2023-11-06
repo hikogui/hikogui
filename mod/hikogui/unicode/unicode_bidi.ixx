@@ -5,6 +5,13 @@
 module;
 #include "../macros.hpp"
 
+#include <cstdint>
+#include <exception>
+#include <cstddef>
+#include <vector>
+#include <utility>
+#include <iterator>
+#include <algorithm>
 
 export module hikogui_unicode_unicode_bidi;
 import hikogui_algorithm;

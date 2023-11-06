@@ -11,7 +11,6 @@ export import hikogui_concurrency_callback;
 export import hikogui_concurrency_callback_flags;
 export import hikogui_concurrency_global_state;
 export import hikogui_concurrency_id_factory;
-export import hikogui_concurrency_notifier;
 export import hikogui_concurrency_rcu;
 export import hikogui_concurrency_subsystem;
 export import hikogui_concurrency_thread;

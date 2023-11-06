@@ -37,7 +37,7 @@ public:
     template<std::size_t I>
     constexpr friend bool set(iso_639& rhs, char c) noexcept
     {
-        if (not c == 0 or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '1' and c <= '5')) {
+        if (not (c == 0 or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '1' and c <= '5'))) {
             // Must be letters or the digits between '1' and '5', or nul.
             return false;
         }

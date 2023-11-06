@@ -12,6 +12,7 @@ module;
 #include <concepts>
 #include <thread>
 #include <optional>
+#include <chrono>
 
 export module hikogui_container_polymorphic_optional;
 import hikogui_utility;

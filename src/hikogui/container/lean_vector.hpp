@@ -662,7 +662,8 @@ public:
      * @param last An iterator to one beyond the last item to copy.
      * @return An iterator pointing to the newly inserted item.
      */
-    iterator insert(const_iterator pos, std::input_iterator auto first, std::input_iterator auto last)
+    template<std::input_iterator First, std::input_iterator Last>
+    iterator insert(const_iterator pos, First first, Last last)
     {
         if constexpr (requires { std::distance(first, last); }) {
             hilet n = std::distance(first, last);

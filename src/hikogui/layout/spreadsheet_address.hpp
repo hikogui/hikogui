@@ -30,6 +30,7 @@
 #include "../macros.hpp"
 #include <tuple>
 #include <string_view>
+#include <format>
 
 hi_export_module(hikogui.layout.spreadsheet_address);
 

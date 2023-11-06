@@ -8,8 +8,13 @@
 
 #pragma once
 
-#include "../l10n/l10n.hpp"
 #include "../observer/observer.hpp"
+#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../dispatch/dispatch.hpp"
+#include "../GUI/GUI.hpp"
+#include "../macros.hpp"
+#include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>

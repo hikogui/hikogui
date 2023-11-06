@@ -20,6 +20,8 @@ export module hikogui_telemetry : log;
 import hikogui_char_maps; // XXX #619
 import hikogui_concurrency;
 import hikogui_console;
+import hikogui_console_dialog; // XXX #616
+import hikogui_console_print; // XXX #616
 import hikogui_container;
 import hikogui_telemetry_delayed_format;
 import hikogui_telemetry_format_check;

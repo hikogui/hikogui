@@ -10,6 +10,8 @@
 #include "log.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
+#include "../concurrency/unfair_mutex.hpp" // XXX #616
+#include "../concurrency/thread.hpp" // XXX #616
 #include "../time/time.hpp"
 #include "../macros.hpp"
 #include <span>
@@ -20,6 +22,8 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <chrono>
+#include <limits>
 
 hi_export_module(hikogui.telemetry : counters);
 

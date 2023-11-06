@@ -11,8 +11,11 @@ module;
 
 #include <algorithm>
 #include <array>
+#include <bit>
+#include <cstdint>
 
 export module hikogui_image_sint_abgr8_pack;
+import hikogui_SIMD;
 import hikogui_geometry;
 
 export namespace hi::inline v1 {

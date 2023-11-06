@@ -13,8 +13,11 @@ module;
 #include <chrono>
 #include <thread>
 
-export module hikogui_dispatch_loop : intf;
+export module hikogui_dispatch : loop_intf;
+import : notifier;
 import hikogui_concurrency;
+import hikogui_concurrency_thread; // XXX #616
+import hikogui_concurrency_unfair_mutex; // XXX #616
 import hikogui_container;
 import hikogui_dispatch_function_timer;
 import hikogui_dispatch_socket_event;

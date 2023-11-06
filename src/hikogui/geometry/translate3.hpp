@@ -9,6 +9,7 @@
 #include "../macros.hpp"
 #include <concepts>
 #include <exception>
+#include <compare>
 
 hi_export_module(hikogui.geometry : translate3);
 

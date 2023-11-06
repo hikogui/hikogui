@@ -12,6 +12,7 @@ module;
 #include <concepts>
 #include <mutex>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : aarectangle;
 import : alignment;

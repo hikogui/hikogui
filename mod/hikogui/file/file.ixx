@@ -6,10 +6,10 @@ module;
 
 
 export module hikogui_file;
-export import hikogui_file_resource_view : impl;
 export import hikogui_file_access_mode;
 export import hikogui_file_file;
 export import hikogui_file_file_view;
+export import hikogui_file_resource_view;
 export import hikogui_file_seek_whence;
 
 export namespace hi {

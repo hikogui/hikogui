@@ -10,6 +10,8 @@
 #include "../macros.hpp"
 #include <string_view>
 #include <unordered_map>
+#include <format>
+#include <string>
 
 hi_export_module(hikogui.GUI : keyboard_key);
 

@@ -11,6 +11,8 @@ module;
 
 #include <algorithm>
 #include <cmath>
+#include <bit>
+#include <cstdint>
 
 export module hikogui_image_snorm_r8;
 import hikogui_utility;

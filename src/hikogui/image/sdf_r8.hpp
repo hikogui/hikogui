@@ -11,6 +11,8 @@
 #include "snorm_r8.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <bit>
+#include <cstdint>
 
 hi_export_module(hikogui.image.sdf_r8);
 

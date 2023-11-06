@@ -8,6 +8,7 @@
 module;
 #include "../macros.hpp"
 
+#include <compare>
 
 export module hikogui_geometry : axis;
 import hikogui_utility;

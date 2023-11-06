@@ -8,6 +8,8 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <exception>
+#include <compare>
+#include <cmath>
 
 hi_export_module(hikogui.geometry : perspective);
 

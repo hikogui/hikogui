@@ -11,6 +11,7 @@ module;
 
 #include <algorithm>
 #include <bit>
+#include <cstdint>
 #include <array>
 
 export module hikogui_image_sfloat_rgba16;

@@ -12,7 +12,7 @@
 #include <coroutine>
 #include <functional>
 
-hi_export_module(hikogui.dispatch.awaitable_timer : intf);
+hi_export_module(hikogui.dispatch : awaitable_timer_intf);
 
 hi_export namespace hi::inline v1 {
 

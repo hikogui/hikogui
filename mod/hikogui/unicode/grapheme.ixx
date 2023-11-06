@@ -15,9 +15,15 @@ module;
 #include <bit>
 #include <array>
 #include <atomic>
+#include <unordered_map>
+#include <mutex>
+#include <chrono>
+#include <format>
 
 export module hikogui_unicode_grapheme;
+import hikogui_char_maps;
 import hikogui_concurrency;
+import hikogui_coroutine_generator; // XXX #616
 import hikogui_i18n;
 import hikogui_telemetry;
 import hikogui_unicode_phrasing;

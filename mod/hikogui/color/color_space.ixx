@@ -9,6 +9,7 @@ module;
  * @ingroup color
  */
 
+#include <compare>
 
 export module hikogui_color_color_space;
 import hikogui_geometry;

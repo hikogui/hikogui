@@ -11,6 +11,8 @@ module;
 
 #include <algorithm>
 #include <array>
+#include <bit>
+#include <cstdint>
 
 export module hikogui_image_sfloat_rgb32;
 import hikogui_SIMD;

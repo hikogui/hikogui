@@ -6,6 +6,12 @@ module;
 #include "../macros.hpp"
 
 #include <cstdint>
+#include <utility>
+#include <format>
+#include <string_view>
+#include <string>
+#include <ostream>
+#include <functional>
 
 export module hikogui_GUI : keyboard_modifiers;
 import hikogui_algorithm;

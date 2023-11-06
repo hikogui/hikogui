@@ -8,6 +8,7 @@ module;
 #include <exception>
 #include <format>
 #include <ostream>
+#include <compare>
 
 export module hikogui_geometry : vector3;
 import : vector2;

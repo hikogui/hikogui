@@ -13,6 +13,7 @@
 #include "../macros.hpp"
 #include <cstddef>
 #include <exception>
+#include <compare>
 
 hi_export_module(hikogui.geometry : line_segment);
 

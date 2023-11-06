@@ -10,6 +10,8 @@ module;
 #include "../macros.hpp"
 
 #include <algorithm>
+#include <bit>
+#include <cstdint>
 
 export module hikogui_image_unorm_a2bgr10_pack;
 import hikogui_SIMD;

@@ -12,6 +12,7 @@ export module hikogui_GFX : gfx_pipeline_image_intf;
 import : gfx_pipeline_intf;
 import hikogui_codec;
 import hikogui_container;
+import hikogui_geometry;
 import hikogui_image;
 
 export namespace hi { inline namespace v1 {

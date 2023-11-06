@@ -12,6 +12,7 @@ module;
 #include <optional>
 #include <algorithm>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : alignment;
 import hikogui_utility;

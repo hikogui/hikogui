@@ -15,6 +15,18 @@
 #include "../char_maps/char_maps.hpp"
 #include "../time/time.hpp"
 #include "../macros.hpp"
+#include <cstddef>
+#include <memory>
+#include <cstring>
+#include <string>
+#include <cstdio>
+#include <exception>
+#include <compare>
+#include <string_view>
+#include <format>
+#include <type_traits>
+#include <chrono>
+
 
 hi_export_module(hikogui.crt.crt_utils : impl);
 

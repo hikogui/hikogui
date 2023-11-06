@@ -14,6 +14,9 @@
 #include "../macros.hpp"
 #include <cmath>
 #include <array>
+#include <algorithm>
+#include <string_view>
+#include <format>
 
 hi_export_module(hikogui.color.sRGB);
 

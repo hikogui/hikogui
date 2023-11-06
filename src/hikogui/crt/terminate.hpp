@@ -10,12 +10,14 @@
 #include "../utility/utility.hpp"
 #include "../console/console.hpp"
 #include "../telemetry/telemetry.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
 #include <exception>
 #include <stdexcept>
 #include <atomic>
 #include <bit>
 #include <format>
+#include <iostream>
 
 hi_export_module(hikogui.crt.terminate);
 

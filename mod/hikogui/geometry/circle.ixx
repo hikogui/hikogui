@@ -9,6 +9,7 @@ module;
 #include "../macros.hpp"
 
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : circle;
 import : aarectangle;

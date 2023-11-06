@@ -14,9 +14,12 @@ module;
 #include <memory>
 
 export module hikogui_file_file_view;
+import hikogui_char_maps; // XXX #619
 import hikogui_container;
+import hikogui_file_access_mode;
 import hikogui_file_file;
 import hikogui_file_file_view_impl;
+import hikogui_utility;
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).

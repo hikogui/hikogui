@@ -9,6 +9,7 @@
 #include <memory>
 #include <atomic>
 #include <functional>
+#include <cstddef>
 
 hi_export_module(hikogui.concurrency.callback);
 
@@ -272,9 +273,9 @@ public:
         return *this;
     }
 
-    callback(nullptr_t) noexcept : _impl(nullptr) {}
+    callback(std::nullptr_t) noexcept : _impl(nullptr) {}
 
-    callback& operator=(nullptr_t) noexcept
+    callback& operator=(std::nullptr_t) noexcept
     {
         unsubscribe();
         return *this;

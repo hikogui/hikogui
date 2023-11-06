@@ -8,6 +8,7 @@ module;
 #include <format>
 #include <concepts>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : point3;
 import : extent3;

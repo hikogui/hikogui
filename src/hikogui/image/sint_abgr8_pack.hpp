@@ -9,9 +9,12 @@
 #pragma once
 
 #include "../geometry/geometry.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <algorithm>
 #include <array>
+#include <bit>
+#include <cstdint>
 
 hi_export_module(hikogui.image.sint_abgr8_pack);
 

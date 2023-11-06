@@ -13,7 +13,11 @@ module;
 #include <memory>
 
 export module hikogui_widgets_button_delegate;
+import hikogui_GUI;
+import hikogui_concurrency;
+import hikogui_dispatch;
 import hikogui_observer;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 

@@ -14,6 +14,8 @@
 #include "../macros.hpp"
 #include <algorithm>
 #include <array>
+#include <bit>
+#include <cstdint>
 
 hi_export_module(hikogui.image.sfloat_srgb32);
 

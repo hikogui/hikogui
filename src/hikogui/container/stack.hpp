@@ -10,6 +10,7 @@
 #include <memory>
 #include <initializer_list>
 #include <stdexcept>
+#include <array>
 
 hi_export_module(hikogui.container.stack);
 

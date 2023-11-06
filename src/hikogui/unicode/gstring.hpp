@@ -8,16 +8,26 @@
 #include "unicode_normalization.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
 #include "../utility/utility.hpp"
+#include "../i18n/i18n.hpp"
+#include "../time/time.hpp" // XXX #616
 #include "../macros.hpp"
 #include <vector>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <iterator>
+#include <concepts>
+#include <ios>
+#include <cuchar>
+#include <cwchar>
+#include <compare>
 
 hi_export_module(hikogui.unicode.gstring);
 
-hi_export template<>
-struct std::char_traits<hi::grapheme> {
+hi_export namespace std {
+
+template<>
+struct char_traits<hi::grapheme> {
     using char_type = hi::grapheme;
     using int_type = std::make_signed_t<char_type::value_type>;
     using off_type = std::streamoff;
@@ -139,14 +149,12 @@ struct std::char_traits<hi::grapheme> {
     }
 };
 
+}
+
 hi_export namespace hi::inline v1 {
 
-hi_export using gstring = std::basic_string<grapheme>;
-hi_export using gstring_view = std::basic_string_view<grapheme>;
-
-namespace pmr {
-hi_export using gstring = std::pmr::basic_string<grapheme>;
-}
+using gstring = std::basic_string<grapheme>;
+using gstring_view = std::basic_string_view<grapheme>;
 
 
 [[nodiscard]] constexpr bool operator==(gstring_view const &lhs, std::string_view const &rhs) noexcept
@@ -175,7 +183,7 @@ hi_export using gstring = std::pmr::basic_string<grapheme>;
  *                 be expanded. The script of the grapheme will never
  *                 contradict the unicode database.
  */
-hi_export template<std::input_or_output_iterator It, std::sentinel_for<It> ItEnd>
+template<std::input_or_output_iterator It, std::sentinel_for<It> ItEnd>
 constexpr void set_language(It first, ItEnd last, language_tag language) noexcept
 {
     language = language.expand();
@@ -185,7 +193,7 @@ constexpr void set_language(It first, ItEnd last, language_tag language) noexcep
     }
 }
 
-hi_export [[nodiscard]] constexpr gstring set_language(gstring str, language_tag language) noexcept
+[[nodiscard]] constexpr gstring set_language(gstring str, language_tag language) noexcept
 {
     set_language(str.begin(), str.end(), language);
     return str;
@@ -208,7 +216,7 @@ hi_export [[nodiscard]] constexpr gstring set_language(gstring str, language_tag
  * @param last An iterator pointing beyond the last grapheme.
  * @param default_language_tag The language to set each grapheme to.
  */
-hi_export template<std::input_or_output_iterator It, std::sentinel_for<It> ItEnd>
+template<std::input_or_output_iterator It, std::sentinel_for<It> ItEnd>
 constexpr void fix_language(It first, ItEnd last, language_tag default_language_tag) noexcept
     requires(std::is_same_v<std::iter_value_t<It>, grapheme>)
 {
@@ -236,7 +244,7 @@ constexpr void fix_language(It first, ItEnd last, language_tag default_language_
     }
 }
 
-hi_export [[nodiscard]] constexpr gstring fix_language(gstring str, language_tag default_language_tag) noexcept
+[[nodiscard]] constexpr gstring fix_language(gstring str, language_tag default_language_tag) noexcept
 {
     fix_language(str.begin(), str.end(), default_language_tag);
     return str;
@@ -251,7 +259,7 @@ hi_export [[nodiscard]] constexpr gstring fix_language(gstring str, language_tag
  * @param config The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-hi_export [[nodiscard]] constexpr gstring
+[[nodiscard]] constexpr gstring
 to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
     hilet normalized_string = unicode_normalize(rhs, config);
@@ -285,7 +293,7 @@ to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_no
  * @param config The attributes used for normalizing the input string.
  * @return A grapheme-string.
  */
-hi_export [[nodiscard]] constexpr gstring
+[[nodiscard]] constexpr gstring
 to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
     return to_gstring(to_u32string(rhs), config);
@@ -296,7 +304,7 @@ to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_norma
  * @param rhs The grapheme string view to convert to UTF-8
  * @return The resulting UTF-8 string, in NFC normalization.
  */
-hi_export [[nodiscard]] constexpr std::string to_string(gstring_view rhs) noexcept
+[[nodiscard]] constexpr std::string to_string(gstring_view rhs) noexcept
 {
     auto r = std::string{};
     r.reserve(rhs.size());
@@ -311,7 +319,7 @@ hi_export [[nodiscard]] constexpr std::string to_string(gstring_view rhs) noexce
  * @param rhs The grapheme string view to convert to UTF-8
  * @return The resulting wide-string, in NFC normalization.
  */
-hi_export [[nodiscard]] constexpr std::wstring to_wstring(gstring_view rhs) noexcept
+[[nodiscard]] constexpr std::wstring to_wstring(gstring_view rhs) noexcept
 {
     auto r = std::wstring{};
     r.reserve(rhs.size());
@@ -326,7 +334,7 @@ hi_export [[nodiscard]] constexpr std::wstring to_wstring(gstring_view rhs) noex
  * @param rhs The grapheme string view to convert to UTF-8
  * @return The resulting UTF-32 string, in NFC normalization.
  */
-hi_export [[nodiscard]] constexpr std::u32string to_u32string(gstring_view rhs) noexcept
+[[nodiscard]] constexpr std::u32string to_u32string(gstring_view rhs) noexcept
 {
     auto r = std::u32string{};
     r.reserve(rhs.size());
@@ -341,15 +349,17 @@ hi_export [[nodiscard]] constexpr std::u32string to_u32string(gstring_view rhs) 
  * @param rhs The grapheme string to convert to UTF-8
  * @return The resulting UTF-32 string, in NFC normalization.
  */
-hi_export [[nodiscard]] constexpr std::string to_string(gstring const& rhs) noexcept
+[[nodiscard]] constexpr std::string to_string(gstring const& rhs) noexcept
 {
     return to_string(gstring_view{rhs});
 }
 
 } // namespace hi::inline v1
 
-hi_export template<>
-struct std::hash<hi::gstring> {
+hi_export namespace std {
+
+template<>
+struct hash<hi::gstring> {
     [[nodiscard]] std::size_t operator()(hi::gstring const& rhs) noexcept
     {
         auto r = std::hash<std::size_t>{}(rhs.size());
@@ -360,14 +370,4 @@ struct std::hash<hi::gstring> {
     }
 };
 
-hi_export template<>
-struct std::hash<hi::pmr::gstring> {
-    [[nodiscard]] std::size_t operator()(hi::pmr::gstring const& rhs) noexcept
-    {
-        auto r = std::hash<std::size_t>{}(rhs.size());
-        for (hilet c : rhs) {
-            r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
-        }
-        return r;
-    }
-};
+}

@@ -5,9 +5,13 @@
 module;
 #include "../macros.hpp"
 
+#include <concepts>
+#include <iterator>
 
 export module hikogui_layout_row_column_layout;
 import hikogui_geometry;
+import hikogui_layout_box_constraints;
+import hikogui_layout_box_shape;
 import hikogui_layout_grid_layout;
 
 export namespace hi { inline namespace v1 {

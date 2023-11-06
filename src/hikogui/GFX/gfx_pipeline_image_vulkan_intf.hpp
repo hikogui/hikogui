@@ -6,6 +6,7 @@
 
 #include "gfx_pipeline_vulkan_intf.hpp"
 #include "../container/container.hpp"
+#include "../geometry/geometry.hpp"
 #include "../image/image.hpp"
 #include "../codec/codec.hpp"
 #include "../macros.hpp"

@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "color_intf.hpp"
-#include "color_space.hpp"
-#include "quad_color.hpp"
-#include "Rec2020.hpp"
-#include "Rec2100.hpp"
-#include "semantic_color.hpp"
-#include "sRGB.hpp"
+#include "color_intf.hpp" // export
+#include "color_space.hpp" // export
+#include "quad_color.hpp" // export
+#include "Rec2020.hpp" // export
+#include "Rec2100.hpp" // export
+#include "semantic_color.hpp" // export
+#include "sRGB.hpp" // export
 #include "../macros.hpp"
 
 hi_export_module(hikogui.color);

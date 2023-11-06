@@ -10,6 +10,7 @@ module;
 #include "../macros.hpp"
 
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : lookat;
 import : matrix3;

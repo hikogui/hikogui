@@ -13,8 +13,10 @@ module;
 #include <atomic>
 #include <bit>
 #include <format>
+#include <iostream>
 
 export module hikogui_crt_terminate;
+import hikogui_char_maps; // XXX #616
 import hikogui_console;
 import hikogui_telemetry;
 import hikogui_utility;

@@ -22,7 +22,7 @@ configure_file(
     ${CMAKE_CURRENT_BINARY_DIR}/mod/hikogui/metadata/library_metadata.ixx @ONLY)
 
 target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/mod/" FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/mod/hikogui/metadata/library_metadata.ixx
+${CMAKE_CURRENT_BINARY_DIR}/mod/hikogui/metadata/library_metadata.ixx
 )
 
 target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/mod/" FILES
@@ -96,7 +96,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/global_state.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/id_factory.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/concurrency.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/notifier.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/rcu.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/subsystem.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/thread.ixx
@@ -135,14 +134,24 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/awaitable.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/generator.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/coroutine.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/scoped_task.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/task.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/when_any.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_win32_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/terminate.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_intf.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_impl.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/dispatch.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/function_timer.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_intf.ixx
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_win32_impl.ixx>
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/notifier.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/scoped_task.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event_intf.ixx
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event_win32_impl.ixx>
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/when_any.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/access_mode.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_intf.ixx
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/file/file_posix_impl.ixx>
@@ -347,17 +356,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/po_parser.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/txt.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/translation.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_intf.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_impl.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/function_timer.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/dispatch.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event_win32_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/box_constraints.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/box_shape.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/grid_layout.ixx

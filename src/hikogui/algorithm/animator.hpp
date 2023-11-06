@@ -8,6 +8,8 @@
 #include "../utility/utility.hpp"
 #include "../time/time.hpp"
 #include <cmath>
+#include <chrono>
+#include <algorithm>
 
 hi_export_module(hikogui.algorithm.animator);
 

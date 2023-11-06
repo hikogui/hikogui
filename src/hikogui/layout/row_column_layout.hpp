@@ -5,8 +5,12 @@
 #pragma once
 
 #include "grid_layout.hpp"
+#include "box_constraints.hpp"
+#include "box_shape.hpp"
 #include "../geometry/geometry.hpp"
 #include "../macros.hpp"
+#include <concepts>
+#include <iterator>
 
 hi_export_module(hikogui.layout.row_column_layout);
 

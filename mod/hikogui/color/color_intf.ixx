@@ -9,6 +9,9 @@
 module;
 #include "../macros.hpp"
 
+#include <cstdint>
+#include <bit>
+#include <functional>
 
 export module hikogui_color_intf;
 import hikogui_SIMD;

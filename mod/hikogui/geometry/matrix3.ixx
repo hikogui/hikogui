@@ -11,6 +11,8 @@ module;
 
 #include <array>
 #include <exception>
+#include <compare>
+#include <stdexcept>
 
 export module hikogui_geometry : matrix3;
 import : matrix2;

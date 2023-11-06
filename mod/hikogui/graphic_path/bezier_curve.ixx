@@ -8,12 +8,17 @@ module;
 #include <tuple>
 #include <limits>
 #include <algorithm>
+#include <vector>
+#include <cmath>
+#include <span>
 
 export module hikogui_graphic_path_bezier_curve;
+import hikogui_container;
 import hikogui_geometry;
 import hikogui_graphic_path_bezier;
 import hikogui_graphic_path_bezier_point;
 import hikogui_image;
+import hikogui_numeric;
 import hikogui_utility;
 
 export namespace hi { inline namespace v1 {

@@ -7,6 +7,18 @@ module;
 #include "../win32_headers.hpp"
 
 
+#include <cstddef>
+#include <memory>
+#include <cstring>
+#include <string>
+#include <cstdio>
+#include <exception>
+#include <compare>
+#include <string_view>
+#include <format>
+#include <type_traits>
+#include <chrono>
+
 
 export module hikogui_crt_crt_utils : impl;
 import : intf;

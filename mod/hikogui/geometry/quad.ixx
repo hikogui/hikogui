@@ -8,6 +8,7 @@ module;
 
 #include <tuple>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : quad;
 import : aarectangle;

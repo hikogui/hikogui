@@ -14,6 +14,12 @@
 #include <string>
 #include <optional>
 #include <ranges>
+#include <vector>
+#include <format>
+#include <string_view>
+#include <string>
+#include <compare>
+#include <ostream>
 
 hi_export_module(hikogui.path.URI);
 

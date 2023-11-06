@@ -8,6 +8,8 @@ module;
 #include <limits>
 #include <cstdint>
 #include <compare>
+#include <utility>
+#include <exception>
 
 export module hikogui_GUI : hitbox;
 import : widget_id;

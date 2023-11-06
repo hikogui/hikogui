@@ -14,8 +14,10 @@ module;
 #include <array>
 #include <cstdint>
 #include <cstddef>
+#include <bit>
 
 export module hikogui_unicode_unicode_plural;
+import hikogui_coroutine_generator; // XXX #616
 import hikogui_i18n;
 import hikogui_utility;
 

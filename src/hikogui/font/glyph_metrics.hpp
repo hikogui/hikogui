@@ -7,6 +7,7 @@
 #include "../utility/utility.hpp"
 #include "../geometry/geometry.hpp"
 #include "../macros.hpp"
+#include <compare>
 
 hi_export_module(hikogui.font.glyph_metrics);
 

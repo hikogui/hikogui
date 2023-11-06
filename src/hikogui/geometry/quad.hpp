@@ -13,6 +13,7 @@
 #include "../macros.hpp"
 #include <tuple>
 #include <exception>
+#include <compare>
 
 hi_export_module(hikogui.geometry : quad);
 

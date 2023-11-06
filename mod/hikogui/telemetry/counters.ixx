@@ -16,10 +16,14 @@ module;
 #include <map>
 #include <memory>
 #include <mutex>
+#include <chrono>
+#include <limits>
 
 export module hikogui_telemetry : counters;
 import : log;
 import hikogui_concurrency;
+import hikogui_concurrency_thread; // XXX #616
+import hikogui_concurrency_unfair_mutex; // XXX #616
 import hikogui_time;
 import hikogui_utility;
 

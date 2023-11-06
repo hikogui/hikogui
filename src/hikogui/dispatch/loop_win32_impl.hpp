@@ -41,14 +41,16 @@
 #include "loop_intf.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
 #include <vector>
 #include <utility>
 #include <stop_token>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 
-hi_export_module(hikogui.dispatch.loop : impl);
+hi_export_module(hikogui.dispatch : loop_impl);
 
 hi_export namespace hi::inline v1 {
 

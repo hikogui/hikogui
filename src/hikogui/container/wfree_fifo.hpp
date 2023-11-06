@@ -12,6 +12,9 @@
 #include <atomic>
 #include <memory>
 #include <array>
+#include <bit>
+#include <chrono>
+#include <format>
 
 hi_export_module(hikogui.container.wfree_fifo);
 

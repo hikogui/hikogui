@@ -30,10 +30,10 @@ template<typename T>
 hi_force_inline constexpr lean_vector<T> solvePolynomial(T const& a, T const& b) noexcept
 {
     if (a != 0) {
-        return {-(b / a)};
+        return {static_cast<T>(-(b / a))};
     } else if (b == 0) {
         // Any value of x is correct.
-        return {0.0f};
+        return {T{0}};
     } else {
         // None of the values for x is correct.
         return {};
@@ -59,14 +59,14 @@ hi_force_inline constexpr lean_vector<T> solvePolynomial(T const& a, T const& b,
     if (a == 0) {
         return solvePolynomial(b, c);
     } else {
-        hilet D = b * b - static_cast<T>(4) * a * c;
+        hilet D = b * b - T{4} * a * c;
         if (D < 0) {
             return {};
         } else if (D == 0) {
-            return {-b / (static_cast<T>(2) * a)};
+            return {static_cast<T>(-b / (T{2} * a))};
         } else {
             hilet Dsqrt = sqrt(D);
-            return {(-b - Dsqrt) / (static_cast<T>(2) * a), (-b + Dsqrt) / (static_cast<T>(2) * a)};
+            return {static_cast<T>((-b - Dsqrt) / (T{2} * a)), static_cast<T>((-b + Dsqrt) / (T{2} * a))};
         }
     }
 }
@@ -76,27 +76,27 @@ hi_force_inline constexpr lean_vector<T> solvePolynomial(T const& a, T const& b,
 template<typename T>
 hi_force_inline lean_vector<T> solveDepressedCubicTrig(T const& p, T const& q) noexcept
 {
-    constexpr T oneThird = static_cast<T>(1) / static_cast<T>(3);
-    constexpr T pi2_3 = (static_cast<T>(2) / static_cast<T>(3)) * std::numbers::pi_v<T>;
-    constexpr T pi4_3 = (static_cast<T>(4) / static_cast<T>(3)) * std::numbers::pi_v<T>;
+    constexpr T oneThird = T{1} / T{3};
+    constexpr T pi2_3 = (T{2} / T{3}) * std::numbers::pi_v<T>;
+    constexpr T pi4_3 = (T{4} / T{3}) * std::numbers::pi_v<T>;
 
-    hilet U = oneThird * acos(((static_cast<T>(3) * q) / (static_cast<T>(2) * p)) * sqrt(static_cast<T>(-3) / p));
-    hilet V = static_cast<T>(2) * sqrt(-oneThird * p);
+    hilet U = oneThird * acos(((T{3} * q) / (T{2} * p)) * sqrt(T{-3} / p));
+    hilet V = T{2} * sqrt(-oneThird * p);
 
     hilet t0 = V * cos(U);
     hilet t1 = V * cos(U - pi2_3);
     hilet t2 = V * cos(U - pi4_3);
-    return {t0, t1, t2};
+    return {static_cast<T>(t0), static_cast<T>(t1), static_cast<T>(t2)};
 }
 
 template<typename T>
 hi_force_inline lean_vector<T> solveDepressedCubicCardano(T const& p, T const& q, T const& D) noexcept
 {
     hilet sqrtD = sqrt(D);
-    hilet minusHalfQ = static_cast<T>(-0.5) * q;
+    hilet minusHalfQ = T{-0.5} * q;
     hilet v = cbrt(minusHalfQ + sqrtD);
     hilet w = cbrt(minusHalfQ - sqrtD);
-    return {v + w};
+    return {static_cast<T>(v + w)};
 }
 
 /*! Solve cubic function in the form.
@@ -118,11 +118,11 @@ hi_force_inline lean_vector<T> solveDepressedCubicCardano(T const& p, T const& q
 template<typename T>
 hi_force_inline lean_vector<T> solveDepressedCubic(T const& p, T const& q) noexcept
 {
-    constexpr T oneForth = static_cast<T>(1) / static_cast<T>(4);
-    constexpr T oneTwentySeventh = static_cast<T>(1) / static_cast<T>(27);
+    constexpr T oneForth = T{1} / T{4};
+    constexpr T oneTwentySeventh = T{1} / T{27};
 
     if (p == 0.0 && q == 0.0) {
-        return {static_cast<T>(0)};
+        return {T{0}};
 
     } else {
         hilet D = oneForth * q * q + oneTwentySeventh * p * p * p;
@@ -133,9 +133,9 @@ hi_force_inline lean_vector<T> solveDepressedCubic(T const& p, T const& q) noexc
 
         } else if (D == 0 && p != 0.0) {
             // Has two real roots, or maybe one root
-            hilet t0 = (static_cast<T>(3) * q) / p;
-            hilet t1 = (static_cast<T>(-3) * q) / (static_cast<T>(2) * p);
-            return {t0, t1, t1};
+            hilet t0 = (T{3} * q) / p;
+            hilet t1 = (T{-3} * q) / (T{2} * p);
+            return {static_cast<T>(t0), static_cast<T>(t1), static_cast<T>(t1)};
 
         } else {
             // Has one real root.
@@ -159,11 +159,11 @@ hi_force_inline constexpr lean_vector<T> solvePolynomial(T const& a, T const& b,
         return solvePolynomial(b, c, d);
 
     } else {
-        hilet p = (static_cast<T>(3) * a * c - b * b) / (static_cast<T>(3) * a * a);
-        hilet q = (static_cast<T>(2) * b * b * b - static_cast<T>(9) * a * b * c + static_cast<T>(27) * a * a * d) /
-            (static_cast<T>(27) * a * a * a);
+        hilet p = (T{3} * a * c - b * b) / (T{3} * a * a);
+        hilet q = (T{2} * b * b * b - T{9} * a * b * c + T{27} * a * a * d) /
+            (T{27} * a * a * a);
 
-        hilet b_3a = b / (static_cast<T>(3) * a);
+        hilet b_3a = b / (T{3} * a);
 
         auto r = solveDepressedCubic(p, q);
         for (auto &x: r) {

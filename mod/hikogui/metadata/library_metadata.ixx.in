@@ -8,7 +8,7 @@ module;
 #include <atomic>
 #include <filesystem>
 
-export module hikogui_metadata_metadata_library;
+export module hikogui_metadata_library_metadata;
 import hikogui_metadata_semantic_version;
 import hikogui_utility;
 

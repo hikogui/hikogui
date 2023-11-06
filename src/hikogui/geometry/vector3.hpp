@@ -10,6 +10,7 @@
 #include <exception>
 #include <format>
 #include <ostream>
+#include <compare>
 
 hi_export_module(hikogui.geometry : vector3);
 

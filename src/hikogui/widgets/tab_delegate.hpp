@@ -8,7 +8,12 @@
 
 #pragma once
 
+#include "../observer/observer.hpp"
+#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../dispatch/dispatch.hpp"
 #include "../GUI/GUI.hpp"
+#include "../macros.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <functional>

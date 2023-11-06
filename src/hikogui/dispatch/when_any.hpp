@@ -2,9 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-module;
-#include "../macros.hpp"
+#pragma once
 
+#include "scoped_task.hpp"
+#include "../coroutine/coroutine.hpp"
+#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../macros.hpp"
 #include <coroutine>
 #include <cstddef>
 #include <type_traits>
@@ -13,13 +17,9 @@ module;
 #include <tuple>
 #include <chrono>
 
-export module hikogui_coroutine_when_any;
-import hikogui_concurrency;
-import hikogui_coroutine_awaitable;
-import hikogui_coroutine_scoped_task;
-import hikogui_utility;
+hi_export_module(hikogui.dispatch : when_any);
 
-export namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 namespace detail {
 

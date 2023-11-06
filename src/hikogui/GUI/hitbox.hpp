@@ -11,6 +11,8 @@
 #include <limits>
 #include <cstdint>
 #include <compare>
+#include <utility>
+#include <exception>
 
 hi_export_module(hikogui.GUI : hitbox);
 

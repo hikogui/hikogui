@@ -12,6 +12,8 @@
 #include "../macros.hpp"
 #include <algorithm>
 #include <cmath>
+#include <bit>
+#include <cstdint>
 
 hi_export_module(hikogui.image.snorm_r8);
 

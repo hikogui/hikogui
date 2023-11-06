@@ -22,6 +22,7 @@
 #include <bit>
 #include <climits>
 #include <utility>
+#include <compare>
 
 hi_export_module(hikogui.SIMD : intf);
 

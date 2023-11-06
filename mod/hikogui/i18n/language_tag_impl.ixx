@@ -7,6 +7,14 @@ module;
 
 #include <algorithm>
 #include <numeric>
+#include <string_view>
+#include <utility>
+#include <array>
+#include <optional>
+#include <string>
+#include <format>
+#include <ranges>
+#include <vector>
 
 export module hikogui_i18n_language_tag : impl;
 import : intf;

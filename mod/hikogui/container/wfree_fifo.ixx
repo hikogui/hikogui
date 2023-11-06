@@ -10,6 +10,9 @@ module;
 #include <atomic>
 #include <memory>
 #include <array>
+#include <bit>
+#include <chrono>
+#include <format>
 
 export module hikogui_container_wfree_fifo;
 import hikogui_container_polymorphic_optional;

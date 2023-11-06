@@ -9,6 +9,8 @@
 module;
 #include "../macros.hpp"
 
+#include <bit>
+#include <cstdint>
 
 export module hikogui_image_sdf_r8;
 import hikogui_image_snorm_r8;

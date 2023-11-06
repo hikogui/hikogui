@@ -13,6 +13,8 @@ export module hikogui_GFX : gfx_pipeline_SDF_intf;
 import : gfx_pipeline_intf;
 import hikogui_container;
 import hikogui_font;
+import hikogui_geometry;
+import hikogui_image;
 
 export namespace hi { inline namespace v1 {
 

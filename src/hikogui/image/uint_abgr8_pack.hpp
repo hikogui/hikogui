@@ -13,6 +13,8 @@
 #include "../macros.hpp"
 #include <algorithm>
 #include <array>
+#include <bit>
+#include <cstdint>
 
 hi_export_module(hikogui.image.uint_abgr8_pack);
 

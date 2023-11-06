@@ -2,22 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-module;
-#include "../macros.hpp"
+#pragma once
 
+#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../macros.hpp"
 #include <vector>
 #include <tuple>
 #include <functional>
 #include <coroutine>
 #include <mutex>
 
-export module hikogui_concurrency_notifier;
-import hikogui_concurrency_callback;
-import hikogui_concurrency_callback_flags;
-import hikogui_concurrency_unfair_mutex;
-import hikogui_utility;
+hi_export_module(hikogui.dispatch : notifier);
 
-export namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A notifier which can be used to call a set of registered callbacks.
  *

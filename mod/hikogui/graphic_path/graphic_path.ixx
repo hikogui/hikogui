@@ -6,8 +6,11 @@ module;
 #include "../macros.hpp"
 
 #include <vector>
+#include <utility>
+#include <cmath>
 
 export module hikogui_graphic_path;
+import hikogui_color;
 import hikogui_geometry;
 export import hikogui_graphic_path_bezier;
 export import hikogui_graphic_path_bezier_curve;

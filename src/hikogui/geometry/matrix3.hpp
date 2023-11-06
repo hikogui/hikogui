@@ -15,6 +15,8 @@
 #include "../macros.hpp"
 #include <array>
 #include <exception>
+#include <compare>
+#include <stdexcept>
 
 hi_export_module(hikogui.geometry : matrix3);
 

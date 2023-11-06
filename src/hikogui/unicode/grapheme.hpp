@@ -8,6 +8,8 @@
 #include "../i18n/i18n.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../concurrency/concurrency.hpp"
+#include "../char_maps/char_maps.hpp"
+#include "../coroutine/generator.hpp" // XXX #616
 #include "unicode_normalization.hpp"
 #include "ucd_general_categories.hpp"
 #include "ucd_canonical_combining_classes.hpp"
@@ -24,6 +26,10 @@
 #include <bit>
 #include <array>
 #include <atomic>
+#include <unordered_map>
+#include <mutex>
+#include <chrono>
+#include <format>
 
 hi_export_module(hikogui.unicode.grapheme);
 

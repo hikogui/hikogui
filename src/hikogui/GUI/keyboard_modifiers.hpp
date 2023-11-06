@@ -8,6 +8,12 @@
 #include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <cstdint>
+#include <utility>
+#include <format>
+#include <string_view>
+#include <string>
+#include <ostream>
+#include <functional>
 
 hi_export_module(hikogui.GUI : keyboard_modifiers);
 

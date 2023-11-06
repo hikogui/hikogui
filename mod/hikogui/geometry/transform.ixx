@@ -8,6 +8,7 @@ module;
 #include <type_traits>
 #include <functional>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : transform;
 import : aarectangle;

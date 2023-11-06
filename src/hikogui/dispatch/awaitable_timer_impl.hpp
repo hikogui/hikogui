@@ -5,10 +5,13 @@
 #pragma once
 
 #include "awaitable_timer_intf.hpp"
-#include "loop.hpp"
+#include "loop_intf.hpp"
 #include "../macros.hpp"
+#include <utility>
+#include <coroutine>
+#include <chrono>
 
-hi_export_module(hikogui.dispatch.awaitable_timer : impl);
+hi_export_module(hikogui.dispatch : awaitable_timer_impl);
 
 hi_export namespace hi::inline v1 {
 

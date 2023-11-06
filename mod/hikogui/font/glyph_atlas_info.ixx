@@ -9,6 +9,7 @@ module;
 
 export module hikogui_font_glyph_atlas_info;
 import hikogui_geometry;
+import hikogui_utility;
 
 export namespace hi::inline v1 {
 

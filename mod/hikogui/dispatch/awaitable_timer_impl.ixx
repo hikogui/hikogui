@@ -5,10 +5,13 @@
 module;
 #include "../macros.hpp"
 
+#include <utility>
+#include <coroutine>
+#include <chrono>
 
-export module hikogui_dispatch_awaitable_timer : impl;
-import : intf;
-import hikogui_dispatch_loop;
+export module hikogui_dispatch : awaitable_timer_impl;
+import : awaitable_timer_intf;
+import : loop_intf;
 
 export namespace hi::inline v1 {
 

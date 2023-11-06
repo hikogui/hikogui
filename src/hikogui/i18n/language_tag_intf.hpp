@@ -14,6 +14,8 @@
 #include <vector>
 #include <string_view>
 #include <coroutine>
+#include <format>
+#include <string>
 
 hi_export_module(hikogui.i18n.language_tag : intf);
 

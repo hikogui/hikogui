@@ -6,6 +6,8 @@ module;
 #include "../macros.hpp"
 
 #include <cmath>
+#include <chrono>
+#include <algorithm>
 
 export module hikogui_algorithm_animator;
 import hikogui_time;

@@ -9,7 +9,6 @@
 #include "callback_flags.hpp" // export
 #include "global_state.hpp" // export
 #include "id_factory.hpp" // export
-#include "notifier.hpp" // export
 #include "rcu.hpp" // export
 #include "subsystem.hpp" // export
 #include "thread.hpp" // export

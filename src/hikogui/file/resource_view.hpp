@@ -10,6 +10,7 @@
 
 #include "file_view.hpp"
 #include "../container/container.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <span>
 #include <variant>
@@ -17,8 +18,10 @@
 #include <cstddef>
 #include <string_view>
 #include <type_traits>
+#include <filesystem>
+#include <memory>
 
-hi_export_module(hikogui.file.resource_view : impl);
+hi_export_module(hikogui.file.resource_view);
 
 hi_export namespace hi { inline namespace v1 {
 

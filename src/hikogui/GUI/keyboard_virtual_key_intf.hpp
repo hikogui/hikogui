@@ -8,6 +8,10 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <unordered_map>
+#include <format>
+#include <string_view>
+#include <string>
+#include <ostream>
 
 hi_export_module(hikogui.GUI : keyboard_virtual_key_intf);
 

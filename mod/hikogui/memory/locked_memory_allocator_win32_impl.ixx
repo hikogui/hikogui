@@ -7,9 +7,18 @@ module;
 #include "../win32_headers.hpp"
 
 
+#include <cstddef>
+#include <format>
+#include <type_traits>
+#include <string_view>
+#include <string>
+#include <compare>
+#include <exception>
+#include <chrono> // XXX #620
 
 export module hikogui_memory_locked_memory_allocator : impl;
 import : intf;
+import hikogui_char_maps; // XXX #616
 import hikogui_telemetry;
 import hikogui_utility;
 

@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <algorithm>
 
 hi_export_module(hikogui.unicode.unicode_normalization);
 

@@ -8,6 +8,7 @@ module;
 #include <memory>
 #include <atomic>
 #include <functional>
+#include <cstddef>
 
 export module hikogui_concurrency_callback;
 import hikogui_utility;
@@ -272,9 +273,9 @@ public:
         return *this;
     }
 
-    callback(nullptr_t) noexcept : _impl(nullptr) {}
+    callback(std::nullptr_t) noexcept : _impl(nullptr) {}
 
-    callback& operator=(nullptr_t) noexcept
+    callback& operator=(std::nullptr_t) noexcept
     {
         unsubscribe();
         return *this;

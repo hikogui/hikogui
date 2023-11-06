@@ -14,7 +14,12 @@ module;
 #include <vector>
 
 export module hikogui_widgets_selection_delegate;
+import hikogui_GUI;
+import hikogui_concurrency;
+import hikogui_dispatch;
 import hikogui_l10n;
+import hikogui_observer;
+import hikogui_utility;
 import hikogui_widgets_radio_button_widget;
 
 export namespace hi { inline namespace v1 {

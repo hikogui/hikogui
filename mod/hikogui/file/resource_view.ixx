@@ -15,10 +15,13 @@ module;
 #include <cstddef>
 #include <string_view>
 #include <type_traits>
+#include <filesystem>
+#include <memory>
 
-export module hikogui_file_resource_view : impl;
+export module hikogui_file_resource_view;
 import hikogui_container;
 import hikogui_file_file_view;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 

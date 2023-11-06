@@ -11,8 +11,10 @@ module;
 #include <exception>
 #include <optional>
 
-export module hikogui_coroutine_scoped_task;
-import hikogui_concurrency;
+export module hikogui_dispatch : scoped_task;
+import : notifier;
+import hikogui_concurrency_thread; // XXX #616
+import hikogui_concurrency_unfair_mutex; // XXX #616
 import hikogui_utility;
 
 export namespace hi::inline v1 {

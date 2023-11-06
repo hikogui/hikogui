@@ -21,6 +21,7 @@
 #include <concepts>
 #include <mutex>
 #include <exception>
+#include <compare>
 
 hi_export_module(hikogui.geometry : aarectangle);
 

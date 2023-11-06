@@ -6,6 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "../color/color.hpp"
+#include "../macros.hpp"
 #include <format>
 #include <filesystem>
 #include <iterator>

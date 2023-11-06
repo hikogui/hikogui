@@ -13,6 +13,7 @@ module;
 
 export module hikogui_path_path_location : impl;
 import : intf;
+import hikogui_char_maps; // XXX #616
 import hikogui_coroutine;
 import hikogui_metadata;
 import hikogui_telemetry;

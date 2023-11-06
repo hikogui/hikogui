@@ -7,6 +7,7 @@ module;
 
 #include <algorithm>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : scale2;
 import : extent2;

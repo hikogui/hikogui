@@ -7,6 +7,7 @@ module;
 
 #include <cmath>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : rotate2;
 import hikogui_SIMD;

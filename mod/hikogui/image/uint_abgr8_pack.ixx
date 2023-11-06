@@ -11,6 +11,8 @@ module;
 
 #include <algorithm>
 #include <array>
+#include <bit>
+#include <cstdint>
 
 export module hikogui_image_uint_abgr8_pack;
 import hikogui_SIMD;

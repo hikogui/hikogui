@@ -4,11 +4,14 @@
 #include "user_settings_intf.hpp"
 #include "../win32/win32.hpp"
 #include "../path/path.hpp"
+#include "../metadata/metadata.hpp"
 #include "../macros.hpp"
 #include <format>
 #include <string>
 #include <expected>
 #include <system_error>
+#include <Windows.h>
+#include <winreg.h>
 
 hi_export_module(hikogui.settings.user_settings : impl);
 

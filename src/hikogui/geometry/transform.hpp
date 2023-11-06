@@ -29,6 +29,7 @@
 #include <type_traits>
 #include <functional>
 #include <exception>
+#include <compare>
 
 hi_export_module(hikogui.geometry : transform);
 

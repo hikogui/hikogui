@@ -8,6 +8,8 @@ module;
 #include <vector>
 #include <string_view>
 #include <coroutine>
+#include <format>
+#include <string>
 
 export module hikogui_i18n_language_tag : intf;
 import hikogui_algorithm;

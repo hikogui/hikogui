@@ -44,9 +44,11 @@ module;
 #include <stop_token>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 
-export module hikogui_dispatch_loop : impl;
-import : intf;
+export module hikogui_dispatch : loop_impl;
+import : loop_intf;
+import hikogui_char_maps; // XXX #616
 import hikogui_telemetry;
 import hikogui_utility;
 

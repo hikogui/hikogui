@@ -11,6 +11,7 @@ module;
 
 #include <cstddef>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : line_segment;
 import : point3;

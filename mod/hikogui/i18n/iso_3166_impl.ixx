@@ -6,6 +6,8 @@ module;
 #include "../macros.hpp"
 
 #include <array>
+#include <algorithm>
+#include <format>
 
 export module hikogui_i18n_iso_3166 : impl;
 import : intf;

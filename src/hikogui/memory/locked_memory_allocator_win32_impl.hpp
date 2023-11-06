@@ -8,8 +8,17 @@
 
 #include "locked_memory_allocator_intf.hpp"
 #include "../telemetry/telemetry.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <cstddef>
+#include <format>
+#include <type_traits>
+#include <string_view>
+#include <string>
+#include <compare>
+#include <exception>
+#include <chrono> // XXX #620
 
 hi_export_module(hikogui.memory.locked_memory_allocator : impl);
 

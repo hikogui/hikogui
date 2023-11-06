@@ -10,6 +10,7 @@
 
 #include "../geometry/geometry.hpp"
 #include "../macros.hpp"
+#include <compare>
 
 hi_export_module(hikogui.color.color_space);
 

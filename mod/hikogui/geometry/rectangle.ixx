@@ -7,6 +7,7 @@ module;
 
 #include <array>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : rectangle;
 import : aarectangle;

@@ -10,8 +10,11 @@
 #include "../utility/utility.hpp"
 #include "../geometry/geometry.hpp"
 #include "../image/image.hpp"
+#include "../color/color.hpp"
 #include "../macros.hpp"
 #include <vector>
+#include <utility>
+#include <cmath>
 
 hi_export_module(hikogui.graphic_path);
 

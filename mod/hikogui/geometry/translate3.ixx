@@ -7,6 +7,7 @@ module;
 
 #include <concepts>
 #include <exception>
+#include <compare>
 
 export module hikogui_geometry : translate3;
 import : point3;

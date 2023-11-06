@@ -6,6 +6,8 @@ module;
 #include "../macros.hpp"
 
 #include <exception>
+#include <compare>
+#include <cmath>
 
 export module hikogui_geometry : perspective;
 import : matrix3;

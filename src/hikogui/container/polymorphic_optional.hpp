@@ -13,6 +13,7 @@
 #include <concepts>
 #include <thread>
 #include <optional>
+#include <chrono>
 
 hi_export_module(hikogui.container.polymorphic_optional);
 

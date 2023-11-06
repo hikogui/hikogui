@@ -14,8 +14,13 @@ module;
 #include <functional>
 
 export module hikogui_widgets_text_delegate;
+import hikogui_GUI;
+import hikogui_concurrency;
+import hikogui_dispatch;
 import hikogui_l10n;
+import hikogui_observer;
 import hikogui_unicode;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 class text_widget;

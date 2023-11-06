@@ -13,6 +13,13 @@
 #include "../container/container.hpp"
 #include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
+#include <cstdint>
+#include <exception>
+#include <cstddef>
+#include <vector>
+#include <utility>
+#include <iterator>
+#include <algorithm>
 
 hi_export_module(hikogui.unicode.unicode_bidi);
 

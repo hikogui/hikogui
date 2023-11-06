@@ -9,8 +9,14 @@ module;
 
 
 #include <format>
+#include <span>
+#include <cstddef>
+#include <chrono>
 
 export module hikogui_file_file_view_impl;
+import hikogui_char_maps; // XXX #616
+import hikogui_container;
+import hikogui_file_access_mode;
 import hikogui_file_file;
 import hikogui_file_file_impl;
 import hikogui_telemetry;

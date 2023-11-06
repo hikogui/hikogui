@@ -5,6 +5,7 @@
 module;
 #include "../macros.hpp"
 
+#include <compare>
 
 export module hikogui_font_glyph_metrics;
 import hikogui_geometry;

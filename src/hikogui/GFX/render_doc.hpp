@@ -7,6 +7,8 @@
 #include "../win32_headers.hpp"
 
 #include "renderdoc_app.h"
+#include "../utility/utility.hpp" // XXX #620
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <type_traits>

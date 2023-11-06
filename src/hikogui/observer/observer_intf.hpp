@@ -6,8 +6,8 @@
 
 #include "observed_value.hpp"
 #include "observed.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../utility/utility.hpp"
+#include "../dispatch/dispatch.hpp"
 #include "../concurrency/thread.hpp" // XXX #616
 #include "../macros.hpp"
 #include <concepts>

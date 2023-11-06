@@ -6,9 +6,12 @@ module;
 #include <string>
 #include <expected>
 #include <system_error>
+#include <Windows.h>
+#include <winreg.h>
 
 export module hikogui_settings_user_settings : impl;
 import : intf;
+import hikogui_metadata;
 import hikogui_path;
 import hikogui_win32;
 

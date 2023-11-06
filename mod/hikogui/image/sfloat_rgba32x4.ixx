@@ -11,10 +11,13 @@ module;
 
 #include <algorithm>
 #include <array>
+#include <bit>
+#include <cstdint>
 
 export module hikogui_image_sfloat_rgba32x4;
 import hikogui_SIMD;
 import hikogui_geometry;
+import hikogui_utility;
 
 export namespace hi::inline v1 {
 

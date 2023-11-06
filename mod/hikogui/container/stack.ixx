@@ -9,6 +9,7 @@ module;
 #include <memory>
 #include <initializer_list>
 #include <stdexcept>
+#include <array>
 
 export module hikogui_container_stack;
 import hikogui_utility;

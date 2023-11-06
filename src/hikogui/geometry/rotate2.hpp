@@ -8,6 +8,7 @@
 #include "../macros.hpp"
 #include <cmath>
 #include <exception>
+#include <compare>
 
 hi_export_module(hikogui.geometry : rotate2);
 

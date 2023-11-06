@@ -11,6 +11,9 @@ module;
 
 #include <cmath>
 #include <array>
+#include <algorithm>
+#include <string_view>
+#include <format>
 
 export module hikogui_color_sRGB;
 import hikogui_color_intf;

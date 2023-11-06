@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "notifier.hpp"
 #include "../utility/utility.hpp"
-#include "../concurrency/concurrency.hpp"
+#include "../concurrency/unfair_mutex.hpp" // XXX #616
+#include "../concurrency/thread.hpp" // XXX #616
 #include "../macros.hpp"
 #include <coroutine>
 #include <type_traits>
@@ -13,7 +15,7 @@
 #include <exception>
 #include <optional>
 
-hi_export_module(hikogui.coroutine.scoped_task);
+hi_export_module(hikogui.dispatch : scoped_task);
 
 hi_export namespace hi::inline v1 {
 

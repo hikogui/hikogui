@@ -10,6 +10,7 @@
 #include "../macros.hpp"
 #include <array>
 #include <tuple>
+#include <exception>
 
 hi_export_module(hikogui.telemetry : trace);
 

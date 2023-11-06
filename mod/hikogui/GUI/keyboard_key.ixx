@@ -7,6 +7,8 @@ module;
 
 #include <string_view>
 #include <unordered_map>
+#include <format>
+#include <string>
 
 export module hikogui_GUI : keyboard_key;
 import : keyboard_modifiers;

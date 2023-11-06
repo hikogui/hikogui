@@ -13,6 +13,9 @@
 #include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <cstdint>
+#include <bit>
+#include <functional>
 
 hi_export_module(hikogui.color_intf);
 

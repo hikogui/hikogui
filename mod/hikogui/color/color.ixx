@@ -7,13 +7,13 @@ module;
 
 
 export module hikogui_color;
-import hikogui_color_Rec2020;
-import hikogui_color_Rec2100;
-import hikogui_color_color_space;
-import hikogui_color_quad_color;
-import hikogui_color_sRGB;
-import hikogui_color_semantic_color;
-import hikogui_color_intf;
+export import hikogui_color_Rec2020;
+export import hikogui_color_Rec2100;
+export import hikogui_color_color_space;
+export import hikogui_color_quad_color;
+export import hikogui_color_sRGB;
+export import hikogui_color_semantic_color;
+export import hikogui_color_intf;
 
 export namespace hi { inline namespace v1 {
 

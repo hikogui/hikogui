@@ -6,6 +6,10 @@ module;
 #include "../macros.hpp"
 
 #include <unordered_map>
+#include <format>
+#include <string_view>
+#include <string>
+#include <ostream>
 
 export module hikogui_GUI : keyboard_virtual_key_intf;
 import : keyboard_modifiers;

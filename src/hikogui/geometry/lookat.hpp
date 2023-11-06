@@ -12,6 +12,7 @@
 #include "point3.hpp"
 #include "../macros.hpp"
 #include <exception>
+#include <compare>
 
 hi_export_module(hikogui.geometry : lookat);
 

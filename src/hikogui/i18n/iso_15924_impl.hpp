@@ -9,6 +9,9 @@
 #include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <array>
+#include <algorithm>
+#include <format>
+#include <compare>
 
 hi_export_module(hikogui.i18n.iso_15924 : impl);
 

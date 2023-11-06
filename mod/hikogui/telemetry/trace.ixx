@@ -7,6 +7,7 @@ module;
 
 #include <array>
 #include <tuple>
+#include <exception>
 
 export module hikogui_telemetry : trace;
 import : counters;

@@ -12,6 +12,8 @@
 #include "../concurrency/concurrency.hpp"
 #include "../char_maps/char_maps.hpp" // XXX #619
 #include "../console/console.hpp"
+#include "../console/print.hpp" // XXX #616
+#include "../console/dialog.hpp" // XXX #616
 #include "../macros.hpp"
 #include <chrono>
 #include <format>

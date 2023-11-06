@@ -276,11 +276,13 @@ fixed_string(F const& f) -> fixed_string<F{}().size()>;
 
 }} // namespace hi::v1
 
-// XXX #617 MSVC bug does not handle partial specialization in modules.
+// XXX #617 MSVC bug does not handle partial specialization in modules, outside a namespace.
+namespace std {
 export template<std::size_t N>
-struct std::formatter<hi::fixed_string<N>, char> : std::formatter<std::string_view, char> {
+struct formatter<hi::fixed_string<N>, char> : formatter<std::string_view, char> {
     constexpr auto format(hi::fixed_string<N> const& t, auto& fc) const
     {
         return std::formatter<std::string_view, char>::format(static_cast<std::string_view>(t), fc);
     }
 };
+}

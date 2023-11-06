@@ -14,6 +14,10 @@ module;
 
 export module hikogui_widgets_tab_delegate;
 import hikogui_GUI;
+import hikogui_concurrency;
+import hikogui_dispatch;
+import hikogui_observer;
+import hikogui_utility;
 
 export namespace hi { inline namespace v1 {
 

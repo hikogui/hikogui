@@ -12,7 +12,9 @@ module;
 #include <filesystem>
 
 export module hikogui_GFX_render_doc;
+import hikogui_char_maps; // XXX #616
 import hikogui_telemetry;
+import hikogui_utility; // XXX #620
 
 export namespace hi { inline namespace v1 {
 

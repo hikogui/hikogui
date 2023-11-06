@@ -11,6 +11,8 @@
 #include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+#include <bit>
+#include <cstdint>
 
 hi_export_module(hikogui.image.unorm_a2bgr10_pack);
 

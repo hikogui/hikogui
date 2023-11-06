@@ -9,6 +9,7 @@
 #pragma once
 
 #include "color_space.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <cmath>
 #include <array>

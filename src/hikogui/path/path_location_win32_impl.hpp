@@ -11,6 +11,7 @@
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../coroutine/coroutine.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
 #include <filesystem>
 #include <string>

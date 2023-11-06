@@ -12,11 +12,17 @@
 #include "../numeric/numeric.hpp"
 #include "../observer/observer.hpp"
 #include "../dispatch/dispatch.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../telemetry/telemetry.hpp"
+#include "../time/time.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
 #include <vector>
 #include <mutex>
 #include <expected>
 #include <system_error>
+#include <chrono>
+#include <atomic>
 
 hi_export_module(hikogui.settings.os_settings : intf);
 
@@ -508,35 +514,35 @@ private:
     constexpr static std::chrono::duration gather_interval = std::chrono::seconds(5);
     constexpr static std::chrono::duration gather_minimum_interval = std::chrono::seconds(1);
 
-    static hi_inline std::atomic<bool> _started = false;
-    static hi_inline std::atomic<bool> _populated = false;
-    static hi_inline unfair_mutex _mutex;
-    static hi_inline utc_nanoseconds _gather_last_time;
+    static inline std::atomic<bool> _started = false;
+    static inline std::atomic<bool> _populated = false;
+    static inline unfair_mutex _mutex;
+    static inline utc_nanoseconds _gather_last_time;
 
-    static hi_inline notifier<void()> _notifier;
+    static inline notifier<void()> _notifier;
 
-    static hi_inline std::vector<language_tag> _language_tags = {};
-    static hi_inline std::locale _locale = std::locale{""};
-    static hi_inline std::atomic<bool> _left_to_right = true;
-    static hi_inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
-    static hi_inline std::atomic<bool> _uniform_HDR = false;
-    static hi_inline std::atomic<hi::subpixel_orientation> _subpixel_orientation = hi::subpixel_orientation::unknown;
-    static hi_inline std::atomic<std::chrono::milliseconds> _double_click_interval = std::chrono::milliseconds(500);
-    static hi_inline std::atomic<float> _double_click_distance = 4.0f;
-    static hi_inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_delay = std::chrono::milliseconds(250);
-    static hi_inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_interval = std::chrono::milliseconds(33);
-    static hi_inline std::atomic<std::chrono::milliseconds> _cursor_blink_interval = std::chrono::milliseconds(1000);
-    static hi_inline std::atomic<std::chrono::milliseconds> _cursor_blink_delay = std::chrono::milliseconds(1000);
-    static hi_inline std::atomic<float> _minimum_window_width = 40.0f;
-    static hi_inline std::atomic<float> _minimum_window_height = 25.0f;
-    static hi_inline std::atomic<float> _maximum_window_width = 1920.0f;
-    static hi_inline std::atomic<float> _maximum_window_height = 1080.0f;
-    static hi_inline std::atomic<uintptr_t> _primary_monitor_id = 0;
-    static hi_inline aarectangle _primary_monitor_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
-    static hi_inline aarectangle _desktop_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
-    static hi_inline std::atomic<hi::policy> _gpu_policy = policy::unspecified;
+    static inline std::vector<language_tag> _language_tags = {};
+    static inline std::locale _locale = std::locale{""};
+    static inline std::atomic<bool> _left_to_right = true;
+    static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
+    static inline std::atomic<bool> _uniform_HDR = false;
+    static inline std::atomic<hi::subpixel_orientation> _subpixel_orientation = hi::subpixel_orientation::unknown;
+    static inline std::atomic<std::chrono::milliseconds> _double_click_interval = std::chrono::milliseconds(500);
+    static inline std::atomic<float> _double_click_distance = 4.0f;
+    static inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_delay = std::chrono::milliseconds(250);
+    static inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_interval = std::chrono::milliseconds(33);
+    static inline std::atomic<std::chrono::milliseconds> _cursor_blink_interval = std::chrono::milliseconds(1000);
+    static inline std::atomic<std::chrono::milliseconds> _cursor_blink_delay = std::chrono::milliseconds(1000);
+    static inline std::atomic<float> _minimum_window_width = 40.0f;
+    static inline std::atomic<float> _minimum_window_height = 25.0f;
+    static inline std::atomic<float> _maximum_window_width = 1920.0f;
+    static inline std::atomic<float> _maximum_window_height = 1080.0f;
+    static inline std::atomic<uintptr_t> _primary_monitor_id = 0;
+    static inline aarectangle _primary_monitor_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
+    static inline aarectangle _desktop_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
+    static inline std::atomic<hi::policy> _gpu_policy = policy::unspecified;
 
-    static hi_inline callback<void()> _gather_cbt;
+    static inline callback<void()> _gather_cbt;
 
     [[nodiscard]] static bool subsystem_init() noexcept
     {

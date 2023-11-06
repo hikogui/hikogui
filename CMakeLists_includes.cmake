@@ -89,7 +89,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/global_state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/id_factory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/concurrency.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/notifier.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/rcu.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/subsystem.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/thread.hpp
@@ -128,14 +127,24 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/awaitable.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/generator.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/coroutine.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/scoped_task.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/task.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/when_any.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/terminate.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_intf.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_impl.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/dispatch.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/function_timer.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_impl.hpp>
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/scoped_task.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_win32_impl.hpp>
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/when_any.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/access_mode.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_file_intf.hpp
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_file_posix_impl.hpp>
@@ -343,17 +352,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/po_parser.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/txt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/translation.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_intf.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_impl.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/function_timer.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/dispatch.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/box_constraints.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/box_shape.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/grid_layout.hpp

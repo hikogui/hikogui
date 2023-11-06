@@ -9,6 +9,14 @@
 #include "../macros.hpp"
 #include <algorithm>
 #include <numeric>
+#include <string_view>
+#include <utility>
+#include <array>
+#include <optional>
+#include <string>
+#include <format>
+#include <ranges>
+#include <vector>
 
 hi_export_module(hikogui.i18n.language_tag : impl);
 

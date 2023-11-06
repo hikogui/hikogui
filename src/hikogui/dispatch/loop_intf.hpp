@@ -6,8 +6,11 @@
 
 #include "function_timer.hpp"
 #include "socket_event.hpp"
+#include "notifier.hpp"
 #include "../container/container.hpp"
 #include "../concurrency/concurrency.hpp"
+#include "../concurrency/unfair_mutex.hpp" // XXX #616
+#include "../concurrency/thread.hpp" // XXX #616
 #include "../time/time.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -19,7 +22,7 @@
 #include <chrono>
 #include <thread>
 
-hi_export_module(hikogui.dispatch.loop : intf);
+hi_export_module(hikogui.dispatch : loop_intf);
 
 hi_export namespace hi::inline v1 {
 

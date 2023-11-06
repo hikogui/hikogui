@@ -10,7 +10,10 @@
 
 #include "file_intf.hpp"
 #include "file_view_win32_impl.hpp"
+#include "access_mode.hpp"
 #include "../container/container.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #619
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <span>
 #include <filesystem>

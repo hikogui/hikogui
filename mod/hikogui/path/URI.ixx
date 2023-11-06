@@ -12,6 +12,12 @@ module;
 #include <string>
 #include <optional>
 #include <ranges>
+#include <vector>
+#include <format>
+#include <string_view>
+#include <string>
+#include <compare>
+#include <ostream>
 
 export module hikogui_path_URI;
 import hikogui_algorithm;

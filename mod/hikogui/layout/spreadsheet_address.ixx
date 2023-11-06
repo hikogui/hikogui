@@ -28,6 +28,7 @@ module;
 
 #include <tuple>
 #include <string_view>
+#include <format>
 
 export module hikogui_layout_spreadsheet_address;
 import hikogui_algorithm;

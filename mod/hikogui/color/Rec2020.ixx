@@ -14,6 +14,7 @@ module;
 
 export module hikogui_color_Rec2020;
 import hikogui_color_color_space;
+import hikogui_geometry;
 
 export namespace hi {
 inline namespace v1 {

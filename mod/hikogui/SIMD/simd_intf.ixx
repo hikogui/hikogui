@@ -15,6 +15,7 @@ module;
 #include <bit>
 #include <climits>
 #include <utility>
+#include <compare>
 
 export module hikogui_SIMD : intf;
 import : native_f32x4_sse;

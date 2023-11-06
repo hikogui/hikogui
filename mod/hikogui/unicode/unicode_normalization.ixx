@@ -8,6 +8,7 @@ module;
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <algorithm>
 
 export module hikogui_unicode_unicode_normalization;
 import hikogui_algorithm;
