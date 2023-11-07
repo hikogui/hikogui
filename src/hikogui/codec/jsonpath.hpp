@@ -6,7 +6,7 @@
 
 #include "../utility/utility.hpp"
 #include "../parser/parser.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <variant>
@@ -14,10 +14,11 @@
 #include <vector>
 #include <limits>
 #include <format>
+#include <coroutine>
 
 hi_export_module(hikogui.codec.jsonpath);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class jsonpath {
 public:
@@ -540,10 +541,11 @@ private:
 
 }} // namespace hi::v1
 
-hi_export template<typename CharT>
-struct std::formatter<hi::jsonpath, CharT> : std::formatter<char const *, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::jsonpath, char> : std::formatter<char const *, char> {
     auto format(hi::jsonpath const& t, auto& fc) const
     {
-        return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
+        return std::formatter<std::string, char>{}.format(to_string(t), fc);
     }
 };

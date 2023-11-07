@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.formula.formula_filter_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_filter_node final : formula_binary_operator_node {
     mutable formula_post_process_context::filter_type filter;

@@ -4,13 +4,17 @@
 
 #pragma once
 
+#include "chrono.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
-#include "../numeric/module.hpp"
+#include "../numeric/numeric.hpp"
 #include "../macros.hpp"
 #include <atomic>
 #include <array>
 #include <cstdint>
+#include <chrono>
+#include <utility>
+#include <thread>
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <intrin.h>
@@ -18,9 +22,10 @@
 #include <x86intrin.h>
 #endif
 
+hi_export_module(hikogui.time.time_stamp_count);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /**
  * Since Window's 10 QueryPerformanceCounter() counts at only 10MHz which

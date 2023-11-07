@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.audio.audio_format_range);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class audio_format_range {
 public:
@@ -89,10 +89,11 @@ public:
 
 }} // namespace hi::inline v1
 
-hi_export template<typename CharT>
-struct std::formatter<hi::audio_format_range, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::audio_format_range, char> : std::formatter<std::string_view, char> {
     auto format(hi::audio_format_range const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<std::string_view, char>::format(to_string(t), fc);
     }
 };

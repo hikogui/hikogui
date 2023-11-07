@@ -10,7 +10,7 @@
 
 #include "URI.hpp"
 #include "path_location.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <string>
@@ -30,7 +30,7 @@ hi_warning_push();
 // False positive reported: https://developercommunity.visualstudio.com/t/C26434-false-positive-with-conversion-op/10262199
 hi_warning_ignore_msvc(26434);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Universal Resource Locator.
  * @ingroup file
@@ -316,11 +316,12 @@ struct std::hash<hi::URL> {
     }
 };
 
-template<typename CharT>
-struct std::formatter<hi::URL, CharT> : std::formatter<hi::URI, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::URL, char> : std::formatter<hi::URI, char> {
     auto format(hi::URL const& t, auto& fc) const
     {
-        return std::formatter<hi::URI, CharT>::format(t, fc);
+        return std::formatter<hi::URI, char>::format(t, fc);
     }
 };
 

@@ -12,6 +12,7 @@
 #include "../macros.hpp"
 #include "concepts.hpp"
 #include <concepts>
+#include <limits>
 
 hi_export_module(hikogui.utility.numbers);
 

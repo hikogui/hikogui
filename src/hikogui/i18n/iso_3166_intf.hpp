@@ -8,10 +8,13 @@
 #include "../macros.hpp"
 #include <compare>
 #include <cctype>
+#include <string_view>
+#include <string>
+#include <format>
 
 hi_export_module(hikogui.i18n.iso_3166 : intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** ISO-3166 country code.
  */

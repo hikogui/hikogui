@@ -8,8 +8,11 @@
 #include "unicode_break_opportunity.hpp"
 #include "../macros.hpp"
 #include <cstdint>
+#include <vector>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.unicode.unicode_grapheme_cluster_break);
+
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 struct grapheme_break_state {

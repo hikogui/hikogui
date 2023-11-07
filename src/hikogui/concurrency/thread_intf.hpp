@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "thread.hpp"
 #include "unfair_mutex.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -23,13 +22,13 @@
 #include <mutex>
 #include <bit>
 
-hi_export_module(hikogui.conurrency.thread : intf);
+hi_export_module(hikogui.concurrency.thread : intf);
 
 hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
-inline std::unordered_map<thread_id, std::string> thread_names = {};
-inline unfair_mutex thread_names_mutex = {};
+hi_inline std::unordered_map<thread_id, std::string> thread_names = {};
+hi_inline unfair_mutex thread_names_mutex = {};
 
 } // namespace detail
 
@@ -60,7 +59,7 @@ void set_thread_name(std::string_view name) noexcept;
  * @param id The thread id.
  * @return Name of the thread set with `set_hread_name()`. Or the numeric thread-id as string.
  */
-[[nodiscard]] inline std::string get_thread_name(thread_id id) noexcept
+[[nodiscard]] hi_inline std::string get_thread_name(thread_id id) noexcept
 {
     hilet lock = std::scoped_lock(detail::thread_names_mutex);
     hilet it = detail::thread_names.find(id);
@@ -101,7 +100,7 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const& mask);
  * @return The previous bit mask. Or zero on failure.
  * @throw std::os_error When unable to set the thread affinity to the given index
  */
-inline std::vector<bool> set_thread_affinity(std::size_t cpu_id)
+hi_inline std::vector<bool> set_thread_affinity(std::size_t cpu_id)
 {
     auto new_mask = std::vector<bool>{};
     new_mask.resize(cpu_id + 1);
@@ -119,7 +118,7 @@ inline std::vector<bool> set_thread_affinity(std::size_t cpu_id)
  *
  * @return The cpu that was selected to run on.
  */
-[[nodiscard]] inline std::size_t advance_thread_affinity(std::size_t &cpu) noexcept
+[[nodiscard]] hi_inline std::size_t advance_thread_affinity(std::size_t &cpu) noexcept
 {
     auto available_cpus = process_affinity_mask();
     hi_assert_bounds(cpu, available_cpus);

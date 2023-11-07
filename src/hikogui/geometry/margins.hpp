@@ -8,14 +8,16 @@
 
 #pragma once
 
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <concepts>
+#include <exception>
+#include <compare>
 
+hi_export_module(hikogui.geometry : margins);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The left, bottom, right and top margins.
  * @ingroup geometry

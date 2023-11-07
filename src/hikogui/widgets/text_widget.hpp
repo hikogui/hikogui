@@ -11,12 +11,12 @@
 #include "widget.hpp"
 #include "text_delegate.hpp"
 #include "../GUI/GUI.hpp"
-#include "../text/module.hpp"
-#include "../geometry/module.hpp"
+#include "../text/text.hpp"
+#include "../geometry/geometry.hpp"
 #include "../l10n/l10n.hpp"
-#include "../container/module.hpp"
-#include "../observer/module.hpp"
-#include "../coroutine/module.hpp"
+#include "../container/container.hpp"
+#include "../observer/observer.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
@@ -26,7 +26,9 @@
 #include <limits>
 #include <chrono>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.text_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_style>>;

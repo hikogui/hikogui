@@ -15,7 +15,9 @@
 #include <memory>
 #include <algorithm>
 #include <iterator>
+#include <stdexcept>
 
+hi_export_module(hikogui.container.lean_vector);
 
 
 hi_warning_push();
@@ -23,7 +25,7 @@ hi_warning_push();
 // Using an iterator requires a lot of code which will not make it safer.
 hi_warning_ignore_msvc(26459);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Lean-vector with (SVO) short-vector-optimization.
  *
@@ -660,7 +662,8 @@ public:
      * @param last An iterator to one beyond the last item to copy.
      * @return An iterator pointing to the newly inserted item.
      */
-    iterator insert(const_iterator pos, std::input_iterator auto first, std::input_iterator auto last)
+    template<std::input_iterator First, std::input_iterator Last>
+    iterator insert(const_iterator pos, First first, Last last)
     {
         if constexpr (requires { std::distance(first, last); }) {
             hilet n = std::distance(first, last);

@@ -4,8 +4,10 @@
 
 #pragma once
 
-#include "../security/module.hpp"
+#include "../security/security.hpp"
 #include "../macros.hpp"
+
+hi_export_module(hikogui.container.secure_vector);
 
 // namespace hi::inline v1 {
 // 

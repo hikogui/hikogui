@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.audio.audio_system_asio);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class audio_system_asio : public audio_system {
 };

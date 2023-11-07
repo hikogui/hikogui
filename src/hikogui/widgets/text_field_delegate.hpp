@@ -8,16 +8,22 @@
 
 #pragma once
 
+#include "../observer/observer.hpp"
+#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../dispatch/dispatch.hpp"
+#include "../GUI/GUI.hpp"
+#include "../macros.hpp"
 #include "../l10n/l10n.hpp"
-#include "../observer/module.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <optional>
 #include <concepts>
 
-namespace hi { inline namespace v1 {
-class text_field_widget;
+hi_export_module(hikogui.widgets.text_field_delegate);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A delegate that controls the state of a text_field_widget.
  *

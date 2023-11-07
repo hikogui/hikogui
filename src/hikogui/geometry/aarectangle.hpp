@@ -12,16 +12,20 @@
 #include "extent2.hpp"
 #include "point2.hpp"
 #include "point3.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
+#include "../concurrency/unfair_mutex.hpp" // XXX #616
+#include "../concurrency/thread.hpp" // XXX #616
 #include "../macros.hpp"
 #include <concepts>
 #include <mutex>
+#include <exception>
+#include <compare>
 
+hi_export_module(hikogui.geometry : aarectangle);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Class which represents an axis-aligned rectangle.
  * @ingroup geometry
@@ -604,8 +608,9 @@ private:
     mutable hi::unfair_mutex _mutex;
 };
 
-template<typename CharT>
-struct std::formatter<hi::aarectangle, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::aarectangle, char> {
     auto parse(auto& pc)
     {
         return pc.end();

@@ -15,7 +15,9 @@
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.radio_button_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept radio_button_widget_attribute =

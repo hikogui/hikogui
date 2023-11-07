@@ -5,14 +5,14 @@
 #pragma once
 
 #include "seed.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <random>
 
+hi_export_module(hikogui.random.xorshift128p);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** xorshift128+
  */

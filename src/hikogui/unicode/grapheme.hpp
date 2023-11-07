@@ -8,6 +8,8 @@
 #include "../i18n/i18n.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../concurrency/concurrency.hpp"
+#include "../char_maps/char_maps.hpp"
+#include "../coroutine/generator.hpp" // XXX #616
 #include "unicode_normalization.hpp"
 #include "ucd_general_categories.hpp"
 #include "ucd_canonical_combining_classes.hpp"
@@ -24,8 +26,14 @@
 #include <bit>
 #include <array>
 #include <atomic>
+#include <unordered_map>
+#include <mutex>
+#include <chrono>
+#include <format>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.unicode.grapheme);
+
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 class long_grapheme_table {
@@ -140,7 +148,7 @@ private:
     std::unordered_map<std::u32string, uint32_t> _indices = {};
 };
 
-inline long_grapheme_table long_graphemes = {};
+hi_inline long_grapheme_table long_graphemes = {};
 
 } // namespace detail
 

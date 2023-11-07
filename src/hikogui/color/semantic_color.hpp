@@ -11,10 +11,12 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <array>
+#include <string_view>
+#include <format>
 
+hi_export_module(hikogui.color.semantic_color);
 
-
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Semantic colors.
@@ -79,7 +81,7 @@ constexpr auto semantic_color_metadata = enum_metadata{
  *
  * @ingroup color
  */
-[[nodiscard]] inline std::string_view to_string(semantic_color rhs) noexcept
+[[nodiscard]] hi_inline std::string_view to_string(semantic_color rhs) noexcept
 {
     return semantic_color_metadata[rhs];
 }
@@ -89,18 +91,19 @@ constexpr auto semantic_color_metadata = enum_metadata{
  *
  * @ingroup color
  */
-[[nodiscard]] inline semantic_color semantic_color_from_string(std::string_view str)
+[[nodiscard]] hi_inline semantic_color semantic_color_from_string(std::string_view str)
 {
     return semantic_color_metadata[str];
 }
 
 }} // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::semantic_color, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::semantic_color, char> : std::formatter<std::string_view, char> {
     auto format(hi::semantic_color const &t, auto &fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::semantic_color_metadata[t], fc);
+        return std::formatter<std::string_view, char>::format(hi::semantic_color_metadata[t], fc);
     }
 };
 

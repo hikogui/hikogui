@@ -3,13 +3,14 @@
 #pragma once
 
 #include "../macros.hpp"
+#include <concepts>
 
 /** @file utility/value_traits.hpp Utility functions to determine information about values.
  * @ingroup utility
  */
 hi_export_module(hikogui.utility.value_traits);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Check if a value is integral.
  *

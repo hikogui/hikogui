@@ -18,7 +18,9 @@
 #include "../macros.hpp"
 #include <unordered_map>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.GUI : gui_window);
+
+hi_export namespace hi::inline v1 {
 
 class gui_window {
 public:

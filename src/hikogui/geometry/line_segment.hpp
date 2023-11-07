@@ -11,8 +11,13 @@
 #include "point3.hpp"
 #include "vector3.hpp"
 #include "../macros.hpp"
+#include <cstddef>
+#include <exception>
+#include <compare>
 
-namespace hi {
+hi_export_module(hikogui.geometry : line_segment);
+
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Line segment.

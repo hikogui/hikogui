@@ -4,15 +4,18 @@
 
 #pragma once
 
-#include "gfx_pipeline_override_vulkan.hpp"
+#include "gfx_pipeline_override_vulkan_intf.hpp"
 #include "gfx_device_vulkan_impl.hpp"
 #include "../macros.hpp"
+#include <vulkan/vulkan.hpp>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.GFX : gfx_pipeline_override_impl);
+
+hi_export namespace hi { inline namespace v1 {
 
 /* Do not blend, simply use just the alpha channel and overwrite the pixels in the color attachment directly.
  */
-inline std::vector<vk::PipelineColorBlendAttachmentState> gfx_pipeline_override::getPipelineColorBlendAttachmentStates() const
+hi_inline std::vector<vk::PipelineColorBlendAttachmentState> gfx_pipeline_override::getPipelineColorBlendAttachmentStates() const
 {
     bool has_dual_source_blend = false;
     if (auto device_ = device()) {
@@ -31,7 +34,7 @@ inline std::vector<vk::PipelineColorBlendAttachmentState> gfx_pipeline_override:
              vk::ColorComponentFlagBits::eA}};
 }
 
-inline void gfx_pipeline_override::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+hi_inline void gfx_pipeline_override::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
     gfx_pipeline::draw_in_command_buffer(commandBuffer, context);
 
@@ -63,43 +66,43 @@ inline void gfx_pipeline_override::draw_in_command_buffer(vk::CommandBuffer comm
     device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
-inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_override::createShaderStages() const
+hi_inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_override::createShaderStages() const
 {
     hi_axiom_not_null(device());
     return device()->override_pipeline->shaderStages;
 }
 
-inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_override::createDescriptorSetLayoutBindings() const
+hi_inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_override::createDescriptorSetLayoutBindings() const
 {
     return {};
 }
 
-inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_override::createWriteDescriptorSet() const
+hi_inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_override::createWriteDescriptorSet() const
 {
     return {};
 }
 
-inline size_t gfx_pipeline_override::getDescriptorSetVersion() const
+hi_inline size_t gfx_pipeline_override::getDescriptorSetVersion() const
 {
     return 0;
 }
 
-inline std::vector<vk::PushConstantRange> gfx_pipeline_override::createPushConstantRanges() const
+hi_inline std::vector<vk::PushConstantRange> gfx_pipeline_override::createPushConstantRanges() const
 {
     return push_constants::pushConstantRanges();
 }
 
-inline vk::VertexInputBindingDescription gfx_pipeline_override::createVertexInputBindingDescription() const
+hi_inline vk::VertexInputBindingDescription gfx_pipeline_override::createVertexInputBindingDescription() const
 {
     return vertex::inputBindingDescription();
 }
 
-inline std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_override::createVertexInputAttributeDescriptions() const
+hi_inline std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_override::createVertexInputAttributeDescriptions() const
 {
     return vertex::inputAttributeDescriptions();
 }
 
-inline void gfx_pipeline_override::build_vertex_buffers()
+hi_inline void gfx_pipeline_override::build_vertex_buffers()
 {
     using vertexIndexType = uint16_t;
     constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
@@ -120,32 +123,32 @@ inline void gfx_pipeline_override::build_vertex_buffers()
     vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
 }
 
-inline void gfx_pipeline_override::teardown_vertex_buffers()
+hi_inline void gfx_pipeline_override::teardown_vertex_buffers()
 {
     hi_axiom_not_null(device());
     device()->unmapMemory(vertexBufferAllocation);
     device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
-inline gfx_pipeline_override::device_shared::device_shared(gfx_device const& device) : device(device)
+hi_inline gfx_pipeline_override::device_shared::device_shared(gfx_device const& device) : device(device)
 {
     buildShaders();
 }
 
-inline gfx_pipeline_override::device_shared::~device_shared() {}
+hi_inline gfx_pipeline_override::device_shared::~device_shared() {}
 
-inline void gfx_pipeline_override::device_shared::destroy(gfx_device const*vulkanDevice)
+hi_inline void gfx_pipeline_override::device_shared::destroy(gfx_device const*vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     teardownShaders(vulkanDevice);
 }
 
-inline void gfx_pipeline_override::device_shared::drawInCommandBuffer(vk::CommandBuffer const& commandBuffer)
+hi_inline void gfx_pipeline_override::device_shared::drawInCommandBuffer(vk::CommandBuffer const& commandBuffer)
 {
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
 
-inline void gfx_pipeline_override::device_shared::place_vertices(vector_span<vertex>& vertices, aarectangle clipping_rectangle, quad box, quad_color color, quad_color blend_factor)
+hi_inline void gfx_pipeline_override::device_shared::place_vertices(vector_span<vertex>& vertices, aarectangle clipping_rectangle, quad box, quad_color color, quad_color blend_factor)
 {
     hilet clipping_rectangle_ = sfloat_rgba32{clipping_rectangle};
 
@@ -155,7 +158,7 @@ inline void gfx_pipeline_override::device_shared::place_vertices(vector_span<ver
     vertices.emplace_back(box.p3, clipping_rectangle_, color.p3, blend_factor.p3);
 }
 
-inline void gfx_pipeline_override::device_shared::buildShaders()
+hi_inline void gfx_pipeline_override::device_shared::buildShaders()
 {
     vertexShaderModule = device.loadShader(URL("resource:override_vulkan.vert.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "alpha-pipeline vertex shader");
@@ -168,7 +171,7 @@ inline void gfx_pipeline_override::device_shared::buildShaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}};
 }
 
-inline void gfx_pipeline_override::device_shared::teardownShaders(gfx_device const*vulkanDevice)
+hi_inline void gfx_pipeline_override::device_shared::teardownShaders(gfx_device const*vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);

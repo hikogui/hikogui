@@ -8,8 +8,12 @@
 #include "aarectangle.hpp"
 #include "../macros.hpp"
 #include <concepts>
+#include <exception>
+#include <compare>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.geometry : translate2);
+
+hi_export namespace hi { inline namespace v1 {
 
 class translate2 {
 public:

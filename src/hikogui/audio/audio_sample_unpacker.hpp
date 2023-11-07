@@ -6,14 +6,14 @@
 
 #include "audio_sample_format.hpp"
 #include "../utility/utility.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <cstddef>
 #include <bit>
 
 hi_export_module(hikogui.audio.audio_sample_unpacker);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class audio_sample_unpacker {
 public:

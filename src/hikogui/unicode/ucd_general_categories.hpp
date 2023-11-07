@@ -5,13 +5,18 @@
 #include "../utility/utility.hpp"
 #include <cstdint>
 #include <optional>
+#include <bit>
+#include <string_view>
+#include <string>
 
 // Windows.h defines small as a macro.
 #ifdef small
 #undef small
 #endif
 
-namespace hi {
+hi_export_module(hikogui.unicode.ucd_general_categories);
+
+hi_export namespace hi {
 inline namespace v1 {
 namespace detail {
 
@@ -1041,7 +1046,7 @@ enum class unicode_general_category : uint8_t {
 
 [[nodiscard]] constexpr bool is_noncharacter(char32_t rhs) noexcept
 {
-    hilet rhs_ = char_cast<uint32_t>(rhs);
+    auto const rhs_ = char_cast<uint32_t>(rhs);
     return rhs_ >= 0x11'0000 or (rhs_ & 0xfffe) == 0xfffe or (rhs >= 0xfdd0 and rhs <= 0xfdef);
 }
 
@@ -1050,21 +1055,21 @@ enum class unicode_general_category : uint8_t {
     constexpr auto max_code_point_hi = detail::ucd_general_categories_indices_size - 1;
 
     auto code_point_hi = code_point / detail::ucd_general_categories_chunk_size;
-    hilet code_point_lo = code_point % detail::ucd_general_categories_chunk_size;
+    auto const code_point_lo = code_point % detail::ucd_general_categories_chunk_size;
 
     if (code_point_hi > max_code_point_hi) {
         code_point_hi = max_code_point_hi;
     }
 
-    hilet chunk_index = load_bits_be<detail::ucd_general_categories_index_width>(
+    auto const chunk_index = load_bits_be<detail::ucd_general_categories_index_width>(
         detail::ucd_general_categories_indices_bytes,
         code_point_hi * detail::ucd_general_categories_index_width);
 
     // Add back in the lower-bits of the code-point.
-    hilet index = (chunk_index * detail::ucd_general_categories_chunk_size) + code_point_lo;
+    auto const index = (chunk_index * detail::ucd_general_categories_chunk_size) + code_point_lo;
 
     // Get the canonical combining class from the table.
-    hilet value = load_bits_be<detail::ucd_general_category_width>(
+    auto const value = load_bits_be<detail::ucd_general_category_width>(
         detail::ucd_general_categories_bytes, index * detail::ucd_general_category_width);
 
     return static_cast<unicode_general_category>(value);

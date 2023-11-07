@@ -8,8 +8,11 @@
 #include <cstdint>
 #include <limits>
 #include <tuple>
+#include <string_view>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.parser.operator);
+
+hi_export namespace hi::inline v1 {
 
 enum class graphic_character_t {
     none = 0x00,

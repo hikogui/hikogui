@@ -7,10 +7,13 @@
 #include "matrix3.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <exception>
+#include <compare>
+#include <cmath>
 
+hi_export_module(hikogui.geometry : perspective);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Perspective transform.
  * @ingroup geometry

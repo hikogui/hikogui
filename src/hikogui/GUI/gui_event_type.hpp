@@ -14,9 +14,9 @@
 #include <string_view>
 #include <ostream>
 
+hi_export_module(hikogui.GUI : gui_event_type);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** GUI event type.
  * @ingroup GUI
@@ -194,7 +194,7 @@ constexpr auto gui_event_type_metadata = enum_metadata{
 
 /** Convert a GUI event type to a string.
  */
-inline std::string_view to_string(gui_event_type rhs) noexcept
+hi_inline std::string_view to_string(gui_event_type rhs) noexcept
 {
     return gui_event_type_metadata[rhs];
 }

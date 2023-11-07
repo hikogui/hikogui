@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <span>
@@ -13,10 +13,12 @@
 #include <string>
 #include <string_view>
 #include <bit>
+#include <iterator>
+#include <format>
 
 hi_export_module(hikogui.codec.base_n);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 struct base_n_alphabet {

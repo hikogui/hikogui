@@ -5,10 +5,12 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <cstdint>
+#include <compare>
 
 hi_export_module(hikogui.font.font_family_id);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 hi_export using font_family_id = tagged_id<uint16_t, "font_family_id">;
 

@@ -6,15 +6,18 @@
 
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
+#include "../concurrency/unfair_mutex.hpp" // XXX #616
 #include "../macros.hpp"
 #include <memory>
 #include <vector>
 #include <functional>
 #include <tuple>
+#include <mutex>
+
+hi_export_module(hikogui.observer.group_ptr);
 
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename>
 class group_ptr;

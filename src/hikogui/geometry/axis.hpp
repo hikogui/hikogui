@@ -7,8 +7,13 @@
 
 #pragma once
 
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
-namespace hi {
+#include <compare>
+
+hi_export_module(hikogui.geometry : axis);
+
+hi_export namespace hi {
 inline namespace v1 {
 
 /** An enumeration of the 3 axis for 3D geometry.

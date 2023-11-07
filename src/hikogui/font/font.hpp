@@ -19,7 +19,7 @@
 
 hi_export_module(hikogui.font);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** #defgroup font Font file handler.

@@ -9,18 +9,19 @@
 #pragma once
 
 #include "pixmap_span.hpp"
-#include "../color/module.hpp"
-#include "../geometry/module.hpp"
-#include "../SIMD/module.hpp"
+#include "../color/color.hpp"
+#include "../geometry/geometry.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <algorithm>
 #include <bit>
+#include <cstdint>
 #include <array>
 
+hi_export_module(hikogui.image.sfloat_rgba16);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** 4 x float16 pixel format.
  *
@@ -98,7 +99,7 @@ constexpr void fill(pixmap_span<sfloat_rgba16> image, f32x4 color) noexcept
     }
 }
 
-inline void composit(pixmap_span<sfloat_rgba16> under, pixmap_span<sfloat_rgba16 const> over) noexcept
+hi_inline void composit(pixmap_span<sfloat_rgba16> under, pixmap_span<sfloat_rgba16 const> over) noexcept
 {
     hi_assert(over.height() >= under.height());
     hi_assert(over.width() >= under.width());
@@ -115,7 +116,7 @@ inline void composit(pixmap_span<sfloat_rgba16> under, pixmap_span<sfloat_rgba16
     }
 }
 
-inline void composit(pixmap_span<sfloat_rgba16> under, color over, pixmap_span<uint8_t const> mask) noexcept
+hi_inline void composit(pixmap_span<sfloat_rgba16> under, color over, pixmap_span<uint8_t const> mask) noexcept
 {
     hi_assert(mask.height() >= under.height());
     hi_assert(mask.width() >= under.width());

@@ -7,15 +7,22 @@
 
 #include "../win32_headers.hpp"
 
-#include "file_file.hpp"
+#include "access_mode.hpp"
+#include "file_intf.hpp"
+#include "file_win32_impl.hpp"
 #include "../utility/utility.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../telemetry/telemetry.hpp"
+#include "../container/container.hpp"
 #include "../macros.hpp"
 #include <format>
+#include <span>
+#include <cstddef>
+#include <chrono>
 
-hi_export_module(hikogui.file.file_view : impl);
+hi_export_module(hikogui.file.file_view_impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 class file_view_impl {

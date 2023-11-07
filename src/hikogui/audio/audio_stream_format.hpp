@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.audio.audio_stream_format);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export constexpr auto common_sample_rates = std::array{
     uint32_t{8000},

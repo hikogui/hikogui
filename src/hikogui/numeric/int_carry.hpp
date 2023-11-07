@@ -22,6 +22,8 @@
 #include <immintrin.h>
 #endif
 
+hi_export_module(hikogui.numeric.int_carry);
+
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
 hi_warning_ignore_msvc(4702);
@@ -29,7 +31,7 @@ hi_warning_ignore_msvc(4702);
 // int_carry does many static_casts on purpose.
 hi_warning_ignore_msvc(26472)
 
-namespace hi {
+hi_export namespace hi {
 
 /** Get a bit from an array of unsigned integers.
  * The integers are arranged in little-endian order.

@@ -9,11 +9,14 @@
 #pragma once
 
 #include "Rec2020.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <cmath>
 #include <array>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.color.Rec2100);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** Rec.2100 to XYZ color space conversion matrix.
  * @ingroup color
@@ -31,7 +34,7 @@ constexpr matrix3 XYZ_to_Rec2100 = XYZ_to_Rec2020;
  * @param L The linear color value, between 0.0 and 1.0.
  * @return The color value converted to the Rec.2100 gamma corrected value between 0.0 and 1.0.
  */
-[[nodiscard]] inline float Rec2100_linear_to_gamma(float L) noexcept
+[[nodiscard]] hi_inline float Rec2100_linear_to_gamma(float L) noexcept
 {
     constexpr float c1 = 0.8359375f;
     constexpr float c2 = 18.8515625f;
@@ -50,7 +53,7 @@ constexpr matrix3 XYZ_to_Rec2100 = XYZ_to_Rec2020;
  * @param N The Rec.2100 gamma corrected color value, between 0.0 and 1.0.
  * @return The color value converted to a linear color value between 0.0 and 1.0.
  */
-[[nodiscard]] inline float Rec2100_gamma_to_linear(float N) noexcept
+[[nodiscard]] hi_inline float Rec2100_gamma_to_linear(float N) noexcept
 {
     constexpr float c1 = 0.8359375f;
     constexpr float c2 = 18.8515625f;

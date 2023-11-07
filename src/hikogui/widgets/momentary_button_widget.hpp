@@ -11,7 +11,9 @@
 #include "abstract_button_widget.hpp"
 #include "../macros.hpp"
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.momentary_button_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A momentary button widget.
  * @ingroup widgets

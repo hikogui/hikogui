@@ -6,15 +6,17 @@
 
 #include "vector2.hpp"
 #include "extent2.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <format>
 #include <concepts>
+#include <exception>
+#include <compare>
 
+hi_export_module(hikogui.geometry : point2);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A high-level geometric point
  * Part of the high-level vec, point, mat and color types.
@@ -245,8 +247,9 @@ private:
 
 } // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::point2, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::point2, char> {
     auto parse(auto& pc)
     {
         return pc.end();

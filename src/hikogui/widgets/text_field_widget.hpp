@@ -13,14 +13,18 @@
 #include "label_widget.hpp"
 #include "scroll_widget.hpp"
 #include "../l10n/l10n.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.text_field_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept text_field_widget_attribute = text_widget_attribute<Context>;

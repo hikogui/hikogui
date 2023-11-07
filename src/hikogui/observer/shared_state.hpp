@@ -5,11 +5,14 @@
 #pragma once
 
 #include "observed_value.hpp"
-#include "observer.hpp"
+#include "../utility/utility.hpp"
+#include "../concurrency/thread.hpp" // XXX #616
 #include "../macros.hpp"
 #include <memory>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.observer : shared_state);
+
+hi_export namespace hi::inline v1 {
 
 /** Shared state of an application.
  *

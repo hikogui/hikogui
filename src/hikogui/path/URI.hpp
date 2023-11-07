@@ -9,15 +9,21 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <optional>
 #include <ranges>
+#include <vector>
+#include <format>
+#include <string_view>
+#include <string>
+#include <compare>
+#include <ostream>
 
 hi_export_module(hikogui.path.URI);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 #define HI_SUB_DELIM '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='
 #define HI_PCHAR HI_SUB_DELIM, ':', '@'
@@ -975,10 +981,11 @@ struct std::hash<hi::URI> {
     }
 };
 
-template<typename CharT>
-struct std::formatter<hi::URI, CharT> : std::formatter<std::string, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::URI, char> : std::formatter<std::string, char> {
     auto format(hi::URI const& t, auto& fc) const
     {
-        return std::formatter<std::string, CharT>::format(to_string(t), fc);
+        return std::formatter<std::string, char>::format(to_string(t), fc);
     }
 };

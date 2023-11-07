@@ -6,15 +6,16 @@
 
 #include "audio_system.hpp"
 #include "audio_device_win32.hpp"
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../memory/memory.hpp"
 #include "../macros.hpp"
 #include "../win32_headers.hpp"
 #include <memory>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.audio_system_win32);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 class audio_system_win32;
 
 hi_export struct audio_system_win32_event {
@@ -226,7 +227,7 @@ private:
     friend class audio_system_win32_notification_client;
 };
 
-hi_export [[nodiscard]] inline audio_system &audio_system::global() noexcept
+hi_export [[nodiscard]] hi_inline audio_system &audio_system::global() noexcept
 {
     if (not detail::audio_system_global) {
         auto tmp = std::make_unique<audio_system_aggregate>();

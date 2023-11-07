@@ -5,7 +5,7 @@
 #pragma once
 
 #include "semantic_version.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <stdexcept>
@@ -14,14 +14,14 @@
 
 hi_export_module(hikogui.metadata.metadata_application);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
-inline std::optional<std::string> _application_name = std::nullopt;
-inline std::optional<std::string> _application_slug = std::nullopt;
-inline std::optional<std::string> _application_vendor = std::nullopt;
-inline std::optional<semantic_version> _application_version = std::nullopt;
+hi_inline std::optional<std::string> _application_name = std::nullopt;
+hi_inline std::optional<std::string> _application_slug = std::nullopt;
+hi_inline std::optional<std::string> _application_vendor = std::nullopt;
+hi_inline std::optional<semantic_version> _application_version = std::nullopt;
 
-hi_export [[nodiscard]] inline std::string const& get_application_name()
+hi_export [[nodiscard]] hi_inline std::string const& get_application_name()
 {
     if (_application_name) {
         return *_application_name;
@@ -30,7 +30,7 @@ hi_export [[nodiscard]] inline std::string const& get_application_name()
     }
 }
 
-hi_export [[nodiscard]] inline std::string const& get_application_slug()
+hi_export [[nodiscard]] hi_inline std::string const& get_application_slug()
 {
     if (_application_slug) {
         return *_application_slug;
@@ -39,7 +39,7 @@ hi_export [[nodiscard]] inline std::string const& get_application_slug()
     }
 }
 
-hi_export [[nodiscard]] inline std::string const& get_application_vendor()
+hi_export [[nodiscard]] hi_inline std::string const& get_application_vendor()
 {
     if (_application_vendor) {
         return *_application_vendor;
@@ -48,7 +48,7 @@ hi_export [[nodiscard]] inline std::string const& get_application_vendor()
     }
 }
 
-hi_export [[nodiscard]] inline semantic_version const& get_application_version()
+hi_export [[nodiscard]] hi_inline semantic_version const& get_application_version()
 {
     if (_application_version) {
         return *_application_version;
@@ -57,7 +57,7 @@ hi_export [[nodiscard]] inline semantic_version const& get_application_version()
     }
 }
 
-hi_export inline void set_application_name(std::string_view name, std::string_view slug)
+hi_export hi_inline void set_application_name(std::string_view name, std::string_view slug)
 {
     if (name.empty()) {
         throw std::invalid_argument("application name must not be empty.");
@@ -76,12 +76,12 @@ hi_export inline void set_application_name(std::string_view name, std::string_vi
     _application_slug = slug;
 }
 
-hi_export inline void set_application_name(std::string_view name)
+hi_export hi_inline void set_application_name(std::string_view name)
 {
     return set_application_name(name, make_slug(name));
 }
 
-hi_export inline void set_application_vendor(std::string_view name)
+hi_export hi_inline void set_application_vendor(std::string_view name)
 {
     if (name.empty()) {
         throw std::invalid_argument("vendor name must not be empty.");
@@ -93,12 +93,12 @@ hi_export inline void set_application_vendor(std::string_view name)
     _application_vendor = name;
 }
 
-hi_export inline void set_application_version(semantic_version version) noexcept
+hi_export hi_inline void set_application_version(semantic_version version) noexcept
 {
     _application_version = version;
 }
 
-hi_export inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
+hi_export hi_inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
 {
     return set_application_version(semantic_version{major, minor, patch});
 }
