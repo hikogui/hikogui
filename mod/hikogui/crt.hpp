@@ -69,7 +69,7 @@ hi_warning_pop();
         _In_ int nShowCmd) \
     { \
         auto [argc, argv] = hi::crt_start(hInstance, nShowCmd); \
-        hilet r = hi_main(argc, argv); \
+        hilet r = hi_main_detail(argc, argv); \
         return hi::crt_finish(argc, argv, r); \
     } \
     int hi_main_detail(ARGC, ARGV)

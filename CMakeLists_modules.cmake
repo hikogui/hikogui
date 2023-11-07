@@ -354,6 +354,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/label.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/l10n.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/po_parser.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/po_translations.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/txt.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/l10n/translation.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/layout/box_constraints.ixx
