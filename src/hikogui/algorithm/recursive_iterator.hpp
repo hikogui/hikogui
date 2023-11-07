@@ -4,12 +4,15 @@
 
 #pragma once
 
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <compare>
 #include <iterator>
 
-namespace hi {
+hi_export_module(hikogui.algorithm.recursive_iterator);
+
+hi_export namespace hi {
 inline namespace v1 {
 
 /** An iterator which recursively iterates through nested containers.

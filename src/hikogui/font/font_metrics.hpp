@@ -5,10 +5,12 @@
 #pragma once
 
 #include "../macros.hpp"
+#include <algorithm>
+#include <cmath>
 
 hi_export_module(hikogui.font.font_metrics);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** The metrics of a font.
  *

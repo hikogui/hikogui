@@ -8,7 +8,9 @@
 #include <vulkan/vulkan.hpp>
 #include <cstdint>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.GFX : gfx_queue);
+
+hi_export namespace hi::inline v1 {
 
 struct gfx_queue_vulkan {
     uint32_t family_queue_index;

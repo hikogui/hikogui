@@ -12,15 +12,18 @@
 #include <atomic>
 #include <memory>
 #include <array>
+#include <bit>
+#include <chrono>
+#include <format>
 
-
+hi_export_module(hikogui.container.wfree_fifo);
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).
 // Implementing a container.
 hi_warning_ignore_msvc(26490);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A wait-free multiple-producer/single-consumer fifo designed for absolute performance.
  * Because of performance reasons the ring-buffer is 64kByte.

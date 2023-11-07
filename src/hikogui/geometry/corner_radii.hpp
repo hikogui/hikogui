@@ -8,8 +8,15 @@
 
 #pragma once
 
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
-namespace hi {
+#include <cstddef>
+#include <exception>
+#include <compare>
+
+hi_export_module(hikogui.geometry : corner_radii);
+
+hi_export namespace hi {
 inline namespace v1 {
 
 /** The 4 radii of the corners of a quad or rectangle.

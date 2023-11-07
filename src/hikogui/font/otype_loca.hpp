@@ -14,7 +14,7 @@ hi_export_module(hikogui.font.otype_loca);
 
 hi_export namespace hi { inline namespace v1 {
 
-[[nodiscard]] inline std::pair<size_t, size_t> otype_loca16_get(std::span<std::byte const> bytes, hi::glyph_id glyph_id)
+[[nodiscard]] hi_inline std::pair<size_t, size_t> otype_loca16_get(std::span<std::byte const> bytes, hi::glyph_id glyph_id)
 {
     hilet entries = implicit_cast<big_uint16_buf_t>(bytes, bytes.size() / sizeof(big_uint16_buf_t));
     hilet first = wide_cast<size_t>(*hi_check_at(entries, *glyph_id)) * 2;
@@ -23,7 +23,7 @@ hi_export namespace hi { inline namespace v1 {
     return {first, last};
 }
 
-[[nodiscard]] inline std::pair<size_t, size_t> otype_loca32_get(std::span<std::byte const> bytes, hi::glyph_id glyph_id)
+[[nodiscard]] hi_inline std::pair<size_t, size_t> otype_loca32_get(std::span<std::byte const> bytes, hi::glyph_id glyph_id)
 {
     hilet entries = implicit_cast<big_uint32_buf_t>(bytes, bytes.size() / sizeof(big_uint32_buf_t));
     hilet first = wide_cast<size_t>(*hi_check_at(entries, *glyph_id));
@@ -32,7 +32,7 @@ hi_export namespace hi { inline namespace v1 {
     return {first, last};
 }
 
-[[nodiscard]] inline std::pair<size_t, size_t>
+[[nodiscard]] hi_inline std::pair<size_t, size_t>
 otype_loca_get(std::span<std::byte const> loca_bytes, hi::glyph_id glyph_id, bool loca_is_offset32)
 {
     if (loca_is_offset32) {
@@ -42,7 +42,7 @@ otype_loca_get(std::span<std::byte const> loca_bytes, hi::glyph_id glyph_id, boo
     }
 }
 
-[[nodiscard]] inline std::span<std::byte const> otype_loca_get(
+[[nodiscard]] hi_inline std::span<std::byte const> otype_loca_get(
     std::span<std::byte const> loca_bytes,
     std::span<std::byte const> glyf_bytes,
     hi::glyph_id glyph_id,

@@ -8,11 +8,13 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
+#include <string_view>
+#include <coroutine>
 
 hi_export_module(hikogui.font.font_style);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** The different styles a font-family comes with.
@@ -44,7 +46,7 @@ constexpr auto font_style_metadata = enum_metadata{
 };
 // clang-format on
 
-hi_export [[nodiscard]] inline generator<font_style> alternatives(font_style start) noexcept
+hi_export [[nodiscard]] hi_inline generator<font_style> alternatives(font_style start) noexcept
 {
     if (start == font_style::normal) {
         co_yield font_style::normal;

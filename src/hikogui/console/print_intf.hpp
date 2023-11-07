@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.console.print : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Output text to the console.
  * This will output the text to the console.

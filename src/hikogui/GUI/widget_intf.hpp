@@ -9,9 +9,13 @@
 #include "../layout/layout.hpp"
 #include "../GFX/GFX.hpp"
 #include "../telemetry/telemetry.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.GUI : widget_intf);
+
+hi_export namespace hi { inline namespace v1 {
 class gui_window;
 
 class widget_intf {
@@ -217,7 +221,7 @@ public:
     }
 };
 
-inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept
+hi_inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept
 {
     hi_assert_not_null(start);
 
@@ -232,7 +236,7 @@ inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisi
     return nullptr;
 }
 
-inline widget_intf& get(widget_intf& start, widget_id id, bool include_invisible)
+hi_inline widget_intf& get(widget_intf& start, widget_id id, bool include_invisible)
 {
     if (auto r = get_if(std::addressof(start), id, include_invisible); r != nullptr) {
         return *r;

@@ -8,14 +8,16 @@
 
 #include "dialog_intf.hpp"
 #include "../utility/utility.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include "../macros.hpp"
+#include <exception>
+#include <string_view>
 
 hi_export_module(hikogui.console.dialog : impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
-hi_export inline bool dialog(dialog_type type, std::string_view title, std::string_view text)
+hi_export hi_inline bool dialog(dialog_type type, std::string_view title, std::string_view text)
 {
     UINT type_;
 

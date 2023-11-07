@@ -6,13 +6,15 @@
 
 #include "iso_3166_intf.hpp"
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <array>
+#include <algorithm>
+#include <format>
 
 hi_export_module(hikogui.i18n.iso_3166 : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 struct iso_3166_info {

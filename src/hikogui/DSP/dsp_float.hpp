@@ -1,9 +1,11 @@
 
-#include "../macros.hpp"
-
 #pragma once
 
-namespace hi {
+#include "../macros.hpp"
+
+hi_export_module(hikogui.DSP.dsp_float);
+
+hi_export namespace hi {
 inline namespace v1 {
 
 template<typename Context>

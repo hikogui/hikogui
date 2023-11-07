@@ -5,8 +5,8 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../numeric/module.hpp"
-#include "../container/module.hpp"
+#include "../numeric/numeric.hpp"
+#include "../container/container.hpp"
 #include "../macros.hpp"
 #include "base_n.hpp"
 #include "jsonpath.hpp"
@@ -32,7 +32,7 @@ hi_warning_ignore_msvc(26492);
 
 hi_export_module(hikogui.codec.datum);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 /** Promotion result.
@@ -2374,17 +2374,18 @@ private:
 
 hi_export template<>
 struct std::hash<hi::datum> {
-    [[nodiscard]] inline std::size_t operator()(hi::datum const& rhs) const noexcept
+    [[nodiscard]] hi_inline std::size_t operator()(hi::datum const& rhs) const noexcept
     {
         return rhs.hash();
     }
 };
 
-hi_export template<typename CharT>
-struct std::formatter<hi::datum, CharT> : std::formatter<std::string, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::datum, char> : std::formatter<std::string, char> {
     auto format(hi::datum const& t, auto& fc) const
     {
-        return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
+        return std::formatter<std::string, char>{}.format(to_string(t), fc);
     }
 };
 

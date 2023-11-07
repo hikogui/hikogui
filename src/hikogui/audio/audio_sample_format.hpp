@@ -5,13 +5,13 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <bit>
 
 hi_export_module(hikogui.audio.audio_sample_format);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Audio sample format.
  * Audio samples described by this type can be in three different formats.

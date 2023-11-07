@@ -5,12 +5,15 @@
 #pragma once
 
 #include "xorshift128p.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <iterator>
+#include <exception>
 
+hi_export_module(hikogui.random.dither);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** An object that create dither values to add to samples before rounding.
  *

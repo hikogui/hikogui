@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.unicode.markup);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** @file unicode/markup.hpp
  *

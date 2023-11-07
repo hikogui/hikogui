@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.path);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /**

@@ -7,7 +7,7 @@ target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 add_dependencies(hikogui_all_tests hikogui_tests)
 
 target_sources(hikogui_tests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm_misc_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/ranges_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/strings_tests.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_sample_packer_tests.cpp
@@ -29,13 +29,13 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/notifier_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/rcu_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/small_map_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/tree_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/generator_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_char_map_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_weight_tests.cpp
@@ -65,7 +65,6 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/interval_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_carry_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_overflow_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial_tests.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/safe_int_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr_tests.cpp

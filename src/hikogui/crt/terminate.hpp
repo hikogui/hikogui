@@ -10,22 +10,24 @@
 #include "../utility/utility.hpp"
 #include "../console/console.hpp"
 #include "../telemetry/telemetry.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
 #include <exception>
 #include <stdexcept>
 #include <atomic>
 #include <bit>
 #include <format>
+#include <iostream>
 
 hi_export_module(hikogui.crt.terminate);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The old terminate handler.
  *
  * This is the handler returned by `std::set_terminate()`.
  */
-inline std::terminate_handler old_terminate_handler;
+hi_inline std::terminate_handler old_terminate_handler;
 
 /** The HikoGUI terminate handler.
  *
@@ -33,7 +35,7 @@ inline std::terminate_handler old_terminate_handler;
  *
  * @note Use `hi_set_terminate_message()` to set a message.
  */
-inline void terminate_handler() noexcept{
+hi_inline void terminate_handler() noexcept{
     using namespace std::literals;
 
     log_global.flush();

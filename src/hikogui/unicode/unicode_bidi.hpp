@@ -10,13 +10,21 @@
 #include "ucd_decompositions.hpp"
 #include "ucd_general_categories.hpp"
 #include "../utility/utility.hpp"
-#include "../container/module.hpp"
-#include "../algorithm/module.hpp"
+#include "../container/container.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
+#include <cstdint>
+#include <exception>
+#include <cstddef>
+#include <vector>
+#include <utility>
+#include <iterator>
+#include <algorithm>
+
+hi_export_module(hikogui.unicode.unicode_bidi);
 
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct unicode_bidi_context {
     enum class mode_type : uint8_t { LTR, RTL, auto_LTR, auto_RTL };

@@ -8,9 +8,9 @@
 #include "../macros.hpp"
 #include <array>
 
+hi_export_module(hikogui.container.small_vector);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename T, std::size_t N>
 class small_vector {
@@ -48,7 +48,7 @@ public:
         _end = items.begin();
     }
 
-    constexpr bool push_back(value_type &&value) noexcept
+    constexpr bool push_back(value_type&& value) noexcept
     {
         if (_end == items.end()) {
             return false;
@@ -57,7 +57,7 @@ public:
         return true;
     }
 
-    constexpr bool push_back(value_type const &value) noexcept
+    constexpr bool push_back(value_type const& value) noexcept
     {
         if (_end == items.end()) {
             return false;

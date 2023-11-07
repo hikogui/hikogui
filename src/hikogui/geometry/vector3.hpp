@@ -5,10 +5,16 @@
 #pragma once
 
 #include "vector2.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <exception>
+#include <format>
+#include <ostream>
+#include <compare>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.geometry : vector3);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A high-level geometric vector
  * Part of the high-level vector, point, mat and color types.
@@ -326,8 +332,9 @@ private:
 
 }} // namespace hi::v1
 
-template<typename CharT>
-struct std::formatter<hi::vector3, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::vector3, char> {
     auto parse(auto& pc)
     {
         return pc.end();

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "glyph_id.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <bitset>
@@ -21,7 +21,7 @@
 
 hi_export_module(hikogui.font.font_char_map);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Character map of a font.
  *
@@ -163,7 +163,7 @@ public:
      * @param code_point The code-point to find in the character map.
      * @return The corrosponding glyph found representing the code-point, or an empty glyph if not found.
      */
-    [[nodiscard]] inline glyph_id find(char32_t code_point) const noexcept
+    [[nodiscard]] hi_inline glyph_id find(char32_t code_point) const noexcept
     {
 #ifndef NDEBUG
         hi_assert(_prepared);

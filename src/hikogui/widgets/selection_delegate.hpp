@@ -9,13 +9,20 @@
 #pragma once
 
 #include "../l10n/l10n.hpp"
+#include "../observer/observer.hpp"
+#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../dispatch/dispatch.hpp"
+#include "../GUI/GUI.hpp"
 #include "../macros.hpp"
 #include "radio_button_widget.hpp"
 #include <memory>
 #include <functional>
 #include <vector>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.selection_delegate);
+
+hi_export namespace hi { inline namespace v1 {
 class selection_widget;
 
 /** A delegate that controls the state of a selection_widget.

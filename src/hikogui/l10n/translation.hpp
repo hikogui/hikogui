@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "translation.hpp"
+#include "po_translations.hpp"
 #include "po_parser.hpp"
 #include "../i18n/i18n.hpp"
 #include "../formula/formula.hpp"
@@ -21,7 +21,7 @@
 
 hi_export_module(hikogui.l10n.translation);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 struct translation_key {
@@ -46,19 +46,19 @@ struct std::hash<hi::translation_key> {
     }
 };
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
-inline std::unordered_map<translation_key, std::vector<std::string>> translations;
-inline std::atomic<bool> translations_loaded = false;
+hi_inline std::unordered_map<translation_key, std::vector<std::string>> translations;
+hi_inline std::atomic<bool> translations_loaded = false;
 
-inline void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept
+hi_inline void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept
 {
     auto key = translation_key{std::string{msgid}, language};
     translations[key] = plural_forms;
 }
 
-inline void add_translations(po_translations const &po_translations) noexcept
+hi_inline void add_translations(po_translations const &po_translations) noexcept
 {
     for (hilet &translation : po_translations.translations) {
         auto msgid = translation.msgctxt ? *translation.msgctxt + '|' + translation.msgid : translation.msgid;
@@ -66,13 +66,13 @@ inline void add_translations(po_translations const &po_translations) noexcept
     }
 }
 
-inline void load_translations(std::filesystem::path path)
+hi_inline void load_translations(std::filesystem::path path)
 {
     hi_log_info("Loading translation file {}.", path.string());
     return add_translations(parse_po(path));
 }
 
-inline void load_translations()
+hi_inline void load_translations()
 {
     if (not translations_loaded.exchange(true)) {
         // XXX Waiting for C++23 to extend life-time of temporaries in for loops.
@@ -87,7 +87,7 @@ inline void load_translations()
     }
 }
 
-[[nodiscard]] inline std::pair<std::string_view, language_tag>
+[[nodiscard]] hi_inline std::pair<std::string_view, language_tag>
 get_translation(std::string_view msgid, long long n, std::vector<language_tag> const &languages) noexcept
 {
     load_translations();
@@ -101,7 +101,7 @@ get_translation(std::string_view msgid, long long n, std::vector<language_tag> c
         hilet i = translations.find(key);
         if (i != translations.cend()) {
             hilet plurality = cardinal_plural(language, n, i->second.size());
-            hilet &translation = i->second[plurality];
+            hilet& translation = i->second[plurality];
             if (translation.size() != 0) {
                 return {translation, language};
             }
@@ -110,6 +110,5 @@ get_translation(std::string_view msgid, long long n, std::vector<language_tag> c
     hi_log_debug("No translation found for '{}'", msgid);
     return {msgid, language_tag{"en-Latn-US"}};
 }
-
 
 }} // namespace hi::inline v1

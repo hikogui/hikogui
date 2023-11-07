@@ -9,9 +9,9 @@
 #include <vector>
 #include <cstddef>
 
+hi_export_module(hikogui.container.undo_stack);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename T>
 class undo_stack {

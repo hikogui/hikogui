@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.settings.cpu_id);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 class cpu_id {

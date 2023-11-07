@@ -11,11 +11,15 @@
 #include "widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.scroll_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** The scroll widget allows a content widget to be shown in less space than is
  * required.

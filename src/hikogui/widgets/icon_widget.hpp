@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "../GFX/GFX.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <memory>
@@ -19,7 +19,9 @@
 #include <optional>
 #include <future>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.icon_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer<hi::alignment>, observer<hi::color>>;

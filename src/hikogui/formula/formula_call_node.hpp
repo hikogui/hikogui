@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.formula.formula_call_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_call_node final : formula_node {
     std::unique_ptr<formula_node> lhs;

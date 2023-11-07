@@ -4,8 +4,13 @@
 
 #pragma once
 
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
-namespace hi::inline v1 {
+#include <utility>
+
+hi_export_module(hikogui.GUI : keyboard_focus_group);
+
+hi_export namespace hi::inline v1 {
 
 /** The keyboard focus group used for finding a widget that will accept a particular focus.
  */

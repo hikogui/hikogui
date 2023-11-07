@@ -4,45 +4,48 @@
 
 #pragma once
 
-#include "audio/audio.hpp"
-#include "algorithm/module.hpp"
-#include "char_maps/module.hpp"
-#include "codec/codec.hpp"
-#include "color/module.hpp"
-#include "concurrency/concurrency.hpp"
-#include "console/console.hpp"
-#include "container/module.hpp"
-#include "coroutine/module.hpp"
-#include "crt/crt.hpp"
-#include "file/file.hpp"
-#include "font/font.hpp"
-#include "formula/formula.hpp"
-#include "geometry/module.hpp"
-#include "GFX/GFX.hpp"
-#include "graphic_path/graphic_path.hpp"
-#include "GUI/GUI.hpp"
-#include "i18n/i18n.hpp"
-#include "image/module.hpp"
-#include "l10n/l10n.hpp"
-#include "dispatch/dispatch.hpp"
-#include "layout/layout.hpp"
-#include "memory/memory.hpp"
-#include "net/module.hpp"
-#include "numeric/module.hpp"
-#include "observer/module.hpp"
-#include "parser/parser.hpp"
-#include "path/path.hpp"
-#include "random/random.hpp"
-#include "security/module.hpp"
-#include "settings/settings.hpp"
-#include "SIMD/module.hpp"
-#include "skeleton/module.hpp"
-#include "telemetry/telemetry.hpp"
-#include "text/module.hpp"
-#include "time/module.hpp"
-#include "unicode/unicode.hpp"
-#include "utility/utility.hpp"
-#include "widgets/widgets.hpp"
+#include "audio/audio.hpp" // export
+#include "algorithm/algorithm.hpp" // export
+#include "char_maps/char_maps.hpp" // export
+#include "codec/codec.hpp" // export
+#include "color/color.hpp" // export
+#include "concurrency/concurrency.hpp" // export
+#include "console/console.hpp" // export
+#include "container/container.hpp" // export
+#include "coroutine/coroutine.hpp" // export
+#include "crt/crt.hpp" // export
+#include "file/file.hpp" // export
+#include "font/font.hpp" // export
+#include "formula/formula.hpp" // export
+#include "geometry/geometry.hpp" // export
+#include "GFX/GFX.hpp" // export
+#include "graphic_path/graphic_path.hpp" // export
+#include "GUI/GUI.hpp" // export
+#include "i18n/i18n.hpp" // export
+#include "image/image.hpp" // export
+#include "l10n/l10n.hpp" // export
+#include "dispatch/dispatch.hpp" // export
+#include "layout/layout.hpp" // export
+#include "memory/memory.hpp" // export
+#include "net/net.hpp" // export
+#include "numeric/numeric.hpp" // export
+#include "observer/observer.hpp" // export
+#include "parser/parser.hpp" // export
+#include "path/path.hpp" // export
+#include "random/random.hpp" // export
+#include "security/security.hpp" // export
+#include "settings/settings.hpp" // export
+#include "SIMD/SIMD.hpp" // export
+#include "skeleton/skeleton.hpp" // export
+#include "telemetry/telemetry.hpp" // export
+#include "text/text.hpp" // export
+#include "time/time.hpp" // export
+#include "unicode/unicode.hpp" // export
+#include "utility/utility.hpp" // export
+#include "widgets/widgets.hpp" // export
+#include "win32/win32.hpp" // export
+
+hi_export_module(hikogui);
 
 //#include "command_line.hpp"
 // Never include "crt.hpp"
@@ -62,7 +65,7 @@
 
 /** @namespace hi The HikoGUI namespace.
  */
-namespace hi {
+hi_export namespace hi {
 
 /** @namespace hi::v1 The HikoGUI API version 1.
  */

@@ -7,9 +7,10 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
+hi_export_module(hikogui.unicode.unicode_description);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 constexpr char32_t unicode_replacement_character = U'\ufffd';
 constexpr char32_t unicode_LF = U'\n';

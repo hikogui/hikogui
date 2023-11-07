@@ -8,7 +8,12 @@
 
 #pragma once
 
-#include "../l10n/l10n.hpp"
+#include "../observer/observer.hpp"
+#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../dispatch/dispatch.hpp"
+#include "../GUI/GUI.hpp"
+#include "../macros.hpp"
 #include "../unicode/unicode.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
@@ -16,7 +21,9 @@
 #include <memory>
 #include <functional>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.text_delegate);
+
+hi_export namespace hi { inline namespace v1 {
 class text_widget;
 
 /** A delegate that controls the state of a text_widget.

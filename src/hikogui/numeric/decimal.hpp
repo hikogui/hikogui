@@ -14,9 +14,9 @@
 #include <ostream>
 #include <bit>
 
+hi_export_module(hikogui.numeric.decimal);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class decimal {
 private:
@@ -572,16 +572,17 @@ private:
 
 template<>
 struct std::hash<hi::decimal> {
-    inline std::size_t operator()(hi::decimal const& value) const noexcept
+    hi_inline std::size_t operator()(hi::decimal const& value) const noexcept
     {
         return value.hash();
     }
 };
 
-template<typename CharT>
-struct std::formatter<hi::decimal, CharT> : std::formatter<double, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::decimal, char> : std::formatter<double, char> {
     auto format(hi::decimal const& t, auto& fc) const
     {
-        return std::formatter<double, CharT>::format(static_cast<double>(t), fc);
+        return std::formatter<double, char>::format(static_cast<double>(t), fc);
     }
 };

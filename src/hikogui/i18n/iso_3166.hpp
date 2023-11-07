@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <compare>
 #include "iso_3166_intf.hpp" // export
 #include "iso_3166_impl.hpp" // export
 

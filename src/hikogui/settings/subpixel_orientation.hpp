@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <format>
 
 hi_export_module(hikogui.settings.subpixel_orientation);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** The orientation of the RGB sub-pixels of and LCD/LED panel.
  */
@@ -51,10 +51,11 @@ constexpr auto subpixel_orientation_metadata = enum_metadata{
 
 } // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::subpixel_orientation, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::subpixel_orientation, char> : std::formatter<std::string_view, char> {
     auto format(hi::subpixel_orientation const &t, auto &fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::subpixel_orientation_metadata[t], fc);
+        return std::formatter<std::string_view, char>::format(hi::subpixel_orientation_metadata[t], fc);
     }
 };

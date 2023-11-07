@@ -10,7 +10,7 @@
 #include "audio_direction.hpp"
 #include "audio_device_state.hpp"
 #include "speaker_mapping.hpp"
-#include "../numeric/module.hpp"
+#include "../numeric/numeric.hpp"
 #include "../l10n/l10n.hpp"
 #include "../utility/utility.hpp"
 #include "../dispatch/dispatch.hpp"
@@ -21,7 +21,7 @@
 
 hi_export_module(hikogui.audio.audio_device);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A set of audio channels which can be rendered and/or captures at the same time.
  * On win32 this would be Audio Endpoint gfx_device, which can either render or capture

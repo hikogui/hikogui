@@ -6,10 +6,12 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <string>
+#include <cstddef>
 
 hi_export_module(hikogui.codec.indent);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Indentation for writing out text files.
  * This type is used to pass indentation information recursivly to

@@ -7,6 +7,9 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <type_traits>
+#include <bit>
+#include <climits>
+#include <functional>
 
 #ifdef HI_HAS_SSE
 #include <xmmintrin.h>
@@ -29,13 +32,11 @@
 #ifdef HI_HAS_AVX
 #include <immintrin.h>
 #endif
-#ifdef HI_HAS_AVX512F
-#include <immintrin.h>
-#endif
+
+hi_export_module(hikogui.SIMD : native_simd_utility);
 
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 #ifdef HI_HAS_SSE
 enum class native_rounding_mode : int {
@@ -175,14 +176,14 @@ namespace testing::internal {
 
 // Add equality operator to Google-test internal namespace so that ASSERT_EQ() work.
 template<typename T, size_t N>
-inline bool operator==(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
+hi_inline bool operator==(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
 {
     return std::equal_to<::hi::native_simd<T, N>>{}(lhs, rhs);
 }
 
 // Add equality operator to Google-test internal namespace so that ASSERT_NE() work.
 template<typename T, size_t N>
-inline bool operator!=(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
+hi_inline bool operator!=(::hi::native_simd<T, N> lhs, ::hi::native_simd<T, N> rhs) noexcept
 {
     return not std::equal_to<::hi::native_simd<T, N>>{}(lhs, rhs);
 }

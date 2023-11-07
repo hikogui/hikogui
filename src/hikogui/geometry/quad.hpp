@@ -12,8 +12,12 @@
 #include "rectangle.hpp"
 #include "../macros.hpp"
 #include <tuple>
+#include <exception>
+#include <compare>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.geometry : quad);
+
+hi_export namespace hi::inline v1 {
 
 class quad {
 public:

@@ -16,7 +16,7 @@
 
 hi_export_module(hikogui.formula.formula_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 struct formula_node {
     using formula_vector = std::vector<std::unique_ptr<formula_node>>;
@@ -121,17 +121,18 @@ struct formula_node {
 
 }} // namespace hi::v1
 
-template<class CharT>
-struct std::formatter<hi::formula_node, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::formula_node, char> : std::formatter<std::string_view, char> {
     auto format(hi::formula_node const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<std::string_view, char>::format(to_string(t), fc);
     }
 };
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
-inline std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept
+hi_inline std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept
 {
     return lhs << std::format("{}", rhs);
 }

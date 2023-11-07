@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.audio.audio_device_asio);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A class representing an audio device on the system.
  */

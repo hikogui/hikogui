@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <vector>
 
 hi_export_module(hikogui.graphic_path.bezier_point);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /*! A point or control-point on contour of bezier curves.
  * The bezier curves can be linear (a line), quadratic or cubic.

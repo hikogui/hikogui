@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.i18n);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** @defgroup i18n Internationalization.

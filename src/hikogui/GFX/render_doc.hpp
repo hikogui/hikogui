@@ -7,16 +7,20 @@
 #include "../win32_headers.hpp"
 
 #include "renderdoc_app.h"
+#include "../utility/utility.hpp" // XXX #620
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <filesystem>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.GFX.render_doc);
 
-inline void *render_doc_api = nullptr;
+hi_export namespace hi { inline namespace v1 {
 
-inline void render_doc_set_overlay(bool frameRate, bool frameNumber, bool captureList) noexcept
+hi_inline void *render_doc_api = nullptr;
+
+hi_inline void render_doc_set_overlay(bool frameRate, bool frameNumber, bool captureList) noexcept
 {
     if (not render_doc_api) {
         return;
@@ -55,7 +59,7 @@ inline void render_doc_set_overlay(bool frameRate, bool frameNumber, bool captur
     api_.MaskOverlayBits(and_mask, or_mask);
 }
 
-inline void start_render_doc() noexcept
+hi_inline void start_render_doc() noexcept
 {
 #ifndef NDEBUG
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS

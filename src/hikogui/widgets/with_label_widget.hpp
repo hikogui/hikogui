@@ -13,17 +13,21 @@
 #include "widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../l10n/l10n.hpp"
-#include "../observer/module.hpp"
+#include "../observer/observer.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.with_label_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept with_label_widget_attribute = label_widget_attribute<Context>;

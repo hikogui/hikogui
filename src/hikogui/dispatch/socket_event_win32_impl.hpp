@@ -9,10 +9,11 @@
 #include "socket_event_intf.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <exception>
 
-hi_export_module(hikogui.dipatch.socket_event : impl);
+hi_export_module(hikogui.dispatch.socket_event : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr socket_event socket_event_from_win32(long rhs) noexcept
 {

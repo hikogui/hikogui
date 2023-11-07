@@ -14,7 +14,9 @@
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.toggle_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept toggle_widget_attribute = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;

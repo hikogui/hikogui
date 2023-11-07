@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.audio.pcm_format);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class pcm_format {
 public:
@@ -295,10 +295,11 @@ private:
 
 }} // namespace hi::inline v1
 
-hi_export template<typename CharT>
-struct std::formatter<hi::pcm_format, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::pcm_format, char> : std::formatter<std::string_view, char> {
     auto format(hi::pcm_format const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<std::string_view, char>::format(to_string(t), fc);
     }
 };

@@ -8,12 +8,17 @@
 #pragma once
 
 #include "../utility/utility.hpp"
+#include "../macros.hpp"
 #include <iterator>
 #include <bit>
 #include <optional>
 #include <string>
+#include <stdexcept>
+#include <array>
 
-namespace hi {
+hi_export_module(hikogui.parser.lookahead_iterator);
+
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Lookahead iterator.

@@ -5,13 +5,15 @@
 #pragma once
 
 #include "group_ptr.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <vector>
 #include <string>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.observer : observed);
+
+hi_export namespace hi::inline v1 {
 
 struct observable_msg {
     /** The type of the path used for notifying observers.

@@ -5,17 +5,21 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
+#include "../macros.hpp"
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <ostream>
 #include <array>
+#include <coroutine>
+#include <format>
 
 hi_export_module(hikogui.font.font_weight);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
-hi_export enum class font_weight {
+enum class font_weight {
     thin, ///< 100: Thin / Hairline
     extra_light, ///< 200: Ultra-light / Extra-light
     light, ///< 300: Light
@@ -28,13 +32,13 @@ hi_export enum class font_weight {
     extra_black, ///< 950: Extra-black / Ultra-black
 };
 
-hi_export constexpr font_weight& operator++(font_weight& rhs) noexcept
+constexpr font_weight& operator++(font_weight& rhs) noexcept
 {
     hi_axiom(rhs < font_weight::extra_black);
     return rhs = static_cast<font_weight>(std::to_underlying(rhs) + 1);
 }
 
-hi_export constexpr font_weight& operator--(font_weight& rhs) noexcept
+constexpr font_weight& operator--(font_weight& rhs) noexcept
 {
     hi_axiom(rhs > font_weight::thin);
     return rhs = static_cast<font_weight>(std::to_underlying(rhs) - 1);
@@ -57,7 +61,7 @@ constexpr auto font_weight_metadata = enum_metadata{
 
 /** Convert a font weight value between 50 and 1000 to a font weight.
  */
-hi_export [[nodiscard]] constexpr font_weight font_weight_from_int(numeric_integral auto rhs)
+[[nodiscard]] constexpr font_weight font_weight_from_int(numeric_integral auto rhs)
 {
     if (rhs < 50 or rhs > 1000) {
         throw parse_error(std::format("Unknown font-weight {}", rhs));
@@ -65,44 +69,44 @@ hi_export [[nodiscard]] constexpr font_weight font_weight_from_int(numeric_integ
     return static_cast<font_weight>(((rhs + 50) / 100) - 1);
 }
 
-hi_export [[nodiscard]] constexpr font_weight font_weight_from_string(std::string_view rhs)
+[[nodiscard]] constexpr font_weight font_weight_from_string(std::string_view rhs)
 {
-    try {
-        return font_weight_metadata.at(rhs);
-    } catch (...) {
+    if (auto weight = font_weight_metadata.at_if(rhs)) {
+        return *weight;
+    } else {
         throw parse_error(std::format("Unknown font-weight {}", rhs));
     }
 }
 
-hi_export [[nodiscard]] constexpr std::string_view to_string_view(font_weight const& x) noexcept
+[[nodiscard]] constexpr std::string_view to_string_view(font_weight const& x) noexcept
 {
     return font_weight_metadata[x];
 }
 
-hi_export [[nodiscard]] constexpr std::string to_string(font_weight const& x) noexcept
+[[nodiscard]] constexpr std::string to_string(font_weight const& x) noexcept
 {
     return std::string{to_string_view(x)};
 }
 
-hi_export [[nodiscard]] constexpr char to_char(font_weight const& x) noexcept
+[[nodiscard]] constexpr char to_char(font_weight const& x) noexcept
 {
     hilet x_ = static_cast<int>(x);
     hi_axiom(x_ >= 0 && x_ <= 9);
     return char_cast<char>('0' + x_);
 }
 
-hi_export [[nodiscard]] constexpr int to_int(font_weight const& x) noexcept
+[[nodiscard]] constexpr int to_int(font_weight const& x) noexcept
 {
     hilet x_ = (static_cast<int>(x) + 1) * 100;
     return (x_ == 1000) ? 950 : x_;
 }
 
-hi_export inline std::ostream& operator<<(std::ostream& lhs, font_weight const& rhs)
+hi_inline std::ostream& operator<<(std::ostream& lhs, font_weight const& rhs)
 {
     return lhs << to_string(rhs);
 }
 
-hi_export constexpr bool almost_equal(font_weight const& lhs, font_weight const& rhs) noexcept
+constexpr bool almost_equal(font_weight const& lhs, font_weight const& rhs) noexcept
 {
     // Check only if it is bold or not.
     return (lhs > font_weight::medium) == (rhs > font_weight::medium);
@@ -113,7 +117,7 @@ hi_export constexpr bool almost_equal(font_weight const& lhs, font_weight const&
  * @param start The starting font-weight.
  * @return Generated font weights, starting at start, then zig-zag toward thin and extra-black.
  */
-hi_export [[nodiscard]] inline generator<font_weight> alternatives(font_weight start) noexcept
+[[nodiscard]] hi_inline generator<font_weight> alternatives(font_weight start) noexcept
 {
     co_yield start;
 
@@ -139,10 +143,11 @@ hi_export [[nodiscard]] inline generator<font_weight> alternatives(font_weight s
 
 } // namespace hi::inline v1
 
-hi_export template<typename CharT>
-struct std::formatter<hi::font_weight, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::font_weight, char> : std::formatter<std::string_view, char> {
     auto format(hi::font_weight const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::to_string_view(t), fc);
+        return std::formatter<std::string_view, char>::format(hi::to_string_view(t), fc);
     }
 };

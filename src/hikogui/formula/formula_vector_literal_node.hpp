@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.formula.formula_vector_literal_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_vector_literal_node final : formula_node {
     formula_vector values;

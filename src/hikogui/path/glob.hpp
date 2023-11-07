@@ -5,8 +5,9 @@
 #pragma once
 
 #include "path_location.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include "../utility/utility.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <string>
@@ -14,13 +15,14 @@
 #include <filesystem>
 #include <variant>
 #include <type_traits>
+#include <coroutine>
 
 /** @file path/glob.hpp Defines utilities for handling glob patterns.
  * @ingroup path
  */
 hi_export_module(hikogui.path.glob);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A glob pattern.
  * @ingroup path
@@ -876,7 +878,7 @@ private:
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
  */
-hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(glob_pattern pattern) noexcept
+hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> glob(glob_pattern pattern) noexcept
 {
     auto path = pattern.base_path();
 
@@ -909,7 +911,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(glob_patter
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
  */
-hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::string_view pattern) noexcept
+hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> glob(std::string_view pattern) noexcept
 {
     return glob(glob_pattern{pattern});
 }
@@ -920,7 +922,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::string
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
  */
-hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::string pattern) noexcept
+hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> glob(std::string pattern) noexcept
 {
     return glob(glob_pattern{std::move(pattern)});
 }
@@ -931,7 +933,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::string
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
  */
-hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(char const *pattern) noexcept
+hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> glob(char const *pattern) noexcept
 {
     return glob(glob_pattern{pattern});
 }
@@ -942,7 +944,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(char const 
  * @param pattern The pattern to search the filesystem for.
  * @return a generator yielding paths to objects on the filesystem that match the pattern.
  */
-hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::filesystem::path pattern) noexcept
+hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> glob(std::filesystem::path pattern) noexcept
 {
     return glob(glob_pattern{std::move(pattern)});
 }
@@ -955,7 +957,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> glob(std::filesy
  * @return a generator yielding paths to objects in the path-location that match the pattern.
  */
 hi_export template<path_range Locations>
-[[nodiscard]] inline generator<std::filesystem::path> glob(Locations&& locations, std::filesystem::path ref) noexcept
+[[nodiscard]] hi_inline generator<std::filesystem::path> glob(Locations&& locations, std::filesystem::path ref) noexcept
 {
     for (hilet& directory : locations) {
         for (hilet& path : glob(directory / ref)) {
@@ -972,7 +974,7 @@ hi_export template<path_range Locations>
  * @return a generator yielding paths to objects in the path-location that match the pattern.
  */
 hi_export template<path_range Locations>
-[[nodiscard]] inline generator<std::filesystem::path> glob(Locations&& locations, std::string_view ref) noexcept
+[[nodiscard]] hi_inline generator<std::filesystem::path> glob(Locations&& locations, std::string_view ref) noexcept
 {
     return glob(std::forward<Locations>(locations), std::filesystem::path{ref});
 }
@@ -985,7 +987,7 @@ hi_export template<path_range Locations>
  * @return a generator yielding paths to objects in the path-location that match the pattern.
  */
 hi_export template<path_range Locations>
-[[nodiscard]] inline generator<std::filesystem::path> glob(Locations&& locations, std::string ref) noexcept
+[[nodiscard]] hi_inline generator<std::filesystem::path> glob(Locations&& locations, std::string ref) noexcept
 {
     return glob(std::forward<Locations>(locations), std::filesystem::path{ref});
 }
@@ -998,7 +1000,7 @@ hi_export template<path_range Locations>
  * @return a generator yielding paths to objects in the path-location that match the pattern.
  */
 hi_export template<path_range Locations>
-[[nodiscard]] inline generator<std::filesystem::path> glob(Locations&& locations, char const *ref) noexcept
+[[nodiscard]] hi_inline generator<std::filesystem::path> glob(Locations&& locations, char const *ref) noexcept
 {
     return glob(std::forward<Locations>(locations), std::filesystem::path{ref});
 }

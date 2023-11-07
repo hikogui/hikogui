@@ -11,9 +11,10 @@
 #include <cstdlib>
 #include <algorithm>
 
+hi_export_module(hikogui.text.text_cursor);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A cursor-position in text.
  *

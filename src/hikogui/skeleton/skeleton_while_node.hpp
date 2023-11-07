@@ -7,7 +7,9 @@
 #include "skeleton_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.skeleton : while_node);
+
+hi_export namespace hi::inline v1 {
 
 struct skeleton_while_node final : skeleton_node {
     statement_vector children;

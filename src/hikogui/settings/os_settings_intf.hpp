@@ -7,20 +7,26 @@
 #include "theme_mode.hpp"
 #include "subpixel_orientation.hpp"
 #include "../i18n/i18n.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
-#include "../numeric/module.hpp"
-#include "../observer/module.hpp"
+#include "../numeric/numeric.hpp"
+#include "../observer/observer.hpp"
 #include "../dispatch/dispatch.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../telemetry/telemetry.hpp"
+#include "../time/time.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
 #include <vector>
 #include <mutex>
 #include <expected>
 #include <system_error>
+#include <chrono>
+#include <atomic>
 
 hi_export_module(hikogui.settings.os_settings : intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class os_settings {
 public:

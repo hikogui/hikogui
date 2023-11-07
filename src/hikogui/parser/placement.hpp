@@ -7,7 +7,12 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <span>
+#include <bit>
+#include <stdexcept>
+#include <memory>
+#include <new>
 
+hi_export_module(hikogui.parser.placement);
 
 
 hi_warning_push();
@@ -19,9 +24,9 @@ hi_warning_ignore_msvc(26492);
 hi_warning_ignore_msvc(26403);
 hi_warning_ignore_msvc(26460);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 template<typename T>
-inline bool check_alignment(void const *ptr) noexcept
+hi_inline bool check_alignment(void const *ptr) noexcept
 {
     return std::bit_cast<uintptr_t>(ptr) % alignof(T) == 0;
 }

@@ -10,10 +10,12 @@
 #include <cstdint>
 #include <format>
 #include <compare>
+#include <string>
+#include <string_view>
 
 hi_export_module(hikogui.i18n.iso_15924 : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** ISO-15924 script code.
  * A 4 letter title case script code:

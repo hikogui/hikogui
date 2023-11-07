@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.settings.user_settings : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] std::expected<std::string, std::error_code> get_user_setting_string(std::string_view key) noexcept;
 [[nodiscard]] std::expected<long long, std::error_code> get_user_setting_integral(std::string_view key) noexcept;
@@ -68,13 +68,13 @@ std::error_code delete_user_setting(std::string_view key) noexcept;
 std::error_code delete_user_settings() noexcept;
 
 template<>
-[[nodiscard]] inline std::expected<std::string, std::error_code> get_user_setting(std::string_view key) noexcept
+[[nodiscard]] hi_inline std::expected<std::string, std::error_code> get_user_setting(std::string_view key) noexcept
 {
     return get_user_setting_string(key);
 }
 
 template<std::integral T>
-[[nodiscard]] inline std::expected<T, std::error_code> get_user_setting(std::string_view key) noexcept
+[[nodiscard]] hi_inline std::expected<T, std::error_code> get_user_setting(std::string_view key) noexcept
 {
     if (hilet value = get_user_setting_integral(key)) {
         if (can_narrow_cast<T>(*value)) {

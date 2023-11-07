@@ -13,10 +13,16 @@
 #include "../macros.hpp"
 #include <cstdint>
 #include <utility>
+#include <array>
+#include <bit>
+#include <compare>
+#if defined(HI_HAS_SSE2)
+#include <emmintrin.h>
+#endif
 
+hi_export_module(hikogui.char_maps.cp_1252);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 namespace detail {
 

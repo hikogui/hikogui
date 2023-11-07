@@ -8,10 +8,13 @@
 #include "../concurrency/concurrency.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <concepts>
+#include <memory>
+
+hi_export_module(hikogui.observer : observed_value);
 
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 template<std::equality_comparable>
 class observer;
 

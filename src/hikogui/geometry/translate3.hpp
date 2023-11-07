@@ -8,8 +8,12 @@
 #include "point3.hpp"
 #include "../macros.hpp"
 #include <concepts>
+#include <exception>
+#include <compare>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.geometry : translate3);
+
+hi_export namespace hi { inline namespace v1 {
 
 class translate3;
 [[nodiscard]] constexpr point3 operator*(translate3 const& lhs, point3 const& rhs) noexcept;

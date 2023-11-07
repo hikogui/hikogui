@@ -5,12 +5,15 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../color/module.hpp"
+#include "../color/color.hpp"
+#include "../macros.hpp"
 #include <format>
 #include <filesystem>
 #include <iterator>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.parser.token);
+
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct token {
     enum class kind_type : uint8_t {
@@ -174,20 +177,21 @@ hi_export template<std::input_iterator It>
 
 }} // namespace hi::v1
 
-hi_export template<typename CharT>
-struct std::formatter<hi::token, CharT> : std::formatter<std::string, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::token, char> : std::formatter<std::string, char> {
     auto format(hi::token const& t, auto& fc) const
     {
-        return std::formatter<std::string, CharT>::format(
+        return std::formatter<std::string, char>::format(
             std::format(
                 "{} \"{}\" {}:{}", hi::token::kind_type_metadata[t.kind], static_cast<std::string>(t), t.line_nr, t.column_nr),
             fc);
     }
 };
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
-hi_export inline std::ostream& operator<<(std::ostream& lhs, token const& rhs)
+hi_export hi_inline std::ostream& operator<<(std::ostream& lhs, token const& rhs)
 {
     return lhs << std::format("{}", rhs);
 }

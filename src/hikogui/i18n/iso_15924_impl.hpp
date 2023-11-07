@@ -6,13 +6,16 @@
 
 #include "iso_15924_intf.hpp"
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <array>
+#include <algorithm>
+#include <format>
+#include <compare>
 
 hi_export_module(hikogui.i18n.iso_15924 : impl);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 struct iso_15924_info {

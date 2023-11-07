@@ -5,10 +5,10 @@
 #pragma once
 
 #include "../settings/settings.hpp"
-#include "../text/module.hpp"
+#include "../text/text.hpp"
 #include "../utility/utility.hpp"
-#include "../color/module.hpp"
-#include "../geometry/module.hpp"
+#include "../color/color.hpp"
+#include "../geometry/geometry.hpp"
 #include "../codec/codec.hpp"
 #include "../macros.hpp"
 #include <array>
@@ -16,7 +16,9 @@
 #include <string>
 #include <vector>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.GUI : theme);
+
+hi_export namespace hi::inline v1 {
 
 class theme {
 public:
@@ -113,7 +115,7 @@ public:
         return _large_icon_size;
     }
 
-    /** Size of icons being inline with a label's text.
+    /** Size of icons being hi_inline with a label's text.
      */
     [[nodiscard]] constexpr float label_icon_size() const noexcept
     {
@@ -225,7 +227,7 @@ private:
      */
     float _large_icon_size = 23.0f;
 
-    /** Size of icons being inline with a label's text.
+    /** Size of icons being hi_inline with a label's text.
      */
     float _label_icon_size = 15.0f;
 

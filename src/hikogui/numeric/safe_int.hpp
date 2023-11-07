@@ -12,9 +12,10 @@
 #include <limits>
 #include <concepts>
 
+hi_export_module(hikogui.numeric.safe_int);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class on_overflow_t {
     //! On overflow throw an exception.
