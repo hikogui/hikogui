@@ -114,7 +114,7 @@ public:
     // Check for operating system support through CR4[9] for FXSR and SSE.
     static bool OSFXSR(void) {
         // XXX Should actually check CR4.
-        return FXSR() && SSE()
+        return FXSR() && SSE();
     }
 
     // Check for operating system support through EFER[0] for syscall instruction.
@@ -326,7 +326,7 @@ int main()
     print_pair(\"HLE\",         InstructionSet::HLE());
     print_pair(\"INVPCID\",     InstructionSet::INVPCID());
     print_pair(\"LAHF\",        InstructionSet::LAHF());
-    print_pair(\"LZCNT\",       InstructionSet::LZCNT());
+    print_pair(\"LZCNT\",       InstructionSet::LZCNT_ABM());
     print_pair(\"MMX\",         InstructionSet::MMX());
     print_pair(\"MMXEXT\",      InstructionSet::MMXEXT());
     print_pair(\"MONITOR\",     InstructionSet::MONITOR());
