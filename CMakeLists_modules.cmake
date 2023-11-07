@@ -17,6 +17,8 @@ else()
     set(LIBRARY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/unicode/gstring.ixx PROPERTIES COMPILE_FLAGS "-d1module:enableLoggingfile.json")
+
 target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/mod/" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/algorithm/algorithm.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/algorithm/animator.ixx
