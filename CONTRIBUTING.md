@@ -73,9 +73,15 @@ To make crash mini-dump when the HikoGUI demo application crashes; create the fo
 | DumpCount  | DWORD (32-bit) Value    | 10
 | DumpType   | DWORD (32-bit) Value    | 2
 
+External Bugs
+-------------
+There are a lot of bugs in IDEs and compilers with HikoGUI
+[External Bugs](EXTERNAL_BUGS.md)
+
+You may want to 'like' those bugs to hopefully get them resolved quicker.
+
 Code of Conduct
 ---------------
 
 This project and everyone participating in it is governed by the
 [HikoGUI Code of Conduct](CODE_OF_CONDUCT.md)
-
