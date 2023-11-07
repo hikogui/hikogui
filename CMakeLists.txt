@@ -11,10 +11,6 @@ cmake_minimum_required(VERSION 3.25)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
-include(SetupVcpkg)
-include(SetupCompiler)
-include(SetupCxxModules)
-
 #-------------------------------------------------------------------
 # Build Options
 #-------------------------------------------------------------------
@@ -22,9 +18,15 @@ include(SetupCxxModules)
 option(BUILD_SHARED_LIBS    "Build shared libraries"                             OFF)
 option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
-option(HI_ENABLE_MODULES    "Compile using C++20 modules"                        ON)
+option(HI_ENABLE_MODULES    "Compile using C++20 modules"                        OFF)
 option(BUILD_EXAMPLES       "Compile the example executables"                    ON)
 option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" OFF)
+
+if(HI_ENABLE_MODULES)
+    include(SetupCxxModules)
+endif()
+include(SetupVcpkg)
+include(SetupCompiler)
 
 #-------------------------------------------------------------------
 # Project

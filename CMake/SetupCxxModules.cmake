@@ -11,12 +11,14 @@
 cmake_minimum_required(VERSION 3.25)
 
 # Enable C++ module support
-if(${CMAKE_VERSION} VERSION_EQUAL "3.25")
+if(${CMAKE_VERSION} VERSION_LESS "3.26")
   set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "3c375311-a3c9-4396-a187-3227ef642046")
-elseif(${CMAKE_VERSION} VERSION_EQUAL "3.26")
+elseif(${CMAKE_VERSION} VERSION_LESS "3.27")
   set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "2182bf5c-ef0d-489a-91da-49dbc3090d2a")
-  elseif(${CMAKE_VERSION} VERSION_EQUAL "3.27")
+elseif(${CMAKE_VERSION} VERSION_LESS "3.28")
   set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API "aa1f7df0-828a-4fcd-9afc-2dc80491aca7")
+else()
+  # 3.29 CXX_MODULE is no longer experimental.
 endif()
 
 # Turn on the dynamic dependencies for ninja
