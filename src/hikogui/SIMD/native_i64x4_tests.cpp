@@ -3,7 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "native_i64x4_avx2.hpp"
+#include "simd_intf.hpp"
 #include "../macros.hpp"
+#include <gtest/gtest.h>
 
 hi_warning_push();
 // C26474: Don't cast between pointer types when the conversion could be implicit (type.1).

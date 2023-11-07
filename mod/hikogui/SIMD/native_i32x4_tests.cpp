@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "native_i32x4_sse2.hpp"
-#include "simd_test_utility.hpp"
 #include "../macros.hpp"
 
 hi_warning_push();

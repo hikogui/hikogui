@@ -45,7 +45,7 @@ constexpr font_weight& operator--(font_weight& rhs) noexcept
 }
 
 // clang-format off
-auto font_weight_metadata = enum_metadata{
+constexpr auto font_weight_metadata = enum_metadata{
     font_weight::thin, "thin",
     font_weight::extra_light, "extra-light",
     font_weight::light, "light",

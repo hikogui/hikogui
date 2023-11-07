@@ -4,6 +4,7 @@
 
 #include "simd_intf.hpp"
 #include "../macros.hpp"
+#include <gtest/gtest.h>
 
 namespace simd_tests {
 

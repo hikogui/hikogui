@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "translation.hpp"
+#include "po_translations.hpp"
 #include "../i18n/i18n.hpp"
 #include "../file/file.hpp"
 #include "../parser/parser.hpp"
@@ -16,21 +16,7 @@
 
 hi_export_module(hikogui.l10n.po_parser);
 
-hi_export namespace hi::inline v1 {
-
-struct po_translation {
-    std::optional<std::string> msgctxt;
-    std::string msgid;
-    std::string msgid_plural;
-    std::vector<std::string> msgstr;
-};
-
-struct po_translations {
-    language_tag language;
-    size_t nr_plural_forms;
-    std::string plural_expression;
-    std::vector<po_translation> translations;
-};
+hi_export namespace hi { inline namespace v1 {
 
 namespace detail {
 
@@ -192,49 +178,4 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     return parse_po(as_string_view(file_view{path}), path.string());
 }
 
-hi_inline void load_translations(std::filesystem::path path)
-{
-    hi_log_info("Loading translation file {}.", path.string());
-    return add_translations(parse_po(path));
-}
-
-hi_inline void load_translations()
-{
-    if (not translations_loaded.exchange(true)) {
-        // XXX Waiting for C++23 to extend life-time of temporaries in for loops.
-        auto resource_paths = resource_dirs();
-        for (auto &path : glob(resource_paths, "**/*.po")) {
-            try {
-                load_translations(path);
-            } catch (std::exception const &e) {
-                hi_log_error("Could not load translation file. {}", e.what());
-            }
-        }
-    }
-}
-
-[[nodiscard]] hi_inline std::pair<std::string_view, language_tag>
-get_translation(std::string_view msgid, long long n, std::vector<language_tag> const &languages) noexcept
-{
-    load_translations();
-
-    // Update only the language in each iteration.
-    auto key = translation_key{std::string{msgid}, language_tag{}};
-
-    for (hilet language : languages) {
-        key.language = language;
-
-        hilet i = translations.find(key);
-        if (i != translations.cend()) {
-            hilet plurality = cardinal_plural(language, n, i->second.size());
-            hilet &translation = i->second[plurality];
-            if (translation.size() != 0) {
-                return {translation, language};
-            }
-        }
-    }
-    hi_log_debug("No translation found for '{}'", msgid);
-    return {msgid, language_tag{"en-Latn-US"}};
-}
-
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
