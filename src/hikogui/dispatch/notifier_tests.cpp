@@ -5,6 +5,7 @@
 #include "notifier.hpp"
 #include "scoped_task.hpp"
 #include "loop_intf.hpp"
+#include "loop_win32_impl.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
