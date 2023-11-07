@@ -67,6 +67,7 @@ public:
     static bool F16C(void) { return CPU_Rep.f_1_ECX_[29]; }
     static bool RDRAND(void) { return CPU_Rep.f_1_ECX_[30]; }
 
+    static bool FPU(void) { return CPU_Rep.f_1_EDX_[0]; }
     static bool MSR(void) { return CPU_Rep.f_1_EDX_[5]; }
     static bool CX8(void) { return CPU_Rep.f_1_EDX_[8]; }
     static bool SEP(void) { return CPU_Rep.f_1_EDX_[11]; }
@@ -86,27 +87,57 @@ public:
     static bool INVPCID(void) { return CPU_Rep.f_7_EBX_[10]; }
     static bool RTM(void) { return CPU_Rep.isIntel_ && CPU_Rep.f_7_EBX_[11]; }
     static bool AVX512F(void) { return CPU_Rep.f_7_EBX_[16]; }
+    static bool AVX512DQ(void) { return CPU_Rep.f_7_EBX_[17]; }
     static bool RDSEED(void) { return CPU_Rep.f_7_EBX_[18]; }
     static bool ADX(void) { return CPU_Rep.f_7_EBX_[19]; }
     static bool AVX512PF(void) { return CPU_Rep.f_7_EBX_[26]; }
     static bool AVX512ER(void) { return CPU_Rep.f_7_EBX_[27]; }
     static bool AVX512CD(void) { return CPU_Rep.f_7_EBX_[28]; }
     static bool SHA(void) { return CPU_Rep.f_7_EBX_[29]; }
+    static bool AVX512BW(void) { return CPU_Rep.f_7_EBX_[30]; }
+    static bool AVX512VL(void) { return CPU_Rep.f_7_EBX_[31]; }
 
     static bool PREFETCHWT1(void) { return CPU_Rep.f_7_ECX_[0]; }
 
     static bool LAHF(void) { return CPU_Rep.f_81_ECX_[0]; }
-    static bool LZCNT(void) { return CPU_Rep.isIntel_ && CPU_Rep.f_81_ECX_[5]; }
-    static bool ABM(void) { return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[5]; }
+    static bool LZCNT_ABM(void) { return CPU_Rep.f_81_ECX_[5]; }
     static bool SSE4a(void) { return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[6]; }
     static bool XOP(void) { return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[11]; }
     static bool TBM(void) { return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[21]; }
 
-    static bool SYSCALL(void) { return CPU_Rep.isIntel_ && CPU_Rep.f_81_EDX_[11]; }
+    static bool SYSCALL(void) { return CPU_Rep.f_81_EDX_[11] || (CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[10]); }
     static bool MMXEXT(void) { return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[22]; }
     static bool RDTSCP(void) { return CPU_Rep.isIntel_ && CPU_Rep.f_81_EDX_[27]; }
     static bool _3DNOWEXT(void) { return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[30]; }
     static bool _3DNOW(void) { return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[31]; }
+
+    // Check for operating system support through CR4[9] for FXSR and SSE.
+    static bool OSFXSR(void) {
+        // XXX Should actually check CR4.
+        return FXSR() && SSE();
+    }
+
+    // Check for operating system support through EFER[0] for syscall instruction.
+    static bool SCE(void) {
+        // XXX Should actually check EFER.
+        return SYSCALL();
+    }
+
+    static bool x86_64_v1(void) {
+        return CMOV() && CX8() && FPU() && FXSR() && MMX() && OSFXSR() && SCE() && SSE() && SSE2();
+    }
+
+    static bool x86_64_v2(void) {
+        return x86_64_v1() && CMPXCHG16B() && LAHF() && POPCNT() && SSE3() && SSE41() && SSE42() && SSSE3();
+    }
+
+    static bool x86_64_v3(void) {
+        return x86_64_v2() && AVX() && AVX2() && BMI1() && BMI2() && FMA() && LZCNT_ABM() && MOVBE() && OSXSAVE();
+    }
+
+    static bool x86_64_v4(void) {
+        return x86_64_v3() && AVX512F() && AVX512BW() && AVX512CD() && AVX512DQ() && AVX512VL();
+    }
 
 private:
     static const InstructionSet_Internal CPU_Rep;
@@ -270,15 +301,17 @@ int main()
 
     print_pair(\"3DNOW\",       InstructionSet::_3DNOW());
     print_pair(\"3DNOWEXT\",    InstructionSet::_3DNOWEXT());
-    print_pair(\"ABM\",         InstructionSet::ABM());
     print_pair(\"ADX\",         InstructionSet::ADX());
     print_pair(\"AES\",         InstructionSet::AES());
     print_pair(\"AVX\",         InstructionSet::AVX());
     print_pair(\"AVX2\",        InstructionSet::AVX2());
+    print_pair(\"AVX512BW\",    InstructionSet::AVX512BW());
     print_pair(\"AVX512CD\",    InstructionSet::AVX512CD());
-    print_pair(\"AVX512F\",     InstructionSet::AVX512F());
+    print_pair(\"AVX512DQ\",    InstructionSet::AVX512DQ());
     print_pair(\"AVX512ER\",    InstructionSet::AVX512ER());
+    print_pair(\"AVX512F\",     InstructionSet::AVX512F());
     print_pair(\"AVX512PF\",    InstructionSet::AVX512PF());
+    print_pair(\"AVX512VL\",    InstructionSet::AVX512VL());
     print_pair(\"BMI1\",        InstructionSet::BMI1());
     print_pair(\"BMI2\",        InstructionSet::BMI2());
     print_pair(\"CLFSH\",       InstructionSet::CLFSH());
@@ -287,12 +320,13 @@ int main()
     print_pair(\"ERMS\",        InstructionSet::ERMS());
     print_pair(\"F16C\",        InstructionSet::F16C());
     print_pair(\"FMA\",         InstructionSet::FMA());
+    print_pair(\"FPU\",         InstructionSet::FPU());
     print_pair(\"FSGSBASE\",    InstructionSet::FSGSBASE());
     print_pair(\"FXSR\",        InstructionSet::FXSR());
     print_pair(\"HLE\",         InstructionSet::HLE());
     print_pair(\"INVPCID\",     InstructionSet::INVPCID());
     print_pair(\"LAHF\",        InstructionSet::LAHF());
-    print_pair(\"LZCNT\",       InstructionSet::LZCNT());
+    print_pair(\"LZCNT\",       InstructionSet::LZCNT_ABM());
     print_pair(\"MMX\",         InstructionSet::MMX());
     print_pair(\"MMXEXT\",      InstructionSet::MMXEXT());
     print_pair(\"MONITOR\",     InstructionSet::MONITOR());
@@ -326,10 +360,11 @@ int main()
 
     // determine architecture level
     std::string architecture;
-    if(InstructionSet::AVX512F()) { architecture = \"x86-64-v4\"; } else
-    if(InstructionSet::AVX2())    { architecture = \"x86-64-v3\"; } else
-    if(InstructionSet::SSE42())   { architecture = \"x86-64-v2\"; } else
-    if(InstructionSet::SSE2())    { architecture = \"x86-64-v1\"; }
+    if(InstructionSet::x86_64_v4()) { architecture = \"x86-64-v4\"; } else
+    if(InstructionSet::x86_64_v3()) { architecture = \"x86-64-v3\"; } else
+    if(InstructionSet::x86_64_v2()) { architecture = \"x86-64-v2\"; } else
+    if(InstructionSet::x86_64_v1()) { architecture = \"x86-64-v1\"; } else
+                                    { architecture = \"x86\"; }
 
     std::string vendor = InstructionSet::Vendor();
     std::string brand = InstructionSet::Brand();
@@ -398,10 +433,16 @@ if(CPUINFO_OK)
 
   if(${CPUINFO_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v4")
     set(HOST_IS_X86_64_4 TRUE)
+    set(HOST_IS_X86_64_3 TRUE)
+    set(HOST_IS_X86_64_2 TRUE)
+    set(HOST_IS_X86_64_1 TRUE)
   elseif(${CPUINFO_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v3")
     set(HOST_IS_X86_64_3 TRUE)
+    set(HOST_IS_X86_64_2 TRUE)
+    set(HOST_IS_X86_64_1 TRUE)
   elseif(${CPUINFO_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v2")
     set(HOST_IS_X86_64_2 TRUE)
+    set(HOST_IS_X86_64_1 TRUE)
   elseif(${CPUINFO_ARCHITECTURE_LEVEL} STREQUAL "x86-64-v1")
     set(HOST_IS_X86_64_1 TRUE)
   else()
