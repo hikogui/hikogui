@@ -146,11 +146,9 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/when_any.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/access_mode.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_file_intf.hpp
-    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_file_posix_impl.hpp>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_file_win32_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_file.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_intf.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_intf.hpp
+    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_posix_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_win32_impl.hpp>
     $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_posix_impl.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view.hpp
