@@ -4,16 +4,16 @@
 
 #pragma once
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <limits>
 #include <concepts>
 
+hi_export_module(hikogui.layout.box_constraints);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** 2D constraints.
  * @ingroup geometry

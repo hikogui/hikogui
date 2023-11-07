@@ -9,7 +9,7 @@
 
 #include "../utility/utility.hpp"
 #include "../unicode/unicode.hpp"
-#include "../image/module.hpp"
+#include "../image/image.hpp"
 #include "../font/font.hpp"
 #include "txt.hpp"
 #include "../macros.hpp"
@@ -21,7 +21,7 @@
 hi_export_module(hikogui.l10n.label);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A variant of icon.
  *
@@ -134,10 +134,11 @@ struct selector<label> {
 
 } // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::label, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::label, char> : std::formatter<std::string_view, char> {
     auto format(hi::label const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(std::string{t.text}, fc);
+        return std::formatter<std::string_view, char>::format(std::string{t.text}, fc);
     }
 };

@@ -20,7 +20,7 @@ hi_warning_push();
 // static_cast here is used to extract bits and cause sign-extension.
 hi_warning_ignore_msvc(26472);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 constexpr uint32_t float16_bias = 15;
 constexpr uint32_t float32_bias = 127;
@@ -200,11 +200,12 @@ struct std::hash<hi::float16> {
     }
 };
 
-hi_export template<typename CharT>
-struct std::formatter<hi::float16, CharT> : std::formatter<float, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::float16, char> : std::formatter<float, char> {
     constexpr auto format(hi::float16 const& t, auto& fc) const
     {
-        return std::formatter<float, CharT>::format(static_cast<float>(t), fc);
+        return std::formatter<float, char>::format(static_cast<float>(t), fc);
     }
 };
 

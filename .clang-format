@@ -19,6 +19,7 @@ AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: Yes
+AttributeMacros: [hi_export, hi_inline, hi_force_inline, hi_no_inline]
 BinPackArguments: false
 BinPackParameters: false
 BraceWrapping:

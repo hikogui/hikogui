@@ -4,16 +4,17 @@
 
 #pragma once
 
-#include "../coroutine/module.hpp"
-#include "../time/module.hpp"
+#include "../coroutine/coroutine.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../time/time.hpp"
 #include "../macros.hpp"
 #include <chrono>
 #include <coroutine>
 #include <functional>
 
-hi_export_module(hikogui.dispatch.awaitable_timer : intf);
+hi_export_module(hikogui.dispatch : awaitable_timer_intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class awaitable_timer {
 public:

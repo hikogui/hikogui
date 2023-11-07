@@ -9,12 +9,15 @@
 #include "concepts.hpp"
 #include "exception.hpp"
 #include "not_null.hpp"
+#include "debugger.hpp"
+#include "cast.hpp"
 #include <concepts>
 #include <memory>
 #include <vector>
 #include <map>
 #include <unordered_map>
 #include <type_traits>
+#include <bit>
 #include <string.h>
 
 hi_export_module(hikogui.utility.memory);
@@ -247,7 +250,7 @@ constexpr T *floor(T *ptr, std::size_t alignment) noexcept
  * @param ptr The pointer to advance.
  * @param distance The number of bytes to advance the pointer, may be negative.
  */
-inline void *advance_bytes(void *ptr, std::ptrdiff_t distance) noexcept
+hi_inline void *advance_bytes(void *ptr, std::ptrdiff_t distance) noexcept
 {
     hi_axiom_not_null(ptr);
     return static_cast<char *>(ptr) + distance;
@@ -259,14 +262,14 @@ inline void *advance_bytes(void *ptr, std::ptrdiff_t distance) noexcept
  * @param ptr The pointer to advance.
  * @param distance The number of bytes to advance the pointer, may be negative.
  */
-inline void const *advance_bytes(void const *ptr, std::ptrdiff_t distance) noexcept
+hi_inline void const *advance_bytes(void const *ptr, std::ptrdiff_t distance) noexcept
 {
     hi_axiom_not_null(ptr);
     return static_cast<char const *>(ptr) + distance;
 }
 
 template<typename T>
-inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>>& v) noexcept
+hi_inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>>& v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -279,7 +282,7 @@ inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>>& v) noexcept
 }
 
 template<typename K, typename T>
-inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>>& v) noexcept
+hi_inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>>& v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -292,7 +295,7 @@ inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>>& v) noex
 }
 
 template<typename K, typename T>
-inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_ptr<T>>>& v) noexcept
+hi_inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_ptr<T>>>& v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -306,7 +309,7 @@ inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_ptr<
 }
 
 template<typename Value, typename Map, typename Key, typename... Args>
-inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
+hi_inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
 {
     std::shared_ptr<Value> value;
 
@@ -352,7 +355,7 @@ template<numeric T, byte_like B>
 }
 
 template<numeric T>
-[[nodiscard]] inline T unaligned_load(void const *src) noexcept
+[[nodiscard]] hi_inline T unaligned_load(void const *src) noexcept
 {
     return unaligned_load<T>(static_cast<std::byte const *>(src));
 }
@@ -383,7 +386,7 @@ constexpr void unaligned_store(T src, B *dst) noexcept
 }
 
 template<numeric T>
-inline void unaligned_store(T src, void *dst) noexcept
+hi_inline void unaligned_store(T src, void *dst) noexcept
 {
     return unaligned_store(src, reinterpret_cast<std::byte *>(dst));
 }

@@ -8,16 +8,18 @@
 #include "ucd_compositions.hpp"
 #include "ucd_canonical_combining_classes.hpp"
 #include "unicode_description.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <algorithm>
+
+hi_export_module(hikogui.unicode.unicode_normalization);
 
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 struct unicode_normalize_config {
     /** The types of decompositions, that should be used when decomposing.

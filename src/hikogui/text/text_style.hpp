@@ -6,19 +6,21 @@
 
 #include "text_decoration.hpp"
 #include "semantic_text_style.hpp"
-#include "../color/module.hpp"
+#include "../color/color.hpp"
 #include "../i18n/i18n.hpp"
 #include "../unicode/unicode.hpp"
 #include "../utility/utility.hpp"
 #include "../font/font.hpp"
 #include "../telemetry/telemetry.hpp"
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../macros.hpp"
 #include <ostream>
 #include <vector>
 #include <algorithm>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.text.text_style);
+
+hi_export namespace hi::inline v1 {
 
 struct text_sub_style {
     phrasing_mask phrasing_mask;
@@ -106,7 +108,7 @@ struct std::hash<hi::text_sub_style> {
     }
 };
 
-namespace hi::inline v1::detail {
+hi_export namespace hi::inline v1::detail {
 
 struct text_style_impl {
     using value_type = text_sub_style;
@@ -173,9 +175,9 @@ struct std::hash<hi::detail::text_style_impl> {
     }
 };
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
-inline auto text_styles = stable_set<text_style_impl>{};
+hi_inline auto text_styles = stable_set<text_style_impl>{};
 }
 
 class text_style {

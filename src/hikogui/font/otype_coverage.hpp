@@ -2,8 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "true_type_font.hpp"
-#include "../geometry/module.hpp"
+#pragma once
+
+#include "../geometry/geometry.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../parser/parser.hpp"

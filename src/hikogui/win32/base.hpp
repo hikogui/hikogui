@@ -10,9 +10,9 @@
 #include <vector>
 #include <algorithm>
 
-hi_export_module(hikogui.win32.errhandlingapi);
+hi_export_module(hikogui.win32.base);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class win32_error : uint32_t {
     success = ERROR_SUCCESS,
@@ -26,7 +26,7 @@ hi_export enum class win32_error : uint32_t {
 hi_export template<>
 struct std::is_error_code_enum<hi::win32_error> : std::true_type {};
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct win32_error_category : std::error_category {
     char const *name() const noexcept override
@@ -51,14 +51,14 @@ hi_export struct win32_error_category : std::error_category {
     }
 };
 
-hi_export inline auto global_win32_error_category = win32_error_category{};
+hi_inline auto global_win32_error_category = win32_error_category{};
 
-hi_export [[nodiscard]] inline std::error_code make_error_code(win32_error code) noexcept
+hi_export [[nodiscard]] hi_inline std::error_code make_error_code(win32_error code) noexcept
 {
     return {static_cast<int>(code), global_win32_error_category};
 }
 
-hi_export [[nodiscard]] inline win32_error win32_GetLastError() noexcept
+hi_export [[nodiscard]] hi_inline win32_error win32_GetLastError() noexcept
 {
     return static_cast<win32_error>(::GetLastError());
 }
@@ -70,7 +70,7 @@ hi_export [[nodiscard]] inline win32_error win32_GetLastError() noexcept
  * @param flags The flags to passing
  * @return multi-byte string.
  */
-hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_WideCharToMultiByte(std::wstring_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
+hi_export [[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_WideCharToMultiByte(std::wstring_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
 {
     if (s.empty()) {
         // WideCharToMultiByte() does not handle empty strings, if it can not also convert the null-character.
@@ -102,7 +102,7 @@ hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_Wid
  * @param flags The flags to passing
  * @return multi-byte string.
  */
-hi_export [[nodiscard]] inline std::expected<std::wstring, win32_error> win32_MultiByteToWideChar(std::string_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
+hi_export [[nodiscard]] hi_inline std::expected<std::wstring, win32_error> win32_MultiByteToWideChar(std::string_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
 {
     if (s.empty()) {
         // MultiByteToWideChar() does not handle empty strings, if it can not also convert the null-character.
@@ -136,7 +136,7 @@ hi_export [[nodiscard]] inline std::expected<std::wstring, win32_error> win32_Mu
  * @param last A pointer one beyond the buffer.
  * @return A vector of UTF-8 encoded strings, win32_error::invalid_data when the list is incorrectly terminated.
  */
-hi_export [[nodiscard]] inline std::expected<std::vector<std::string>, win32_error> win32_MultiSZToStringVector(wchar_t const *first, wchar_t const *last) noexcept
+hi_export [[nodiscard]] hi_inline std::expected<std::vector<std::string>, win32_error> win32_MultiSZToStringVector(wchar_t const *first, wchar_t const *last) noexcept
 {
     auto r = std::vector<std::string>{};
 
@@ -166,7 +166,7 @@ hi_export [[nodiscard]] inline std::expected<std::vector<std::string>, win32_err
     return r;
 }
 
-hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_FormatMessage(win32_error error_code) noexcept
+hi_export [[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_FormatMessage(win32_error error_code) noexcept
 {
     hilet error_code_ = static_cast<DWORD>(std::to_underlying(error_code));
 
@@ -191,7 +191,7 @@ hi_export [[nodiscard]] inline std::expected<std::string, win32_error> win32_For
     return r;
 }
 
-hi_export inline std::string win32_error_category::message(int code) const
+hi_export hi_inline std::string win32_error_category::message(int code) const
 {
     if (auto msg = win32_FormatMessage(static_cast<win32_error>(code))) {
         return *msg;

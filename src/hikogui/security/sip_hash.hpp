@@ -2,16 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include "../random/random.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <string_view>
 #include <string>
 #include <span>
+#include <bit>
 
+hi_export_module(hikogui.security.sip_hash);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 struct sip_hash_seed_type {
@@ -23,7 +26,7 @@ struct sip_hash_seed_type {
     sip_hash_seed_type() noexcept : sip_hash_seed_type(seed<uint64_t>{}(), seed<uint64_t>{}()) {}
 };
 
-inline auto sip_hash_seed = sip_hash_seed_type();
+hi_inline auto sip_hash_seed = sip_hash_seed_type();
 
 struct sip_hash_seed_tag {};
 
@@ -236,7 +239,7 @@ private:
 
 namespace detail {
 template<size_t C, size_t D>
-static inline sip_hash sip_hash_prototype = sip_hash<C, D>(sip_hash_seed_tag{});
+hi_inline sip_hash sip_hash_prototype = sip_hash<C, D>(sip_hash_seed_tag{});
 }
 
 template<size_t C, size_t D>

@@ -7,8 +7,13 @@
 #include "vector2.hpp"
 #include "extent2.hpp"
 #include "../macros.hpp"
+#include <algorithm>
+#include <exception>
+#include <compare>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.geometry : scale2);
+
+hi_export namespace hi { inline namespace v1 {
 
 class scale2 {
 public:

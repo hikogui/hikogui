@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.formula.formula_member_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_member_node final : formula_binary_operator_node {
     mutable formula_post_process_context::method_type method;

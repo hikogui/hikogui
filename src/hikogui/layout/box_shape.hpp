@@ -5,15 +5,15 @@
 #pragma once
 
 #include "box_constraints.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <limits>
 #include <optional>
 
+hi_export_module(hikogui.layout.box_shape);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 struct box_shape {
     aarectangle rectangle;

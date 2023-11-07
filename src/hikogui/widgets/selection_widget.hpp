@@ -15,15 +15,19 @@
 #include "grid_widget.hpp"
 #include "radio_button_widget.hpp"
 #include "selection_delegate.hpp"
-#include "../observer/module.hpp"
+#include "../observer/observer.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.selection_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept selection_widget_attribute = label_widget_attribute<Context>;

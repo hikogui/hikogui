@@ -13,14 +13,14 @@
 #include <concepts>
 #include <type_traits>
 
-
+hi_export_module(hikogui.container.byte_string);
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).
 // Need to call strlen() and friends with a `char *`.
 hi_warning_ignore_msvc(26490);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 using byteptr = std::byte *;
 using cbyteptr = std::byte const *;
@@ -107,12 +107,12 @@ public:
 using bstring = std::basic_string<std::byte, byte_char_traits>;
 using bstring_view = std::basic_string_view<std::byte, byte_char_traits>;
 
-[[nodiscard]] inline bstring to_bstring(std::string_view src) noexcept
+[[nodiscard]] hi_inline bstring to_bstring(std::string_view src) noexcept
 {
     return bstring{reinterpret_cast<std::byte const *>(src.data()), src.size()};
 }
 
-[[nodiscard]] inline bstring to_bstring(std::integral auto... args) noexcept
+[[nodiscard]] hi_inline bstring to_bstring(std::integral auto... args) noexcept
 {
     return bstring{{static_cast<std::byte>(args)...}};
 }

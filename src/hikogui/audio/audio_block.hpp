@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "../time/module.hpp"
+#include "../time/time.hpp"
 #include "../utility/utility.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <span>
 
 hi_export_module(hikogui.audio.audio_block);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class audio_block_state { normal, silent, corrupt };
 

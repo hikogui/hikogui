@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.formula.formula_increment_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_increment_node final : formula_unary_operator_node {
     formula_increment_node(size_t line_nr, size_t column_nr, std::unique_ptr<formula_node> rhs) :

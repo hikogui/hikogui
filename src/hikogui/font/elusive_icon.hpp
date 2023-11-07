@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.font.elusive_icon);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 hi_export enum class elusive_icon : char32_t {
     AddressBook = 0xf102,

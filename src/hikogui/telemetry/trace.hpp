@@ -5,15 +5,16 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../time/module.hpp"
+#include "../time/time.hpp"
 #include "counters.hpp"
 #include "../macros.hpp"
 #include <array>
 #include <tuple>
+#include <exception>
 
+hi_export_module(hikogui.telemetry : trace);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class trace_base {
 public:

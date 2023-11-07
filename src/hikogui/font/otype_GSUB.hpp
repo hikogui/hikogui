@@ -2,13 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "true_type_font.hpp"
-#include "../unicode/module.hpp"
-#include "../geometry/module.hpp"
-#include "../placement.hpp"
-#include "../strings.hpp"
-#include "../log.hpp"
-#include "../utility/module.hpp"
+#pragma once
+
+#include "../geometry/geometry.hpp"
+#include "../parser/parser.hpp"
+#include "../utility/utility.hpp"
 #include <cstddef>
 #include <span>
 

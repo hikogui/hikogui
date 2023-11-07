@@ -13,11 +13,15 @@
 #include "../macros.hpp"
 #include <cstdint>
 #include <utility>
-#include <tuple>
+#include <bit>
+#include <compare>
+#if defined(HI_HAS_SSE2)
+#include <emmintrin.h>
+#endif
 
+hi_export_module(hikogui.char_maps.ascii);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** ASCII (7-bit) character map.
  * @ingroup char_maps

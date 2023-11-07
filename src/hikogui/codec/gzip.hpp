@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../file/file.hpp"
 #include "../parser/parser.hpp"
 #include "../macros.hpp"
@@ -14,7 +14,7 @@
 
 hi_export_module(hikogui.codec.gzip);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 struct gzip_member_header {
@@ -27,7 +27,7 @@ struct gzip_member_header {
     uint8_t OS;
 };
 
-[[nodiscard]] inline bstring gzip_decompress_member(std::span<std::byte const> bytes, std::size_t &offset, std::size_t max_size)
+[[nodiscard]] hi_inline bstring gzip_decompress_member(std::span<std::byte const> bytes, std::size_t &offset, std::size_t max_size)
 {
     hilet header = make_placement_ptr<gzip_member_header>(bytes, offset);
 
@@ -80,7 +80,7 @@ struct gzip_member_header {
 
 }
 
-hi_export [[nodiscard]] inline bstring gzip_decompress(std::span<std::byte const> bytes, std::size_t max_size)
+hi_export [[nodiscard]] hi_inline bstring gzip_decompress(std::span<std::byte const> bytes, std::size_t max_size)
 {
     auto r = bstring{};
 
@@ -94,7 +94,7 @@ hi_export [[nodiscard]] inline bstring gzip_decompress(std::span<std::byte const
     return r;
 }
 
-hi_export [[nodiscard]] inline bstring gzip_decompress(std::filesystem::path const &path, std::size_t max_size = 0x01000000)
+hi_export [[nodiscard]] hi_inline bstring gzip_decompress(std::filesystem::path const &path, std::size_t max_size = 0x01000000)
 {
     return gzip_decompress(as_span<std::byte const>(file_view{path}), max_size);
 }

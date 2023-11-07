@@ -6,10 +6,13 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <string_view>
+#include <utility>
+#include <format>
 
 hi_export_module(hikogui.audio.audio_direction);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class audio_direction : unsigned char { none = 0b00, input = 0b01, output = 0b10, bidirectional = 0b11 };
 
@@ -39,10 +42,11 @@ hi_export constexpr auto audio_direction_metadata = enum_metadata{
 
 }}
 
-hi_export template<typename CharT>
-struct std::formatter<hi::audio_direction, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::audio_direction, char> : std::formatter<std::string_view, char> {
     auto format(hi::audio_direction const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::audio_direction_metadata[t], fc);
+        return std::formatter<std::string_view, char>::format(hi::audio_direction_metadata[t], fc);
     }
 };

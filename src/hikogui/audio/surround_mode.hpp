@@ -8,13 +8,14 @@
 #include "../font/font.hpp"
 #include "../utility/utility.hpp"
 #include "../l10n/l10n.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <cstdint>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.surround_mode);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class surround_mode : uint64_t {
     none = 0,
@@ -238,7 +239,7 @@ hi_export [[nodiscard]] constexpr speaker_mapping to_speaker_mapping(surround_mo
     return surround_mode_speaker_mappings[rhs];
 }
 
-hi_export [[nodiscard]] inline generator<surround_mode> enumerate_surround_modes() noexcept
+hi_export [[nodiscard]] hi_inline generator<surround_mode> enumerate_surround_modes() noexcept
 {
     hilet begin = std::to_underlying(surround_mode::mono_1_0);
     hilet end = std::to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
@@ -283,10 +284,11 @@ hi_export [[nodiscard]] constexpr std::string to_string(surround_mode const& mas
 
 }} // namespace hi::inline v1
 
-hi_export template<typename CharT>
-struct std::formatter<hi::surround_mode, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::surround_mode, char> : std::formatter<std::string_view, char> {
     auto format(hi::surround_mode const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::to_string(t), fc);
+        return std::formatter<std::string_view, char>::format(hi::to_string(t), fc);
     }
 };

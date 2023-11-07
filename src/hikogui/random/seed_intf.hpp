@@ -8,12 +8,13 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <random>
 #include <concepts>
 #include <type_traits>
 #include <bit>
+#include <array>
 
 hi_export_module(hikogui.random.seed : intf);
 

@@ -8,11 +8,17 @@
 
 #pragma once
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+#include <array>
+#include <bit>
+#include <cstdint>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.image.sint_abgr8_pack);
+
+hi_export namespace hi::inline v1 {
 
 /** 4 x int8_t packed pixel format.
  *

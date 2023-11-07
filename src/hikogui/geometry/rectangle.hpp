@@ -6,11 +6,15 @@
 
 #include "aarectangle.hpp"
 #include "alignment.hpp"
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <array>
+#include <exception>
+#include <compare>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.geometry : rectangle);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A rectangle / parallelogram in 3D space.
  *

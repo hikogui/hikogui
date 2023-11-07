@@ -4,8 +4,15 @@
 
 #pragma once
 
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
-namespace hi { inline namespace v1 {
+#include <cmath>
+#include <exception>
+#include <compare>
+
+hi_export_module(hikogui.geometry : rotate2);
+
+hi_export namespace hi { inline namespace v1 {
 
 class rotate2 {
 public:

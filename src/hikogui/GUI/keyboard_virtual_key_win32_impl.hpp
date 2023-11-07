@@ -6,11 +6,13 @@
 
 #include "../win32_headers.hpp"
 
-#include "keyboard_virtual_key.hpp"
+#include "keyboard_virtual_key_intf.hpp"
 #include "keyboard_modifiers.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.GUI : keyboard_virtual_key_impl);
+
+hi_export namespace hi::inline v1 {
 
 [[nodiscard]] constexpr keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers) noexcept
 {

@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.audio.audio_device_delegate);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class audio_device_delegate {
 public:

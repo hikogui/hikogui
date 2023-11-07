@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "hikogui/metadata/semantic_version.hpp"
-#include "hikogui/utility/utility.hpp"
-#include "hikogui/macros.hpp"
+#include "semantic_version.hpp"
+#include "../utility/utility.hpp"
+#include "../macros.hpp"
 #include <atomic>
 #include <filesystem>
 
-hi_export_module(hikogui.metadata.metadata_library);
+hi_export_module(hikogui.metadata.library_metadata);
 
 hi_export namespace hi { inline namespace v1 {
 

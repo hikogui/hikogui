@@ -4,21 +4,22 @@
 
 #pragma once
 
-#include <string>
-#include <string_view>
-#include <format>
-#include <array>
-#include <ranges>
 #include "../macros.hpp"
 #include "assert.hpp"
 #include "cast.hpp"
 #include "debugger.hpp"
 #include "exception.hpp"
 #include "misc.hpp"
+#include <string>
+#include <string_view>
+#include <format>
+#include <array>
+#include <ranges>
+#include <compare>
 
 hi_export_module(hikogui.utility.fixed_string);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A string which may be used as a none-type template parameter.
  *
@@ -275,10 +276,13 @@ fixed_string(F const& f) -> fixed_string<F{}().size()>;
 
 }} // namespace hi::v1
 
-hi_export template<std::size_t N, typename CharT>
-struct std::formatter<hi::fixed_string<N>, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules, outside a namespace.
+namespace std {
+hi_export template<std::size_t N>
+struct formatter<hi::fixed_string<N>, char> : formatter<std::string_view, char> {
     constexpr auto format(hi::fixed_string<N> const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(static_cast<std::string_view>(t), fc);
+        return std::formatter<std::string_view, char>::format(static_cast<std::string_view>(t), fc);
     }
 };
+}

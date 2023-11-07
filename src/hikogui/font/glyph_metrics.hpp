@@ -5,12 +5,13 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
+#include <compare>
 
 hi_export_module(hikogui.font.glyph_metrics);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /*! Metrics of a glyph.
  * This information is used to position glyphs next to each other

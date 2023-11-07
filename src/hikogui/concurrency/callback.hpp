@@ -9,8 +9,11 @@
 #include <memory>
 #include <atomic>
 #include <functional>
+#include <cstddef>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.concurrency.callback);
+
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 template<typename R, typename... Args>
@@ -270,9 +273,9 @@ public:
         return *this;
     }
 
-    callback(nullptr_t) noexcept : _impl(nullptr) {}
+    callback(std::nullptr_t) noexcept : _impl(nullptr) {}
 
-    callback& operator=(nullptr_t) noexcept
+    callback& operator=(std::nullptr_t) noexcept
     {
         unsubscribe();
         return *this;
@@ -352,7 +355,7 @@ private:
 };
 
 template<typename R, typename... Args>
-inline weak_callback<R(Args...)>::weak_callback(callback<R(Args...)> const& other) noexcept : weak_callback(other._impl)
+hi_inline weak_callback<R(Args...)>::weak_callback(callback<R(Args...)> const& other) noexcept : weak_callback(other._impl)
 {
 }
 

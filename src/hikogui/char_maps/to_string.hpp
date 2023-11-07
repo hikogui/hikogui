@@ -11,12 +11,16 @@
 #include "utf_8.hpp"
 #include "utf_16.hpp"
 #include "utf_32.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>
 #include <climits>
+#include <array>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.char_maps.to_string);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** Identity conversion from UTF-32 to UTF-32.
  * @ingroup char_maps

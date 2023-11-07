@@ -8,7 +8,7 @@
 
 hi_export_module(hikogui.font.hikogui_icon);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 hi_export enum class hikogui_icon : char32_t {
     MinimizeWindow = 0xf301,

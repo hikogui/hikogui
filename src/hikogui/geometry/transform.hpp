@@ -28,8 +28,12 @@
 #include "../macros.hpp"
 #include <type_traits>
 #include <functional>
+#include <exception>
+#include <compare>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.geometry : transform);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename T>
 struct transform2 : public std::false_type {};
@@ -144,7 +148,7 @@ concept transformer = transformer2<T> or transformer3<T>;
  * The floating point number is transformed into a vector laying on the x-axis,
  * then transformed, then extracting the hypot from it.
  */
-[[nodiscard]] inline float operator*(matrix2 const& lhs, float const& rhs) noexcept
+[[nodiscard]] hi_inline float operator*(matrix2 const& lhs, float const& rhs) noexcept
 {
     // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
     hilet abs_scale = hypot<0b0011>(get<0>(lhs) * f32x4::broadcast(rhs));
@@ -158,7 +162,7 @@ concept transformer = transformer2<T> or transformer3<T>;
  * The floating point number is transformed into a vector laying on the x-axis,
  * then transformed, then extracting the hypot from it.
  */
-[[nodiscard]] inline float operator*(matrix3 const &lhs, float const& rhs) noexcept
+[[nodiscard]] hi_inline float operator*(matrix3 const &lhs, float const& rhs) noexcept
 {
     // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
     hilet abs_scale = hypot<0b0111>(get<0>(lhs) * f32x4::broadcast(rhs));

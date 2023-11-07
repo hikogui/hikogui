@@ -11,7 +11,7 @@
 #include "widget_id.hpp"
 #include "gui_event_type.hpp"
 #include "gui_event_variant.hpp"
-#include "keyboard_virtual_key.hpp"
+#include "keyboard_virtual_key_intf.hpp"
 #include "keyboard_state.hpp"
 #include "keyboard_modifiers.hpp"
 #include "keyboard_focus_group.hpp"
@@ -19,13 +19,15 @@
 #include "mouse_buttons.hpp"
 #include "hitbox.hpp"
 #include "../unicode/unicode.hpp"
-#include "../geometry/module.hpp"
-#include "../time/module.hpp"
+#include "../geometry/geometry.hpp"
+#include "../time/time.hpp"
 #include "../macros.hpp"
 #include <chrono>
 #include <memory>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.GUI : gui_event);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** Information for a mouse event.
  * @ingroup GUI
@@ -420,10 +422,11 @@ private:
 
 }} // namespace hi::v1
 
-template<typename CharT>
-struct std::formatter<hi::gui_event, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::gui_event, char> : std::formatter<std::string_view, char> {
     auto format(hi::gui_event const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::gui_event_type_metadata[t.type()], fc);
+        return std::formatter<std::string_view, char>::format(hi::gui_event_type_metadata[t.type()], fc);
     }
 };

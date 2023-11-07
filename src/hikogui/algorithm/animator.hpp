@@ -4,13 +4,16 @@
 
 #pragma once
 
-#include "algorithm.hpp"
 #include "../macros.hpp"
 #include "../utility/utility.hpp"
-#include "../time/module.hpp"
+#include "../time/time.hpp"
 #include <cmath>
+#include <chrono>
+#include <algorithm>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.algorithm.animator);
+
+hi_export namespace hi::inline v1 {
 
 enum class animator_state {
     uninitialized, idle, running, end

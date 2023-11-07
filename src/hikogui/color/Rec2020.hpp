@@ -9,11 +9,14 @@
 #pragma once
 
 #include "color_space.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <cmath>
 #include <array>
 
-namespace hi {
+hi_export_module(hikogui.color.Rec2020);
+
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Rec.2020 to XYZ color space conversion matrix.

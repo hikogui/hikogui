@@ -5,8 +5,10 @@
 #pragma once
 
 #include "assert.hpp"
+#include "misc.hpp"
 #include "type_traits.hpp"
 #include "concepts.hpp"
+#include "debugger.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <memory>
@@ -14,7 +16,7 @@
 
 hi_export_module(utility.not_null);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 template<nullable_pointer T>
 class not_null {

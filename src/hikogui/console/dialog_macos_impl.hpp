@@ -5,7 +5,7 @@
 
 hi_export_module(hikogui.console.dialog : impl);
 
-hi_export inline void dialog_output(char const *title, char const *message)
+hi_export hi_inline void dialog_output(char const *title, char const *message)
 {
     @autoreleasepool {
         NSString *title_s = [NSString stringWithCString:title encoding:NSUTF8StringEncoding];

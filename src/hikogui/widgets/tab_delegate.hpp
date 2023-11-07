@@ -8,12 +8,19 @@
 
 #pragma once
 
+#include "../observer/observer.hpp"
+#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../dispatch/dispatch.hpp"
+#include "../GUI/GUI.hpp"
+#include "../macros.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <functional>
 
-namespace hi { inline namespace v1 {
-class tab_widget;
+hi_export_module(hikogui.widgets.tab_delegate);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A delegate that controls the state of a tab_widget.
  *

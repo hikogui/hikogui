@@ -6,6 +6,7 @@
 
 #include "../win32_headers.hpp"
 #include "../macros.hpp"
+#include "exception.hpp"
 #include "debugger_intf.hpp"
 #include <exception>
 
@@ -16,43 +17,81 @@ hi_warning_push();
 // This might mask exceptions that were not intended to be handled.
 hi_warning_ignore_msvc(6320);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
-inline hi_no_inline bool prepare_debug_break() noexcept
+hi_inline void launch_just_in_time_debugger(unsigned int v, _EXCEPTION_POINTERS *p)
+{
+    // We return the result of `UnhandledExceptionFilter() -> lONG` as an
+    // exception.
+    throw UnhandledExceptionFilter(p);
+}
+
+hi_export hi_no_inline hi_inline bool prepare_debug_break() noexcept
 {
     if (IsDebuggerPresent()) {
         // When running under the debugger, __debugbreak() after returning.
         return true;
 
     } else {
-        __try {
-            __try {
-                // Attempt to break, causing an exception.
-                DebugBreak();
+        // If there is no debugger present we are going to try to launch the
+        // just-in-time-debugger. This debugger is launched by the
+        // UnhandledExceptionFilter(). However this function needs to be called
+        // inside the __except(<expression>) filter expression.
+        //
+        // Since __try and __except are not available inside a C++20 module
+        // we will need to use a lower level API. A se_translator is a function
+        // that is called inside the filter-expression context and should normally
+        // translate a structured exception to a C++ exception.
+        //
+        // So inside the se_translator function we will call
+        // UnhandledExceptionFilter() and throw the result value which will
+        // tell us if the debugger was launched by the user. A dialogue was
+        // presented to the user for the selection of one of the installed
+        // debuggers.
 
-                // The UnhandledExceptionFilter() will be called to attempt to attach a debugger.
-                //  * If the jit-debugger is not configured the user gets a error dialogue-box that
-                //    with "Abort", "Retry (Debug)", "Ignore". The "Retry" option will only work
-                //    when the application is already being debugged.
-                //  * When the jit-debugger is configured the user gets a dialogue window which allows
-                //    a selection of debuggers and a "OK (Debug)", "Cancel (aborts application)".
+        auto old_handler = _set_se_translator(launch_just_in_time_debugger);
 
-            } __except (UnhandledExceptionFilter(GetExceptionInformation())) {
-                // The jit-debugger is not configured and the user pressed any of the buttons.
-                return false;
-            }
+        try {
+            // Attempt to break, causing an exception.
+            // This will eventually execute the UnhandledExceptionFilter(),
+            // which may launch the just-in-time-debugger.
+            DebugBreak();
 
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
-            // User pressed "OK", debugger has been attached, __debugbreak() after return.
+            // If we got here that means the debugger was attached to the
+            // process between IsDebuggerPresent() and DebugBreak() calls.
+            // It also means the debugger 'continue' over the break-point.
+            // We return true, but the debugger will break again right after
+            // this function ends.
+            _set_se_translator(old_handler);
             return true;
-        }
 
-        // The jit-debugger was configured, but the use pressed Cancel.
-        return false;
+        } catch (LONG e) {
+            _set_se_translator(old_handler);
+
+            switch (e) {
+            case EXCEPTION_CONTINUE_SEARCH:
+                // The just-in-time-debugger was not launched by the user.
+                //  - There are no debuggers available on the system.
+                //  - No debuggers where configured as just-in-time-debuggers.
+                //  - The user pressed 'Cancel' on the just-in-time-debugger
+                //    dialogue.
+                return false;
+
+            case EXCEPTION_EXECUTE_HANDLER:
+                // The just-in-time debugger was successfully launched by the
+                // user.
+                return true;
+
+            default:
+                // UnhandledExceptionFilter() returned an unexpected value.
+                std::terminate();
+            }
+        }
     }
 }
 
-
-}} // namespace hi::inline v1
+} // namespace v1
+} // namespace hi::inline v1
 
 hi_warning_pop();

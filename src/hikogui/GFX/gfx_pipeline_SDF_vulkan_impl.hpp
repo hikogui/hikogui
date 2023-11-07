@@ -4,15 +4,18 @@
 
 #pragma once
 
-#include "gfx_pipeline_SDF_vulkan.hpp"
-#include "gfx_surface_vulkan.hpp"
+#include "gfx_pipeline_SDF_vulkan_intf.hpp"
+#include "gfx_surface_vulkan_intf.hpp"
 #include "gfx_device_vulkan_impl.hpp"
-#include "draw_context.hpp"
+#include "draw_context_intf.hpp"
 #include "../macros.hpp"
+#include <vulkan/vulkan.hpp>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.GFX : gfx_pipeline_SDF_impl);
 
-inline void gfx_pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+hi_export namespace hi { inline namespace v1 {
+
+hi_inline void gfx_pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
     gfx_pipeline::draw_in_command_buffer(commandBuffer, context);
 
@@ -71,7 +74,7 @@ inline void gfx_pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBu
     device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
-inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_SDF::createShaderStages() const
+hi_inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_SDF::createShaderStages() const
 {
     hi_axiom_not_null(device());
     return device()->SDF_pipeline->shaderStages;
@@ -79,7 +82,7 @@ inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_SDF::createSh
 
 /* Dual-source alpha blending which allows subpixel anti-aliasing.
  */
-inline std::vector<vk::PipelineColorBlendAttachmentState> gfx_pipeline_SDF::getPipelineColorBlendAttachmentStates() const
+hi_inline std::vector<vk::PipelineColorBlendAttachmentState> gfx_pipeline_SDF::getPipelineColorBlendAttachmentStates() const
 {
     bool has_dual_source_blend = false;
     if (auto device_ = device()) {
@@ -98,7 +101,7 @@ inline std::vector<vk::PipelineColorBlendAttachmentState> gfx_pipeline_SDF::getP
              vk::ColorComponentFlagBits::eA}};
 }
 
-inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_SDF::createDescriptorSetLayoutBindings() const
+hi_inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_SDF::createDescriptorSetLayoutBindings() const
 {
     return {
         {0, // binding
@@ -111,7 +114,7 @@ inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_SDF::createDescr
          vk::ShaderStageFlagBits::eFragment}};
 }
 
-inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_SDF::createWriteDescriptorSet() const
+hi_inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_SDF::createWriteDescriptorSet() const
 {
     hi_axiom_not_null(device());
     hilet& sharedImagePipeline = device()->SDF_pipeline;
@@ -140,28 +143,28 @@ inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_SDF::createWriteDescript
     };
 }
 
-inline size_t gfx_pipeline_SDF::getDescriptorSetVersion() const
+hi_inline size_t gfx_pipeline_SDF::getDescriptorSetVersion() const
 {
     hi_axiom_not_null(device());
     return device()->SDF_pipeline->atlasTextures.size();
 }
 
-inline std::vector<vk::PushConstantRange> gfx_pipeline_SDF::createPushConstantRanges() const
+hi_inline std::vector<vk::PushConstantRange> gfx_pipeline_SDF::createPushConstantRanges() const
 {
     return push_constants::pushConstantRanges();
 }
 
-inline vk::VertexInputBindingDescription gfx_pipeline_SDF::createVertexInputBindingDescription() const
+hi_inline vk::VertexInputBindingDescription gfx_pipeline_SDF::createVertexInputBindingDescription() const
 {
     return vertex::inputBindingDescription();
 }
 
-inline std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_SDF::createVertexInputAttributeDescriptions() const
+hi_inline std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_SDF::createVertexInputAttributeDescriptions() const
 {
     return vertex::inputAttributeDescriptions();
 }
 
-inline void gfx_pipeline_SDF::build_vertex_buffers()
+hi_inline void gfx_pipeline_SDF::build_vertex_buffers()
 {
     using vertexIndexType = uint16_t;
     constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
@@ -182,14 +185,14 @@ inline void gfx_pipeline_SDF::build_vertex_buffers()
     vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
 }
 
-inline void gfx_pipeline_SDF::teardown_vertex_buffers()
+hi_inline void gfx_pipeline_SDF::teardown_vertex_buffers()
 {
     hi_axiom_not_null(device());
     device()->unmapMemory(vertexBufferAllocation);
     device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
-inline void gfx_pipeline_SDF::texture_map::transitionLayout(const gfx_device &device, vk::Format format, vk::ImageLayout nextLayout)
+hi_inline void gfx_pipeline_SDF::texture_map::transitionLayout(const gfx_device &device, vk::Format format, vk::ImageLayout nextLayout)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -199,15 +202,15 @@ inline void gfx_pipeline_SDF::texture_map::transitionLayout(const gfx_device &de
     }
 }
 
-inline gfx_pipeline_SDF::device_shared::device_shared(gfx_device const& device) : device(device)
+hi_inline gfx_pipeline_SDF::device_shared::device_shared(gfx_device const& device) : device(device)
 {
     buildShaders();
     buildAtlas();
 }
 
-inline gfx_pipeline_SDF::device_shared::~device_shared() {}
+hi_inline gfx_pipeline_SDF::device_shared::~device_shared() {}
 
-inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const *vulkanDevice)
+hi_inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 
@@ -215,7 +218,7 @@ inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const *vulkanDev
     teardownAtlas(vulkanDevice);
 }
 
-[[nodiscard]] inline glyph_atlas_info gfx_pipeline_SDF::device_shared::allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept
+[[nodiscard]] hi_inline glyph_atlas_info gfx_pipeline_SDF::device_shared::allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept
 {
     auto image_width = ceil_cast<int>(draw_extent.width());
     auto image_height = ceil_cast<int>(draw_extent.height());
@@ -251,7 +254,7 @@ inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const *vulkanDev
     return r;
 }
 
-inline void gfx_pipeline_SDF::device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const& location)
+hi_inline void gfx_pipeline_SDF::device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const& location)
 {
     // Flush the given image, included the border.
     device.flushAllocation(
@@ -279,12 +282,12 @@ inline void gfx_pipeline_SDF::device_shared::uploadStagingPixmapToAtlas(glyph_at
         std::move(regionsToCopy));
 }
 
-inline void gfx_pipeline_SDF::device_shared::prepareStagingPixmapForDrawing()
+hi_inline void gfx_pipeline_SDF::device_shared::prepareStagingPixmapForDrawing()
 {
     stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eGeneral);
 }
 
-inline void gfx_pipeline_SDF::device_shared::prepare_atlas_for_rendering()
+hi_inline void gfx_pipeline_SDF::device_shared::prepare_atlas_for_rendering()
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
     for (auto& atlasTexture : atlasTextures) {
@@ -308,7 +311,7 @@ inline void gfx_pipeline_SDF::device_shared::prepare_atlas_for_rendering()
  *  |                     |
  *  O---------------------+
  */
-inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font const &font, glyph_id glyph, glyph_atlas_info& info) noexcept
+hi_inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font const &font, glyph_id glyph, glyph_atlas_info& info) noexcept
 {
     hilet glyph_metrics = font.get_metrics(glyph);
     hilet glyph_path = font.get_path(glyph);
@@ -339,7 +342,7 @@ inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font const &
     uploadStagingPixmapToAtlas(info);
 }
 
-inline bool gfx_pipeline_SDF::device_shared::place_vertices(
+hi_inline bool gfx_pipeline_SDF::device_shared::place_vertices(
     vector_span<vertex>& vertices,
     aarectangle const& clipping_rectangle,
     quad const& box,
@@ -363,12 +366,12 @@ inline bool gfx_pipeline_SDF::device_shared::place_vertices(
     return glyph_was_added;
 }
 
-inline void gfx_pipeline_SDF::device_shared::drawInCommandBuffer(vk::CommandBuffer const& commandBuffer)
+hi_inline void gfx_pipeline_SDF::device_shared::drawInCommandBuffer(vk::CommandBuffer const& commandBuffer)
 {
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
 
-inline void gfx_pipeline_SDF::device_shared::buildShaders()
+hi_inline void gfx_pipeline_SDF::device_shared::buildShaders()
 {
     specializationConstants.sdf_r8maxDistance = sdf_r8::max_distance;
     specializationConstants.atlasImageWidth = atlasImageWidth;
@@ -388,7 +391,7 @@ inline void gfx_pipeline_SDF::device_shared::buildShaders()
          &fragmentShaderSpecializationInfo}};
 }
 
-inline void gfx_pipeline_SDF::device_shared::teardownShaders(gfx_device const *vulkanDevice)
+hi_inline void gfx_pipeline_SDF::device_shared::teardownShaders(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 
@@ -396,7 +399,7 @@ inline void gfx_pipeline_SDF::device_shared::teardownShaders(gfx_device const *v
     vulkanDevice->destroy(fragmentShaderModule);
 }
 
-inline void gfx_pipeline_SDF::device_shared::addAtlasImage()
+hi_inline void gfx_pipeline_SDF::device_shared::addAtlasImage()
 {
     hilet current_image_index = atlasTextures.size();
 
@@ -458,7 +461,7 @@ inline void gfx_pipeline_SDF::device_shared::addAtlasImage()
     }
 }
 
-inline void gfx_pipeline_SDF::device_shared::buildAtlas()
+hi_inline void gfx_pipeline_SDF::device_shared::buildAtlas()
 {
     // Create staging image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -517,7 +520,7 @@ inline void gfx_pipeline_SDF::device_shared::buildAtlas()
     addAtlasImage();
 }
 
-inline void gfx_pipeline_SDF::device_shared::teardownAtlas(gfx_device const *vulkanDevice)
+hi_inline void gfx_pipeline_SDF::device_shared::teardownAtlas(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 

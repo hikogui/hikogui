@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../telemetry/telemetry.hpp"
-#include "../observer/module.hpp"
+#include "../observer/observer.hpp"
 #include "../codec/codec.hpp"
 #include "../dispatch/dispatch.hpp"
 #include "../file/file.hpp"
@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.settings.preferences);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 class preferences;
 
 namespace detail {
@@ -346,7 +346,7 @@ private:
     friend class detail::preference_item;
 };
 
-inline void detail::preference_item_base::load() noexcept
+hi_inline void detail::preference_item_base::load() noexcept
 {
     hilet value = this->_parent.read(_path);
     if (value.is_undefined()) {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "translation.hpp"
+#include "po_translations.hpp"
 #include "../i18n/i18n.hpp"
 #include "../file/file.hpp"
 #include "../parser/parser.hpp"
@@ -16,21 +16,7 @@
 
 hi_export_module(hikogui.l10n.po_parser);
 
-namespace hi::inline v1 {
-
-struct po_translation {
-    std::optional<std::string> msgctxt;
-    std::string msgid;
-    std::string msgid_plural;
-    std::vector<std::string> msgstr;
-};
-
-struct po_translations {
-    language_tag language;
-    size_t nr_plural_forms;
-    std::string plural_expression;
-    std::vector<po_translation> translations;
-};
+hi_export namespace hi { inline namespace v1 {
 
 namespace detail {
 
@@ -187,9 +173,9 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     return parse_po(text.begin(), text.end(), path);
 }
 
-[[nodiscard]] inline po_translations parse_po(std::filesystem::path const& path)
+[[nodiscard]] hi_inline po_translations parse_po(std::filesystem::path const& path)
 {
     return parse_po(as_string_view(file_view{path}), path.string());
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

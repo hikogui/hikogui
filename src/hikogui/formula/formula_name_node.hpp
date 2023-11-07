@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.formula.formula_name_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_name_node final : formula_node {
     std::string name;

@@ -1,0 +1,30 @@
+
+module;
+
+
+export module hikogui_audio;
+export import hikogui_audio_audio_block;
+export import hikogui_audio_audio_channel;
+export import hikogui_audio_audio_device;
+export import hikogui_audio_audio_device_asio;
+export import hikogui_audio_audio_device_delegate;
+export import hikogui_audio_audio_device_state;
+export import hikogui_audio_audio_device_win32;
+export import hikogui_audio_audio_direction;
+export import hikogui_audio_audio_format_range;
+export import hikogui_audio_audio_sample_format;
+export import hikogui_audio_audio_sample_packer;
+export import hikogui_audio_audio_sample_unpacker;
+export import hikogui_audio_audio_stream_config;
+export import hikogui_audio_audio_stream_format;
+export import hikogui_audio_audio_stream_format_win32;
+export import hikogui_audio_audio_system;
+export import hikogui_audio_audio_system_aggregate;
+export import hikogui_audio_audio_system_asio;
+export import hikogui_audio_audio_system_win32;
+export import hikogui_audio_pcm_format;
+export import hikogui_audio_speaker_mapping;
+export import hikogui_audio_speaker_mapping_win32;
+export import hikogui_audio_surround_mode;
+export import hikogui_audio_win32_device_interface;
+export import hikogui_audio_win32_wave_device;

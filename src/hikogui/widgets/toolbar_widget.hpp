@@ -10,12 +10,16 @@
 
 #include "widget.hpp"
 #include "../layout/layout.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <ranges>
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.toolbar_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A toolbar widget is located at the top of a window and lays out its children
  * horizontally.

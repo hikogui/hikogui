@@ -4,17 +4,19 @@
 
 #pragma once
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "widget_id.hpp"
 #include "../macros.hpp"
 #include <limits>
 #include <cstdint>
 #include <compare>
+#include <utility>
+#include <exception>
 
+hi_export_module(hikogui.GUI : hitbox);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class hitbox_type : uint8_t {
     outside,

@@ -6,6 +6,8 @@
 #include "hikogui/crt.hpp"
 #include <memory>
 
+//import hikogui;
+
 class my_preferences : public hi::preferences {
 public:
     hi::observer<std::string> audio_output_device_id;

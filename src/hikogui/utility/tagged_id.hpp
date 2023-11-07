@@ -6,11 +6,17 @@
 
 #include "../macros.hpp"
 #include "fixed_string.hpp"
+#include "debugger.hpp"
 #include <limits>
 #include <typeinfo>
 #include <typeindex>
 #include <compare>
 #include <concepts>
+#include <bit>
+#include <optional>
+#include <string>
+#include <ostream>
+#include <cstddef>
 
 hi_export_module(hikogui.utility.tagged_id);
 
@@ -61,7 +67,7 @@ public:
         return *this;
     }
 
-    template<numeric_integral O>
+    template<std::integral O>
     constexpr explicit operator O() const noexcept
     {
         hi_axiom(value != invalid);
@@ -131,7 +137,7 @@ private:
 
 } // namespace hi::inline v1
 
-template<typename T, hi::fixed_string Tag, hi::ssize_t Max>
+hi_export template<typename T, hi::fixed_string Tag, std::size_t Max>
 struct std::hash<hi::tagged_id<T, Tag, Max>> {
     [[nodiscard]] constexpr std::size_t operator()(hi::tagged_id<T, Tag, Max> const& rhs) const noexcept
     {

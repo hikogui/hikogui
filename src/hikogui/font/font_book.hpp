@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "font.hpp"
+#include "font_font.hpp"
 #include "font_family_id.hpp"
 #include "true_type_font.hpp"
 #include "elusive_icon.hpp"
 #include "hikogui_icon.hpp"
 #include "../unicode/unicode.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../path/path.hpp"
 #include <limits>
 #include <array>
@@ -22,7 +22,7 @@
 
 hi_export_module(hikogui.font.font_book);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** font_book keeps track of multiple fonts.
  * The font_book is instantiated during application startup
@@ -358,10 +358,10 @@ private:
 };
 
 namespace detail {
-inline std::unique_ptr<font_book> font_book_global = nullptr;
+hi_inline std::unique_ptr<font_book> font_book_global = nullptr;
 }
 
-inline font_book& font_book::global() noexcept
+hi_inline font_book& font_book::global() noexcept
 {
     if (not detail::font_book_global) {
         detail::font_book_global = std::make_unique<font_book>();
@@ -379,18 +379,18 @@ inline font_book& font_book::global() noexcept
  *
  * @param path Location of font.
  */
-hi_export inline font& register_font_file(std::filesystem::path const& path)
+hi_export hi_inline font& register_font_file(std::filesystem::path const& path)
 {
     return font_book::global().register_font_file(path);
 }
 
-hi_export inline void register_font_directory(std::filesystem::path const& path)
+hi_export hi_inline void register_font_directory(std::filesystem::path const& path)
 {
     return font_book::global().register_font_directory(path);
 }
 
 hi_export template<typename Range>
-inline void register_font_directories(Range&& range) noexcept
+hi_inline void register_font_directories(Range&& range) noexcept
 {
     for (auto const& path : range) {
         font_book::global().register_font_directory(path, false);
@@ -401,7 +401,7 @@ inline void register_font_directories(Range&& range) noexcept
 /** Find font family id.
  * This function will always return a valid font_family_id by walking the fallback-chain.
  */
-hi_export [[nodiscard]] inline font_family_id find_font_family(std::string const& family_name) noexcept
+hi_export [[nodiscard]] hi_inline font_family_id find_font_family(std::string const& family_name) noexcept
 {
     return font_book::global().find_family(family_name);
 }
@@ -413,7 +413,7 @@ hi_export [[nodiscard]] inline font_family_id find_font_family(std::string const
  * @param variant The variant of the font to select.
  * @return a valid font id.
  */
-hi_export [[nodiscard]] inline font const& find_font(font_family_id family_id, font_variant variant = font_variant{}) noexcept
+hi_export [[nodiscard]] hi_inline font const& find_font(font_family_id family_id, font_variant variant = font_variant{}) noexcept
 {
     return font_book::global().find_font(family_id, variant);
 }
@@ -425,7 +425,7 @@ hi_export [[nodiscard]] inline font const& find_font(font_family_id family_id, f
  * @param variant The variant of the font to select.
  * @return A pointer to the loaded font.
  */
-hi_export [[nodiscard]] inline font const *find_font(std::string const& family_name, font_variant variant = font_variant{}) noexcept
+hi_export [[nodiscard]] hi_inline font const *find_font(std::string const& family_name, font_variant variant = font_variant{}) noexcept
 {
     return font_book::global().find_font(family_name, variant);
 }
@@ -438,7 +438,7 @@ hi_export [[nodiscard]] inline font const *find_font(std::string const& family_n
  * @param grapheme The Unicode grapheme to find in the font.
  * @return A list of glyphs which matched the grapheme.
  */
-hi_export [[nodiscard]] inline auto find_glyph(font const& font, grapheme grapheme) noexcept
+hi_export [[nodiscard]] hi_inline auto find_glyph(font const& font, grapheme grapheme) noexcept
 {
     return font_book::global().find_glyph(font, grapheme);
 }
@@ -451,19 +451,19 @@ hi_export [[nodiscard]] inline auto find_glyph(font const& font, grapheme graphe
  * @param grapheme The Unicode grapheme to find in the font.
  * @return A list of glyphs which matched the grapheme.
  */
-hi_export [[nodiscard]] inline auto find_glyph(font const& font, char32_t code_point) noexcept
+hi_export [[nodiscard]] hi_inline auto find_glyph(font const& font, char32_t code_point) noexcept
 {
     return font_book::global().find_glyph(font, code_point);
 }
 
-hi_export [[nodiscard]] inline auto find_glyph(elusive_icon rhs) noexcept
+hi_export [[nodiscard]] hi_inline auto find_glyph(elusive_icon rhs) noexcept
 {
     hilet *font = find_font("elusiveicons", font_variant{font_weight::medium, font_style::normal});
     hi_assert_not_null(font, "Could not find Elusive icon font");
     return find_glyph(*font, std::to_underlying(rhs));
 }
 
-hi_export [[nodiscard]] inline auto find_glyph(hikogui_icon rhs) noexcept
+hi_export [[nodiscard]] hi_inline auto find_glyph(hikogui_icon rhs) noexcept
 {
     hilet *font = find_font("Hikogui Icons", font_variant{font_weight::regular, font_style::normal});
     hi_assert_not_null(font, "Could not find HikoGUI icon font");

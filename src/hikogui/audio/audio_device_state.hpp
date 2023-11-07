@@ -11,7 +11,7 @@
 
 hi_export_module(hikogui.audio.audio_device_state);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export enum class audio_device_state { uninitialized, active, disabled, not_present, unplugged };
 
@@ -32,10 +32,11 @@ hi_export [[nodiscard]] constexpr std::string_view to_string(audio_device_state 
 
 }} // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::audio_device_state, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::audio_device_state, char> : std::formatter<std::string_view, char> {
     auto format(hi::audio_device_state const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::audio_device_state_metadata[t], fc);
+        return std::formatter<std::string_view, char>::format(hi::audio_device_state_metadata[t], fc);
     }
 };

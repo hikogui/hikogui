@@ -6,10 +6,12 @@
 
 #include "../macros.hpp"
 #include "audio_direction.hpp"
+#include <cstddef>
+#include <string>
 
 hi_export_module(hikogui.audio.audio_channel);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class audio_channel {
 public:

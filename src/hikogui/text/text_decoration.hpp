@@ -10,9 +10,10 @@
 #include <string>
 #include <ostream>
 
+hi_export_module(hikogui.text.text_decoration);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Describes how a grapheme should be underlined when rendering the text.
  * It is carried with the grapheme and glyphs, so that the text render engine
@@ -36,12 +37,12 @@ constexpr auto text_decoration_metadata = enum_metadata{
 };
 // clang-format on
 
-[[nodiscard]] inline std::string_view to_string(text_decoration const &rhs) noexcept
+[[nodiscard]] hi_inline std::string_view to_string(text_decoration const &rhs) noexcept
 {
     return text_decoration_metadata[rhs];
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, text_decoration const &rhs)
+hi_inline std::ostream &operator<<(std::ostream &lhs, text_decoration const &rhs)
 {
     return lhs << text_decoration_metadata[rhs];
 }

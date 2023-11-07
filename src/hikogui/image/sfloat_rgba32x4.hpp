@@ -8,12 +8,18 @@
 
 #pragma once
 
-#include "../SIMD/module.hpp"
-#include "../geometry/module.hpp"
+#include "../SIMD/SIMD.hpp"
+#include "../geometry/geometry.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <algorithm>
 #include <array>
+#include <bit>
+#include <cstdint>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.image.sfloat_rgba32x4);
+
+hi_export namespace hi::inline v1 {
 
 /** 4 x 4 x float32 pixel format.
  *

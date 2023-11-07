@@ -4,13 +4,16 @@
 
 #pragma once
 
-#include "../container/module.hpp"
+#include "../container/container.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <bit>
 #include <array>
 #include <cstdint>
 #include <span>
+#include <string_view>
+#include <exception>
+#include <string>
 
 hi_export_module(hikogui.codec.SHA2);
 
@@ -19,7 +22,7 @@ hi_warning_push();
 // False positive reported: https://developercommunity.visualstudio.com/t/C26429-false-positive-on-reference-to-po/10262151
 hi_warning_ignore_msvc(26429);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export template<typename T, std::size_t Bits>
 class SHA2 {
