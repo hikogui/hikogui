@@ -7,7 +7,7 @@
 
 hi_export_module(hikogui.file.access_mode);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The mode in which way to open a file.
  * @ingroup file

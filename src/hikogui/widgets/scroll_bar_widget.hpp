@@ -10,8 +10,8 @@
 
 #include "widget.hpp"
 #include "../GUI/GUI.hpp"
-#include "../geometry/module.hpp"
-#include "../observer/module.hpp"
+#include "../geometry/geometry.hpp"
+#include "../observer/observer.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <memory>
@@ -20,9 +20,10 @@
 #include <optional>
 #include <future>
 
+hi_export_module(hikogui.widgets.scroll_bar_widget);
 
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Scroll bar widget
  * This widget is used in a pair of a vertical and horizontal scrollbar as

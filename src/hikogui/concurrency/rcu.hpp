@@ -13,9 +13,10 @@
 #include <mutex>
 #include <memory>
 
+hi_export_module(hikogui.concurrency.rcu);
 
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Read-copy-update.
  *

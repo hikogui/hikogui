@@ -6,7 +6,12 @@
 
 #include "function_timer.hpp"
 #include "socket_event.hpp"
-#include "../container/module.hpp"
+#include "notifier.hpp"
+#include "../container/container.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../concurrency/unfair_mutex.hpp" // XXX #616
+#include "../concurrency/thread.hpp" // XXX #616
+#include "../time/time.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <functional>
@@ -14,10 +19,12 @@
 #include <concepts>
 #include <vector>
 #include <memory>
+#include <chrono>
+#include <thread>
 
-hi_export_module(hikogui.dispatch.loop : intf);
+hi_export_module(hikogui.dispatch : loop_intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class loop {
 public:
@@ -389,12 +396,12 @@ private:
 };
 
 namespace detail {
-inline thread_local std::unique_ptr<loop> thread_local_loop;
+hi_inline thread_local std::unique_ptr<loop> thread_local_loop;
 }
 
 /** Get or create the thread-local loop.
  */
-[[nodiscard]] hi_no_inline inline loop& loop::local() noexcept
+[[nodiscard]] hi_no_inline hi_inline loop& loop::local() noexcept
 {
     if (not detail::thread_local_loop) {
         detail::thread_local_loop = std::make_unique<loop>();

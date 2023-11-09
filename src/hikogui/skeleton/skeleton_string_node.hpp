@@ -7,7 +7,9 @@
 #include "skeleton_node.hpp"
 #include "../macros.hpp"
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.skeleton : string_node);
+
+hi_export namespace hi::inline v1 {
 
 struct skeleton_string_node final : skeleton_node {
     std::string text;

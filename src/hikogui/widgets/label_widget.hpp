@@ -11,17 +11,21 @@
 #include "widget.hpp"
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
 #include "../l10n/l10n.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.label_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept label_widget_attribute =
@@ -49,17 +53,17 @@ public:
     observer<label> label;
 
     /** How the label and icon are aligned. Different layouts:
-     *  - `alignment::top_left`: icon and text are inline with each other, with
+     *  - `alignment::top_left`: icon and text are hi_inline with each other, with
      *    the icon in the top-left corner.
-     *  - `alignment::top_right`: icon and text are inline with each other, with
+     *  - `alignment::top_right`: icon and text are hi_inline with each other, with
      *    the icon in the top-right corner.
-     *  - `alignment::middle_left`: icon and text are inline with each other, with
+     *  - `alignment::middle_left`: icon and text are hi_inline with each other, with
      *    the icon in the middle-left.
-     *  - `alignment::middle_right`: icon and text are inline with each other, with
+     *  - `alignment::middle_right`: icon and text are hi_inline with each other, with
      *    the icon in the middle-right.
-     *  - `alignment::bottom_left`: icon and text are inline with each other, with
+     *  - `alignment::bottom_left`: icon and text are hi_inline with each other, with
      *    the icon in the bottom-left.
-     *  - `alignment::bottom_right`: icon and text are inline with each other, with
+     *  - `alignment::bottom_right`: icon and text are hi_inline with each other, with
      *    the icon in the bottom-right.
      *  - `alignment::top_center`: Larger icon above the text, both center aligned.
      *  - `alignment::bottom_center`: Larger icon below the text, both center aligned.

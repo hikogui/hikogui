@@ -8,11 +8,15 @@
 
 #pragma once
 
-#include "../SIMD/module.hpp"
+#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+#include <bit>
+#include <cstdint>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.image.unorm_a2bgr10_pack);
+
+hi_export namespace hi::inline v1 {
 
 //[[nodiscard]] constexpr uint32_t make_unorm_a2bgr10_pack_value(f32x4 const &rhs) noexcept
 //{

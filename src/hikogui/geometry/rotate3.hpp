@@ -6,8 +6,13 @@
 
 #include "vector3.hpp"
 #include "../macros.hpp"
+#include <cmath>
+#include <exception>
+#include <compare>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.geometry : rotate3);
+
+hi_export namespace hi { inline namespace v1 {
 
 class rotate3 {
 public:

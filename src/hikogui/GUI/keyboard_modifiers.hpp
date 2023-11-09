@@ -5,13 +5,19 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <cstdint>
+#include <utility>
+#include <format>
+#include <string_view>
+#include <string>
+#include <ostream>
+#include <functional>
 
+hi_export_module(hikogui.GUI : keyboard_modifiers);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Key modification keys pressed at the same time as another key.
  *
@@ -51,7 +57,7 @@ bool operator>=(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) = 
 /** Parse a key-binding modifier name.
  * @param s The modifier name, with or without the canonical trailing '+'
  */
-inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
+hi_inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
 {
     if (ssize(s) == 0) {
         throw parse_error("Empty keyboard modifier");
@@ -73,7 +79,7 @@ inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
     }
 }
 
-inline std::string to_string(keyboard_modifiers modifiers)
+hi_inline std::string to_string(keyboard_modifiers modifiers)
 {
     auto r = std::string{};
 
@@ -93,7 +99,7 @@ inline std::string to_string(keyboard_modifiers modifiers)
     return r;
 }
 
-inline std::ostream& operator<<(std::ostream& lhs, keyboard_modifiers const& rhs)
+hi_inline std::ostream& operator<<(std::ostream& lhs, keyboard_modifiers const& rhs)
 {
     return lhs << to_string(rhs);
 }
@@ -108,10 +114,11 @@ struct std::hash<hi::keyboard_modifiers> {
     }
 };
 
-template<typename CharT>
-struct std::formatter<hi::keyboard_modifiers, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::keyboard_modifiers, char> : std::formatter<std::string_view, char> {
     auto format(hi::keyboard_modifiers const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::to_string(t), fc);
+        return std::formatter<std::string_view, char>::format(hi::to_string(t), fc);
     }
 };

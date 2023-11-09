@@ -6,15 +6,16 @@
 
 #include "audio_device.hpp"
 #include "../utility/utility.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <memory>
 #include <concepts>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.audio_system);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /*! An system of audio devices.
  * Systems are for example: Window Audio Session API (WASAPI), ASIO, Apple CoreAudio
@@ -61,7 +62,7 @@ protected:
 };
 
 namespace detail {
-inline std::unique_ptr<audio_system> audio_system_global;
+hi_inline std::unique_ptr<audio_system> audio_system_global;
 }
 
 template<typename Context>
@@ -73,7 +74,7 @@ concept audio_device_filter = std::same_as<Context, audio_device_state> or std::
 }
 
 template<audio_device_filter FirstFilter, audio_device_filter... Filters>
-[[nodiscard]] inline bool match_audio_device(audio_device const &device, FirstFilter &&first_filter, Filters &&...filters) noexcept
+[[nodiscard]] hi_inline bool match_audio_device(audio_device const &device, FirstFilter &&first_filter, Filters &&...filters) noexcept
 {
     if constexpr (std::same_as<FirstFilter, audio_device_state>) {
         if (device.state() != first_filter) {

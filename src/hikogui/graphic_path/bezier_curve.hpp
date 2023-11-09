@@ -4,8 +4,10 @@
 
 #pragma once
 
-#include "../image/module.hpp"
-#include "../geometry/module.hpp"
+#include "../image/image.hpp"
+#include "../geometry/geometry.hpp"
+#include "../container/container.hpp"
+#include "../numeric/numeric.hpp"
 #include "../utility/utility.hpp"
 #include "bezier.hpp"
 #include "bezier_point.hpp"
@@ -13,10 +15,13 @@
 #include <tuple>
 #include <limits>
 #include <algorithm>
+#include <vector>
+#include <cmath>
+#include <span>
 
 hi_export_module(hikogui.graphic_path.bezier_curve);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /*! Bezier Curve
  * A linear, quadratic or cubic bezier curve.

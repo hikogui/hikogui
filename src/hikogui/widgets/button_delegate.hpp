@@ -8,12 +8,18 @@
 
 #pragma once
 
-#include "../observer/module.hpp"
+#include "../observer/observer.hpp"
+#include "../utility/utility.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../dispatch/dispatch.hpp"
+#include "../GUI/GUI.hpp"
 #include "../macros.hpp"
 #include <type_traits>
 #include <memory>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.button_delegate);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** The state of a button.
  * @ingroup widget_delegates

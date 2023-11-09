@@ -12,14 +12,18 @@
 #include "grid_widget.hpp"
 #include "../audio/audio.hpp"
 #include "../l10n/l10n.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.audio_device_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** Audio device configuration widget.
  * @ingroup widgets

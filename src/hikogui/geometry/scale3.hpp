@@ -8,8 +8,13 @@
 #include "vector3.hpp"
 #include "extent3.hpp"
 #include "../macros.hpp"
+#include <algorithm>
+#include <exception>
+#include <compare>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.geometry : scale3);
+
+hi_export namespace hi { inline namespace v1 {
 
 class scale3 {
 public:

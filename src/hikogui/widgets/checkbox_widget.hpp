@@ -15,7 +15,9 @@
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.checkbox_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept checkbox_widget_attribute =

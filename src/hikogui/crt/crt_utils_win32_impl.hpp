@@ -12,9 +12,21 @@
 #include "../console/console.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
-#include "../char_maps/module.hpp"
-#include "../time/module.hpp"
+#include "../char_maps/char_maps.hpp"
+#include "../time/time.hpp"
 #include "../macros.hpp"
+#include <cstddef>
+#include <memory>
+#include <cstring>
+#include <string>
+#include <cstdio>
+#include <exception>
+#include <compare>
+#include <string_view>
+#include <format>
+#include <type_traits>
+#include <chrono>
+
 
 hi_export_module(hikogui.crt.crt_utils : impl);
 
@@ -23,12 +35,12 @@ hi_warning_push();
 // For compatibility reasons we work with raw pointers here.
 hi_warning_ignore_msvc(26400);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-hi_export [[nodiscard]] inline char *make_cstr(char const *c_str, std::size_t size = -1) noexcept
+hi_export [[nodiscard]] hi_inline char *make_cstr(char const *c_str, std::size_t size = -1) noexcept
 {
     if (size == -1) {
         size = std::strlen(c_str);
@@ -42,12 +54,12 @@ hi_export [[nodiscard]] inline char *make_cstr(char const *c_str, std::size_t si
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-hi_export [[nodiscard]] inline char *make_cstr(std::string const& s) noexcept
+hi_export [[nodiscard]] hi_inline char *make_cstr(std::string const& s) noexcept
 {
     return make_cstr(s.c_str(), s.size());
 }
 
-hi_export inline void console_start() noexcept
+hi_export hi_inline void console_start() noexcept
 {
     auto out_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -80,7 +92,7 @@ hi_export inline void console_start() noexcept
     }
 }
 
-hi_export inline std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
+hi_export hi_inline std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
     // Switch out the terminate handler with one that can print an error message.
     old_terminate_handler = std::set_terminate(terminate_handler);
@@ -129,7 +141,7 @@ hi_export inline std::pair<int, char **> crt_start(int, char **, void *instance,
     return {argc, argv};
 }
 
-inline int crt_finish(int argc, char **argv, int exit_code)
+hi_inline int crt_finish(int argc, char **argv, int exit_code)
 {
     hi_assert_not_null(argv);
 

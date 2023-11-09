@@ -9,11 +9,16 @@
 #pragma once
 
 #include "sfloat_rgba16.hpp"
-#include "../color/module.hpp"
+#include "../color/color.hpp"
 #include "../macros.hpp"
 #include <algorithm>
+#include <array>
+#include <bit>
+#include <cstdint>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.image.srgb_abgr8_pack);
+
+hi_export namespace hi::inline v1 {
 
 /** 4 x uint8_t pixel packed format with sRGB transfer function.
  *
@@ -73,7 +78,7 @@ public:
     }
 };
 
-//inline void fill(pixmap<srgb_abgr8_pack> &dst, pixmap<sfloat_rgba16> const &src) noexcept
+//hi_inline void fill(pixmap<srgb_abgr8_pack> &dst, pixmap<sfloat_rgba16> const &src) noexcept
 //{
 //    hi_assert(dst.width >= src.width);
 //    hi_assert(dst.height >= src.height);

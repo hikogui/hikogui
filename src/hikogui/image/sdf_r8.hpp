@@ -11,15 +11,17 @@
 #include "snorm_r8.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <bit>
+#include <cstdint>
 
-
+hi_export_module(hikogui.image.sdf_r8);
 
 hi_warning_push();
 // C26434: Function '...' hides a non-virtual function '...'.
 // We need to hide those functions.
 hi_warning_ignore_msvc(26434);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** A pixel of a single channel signed distance field.
  * https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf

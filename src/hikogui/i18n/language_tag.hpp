@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <compare>
 #include "language_tag_intf.hpp" // export
 #include "language_tag_impl.hpp" // export
 

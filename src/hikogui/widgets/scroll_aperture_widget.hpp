@@ -9,9 +9,13 @@
 #pragma once
 
 #include "widget.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.scroll_aperture_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A scroll aperture widget.
  *

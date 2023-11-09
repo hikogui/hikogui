@@ -5,10 +5,36 @@
 #include "native_simd_utility.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <span>
+#include <array>
+#include <ostream>
+
+#ifdef HI_HAS_SSE
+#include <xmmintrin.h>
+#endif
+#ifdef HI_HAS_SSE2
+#include <emmintrin.h>
+#endif
+#ifdef HI_HAS_SSE3
+#include <pmmintrin.h>
+#endif
+#ifdef HI_HAS_SSSE3
+#include <tmmintrin.h>
+#endif
+#ifdef HI_HAS_SSE4_1
+#include <smmintrin.h>
+#endif
+#ifdef HI_HAS_SSE4_2
+#include <nmmintrin.h>
+#endif
+#ifdef HI_HAS_AVX
+#include <immintrin.h>
+#endif
+
+hi_export_module(hikogui.SIMD : native_f16x8_sse2);
 
 
-
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 #ifdef HI_HAS_SSE2

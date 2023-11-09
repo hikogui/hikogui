@@ -34,21 +34,25 @@
  *
  */
 
+#pragma once
+
 #include "../win32_headers.hpp"
 
 #include "loop_intf.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
 #include <vector>
 #include <utility>
 #include <stop_token>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 
-hi_export_module(hikogui.dispatch.loop : impl);
+hi_export_module(hikogui.dispatch : loop_impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 class loop_impl_win32 final : public loop::impl_type {
 public:
@@ -634,6 +638,6 @@ private:
     }
 };
 
-inline loop::loop() : _pimpl(std::make_unique<loop_impl_win32>()) {}
+hi_inline loop::loop() : _pimpl(std::make_unique<loop_impl_win32>()) {}
 
 } // namespace hi::inline v1

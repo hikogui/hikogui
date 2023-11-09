@@ -8,6 +8,8 @@
 #include "../macros.hpp"
 
 #include <type_traits>
+#include <limits>
+#include <exception>
 #include <cmath>
 
 #if HI_PROCESSOR == HI_CPU_X86_64
@@ -19,14 +21,16 @@
 #pragma intrinsic(_mul128)
 #endif
 
+hi_export_module(hikogui.numeric.int_overflow);
+
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
 hi_warning_ignore_msvc(4702);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename T, typename U>
-inline bool convert_overflow(T x, U *r)
+hi_inline bool convert_overflow(T x, U *r)
 {
     static_assert(std::is_integral_v<U>, "convert_overflow() requires integral return type.");
     static_assert(
@@ -43,7 +47,7 @@ inline bool convert_overflow(T x, U *r)
 }
 
 template<typename T>
-inline bool add_overflow(T lhs, T rhs, T *r)
+hi_inline bool add_overflow(T lhs, T rhs, T *r)
 {
     static_assert(std::is_integral_v<T>, "add_overflow() requires integral arguments.");
 
@@ -68,7 +72,7 @@ inline bool add_overflow(T lhs, T rhs, T *r)
 }
 
 template<typename T>
-inline bool sub_overflow(T lhs, T rhs, T *r)
+hi_inline bool sub_overflow(T lhs, T rhs, T *r)
 {
     static_assert(std::is_integral_v<T>, "sub_overflow() requires integral arguments.");
 
@@ -96,7 +100,7 @@ inline bool sub_overflow(T lhs, T rhs, T *r)
  * @return true when the multiplication overflowed.
  */
 template<typename T>
-inline bool mul_overflow(T lhs, T rhs, T *r) noexcept
+hi_inline bool mul_overflow(T lhs, T rhs, T *r) noexcept
 {
     static_assert(std::is_integral_v<T>, "mul_overflow() requires integral arguments.");
 

@@ -7,8 +7,13 @@
 #include "../utility/utility.hpp"
 #include "interval.hpp"
 #include "../macros.hpp"
+#include <type_traits>
+#include <compare>
+#include <stdexcept>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.numeric.bound_integer);
+
+hi_export namespace hi::inline v1 {
 
 constexpr auto bounds_test = interval<long long>{1, 5};
 

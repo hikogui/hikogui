@@ -7,7 +7,7 @@
 #include "../file/file.hpp"
 #include "../parser/parser.hpp"
 #include "../utility/utility.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "datum.hpp"
 #include "indent.hpp"
 #include "../macros.hpp"
@@ -18,7 +18,7 @@
 
 hi_export_module(hikogui.codec.JSON);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 namespace detail {
 
 template<std::input_iterator It, std::sentinel_for<It> ItEnd>
@@ -234,7 +234,7 @@ hi_export [[nodiscard]] constexpr datum parse_JSON(char const *text, std::string
  * @param path A path pointing to the file to parse.
  * @return A datum representing the parsed object.
  */
-hi_export [[nodiscard]] inline datum parse_JSON(std::filesystem::path const& path)
+hi_export [[nodiscard]] hi_inline datum parse_JSON(std::filesystem::path const& path)
 {
     return parse_JSON(as_string_view(file_view(path)), path.string());
 }

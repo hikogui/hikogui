@@ -10,13 +10,16 @@
 #include "../metadata/metadata.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
+#include "../coroutine/coroutine.hpp"
+#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
 #include <filesystem>
 #include <string>
+#include <coroutine>
 
 hi_export_module(hikogui.path.path_location : impl);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Convenience function for SHGetKnownFolderPath().
  *  Retrieves a full path of a known folder identified by the folder's KNOWNFOLDERID.
@@ -25,7 +28,7 @@ namespace hi::inline v1 {
  * @param KNOWNFOLDERID folder_id.
  * @return The path of the folder.
  */
-hi_export [[nodiscard]] inline std::filesystem::path get_path_by_id(const KNOWNFOLDERID& folder_id) noexcept
+hi_export [[nodiscard]] hi_inline std::filesystem::path get_path_by_id(const KNOWNFOLDERID& folder_id) noexcept
 {
     PWSTR wpath = nullptr;
     if (SHGetKnownFolderPath(folder_id, 0, nullptr, &wpath) != S_OK) {
@@ -38,7 +41,7 @@ hi_export [[nodiscard]] inline std::filesystem::path get_path_by_id(const KNOWNF
     return std::filesystem::path{wpath} / "";
 }
 
-hi_export [[nodiscard]] inline std::filesystem::path get_module_path(HMODULE module_handle) noexcept
+hi_export [[nodiscard]] hi_inline std::filesystem::path get_module_path(HMODULE module_handle) noexcept
 {
     std::wstring module_path;
     auto buffer_size = MAX_PATH; // initial default value = 256
@@ -58,12 +61,12 @@ hi_export [[nodiscard]] inline std::filesystem::path get_module_path(HMODULE mod
     hi_no_default("Could not get module path. It exceeds the buffer length of 32768 chars.");
 }
 
-hi_export [[nodiscard]] inline std::filesystem::path executable_file() noexcept
+hi_export [[nodiscard]] hi_inline std::filesystem::path executable_file() noexcept
 {
     return get_module_path(nullptr);
 }
 
-hi_export [[nodiscard]] inline std::filesystem::path data_dir() noexcept
+hi_export [[nodiscard]] hi_inline std::filesystem::path data_dir() noexcept
 {
     // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
     // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
@@ -71,19 +74,19 @@ hi_export [[nodiscard]] inline std::filesystem::path data_dir() noexcept
     return local_app_data / get_application_vendor() / get_application_name() / "";
 }
 
-hi_export [[nodiscard]] inline std::filesystem::path log_dir() noexcept
+hi_export [[nodiscard]] hi_inline std::filesystem::path log_dir() noexcept
 {
     // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\Log\"
     return data_dir() / "Log" / "";
 }
 
-hi_export [[nodiscard]] inline std::filesystem::path preferences_file() noexcept
+hi_export [[nodiscard]] hi_inline std::filesystem::path preferences_file() noexcept
 {
     // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\preferences.json"
     return data_dir() / "preferences.json";
 }
 
-hi_export [[nodiscard]] inline generator<std::filesystem::path> resource_dirs() noexcept
+hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> resource_dirs() noexcept
 {
     if (auto source_path = source_dir()) {
             // Fallback when the application is executed from its build directory.
@@ -104,12 +107,12 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> resource_dirs() 
         }
 }
 
-hi_export [[nodiscard]] inline generator<std::filesystem::path> system_font_dirs() noexcept
+hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> system_font_dirs() noexcept
 {
     co_yield get_path_by_id(FOLDERID_Fonts);
 }
 
-hi_export [[nodiscard]] inline generator<std::filesystem::path> font_dirs() noexcept
+hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> font_dirs() noexcept
 {
     for (hilet& path : resource_dirs()) {
         co_yield path;
@@ -119,7 +122,7 @@ hi_export [[nodiscard]] inline generator<std::filesystem::path> font_dirs() noex
     }
 }
 
-hi_export [[nodiscard]] inline generator<std::filesystem::path> theme_dirs() noexcept
+hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> theme_dirs() noexcept
 {
     for (hilet& path : resource_dirs()) {
         co_yield path;

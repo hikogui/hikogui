@@ -11,7 +11,9 @@
 #include "widget.hpp"
 #include "../macros.hpp"
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.spacer_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** This GUI widget is used as a spacer between other widget for layout purposes.
  * @ingroup widgets

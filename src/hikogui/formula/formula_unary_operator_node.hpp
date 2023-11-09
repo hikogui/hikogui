@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.formula.formula_unary_operator_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_unary_operator_node : formula_node {
     std::unique_ptr<formula_node> rhs;

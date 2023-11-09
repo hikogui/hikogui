@@ -5,12 +5,13 @@
 
 #pragma once
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 
 hi_export_module(hikogui.font.glyph_atlas_info);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 hi_export class glyph_atlas_info {
 public:

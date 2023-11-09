@@ -15,7 +15,7 @@
 
 hi_export_module(hikogui.concurrency.unfair_mutex : intf);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** An unfair mutex
  * This is a fast implementation of a mutex which does not fairly arbitrate

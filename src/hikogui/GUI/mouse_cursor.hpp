@@ -4,7 +4,10 @@
 #pragma once
 
 #include "../macros.hpp"
-namespace hi::inline v1 {
+
+hi_export_module(hikogui.GUI : mouse_cursor);
+
+hi_export namespace hi::inline v1 {
 
 enum class mouse_cursor { None, Default, TextEdit, Button };
 

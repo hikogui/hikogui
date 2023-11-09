@@ -34,7 +34,7 @@
 
 hi_export_module(hikogui.unicode);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 
 /** @defgroup unicode Unicode character database and algorithms

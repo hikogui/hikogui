@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.formula.formula_map_literal_node);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct formula_map_literal_node final : formula_node {
     formula_vector keys;

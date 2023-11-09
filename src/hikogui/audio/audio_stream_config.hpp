@@ -7,7 +7,7 @@
 
 hi_export_module(hikogui.audio.audio_stream_config);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export struct audio_stream_config {
     double sample_rate;

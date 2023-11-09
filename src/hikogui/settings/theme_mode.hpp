@@ -11,28 +11,29 @@
 
 hi_export_module(hikogui.settings.theme_mode);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class theme_mode { light, dark };
 
 constexpr auto theme_mode_metadata = enum_metadata{theme_mode::light, "light", theme_mode::dark, "dark"};
 
-[[nodiscard]] inline std::string_view to_string(theme_mode rhs) noexcept
+[[nodiscard]] hi_inline std::string_view to_string(theme_mode rhs) noexcept
 {
     return theme_mode_metadata[rhs];
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, theme_mode rhs)
+hi_inline std::ostream &operator<<(std::ostream &lhs, theme_mode rhs)
 {
     return lhs << theme_mode_metadata[rhs];
 }
 
 } // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::theme_mode, CharT> : std::formatter<std::string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::theme_mode, char> : std::formatter<std::string_view, char> {
     auto format(hi::theme_mode const &t, auto &fc) const
     {
-        return std::formatter<std::string_view, CharT>::format(hi::theme_mode_metadata[t], fc);
+        return std::formatter<std::string_view, char>::format(hi::theme_mode_metadata[t], fc);
     }
 };

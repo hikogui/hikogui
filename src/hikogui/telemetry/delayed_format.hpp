@@ -9,9 +9,9 @@
 #include <format>
 #include <tuple>
 
+hi_export_module(hikogui.telemetry.delayed_format);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 /** Delayed formatting.
  * This class will capture all the arguments so that it may be passed

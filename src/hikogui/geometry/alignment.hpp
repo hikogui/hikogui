@@ -11,10 +11,13 @@
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <optional>
+#include <algorithm>
+#include <exception>
+#include <compare>
 
+hi_export_module(hikogui.geometry : alignment);
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** Vertical alignment.
  * @ingroup geometry

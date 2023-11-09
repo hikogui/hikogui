@@ -94,7 +94,7 @@ namespace std {
 // Due to a bug in clang it will emit a undefined symbol to _Literal_zero_is_expected()
 // Which is only called from a consteval function (which should never emit code, ever).
 #if HI_COMPILER == HI_CC_CLANG && HI_STD_LIBRARY == HI_STL_MS
-inline void _Literal_zero_is_expected(void)
+hi_inline void _Literal_zero_is_expected(void)
 {
     std::terminate();
 }

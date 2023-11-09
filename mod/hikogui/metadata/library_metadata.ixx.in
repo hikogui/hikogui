@@ -1,0 +1,66 @@
+// Copyright Take Vos 2020-2023.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+module;
+#include "../macros.hpp"
+
+#include <atomic>
+#include <filesystem>
+
+export module hikogui_metadata_library_metadata;
+import hikogui_metadata_semantic_version;
+import hikogui_utility;
+
+export namespace hi { inline namespace v1 {
+
+[[nodiscard]] constexpr std::string get_library_name() noexcept
+{
+    return "@HI_LIB_DISPLAY_NAME@";
+}
+
+[[nodiscard]] constexpr std::string get_library_slug() noexcept
+{
+    return "@HI_LIB_NAME@";
+}
+
+[[nodiscard]] constexpr std::string get_library_vendor_name() noexcept
+{
+    return "@HI_LIB_VENDOR@";
+}
+
+[[nodiscard]] constexpr semantic_version get_library_version() noexcept
+{
+    return semantic_version{@PROJECT_VERSION_MAJOR@, @PROJECT_VERSION_MINOR@, @PROJECT_VERSION_PATCH@};
+}
+
+[[nodiscard]] constexpr std::string get_library_license() noexcept
+{
+    return "@HI_LIB_LICENSE@";
+}
+
+[[nodiscard]] constexpr std::string get_library_url() noexcept
+{
+    return "@HI_LIB_HOMEPAGE@";
+}
+
+[[nodiscard]] constexpr std::string get_library_description() noexcept
+{
+    return "@HI_LIB_DESC@";
+}
+
+/** The full path where HikoGUI source code is located.
+ */
+[[nodiscard]] inline std::filesystem::path library_source_dir() noexcept
+{
+    return std::filesystem::canonical(std::filesystem::path{"@LIBRARY_SOURCE_DIR@"});
+}
+
+/** The full path where HikoGUI build directory is located.
+ */
+[[nodiscard]] inline std::filesystem::path library_build_dir() noexcept
+{
+    return std::filesystem::canonical(std::filesystem::path{"@LIBRARY_BUILD_DIR@"});
+}
+
+}} // namespace hi::v1

@@ -11,7 +11,9 @@
 #include <iostream>
 #include <string_view>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.parser.parse_location);
+
+hi_export namespace hi::inline v1 {
 
 /*! Location inside a configuration file.
  */
@@ -173,10 +175,11 @@ public:
 
 } // namespace hi::inline v1
 
-template<typename CharT>
-struct std::formatter<hi::parse_location, CharT> : std::formatter<string_view, CharT> {
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::parse_location, char> : std::formatter<string_view, char> {
     auto format(hi::parse_location t, auto& fc) const
     {
-        return std::formatter<string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<string_view, char>::format(to_string(t), fc);
     }
 };

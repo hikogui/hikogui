@@ -10,10 +10,12 @@
 
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <utility>
 #include <atomic>
 #include <type_traits>
 #include <bit>
 
+hi_export_module(hikogui.concurrency.global_state);
 
 
 hi_warning_push();
@@ -21,7 +23,7 @@ hi_warning_push();
 // Need it for allow the use of enum in an atomic operation.
 hi_warning_ignore_msvc(26490);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The flag-type used for global state.
  *
@@ -185,7 +187,7 @@ struct std::atomic<hi::global_state_type> {
     }
 };
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The global state of the hikogui framework.
  *
@@ -198,7 +200,7 @@ namespace hi { inline namespace v1 {
  *
  * @ingroup concurrency
  */
-inline std::atomic<global_state_type> global_state = global_state_type::log_level_default;
+hi_inline std::atomic<global_state_type> global_state = global_state_type::log_level_default;
 
 /** Check if the HikoGUI system is running.
  *
@@ -206,7 +208,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
  *
  * @ingroup concurrency
  */
-[[nodiscard]] inline bool is_system_running() noexcept
+[[nodiscard]] hi_inline bool is_system_running() noexcept
 {
     return is_system_running(global_state.load(std::memory_order::relaxed));
 }
@@ -217,7 +219,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
  *
  * @ingroup concurrency
  */
-[[nodiscard]] inline bool is_system_shutting_down() noexcept
+[[nodiscard]] hi_inline bool is_system_shutting_down() noexcept
 {
     return is_system_shutting_down(global_state.load(std::memory_order::relaxed));
 }
@@ -227,7 +229,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
  * @ingroup concurrency
  * @param log_level A mask of which log levels should be logged.
  */
-inline void set_log_level(global_state_type log_level) noexcept
+hi_inline void set_log_level(global_state_type log_level) noexcept
 {
     // Only the log_* bits should be set.
     hi_assert(not to_bool(log_level & ~global_state_type::log_mask));
@@ -244,7 +246,7 @@ inline void set_log_level(global_state_type log_level) noexcept
  * @param order Memory order to use on the global_state variable.
  * @return True if the subsystem was enabled.
  */
-inline bool global_state_disable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
+hi_inline bool global_state_disable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
 {
     hi_assert(std::popcount(std::to_underlying(subsystem)) == 1);
     return to_bool(global_state.fetch_and(~subsystem, order) & subsystem);
@@ -257,7 +259,7 @@ inline bool global_state_disable(global_state_type subsystem, std::memory_order 
  * @param order Memory order to use on the global_state variable.
  * @return True if the subsystem was enabled.
  */
-inline bool global_state_enable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
+hi_inline bool global_state_enable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
 {
     hi_assert(std::popcount(std::to_underlying(subsystem)) == 1);
     return to_bool(global_state.fetch_or(subsystem, order) & subsystem);

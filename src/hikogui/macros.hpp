@@ -306,16 +306,22 @@
 #define msvc_pragma(...)
 #endif
 
-/** After module translation this is replaced with "export module x".
+/** After module translation "hi_export_module(x)" is replaced with "export module x".
  */
 #ifndef hi_export_module
 #define hi_export_module(x)
 #endif
 
-/** After module translation this is replace with "export".
+/** After module translation "hi_export " is replace with "export ".
  */
 #ifndef hi_export
 #define hi_export
+#endif
+
+/** After module translation "hi_inline " is replaced with "".
+ */
+#ifndef hi_inline
+#define hi_inline inline
 #endif
 
 /** Invariant should be the default for variables.

@@ -7,7 +7,7 @@
 #include "token.hpp"
 #include "../utility/utility.hpp"
 #include "../unicode/unicode.hpp"
-#include "../char_maps/module.hpp"
+#include "../char_maps/char_maps.hpp"
 #include <ranges>
 #include <iterator>
 #include <cstdint>
@@ -16,7 +16,9 @@
 #include <format>
 #include <ostream>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.parser.lexer);
+
+hi_export namespace hi { inline namespace v1 {
 
 struct lexer_config {
     /** A zero starts in octal number.

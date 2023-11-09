@@ -2,18 +2,21 @@
 
 #pragma once
 
-#include "../utility/module.hpp"
+#include "../utility/utility.hpp"
 #include <cstdint>
 #include <optional>
+#include <bit>
+#include <string_view>
+#include <string>
 
 // Windows.h defines small as a macro.
 #ifdef small
 #undef small
 #endif
 
-import hikogui_utility;
+hi_export_module(hikogui.unicode.ucd_compositions);
 
-namespace hi {
+hi_export namespace hi {
 inline namespace v1 {
 namespace detail {
 
@@ -73,42 +76,42 @@ $end
     constexpr auto max_code_point_hi = detail::ucd_compositions_indices_size - 1;
 
     auto code_point_hi = cp1 / detail::ucd_compositions_chunk_size;
-    hilet code_point_lo = cp1 % detail::ucd_compositions_chunk_size;
+    auto const code_point_lo = cp1 % detail::ucd_compositions_chunk_size;
 
     if (code_point_hi > max_code_point_hi) {
         code_point_hi = max_code_point_hi;
     }
 
     // The index in the chunk-index table based on the upper-bits of the code-point.
-    hilet chunk_index = load_bits_be<detail::ucd_compositions_index_width>(
+    auto const chunk_index = load_bits_be<detail::ucd_compositions_index_width>(
         detail::ucd_compositions_indices_bytes,
         code_point_hi * detail::ucd_compositions_index_width);
 
     // Add back in the lower-bits of the code-point.
-    hilet index = (chunk_index * detail::ucd_compositions_chunk_size) + code_point_lo;
+    auto const index = (chunk_index * detail::ucd_compositions_chunk_size) + code_point_lo;
 
     // Get the composition value from the composition table by index.
-    hilet value = load_bits_be<detail::ucd_composition_width>(
+    auto const value = load_bits_be<detail::ucd_composition_width>(
         detail::ucd_compositions_bytes, index * detail::ucd_composition_width);
 
     constexpr auto cp_size_width = $cp_size_width$;
     constexpr auto cp_size_mask = (1_uz << cp_size_width) - 1;
-    hilet cp_size = value & cp_size_mask;
+    auto const cp_size = value & cp_size_mask;
     if (cp_size == 0) {
         return std::nullopt;
     }
 
-    hilet cp_index = value >> cp_size_width;
+    auto const cp_index = value >> cp_size_width;
 
     auto offset = cp_index * 2_uz * detail::ucd_compositions_code_point_width;
     for (auto i = 0_uz; i != cp_size; ++i, offset += detail::ucd_compositions_code_point_width) {
-        hilet second_cp = load_bits_be<detail::ucd_compositions_code_point_width>(
+        auto const second_cp = load_bits_be<detail::ucd_compositions_code_point_width>(
             detail::ucd_composition_code_points_bytes, offset);
 
         if (second_cp == cp2) {
             offset += cp_size * detail::ucd_compositions_code_point_width;
 
-            hilet result_cp = load_bits_be<detail::ucd_compositions_code_point_width>(
+            auto const result_cp = load_bits_be<detail::ucd_compositions_code_point_width>(
                 detail::ucd_composition_code_points_bytes, offset);
 
             return char_cast<char32_t>(result_cp);

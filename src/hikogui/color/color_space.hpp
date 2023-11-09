@@ -8,10 +8,13 @@
  * @ingroup color
  */
 
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
+#include <compare>
 
-namespace hi {
+hi_export_module(hikogui.color.color_space);
+
+hi_export namespace hi {
 inline namespace v1 {
 
 /** Create a color space conversion matrix.

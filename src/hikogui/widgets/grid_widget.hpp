@@ -10,10 +10,14 @@
 
 #include "widget.hpp"
 #include "../layout/layout.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.grid_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A GUI widget that lays out child-widgets in a grid with variable sized cells.
  * @ingroup widgets

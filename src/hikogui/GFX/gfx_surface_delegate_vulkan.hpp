@@ -4,15 +4,16 @@
 
 #pragma once
 
-#include "gfx_surface_delegate_vulkan.hpp"
-#include "../geometry/module.hpp"
+#include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <vector>
 #include <cstdint>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.GFX : gfx_surface_delegate);
+
+hi_export namespace hi::inline v1 {
 
 /** A delegate for drawing on a window below the HikoGUI user interface.
  *

@@ -9,7 +9,7 @@
 
 hi_export_module(hikogui.formula.formula_arguments);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** A temporary node used during parsing.
  */

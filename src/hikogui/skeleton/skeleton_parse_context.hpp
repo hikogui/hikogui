@@ -7,7 +7,7 @@
 #include "skeleton_top_node.hpp"
 #include "skeleton_string_node.hpp"
 #include "skeleton_do_node.hpp"
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../formula/formula.hpp"
 #include "../macros.hpp"
 #include <memory>
@@ -15,7 +15,9 @@
 #include <optional>
 #include <filesystem>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.skeleton : parse_context);
+
+hi_export namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path);
 
@@ -43,7 +45,7 @@ struct skeleton_parse_context {
     skeleton_parse_context& operator=(skeleton_parse_context&& other) = delete;
     ~skeleton_parse_context() = default;
 
-    inline skeleton_parse_context(std::filesystem::path const& path, const_iterator first, const_iterator last) :
+    hi_inline skeleton_parse_context(std::filesystem::path const& path, const_iterator first, const_iterator last) :
         location(path.string()), index(first), last(last)
     {
         push<skeleton_top_node>(location);
@@ -230,7 +232,7 @@ struct skeleton_parse_context {
         }
     }
 
-    inline void include(parse_location statement_location, formula_node& expression)
+    hi_inline void include(parse_location statement_location, formula_node& expression)
     {
         auto tmp_post_process_context = formula_post_process_context();
         expression.post_process(tmp_post_process_context);

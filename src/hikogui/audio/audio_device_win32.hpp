@@ -10,16 +10,17 @@
 #include "win32_device_interface.hpp"
 #include "win32_wave_device.hpp"
 #include "audio_format_range.hpp"
-#include "../coroutine/module.hpp"
-#include "../algorithm/module.hpp"
+#include "../coroutine/coroutine.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include "../win32_headers.hpp"
 #include <algorithm>
 #include <vector>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.audio_device_win32);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /*! A class representing an audio device on the system.
  */

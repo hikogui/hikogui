@@ -12,7 +12,7 @@
 
 hi_export_module(hikogui.codec.huffman);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export template<typename T>
 class huffman_tree {

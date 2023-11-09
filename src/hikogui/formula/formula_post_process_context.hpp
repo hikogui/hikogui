@@ -17,7 +17,7 @@
 
 hi_export_module(hikogui.formula.formula_post_process_context);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
 [[nodiscard]] constexpr datum function_float(formula_evaluation_context& context, datum::vector_type const& args)
@@ -47,7 +47,7 @@ namespace detail {
     return datum{static_cast<decimal>(args[0])};
 }
 
-[[nodiscard]] inline datum function_string(formula_evaluation_context& context, datum::vector_type const& args)
+[[nodiscard]] hi_inline datum function_string(formula_evaluation_context& context, datum::vector_type const& args)
 {
     if (args.size() != 1) {
         throw operation_error(std::format("Expecting 1 argument for string() function, got {}", args.size()));
@@ -74,7 +74,7 @@ namespace detail {
     return datum{args[0].size()};
 }
 
-[[nodiscard]] inline datum function_keys(formula_evaluation_context& context, datum::vector_type const& args)
+[[nodiscard]] hi_inline datum function_keys(formula_evaluation_context& context, datum::vector_type const& args)
 {
     if (args.size() != 1) {
         throw operation_error(std::format("Expecting 1 argument for keys() function, got {}", args.size()));
@@ -83,7 +83,7 @@ namespace detail {
     return datum{args[0].keys()};
 }
 
-[[nodiscard]] inline datum function_values(formula_evaluation_context& context, datum::vector_type const& args)
+[[nodiscard]] hi_inline datum function_values(formula_evaluation_context& context, datum::vector_type const& args)
 {
     if (args.size() != 1) {
         throw operation_error(std::format("Expecting 1 argument for values() function, got {}", args.size()));
@@ -92,7 +92,7 @@ namespace detail {
     return datum{args[0].values()};
 }
 
-[[nodiscard]] inline datum function_items(formula_evaluation_context& context, datum::vector_type const& args)
+[[nodiscard]] hi_inline datum function_items(formula_evaluation_context& context, datum::vector_type const& args)
 {
     if (args.size() != 1) {
         throw operation_error(std::format("Expecting 1 argument for items() function, got {}", args.size()));
@@ -243,7 +243,7 @@ hi_export struct formula_post_process_context {
     using method_type = std::function<datum(formula_evaluation_context&, datum&, datum::vector_type const&)>;
     using method_table = std::unordered_map<std::string, method_type>;
 
-    static inline auto global_functions = function_table{
+    static hi_inline auto global_functions = function_table{
         {"float", detail::function_float},
         {"integer", detail::function_integer},
         {"decimal", detail::function_decimal},
@@ -255,7 +255,7 @@ hi_export struct formula_post_process_context {
         {"items", detail::function_items},
         {"sort", detail::function_sort}};
 
-    static inline auto global_methods = method_table{
+    static hi_inline auto global_methods = method_table{
         {"append", detail::method_append},
         {"contains", detail::method_contains},
         {"push", detail::method_append},
@@ -265,7 +265,7 @@ hi_export struct formula_post_process_context {
         {"month", detail::method_month},
         {"day", detail::method_day}};
 
-    static inline auto global_filters = filter_table{{"id", make_identifier}, {"url", detail::url_encode}};
+    static hi_inline auto global_filters = filter_table{{"id", make_identifier}, {"url", detail::url_encode}};
 
     function_table functions = {};
     function_stack super_stack = {};

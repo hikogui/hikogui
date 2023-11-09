@@ -10,16 +10,19 @@
 #pragma once
 
 #include "../utility/utility.hpp"
+#include "../coroutine/generator.hpp" // XXX #616
 #include "../i18n/i18n.hpp"
 #include "../macros.hpp"
 #include <concepts>
 #include <array>
 #include <cstdint>
 #include <cstddef>
+#include <bit>
+
+hi_export_module(hikogui.unicode.unicode_plural);
 
 
-
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 /** The plurality value of a cardinal or ordinal number.
  */

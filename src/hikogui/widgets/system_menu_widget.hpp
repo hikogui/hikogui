@@ -11,12 +11,16 @@
 #include "widget.hpp"
 #include "icon_widget.hpp"
 #include "../l10n/l10n.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
 #include <array>
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.system_menu_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** The system menu widget.
  * This widget displays an icon in the menu bar of the window and is used to call-up

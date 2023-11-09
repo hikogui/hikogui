@@ -11,9 +11,13 @@
 #include "widget.hpp"
 #include "grid_widget.hpp"
 #include "tab_delegate.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
+#include <coroutine>
 
-namespace hi { inline namespace v1 {
+hi_export_module(hikogui.widgets.tab_widget);
+
+hi_export namespace hi { inline namespace v1 {
 
 /** A graphical element that shows only one of a predefined set of mutually
  * exclusive child widgets.

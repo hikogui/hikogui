@@ -11,9 +11,9 @@
 #include <algorithm>
 #include <set>
 
+hi_export_module(hikogui.container.range_map);
 
-
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 template<typename Key, typename Value>
 class range_map {

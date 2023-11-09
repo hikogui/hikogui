@@ -4,14 +4,16 @@
 
 #pragma once
 
-#include "../algorithm/module.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../formula/formula.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string_view>
 #include <optional>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.skeleton : node);
+
+hi_export namespace hi::inline v1 {
 
 struct skeleton_node {
     using statement_vector = typename std::vector<std::unique_ptr<skeleton_node>>;

@@ -19,7 +19,7 @@ hi_export_module(hikogui.utility.time_zone);
 hi_export namespace hi { inline namespace v1 {
 namespace detail {
 
-[[nodiscard]] inline std::chrono::time_zone const *_cached_current_zone() noexcept
+[[nodiscard]] hi_inline std::chrono::time_zone const *_cached_current_zone() noexcept
 {
     try {
         return std::chrono::current_zone();
@@ -36,7 +36,7 @@ namespace detail {
  * The cached current time zone is not updated when the time zone is modified
  * on the system.
  */
-[[nodiscard]] inline std::chrono::time_zone const& cached_current_zone() noexcept
+[[nodiscard]] hi_inline std::chrono::time_zone const& cached_current_zone() noexcept
 {
     static auto *zone = detail::_cached_current_zone();
     return *zone;

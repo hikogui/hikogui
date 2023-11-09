@@ -6,13 +6,14 @@
 
 #include "audio_direction.hpp"
 #include "win32_device_interface.hpp"
-#include "../coroutine/module.hpp"
+#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <string>
+#include <coroutine>
 
 hi_export_module(hikogui.audio.win32_wave_device);
 
-namespace hi { inline namespace v1 {
+hi_export namespace hi { inline namespace v1 {
 
 hi_export class win32_wave_device {
 public:

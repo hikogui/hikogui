@@ -13,7 +13,7 @@
 
 hi_export_module(hikogui.dispatch.socket_event : intf);
 
-namespace hi::inline v1 {
+hi_export namespace hi::inline v1 {
 
 enum class socket_event : uint16_t {
     none = 0,
@@ -69,7 +69,7 @@ enum class socket_error : uint8_t {
     connection_aborted
 };
 
-constexpr static size_t socket_event_max = 10;
+constexpr size_t socket_event_max = 10;
 
 class socket_events {
 public:
