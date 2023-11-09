@@ -23,13 +23,13 @@ hi_export_module(hikogui.image.sfloat_rgba16);
 
 hi_export namespace hi::inline v1 {
 
-/** 4 x float16 pixel format.
+/** 4 x half pixel format.
  *
  * @ingroup image
  */
 class sfloat_rgba16 {
     // Red, Green, Blue, Alpha in binary16 (native endian).
-    std::array<float16, 4> v;
+    std::array<half, 4> v;
 
 public:
     constexpr sfloat_rgba16() noexcept : v() {}

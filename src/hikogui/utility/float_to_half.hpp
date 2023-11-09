@@ -3,8 +3,21 @@
 
 #pragma once
 
-namespace hi { inline namespace v1 {
+#include "cpu_id_x64.hpp"
+#include "../macros.hpp"
+#include <cstdint>
+#include <bit>
+#include <type_traits>
 
+#ifdef HI_HAS_X86
+#include <immintrin.h>
+#include <emmintrin.h>
+#include <smmintrin.h>
+#endif
+
+hi_export_module(hikogui.utility.float_to_half);
+
+hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] constexpr uint16_t float_to_half_generic(float f32) noexcept
 {
@@ -31,7 +44,7 @@ namespace hi { inline namespace v1 {
     // Add implicit leading bit.
     mantissa |= 0x0400;
 
-    // Shift mantissa when denomalizing.
+    // Shift mantissa when denormalizing.
     auto shift = 1 - exponent;
     shift = shift < 0 ? 0 : shift;
     shift = shift > 31 ? 31 : shift;
@@ -52,74 +65,87 @@ namespace hi { inline namespace v1 {
     return r;
 }
 
-[[nodiscard]] std::array<uint16_t,4> float_to_half_f16c(std::array<float,4> f32) noexcept hi_target("sse,sse2,f16c")
+#if HI_HAS_X86
+[[nodiscard]] hi_inline std::array<uint16_t,4> float_to_half_f16c(std::array<float,4> f32) noexcept hi_target("sse,sse4.1,f16c")
 {
-    hilet tmp = _mm_extract_epi64(_mm_cvtps_ph(_mm_loadu_ps(f32.data())));
-    return std::bit_cast<std::array<uint16_t,4>>(tmp);
+    return std::bit_cast<std::array<uint16_t, 4>>(
+        _mm_extract_epi64(_mm_cvtps_ph(_mm_loadu_ps(f32.data()), _MM_FROUND_TO_ZERO), 0));
 }
+#endif
 
-[[nodiscard]] std::array<uint16_t,4> float_to_half_sse4_1(std::array<float,4> f32) noexcept hi_target("sse,sse2,sse3,sse4.1")
+#if HI_HAS_X86
+[[nodiscard]] hi_inline uint16_t float_to_half_f16c(float f32) noexcept hi_target("sse,sse2,f16c")
+{
+    return static_cast<uint16_t>(_mm_extract_epi16(_mm_cvtps_ph(_mm_set1_ps(f32), _MM_FROUND_TO_ZERO), 0));
+}
+#endif
+
+#if HI_HAS_X86
+[[nodiscard]] hi_inline std::array<uint16_t,4> float_to_half_sse4_1(std::array<float,4> f32) noexcept hi_target("sse,sse2,sse4.1")
 {
     auto u32 = _mm_castps_si128(_mm_loadu_ps(f32.data()));
 
-    // Extract the exponent and adjust the bias for float-16.
-    auto exponemt = _mm_slli_epi32(u32, 1);
-    exponent = _mm_srli_epi32(exponent, 25);
+    // Extract the sign into the lsb.
+    hilet sign = _mm_srli_epi32(u32, 31);
+
+    // Strip off the sign.
+    u32 = _mm_srli_epi32(_mm_slli_epi32(u32, 1), 1);
+
+    // Extract the exponent, and adjust for float-16 bias.
+    auto exponent = _mm_srli_epi32(u32, 23);
     exponent = _mm_add_epi32(exponent, _mm_set1_epi32(-127 + 15));
 
-    // Extract the mantissa, and adjust to 10 bits.
+    // Extract the mantissa, and adjust for float-16.
     auto mantissa = _mm_slli_epi32(u32, 9);
-    mantissa = _mm_srli_epi32(mantissa, 9);
+    mantissa = _mm_srli_epi32(mantissa, 9 + 13);
 
-    auto _1f = _mm_set1_epi32(0x1f);
-    auto _1 = _mm_set1_epi32(0x1);
+    // Check for infinity. When the exponent >= 0x1f.
+    // Set mantissa to zero if infinite.
+    hilet _1f = _mm_set1_epi32(0x1f);
+    hilet is_inf = _mm_cmplt_epi32(_1f, exponent);
+    mantissa = _mm_andnot_si128(is_inf, mantissa);
 
-    // Check for infinity. set the mantissa and exponent to float-16 infinite.
-    auto is_inf = _mm_cmplt_epi32(exponent, _1f);
-    mantissa = _mm_and_si128(is_inf, mantissa);
-    exponent = _mm_blendv_epi8(_1f, exponent);
-
-    // Check for NaN, set mantissa to 1.
-    auto is_nan = _mm_slli_epi32(u32, _1);
-    is_nan = _mm_cmpgt_epi32(is_nan, _mm_set1_epi32(0xff000000));
-    mantissa = _mm_blendv_epi8(mantissa, _1, is_nan);
+    // On NaN, set mantissa to 1.
+    hilet is_nan = _mm_cmpgt_epi32(u32, _mm_set1_epi32(0x7f80'0000));
+    hilet _1 = _mm_set1_epi32(0x1);
+    mantissa = _mm_castps_si128(_mm_blendv_ps(_mm_castsi128_ps(mantissa), _mm_castsi128_ps(_1), _mm_castsi128_ps(is_nan)));
 
     // Add implicit leading bit.
-    mantissa = _mm_or_epi32(mantissa, _mm_set1_epi32(0x0400));
+    hilet _0400 = _mm_set1_epi32(0x0400);
+    mantissa = _mm_or_epi32(mantissa, _0400);
 
     // Shift the mantissa if it is denormal.
     auto shift = _mm_sub_epi32(_1, exponent);
     shift = _mm_max_epi32(shift, _mm_setzero_si128());
+
+    // Emulate vector right-shifts.
+    auto one_shift = 
     mantissa = _mm_srl_epi32(mantissa, shift);
 
-    // Clamp the exponent to zero if denormal.
+    // Remove the implicit bit again, if it didn't move.
+    mantissa = _mm_andnot_si128(_0400, mantissa);
+
+    // Clamp the exponent between 0 (denormal) and 0x1f (infinite,NaN).
+    exponent = _mm_min_epi32(exponent, _1f);
     exponent = _mm_max_epi32(exponent, _mm_setzero_si128());
-    exponent = _mm_slli_epi32(exponent, 10);
 
-    // Remove the implicit bit again.
-    mantissa = _mm_add_epi32(mantissa, _mm_set1_epi32(0x03ff));
+    // Combine the sign and exponent onto the mantissa.
+    mantissa = _mm_or_si128(mantissa, _mm_slli_epi32(sign, 15));
+    mantissa = _mm_or_si128(mantissa, _mm_slli_epi32(exponent, 10));
 
-    // Combine sign, eponent and mantissa.
-    auto r = _mm_srai_epi32(u32, 31);
-    r = _mm_slli_epi32(u32, 15);
-    r = _mm_or_epi32(r, mantissa);
-    r = _mm_or_epi32(r, exponent);
-
-    // Pack into 64 bit integer
-    r = _mm_slli_epi32(r, 16); 
-    r = _mm_srli_epi32(r, 16); 
-    r = _mm_packus_epi32(r, r);
-    return std::bit_cast<std::array<uint16_t,4>>(_mm_extract_epi64(r));
+    // Convert each uint32_t to uint16_t and pack them together into a single uint64_t.
+    mantissa = _mm_packus_epi32(mantissa, mantissa);
+    return std::bit_cast<std::array<uint16_t,4>>(_mm_extract_epi64(mantissa, 0));
 }
+#endif
 
 [[nodiscard]] constexpr uint16_t float_to_half(float v) noexcept
 {
     if (not std::is_constant_evaluated()) {
-#if HI_HAS_SSE2
+#if HI_HAS_X86
         if (has_f16c()) {
-            auto v_ = std::array<float,4>{};
-            std::get<0>(v_) = v;
-            auto tmp = float_to_half_f16c(v);
+            auto v_ = std::array<float,4>{v, v, v, v};
+            auto tmp = float_to_half_f16c(v_);
             return std::get<0>(tmp);
         }
 #endif
@@ -132,18 +158,14 @@ namespace hi { inline namespace v1 {
 {
     auto r = std::array<uint16_t, 4>{};
 
-    if (not is_constant_evaluated()) {
-#if HI_HAS_AVX
+    if (not std::is_constant_evaluated()) {
+#if HI_HAS_X86
         if (has_f16c()) {
-            auto tmp = float_to_half_f16c(_mm_loadu_ps(v.data()));
-            _mm_storeu_epi64(r.data(), tmp);
-            return r;
+            return float_to_half_f16c(v);
         }
-#endif
-#if HI_HAS_SSE4_1
-        auto tmp = float_to_half_sse4_1(_mm_loadu_ps(v.data()));
-        _mm_storeu_epi64(r.data(), tmp);
-        return r;
+        if (has_sse4_1()) {
+            return float_to_half_sse4_1(v);
+        }
 #endif
     }
 

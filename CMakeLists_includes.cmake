@@ -406,22 +406,22 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/xorshift128p.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float16_sse4_1.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/SIMD.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f16x8_sse2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f32x4_sse.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f64x4_avx.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i16x8_sse2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i32x4_sse2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i64x4_avx2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i8x16_sse2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_conversions_x86.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f16x8_sse2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f32x4_sse.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f64x4_avx.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i16x8_sse2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i32x4_sse2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i64x4_avx2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i8x16_sse2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_conversions_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_utility.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_u32x4_sse2.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_u32x4_sse2.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/sip_hash.hpp
-    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/cpu_id.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/cpu_id_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/settings.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/os_settings.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/os_settings_intf.hpp
@@ -513,7 +513,9 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception_win32_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/fixed_string.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float16.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float_to_half.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_to_float.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/hash.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/math.hpp

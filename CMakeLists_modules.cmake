@@ -428,7 +428,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security_win32_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/sip_hash.ixx
-    #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/cpu_id.ixx
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/cpu_id.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/settings.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/os_settings.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/os_settings_intf.ixx
@@ -520,7 +520,9 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/exception_win32_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/exception.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/fixed_string.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/float16.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/half.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/half_to_float.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/float_to_half.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/forward_value.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/hash.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/math.ixx

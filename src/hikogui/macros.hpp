@@ -69,24 +69,22 @@
 #define HI_PROCESSOR HI_CPU_UNKNOWN
 #endif
 
-
 // All the HI_HAS_* macros tell us if the compiler will generate code with these instructions.
 // Therefor we can use intrinsics for these instructions without checking the cpu-id.
 // Which instrinsics are available is handled by a different macro.
 
 #if HI_PROCESSOR == HI_CPU_X86_64
-#define HI_HAS_X86_64
-#define HI_HAS_X86
+#define HI_HAS_X86_64 1
+#define HI_HAS_X86 1
 #elif HI_PROCESSOR == HI_CPU_X86
-#define HI_HAS_X86
+#define HI_HAS_X86 1
 #endif
-
 
 // Detect microarchitecture level.
 #if defined(HI_HAS_X86)
 #if HI_COMPILER == HI_CC_MSVC
 // MSVC /arch:SSE (x86)
-#if _M_IX86_FP >= 1
+#if _M_IX86_FP >= 1 || defined(HI_HAS_X86_64)
 #define HI_HAS_SSE 1
 #define HI_HAS_MMX 1
 
@@ -98,7 +96,7 @@
 #define HI_HAS_CMOV 1
 
 // MSVC /arch:SSE2 (x86)
-#if _M_IX86_FP >= 2
+#if _M_IX86_FP >= 2 || defined(HI_HAS_X86_64)
 #define HI_HAS_SSE2 1
 
 // MSVC /arch:AVX
@@ -217,14 +215,14 @@
 #endif
 
 #else
-#error "Uknown compiler for x86"
+#error "Unknown compiler for x86"
 #endif
 
 #else
 #error "Unknown CPU architecture."
 #endif
 
-
+// clang-format off
 #if defined(HI_HAS_SSE2) && defined(HI_HAS_SSE) && defined(HI_HAS_SCE) && \
     defined(HI_HAS_OSFXSR) && defined(HI_HAS_MMX) && defined(HI_HAS_FXSR) && \
     defined(HI_HAS_FPU) && defined(HI_HAS_CX8) && defined(HI_HAS_CMOV)
@@ -245,10 +243,10 @@
 #endif
 
 #if defined(HI_HAS_X86_64V3) && defined(HI_HAS_AVX512F) && defined(HI_HAS_AVX512BW) && \
-    defined(HI_HAS_AVX512CD) && defined(HI_HAS_AVX512DQ) && defined(HI_HAS_AVX512VL) &&
+    defined(HI_HAS_AVX512CD) && defined(HI_HAS_AVX512DQ) && defined(HI_HAS_AVX512VL)
 #define HI_HAS_X86_64_V4 1
 #endif
-
+// clang-format on
 
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_target(...) __attribute__((target(__VA_ARGS__)))

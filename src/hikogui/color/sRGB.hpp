@@ -84,8 +84,12 @@ namespace detail {
     std::array<uint8_t, 65536> r{};
 
     for (int i = 0; i != 65536; ++i) {
-        r[i] = round_cast<uint8_t>(
-            std::floor(std::clamp(sRGB_linear_to_gamma(float16(intrinsic, narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f));
+        auto f = static_cast<float>(half(intrinsic, narrow_cast<uint16_t>(i)));
+        if (f != f) {
+            f = 0.0f;
+        }
+
+        r[i] = round_cast<uint8_t>(std::floor(std::clamp(sRGB_linear_to_gamma(f), 0.0f, 1.0f) * 255.0f));
     }
 
     return r;
@@ -93,10 +97,10 @@ namespace detail {
 
 [[nodiscard]] hi_inline auto sRGB_gamma8_to_linear16_table_generator() noexcept
 {
-    std::array<float16, 256> r{};
+    std::array<half, 256> r{};
 
     for (int i = 0; i != 256; ++i) {
-        r[i] = static_cast<float16>(sRGB_gamma_to_linear(i / 255.0f));
+        r[i] = static_cast<half>(sRGB_gamma_to_linear(i / 255.0f));
     }
 
     return r;
@@ -115,7 +119,7 @@ hi_inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_gen
  * @param u The linear color value, between 0.0 and 1.0.
  * @return The color value converted to the sRGB gamma corrected value between 0.0 and 1.0.
  */
-[[nodiscard]] hi_inline uint8_t sRGB_linear16_to_gamma8(float16 u) noexcept
+[[nodiscard]] hi_inline uint8_t sRGB_linear16_to_gamma8(half u) noexcept
 {
     return detail::sRGB_linear16_to_gamma8_table[u.intrinsic()];
 }
@@ -128,7 +132,7 @@ hi_inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_gen
  * @param u The sRGB gamma corrected color value, between 0.0 and 1.0.
  * @return The color value converted to a linear color value between 0.0 and 1.0.
  */
-[[nodiscard]] hi_inline float16 sRGB_gamma8_to_linear16(uint8_t u) noexcept
+[[nodiscard]] hi_inline half sRGB_gamma8_to_linear16(uint8_t u) noexcept
 {
     return detail::sRGB_gamma8_to_linear16_table[u];
 }
