@@ -117,10 +117,22 @@ hi_export namespace hi { inline namespace v1 {
     // Shift the mantissa if it is denormal.
     auto shift = _mm_sub_epi32(_1, exponent);
     shift = _mm_max_epi32(shift, _mm_setzero_si128());
-
-    // Emulate vector right-shifts.
-    auto one_shift = 
-    mantissa = _mm_srl_epi32(mantissa, shift);
+    if (not _mm_testz_si128(shift, shift)) {
+        // Emulate vector right-shifts.
+        hilet shift_ = _mm_castsi128_ps(shift);
+        auto shift0 = _mm_castps_si128(_mm_insert_ps(shift_, shift_, 0b00'00'1110));
+        auto shift1 = _mm_castps_si128(_mm_insert_ps(shift_, shift_, 0b01'00'1110));
+        auto shift2 = _mm_castps_si128(_mm_insert_ps(shift_, shift_, 0b10'00'1110));
+        auto shift3 = _mm_castps_si128(_mm_insert_ps(shift_, shift_, 0b11'00'1110));
+        auto mantissa0 = _mm_castsi128_ps(_mm_srl_epi32(mantissa, shift0));
+        auto mantissa1 = _mm_castsi128_ps(_mm_srl_epi32(mantissa, shift1));
+        auto mantissa2 = _mm_castsi128_ps(_mm_srl_epi32(mantissa, shift2));
+        auto mantissa3 = _mm_castsi128_ps(_mm_srl_epi32(mantissa, shift3));
+        mantissa = _mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(mantissa), mantissa0, 0b00'00'0000));
+        mantissa = _mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(mantissa), mantissa1, 0b01'01'0000));
+        mantissa = _mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(mantissa), mantissa2, 0b10'10'0000));
+        mantissa = _mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(mantissa), mantissa3, 0b11'11'0000));
+    }
 
     // Remove the implicit bit again, if it didn't move.
     mantissa = _mm_andnot_si128(_0400, mantissa);
