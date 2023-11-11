@@ -4,19 +4,6 @@
 
 #pragma once
 
-/** CPU ID
- *
- *
- * The MSVC `/arch:` argument determines which instructions are used by
- * the compiler for code generation. This argument also sets the __AVX__ macros.
- * However you can use any intrinsic that is supported by the compiler.
- *
- * In other words if you have a x64-MSVC compiler and you set the /arch:AVX
- * then the compiler will only directly use instructions upto AVX. The
- * __AVX__ macro is set, but not __AVX2__. However you are still allowed to
- * use the _mm256_* instructions.
- * 
- */
 
 #include "debugger.hpp"
 #include "cast.hpp"
@@ -33,6 +20,37 @@
 #error "Unsupported compiler for x64 cpu_id"
 #endif
 
+/** CPU-ID.
+ *
+ * This module together with the <hikogui/macros.hpp> header is used to
+ * handle CPU specific implementation.
+ *
+ * There are three mechanics that work together:
+ *  - `HI_HAS_*` CPU feature that will always be available.
+ *  - `hi::has_*()` CPU feature that is avaiable at runtime.
+ *  - `hi_target()` turn on a CPU feature for this function.
+ *
+ * HikoGUI determines the `HI_HAS_*` macros based on the CPU architecture
+ * command line arguments of the compiler.
+ *  - MSVC: `/arch:`
+ *  - clang and gcc: `-march=`, `-mcpu=` and other `-m*` arguments.
+ *
+ * The `hi::has_*()` functions are constexpr true if the corrosponding
+ * `HI_HAS_*` macro is set. The other `hi::has_*()` functions determine
+ * the existance of that CPU feature based on the cached result of the cpu-id
+ * instruction.
+ *
+ * Clang and gcc require that `-march=` and `-m*` command line arguments
+ * are set to be able to use a corrosponding compiler intrinsic. For
+ * example: if you want to use the `_mm_cvtph_ps()` intrinsic than the
+ * `-mf16c` must be passed as the compile time argument.
+ *
+ * Clang and gcc also allows you to decorate a function with the `hi_target()`
+ * attribute (which is ignored on MSVC) to enable code-generation and
+ * the use of specific intrinsics for a single function.
+ *
+ * @module hikogui.utility.cpu_id
+ */
 hi_export_module(hikogui.utility.cpu_id);
 
 namespace hi {
@@ -214,26 +232,50 @@ struct cpu_id_result {
     return r;
 }
 
+[[nodiscard]] hi_inline uint64_t read_cr4()
+{
+#if HI_COMPILER == HI_CC_MSVC
+    return __readcr4();
+
+#else
+#error "read_cr4() not implemented"
+#endif
+}
 
 
 [[nodiscard]] hi_inline cpu_feature_mask cpu_features_init() noexcept
 {
+    // clang-format off
     auto r = cpu_feature_mask{};
 
     hilet leaf0 = cpu_id(0);
     hilet max_leaf = leaf0.eax;
 
-    // clang-format off
     if (max_leaf >= 1) {
         hilet leaf1 = cpu_id(1);
 
         if (leaf1.ecx_bit( 0)) { r |= cpu_feature::sse3; }
         if (leaf1.ecx_bit( 9)) { r |= cpu_feature::ssse3; }
+        if (leaf1.ecx_bit(12)) { r |= cpu_feature::fma; }
+        if (leaf1.ecx_bit(13)) { r |= cpu_feature::cx16; }
         if (leaf1.ecx_bit(19)) { r |= cpu_feature::sse4_1; }
         if (leaf1.ecx_bit(20)) { r |= cpu_feature::sse4_2; }
+        if (leaf1.ecx_bit(22)) { r |= cpu_feature::movbe; }
+        if (leaf1.ecx_bit(23)) { r |= cpu_feature::popcnt; }
+        if (leaf1.ecx_bit(27)) { r |= cpu_feature::osxsave; }
         if (leaf1.ecx_bit(28)) { r |= cpu_feature::avx; }
         if (leaf1.ecx_bit(29)) { r |= cpu_feature::f16c; }
 
+        if (leaf1.edx_bit( 0)) { r |= cpu_feature::fpu; }
+        if (leaf1.edx_bit( 8)) { r |= cpu_feature::cx8; }
+        if (leaf1.edx_bit(15)) { r |= cpu_feature::cmov; }
+        if (leaf1.edx_bit(23)) { r |= cpu_feature::mmx; }
+        if (leaf1.edx_bit(24)) {
+            r |= cpu_feature::fsxr;
+            if (to_bool(read_cr4() & (1ULL << 9))) {
+                r |= cpu_feature::osfxsr;
+            }
+        }
         if (leaf1.edx_bit(25)) { r |= cpu_feature::sse; }
         if (leaf1.edx_bit(26)) { r |= cpu_feature::sse2; }
     }
@@ -251,17 +293,181 @@ struct cpu_id_result {
         if (leaf7.ebx_bit(28)) { r |= cpu_feature::avx512cd; }
         if (leaf7.ebx_bit(30)) { r |= cpu_feature::avx512bw; }
         if (leaf7.ebx_bit(31)) { r |= cpu_feature::avx512vl; }
-
     }
-    // clang-format on
 
+    hilet leaf80 = cpu_id(0x8000'0000);
+    hilet max_leaf8 = leaf80.eax;
+
+    if (max_leaf8 >= 1) {
+        hilet leaf81 = cpu_id(0x8000'0001);
+
+        if (leaf81.ecx_bit( 0)) { r |= cpu_feature::lahf; }
+        if (leaf81.ecx_bit( 5)) { r |= cpu_feature::lzcnt; }
+
+        // edx[10] sce (only on AuthenticAMD Family 5 Model 7 CPUs)
+        if (leaf81.edx_bit(11)) { r |= cpu_feature::sce; }
+    }
+
+#if HI_HAS_X86_64_V4
+    if (r & cpu_feature_mask::x86_64_v4 != cpu_feature_mask::x86_64_v4) { hi_debug_abort("Missing CPU feature: x86-64-v4"); }
+#endif
+#if HI_HAS_X86_64_V3
+    if (r & cpu_feature_mask::x86_64_v3 != cpu_feature_mask::x86_64_v3) { hi_debug_abort("Missing CPU feature: x86-64-v3"); }
+#endif
+#if HI_HAS_X86_64_V2
+    if (r & cpu_feature_mask::x86_64_v3 != cpu_feature_mask::x86_64_v3) { hi_debug_abort("Missing CPU feature: x86-64-v2"); }
+#endif
+#if HI_HAS_X86_64_V1
+    if (r & cpu_feature_mask::x86_64_v3 != cpu_feature_mask::x86_64_v3) { hi_debug_abort("Missing CPU feature: x86-64-v1"); }
+#endif
+
+#if HI_HAS_CMOV
+    if (not to_bool(r & cpu_feature::cmov)) { hi_debug_abort("Missing CPU feature: CMOV"); }
+#endif
+#if HI_HAS_CX8
+    if (not to_bool(r & cpu_feature::cx8)) { hi_debug_abort("Missing CPU feature: CX8"); }
+#endif
+#if HI_HAS_FPU
+    if (not to_bool(r & cpu_feature::fpu)) { hi_debug_abort("Missing CPU feature: FPU"); }
+#endif
+#if HI_HAS_FXSR
+    if (not to_bool(r & cpu_feature::fxsr)) { hi_debug_abort("Missing CPU feature: FXSR"); }
+#endif
+#if HI_HAS_OSFXSR
+    if (not to_bool(r & cpu_feature::osfxsr)) { hi_debug_abort("Missing CPU feature: OSFXSR"); }
+#endif
+#if HI_HAS_SCE
+    if (not to_bool(r & cpu_feature::sce)) { hi_debug_abort("Missing CPU feature: SCE"); }
+#endif
+#if HI_HAS_MMX
+    if (not to_bool(r & cpu_feature::mmx)) { hi_debug_abort("Missing CPU feature: MMX"); }
+#endif
+#if HI_HAS_SSE
+    if (not to_bool(r & cpu_feature::sse)) { hi_debug_abort("Missing CPU feature: SSE"); }
+#endif
+#if HI_HAS_SSE2
+    if (not to_bool(r & cpu_feature::sse2)) { hi_debug_abort("Missing CPU feature: SSE2"); }
+#endif
+#if HI_HAS_CX16
+    if (not to_bool(r & cpu_feature::cx16)) { hi_debug_abort("Missing CPU feature: CX16"); }
+#endif
+#if HI_HAS_LAHF
+    if (not to_bool(r & cpu_feature::lahf)) { hi_debug_abort("Missing CPU feature: LAHF"); }
+#endif
+#if HI_HAS_POPCNT
+    if (not to_bool(r & cpu_feature::popcnt)) { hi_debug_abort("Missing CPU feature: POPCNT"); }
+#endif
+#if HI_HAS_SSE3
+    if (not to_bool(r & cpu_feature::sse3)) { hi_debug_abort("Missing CPU feature: SSE3"); }
+#endif
+#if HI_HAS_SSE4_1
+    if (not to_bool(r & cpu_feature::sse4_1)) { hi_debug_abort("Missing CPU feature: SSE4_1"); }
+#endif
+#if HI_HAS_SSE4_2
+    if (not to_bool(r & cpu_feature::sse4_2)) { hi_debug_abort("Missing CPU feature: SSE4_2"); }
+#endif
+#if HI_HAS_SSSE3
+    if (not to_bool(r & cpu_feature::ssse3)) { hi_debug_abort("Missing CPU feature: SSSE3"); }
+#endif
+#if HI_HAS_LZCNT
+    if (not to_bool(r & cpu_feature::lzcnt)) { hi_debug_abort("Missing CPU feature: LZCNT"); }
+#endif
+#if HI_HAS_MOVBE
+    if (not to_bool(r & cpu_feature::movbe)) { hi_debug_abort("Missing CPU feature: MOVBE"); }
+#endif
+#if HI_HAS_OSXSAVE
+    if (not to_bool(r & cpu_feature::osxsave)) { hi_debug_abort("Missing CPU feature: OSXSAVE"); }
+#endif
+#if HI_HAS_F16C
+    if (not to_bool(r & cpu_feature::f16c)) { hi_debug_abort("Missing CPU feature: F16C"); }
+#endif
+#if HI_HAS_FMA
+    if (not to_bool(r & cpu_feature::fma)) { hi_debug_abort("Missing CPU feature: FMA"); }
+#endif
+#if HI_HAS_BMI1
+    if (not to_bool(r & cpu_feature::bmi1)) { hi_debug_abort("Missing CPU feature: BMI1"); }
+#endif
+#if HI_HAS_BMI2
+    if (not to_bool(r & cpu_feature::bmi2)) { hi_debug_abort("Missing CPU feature: BMI2"); }
+#endif
+#if HI_HAS_AVX
+    if (not to_bool(r & cpu_feature::avx)) { hi_debug_abort("Missing CPU feature: AVX"); }
+#endif
+#if HI_HAS_AVX2
+    if (not to_bool(r & cpu_feature::avx2)) { hi_debug_abort("Missing CPU feature: AVX2"); }
+#endif
+#if HI_HAS_AVX512F
+    if (not to_bool(r & cpu_feature::avx512f)) { hi_debug_abort("Missing CPU feature: AVX512F"); }
+#endif
+#if HI_HAS_AVX512BW
+    if (not to_bool(r & cpu_feature::avx512bw)) { hi_debug_abort("Missing CPU feature: AVX512BW"); }
+#endif
+#if HI_HAS_AVX512CD
+    if (not to_bool(r & cpu_feature::avx512cd)) { hi_debug_abort("Missing CPU feature: AVX512CD"); }
+#endif
+#if HI_HAS_AVX512DQ
+    if (not to_bool(r & cpu_feature::avx512dq)) { hi_debug_abort("Missing CPU feature: AVX512DQ"); }
+#endif
+#if HI_HAS_AVX512VL
+    if (not to_bool(r & cpu_feature::avx512vl)) { hi_debug_abort("Missing CPU feature: AVX512VL"); }
+#endif
+#if HI_HAS_AVX512PF
+    if (not to_bool(r & cpu_feature::avx512pf)) { hi_debug_abort("Missing CPU feature: AVX512PF"); }
+#endif
+#if HI_HAS_AVX512ER
+    if (not to_bool(r & cpu_feature::avx512er)) { hi_debug_abort("Missing CPU feature: AVX512ER"); }
+#endif
 
     return r;
+    // clang-format on
 }
 
 inline cpu_feature_mask const cpu_features = cpu_features_init();
 
 // clang-format off
+
+#if HI_HAS_CMOV
+[[nodiscard]] constexpr bool has_cmov() noexcept { return true; }
+#else
+[[nodiscard]] bool has_cmov() noexcept { return to_bool(cpu_features & cpu_feature::cmov); }
+#endif
+
+#if HI_HAS_CX8
+[[nodiscard]] constexpr bool has_cx8() noexcept { return true; }
+#else
+[[nodiscard]] bool has_cx8() noexcept { return to_bool(cpu_features & cpu_feature::cx8); }
+#endif
+
+#if HI_HAS_FPU
+[[nodiscard]] constexpr bool has_fpu() noexcept { return true; }
+#else
+[[nodiscard]] bool has_fpu() noexcept { return to_bool(cpu_features & cpu_feature::fpu); }
+#endif
+
+#if HI_HAS_FXSR
+[[nodiscard]] constexpr bool has_fxsr() noexcept { return true; }
+#else
+[[nodiscard]] bool has_fxsr() noexcept { return to_bool(cpu_features & cpu_feature::fxsr); }
+#endif
+
+#if HI_HAS_OSFXSR
+[[nodiscard]] constexpr bool has_osfxsr() noexcept { return true; }
+#else
+[[nodiscard]] bool has_osfxsr() noexcept { return to_bool(cpu_features & cpu_feature::osfxsr); }
+#endif
+
+#if HI_HAS_SCE
+[[nodiscard]] constexpr bool has_sce() noexcept { return true; }
+#else
+[[nodiscard]] bool has_sce() noexcept { return to_bool(cpu_features & cpu_feature::sce); }
+#endif
+
+#if HI_HAS_MMX
+[[nodiscard]] constexpr bool has_mmx() noexcept { return true; }
+#else
+[[nodiscard]] bool has_mmx() noexcept { return to_bool(cpu_features & cpu_feature::mmx); }
+#endif
+
 #if HI_HAS_SSE
 [[nodiscard]] constexpr bool has_sse() noexcept { return true; }
 #else
@@ -272,6 +478,30 @@ inline cpu_feature_mask const cpu_features = cpu_features_init();
 [[nodiscard]] constexpr bool has_sse2() noexcept { return true; }
 #else
 [[nodiscard]] bool has_sse2() noexcept { return to_bool(cpu_features & cpu_feature::sse2); }
+#endif
+
+#if HI_HAS_X86_64_V1
+[[nodiscard]] constexpr bool has_x86_64_v1() noexcept { return true; }
+#else
+[[nodiscard]] bool has_x86_64_v1() noexcept { return cpu_features & cpu_feature_mask::x86_64_v1 == cpu_feature_mask::x86_64_v1; }
+#endif
+
+#if HI_HAS_CX16
+[[nodiscard]] constexpr bool has_cx16() noexcept { return true; }
+#else
+[[nodiscard]] bool has_cx16() noexcept { return to_bool(cpu_features & cpu_feature::cx16); }
+#endif
+
+#if HI_HAS_LAHF
+[[nodiscard]] constexpr bool has_lahf() noexcept { return true; }
+#else
+[[nodiscard]] bool has_lahf() noexcept { return to_bool(cpu_features & cpu_feature::lahf); }
+#endif
+
+#if HI_HAS_POPCNT
+[[nodiscard]] constexpr bool has_popcnt() noexcept { return true; }
+#else
+[[nodiscard]] bool has_popcnt() noexcept { return to_bool(cpu_features & cpu_feature::popcnt); }
 #endif
 
 #if HI_HAS_SSE3
@@ -298,6 +528,54 @@ inline cpu_feature_mask const cpu_features = cpu_features_init();
 [[nodiscard]] bool has_sse4_2() noexcept { return to_bool(cpu_features & cpu_feature::sse4_2); }
 #endif
 
+#if HI_HAS_X86_64_V2
+[[nodiscard]] constexpr bool has_x86_64_v2() noexcept { return true; }
+#else
+[[nodiscard]] bool has_x86_64_v2() noexcept { return cpu_features & cpu_feature_mask::x86_64_v2 == cpu_feature_mask::x86_64_v2; }
+#endif
+
+#if HI_HAS_F16C
+[[nodiscard]] constexpr bool has_f16c() noexcept { return true; }
+#else
+[[nodiscard]] bool has_f16c() noexcept { return to_bool(cpu_features & cpu_feature::f16c); }
+#endif
+
+#if HI_HAS_FMA
+[[nodiscard]] constexpr bool has_fma() noexcept { return true; }
+#else
+[[nodiscard]] bool has_fma() noexcept { return to_bool(cpu_features & cpu_feature::fma); }
+#endif
+
+#if HI_HAS_BMI1
+[[nodiscard]] constexpr bool has_bmi1() noexcept { return true; }
+#else
+[[nodiscard]] bool has_bmi1() noexcept { return to_bool(cpu_features & cpu_feature::bmi1); }
+#endif
+
+#if HI_HAS_BMI2
+[[nodiscard]] constexpr bool has_bmi2() noexcept { return true; }
+#else
+[[nodiscard]] bool has_bmi2() noexcept { return to_bool(cpu_features & cpu_feature::bmi2); }
+#endif
+
+#if HI_HAS_LZCNT
+[[nodiscard]] constexpr bool has_lzcnt() noexcept { return true; }
+#else
+[[nodiscard]] bool has_lzcnt() noexcept { return to_bool(cpu_features & cpu_feature::lzcnt); }
+#endif
+
+#if HI_HAS_MOVBE
+[[nodiscard]] constexpr bool has_movbe() noexcept { return true; }
+#else
+[[nodiscard]] bool has_movbe() noexcept { return to_bool(cpu_features & cpu_feature::movbe); }
+#endif
+
+#if HI_HAS_OSXSAVE
+[[nodiscard]] constexpr bool has_osxsave() noexcept { return true; }
+#else
+[[nodiscard]] bool has_osxsave() noexcept { return to_bool(cpu_features & cpu_feature::osxsave); }
+#endif
+
 #if HI_HAS_AVX
 [[nodiscard]] constexpr bool has_avx() noexcept { return true; }
 #else
@@ -310,10 +588,58 @@ inline cpu_feature_mask const cpu_features = cpu_features_init();
 [[nodiscard]] bool has_avx2() noexcept { return to_bool(cpu_features & cpu_feature::avx2); }
 #endif
 
-#if HI_HAS_F16C
-[[nodiscard]] constexpr bool has_f16c() noexcept { return true; }
+#if HI_HAS_X86_64_V3
+[[nodiscard]] constexpr bool has_x86_64_v3() noexcept { return true; }
 #else
-[[nodiscard]] bool has_f16c() noexcept { return to_bool(cpu_features & cpu_feature::f16c); }
+[[nodiscard]] bool has_x86_64_v3() noexcept { return cpu_features & cpu_feature_mask::x86_64_v3 == cpu_feature_mask::x86_64_v3; }
+#endif
+
+#if HI_HAS_AVX512F
+[[nodiscard]] constexpr bool has_avx512f() noexcept { return true; }
+#else
+[[nodiscard]] bool has_avx512f() noexcept { return to_bool(cpu_features & cpu_feature::avx512f); }
+#endif
+
+#if HI_HAS_AVX512BW
+[[nodiscard]] constexpr bool has_avx512bw() noexcept { return true; }
+#else
+[[nodiscard]] bool has_avx512bw() noexcept { return to_bool(cpu_features & cpu_feature::avx512bw); }
+#endif
+
+#if HI_HAS_AVX512CD
+[[nodiscard]] constexpr bool has_avx512cd() noexcept { return true; }
+#else
+[[nodiscard]] bool has_avx512cd() noexcept { return to_bool(cpu_features & cpu_feature::avx512cd); }
+#endif
+
+#if HI_HAS_AVX512DQ
+[[nodiscard]] constexpr bool has_avx512dq() noexcept { return true; }
+#else
+[[nodiscard]] bool has_avx512dq() noexcept { return to_bool(cpu_features & cpu_feature::avx512dq); }
+#endif
+
+#if HI_HAS_AVX512VL
+[[nodiscard]] constexpr bool has_avx512vl() noexcept { return true; }
+#else
+[[nodiscard]] bool has_avx512vl() noexcept { return to_bool(cpu_features & cpu_feature::avx512vl); }
+#endif
+
+#if HI_HAS_X86_64_V4
+[[nodiscard]] constexpr bool has_x86_64_v4() noexcept { return true; }
+#else
+[[nodiscard]] bool has_x86_64_v4() noexcept { return cpu_features & cpu_feature_mask::x86_64_v4 == cpu_feature_mask::x86_64_v4; }
+#endif
+
+#if HI_HAS_AVX512PF
+[[nodiscard]] constexpr bool has_avx512pf() noexcept { return true; }
+#else
+[[nodiscard]] bool has_avx512pf() noexcept { return to_bool(cpu_features & cpu_feature::avx512pf); }
+#endif
+
+#if HI_HAS_AVX512ER
+[[nodiscard]] constexpr bool has_avx512er() noexcept { return true; }
+#else
+[[nodiscard]] bool has_avx512er() noexcept { return to_bool(cpu_features & cpu_feature::avx512er); }
 #endif
 
 // clang-format on

@@ -421,7 +421,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/sip_hash.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/cpu_id_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/settings.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/os_settings.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/os_settings_intf.hpp
@@ -503,6 +502,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/charconv.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/compare.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/concepts.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/cpu_id_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger.hpp

@@ -20,7 +20,6 @@ option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                            
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
 option(HI_ENABLE_MODULES    "Compile using C++20 modules"                        OFF)
 option(BUILD_EXAMPLES       "Compile the example executables"                    ON)
-option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" OFF)
         
 if(HI_ENABLE_MODULES)
     include(SetupCxxModules)
@@ -90,7 +89,6 @@ endif()
 include(FeatureSummary)
 include(ShowBuildTargetProperties)
 include(FetchContent)
-include(CPUID)
 include(SetupDoxygen)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -100,12 +98,6 @@ include(TargetResources)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
 configure_file("${CMAKE_SOURCE_DIR}/cmake/ctest/CTestCustom.cmake.in" "CTestCustom.cmake" @ONLY)
 include(CTest)
-
-# HI_ARCHITECTURE can be set as a build option.
-# if this build option is not set, default to the auto-detected architecture level.
-if(NOT HI_ARCHITECTURE)
-  set(HI_ARCHITECTURE ${CPUINFO_ARCHITECTURE_LEVEL})
-endif()
 
 #-------------------------------------------------------------------
 # Find Dependencies
@@ -259,8 +251,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # It seems this check should only be used for interopability with swift
     target_compile_options(hikogui ${HI_SCOPE} -Wno-nullability-completeness)
 
-    target_compile_options(hikogui ${HI_SCOPE} -march=${HI_ARCHITECTURE})
-
     # warning: template argument for template type parameter must be a type; omitted 'typename' is a Microsoft extension
     # Very likely this is because clang does not support C++20 fully "down with typename".
     target_compile_options(hikogui ${HI_SCOPE} -Wno-microsoft-template)
@@ -282,14 +272,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
-    if(HOST_IS_X86_64_4)
-        target_compile_options(hikogui ${HI_SCOPE} -arch:AVX512)
-    elseif(HOST_IS_X86_64_3)
-        target_compile_options(hikogui ${HI_SCOPE} -arch:AVX2)
-    elseif(HOST_IS_X86_64_2)
-        target_compile_options(hikogui ${HI_SCOPE} -arch:AVX)
-    endif()
-
     # This option is required when using _set_se_translator().
     target_compile_options(hikogui ${HI_SCOPE} -EHa)
 
