@@ -6,9 +6,12 @@
 
 #include "../win32_headers.hpp"
 #include "../macros.hpp"
+#include "console_win32.hpp"
 #include "exception.hpp"
 #include "debugger_intf.hpp"
 #include <exception>
+#include <print>
+#include <cstdio>
 
 hi_export_module(hikogui.utility.debugger : impl);
 
@@ -20,15 +23,45 @@ hi_warning_ignore_msvc(6320);
 hi_export namespace hi {
 inline namespace v1 {
 
-hi_inline void launch_just_in_time_debugger(unsigned int v, _EXCEPTION_POINTERS *p)
+namespace detail {
+
+thread_local inline bool just_in_time_debugger_available = false;
+
+}
+
+hi_inline LONG launch_just_in_time_debugger(_EXCEPTION_POINTERS *p)
 {
-    // We return the result of `UnhandledExceptionFilter() -> lONG` as an
-    // exception.
-    throw UnhandledExceptionFilter(p);
+    // The UnhandledExceptionFilter will try to launch the just-in-time-debugger
+    //  - EXCEPTION_CONTINUE_SEARCH:
+    //    The just-in-time debugger was successfully launched by the user.
+    //  - EXCEPTION_EXECUTE_HANDLER:
+    //    The just-in-time-debugger was not launched by the user.
+    //     - There are no debuggers available on the system.
+    //     - No debuggers where configured as just-in-time-debuggers.
+    //     - The user pressed 'Cancel' on the just-in-time-debugger
+    //       dialogue.
+    detail::just_in_time_debugger_available = UnhandledExceptionFilter(p) == EXCEPTION_CONTINUE_SEARCH;
+
+#if HI_PROCESSOR == HI_CPU_X86_64
+    // The breakpoint instruction is 0xCC (int 3), advance the instruction pointer.
+    p->ContextRecord->Rip++;
+#elif HI_PROCESSOR == HI_CPU_X86
+    // The breakpoint instruction is 0xCC (int 3), advance the instruction pointer.
+    p->ContextRecord->Eip++;
+#else
+#error "Not implemented."
+#endif    
+
+    // Continue at the saved instruction pointer.
+    return EXCEPTION_CONTINUE_EXECUTION;
 }
 
 hi_export hi_no_inline hi_inline bool prepare_debug_break() noexcept
 {
+    // It is possible this function is called before main() and it will
+    // need to make sure the console is started.
+    start_console();
+
     if (IsDebuggerPresent()) {
         // When running under the debugger, __debugbreak() after returning.
         return true;
@@ -40,54 +73,28 @@ hi_export hi_no_inline hi_inline bool prepare_debug_break() noexcept
         // inside the __except(<expression>) filter expression.
         //
         // Since __try and __except are not available inside a C++20 module
-        // we will need to use a lower level API. A se_translator is a function
-        // that is called inside the filter-expression context and should normally
-        // translate a structured exception to a C++ exception.
+        // we will need to use a lower level API.
+        // The AddVectoredExceptionHandler() adds an interrupt handler that
+        // will catch the int 3 (debug break) instruction.
         //
-        // So inside the se_translator function we will call
-        // UnhandledExceptionFilter() and throw the result value which will
-        // tell us if the debugger was launched by the user. A dialogue was
-        // presented to the user for the selection of one of the installed
-        // debuggers.
+        // Inside the function registered with AddVectoredExceptionHandler()
+        // we will call UnhandledExceptionFilter() and store the result value
+        // which will tell us if the debugger was launched by the user.
+        //
+        // UnhandledExceptionFilter() will present the user with a dialogue
+        // to select one of the installed debuggers, or to cancel.
+        hilet veh_handle = AddVectoredExceptionHandler(0, launch_just_in_time_debugger);
 
-        auto old_handler = _set_se_translator(launch_just_in_time_debugger);
+        // Attempt to break, which will interrupt.
+        // This will eventually execute the UnhandledExceptionFilter(),
+        // which may launch the just-in-time-debugger.
+        DebugBreak();
 
-        try {
-            // Attempt to break, causing an exception.
-            // This will eventually execute the UnhandledExceptionFilter(),
-            // which may launch the just-in-time-debugger.
-            DebugBreak();
+        // Cleanup.
+        RemoveVectoredExceptionHandler(veh_handle);
 
-            // If we got here that means the debugger was attached to the
-            // process between IsDebuggerPresent() and DebugBreak() calls.
-            // It also means the debugger 'continue' over the break-point.
-            // We return true, but the debugger will break again right after
-            // this function ends.
-            _set_se_translator(old_handler);
-            return true;
-
-        } catch (LONG e) {
-            _set_se_translator(old_handler);
-
-            switch (e) {
-            case EXCEPTION_CONTINUE_SEARCH:
-                // The just-in-time-debugger was not launched by the user.
-                //  - There are no debuggers available on the system.
-                //  - No debuggers where configured as just-in-time-debuggers.
-                //  - The user pressed 'Cancel' on the just-in-time-debugger
-                //    dialogue.
-                return false;
-
-            case EXCEPTION_EXECUTE_HANDLER:
-                // The just-in-time debugger was successfully launched by the
-                // user.
-                return true;
-
-            default:
-                // UnhandledExceptionFilter() returned an unexpected value.
-                std::terminate();
-            }
-        }
+        // Return the result of the dialogue window presented to the user.
+        return detail::just_in_time_debugger_available;
     }
 }
 

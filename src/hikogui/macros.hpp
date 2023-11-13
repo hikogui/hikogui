@@ -142,91 +142,91 @@
 
 #elif HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC
 #if defined(__MMX__)
-#define HAS_MMX 1
+#define HI_HAS_MMX 1
 #endif
 #if defined(__SSE__)
-#define HAS_SSE 1
+#define HI_HAS_SSE 1
 #endif
 #if defined(__SSE2__)
-#define HAS_SSE2 1
+#define HI_HAS_SSE2 1
 #endif
 #if defined(__SSE3__)
-#define HAS_SSE3 1
+#define HI_HAS_SSE3 1
 #endif
 #if defined(__SSSE3__)
-#define HAS_SSSE3 1
+#define HI_HAS_SSSE3 1
 #endif
 #if defined(__SSE4_1__)
-#define HAS_SSE4_1 1
+#define HI_HAS_SSE4_1 1
 #endif
 #if defined(__SSE4_2__)
-#define HAS_SSE4_2 1
+#define HI_HAS_SSE4_2 1
 #endif
 #if defined(__POPCNT__)
-#define HAS_POPCNT 1
+#define HI_HAS_POPCNT 1
 #endif
 #if defined(__LAHF_SAHF__)
-#define HAS_LAHF 1
+#define HI_HAS_LAHF 1
 #endif
 #if defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16)
-#define HAS_CX16 1
+#define HI_HAS_CX16 1
 #endif
 #if defined(__AVX__)
-#define HAS_AVX 1
+#define HI_HAS_AVX 1
 #endif
 #if defined(__AVX2__)
-#define HAS_AVX2 1
+#define HI_HAS_AVX2 1
 #endif
 #if defined(__BMI__)
-#define HAS_BMI1 1
+#define HI_HAS_BMI1 1
 #endif
 #if defined(__BMI2__)
-#define HAS_BMI2 1
+#define HI_HAS_BMI2 1
 #endif
 #if defined(__F16C__)
-#define HAS_F16C 1
+#define HI_HAS_F16C 1
 #endif
 #if defined(__FMA__)
-#define HAS_FMA 1
+#define HI_HAS_FMA 1
 #endif
 #if defined(__LZCNT__)
-#define HAS_LZCNT 1
+#define HI_HAS_LZCNT 1
 #endif
 #if defined(__MOVBE__)
-#define HAS_MOVBE 1
+#define HI_HAS_MOVBE 1
 #endif
 #if defined(__XSAVE__)
-#define HAS_XSAVE 1
+#define HI_HAS_XSAVE 1
 #endif
 #if defined(__AVX512BW__)
-#define HAS_AVX512BW 1
+#define HI_HAS_AVX512BW 1
 #endif
 #if defined(__AVX512CD__)
-#define HAS_AVX512CD 1
+#define HI_HAS_AVX512CD 1
 #endif
 #if defined(__AVX512DQ__)
-#define HAS_AVX512DQ 1
+#define HI_HAS_AVX512DQ 1
 #endif
 #if defined(__AVX512F__)
-#define HAS_AVX512F 1
+#define HI_HAS_AVX512F 1
 #endif
 #if defined(__AVX512VL__)
-#define HAS_AVX512VL 1
+#define HI_HAS_AVX512VL 1
 #endif
 #if defined(__SHA__)
-#define HAS_SHA 1
+#define HI_HAS_SHA 1
 #endif
 #if defined(__AES__)
-#define HAS_AES 1
+#define HI_HAS_AES 1
 #endif
 #if defined(__PCLMUL__)
-#define HAS_PCLMUL 1
+#define HI_HAS_PCLMUL 1
 #endif
 #if defined(__RDRND__)
-#define HAS_RDRND 1
+#define HI_HAS_RDRND 1
 #endif
 #if defined(__RDSEED__)
-#define HAS_RDSEED 1
+#define HI_HAS_RDSEED 1
 #endif
 
 #else
@@ -244,20 +244,20 @@
 #define HI_HAS_X86_64_V1 1
 #endif
 
-#if defined(HI_HAS_X86_64V1) && defined(HI_HAS_SSSE3) && defined(HI_HAS_SSE4_1) && \
+#if defined(HI_HAS_X86_64_V1) && defined(HI_HAS_SSSE3) && defined(HI_HAS_SSE4_1) && \
     defined(HI_HAS_SSE4_2) && defined(HI_HAS_SSE3) && defined(HI_HAS_POPCNT) && \
     defined(HI_HAS_LAHF) && defined(HI_HAS_CX16)
 #define HI_HAS_X86_64_V2 1
 #endif
 
-#if defined(HI_HAS_X86_64V2) && defined(HI_HAS_AVX) && defined(HI_HAS_AVX2) && \
+#if defined(HI_HAS_X86_64_V2) && defined(HI_HAS_AVX) && defined(HI_HAS_AVX2) && \
     defined(HI_HAS_BMI1) && defined(HI_HAS_BMI2) && defined(HI_HAS_F16C) && \
     defined(HI_HAS_FMA) && defined(HI_HAS_LZCNT) && defined(HI_HAS_MOVBE) && \
     defined(HI_HAS_OSXSAVE)
 #define HI_HAS_X86_64_V3 1
 #endif
 
-#if defined(HI_HAS_X86_64V3) && defined(HI_HAS_AVX512F) && defined(HI_HAS_AVX512BW) && \
+#if defined(HI_HAS_X86_64_V3) && defined(HI_HAS_AVX512F) && defined(HI_HAS_AVX512BW) && \
     defined(HI_HAS_AVX512CD) && defined(HI_HAS_AVX512DQ) && defined(HI_HAS_AVX512VL)
 #define HI_HAS_X86_64_V4 1
 #endif

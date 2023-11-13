@@ -164,6 +164,7 @@ hi::task<> main_window(my_preferences& preferences)
     top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
     hilet& hello_world_button = top->content().emplace_bottom<momentary_button_widget>(txt("Hello world AV"));
     hilet& vma_dump_button = top->content().emplace_bottom<momentary_button_widget>(txt("vma\ncalculate stats"));
+    hilet& abort_button = top->content().emplace_bottom<momentary_button_widget>(txt("abort"));
 
     auto window = gui_window{std::move(top)}; 
 
@@ -172,6 +173,7 @@ hi::task<> main_window(my_preferences& preferences)
             preferences_button,
             vma_dump_button,
             hello_world_button,
+            abort_button,
             preferences.toggle_value,
             window.closing);
 
@@ -186,9 +188,12 @@ hi::task<> main_window(my_preferences& preferences)
             hi_log_info("Hello World");
             break;
         case 3:
-            hi_log_info("Toggle value {}", get<bool>(result));
+            hi_debug_abort("my abort");
             break;
         case 4:
+            hi_log_info("Toggle value {}", get<bool>(result));
+            break;
+        case 5:
             co_return;
         default:
             hi_no_default();

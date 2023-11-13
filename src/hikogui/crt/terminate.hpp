@@ -8,7 +8,6 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../console/console.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
@@ -64,7 +63,7 @@ hi_inline void terminate_handler() noexcept{
         message = debug_message.exchange(nullptr, std::memory_order::relaxed);
     }
 
-    dialog_ok(title, message);
+    dialog(title, message);
 
     return old_terminate_handler();
 }

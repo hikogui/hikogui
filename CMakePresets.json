@@ -39,6 +39,9 @@
 	      "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_C_COMPILER": "cl"
       },
+      "environment": {
+        "CXXFLAGS": "/arch:AVX2"
+      },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "intelliSenseMode": "windows-msvc-x64"

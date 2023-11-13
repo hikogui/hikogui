@@ -11,9 +11,6 @@
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../char_maps/char_maps.hpp" // XXX #619
-#include "../console/console.hpp"
-#include "../console/print.hpp" // XXX #616
-#include "../console/dialog.hpp" // XXX #616
 #include "../macros.hpp"
 #include <chrono>
 #include <format>
@@ -25,6 +22,7 @@
 #include <memory>
 #include <thread>
 #include <filesystem>
+#include <cstdio>
 
 hi_export_module(hikogui.telemetry : log);
 
@@ -79,11 +77,11 @@ public:
         hilet thread_name = get_thread_name(thread_id);
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
-            return std::format("{} {}({}) {:5} {}\n", local_time_point, thread_name, cpu_id, log_level_name, _what());
+            return std::format("{} {}({}) {:5} {}", local_time_point, thread_name, cpu_id, log_level_name, _what());
         } else {
             auto source_filename = std::filesystem::path{static_cast<std::string_view>(SourcePath)}.filename().generic_string();
             return std::format(
-                "{} {}({}) {:5} {} ({}:{})\n",
+                "{} {}({}) {:5} {} ({}:{})",
                 local_time_point,
                 thread_name,
                 cpu_id,
@@ -200,7 +198,7 @@ private:
      */
     void write(std::string const& str) const noexcept
     {
-        print("{}", str);
+        std::println(stderr, "{}", str);
     }
 
     /** The global logger thread.

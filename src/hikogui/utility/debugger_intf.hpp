@@ -8,8 +8,10 @@
 #pragma once
 
 #include "../macros.hpp"
-#include <format>
+#include <print>
+#include <cstdio>
 #include <iostream>
+#include <exception>
 
 hi_export_module(hikogui.utility.debugger : intf);
 
@@ -40,7 +42,7 @@ bool prepare_debug_break() noexcept;
 hi_no_inline hi_inline void prepare_debug_break(char const *msg) noexcept
 {
     if (not prepare_debug_break()) {
-        std::cerr << std::format("Abnormal termination.\n{}\n", msg);
+        std::println(stderr, "Abnormal termination.\n{}", msg);
         debug_message.store(msg, std::memory_order::relaxed);
         std::terminate();
     }

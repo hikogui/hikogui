@@ -3,7 +3,7 @@
 
 #include "dialog_intf.hpp"
 
-hi_export_module(hikogui.console.dialog : impl);
+hi_export_module(hikogui.utility.dialog : impl);
 
 hi_export hi_inline void dialog_output(char const *title, char const *message)
 {

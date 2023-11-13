@@ -104,9 +104,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog_win32_impl.hpp>
     $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog_macos_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/print.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/print_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/print_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/byte_string.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/function_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/functional.hpp
@@ -502,6 +499,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/charconv.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/compare.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/concepts.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/console_win32.hpp>
     $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/cpu_id_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp
@@ -570,6 +568,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/win32.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winnls.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winreg.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winuser.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/macros.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/hikogui.hpp

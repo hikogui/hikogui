@@ -109,11 +109,9 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/console.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog_intf.ixx
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/console_win32.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog_win32_impl.ixx>
     $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog_macos_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/print.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/print_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/print_win32_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/byte_string.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/function_fifo.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/functional.ixx
@@ -577,6 +575,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/win32.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/winnls.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/winreg.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/winuser.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/hikogui.ixx
 )
 

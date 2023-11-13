@@ -10,7 +10,6 @@
 #include "codec/codec.hpp" // export
 #include "color/color.hpp" // export
 #include "concurrency/concurrency.hpp" // export
-#include "console/console.hpp" // export
 #include "container/container.hpp" // export
 #include "coroutine/coroutine.hpp" // export
 #include "crt/crt.hpp" // export
