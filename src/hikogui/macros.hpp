@@ -213,6 +213,21 @@
 #if defined(__AVX512VL__)
 #define HAS_AVX512VL 1
 #endif
+#if defined(__SHA__)
+#define HAS_SHA 1
+#endif
+#if defined(__AES__)
+#define HAS_AES 1
+#endif
+#if defined(__PCLMUL__)
+#define HAS_PCLMUL 1
+#endif
+#if defined(__RDRND__)
+#define HAS_RDRND 1
+#endif
+#if defined(__RDSEED__)
+#define HAS_RDSEED 1
+#endif
 
 #else
 #error "Unknown compiler for x86"

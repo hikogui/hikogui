@@ -56,6 +56,18 @@ hi_export_module(hikogui.utility.cpu_id);
 namespace hi {
 inline namespace v1 {
 
+/** Possible features of x86 CPUs.
+ *
+ * The features listed here are the ones which are required for
+ * official microarchitecture levels:
+ *  - x86-64-v1
+ *  - x86-64-v2
+ *  - x86-64-v3
+ *  - x86-64-v4
+ *
+ * Plus some optional features that are used by HikoGUI.
+ *
+ */
 enum class cpu_feature {
     // x86-64-v1
     cmov,
@@ -94,6 +106,11 @@ enum class cpu_feature {
     // others
     avx512pf,
     avx512er,
+    sha,
+    aes,
+    pclmul,
+    rdrnd,
+    rdseed,
 };
 
 template<std::integral Lhs>
@@ -105,6 +122,10 @@ template<std::integral Lhs>
     return static_cast<unsigned long long>(lhs) << std::to_underlying(rhs);
 }
 
+/** A mask of features.
+ *
+ * Currently this implementation can handle up to 64 features.
+ */
 enum class cpu_feature_mask : uint64_t {
     cmov       = 1 << cpu_feature::cmov,
     cx8        = 1 << cpu_feature::cx8,
@@ -146,6 +167,11 @@ enum class cpu_feature_mask : uint64_t {
 
     avx512pf   = 1 << cpu_feature::avx512pf,
     avx512er   = 1 << cpu_feature::avx512er,
+    sha        = 1 << cpu_feature::sha,
+    aes        = 1 << cpu_feature::aes,
+    pclmul     = 1 << cpu_feature::pclmul,
+    rdrnd      = 1 << cpu_feature::rdrnd,
+    rdseed     = 1 << cpu_feature::rdseed,
 };
 
 [[nodiscard]] constexpr cpu_feature_mask operator|(cpu_feature_mask const &lhs, cpu_feature_mask const &rhs) noexcept
@@ -232,16 +258,7 @@ struct cpu_id_result {
     return r;
 }
 
-[[nodiscard]] hi_inline uint64_t read_cr4()
-{
-#if HI_COMPILER == HI_CC_MSVC
-    return __readcr4();
-
-#else
-#error "read_cr4() not implemented"
-#endif
-}
-
+namespace detail {
 
 [[nodiscard]] hi_inline cpu_feature_mask cpu_features_init() noexcept
 {
@@ -255,6 +272,7 @@ struct cpu_id_result {
         hilet leaf1 = cpu_id(1);
 
         if (leaf1.ecx_bit( 0)) { r |= cpu_feature::sse3; }
+        if (leaf1.ecx_bit( 1)) { r |= cpu_feature::pclmul; }
         if (leaf1.ecx_bit( 9)) { r |= cpu_feature::ssse3; }
         if (leaf1.ecx_bit(12)) { r |= cpu_feature::fma; }
         if (leaf1.ecx_bit(13)) { r |= cpu_feature::cx16; }
@@ -262,9 +280,11 @@ struct cpu_id_result {
         if (leaf1.ecx_bit(20)) { r |= cpu_feature::sse4_2; }
         if (leaf1.ecx_bit(22)) { r |= cpu_feature::movbe; }
         if (leaf1.ecx_bit(23)) { r |= cpu_feature::popcnt; }
+        if (leaf1.ecx_bit(25)) { r |= cpu_feature::aes; }
         if (leaf1.ecx_bit(27)) { r |= cpu_feature::osxsave; }
         if (leaf1.ecx_bit(28)) { r |= cpu_feature::avx; }
         if (leaf1.ecx_bit(29)) { r |= cpu_feature::f16c; }
+        if (leaf1.ecx_bit(30)) { r |= cpu_feature::rdrnd; }
 
         if (leaf1.edx_bit( 0)) { r |= cpu_feature::fpu; }
         if (leaf1.edx_bit( 8)) { r |= cpu_feature::cx8; }
@@ -272,9 +292,9 @@ struct cpu_id_result {
         if (leaf1.edx_bit(23)) { r |= cpu_feature::mmx; }
         if (leaf1.edx_bit(24)) {
             r |= cpu_feature::fsxr;
-            if (to_bool(read_cr4() & (1ULL << 9))) {
-                r |= cpu_feature::osfxsr;
-            }
+            // Technically we need to read CR4, but this may be privileged.
+            // Moden operating system do support it though.
+            r |= cpu_feature::osfxsr;
         }
         if (leaf1.edx_bit(25)) { r |= cpu_feature::sse; }
         if (leaf1.edx_bit(26)) { r |= cpu_feature::sse2; }
@@ -288,9 +308,11 @@ struct cpu_id_result {
         if (leaf7.ebx_bit( 8)) { r |= cpu_feature::bmi2; }
         if (leaf7.ebx_bit(16)) { r |= cpu_feature::avx512f; }
         if (leaf7.ebx_bit(17)) { r |= cpu_feature::avx512dq; }
+        if (leaf7.ebx_bit(18)) { r |= cpu_feature::rdseed; }
         if (leaf7.ebx_bit(26)) { r |= cpu_feature::avx512pf; }
         if (leaf7.ebx_bit(27)) { r |= cpu_feature::avx512er; }
         if (leaf7.ebx_bit(28)) { r |= cpu_feature::avx512cd; }
+        if (leaf7.ebx_bit(29)) { r |= cpu_feature::sha; }
         if (leaf7.ebx_bit(30)) { r |= cpu_feature::avx512bw; }
         if (leaf7.ebx_bit(31)) { r |= cpu_feature::avx512vl; }
     }
@@ -417,229 +439,360 @@ struct cpu_id_result {
 #if HI_HAS_AVX512ER
     if (not to_bool(r & cpu_feature::avx512er)) { hi_debug_abort("Missing CPU feature: AVX512ER"); }
 #endif
+#if HI_HAS_SHA
+    if (not to_bool(r & cpu_feature::sha)) { hi_debug_abort("Missing CPU feature: SHA"); }
+#endif
+#if HI_HAS_AES
+    if (not to_bool(r & cpu_feature::aes)) { hi_debug_abort("Missing CPU feature: AES"); }
+#endif
+#if HI_HAS_PCLMUL
+    if (not to_bool(r & cpu_feature::pclmul)) { hi_debug_abort("Missing CPU feature: PCLMUL"); }
+#endif
+#if HI_HAS_RDRND
+    if (not to_bool(r & cpu_feature::rdrnd)) { hi_debug_abort("Missing CPU feature: RDRND"); }
+#endif
+#if HI_HAS_RDSEED
+    if (not to_bool(r & cpu_feature::rdseed)) { hi_debug_abort("Missing CPU feature: RDSEED"); }
+#endif
 
     return r;
     // clang-format on
 }
 
-inline cpu_feature_mask const cpu_features = cpu_features_init();
+}
+
+/** A set of features that are supported on this CPU.
+ */
+inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 
 // clang-format off
 
+/** This CPU has the CMOV (Conditional Move) instruction.
+ */
 #if HI_HAS_CMOV
 [[nodiscard]] constexpr bool has_cmov() noexcept { return true; }
 #else
 [[nodiscard]] bool has_cmov() noexcept { return to_bool(cpu_features & cpu_feature::cmov); }
 #endif
 
+/** This CPU has the CMPXCG8 (Compare and exchange 8 bytes) instruction.
+ */
 #if HI_HAS_CX8
 [[nodiscard]] constexpr bool has_cx8() noexcept { return true; }
 #else
 [[nodiscard]] bool has_cx8() noexcept { return to_bool(cpu_features & cpu_feature::cx8); }
 #endif
 
+/** This CPU has a floating-point co-processor.
+ */
 #if HI_HAS_FPU
 [[nodiscard]] constexpr bool has_fpu() noexcept { return true; }
 #else
 [[nodiscard]] bool has_fpu() noexcept { return to_bool(cpu_features & cpu_feature::fpu); }
 #endif
 
+/** This CPU has the fxsave instruction.
+ */
 #if HI_HAS_FXSR
 [[nodiscard]] constexpr bool has_fxsr() noexcept { return true; }
 #else
 [[nodiscard]] bool has_fxsr() noexcept { return to_bool(cpu_features & cpu_feature::fxsr); }
 #endif
 
+/** This operating system uses the FXSAVE instruction.
+ */
 #if HI_HAS_OSFXSR
 [[nodiscard]] constexpr bool has_osfxsr() noexcept { return true; }
 #else
 [[nodiscard]] bool has_osfxsr() noexcept { return to_bool(cpu_features & cpu_feature::osfxsr); }
 #endif
 
+/** This operating system uses the SYSCALL instruction.
+ */
 #if HI_HAS_SCE
 [[nodiscard]] constexpr bool has_sce() noexcept { return true; }
 #else
 [[nodiscard]] bool has_sce() noexcept { return to_bool(cpu_features & cpu_feature::sce); }
 #endif
 
+/** This CPU has the MMX instruction set.
+ */
 #if HI_HAS_MMX
 [[nodiscard]] constexpr bool has_mmx() noexcept { return true; }
 #else
 [[nodiscard]] bool has_mmx() noexcept { return to_bool(cpu_features & cpu_feature::mmx); }
 #endif
 
+/** This CPU has the SSE instruction set.
+ */
 #if HI_HAS_SSE
 [[nodiscard]] constexpr bool has_sse() noexcept { return true; }
 #else
 [[nodiscard]] bool has_sse() noexcept { return to_bool(cpu_features & cpu_feature::sse); }
 #endif
 
+/** This CPU has the SSE2 instruction set.
+ */
 #if HI_HAS_SSE2
 [[nodiscard]] constexpr bool has_sse2() noexcept { return true; }
 #else
 [[nodiscard]] bool has_sse2() noexcept { return to_bool(cpu_features & cpu_feature::sse2); }
 #endif
 
+/** This CPU has all the features for x86-64-v1 microarchitecture level.
+ */
 #if HI_HAS_X86_64_V1
 [[nodiscard]] constexpr bool has_x86_64_v1() noexcept { return true; }
 #else
 [[nodiscard]] bool has_x86_64_v1() noexcept { return cpu_features & cpu_feature_mask::x86_64_v1 == cpu_feature_mask::x86_64_v1; }
 #endif
 
+/** This CPU has the CMPXCG16 (Compare and exchange 16 bytes) instruction.
+ */
 #if HI_HAS_CX16
 [[nodiscard]] constexpr bool has_cx16() noexcept { return true; }
 #else
 [[nodiscard]] bool has_cx16() noexcept { return to_bool(cpu_features & cpu_feature::cx16); }
 #endif
 
+/** This CPU has the LAHF and SAHF instructions.
+ */
 #if HI_HAS_LAHF
 [[nodiscard]] constexpr bool has_lahf() noexcept { return true; }
 #else
 [[nodiscard]] bool has_lahf() noexcept { return to_bool(cpu_features & cpu_feature::lahf); }
 #endif
 
+/** This CPU has the POPCNT instructions.
+ */
 #if HI_HAS_POPCNT
 [[nodiscard]] constexpr bool has_popcnt() noexcept { return true; }
 #else
 [[nodiscard]] bool has_popcnt() noexcept { return to_bool(cpu_features & cpu_feature::popcnt); }
 #endif
 
+/** This CPU has the SSE3 instruction set.
+ */
 #if HI_HAS_SSE3
 [[nodiscard]] constexpr bool has_sse3() noexcept { return true; }
 #else
 [[nodiscard]] bool has_sse3() noexcept { return to_bool(cpu_features & cpu_feature::sse3); }
 #endif
 
+/** This CPU has the SSSE3 instruction set.
+ */
 #if HI_HAS_SSSE3
 [[nodiscard]] constexpr bool has_ssse3() noexcept { return true; }
 #else
 [[nodiscard]] bool has_ssse3() noexcept { return to_bool(cpu_features & cpu_feature::ssse3); }
 #endif
 
+/** This CPU has the SSE4.1 instruction set.
+ */
 #if HI_HAS_SSE4_1
 [[nodiscard]] constexpr bool has_sse4_1() noexcept { return true; }
 #else
 [[nodiscard]] bool has_sse4_1() noexcept { return to_bool(cpu_features & cpu_feature::sse4_1); }
 #endif
 
+/** This CPU has the SSE4.2 instruction set.
+ */
 #if HI_HAS_SSE4_2
 [[nodiscard]] constexpr bool has_sse4_2() noexcept { return true; }
 #else
 [[nodiscard]] bool has_sse4_2() noexcept { return to_bool(cpu_features & cpu_feature::sse4_2); }
 #endif
 
+/** This CPU has all the features for x86-64-v2 microarchitecture level.
+ */
 #if HI_HAS_X86_64_V2
 [[nodiscard]] constexpr bool has_x86_64_v2() noexcept { return true; }
 #else
 [[nodiscard]] bool has_x86_64_v2() noexcept { return cpu_features & cpu_feature_mask::x86_64_v2 == cpu_feature_mask::x86_64_v2; }
 #endif
 
+/** This CPU has float-16 conversion instructions.
+ */
 #if HI_HAS_F16C
 [[nodiscard]] constexpr bool has_f16c() noexcept { return true; }
 #else
 [[nodiscard]] bool has_f16c() noexcept { return to_bool(cpu_features & cpu_feature::f16c); }
 #endif
 
+/** This CPU has fused-multiply-accumulate instructions.
+ */
 #if HI_HAS_FMA
 [[nodiscard]] constexpr bool has_fma() noexcept { return true; }
 #else
 [[nodiscard]] bool has_fma() noexcept { return to_bool(cpu_features & cpu_feature::fma); }
 #endif
 
+/** This CPU has the BMI1 instruction set.
+ */
 #if HI_HAS_BMI1
 [[nodiscard]] constexpr bool has_bmi1() noexcept { return true; }
 #else
 [[nodiscard]] bool has_bmi1() noexcept { return to_bool(cpu_features & cpu_feature::bmi1); }
 #endif
 
+/** This CPU has the BMI2 instruction set.
+ */
 #if HI_HAS_BMI2
 [[nodiscard]] constexpr bool has_bmi2() noexcept { return true; }
 #else
 [[nodiscard]] bool has_bmi2() noexcept { return to_bool(cpu_features & cpu_feature::bmi2); }
 #endif
 
+/** This CPU has the LZCNT instruction.
+ */
 #if HI_HAS_LZCNT
 [[nodiscard]] constexpr bool has_lzcnt() noexcept { return true; }
 #else
 [[nodiscard]] bool has_lzcnt() noexcept { return to_bool(cpu_features & cpu_feature::lzcnt); }
 #endif
 
+/** This CPU has the MOVBE (Move Big Endian) instruction.
+ */
 #if HI_HAS_MOVBE
 [[nodiscard]] constexpr bool has_movbe() noexcept { return true; }
 #else
 [[nodiscard]] bool has_movbe() noexcept { return to_bool(cpu_features & cpu_feature::movbe); }
 #endif
 
+/** This operating system uses the SXSAVE instruction.
+ */
 #if HI_HAS_OSXSAVE
 [[nodiscard]] constexpr bool has_osxsave() noexcept { return true; }
 #else
 [[nodiscard]] bool has_osxsave() noexcept { return to_bool(cpu_features & cpu_feature::osxsave); }
 #endif
 
+/** This CPU has the AVX instruction set.
+ */
 #if HI_HAS_AVX
 [[nodiscard]] constexpr bool has_avx() noexcept { return true; }
 #else
 [[nodiscard]] bool has_avx() noexcept { return to_bool(cpu_features & cpu_feature::avx); }
 #endif
 
+/** This CPU has the AVX2 instruction set.
+ */
 #if HI_HAS_AVX2
 [[nodiscard]] constexpr bool has_avx2() noexcept { return true; }
 #else
 [[nodiscard]] bool has_avx2() noexcept { return to_bool(cpu_features & cpu_feature::avx2); }
 #endif
 
+/** This CPU has all the features for x86-64-v3 microarchitecture level.
+ */
 #if HI_HAS_X86_64_V3
 [[nodiscard]] constexpr bool has_x86_64_v3() noexcept { return true; }
 #else
 [[nodiscard]] bool has_x86_64_v3() noexcept { return cpu_features & cpu_feature_mask::x86_64_v3 == cpu_feature_mask::x86_64_v3; }
 #endif
 
+/** This CPU has the AVX512F instruction set.
+ */
 #if HI_HAS_AVX512F
 [[nodiscard]] constexpr bool has_avx512f() noexcept { return true; }
 #else
 [[nodiscard]] bool has_avx512f() noexcept { return to_bool(cpu_features & cpu_feature::avx512f); }
 #endif
 
+/** This CPU has the AVX512BW instruction set.
+ */
 #if HI_HAS_AVX512BW
 [[nodiscard]] constexpr bool has_avx512bw() noexcept { return true; }
 #else
 [[nodiscard]] bool has_avx512bw() noexcept { return to_bool(cpu_features & cpu_feature::avx512bw); }
 #endif
 
+/** This CPU has the AVX512CD instruction set.
+ */
 #if HI_HAS_AVX512CD
 [[nodiscard]] constexpr bool has_avx512cd() noexcept { return true; }
 #else
 [[nodiscard]] bool has_avx512cd() noexcept { return to_bool(cpu_features & cpu_feature::avx512cd); }
 #endif
 
+/** This CPU has the AVX512DQ instruction set.
+ */
 #if HI_HAS_AVX512DQ
 [[nodiscard]] constexpr bool has_avx512dq() noexcept { return true; }
 #else
 [[nodiscard]] bool has_avx512dq() noexcept { return to_bool(cpu_features & cpu_feature::avx512dq); }
 #endif
 
+/** This CPU has the AVX512VL instruction set.
+ */
 #if HI_HAS_AVX512VL
 [[nodiscard]] constexpr bool has_avx512vl() noexcept { return true; }
 #else
 [[nodiscard]] bool has_avx512vl() noexcept { return to_bool(cpu_features & cpu_feature::avx512vl); }
 #endif
 
+/** This CPU has all the features for x86-64-v4 microarchitecture level.
+ */
 #if HI_HAS_X86_64_V4
 [[nodiscard]] constexpr bool has_x86_64_v4() noexcept { return true; }
 #else
 [[nodiscard]] bool has_x86_64_v4() noexcept { return cpu_features & cpu_feature_mask::x86_64_v4 == cpu_feature_mask::x86_64_v4; }
 #endif
 
+/** This CPU has the AVX512PF instruction set.
+ */
 #if HI_HAS_AVX512PF
 [[nodiscard]] constexpr bool has_avx512pf() noexcept { return true; }
 #else
 [[nodiscard]] bool has_avx512pf() noexcept { return to_bool(cpu_features & cpu_feature::avx512pf); }
 #endif
 
+/** This CPU has the AVX512ER instruction set.
+ */
 #if HI_HAS_AVX512ER
 [[nodiscard]] constexpr bool has_avx512er() noexcept { return true; }
 #else
 [[nodiscard]] bool has_avx512er() noexcept { return to_bool(cpu_features & cpu_feature::avx512er); }
+#endif
+
+/** This CPU has the SHA cryptographical secure hash instruction set.
+ */
+#if HI_HAS_SHA
+[[nodiscard]] constexpr bool has_sha() noexcept { return true; }
+#else
+[[nodiscard]] bool has_sha() noexcept { return to_bool(cpu_features & cpu_feature::sha); }
+#endif
+
+/** This CPU has the AES-NI block cypher instruction set.
+ */
+#if HI_HAS_AES
+[[nodiscard]] constexpr bool has_aes() noexcept { return true; }
+#else
+[[nodiscard]] bool has_aes() noexcept { return to_bool(cpu_features & cpu_feature::aes); }
+#endif
+
+/** This CPU has the PCLMUL carry-less multiply instruction.
+ */
+#if HI_HAS_AES
+[[nodiscard]] constexpr bool has_aes() noexcept { return true; }
+#else
+[[nodiscard]] bool has_aes() noexcept { return to_bool(cpu_features & cpu_feature::aes); }
+#endif
+
+/** This CPU has the RDRAND on-chip random number generator instruction.
+ */
+#if HI_HAS_RDRND
+[[nodiscard]] constexpr bool has_rdrnd() noexcept { return true; }
+#else
+[[nodiscard]] bool has_rdrnd() noexcept { return to_bool(cpu_features & cpu_feature::rdrnd); }
+#endif
+
+/** This CPU has the RDSEED access to the conditioned on-chip entropy.
+ */
+#if HI_HAS_RDSEED
+[[nodiscard]] constexpr bool has_rdseed() noexcept { return true; }
+#else
+[[nodiscard]] bool has_rdseed() noexcept { return to_bool(cpu_features & cpu_feature::rdseed); }
 #endif
 
 // clang-format on
