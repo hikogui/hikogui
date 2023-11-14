@@ -264,6 +264,7 @@
 // clang-format on
 
 #if HI_COMPILER == HI_CC_CLANG
+#define hi_debug_break() __builtin_debugtrap()
 #define hi_target(...) __attribute__((target(__VA_ARGS__)))
 #define hi_assume(...) __builtin_assume(not not (__VA_ARGS__))
 #define hi_force_inline __attribute__((always_inline))
@@ -276,6 +277,7 @@
 #define hi_warning_ignore_clang(...) _Pragma(hi_stringify(clang diagnostic ignored __VA_ARGS__))
 
 #elif HI_COMPILER == HI_CC_MSVC
+#define hi_debug_break() __debugbreak()
 #define hi_target(...)
 #define hi_assume(...) __assume(__VA_ARGS__)
 #define hi_force_inline __forceinline
@@ -289,6 +291,7 @@
 #define hi_warning_ignore_clang(...)
 
 #elif HI_COMPILER == HI_CC_GCC
+#define hi_debug_break() __builtin_trap()
 #define hi_target(...) __attribute__((target(__VA_ARGS__)))
 #define hi_assume(...) \
     do { \
@@ -306,6 +309,7 @@
 #define msvc_pragma(...)
 
 #else
+#define hi_debug_break() std::terminate()
 #define hi_target(...)
 #define hi_assume(...) static_assert(sizeof(__VA_ARGS__) == 1)
 #define hi_force_inline
@@ -441,23 +445,6 @@
 
 #define ssizeof(x) (static_cast<ssize_t>(sizeof(x)))
 
-/** Debug-break.
- *
- * This function will break the application in the debugger.
- * Potentially it will start the Just-In-Time debugger if one is configured.
- * Otherwise it will continue execution.
- */
-#if defined(_WIN32)
-#define hi_debug_break() \
-    do { \
-        if (::hi::prepare_debug_break()) { \
-            __debugbreak(); \
-        } \
-    } while (false)
-#else
-#error Missing implementation of hi_debug_break().
-#endif
-
 /** Debug-break and abort the application.
  *
  * This function will break the application in the debugger.
@@ -471,8 +458,8 @@
 #if defined(_WIN32)
 #define hi_debug_abort(...) \
     do { \
-        ::hi::prepare_debug_break(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__); \
-        __debugbreak(); \
+        ::hi::set_terminate_message(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__); \
+        hi_debug_break(); \
     } while (false)
 #else
 #error Missing implementation of hi_debug_abort().

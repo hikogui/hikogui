@@ -11,7 +11,7 @@
 #include "../macros.hpp"
 #include "assert.hpp"
 #include "cast.hpp"
-#include "debugger.hpp"
+#include "terminate.hpp"
 #include "exception.hpp"
 #include <complex>
 #include <cmath>

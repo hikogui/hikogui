@@ -8,7 +8,7 @@
 #include "misc.hpp"
 #include "../macros.hpp"
 #include "assert.hpp"
-#include "debugger.hpp"
+#include "terminate.hpp"
 #include "exception.hpp"
 #include <type_traits>
 #include <string>

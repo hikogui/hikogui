@@ -6,7 +6,7 @@
 
 #include "../macros.hpp"
 #include "cast.hpp"
-#include "debugger.hpp"
+#include "terminate.hpp"
 #include "exception.hpp"
 #include "misc.hpp"
 #include <span>

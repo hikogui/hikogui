@@ -5,11 +5,12 @@
 #pragma once
 
 #include "../macros.hpp"
-#include "cast.hpp"
 #include <string_view>
 #include <iostream>
 #include <format>
 #include <concepts>
+#include <expected>
+#include <system_error>
 
 hi_export_module(hikogui.utility.dialog : intf);
 
@@ -21,9 +22,6 @@ enum class dialog_button {no, yes, cancel, ok, retry, _continue};
 template<std::integral T>
 [[nodiscard]] constexpr unsigned long long operator<<(T const &lhs, dialog_button const &rhs) noexcept
 {
-    hi_axiom(std::cmp_equal(lhs, 1));
-    hi_axiom(std::cmp_less(std::to_underlying(rhs), 64));
-
     return 1ULL << std::to_underlying(rhs);
 }
 

@@ -9,11 +9,11 @@
 #pragma once
 
 #include "type_traits.hpp"
+#include "terminate.hpp"
 #include "../macros.hpp"
 #include "assert.hpp"
 #include "compare.hpp"
 #include "concepts.hpp"
-#include "debugger.hpp"
 #include "exception.hpp"
 #include <type_traits>
 #include <typeinfo>

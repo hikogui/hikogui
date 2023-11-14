@@ -8,8 +8,8 @@
 #pragma once
 
 #include "type_traits.hpp"
+#include "terminate.hpp"
 #include "../macros.hpp"
-#include "debugger.hpp"
 #include "exception.hpp"
 #include <exception>
 #include <ranges>

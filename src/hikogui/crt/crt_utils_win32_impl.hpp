@@ -7,7 +7,6 @@
 #include "../win32_headers.hpp"
 
 #include "crt_utils_intf.hpp"
-#include "terminate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
@@ -25,7 +24,6 @@
 #include <format>
 #include <type_traits>
 #include <chrono>
-
 
 hi_export_module(hikogui.crt.crt_utils : impl);
 
@@ -60,9 +58,6 @@ hi_export [[nodiscard]] hi_inline char *make_cstr(std::string const& s) noexcept
 
 hi_export hi_inline std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
-    // Switch out the terminate handler with one that can print an error message.
-    old_terminate_handler = std::set_terminate(terminate_handler);
-
     // lpCmdLine does not handle UTF-8 command line properly.
     // So use GetCommandLineW() to get wide string arguments.
     // CommandLineToArgW properly unescapes the command line
@@ -94,7 +89,6 @@ hi_export hi_inline std::pair<int, char **> crt_start(int, char **, void *instan
     argv[argc] = nullptr;
 
     // Make sure the console is in a valid state to write text to it.
-    start_console();
     hilet [tsc_frequency, aux_is_cpu_id] = hi::time_stamp_count::start_subsystem();
 
     start_system();

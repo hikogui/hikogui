@@ -11,6 +11,7 @@
 #include "../macros.hpp"
 #include <string_view>
 #include <expected>
+#include <system_error>
 
 hi_export_module(hikogui.utility.dialog : impl);
 
@@ -52,7 +53,7 @@ hi_export hi_inline std::expected<dialog_button, std::error_code> dialog(std::st
         break;
 
     default:
-        hi_debug_abort("Unknown dialog type requested.");
+        std::terminate();
     }
 
     if (hilet r = win32_MessageBox(nullptr, text, title, type)) {
@@ -66,7 +67,7 @@ hi_export hi_inline std::expected<dialog_button, std::error_code> dialog(std::st
         case IDRETRY: return dialog_button::retry;
         case IDTRYAGAIN: return dialog_button::retry;
         case IDYES: return dialog_button::yes;
-        default: hi_no_default();
+        default: std::terminate();
         }
     } else {
         return std::unexpected{make_error_code(r.error())};

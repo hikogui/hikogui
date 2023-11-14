@@ -137,7 +137,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/terminate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/dispatch.ixx
@@ -523,6 +522,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/float_to_half.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/forward_value.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/hash.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/initialize.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/math.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/memory.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/misc.ixx
@@ -532,6 +532,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/policy.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/reflection.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/tagged_id.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/terminate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/time_zone.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/type_traits.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/units.ixx

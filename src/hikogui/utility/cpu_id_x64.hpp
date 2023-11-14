@@ -5,8 +5,9 @@
 #pragma once
 
 
-#include "debugger.hpp"
+#include "terminate.hpp"
 #include "cast.hpp"
+#include "initialize.hpp"
 #include "../macros.hpp"
 #include <array>
 #include <utility>
@@ -262,6 +263,8 @@ namespace detail {
 
 [[nodiscard]] hi_inline cpu_feature_mask cpu_features_init() noexcept
 {
+    initialize();
+
     // clang-format off
     auto r = cpu_feature_mask{};
 

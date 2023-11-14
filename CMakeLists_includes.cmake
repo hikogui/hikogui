@@ -129,7 +129,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_win32_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/terminate.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/dispatch.hpp
@@ -516,6 +515,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_to_float.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/hash.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/initialize.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/math.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/memory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/misc.hpp
@@ -525,6 +525,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/policy.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/tagged_id.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/terminate.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/time_zone.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/type_traits.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/units.hpp
