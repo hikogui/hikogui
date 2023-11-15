@@ -460,6 +460,7 @@
     do { \
         ::hi::set_terminate_message(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__); \
         hi_debug_break(); \
+        ::hi::set_terminate_message(nullptr); \
     } while (false)
 #else
 #error Missing implementation of hi_debug_abort().

@@ -15,6 +15,7 @@
 #include <string>
 #include <chrono>
 #include <atomic>
+#include <string_view>
 
 hi_export_module(hikogui.utility.misc);
 
@@ -156,7 +157,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>>
 
     while (true) {
         auto i = haystack.find(needle, pos);
-        if (i == haystack::npos) {
+        if (i == haystack.npos) {
             return count;
         }
 
@@ -171,7 +172,7 @@ template<typename CharT, typename Traits = std::char_traits<CharT>>
 
     while (true) {
         auto i = haystack.find(needle, pos);
-        if (i == haystack::npos) {
+        if (i == haystack.npos) {
             return haystack;
         }
 

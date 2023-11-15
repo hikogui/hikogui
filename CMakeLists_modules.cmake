@@ -573,6 +573,8 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/with_label_widget.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/base.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/processthreadsapi.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/synchapi.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/win32.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/winnls.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/winreg.ixx>
