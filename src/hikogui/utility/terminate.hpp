@@ -48,6 +48,16 @@ hi_inline void set_terminate_message(char const *str) noexcept
     detail::terminate_message.store(str, std::memory_order::relaxed);
 }
 
+[[nodiscard]] hi_inline bool has_terminate_message() noexcept
+{
+    return detail::terminate_message.load(std::memory_order::relaxed) != nullptr;
+}
+
+[[nodiscard]] hi_inline char const *get_terminate_message() noexcept
+{
+    return detail::terminate_message.exchange(nullptr, std::memory_order::relaxed);
+}
+
 /** Register functions that need to be called on std::terminate().
  * 
 */
@@ -93,7 +103,7 @@ hi_inline void terminate_handler() noexcept{
 
     } else {
         title = "Abnormal termination."s;
-        if (auto message_cstr = detail::terminate_message.exchange(nullptr, std::memory_order::relaxed)) {
+        if (auto message_cstr = get_terminate_message()) {
             message = message_cstr;
         } else {
             message = "<unknown>";
