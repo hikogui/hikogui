@@ -37,7 +37,7 @@ inline namespace v1 {
             buffer_size *= 2;
         }
     }
-    hi_no_default("Could not get module path. It exceeds the buffer length of 32768 chars.");
+    return std::unexpected{win32_error::insufficient_buffer};
 }
 
 } // namespace v1

@@ -26,7 +26,8 @@ enum class win32_error : uint32_t {
     success = ERROR_SUCCESS,
     file_not_found = ERROR_FILE_NOT_FOUND,
     more_data = ERROR_MORE_DATA,
-    invalid_data = ERROR_INVALID_DATA,
+_   invalid_data = ERROR_INVALID_DATA,
+    insufficient_buffer = ERROR_INSUFFICIENT_BUFFER,
     status_pending = STATUS_PENDING,
 };
 
