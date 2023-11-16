@@ -210,6 +210,14 @@ hi_inline auto global_win32_error_category = win32_error_category{};
     }
 }
 
+/** Convert a HANDLE to a 32-bit unsigned integer.
+ *
+ * Although a `HANDLE` is a typedef of a `void *`, in reality it is an
+ * 32 bit unsigned integer.
+ *
+ * This function is used to pass a HANDLE of an Event Object to be passed
+ * on the command-line to vsjitdebugger.exe.
+ */
 [[nodiscard]] hi_inline uint32_t win32_HANDLE_to_int(HANDLE handle) noexcept
 {
     auto i = std::bit_cast<uintptr_t>(handle);

@@ -233,9 +233,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
         target_compile_options(hikogui ${HI_SCOPE} -finput-charset=UTF-8)
     endif()
 
-    # This option is required when using _set_se_translator().
-    target_compile_options(hikogui ${HI_SCOPE} -EHa)
-
     # Clang will complain about __builtin_assume even on constexpr functions and operators,
     # this warning is absolutely useless.
     target_compile_options(hikogui ${HI_SCOPE} -Wno-assume)
@@ -272,9 +269,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
-    # This option is required when using _set_se_translator().
-    target_compile_options(hikogui ${HI_SCOPE} -EHa)
-
     # Turn on a lot of warnings by default.
     target_compile_options(hikogui ${HI_SCOPE} -W4)
 

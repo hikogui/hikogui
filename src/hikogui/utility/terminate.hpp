@@ -19,6 +19,7 @@
 #include <mutex>
 #include <print>
 #include <cstdio>
+#include <stacktrace>
 
 hi_export_module(hikogui.utility.terminate);
 
@@ -87,6 +88,11 @@ hi_inline void terminate_handler() noexcept{
     auto title = std::string{};
     auto message = std::string{};
 
+    // Construct a stacktrace.
+    auto stack_trace = std::basic_stacktrace::current(1);
+    message += to_string(stack_trace);
+    message += '\n';
+
     hilet ep = std::current_exception();
     if (ep) {
         try {
@@ -94,19 +100,19 @@ hi_inline void terminate_handler() noexcept{
 
         } catch (std::exception const& e) {
             title = "Unhandled std::exception."s;
-            message = e.what();
+            message += e.what();
 
         } catch (...) {
             title = "Unhandled unknown exception."s;
-            message = "<no data>"s;
+            message += "<no data>"s;
         }
 
     } else {
         title = "Abnormal termination."s;
         if (auto message_cstr = get_terminate_message()) {
-            message = message_cstr;
+            message += message_cstr;
         } else {
-            message = "<unknown>";
+            message += "<unknown>";
         }
     }
 

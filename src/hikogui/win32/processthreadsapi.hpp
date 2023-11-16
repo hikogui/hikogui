@@ -15,7 +15,7 @@ hi_export_module(hikogui.win32.processthreadsapi);
 hi_export namespace hi {
 inline namespace v1 {
 
-[[nodiscard]] std::expected<uint32_t, win32_error> win32_GetExitCodeProcess(HANDLE process_handle) noexcept
+[[nodiscard]] hi_inline std::expected<uint32_t, win32_error> win32_GetExitCodeProcess(HANDLE process_handle) noexcept
 {
     DWORD exit_code = 0;
     if (GetExitCodeProcess(process_handle, &exit_code)) {
@@ -30,7 +30,7 @@ inline namespace v1 {
 }
 
 template<typename StartupInfo>
-[[nodiscard]] std::expected<PROCESS_INFORMATION, win32_error> win32_CreateProcess(
+[[nodiscard]] hi_inline std::expected<PROCESS_INFORMATION, win32_error> win32_CreateProcess(
     std::optional<std::string> application_name,
     std::optional<std::string> command_line,
     SECURITY_ATTRIBUTES const *process_attributes,

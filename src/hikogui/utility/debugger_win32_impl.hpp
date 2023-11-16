@@ -158,10 +158,43 @@ hi_inline bool launch_jit_debugger() noexcept
     return debugger_is_attached;
 }
 
-[[nodiscard]] constexpr bool is_debugable_exception(EXCEPTION_POINTERS *p) noexcept
+[[nodiscard]] constexpr std::string to_string(EXCEPTION_POINTERS const &ep) noexcept
+{
+    auto r = std::string{};
+
+    // clang-format off
+    switch (ep.ExceptionRecord->ExceptionCode) {
+    case EXCEPTION_ACCESS_VIOLATION: r += "Access Violation"; break;
+    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: r += "Array Bounds Exceeded"; break;
+    case EXCEPTION_BREAKPOINT: r += "Breakpoint"; break;
+    case EXCEPTION_DATATYPE_MISALIGNMENT: r += "Datatype Misalignment"; break;
+    case EXCEPTION_FLT_DENORMAL_OPERAND: r += "Floating Point Denormal Operand"; break;
+    case EXCEPTION_FLT_DIVIDE_BY_ZERO: r += "Floating Point Divide by Zero"; break;
+    case EXCEPTION_FLT_INEXACT_RESULT: r += "Floating Point Inexact Result"; break;
+    case EXCEPTION_FLT_INVALID_OPERATION: r += "Floating Point Invalid Operation"; break;
+    case EXCEPTION_FLT_OVERFLOW: r += "Floating Point Overflow"; break;
+    case EXCEPTION_FLT_STACK_CHECK: r += "Floating Point Stack Check"; break;
+    case EXCEPTION_FLT_UNDERFLOW: r += "Floating Point Underflow"; break;
+    case EXCEPTION_ILLEGAL_INSTRUCTION: r += "Illegal Instruction"; break;
+    case EXCEPTION_IN_PAGE_ERROR: r += "In Page Error"; break;
+    case EXCEPTION_INT_DIVIDE_BY_ZERO: r += "Integer Divide By Zero"; break;
+    case EXCEPTION_INT_OVERFLOW: r += "Integer Overflow"; break;
+    case EXCEPTION_INVALID_DISPOSITION: r += "Invalid Disposition"; break;
+    case EXCEPTION_NONCONTINUABLE_EXCEPTION: r += "Non-continuable Exception"; break;
+    case EXCEPTION_PRIV_INSTRUCTION: r += "Priveledged Instruction"; break;
+    case EXCEPTION_SINGLE_STEP: r += "Single Step"; break;
+    case EXCEPTION_STACK_OVERFLOW: r += "Stack Overflow"; break;
+    default: r += ""; break;
+    }
+    // clang-format on
+
+    return r;
+}
+
+[[nodiscard]] constexpr bool is_debugable_exception(EXCEPTION_POINTERS const &ep) noexcept
 {
     // clang-format off
-    switch (p->ExceptionRecord->ExceptionCode) {
+    switch (ep.ExceptionRecord->ExceptionCode) {
     case EXCEPTION_ACCESS_VIOLATION: return true;
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: return true;
     case EXCEPTION_BREAKPOINT: return true;
@@ -189,7 +222,7 @@ hi_inline bool launch_jit_debugger() noexcept
 
 hi_inline LONG exception_handler(EXCEPTION_POINTERS *p) noexcept
 {
-    if (not is_debugable_exception(p)) {
+    if (not is_debugable_exception(*p)) {
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
@@ -244,7 +277,8 @@ hi_inline LONG exception_handler(EXCEPTION_POINTERS *p) noexcept
 
     } else {
         // Create a message for this exception.
-        set_terminate_message("Received exception.");
+        auto exception_str = to_string(*p);
+        set_terminate_message(exception_str.c_str());
         std::terminate();
     }
 }
