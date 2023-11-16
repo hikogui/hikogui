@@ -14,6 +14,7 @@ hi_export_module(hikogui.utility.debugger : intf);
 hi_export namespace hi { inline namespace v1 {
 
 /** Setup the handler for break-points
+ *
  */
 void setup_debug_break_handler() noexcept;
 
