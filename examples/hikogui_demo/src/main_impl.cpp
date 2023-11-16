@@ -5,6 +5,7 @@
 #include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 #include <memory>
+#include <stacktrace>
 
 //import hikogui;
 
@@ -192,8 +193,8 @@ hi::task<> main_window(my_preferences& preferences)
             hi_log_info("Hello World");
             break;
         case 3:
-            target = 1 / (result.index() - 3);
-            //hi_debug_abort("my abort");
+            //target = 1 / (result.index() - 3);
+            hi_assert_abort("my abort");
             break;
         case 4:
             hi_debug_break();

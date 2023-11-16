@@ -249,6 +249,40 @@
       ]
     },
     {
+      "name": "msvc-x64-windows-rdi-tests",
+      "displayName": "Library + Tests",
+      "configurePreset": "msvc-x64-windows-rdi",
+      "targets": [
+        "hikogui_all_tests"
+      ]
+    },
+    {
+      "name": "msvc-x64-windows-rdi-examples",
+      "displayName": "Library + Examples",
+      "configurePreset": "msvc-x64-windows-rdi",
+      "targets": [
+        "examples"
+      ]
+    },
+    {
+      "name": "msvc-x64-windows-rdi-demo",
+      "displayName": "Library + Demo",
+      "configurePreset": "msvc-x64-windows-rdi",
+      "targets": [
+        "hikogui_demo"
+      ]
+    },
+    {
+      "name": "msvc-x64-windows-rdi-all",
+      "displayName": "All",
+      "configurePreset": "msvc-x64-windows-rdi",
+      "targets": [
+        "hikogui_all_tests",
+        "hikogui_demo",
+        "examples"
+      ]
+    },
+    {
       "name": "msvc-x64-windows-rel-tests",
       "displayName": "Library + Tests",
       "configurePreset": "msvc-x64-windows-rel",

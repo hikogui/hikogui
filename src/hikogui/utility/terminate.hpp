@@ -9,6 +9,7 @@
 
 #include "../macros.hpp"
 #include "dialog.hpp"
+#include "debugger.hpp"
 #include <exception>
 #include <stdexcept>
 #include <atomic>
@@ -23,12 +24,9 @@
 
 hi_export_module(hikogui.utility.terminate);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 namespace detail {
-
-/** Message to show when the application is terminated because of a debug_abort.
- */
-hi_inline std::atomic<char const *> terminate_message = nullptr;
 
 hi_inline std::mutex terminate_mutex;
 
@@ -42,26 +40,11 @@ hi_inline void call_atterminate() noexcept
     }
 }
 
-}
-
-hi_inline void set_terminate_message(char const *str) noexcept
-{
-    detail::terminate_message.store(str, std::memory_order::relaxed);
-}
-
-[[nodiscard]] hi_inline bool has_terminate_message() noexcept
-{
-    return detail::terminate_message.load(std::memory_order::relaxed) != nullptr;
-}
-
-[[nodiscard]] hi_inline char const *get_terminate_message() noexcept
-{
-    return detail::terminate_message.exchange(nullptr, std::memory_order::relaxed);
-}
+} // namespace detail
 
 /** Register functions that need to be called on std::terminate().
- * 
-*/
+ *
+ */
 hi_inline void atterminate(std::function<void()> f) noexcept
 {
     hilet lock = std::scoped_lock(detail::terminate_mutex);
@@ -78,20 +61,16 @@ hi_inline std::terminate_handler old_terminate_handler;
  *
  * This handler will print an error message on the console or pop-up a dialogue box.
  *
- * @note Use `set_terminate_message()` to set a message.
+ * @note Use `set_debug_message()` to set a message.
  */
-hi_inline void terminate_handler() noexcept{
+hi_inline void terminate_handler() noexcept
+{
     using namespace std::literals;
 
     detail::call_atterminate();
 
     auto title = std::string{};
     auto message = std::string{};
-
-    // Construct a stacktrace.
-    auto stack_trace = std::basic_stacktrace::current(1);
-    message += to_string(stack_trace);
-    message += '\n';
 
     hilet ep = std::current_exception();
     if (ep) {
@@ -109,11 +88,26 @@ hi_inline void terminate_handler() noexcept{
 
     } else {
         title = "Abnormal termination."s;
-        if (auto message_cstr = get_terminate_message()) {
+        if (auto message_cstr = get_debug_message()) {
             message += message_cstr;
         } else {
             message += "<unknown>";
         }
+    }
+
+    // Append a stacktrace.
+    message += "\n\nStack Trace:\n";
+
+    auto stack_trace = std::stacktrace::current(0, 25);
+
+    auto depth = 0;
+    for (auto entry : stack_trace) {
+        if (entry and not(entry.source_file().empty() and entry.source_line() == 0 and entry.description().empty())) {
+            message += std::format("{}. {}:{} {}\n", depth, entry.source_file(), entry.source_line(), entry.description());
+        } else {
+            message += std::format("{}. <information is unavailable>\n", depth);
+        }
+        ++depth;
     }
 
     if (not dialog(title, message)) {
@@ -127,4 +121,5 @@ hi_inline void terminate_handler() noexcept{
     }
 }
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

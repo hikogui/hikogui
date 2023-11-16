@@ -11,11 +11,18 @@
 
 hi_export_module(hikogui.utility.debugger : intf);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
-/** Setup the handler for break-points
- *
+/** Enable the JIT debugger to be attached.
+ * 
+ * Normally the JIT debugger will already work. By using this function
+ * hi_assert_break() and hi_debug_break() will improve.
+ *  - hi_assert_break() will call std::terminate() for a better error message
+ *    and stack-trace.
+ *  - hi_debug_break() will continue if no debugger is available or cancelled. 
  */
-void setup_debug_break_handler() noexcept;
+void enable_debugger() noexcept;
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

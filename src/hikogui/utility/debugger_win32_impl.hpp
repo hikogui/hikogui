@@ -10,6 +10,7 @@
 #include "console_win32.hpp"
 #include "exception.hpp"
 #include "debugger_intf.hpp"
+#include "debugger_utils.hpp"
 #include "misc.hpp"
 #include <exception>
 #include <print>
@@ -17,6 +18,8 @@
 #include <chrono>
 #include <bit>
 #include <format>
+#include <thread>
+#include <filesystem>
 
 hi_export_module(hikogui.utility.debugger : impl);
 
@@ -27,6 +30,7 @@ hi_warning_ignore_msvc(6320);
 
 hi_export namespace hi {
 inline namespace v1 {
+
 namespace detail {
 
 struct JIT_DEBUG_INFO {
@@ -55,6 +59,13 @@ hi_inline bool launch_jit_debugger() noexcept
 {
     using namespace std::literals;
 
+    auto debugger_enabled = win32_RegGetValue<std::string>(
+        HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug", "Auto");
+    if (not debugger_enabled or *debugger_enabled != "1") {
+        // JIT debugger was not configured or disabled.
+        return false;
+    }
+
     auto debugger = win32_RegGetValue<std::string>(
         HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug", "Debugger");
     if (not debugger) {
@@ -62,7 +73,18 @@ hi_inline bool launch_jit_debugger() noexcept
         return false;
     }
 
-    // XXX check AutoExclusionList.
+    auto executable_name = win32_GetModuleFileName();
+    if (not executable_name) {
+        // Could not get executable name.
+        return false;
+    }
+
+    auto executable_is_excluded = win32_RegGetValue<uint32_t>(
+        HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug\\AutoExclusionList", executable_name->filename().string());
+    if (executable_is_excluded and *executable_is_excluded == 1) {
+        // This executable was excluded.
+        return false;
+    }
 
     hilet num_arguments = count(*debugger, "%ld") + count(*debugger, "%p");
     hilet cmd_line_fmt = replace(replace(*debugger, "%ld", "{}"), "%p", "{:x}");
@@ -74,7 +96,7 @@ hi_inline bool launch_jit_debugger() noexcept
             jit_debug_handle = *handle;
 
         } else {
-            set_terminate_message("Could not create event object for JIT debugger.");
+            set_debug_message("Could not create event object for JIT debugger.");
             std::terminate();
         }
     }
@@ -89,7 +111,7 @@ hi_inline bool launch_jit_debugger() noexcept
             case 3:
                 return std::vformat(cmd_line_fmt, std::make_format_args(process_id, win32_HANDLE_to_int(jit_debug_handle), std::bit_cast<uintptr_t>(&jit_debug_info)));
             default:
-                set_terminate_message("JIT debugger accepts an invalid number of arguments.");
+                set_debug_message("JIT debugger accepts an invalid number of arguments.");
                 std::terminate();
             }
         } catch (...) {
@@ -113,7 +135,7 @@ hi_inline bool launch_jit_debugger() noexcept
         startup_info); // process info
 
     if (not process_info) {
-        set_terminate_message("Could not executed JIT debugger.");
+        set_debug_message("Could not executed JIT debugger.");
         std::terminate();
     }
 
@@ -139,7 +161,7 @@ hi_inline bool launch_jit_debugger() noexcept
 
                 } else if (exit_code.error() != win32_error::status_pending) {
                     // The JIT debug process has not yet exited.
-                    set_terminate_message("GetExitCodeProcess() return unknown error");
+                    set_debug_message("GetExitCodeProcess() return unknown error");
                     std::terminate();
                 }
             }
@@ -147,7 +169,7 @@ hi_inline bool launch_jit_debugger() noexcept
             std::this_thread::sleep_for(15ms);
         }
 
-        set_terminate_message("Debugger did not attach within 60s after being selected.");
+        set_debug_message("Debugger did not attach within 60s after being selected.");
         std::terminate();
     }();
 
@@ -164,6 +186,7 @@ hi_inline bool launch_jit_debugger() noexcept
 
     // clang-format off
     switch (ep.ExceptionRecord->ExceptionCode) {
+    case STATUS_ASSERTION_FAILURE: r += "Assertion Failure"; break;
     case EXCEPTION_ACCESS_VIOLATION: r += "Access Violation"; break;
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: r += "Array Bounds Exceeded"; break;
     case EXCEPTION_BREAKPOINT: r += "Breakpoint"; break;
@@ -181,10 +204,10 @@ hi_inline bool launch_jit_debugger() noexcept
     case EXCEPTION_INT_OVERFLOW: r += "Integer Overflow"; break;
     case EXCEPTION_INVALID_DISPOSITION: r += "Invalid Disposition"; break;
     case EXCEPTION_NONCONTINUABLE_EXCEPTION: r += "Non-continuable Exception"; break;
-    case EXCEPTION_PRIV_INSTRUCTION: r += "Priveledged Instruction"; break;
+    case EXCEPTION_PRIV_INSTRUCTION: r += "Priviledged Instruction"; break;
     case EXCEPTION_SINGLE_STEP: r += "Single Step"; break;
     case EXCEPTION_STACK_OVERFLOW: r += "Stack Overflow"; break;
-    default: r += ""; break;
+    default: r += "Unknown Operating System Exception"; break;
     }
     // clang-format on
 
@@ -195,6 +218,7 @@ hi_inline bool launch_jit_debugger() noexcept
 {
     // clang-format off
     switch (ep.ExceptionRecord->ExceptionCode) {
+    case STATUS_ASSERTION_FAILURE: return true;
     case EXCEPTION_ACCESS_VIOLATION: return true;
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: return true;
     case EXCEPTION_BREAKPOINT: return true;
@@ -253,39 +277,44 @@ hi_inline LONG exception_handler(EXCEPTION_POINTERS *p) noexcept
     } else if (launch_jit_debugger()) {
         // The user selected a debugger.
         // The instruction that caused the exception will be executed again.
+
+        // Clear the message set by a hi_assert_abort().
+        ::hi::set_debug_message(nullptr);
         return EXCEPTION_CONTINUE_EXECUTION;
 
     } else if (p->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT) {
-        if (has_terminate_message()) {
-            // A terminate message means we will terminate.
-            std::terminate();
-
-        } else {
-            // A break-point without a terminate message will simply continue.
-            // No debugger attached, advance the instruction pointer to not get into a loop.
+        // A break-point without a terminate message will simply continue.
+        // No debugger attached, advance the instruction pointer to not get into a loop.
 #if HI_PROCESSOR == HI_CPU_X86_64
-            // The breakpoint instruction is 0xCC (int 3), advance the instruction pointer.
-            p->ContextRecord->Rip++;
+        // The breakpoint instruction is 0xCC (int 3), advance the instruction pointer.
+        p->ContextRecord->Rip++;
 #elif HI_PROCESSOR == HI_CPU_X86
-            // The breakpoint instruction is 0xCC (int 3), advance the instruction pointer.
-            p->ContextRecord->Eip++;
+        // The breakpoint instruction is 0xCC (int 3), advance the instruction pointer.
+        p->ContextRecord->Eip++;
 #else
 #error "Not implemented."
 #endif
-            return EXCEPTION_CONTINUE_EXECUTION;
-        }
+        return EXCEPTION_CONTINUE_EXECUTION;
 
     } else {
-        // Create a message for this exception.
-        auto exception_str = to_string(*p);
-        set_terminate_message(exception_str.c_str());
+        if (not (p->ExceptionRecord->ExceptionCode == STATUS_ASSERTION_FAILURE and has_debug_message())) {
+            // The exception was not caused by a hi_assert_abort().
+            auto exception_str = to_string(*p);
+            set_debug_message(exception_str.c_str());
+        }
+
+        // If we reach this point we already tried opening the JIT debugger,
+        // std::abort() should not.
+        _set_abort_behavior(0, _CALL_REPORTFAULT);
         std::terminate();
+
+        // A EXCEPTION_CONTINUE_SEARCH does not cause std::terminate() to be called.
     }
 }
 
 } // namespace detail
 
-hi_inline void setup_debug_break_handler() noexcept
+hi_inline void enable_debugger() noexcept
 {
     // Disable error messages from the Windows CRT on std::terminate().
     _CrtSetReportMode(_CRT_WARN, 0);
@@ -295,7 +324,7 @@ hi_inline void setup_debug_break_handler() noexcept
     // Install a handler for __debugbreak() / int 3 (0xCC).
     // This handler will request the user if it wants a debugger to be
     // attached to the application.
-    AddVectoredExceptionHandler(1, detail::exception_handler);
+    AddVectoredExceptionHandler(0, detail::exception_handler);
 }
 
 } // namespace v1

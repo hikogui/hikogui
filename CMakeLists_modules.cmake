@@ -508,6 +508,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/compare.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/concepts.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger_intf.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger_utils.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger_win32_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/defer.ixx
@@ -573,6 +574,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/with_label_widget.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/base.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/libloaderapi.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/processthreadsapi.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/synchapi.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/win32.ixx>

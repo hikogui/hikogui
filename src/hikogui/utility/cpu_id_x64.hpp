@@ -334,128 +334,128 @@ namespace detail {
     }
 
 #if HI_HAS_X86_64_V4
-    if ((r & cpu_feature_mask::x86_64_v4) != cpu_feature_mask::x86_64_v4) { hi_debug_abort("Missing CPU feature: x86-64-v4"); }
+    if ((r & cpu_feature_mask::x86_64_v4) != cpu_feature_mask::x86_64_v4) { hi_assert_abort("Missing CPU feature: x86-64-v4"); }
 #endif
 #if HI_HAS_X86_64_V3
-    if ((r & cpu_feature_mask::x86_64_v3) != cpu_feature_mask::x86_64_v3) { hi_debug_abort("Missing CPU feature: x86-64-v3"); }
+    if ((r & cpu_feature_mask::x86_64_v3) != cpu_feature_mask::x86_64_v3) { hi_assert_abort("Missing CPU feature: x86-64-v3"); }
 #endif
 #if HI_HAS_X86_64_V2
-    if ((r & cpu_feature_mask::x86_64_v2) != cpu_feature_mask::x86_64_v2) { hi_debug_abort("Missing CPU feature: x86-64-v2"); }
+    if ((r & cpu_feature_mask::x86_64_v2) != cpu_feature_mask::x86_64_v2) { hi_assert_abort("Missing CPU feature: x86-64-v2"); }
 #endif
 #if HI_HAS_X86_64_V1
-    if ((r & cpu_feature_mask::x86_64_v1) != cpu_feature_mask::x86_64_v1) { hi_debug_abort("Missing CPU feature: x86-64-v1"); }
+    if ((r & cpu_feature_mask::x86_64_v1) != cpu_feature_mask::x86_64_v1) { hi_assert_abort("Missing CPU feature: x86-64-v1"); }
 #endif
 
 #if HI_HAS_CMOV
-    if (not to_bool(r & cpu_feature::cmov)) { hi_debug_abort("Missing CPU feature: CMOV"); }
+    if (not to_bool(r & cpu_feature::cmov)) { hi_assert_abort("Missing CPU feature: CMOV"); }
 #endif
 #if HI_HAS_CX8
-    if (not to_bool(r & cpu_feature::cx8)) { hi_debug_abort("Missing CPU feature: CX8"); }
+    if (not to_bool(r & cpu_feature::cx8)) { hi_assert_abort("Missing CPU feature: CX8"); }
 #endif
 #if HI_HAS_FPU
-    if (not to_bool(r & cpu_feature::fpu)) { hi_debug_abort("Missing CPU feature: FPU"); }
+    if (not to_bool(r & cpu_feature::fpu)) { hi_assert_abort("Missing CPU feature: FPU"); }
 #endif
 #if HI_HAS_FXSR
-    if (not to_bool(r & cpu_feature::fxsr)) { hi_debug_abort("Missing CPU feature: FXSR"); }
+    if (not to_bool(r & cpu_feature::fxsr)) { hi_assert_abort("Missing CPU feature: FXSR"); }
 #endif
 #if HI_HAS_OSFXSR
-    if (not to_bool(r & cpu_feature::osfxsr)) { hi_debug_abort("Missing CPU feature: OSFXSR"); }
+    if (not to_bool(r & cpu_feature::osfxsr)) { hi_assert_abort("Missing CPU feature: OSFXSR"); }
 #endif
 #if HI_HAS_SCE
-    if (not to_bool(r & cpu_feature::sce)) { hi_debug_abort("Missing CPU feature: SCE"); }
+    if (not to_bool(r & cpu_feature::sce)) { hi_assert_abort("Missing CPU feature: SCE"); }
 #endif
 #if HI_HAS_MMX
-    if (not to_bool(r & cpu_feature::mmx)) { hi_debug_abort("Missing CPU feature: MMX"); }
+    if (not to_bool(r & cpu_feature::mmx)) { hi_assert_abort("Missing CPU feature: MMX"); }
 #endif
 #if HI_HAS_SSE
-    if (not to_bool(r & cpu_feature::sse)) { hi_debug_abort("Missing CPU feature: SSE"); }
+    if (not to_bool(r & cpu_feature::sse)) { hi_assert_abort("Missing CPU feature: SSE"); }
 #endif
 #if HI_HAS_SSE2
-    if (not to_bool(r & cpu_feature::sse2)) { hi_debug_abort("Missing CPU feature: SSE2"); }
+    if (not to_bool(r & cpu_feature::sse2)) { hi_assert_abort("Missing CPU feature: SSE2"); }
 #endif
 #if HI_HAS_CX16
-    if (not to_bool(r & cpu_feature::cx16)) { hi_debug_abort("Missing CPU feature: CX16"); }
+    if (not to_bool(r & cpu_feature::cx16)) { hi_assert_abort("Missing CPU feature: CX16"); }
 #endif
 #if HI_HAS_LAHF
-    if (not to_bool(r & cpu_feature::lahf)) { hi_debug_abort("Missing CPU feature: LAHF"); }
+    if (not to_bool(r & cpu_feature::lahf)) { hi_assert_abort("Missing CPU feature: LAHF"); }
 #endif
 #if HI_HAS_POPCNT
-    if (not to_bool(r & cpu_feature::popcnt)) { hi_debug_abort("Missing CPU feature: POPCNT"); }
+    if (not to_bool(r & cpu_feature::popcnt)) { hi_assert_abort("Missing CPU feature: POPCNT"); }
 #endif
 #if HI_HAS_SSE3
-    if (not to_bool(r & cpu_feature::sse3)) { hi_debug_abort("Missing CPU feature: SSE3"); }
+    if (not to_bool(r & cpu_feature::sse3)) { hi_assert_abort("Missing CPU feature: SSE3"); }
 #endif
 #if HI_HAS_SSE4_1
-    if (not to_bool(r & cpu_feature::sse4_1)) { hi_debug_abort("Missing CPU feature: SSE4_1"); }
+    if (not to_bool(r & cpu_feature::sse4_1)) { hi_assert_abort("Missing CPU feature: SSE4_1"); }
 #endif
 #if HI_HAS_SSE4_2
-    if (not to_bool(r & cpu_feature::sse4_2)) { hi_debug_abort("Missing CPU feature: SSE4_2"); }
+    if (not to_bool(r & cpu_feature::sse4_2)) { hi_assert_abort("Missing CPU feature: SSE4_2"); }
 #endif
 #if HI_HAS_SSSE3
-    if (not to_bool(r & cpu_feature::ssse3)) { hi_debug_abort("Missing CPU feature: SSSE3"); }
+    if (not to_bool(r & cpu_feature::ssse3)) { hi_assert_abort("Missing CPU feature: SSSE3"); }
 #endif
 #if HI_HAS_LZCNT
-    if (not to_bool(r & cpu_feature::lzcnt)) { hi_debug_abort("Missing CPU feature: LZCNT"); }
+    if (not to_bool(r & cpu_feature::lzcnt)) { hi_assert_abort("Missing CPU feature: LZCNT"); }
 #endif
 #if HI_HAS_MOVBE
-    if (not to_bool(r & cpu_feature::movbe)) { hi_debug_abort("Missing CPU feature: MOVBE"); }
+    if (not to_bool(r & cpu_feature::movbe)) { hi_assert_abort("Missing CPU feature: MOVBE"); }
 #endif
 #if HI_HAS_OSXSAVE
-    if (not to_bool(r & cpu_feature::osxsave)) { hi_debug_abort("Missing CPU feature: OSXSAVE"); }
+    if (not to_bool(r & cpu_feature::osxsave)) { hi_assert_abort("Missing CPU feature: OSXSAVE"); }
 #endif
 #if HI_HAS_F16C
-    if (not to_bool(r & cpu_feature::f16c)) { hi_debug_abort("Missing CPU feature: F16C"); }
+    if (not to_bool(r & cpu_feature::f16c)) { hi_assert_abort("Missing CPU feature: F16C"); }
 #endif
 #if HI_HAS_FMA
-    if (not to_bool(r & cpu_feature::fma)) { hi_debug_abort("Missing CPU feature: FMA"); }
+    if (not to_bool(r & cpu_feature::fma)) { hi_assert_abort("Missing CPU feature: FMA"); }
 #endif
 #if HI_HAS_BMI1
-    if (not to_bool(r & cpu_feature::bmi1)) { hi_debug_abort("Missing CPU feature: BMI1"); }
+    if (not to_bool(r & cpu_feature::bmi1)) { hi_assert_abort("Missing CPU feature: BMI1"); }
 #endif
 #if HI_HAS_BMI2
-    if (not to_bool(r & cpu_feature::bmi2)) { hi_debug_abort("Missing CPU feature: BMI2"); }
+    if (not to_bool(r & cpu_feature::bmi2)) { hi_assert_abort("Missing CPU feature: BMI2"); }
 #endif
 #if HI_HAS_AVX
-    if (not to_bool(r & cpu_feature::avx)) { hi_debug_abort("Missing CPU feature: AVX"); }
+    if (not to_bool(r & cpu_feature::avx)) { hi_assert_abort("Missing CPU feature: AVX"); }
 #endif
 #if HI_HAS_AVX2
-    if (not to_bool(r & cpu_feature::avx2)) { hi_debug_abort("Missing CPU feature: AVX2"); }
+    if (not to_bool(r & cpu_feature::avx2)) { hi_assert_abort("Missing CPU feature: AVX2"); }
 #endif
 #if HI_HAS_AVX512F
-    if (not to_bool(r & cpu_feature::avx512f)) { hi_debug_abort("Missing CPU feature: AVX512F"); }
+    if (not to_bool(r & cpu_feature::avx512f)) { hi_assert_abort("Missing CPU feature: AVX512F"); }
 #endif
 #if HI_HAS_AVX512BW
-    if (not to_bool(r & cpu_feature::avx512bw)) { hi_debug_abort("Missing CPU feature: AVX512BW"); }
+    if (not to_bool(r & cpu_feature::avx512bw)) { hi_assert_abort("Missing CPU feature: AVX512BW"); }
 #endif
 #if HI_HAS_AVX512CD
-    if (not to_bool(r & cpu_feature::avx512cd)) { hi_debug_abort("Missing CPU feature: AVX512CD"); }
+    if (not to_bool(r & cpu_feature::avx512cd)) { hi_assert_abort("Missing CPU feature: AVX512CD"); }
 #endif
 #if HI_HAS_AVX512DQ
-    if (not to_bool(r & cpu_feature::avx512dq)) { hi_debug_abort("Missing CPU feature: AVX512DQ"); }
+    if (not to_bool(r & cpu_feature::avx512dq)) { hi_assert_abort("Missing CPU feature: AVX512DQ"); }
 #endif
 #if HI_HAS_AVX512VL
-    if (not to_bool(r & cpu_feature::avx512vl)) { hi_debug_abort("Missing CPU feature: AVX512VL"); }
+    if (not to_bool(r & cpu_feature::avx512vl)) { hi_assert_abort("Missing CPU feature: AVX512VL"); }
 #endif
 #if HI_HAS_AVX512PF
-    if (not to_bool(r & cpu_feature::avx512pf)) { hi_debug_abort("Missing CPU feature: AVX512PF"); }
+    if (not to_bool(r & cpu_feature::avx512pf)) { hi_assert_abort("Missing CPU feature: AVX512PF"); }
 #endif
 #if HI_HAS_AVX512ER
-    if (not to_bool(r & cpu_feature::avx512er)) { hi_debug_abort("Missing CPU feature: AVX512ER"); }
+    if (not to_bool(r & cpu_feature::avx512er)) { hi_assert_abort("Missing CPU feature: AVX512ER"); }
 #endif
 #if HI_HAS_SHA
-    if (not to_bool(r & cpu_feature::sha)) { hi_debug_abort("Missing CPU feature: SHA"); }
+    if (not to_bool(r & cpu_feature::sha)) { hi_assert_abort("Missing CPU feature: SHA"); }
 #endif
 #if HI_HAS_AES
-    if (not to_bool(r & cpu_feature::aes)) { hi_debug_abort("Missing CPU feature: AES"); }
+    if (not to_bool(r & cpu_feature::aes)) { hi_assert_abort("Missing CPU feature: AES"); }
 #endif
 #if HI_HAS_PCLMUL
-    if (not to_bool(r & cpu_feature::pclmul)) { hi_debug_abort("Missing CPU feature: PCLMUL"); }
+    if (not to_bool(r & cpu_feature::pclmul)) { hi_assert_abort("Missing CPU feature: PCLMUL"); }
 #endif
 #if HI_HAS_RDRND
-    if (not to_bool(r & cpu_feature::rdrnd)) { hi_debug_abort("Missing CPU feature: RDRND"); }
+    if (not to_bool(r & cpu_feature::rdrnd)) { hi_assert_abort("Missing CPU feature: RDRND"); }
 #endif
 #if HI_HAS_RDSEED
-    if (not to_bool(r & cpu_feature::rdseed)) { hi_debug_abort("Missing CPU feature: RDSEED"); }
+    if (not to_bool(r & cpu_feature::rdseed)) { hi_assert_abort("Missing CPU feature: RDSEED"); }
 #endif
 
     return r;

@@ -63,7 +63,7 @@ hi_export [[nodiscard]] constexpr bool bound_check(std::integral auto index, std
 
 #ifndef NDEBUG
     if (not(lower_ < upper_)) {
-        hi_debug_abort("bound_check() lower is greater than upper.");
+        hi_assert_abort("bound_check() lower is greater than upper.");
     }
 #else
     hi_assume(lower_ < upper_);

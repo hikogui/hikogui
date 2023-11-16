@@ -5,6 +5,7 @@
 #pragma once
 
 #include "base.hpp" // export
+#include "libloaderapi.hpp" // export
 #include "processthreadsapi.hpp" // export
 #include "synchapi.hpp" // export
 #include "synchapi.h" // export

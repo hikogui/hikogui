@@ -264,6 +264,7 @@
 // clang-format on
 
 #if HI_COMPILER == HI_CC_CLANG
+#define hi_assert_break() __builtin_trap()
 #define hi_debug_break() __builtin_debugtrap()
 #define hi_target(...) __attribute__((target(__VA_ARGS__)))
 #define hi_assume(...) __builtin_assume(not not (__VA_ARGS__))
@@ -277,6 +278,8 @@
 #define hi_warning_ignore_clang(...) _Pragma(hi_stringify(clang diagnostic ignored __VA_ARGS__))
 
 #elif HI_COMPILER == HI_CC_MSVC
+// __int2c is a STATUS_ASSERTION_FAILURE
+#define hi_assert_break() __int2c()
 #define hi_debug_break() __debugbreak()
 #define hi_target(...)
 #define hi_assume(...) __assume(__VA_ARGS__)
@@ -291,6 +294,7 @@
 #define hi_warning_ignore_clang(...)
 
 #elif HI_COMPILER == HI_CC_GCC
+#define hi_assert_break() __builtin_trap()
 #define hi_debug_break() __builtin_trap()
 #define hi_target(...) __attribute__((target(__VA_ARGS__)))
 #define hi_assume(...) \
@@ -309,6 +313,7 @@
 #define msvc_pragma(...)
 
 #else
+#define hi_assert_break() std::terminate()
 #define hi_debug_break() std::terminate()
 #define hi_target(...)
 #define hi_assume(...) static_assert(sizeof(__VA_ARGS__) == 1)
@@ -452,19 +457,18 @@
  *
  * If no debugger is present than the application will be aborted with `std::terminate()`.
  * If the debugger is attached, it is allowed to continue.
+ * 
+ * It is possible for c-style `assert()` to display the error message of an
+ * earlier `hi_assert_abort()` (together with the error message from `assert()`),
+ * if the earlier `hi_assert_abort()` was continued by a debugger.
  *
  * @param ... The reason why the abort is done.
  */
-#if defined(_WIN32)
-#define hi_debug_abort(...) \
+#define hi_assert_abort(...) \
     do { \
-        ::hi::set_terminate_message(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__); \
-        hi_debug_break(); \
-        ::hi::set_terminate_message(nullptr); \
+        ::hi::set_debug_message(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__); \
+        hi_assert_break(); \
     } while (false)
-#else
-#error Missing implementation of hi_debug_abort().
-#endif
 
 /** Check if the expression is valid, or throw a parse_error.
  *
@@ -568,7 +572,7 @@
 #define hi_assert(expression, ...) \
     do { \
         if (not(expression)) { \
-            hi_debug_abort("assert: " __VA_ARGS__ " not (" hi_stringify(expression) ")"); \
+            hi_assert_abort("assert: " __VA_ARGS__ " not (" hi_stringify(expression) ")"); \
         } \
     } while (false)
 
@@ -594,7 +598,7 @@
 #define hi_assert_bounds(x, ...) \
     do { \
         if (not ::hi::bound_check(x, __VA_ARGS__)) { \
-            hi_debug_abort("assert bounds: " hi_stringify(x) " between " hi_for_each(hi_stringify, (__VA_ARGS__))); \
+            hi_assert_abort("assert bounds: " hi_stringify(x) " between " hi_for_each(hi_stringify, (__VA_ARGS__))); \
         } \
     } while (false)
 
@@ -607,7 +611,7 @@
 #define hi_assert_not_null(x, ...) \
     do { \
         if (x == nullptr) { \
-            hi_debug_abort("assert not-null: " __VA_ARGS__ " (" hi_stringify(x) ")"); \
+            hi_assert_abort("assert not-null: " __VA_ARGS__ " (" hi_stringify(x) ")"); \
         } \
     } while (false)
 
@@ -658,7 +662,7 @@
  */
 #ifndef NDEBUG
 #define hi_no_default(...) \
-    [[unlikely]] hi_debug_abort("Reached no-default:" __VA_ARGS__); \
+    [[unlikely]] hi_assert_abort("Reached no-default:" __VA_ARGS__); \
     std::terminate()
 #else
 #define hi_no_default(...) std::unreachable()
@@ -682,7 +686,7 @@
  * @param ... A string-literal as the reason why this it not implemented.
  */
 #define hi_not_implemented(...) \
-    [[unlikely]] hi_debug_abort("Not implemented: " __VA_ARGS__); \
+    [[unlikely]] hi_assert_abort("Not implemented: " __VA_ARGS__); \
     std::terminate()
 
 /** This part of the code has not been implemented yet.
@@ -738,7 +742,7 @@
 #define hi_log_error(fmt, ...) hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define hi_log_fatal(fmt, ...) \
     hi_log(::hi::global_state_type::log_fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
-    hi_debug_abort(); \
+    hi_assert_abort(); \
     std::terminate()
 
 #define hi_log_info_once(name, fmt, ...) \
