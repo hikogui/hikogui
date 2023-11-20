@@ -33,14 +33,14 @@ jobs:
         ARCHITECTURE: ["AVX2"]
         CXX_FLAGS: ["/arch:AVX2"]
 
-    name: x64-windows ${{matrix.CMAKE_BUILD_TYPE}} ${{matrix.CMAKE_CXX_COMPILER}} ${{ARCHITECTURE}}
+    name: x64-windows ${{matrix.CMAKE_BUILD_TYPE}} ${{matrix.CMAKE_CXX_COMPILER}} ${{matrix.ARCHITECTURE}}
 
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
     runs-on: windows-2022
 
     env:
-      MATRIX_ID: ${{matrix.CMAKE_BUILD_TYPE}}-${{matrix.CMAKE_CXX_COMPILER}}-${{ARCHITECTURE}}
-      CXXFLAGS: /arch:${{ARCHITECTURE}}
+      MATRIX_ID: ${{matrix.CMAKE_BUILD_TYPE}}-${{matrix.CMAKE_CXX_COMPILER}}-${{matrix.ARCHITECTURE}}
+      CXXFLAGS: /arch:${{matrix.ARCHITECTURE}}
       BUILD_DIR: ${{github.workspace}}/build
       INSTALL_DIR: ${{github.workspace}}/install
 
