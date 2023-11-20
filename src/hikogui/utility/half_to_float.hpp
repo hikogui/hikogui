@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "cpu_id_x64.hpp"
+#include "cpu_id_x86.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <bit>

@@ -106,12 +106,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/unfair_mutex_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/unfair_recursive_mutex.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/wfree_idle_count.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/console.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/console_win32.ixx>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog_win32_impl.ixx>
-    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog_macos_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/byte_string.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/function_fifo.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/functional.ixx
@@ -507,11 +501,17 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/charconv.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/compare.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/concepts.ixx
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/console_win32.ixx>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/cpu_id_x86.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger_utils.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger_win32_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/defer.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/dialog_intf.ixx
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/dialog_win32_impl.ixx>
+    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/dialog_maxos_impl.ixx>
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/dialog.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/endian.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/enum_metadata.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/exception_intf.ixx

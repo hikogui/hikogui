@@ -99,11 +99,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_recursive_mutex.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/wfree_idle_count.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/console.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog_win32_impl.hpp>
-    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog_macos_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/byte_string.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/function_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/functional.hpp
@@ -344,6 +339,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/label.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/l10n.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/po_parser.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/po_translations.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/txt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/translation.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/box_constraints.hpp
@@ -505,6 +501,10 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/defer.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_win32_impl.hpp>
+    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_maxos_impl.hpp>
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/endian.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/enum_metadata.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception_intf.hpp

@@ -28,6 +28,7 @@ enum class win32_error : uint32_t {
     more_data = ERROR_MORE_DATA,
     invalid_data = ERROR_INVALID_DATA,
     status_pending = STATUS_PENDING,
+    insufficient_buffer = ERROR_INSUFFICIENT_BUFFER,
 };
 
 }} // namespace hi::v1
@@ -54,6 +55,10 @@ struct win32_error_category : std::error_category {
             return condition == std::errc::message_size;
         case hi::win32_error::invalid_data:
             return condition == std::errc::bad_message;
+        case hi::win32_error::status_pending:
+            return condition == std::errc::interrupted;
+        case hi::win32_error::insufficient_buffer:
+            return condition == std::errc::no_buffer_space;
         default:
             return false;
         };

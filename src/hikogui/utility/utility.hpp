@@ -12,6 +12,7 @@
 #include "compare.hpp" // export
 #include "concepts.hpp" // export
 #include "console_win32.hpp" // export
+#include "cpu_id_x86.hpp" // export
 #include "debugger.hpp" // export
 #include "defer.hpp" // export
 #include "dialog.hpp" // export

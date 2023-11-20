@@ -7,6 +7,8 @@ Release Checklist
    - Add entry to CHANGELOG.md and update link section at end of file
    - Update version in vcpkg.json
    - (Possibly test and fix hikogui-hello-world in local mode).
+   - Use the check_install tool:
+     `PS C:\Users\Tjienta\Projects\hikogui\out\build\msvc-x64-windows-dbg> ..\..\..\tools\install_check\check_install.bat`
    - Merge into main (needed for hikogui/hikogui\_hello\_world test builds)
  * In hikogui/hikogui\_hello\_world:
    - Create release branch
