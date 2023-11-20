@@ -81,7 +81,7 @@ constexpr auto half_to_float_table = half_to_float_table_init();
 }
 
 #if HI_HAS_X86
-[[nodiscard]] hi_inline std::array<float, 4> half_to_float_f16c(std::array<uint16_t, 4> v) noexcept hi_target("sse,sse2,sse4.1,f16c")
+hi_target("sse,sse2,sse4.1,f16c") [[nodiscard]] hi_inline std::array<float, 4> half_to_float_f16c(std::array<uint16_t, 4> v) noexcept
 {
     hilet t1 = std::bit_cast<int64_t>(v);
     hilet t2 = _mm_set1_epi64x(t1);
@@ -94,14 +94,16 @@ constexpr auto half_to_float_table = half_to_float_table_init();
 #endif
 
 #if HI_HAS_X86
-[[nodiscard]] hi_inline float half_to_float_f16c(uint16_t v) noexcept hi_target("sse2,sse4.1,f16c")
+hi_target("sse2,sse4.1,f16c")
+[[nodiscard]] hi_inline float half_to_float_f16c(uint16_t v) noexcept
 {
     return std::bit_cast<float>(_mm_extract_ps(_mm_cvtph_ps(_mm_set1_epi16(static_cast<short>(v))), 0));
 }
 #endif
 
 #if HI_HAS_X86
-[[nodiscard]] hi_inline std::array<float, 4> half_to_float_avx2(std::array<uint16_t, 4> v) noexcept hi_target("sse,sse2,sse4.1,avx2")
+hi_target("sse,sse2,sse4.1,avx2")
+[[nodiscard]] hi_inline std::array<float, 4> half_to_float_avx2(std::array<uint16_t, 4> v) noexcept
 {
     hilet t1 = std::bit_cast<int64_t>(v);
     hilet t2 = _mm_set1_epi64x(t1);

@@ -266,7 +266,7 @@
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_assert_break() __builtin_trap()
 #define hi_debug_break() __builtin_debugtrap()
-#define hi_target(...) __attribute__((target(__VA_ARGS__)))
+#define hi_target(...) [[gnu::target(__VA_ARGS__)]]
 #define hi_assume(...) __builtin_assume(not not (__VA_ARGS__))
 #define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
@@ -296,7 +296,7 @@
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_assert_break() __builtin_trap()
 #define hi_debug_break() __builtin_trap()
-#define hi_target(...) __attribute__((target(__VA_ARGS__)))
+#define hi_target(...) [[gnu::target(__VA_ARGS__)]]
 #define hi_assume(...) \
     do { \
         if (!(__VA_ARGS__)) \

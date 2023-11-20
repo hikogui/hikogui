@@ -66,7 +66,8 @@ hi_export namespace hi { inline namespace v1 {
 }
 
 #if HI_HAS_X86
-[[nodiscard]] hi_inline std::array<uint16_t,4> float_to_half_f16c(std::array<float,4> f32) noexcept hi_target("sse,sse4.1,f16c")
+hi_target("sse,sse4.1,f16c")
+[[nodiscard]] hi_inline std::array<uint16_t,4> float_to_half_f16c(std::array<float,4> f32) noexcept
 {
     return std::bit_cast<std::array<uint16_t, 4>>(
         _mm_extract_epi64(_mm_cvtps_ph(_mm_loadu_ps(f32.data()), _MM_FROUND_TO_ZERO), 0));
@@ -74,14 +75,16 @@ hi_export namespace hi { inline namespace v1 {
 #endif
 
 #if HI_HAS_X86
-[[nodiscard]] hi_inline uint16_t float_to_half_f16c(float f32) noexcept hi_target("sse,sse2,f16c")
+hi_target("sse,sse2,f16c")
+[[nodiscard]] hi_inline uint16_t float_to_half_f16c(float f32) noexcept
 {
     return static_cast<uint16_t>(_mm_extract_epi16(_mm_cvtps_ph(_mm_set1_ps(f32), _MM_FROUND_TO_ZERO), 0));
 }
 #endif
 
 #if HI_HAS_X86
-[[nodiscard]] hi_inline std::array<uint16_t,4> float_to_half_sse4_1(std::array<float,4> f32) noexcept hi_target("sse,sse2,sse4.1")
+hi_target("sse,sse2,sse4.1")
+[[nodiscard]] hi_inline std::array<uint16_t,4> float_to_half_sse4_1(std::array<float,4> f32) noexcept
 {
     auto u32 = _mm_castps_si128(_mm_loadu_ps(f32.data()));
 

@@ -283,10 +283,12 @@ struct native_simd<int32_t, 4> {
         return native_simd{_mm_sub_epi32(a.v, b.v)};
     }
 
+#if defined(HI_HAS_SSE4_1)
     [[nodiscard]] friend native_simd operator*(native_simd a, native_simd b) noexcept
     {
-        return native_simd{_mm_mullo_epi32(a.v, b.v)};
+        return native_simd{_mm_mul_epi32(a.v, b.v)};
     }
+#endif
 
     [[nodiscard]] friend native_simd operator&(native_simd a, native_simd b) noexcept
     {

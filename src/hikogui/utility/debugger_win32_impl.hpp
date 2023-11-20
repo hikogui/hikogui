@@ -186,27 +186,27 @@ hi_inline bool launch_jit_debugger() noexcept
 
     // clang-format off
     switch (ep.ExceptionRecord->ExceptionCode) {
-    case STATUS_ASSERTION_FAILURE: r += "Assertion Failure"; break;
-    case EXCEPTION_ACCESS_VIOLATION: r += "Access Violation"; break;
-    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: r += "Array Bounds Exceeded"; break;
-    case EXCEPTION_BREAKPOINT: r += "Breakpoint"; break;
-    case EXCEPTION_DATATYPE_MISALIGNMENT: r += "Datatype Misalignment"; break;
-    case EXCEPTION_FLT_DENORMAL_OPERAND: r += "Floating Point Denormal Operand"; break;
-    case EXCEPTION_FLT_DIVIDE_BY_ZERO: r += "Floating Point Divide by Zero"; break;
-    case EXCEPTION_FLT_INEXACT_RESULT: r += "Floating Point Inexact Result"; break;
-    case EXCEPTION_FLT_INVALID_OPERATION: r += "Floating Point Invalid Operation"; break;
-    case EXCEPTION_FLT_OVERFLOW: r += "Floating Point Overflow"; break;
-    case EXCEPTION_FLT_STACK_CHECK: r += "Floating Point Stack Check"; break;
-    case EXCEPTION_FLT_UNDERFLOW: r += "Floating Point Underflow"; break;
-    case EXCEPTION_ILLEGAL_INSTRUCTION: r += "Illegal Instruction"; break;
-    case EXCEPTION_IN_PAGE_ERROR: r += "In Page Error"; break;
-    case EXCEPTION_INT_DIVIDE_BY_ZERO: r += "Integer Divide By Zero"; break;
-    case EXCEPTION_INT_OVERFLOW: r += "Integer Overflow"; break;
-    case EXCEPTION_INVALID_DISPOSITION: r += "Invalid Disposition"; break;
-    case EXCEPTION_NONCONTINUABLE_EXCEPTION: r += "Non-continuable Exception"; break;
-    case EXCEPTION_PRIV_INSTRUCTION: r += "Priviledged Instruction"; break;
-    case EXCEPTION_SINGLE_STEP: r += "Single Step"; break;
-    case EXCEPTION_STACK_OVERFLOW: r += "Stack Overflow"; break;
+    case static_cast<DWORD>(STATUS_ASSERTION_FAILURE): r += "Assertion Failure"; break;
+    case static_cast<DWORD>(EXCEPTION_ACCESS_VIOLATION): r += "Access Violation"; break;
+    case static_cast<DWORD>(EXCEPTION_ARRAY_BOUNDS_EXCEEDED): r += "Array Bounds Exceeded"; break;
+    case static_cast<DWORD>(EXCEPTION_BREAKPOINT): r += "Breakpoint"; break;
+    case static_cast<DWORD>(EXCEPTION_DATATYPE_MISALIGNMENT): r += "Datatype Misalignment"; break;
+    case static_cast<DWORD>(EXCEPTION_FLT_DENORMAL_OPERAND): r += "Floating Point Denormal Operand"; break;
+    case static_cast<DWORD>(EXCEPTION_FLT_DIVIDE_BY_ZERO): r += "Floating Point Divide by Zero"; break;
+    case static_cast<DWORD>(EXCEPTION_FLT_INEXACT_RESULT): r += "Floating Point Inexact Result"; break;
+    case static_cast<DWORD>(EXCEPTION_FLT_INVALID_OPERATION): r += "Floating Point Invalid Operation"; break;
+    case static_cast<DWORD>(EXCEPTION_FLT_OVERFLOW): r += "Floating Point Overflow"; break;
+    case static_cast<DWORD>(EXCEPTION_FLT_STACK_CHECK): r += "Floating Point Stack Check"; break;
+    case static_cast<DWORD>(EXCEPTION_FLT_UNDERFLOW): r += "Floating Point Underflow"; break;
+    case static_cast<DWORD>(EXCEPTION_ILLEGAL_INSTRUCTION): r += "Illegal Instruction"; break;
+    case static_cast<DWORD>(EXCEPTION_IN_PAGE_ERROR): r += "In Page Error"; break;
+    case static_cast<DWORD>(EXCEPTION_INT_DIVIDE_BY_ZERO): r += "Integer Divide By Zero"; break;
+    case static_cast<DWORD>(EXCEPTION_INT_OVERFLOW): r += "Integer Overflow"; break;
+    case static_cast<DWORD>(EXCEPTION_INVALID_DISPOSITION): r += "Invalid Disposition"; break;
+    case static_cast<DWORD>(EXCEPTION_NONCONTINUABLE_EXCEPTION): r += "Non-continuable Exception"; break;
+    case static_cast<DWORD>(EXCEPTION_PRIV_INSTRUCTION): r += "Priviledged Instruction"; break;
+    case static_cast<DWORD>(EXCEPTION_SINGLE_STEP): r += "Single Step"; break;
+    case static_cast<DWORD>(EXCEPTION_STACK_OVERFLOW): r += "Stack Overflow"; break;
     default: r += "Unknown Operating System Exception"; break;
     }
     // clang-format on
@@ -218,27 +218,27 @@ hi_inline bool launch_jit_debugger() noexcept
 {
     // clang-format off
     switch (ep.ExceptionRecord->ExceptionCode) {
-    case STATUS_ASSERTION_FAILURE: return true;
-    case EXCEPTION_ACCESS_VIOLATION: return true;
-    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: return true;
-    case EXCEPTION_BREAKPOINT: return true;
-    case EXCEPTION_DATATYPE_MISALIGNMENT: return true;
-    case EXCEPTION_FLT_DENORMAL_OPERAND: return true;
-    case EXCEPTION_FLT_DIVIDE_BY_ZERO: return true;
-    case EXCEPTION_FLT_INEXACT_RESULT: return true;
-    case EXCEPTION_FLT_INVALID_OPERATION: return true;
-    case EXCEPTION_FLT_OVERFLOW: return true;
-    case EXCEPTION_FLT_STACK_CHECK: return true;
-    case EXCEPTION_FLT_UNDERFLOW: return true;
-    case EXCEPTION_ILLEGAL_INSTRUCTION: return true;
-    case EXCEPTION_IN_PAGE_ERROR: return true;
-    case EXCEPTION_INT_DIVIDE_BY_ZERO: return true;
-    case EXCEPTION_INT_OVERFLOW: return true;
-    case EXCEPTION_INVALID_DISPOSITION: return true;
-    case EXCEPTION_NONCONTINUABLE_EXCEPTION: return true;
-    case EXCEPTION_PRIV_INSTRUCTION: return true;
-    case EXCEPTION_SINGLE_STEP: return false;
-    case EXCEPTION_STACK_OVERFLOW: return true;
+    case static_cast<DWORD>(STATUS_ASSERTION_FAILURE): return true;
+    case static_cast<DWORD>(EXCEPTION_ACCESS_VIOLATION): return true;
+    case static_cast<DWORD>(EXCEPTION_ARRAY_BOUNDS_EXCEEDED): return true;
+    case static_cast<DWORD>(EXCEPTION_BREAKPOINT): return true;
+    case static_cast<DWORD>(EXCEPTION_DATATYPE_MISALIGNMENT): return true;
+    case static_cast<DWORD>(EXCEPTION_FLT_DENORMAL_OPERAND): return true;
+    case static_cast<DWORD>(EXCEPTION_FLT_DIVIDE_BY_ZERO): return true;
+    case static_cast<DWORD>(EXCEPTION_FLT_INEXACT_RESULT): return true;
+    case static_cast<DWORD>(EXCEPTION_FLT_INVALID_OPERATION): return true;
+    case static_cast<DWORD>(EXCEPTION_FLT_OVERFLOW): return true;
+    case static_cast<DWORD>(EXCEPTION_FLT_STACK_CHECK): return true;
+    case static_cast<DWORD>(EXCEPTION_FLT_UNDERFLOW): return true;
+    case static_cast<DWORD>(EXCEPTION_ILLEGAL_INSTRUCTION): return true;
+    case static_cast<DWORD>(EXCEPTION_IN_PAGE_ERROR): return true;
+    case static_cast<DWORD>(EXCEPTION_INT_DIVIDE_BY_ZERO): return true;
+    case static_cast<DWORD>(EXCEPTION_INT_OVERFLOW): return true;
+    case static_cast<DWORD>(EXCEPTION_INVALID_DISPOSITION): return true;
+    case static_cast<DWORD>(EXCEPTION_NONCONTINUABLE_EXCEPTION): return true;
+    case static_cast<DWORD>(EXCEPTION_PRIV_INSTRUCTION): return true;
+    case static_cast<DWORD>(EXCEPTION_SINGLE_STEP): return false;
+    case static_cast<DWORD>(EXCEPTION_STACK_OVERFLOW): return true;
     default: return false;
     }
     // clang-format on
