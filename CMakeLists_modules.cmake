@@ -106,14 +106,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/unfair_mutex_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/unfair_recursive_mutex.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/wfree_idle_count.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/console.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog_win32_impl.ixx>
-    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/dialog_macos_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/print.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/print_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/console/print_win32_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/byte_string.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/function_fifo.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/functional.ixx
@@ -139,7 +131,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/terminate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/dispatch.ixx
@@ -428,7 +419,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security_win32_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/sip_hash.ixx
-    #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/cpu_id.ixx
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/cpu_id.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/settings.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/os_settings.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/os_settings_intf.ixx
@@ -510,19 +501,29 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/charconv.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/compare.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/concepts.ixx
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/console_win32.ixx>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/cpu_id_x86.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger_intf.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger_utils.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger_win32_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/debugger.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/defer.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/dialog_intf.ixx
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/dialog_win32_impl.ixx>
+    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/dialog_maxos_impl.ixx>
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/dialog.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/endian.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/enum_metadata.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/exception_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/exception_win32_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/exception.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/fixed_string.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/float16.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/half.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/half_to_float.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/float_to_half.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/forward_value.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/hash.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/initialize.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/math.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/memory.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/misc.ixx
@@ -532,6 +533,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/policy.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/reflection.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/tagged_id.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/terminate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/time_zone.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/type_traits.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/units.ixx
@@ -572,9 +574,13 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/with_label_widget.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/base.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/libloaderapi.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/processthreadsapi.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/synchapi.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/win32.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/winnls.ixx>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/winreg.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/win32/winuser.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/hikogui.ixx
 )
 

@@ -27,7 +27,7 @@ constexpr std::size_t hardware_destructive_interference_size = 128;
 constexpr std::size_t hardware_constructive_interference_size = 64;
 using intreg_t = int32_t;
 using uintreg_t = uint32_t;
-#elif HI_PROCESSOR == HI_CPU_X64
+#elif HI_PROCESSOR == HI_CPU_X86_64
 constexpr std::size_t hardware_destructive_interference_size = 128;
 constexpr std::size_t hardware_constructive_interference_size = 64;
 using intreg_t = int64_t;
@@ -48,7 +48,7 @@ using uintreg_t = uint64_t;
 
 
 #if (HI_COMPILER == HI_CC_GCC || HI_COMPILER == HI_CC_CLANG)
-#if (HI_PROCESSOR == HI_CPU_X64 || HI_PROCESSOR == HI_CPU_ARM64)
+#if (HI_PROCESSOR == HI_CPU_X86_64 || HI_PROCESSOR == HI_CPU_ARM64)
 #if (HI_STD_LIBRARY == HI_STL_GCC || HI_STD_LIBRARY == HI_STL_LLVM)
 #define HI_HAS_INT128 1
 

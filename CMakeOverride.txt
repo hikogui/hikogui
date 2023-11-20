@@ -27,9 +27,10 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "M
   # Settings for ALL build types
   #
   # -GR:   Add type information in executable needed for dynamic_cast<>() to work.
+  # -EHsc: Set standard conforming exception handling.
   #
   set(CMAKE_C_FLAGS_INIT             "-DWIN32 -D_WINDOWS -nologo")
-  set(CMAKE_CXX_FLAGS_INIT           "-DWIN32 -D_WINDOWS -GR -nologo")
+  set(CMAKE_CXX_FLAGS_INIT           "-DWIN32 -D_WINDOWS -GR -EHsc -nologo")
   set(CMAKE_EXE_LINKER_FLAGS_INIT    "-machine:x64 -nologo")
   set(CMAKE_MODULE_LINKER_FLAGS_INIT "-machine:x64 -nologo")
   set(CMAKE_SHARED_LINKER_FLAGS_INIT "-machine:x64 -nologo")
@@ -111,9 +112,10 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Settings for ALL build types
   #
   # -GR:   Add type information in executable needed for dynamic_cast<>() to work.
+  # -EHsc: Set standard conforming exception handling.
   #
   set(CMAKE_C_FLAGS_INIT             "-DWIN32 -D_WINDOWS -nologo")
-  set(CMAKE_CXX_FLAGS_INIT           "-DWIN32 -D_WINDOWS -GR -nologo")
+  set(CMAKE_CXX_FLAGS_INIT           "-DWIN32 -D_WINDOWS -GR -EHsc -nologo")
   set(CMAKE_EXE_LINKER_FLAGS_INIT    "-machine:x64 -nologo")
   set(CMAKE_MODULE_LINKER_FLAGS_INIT "-machine:x64 -nologo")
   set(CMAKE_SHARED_LINKER_FLAGS_INIT "-machine:x64 -nologo")

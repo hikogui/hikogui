@@ -47,7 +47,7 @@ public:
      */
     explicit time_stamp_count(time_stamp_count::inplace) noexcept : _aux(0), _thread_id(0)
     {
-#if HI_PROCESSOR == HI_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X86_64
         uint32_t tmp;
         _count = __rdtscp(&tmp);
 #else
@@ -59,7 +59,7 @@ public:
      */
     explicit time_stamp_count(time_stamp_count::inplace_with_cpu_id) noexcept : _thread_id(0)
     {
-#if HI_PROCESSOR == HI_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X86_64
             _count = __rdtscp(&_aux);
 #else
 #error "Not Implemented"
@@ -70,7 +70,7 @@ public:
      */
     explicit time_stamp_count(time_stamp_count::inplace_with_thread_id) noexcept
     {
-#if HI_PROCESSOR == HI_CPU_X64 and HI_OPERATING_SYSTEM == HI_OS_WINDOWS
+#if HI_PROCESSOR == HI_CPU_X86_64 and HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         constexpr uint64_t NT_TIB_CurrentThreadID = 0x48;
 
         _count = __rdtscp(&_aux);

@@ -39,6 +39,9 @@
 	      "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_C_COMPILER": "cl"
       },
+      "environment": {
+        "CXXFLAGS": "/arch:AVX2"
+      },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "intelliSenseMode": "windows-msvc-x64"
@@ -239,6 +242,40 @@
       "name": "msvc-x64-windows-dbg-all",
       "displayName": "All",
       "configurePreset": "msvc-x64-windows-dbg",
+      "targets": [
+        "hikogui_all_tests",
+        "hikogui_demo",
+        "examples"
+      ]
+    },
+    {
+      "name": "msvc-x64-windows-rdi-tests",
+      "displayName": "Library + Tests",
+      "configurePreset": "msvc-x64-windows-rdi",
+      "targets": [
+        "hikogui_all_tests"
+      ]
+    },
+    {
+      "name": "msvc-x64-windows-rdi-examples",
+      "displayName": "Library + Examples",
+      "configurePreset": "msvc-x64-windows-rdi",
+      "targets": [
+        "examples"
+      ]
+    },
+    {
+      "name": "msvc-x64-windows-rdi-demo",
+      "displayName": "Library + Demo",
+      "configurePreset": "msvc-x64-windows-rdi",
+      "targets": [
+        "hikogui_demo"
+      ]
+    },
+    {
+      "name": "msvc-x64-windows-rdi-all",
+      "displayName": "All",
+      "configurePreset": "msvc-x64-windows-rdi",
       "targets": [
         "hikogui_all_tests",
         "hikogui_demo",

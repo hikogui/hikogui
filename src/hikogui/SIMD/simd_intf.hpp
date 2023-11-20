@@ -150,7 +150,7 @@ hi_warning_ignore_msvc(26472)
 hi_export namespace hi::inline v1 {
 
 template<typename T>
-concept simd_value_type = arithmetic<T> or std::same_as<T, float16>;
+concept simd_value_type = arithmetic<T> or std::same_as<T, half>;
 
 template<simd_value_type T, std::size_t N>
 struct simd {
@@ -1060,7 +1060,7 @@ struct simd {
     }
 
     [[nodiscard]] constexpr friend simd composit(simd const& under, simd const& over) noexcept
-        requires(std::is_same_v<value_type, float16> and size == 4)
+        requires(std::is_same_v<value_type, half> and size == 4)
     {
         return simd{composit(static_cast<simd<float, 4>>(under), static_cast<simd<float, 4>>(over))};
     }
@@ -1242,7 +1242,7 @@ using u16x8 = simd<uint16_t, 8>;
 using u16x16 = simd<uint16_t, 16>;
 using u16x32 = simd<uint16_t, 32>;
 
-using f16x4 = simd<float16, 4>;
+using f16x4 = simd<half, 4>;
 
 using i32x1 = simd<int32_t, 1>;
 using i32x2 = simd<int32_t, 2>;

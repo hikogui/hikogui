@@ -22,7 +22,7 @@
 #endif
 #include "../utility/utility.hpp"
 
-hi_export_module(hikogui.SIMD : float16_sse4_1);
+hi_export_module(hikogui.SIMD : half_sse4_1);
 
 
 hi_export namespace hi::inline v1 {

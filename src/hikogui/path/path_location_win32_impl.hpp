@@ -41,29 +41,13 @@ hi_export [[nodiscard]] hi_inline std::filesystem::path get_path_by_id(const KNO
     return std::filesystem::path{wpath} / "";
 }
 
-hi_export [[nodiscard]] hi_inline std::filesystem::path get_module_path(HMODULE module_handle) noexcept
-{
-    std::wstring module_path;
-    auto buffer_size = MAX_PATH; // initial default value = 256
-
-    // iterative buffer resizing to max value of 32768 (256*2^7)
-    for (std::size_t i = 0; i < 7; ++i) {
-        module_path.resize(buffer_size);
-        auto chars = GetModuleFileNameW(module_handle, module_path.data(), buffer_size);
-        if (chars < module_path.length()) {
-            module_path.resize(chars);
-            return std::filesystem::path{module_path};
-
-        } else {
-            buffer_size *= 2;
-        }
-    }
-    hi_no_default("Could not get module path. It exceeds the buffer length of 32768 chars.");
-}
-
 hi_export [[nodiscard]] hi_inline std::filesystem::path executable_file() noexcept
 {
-    return get_module_path(nullptr);
+    if (auto path = win32_GetModuleFileName()) {
+        return *path;
+    } else {
+        hi_log_fatal("Could not get executable-file. {}", make_error_code(path.error()).message());
+    }
 }
 
 hi_export [[nodiscard]] hi_inline std::filesystem::path data_dir() noexcept

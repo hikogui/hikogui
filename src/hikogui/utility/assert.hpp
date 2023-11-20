@@ -8,8 +8,8 @@
 #pragma once
 
 #include "type_traits.hpp"
+#include "terminate.hpp"
 #include "../macros.hpp"
-#include "debugger.hpp"
 #include "exception.hpp"
 #include <exception>
 #include <ranges>
@@ -63,7 +63,7 @@ hi_export [[nodiscard]] constexpr bool bound_check(std::integral auto index, std
 
 #ifndef NDEBUG
     if (not(lower_ < upper_)) {
-        hi_debug_abort("bound_check() lower is greater than upper.");
+        hi_assert_abort("bound_check() lower is greater than upper.");
     }
 #else
     hi_assume(lower_ < upper_);

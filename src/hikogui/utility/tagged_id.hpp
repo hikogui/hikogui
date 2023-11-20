@@ -6,7 +6,7 @@
 
 #include "../macros.hpp"
 #include "fixed_string.hpp"
-#include "debugger.hpp"
+#include "terminate.hpp"
 #include <limits>
 #include <typeinfo>
 #include <typeindex>

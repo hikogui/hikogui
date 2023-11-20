@@ -15,6 +15,7 @@
 #include <string>
 #include <chrono>
 #include <atomic>
+#include <string_view>
 
 hi_export_module(hikogui.utility.misc);
 
@@ -147,6 +148,37 @@ template<typename CharT, typename Traits = std::char_traits<CharT>>
     }
 
     return r;
+}
+
+[[nodiscard]] constexpr size_t count(std::string_view haystack, std::string_view needle) noexcept
+{
+    auto count = 0_uz;
+    auto pos = 0_uz;
+
+    while (true) {
+        auto i = haystack.find(needle, pos);
+        if (i == haystack.npos) {
+            return count;
+        }
+
+        ++count;
+        pos = i + needle.size();
+    }
+}
+
+[[nodiscard]] constexpr std::string replace(std::string haystack, std::string_view needle, std::string_view replace) noexcept
+{
+    auto pos = 0_uz;
+
+    while (true) {
+        auto i = haystack.find(needle, pos);
+        if (i == haystack.npos) {
+            return haystack;
+        }
+
+        haystack.replace(i, needle.size(), replace);
+        pos = i + replace.size();
+    }
 }
 
 } // namespace v1

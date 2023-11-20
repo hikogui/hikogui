@@ -12,7 +12,7 @@
 #include <exception>
 #include <cmath>
 
-#if HI_PROCESSOR == HI_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X86_64
 #include <immintrin.h>
 #endif
 

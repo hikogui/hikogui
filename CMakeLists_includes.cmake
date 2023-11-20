@@ -99,14 +99,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_recursive_mutex.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/wfree_idle_count.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/console.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog_win32_impl.hpp>
-    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/dialog_macos_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/print.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/print_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/console/print_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/byte_string.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/function_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/functional.hpp
@@ -132,7 +124,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_win32_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/terminate.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/dispatch.hpp
@@ -348,6 +339,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/label.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/l10n.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/po_parser.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/po_translations.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/txt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/l10n/translation.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/box_constraints.hpp
@@ -406,22 +398,21 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/xorshift128p.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float16_sse4_1.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/SIMD.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f16x8_sse2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f32x4_sse.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f64x4_avx.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i16x8_sse2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i32x4_sse2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i64x4_avx2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i8x16_sse2.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_conversions_x86.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f16x8_sse2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f32x4_sse.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f64x4_avx.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i16x8_sse2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i32x4_sse2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i64x4_avx2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i8x16_sse2.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_conversions_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_utility.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_u32x4_sse2.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_u32x4_sse2.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/sip_hash.hpp
-    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/cpu_id.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/settings.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/os_settings.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/os_settings_intf.hpp
@@ -503,19 +494,29 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/charconv.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/compare.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/concepts.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/console_win32.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/cpu_id_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_intf.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_utils.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/defer.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_intf.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_win32_impl.hpp>
+    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_maxos_impl.hpp>
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/endian.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/enum_metadata.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception_win32_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/fixed_string.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float16.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float_to_half.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_to_float.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/hash.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/initialize.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/math.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/memory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/misc.hpp
@@ -525,6 +526,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/policy.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/tagged_id.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/terminate.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/time_zone.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/type_traits.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/units.hpp
@@ -565,9 +567,13 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/with_label_widget.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/base.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/libloaderapi.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/processthreadsapi.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/synchapi.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/win32.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winnls.hpp>
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winreg.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winuser.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/macros.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/hikogui.hpp
