@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: 🔽 Download Artifacts
-        uses: actions/github-script@v6 # https://github.com/actions/github-script
+        uses: actions/github-script@v7 # https://github.com/actions/github-script
         with:
           script: |
             var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
