@@ -115,7 +115,7 @@ hi_target("sse,sse2,sse4.1")
 
     // Add implicit leading bit.
     hilet _0400 = _mm_set1_epi32(0x0400);
-    mantissa = _mm_or_epi32(mantissa, _0400);
+    mantissa = _mm_or_si128(mantissa, _0400);
 
     // Shift the mantissa if it is denormal.
     auto shift = _mm_sub_epi32(_1, exponent);
