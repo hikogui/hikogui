@@ -11,7 +11,7 @@
 #include "../macros.hpp"
 #include "assert.hpp"
 #include "cast.hpp"
-#include "debugger.hpp"
+#include "terminate.hpp"
 #include "exception.hpp"
 #include <complex>
 #include <cmath>
@@ -28,7 +28,7 @@
 #if HI_COMPILER == HI_CC_MSVC
 #include <intrin.h>
 #endif
-#if HI_PROCESSOR == HI_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X86_64
 #include <immintrin.h>
 #endif
 

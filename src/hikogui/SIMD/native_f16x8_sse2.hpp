@@ -40,7 +40,7 @@ inline namespace v1 {
 #ifdef HI_HAS_SSE2
 
 
-/** A float16 x 8 (__m128i) SSE2 register.
+/** A half x 8 (__m128i) SSE2 register.
  *
  *
  * When loading and storing from memory this is the order of the element in the register
@@ -57,8 +57,8 @@ inline namespace v1 {
  *
  */
 template<>
-struct native_simd<float16,8> {
-    using value_type = float16;
+struct native_simd<half,8> {
+    using value_type = half;
     constexpr static size_t size = 8;
     using register_type = __m128i;
 

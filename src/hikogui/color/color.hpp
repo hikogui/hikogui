@@ -27,16 +27,16 @@ Usage of color spaces
 
  | Usage            | Space | depth   | alpha          |
  |:-----------------|:------|:--------|:---------------|
- | draw API         | scRGB | float16 | straight       |
- | vertices         | scRGB | float16 | straight       |
- | images           | scRGB | float16 | pre-multiplied |
+ | draw API         | scRGB | half | straight       |
+ | vertices         | scRGB | half | straight       |
+ | images           | scRGB | half | pre-multiplied |
  | fragment shaders | scRGB | float32 | pre-multiplied |
- | frame buffers    | scRGB | float16 | pre-multiplied |
+ | frame buffers    | scRGB | half | pre-multiplied |
  | swap chain       | sRGB\*| uint8\* | pre-multiplied |
 
 ### PNG decoding
 
-HikoGUI's PNG decoder will create an image of float16 RGBA values
+HikoGUI's PNG decoder will create an image of half RGBA values
 in the scRGB color space. The RGB values in the resulting image are
 pre-multiplied by the alpha.
 
@@ -70,7 +70,7 @@ monitor to switch to this mode and likely they have different calibrations assoc
 very likely the user has never calibrated this and the experience will be extremely jarring.
 For this reason on Windows 10 HikoGUI will not by default request a float-16 scRGB swap chain.
 
-On MacOS the swap chain will be in scRGB float16. Since the desktop is always running HDR/high
+On MacOS the swap chain will be in scRGB half. Since the desktop is always running HDR/high
 gamut mode, there is no switching effect like on Windows 10.
 
 scRGB color space

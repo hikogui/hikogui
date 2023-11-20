@@ -52,13 +52,13 @@
 #endif
 
 #define HI_CPU_X86 'i'
-#define HI_CPU_X64 'I'
+#define HI_CPU_X86_64 'I'
 #define HI_CPU_ARM 'a'
 #define HI_CPU_ARM64 'A'
 #define HI_CPU_UNKNOWN '-'
 
 #if defined(__amd64__) or defined(__amd64) or defined(__x86_64__) or defined(__x86_64) or defined(_M_AMD64) or defined(_M_X64)
-#define HI_PROCESSOR HI_CPU_X64
+#define HI_PROCESSOR HI_CPU_X86_64
 #elif defined(__aarch64__) or defined(_M_ARM64)
 #define HI_PROCESSOR HI_CPU_ARM64
 #elif defined(__i386__) or defined(_M_IX86)
@@ -69,30 +69,52 @@
 #define HI_PROCESSOR HI_CPU_UNKNOWN
 #endif
 
-#if defined(__AVX512BW__) and defined(__AVX512CD__) and defined(__AVX512DQ__) and defined(__AVX512F__) and defined(__AVX512VL__)
-#define HI_X86_64_LEVEL 4
-#elif defined(__AVX2__)
-#define HI_X86_64_LEVEL 3
-#elif defined(__SSE4_2__) and defined(__SSSE3__)
-#define HI_X86_64_LEVEL 2
-#elif HI_PROCESSOR == HI_CPU_X64
-#define HI_X86_64_LEVEL 1
+// All the HI_HAS_* macros tell us if the compiler will generate code with these instructions.
+// Therefor we can use intrinsics for these instructions without checking the cpu-id.
+// Which instrinsics are available is handled by a different macro.
+
+#if HI_PROCESSOR == HI_CPU_X86_64
+#define HI_HAS_X86_64 1
+#define HI_HAS_X86 1
+#elif HI_PROCESSOR == HI_CPU_X86
+#define HI_HAS_X86 1
 #endif
 
-#if defined(HI_X86_64_MAX_LEVEL) and defined(HI_X86_64_LEVEL) and HI_X86_64_MAX_LEVEL < HI_X86_64_LEVEL
-#undef HI_X86_64_LEVEL
-#define HI_X86_64_LEVEL HI_X86_64_MAX_LEVEL
-#endif
+// Detect microarchitecture level.
+#if defined(HI_HAS_X86)
+#if HI_COMPILER == HI_CC_MSVC
+// MSVC /arch:SSE (x86)
+#if _M_IX86_FP >= 1 || defined(HI_HAS_X86_64)
+#define HI_HAS_SSE 1
+#define HI_HAS_MMX 1
 
-#if defined(HI_X86_64_LEVEL) and HI_X86_64_LEVEL >= 4
-#define HI_HAS_AVX512F 1
-#define HI_HAS_AVX512BW 1
-#define HI_HAS_AVX512CD 1
-#define HI_HAS_AVX512DQ 1
-#define HI_HAS_AVX512VL 1
-#endif
+#define HI_HAS_SCE 1
+#define HI_HAS_OSFXSR 1
+#define HI_HAS_FXSR 1
+#define HI_HAS_FPU 1
+#define HI_HAS_CX8 1
+#define HI_HAS_CMOV 1
 
-#if defined(HI_X86_64_LEVEL) and HI_X86_64_LEVEL >= 3
+// MSVC /arch:SSE2 (x86)
+#if _M_IX86_FP >= 2 || defined(HI_HAS_X86_64)
+#define HI_HAS_SSE2 1
+
+// MSVC /arch:AVX
+#if defined(__AVX__)
+// x86-64-v2
+#define HI_HAS_SSSE3 1
+#define HI_HAS_SSE4_1 1
+#define HI_HAS_SSE4_2 1
+#define HI_HAS_SSE3 1
+#define HI_HAS_POPCNT 1
+#define HI_HAS_LAHF 1
+#define HI_HAS_CX16 1
+
+#define HI_HAS_AVX 1
+
+// MSVC /arch:AVX2
+#if defined(__AVX2__)
+// x86-64-v3
 #define HI_HAS_AVX 1
 #define HI_HAS_AVX2 1
 #define HI_HAS_BMI1 1
@@ -102,57 +124,182 @@
 #define HI_HAS_LZCNT 1
 #define HI_HAS_MOVBE 1
 #define HI_HAS_OSXSAVE 1
-#endif
 
-#if defined(HI_X86_64_LEVEL) and HI_X86_64_LEVEL >= 2
-#define HI_HAS_CMPXCHG16B 1
-#define HI_HAS_LAHF_SAHF 1
-#define HI_HAS_POPCNT 1
-#define HI_HAS_SSE3 1
-#define HI_HAS_SSE4_1 1
-#define HI_HAS_SSE4_2 1
-#define HI_HAS_SSSE3 1
-#endif
+// MSVC /arch:AVX512
+#if defined(__AVX512F__) && defined(__AVX512BW__) && defined(__AVX512CD__) && defined(__AVX512DQ__) && defined(__AVX512VL__)
+// x86-64-v4
+#define HI_HAS_AVX512F 1
+#define HI_HAS_AVX512BW 1
+#define HI_HAS_AVX512CD 1
+#define HI_HAS_AVX512DQ 1
+#define HI_HAS_AVX512VL 1
 
-#if defined(HI_X86_64_LEVEL) and HI_X86_64_LEVEL >= 1
-#define HI_HAS_CMOV 1
-#define HI_HAS_CX8 1
-#define HI_HAS_FPU 1
-#define HI_HAS_FXSR 1
+#endif // defined(__AVX512__)
+#endif // defined(__AVX2__)
+#endif // defined(__AVX__)
+#endif // _M_IX86_FP >= 2
+#endif // _M_IX86_FP >= 1
+
+#elif HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC
+#if defined(__MMX__)
 #define HI_HAS_MMX 1
-#define HI_HAS_OSFXSR 1
-#define HI_HAS_SCE 1
+#endif
+#if defined(__SSE__)
 #define HI_HAS_SSE 1
+#endif
+#if defined(__SSE2__)
 #define HI_HAS_SSE2 1
 #endif
+#if defined(__SSE3__)
+#define HI_HAS_SSE3 1
+#endif
+#if defined(__SSSE3__)
+#define HI_HAS_SSSE3 1
+#endif
+#if defined(__SSE4_1__)
+#define HI_HAS_SSE4_1 1
+#endif
+#if defined(__SSE4_2__)
+#define HI_HAS_SSE4_2 1
+#endif
+#if defined(__POPCNT__)
+#define HI_HAS_POPCNT 1
+#endif
+#if defined(__LAHF_SAHF__)
+#define HI_HAS_LAHF 1
+#endif
+#if defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16)
+#define HI_HAS_CX16 1
+#endif
+#if defined(__AVX__)
+#define HI_HAS_AVX 1
+#endif
+#if defined(__AVX2__)
+#define HI_HAS_AVX2 1
+#endif
+#if defined(__BMI__)
+#define HI_HAS_BMI1 1
+#endif
+#if defined(__BMI2__)
+#define HI_HAS_BMI2 1
+#endif
+#if defined(__F16C__)
+#define HI_HAS_F16C 1
+#endif
+#if defined(__FMA__)
+#define HI_HAS_FMA 1
+#endif
+#if defined(__LZCNT__)
+#define HI_HAS_LZCNT 1
+#endif
+#if defined(__MOVBE__)
+#define HI_HAS_MOVBE 1
+#endif
+#if defined(__XSAVE__)
+#define HI_HAS_XSAVE 1
+#endif
+#if defined(__AVX512BW__)
+#define HI_HAS_AVX512BW 1
+#endif
+#if defined(__AVX512CD__)
+#define HI_HAS_AVX512CD 1
+#endif
+#if defined(__AVX512DQ__)
+#define HI_HAS_AVX512DQ 1
+#endif
+#if defined(__AVX512F__)
+#define HI_HAS_AVX512F 1
+#endif
+#if defined(__AVX512VL__)
+#define HI_HAS_AVX512VL 1
+#endif
+#if defined(__SHA__)
+#define HI_HAS_SHA 1
+#endif
+#if defined(__AES__)
+#define HI_HAS_AES 1
+#endif
+#if defined(__PCLMUL__)
+#define HI_HAS_PCLMUL 1
+#endif
+#if defined(__RDRND__)
+#define HI_HAS_RDRND 1
+#endif
+#if defined(__RDSEED__)
+#define HI_HAS_RDSEED 1
+#endif
+
+#else
+#error "Unknown compiler for x86"
+#endif
+
+#else
+#error "Unknown CPU architecture."
+#endif
+
+// clang-format off
+#if defined(HI_HAS_SSE2) && defined(HI_HAS_SSE) && defined(HI_HAS_SCE) && \
+    defined(HI_HAS_OSFXSR) && defined(HI_HAS_MMX) && defined(HI_HAS_FXSR) && \
+    defined(HI_HAS_FPU) && defined(HI_HAS_CX8) && defined(HI_HAS_CMOV)
+#define HI_HAS_X86_64_V1 1
+#endif
+
+#if defined(HI_HAS_X86_64_V1) && defined(HI_HAS_SSSE3) && defined(HI_HAS_SSE4_1) && \
+    defined(HI_HAS_SSE4_2) && defined(HI_HAS_SSE3) && defined(HI_HAS_POPCNT) && \
+    defined(HI_HAS_LAHF) && defined(HI_HAS_CX16)
+#define HI_HAS_X86_64_V2 1
+#endif
+
+#if defined(HI_HAS_X86_64_V2) && defined(HI_HAS_AVX) && defined(HI_HAS_AVX2) && \
+    defined(HI_HAS_BMI1) && defined(HI_HAS_BMI2) && defined(HI_HAS_F16C) && \
+    defined(HI_HAS_FMA) && defined(HI_HAS_LZCNT) && defined(HI_HAS_MOVBE) && \
+    defined(HI_HAS_OSXSAVE)
+#define HI_HAS_X86_64_V3 1
+#endif
+
+#if defined(HI_HAS_X86_64_V3) && defined(HI_HAS_AVX512F) && defined(HI_HAS_AVX512BW) && \
+    defined(HI_HAS_AVX512CD) && defined(HI_HAS_AVX512DQ) && defined(HI_HAS_AVX512VL)
+#define HI_HAS_X86_64_V4 1
+#endif
+// clang-format on
 
 #if HI_COMPILER == HI_CC_CLANG
-#define hi_assume(condition) __builtin_assume(not not (condition))
+#define hi_assert_break() __builtin_trap()
+#define hi_debug_break() __builtin_debugtrap()
+#define hi_target(...) [[gnu::target(__VA_ARGS__)]]
+#define hi_assume(...) __builtin_assume(not not (__VA_ARGS__))
 #define hi_force_inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__
 #define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(push)")
-#define hi_warning_ignore_msvc(code)
-#define hi_warning_ignore_clang(a) _Pragma(hi_stringify(clang diagnostic ignored a))
+#define hi_warning_ignore_msvc(...)
+#define hi_warning_ignore_clang(...) _Pragma(hi_stringify(clang diagnostic ignored __VA_ARGS__))
 
 #elif HI_COMPILER == HI_CC_MSVC
-#define hi_assume(condition) __assume(condition)
+// __int2c is a STATUS_ASSERTION_FAILURE
+#define hi_assert_break() __int2c()
+#define hi_debug_break() __debugbreak()
+#define hi_target(...)
+#define hi_assume(...) __assume(__VA_ARGS__)
 #define hi_force_inline __forceinline
 #define hi_no_inline __declspec(noinline)
 #define hi_restrict __restrict
 #define hi_no_sanitize_address __declspec(no_sanitize_address)
 #define hi_warning_push() _Pragma("warning( push )")
 #define hi_warning_pop() _Pragma("warning( pop )")
-#define hi_msvc_pragma(a) _Pragma(a)
-#define hi_warning_ignore_msvc(code) _Pragma(hi_stringify(warning(disable : code)))
-#define hi_warning_ignore_clang(a)
+#define hi_msvc_pragma(...) _Pragma(__VA_ARGS__)
+#define hi_warning_ignore_msvc(...) _Pragma(hi_stringify(warning(disable : __VA_ARGS__)))
+#define hi_warning_ignore_clang(...)
 
 #elif HI_COMPILER == HI_CC_GCC
-#define hi_assume(condition) \
+#define hi_assert_break() __builtin_trap()
+#define hi_debug_break() __builtin_trap()
+#define hi_target(...) [[gnu::target(__VA_ARGS__)]]
+#define hi_assume(...) \
     do { \
-        if (!(condition)) \
+        if (!(__VA_ARGS__)) \
             std::unreachable(); \
     } while (false)
 #define hi_force_inline __attribute__((always_inline))
@@ -161,21 +308,24 @@
 #define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(pop)")
-#define hi_msvc_pragma(a)
-#define hi_warning_ignore_clang(a)
-#define msvc_pragma(a)
+#define hi_msvc_pragma(...)
+#define hi_warning_ignore_clang(...)
+#define msvc_pragma(...)
 
 #else
-#define hi_assume(condition) static_assert(sizeof(condition) == 1)
+#define hi_assert_break() std::terminate()
+#define hi_debug_break() std::terminate()
+#define hi_target(...)
+#define hi_assume(...) static_assert(sizeof(__VA_ARGS__) == 1)
 #define hi_force_inline
 #define hi_no_inline
 #define hi_restrict
 #define hi_no_sanitize_address
 #define hi_warning_push()
 #define hi_warning_pop()
-#define hi_msvc_pragma(a)
-#define hi_warning_ignore_clang(a)
-#define msvc_pragma(a)
+#define hi_msvc_pragma(...)
+#define hi_warning_ignore_clang(...)
+#define msvc_pragma(...)
 #endif
 
 /** After module translation "hi_export_module(x)" is replaced with "export module x".
@@ -300,23 +450,6 @@
 
 #define ssizeof(x) (static_cast<ssize_t>(sizeof(x)))
 
-/** Debug-break.
- *
- * This function will break the application in the debugger.
- * Potentially it will start the Just-In-Time debugger if one is configured.
- * Otherwise it will continue execution.
- */
-#if defined(_WIN32)
-#define hi_debug_break() \
-    do { \
-        if (::hi::prepare_debug_break()) { \
-            __debugbreak(); \
-        } \
-    } while (false)
-#else
-#error Missing implementation of hi_debug_break().
-#endif
-
 /** Debug-break and abort the application.
  *
  * This function will break the application in the debugger.
@@ -324,18 +457,18 @@
  *
  * If no debugger is present than the application will be aborted with `std::terminate()`.
  * If the debugger is attached, it is allowed to continue.
+ * 
+ * It is possible for c-style `assert()` to display the error message of an
+ * earlier `hi_assert_abort()` (together with the error message from `assert()`),
+ * if the earlier `hi_assert_abort()` was continued by a debugger.
  *
  * @param ... The reason why the abort is done.
  */
-#if defined(_WIN32)
-#define hi_debug_abort(...) \
+#define hi_assert_abort(...) \
     do { \
-        ::hi::prepare_debug_break(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__); \
-        __debugbreak(); \
+        ::hi::set_debug_message(__FILE__ ":" hi_stringify(__LINE__) ":" __VA_ARGS__); \
+        hi_assert_break(); \
     } while (false)
-#else
-#error Missing implementation of hi_debug_abort().
-#endif
 
 /** Check if the expression is valid, or throw a parse_error.
  *
@@ -439,7 +572,7 @@
 #define hi_assert(expression, ...) \
     do { \
         if (not(expression)) { \
-            hi_debug_abort("assert: " __VA_ARGS__ " not (" hi_stringify(expression) ")"); \
+            hi_assert_abort("assert: " __VA_ARGS__ " not (" hi_stringify(expression) ")"); \
         } \
     } while (false)
 
@@ -465,7 +598,7 @@
 #define hi_assert_bounds(x, ...) \
     do { \
         if (not ::hi::bound_check(x, __VA_ARGS__)) { \
-            hi_debug_abort("assert bounds: " hi_stringify(x) " between " hi_for_each(hi_stringify, (__VA_ARGS__))); \
+            hi_assert_abort("assert bounds: " hi_stringify(x) " between " hi_for_each(hi_stringify, (__VA_ARGS__))); \
         } \
     } while (false)
 
@@ -478,7 +611,7 @@
 #define hi_assert_not_null(x, ...) \
     do { \
         if (x == nullptr) { \
-            hi_debug_abort("assert not-null: " __VA_ARGS__ " (" hi_stringify(x) ")"); \
+            hi_assert_abort("assert not-null: " __VA_ARGS__ " (" hi_stringify(x) ")"); \
         } \
     } while (false)
 
@@ -529,7 +662,7 @@
  */
 #ifndef NDEBUG
 #define hi_no_default(...) \
-    [[unlikely]] hi_debug_abort("Reached no-default:" __VA_ARGS__); \
+    [[unlikely]] hi_assert_abort("Reached no-default:" __VA_ARGS__); \
     std::terminate()
 #else
 #define hi_no_default(...) std::unreachable()
@@ -553,7 +686,7 @@
  * @param ... A string-literal as the reason why this it not implemented.
  */
 #define hi_not_implemented(...) \
-    [[unlikely]] hi_debug_abort("Not implemented: " __VA_ARGS__); \
+    [[unlikely]] hi_assert_abort("Not implemented: " __VA_ARGS__); \
     std::terminate()
 
 /** This part of the code has not been implemented yet.
@@ -609,7 +742,7 @@
 #define hi_log_error(fmt, ...) hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define hi_log_fatal(fmt, ...) \
     hi_log(::hi::global_state_type::log_fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
-    hi_debug_abort(); \
+    hi_assert_abort(); \
     std::terminate()
 
 #define hi_log_info_once(name, fmt, ...) \

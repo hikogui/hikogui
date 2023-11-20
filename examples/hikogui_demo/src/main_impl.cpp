@@ -5,6 +5,7 @@
 #include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
 #include <memory>
+#include <stacktrace>
 
 //import hikogui;
 
@@ -151,6 +152,8 @@ hi::task<> preferences_window(my_preferences& preferences)
     co_await window.closing;
 }
 
+inline size_t target = 0;
+
 hi::task<> main_window(my_preferences& preferences)
 {
     using namespace hi;
@@ -164,6 +167,8 @@ hi::task<> main_window(my_preferences& preferences)
     top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
     hilet& hello_world_button = top->content().emplace_bottom<momentary_button_widget>(txt("Hello world AV"));
     hilet& vma_dump_button = top->content().emplace_bottom<momentary_button_widget>(txt("vma\ncalculate stats"));
+    hilet& abort_button = top->content().emplace_bottom<momentary_button_widget>(txt("abort"));
+    hilet& break_button = top->content().emplace_bottom<momentary_button_widget>(txt("break"));
 
     auto window = gui_window{std::move(top)}; 
 
@@ -172,6 +177,8 @@ hi::task<> main_window(my_preferences& preferences)
             preferences_button,
             vma_dump_button,
             hello_world_button,
+            abort_button,
+            break_button,
             preferences.toggle_value,
             window.closing);
 
@@ -186,9 +193,16 @@ hi::task<> main_window(my_preferences& preferences)
             hi_log_info("Hello World");
             break;
         case 3:
-            hi_log_info("Toggle value {}", get<bool>(result));
+            //target = 1 / (result.index() - 3);
+            hi_assert_abort("my abort");
             break;
         case 4:
+            hi_debug_break();
+            break;
+        case 5:
+            hi_log_info("Toggle value {}", get<bool>(result));
+            break;
+        case 6:
             co_return;
         default:
             hi_no_default();

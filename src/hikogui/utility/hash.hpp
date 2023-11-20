@@ -6,7 +6,7 @@
 
 #include "../macros.hpp"
 #include "assert.hpp"
-#include "debugger.hpp"
+#include "terminate.hpp"
 #include <utility>
 #include <array>
 #include <type_traits>

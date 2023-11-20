@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../macros.hpp"
-#include "debugger.hpp"
+#include "terminate.hpp"
 #include "exception.hpp"
 #include <concepts>
 #include <charconv>

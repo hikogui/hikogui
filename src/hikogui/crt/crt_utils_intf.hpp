@@ -23,10 +23,6 @@ hi_export namespace hi::inline v1 {
 */
 hi_inline os_handle crt_application_instance;
 
-/** Initialize the console.
- */
-hi_export void console_start() noexcept;
-
 /** Start the hikogui system.
  *
  * This function will do a minimum amount of setup for the hikogui system.

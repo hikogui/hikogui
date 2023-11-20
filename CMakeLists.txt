@@ -20,8 +20,7 @@ option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                            
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
 option(HI_ENABLE_MODULES    "Compile using C++20 modules"                        OFF)
 option(BUILD_EXAMPLES       "Compile the example executables"                    ON)
-option(HI_ARCHITECTURE      "The architecture to build the hikogui library with" OFF)
-
+        
 if(HI_ENABLE_MODULES)
     include(SetupCxxModules)
 endif()
@@ -53,6 +52,36 @@ string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+    set(ARCHITECTURE_ID "x86")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "X86")
+    set(ARCHITECTURE_ID "x86")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
+    set(ARCHITECTURE_ID "x86")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    set(ARCHITECTURE_ID "x86")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x64")
+    set(ARCHITECTURE_ID "x86")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "i386")
+    set(ARCHITECTURE_ID "x86")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "i686")
+    set(ARCHITECTURE_ID "x86")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
+    set(ARCHITECTURE_ID "arm")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64")
+    set(ARCHITECTURE_ID "arm")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+    set(ARCHITECTURE_ID "arm")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set(ARCHITECTURE_ID "arm")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "armv8b")
+    set(ARCHITECTURE_ID "arm")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "armv8l")
+    set(ARCHITECTURE_ID "arm")
+else()
+    message(FATAL_ERROR "Unknown CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
 #-------------------------------------------------------------------
 # Setup CMake Includes
 #-------------------------------------------------------------------
@@ -60,7 +89,6 @@ project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 include(FeatureSummary)
 include(ShowBuildTargetProperties)
 include(FetchContent)
-include(CPUID)
 include(SetupDoxygen)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -70,12 +98,6 @@ include(TargetResources)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
 configure_file("${CMAKE_SOURCE_DIR}/cmake/ctest/CTestCustom.cmake.in" "CTestCustom.cmake" @ONLY)
 include(CTest)
-
-# HI_ARCHITECTURE can be set as a build option.
-# if this build option is not set, default to the auto-detected architecture level.
-if(NOT HI_ARCHITECTURE)
-  set(HI_ARCHITECTURE ${CPUINFO_ARCHITECTURE_LEVEL})
-endif()
 
 #-------------------------------------------------------------------
 # Find Dependencies
@@ -211,9 +233,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
         target_compile_options(hikogui ${HI_SCOPE} -finput-charset=UTF-8)
     endif()
 
-    # This option is required when using _set_se_translator().
-    target_compile_options(hikogui ${HI_SCOPE} -EHa)
-
     # Clang will complain about __builtin_assume even on constexpr functions and operators,
     # this warning is absolutely useless.
     target_compile_options(hikogui ${HI_SCOPE} -Wno-assume)
@@ -228,8 +247,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # vk_mem_alloc.h seems to turn on nullability completeness checks on clang.
     # It seems this check should only be used for interopability with swift
     target_compile_options(hikogui ${HI_SCOPE} -Wno-nullability-completeness)
-
-    target_compile_options(hikogui ${HI_SCOPE} -march=${HI_ARCHITECTURE})
 
     # warning: template argument for template type parameter must be a type; omitted 'typename' is a Microsoft extension
     # Very likely this is because clang does not support C++20 fully "down with typename".
@@ -252,17 +269,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
-    if(HOST_IS_X86_64_4)
-        target_compile_options(hikogui ${HI_SCOPE} -arch:AVX512)
-    elseif(HOST_IS_X86_64_3)
-        target_compile_options(hikogui ${HI_SCOPE} -arch:AVX2)
-    elseif(HOST_IS_X86_64_2)
-        target_compile_options(hikogui ${HI_SCOPE} -arch:AVX)
-    endif()
-
-    # This option is required when using _set_se_translator().
-    target_compile_options(hikogui ${HI_SCOPE} -EHa)
-
     # Turn on a lot of warnings by default.
     target_compile_options(hikogui ${HI_SCOPE} -W4)
 

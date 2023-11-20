@@ -9,7 +9,7 @@
 #include "concepts.hpp"
 #include "exception.hpp"
 #include "not_null.hpp"
-#include "debugger.hpp"
+#include "terminate.hpp"
 #include "cast.hpp"
 #include <concepts>
 #include <memory>

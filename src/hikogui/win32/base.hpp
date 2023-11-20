@@ -1,3 +1,6 @@
+// Copyright Take Vos 2023.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
@@ -9,26 +12,33 @@
 #include <expected>
 #include <vector>
 #include <algorithm>
+#include <bit>
+#include <exception>
+#include <cstddef>
+#include <cstdint>
+#include <limits>
 
 hi_export_module(hikogui.win32.base);
 
 hi_export namespace hi { inline namespace v1 {
 
-hi_export enum class win32_error : uint32_t {
+enum class win32_error : uint32_t {
     success = ERROR_SUCCESS,
     file_not_found = ERROR_FILE_NOT_FOUND,
     more_data = ERROR_MORE_DATA,
     invalid_data = ERROR_INVALID_DATA,
+    insufficient_buffer = ERROR_INSUFFICIENT_BUFFER,
+    status_pending = STATUS_PENDING,
 };
 
 }} // namespace hi::v1
 
-hi_export template<>
+template<>
 struct std::is_error_code_enum<hi::win32_error> : std::true_type {};
 
-hi_export namespace hi { inline namespace v1 {
+namespace hi { inline namespace v1 {
 
-hi_export struct win32_error_category : std::error_category {
+struct win32_error_category : std::error_category {
     char const *name() const noexcept override
     {
         return "win32";
@@ -45,6 +55,10 @@ hi_export struct win32_error_category : std::error_category {
             return condition == std::errc::message_size;
         case hi::win32_error::invalid_data:
             return condition == std::errc::bad_message;
+        case hi::win32_error::status_pending:
+            return condition == std::errc::interrupted;
+        case hi::win32_error::insufficient_buffer:
+            return condition == std::errc::no_buffer_space;
         default:
             return false;
         };
@@ -53,12 +67,12 @@ hi_export struct win32_error_category : std::error_category {
 
 hi_inline auto global_win32_error_category = win32_error_category{};
 
-hi_export [[nodiscard]] hi_inline std::error_code make_error_code(win32_error code) noexcept
+[[nodiscard]] hi_inline std::error_code make_error_code(win32_error code) noexcept
 {
     return {static_cast<int>(code), global_win32_error_category};
 }
 
-hi_export [[nodiscard]] hi_inline win32_error win32_GetLastError() noexcept
+[[nodiscard]] hi_inline win32_error win32_GetLastError() noexcept
 {
     return static_cast<win32_error>(::GetLastError());
 }
@@ -70,7 +84,7 @@ hi_export [[nodiscard]] hi_inline win32_error win32_GetLastError() noexcept
  * @param flags The flags to passing
  * @return multi-byte string.
  */
-hi_export [[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_WideCharToMultiByte(std::wstring_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
+[[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_WideCharToMultiByte(std::wstring_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
 {
     if (s.empty()) {
         // WideCharToMultiByte() does not handle empty strings, if it can not also convert the null-character.
@@ -102,7 +116,7 @@ hi_export [[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_
  * @param flags The flags to passing
  * @return multi-byte string.
  */
-hi_export [[nodiscard]] hi_inline std::expected<std::wstring, win32_error> win32_MultiByteToWideChar(std::string_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
+[[nodiscard]] hi_inline std::expected<std::wstring, win32_error> win32_MultiByteToWideChar(std::string_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
 {
     if (s.empty()) {
         // MultiByteToWideChar() does not handle empty strings, if it can not also convert the null-character.
@@ -136,7 +150,7 @@ hi_export [[nodiscard]] hi_inline std::expected<std::wstring, win32_error> win32
  * @param last A pointer one beyond the buffer.
  * @return A vector of UTF-8 encoded strings, win32_error::invalid_data when the list is incorrectly terminated.
  */
-hi_export [[nodiscard]] hi_inline std::expected<std::vector<std::string>, win32_error> win32_MultiSZToStringVector(wchar_t const *first, wchar_t const *last) noexcept
+[[nodiscard]] hi_inline std::expected<std::vector<std::string>, win32_error> win32_MultiSZToStringVector(wchar_t const *first, wchar_t const *last) noexcept
 {
     auto r = std::vector<std::string>{};
 
@@ -166,7 +180,7 @@ hi_export [[nodiscard]] hi_inline std::expected<std::vector<std::string>, win32_
     return r;
 }
 
-hi_export [[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_FormatMessage(win32_error error_code) noexcept
+[[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_FormatMessage(win32_error error_code) noexcept
 {
     hilet error_code_ = static_cast<DWORD>(std::to_underlying(error_code));
 
@@ -191,7 +205,7 @@ hi_export [[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_
     return r;
 }
 
-hi_export hi_inline std::string win32_error_category::message(int code) const
+[[nodiscard]] hi_inline std::string win32_error_category::message(int code) const
 {
     if (auto msg = win32_FormatMessage(static_cast<win32_error>(code))) {
         return *msg;
@@ -199,6 +213,28 @@ hi_export hi_inline std::string win32_error_category::message(int code) const
     } else {
         throw std::system_error(msg.error());
     }
+}
+
+/** Convert a HANDLE to a 32-bit unsigned integer.
+ *
+ * Although a `HANDLE` is a typedef of a `void *`, in reality it is an
+ * 32 bit unsigned integer.
+ *
+ * This function is used to pass a HANDLE of an Event Object to be passed
+ * on the command-line to vsjitdebugger.exe.
+ */
+[[nodiscard]] hi_inline uint32_t win32_HANDLE_to_int(HANDLE handle) noexcept
+{
+    auto i = std::bit_cast<uintptr_t>(handle);
+    if (std::cmp_greater(i, std::numeric_limits<uint32_t>::max())) {
+        std::terminate();
+    }
+    return static_cast<uint32_t>(i);
+}
+
+[[nodiscard]] hi_inline HANDLE win32_int_to_HANDLE(uint32_t i) noexcept
+{
+    return std::bit_cast<HANDLE>(static_cast<uintptr_t>(i));
 }
 
 }} // namespace hi::v1

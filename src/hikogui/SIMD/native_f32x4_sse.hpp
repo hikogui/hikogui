@@ -182,19 +182,16 @@ struct native_simd<float, 4> {
     {
         hi_axiom(a <= 0b1111);
 
-        uint64_t a_ = a;
+        auto a_ = static_cast<int64_t>(a) << 31;
 
-        a_ <<= 31;
-        auto tmp = _mm_cvtsi32_si128(truncate<uint32_t>(a_));
+        hilet f0 = std::bit_cast<float>(static_cast<int32_t>(a_) >> 31);
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, truncate<uint32_t>(a_), 1);
+        hilet f1 = std::bit_cast<float>(static_cast<int32_t>(a_) >> 31);
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, truncate<uint32_t>(a_), 2);
+        hilet f2 = std::bit_cast<float>(static_cast<int32_t>(a_) >> 31);
         a_ >>= 1;
-        tmp = _mm_insert_epi32(tmp, truncate<uint32_t>(a_), 3);
-
-        tmp = _mm_srai_epi32(tmp, 31);
-        return native_simd{_mm_castsi128_ps(tmp)};
+        hilet f3 = std::bit_cast<float>(static_cast<int32_t>(a_) >> 31);
+        return native_simd{_mm_set_ps(f3, f2, f1, f0)};
     }
 
     /** Create a vector with all the bits set.

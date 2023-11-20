@@ -76,10 +76,10 @@ public:
 
     [[nodiscard]] constexpr explicit color(hi::semantic_color semantic_color, float alpha = 1.0f) noexcept : _v()
     {
-        _v.x() = float16(intrinsic, 0xf900 + static_cast<uint8_t>(semantic_color));
-        _v.y() = float16(intrinsic, 0x0000);
-        _v.z() = float16(intrinsic, 0x0000);
-        _v.w() = float16(1.0f);
+        _v.x() = half(intrinsic, 0xf900 + static_cast<uint8_t>(semantic_color));
+        _v.y() = half(intrinsic, 0x0000);
+        _v.z() = half(intrinsic, 0x0000);
+        _v.w() = half(1.0f);
     }
 
     [[nodiscard]] constexpr bool is_semantic() const noexcept
@@ -138,42 +138,42 @@ public:
         return std::hash<uint64_t>{}(std::bit_cast<uint64_t>(_v));
     }
 
-    [[nodiscard]] constexpr float16& r() noexcept
+    [[nodiscard]] constexpr half& r() noexcept
     {
         return _v.x();
     }
 
-    [[nodiscard]] constexpr float16& g() noexcept
+    [[nodiscard]] constexpr half& g() noexcept
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr float16& b() noexcept
+    [[nodiscard]] constexpr half& b() noexcept
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr float16& a() noexcept
+    [[nodiscard]] constexpr half& a() noexcept
     {
         return _v.w();
     }
 
-    [[nodiscard]] constexpr float16 r() const noexcept
+    [[nodiscard]] constexpr half r() const noexcept
     {
         return _v.x();
     }
 
-    [[nodiscard]] constexpr float16 g() const noexcept
+    [[nodiscard]] constexpr half g() const noexcept
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr float16 b() const noexcept
+    [[nodiscard]] constexpr half b() const noexcept
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr float16 a() const noexcept
+    [[nodiscard]] constexpr half a() const noexcept
     {
         return _v.w();
     }

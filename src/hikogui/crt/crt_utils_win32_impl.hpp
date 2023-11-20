@@ -7,9 +7,7 @@
 #include "../win32_headers.hpp"
 
 #include "crt_utils_intf.hpp"
-#include "terminate.hpp"
 #include "../telemetry/telemetry.hpp"
-#include "../console/console.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../char_maps/char_maps.hpp"
@@ -26,7 +24,6 @@
 #include <format>
 #include <type_traits>
 #include <chrono>
-
 
 hi_export_module(hikogui.crt.crt_utils : impl);
 
@@ -59,44 +56,8 @@ hi_export [[nodiscard]] hi_inline char *make_cstr(std::string const& s) noexcept
     return make_cstr(s.c_str(), s.size());
 }
 
-hi_export hi_inline void console_start() noexcept
-{
-    auto out_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    if (out_handle == NULL) {
-        // The stdout is not set, which means our parent process has
-        // not set it. This is the most likely case on Windows 10.
-
-        if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-            // Our parent process is a console, like cmd and powershell.
-            // After attaching to the console we need re-open stdin,
-            // stdout, stderr using the original device names.
-
-            // Since stdin, stdout, stderr are macro's make sure we get pointers
-            // which can be modified by freopen_s().
-            FILE *fpstdin = stdin;
-            FILE *fpstdout = stdout;
-            FILE *fpstderr = stderr;
-
-            freopen_s(&fpstdin, "CONIN$", "r", stdin);
-            freopen_s(&fpstdout, "CONOUT$", "w", stdout);
-            freopen_s(&fpstderr, "CONOUT$", "w", stderr);
-        }
-
-    } else {
-        // stdout is already working, this happens when a UNIX-like shell
-        // as setup stdin, stdout, stderr. For example when the application
-        // is started from git-bash.
-        // Since everything is already working, don't do anything.
-        ;
-    }
-}
-
 hi_export hi_inline std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
-    // Switch out the terminate handler with one that can print an error message.
-    old_terminate_handler = std::set_terminate(terminate_handler);
-
     // lpCmdLine does not handle UTF-8 command line properly.
     // So use GetCommandLineW() to get wide string arguments.
     // CommandLineToArgW properly unescapes the command line
@@ -128,7 +89,6 @@ hi_export hi_inline std::pair<int, char **> crt_start(int, char **, void *instan
     argv[argc] = nullptr;
 
     // Make sure the console is in a valid state to write text to it.
-    console_start();
     hilet [tsc_frequency, aux_is_cpu_id] = hi::time_stamp_count::start_subsystem();
 
     start_system();
