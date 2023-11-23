@@ -56,6 +56,9 @@
 	      "CMAKE_CXX_COMPILER": "clang-cl",
         "CMAKE_C_COMPILER": "clang-cl"
       },
+      "environment": {
+        "CXXFLAGS": "/arch:AVX2"
+      },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "intelliSenseMode": "windows-clang-x64"

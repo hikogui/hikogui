@@ -203,7 +203,7 @@ struct simd : public std::array<T, N> {
             return swizzle<Indices...>(lhs);
 
         } else {
-            constexpr auto c == std::get<sizeof...(Indices)>(Name);
+            constexpr auto c = std::get<sizeof...(Indices)>(Name);
             if constexpr (c == '0') {
                 return swizzle<Name, Indices..., -1>(lhs);
             } else if constexpr (c == '1') {

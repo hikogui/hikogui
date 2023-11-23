@@ -16,9 +16,39 @@ hi_export_module(hikogui.simd.simd_unary_operators);
 namespace hi { inline namespace v1 {
 
 // clang-format off
+template<typename T, size_t N> struct simd_get_mask;
 template<typename T, size_t N> struct simd_not;
 template<typename T, size_t N> struct simd_neg;
+template<typename T, size_t N> struct simd_test_all_ones;
 // clang-format on
+
+#define HI_X(NAME, VALUE_TYPE, SIZE, MOVEMASK_OP) \
+    template<> \
+    struct NAME<VALUE_TYPE, SIZE> { \
+        using array_type = std::array<VALUE_TYPE, SIZE>; \
+        [[nodiscard]] hi_force_inline size_t operator()(array_type const& rhs) const noexcept \
+        { \
+            hilet rhs_ = simd_load<VALUE_TYPE, SIZE>(rhs); \
+            return static_cast<size_t>(MOVEMASK_OP(rhs_)); \
+        } \
+    }
+
+#if defined(HI_HAS_SSE)
+HI_X(simd_get_mask, float, 2, _mm_movemask_ps);
+#endif
+#if defined(HI_HAS_SSE2)
+HI_X(simd_get_mask, double, 2, _mm_movemask_pd);
+HI_X(simd_get_mask, int8_t, 16, _mm_movemask_epi8);
+HI_X(simd_get_mask, uint8_t, 16, _mm_movemask_epi8);
+#endif
+#if defined(HI_HAS_AVX2)
+HI_X(simd_get_mask, float, 8, _mm256_movemask_ps);
+HI_X(simd_get_mask, double, 4, _mm256_movemask_pd);
+HI_X(simd_get_mask, int8_t, 32, _mm256_movemask_epi8);
+HI_X(simd_get_mask, uint8_t, 32, _mm256_movemask_epi8);
+#endif
+
+#undef HI_X
 
 #define HI_X(NAME, VALUE_TYPE, SIZE, XOR_OP, SET_OP) \
     template<> \
@@ -146,6 +176,52 @@ HI_X(simd_not, double, 4, _mm256_xor_ps, _mm256_cmpeq_epi8, _mm256_castps_si256,
 #if defined(HI_HAS_AVX512)
 HI_X(simd_not, float, 16, _mm512_xor_ps, _mm512_cmpeq_epi8, _mm512_castps_si512, _mm512_castsi512_ps);
 HI_X(simd_not, double, 8, _mm512_xor_ps, _mm512_cmpeq_epi8, _mm512_castps_si512, _mm512_castsi512_ps);
+#endif
+#undef HI_X
+
+#define HI_X(NAME, VALUE_TYPE, SIZE, TEST_OP, CMP_OP) \
+    template<> \
+    struct NAME<VALUE_TYPE, SIZE> { \
+        using array_type = std::array<VALUE_TYPE, SIZE>; \
+        [[nodiscard]] hi_force_inline bool operator()(array_type const& rhs) const noexcept \
+        { \
+            hilet rhs_ = simd_load<VALUE_TYPE, SIZE>{}(rhs); \
+            return to_bool(TEST_OP(rhs_, CMP_OP(rhs_, rhs_))); \
+        } \
+    }
+
+#if defined(HI_HAS_SSE2)
+HI_X(simd_test_all_ones, int64_t, 2, _mm_testc_si128, _mm_cmpeq_epi8);
+HI_X(simd_test_all_ones, int32_t, 4, _mm_testc_si128, _mm_cmpeq_epi8);
+HI_X(simd_test_all_ones, int16_t, 8, _mm_testc_si128, _mm_cmpeq_epi8);
+HI_X(simd_test_all_ones, int8_t, 16, _mm_testc_si128, _mm_cmpeq_epi8);
+HI_X(simd_test_all_ones, uint64_t, 2, _mm_testc_si128, _mm_cmpeq_epi8);
+HI_X(simd_test_all_ones, uint32_t, 4, _mm_testc_si128, _mm_cmpeq_epi8);
+HI_X(simd_test_all_ones, uint16_t, 8, _mm_testc_si128, _mm_cmpeq_epi8);
+HI_X(simd_test_all_ones, uint8_t, 16, _mm_testc_si128, _mm_cmpeq_epi8);
+#endif
+#undef HI_X
+
+#define HI_X(NAME, VALUE_TYPE, SIZE, TEST_OP, EQ_OP, CAST1_OP, CAST2_OP) \
+    template<> \
+    struct NAME<VALUE_TYPE, SIZE> { \
+        using array_type = std::array<VALUE_TYPE, SIZE>; \
+        [[nodiscard]] hi_force_inline array_type operator()(array_type const& rhs) const noexcept \
+        { \
+            hilet rhs_ = simd_load<VALUE_TYPE, SIZE>(rhs); \
+            return TEST_OP(rhs_, CAST2_OP(EQ_OP(CAST1_OP(rhs_), CAST1_OP(rhs_)))); \
+        } \
+    }
+
+#if defined(HI_HAS_SSE)
+HI_X(simd_test_all_ones, float, 4, _mm_testc_ps, _mm_cmpeq_epi8, _mm_castps_si128, _mm_castsi128_ps);
+#endif
+#if defined(HI_HAS_SSE2)
+HI_X(simd_test_all_ones, double, 2, _mm_testc_ps, _mm_cmpeq_epi8, _mm_castps_si128, _mm_castsi128_ps);
+#endif
+#if defined(HI_HAS_AVX)
+HI_X(simd_test_all_ones, float, 8, _mm256_testc_ps, _mm256_cmpeq_epi8, _mm256_castps_si256, _mm256_castsi256_ps);
+HI_X(simd_test_all_ones, double, 4, _mm256_testc_ps, _mm256_cmpeq_epi8, _mm256_castps_si256, _mm256_castsi256_ps);
 #endif
 #undef HI_X
 
