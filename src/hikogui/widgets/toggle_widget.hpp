@@ -123,11 +123,11 @@ public:
     toggle_widget(not_null<widget_intf const *> parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
+        this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
             set_value(this->delegate->state(*this));
         });
-
-        this->delegate->init(*this);
+        _delegate_cbt();
     }
 
     /** Construct a toggle widget with a default button delegate.

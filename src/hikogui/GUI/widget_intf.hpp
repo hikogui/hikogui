@@ -40,7 +40,7 @@ public:
     notifier<void()> notifier;
 
     /** The current state of the widget.
-    */
+     */
     observer<widget_state> state;
 
     virtual ~widget_intf()
@@ -48,7 +48,8 @@ public:
         release_widget_id(id);
     }
 
-    widget_intf(widget_intf const *parent) noexcept : id(make_widget_id()), parent(const_cast<widget_intf *>(parent))
+    widget_intf(widget_intf const *parent) noexcept :
+        id(make_widget_id()), parent(const_cast<widget_intf *>(parent)), state(widget_state::enabled)
     {
         _state_cbt = state.subscribe([&](widget_state new_state) {
             static auto old_state = widget_state{};

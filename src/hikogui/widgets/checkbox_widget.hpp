@@ -119,11 +119,11 @@ public:
         not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        _delegate_cbt = this->delegate->subscribe([&]{
+        this->delegate->init(*this);
+        _delegate_cbt = this->delegate->subscribe([&] {
             set_value(this->delegate->state(*this));
         });
-
-        this->delegate->init(*this);
+        _delegate_cbt();
     }
 
     /** Construct a checkbox widget with a default button delegate.

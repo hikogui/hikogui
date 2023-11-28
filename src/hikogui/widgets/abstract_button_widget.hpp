@@ -77,10 +77,12 @@ public:
         _on_label_widget = std::make_unique<label_widget>(this, on_label, alignment, text_style);
         _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, text_style);
         _other_label_widget = std::make_unique<label_widget>(this, other_label, alignment, text_style);
+
+        this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
             set_value(this->delegate->state(*this));
         });
-        this->delegate->init(*this);
+        _delegate_cbt();
     }
 
     /// @privatesection
