@@ -6,7 +6,6 @@
 
 #include "otype_utilities.hpp"
 #include "font_char_map.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <variant>
 #include <coroutine>

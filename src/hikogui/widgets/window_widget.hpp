@@ -14,7 +14,6 @@
 #include "grid_widget.hpp"
 #include "window_controls_macos_widget.hpp"
 #include "window_controls_win32_widget.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
 #include <coroutine>

@@ -34,7 +34,6 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/small_map_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/tree_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/generator_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_char_map_tests.cpp
@@ -96,6 +95,7 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exceptions_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/fixed_string_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float_to_half_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/generator_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_to_float_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value_tests.cpp

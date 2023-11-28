@@ -11,7 +11,6 @@
 #include "color/color.hpp" // export
 #include "concurrency/concurrency.hpp" // export
 #include "container/container.hpp" // export
-#include "coroutine/coroutine.hpp" // export
 #include "crt/crt.hpp" // export
 #include "file/file.hpp" // export
 #include "font/font.hpp" // export

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <string>
 #include <string_view>

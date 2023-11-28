@@ -16,7 +16,6 @@
 #include "radio_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "../observer/observer.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>

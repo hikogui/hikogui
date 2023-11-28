@@ -9,7 +9,6 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <coroutine>
 

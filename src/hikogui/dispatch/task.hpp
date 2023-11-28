@@ -15,21 +15,22 @@
 #include <exception>
 #include <optional>
 
-hi_export_module(hikogui.dispatch : scoped_task);
+hi_export_module(hikogui.dispatch : task);
 
 hi_export namespace hi::inline v1 {
 
-/** A scoped_task.
+/** A task.
  *
  * Like the `hi::task` instance this implements a asynchronous co-routine task.
  *
- * If the `scoped_task` object is destroyed, the potentially non-completed co-routine will be destroyed as well.
- * A `scoped_task` is a move-only object.
+ * If the `task` object is destroyed, the potentially non-completed co-routine will be destroyed as well.
+ * A `task` is a move-only object.
  *
  * @tparam T The type returned by co_return.
+ * @tparam DestroyFrame Destroy the coroutine frame when `task` goes out of scope.
  */
-template<typename T = void>
-class scoped_task {
+template<typename T = void, bool DestroyFrame = false>
+class task {
 public:
     using value_type = T;
     using notifier_type = notifier<void(value_type)>;
@@ -67,9 +68,9 @@ public:
             return {};
         }
 
-        scoped_task get_return_object() noexcept
+        task get_return_object() noexcept
         {
-            return scoped_task{handle_type::from_promise(*this)};
+            return task{handle_type::from_promise(*this)};
         }
 
         /** Before we enter the coroutine, allow the caller to set the callback.
@@ -82,28 +83,28 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    scoped_task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
+    task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
 
-    ~scoped_task()
+    ~task()
     {
-        if (_coroutine) {
+        if (DestroyFrame and _coroutine) {
             _coroutine.destroy();
         }
     }
 
-    scoped_task() = default;
+    task() = default;
 
-    // scoped_task can not be copied because it tracks if the co-routine must be destroyed by the
-    // shared_ptr to the value shared between scoped_task and the promise.
-    scoped_task(scoped_task const&) = delete;
-    scoped_task& operator=(scoped_task const&) = delete;
+    // task can not be copied because it tracks if the co-routine must be destroyed by the
+    // shared_ptr to the value shared between task and the promise.
+    task(task const&) = delete;
+    task& operator=(task const&) = delete;
 
-    scoped_task(scoped_task&& other) noexcept
+    task(task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
     }
 
-    scoped_task& operator=(scoped_task&& other) noexcept
+    task& operator=(task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         return *this;
@@ -166,16 +167,23 @@ public:
         return _coroutine.promise().notifier.subscribe(std::forward<Func>(func), flags);
     }
 
+    /** Create an awaiter that can await on this task.
+     */
+    auto operator co_await() const noexcept
+    {
+        return _coroutine.promise().notifier.operator co_await();
+    }
+
 private:
     // Optional value type
     handle_type _coroutine;
 };
 
 /**
- * @sa scoped_task<>
+ * @sa task<>
  */
-template<>
-class scoped_task<void> {
+template<bool DestroyFrame>
+class task<void, DestroyFrame> {
 public:
     using value_type = void;
     using notifier_type = notifier<void()>;
@@ -198,9 +206,9 @@ public:
             return {};
         }
 
-        scoped_task get_return_object() noexcept
+        task get_return_object() noexcept
         {
-            return scoped_task{handle_type::from_promise(*this)};
+            return task{handle_type::from_promise(*this)};
         }
 
         std::suspend_never initial_suspend() noexcept
@@ -211,32 +219,32 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    scoped_task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
+    task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
 
-    ~scoped_task()
+    ~task()
     {
-        if (_coroutine) {
+        if (DestroyFrame and _coroutine) {
             _coroutine.destroy();
         }
     }
 
-    scoped_task() = default;
-    scoped_task(scoped_task const&) = delete;
-    scoped_task& operator=(scoped_task const&) = delete;
+    task() = default;
+    task(task const&) = delete;
+    task& operator=(task const&) = delete;
 
-    scoped_task(scoped_task&& other) noexcept
+    task(task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
     }
 
-    scoped_task& operator=(scoped_task&& other) noexcept
+    task& operator=(task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         return *this;
     }
 
     /**
-     * @sa scoped_task<>::completed()
+     * @sa task<>::completed()
      */
     [[nodiscard]] bool done() const noexcept
     {
@@ -245,7 +253,7 @@ public:
     }
 
     /**
-     * @sa scoped_task<>::operator bool()
+     * @sa task<>::operator bool()
      */
     explicit operator bool() const noexcept
     {
@@ -276,9 +284,19 @@ public:
         return _coroutine.promise().notifier.subscribe(std::forward<Func>(func), flags);
     }
 
+    /** Create an awaiter that can await on this task.
+     */
+    auto operator co_await() const noexcept
+    {
+        return _coroutine.promise().notifier.operator co_await();
+    }
+
 private:
     // Optional value type
     handle_type _coroutine;
 };
+
+template<typename T = void>
+using scoped_task = task<T, true>;
 
 } // namespace hi::inline v1

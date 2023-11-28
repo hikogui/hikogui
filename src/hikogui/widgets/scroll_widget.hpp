@@ -13,7 +13,6 @@
 #include "scroll_aperture_widget.hpp"
 #include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <coroutine>
 

@@ -6,7 +6,6 @@
 
 #include "audio_device.hpp"
 #include "../utility/utility.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <memory>

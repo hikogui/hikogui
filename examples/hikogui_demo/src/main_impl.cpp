@@ -127,7 +127,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     co_await std::suspend_always{};
 }
 
-hi::task<> preferences_window(my_preferences& preferences)
+hi::task<> preferences_window(std::stop_token stop_token, my_preferences& preferences)
 {
     using namespace hi;
 
@@ -149,7 +149,7 @@ hi::task<> preferences_window(my_preferences& preferences)
 
     auto window = gui_window{std::move(top)};
 
-    co_await window.closing;
+    co_await when_any(window.closing, stop_token);
 }
 
 inline size_t target = 0;
@@ -162,7 +162,7 @@ hi::task<> main_window(my_preferences& preferences)
     auto top = std::make_unique<window_widget>(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, txt("Preferences")};
-    hilet& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
+    auto& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
 
     top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
     hilet& hello_world_button = top->content().emplace_bottom<momentary_button_widget>(txt("Hello world AV"));
@@ -184,7 +184,7 @@ hi::task<> main_window(my_preferences& preferences)
 
         switch (result.index()) {
         case 0:
-            preferences_window(preferences);
+            preferences_button.wait_for(preferences_window(preferences_button.get_stop_token(), preferences));
             break;
         case 1:
             gfx_system::global().log_memory_usage();

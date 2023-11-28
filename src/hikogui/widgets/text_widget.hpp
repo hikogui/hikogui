@@ -16,7 +16,6 @@
 #include "../l10n/l10n.hpp"
 #include "../container/container.hpp"
 #include "../observer/observer.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>

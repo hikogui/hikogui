@@ -9,7 +9,6 @@
 #include "../layout/layout.hpp"
 #include "../GFX/GFX.hpp"
 #include "../telemetry/telemetry.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <coroutine>
 

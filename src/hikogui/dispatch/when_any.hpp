@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "scoped_task.hpp"
-#include "../coroutine/coroutine.hpp"
+#include "task.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../macros.hpp"

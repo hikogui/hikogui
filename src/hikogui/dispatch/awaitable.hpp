@@ -9,7 +9,7 @@
 #include <coroutine>
 #include <type_traits>
 
-hi_export_module(hikogui.coroutine.awaitable);
+hi_export_module(hikogui.dispatch.awaitable);
 
 hi_export namespace hi::inline v1 {
 

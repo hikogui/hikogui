@@ -116,14 +116,13 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/void_span.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/wfree_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/wfree_unordered_map.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/awaitable.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/generator.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/coroutine.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/task.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_win32_impl.hpp>
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_stop_token_intf.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_stop_token_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/dispatch.hpp
@@ -131,7 +130,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/scoped_task.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/task.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_win32_impl.hpp>
@@ -515,6 +514,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float_to_half.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_to_float.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/generator.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/hash.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/initialize.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/math.hpp

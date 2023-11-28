@@ -7,7 +7,6 @@
 #include "../path/path.hpp"
 #include "../utility/utility.hpp"
 #include "../algorithm/algorithm.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
