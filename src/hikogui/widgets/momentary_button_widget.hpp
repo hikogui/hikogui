@@ -62,7 +62,7 @@ public:
     }
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             draw_label_button(context);
             draw_button(context);
         }

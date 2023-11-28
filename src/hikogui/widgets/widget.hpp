@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "widget_mode.hpp"
 #include "../layout/layout.hpp"
 #include "../geometry/geometry.hpp"
 #include "../observer/observer.hpp"
@@ -38,19 +37,6 @@ hi_export namespace hi { inline namespace v1 {
  */
 class widget : public widget_intf {
 public:
-    /** The widget mode.
-     * The current visibility and interactivity of a widget.
-     */
-    observer<widget_mode> mode = widget_mode::enabled;
-
-    /** Mouse cursor is hovering over the widget.
-     */
-    observer<bool> hover = false;
-
-    /** The widget has keyboard focus.
-     */
-    observer<bool> focus = false;
-
     /** The minimum size this widget is allowed to be.
      */
     observer<extent2> minimum = extent2{};
@@ -63,22 +49,6 @@ public:
      */
     explicit widget(widget_intf const * parent) noexcept : widget_intf(parent)
     {
-        hi_axiom(loop::main().on_thread());
-
-        _mode_cbt = mode.subscribe([&](auto...) {
-            ++global_counter<"widget:mode:constrain">;
-            process_event({gui_event_type::window_reconstrain});
-        });
-
-        _focus_cbt = focus.subscribe([&](auto...) {
-            ++global_counter<"widget:focus:redraw">;
-            request_redraw();
-        });
-
-        _hover_cbt = hover.subscribe([&](auto...) {
-            ++global_counter<"widget:hover:redraw">;
-            request_redraw();
-        });
     }
 
     virtual ~widget() {}
@@ -148,11 +118,6 @@ public:
         _layout = context;
     }
 
-    widget_layout const& layout() const noexcept override
-    {
-        return _layout;
-    }
-
     void draw(draw_context const& context) noexcept override {}
 
     /** Send a event to the window.
@@ -183,28 +148,20 @@ public:
 
         switch (event.type()) {
         case gui_event_type::keyboard_enter:
-            focus = true;
+            state |= widget_state::focus;
             this->scroll_to_show();
-            ++global_counter<"widget:keyboard_enter:redraw">;
-            request_redraw();
             return true;
 
         case gui_event_type::keyboard_exit:
-            focus = false;
-            ++global_counter<"widget:keyboard_exit:redraw">;
-            request_redraw();
+            state &= ~widget_state::focus;
             return true;
 
         case gui_event_type::mouse_enter:
-            hover = true;
-            ++global_counter<"widget:mouse_enter:redraw">;
-            request_redraw();
+            state |= widget_state::hover;
             return true;
 
         case gui_event_type::mouse_exit:
-            hover = false;
-            ++global_counter<"widget:mouse_exit:redraw">;
-            request_redraw();
+            state &= ~widget_state::hover;
             return true;
 
         case gui_event_type::gui_activate_stay:
@@ -232,7 +189,7 @@ public:
             return true;
 
         case gui_event_type::gui_menu_next:
-            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
+            if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id, keyboard_focus_group::menu, keyboard_focus_direction::forward));
                 return true;
@@ -240,7 +197,7 @@ public:
             break;
 
         case gui_event_type::gui_menu_prev:
-            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
+            if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id, keyboard_focus_group::menu, keyboard_focus_direction::backward));
                 return true;
@@ -248,7 +205,7 @@ public:
             break;
 
         case gui_event_type::gui_toolbar_next:
-            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
+            if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
                 return true;
@@ -256,7 +213,7 @@ public:
             break;
 
         case gui_event_type::gui_toolbar_prev:
-            if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
+            if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
                 return true;
@@ -396,8 +353,8 @@ public:
 
     [[nodiscard]] virtual color background_color() const noexcept
     {
-        if (*mode >= widget_mode::partial) {
-            if (*hover) {
+        if (mode() >= widget_mode::partial) {
+            if (hover()) {
                 return theme().color(semantic_color::fill, _layout.layer + 1);
             } else {
                 return theme().color(semantic_color::fill, _layout.layer);
@@ -409,8 +366,8 @@ public:
 
     [[nodiscard]] virtual color foreground_color() const noexcept
     {
-        if (*mode >= widget_mode::partial) {
-            if (*hover) {
+        if (mode() >= widget_mode::partial) {
+            if (hover()) {
                 return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
                 return theme().color(semantic_color::border, _layout.layer);
@@ -422,10 +379,10 @@ public:
 
     [[nodiscard]] virtual color focus_color() const noexcept
     {
-        if (*mode >= widget_mode::partial) {
-            if (*focus) {
+        if (mode() >= widget_mode::partial) {
+            if (focus()) {
                 return theme().color(semantic_color::accent);
-            } else if (*hover) {
+            } else if (hover()) {
                 return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
                 return theme().color(semantic_color::border, _layout.layer);
@@ -437,7 +394,7 @@ public:
 
     [[nodiscard]] virtual color accent_color() const noexcept
     {
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             return theme().color(semantic_color::accent);
         } else {
             return theme().color(semantic_color::border, _layout.layer - 1);
@@ -446,7 +403,7 @@ public:
 
     [[nodiscard]] virtual color label_color() const noexcept
     {
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             return theme().text_style(semantic_text_style::label)->color;
         } else {
             return theme().color(semantic_color::border, _layout.layer - 1);
@@ -454,12 +411,6 @@ public:
     }
 
 protected:
-    widget_layout _layout;
-
-    callback<void(widget_mode)> _mode_cbt;
-    callback<void(bool)> _focus_cbt;
-    callback<void(bool)> _hover_cbt;
-
     /** Make an overlay rectangle.
      *
      * This function tries to create a rectangle for an overlay-widget that

@@ -283,6 +283,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_id.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_layout.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_state.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/aarectangle.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/alignment.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/axis.ixx
@@ -568,7 +569,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_tab_button_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/widget_mode.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_controls_macos_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_controls_win32_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_widget.ixx

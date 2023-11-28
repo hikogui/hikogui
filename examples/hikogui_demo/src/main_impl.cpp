@@ -116,8 +116,8 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
 
     auto toggle_value_cbt = preferences.toggle_value.subscribe(
         [&](bool value) {
-            checkbox2.mode = value ? widget_mode::enabled : widget_mode::disabled;
-            selection3.mode = value ? widget_mode::enabled : widget_mode::disabled;
+            checkbox2.set_mode(value ? widget_mode::enabled : widget_mode::disabled);
+            selection3.set_mode(value ? widget_mode::enabled : widget_mode::disabled);
         },
         callback_flags::main);
 

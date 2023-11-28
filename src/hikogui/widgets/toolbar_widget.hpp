@@ -119,7 +119,7 @@ public:
     }
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             if (overlaps(context, layout())) {
                 context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, _layout.layer));
 
@@ -142,7 +142,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         // By default the toolbar is used for dragging the window.
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             auto r = layout().contains(position) ? hitbox{id, _layout.elevation, hitbox_type::move_area} : hitbox{};
 
             for (hilet& child : _children) {
@@ -157,7 +157,7 @@ public:
     }
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             return theme().color(semantic_color::accent);
         } else {
             return theme().color(semantic_color::border, _layout.layer - 1);
@@ -200,7 +200,7 @@ private:
     {
         for (hilet& cell : _children) {
             if (auto const *const c = dynamic_cast<toolbar_tab_button_widget *>(cell.value.get())) {
-                if (*c->focus and c->state() == hi::button_state::on) {
+                if (c->focus() and c->value() == widget_value::on) {
                     return true;
                 }
             }

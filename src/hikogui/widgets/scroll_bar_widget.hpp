@@ -72,7 +72,7 @@ public:
     {
         _layout = {};
 
-        if (*mode <= widget_mode::collapse) {
+        if (mode() <= widget_mode::collapse) {
             return {};
         }
 
@@ -94,7 +94,7 @@ public:
     {
         _layout = context;
 
-        if (*mode <= widget_mode::collapse) {
+        if (mode() <= widget_mode::collapse) {
             _slider_rectangle = {};
             return;
         }
@@ -115,7 +115,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout()) and visible()) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout()) and visible()) {
             draw_rails(context);
             draw_slider(context);
         }
@@ -125,7 +125,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout().contains(position) and visible() and
+        if (mode() >= widget_mode::partial and layout().contains(position) and visible() and
             _slider_rectangle.contains(position)) {
             return {id, _layout.elevation, hitbox_type::scroll_bar};
         } else {
@@ -174,7 +174,7 @@ public:
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        if (*hover) {
+        if (hover()) {
             return theme().color(semantic_color::fill, _layout.layer + 2);
         } else {
             return theme().color(semantic_color::fill, _layout.layer + 1);
