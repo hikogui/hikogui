@@ -54,11 +54,6 @@ public:
      */
     bool resizing = false;
 
-    /*! The window is currently active.
-     * Widgets may want to reduce redraws, or change colors.
-     */
-    bool active = false;
-
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
      * the source for the DPI value.
@@ -283,20 +278,7 @@ public:
             _redraw_rectangle = aarectangle{};
             draw_context.display_time_point = display_time_point;
             draw_context.subpixel_orientation = subpixel_orientation();
-            draw_context.active = active;
-
-            switch (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
-            case animator_state::idle:
-                break;
-            case animator_state::running:
-                this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
-                break;
-            case animator_state::end:
-                break;
-            default:
-                hi_no_default();
-            }
-            draw_context.saturation = _animated_active.current_value();
+            draw_context.saturation = 1.0f;
 
             {
                 hilet t2 = trace<"window::draw">();
@@ -966,10 +948,6 @@ private:
      */
     utc_nanoseconds last_forced_redraw = {};
 
-    /** The animated version of the `active` flag.
-     */
-    animator<float> _animated_active = _animation_duration;
-
     /** Target of the mouse
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.
@@ -1510,10 +1488,10 @@ private:
             switch (wParam) {
             case 1: // WA_ACTIVE
             case 2: // WA_CLICKACTIVE
-                active = true;
+                this->process_event({gui_event_type::window_activate});
                 break;
             case 0: // WA_INACTIVE
-                active = false;
+                this->process_event({gui_event_type::window_deactivate});
                 break;
             default:
                 hi_log_error("Unknown WM_ACTIVE value.");

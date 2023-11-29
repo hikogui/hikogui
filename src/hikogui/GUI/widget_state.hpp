@@ -30,28 +30,28 @@ enum class widget_mode {
      *  - The widget does not draw itself or its children.
      *  - The widget will not accept any events.
      */
-    collapse,
+    collapse = 0,
 
     /** The widget is invisible.
      *
      * This means:
      *  - The widget has size and margins so that it will reserve space in a container.
      */
-    invisible,
+    invisible = 1,
 
     /** The widget is disabled.
      *
      * This means:
      *  - The widget "grayed-out"; drawn with less contrast and saturation.
      */
-    disabled,
+    disabled = 2,
 
     /** The widget is in display-only mode.
      *
      * This means:
      *  - The widget is drawn normally.
      */
-    display,
+    display = 3,
 
     /** The widget is selectable.
      *
@@ -59,7 +59,7 @@ enum class widget_mode {
      *  - The widget or its contents such as text may be selected.
      *  - The widget or its contents may be dragged by the mouse.
      */
-    select,
+    select = 4,
 
     /** A widget is partially enabled.
      *
@@ -69,7 +69,7 @@ enum class widget_mode {
      *    such as a text-widget which has a mode where only a single line
      *    can be edited.
      */
-    partial,
+    partial = 5,
 
     /** The widget is fully enabled.
      *
@@ -77,7 +77,7 @@ enum class widget_mode {
      *  - The widget will accept keyboard focus.
      *  - The widget's state is controllable.
      */
-    enabled
+    enabled = 6,
 };
 
 enum class widget_value {
@@ -86,150 +86,334 @@ enum class widget_value {
     other = 2,
 };
 
+enum class widget_phase {
+    inactive = 0,
+    normal = 1,
+    hover = 2,
+    pressed = 3,
+};
+
 constexpr auto widget_state_mode_shift = 0;
 constexpr auto widget_state_value_shift = 5;
 
-// clang-format off
-enum class widget_state : uint16_t {
-    /** The mode of a widget.
-     * 
-     * The mode may change the size of the widget and therefor when the value
-     * changes a reconstrain is nessesary.
-     */
-    collapse         = std::to_underlying(widget_mode::collapse) << widget_state_mode_shift,
-    invisible        = std::to_underlying(widget_mode::invisible) << widget_state_mode_shift,
-    disabled         = std::to_underlying(widget_mode::disabled) << widget_state_mode_shift,
-    display          = std::to_underlying(widget_mode::display) << widget_state_mode_shift,
-    select           = std::to_underlying(widget_mode::select) << widget_state_mode_shift,
-    partial          = std::to_underlying(widget_mode::partial) << widget_state_mode_shift,
-    enabled          = std::to_underlying(widget_mode::enabled) << widget_state_mode_shift,
-    mode_mask        = 0b111 << widget_state_mode_shift,
+/** The state the widget is in.
+ * 
+ * The numeric value of the state is used as an index into theme-values
+ * to select the appropriate visual style.
+ */
+class widget_state {
+public:
+    constexpr widget_state(widget_state const &) noexcept = default;
+    constexpr widget_state(widget_state &&) noexcept = default;
+    constexpr widget_state &operator=(widget_state const &) noexcept = default;
+    constexpr widget_state &operator=(widget_state &&) noexcept = default;
+    
+    constexpr widget_state() noexcept = default;
 
-    /** The nesting layer for widgets.
-     * 
-     * The layer mostly determines the background color of nested widgets.
+    /** Start of the iteration of all possible widget states.
      */
-    layer0           = 0 << 3,
-    layer1           = 1 << 3,
-    layer2           = 2 << 3,
-    layer3           = 3 << 3,
+    constexpr static widget_state begin() noexcept
+    {
+        auto r = widget_state{};
+        r.set_mode(widget_mode::collapse);
+        r.set_layer(0);
+        r.set_value(widget_value::off);
+        r.set_pressed(false);
+        r.set_hover(false);
+        r.set_active(false);
+        r.set_focus(false);
+        return r;
+    }
 
-    /** The value that the widget represents.
+    /** End of the iteration of all possible widget states.
+     */
+    constexpr static widget_state end() noexcept
+    {
+        auto r = begin();
+        r._end = true;
+        return r;
+    }
+
+    /** The number if possible widget states.
+     */
+    constexpr static size_t size() noexcept
+    {
+        return static_cast<size_t>(end());
+    }
+
+    /** Get the mode of a widget.
+     *
+     * @see widget_mode
+     */
+    [[nodiscard]] constexpr widget_mode mode() const noexcept
+    {
+        return static_cast<widget_mode>(_mode);
+    }
+
+    /** Set the mode of a widget.
+     *
+     * @see widget_mode
+     */
+    constexpr widget_state &set_mode(widget_mode mode) noexcept
+    {
+        _mode = static_cast<uint16_t>(mode);
+        return *this;
+    }
+
+    /** Get the layer of a widget.
+     *
+     * The layer between 0 and 3 is used to determine how to visual
+     * distinct widget at different nesting levels.
+     */
+    [[nodiscard]] constexpr size_t layer() const noexcept
+    {
+        return _layer;
+    }
+
+    /** Set the layer of the widget
      * 
-     * The value may cause a change of color or draw shape to change.
+     * @param layer The layer is modulo 4.
+     */
+    constexpr widget_state &set_layer(size_t layer) noexcept
+    {
+        _layer = static_cast<uint16_t>(layer % 4);
+        return *this;
+    }
+
+    /** Get the value of the widget.
+     * 
+     * @see widget_value
+     */
+    [[nodiscard]] constexpr widget_value value() const noexcept
+    {
+        return static_cast<widget_value>(_value);
+    }
+
+    /** Set the value of the widget.
+     * 
+     * @see widget_value
+     */
+    constexpr widget_state &set_value(widget_value value) noexcept
+    {
+        _value = static_cast<uint16_t>(value);
+        return *this;
+    }
+
+    /** Get the phase of the widget.
+     * 
+     * @see widget_phase
+     */
+    [[nodiscard]] constexpr widget_phase phase() const noexcept
+    {
+        if (_pressed) {
+            return widget_phase::pressed;
+        } else if (_hover) {
+            return widget_phase::hover;
+        } else if (_active) {
+            return widget_phase::normal;
+        } else {
+            return widget_phase::inactive;
+        }
+    }
+
+    /** Set if the mouse/finger presses the widget.
+     * 
+     * @see widget_phase
+     */
+    constexpr widget_state &set_pressed(bool pressed) noexcept
+    {
+        _pressed = static_cast<bool>(pressed);
+        return *this;
+    }
+
+    /** Set if the mouse hovers over the widget.
+     * 
+     * @see widget_phase
+     */
+    constexpr widget_state &set_hover(bool hover) noexcept
+    {
+        _hover = static_cast<bool>(hover);
+        return *this;
+    }
+
+    /** Set if the window is active widget.
+     * 
+     * @see widget_phase
+     */
+    constexpr widget_state &set_active(bool active) noexcept
+    {
+        _active = static_cast<bool>(active);
+        return *this;
+    }
+
+    /** Get if the window has keyboard focus.
+     */
+    [[nodiscard]] constexpr bool focus() const noexcept
+    {
+        return static_cast<bool>(_focus);
+    }
+
+    /** Set if the window has keyboard focus.
+     */
+    constexpr widget_state &set_focus(bool focus) noexcept
+    {
+        _focus = static_cast<uint16_t>(focus);
+        return *this;
+    }
+
+    /** Get the numeric value of the window state.
+     * 
+     * The numeric value is used for indexing into theme tables
+     * for quick lookup of, for example, the background color of
+     * the widget in a certain state.
+     */
+    template<std::integral T>
+    constexpr explicit operator T() const noexcept
+        requires(sizeof(T) >= 2)
+    {
+        auto r = T{0};
+
+        r += static_cast<T>(_end);
+
+        r *= 2;
+        r += static_cast<T>(focus());
+
+        r *= 4;
+        r += static_cast<T>(phase());
+
+        r *= 3;
+        r += static_cast<T>(value());
+
+        r *= 2;
+        r += static_cast<T>(layer());
+
+        r *= 7;
+        r += static_cast<T>(mode());
+        return r;
+    }
+
+    [[nodiscard]] constexpr friend bool operator==(widget_state const &lhs, widget_state const &rhs) noexcept
+    {
+        return static_cast<uint16_t>(lhs) == static_cast<uint16_t>(rhs);
+    }
+
+    /** Increment the widget-state.
+     * 
+     * This is used to iterate over each unique widget_state, to fill in
+     * the theme tables.
+     */
+    [[nodiscard]] constexpr widget_state& operator++() noexcept
+    {
+        if (mode() < widget_mode::enabled) {
+            set_mode(static_cast<widget_mode>(std::to_underlying(mode()) + 1));
+            return *this;
+        }
+        set_mode(widget_mode::collapse);
+
+        if (layer() < 3) {
+            set_layer(layer() + 1);
+            return *this;
+        }
+        set_layer(0);
+
+        if (value() < widget_value::other) {
+            set_value(static_cast<widget_value>(std::to_underlying(value()) + 1));
+            return *this;
+        }
+        set_value(widget_value::off);
+
+        switch (phase()) {
+        case widget_phase::inactive:
+            set_pressed(false);
+            set_hover(false);
+            set_active(true);
+            return *this;
+        case widget_phase::normal:
+            set_pressed(false);
+            set_hover(true);
+            set_active(true);
+            return *this;
+        case widget_phase::pressed:
+            set_pressed(true);
+            set_hover(true);
+            set_active(true);
+            return *this;
+        default:;
+        }
+        set_pressed(false);
+        set_hover(false);
+        set_active(false);
+
+        if (focus() == false) {
+            set_focus(true);
+            return *this;
+        }
+        set_focus(false);
+
+        _end = true;
+        return *this;
+    }
+
+    /** Check if the change in widget-state requires the widget to reconstrain.
+     */
+    [[nodiscard]] constexpr friend bool need_reconstrain(widget_state const &lhs, widget_state const &rhs) noexcept
+    {
+        return lhs._mode != rhs._mode;
+    } 
+
+    /** Check if the change in widget-state requires the widget to relayout.
+     */
+    [[nodiscard]] constexpr friend bool need_relayout(widget_state const &lhs, widget_state const &rhs) noexcept
+    {
+        return need_reconstrain(lhs, rhs) or lhs._layer != rhs._layer;
+    } 
+
+    /** Check if the change in widget-state requires the widget to redraw.
+     */
+    [[nodiscard]] constexpr friend bool need_redraw(widget_state const &lhs, widget_state const &rhs) noexcept
+    {
+        return lhs != rhs;
+    } 
+
+    /** Check if the change in widget-state requires the widget to notify listeners for a change in value.
+     */
+    [[nodiscard]] constexpr friend bool need_notify(widget_state const &lhs, widget_state const &rhs) noexcept
+    {
+        return lhs._value != rhs._value;
+    } 
+
+private:
+    /** hi::widget_mode.
+     */
+    uint16_t _mode : 3 = static_cast<uint16_t>(widget_mode::enabled);
+
+    /** Widget depth layer used for visually separating layers of nest widget.
+     */
+    uint16_t _layer : 2 = 0;
+
+    /** hi::widget_value.
+     */
+    uint16_t _value : 2 = static_cast<uint16_t>(widget_value::off);
+
+    /** The window is active.
+     */
+    uint16_t _active: 1 = 1;
+
+    /** The mouse hovers over the widget.
     */
-    off              = std::to_underlying(widget_value::off) << widget_state_value_shift,
-    on               = std::to_underlying(widget_value::on) << widget_state_value_shift,
-    other            = std::to_underlying(widget_value::other) << widget_state_value_shift,
-    value_mask       = 0b11 << widget_state_value_shift,
+    uint16_t _hover : 1 = 0;
 
-    /** Keyboard focus
+    /** The mouse clicked the widget.
+    */
+    uint16_t _pressed : 1 = 0;
+
+    /** The widget has keyboard focus.
+    */
+    uint16_t _focus : 1 = 0;
+
+    /** Marker for end of iteration.
      */
-    focus            = 1 << 7,
-
-    /** Mouse hover
-     */
-    hover            = 1 << 8,
-
-    /** Mouse clicked
-     */
-    pressed          = 1 << 9,
-
-    /** Window active
-     */
-    active           = 1 << 10,
-
-    reconstrain_mask = 0b0000'00'00'111,
-    relayout_mask    = 0b0000'00'00'111,
-    redraw_mask      = 0b1111'11'11'111,
-    notify_mask      = 0b0000'11'00'000,
+    uint16_t _end : 1 = 0;
 };
-// clang-format on
-
-[[nodiscard]] constexpr widget_state operator|(widget_state const &lhs, widget_state const &rhs) noexcept
-{
-    return static_cast<widget_state>(std::to_underlying(lhs) | std::to_underlying(rhs));
-}
-
-[[nodiscard]] constexpr widget_state operator&(widget_state const &lhs, widget_state const &rhs) noexcept
-{
-    return static_cast<widget_state>(std::to_underlying(lhs) & std::to_underlying(rhs));
-}
-
-[[nodiscard]] constexpr widget_state operator^(widget_state const &lhs, widget_state const &rhs) noexcept
-{
-    return static_cast<widget_state>(std::to_underlying(lhs) ^ std::to_underlying(rhs));
-}
-
-[[nodiscard]] constexpr widget_state operator~(widget_state const &rhs) noexcept
-{
-    return static_cast<widget_state>(~std::to_underlying(rhs));
-}
-
-constexpr widget_state &operator|=(widget_state &lhs, widget_state const &rhs) noexcept
-{
-    return lhs = lhs | rhs;
-}
-
-constexpr widget_state &operator&=(widget_state &lhs, widget_state const &rhs) noexcept
-{
-    return lhs = lhs & rhs;
-}
-
-constexpr widget_state &operator^=(widget_state &lhs, widget_state const &rhs) noexcept
-{
-    return lhs = lhs ^ rhs;
-}
-
-[[nodiscard]] constexpr bool to_bool(widget_state const &rhs) noexcept
-{
-    return std::to_underlying(rhs) != 0;
-}
-
-[[nodiscard]] constexpr bool need_reconstrain(widget_state const &old_state, widget_state const &new_state) noexcept
-{
-    return to_bool((old_state ^ new_state) & widget_state::reconstrain_mask);
-} 
-
-[[nodiscard]] constexpr bool need_relayout(widget_state const &old_state, widget_state const &new_state) noexcept
-{
-    return to_bool((old_state ^ new_state) & widget_state::relayout_mask);
-} 
-
-[[nodiscard]] constexpr bool need_redraw(widget_state const &old_state, widget_state const &new_state) noexcept
-{
-    return to_bool((old_state ^ new_state) & widget_state::redraw_mask);
-} 
-
-[[nodiscard]] constexpr bool need_notify(widget_state const &old_state, widget_state const &new_state) noexcept
-{
-    return to_bool((old_state ^ new_state) & widget_state::notify_mask);
-} 
-
-[[nodiscard]] constexpr size_t to_layer(widget_state const &rhs) noexcept
-{
-    return (std::to_underlying(rhs) >> 3) & 0b11;
-}
-
-[[nodiscard]] constexpr widget_mode to_mode(widget_state const &rhs) noexcept
-{
-    return static_cast<widget_mode>(std::to_underlying(rhs) & 0b111);
-}
-
-[[nodiscard]] constexpr widget_state set_mode(widget_state const &lhs, widget_mode const &rhs) noexcept
-{
-    return (lhs & ~widget_state::mode_mask) | static_cast<widget_state>(std::to_underlying(rhs) << widget_state_mode_shift);
-}
-
-[[nodiscard]] constexpr widget_value to_value(widget_state const &rhs) noexcept
-{
-    return static_cast<widget_value>((std::to_underlying(rhs) >> 5) & 0b11);
-}
-
-[[nodiscard]] constexpr widget_state set_value(widget_state const &lhs, widget_value const &rhs) noexcept
-{
-    return (lhs & ~widget_state::value_mask) | static_cast<widget_state>(std::to_underlying(rhs) << widget_state_value_shift);
-}
-
 
 }}

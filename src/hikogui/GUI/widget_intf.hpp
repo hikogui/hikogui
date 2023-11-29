@@ -49,26 +49,30 @@ public:
     }
 
     widget_intf(widget_intf const *parent) noexcept :
-        id(make_widget_id()), parent(const_cast<widget_intf *>(parent)), state(widget_state::enabled)
+        id(make_widget_id()), parent(const_cast<widget_intf *>(parent))
     {
+        // This lambda allows the state to be set once before it will trigger
+        // notifications.
         _state_cbt = state.subscribe([&](widget_state new_state) {
-            static auto old_state = widget_state{};
+            static std::optional<widget_state> old_state = std::nullopt;
+            
+            if (old_state) {
+                if (need_notify(*old_state, new_state)) {
+                    notifier();
+                }
 
-            if (need_notify(old_state, new_state)) {
-                notifier();
-            }
+                if (need_reconstrain(*old_state, new_state)) {
+                    ++global_counter<"widget:state:reconstrain">;
+                    process_event({gui_event_type::window_reconstrain});
 
-            if (need_reconstrain(old_state, new_state)) {
-                ++global_counter<"widget:state:reconstrain">;
-                process_event({gui_event_type::window_reconstrain});
+                } else if (need_relayout(*old_state, new_state)) {
+                    ++global_counter<"widget:state:relayout">;
+                    process_event({gui_event_type::window_relayout});
 
-            } else if (need_relayout(old_state, new_state)) {
-                ++global_counter<"widget:state:relayout">;
-                process_event({gui_event_type::window_relayout});
-
-            } else if (need_redraw(old_state, new_state)) {
-                ++global_counter<"widget:state:redraw">;
-                request_redraw();
+                } else if (need_redraw(*old_state, new_state)) {
+                    ++global_counter<"widget:state:redraw">;
+                    request_redraw();
+                }
             }
             old_state = new_state;
         });
@@ -91,47 +95,62 @@ public:
 
     [[nodiscard]] size_t layer() const noexcept
     {
-        return to_layer(*state);
+        return state->layer();
+    }
+
+    void set_layer(size_t new_layer) noexcept
+    {
+        state.copy()->set_layer(new_layer);
     }
 
     [[nodiscard]] widget_mode mode() const noexcept
     {
-        return to_mode(*state);
+        return state->mode();
     }
 
     void set_mode(widget_mode new_mode) noexcept
     {
-        state = ::hi::set_mode(*state, new_mode);
+        state.copy()->set_mode(new_mode);
     }
 
     [[nodiscard]] widget_value value() const noexcept
     {
-        return to_value(*state);
+        return state->value();
     }
 
     void set_value(widget_value new_value) noexcept
     {
-        state = ::hi::set_value(*state, new_value);
+        state.copy()->set_value(new_value);
     }
 
-    [[nodiscard]] bool hover() const noexcept
+    [[nodiscard]] widget_phase phase() const noexcept
     {
-        return to_bool(*state & widget_state::hover);
+        return state->phase();
+    }
+
+    void set_pressed(bool pressed) noexcept
+    {
+        state.copy()->set_pressed(pressed);
+    }
+
+    void set_hover(bool hover) noexcept
+    {
+        state.copy()->set_hover(hover);
+    }
+
+    void set_active(bool active) noexcept
+    {
+        state.copy()->set_active(active);
     }
 
     [[nodiscard]] bool focus() const noexcept
     {
-        return to_bool(*state & widget_state::focus);
+        return state->focus();
     }
 
-    [[nodiscard]] bool pressed() const noexcept
+    void set_focus(bool new_focus) const noexcept
     {
-        return to_bool(*state & widget_state::pressed);
-    }
-
-    [[nodiscard]] bool active() const noexcept
-    {
-        return to_bool(*state & widget_state::active);
+        state.copy()->set_focus(new_focus);
     }
 
     /** Set the window for this tree of widgets.

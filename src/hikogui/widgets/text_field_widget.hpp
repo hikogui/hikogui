@@ -278,7 +278,7 @@ public:
                 return theme().text_style(semantic_text_style::error)->color;
             } else if (_text_widget->focus()) {
                 return theme().color(semantic_color::accent);
-            } else if (hover()) {
+            } else if (phase() == widget_phase::hover) {
                 return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
                 return theme().color(semantic_color::border, _layout.layer);

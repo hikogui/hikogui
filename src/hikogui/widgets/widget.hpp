@@ -148,21 +148,31 @@ public:
 
         switch (event.type()) {
         case gui_event_type::keyboard_enter:
-            state |= widget_state::focus;
+            set_focus(true);
             this->scroll_to_show();
             return true;
 
         case gui_event_type::keyboard_exit:
-            state &= ~widget_state::focus;
+            set_focus(false);
             return true;
 
         case gui_event_type::mouse_enter:
-            state |= widget_state::hover;
+            set_hover(true);
             return true;
 
         case gui_event_type::mouse_exit:
-            state &= ~widget_state::hover;
+            set_hover(false);
             return true;
+
+        case gui_event_type::window_activate:
+            set_active(true);
+            // All widgets need the active value set.
+            return false;
+
+        case gui_event_type::window_deactivate:
+            set_active(false);
+            // All widgets need the active value unset.
+            return false;
 
         case gui_event_type::gui_activate_stay:
             process_event(gui_event_type::gui_activate);
@@ -354,7 +364,7 @@ public:
     [[nodiscard]] virtual color background_color() const noexcept
     {
         if (mode() >= widget_mode::partial) {
-            if (hover()) {
+            if (phase() == widget_phase::hover) {
                 return theme().color(semantic_color::fill, _layout.layer + 1);
             } else {
                 return theme().color(semantic_color::fill, _layout.layer);
@@ -367,7 +377,7 @@ public:
     [[nodiscard]] virtual color foreground_color() const noexcept
     {
         if (mode() >= widget_mode::partial) {
-            if (hover()) {
+            if (phase() == widget_phase::hover) {
                 return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
                 return theme().color(semantic_color::border, _layout.layer);
@@ -382,7 +392,7 @@ public:
         if (mode() >= widget_mode::partial) {
             if (focus()) {
                 return theme().color(semantic_color::accent);
-            } else if (hover()) {
+            } else if (phase() == widget_phase::hover) {
                 return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
                 return theme().color(semantic_color::border, _layout.layer);

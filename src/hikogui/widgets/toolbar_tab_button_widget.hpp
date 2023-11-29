@@ -159,7 +159,7 @@ private:
         hilet button_z = focus() ? translate_z(0.6f) : translate_z(0.0f);
 
         // clang-format off
-        auto button_color = (hover() or value() == widget_value::on) ?
+        auto button_color = (phase() == widget_phase::hover or value() == widget_value::on) ?
             theme().color(semantic_color::fill, _layout.layer - 1) :
             theme().color(semantic_color::fill, _layout.layer);
         // clang-format on

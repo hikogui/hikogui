@@ -79,23 +79,23 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
-            hilet close_circle_color = (not context.active and not hover()) ? color(0.246f, 0.246f, 0.246f) :
+            hilet close_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
                 pressedClose                                               ? color(1.0f, 0.242f, 0.212f) :
                                                                              color(1.0f, 0.1f, 0.082f);
             context.draw_box(layout(), closeRectangle, close_circle_color, corner_radii{RADIUS});
 
-            hilet minimize_circle_color = (not context.active and not hover()) ? color(0.246f, 0.246f, 0.246f) :
+            hilet minimize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
                 pressedMinimize                                               ? color(1.0f, 0.847f, 0.093f) :
                                                                                 color(0.784f, 0.521f, 0.021f);
             context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_radii{RADIUS});
 
-            hilet maximize_circle_color = (not context.active and not hover()) ? color(0.246f, 0.246f, 0.246f) :
+            hilet maximize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
                 pressedMaximize                                               ? color(0.223f, 0.863f, 0.1f) :
                                                                                 color(0.082f, 0.533f, 0.024f);
 
             context.draw_box(layout(), maximizeRectangle, maximize_circle_color, corner_radii{RADIUS});
 
-            if (hover()) {
+            if (phase() == widget_phase::hover) {
                 context.draw_glyph(
                     layout(), translate_z(0.1f) * closeWindowGlyphRectangle, closeWindowGlyph, color{0.319f, 0.0f, 0.0f});
                 context.draw_glyph(

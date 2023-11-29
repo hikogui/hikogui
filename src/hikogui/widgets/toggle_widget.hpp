@@ -258,7 +258,7 @@ public:
     [[nodiscard]] color background_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        if (pressed()) {
+        if (phase() == widget_phase::pressed) {
             return theme().color(semantic_color::fill, _layout.layer + 2);
         } else {
             return super::background_color();
@@ -298,15 +298,14 @@ public:
 
         case gui_event_type::mouse_down:
             if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                state |= widget_state::pressed;
-                request_redraw();
+                set_pressed(true);
                 return true;
             }
             break;
 
         case gui_event_type::mouse_up:
             if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                state &= ~widget_state::pressed;
+                set_pressed(false);
 
                 // with_label_widget or other widgets may have accepted the hitbox
                 // for this widget. Which means the widget_id in the mouse-event
