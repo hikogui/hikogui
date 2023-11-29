@@ -284,7 +284,7 @@ public:
         r *= 3;
         r += static_cast<T>(value());
 
-        r *= 2;
+        r *= 4;
         r += static_cast<T>(layer());
 
         r *= 7;
@@ -302,7 +302,7 @@ public:
      * This is used to iterate over each unique widget_state, to fill in
      * the theme tables.
      */
-    [[nodiscard]] constexpr widget_state& operator++() noexcept
+    constexpr widget_state& operator++() noexcept
     {
         if (mode() < widget_mode::enabled) {
             set_mode(static_cast<widget_mode>(std::to_underlying(mode()) + 1));
@@ -333,16 +333,19 @@ public:
             set_hover(true);
             set_active(true);
             return *this;
-        case widget_phase::pressed:
+        case widget_phase::hover:
             set_pressed(true);
             set_hover(true);
             set_active(true);
             return *this;
-        default:;
+        case widget_phase::pressed:
+            set_pressed(false);
+            set_hover(false);
+            set_active(false);
+            break;
+        default:
+            hi_no_default();
         }
-        set_pressed(false);
-        set_hover(false);
-        set_active(false);
 
         if (focus() == false) {
             set_focus(true);
