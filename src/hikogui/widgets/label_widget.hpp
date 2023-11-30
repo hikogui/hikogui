@@ -159,7 +159,7 @@ public:
     }
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             for (hilet& cell : _grid) {
                 cell.value->draw(context);
             }
@@ -169,7 +169,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             return _text_widget->hitbox_test_from_parent(position);
         } else {
             return {};
@@ -206,13 +206,13 @@ private:
 
     label_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
     {
-        mode = widget_mode::select;
+        set_mode(widget_mode::select);
 
         _icon_widget = std::make_unique<icon_widget>(this, label.get<"icon">());
         _text_widget = std::make_unique<text_widget>(this, label.get<"text">());
         _text_widget->alignment = alignment;
         _text_widget->text_style = text_style;
-        _text_widget->mode = mode;
+        _text_widget->set_mode(mode());
 
         _alignment_cbt = alignment.subscribe([this](auto...) {
             if (alignment == horizontal_alignment::center or alignment == horizontal_alignment::justified) {

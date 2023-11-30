@@ -115,11 +115,11 @@ public:
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         _current_label_widget = std::make_unique<label_widget>(this, this->attributes.alignment, this->attributes.text_style);
-        _current_label_widget->mode = widget_mode::invisible;
+        _current_label_widget->set_mode(widget_mode::invisible);
         _off_label_widget = std::make_unique<label_widget>(this, this->attributes.off_label, this->attributes.alignment, semantic_text_style::placeholder);
 
         _overlay_widget = std::make_unique<overlay_widget>(this);
-        _overlay_widget->mode = widget_mode::invisible;
+        _overlay_widget->set_mode(widget_mode::invisible);
         _scroll_widget = &_overlay_widget->emplace<vertical_scroll_widget>();
         _grid_widget = &_scroll_widget->emplace<grid_widget>();
 
@@ -264,7 +264,7 @@ public:
     {
         animate_overlay(context.display_time_point);
 
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             if (overlaps(context, layout())) {
                 draw_outline(context);
                 draw_left_box(context);
@@ -283,7 +283,7 @@ public:
     {
         switch (event.type()) {
         case gui_event_type::mouse_up:
-            if (*mode >= widget_mode::partial and not delegate->empty(*this) and layout().rectangle().contains(event.mouse().position)) {
+            if (mode() >= widget_mode::partial and not delegate->empty(*this) and layout().rectangle().contains(event.mouse().position)) {
                 return handle_event(gui_event_type::gui_activate);
             }
             return true;
@@ -292,7 +292,7 @@ public:
             // Handle gui_active_next so that the next widget will NOT get keyboard focus.
             // The previously selected item needs the get keyboard focus instead.
         case gui_event_type::gui_activate:
-            if (*mode >= widget_mode::partial and not delegate->empty(*this) and overlay_closed()) {
+            if (mode() >= widget_mode::partial and not delegate->empty(*this) and overlay_closed()) {
                 open_overlay();
             } else {
                 close_overlay();
@@ -315,7 +315,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             auto r = _overlay_widget->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {
@@ -331,14 +331,14 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and not delegate->empty(*this);
+        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and not delegate->empty(*this);
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and not overlay_closed()) {
+        if (mode() >= widget_mode::partial and not overlay_closed()) {
             return theme().color(semantic_color::accent);
         } else {
             return super::focus_color();
@@ -395,7 +395,7 @@ private:
 
         if (auto focus_id = delegate->keyboard_focus_id(*this)) {
             _overlay_state = overlay_state_type::open;
-            _overlay_widget->mode = widget_mode::enabled;
+            _overlay_widget->set_mode(widget_mode::enabled);
             process_event(gui_event::window_set_keyboard_target(*focus_id, keyboard_focus_group::menu));
             request_redraw();
         }
@@ -416,7 +416,7 @@ private:
     {
         if (_overlay_state != overlay_state_type::closed) {
             _overlay_state = overlay_state_type::closed;
-            _overlay_widget->mode = widget_mode::invisible;
+            _overlay_widget->set_mode(widget_mode::invisible);
             request_redraw();
         }
     }
@@ -456,13 +456,13 @@ private:
     void update_value() noexcept
     {
         if (auto selected_label = delegate->selected_label(*this)) {
-            _off_label_widget->mode = widget_mode::invisible;
+            _off_label_widget->set_mode(widget_mode::invisible);
             _current_label_widget->label = *selected_label;
-            _current_label_widget->mode = widget_mode::display;
+            _current_label_widget->set_mode(widget_mode::display);
 
         } else {
-            _off_label_widget->mode = widget_mode::display;
-            _current_label_widget->mode = widget_mode::invisible;
+            _off_label_widget->set_mode(widget_mode::display);
+            _current_label_widget->set_mode(widget_mode::invisible);
         }
 
         close_overlay();

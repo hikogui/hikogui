@@ -78,7 +78,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             if (pressedClose) {
                 context.draw_box(layout(), closeRectangle, color{1.0f, 0.0f, 0.0f});
             } else if (hoverClose) {
@@ -103,7 +103,7 @@ public:
                 context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer));
             }
 
-            hilet glyph_color = context.active ? label_color() : foreground_color();
+            hilet glyph_color = phase() >= widget_phase::normal ? label_color() : foreground_color();
 
             context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, closeWindowGlyph, glyph_color);
             context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, minimizeWindowGlyph, glyph_color);
@@ -193,7 +193,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout().contains(position) and
+        if (mode() >= widget_mode::partial and layout().contains(position) and
             (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
             return hitbox{id, _layout.elevation, hitbox_type::button};
         } else {

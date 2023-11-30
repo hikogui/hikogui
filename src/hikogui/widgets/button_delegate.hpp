@@ -21,28 +21,6 @@ hi_export_module(hikogui.widgets.button_delegate);
 
 hi_export namespace hi { inline namespace v1 {
 
-/** The state of a button.
- * @ingroup widget_delegates
- */
-enum class button_state {
-    /** The 'off' state of a button.
-     */
-    off,
-
-    /** The 'on' state of a button.
-     */
-    on,
-
-    /** The other state of a button.
-     *
-     * For checkboxes the 'other' state is when the value it represents is
-     * neither 'on' or 'off'. Examples off this is when the checkbox is a parent
-     * in a tree structure, where 'other' represents that its children have
-     * different values.
-     */
-    other
-};
-
 /** A button delegate controls the state of a button widget.
  * @ingroup widget_delegates
  */
@@ -60,9 +38,9 @@ public:
 
     /** Used by the widget to check the state of the button.
      */
-    [[nodiscard]] virtual button_state state(widget_intf const& sender) const noexcept
+    [[nodiscard]] virtual widget_value state(widget_intf const& sender) const noexcept
     {
-        return button_state::off;
+        return widget_value::off;
     }
 
     /** Subscribe a callback for notifying the widget of a data change.
@@ -110,12 +88,12 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(widget_intf const& sender) const noexcept override
+    [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
     {
         if (*value == *on_value) {
-            return button_state::on;
+            return widget_value::on;
         } else {
-            return button_state::off;
+            return widget_value::off;
         }
     }
 
@@ -194,14 +172,14 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(widget_intf const& sender) const noexcept override
+    [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
     {
         if (*value == *on_value) {
-            return button_state::on;
+            return widget_value::on;
         } else if (*value == *off_value) {
-            return button_state::off;
+            return widget_value::off;
         } else {
-            return button_state::other;
+            return widget_value::other;
         }
     }
 

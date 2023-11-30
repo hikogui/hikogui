@@ -222,10 +222,6 @@ public:
      */
     hi::subpixel_orientation subpixel_orientation;
 
-    /** Window is active.
-     */
-    bool active;
-
     /** The tone-mapper's saturation.
      */
     float saturation;

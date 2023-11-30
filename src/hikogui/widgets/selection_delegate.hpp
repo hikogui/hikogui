@@ -210,16 +210,16 @@ private:
             return make_unique<button_widget>(make_not_null(sender), button_attributes{label}, std::move(shared_this));
         }
 
-        [[nodiscard]] button_state state(widget_intf const& sender) const noexcept override
+        [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
         {
             hilet it = std::lower_bound(_senders.begin(), _senders.end(), sender.id);
 
             if (it != _senders.end() and it->id == sender.id) {
-                return *_parent->value == it->value ? button_state::on : button_state::off;
+                return *_parent->value == it->value ? widget_value::on : widget_value::off;
 
             } else {
                 // button-button was not yet registered.
-                return button_state::off;
+                return widget_value::off;
             }
         }
 

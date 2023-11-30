@@ -109,7 +109,7 @@ public:
     }
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             if (overlaps(context, layout())) {
                 draw_background(context);
             }
@@ -133,7 +133,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             return _content->hitbox_test_from_parent(position);
         } else {
             return {};

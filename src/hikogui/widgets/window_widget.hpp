@@ -175,7 +175,7 @@ public:
     }
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             context.draw_box(_layout, _layout.rectangle(), background_color(), background_color());
 
             _toolbar->draw(context);
