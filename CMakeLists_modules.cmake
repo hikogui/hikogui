@@ -380,7 +380,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/group_ptr.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observer_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observed.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observed_value.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observer.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/shared_state.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/lexer.ixx

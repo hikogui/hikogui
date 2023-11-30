@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "observed_value.hpp"
 #include "observed.hpp"
 #include "../utility/utility.hpp"
 #include "../dispatch/dispatch.hpp"
@@ -19,17 +18,17 @@
 
 hi_export_module(hikogui.observer : observer_intf);
 
-hi_export namespace hi::inline v1 {
+hi_export namespace hi { inline namespace v1 {
 
-/** A observer pointing to the whole or part of a observed.
+/** A observer pointing to the whole or part of a observed_base.
  *
- * A observer will point to a observed that was created, or possibly
- * an anonymous observed, which is created when a observer is created
+ * A observer will point to a observed_base that was created, or possibly
+ * an anonymous observed_base, which is created when a observer is created
  * as empty.
  *
  * @tparam T The type of observer.
  */
-template<std::equality_comparable T>
+template<typename T>
 class observer {
 public:
     using value_type = T;
@@ -40,23 +39,14 @@ public:
 
     /** A proxy object of the observer.
      *
-     * The proxy is a RAII object that manages a transaction with the
-     * shared-state as a whole, while giving access to only a sub-object
-     * of the shared-state.
-     *
-     * @tparam IsWriting The proxy is being used to write
+     * The proxy is a RAII object that makes sure that listeners will
+     * get notified if the value was modified.
      */
-    template<bool IsWriting>
-    class _proxy {
+    class proxy_type {
     public:
-        constexpr static bool is_writing = IsWriting;
-
-        using void_pointer = std::conditional_t<is_writing, void *, void const *>;
-        using const_void_pointer = void const *;
-
-        using reference = std::conditional_t<is_writing, value_type&, value_type const&>;
-        using const_reference = value_type const&;
-        using pointer = std::conditional_t<is_writing, value_type *, value_type const *>;
+        using reference = value_type &;
+        using const_reference = value_type const &;
+        using pointer = value_type *;
         using const_pointer = value_type const *;
 
         /** Commits and destruct the proxy object.
@@ -64,51 +54,64 @@ public:
          * If `commit()` or `abort()` are called or the proxy object
          * is empty then the destructor does not commit the changes.
          */
-        ~_proxy() noexcept
+        ~proxy_type() noexcept
         {
-            _commit();
+            if (_observer != nullptr) {
+                hi_axiom_not_null(_ptr);
+                if (_original_value) {
+                    if constexpr (requires(value_type const& a, value_type const& b) { a != b; }) {
+                        if (*_original_value != *_ptr) {
+                            _observer->notify();
+                        }
+                    } else {
+                        _observer->notify();
+                    }
+                }
+            }
         }
 
-        _proxy(_proxy const&) = delete;
-        _proxy& operator=(_proxy const&) = delete;
+        proxy_type(proxy_type const&) = delete;
+        proxy_type& operator=(proxy_type const&) = delete;
 
-        _proxy(_proxy const& other) noexcept
-            requires(not is_writing)
-            : _observer(other._observer), _base(other._base), _value(other._value)
-        {
-            _observer->read_lock();
-        }
-
-        _proxy& operator=(_proxy const& other) noexcept
-            requires(not is_writing)
-        {
-            _commit();
-            _observer = other._observer;
-            _base = other._base;
-            _value = other._value;
-            _observer->read_lock();
-            return *this;
-        };
-
-        _proxy(_proxy&& other) noexcept :
+        proxy_type(proxy_type&& other) noexcept :
             _observer(std::exchange(other._observer, nullptr)),
-            _base(std::exchange(other._base, nullptr)),
-            _value(std::exchange(other._value, nullptr))
+            _ptr(std::exchange(other._ptr, nullptr)),
+            _original_value(std::exchange(other._original_value, std::nullopt))
         {
         }
 
-        _proxy& operator=(_proxy&& other) noexcept
+        proxy_type& operator=(proxy_type&& other) noexcept
         {
             _commit();
             _observer = std::exchange(other._observer, nullptr);
-            _base = std::exchange(other._base, nullptr);
-            _value = std::exchange(other._value, nullptr);
+            _ptr = std::exchange(other._ptr, nullptr);
+            _original_value = std::exchange(other._original_value, std::nullopt);
             return *this;
         }
 
-        /** Construct an empty proxy object.
+        /** Create a proxy object.
+         *
+         * @param observer a pointer to the observer.
+         * @param ptr a pointer to the sub-object of the shared_state that the observer
+         *            is pointing to.
          */
-        constexpr _proxy() noexcept = default;
+        proxy_type(observer *observer, value_type *ptr) noexcept :
+            _observer(observer), _ptr(ptr), _original_value(std::nullopt)
+        {
+            hi_axiom_not_null(_observer);
+            hi_axiom_not_null(_ptr);
+        }
+
+        /** Create a proxy object.
+         *
+         * @param observer a pointer to the observer.
+         * @param ptr a pointer to the sub-object of the shared_state that the observer
+         *            is pointing to.
+         */
+        proxy_type() noexcept :
+            _observer(nullptr), _ptr(nullptr), _original_value(std::nullopt)
+        {
+        }
 
         /** Dereference the value.
          *
@@ -118,8 +121,8 @@ public:
          */
         reference operator*() noexcept
         {
-            hi_assert_not_null(_value);
-            return *_value;
+            start_write();
+            return *_ptr;
         }
 
         /** Dereference the value.
@@ -130,8 +133,8 @@ public:
          */
         const_reference operator*() const noexcept
         {
-            hi_assert_not_null(_value);
-            return *_value;
+            hi_axiom_not_null(_ptr);
+            return *_ptr;
         }
 
         /** Pointer dereference the value.
@@ -143,21 +146,8 @@ public:
          */
         pointer operator->() noexcept
         {
-            hi_assert_not_null(_value);
-            return _value;
-        }
-
-        /** Pointer dereference the value.
-         *
-         * This function allows reads and modification to the value, including
-         * calling member functions on the value.
-         *
-         * @note It is undefined behavior to call this function after calling `commit()` or `abort()`
-         */
-        pointer operator&() noexcept
-        {
-            hi_assert_not_null(_value);
-            return _value;
+            start_write();
+            return _ptr;
         }
 
         /** Pointer dereference the value.
@@ -169,38 +159,34 @@ public:
          */
         const_pointer operator->() const noexcept
         {
-            hi_assert_not_null(_value);
-            return _value;
+            hi_axiom_not_null(_ptr);
+            return _ptr;
         }
 
-        /** Commit the changes to the value early.
+        /** Pointer dereference the value.
          *
-         * Calling this function allows to commit earlier than the destructor.
+         * This function allows reads and modification to the value, including
+         * calling member functions on the value.
          *
-         * @note It is undefined behavior to change the value after committing.
+         * @note It is undefined behavior to call this function after calling `commit()` or `abort()`
          */
-        void commit() noexcept
+        pointer operator&() noexcept
         {
-            _commit();
-            _observer = nullptr;
-#ifndef NDEBUG
-            _value = nullptr;
-#endif
+            start_write();
+            return _ptr;
         }
 
-        /** Revert any changes to the value.
+        /** Pointer dereference the value.
          *
-         * Calling this function allows to abort any changes in the value.
+         * This function allows reads and modification to the value, including
+         * calling member functions on the value.
          *
-         * @note It is undefined behavior to change the value after aborting.
+         * @note It is undefined behavior to call this function after calling `commit()` or `abort()`
          */
-        void abort() noexcept
+        const_pointer operator&() const noexcept
         {
-            _abort();
-            _observer = nullptr;
-#ifndef NDEBUG
-            _value = nullptr;
-#endif
+            hi_axiom_not_null(_ptr);
+            return _ptr;
         }
 
         // clang-format off
@@ -209,9 +195,10 @@ public:
 #define X(op) \
         template<typename Rhs> \
         decltype(auto) operator op() noexcept \
-            requires is_writing and requires(value_type& a) { op a; } \
+            requires requires(value_type& a) { op a; } \
         { \
-            return op (*_value); \
+            start_write(); \
+            return op (*_ptr); \
         }
     
         X(++)
@@ -222,9 +209,10 @@ public:
 #define X(op) \
         template<typename Rhs> \
         auto operator op(int) noexcept \
-            requires is_writing and requires(value_type& a) { a op; } \
+            requires requires(value_type& a) { a op; } \
         { \
-            return (*_value) op; \
+            start_write(); \
+            return (*_ptr) op; \
         }
     
         X(++)
@@ -235,9 +223,10 @@ public:
 #define X(op) \
         template<typename Rhs> \
         decltype(auto) operator op(Rhs const& rhs) noexcept \
-            requires is_writing and requires(value_type& a, Rhs const& b) { a op b; } \
+            requires requires(value_type& a, Rhs const& b) { a op b; } \
         { \
-            return (*_value) op rhs; \
+            start_write(); \
+            return (*_ptr) op rhs; \
         }
     
         X(+=)
@@ -258,7 +247,8 @@ public:
         auto operator op() const noexcept \
             requires requires(value_type const& a) { op a; } \
         { \
-            return op (*_value); \
+            hi_axiom_not_null(_ptr); \
+            return op (*_ptr); \
         }
     
         X(-)
@@ -273,7 +263,8 @@ public:
         auto operator op(Rhs const& rhs) const noexcept \
             requires requires(value_type const& a, Rhs const& b) { a op b; } \
         { \
-            return (*_value) op rhs; \
+            hi_axiom_not_null(_ptr); \
+            return (*_ptr) op rhs; \
         }
     
         X(==)
@@ -295,14 +286,16 @@ public:
         auto operator()(Args &&... args) const noexcept
             requires requires(value_type const & a, Args &&...args) { a(std::forward<Args>(args)...); }
         {
-            return (*_value)(std::forward<Args>(args)...);
+            hi_axiom_not_null(_ptr);
+            return (*_ptr)(std::forward<Args>(args)...);
         }
     
         template<typename... Args>
         decltype(auto) operator()(Args &&... args) noexcept
-            requires is_writing and requires(value_type & a, Args &&...args) { a(std::forward<Args>(args)...); }
+            requires requires(value_type & a, Args &&...args) { a(std::forward<Args>(args)...); }
         {
-            return (*_value)(std::forward<Args>(args)...);
+            start_write();
+            return (*_ptr)(std::forward<Args>(args)...);
         }
         
         // index operator
@@ -311,93 +304,56 @@ public:
         auto operator[](Arg && arg) const noexcept
             requires requires(value_type const & a, Arg &&arg) { a[std::forward<Arg>(arg)]; }
         {
-            return (*_value)[std::forward<Arg>(arg)];
-        }
-
-        template<typename Arg>
-        decltype(auto) operator[](Arg && arg) noexcept
-            requires is_writing and requires(value_type & a, Arg &&arg) { a[std::forward<Arg>(arg)]; }
-        {
-            return (*_value)[std::forward<Arg>(arg)];
+            hi_axiom_not_null(_ptr);
+            return (*_ptr)[std::forward<Arg>(arg)];
         }
 
         // clang-format on
 
     private:
-        observer const *_observer = nullptr;
-        void_pointer _base = nullptr;
-        pointer _value = nullptr;
+        observer *_observer;
+        value_type *_ptr;
+        std::optional<value_type> _original_value;
 
-        /** Create a proxy object.
-         *
-         * @param observer a pointer to the observer.
-         * @param base a pointer to the dereference rcu-object from the shared_state.
-         *             This is needed to commit or abort the shared_state as a whole.
-         * @param value a pointer to the sub-object of the shared_state that the observer
-         *              is pointing to.
-         */
-        _proxy(observer const *observer, void_pointer base, pointer value) noexcept :
-            _observer(observer), _base(base), _value(value)
+        void start_write() noexcept
         {
-            hi_assert_not_null(_observer);
-            hi_assert_not_null(_base);
-            hi_assert_not_null(_value);
-        }
-
-        void _commit() noexcept
-        {
-            if (_observer != nullptr) {
-                if constexpr (is_writing) {
-                    _observer->commit(_base);
-                } else {
-                    _observer->read_unlock();
-                }
-            }
-        }
-
-        void _abort() noexcept
-        {
-            if (_observer != nullptr) {
-                if constexpr (is_writing) {
-                    _observer->abort(_base);
-                } else {
-                    _observer->read_unlock();
-                }
+            if (not _original_value) {
+                hi_axiom_not_null(_ptr);
+                _original_value = *_ptr;
             }
         }
 
         friend class observer;
     };
 
-    using proxy = _proxy<true>;
-    using const_proxy = _proxy<false>;
+    using const_reference = value_type const &;
+    using pointer = proxy_type;
+    using const_pointer = value_type const *;
 
     constexpr ~observer() = default;
 
-    // static_assert(is_forward_of_v<std::shared_ptr<observed>, group_ptr<observed,observable_msg>>);
-
-    /** Create an observer from an observed.
+    /** Create an observer from an observed_base.
      *
-     * @param observed The `observed` which will be observed by this observer.
+     * @param observed_base The `observed_base` which will be observed_base by this observer.
      */
-    template<forward_of<std::shared_ptr<hi::observed>> Observed>
-    observer(Observed&& observed) noexcept :
-        observer(group_ptr<hi::observed>{std::forward<Observed>(observed)}, path_type{}, [](void *base) {
+    template<forward_of<std::shared_ptr<hi::observed_base>> Observed>
+    observer(Observed&& observed_base) noexcept :
+        observer(group_ptr<hi::observed_base>{std::forward<Observed>(observed_base)}, path_type{}, [](void *base) {
             return base;
         })
     {
     }
 
-    /** Create a observer linked to an anonymous default initialized observed-value.
+    /** Create a observer linked to an anonymous default initialized observed_base-value.
      *
      * @note marked 'explicit' so that accidental assignment with {} is not allowed.
      */
-    constexpr explicit observer() noexcept : observer(std::make_shared<observed_value<value_type>>()) {}
+    constexpr explicit observer() noexcept : observer(std::make_shared<observed<value_type>>()) {}
 
-    /** Create a observer linked to an anonymous observed-value.
+    /** Create a observer linked to an anonymous observed_base-value.
      */
     constexpr observer(std::convertible_to<value_type> auto&& value) noexcept :
-        observer(std::make_shared<observed_value<value_type>>(hi_forward(value)))
+        observer(std::make_shared<observed<value_type>>(hi_forward(value)))
     {
     }
 
@@ -433,9 +389,7 @@ public:
 
         // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
-        _observed->read_lock();
-        _observed->notify_group_ptr(observable_msg{_observed->read(), _path});
-        _observed->read_unlock();
+        _observed->notify_group_ptr(observable_msg{_observed->get(), _path});
         return *this;
     }
 
@@ -455,19 +409,17 @@ public:
 
         // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
-        _observed->read_lock();
-        _observed->notify_group_ptr({_observed->read(), _path});
-        _observed->read_unlock();
+        _observed->notify_group_ptr(observable_msg{_observed->get(), _path});
         return *this;
     }
 
     /** Reset the observer.
      *
-     * This will link the observer with an anonymous observed with a default initialized value.
+     * This will link the observer with an anonymous observed_base with a default initialized value.
      */
     void reset() noexcept
     {
-        _observed = std::make_shared<observed_value<value_type>>();
+        _observed = std::make_shared<observed<value_type>>();
         _path = {};
         _convert = [](void *base) {
             return base;
@@ -475,28 +427,22 @@ public:
         update_state_callback();
     }
 
-    /** Read the observed value.
+    /** Read the observed_base value.
      *
-     * @return A const-proxy object used to access the data being observed.
+     * @return A const-proxy object used to access the data being observed_base.
      */
-    [[nodiscard]] const_proxy read() const& noexcept
+    [[nodiscard]] const_pointer get() const noexcept
     {
-        _observed->read_lock();
-        void const *base = _observed->read();
-        return const_proxy{this, base, convert(base)};
+        return convert(_observed->get());
     }
-    const_proxy read() && = delete;
 
-    /** Make a copy of the observed value for modification.
+    /** Make a copy of the observed_base value for modification.
      *
-     * @return A proxy object used to modify the data being observed.
+     * @return A proxy object used to modify the data being observed_base.
      */
-    [[nodiscard]] proxy copy() const& noexcept
+    [[nodiscard]] pointer get() noexcept
     {
-        _observed->write_lock();
-        void const *old_base = _observed->read();
-        void *new_base = _observed->copy(old_base);
-        return proxy(this, new_base, convert(new_base));
+        return proxy_type{this, convert(_observed->get())};
     }
 
     /** Subscribe a callback to this observer.
@@ -518,7 +464,7 @@ public:
 
     /** Create a sub-observer by indexing into the value.
      *
-     * @param index The index into the value being observed.
+     * @param index The index into the value being observed_base.
      * @return A new sub-observer which monitors the selected sub-value.
      */
     [[nodiscard]] auto get(auto const& index) const noexcept
@@ -564,32 +510,31 @@ public:
 
     // clang-format off
 
-    /** Assign a new value to the observed value.
+    /** Assign a new value to the observed_base value.
      */
     template<typename Rhs>
     observer& operator=(Rhs&& rhs) noexcept
         requires requires (value_type &a, Rhs &&b) { a = std::forward<Rhs>(b); }
     {
-        *copy() = std::forward<Rhs>(rhs);
+        value() = std::forward<Rhs>(rhs);
         return *this;
     }
 
-    /** Get a copy of the value being observed.
+    /** Get a copy of the value being observed_base.
      */
-    value_type operator*() const noexcept
+    value_type const &operator*() const noexcept
     {
         // This returns a copy of the dereferenced value of the proxy.
         // The proxy's lifetime will be extended for the copy to be made.
-        return *read();
+        return value();
     }
 
-    /** Constant pointer-to-member of the value being observed.
+    /** Constant pointer-to-member of the value being observed_base.
      */
-    const_proxy operator->() const& noexcept
+    value_type const *operator->() const noexcept
     {
-        return read();
+        return value();
     }
-    const_proxy operator->() && = delete;
 
     // prefix operators
 #define X(op) \
@@ -698,7 +643,7 @@ public:
     // clang-format on
 
 private:
-    using observed_type = group_ptr<observed>;
+    using observed_type = group_ptr<observed_base>;
     observed_type _observed = {};
     path_type _path = {};
     std::function<void *(void *)> _convert = {};
@@ -707,44 +652,20 @@ private:
     value_type _debug_value;
 #endif
 
-    /** Construct an observer from an observed.
+    /** Construct an observer from an observed_base.
      */
     observer(
-        forward_of<observed_type> auto&& observed,
+        forward_of<observed_type> auto&& observed_base,
         forward_of<path_type> auto&& path,
         forward_of<void *(void *)> auto&& converter) noexcept :
-        _observed(hi_forward(observed)), _path(hi_forward(path)), _convert(hi_forward(converter)), _notifier()
+        _observed(hi_forward(observed_base)), _path(hi_forward(path)), _convert(hi_forward(converter)), _notifier()
     {
         update_state_callback();
     }
 
-    void read_unlock() const noexcept
+    void notify() const noexcept
     {
-        _observed->read_unlock();
-    }
-
-    void commit(void *base) const noexcept
-    {
-        if constexpr (requires(value_type const& a, value_type const& b) { a == b; }) {
-            // Only commit and notify when the value has actually changed.
-            // Since there is a write-lock being held, _observed->read() will be the previous value.
-            if (*convert(_observed->read()) != *convert(base)) {
-                _observed->commit(base);
-                _observed->notify_group_ptr({base, _path});
-            } else {
-                _observed->abort(base);
-            }
-        } else {
-            _observed->commit(base);
-            _observed->notify_group_ptr({base, _path});
-        }
-        _observed->write_unlock();
-    }
-
-    void abort(void *base) const noexcept
-    {
-        _observed->abort(base);
-        _observed->write_unlock();
+        _observed->notify_group_ptr(observable_msg{base, _path});
     }
 
     value_type *convert(void *base) const noexcept
@@ -765,22 +686,19 @@ private:
             // If this' path is fully within the message's path, then this is along the path.
             if (msg_it == msg.path.cend() or this_it == _path.cend()) {
 #ifndef NDEBUG
-                _notifier(_debug_value = *convert(msg.ptr));
-#else
-                _notifier(*convert(msg.ptr));
+                _debug_value = *convert(msg.ptr);
 #endif
+                _notifier();
             }
         });
 
 #ifndef NDEBUG
-        _observed->read_lock();
-        _debug_value = *convert(_observed->read());
-        _observed->read_unlock();
+        _debug_value = *convert(_observed->get());
 #endif
     }
 
     // It is possible to make sub-observables.
-    template<std::equality_comparable>
+    template<typename>
     friend class observer;
 };
 
@@ -820,4 +738,4 @@ struct is_forward_of<Context, observer<Expected>> :
 template<typename Context, typename Expected>
 concept forward_observer = forward_of<Context, observer<observer_decay_t<Expected>>>;
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
