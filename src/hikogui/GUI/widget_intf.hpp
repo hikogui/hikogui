@@ -57,10 +57,6 @@ public:
             static std::optional<widget_state> old_state = std::nullopt;
             
             if (old_state) {
-                if (need_notify(*old_state, new_state)) {
-                    notifier();
-                }
-
                 if (need_reconstrain(*old_state, new_state)) {
                     ++global_counter<"widget:state:reconstrain">;
                     process_event({gui_event_type::window_reconstrain});

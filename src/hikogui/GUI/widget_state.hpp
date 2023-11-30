@@ -378,13 +378,6 @@ public:
         return lhs != rhs;
     } 
 
-    /** Check if the change in widget-state requires the widget to notify listeners for a change in value.
-     */
-    [[nodiscard]] constexpr friend bool need_notify(widget_state const &lhs, widget_state const &rhs) noexcept
-    {
-        return lhs._value != rhs._value;
-    } 
-
 private:
     /** hi::widget_mode.
      */
