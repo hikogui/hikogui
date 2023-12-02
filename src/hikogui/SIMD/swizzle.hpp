@@ -48,7 +48,38 @@ struct array_swizzle {
 
         if (not std::is_constant_evaluated()) {
             if constexpr (requires { simd_swizzle<T, N>.operator()<Indices...>(lhs); }) {
-                return simd_swizzle<T, N>.operator()<Indices...>(lhs);
+                constexpr auto zero_mask = make_mask<-1, Indices...>();
+                constexpr auto one_mask = make_mask<-2, Indices...>();
+                constexpr auto number_mask = zero_mask | one_mask;
+                constexpr auto indices = make_packed_indices<N, Indices...>();
+
+                constexpr auto full_mask = (size_t{1} << N) - 1;
+                constexpr auto increment_indices = datail::make_packed_indices_increment<N>;
+
+                // Short cut all literals.
+                if constexpr (zero_mask == full_mask) {
+                    return array_set_zero<T, N>{}();
+                } else if constexpr (one_mask == full_mask) {
+                    return array_set_one<T, N>{}();
+                }
+
+                auto r = lhs;
+                if constexpr (indices != increment_indices) {
+                    r = simd_shuffle<T, N>.template operator()<Indices...>(r);
+                }
+
+                if constexpr (number_mask != 0) {
+                    auto tmp = simd_store<T, N>{}(simd_set_zero<T, N>{}());
+
+                    if constexpr (one_mask != 0) {
+                        hilet ones = simd_store<T, N>{}(simd_set_one<T, N>{}());
+                        tmp = simd_blend<T, N>{}.template operator()<one_mask>(tmp, ones);
+                    }
+
+                    r = simd_blend<T, N>{}.template operator()<number_mask>(r, tmp);
+                }
+
+                return r;
             }
 
             auto r = array_type{};

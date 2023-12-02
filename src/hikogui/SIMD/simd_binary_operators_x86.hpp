@@ -35,15 +35,13 @@ template<typename T, size_t N> struct simd_rol;
 template<typename T, size_t N> struct simd_ror;
 // clang-format on
 
-#define HI_X(NAME, VALUE_TYPE, SIZE, FUNC) \
+#define HI_X(NAME, TYPE, SIZE, FUNC) \
     template<> \
-    struct NAME<VALUE_TYPE, SIZE> { \
-        using array_type = std::array<VALUE_TYPE, SIZE> \
-        [[nodiscard]] hi_force_inline hi_inline array_type operator()(array_type const &lhs, array_type const &rhs) const noexcept \
+    struct NAME<TYPE, SIZE> { \
+        using reg_type = simd_reg_t<TYPE, SIZE>; \
+        [[nodiscard]] hi_force_inline reg_type r(reg_type lhs, reg_type rhs) const noexcept \
         { \
-            hilet lhs_ = simd_load<VALUE_TYPE, SIZE>{}(lhs); \
-            hilet rhs_ = simd_load<VALUE_TYPE, SIZE>{}(rhs); \
-            return simd_store<VALUE_TYPE, SIZE>{}(FUNC(lhs_, rhs_)); \
+            return FUNC(lhs, rhs); \
         } \
     }
 
@@ -522,15 +520,15 @@ HI_X(simd_ne, uint8_t, 64, _mm512_ne_epu8);
 
 template<>
 struct simd_sl<int64_t, 2> {
-    using array_type = std::array<int64_t, 2>;
+    using reg_type = simd_reg_t<int64_t, 2>;
     template<size_t Rhs>
-    [[nodiscard]] hi_force_inline array_type operator(array_type const &lhs) const noexcept
+    [[nodiscard]] hi_force_inline reg_type operator(reg_type const &lhs) const noexcept
     {
-        return simd_store<int64_t, 2>{}(_mm_slli_epi64(simd_load<uint64_t, 2>{}(lhs), Rhs));
+        return _mm_slli_epi64(lhs, Rhs);
     }
-    [[nodiscard]] hi_force_inline array_type operator(array_type const &lhs, size_t rhs) const noexcept
+    [[nodiscard]] hi_force_inline reg_type operator(reg_type const &lhs, size_t rhs) const noexcept
     {
-        return simd_store<int64_t, 2>{}(_mm_sll_epi64(simd_load<uint64_t, 2>{}(lhs), _mm_cvtsi64_si128(static_cast<int64_t>(Rhs))));
+        return _mm_sll_epi64(lhs, _mm_cvtsi64_si128(Rhs);
     }
 };
 

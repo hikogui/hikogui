@@ -22,14 +22,12 @@ template<typename T, size_t N> struct simd_neg;
 template<typename T, size_t N> struct simd_test_all_ones;
 // clang-format on
 
-#define HI_X(NAME, VALUE_TYPE, SIZE, MOVEMASK_OP) \
+#define HI_X(NAME, TYPE, SIZE, REG, MOVEMASK_OP) \
     template<> \
-    struct NAME<VALUE_TYPE, SIZE> { \
-        using array_type = std::array<VALUE_TYPE, SIZE>; \
-        [[nodiscard]] hi_force_inline size_t operator()(array_type const& rhs) const noexcept \
+    struct NAME<TYPE, SIZE> { \
+        [[nodiscard]] hi_force_inline size_t operator()(REG rhs) const noexcept \
         { \
-            hilet rhs_ = simd_load<VALUE_TYPE, SIZE>(rhs); \
-            return static_cast<size_t>(MOVEMASK_OP(rhs_)); \
+            return static_cast<size_t>(MOVEMASK_OP(rhs)); \
         } \
     }
 
@@ -50,11 +48,10 @@ HI_X(simd_get_mask, uint8_t, 32, _mm256_movemask_epi8);
 
 #undef HI_X
 
-#define HI_X(NAME, VALUE_TYPE, SIZE, XOR_OP, SET_OP) \
+#define HI_X(NAME, TYPE, SIZE, REG, XOR_OP, SET_OP) \
     template<> \
-    struct NAME<VALUE_TYPE, SIZE> { \
-        using array_type = std::array<VALUE_TYPE, SIZE>; \
-        [[nodiscard]] hi_force_inline array_type operator()(array_type const& rhs) const noexcept \
+    struct NAME<TYPE, SIZE> { \
+        [[nodiscard]] hi_force_inline REG  operator()(array_type const& rhs) const noexcept \
         { \
             hilet rhs_ = simd_load<VALUE_TYPE, SIZE>(rhs); \
             return simd_store<VALUE_TYPE, SIZE>(XOR_OP(SET_OP(rhs_, rhs_), rhs_)); \

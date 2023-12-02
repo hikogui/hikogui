@@ -17,7 +17,7 @@ struct simd_load;
     template<> \
     struct simd_load<VALUE_TYPE, SIZE> { \
         using array_type = std::array<VALUE_TYPE, SIZE> \
-        [[nodiscard]] hi_inline REG operator()(array_type const &rhs) const noexcept \
+        [[nodiscard]] hi_inline REG r()(array_type const &rhs) const noexcept \
         { \
             return FUNC(rhs.data()); \
         } \

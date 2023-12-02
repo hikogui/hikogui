@@ -103,6 +103,63 @@ struct simd : public std::array<T, N> {
         return simd{array_sr<T, N>{}(lhs, rhs)};
     }
 
+    [[nodiscard]] constexpr simd &operator+=(simd const &rhs) noexcept
+    {
+        return *this = *this + rhs;
+    }
+
+    [[nodiscard]] constexpr simd &operator-=(simd const &rhs) noexcept
+    {
+        return *this = *this - rhs;
+    }
+
+    [[nodiscard]] constexpr simd &operator*=(simd const &rhs) noexcept
+    {
+        return *this = *this * rhs;
+    }
+
+    [[nodiscard]] constexpr simd &operator/=(simd const &rhs) noexcept
+    {
+        return *this = *this / rhs;
+    }
+
+    [[nodiscard]] constexpr simd &operator|=(simd const &rhs) noexcept
+    {
+        return *this = *this | rhs;
+    }
+
+    [[nodiscard]] constexpr simd &operator&=(simd const &rhs) noexcept
+    {
+        return *this = *this & rhs;
+    }
+
+    [[nodiscard]] constexpr simd &operator^=(simd const &rhs) noexcept
+    {
+        return *this = *this ^ rhs;
+    }
+
+    [[nodiscard]] constexpr simd &operator<<=(size_t const &rhs) noexcept
+    {
+        return *this = *this << rhs;
+    }
+
+    [[nodiscard]] constexpr simd &operator>>=(size_t const &rhs) noexcept
+    {
+        return *this = *this >> rhs;
+    }
+
+    template<std::unsigned_integral Rhs>
+    [[nodiscard]] constexpr simd &operator<<=(simd<Rhs, N> const &rhs) noexcept
+    {
+        return *this = *this << rhs;
+    }
+
+    template<std::unsigned_integral Rhs>
+    [[nodiscard]] constexpr simd &operator>>=(simd<Rhs, N> const &rhs) noexcept
+    {
+        return *this = *this >> rhs;
+    }
+
     template<size_t Rhs>
     [[nodiscard]] friend constexpr simd sll(simd const& lhs) noexcept
     {

@@ -18,32 +18,145 @@ hi_export_module(hikogui.simd.binary_operators);
 
 namespace hi { inline namespace v1 {
 
-#define HI_X(NAME, SIMD_NAME, OPERATOR) \
-    template<typename T, size_t N> \
-    struct NAME { \
-        using array_type = std::array<T, N>; \
-        [[nodiscard]] constexpr array_type operator()(array_type const& lhs, array_type const& rhs) const noexcept \
-        { \
-            if (not std::is_constant_evaluated()) { \
-                if constexpr (requires { SIMD_NAME<T, N>{}(lhs, rhs); }) { \
-                    return SIMD_NAME<T, N>{}(lhs, rhs); \
-                } \
-            } \
-\
-            auto r = array_type{}; \
-            for (auto i = 0_uz; i != N; ++i) { \
-                r[i] = lhs[i] OPERATOR rhs[i]; \
-            } \
-            return r; \
-        } \
-    }
+template<typename T, size_t N>
+struct array_add {
+    using array_type = std::array<T, N>;
 
-HI_X(array_add, simd_add, +);
-HI_X(array_sub, simd_sub, -);
-HI_X(array_mul, simd_mul, *);
-HI_X(array_div, simd_div, /);
-HI_X(array_or, simd_or, |);
-HI_X(array_and, simd_and, &);
+    [[nodiscard]] constexpr array_type operator()(array_type const& lhs, array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_add<T, N>{}(lhs, rhs); }) {
+                return simd_add<T, N>{}(lhs, rhs);
+            }
+        }
+
+        auto r = array_type{};
+        for (auto i = 0_uz; i != N; ++i) {
+            r[i] = lhs[i] + rhs[i];
+        }
+        return r;
+    }
+};
+
+template<typename T, size_t N>
+struct array_sub {
+    using array_type = std::array<T, N>;
+
+    [[nodiscard]] constexpr array_type operator()(array_type const& lhs, array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_sub<T, N>{}(lhs, rhs); }) {
+                return simd_sub<T, N>{}(lhs, rhs);
+            }
+        }
+
+        auto r = array_type{};
+        for (auto i = 0_uz; i != N; ++i) {
+            r[i] = lhs[i] - rhs[i];
+        }
+        return r;
+    }
+};
+
+template<typename T, size_t N>
+struct array_mul {
+    using array_type = std::array<T, N>;
+
+    [[nodiscard]] constexpr array_type operator()(array_type const& lhs, array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_mul<T, N>{}(lhs, rhs); }) {
+                return simd_mul<T, N>{}(lhs, rhs);
+            }
+        }
+
+        auto r = array_type{};
+        for (auto i = 0_uz; i != N; ++i) {
+            r[i] = lhs[i] * rhs[i];
+        }
+        return r;
+    }
+};
+
+template<typename T, size_t N>
+struct array_div {
+    using array_type = std::array<T, N>;
+
+    [[nodiscard]] constexpr array_type operator()(array_type const& lhs, array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_div<T, N>{}(lhs, rhs); }) {
+                return simd_div<T, N>{}(lhs, rhs);
+            }
+        }
+
+        auto r = array_type{};
+        for (auto i = 0_uz; i != N; ++i) {
+            r[i] = lhs[i] / rhs[i];
+        }
+        return r;
+    }
+};
+
+template<typename T, size_t N>
+struct array_or {
+    using array_type = std::array<T, N>;
+
+    [[nodiscard]] constexpr array_type operator()(array_type const& lhs, array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_or<T, N>{}(lhs, rhs); }) {
+                return simd_or<T, N>{}(lhs, rhs);
+            }
+        }
+
+        auto r = array_type{};
+        for (auto i = 0_uz; i != N; ++i) {
+            r[i] = lhs[i] | rhs[i];
+        }
+        return r;
+    }
+};
+
+template<typename T, size_t N>
+struct array_and {
+    using array_type = std::array<T, N>;
+
+    [[nodiscard]] constexpr array_type operator()(array_type const& lhs, array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_and<T, N>{}(lhs, rhs); }) {
+                return simd_and<T, N>{}(lhs, rhs);
+            }
+        }
+
+        auto r = array_type{};
+        for (auto i = 0_uz; i != N; ++i) {
+            r[i] = lhs[i] & rhs[i];
+        }
+        return r;
+    }
+};
+
+template<typename T, size_t N>
+struct array_xor {
+    using array_type = std::array<T, N>;
+
+    [[nodiscard]] constexpr array_type operator()(array_type const& lhs, array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_xor<T, N>{}(lhs, rhs); }) {
+                return simd_xor<T, N>{}(lhs, rhs);
+            }
+        }
+
+        auto r = array_type{};
+        for (auto i = 0_uz; i != N; ++i) {
+            r[i] = lhs[i] ^ rhs[i];
+        }
+        return r;
+    }
+};
 
 template<typename T, size_t N>
 struct array_andnot {
@@ -260,6 +373,88 @@ struct array_ge {
 };
 
 
-#undef HI_X
+/** Pack the msb of each element into a integer
+*/
+template<typename T, size_t N>
+struct array_get_mask {
+    using array_type = std::array<T, N>;
+    [[nodiscard]] constexpr size_t operator()(array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_get_mask<T, N>{}(lhs, rhs); }) {
+                return simd_get_mask<T, N>{}(rhs);
+            }
+        }
+
+        auto r = size_t{};
+        auto mask = size_t{1};
+        for (auto i = 0_uz; i != N; ++i) {
+            hilet rhs_ = std::bit_cast<make_intxx_t<sizeof(T) * CHAR_BIT>>(rhs[i]);
+            r |= (rhs_ >> sizeof(T) * CHAR_BIT - 1) & mask;
+            mask <<= 1;
+        }
+        return r;
+    }
+};
+
+template<typename T, size_t N>
+struct array_not {
+    using array_type = std::array<T, N>;
+    [[nodiscard]] constexpr array_type operator()(array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_not<T, N>{}(lhs, rhs); }) {
+                return simd_not<T, N>{}(rhs);
+            }
+        }
+
+        auto r = array_type{};
+        for (auto i = 0_uz; i != N; ++i) {
+            r[i] = ~rhs[i];
+        }
+        return r;
+    }
+};
+
+template<typename T, size_t N>
+struct array_neg {
+    using array_type = std::array<T, N>;
+    [[nodiscard]] constexpr array_type operator()(array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_neg<T, N>{}(lhs, rhs); }) {
+                return simd_neg<T, N>{}(rhs);
+            }
+        }
+
+        auto r = array_type{};
+        for (auto i = 0_uz; i != N; ++i) {
+            r[i] = -rhs[i];
+        }
+        return r;
+    }
+};
+
+template<typename T, size_t N>
+struct array_test_all_ones {
+    using array_type = std::array<T, N>;
+    [[nodiscard]] constexpr bool operator()(array_type const& rhs) const noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (requires { simd_test_all_ones<T, N>{}(lhs, rhs); }) {
+                return simd_test_all_ones<T, N>{}(rhs);
+            }
+        }
+
+        auto r = true;
+        for (auto i = 0_uz; i != N; ++i) {
+            hilet rhs_ = ~std::bit_cast<make_uintxx_t<sizeof(T) * CHAR_BIT>>(rhs[i]);
+            r &= rhs_ == 0;
+        }
+        return r;
+    }
+};
+
+}}
 
 }} // namespace hi::v1
