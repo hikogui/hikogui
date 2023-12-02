@@ -32,7 +32,7 @@ template<typename T>
 class observer {
 public:
     using value_type = T;
-    using notifier_type = notifier<void(value_type)>;
+    using notifier_type = notifier<>;
     using callback_type = notifier_type::callback_type;
     using awaiter_type = notifier_type::awaiter_type;
     using path_type = observable_msg::path_type;
@@ -82,7 +82,7 @@ public:
 
         proxy_type& operator=(proxy_type&& other) noexcept
         {
-            _commit();
+            notify();
             _observer = std::exchange(other._observer, nullptr);
             _ptr = std::exchange(other._ptr, nullptr);
             _original_value = std::exchange(other._original_value, std::nullopt);
@@ -352,8 +352,9 @@ public:
 
     /** Create a observer linked to an anonymous observed_base-value.
      */
-    constexpr observer(std::convertible_to<value_type> auto&& value) noexcept :
-        observer(std::make_shared<observed<value_type>>(hi_forward(value)))
+    template<std::convertible_to<value_type> Value>
+    constexpr observer(Value && value) noexcept :
+        observer(std::make_shared<observed<value_type>>(std::forward<Value>(value)))
     {
     }
 
@@ -448,11 +449,11 @@ public:
     /** Subscribe a callback to this observer.
      *
      * @param flags The callback flags on how to call the function.
-     * @param function The function used as callback in the form `void(value_type const &old_value, value_type const &new_value)`
+     * @param function The function used as callback in the form `void()`
      * @return A callback-token used to extend the lifetime of the callback function.
      */
-    template<forward_of<void(value_type)> Func>
-    [[nodiscard]] callback<void(value_type)> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
     {
         return _notifier.subscribe(std::forward<Func>(func), flags);
     }
@@ -467,7 +468,7 @@ public:
      * @param index The index into the value being observed_base.
      * @return A new sub-observer which monitors the selected sub-value.
      */
-    [[nodiscard]] auto get(auto const& index) const noexcept
+    [[nodiscard]] auto sub(auto const& index) const noexcept
         requires(requires() { std::declval<value_type>()[index]; })
     {
         using result_type = std::decay_t<decltype(std::declval<value_type>()[index])>;
@@ -487,7 +488,7 @@ public:
      * @return A new sub-observer which monitors the member of value.
      */
     template<fixed_string Name>
-    [[nodiscard]] auto get() const noexcept
+    [[nodiscard]] auto sub() const noexcept
     {
         using result_type = std::decay_t<decltype(selector<value_type>{}.template get<Name>(std::declval<value_type&>()))>;
 
@@ -516,24 +517,36 @@ public:
     observer& operator=(Rhs&& rhs) noexcept
         requires requires (value_type &a, Rhs &&b) { a = std::forward<Rhs>(b); }
     {
-        value() = std::forward<Rhs>(rhs);
+        *get() = std::forward<Rhs>(rhs);
         return *this;
     }
 
-    /** Get a copy of the value being observed_base.
+    /** Get the value being observed_base.
      */
-    value_type const &operator*() const noexcept
+    const_reference operator*() const noexcept
     {
         // This returns a copy of the dereferenced value of the proxy.
         // The proxy's lifetime will be extended for the copy to be made.
-        return value();
+        return *get();
+    }
+
+    const_pointer operator&() const noexcept
+    {
+        return get();
     }
 
     /** Constant pointer-to-member of the value being observed_base.
      */
-    value_type const *operator->() const noexcept
+    const_pointer operator->() const noexcept
     {
-        return value();
+        return get();
+    }
+
+    /** Constant pointer-to-member of the value being observed_base.
+     */
+    pointer operator->() noexcept
+    {
+        return get();
     }
 
     // prefix operators
@@ -542,7 +555,7 @@ public:
     observer& operator op() noexcept \
         requires requires(value_type& a) { op a; } \
     { \
-        op *copy(); \
+        op *get(); \
         return *this; \
     }
 
@@ -556,7 +569,7 @@ public:
     auto operator op(int) noexcept \
         requires requires(value_type& a) { a op; } \
     { \
-        return *copy() op; \
+        return *get() op; \
     }
 
     X(++)
@@ -569,7 +582,7 @@ public:
     observer& operator op(Rhs const& rhs) noexcept \
         requires requires(value_type& a, Rhs const& b) { a op b; } \
     { \
-        *copy() op rhs; \
+        *get() op rhs; \
         return *this; \
     }
 
@@ -591,7 +604,7 @@ public:
     auto operator op() const noexcept \
         requires requires(value_type const& a) { op a; } \
     { \
-        return op *read(); \
+        return op *get(); \
     }
 
     X(-)
@@ -606,7 +619,7 @@ public:
     auto operator op(Rhs const& rhs) const noexcept \
         requires requires(value_type const& a, Rhs const& b) { a op b; } \
     { \
-        return *read() op rhs; \
+        return *get() op rhs; \
     }
 
     X(==)
@@ -628,7 +641,7 @@ public:
     auto operator()(Args &&... args) const noexcept
         requires requires(value_type const & a, Args &&...args) { a(std::forward<Args>(args)...); }
     {
-        return (*read())(std::forward<Args>(args)...);
+        return (*get())(std::forward<Args>(args)...);
     }
 
     // index operator
@@ -637,7 +650,7 @@ public:
     auto operator[](Arg && arg) const noexcept
         requires requires(value_type const & a, Arg &&arg) { a[std::forward<Arg>(arg)]; }
     {
-        return (*read())[std::forward<Arg>(arg)];
+        return (*get())[std::forward<Arg>(arg)];
     }
 
     // clang-format on
@@ -654,18 +667,19 @@ private:
 
     /** Construct an observer from an observed_base.
      */
+    template<forward_of<observed_type> ObservedBase, forward_of<path_type> Path, forward_of<void *(void *)> Converter>
     observer(
-        forward_of<observed_type> auto&& observed_base,
-        forward_of<path_type> auto&& path,
-        forward_of<void *(void *)> auto&& converter) noexcept :
-        _observed(hi_forward(observed_base)), _path(hi_forward(path)), _convert(hi_forward(converter)), _notifier()
+        ObservedBase&& observed_base,
+        Path&& path,
+        Converter&& converter) noexcept :
+        _observed(std::forward<ObservedBase>(observed_base)), _path(std::forward<Path>(path)), _convert(std::forward<Converter>(converter)), _notifier()
     {
         update_state_callback();
     }
 
     void notify() const noexcept
     {
-        _observed->notify_group_ptr(observable_msg{base, _path});
+        _observed->notify_group_ptr(observable_msg{get(), _path});
     }
 
     value_type *convert(void *base) const noexcept

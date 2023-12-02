@@ -55,22 +55,22 @@ public:
         // notifications.
         _state_cbt = state.subscribe([&](widget_state new_state) {
             static std::optional<widget_state> old_state = std::nullopt;
-            
+
             if (old_state) {
-                if (need_reconstrain(*old_state, new_state)) {
+                if (need_reconstrain(*old_state, *state)) {
                     ++global_counter<"widget:state:reconstrain">;
                     process_event({gui_event_type::window_reconstrain});
 
-                } else if (need_relayout(*old_state, new_state)) {
+                } else if (need_relayout(*old_state, *state)) {
                     ++global_counter<"widget:state:relayout">;
                     process_event({gui_event_type::window_relayout});
 
-                } else if (need_redraw(*old_state, new_state)) {
+                } else if (need_redraw(*old_state, *state)) {
                     ++global_counter<"widget:state:redraw">;
                     request_redraw();
                 }
             }
-            old_state = new_state;
+            old_state = *state;
         });
     }
 
@@ -96,7 +96,7 @@ public:
 
     void set_layer(size_t new_layer) noexcept
     {
-        state.copy()->set_layer(new_layer);
+        state->set_layer(new_layer);
     }
 
     [[nodiscard]] widget_mode mode() const noexcept
@@ -106,7 +106,7 @@ public:
 
     void set_mode(widget_mode new_mode) noexcept
     {
-        state.copy()->set_mode(new_mode);
+        state->set_mode(new_mode);
     }
 
     [[nodiscard]] widget_value value() const noexcept
@@ -116,7 +116,7 @@ public:
 
     void set_value(widget_value new_value) noexcept
     {
-        state.copy()->set_value(new_value);
+        state->set_value(new_value);
     }
 
     [[nodiscard]] widget_phase phase() const noexcept
@@ -126,17 +126,17 @@ public:
 
     void set_pressed(bool pressed) noexcept
     {
-        state.copy()->set_pressed(pressed);
+        state->set_pressed(pressed);
     }
 
     void set_hover(bool hover) noexcept
     {
-        state.copy()->set_hover(hover);
+        state->set_hover(hover);
     }
 
     void set_active(bool active) noexcept
     {
-        state.copy()->set_active(active);
+        state->set_active(active);
     }
 
     [[nodiscard]] bool focus() const noexcept
@@ -144,9 +144,9 @@ public:
         return state->focus();
     }
 
-    void set_focus(bool new_focus) const noexcept
+    void set_focus(bool new_focus) noexcept
     {
-        state.copy()->set_focus(new_focus);
+        state->set_focus(new_focus);
     }
 
     /** Set the window for this tree of widgets.

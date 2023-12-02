@@ -119,7 +119,7 @@ private:
     {
         while (true) {
             {
-                auto proxy = _device_list.copy();
+                auto proxy = _device_list.get();
                 proxy->clear();
                 for (auto& device : audio_devices(hi::audio_device_state::active, *direction)) {
                     proxy->emplace_back(device.id(), device.label());

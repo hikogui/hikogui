@@ -28,7 +28,7 @@ struct observable_msg {
  *
  * This type is referenced by `observer`s
  */
-class observed_base : public enable_group_ptr<observed, void(observable_msg)> {
+class observed_base : public enable_group_ptr<observed_base, void(observable_msg)> {
 public:
     virtual ~observed_base() = default;
     observed_base(observed_base const&) = delete;
@@ -69,12 +69,12 @@ public:
 
     [[nodiscard]] void const *get() const noexcept override
     {
-        return static_cast<void const *>(std::addressof(_value));
+        return std::addressof(_value);
     }
 
     [[nodiscard]] void *get() noexcept override
     {
-        return static_cast<void const *>(std::addressof(_value));
+        return std::addressof(_value);
     }
 
 private:

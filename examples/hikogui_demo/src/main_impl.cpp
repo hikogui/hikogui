@@ -67,7 +67,7 @@ hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferen
     hi::observer<std::vector<std::pair<std::string, hi::label>>> theme_list;
 
     {
-        auto proxy = theme_list.copy();
+        auto proxy = theme_list.get();
         for (hilet& name : theme_names()) {
             proxy->emplace_back(name, txt(name));
         }
@@ -115,9 +115,9 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     grid.emplace<text_field_widget>("B7", preferences.audio_output_sample_rate);
 
     auto toggle_value_cbt = preferences.toggle_value.subscribe(
-        [&](bool value) {
-            checkbox2.set_mode(value ? widget_mode::enabled : widget_mode::disabled);
-            selection3.set_mode(value ? widget_mode::enabled : widget_mode::disabled);
+        [&] {
+            checkbox2.set_mode(*preferences.toggle_value ? widget_mode::enabled : widget_mode::disabled);
+            selection3.set_mode(*preferences.toggle_value ? widget_mode::enabled : widget_mode::disabled);
         },
         callback_flags::main);
 
@@ -200,7 +200,7 @@ hi::task<> main_window(my_preferences& preferences)
             hi_debug_break();
             break;
         case 5:
-            hi_log_info("Toggle value {}", get<bool>(result));
+            hi_log_info("Toggle value {}", std::get<5>(result));
             break;
         case 6:
             co_return;

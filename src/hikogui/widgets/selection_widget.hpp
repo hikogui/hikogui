@@ -197,7 +197,7 @@ public:
         auto r = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
 
         // Make it so that the scroll widget can scroll vertically.
-        _scroll_widget->minimum.copy()->height() = theme().size();
+        _scroll_widget->minimum->height() = theme().size();
 
         r.minimum.width() = std::max(r.minimum.width(), _overlay_constraints.minimum.width() + extra_size.width());
         r.preferred.width() = std::max(r.preferred.width(), _overlay_constraints.preferred.width() + extra_size.width());
