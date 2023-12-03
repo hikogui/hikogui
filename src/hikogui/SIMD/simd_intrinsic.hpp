@@ -9,13 +9,6 @@
 #include <cstddef>
 #include <array>
 
-#include <xmmintrin.h>
-#include <emmintrin.h>
-#include <pmmintrin.h>
-#include <tmmintrin.h>
-#include <smmintrin.h>
-#include <nmmintrin.h>
-#include <immintrin.h>
 
 hi_export_module(hikogui.simd.simd_intrinsic);
 
