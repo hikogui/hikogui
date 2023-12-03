@@ -65,10 +65,12 @@ struct simd_intrinsic<float, 4> {
     [[nodiscard]] hi_force_inline reg ceil(reg a) const noexcept { return _mm_ceil_ps(a); }
 #endif
 
-    [[nodiscard]] hi_force_inline reg convert(uint32_t const *a) const noexcept
-    {
-
-    }
+#if defined(HI_HAS_SSE2)
+    template<typename T>
+    [[nodiscard]] hi_force_inline reg convert(__m128i) const noexcept = delete;
+    template<>
+    [[nodiscard]] hi_force_inline reg convert<int32_t>(__m128i a) const noexcept { return _mm_cvtepi32_ps(a); }
+#endif
 
     [[nodiscard]] hi_force_inline mask_reg set_all_ones() const noexcept {
 #if defined(HI_HAS_SSE2)
