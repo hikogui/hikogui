@@ -5,6 +5,7 @@
 #pragma once
 
 #include "observed.hpp"
+#include "observer_intf.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/thread.hpp" // XXX #616
 #include "../macros.hpp"

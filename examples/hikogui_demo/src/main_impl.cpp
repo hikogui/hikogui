@@ -115,7 +115,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     grid.emplace<text_field_widget>("B7", preferences.audio_output_sample_rate);
 
     auto toggle_value_cbt = preferences.toggle_value.subscribe(
-        [&] {
+        [&](auto...) {
             checkbox2.set_mode(*preferences.toggle_value ? widget_mode::enabled : widget_mode::disabled);
             selection3.set_mode(*preferences.toggle_value ? widget_mode::enabled : widget_mode::disabled);
         },

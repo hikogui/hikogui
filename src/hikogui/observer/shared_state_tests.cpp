@@ -53,25 +53,25 @@ TEST(shared_state, read)
     auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
     auto a_cursor = state.observer();
-    auto baz_cursor = state.get<"baz">();
-    auto baz0_cursor = state.get<"baz">().get(0);
-    auto baz1_cursor = baz_cursor.get(1);
-    auto b_cursor = a_cursor.get<"b">();
-    auto foo_cursor = state.get<"b">().get<"foo">();
-    auto bar_cursor = b_cursor.get<"bar">();
+    auto baz_cursor = state.sub<"baz">();
+    auto baz0_cursor = state.sub<"baz">().sub(0);
+    auto baz1_cursor = baz_cursor.sub(1);
+    auto b_cursor = a_cursor.sub<"b">();
+    auto foo_cursor = state.sub<"b">().sub<"foo">();
+    auto bar_cursor = b_cursor.sub<"bar">();
 
-    ASSERT_EQ(*foo_cursor.read(), "hello world");
-    ASSERT_EQ(*bar_cursor.read(), 42);
+    ASSERT_EQ(foo_cursor, "hello world");
+    ASSERT_EQ(bar_cursor, 42);
     auto baz_result = std::vector<int>{5, 15};
-    ASSERT_EQ(*baz_cursor.read(), baz_result);
-    ASSERT_EQ(*baz0_cursor.read(), 5);
-    ASSERT_EQ(*baz1_cursor.read(), 15);
+    ASSERT_EQ(baz_cursor, baz_result);
+    ASSERT_EQ(baz0_cursor, 5);
+    ASSERT_EQ(baz1_cursor, 15);
 
-    auto b_proxy = b_cursor.read();
+    auto b_proxy = b_cursor.get();
     ASSERT_EQ(b_proxy->foo, "hello world");
-    ASSERT_EQ(b_cursor.read()->bar, 42);
+    ASSERT_EQ(b_cursor->bar, 42);
 
-    auto a_proxy = a_cursor.read();
+    auto a_proxy = a_cursor.get();
     ASSERT_EQ(a_proxy->b.foo, "hello world");
     ASSERT_EQ(a_proxy->b.bar, 42);
     ASSERT_EQ(a_proxy->baz, baz_result);
@@ -84,13 +84,13 @@ TEST(shared_state, notify)
     auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
     auto a_cursor = state.observer();
-    auto b_cursor = a_cursor.get<"b">();
-    auto foo_cursor = b_cursor.get<"foo">();
-    auto bar_cursor = b_cursor.get<"bar">();
-    auto barD_cursor = b_cursor.get<"bar">();
-    auto baz_cursor = a_cursor.get<"baz">();
-    auto baz0_cursor = baz_cursor.get(0);
-    auto baz1_cursor = baz_cursor.get(1);
+    auto b_cursor = a_cursor.sub<"b">();
+    auto foo_cursor = b_cursor.sub<"foo">();
+    auto bar_cursor = b_cursor.sub<"bar">();
+    auto barD_cursor = b_cursor.sub<"bar">();
+    auto baz_cursor = a_cursor.sub<"baz">();
+    auto baz0_cursor = baz_cursor.sub(0);
+    auto baz1_cursor = baz_cursor.sub(1);
 
     auto a_count = 0;
     auto b_count = 0;
@@ -121,8 +121,8 @@ TEST(shared_state, notify)
         baz_count = 0;
         baz0_count = 0;
         baz1_count = 0;
-        a_cursor.copy()->b.bar = 3;
-        ASSERT_EQ(a_cursor.read()->b.bar, 3);
+        a_cursor->b.bar = 3;
+        ASSERT_EQ(a_cursor->b.bar, 3);
         ASSERT_EQ(a_count, 1);
         ASSERT_EQ(b_count, 1);
         ASSERT_EQ(foo_count, 1);
@@ -142,8 +142,8 @@ TEST(shared_state, notify)
         baz_count = 0;
         baz0_count = 0;
         baz1_count = 0;
-        b_cursor.copy()->bar = 5;
-        ASSERT_EQ(a_cursor.read()->b.bar, 5);
+        b_cursor->bar = 5;
+        ASSERT_EQ(a_cursor->b.bar, 5);
         ASSERT_EQ(a_count, 1);
         ASSERT_EQ(b_count, 1);
         ASSERT_EQ(foo_count, 1);
@@ -163,8 +163,8 @@ TEST(shared_state, notify)
         baz_count = 0;
         baz0_count = 0;
         baz1_count = 0;
-        *bar_cursor.copy() = 7;
-        ASSERT_EQ(a_cursor.read()->b.bar, 7);
+        bar_cursor = 7;
+        ASSERT_EQ(a_cursor->b.bar, 7);
         ASSERT_EQ(a_count, 1);
         ASSERT_EQ(b_count, 1);
         ASSERT_EQ(foo_count, 0);
@@ -184,9 +184,9 @@ TEST(shared_state, notify)
         baz_count = 0;
         baz0_count = 0;
         baz1_count = 0;
-        baz_cursor.copy()->push_back(7);
+        baz_cursor->push_back(7);
         auto baz_result = std::vector<int>{5, 15, 7};
-        ASSERT_EQ(a_cursor.read()->baz, baz_result);
+        ASSERT_EQ(a_cursor->baz, baz_result);
         ASSERT_EQ(a_count, 1);
         ASSERT_EQ(b_count, 0);
         ASSERT_EQ(foo_count, 0);
@@ -206,8 +206,8 @@ TEST(shared_state, notify)
         baz_count = 0;
         baz0_count = 0;
         baz1_count = 0;
-        *baz0_cursor.copy() = 1;
-        ASSERT_EQ(a_cursor.read()->baz[0], 1);
+        baz0_cursor = 1;
+        ASSERT_EQ(a_cursor->baz[0], 1);
         ASSERT_EQ(a_count, 1);
         ASSERT_EQ(b_count, 0);
         ASSERT_EQ(foo_count, 0);
@@ -219,79 +219,6 @@ TEST(shared_state, notify)
     }
 }
 
-TEST(shared_state, commit_abort)
-{
-    using namespace test_shared_space;
-
-    auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
-
-    auto a_cursor = state.observer();
-    auto b_cursor = a_cursor.get<"b">();
-    auto foo_cursor = b_cursor.get<"foo">();
-    auto baz_cursor = a_cursor.get<"baz">();
-
-    auto a_count = 0;
-    auto b_count = 0;
-    auto foo_count = 0;
-    auto baz_count = 0;
-
-    // clang-format off
-    auto a_cbt = a_cursor.subscribe([&](auto...) { ++a_count; });
-    auto b_cbt = b_cursor.subscribe([&](auto...) { ++b_count; });
-    auto foo_cbt = foo_cursor.subscribe([&](auto...) { ++foo_count; });
-    auto baz_cbt = baz_cursor.subscribe([&](auto...) { ++baz_count; });
-    // clang-format on
-
-    // Commit on end-of-scope.
-    a_count = 0;
-    b_count = 0;
-    foo_count = 0;
-    baz_count = 0;
-    {
-        auto foo_proxy = foo_cursor.copy();
-        *foo_proxy = "1";
-        ASSERT_EQ(*foo_cursor.read(), "hello world");
-    }
-    ASSERT_EQ(*foo_cursor.read(), "1");
-    ASSERT_EQ(a_count, 1);
-    ASSERT_EQ(b_count, 1);
-    ASSERT_EQ(foo_count, 1);
-    ASSERT_EQ(baz_count, 0);
-
-    // Early commit.
-    a_count = 0;
-    b_count = 0;
-    foo_count = 0;
-    baz_count = 0;
-    {
-        auto foo_proxy = foo_cursor.copy();
-        *foo_proxy = "2";
-        ASSERT_EQ(*foo_cursor.read(), "1");
-        foo_proxy.commit();
-        ASSERT_EQ(*foo_cursor.read(), "2");
-    }
-    ASSERT_EQ(a_count, 1);
-    ASSERT_EQ(b_count, 1);
-    ASSERT_EQ(foo_count, 1);
-    ASSERT_EQ(baz_count, 0);
-
-    // Early abort.
-    a_count = 0;
-    b_count = 0;
-    foo_count = 0;
-    baz_count = 0;
-    {
-        auto foo_proxy = foo_cursor.copy();
-        *foo_proxy = "3";
-        ASSERT_EQ(*foo_cursor.read(), "2");
-        foo_proxy.abort();
-        ASSERT_EQ(*foo_cursor.read(), "2");
-    }
-    ASSERT_EQ(a_count, 0);
-    ASSERT_EQ(b_count, 0);
-    ASSERT_EQ(foo_count, 0);
-    ASSERT_EQ(baz_count, 0);
-}
 
 TEST(shared_state, value)
 {

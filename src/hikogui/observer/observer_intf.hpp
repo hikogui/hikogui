@@ -32,7 +32,7 @@ template<typename T>
 class observer {
 public:
     using value_type = T;
-    using notifier_type = notifier<>;
+    using notifier_type = notifier<void(value_type)>;
     using callback_type = notifier_type::callback_type;
     using awaiter_type = notifier_type::awaiter_type;
     using path_type = observable_msg::path_type;
@@ -452,8 +452,8 @@ public:
      * @param function The function used as callback in the form `void()`
      * @return A callback-token used to extend the lifetime of the callback function.
      */
-    template<forward_of<void()> Func>
-    [[nodiscard]] callback<> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
+    template<forward_of<void(value_type)> Func>
+    [[nodiscard]] callback<void(value_type)> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
     {
         return _notifier.subscribe(std::forward<Func>(func), flags);
     }
@@ -679,7 +679,7 @@ private:
 
     void notify() const noexcept
     {
-        _observed->notify_group_ptr(observable_msg{get(), _path});
+        _observed->notify_group_ptr(observable_msg{_observed->get(), _path});
     }
 
     value_type *convert(void *base) const noexcept
@@ -702,7 +702,7 @@ private:
 #ifndef NDEBUG
                 _debug_value = *convert(msg.ptr);
 #endif
-                _notifier();
+                _notifier(*convert(msg.ptr));
             }
         });
 
