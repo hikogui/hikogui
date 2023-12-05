@@ -10,6 +10,7 @@
 #include "socket_event.hpp"
 #include "notifier.hpp"
 #include "../container/container.hpp"
+#include "../telemetry/telemetry.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../concurrency/unfair_mutex.hpp" // XXX #616
 #include "../concurrency/thread.hpp" // XXX #616
