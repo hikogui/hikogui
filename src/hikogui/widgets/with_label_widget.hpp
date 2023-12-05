@@ -133,6 +133,8 @@ public:
             this, this->attributes.other_label, this->attributes.alignment, this->attributes.text_style);
 
         _button_widget_cbt = _button_widget->subscribe([&] {
+            set_value(_button_widget->value());
+
             _on_label_widget->set_mode(value() == widget_value::on ? widget_mode::display : widget_mode::invisible);
             _off_label_widget->set_mode(value() == widget_value::off ? widget_mode::display : widget_mode::invisible);
             _other_label_widget->set_mode(value() == widget_value::other ? widget_mode::display : widget_mode::invisible);
