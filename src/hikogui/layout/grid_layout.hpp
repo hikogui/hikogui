@@ -182,46 +182,6 @@ struct grid_layout_cell {
         }
     }
 
-    template<hi::axis Axis>
-    [[nodiscard]] constexpr float padding_before(bool forward) const noexcept
-    {
-        if constexpr (Axis == axis::x) {
-            if (forward) {
-                return _constraints.padding.left();
-            } else {
-                return _constraints.padding.right();
-            }
-        } else if constexpr (Axis == axis::y) {
-            if (forward) {
-                return _constraints.padding.bottom();
-            } else {
-                return _constraints.padding.top();
-            }
-        } else {
-            hi_static_no_default();
-        }
-    }
-
-    template<hi::axis Axis>
-    [[nodiscard]] constexpr float padding_after(bool forward) const noexcept
-    {
-        if constexpr (Axis == axis::x) {
-            if (forward) {
-                return _constraints.padding.right();
-            } else {
-                return _constraints.padding.left();
-            }
-        } else if constexpr (Axis == axis::y) {
-            if (forward) {
-                return _constraints.padding.top();
-            } else {
-                return _constraints.padding.bottom();
-            }
-        } else {
-            hi_static_no_default();
-        }
-    }
-
 private:
     box_constraints _constraints;
 };
@@ -256,14 +216,6 @@ public:
         /** The right/bottom margin of the cells.
          */
         float margin_after = 0.0f;
-
-        /** The left/top padding of the cells.
-         */
-        float padding_before = 0.0f;
-
-        /** The right/bottom padding of the cells.
-         */
-        float padding_after = 0.0f;
 
         /** The alignment of the cells.
          */
@@ -718,8 +670,7 @@ private:
         auto position = start_position;
         for (auto it = first; it != last; ++it) {
             it->position = position;
-            it->guideline = make_guideline(
-                it->alignment, position, position + it->extent, it->padding_before, it->padding_after, guideline_width);
+            it->guideline = make_guideline(it->alignment, position, position + it->extent, guideline_width);
 
             position += it->extent;
             position += it->margin_after;
@@ -737,8 +688,6 @@ private:
     {
         inplace_max(_constraints[cell.template first<axis>()].margin_before, cell.template margin_before<axis>(_forward));
         inplace_max(_constraints[cell.template last<axis>() - 1].margin_after, cell.template margin_after<axis>(_forward));
-        inplace_max(_constraints[cell.template first<axis>()].padding_before, cell.template padding_before<axis>(_forward));
-        inplace_max(_constraints[cell.template last<axis>() - 1].padding_after, cell.template padding_after<axis>(_forward));
 
         for (auto i = cell.template first<axis>(); i != cell.template last<axis>(); ++i) {
             _constraints[i].beyond_maximum |= cell.beyond_maximum;
@@ -803,14 +752,6 @@ private:
             // Fix the constraints so that minimum <= preferred <= maximum.
             inplace_max(it->preferred, it->minimum);
             inplace_max(it->maximum, it->preferred);
-
-            // Fix the padding, so that it doesn't overlap.
-            if (it->padding_before + it->padding_after > it->minimum) {
-                hilet padding_diff = it->padding_after - it->padding_before;
-                hilet middle = std::clamp(it->minimum / 2.0f + padding_diff, 0.0f, it->minimum);
-                it->padding_after = middle;
-                it->padding_before = it->minimum - middle;
-            }
         }
     }
 
@@ -1111,14 +1052,10 @@ public:
         std::tie(r.minimum.width(), r.preferred.width(), r.maximum.width()) = _column_constraints.update_constraints();
         r.margins.left() = _column_constraints.margin_before();
         r.margins.right() = _column_constraints.margin_after();
-        r.padding.left() = _column_constraints.padding_before();
-        r.padding.right() = _column_constraints.padding_after();
 
         std::tie(r.minimum.height(), r.preferred.height(), r.maximum.height()) = _row_constraints.update_constraints();
         r.margins.bottom() = _row_constraints.margin_after();
         r.margins.top() = _row_constraints.margin_before();
-        r.padding.bottom() = _row_constraints.padding_after();
-        r.padding.top() = _row_constraints.padding_before();
 
         r.alignment = [&] {
             if (num_rows() == 1 and num_columns() == 1) {

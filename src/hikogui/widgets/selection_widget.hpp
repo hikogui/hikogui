@@ -203,7 +203,6 @@ public:
         r.preferred.width() = std::max(r.preferred.width(), _overlay_constraints.preferred.width() + extra_size.width());
         r.maximum.width() = std::max(r.maximum.width(), _overlay_constraints.maximum.width() + extra_size.width());
         r.margins = theme().margin();
-        r.padding = theme().margin();
         r.alignment = resolve(*attributes.alignment, os_settings::left_to_right());
         hi_axiom(r.holds_invariant());
         return r;

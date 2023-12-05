@@ -209,7 +209,7 @@ public:
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _button_size = {theme().size(), theme().size()};
-        return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin(), {}};
+        return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin()};
     }
 
     void set_layout(widget_layout const& context) noexcept override
