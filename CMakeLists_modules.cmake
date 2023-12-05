@@ -135,8 +135,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/dispatch.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/function_timer.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_win32_impl.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_win32_intf.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/notifier.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/scoped_task.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event.ixx
