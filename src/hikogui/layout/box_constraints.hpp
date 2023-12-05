@@ -27,7 +27,6 @@ struct box_constraints {
     extent2 preferred = {};
     extent2 maximum = {};
     hi::margins margins = {};
-    hi::margins padding = {};
 
     hi::alignment alignment = hi::alignment{};
 
@@ -43,29 +42,10 @@ struct box_constraints {
         extent2 preferred,
         extent2 maximum,
         hi::alignment alignment = hi::alignment{},
-        hi::margins margins = hi::margins{},
-        hi::margins padding = hi::margins{}) noexcept :
-        minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), padding(padding), alignment(alignment)
+        hi::margins margins = hi::margins{}) noexcept :
+        minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), alignment(alignment)
     {
         hi_axiom(holds_invariant());
-    }
-
-    [[nodiscard]] constexpr box_constraints internalize_margins() const noexcept
-    {
-        auto r = *this;
-        r.padding += r.margins;
-
-        r.minimum.width() += r.margins.left() + r.margins.right();
-        r.preferred.width() += r.margins.left() + r.margins.right();
-        r.maximum.width() += r.margins.left() + r.margins.right();
-
-        r.minimum.height() += r.margins.bottom() + r.margins.top();
-        r.preferred.height() += r.margins.bottom() + r.margins.top();
-        r.maximum.height() += r.margins.bottom() + r.margins.top();
-
-        r.margins = 0;
-        hi_axiom(r.holds_invariant());
-        return r;
     }
 
     [[nodiscard]] constexpr box_constraints constrain(extent2 new_minimum, extent2 new_maximum) const noexcept
@@ -139,7 +119,6 @@ struct box_constraints {
         inplace_max(r.preferred, rhs.preferred);
         inplace_max(r.maximum, rhs.maximum);
         inplace_max(r.margins, rhs.margins);
-        inplace_max(r.padding, rhs.padding);
 
         hi_axiom(r.holds_invariant());
         return r;

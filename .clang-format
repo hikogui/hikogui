@@ -70,7 +70,6 @@ ObjCBlockIndentWidth: 4
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: false
 PointerAlignment: Right
-#QualifierOrder: constexpr inline static type const volatile restrict
 ReferenceAlignment: Left
 ReflowComments: true
 #RequiresClausePosition: WithPreceding
