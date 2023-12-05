@@ -94,7 +94,6 @@ public:
         r.minimum.height() += r.margins.top();
         r.preferred.height() += r.margins.top();
         r.maximum.height() += r.margins.top();
-        r.padding.top() += r.margins.top();
         r.margins.top() = 0;
 
         return r;

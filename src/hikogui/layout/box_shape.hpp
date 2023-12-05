@@ -39,15 +39,11 @@ struct box_shape {
             constraints.alignment.vertical(),
             rectangle.bottom(),
             rectangle.top(),
-            constraints.padding.bottom(),
-            constraints.padding.top(),
             baseline_adjustment)),
         centerline(make_guideline(
             constraints.alignment.horizontal(),
             rectangle.left(),
-            rectangle.right(),
-            constraints.padding.left(),
-            constraints.padding.right()))
+            rectangle.right()))
     {
     }
 
