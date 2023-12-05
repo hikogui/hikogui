@@ -128,8 +128,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/dispatch.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/function_timer.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_intf.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/scoped_task.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event.hpp
