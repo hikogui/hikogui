@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "observed_value.hpp"
+#include "observed.hpp"
+#include "observer_intf.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/thread.hpp" // XXX #616
 #include "../macros.hpp"
@@ -53,7 +54,7 @@ public:
      */
     template<typename... Args>
     constexpr shared_state(Args&&...args) noexcept :
-        _pimpl(std::make_shared<observed_value<value_type>>(std::forward<Args>(args)...))
+        _pimpl(std::make_shared<observed<value_type>>(std::forward<Args>(args)...))
     {
     }
 
@@ -68,10 +69,10 @@ public:
      * @param index The index used with the index operator of the value.
      * @return The new observer pointing to a sub-object of the value.
      */
-    [[nodiscard]] auto get(auto const& index) const& noexcept
-        requires requires { observer().get(index); }
+    [[nodiscard]] auto sub(auto const& index) const& noexcept
+        requires requires { observer().sub(index); }
     {
-        return observer().get(index);
+        return observer().sub(index);
     }
     // clang-format on
 
@@ -82,13 +83,13 @@ public:
      * @return The new observer pointing to the member variable of the value
      */
     template<fixed_string Name>
-    [[nodiscard]] auto get() const& noexcept
+    [[nodiscard]] auto sub() const& noexcept
     {
-        return observer().template get<Name>();
+        return observer().template sub<Name>();
     }
 
 private:
-    std::shared_ptr<observed_value<value_type>> _pimpl;
+    std::shared_ptr<observed<value_type>> _pimpl;
 };
 
 }

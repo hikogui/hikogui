@@ -208,8 +208,8 @@ private:
     {
         set_mode(widget_mode::select);
 
-        _icon_widget = std::make_unique<icon_widget>(this, label.get<"icon">());
-        _text_widget = std::make_unique<text_widget>(this, label.get<"text">());
+        _icon_widget = std::make_unique<icon_widget>(this, label.sub<"icon">());
+        _text_widget = std::make_unique<text_widget>(this, label.sub<"text">());
         _text_widget->alignment = alignment;
         _text_widget->text_style = text_style;
         _text_widget->set_mode(mode());

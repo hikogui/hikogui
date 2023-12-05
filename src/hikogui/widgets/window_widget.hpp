@@ -41,7 +41,7 @@ public:
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         _system_menu = &_toolbar->emplace<system_menu_widget>();
-        this->_system_menu->icon = this->title.get<"icon">();
+        this->_system_menu->icon = this->title.sub<"icon">();
         _toolbar->emplace<window_controls_win32_widget, horizontal_alignment::right>();
 
 #elif HI_OPERATING_SYSTEM == HI_OS_MACOS

@@ -73,13 +73,13 @@ public:
             this, aperture->content_height, aperture->aperture_height, aperture->offset_y);
 
         if (to_bool(axis & axis::horizontal)) {
-            minimum.copy()->width() = 0;
+            minimum->width() = 0;
         } else {
             horizontal_scroll_bar->set_mode(widget_mode::collapse);
         }
 
         if (to_bool(axis & axis::vertical)) {
-            minimum.copy()->height() = 0;
+            minimum->height() = 0;
         } else {
             vertical_scroll_bar->set_mode(widget_mode::collapse);
         }

@@ -374,7 +374,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observer_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed_value.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/shared_state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lexer.hpp
