@@ -14,8 +14,11 @@
 using namespace std;
 using namespace hi;
 
-TEST(Counters, CompileTime)
+TEST(counters, template_read)
 {
+    global_counter<"foo_a"> = 0;
+    global_counter<"bar_a"> = 0;
+
     ++global_counter<"foo_a">;
     ++global_counter<"bar_a">;
     ++global_counter<"bar_a">;
@@ -25,8 +28,11 @@ TEST(Counters, CompileTime)
     ASSERT_EQ(global_counter<"bar_a">, 2);
 }
 
-TEST(Counters, RunTimeRead)
+TEST(counters, search_and_read)
 {
+    global_counter<"foo_b"> = 0;
+    global_counter<"bar_b"> = 0;
+
     ++global_counter<"foo_b">;
     ++global_counter<"bar_b">;
     ++global_counter<"bar_b">;
