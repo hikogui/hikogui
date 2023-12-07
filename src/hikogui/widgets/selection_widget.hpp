@@ -445,7 +445,7 @@ private:
     {
         _grid_widget->clear();
         for (auto i = 0_uz; i != delegate->size(*this); ++i) {
-            _grid_widget->push_bottom(delegate->make_option_widget(*this, i));
+            _grid_widget->push_bottom(delegate->make_option_widget(*this, *_grid_widget, i));
         }
 
         ++global_counter<"selection_widget:update_options:constrain">;
