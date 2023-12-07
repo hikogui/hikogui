@@ -58,14 +58,14 @@ public:
         return size(sender) == 0;
     }
 
-    /** Make a widget to be displayed in a selection pull-down.
+    /** Create a new widget that represents the button in the selection menu.
      *
-     * @note It is undefined behavior if the index is beyond the end of the number of options.
-     * @param sender The parent widget that will become the owner.
-     * @param index The index in the list of options.
-     * @return The widgets to be displayed.
+     * @param sender The selection widget that uses this delegate.
+     * @param parent The parent widget of the new widget being created.
+     * @param index The index of the option.
+     * @return A new widget that represents the option at @a index. 
      */
-    [[nodiscard]] virtual std::unique_ptr<widget> make_option_widget(widget_intf const& sender, size_t index) noexcept = 0;
+    [[nodiscard]] virtual std::unique_ptr<widget> make_option_widget(widget_intf const& sender, widget_intf const &parent, size_t index) noexcept = 0;
 
     /** Get the label of the selected option.
      *
@@ -150,10 +150,17 @@ public:
         return _option_delegate->keyboard_focus_id();
     }
 
-    [[nodiscard]] std::unique_ptr<widget> make_option_widget(widget_intf const& sender, size_t index) noexcept override
+    /** Create a new widget that represents the button in the selection menu.
+     *
+     * @param sender The selection widget that uses this delegate.
+     * @param parent The parent widget of the new widget being created.
+     * @param index The index of the option.
+     * @return A new widget that represents the option at @a index. 
+     */
+    [[nodiscard]] std::unique_ptr<widget> make_option_widget(widget_intf const& sender, widget_intf const &parent, size_t index) noexcept override
     {
         auto& [option_value, option_label] = options->at(index);
-        return _option_delegate->make_option_widget(sender, option_value, option_label, _option_delegate);
+        return _option_delegate->make_option_widget(sender, parent, option_value, option_label, _option_delegate);
     }
 
 private:
@@ -200,14 +207,14 @@ private:
         }
 
         [[nodiscard]] std::unique_ptr<widget>
-        make_option_widget(widget_intf const& sender, value_type const& value, label const& label, std::shared_ptr<option_delegate_type> shared_this) noexcept
+        make_option_widget(widget_intf const& sender, widget_intf const &parent, value_type const& value, label const& label, std::shared_ptr<option_delegate_type> shared_this) noexcept
         {
             using button_widget = radio_menu_button_widget;
             using button_attributes = radio_menu_button_widget::attributes_type;
 
             // Prepare the value for the next widget, so that the widget immediately can retrieve its value.
             _next_value = value;
-            return make_unique<button_widget>(make_not_null(sender), button_attributes{label}, std::move(shared_this));
+            return make_unique<button_widget>(make_not_null(parent), button_attributes{label}, std::move(shared_this));
         }
 
         [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
