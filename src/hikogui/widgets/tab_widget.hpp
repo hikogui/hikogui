@@ -125,34 +125,37 @@ public:
         }
 
         for (hilet& child : _children) {
-            child->mode = child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible;
+            child->set_mode(child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible);
         }
 
         return selected_child_.update_constraints();
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
         _layout = context;
 
         for (hilet& child : _children) {
-            if (*child->mode > widget_mode::invisible) {
+            if (child->mode() > widget_mode::invisible) {
                 child->set_layout(context);
             }
         }
     }
+
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             for (hilet& child : _children) {
                 child->draw(context);
             }
         }
     }
+
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             auto r = hitbox{};
             for (hilet& child : _children) {
                 r = child->hitbox_test_from_parent(position, r);
@@ -162,6 +165,7 @@ public:
             return {};
         }
     }
+
     [[nodiscard]] widget_id find_next_widget(
         widget_id current_widget,
         keyboard_focus_group group,

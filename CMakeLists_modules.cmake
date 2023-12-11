@@ -134,8 +134,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/dispatch.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/function_timer.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_intf.ixx
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_win32_impl.ixx>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_win32_intf.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/notifier.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/task.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event.ixx
@@ -282,6 +281,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_id.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_layout.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GUI/widget_state.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/aarectangle.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/alignment.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/geometry/axis.ixx
@@ -378,7 +378,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/group_ptr.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observer_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observed.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observed_value.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observer.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/shared_state.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/lexer.ixx
@@ -568,7 +567,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_tab_button_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/widget_mode.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_controls_macos_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_controls_win32_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/window_widget.ixx

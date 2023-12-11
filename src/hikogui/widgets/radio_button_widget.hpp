@@ -119,11 +119,11 @@ public:
         not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        _delegate_cbt = this->delegate->subscribe([&]{
-            this->request_redraw();
-        });
-
         this->delegate->init(*this);
+        _delegate_cbt = this->delegate->subscribe([&] {
+            set_value(this->delegate->state(*this));
+        });
+        _delegate_cbt();
     }
 
     /** Construct a radio_button widget with a default button delegate.
@@ -154,20 +154,11 @@ public:
     {
     }
 
-    /** Get the current state of the button.
-     * @return The state of the button: on / off / other.
-     */
-    [[nodiscard]] button_state state() const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        return delegate->state(*this);
-    }
-
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         _button_size = {theme().size(), theme().size()};
-        return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin(), {}};
+        return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin()};
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -184,13 +175,13 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             if (attributes.focus_group != keyboard_focus_group::menu) {
                 context.draw_circle(
                     layout(), _button_circle * 1.02f, background_color(), focus_color(), theme().border_width(), border_side::inside);
             }
 
-            switch (_animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point)) {
+            switch (_animated_value.update(value() == widget_value::on ? 1.0f : 0.0f, context.display_time_point)) {
             case animator_state::idle:
                 break;
             case animator_state::running:
@@ -214,7 +205,7 @@ public:
     [[nodiscard]] color background_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        if (_pressed) {
+        if (phase() == widget_phase::pressed) {
             return theme().color(semantic_color::fill, _layout.layer + 2);
         } else {
             return super::background_color();
@@ -225,7 +216,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout().contains(position)) {
+        if (mode() >= widget_mode::partial and layout().contains(position)) {
             return {id, _layout.elevation, hitbox_type::button};
         } else {
             return {};
@@ -235,7 +226,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return *mode >= widget_mode::partial and to_bool(group & attributes.focus_group);
+        return mode() >= widget_mode::partial and to_bool(group & attributes.focus_group);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -244,7 +235,7 @@ public:
 
         switch (event.type()) {
         case gui_event_type::gui_activate:
-            if (*mode >= widget_mode::partial) {
+            if (mode() >= widget_mode::partial) {
                 delegate->activate(*this);
                 request_redraw();
                 return true;
@@ -252,16 +243,15 @@ public:
             break;
 
         case gui_event_type::mouse_down:
-            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
-                _pressed = true;
-                request_redraw();
+            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
+                set_pressed(true);
                 return true;
             }
             break;
 
         case gui_event_type::mouse_up:
-            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
-                _pressed = false;
+            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
+                set_pressed(false);
 
                 // with_label_widget or other widgets may have accepted the hitbox
                 // for this widget. Which means the widget_id in the mouse-event
@@ -292,8 +282,6 @@ private:
 
     animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
-
-    bool _pressed = false;
 
     callback<void()> _delegate_cbt;
 };

@@ -68,7 +68,7 @@ public:
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
     void draw(hi::draw_context const& context) noexcept override
     {
-        if (*mode > hi::widget_mode::invisible) {
+        if (mode() > hi::widget_mode::invisible) {
             // We only need to draw the widget when it is visible and when the visible area of
             // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
             if (overlaps(context, layout())) {

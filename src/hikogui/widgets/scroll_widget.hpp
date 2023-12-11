@@ -72,15 +72,15 @@ public:
             this, aperture->content_height, aperture->aperture_height, aperture->offset_y);
 
         if (to_bool(axis & axis::horizontal)) {
-            minimum.copy()->width() = 0;
+            minimum->width() = 0;
         } else {
-            horizontal_scroll_bar->mode = widget_mode::collapse;
+            horizontal_scroll_bar->set_mode(widget_mode::collapse);
         }
 
         if (to_bool(axis & axis::vertical)) {
-            minimum.copy()->height() = 0;
+            minimum->height() = 0;
         } else {
-            vertical_scroll_bar->mode = widget_mode::collapse;
+            vertical_scroll_bar->set_mode(widget_mode::collapse);
         }
 
         _aperture = aperture.get();
@@ -153,7 +153,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             for (hilet& cell : _grid) {
                 cell.value->draw(context);
             }
@@ -164,7 +164,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             auto r = _aperture->hitbox_test_from_parent(position);
             r = _horizontal_scroll_bar->hitbox_test_from_parent(position, r);
             r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);

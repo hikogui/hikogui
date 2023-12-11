@@ -86,7 +86,7 @@ public:
      */
     text_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
     {
-        mode = widget_mode::select;
+        set_mode(widget_mode::select);
 
         hi_assert_not_null(this->delegate);
         _delegate_cbt = this->delegate->subscribe([&] {
@@ -180,7 +180,7 @@ public:
         hilet shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
         hilet shaped_text_size = shaped_text_rectangle.size();
 
-        if (*mode == widget_mode::partial) {
+        if (mode() == widget_mode::partial) {
             // In line-edit mode the text should not wrap.
             return _constraints_cache = {
                        shaped_text_size, shaped_text_size, shaped_text_size, _shaped_text.resolved_alignment(), theme().margin()};
@@ -238,7 +238,7 @@ public:
             request_redraw();
         }
 
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             context.draw_text(layout(), _shaped_text);
 
             context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(semantic_color::text_select));
@@ -274,7 +274,7 @@ public:
             return super::handle_event(event);
 
         case keyboard_grapheme:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 add_character(event.grapheme(), add_type::append);
                 return true;
@@ -282,7 +282,7 @@ public:
             break;
 
         case keyboard_partial_grapheme:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 add_character(event.grapheme(), add_type::dead);
                 return true;
@@ -290,7 +290,7 @@ public:
             break;
 
         case text_mode_insert:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _overwrite_mode = not _overwrite_mode;
                 fix_cursor_position();
@@ -299,7 +299,7 @@ public:
             break;
 
         case text_edit_paste:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 auto tmp = event.clipboard_data();
                 // Replace all paragraph separators with white-space.
@@ -307,7 +307,7 @@ public:
                 replace_selection(tmp);
                 return true;
 
-            } else if (*mode >= enabled) {
+            } else if (mode() >= enabled) {
                 reset_state("BDX");
                 replace_selection(event.clipboard_data());
                 return true;
@@ -315,7 +315,7 @@ public:
             break;
 
         case text_edit_copy:
-            if (*mode >= select) {
+            if (mode() >= select) {
                 reset_state("BDX");
                 if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
                     process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text_));
@@ -325,10 +325,10 @@ public:
             break;
 
         case text_edit_cut:
-            if (*mode >= select) {
+            if (mode() >= select) {
                 reset_state("BDX");
                 process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text()));
-                if (*mode >= partial) {
+                if (mode() >= partial) {
                     replace_selection(gstring{});
                 }
                 return true;
@@ -336,7 +336,7 @@ public:
             break;
 
         case text_undo:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 undo();
                 return true;
@@ -344,7 +344,7 @@ public:
             break;
 
         case text_redo:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 redo();
                 return true;
@@ -352,7 +352,7 @@ public:
             break;
 
         case text_insert_line:
-            if (*mode >= enabled) {
+            if (mode() >= enabled) {
                 reset_state("BDX");
                 add_character(grapheme{unicode_PS}, add_type::append);
                 return true;
@@ -360,7 +360,7 @@ public:
             break;
 
         case text_insert_line_up:
-            if (*mode >= enabled) {
+            if (mode() >= enabled) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
                 add_character(grapheme{unicode_PS}, add_type::insert);
@@ -369,7 +369,7 @@ public:
             break;
 
         case text_insert_line_down:
-            if (*mode >= enabled) {
+            if (mode() >= enabled) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_end_paragraph(_selection.cursor());
                 add_character(grapheme{unicode_PS}, add_type::insert);
@@ -378,7 +378,7 @@ public:
             break;
 
         case text_delete_char_next:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 delete_character_next();
                 return true;
@@ -386,7 +386,7 @@ public:
             break;
 
         case text_delete_char_prev:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 delete_character_prev();
                 return true;
@@ -394,7 +394,7 @@ public:
             break;
 
         case text_delete_word_next:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 delete_word_next();
                 return true;
@@ -402,7 +402,7 @@ public:
             break;
 
         case text_delete_word_prev:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 delete_word_prev();
                 return true;
@@ -410,7 +410,7 @@ public:
             break;
 
         case text_cursor_left_char:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_left_char(_selection.cursor(), _overwrite_mode);
                 request_scroll();
@@ -419,7 +419,7 @@ public:
             break;
 
         case text_cursor_right_char:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_right_char(_selection.cursor(), _overwrite_mode);
                 request_scroll();
@@ -428,7 +428,7 @@ public:
             break;
 
         case text_cursor_down_char:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BD");
                 _selection = _shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x);
                 request_scroll();
@@ -437,7 +437,7 @@ public:
             break;
 
         case text_cursor_up_char:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BD");
                 _selection = _shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x);
                 request_scroll();
@@ -446,7 +446,7 @@ public:
             break;
 
         case text_cursor_left_word:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_left_word(_selection.cursor(), _overwrite_mode);
                 request_scroll();
@@ -455,7 +455,7 @@ public:
             break;
 
         case text_cursor_right_word:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_right_word(_selection.cursor(), _overwrite_mode);
                 request_scroll();
@@ -464,7 +464,7 @@ public:
             break;
 
         case text_cursor_begin_line:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_line(_selection.cursor());
                 request_scroll();
@@ -473,7 +473,7 @@ public:
             break;
 
         case text_cursor_end_line:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_end_line(_selection.cursor());
                 request_scroll();
@@ -482,7 +482,7 @@ public:
             break;
 
         case text_cursor_begin_sentence:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_sentence(_selection.cursor());
                 request_scroll();
@@ -491,7 +491,7 @@ public:
             break;
 
         case text_cursor_end_sentence:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_end_sentence(_selection.cursor());
                 request_scroll();
@@ -500,7 +500,7 @@ public:
             break;
 
         case text_cursor_begin_document:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_document(_selection.cursor());
                 request_scroll();
@@ -509,7 +509,7 @@ public:
             break;
 
         case text_cursor_end_document:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_end_document(_selection.cursor());
                 request_scroll();
@@ -518,7 +518,7 @@ public:
             break;
 
         case gui_cancel:
-            if (*mode >= select) {
+            if (mode() >= select) {
                 reset_state("BDX");
                 _selection.clear_selection(_shaped_text.size());
                 return true;
@@ -526,7 +526,7 @@ public:
             break;
 
         case text_select_left_char:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor(), false));
                 request_scroll();
@@ -535,7 +535,7 @@ public:
             break;
 
         case text_select_right_char:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor(), false));
                 request_scroll();
@@ -544,7 +544,7 @@ public:
             break;
 
         case text_select_down_char:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BD");
                 _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x));
                 request_scroll();
@@ -553,7 +553,7 @@ public:
             break;
 
         case text_select_up_char:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BD");
                 _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x));
                 request_scroll();
@@ -562,7 +562,7 @@ public:
             break;
 
         case text_select_left_word:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor(), false));
                 request_scroll();
@@ -571,7 +571,7 @@ public:
             break;
 
         case text_select_right_word:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor(), false));
                 request_scroll();
@@ -580,7 +580,7 @@ public:
             break;
 
         case text_select_begin_line:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_begin_line(_selection.cursor()));
                 request_scroll();
@@ -589,7 +589,7 @@ public:
             break;
 
         case text_select_end_line:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_end_line(_selection.cursor()));
                 request_scroll();
@@ -598,7 +598,7 @@ public:
             break;
 
         case text_select_begin_sentence:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_begin_sentence(_selection.cursor()));
                 request_scroll();
@@ -607,7 +607,7 @@ public:
             break;
 
         case text_select_end_sentence:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_end_sentence(_selection.cursor()));
                 request_scroll();
@@ -616,7 +616,7 @@ public:
             break;
 
         case text_select_begin_document:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_begin_document(_selection.cursor()));
                 request_scroll();
@@ -625,7 +625,7 @@ public:
             break;
 
         case text_select_end_document:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
                 request_scroll();
@@ -634,7 +634,7 @@ public:
             break;
 
         case text_select_document:
-            if (*mode >= partial) {
+            if (mode() >= partial) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_document(_selection.cursor());
                 _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
@@ -644,7 +644,7 @@ public:
             break;
 
         case mouse_up:
-            if (*mode >= select) {
+            if (mode() >= select) {
                 // Stop the continues redrawing during dragging.
                 // Also reset the time, so on drag-start it will initialize the time, which will
                 // cause a smooth startup of repeating.
@@ -655,7 +655,7 @@ public:
             break;
 
         case mouse_down:
-            if (*mode >= select) {
+            if (mode() >= select) {
                 hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
                 switch (event.mouse().click_count) {
                 case 1:
@@ -689,7 +689,7 @@ public:
             break;
 
         case mouse_drag:
-            if (*mode >= select) {
+            if (mode() >= select) {
                 hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
                 switch (event.mouse().click_count) {
                 case 1:
@@ -733,10 +733,10 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (layout().contains(position)) {
-            if (*mode >= widget_mode::partial) {
+            if (mode() >= widget_mode::partial) {
                 return hitbox{id, _layout.elevation, hitbox_type::text_edit};
 
-            } else if (*mode >= widget_mode::select) {
+            } else if (mode() >= widget_mode::select) {
                 return hitbox{id, _layout.elevation, hitbox_type::_default};
 
             } else {
@@ -749,9 +749,9 @@ public:
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             return to_bool(group & keyboard_focus_group::normal);
-        } else if (*mode >= widget_mode::select) {
+        } else if (mode() >= widget_mode::select) {
             return to_bool(group & keyboard_focus_group::mouse);
         } else {
             return false;
@@ -836,7 +836,7 @@ private:
      */
     void scroll_to_show_selection() noexcept
     {
-        if (*mode > widget_mode::invisible and *focus) {
+        if (mode() > widget_mode::invisible and focus()) {
             hilet cursor = _selection.cursor();
             hilet char_it = _shaped_text.begin() + cursor.index();
             if (char_it < _shaped_text.end()) {
@@ -922,21 +922,21 @@ private:
     scoped_task<> blink_cursor() noexcept
     {
         while (true) {
-            if (*mode >= widget_mode::partial and *focus) {
+            if (mode() >= widget_mode::partial and focus()) {
                 switch (*_cursor_state) {
                 case cursor_state_type::busy:
                     _cursor_state = cursor_state_type::on;
-                    co_await when_any(os_settings::cursor_blink_delay(), mode, focus);
+                    co_await when_any(os_settings::cursor_blink_delay(), state);
                     break;
 
                 case cursor_state_type::on:
                     _cursor_state = cursor_state_type::off;
-                    co_await when_any(os_settings::cursor_blink_interval() / 2, mode, focus);
+                    co_await when_any(os_settings::cursor_blink_interval() / 2, state);
                     break;
 
                 case cursor_state_type::off:
                     _cursor_state = cursor_state_type::on;
-                    co_await when_any(os_settings::cursor_blink_interval() / 2, mode, focus);
+                    co_await when_any(os_settings::cursor_blink_interval() / 2, state);
                     break;
 
                 default:
@@ -945,7 +945,7 @@ private:
 
             } else {
                 _cursor_state = cursor_state_type::none;
-                co_await when_any(mode, focus);
+                co_await state;
             }
         }
     }

@@ -2,89 +2,41 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file loop_win32_impl.cpp
- *
- * This is the win32 implementation of the main loop.
- *
- * It works as follows:
- *
- * The main-loop primarily blocks on `MsgWaitForMultipleObjects()` which waits on
- * handles and on the win32 message queue. There are quite a few types of handles
- * that it can block on, but in this case we use it for Events and on winsock2 select events.
- *
- * `MsgWaitForMultipleObjects()` will release on only a single of those handles at a time
- * and its priority is based on the order of the handles.
- *
- * We will use the first handle for an event triggered by `IDXGIOutput::WaitForVBlank()` running
- * on a separate high priority thread; using `SetEvent()` to trigger the event.
- * The desktop-window-manager (DWM) is refreshed on the vsync of the primary monitor,
- * also for windows running on another monitor. For performance reasons `SetEvent()` may be
- * frequency divided based on the window that is located on a monitor with the highest refresh rate.
- *
- * The second handle is for triggering processing of the asynchronous fifo. When adding asynchronous
- * calls the caller can specify if the call needs to processed immediately (non-wait-free), or
- * at the next natural release of `MsgWaitForMultipleObjects()` (wait-free).
- *
- * For networking we use a handle for each socket, subscribed and updated using `WSAEventSelect()`.
- * Since `MsgWaitForMultipleObjects()` can only handle up to 64 handles, for a high number of sockets
- * This needs to be handled as a tree of threads, each blocking on up the 64 sockets and triggering
- * the parent using an event.
- *
- * Timers are added directly on the win32 message queue.
- *
- */
-
 #pragma once
 
 #include "../win32_headers.hpp"
 
-#include "loop_intf.hpp"
+#include "function_timer.hpp"
+#include "socket_event.hpp"
+#include "notifier.hpp"
+#include "../container/container.hpp"
 #include "../telemetry/telemetry.hpp"
+#include "../concurrency/concurrency.hpp"
+#include "../concurrency/unfair_mutex.hpp" // XXX #616
+#include "../concurrency/thread.hpp" // XXX #616
+#include "../time/time.hpp"
 #include "../utility/utility.hpp"
-#include "../char_maps/char_maps.hpp" // XXX #616
 #include "../macros.hpp"
+#include <functional>
+#include <type_traits>
+#include <concepts>
 #include <vector>
-#include <utility>
-#include <stop_token>
-#include <thread>
+#include <memory>
 #include <chrono>
-#include <algorithm>
+#include <thread>
 
-hi_export_module(hikogui.dispatch : loop_impl);
+hi_export_module(hikogui.dispatch : loop_intf);
 
 hi_export namespace hi::inline v1 {
 
-class loop_impl_win32 final : public loop::impl_type {
+class loop {
 public:
-    loop_impl_win32() : loop::impl_type()
-    {
-        // Create an level trigger event, to use as an on/off switch.
-        if (auto handle = CreateEventW(NULL, TRUE, TRUE, NULL)) {
-            _use_vsync_handle = handle;
-        } else {
-            hi_log_fatal("Could not create an use-vsync handle. {}", get_last_error_message());
-        }
+    loop(loop const&) = delete;
+    loop(loop&&) noexcept = delete;
+    loop& operator=(loop const&) = delete;
+    loop& operator=(loop&&) noexcept = delete;
 
-        // Create a pulse trigger event.
-        if (auto handle = CreateEventW(NULL, FALSE, FALSE, NULL)) {
-            _handles.push_back(handle);
-            _sockets.push_back(-1);
-            _socket_functions.emplace_back();
-        } else {
-            hi_log_fatal("Could not create an vsync-event handle. {}", get_last_error_message());
-        }
-
-        // Create a pulse trigger event.
-        if (auto handle = CreateEventW(NULL, FALSE, FALSE, NULL)) {
-            _handles.push_back(handle);
-            _sockets.push_back(-1);
-            _socket_functions.emplace_back();
-        } else {
-            hi_log_fatal("Could not create an async-event handle. {}", get_last_error_message());
-        }
-    }
-
-    ~loop_impl_win32()
+    ~loop()
     {
         // Close all socket event handles.
         while (_handles.size() > _socket_handle_idx) {
@@ -112,20 +64,199 @@ public:
         }
     }
 
-    void set_maximum_frame_rate(double frame_rate) noexcept override
+    loop() noexcept : _thread_id(current_thread_id())
+    {
+        // Create an level trigger event, to use as an on/off switch.
+        if (auto handle = CreateEventW(NULL, TRUE, TRUE, NULL)) {
+            _use_vsync_handle = handle;
+        } else {
+            hi_log_fatal("Could not create an use-vsync handle. {}", get_last_error_message());
+        }
+
+        // Create a pulse trigger event.
+        if (auto handle = CreateEventW(NULL, FALSE, FALSE, NULL)) {
+            _handles.push_back(handle);
+            _sockets.push_back(-1);
+            _socket_functions.emplace_back();
+        } else {
+            hi_log_fatal("Could not create an vsync-event handle. {}", get_last_error_message());
+        }
+
+        // Create a pulse trigger event.
+        if (auto handle = CreateEventW(NULL, FALSE, FALSE, NULL)) {
+            _handles.push_back(handle);
+            _sockets.push_back(-1);
+            _socket_functions.emplace_back();
+        } else {
+            hi_log_fatal("Could not create an async-event handle. {}", get_last_error_message());
+        }
+    }
+
+    /** Get or create the thread-local loop.
+     */
+    [[nodiscard]] static loop& local() noexcept;
+
+    /** Get or create the main-loop.
+     *
+     * @note The first time main() is called must be from the main-thread.
+     *       In this case there is no race condition on the first time main() is called.
+     */
+    [[nodiscard]] hi_no_inline static loop& main() noexcept
+    {
+        if (auto ptr = _main.load(std::memory_order::acquire)) {
+            return *ptr;
+        }
+
+        hi_axiom(_timer.load(std::memory_order::relaxed) == nullptr, "loop::main() must be called before loop::timer()");
+
+        // This is the first time loop::main() is called so we must be on the main-thread
+        // So name the thread "main" so we can find it during debugging.
+        set_thread_name("main");
+
+        auto ptr = std::addressof(local());
+        _main.store(ptr, std::memory_order::release);
+        return *ptr;
+    }
+
+    /** Get or create the timer event-loop.
+     *
+     * @note The first time this is called a thread is started to handle the timer events.
+     */
+    [[nodiscard]] hi_no_inline static loop& timer() noexcept
+    {
+        // The first time timer() is called, make sure that the main-loop exists,
+        // or even create the main-loop on the current thread.
+        [[maybe_unused]] hilet &tmp = loop::main();
+
+        return *start_subsystem_or_terminate(_timer, nullptr, timer_init, timer_deinit);
+    }
+
+    /** Set maximum frame rate.
+     *
+     * A frame rate above 30.0 may will cause the vsync thread to block on
+     *
+     * @param frame_rate The maximum frame rate that a window will be updated.
+     */
+    void set_maximum_frame_rate(double frame_rate) noexcept
     {
         hi_axiom(on_thread());
     }
 
-    void set_vsync_monitor_id(uintptr_t id) noexcept override
+    /** Set the monitor id for vertical sync.
+     */
+    void set_vsync_monitor_id(uintptr_t id) noexcept
     {
         _selected_monitor_id.store(id, std::memory_order::relaxed);
     }
 
-    void subscribe_render(weak_callback<void(utc_nanoseconds)> callback) noexcept override
+    /** Wait-free post a function to be called from the loop.
+     *
+     * @note It is safe to call this function from another thread.
+     * @note The event loop is not directly notified that a new function exists
+     *       and will be delayed until after the loop has woken for other work.
+     * @note The post is only wait-free if the function fifo is not full,
+     *       and the function is small enough to fit in a slot on the fifo.
+     * @param func The function to call from the loop. The function must not take any arguments and return void.
+     */
+    template<forward_of<void()> Func>
+    void wfree_post_function(Func&& func) noexcept
+    {
+        _function_fifo.add_function(std::forward<Func>(func));
+    }
+
+    /** Post a function to be called from the loop.
+     *
+     * @note It is safe to call this function from another thread.
+     * @param func The function to call from the loop. The function must not take any arguments and return void.
+     */
+    template<forward_of<void()> Func>
+    void post_function(Func&& func) noexcept
+    {
+        _function_fifo.add_function(std::forward<Func>(func));
+        notify_has_send();
+    }
+
+    /** Call a function from the loop.
+     *
+     * @note It is safe to call this function from another thread.
+     * @param func The function to call from the loop. The function must not take any argument,
+     *             but may return a value.
+     * @return A `std::future` for the return value.
+     */
+    template<typename Func>
+    [[nodiscard]] auto async_function(Func&& func) noexcept
+    {
+        auto future = _function_fifo.add_async_function(std::forward<Func>(func));
+        notify_has_send();
+        return future;
+    }
+
+    /** Call a function at a certain time.
+     *
+     * @param time_point The time at which to call the function.
+     * @param func The function to be called.
+     */
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> delay_function(utc_nanoseconds time_point, Func&& func) noexcept
+    {
+        auto [callback, first_to_call] = _function_timer.delay_function(time_point, std::forward<Func>(func));
+        if (first_to_call) {
+            // Notify if the added function is the next function to call.
+            notify_has_send();
+        }
+        return std::move(callback);
+    }
+
+    /** Call a function repeatedly.
+     *
+     * @param period The period between calls to the function.
+     * @param time_point The time at which to call the function.
+     * @param func The function to be called.
+     */
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()>
+    repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, Func&& func) noexcept
+    {
+        auto [callback, first_to_call] = _function_timer.repeat_function(period, time_point, std::forward<Func>(func));
+        if (first_to_call) {
+            // Notify if the added function is the next function to call.
+            notify_has_send();
+        }
+        return callback;
+    }
+
+    /** Call a function repeatedly.
+     *
+     * @param period The period between calls to the function.
+     * @param func The function to be called.
+     */
+    template<forward_of<void()> Func>
+    [[nodiscard]] callback<void()> repeat_function(std::chrono::nanoseconds period, Func&& func) noexcept
+    {
+        auto [callback, first_to_call] = _function_timer.repeat_function(period, std::forward<Func>(func));
+        if (first_to_call) {
+            // Notify if the added function is the next function to call.
+            notify_has_send();
+        }
+        return std::move(callback);
+    }
+
+    void subscribe_render(weak_callback<void(utc_nanoseconds)> callback) noexcept
+    {
+    }
+
+    /** Subscribe a render function to be called on vsync.
+     *
+     * @param f A function to be called when vsync occurs.
+     */
+    template<forward_of<void(utc_nanoseconds)> Func>
+    callback<void(utc_nanoseconds)> subscribe_render(Func &&func) noexcept
     {
         hi_axiom(on_thread());
-        _render_functions.push_back(std::move(callback));
+
+        auto cb = callback<void(utc_nanoseconds)>{std::forward<Func>(func)};
+
+        _render_functions.push_back(cb);
 
         // Startup the vsync thread once there is a window.
         if (not _vsync_thread.joinable()) {
@@ -133,22 +264,49 @@ public:
                 return vsync_thread_proc(std::move(token));
             }};
         }
+
+        return cb;
     }
 
-    void add_socket(int fd, socket_event event_mask, std::function<void(int, socket_events const&)> f) override
+    /** Add a callback that reacts on a socket.
+     *
+     * In most cases @a mode is set to one of the following values:
+     * - error | read: Unblock when there is data available for read.
+     * - error | write: Unblock when there is buffer space available for write.
+     * - error | read | write: Unblock when there is data available for read of when there is buffer space available for write.
+     *
+     * @note Only one callback can be associated with a socket.
+     * @param fd File descriptor of the socket.
+     * @param event_mask The socket events to wait for.
+     * @param f The callback to call when the file descriptor unblocks.
+     */
+    void add_socket(int fd, socket_event event_mask, std::function<void(int, socket_events const&)> f)
     {
         hi_axiom(on_thread());
         hi_not_implemented();
     }
 
-    void remove_socket(int fd) override
+    /** Remove the callback associated with a socket.
+     *
+     * @param fd The file descriptor of the socket.
+     */
+    void remove_socket(int fd)
     {
         hi_axiom(on_thread());
         hi_not_implemented();
     }
 
-    int resume(std::stop_token stop_token) noexcept override
+    /** Resume the loop on the current thread.
+     *
+     * @param stop_token The thread's stop token to use to determine when to stop.
+     *                   If not stop token is given, then resume will automatically stop when there
+     *                   are no more windows, sockets, functions or timers.
+     * @return Exit code when the loop is exited.
+     */
+    int resume(std::stop_token stop_token = {}) noexcept
     {
+        hilet is_main = this == _main.load(std::memory_order::relaxed);
+
         // Microsoft recommends an event-loop that also renders to the screen to run at above normal priority.
         hilet thread_handle = GetCurrentThread();
 
@@ -192,11 +350,26 @@ public:
         return *_exit_code;
     }
 
-    void resume_once(bool block) noexcept override
+    /** Resume for a single iteration.
+     *
+     * The `resume_once(false)` may be used to continue processing events and
+     * GUI redraws while the GUI event queue is blocked. This happens on win32 when
+     * a window is being moved, resized, the title bar or system menu being clicked.
+     *
+     * It should be called often, as it will be used to process network messages and
+     * latency of network processing will be increased based on the amount of times
+     * this function is called.
+     *
+     * @note This function must be called from the same thread as `resume()`.
+     * @param block Allow processing to block, this is normally done only inside `resume()`.
+     */
+    void resume_once(bool block = false) noexcept
     {
         using namespace std::chrono_literals;
 
         hi_axiom(on_thread());
+
+        hilet is_main = this == _main.load(std::memory_order::relaxed);
 
         auto current_time = std::chrono::utc_clock::now();
         auto timeout = std::chrono::duration_cast<std::chrono::milliseconds>(_function_timer.current_deadline() - current_time);
@@ -294,8 +467,36 @@ public:
         handle_functions();
     }
 
+    /** Check if the current thread is the same as the loop's thread.
+     *
+     * The loop's thread is the thread that calls resume().
+     */
+    [[nodiscard]] bool on_thread() const noexcept
+    {
+        return current_thread_id() == _thread_id;
+    }
+
 private:
-    struct socket_type {
+    /** Pointer to the main-loop.
+     */
+    inline static std::atomic<loop *> _main;
+
+    /** Pointer to the timer-loop.
+     */
+    inline static std::atomic<loop *> _timer;
+
+    inline static std::jthread _timer_thread;
+
+    function_fifo<> _function_fifo;
+    function_timer _function_timer;
+
+    std::optional<int> _exit_code = {};
+    double _maximum_frame_rate = 30.0;
+    std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
+    thread_id _thread_id;
+    std::vector<weak_callback<void(utc_nanoseconds)>> _render_functions;
+
+struct socket_type {
         int fd;
         socket_event mode;
         std::function<void(int, socket_events const&)> callback;
@@ -387,7 +588,37 @@ private:
      */
     IDXGIOutput *_vsync_monitor_output = nullptr;
 
-    void notify_has_send() noexcept override
+    static loop *timer_init() noexcept
+    {
+        hi_assert(not _timer_thread.joinable());
+
+        _timer_thread = std::jthread{[](std::stop_token stop_token) {
+            _timer.store(std::addressof(loop::local()), std::memory_order::release);
+
+            set_thread_name("timer");
+            loop::local().resume(stop_token);
+        }};
+
+        while (true) {
+            if (auto ptr = _timer.load(std::memory_order::relaxed)) {
+                return ptr;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+    }
+
+    static void timer_deinit() noexcept
+    {
+        if (auto const *const ptr = _timer.exchange(nullptr, std::memory_order::acquire)) {
+            hi_assert(_timer_thread.joinable());
+            _timer_thread.request_stop();
+            _timer_thread.join();
+        }
+    }
+
+    /** Notify the event loop that a function was added to the _function_fifo.
+     */
+    void notify_has_send() noexcept
     {
         if (not SetEvent(_handles[_function_handle_idx])) {
             hi_log_error("Could not trigger async-event. {}", get_last_error_message());
@@ -638,6 +869,39 @@ private:
     }
 };
 
-hi_inline loop::loop() : _pimpl(std::make_unique<loop_impl_win32>()) {}
+namespace detail {
+hi_inline thread_local std::unique_ptr<loop> thread_local_loop;
+}
+
+/** Get or create the thread-local loop.
+ */
+[[nodiscard]] hi_no_inline hi_inline loop& loop::local() noexcept
+{
+    if (not detail::thread_local_loop) {
+        detail::thread_local_loop = std::make_unique<loop>();
+    }
+    return *detail::thread_local_loop;
+}
+
+template<typename R, typename... Args>
+template<forward_of<void()> Func>
+void notifier<R(Args...)>::loop_local_post_function(Func&& func) const noexcept
+{
+    return loop::local().post_function(std::forward<Func>(func));
+}
+
+template<typename R, typename... Args>
+template<forward_of<void()> Func>
+void notifier<R(Args...)>::loop_main_post_function(Func&& func) const noexcept
+{
+    return loop::main().post_function(std::forward<Func>(func));
+}
+
+template<typename R, typename... Args>
+template<forward_of<void()> Func>
+void notifier<R(Args...)>::loop_timer_post_function(Func&& func) const noexcept
+{
+    return loop::timer().post_function(std::forward<Func>(func));
+}
 
 } // namespace hi::inline v1

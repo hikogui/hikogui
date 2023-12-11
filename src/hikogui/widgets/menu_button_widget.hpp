@@ -116,10 +116,8 @@ public:
         _shortcut_widget = std::make_unique<label_widget>(
             this, this->attributes.shortcut, this->attributes.alignment, this->attributes.text_style);
 
-        // Link the focus from the button, so that we can draw a focus ring
-        // around the whole menu item.
-        _button_widget->focus = focus;
-        _button_widget->hover = hover;
+        // Link the state from the button, so that both this widget and the child widget react in the same way.
+        _button_widget->state = state;
 
         _button_widget_cbt = _button_widget->subscribe([&] {
             this->request_redraw();
@@ -202,15 +200,6 @@ public:
     {
     }
 
-    /** Get the current state of the button.
-     * @return The state of the button: on / off / other.
-     */
-    [[nodiscard]] button_state state() const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        return _button_widget->state();
-    }
-
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
@@ -278,8 +267,8 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-            auto outline_color = *focus ? focus_color() : background_color();
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+            auto outline_color = focus() ? focus_color() : background_color();
             context.draw_box(
                 layout(), layout().rectangle(), background_color(), outline_color, theme().border_width(), border_side::inside);
 
@@ -311,7 +300,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout().contains(position)) {
+        if (mode() >= widget_mode::partial and layout().contains(position)) {
             // Accept the hitbox of the menu_button_widget on behalf of the button_widget.
             return {_button_widget->id, _layout.elevation, hitbox_type::button};
         } else {

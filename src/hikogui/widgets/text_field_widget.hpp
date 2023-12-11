@@ -101,7 +101,7 @@ public:
 
         _scroll_widget = std::make_unique<scroll_widget<axis::none>>(this);
         _text_widget = &_scroll_widget->emplace<text_widget>(_text, alignment, text_style);
-        _text_widget->mode = widget_mode::partial;
+        _text_widget->set_mode(widget_mode::partial);
 
         _error_label_widget =
             std::make_unique<label_widget>(this, _error_label, alignment::top_left(), semantic_text_style::error);
@@ -159,7 +159,7 @@ public:
         hi_assert_not_null(_error_label_widget);
         hi_assert_not_null(_scroll_widget);
 
-        if (*_text_widget->focus) {
+        if (_text_widget->focus()) {
             // Update the optional error value from the string conversion when the text-widget has keyboard focus.
             _error_label = delegate->validate(*this, *_text);
 
@@ -179,11 +179,11 @@ public:
         auto size = box_size;
         auto margins = theme().margin();
         if (_error_label->empty()) {
-            _error_label_widget->mode = widget_mode::invisible;
+            _error_label_widget->set_mode(widget_mode::invisible);
             _error_label_constraints = _error_label_widget->update_constraints();
 
         } else {
-            _error_label_widget->mode = widget_mode::display;
+            _error_label_widget->set_mode(widget_mode::display);
             _error_label_constraints = _error_label_widget->update_constraints();
             inplace_max(size.width(), _error_label_constraints.preferred.width());
             size.height() += _error_label_constraints.margins.top() + _error_label_constraints.preferred.height();
@@ -208,21 +208,21 @@ public:
             hilet scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
             _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme().baseline_adjustment()};
 
-            if (*_error_label_widget->mode > widget_mode::invisible) {
+            if (_error_label_widget->mode() > widget_mode::invisible) {
                 hilet error_label_rectangle =
                     aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
                 _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme().baseline_adjustment()};
             }
         }
 
-        if (*_error_label_widget->mode > widget_mode::invisible) {
+        if (_error_label_widget->mode() > widget_mode::invisible) {
             _error_label_widget->set_layout(context.transform(_error_label_shape));
         }
         _scroll_widget->set_layout(context.transform(_scroll_shape));
     }
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             draw_background_box(context);
 
             _scroll_widget->draw(context);
@@ -233,14 +233,14 @@ public:
     {
         switch (event.type()) {
         case gui_event_type::gui_cancel:
-            if (*mode >= widget_mode::partial) {
+            if (mode() >= widget_mode::partial) {
                 revert(true);
                 return true;
             }
             break;
 
         case gui_event_type::gui_activate:
-            if (*mode >= widget_mode::partial) {
+            if (mode() >= widget_mode::partial) {
                 commit(true);
                 return super::handle_event(event);
             }
@@ -253,7 +253,7 @@ public:
     }
     hitbox hitbox_test(point2 position) const noexcept override
     {
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             auto r = hitbox{};
             r = _scroll_widget->hitbox_test_from_parent(position, r);
             r = _error_label_widget->hitbox_test_from_parent(position, r);
@@ -264,7 +264,7 @@ public:
     }
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             return _scroll_widget->accepts_keyboard_focus(group);
         } else {
             return false;
@@ -272,12 +272,12 @@ public:
     }
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             if (not _error_label->empty()) {
                 return theme().text_style(semantic_text_style::error)->color;
-            } else if (*_text_widget->focus) {
+            } else if (_text_widget->focus()) {
                 return theme().color(semantic_color::accent);
-            } else if (*hover) {
+            } else if (phase() == widget_phase::hover) {
                 return theme().color(semantic_color::border, _layout.layer + 1);
             } else {
                 return theme().color(semantic_color::border, _layout.layer);

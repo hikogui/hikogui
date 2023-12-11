@@ -14,9 +14,6 @@
 #include "../concurrency/thread.hpp" // XXX #616
 #include "../time/time.hpp"
 #include "../macros.hpp"
-#include <span>
-#include <typeinfo>
-#include <typeindex>
 #include <string>
 #include <atomic>
 #include <map>
@@ -24,6 +21,7 @@
 #include <mutex>
 #include <chrono>
 #include <limits>
+#include <concepts>
 
 hi_export_module(hikogui.telemetry : counters);
 
@@ -116,6 +114,17 @@ public:
         }
     }
 
+    /** Rest the counter.
+     * 
+     * @return Old value of the 
+     */
+    counter &operator=(std::integral auto count) noexcept
+    {
+        hi_axiom(count >= 0);
+        _total_count.store(count, std::memory_order::relaxed);
+        return *this;
+    }
+
     uint64_t operator++() noexcept
     {
         return _total_count.fetch_add(1, std::memory_order::relaxed) + 1;
@@ -176,6 +185,8 @@ protected:
 template<fixed_string Tag>
 class tagged_counter : public counter {
 public:
+    using counter::operator=;
+
     tagged_counter() noexcept : counter()
     {
         hilet lock = std::scoped_lock(_mutex);

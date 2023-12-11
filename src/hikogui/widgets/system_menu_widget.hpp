@@ -83,7 +83,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             _icon_widget->draw(context);
         }
     }
@@ -92,7 +92,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout().contains(position)) {
+        if (mode() >= widget_mode::partial and layout().contains(position)) {
             // Only the top-left square should return ApplicationIcon, leave
             // the reset to the toolbar implementation.
             return {id, _layout.elevation, hitbox_type::application_icon};

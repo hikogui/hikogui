@@ -77,14 +77,14 @@ public:
     }
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             draw_toolbar_button(context);
             draw_button(context);
         }
     }
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
+        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
     }
     // @endprivatesection
 private:
@@ -93,7 +93,7 @@ private:
 
     void draw_toolbar_button(draw_context const& context) noexcept
     {
-        hilet border_color = *focus ? focus_color() : color::transparent();
+        hilet border_color = focus() ? focus_color() : color::transparent();
         context.draw_box(
             layout(), layout().rectangle(), background_color(), border_color, theme().border_width(), border_side::inside);
     }

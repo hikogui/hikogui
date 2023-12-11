@@ -130,7 +130,7 @@ public:
 
     void write(widget_intf const& sender, gstring const& text) noexcept override
     {
-        *value.copy() = to_string(text);
+        value = to_string(text);
     }
 
 private:
@@ -166,7 +166,7 @@ public:
 
     void write(widget_intf const& sender, gstring const& text) noexcept override
     {
-        *value.copy() = text;
+        value = text;
     }
 
 private:
@@ -197,7 +197,7 @@ public:
 
     [[nodiscard]] gstring read(widget_intf const& sender) noexcept override
     {
-        return value.read()->translate();
+        return value->translate();
     }
 
     void write(widget_intf const& sender, gstring const& text) noexcept override

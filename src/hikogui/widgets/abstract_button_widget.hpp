@@ -76,21 +76,12 @@ public:
         _on_label_widget = std::make_unique<label_widget>(this, on_label, alignment, text_style);
         _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, text_style);
         _other_label_widget = std::make_unique<label_widget>(this, other_label, alignment, text_style);
-        _delegate_cbt = this->delegate->subscribe([&] {
-            ++global_counter<"abstract_button_widget:delegate:relayout">;
-            process_event({gui_event_type::window_relayout});
-        });
-        this->delegate->init(*this);
-    }
 
-    /** Get the current state of the button.
-     * @return The state of the button: on / off / other.
-     */
-    [[nodiscard]] button_state state() const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        hi_assert_not_null(delegate);
-        return delegate->state(*this);
+        this->delegate->init(*this);
+        _delegate_cbt = this->delegate->subscribe([&] {
+            set_value(this->delegate->state(*this));
+        });
+        _delegate_cbt();
     }
 
     /// @privatesection
@@ -105,10 +96,9 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        auto state_ = state();
-        _on_label_widget->mode = state_ == button_state::on ? widget_mode::display : widget_mode::invisible;
-        _off_label_widget->mode = state_ == button_state::off ? widget_mode::display : widget_mode::invisible;
-        _other_label_widget->mode = state_ == button_state::other ? widget_mode::display : widget_mode::invisible;
+        _on_label_widget->set_mode(value() == widget_value::on ? widget_mode::display : widget_mode::invisible);
+        _off_label_widget->set_mode(value() == widget_value::off ? widget_mode::display : widget_mode::invisible);
+        _other_label_widget->set_mode(value() == widget_value::other ? widget_mode::display : widget_mode::invisible);
 
         _on_label_widget->set_layout(context.transform(_on_label_shape));
         _off_label_widget->set_layout(context.transform(_off_label_shape));
@@ -125,7 +115,7 @@ public:
     [[nodiscard]] color background_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        if (_pressed) {
+        if (phase() == widget_phase::pressed) {
             return theme().color(semantic_color::fill, _layout.layer + 2);
         } else {
             return super::background_color();
@@ -136,7 +126,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout().contains(position)) {
+        if (mode() >= widget_mode::partial and layout().contains(position)) {
             return {id, _layout.elevation, hitbox_type::button};
         } else {
             return {};
@@ -146,7 +136,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
     }
 
     void activate() noexcept
@@ -163,28 +153,26 @@ public:
 
         switch (event.type()) {
         case gui_event_type::gui_activate:
-            if (*mode >= widget_mode::partial) {
+            if (mode() >= widget_mode::partial) {
                 activate();
                 return true;
             }
             break;
 
         case gui_event_type::mouse_down:
-            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
-                _pressed = true;
-                request_redraw();
+            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
+                set_pressed(true);
                 return true;
             }
             break;
 
         case gui_event_type::mouse_up:
-            if (*mode >= widget_mode::partial and event.mouse().cause.left_button) {
-                _pressed = false;
+            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
+                set_pressed(false);
 
                 if (layout().rectangle().contains(event.mouse().position)) {
                     handle_event(gui_event_type::gui_activate);
                 }
-                request_redraw();
                 return true;
             }
             break;
@@ -208,7 +196,6 @@ protected:
     box_constraints _other_label_constraints;
     box_shape _other_label_shape;
 
-    bool _pressed = false;
     callback<void()> _delegate_cbt;
 
     template<size_t I>

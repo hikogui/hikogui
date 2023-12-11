@@ -134,7 +134,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             draw_toolbar_tab_button(context);
             draw_button(context);
         }
@@ -142,7 +142,7 @@ public:
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
+        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
     }
     // @endprivatesection
 private:
@@ -156,10 +156,10 @@ private:
         hilet outline_rectangle = aarectangle{0, -offset, layout().width(), layout().height() + offset};
 
         // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
-        hilet button_z = *focus ? translate_z(0.6f) : translate_z(0.0f);
+        hilet button_z = focus() ? translate_z(0.6f) : translate_z(0.0f);
 
         // clang-format off
-        auto button_color = (*hover or state() == button_state::on) ?
+        auto button_color = (phase() == widget_phase::hover or value() == widget_value::on) ?
             theme().color(semantic_color::fill, _layout.layer - 1) :
             theme().color(semantic_color::fill, _layout.layer);
         // clang-format on
@@ -170,7 +170,7 @@ private:
             layout(),
             button_z * outline_rectangle,
             button_color,
-            *focus ? focus_color() : button_color,
+            focus() ? focus_color() : button_color,
             theme().border_width(),
             border_side::inside,
             corner_radii);

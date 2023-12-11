@@ -1,10 +1,13 @@
-
+// Copyright Take Vos 2023.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "hitbox.hpp"
 #include "widget_layout.hpp"
 #include "widget_id.hpp"
+#include "widget_state.hpp"
 #include "keyboard_focus_group.hpp"
 #include "../layout/layout.hpp"
 #include "../GFX/GFX.hpp"
@@ -14,7 +17,8 @@
 
 hi_export_module(hikogui.GUI : widget_intf);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 class gui_window;
 
 class widget_intf {
@@ -32,17 +36,45 @@ public:
 
     /** Notifier which is called after an action is completed by a widget.
      */
-    hi::notifier<void()> notifier;
+    notifier<void()> notifier;
+
+    /** The current state of the widget.
+     */
+    observer<widget_state> state;
 
     virtual ~widget_intf()
     {
         release_widget_id(id);
     }
 
-    widget_intf(widget_intf const *parent) noexcept : id(make_widget_id()), parent(const_cast<widget_intf *>(parent)) {}
+    widget_intf(widget_intf const *parent) noexcept :
+        id(make_widget_id()), parent(const_cast<widget_intf *>(parent))
+    {
+        // This lambda allows the state to be set once before it will trigger
+        // notifications.
+        _state_cbt = state.subscribe([&](widget_state new_state) {
+            static std::optional<widget_state> old_state = std::nullopt;
+
+            if (old_state) {
+                if (need_reconstrain(*old_state, *state)) {
+                    ++global_counter<"widget:state:reconstrain">;
+                    process_event({gui_event_type::window_reconstrain});
+
+                } else if (need_relayout(*old_state, *state)) {
+                    ++global_counter<"widget:state:relayout">;
+                    process_event({gui_event_type::window_relayout});
+
+                } else if (need_redraw(*old_state, *state)) {
+                    ++global_counter<"widget:state:redraw">;
+                    request_redraw();
+                }
+            }
+            old_state = *state;
+        });
+    }
 
     /** Subscribe a callback to be called when an action is completed by the widget.
-    */
+     */
     template<forward_of<void()> Func>
     [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
@@ -54,6 +86,66 @@ public:
     [[nodiscard]] auto operator co_await() const noexcept
     {
         return notifier.operator co_await();
+    }
+
+    [[nodiscard]] size_t layer() const noexcept
+    {
+        return state->layer();
+    }
+
+    void set_layer(size_t new_layer) noexcept
+    {
+        state->set_layer(new_layer);
+    }
+
+    [[nodiscard]] widget_mode mode() const noexcept
+    {
+        return state->mode();
+    }
+
+    void set_mode(widget_mode new_mode) noexcept
+    {
+        state->set_mode(new_mode);
+    }
+
+    [[nodiscard]] widget_value value() const noexcept
+    {
+        return state->value();
+    }
+
+    void set_value(widget_value new_value) noexcept
+    {
+        state->set_value(new_value);
+    }
+
+    [[nodiscard]] widget_phase phase() const noexcept
+    {
+        return state->phase();
+    }
+
+    void set_pressed(bool pressed) noexcept
+    {
+        state->set_pressed(pressed);
+    }
+
+    void set_hover(bool hover) noexcept
+    {
+        state->set_hover(hover);
+    }
+
+    void set_active(bool active) noexcept
+    {
+        state->set_active(active);
+    }
+
+    [[nodiscard]] bool focus() const noexcept
+    {
+        return state->focus();
+    }
+
+    void set_focus(bool new_focus) noexcept
+    {
+        state->set_focus(new_focus);
     }
 
     /** Set the window for this tree of widgets.
@@ -94,7 +186,7 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-     [[nodiscard]] virtual box_constraints update_constraints() noexcept = 0;
+    [[nodiscard]] virtual box_constraints update_constraints() noexcept = 0;
 
     /** Update the internal layout of the widget.
      * This function is called when the size of this widget must change, or if any of the
@@ -111,7 +203,10 @@ public:
 
     /** Get the current layout for this widget.
      */
-    virtual widget_layout const& layout() const noexcept = 0;
+    [[nodiscard]] widget_layout const& layout() const noexcept
+    {
+        return _layout;
+    }
 
     /** Draw the widget.
      *
@@ -218,6 +313,11 @@ public:
     {
         scroll_to_show(layout().rectangle());
     }
+
+protected:
+    callback<void(widget_state)> _state_cbt;
+
+    widget_layout _layout;
 };
 
 hi_inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept
@@ -243,4 +343,5 @@ hi_inline widget_intf& get(widget_intf& start, widget_id id, bool include_invisi
     throw not_found_error("get widget by id");
 }
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

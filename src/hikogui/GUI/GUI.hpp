@@ -22,6 +22,7 @@
 #include "widget_id.hpp" // export
 #include "widget_intf.hpp" // export
 #include "widget_layout.hpp" // export
+#include "widget_state.hpp" // export
 
 hi_export_module(hikogui.GUI);
 

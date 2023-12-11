@@ -127,8 +127,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/dispatch.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/function_timer.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_intf.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/task.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event.hpp
@@ -276,6 +275,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_id.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_layout.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/aarectangle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/alignment.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/axis.hpp
@@ -372,7 +372,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observer_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed_value.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/shared_state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lexer.hpp
@@ -561,7 +560,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toolbar_tab_button_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toolbar_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/widget_mode.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_macos_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_win32_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_widget.hpp

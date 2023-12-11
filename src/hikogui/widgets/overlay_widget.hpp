@@ -93,6 +93,7 @@ public:
         _content_constraints = _content->update_constraints();
         return _content_constraints;
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
         _layout = context;
@@ -106,37 +107,48 @@ public:
         // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
         _content->set_layout(_layout.transform(_content_shape, context.rectangle()));
     }
+
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             if (overlaps(context, layout())) {
                 draw_background(context);
             }
             _content->draw(context);
         }
     }
+
     [[nodiscard]] color background_color() const noexcept override
     {
         return theme().color(semantic_color::fill, _layout.layer + 1);
     }
+
     [[nodiscard]] color foreground_color() const noexcept override
     {
         return theme().color(semantic_color::border, _layout.layer + 1);
     }
+
     void scroll_to_show(hi::aarectangle rectangle) noexcept override
     {
         // An overlay is in an absolute position on the window,
         // so do not forward the scroll_to_show message to its parent.
     }
+
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             return _content->hitbox_test_from_parent(position);
         } else {
             return {};
         }
+    }
+
+    bool handle_event(gui_event const& event) noexcept override
+    {
+        // Short-cut event handling, no-events should be passed below the overlay.
+        return true;
     }
     /// @endprivatesection
 private:

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "awaitable_timer_intf.hpp"
-#include "loop_intf.hpp"
+#include "loop_win32_intf.hpp"
 #include "../macros.hpp"
 #include <utility>
 #include <coroutine>
