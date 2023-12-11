@@ -110,19 +110,25 @@ public:
         return *this;
     }
 
-    /** Check if the co-routine has completed.
-     */
-    [[nodiscard]] bool done() const noexcept
+    /** Check if the co-routine was started.
+    */
+    [[nodiscard]] bool started() const noexcept
     {
-        hi_axiom(_coroutine);
-        return _coroutine.done();
+        return _coroutine;
+    }
+
+    /** Check if the co-routine is running
+     */
+    [[nodiscard]] bool running() const noexcept
+    {
+        return _coroutine and not _coroutine.done();
     }
 
     /** Check if the co-routine has completed.
      */
-    explicit operator bool() const noexcept
+    [[nodiscard]] bool done() const noexcept
     {
-        return done();
+        return _coroutine and _coroutine.done();
     }
 
     /** Get the return value returned from co_return.
@@ -243,21 +249,25 @@ public:
         return *this;
     }
 
-    /**
-     * @sa task<>::completed()
+    /** Check if the co-routine was started.
+    */
+    [[nodiscard]] bool started() const noexcept
+    {
+        return _coroutine;
+    }
+
+    /** Check if the co-routine is running
+     */
+    [[nodiscard]] bool running() const noexcept
+    {
+        return _coroutine and not _coroutine.done();
+    }
+
+    /** Check if the co-routine has completed.
      */
     [[nodiscard]] bool done() const noexcept
     {
-        hi_axiom(_coroutine);
-        return _coroutine.done();
-    }
-
-    /**
-     * @sa task<>::operator bool()
-     */
-    explicit operator bool() const noexcept
-    {
-        return done();
+        return _coroutine and _coroutine.done();
     }
 
     /** Get the return value returned from co_return.

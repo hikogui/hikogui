@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "async_widget.hpp" // export
 #include "abstract_button_widget.hpp" // export
 #include "audio_device_widget.hpp" // export
 #include "button_delegate.hpp" // export

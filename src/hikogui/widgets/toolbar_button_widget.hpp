@@ -49,8 +49,7 @@ public:
     task<> wait_for(Awaiter &&awaiter) noexcept
     {
         co_await std::forward<Awaiter>(awaiter);
-        state = button_state::off;
-        request_redraw();
+        set_value(widget_value::off);
     }
 
     /// @privatesection

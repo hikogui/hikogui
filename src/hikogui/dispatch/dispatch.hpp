@@ -5,6 +5,7 @@
 #include <cstddef> // XXX #619
 #include <memory> // XXX #619
 #include <chrono> // XXX #619
+#include "async_task.hpp" // export
 #include "awaitable_stop_token_intf.hpp" // export
 #include "awaitable_stop_token_impl.hpp" // export
 #include "awaitable_timer_intf.hpp" // export

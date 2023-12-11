@@ -19,7 +19,8 @@
 
 hi_export_module(hikogui.widgets.button_delegate);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** A button delegate controls the state of a button widget.
  * @ingroup widget_delegates
@@ -241,4 +242,134 @@ default_toggle_button_delegate(Value&&, OnValue&&, OffValue&&) -> default_toggle
         hi_forward(value), hi_forward(args)...);
 }
 
-}} // namespace hi::v1
+template<typename T>
+struct default_async_button_delegate_result_traits {
+    constexpr auto bool is_task = false;
+    using type = std::decay_t<T>;
+};
+
+template<typename T>
+struct default_async_button_delegate_result_traits<::hi::task<T>> {
+    constexpr auto bool is_task = true;
+    using type = std::decay_t<T>;
+};
+
+template<typename F, typename... Args>
+struct default_async_button_delegate_traits {
+    static_assert(
+        std::is_invocable_v<F, Args...> or std::is_invocable_v<F, Args..., std::stop_token>,
+        "Incorrect arguments for function.");
+
+    /** The callable must be called with a std::stop_token as last argument.
+     */
+    constexpr auto bool uses_stop_token = std::is_invocable_v<F, Args..., std::stop_token>;
+
+    /** The result type of the callable.
+     */
+    using result_type =
+        std::conditional<uses_stop_token, std::invoke_result_t<F, Args..., std::stop_token>, std::invoke_result_t<F, Args...>>;
+
+    /** The value returned by the callable, after stripping the optional async-wrapper.
+     */
+    using value_type = default_async_button_delegate_result_traits<result_type>::type;
+
+    /** The callable is a task (co-routine).
+     */
+    constexpr auto bool is_task = default_async_button_delegate_result_traits<result_type>::is_task;
+
+    using task_type = task<value_type>;
+
+    using function_type =
+        std::conditional<uses_stop_token, std::function<task_type(Args..., std::stop_token)>, std::function<task_type(Args...)>>;
+
+    template<typename... A>
+    [[nodiscard]] constexpr static std::tuple<std::decay_t<Args>...> make_tuple(A &&...a) noexcept
+    {
+        return std::tuple<std::decay_t<Args>...>{std::forward<A>(a)...};
+    }
+};
+
+/** A default async button delegate.
+ *
+ * The default async button delegate manages the state of a button widget using
+ * observer values.
+ *
+ * @ingroup widget_delegates
+ * @tparam Traits The traits of the arguments passed to the constructor.
+ */
+template<typename Traits>
+class default_async_button_delegate : public button_delegate {
+public:
+    using value_type = Traits::value_type;
+
+    /** Construct a delegate.
+     *
+     * @note The function may accept a std::stop_token as a last argument,
+     *       this stop-token is passed automatically when the button is pressed
+     *       and the stop_token must not be passed as an argument to this
+     *       constructor.
+     * @param func The function to be called when the button is pressed
+     * @param args... The arguments passed to the function
+     */
+    template<typename Func, typename... Args>
+    default_async_button_delegate(Func&& func, Args&&...args) noexcept
+    {
+        _function = [this, function = std::forward<Func>(func), arguments = Traits::make_tuple(std::forward<Args>(args)...)](
+                    std::stop_token stop_token) -> task<value_type> {
+            if constexpr (Traits::is_task) {
+                if constexpr (Traits::uses_stop_token) {
+                    return std::apply(function, std::tuple_cat(this->_arguments, std::make_tuple(stop_token)));
+                } else {
+                    return std::apply(function, this->_arguments);
+                }
+            } else {
+                if constexpr (Traits::uses_stop_token) {
+                    return std::apply(
+                        async_task, std::tuple_cat(std::make_tuple(function), this->_arguments, std::make_tuple(stop_token)));
+                } else {
+                    return std::apply(async_task, std::tuple_cat(std::make_tuple(function), this->_arguments));
+                }
+            }
+        };
+    }
+
+    /// @privatesection
+    [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
+    {
+        return _task.running() ? widget_value::on : widget_value::off
+    }
+
+    [[nodiscard]] constexpr bool can_stop() const noexcept
+    {
+        return Traits::uses_stop_token;
+    }
+
+    void activate(widget_intf const& sender) noexcept override
+    {
+        if (_task.done() or not _task.started()) {
+            _stop_source = {};
+
+            _task = _function(_stop_source.get_token());
+
+            _task_cbt = _task.subscribe([&] {
+                // Notify the widget when the task is done.
+                _notifier();
+            });
+
+        } else {
+            _stop_source.request_stop();
+        }
+    }
+    /// @endprivatesection
+private:
+    std::function<task<value_type>(std::stop_token)> _function;
+    task<value_type> _task;
+    std::stop_source _stop_source;
+};
+
+template<typename F, typename... Args>
+default_async_button_delegate(F&& func, Args&&...args)
+    -> default_async_button_delegate<default_async_button_delegate_traits<F, Args...>>;
+
+} // namespace v1
+} // namespace hi::v1
