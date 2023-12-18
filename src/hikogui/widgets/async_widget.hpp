@@ -11,7 +11,7 @@
 #include "widget.hpp"
 #include "with_label_widget.hpp"
 #include "menu_button_widget.hpp"
-#include "button_delegate.hpp"
+#include "async_delegate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
@@ -30,18 +30,12 @@ concept async_widget_attribute =
  * representation:
  *  - **on**: A check-mark is shown inside the box, and the `async_widget::on_label` is shown.
  *  - **off**: An empty box is shown, and the `async_widget::off_label` is shown.
- *  - **other**: A dash is shown inside the box, and the `async_widget::other_label` is shown.
  *
  * @image html async_widget.gif
  *
  * Each time a user activates the async-button it toggles between the 'on' and 'off' states.
  * If the async is in the 'other' state an activation will switch it to
  * the 'off' state.
- *
- * A async cannot itself switch state to 'other', this state may be
- * caused by external factors. The canonical example is a tree structure
- * of asynces; when child asynces have different values from each other
- * the parent async state is set to 'other'.
  *
  * In the following example we create a async widget on the window
  * which observes `value`. When the value is 1 the async is 'on',
@@ -52,7 +46,7 @@ concept async_widget_attribute =
 class async_widget final : public widget {
 public:
     using super = widget;
-    using delegate_type = button_delegate;
+    using delegate_type = async_delegate;
 
     struct attributes_type {
         observer<alignment> alignment = alignment::top_left();
@@ -98,9 +92,9 @@ public:
 
     template<typename... Args>
     [[nodiscard]] static not_null<std::shared_ptr<delegate_type>> make_default_delegate(Args &&...args)
-        requires requires { default_toggle_button_delegate{std::forward<Args>(args)...}; }
+        requires requires { default_async_delegate{std::forward<Args>(args)...}; }
     {
-        return make_shared_ctad_not_null<default_toggle_button_delegate>(std::forward<Args>(args)...);
+        return make_shared_ctad_not_null<default_async_delegate>(std::forward<Args>(args)...);
     }
 
     ~async_widget()
@@ -144,64 +138,6 @@ public:
             parent,
             attributes_type{std::forward<Attributes>(attributes)...},
             make_default_delegate(std::forward<Value>(value)))
-    {
-    }
-
-    /** Construct a async widget with a default button delegate.
-     *
-     * @see default_button_delegate
-     * @param parent The parent widget that owns this async widget.
-     * @param value The value or `observer` value which represents the state of the async.
-     * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
-     */
-    template<
-        incompatible_with<attributes_type> Value,
-        forward_of<observer<observer_decay_t<Value>>> OnValue,
-        async_widget_attribute... Attributes>
-    async_widget(
-        not_null<widget_intf const *> parent,
-        Value&& value,
-        OnValue&& on_value,
-        Attributes &&...attributes) noexcept
-        requires requires
-    {
-        make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
-        attributes_type{std::forward<Attributes>(attributes)...};
-    } :
-        async_widget(
-            parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)))
-    {
-    }
-
-    /** Construct a async widget with a default button delegate.
-     *
-     * @see default_button_delegate
-     * @param parent The parent widget that owns this async widget.
-     * @param value The value or `observer` value which represents the state of the async.
-     * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
-     * @param off_value The off-value. This value is used to determine which value yields an 'off' state.
-     */
-    template<
-        typename Value,
-        forward_of<observer<observer_decay_t<Value>>> OnValue,
-        forward_of<observer<observer_decay_t<Value>>> OffValue,
-        async_widget_attribute... Attributes>
-    async_widget(
-        not_null<widget_intf const *> parent,
-        Value&& value,
-        OnValue&& on_value,
-        OffValue&& off_value,
-        Attributes &&...attributes) noexcept requires requires
-    {
-        make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
-        attributes_type{std::forward<Attributes>(attributes)...};
-    } :
-        async_widget(
-            parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value)))
     {
     }
 

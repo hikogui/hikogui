@@ -17,11 +17,16 @@
 
 hi_export_module(hikogui.widgets.checkbox_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
-concept checkbox_widget_attribute =
-    forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
+struct is_checkbox_widget_attribute {
+    constexpr static bool value = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
+};
+
+template<typename Context>
+concept checkbox_widget_attribute = is_checkbox_widget_attribute<Context>::value;
 
 /** A GUI widget that permits the user to make a binary choice.
  * @ingroup widgets
@@ -58,20 +63,18 @@ public:
         observer<alignment> alignment = alignment::top_left();
         keyboard_focus_group focus_group = keyboard_focus_group::normal;
 
-        attributes_type(attributes_type const &) noexcept = default;
-        attributes_type(attributes_type &&) noexcept = default;
-        attributes_type &operator=(attributes_type const &) noexcept = default;
-        attributes_type &operator=(attributes_type &&) noexcept = default;
+        attributes_type(attributes_type const&) noexcept = default;
+        attributes_type(attributes_type&&) noexcept = default;
+        attributes_type& operator=(attributes_type const&) noexcept = default;
+        attributes_type& operator=(attributes_type&&) noexcept = default;
 
         template<checkbox_widget_attribute... Attributes>
-        explicit attributes_type(Attributes &&...attributes) noexcept
+        explicit attributes_type(Attributes&&...attributes) noexcept
         {
             set_attributes(std::forward<Attributes>(attributes)...);
         }
 
-        void set_attributes() noexcept
-        {
-        }
+        void set_attributes() noexcept {}
 
         template<checkbox_widget_attribute First, checkbox_widget_attribute... Rest>
         void set_attributes(First&& first, Rest&&...rest) noexcept
@@ -96,12 +99,9 @@ public:
      */
     not_null<std::shared_ptr<delegate_type>> delegate;
 
-    template<typename... Args>
-    [[nodiscard]] static not_null<std::shared_ptr<delegate_type>> make_default_delegate(Args &&...args)
-        requires requires { default_toggle_button_delegate{std::forward<Args>(args)...}; }
-    {
-        return make_shared_ctad_not_null<default_toggle_button_delegate>(std::forward<Args>(args)...);
-    }
+    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_toggle_button_delegate);
+    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad_not_null<default_toggle_button_delegate>);
+    hi_call_right_arguments(static, make_attributes, attributes_type);
 
     ~checkbox_widget()
     {
@@ -128,80 +128,18 @@ public:
 
     /** Construct a checkbox widget with a default button delegate.
      *
-     * @see default_button_delegate
-     * @param parent The parent widget that owns this checkbox widget.
-     * @param value The value or `observer` value which represents the state of the checkbox.
+     * @param parent The parent widget that owns this toggle widget.
+     * @param args The arguments to the `default_toggle_button_delegate`
+     *                followed by arguments to `attributes_type`
      */
-    template<incompatible_with<attributes_type> Value, checkbox_widget_attribute... Attributes>
-    checkbox_widget(
-        not_null<widget_intf const *> parent,
-        Value&& value,
-        Attributes &&...attributes) requires requires
-    {
-        make_default_delegate(std::forward<Value>(value));
-        attributes_type{std::forward<Attributes>(attributes)...};
-    } : checkbox_widget(
-            parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value)))
-    {
-    }
-
-    /** Construct a checkbox widget with a default button delegate.
-     *
-     * @see default_button_delegate
-     * @param parent The parent widget that owns this checkbox widget.
-     * @param value The value or `observer` value which represents the state of the checkbox.
-     * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
-     */
-    template<
-        incompatible_with<attributes_type> Value,
-        forward_of<observer<observer_decay_t<Value>>> OnValue,
-        checkbox_widget_attribute... Attributes>
-    checkbox_widget(
-        not_null<widget_intf const *> parent,
-        Value&& value,
-        OnValue&& on_value,
-        Attributes &&...attributes) noexcept
-        requires requires
-    {
-        make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
-        attributes_type{std::forward<Attributes>(attributes)...};
-    } :
+    template<typename... Args>
+    checkbox_widget(not_null<widget_intf const *> parent, Args&&...args)
+        requires(num_default_delegate_arguments<Args...>() != 0)
+        :
         checkbox_widget(
             parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)))
-    {
-    }
-
-    /** Construct a checkbox widget with a default button delegate.
-     *
-     * @see default_button_delegate
-     * @param parent The parent widget that owns this checkbox widget.
-     * @param value The value or `observer` value which represents the state of the checkbox.
-     * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
-     * @param off_value The off-value. This value is used to determine which value yields an 'off' state.
-     */
-    template<
-        typename Value,
-        forward_of<observer<observer_decay_t<Value>>> OnValue,
-        forward_of<observer<observer_decay_t<Value>>> OffValue,
-        checkbox_widget_attribute... Attributes>
-    checkbox_widget(
-        not_null<widget_intf const *> parent,
-        Value&& value,
-        OnValue&& on_value,
-        OffValue&& off_value,
-        Attributes &&...attributes) noexcept requires requires
-    {
-        make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
-        attributes_type{std::forward<Attributes>(attributes)...};
-    } :
-        checkbox_widget(
-            parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value)))
+            make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
+            make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
     {
     }
 
@@ -328,4 +266,5 @@ private:
 using checkbox_with_label_widget = with_label_widget<checkbox_widget>;
 using checkbox_menu_button_widget = menu_button_widget<checkbox_widget>;
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

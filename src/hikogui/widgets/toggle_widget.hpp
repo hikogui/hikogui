@@ -16,7 +16,8 @@
 
 hi_export_module(hikogui.widgets.toggle_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
 concept toggle_widget_attribute = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
@@ -103,12 +104,9 @@ public:
      */
     not_null<std::shared_ptr<delegate_type>> delegate;
 
-    template<typename... Args>
-    [[nodiscard]] static not_null<std::shared_ptr<delegate_type>> make_default_delegate(Args&&...args)
-        requires requires { default_toggle_button_delegate{std::forward<Args>(args)...}; }
-    {
-        return make_shared_ctad_not_null<default_toggle_button_delegate>(std::forward<Args>(args)...);
-    }
+    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_toggle_button_delegate);
+    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad_not_null<default_toggle_button_delegate>);
+    hi_call_right_arguments(static, make_attributes, attributes_type);
 
     ~toggle_widget()
     {
@@ -120,7 +118,10 @@ public:
      * @param parent The parent widget that owns this toggle widget.
      * @param delegate The delegate to use to manage the state of the toggle button.
      */
-    toggle_widget(not_null<widget_intf const *> parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+    toggle_widget(
+        not_null<widget_intf const *> parent,
+        attributes_type attributes,
+        not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         this->delegate->init(*this);
@@ -132,71 +133,18 @@ public:
 
     /** Construct a toggle widget with a default button delegate.
      *
-     * @see default_button_delegate
      * @param parent The parent widget that owns this toggle widget.
-     * @param value The value or `observer` value which represents the state of the toggle.
+     * @param args The arguments to the `default_toggle_button_delegate`
+     *                followed by arguments to `attributes_type`
      */
-    template<incompatible_with<attributes_type> Value, toggle_widget_attribute... Attributes>
-    toggle_widget(not_null<widget_intf const *> parent, Value&& value, Attributes&&...attributes)
-        requires requires {
-            make_default_delegate(std::forward<Value>(value));
-            attributes_type{std::forward<Attributes>(attributes)...};
-        }
+    template<typename... Args>
+    toggle_widget(not_null<widget_intf const *> parent, Args&&...args)
+        requires(num_default_delegate_arguments<Args...>() != 0)
         :
         toggle_widget(
             parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value)))
-    {
-    }
-
-    /** Construct a toggle widget with a default button delegate.
-     *
-     * @see default_button_delegate
-     * @param parent The parent widget that owns this toggle widget.
-     * @param value The value or `observer` value which represents the state of the toggle.
-     * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
-     */
-    template<
-        incompatible_with<attributes_type> Value,
-        forward_of<observer<observer_decay_t<Value>>> OnValue,
-        toggle_widget_attribute... Attributes>
-    toggle_widget(not_null<widget_intf const *> parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires {
-            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
-            attributes_type{std::forward<Attributes>(attributes)...};
-        }
-        :
-        toggle_widget(
-            parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)))
-    {
-    }
-
-    /** Construct a toggle widget with a default button delegate.
-     *
-     * @see default_button_delegate
-     * @param parent The parent widget that owns this toggle widget.
-     * @param value The value or `observer` value which represents the state of the toggle.
-     * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
-     * @param off_value The off-value. This value is used to determine which value yields an 'off' state.
-     */
-    template<
-        incompatible_with<attributes_type> Value,
-        forward_of<observer<observer_decay_t<Value>>> OnValue,
-        forward_of<observer<observer_decay_t<Value>>> OffValue,
-        toggle_widget_attribute... Attributes>
-    toggle_widget(not_null<widget_intf const *> parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
-        requires requires {
-            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
-            attributes_type{std::forward<Attributes>(attributes)...};
-        }
-        :
-        toggle_widget(
-            parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value)))
+            make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
+            make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
     {
     }
 
@@ -356,4 +304,5 @@ private:
 
 using toggle_with_label_widget = with_label_widget<toggle_widget>;
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

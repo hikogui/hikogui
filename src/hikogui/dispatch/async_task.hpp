@@ -31,7 +31,7 @@ template<typename Func, typename... Args>
         throw std::future_error(std::future_errc::no_state);
     }
 
-    using std::chrono::literals;
+    using namespace std::literals;
     while (true) {
         switch (future.wait_for(0s)) {
         case std::future_status::deferred:
@@ -49,6 +49,12 @@ template<typename Func, typename... Args>
             hi_no_default();
         }
     }
+}
+
+template<typename Func, typename... Args>
+[[nodiscard]] constexpr auto make_async_task(Func &&func) noexcept
+{
+    return [function = std::forward<Func>(func)](Args const &...args) -> task<std::invoke_result<Func, Args...>> { return function(args...); };
 }
 
 }}

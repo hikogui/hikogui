@@ -13,6 +13,7 @@
 #include "widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
+#include "../utility/utility.hpp"
 #include "../algorithm/algorithm.hpp"
 #include "../l10n/l10n.hpp"
 #include "../observer/observer.hpp"
@@ -116,6 +117,20 @@ public:
 
     attributes_type attributes;
 
+    template<typename... Args>
+    [[nodiscard]] consteval static size_t num_default_delegate_arguments() noexcept
+    {
+        return button_widget_type::template num_default_delegate_arguments<Args...>();
+    }
+
+    template<size_t N, typename... Args>
+    [[nodiscard]] static auto make_default_delegate(Args&&...args)
+    {
+        return button_widget_type::template make_default_delegate<N, Args...>(std::forward<Args>(args)...);
+    }
+
+    hi_call_right_arguments(static, make_attributes, attributes_type);
+
     with_label_widget(
         not_null<widget_intf const *> parent,
         attributes_type attributes,
@@ -145,75 +160,20 @@ public:
         _button_widget_cbt();
     }
 
-    template<with_label_widget_attribute... Attributes>
-    with_label_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept
-        requires requires {
-            button_widget_type::make_default_delegate();
-            attributes_type{std::forward<Attributes>(attributes)...};
-        }
+    /** Construct a widget with a label.
+     *
+     * @param parent The parent widget that owns this toggle widget.
+     * @param args The arguments to the default button delegate of the embedded
+     *             widget followed by arguments to `attributes_type`
+     */
+    template<typename... Args>
+    with_label_widget(not_null<widget_intf const *> parent, Args&&...args)
+        requires(num_default_delegate_arguments<Args...>() != 0)
         :
         with_label_widget(
             parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-
-            button_widget_type::make_default_delegate())
-    {
-    }
-
-    template<typename Value, with_label_widget_attribute... Attributes>
-    with_label_widget(not_null<widget_intf const *> parent, Value&& value, Attributes&&...attributes) noexcept
-        requires requires {
-            button_widget_type::make_default_delegate(std::forward<Value>(value));
-            attributes_type{std::forward<Attributes>(attributes)...};
-        }
-        :
-        with_label_widget(
-            parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-
-            button_widget_type::make_default_delegate(std::forward<Value>(value)))
-    {
-    }
-
-    template<typename Value, forward_observer<Value> OnValue, with_label_widget_attribute... Attributes>
-    with_label_widget(not_null<widget_intf const *> parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
-        requires requires {
-            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value));
-            attributes_type{std::forward<Attributes>(attributes)...};
-        }
-        :
-        with_label_widget(
-            parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-
-            button_widget_type::make_default_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value)))
-    {
-    }
-
-    template<
-        typename Value,
-        forward_observer<Value> OnValue,
-        forward_observer<Value> OffValue,
-        with_label_widget_attribute... Attributes>
-    with_label_widget(
-        not_null<widget_intf const *> parent,
-        Value&& value,
-        OnValue&& on_value,
-        OffValue&& off_value,
-        Attributes&&...attributes) noexcept
-        requires requires {
-            button_widget_type::make_default_delegate(
-                std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
-            attributes_type{std::forward<Attributes>(attributes)...};
-        }
-        :
-        with_label_widget(
-            parent,
-            attributes_type{std::forward<Attributes>(attributes)...},
-            button_widget_type::make_default_delegate(
-                std::forward<Value>(value),
-                std::forward<OnValue>(on_value),
-                std::forward<OffValue>(off_value)))
+            make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
+            make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
     {
     }
 
