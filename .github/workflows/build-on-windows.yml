@@ -142,7 +142,7 @@ jobs:
       # This enables the "Unit Test Result" display to show all individual test runs of the matrix.
       # The tests are published after all matrix runs finished (from job: "publish-test-results").
       - name: 🔼 Upload Test Results
-        uses: actions/upload-artifact@v3 # https://github.com/actions/upload-artifact
+        uses: actions/upload-artifact@v4 # https://github.com/actions/upload-artifact
         if: always()
         with:
           name: test-results
@@ -184,7 +184,7 @@ jobs:
     #
     #  # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
     #  - name: 📦 🚀 Upload Artifact
-    #    uses: actions/upload-artifact@v3 # https://github.com/actions/upload-artifact
+    #    uses: actions/upload-artifact@v4 # https://github.com/actions/upload-artifact
     #    with:
     #      name: ${{env.ARTIFACT_NAME}}
     #      path: build/${{env.ARTIFACT_NAME}}.zip
