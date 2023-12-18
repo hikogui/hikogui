@@ -203,7 +203,7 @@ jobs:
 
     steps:
       - name: 🔽 Download Artifacts
-        uses: actions/download-artifact@v3 # https://github.com/actions/download-artifact
+        uses: actions/download-artifact@v4 # https://github.com/actions/download-artifact
         with:
           path: artifacts
 
