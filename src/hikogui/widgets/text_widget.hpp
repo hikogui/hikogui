@@ -58,7 +58,7 @@ concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, obs
  *
  * @ingroup widgets
  */
-class text_widget final : public widget {
+class text_widget : public widget {
 public:
     using super = widget;
     using delegate_type = text_delegate;

@@ -43,7 +43,7 @@ concept async_widget_attribute =
  *
  * @snippet widgets/async_example_impl.cpp Create a async
  */
-class async_widget final : public widget {
+class async_widget : public widget {
 public:
     using super = widget;
     using delegate_type = async_delegate;
@@ -192,7 +192,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept
     {
         hi_axiom(loop::main().on_thread());
 

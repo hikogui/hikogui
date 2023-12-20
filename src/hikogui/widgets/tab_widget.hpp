@@ -37,7 +37,7 @@ hi_export namespace hi { inline namespace v1 {
  *       `toolbar_tab_button_widget`. This is accomplished by sharing a delegate
  *       or a observer between the toolbar tab button and the tab widget.
  */
-class tab_widget final : public widget {
+class tab_widget : public widget {
 public:
     using super = widget;
     using delegate_type = tab_delegate;

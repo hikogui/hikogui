@@ -63,7 +63,7 @@ concept text_field_widget_attribute = text_widget_attribute<Context>;
  *
  * @ingroup widgets
  */
-class text_field_widget final : public widget {
+class text_field_widget : public widget {
 public:
     using delegate_type = text_field_delegate;
     using super = widget;

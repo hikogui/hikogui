@@ -27,7 +27,7 @@ hi_inline void awaitable_stop_token::callback_wrapper::operator()() noexcept
     });
 }
 
-void awaitable_stop_token::await_suspend(std::coroutine_handle<> handle) noexcept
+hi_inline void awaitable_stop_token::await_suspend(std::coroutine_handle<> handle) noexcept
 {
     _stop_callback_ptr = std::make_unique<std::stop_callback<callback_wrapper>>(_stop_token, callback_wrapper{&loop::local(), handle});
 }

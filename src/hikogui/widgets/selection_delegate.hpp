@@ -15,7 +15,8 @@
 #include "../dispatch/dispatch.hpp"
 #include "../GUI/GUI.hpp"
 #include "../macros.hpp"
-#include "radio_button_widget.hpp"
+#include "radio_delegate.hpp"
+#include "radio_widget.hpp"
 #include <memory>
 #include <functional>
 #include <vector>
@@ -164,7 +165,7 @@ public:
     }
 
 private:
-    class option_delegate_type : public button_delegate {
+    class option_delegate_type : public radio_delegate {
     public:
         option_delegate_type(not_null<default_selection_delegate *> parent) noexcept : _parent(parent)
         {

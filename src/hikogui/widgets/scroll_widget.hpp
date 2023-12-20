@@ -47,7 +47,7 @@ hi_export namespace hi { inline namespace v1 {
  *              `axis::horizontal`, `axis::vertical` or `axis::both`.
  */
 template<axis Axis = axis::both>
-class scroll_widget final : public widget {
+class scroll_widget : public widget {
 public:
     using super = widget;
     using horizontal_scroll_bar_type = scroll_bar_widget<axis::horizontal>;

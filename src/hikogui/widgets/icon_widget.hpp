@@ -32,7 +32,7 @@ concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer
  * The icon is scaled to the size of the widget,
  * parent widgets will use this scaling to set the correct size.
  */
-class icon_widget final : public widget {
+class icon_widget : public widget {
 public:
     using super = widget;
 

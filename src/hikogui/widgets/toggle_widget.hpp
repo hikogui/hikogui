@@ -10,7 +10,7 @@
 
 #include "widget.hpp"
 #include "with_label_widget.hpp"
-#include "button_delegate.hpp"
+#include "toggle_delegate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
@@ -59,10 +59,10 @@ concept toggle_widget_attribute = forward_of<Context, observer<hi::alignment>> o
  *
  * @ingroup widgets
  */
-class toggle_widget final : public widget {
+class toggle_widget : public widget {
 public:
     using super = widget;
-    using delegate_type = button_delegate;
+    using delegate_type = toggle_delegate;
 
     struct attributes_type {
         observer<alignment> alignment = alignment::top_left();
@@ -104,8 +104,8 @@ public:
      */
     not_null<std::shared_ptr<delegate_type>> delegate;
 
-    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_toggle_button_delegate);
-    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad_not_null<default_toggle_button_delegate>);
+    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_toggle_delegate);
+    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad_not_null<default_toggle_delegate>);
     hi_call_right_arguments(static, make_attributes, attributes_type);
 
     ~toggle_widget()
@@ -134,7 +134,7 @@ public:
     /** Construct a toggle widget with a default button delegate.
      *
      * @param parent The parent widget that owns this toggle widget.
-     * @param args The arguments to the `default_toggle_button_delegate`
+     * @param args The arguments to the `default_toggle_delegate`
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
@@ -213,7 +213,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 

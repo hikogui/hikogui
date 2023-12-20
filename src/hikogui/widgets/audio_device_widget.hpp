@@ -27,7 +27,7 @@ hi_export namespace hi { inline namespace v1 {
 /** Audio device configuration widget.
  * @ingroup widgets
  */
-class audio_device_widget final : public widget {
+class audio_device_widget : public widget {
 public:
     using super = widget;
 

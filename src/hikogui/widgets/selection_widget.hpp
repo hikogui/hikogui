@@ -13,7 +13,7 @@
 #include "overlay_widget.hpp"
 #include "scroll_widget.hpp"
 #include "grid_widget.hpp"
-#include "radio_button_widget.hpp"
+#include "radio_widget.hpp"
 #include "selection_delegate.hpp"
 #include "../observer/observer.hpp"
 #include "../macros.hpp"
@@ -45,7 +45,7 @@ concept selection_widget_attribute = label_widget_attribute<Context>;
  *
  * @ingroup widgets
  */
-class selection_widget final : public widget {
+class selection_widget : public widget {
 public:
     using super = widget;
     using delegate_type = selection_delegate;

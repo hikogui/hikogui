@@ -39,7 +39,7 @@ hi_export namespace hi { inline namespace v1 {
  * so that when the overlay widget is drawn smaller than the requested rectangle
  * the content will behave correctly.
  */
-class overlay_widget final : public widget {
+class overlay_widget : public widget {
 public:
     using super = widget;
 

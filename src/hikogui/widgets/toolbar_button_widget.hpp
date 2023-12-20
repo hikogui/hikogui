@@ -20,7 +20,7 @@ hi_export namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class toolbar_button_widget final : public abstract_button_widget {
+class toolbar_button_widget : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;

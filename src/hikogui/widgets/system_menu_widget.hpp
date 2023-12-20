@@ -27,7 +27,7 @@ hi_export namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class system_menu_widget final : public widget {
+class system_menu_widget : public widget {
 public:
     using super = widget;
 

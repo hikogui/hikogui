@@ -35,7 +35,7 @@ hi_export namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class toolbar_widget final : public widget {
+class toolbar_widget : public widget {
 public:
     using super = widget;
 

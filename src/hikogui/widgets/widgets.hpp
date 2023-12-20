@@ -12,7 +12,7 @@
 #include "menu_button_widget.hpp" // export
 #include "momentary_button_widget.hpp" // export
 #include "overlay_widget.hpp" // export
-#include "radio_button_widget.hpp" // export
+#include "radio_widget.hpp" // export
 #include "scroll_aperture_widget.hpp" // export
 #include "scroll_bar_widget.hpp" // export
 #include "scroll_widget.hpp" // export
@@ -73,9 +73,9 @@ int hi_main(int argc, char *argv[])
     auto &window = gui->make_window(txt("Radio button example"));
 
     window.content().emplace<label_widget>("A1", txt("radio buttons:"));
-    window.content().emplace<radio_button_widget>("B1", value, 1, txt("one"));
-    window.content().emplace<radio_button_widget>("B2", value, 2, txt("two"));
-    window.content().emplace<radio_button_widget>("B3", value, 3, txt("three"));
+    window.content().emplace<radio_widget>("B1", value, 1, txt("one"));
+    window.content().emplace<radio_widget>("B2", value, 2, txt("two"));
+    window.content().emplace<radio_widget>("B3", value, 3, txt("three"));
 
     return gui->loop();
 }

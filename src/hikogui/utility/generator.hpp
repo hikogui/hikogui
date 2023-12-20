@@ -11,6 +11,7 @@
 #include <memory_resource>
 #include <type_traits>
 #include "../macros.hpp"
+#include "debugger.hpp"
 
 hi_export_module(hikogui.utility.generator);
 

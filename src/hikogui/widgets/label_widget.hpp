@@ -43,7 +43,7 @@ concept label_widget_attribute =
  * Here is an example on how to create a label:
  * @snippet widgets/checkbox_example_impl.cpp Create a label
  */
-class label_widget final : public widget {
+class label_widget : public widget {
 public:
     using super = widget;
 

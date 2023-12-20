@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file widgets/radio_button_widget.hpp Defines radio_button_widget.
+/** @file widgets/radio_widget.hpp Defines radio_widget.
  * @ingroup widgets
  */
 
@@ -11,48 +11,41 @@
 #include "widget.hpp"
 #include "with_label_widget.hpp"
 #include "menu_button_widget.hpp"
-#include "button_delegate.hpp"
+#include "radio_delegate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.widgets.radio_button_widget);
+hi_export_module(hikogui.widgets.radio_widget);
 
 hi_export namespace hi {
 inline namespace v1 {
 
 template<typename Context>
-concept radio_button_widget_attribute = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
+concept radio_widget_attribute = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
 
 /** A GUI widget that permits the user to make a binary choice.
- * @ingroup widgets
  *
- * A radio_button is a button with three different states with different visual
+ * A radio is a button with three different states with different visual
  * representation:
- *  - **on**: A check-mark is shown inside the box, and the `radio_button_widget::on_label` is shown.
- *  - **off**: An empty box is shown, and the `radio_button_widget::off_label` is shown.
- *  - **other**: A dash is shown inside the box, and the `radio_button_widget::other_label` is shown.
+ *  - **on**: A pip is shown inside the circle.
+ *  - **off**: An empty circle is shown.
  *
- * @image html radio_button_widget.gif
+ * @image html radio_widget.gif
  *
- * Each time a user activates the radio_button-button it toggles between the 'on' and 'off' states.
- * If the radio_button is in the 'other' state an activation will switch it to
+ * Each time a user activates the radio-button it toggles between the 'on' and 'off' states.
+ * If the radio is in the 'other' state an activation will switch it to
  * the 'off' state.
  *
- * A radio_button cannot itself switch state to 'other', this state may be
- * caused by external factors. The canonical example is a tree structure
- * of radio_buttones; when child radio_buttones have different values from each other
- * the parent radio_button state is set to 'other'.
+ * In the following example we create a radio widget on the window
+ * which observes `value`. When the value is 1 the radio is 'on',
+ * when the value is 2 the radio is 'off'.
  *
- * In the following example we create a radio_button widget on the window
- * which observes `value`. When the value is 1 the radio_button is 'on',
- * when the value is 2 the radio_button is 'off'.
- *
- * @snippet widgets/radio_button_example_impl.cpp Create a radio_button
+ * @snippet widgets/radio_example_impl.cpp Create a radio
  */
-class radio_button_widget final : public widget {
+class radio_widget : public widget {
 public:
     using super = widget;
-    using delegate_type = button_delegate;
+    using delegate_type = radio_delegate;
 
     struct attributes_type {
         observer<alignment> alignment = alignment::top_left();
@@ -63,7 +56,7 @@ public:
         attributes_type& operator=(attributes_type const&) noexcept = default;
         attributes_type& operator=(attributes_type&&) noexcept = default;
 
-        template<radio_button_widget_attribute... Attributes>
+        template<radio_widget_attribute... Attributes>
         explicit attributes_type(Attributes&&...attributes) noexcept
         {
             set_attributes(std::forward<Attributes>(attributes)...);
@@ -71,7 +64,7 @@ public:
 
         void set_attributes() noexcept {}
 
-        template<radio_button_widget_attribute First, radio_button_widget_attribute... Rest>
+        template<radio_widget_attribute First, radio_widget_attribute... Rest>
         void set_attributes(First&& first, Rest&&...rest) noexcept
         {
             if constexpr (forward_of<First, observer<hi::alignment>>) {
@@ -94,21 +87,21 @@ public:
      */
     not_null<std::shared_ptr<delegate_type>> delegate;
 
-    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_radio_button_delegate);
-    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad_not_null<default_radio_button_delegate>);
+    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_radio_delegate);
+    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad_not_null<default_radio_delegate>);
     hi_call_right_arguments(static, make_attributes, attributes_type);
 
-    ~radio_button_widget()
+    ~radio_widget()
     {
         this->delegate->deinit(*this);
     }
 
-    /** Construct a radio_button widget.
+    /** Construct a radio widget.
      *
-     * @param parent The parent widget that owns this radio_button widget.
-     * @param delegate The delegate to use to manage the state of the radio_button button.
+     * @param parent The parent widget that owns this radio widget.
+     * @param delegate The delegate to use to manage the state of the radio button.
      */
-    radio_button_widget(
+    radio_widget(
         not_null<widget *> parent,
         attributes_type attributes,
         not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
@@ -124,14 +117,14 @@ public:
     /** Construct a radio widget with a default button delegate.
      *
      * @param parent The parent widget that owns this toggle widget.
-     * @param args The arguments to the `default_radio_button_delegate`
+     * @param args The arguments to the `default_radio_delegate`
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    radio_button_widget(not_null<widget_intf const *> parent, Args&&...args)
+    radio_widget(not_null<widget_intf const *> parent, Args&&...args)
         requires(num_default_delegate_arguments<Args...>() != 0)
         :
-        radio_button_widget(
+        radio_widget(
             parent,
             make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
             make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
@@ -201,7 +194,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
@@ -244,7 +237,7 @@ public:
 
                 // with_label_widget or other widgets may have accepted the hitbox
                 // for this widget. Which means the widget_id in the mouse-event
-                // may match up with the radio_button.
+                // may match up with the radio.
                 if (event.mouse().hitbox.widget_id == id) {
                     // By staying we can give focus to the parent widget.
                     handle_event(gui_event_type::gui_activate_stay);
@@ -275,8 +268,8 @@ private:
     callback<void()> _delegate_cbt;
 };
 
-using radio_button_with_label_widget = with_label_widget<radio_button_widget>;
-using radio_menu_button_widget = menu_button_widget<radio_button_widget>;
+using radio_with_label_widget = with_label_widget<radio_widget>;
+using radio_menu_button_widget = menu_button_widget<radio_widget>;
 
 } // namespace v1
 } // namespace hi::v1
