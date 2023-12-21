@@ -16,7 +16,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 #-------------------------------------------------------------------
 
 option(BUILD_SHARED_LIBS    "Build shared libraries"                             OFF)
-option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
 option(HI_ENABLE_MODULES    "Compile using C++20 modules"                        OFF)
 option(BUILD_EXAMPLES       "Compile the example executables"                    ON)
@@ -295,7 +294,13 @@ elseif (MSVC)
     target_compile_options(hikogui ${HI_SCOPE} "-constexpr:steps100000000")
 
     # The library is too big.
-    target_compile_options(hikogui ${HI_SCOPE} "-bigobj")
+    target_compile_options(hikogui ${HI_SCOPE} -bigobj)
+
+    # Configure the headers of external libraries and only set warning level to W3 for those.
+    target_compile_options(hikogui ${HI_SCOPE} -external:W0)
+    target_compile_options(hikogui ${HI_SCOPE} "-external:IC:\\Program Files\\Microsoft Visual Studio")
+    target_compile_options(hikogui ${HI_SCOPE} "-external:IC:\\Program Files (x86)\\Windows Kits")
+    target_compile_options(hikogui ${HI_SCOPE} "-external:I${Vulkan_INCLUDE_DIRS}")
 
     # C4068: unknown pragma.
     # Ignore unknown pragmas, needed for other compilers.
@@ -355,18 +360,18 @@ elseif (MSVC)
         target_compile_options(hikogui ${HI_SCOPE} -fsanitize=address)
     endif()
 
-    if(HI_ENABLE_ANALYSIS)
-        target_compile_options(hikogui ${HI_SCOPE} -analyze)
-
+    if("$ENV{CXXFLAGS}" MATCHES "[/-]analyze")
         #target_compile_options(hikogui ${HI_SCOPE} -analyze:ruleset ${CMAKE_CURRENT_SOURCE_DIR}/AllRules.ruleset)
 
         # The Core Guidelines checker, not so useful for real programs.
         message(NOTICE "The following environment variables need to be set for the core guidelines checker to work:")
         message(NOTICE "    esp.extensions=cppcorecheck.dll")
-        message(NOTICE "    esp.annotationbuildlevel=ignore")
-        message(NOTICE "    CAExcludePath=C:\\VulkanSDK;C:\\Program Files;C:\\Users\\Tjienta\\Projects\\hikogui\\out\\build\\vc17-x64-windows-static-ana\\_deps")
         message(NOTICE "")
-        target_compile_options(hikogui ${HI_SCOPE} -analyze:plugin EspXEngine.dll)
+
+        # Exclude external headers from analysis.
+        target_compile_options(hikogui ${HI_SCOPE} -analyze:external-)
+
+        target_compile_options(hikogui ${HI_SCOPE} -analyze:pluginEspxEngine.dll)
 
         # C26440: Function '...' can be declared 'noexcept' (f.6).
         # It requires lambda function to also be declared 'noexcept' that makes the code messy.
