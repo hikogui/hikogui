@@ -83,20 +83,20 @@ struct default_async_delegate_traits {
 
     /** The callable must be called with a std::stop_token as last argument.
      */
-    constexpr auto bool uses_stop_token = std::is_invocable_v<F, Args..., std::stop_token>;
+    constexpr static bool uses_stop_token = std::is_invocable_v<F, Args..., std::stop_token>;
 
     /** The result type of the callable.
      */
     using result_type =
         std::conditional<uses_stop_token, std::invoke_result_t<F, Args..., std::stop_token>, std::invoke_result_t<F, Args...>>;
 
+    /** The callable is a task (co-routine).
+     */
+    constexpr static bool is_task = default_async_delegate_result_traits<result_type>::is_task;
+
     /** The value returned by the callable, after stripping the optional async-wrapper.
      */
     using value_type = default_async_delegate_result_traits<result_type>::type;
-
-    /** The callable is a task (co-routine).
-     */
-    constexpr auto bool is_task = default_async_delegate_result_traits<result_type>::is_task;
 
     using task_type = task<value_type>;
 

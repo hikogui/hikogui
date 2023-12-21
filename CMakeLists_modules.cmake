@@ -539,6 +539,8 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/units.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/value_traits.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/abstract_button_widget.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/async_delegate.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/async_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/audio_device_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/button_delegate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/checkbox_widget.ixx
@@ -549,7 +551,8 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/widgets.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/momentary_button_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/overlay_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/radio_button_widget.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/radio_delegate.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/radio_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/scroll_aperture_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/scroll_bar_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/scroll_widget.ixx
@@ -563,6 +566,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_field_delegate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_field_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_widget.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toggle_delegate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toggle_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_button_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_tab_button_widget.ixx

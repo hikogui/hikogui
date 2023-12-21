@@ -532,6 +532,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/units.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/value_traits.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/abstract_button_widget.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/async_delegate.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/async_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/audio_device_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/button_delegate.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/checkbox_widget.hpp
@@ -542,7 +544,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/widgets.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/momentary_button_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/overlay_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/radio_button_widget.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/radio_delegate.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/radio_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/scroll_aperture_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/scroll_bar_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/scroll_widget.hpp
@@ -556,6 +559,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_field_delegate.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_field_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_widget.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toggle_delegate.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toggle_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toolbar_button_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toolbar_tab_button_widget.hpp
