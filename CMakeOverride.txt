@@ -20,7 +20,7 @@ cmake_policy(SET CMP0054 NEW)
 #    endif()
 #endforeach()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
   # using Microsoft clang-cl.
 
   #
@@ -88,16 +88,63 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   #
   # Settings for ALL build types
   #
-  set(CMAKE_CXX_FLAGS_INIT                           "-stdlib=libc++")
+  # -GR:   Add type information in executable needed for dynamic_cast<>() to work.
+  # -EHsc: Set standard conforming exception handling.
+  #
+  set(CMAKE_C_FLAGS_INIT             "-DWIN32 -D_WINDOWS")
+  set(CMAKE_CXX_FLAGS_INIT           "-DWIN32 -D_WINDOWS")
+  set(CMAKE_EXE_LINKER_FLAGS_INIT    "")
+  set(CMAKE_MODULE_LINKER_FLAGS_INIT "")
+  set(CMAKE_SHARED_LINKER_FLAGS_INIT "")
+  set(CMAKE_STATIC_LINKER_FLAGS_INIT "")
+
+  #
+  # Debug
+  #
+  # Zi:     Produce a separate PDB file (debug symbols)
+  # Ob0:    Disable inline expansions
+  # Od:     Disable code movements for easier debugging (DEBUG)
+  #
+  # -debug:fastlink causes "Access Violation" on github-actions.
+  #
+  set(CMAKE_CXX_FLAGS_DEBUG_INIT           "-g")
+  set(CMAKE_C_FLAGS_DEBUG_INIT             "-g")
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG_INIT    "-debug")
+  set(CMAKE_MODULE_LINKER_FLAGS_DEBUG_INIT "-debug")
+  set(CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT "-debug")
 
   #
   # RelWithDebugInfo
   #
-  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT              "-Zi -O2 -Ob2 -DNDEBUG -stdlib=libc++")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT            "-Zi -O2 -Ob2 -DNDEBUG -stdlib=libc++")
-  #set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-INCREMENTAL:NO -debug")
-  #set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -debug")
-  #set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -debug")
+  # This build_type is important, because we need to step through the
+  # assembly of the optimized release build, while having debug information.
+  #
+  # Zi:     Produce a separate PDB file (debug symbols)
+  # O3:     Maximize Speed
+  # NDEBUG: Assertion checks turned off at compile time
+  #
+  # -debug:fastlink causes "Access Violation" on github-actions.
+  #
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT           "-O3 -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT             "-O3 -DNDEBUG")
+  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-debug")
+  set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-debug")
+  set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-debug")
+
+  #
+  # Release
+  #
+  # O2:     Maximize Speed
+  # Ob3:    Aggressive Inline Function Expansion
+  # NDEBUG: Assertion checks turned off at compile time
+  #
+  # -debug:fastlink causes "Access Violation" on github-actions.
+  #
+  set(CMAKE_CXX_FLAGS_RELEASE_INIT           "-O3 -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELEASE_INIT             "-O3 -DNDEBUG")
+  #set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT    "-INCREMENTAL:NO")
+  #set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO")
+  #set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO")
 
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   # using GCC
