@@ -28,17 +28,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        CMAKE_BUILD_TYPE: ["Debug", "Release"]
-        CMAKE_CXX_COMPILER: ["cl", "clang-cl", "clang"]
+        CMAKE_CXX_COMPILER: ["cl", "clang-cl"]
         ARCHITECTURE: ["AVX2"]
 
-    name: x64-windows ${{matrix.CMAKE_BUILD_TYPE}} ${{matrix.CMAKE_CXX_COMPILER}} ${{matrix.ARCHITECTURE}}
+    name: x64-windows ${{matrix.CMAKE_CXX_COMPILER}} ${{matrix.ARCHITECTURE}}
 
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
     runs-on: windows-2022
 
     env:
-      MATRIX_ID: ${{matrix.CMAKE_BUILD_TYPE}}-${{matrix.CMAKE_CXX_COMPILER}}-${{matrix.ARCHITECTURE}}
+      MATRIX_ID: ${{matrix.CMAKE_CXX_COMPILER}}-${{matrix.ARCHITECTURE}}
       CXXFLAGS: /arch:${{matrix.ARCHITECTURE}}
       BUILD_DIR: ${{github.workspace}}/build
       INSTALL_DIR: ${{github.workspace}}/install
@@ -107,10 +106,9 @@ jobs:
         shell: pwsh
         run: >
           cmake
-          -G Ninja
-          "-DCMAKE_BUILD_TYPE=${{matrix.CMAKE_BUILD_TYPE}}"
-          "-DCMAKE_C_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}
-          "-DCMAKE_CXX_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}
+          -G "Ninja Multi-Config"
+          "-DCMAKE_C_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}"
+          "-DCMAKE_CXX_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}"
           "-DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}}"
           ..
 
