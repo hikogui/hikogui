@@ -204,6 +204,7 @@ jobs:
         uses: actions/download-artifact@v4 # https://github.com/actions/download-artifact
         with:
           path: artifacts
+          merge-multiple: true
 
       - name: 👌 Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action/composite@v2 # https://github.com/EnricoMi/publish-unit-test-result-action
