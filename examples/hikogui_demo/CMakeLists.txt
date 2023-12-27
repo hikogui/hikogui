@@ -12,6 +12,8 @@ target_link_libraries(hikogui_demo PRIVATE hikogui)
 target_link_resources(hikogui_demo hikogui)
 set_target_properties(hikogui_demo PROPERTIES MACOSX_BUNDLE TRUE)
 set_target_properties(hikogui_demo PROPERTIES MACOSX_FRAMEWORK_IDENTIFIER org.hikogui.hikogui.hikogui_demo)
+set_target_properties(hikogui_demo PROPERTIES DEBUG_POSTFIX "-debug")
+set_target_properties(hikogui_demo PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
 
 target_sources(hikogui_demo PRIVATE
     src/main_impl.cpp

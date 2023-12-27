@@ -28,8 +28,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        CMAKE_CXX_COMPILER: ["cl", "clang-cl"]
-        ARCHITECTURE: ["AVX2"]
+        CMAKE_CXX_COMPILER: ["cl", "clang"]
+        ARCHITECTURE: ["x86-64", "x86-64-v3"]
 
     name: x64-windows ${{matrix.CMAKE_CXX_COMPILER}} ${{matrix.ARCHITECTURE}}
 
@@ -38,7 +38,6 @@ jobs:
 
     env:
       MATRIX_ID: ${{matrix.CMAKE_CXX_COMPILER}}-${{matrix.ARCHITECTURE}}
-      CXXFLAGS: /arch:${{matrix.ARCHITECTURE}}
       BUILD_DIR: ${{github.workspace}}/build
       INSTALL_DIR: ${{github.workspace}}/install
 
@@ -110,29 +109,45 @@ jobs:
           "-DCMAKE_C_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}"
           "-DCMAKE_CXX_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}"
           "-DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}}"
+          "-DCMAKE_CONFIGURATION_TYPES=Debug;RelWithDebInfo"
+          "-DHI_ARCHITECTURE=${{matrix.ARCHITECTURE}}"
           ..
 
-      - name: 🙏 CMake ➔ Build
+      - name: 🙏 CMake ➔ Build Debug
         working-directory: ${{env.BUILD_DIR}}
-        run: cmake --build . --parallel 1
+        run: cmake --build . --config Debug --parallel 1
+    
+      - name: ✔ ❌✔️ CTest Debug
+        working-directory: ${{env.BUILD_DIR}}
+        run: ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}_debug.xml" --build-config=Debug
+
+      - name: 📦 CMake ➔ Install Debug
+        working-directory: ${{env.BUILD_DIR}}
+        run: cmake --install . --config Debug
   
-      - name: 📦 CMake ➔ Install
+      - name: 🙏 CMake ➔ Build RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
-        run: cmake --install .
-
-      - name: ❔ CHECK important folders, to see if everything is present (after building)
-        run: |
-          dir /S /B build
-          dir /S /B install
-
-      - name: ✔ ❌✔️ Test
+        run: cmake --build . --config RelWithDebInfo --parallel 1
+    
+      - name: ✔ ❌✔️ CTest RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
-        run: |
-          ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}.xml"
-          type "${{github.workspace}}\build\Testing\Temporary\LastTest.log"
-          if exist "${{github.workspace}}\build\Testing\Temporary\LastTestsFailed.log" (
-            type "${{github.workspace}}\build\Testing\Temporary\LastTestsFailed.log"
-          )
+        run: ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}_rdi.xml" --build-config=RelWithDebInfo
+
+      - name: 📦 CMake ➔ Install RelWithDebInfo
+        working-directory: ${{env.BUILD_DIR}}
+        run: cmake --install . --config RelWithDebInfo
+
+      - name: 🙏 CMake ➔ Build Release
+        working-directory: ${{env.BUILD_DIR}}
+        run: cmake --build . --config Release --parallel 1
+    
+      - name: ✔ ❌✔️ CTest Release
+        working-directory: ${{env.BUILD_DIR}}
+        run: ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}.xml" --build-config=Release
+
+      - name: 📦 CMake ➔ Install Release
+        working-directory: ${{env.BUILD_DIR}}
+        run: cmake --install . --config Release
 
       # Each file is differently named by adding the job name of the matrix as a suffix.
       # This enables the "Unit Test Result" display to show all individual test runs of the matrix.
@@ -145,7 +160,7 @@ jobs:
           path: test_results_*.xml
 
       - name: 📑 Generate CodeCoverage Report (Debug)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'Debug-cl-AVX2'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'cl-x86-64'
         run: |
           curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
           OpenCppCoverageSetup-x64-0.9.9.0.exe /VERYSILENT /DIR=.\bin\coverage
@@ -157,11 +172,11 @@ jobs:
           --export_type=cobertura:hikogui_coverage.xml ^
           --working_dir=.\\build ^
           --cover_children ^
-          -- ctest.exe
+          -- ctest.exe --build-config=Debug
 
       # retry uploading to codecov with limit to workaround flaky upload issue
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'Debug-cl'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'cl-x86-64'
         uses: wandalen/wretry.action@v1 # https://github.com/wandalen/wretry.action
         with:
           attempt_limit: 10

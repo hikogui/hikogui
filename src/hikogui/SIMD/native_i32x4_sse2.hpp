@@ -545,6 +545,7 @@ struct native_simd<int32_t, 4> {
         return tmp + permute<"badc">(tmp);
     }
 
+#ifdef HI_HAS_SSE4_1
     /** Dot product.
      *
      * ```
@@ -561,6 +562,7 @@ struct native_simd<int32_t, 4> {
         static_assert(SourceMask <= 0b1111);
         return horizontal_sum(set_zero<~SourceMask & 0b1111>(a * b));
     }
+#endif
 
     /** not followed by and.
      *
