@@ -301,7 +301,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/net/packet_buffer.hpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/net/stream.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/bigint.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/interval.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_carry.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/numeric.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial.hpp

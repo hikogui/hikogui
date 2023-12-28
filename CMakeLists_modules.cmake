@@ -307,7 +307,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/net/packet_buffer.ixx
     #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/net/stream.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/bigint.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/interval.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/int_carry.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/numeric.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/polynomial.ixx
