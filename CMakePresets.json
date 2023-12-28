@@ -60,7 +60,7 @@
         "CMAKE_C_COMPILER": "cl"
       },
       "environment": {
-        "CXXFLAGS": "/arch:AVX2"
+        "CXXFLAGS": "/arch:AVX"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -95,6 +95,9 @@
       "cacheVariables": {
 	      "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_COMPILER": "clang"
+      },
+      "environment": {
+        "CXXFLAGS": "-march=x86-64-v2"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
