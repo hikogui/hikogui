@@ -1,10 +1,41 @@
 
-add_custom_target(hikogui_all_tests)
-
 add_executable(hikogui_tests)
 target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
 target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-add_dependencies(hikogui_all_tests hikogui_tests)
+set_target_properties(hikogui_tests PROPERTIES DEBUG_POSTFIX "-debug")
+set_target_properties(hikogui_tests PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
+
+if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(ASAN_DLL "${CMAKE_CXX_COMPILER}")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        cmake_path(REPLACE_FILENAME ASAN_DLL "clang_rt.asan_dbg_dynamic-x86_64.dll")
+    else()
+        cmake_path(REPLACE_FILENAME ASAN_DLL "clang_rt.asan_dynamic-x86_64.dll")
+    endif()
+
+    add_custom_command(TARGET hikogui_tests PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_tests>)
+
+    target_compile_definitions(hikogui_tests PRIVATE "-D_DISABLE_VECTOR_ANNOTATION")
+    target_compile_definitions(hikogui_tests PRIVATE "-D_DISABLE_STRING_ANNOTATION")
+    target_compile_options(hikogui_tests PRIVATE -fsanitize=address)
+
+elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        set(ASAN_DLL "${CMAKE_CXX_COMPILER}")
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            cmake_path(REPLACE_FILENAME ASAN_DLL "clang_rt.asan_dbg_dynamic-x86_64.dll")
+        else()
+            cmake_path(REPLACE_FILENAME ASAN_DLL "clang_rt.asan_dynamic-x86_64.dll")
+        endif()
+
+        add_custom_command(TARGET hikogui_tests PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_tests>)
+
+        target_compile_options(hikogui_tests PRIVATE -fsanitize=address)
+        target_link_options(hikogui_tests PRIVATE -fsanitize=address)
+    endif()
+endif()
 
 target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm_misc_tests.cpp
