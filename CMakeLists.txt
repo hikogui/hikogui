@@ -16,11 +16,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 #-------------------------------------------------------------------
 
 option(BUILD_SHARED_LIBS    "Build shared libraries"                             OFF)
-option(HI_ENABLE_ANALYSIS   "Compile using -analyze"                             OFF)
-option(HI_ENABLE_ASAN       "Compile using address sanitizer"                    OFF)
 option(HI_ENABLE_MODULES    "Compile using C++20 modules"                        OFF)
 option(BUILD_EXAMPLES       "Compile the example executables"                    ON)
-        
+set(HI_ARCHITECTURE "" CACHE STRING "An architecture name used to set the CXXFLAGS")
+
 if(HI_ENABLE_MODULES)
     include(SetupCxxModules)
 endif()
@@ -51,36 +50,6 @@ string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
-
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
-    set(ARCHITECTURE_ID "x86")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "X86")
-    set(ARCHITECTURE_ID "x86")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
-    set(ARCHITECTURE_ID "x86")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    set(ARCHITECTURE_ID "x86")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x64")
-    set(ARCHITECTURE_ID "x86")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "i386")
-    set(ARCHITECTURE_ID "x86")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "i686")
-    set(ARCHITECTURE_ID "x86")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
-    set(ARCHITECTURE_ID "arm")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64")
-    set(ARCHITECTURE_ID "arm")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
-    set(ARCHITECTURE_ID "arm")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-    set(ARCHITECTURE_ID "arm")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "armv8b")
-    set(ARCHITECTURE_ID "arm")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "armv8l")
-    set(ARCHITECTURE_ID "arm")
-else()
-    message(FATAL_ERROR "Unknown CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
-endif()
 
 #-------------------------------------------------------------------
 # Setup CMake Includes
@@ -137,8 +106,39 @@ if(NOT EXISTS "${Vulkan_INCLUDE_DIRS}/vma")
 endif()
 
 #-------------------------------------------------------------------
-# Setup Build Targets
+# Handle architecture.
 #-------------------------------------------------------------------
+if(NOT HI_ARCHITECTURE STREQUAL "")
+    if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+        if(HI_ARCHITECTURE STREQUAL "x86-64")
+            add_compile_options("-arch:AVX")
+        elseif(HI_ARCHITECTURE STREQUAL "x86-64-v2")
+            add_compile_options("-arch:AVX")
+        elseif(HI_ARCHITECTURE STREQUAL "x86-64-v3")
+            add_compile_options("-arch:AVX2")
+        elseif(HI_ARCHITECTURE STREQUAL "x86-64-v4")
+            add_compile_options("-arch:AVX512")
+        else()
+            message(FATAL_ERROR "Unknown HI_ARCHITECTURE=${HI_ARCHITECTURE} for MSVC frontend.")
+        endif()
+
+    elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+        if(HI_ARCHITECTURE STREQUAL "x86-64")
+        add_compile_options("-march=x86-64")
+        elseif(HI_ARCHITECTURE STREQUAL "x86-64-v2")
+        add_compile_options("-march=x86-64-v2")
+        elseif(HI_ARCHITECTURE STREQUAL "x86-64-v3")
+        add_compile_options("-march=x86-64-v3")
+        elseif(HI_ARCHITECTURE STREQUAL "x86-64-v4")
+        add_compile_options("-march=x86-64-v4")
+        else()
+        message(FATAL_ERROR "Unknown HI_ARCHITECTURE=${HI_ARCHITECTURE} for MSVC frontend.")
+        endif()
+
+    else()
+        message(FATAL_ERROR "Unknown compiler frontend ${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}.")
+    endif()
+endif()
 
 #-------------------------------------------------------------------
 # Build Target: hikogui                                     (library)
@@ -295,7 +295,13 @@ elseif (MSVC)
     target_compile_options(hikogui ${HI_SCOPE} "-constexpr:steps100000000")
 
     # The library is too big.
-    target_compile_options(hikogui ${HI_SCOPE} "-bigobj")
+    target_compile_options(hikogui ${HI_SCOPE} -bigobj)
+
+    # Configure the headers of external libraries and only set warning level to W3 for those.
+    target_compile_options(hikogui ${HI_SCOPE} -external:W0)
+    target_compile_options(hikogui ${HI_SCOPE} "-external:IC:\\Program Files\\Microsoft Visual Studio")
+    target_compile_options(hikogui ${HI_SCOPE} "-external:IC:\\Program Files (x86)\\Windows Kits")
+    target_compile_options(hikogui ${HI_SCOPE} "-external:I${Vulkan_INCLUDE_DIRS}")
 
     # C4068: unknown pragma.
     # Ignore unknown pragmas, needed for other compilers.
@@ -351,22 +357,18 @@ elseif (MSVC)
         target_compile_options(hikogui ${HI_SCOPE} -JMC)
     endif()
 
-    if(HI_ENABLE_ASAN)
-        target_compile_options(hikogui ${HI_SCOPE} -fsanitize=address)
-    endif()
-
-    if(HI_ENABLE_ANALYSIS)
-        target_compile_options(hikogui ${HI_SCOPE} -analyze)
-
+    if("$ENV{CXXFLAGS}" MATCHES "[/-]analyze")
         #target_compile_options(hikogui ${HI_SCOPE} -analyze:ruleset ${CMAKE_CURRENT_SOURCE_DIR}/AllRules.ruleset)
 
         # The Core Guidelines checker, not so useful for real programs.
         message(NOTICE "The following environment variables need to be set for the core guidelines checker to work:")
         message(NOTICE "    esp.extensions=cppcorecheck.dll")
-        message(NOTICE "    esp.annotationbuildlevel=ignore")
-        message(NOTICE "    CAExcludePath=C:\\VulkanSDK;C:\\Program Files;C:\\Users\\Tjienta\\Projects\\hikogui\\out\\build\\vc17-x64-windows-static-ana\\_deps")
         message(NOTICE "")
-        target_compile_options(hikogui ${HI_SCOPE} -analyze:plugin EspXEngine.dll)
+
+        # Exclude external headers from analysis.
+        target_compile_options(hikogui ${HI_SCOPE} -analyze:external-)
+
+        target_compile_options(hikogui ${HI_SCOPE} -analyze:pluginEspxEngine.dll)
 
         # C26440: Function '...' can be declared 'noexcept' (f.6).
         # It requires lambda function to also be declared 'noexcept' that makes the code messy.

@@ -28,19 +28,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        CMAKE_BUILD_TYPE: ["Debug", "Release"]
-        CMAKE_CXX_COMPILER: ["cl", "clang-cl"]
-        ARCHITECTURE: ["AVX2"]
-        CXX_FLAGS: ["/arch:AVX2"]
+        CMAKE_CXX_COMPILER: ["cl", "clang"]
+        ARCHITECTURE: ["x86-64-v3"]
 
-    name: x64-windows ${{matrix.CMAKE_BUILD_TYPE}} ${{matrix.CMAKE_CXX_COMPILER}} ${{matrix.ARCHITECTURE}}
+    name: x64-windows ${{matrix.CMAKE_CXX_COMPILER}} ${{matrix.ARCHITECTURE}}
 
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
     runs-on: windows-2022
 
     env:
-      MATRIX_ID: ${{matrix.CMAKE_BUILD_TYPE}}-${{matrix.CMAKE_CXX_COMPILER}}-${{matrix.ARCHITECTURE}}
-      CXXFLAGS: /arch:${{matrix.ARCHITECTURE}}
+      MATRIX_ID: ${{matrix.CMAKE_CXX_COMPILER}}-${{matrix.ARCHITECTURE}}
       BUILD_DIR: ${{github.workspace}}/build
       INSTALL_DIR: ${{github.workspace}}/install
 
@@ -108,48 +105,62 @@ jobs:
         shell: pwsh
         run: >
           cmake
-          -G Ninja
-          "-DCMAKE_BUILD_TYPE=${{matrix.CMAKE_BUILD_TYPE}}"
-          "-DCMAKE_C_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}
-          "-DCMAKE_CXX_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}
+          -G "Ninja Multi-Config"
+          "-DCMAKE_C_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}"
+          "-DCMAKE_CXX_COMPILER=${{matrix.CMAKE_CXX_COMPILER}}"
           "-DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}}"
+          "-DCMAKE_CONFIGURATION_TYPES=Debug;Release;RelWithDebInfo"
+          "-DHI_ARCHITECTURE=${{matrix.ARCHITECTURE}}"
           ..
 
-      - name: 🙏 CMake ➔ Build
+      - name: 🙏 CMake ➔ Build Debug
         working-directory: ${{env.BUILD_DIR}}
-        run: cmake --build . --parallel 1
+        run: cmake --build . --config Debug --parallel 1
+    
+      - name: ✔ ❌✔️ CTest Debug
+        working-directory: ${{env.BUILD_DIR}}
+        run: ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}_debug.xml" --build-config Debug
+
+      - name: 📦 CMake ➔ Install Debug
+        working-directory: ${{env.BUILD_DIR}}
+        run: cmake --install . --config Debug
   
-      - name: 📦 CMake ➔ Install
+      - name: 🙏 CMake ➔ Build RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
-        run: cmake --install .
-
-      - name: ❔ CHECK important folders, to see if everything is present (after building)
-        run: |
-          dir /S /B build
-          dir /S /B install
-
-      - name: ✔ ❌✔️ Test
+        run: cmake --build . --config RelWithDebInfo --parallel 1
+    
+      - name: ✔ ❌✔️ CTest RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
-        run: |
-          ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}.xml"
-          type "${{github.workspace}}\build\Testing\Temporary\LastTest.log"
-          if exist "${{github.workspace}}\build\Testing\Temporary\LastTestsFailed.log" (
-            type "${{github.workspace}}\build\Testing\Temporary\LastTestsFailed.log"
-          )
+        run: ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}_rdi.xml" --build-config RelWithDebInfo
 
-      # We upload multiple files into the same artifact file (zip).
+      - name: 📦 CMake ➔ Install RelWithDebInfo
+        working-directory: ${{env.BUILD_DIR}}
+        run: cmake --install . --config RelWithDebInfo
+
+      - name: 🙏 CMake ➔ Build Release
+        working-directory: ${{env.BUILD_DIR}}
+        run: cmake --build . --config Release --parallel 1
+    
+      - name: ✔ ❌✔️ CTest Release
+        working-directory: ${{env.BUILD_DIR}}
+        run: ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}.xml" --build-config Release
+
+      - name: 📦 CMake ➔ Install Release
+        working-directory: ${{env.BUILD_DIR}}
+        run: cmake --install . --config Release
+
       # Each file is differently named by adding the job name of the matrix as a suffix.
       # This enables the "Unit Test Result" display to show all individual test runs of the matrix.
       # The tests are published after all matrix runs finished (from job: "publish-test-results").
       - name: 🔼 Upload Test Results
-        uses: actions/upload-artifact@v3 # https://github.com/actions/upload-artifact
+        uses: actions/upload-artifact@v4 # https://github.com/actions/upload-artifact
         if: always()
         with:
-          name: test-results
+          name: test-results-${{env.MATRIX_ID}}
           path: test_results_*.xml
 
       - name: 📑 Generate CodeCoverage Report (Debug)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'Debug-cl'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'cl-x86-64'
         run: |
           curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
           OpenCppCoverageSetup-x64-0.9.9.0.exe /VERYSILENT /DIR=.\bin\coverage
@@ -161,11 +172,11 @@ jobs:
           --export_type=cobertura:hikogui_coverage.xml ^
           --working_dir=.\\build ^
           --cover_children ^
-          -- ctest.exe
+          -- ctest.exe --build-config=Debug
 
       # retry uploading to codecov with limit to workaround flaky upload issue
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'Debug-cl'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'cl-x86-64'
         uses: wandalen/wretry.action@v1 # https://github.com/wandalen/wretry.action
         with:
           attempt_limit: 10
@@ -203,12 +214,14 @@ jobs:
 
     steps:
       - name: 🔽 Download Artifacts
-        uses: actions/download-artifact@v3 # https://github.com/actions/download-artifact
+        uses: actions/download-artifact@v4 # https://github.com/actions/download-artifact
         with:
           path: artifacts
+          merge-multiple: true
 
       - name: 👌 Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action/composite@v2 # https://github.com/EnricoMi/publish-unit-test-result-action
         if: always()
         with:
           junit_files: artifacts/**/test_results*.xml
+

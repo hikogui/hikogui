@@ -22,7 +22,7 @@ hi_export_module(hikogui.path.path_location : intf);
 hi_export namespace hi { inline namespace v1 {
 
 
-hi_export template<typename Context>
+template<typename Context>
 concept path_range =
     std::ranges::input_range<Context> and
     std::convertible_to<std::ranges::range_value_t<std::remove_cvref_t<Context>>, std::filesystem::path> and
@@ -35,7 +35,7 @@ concept path_range =
  * @param ref A relative path to the filesystem-object.
  * @return The the first full path to the filesystem-object found in the location. Or empty if the path is not found.
  */
-hi_export template<path_range Locations>
+template<path_range Locations>
 [[nodiscard]] hi_inline std::optional<std::filesystem::path>
 find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
 {
@@ -59,12 +59,12 @@ find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
 /** Get the full path to this executable.
  * @ingroup path
  */
-hi_export [[nodiscard]] std::filesystem::path executable_file() noexcept;
+[[nodiscard]] std::filesystem::path executable_file() noexcept;
 
 /** Get the full path to the directory when this executable is located.
  * @ingroup path
  */
-hi_export [[nodiscard]] hi_inline std::filesystem::path executable_dir() noexcept
+[[nodiscard]] hi_inline std::filesystem::path executable_dir() noexcept
 {
     auto tmp = executable_file();
     tmp.remove_filename();
@@ -74,37 +74,72 @@ hi_export [[nodiscard]] hi_inline std::filesystem::path executable_dir() noexcep
 /** Get the full path to the directory where the application should store its data.
  * @ingroup path
  */
-hi_export [[nodiscard]] std::filesystem::path data_dir() noexcept;
+[[nodiscard]] std::filesystem::path data_dir() noexcept;
 
 /** Get the full path to the directory where the application should store its log files.
  * @ingroup path
  */
-hi_export [[nodiscard]] std::filesystem::path log_dir() noexcept;
+[[nodiscard]] std::filesystem::path log_dir() noexcept;
 
 /** Get the full path to application preferences file.
  * @ingroup path
  */
-hi_export [[nodiscard]] std::filesystem::path preferences_file() noexcept;
+[[nodiscard]] std::filesystem::path preferences_file() noexcept;
 
 /** The directories to search for resource files.
  * @ingroup path
  */
-hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> resource_dirs() noexcept;
+[[nodiscard]] hi_inline generator<std::filesystem::path> resource_dirs() noexcept;
 
 /** The directories to search for system font files.
  * @ingroup path
  */
-hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> system_font_dirs() noexcept;
+[[nodiscard]] hi_inline generator<std::filesystem::path> system_font_dirs() noexcept;
 
 /** The directories to search for font files of both the application and system.
  * @ingroup path
  */
-hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> font_files() noexcept;
+[[nodiscard]] hi_inline generator<std::filesystem::path> font_files() noexcept;
 
 /** The directories to search for theme files of the application.
  * @ingroup path
  */
-hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> theme_files() noexcept;
+[[nodiscard]] hi_inline generator<std::filesystem::path> theme_files() noexcept;
+
+/** Parse the source dir from a cmake_install.cmake file.
+ * 
+ * @param path The path to the cmake_install.cmake file.
+ * @return The path to the source dir, or std::nullopt if the file does not
+ *         exist, or could not be parsed, or the source-dir does not exist. 
+*/
+[[nodiscard]] hi_inline std::optional<std::filesystem::path> source_dir_parse_cmake_install(std::filesystem::path path) noexcept
+{
+    if (not std::filesystem::exists(path)) {
+        return std::nullopt;
+    }
+
+    auto line = std::string{};
+    try {
+        auto fd = std::ifstream{path.string()};
+        line = getline(fd, 512);
+        fd.close();
+
+    } catch (...) {
+        return std::nullopt;
+    }
+
+    hilet cmake_install_start = std::string{"# Install script for directory: "};
+    if (not line.starts_with(cmake_install_start)) {
+        return std::nullopt;
+    }
+
+    auto source_dir = std::filesystem::path{line.substr(cmake_install_start.size())};
+    if (not std::filesystem::exists(source_dir)) {
+        return std::nullopt;
+    }
+
+    return source_dir;
+}
 
 /** Get the full path to source code of this executable.
  *
@@ -112,39 +147,19 @@ hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> theme_files()
  * @return The path to directory of the source code.
  * @retval std::nullopt The executable is not located in its build directory.
  */
-hi_export [[nodiscard]] hi_inline std::optional<std::filesystem::path> source_dir() noexcept
+[[nodiscard]] hi_inline std::optional<std::filesystem::path> source_dir() noexcept
 {
-    using namespace std::literals;
-
     // If the cmake_install.cmake file exists then the executable is located in a build directory.
-    hilet cmake_install_path = executable_dir() / "cmake_install.cmake";
-
-    if (std::filesystem::exists(cmake_install_path)) {
-        auto line = std::string{};
-        try {
-            auto fd = std::ifstream{cmake_install_path.string()};
-            line = getline(fd, 512);
-            fd.close();
-
-        } catch (...) {
-            return std::nullopt;
-        }
-
-        hilet cmake_install_start = "# Install script for directory: "s;
-        if (not line.starts_with(cmake_install_start)) {
-            return std::nullopt;
-        }
-
-        auto source_dir = std::filesystem::path{line.substr(cmake_install_start.size())};
-        if (not std::filesystem::exists(source_dir)) {
-            return std::nullopt;
-        }
-
-        return source_dir;
-
-    } else {
-        return std::nullopt;
+    if (auto path = source_dir_parse_cmake_install(executable_dir() / "cmake_install.cmake")) {
+        return *path;
     }
+
+    // When using a cmake multi-config generator, the cmake_install.cmake file is located one directory up.
+    if (auto path = source_dir_parse_cmake_install(executable_dir() / ".." / "cmake_install.cmake")) {
+        return *path;
+    }
+
+    return std::nullopt;
 }
 
 /** The full path where HikoGUI is installed during compilation of the application.
