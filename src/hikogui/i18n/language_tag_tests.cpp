@@ -143,7 +143,9 @@ TEST(language_tag, all_variants)
 {
     auto nl_Latn_NL_expected =
         std::vector<tag>{tag::parse("nl-Latn-NL"), tag::parse("nl-NL"), tag::parse("nl-Latn"), tag::parse("nl")};
-    ASSERT_EQ(tag::parse("nl-Latn-NL").all_variants(), nl_Latn_NL_expected);
+    auto nl_latn_NL = tag::parse("nl-Latn-NL");
+    auto nl_latn_NL_result = nl_latn_NL.all_variants();
+    ASSERT_EQ(nl_latn_NL_result, nl_Latn_NL_expected);
 
     auto nl_Latn_BE_expected = std::vector<tag>{
         tag::parse("nl-Latn-BE"),
