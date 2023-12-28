@@ -103,21 +103,6 @@
       }
     },
     {
-      "name": "clangcl-x64-windows",
-      "displayName": "clang-cl",
-      "inherits": "x64-windows",
-      "generator": "Ninja Multi-Config",
-      "cacheVariables": {
-	      "CMAKE_CXX_COMPILER": "clang-cl",
-        "CMAKE_C_COMPILER": "clang-cl"
-      },
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "intelliSenseMode": "windows-clang-x64"
-        }
-      }
-    },
-    {
       "name": "gcc12-x64-linux",
       "displayName": "gcc",
       "inherits": "x64-linux",
@@ -193,27 +178,6 @@
       "displayName": "RelWithDebInfo",
       "inherits": "targets",
       "configurePreset": "clang-x64-windows",
-      "configuration": "RelWithDebInfo"
-    },
-    {
-      "name": "clangcl-x64-windows-dbg",
-      "displayName": "Debug",
-      "inherits": "targets",
-      "configurePreset": "clangcl-x64-windows",
-      "configuration": "Debug"
-    },
-    {
-      "name": "clangcl-x64-windows-rel",
-      "displayName": "Release",
-      "inherits": "targets",
-      "configurePreset": "clangcl-x64-windows",
-      "configuration": "Release"
-    },
-    {
-      "name": "clangcl-x64-windows-rdi",
-      "displayName": "RelWithDebInfo",
-      "inherits": "targets",
-      "configurePreset": "clangcl-x64-windows",
       "configuration": "RelWithDebInfo"
     }
   ]

@@ -185,8 +185,6 @@ class is_datum_type : public std::false_type {};
 hi_export template<>
 class is_datum_type<long long> : public std::true_type {};
 hi_export template<>
-class is_datum_type<decimal> : public std::true_type {};
-hi_export template<>
 class is_datum_type<double> : public std::true_type {};
 hi_export template<>
 class is_datum_type<bool> : public std::true_type {};
@@ -273,7 +271,6 @@ public:
     {
     }
 
-    constexpr explicit datum(decimal value) noexcept : _tag(tag_type::decimal), _value(value) {}
     constexpr explicit datum(std::chrono::year_month_day value) noexcept : _tag(tag_type::year_month_day), _value(value) {}
     explicit datum(std::string value) noexcept : _tag(tag_type::string), _value(new std::string{std::move(value)}) {}
     explicit datum(std::string_view value) noexcept : _tag(tag_type::string), _value(new std::string{value}) {}
@@ -355,13 +352,6 @@ public:
         return *this;
     }
 
-    constexpr datum& operator=(decimal value)
-    {
-        delete_pointer();
-        _tag = tag_type::decimal;
-        _value = value;
-        return *this;
-    }
     constexpr datum& operator=(bool value) noexcept
     {
         delete_pointer();
@@ -447,8 +437,6 @@ public:
         switch (_tag) {
         case tag_type::floating_point:
             return to_bool(get<double>(*this));
-        case tag_type::decimal:
-            return to_bool(get<decimal>(*this));
         case tag_type::boolean:
             return get<bool>(*this);
         case tag_type::integral:
@@ -492,26 +480,8 @@ public:
             return static_cast<T>(get<double>(*this));
         case tag_type::integral:
             return static_cast<T>(get<long long>(*this));
-        case tag_type::decimal:
-            return static_cast<T>(get<decimal>(*this));
         case tag_type::boolean:
             return static_cast<T>(get<bool>(*this));
-        default:
-            throw std::domain_error(std::format("Can't convert {} to floating point", repr(*this)));
-        }
-    }
-
-    constexpr explicit operator decimal() const
-    {
-        switch (_tag) {
-        case tag_type::floating_point:
-            return decimal(get<double>(*this));
-        case tag_type::integral:
-            return decimal(get<long long>(*this));
-        case tag_type::decimal:
-            return get<decimal>(*this);
-        case tag_type::boolean:
-            return decimal(get<bool>(*this));
         default:
             throw std::domain_error(std::format("Can't convert {} to floating point", repr(*this)));
         }
@@ -534,13 +504,6 @@ public:
                 throw std::overflow_error("long long to integral");
             }
             return narrow_cast<T>(*i);
-
-        } else if (auto d = get_if<decimal>(*this)) {
-            hilet r = static_cast<long long>(*d);
-            if (r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
-                throw std::overflow_error("decimal to integral");
-            }
-            return narrow_cast<T>(r);
 
         } else if (auto b = get_if<bool>(*this)) {
             return narrow_cast<T>(*b);
@@ -566,8 +529,6 @@ public:
             return "undefined";
         case tag_type::floating_point:
             return hi::to_string(_value._double);
-        case tag_type::decimal:
-            return to_string(_value._decimal);
         case tag_type::integral:
             return to_string(_value._long_long);
         case tag_type::boolean:
@@ -652,8 +613,6 @@ public:
         switch (_tag) {
         case tag_type::floating_point:
             return "float";
-        case tag_type::decimal:
-            return "decimal";
         case tag_type::integral:
             return "int";
         case tag_type::boolean:
@@ -701,8 +660,6 @@ public:
         switch (_tag) {
         case tag_type::floating_point:
             return std::hash<double>{}(_value._double);
-        case tag_type::decimal:
-            return std::hash<decimal>{}(_value._decimal);
         case tag_type::integral:
             return std::hash<long long>{}(_value._long_long);
         case tag_type::boolean:
@@ -1160,9 +1117,6 @@ public:
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() == doubles.rhs();
 
-        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
-            return decimals.lhs() == decimals.rhs();
-
         } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return long_longs.lhs() == long_longs.rhs();
 
@@ -1190,7 +1144,6 @@ public:
      *
      * Compare are done in the following order:
      * - promote both arguments to `double`.
-     * - promote both arguments to `decimal`.
      * - promote both arguments to `long long`.
      * - promote both arguments to `bool`.
      * - promote both arguments to `std::chrono::year_month_day`.
@@ -1206,7 +1159,6 @@ public:
      *    + monostate = 0,
      *    + floating_point = 1,
      *    + integral = 2,
-     *    + decimal = 3,
      *    + boolean = 4,
      *    + null = 5,
      *    + year_month_day = 6,
@@ -1218,9 +1170,6 @@ public:
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() <=> doubles.rhs();
-
-        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
-            return decimals.lhs() <=> decimals.rhs();
 
         } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return long_longs.lhs() <=> long_longs.rhs();
@@ -1250,10 +1199,10 @@ public:
 
     /** Arithmetic negation.
      *
-     * A arithmetic negation happens when the operand is `double`, `decimal` or `long long`.
+     * A arithmetic negation happens when the operand is `double` or `long long`.
      *
-     * @throws std::domain_error When either argument can not be promoted to `double`,
-     *         `decimal` or `long long`.
+     * @throws std::domain_error When either argument can not be promoted to
+     *         `double` or `long long`.
      * @param lhs The left-hand-side operand of the operation.
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
@@ -1262,9 +1211,6 @@ public:
     {
         if (hilet rhs_double = get_if<double>(rhs)) {
             return datum{-*rhs_double};
-
-        } else if (hilet rhs_decimal = get_if<decimal>(rhs)) {
-            return datum{-*rhs_decimal};
 
         } else if (hilet rhs_long_long = get_if<long long>(rhs)) {
             return datum{-*rhs_long_long};
@@ -1295,14 +1241,14 @@ public:
 
     /** add or concatenate.
      *
-     * A numeric addition happens when both operands are promoted to `double`,
-     * `decimal` or `long long` before the operation is executed.
+     * A numeric addition happens when both operands are promoted to `double` or
+     * `long long` before the operation is executed.
      *
      * A concatenation happens when both operand are promoted to `std::string` or
      * a `std::vector<datum>`.
      *
-     * @throws std::domain_error When either argument can not be promoted to `double`,
-     *         `decimal` or `long long`.
+     * @throws std::domain_error When either argument can not be promoted to
+     *         `double` or `long long`.
      * @param lhs The left-hand-side operand of the operation.
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
@@ -1311,9 +1257,6 @@ public:
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() + doubles.rhs()};
-
-        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
-            return datum{decimals.lhs() + decimals.rhs()};
 
         } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() + long_longs.rhs()};
@@ -1333,11 +1276,11 @@ public:
 
     /** Arithmetic subtract.
      *
-     * Both operands are first promoted to `double`, `decimal` or `long long` before the
+     * Both operands are first promoted to `double` or `long long` before the
      * operation is executed.
      *
-     * @throws std::domain_error When either argument can not be promoted to `double`,
-     *         `decimal` or `long long`.
+     * @throws std::domain_error When either argument can not be promoted to `double`
+     *         or `long long`.
      * @param lhs The left-hand-side operand of the operation.
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
@@ -1346,9 +1289,6 @@ public:
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() - doubles.rhs()};
-
-        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
-            return datum{decimals.lhs() - decimals.rhs()};
 
         } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() - long_longs.rhs()};
@@ -1360,11 +1300,11 @@ public:
 
     /** arithmatic multiply.
      *
-     * Both operands are first promoted to `double`, `decimal` or `long long` before the
+     * Both operands are first promoted to `double` or `long long` before the
      * operation is executed.
      *
-     * @throws std::domain_error When either argument can not be promoted to `double`,
-     *         `decimal` or `long long`.
+     * @throws std::domain_error When either argument can not be promoted to `double`
+     *         or `long long`.
      * @param lhs The left-hand-side operand of the operation.
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
@@ -1373,9 +1313,6 @@ public:
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() * doubles.rhs()};
-
-        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
-            return datum{decimals.lhs() * decimals.rhs()};
 
         } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() * long_longs.rhs()};
@@ -1387,7 +1324,7 @@ public:
 
     /** divide.
      *
-     * Both operands are first promoted to `double`, `decimal` or `long long` before the
+     * Both operands are first promoted to `double` or `long long` before the
      * operation is executed.
      *
      * @throws std::domain_error When either argument can not be promoted to `long long`. Or when
@@ -1403,12 +1340,6 @@ public:
                 throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
             }
             return datum{doubles.lhs() / doubles.rhs()};
-
-        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
-            if (decimals.rhs() == 0) {
-                throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
-            }
-            return datum{decimals.lhs() / decimals.rhs()};
 
         } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() == 0) {
@@ -1622,8 +1553,6 @@ public:
             return "undefined";
         case tag_type::floating_point:
             return std::format("{:.1f}", rhs._value._double);
-        case tag_type::decimal:
-            return to_string(rhs._value._decimal);
         case tag_type::integral:
             return std::format("{}", rhs._value._long_long);
         case tag_type::boolean:
@@ -1685,8 +1614,6 @@ public:
     {
         if constexpr (std::is_same_v<T, double>) {
             return rhs._tag == tag_type::floating_point;
-        } else if constexpr (std::is_same_v<T, decimal>) {
-            return rhs._tag == tag_type::decimal;
         } else if constexpr (std::is_same_v<T, long long>) {
             return rhs._tag == tag_type::integral;
         } else if constexpr (std::is_same_v<T, bool>) {
@@ -1718,8 +1645,6 @@ public:
      *
      * A value can always be promoted to its own type.
      * The following promotions also exist:
-     *  - `decimal` -> `double'
-     *  - `long long` -> `decimal'
      *  - `bool` -> `long long'
      *
      * @tparam To Type to promote the value to.
@@ -1729,10 +1654,8 @@ public:
     [[nodiscard]] friend constexpr bool promotable_to(datum const& rhs) noexcept
     {
         if constexpr (std::is_same_v<To, double>) {
-            return holds_alternative<double>(rhs) or holds_alternative<decimal>(rhs) or holds_alternative<long long>(rhs) or
+            return holds_alternative<double>(rhs) or holds_alternative<long long>(rhs) or
                 holds_alternative<bool>(rhs);
-        } else if constexpr (std::is_same_v<To, decimal>) {
-            return holds_alternative<decimal>(rhs) or holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
         } else if constexpr (std::is_same_v<To, long long>) {
             return holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
         } else {
@@ -1744,7 +1667,7 @@ public:
      *
      * It is monostate behavior if the type does not match the stored value.
      *
-     * @tparam T Type to check, must be one of: `bool`, `double`, `long long`, `decimal`, `std::chrono::year_month_day`
+     * @tparam T Type to check, must be one of: `bool`, `double`, `long long`, `std::chrono::year_month_day`
      * @param rhs The datum to get the value from.
      * @return A copy of the value in the datum.
      */
@@ -1754,8 +1677,6 @@ public:
         hi_axiom(holds_alternative<T>(rhs));
         if constexpr (std::is_same_v<T, double>) {
             return rhs._value._double;
-        } else if constexpr (std::is_same_v<T, decimal>) {
-            return rhs._value._decimal;
         } else if constexpr (std::is_same_v<T, long long>) {
             return rhs._value._long_long;
         } else if constexpr (std::is_same_v<T, bool>) {
@@ -1779,7 +1700,7 @@ public:
      *
      * It is undefined behavior if the type does not match the stored value.
      *
-     * @tparam T Type to check, must be one of: `bool`, `double`, `long long`, `decimal`, `std::chrono::year_month_day`
+     * @tparam T Type to check, must be one of: `bool`, `double`, `long long`, `std::chrono::year_month_day`
      * @param rhs The datum to get the value from.
      * @return A copy of the value in the datum.
      */
@@ -1789,8 +1710,6 @@ public:
         hi_axiom(holds_alternative<T>(rhs));
         if constexpr (std::is_same_v<T, double>) {
             return rhs._value._double;
-        } else if constexpr (std::is_same_v<T, decimal>) {
-            return rhs._value._decimal;
         } else if constexpr (std::is_same_v<T, long long>) {
             return rhs._value._long_long;
         } else if constexpr (std::is_same_v<T, bool>) {
@@ -1898,12 +1817,11 @@ private:
         monostate = 0,
         floating_point = 1,
         integral = 2,
-        decimal = 3,
-        boolean = 4,
-        null = 5,
-        year_month_day = 6,
-        flow_continue = 7,
-        flow_break = 8,
+        boolean = 3,
+        null = 4,
+        year_month_day = 5,
+        flow_continue = 6,
+        flow_break = 7,
 
         // pointers are detected by: `std::to_underlying(tag_type) < 0`.
         string = -1,
@@ -1916,7 +1834,6 @@ private:
     union value_type {
         double _double;
         long long _long_long;
-        decimal _decimal;
         bool _bool;
         std::chrono::year_month_day _year_month_day;
         std::string *_string;
@@ -1926,7 +1843,6 @@ private:
 
         constexpr value_type(numeric_integral auto value) noexcept : _long_long(narrow_cast<long long>(value)) {}
         constexpr value_type(std::floating_point auto value) noexcept : _double(narrow_cast<double>(value)) {}
-        constexpr value_type(decimal value) noexcept : _decimal(value) {}
         constexpr value_type(bool value) noexcept : _bool(value) {}
         constexpr value_type(std::chrono::year_month_day value) noexcept : _year_month_day(value) {}
         constexpr value_type(std::string *value) noexcept : _string(value) {}

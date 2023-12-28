@@ -183,26 +183,26 @@ target_include_directories(hikogui ${HI_SCOPE} ${Vulkan_INCLUDE_DIRS})
 
 # HikoGUI only uses Vulkan-1.2; we can limit VMA to that version as well.
 # This solves a common issue with: "Cant find entrypoint for vkGetDeviceBufferMemoryRequirements procedure"
-target_compile_definitions(hikogui ${HI_SCOPE} -DVMA_VULKAN_VERSION=1002000)
+target_compile_definitions(hikogui ${HI_SCOPE} "VMA_VULKAN_VERSION=1002000")
 if (WIN32)
     # Add vulkan win32 surface support.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DVK_USE_PLATFORM_WIN32_KHR)
+    target_compile_definitions(hikogui ${HI_SCOPE} "VK_USE_PLATFORM_WIN32_KHR")
 
     # vulkan.h will include the windows headers, so we must define all sorts of stuff on the command line.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DUNICODE)
-    target_compile_definitions(hikogui ${HI_SCOPE} -D_UNICODE)
-    target_compile_definitions(hikogui ${HI_SCOPE} -D_CRT_SECURE_NO_WARNINGS)
-    target_compile_definitions(hikogui ${HI_SCOPE} -DNOMINMAX)
-    target_compile_definitions(hikogui ${HI_SCOPE} -DWIN32_LEAN_AND_MEAN)
-    target_compile_definitions(hikogui ${HI_SCOPE} -DWIN32_NO_STATUS)
+    target_compile_definitions(hikogui ${HI_SCOPE} "UNICODE")
+    target_compile_definitions(hikogui ${HI_SCOPE} "_UNICODE")
+    target_compile_definitions(hikogui ${HI_SCOPE} "_CRT_SECURE_NO_WARNINGS")
+    target_compile_definitions(hikogui ${HI_SCOPE} "NOMINMAX")
+    target_compile_definitions(hikogui ${HI_SCOPE} "WIN32_LEAN_AND_MEAN")
+    target_compile_definitions(hikogui ${HI_SCOPE} "WIN32_NO_STATUS")
 
     # Minimum Windows 10.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DWINVER=0x0a00)
-    target_compile_definitions(hikogui ${HI_SCOPE} -D_WIN32_WINNT=0x0a00)
+    target_compile_definitions(hikogui ${HI_SCOPE} "WINVER=0x0a00")
+    target_compile_definitions(hikogui ${HI_SCOPE} "_WIN32_WINNT=0x0a00")
 
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DVK_USE_PLATFORM_METAL_EXT)
+    target_compile_definitions(hikogui ${HI_SCOPE} "VK_USE_PLATFORM_METAL_EXT")
 endif()
 
 if(HI_ENABLE_MODULES)

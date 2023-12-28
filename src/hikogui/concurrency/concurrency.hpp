@@ -9,12 +9,10 @@
 #include "callback_flags.hpp" // export
 #include "global_state.hpp" // export
 #include "id_factory.hpp" // export
-#include "rcu.hpp" // export
 #include "subsystem.hpp" // export
 #include "thread.hpp" // export
 #include "unfair_mutex.hpp" // export
 #include "unfair_recursive_mutex.hpp" // export
-#include "wfree_idle_count.hpp" // export
 
 hi_export_module(hikogui.concurrency);
 
