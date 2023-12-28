@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         CMAKE_CXX_COMPILER: ["cl", "clang"]
-        ARCHITECTURE: ["x86-64-v3"]
+        ARCHITECTURE: ["x86-64", "x86-64-v2", "x86-64-v3"]
 
     name: x64-windows ${{matrix.CMAKE_CXX_COMPILER}} ${{matrix.ARCHITECTURE}}
 
@@ -117,9 +117,9 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config Debug --parallel 1
     
-      - name: ✔ ❌✔️ CTest Debug
+      - name: ✔ ❌✔️ Google-Test Debug
         working-directory: ${{env.BUILD_DIR}}
-        run: ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}_debug.xml" --build-config Debug
+        run: Debug/hikogui_tests-debug "--gtest_output=xml:${{github.workspace}}\test_results_${{env.MATRIX_ID}}_debug.xml"
 
       - name: 📦 CMake ➔ Install Debug
         working-directory: ${{env.BUILD_DIR}}
@@ -129,9 +129,9 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config RelWithDebInfo --parallel 1
     
-      - name: ✔ ❌✔️ CTest RelWithDebInfo
+      - name: ✔ ❌✔️ Google-Test RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
-        run: ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}_rdi.xml" --build-config RelWithDebInfo
+        run: RelWithDebInfo/hikogui_tests-rdi "--gtest_output=xml:${{github.workspace}}\test_results_${{env.MATRIX_ID}}_rdi.xml"
 
       - name: 📦 CMake ➔ Install RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
@@ -141,9 +141,9 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config Release --parallel 1
     
-      - name: ✔ ❌✔️ CTest Release
+      - name: ✔ ❌✔️ Google-Test Release
         working-directory: ${{env.BUILD_DIR}}
-        run: ctest --extra-verbose --output-junit "${{github.workspace}}\test_results_${{env.MATRIX_ID}}.xml" --build-config Release
+        run: Release/hikogui_tests "--gtest_output=xml:${{github.workspace}}\test_results_${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install Release
         working-directory: ${{env.BUILD_DIR}}
