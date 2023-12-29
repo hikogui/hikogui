@@ -75,14 +75,14 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             _grid_widget->draw(context);
         }
     }
 
     hitbox hitbox_test(point2 position) const noexcept override
     {
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             auto r = hitbox{};
             r = _grid_widget->hitbox_test_from_parent(position, r);
             return r;
@@ -93,7 +93,7 @@ public:
     
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             return _grid_widget->accepts_keyboard_focus(group);
         } else {
             return false;
@@ -119,7 +119,7 @@ private:
     {
         while (true) {
             {
-                auto proxy = _device_list.copy();
+                auto proxy = _device_list.get();
                 proxy->clear();
                 for (auto& device : audio_devices(hi::audio_device_state::active, *direction)) {
                     proxy->emplace_back(device.id(), device.label());

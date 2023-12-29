@@ -89,7 +89,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/global_state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/id_factory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/concurrency.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/rcu.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/subsystem.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/thread.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/thread_intf.hpp
@@ -98,7 +97,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_recursive_mutex.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/wfree_idle_count.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/byte_string.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/function_fifo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/functional.hpp
@@ -106,16 +104,12 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/container.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/secure_vector.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/small_map.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/small_vector.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/stable_set.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/stack.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/tree.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/undo_stack.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/vector_span.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/void_span.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/wfree_fifo.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/wfree_unordered_map.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/awaitable.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/generator.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/coroutine.hpp
@@ -128,8 +122,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_timer_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/dispatch.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/function_timer.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_intf.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_intf.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/scoped_task.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event.hpp
@@ -174,60 +167,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/otype_sfnt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/otype_utilities.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/true_type_font.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_add_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_arguments.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_assign_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_binary_operator_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_bit_and_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_bit_or_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_bit_xor_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_call_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_decrement_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_div_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_eq_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_evaluation_context.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_filter_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_ge_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_gt_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_increment_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_index_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_add_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_and_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_div_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_mod_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_mul_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_or_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_shl_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_shr_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_sub_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_inplace_xor_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_invert_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_le_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_literal_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_logical_and_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_logical_not_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_logical_or_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_lt_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_map_literal_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_member_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_minus_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_mod_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_mul_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_name_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_ne_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_parser.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_plus_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_post_process_context.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_pow_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_shl_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_shr_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_sub_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_ternary_operator_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_unary_operator_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_vector_literal_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/draw_context_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/draw_context_impl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GFX/gfx_device_vulkan_impl.hpp
@@ -277,6 +216,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_id.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_layout.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/aarectangle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/alignment.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/axis.hpp
@@ -361,25 +301,17 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/net/packet_buffer.hpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/net/stream.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/bigint.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/bound_integer.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/decimal.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/fixed.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/interval.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_carry.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_overflow.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/numeric.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/safe_int.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observer_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observed_value.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/observer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/shared_state.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lexer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lookahead_iterator.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/operator.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/parse_location.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/parser.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/placement.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/token.hpp
@@ -423,23 +355,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings_win32_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/parser.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_block_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_break_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_continue_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_do_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_expression_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_for_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_function_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_if_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_parse_context.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_placeholder_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_return_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_string_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_top_node.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_while_node.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/counters.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/delayed_format.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/format_check.hpp
@@ -561,7 +476,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toolbar_tab_button_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toolbar_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/widget_mode.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_macos_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_win32_widget.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_widget.hpp

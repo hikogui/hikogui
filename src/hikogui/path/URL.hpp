@@ -222,7 +222,14 @@ public:
                 if (auto path = find_path(resource_dirs(), ref)) {
                     return *path;
                 } else {
-                    throw url_error(std::format("Resource {} not found.", to_string(*this)));
+                    auto search_path = std::string{};
+                    for (auto p: resource_dirs()) {
+                        if (not search_path.empty()) {
+                            search_path += ";";
+                        }
+                        search_path += p.string();
+                    }
+                    throw url_error(std::format("Resource '{}' not found in search-path: '{}'", to_string(*this), search_path));
                 }
 
             } else if (scheme_ == "file") {

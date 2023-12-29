@@ -27,7 +27,8 @@
 
 hi_export_module(hikogui.widgets.with_label_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
 concept with_label_widget_attribute = label_widget_attribute<Context>;
@@ -116,7 +117,10 @@ public:
 
     attributes_type attributes;
 
-    with_label_widget(not_null<widget_intf const *> parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+    with_label_widget(
+        not_null<widget_intf const *> parent,
+        attributes_type attributes,
+        not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes))
     {
         _button_widget =
@@ -129,10 +133,11 @@ public:
             this, this->attributes.other_label, this->attributes.alignment, this->attributes.text_style);
 
         _button_widget_cbt = _button_widget->subscribe([&] {
-            auto state_ = state();
-            _on_label_widget->mode = state_ == button_state::on ? widget_mode::display : widget_mode::invisible;
-            _off_label_widget->mode = state_ == button_state::off ? widget_mode::display : widget_mode::invisible;
-            _other_label_widget->mode = state_ == button_state::other ? widget_mode::display : widget_mode::invisible;
+            set_value(_button_widget->value());
+
+            _on_label_widget->set_mode(value() == widget_value::on ? widget_mode::display : widget_mode::invisible);
+            _off_label_widget->set_mode(value() == widget_value::off ? widget_mode::display : widget_mode::invisible);
+            _other_label_widget->set_mode(value() == widget_value::other ? widget_mode::display : widget_mode::invisible);
 
             this->request_redraw();
             this->notifier();
@@ -191,7 +196,12 @@ public:
         forward_observer<Value> OnValue,
         forward_observer<Value> OffValue,
         with_label_widget_attribute... Attributes>
-    with_label_widget(not_null<widget_intf const *> parent, Value&& value, OnValue&& on_value, OffValue&& off_value, Attributes&&...attributes) noexcept
+    with_label_widget(
+        not_null<widget_intf const *> parent,
+        Value&& value,
+        OnValue&& on_value,
+        OffValue&& off_value,
+        Attributes&&...attributes) noexcept
         requires requires {
             button_widget_type::make_default_delegate(
                 std::forward<Value>(value), std::forward<OnValue>(on_value), std::forward<OffValue>(off_value));
@@ -206,15 +216,6 @@ public:
                 std::forward<OnValue>(on_value),
                 std::forward<OffValue>(off_value)))
     {
-    }
-
-    /** Get the current state of the button.
-     * @return The state of the button: on / off / other.
-     */
-    [[nodiscard]] button_state state() const noexcept
-    {
-        hi_axiom(loop::main().on_thread());
-        return _button_widget->state();
     }
 
     /// @privatesection
@@ -289,7 +290,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             for (hilet& cell : _grid) {
                 if (cell.value == grid_cell_type::button) {
                     _button_widget->draw(context);
@@ -309,13 +310,13 @@ public:
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         co_yield *_button_widget;
-        if (include_invisible or *_on_label_widget->mode > widget_mode::invisible) {
+        if (include_invisible or _on_label_widget->mode() > widget_mode::invisible) {
             co_yield *_on_label_widget;
         }
-        if (include_invisible or *_off_label_widget->mode > widget_mode::invisible) {
+        if (include_invisible or _off_label_widget->mode() > widget_mode::invisible) {
             co_yield *_off_label_widget;
         }
-        if (include_invisible or *_other_label_widget->mode > widget_mode::invisible) {
+        if (include_invisible or _other_label_widget->mode() > widget_mode::invisible) {
             co_yield *_other_label_widget;
         }
     }
@@ -324,7 +325,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial and layout().contains(position)) {
+        if (mode() >= widget_mode::partial and layout().contains(position)) {
             // Accept the hitbox of the with_label_widget on behalf of the button_widget.
             return {_button_widget->id, _layout.elevation, hitbox_type::button};
         } else {
@@ -346,4 +347,5 @@ protected:
     callback<void()> _button_widget_cbt;
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

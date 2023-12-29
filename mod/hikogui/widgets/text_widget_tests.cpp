@@ -80,7 +80,7 @@ protected:
         window_widget = std::make_unique<window_widget_moc>(window.get());
 
         widget = std::make_unique<hi::text_widget>(window_widget.get(), text);
-        widget->mode = hi::widget_mode::enabled;
+        widget->set_mode(widget_mode::enabled);
 
         auto constraints = widget->update_constraints();
         auto layout = widget_layout{};

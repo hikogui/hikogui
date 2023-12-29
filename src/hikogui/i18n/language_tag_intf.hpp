@@ -127,9 +127,10 @@ public:
 
         // And languages variants from expanded variants.
         for (hilet variant : variants()) {
-            for (hilet expanded_variant : variant.expand().variants()) {
-                if (std::find(r.begin(), r.end(), expanded_variant) == r.end()) {
-                    r.push_back(expanded_variant);
+            auto expanded_variant = variant.expand();
+            for (hilet expanded_variant_variants : expanded_variant.variants()) {
+                if (std::find(r.begin(), r.end(), expanded_variant_variants) == r.end()) {
+                    r.push_back(expanded_variant_variants);
                 }
             }
         }

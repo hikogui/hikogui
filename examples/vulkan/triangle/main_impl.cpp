@@ -76,7 +76,7 @@ public:
 
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
+        if (mode() > hi::widget_mode::invisible and overlaps(context, layout())) {
             // The 3D drawing will be done directly on the swap-chain before the GUI is drawn.
             // By making a hole in the GUI we can show the 3D drawing underneath it, otherwise
             // the solid-background color of the GUI would show instead.

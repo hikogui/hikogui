@@ -106,7 +106,12 @@ public:
         auto aperture_constraints = _content_constraints;
         aperture_constraints.minimum = extent2{0, 0};
 
-        return aperture_constraints.internalize_margins().constrain(*minimum, *maximum);
+        aperture_constraints = aperture_constraints.constrain(*minimum, *maximum);
+        aperture_constraints += extent2{
+            _content_constraints.margins.left() + _content_constraints.margins.right(),
+            _content_constraints.margins.top() + _content_constraints.margins.bottom()};
+        aperture_constraints.margins = {};
+        return aperture_constraints;
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -148,7 +153,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*mode > widget_mode::invisible) {
+        if (mode() > widget_mode::invisible) {
             _content->draw(context);
         }
     }
@@ -157,7 +162,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (*mode >= widget_mode::partial) {
+        if (mode() >= widget_mode::partial) {
             auto r = _content->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {
