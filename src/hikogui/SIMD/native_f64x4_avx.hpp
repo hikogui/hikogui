@@ -181,7 +181,7 @@ struct native_simd<double,4> {
         return native_simd{_mm256_castsi256_pd(ones)};
 #else
         auto ones = _mm256_setzero_pd();
-        ones = _mm256_cmpeq_pd(ones, ones);
+        ones = _mm256_cmp_pd(ones, ones, _CMP_EQ_OQ);
         return native_simd{ones};
 #endif
     }

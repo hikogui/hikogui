@@ -96,7 +96,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/global_state.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/id_factory.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/concurrency.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/rcu.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/subsystem.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/thread.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/thread_intf.ixx
@@ -105,7 +104,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/unfair_mutex_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/unfair_mutex_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/unfair_recursive_mutex.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/concurrency/wfree_idle_count.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/byte_string.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/function_fifo.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/functional.ixx
@@ -113,16 +111,12 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/container.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/polymorphic_optional.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/secure_vector.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/small_map.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/small_vector.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/stable_set.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/stack.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/tree.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/undo_stack.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/vector_span.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/void_span.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/wfree_fifo.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/wfree_unordered_map.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/awaitable.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/generator.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/coroutine.ixx
@@ -180,60 +174,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_sfnt.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/otype_utilities.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/font/true_type_font.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_add_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_arguments.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_assign_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_binary_operator_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_bit_and_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_bit_or_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_bit_xor_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_call_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_decrement_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_div_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_eq_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_evaluation_context.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_filter_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_ge_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_gt_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_increment_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_index_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_add_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_and_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_div_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_mod_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_mul_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_or_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_shl_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_shr_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_sub_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_inplace_xor_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_invert_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_le_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_literal_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_logical_and_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_logical_not_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_logical_or_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_lt_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_map_literal_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_member_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_minus_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_mod_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_mul_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_name_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_ne_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_parser.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_plus_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_post_process_context.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_pow_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_shl_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_shr_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_sub_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_ternary_operator_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_unary_operator_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula_vector_literal_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/formula/formula.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/draw_context_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/draw_context_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/GFX/gfx_device_vulkan_impl.ixx
@@ -367,15 +307,9 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/net/packet_buffer.ixx
     #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/net/stream.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/bigint.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/bound_integer.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/decimal.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/fixed.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/interval.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/int_carry.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/int_overflow.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/numeric.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/polynomial.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/numeric/safe_int.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/group_ptr.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observer_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/observer/observed.ixx
@@ -384,7 +318,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/lexer.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/lookahead_iterator.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/operator.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/parse_location.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/parser.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/placement.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/parser/token.ixx
@@ -429,23 +362,6 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/user_settings.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/user_settings_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/settings/user_settings_win32_impl.ixx>
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/parser.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_block_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_break_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_continue_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_do_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_expression_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_for_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_function_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_if_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_parse_context.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_placeholder_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_return_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_string_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_top_node.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/skeleton/skeleton_while_node.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/telemetry/counters.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/telemetry/delayed_format.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/telemetry/format_check.ixx

@@ -5,6 +5,12 @@ target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 set_target_properties(hikogui_tests PROPERTIES DEBUG_POSTFIX "-debug")
 set_target_properties(hikogui_tests PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
 
+# vscode will run each discoverred test as a separate executable invocation
+# wish has a extreme performance impact of about 100x slower. That is why
+# we use add_test as if it is a single test.
+#gtest_discover_tests(hikogui_tests)
+add_test(NAME hikogui_tests COMMAND hikogui_tests)
+
 if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     set(ASAN_DLL "${CMAKE_CXX_COMPILER}")
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -16,8 +22,8 @@ if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     add_custom_command(TARGET hikogui_tests PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_tests>)
 
-    target_compile_definitions(hikogui_tests PRIVATE "-D_DISABLE_VECTOR_ANNOTATION")
-    target_compile_definitions(hikogui_tests PRIVATE "-D_DISABLE_STRING_ANNOTATION")
+    target_compile_definitions(hikogui_tests PRIVATE "_DISABLE_VECTOR_ANNOTATION")
+    target_compile_definitions(hikogui_tests PRIVATE "_DISABLE_STRING_ANNOTATION")
     target_compile_options(hikogui_tests PRIVATE -fsanitize=address)
 
 elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
@@ -60,17 +66,13 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/rcu_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/small_map_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/tree_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/generator_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_char_map_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_weight_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/formula/formula_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/matrix3_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point2_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point3_tests.cpp
@@ -92,13 +94,8 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/pixmap_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/spreadsheet_address_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/bigint_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/bound_integer_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/decimal_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/interval_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_carry_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_overflow_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/safe_int_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/shared_state_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lexer_tests.cpp
@@ -112,7 +109,6 @@ target_sources(hikogui_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/sip_hash_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/skeleton/skeleton_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/counters_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/format_check_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/grapheme_tests.cpp
@@ -140,5 +136,3 @@ target_sources(hikogui_tests PRIVATE
 )
 
 show_build_target_properties(hikogui_tests)
-#gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
-add_test(NAME hikogui_tests COMMAND hikogui_tests)
