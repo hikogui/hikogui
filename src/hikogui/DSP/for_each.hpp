@@ -206,7 +206,6 @@ constexpr void dsp_for_each(T *r, T *r_last, Args... args) noexcept
     }
 #endif
 
-    while (r_first
 }
 
 

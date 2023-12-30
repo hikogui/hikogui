@@ -11,10 +11,27 @@
 #include "../macros.hpp"
 #include <array>
 #include <optional>
+#include <concepts>
 
 hi_export_module(hikogui.graphic_path.bezier);
 
 hi_export namespace hi { inline namespace v1 {
+
+namespace detail {
+
+template<typename T>
+[[nodiscard]] constexpr T bezier_broadcast(float x) noexcept
+{
+    return T::broadcast(x);
+}
+
+template<>
+[[nodiscard]] constexpr float bezier_broadcast(float x) noexcept
+{
+    return x;
+}
+
+}
 
 // B(t)=(P_{2}-P_{1})t+P_{1}
 template<typename T>
@@ -27,33 +44,43 @@ constexpr std::array<T, 2> bezierToPolynomial(T P1, T P2) noexcept
 template<typename T>
 constexpr std::array<T, 3> bezierToPolynomial(T P1, T C, T P2) noexcept
 {
-    return {P1 - C * 2 + P2, (C - P1) * 2, P1};
+    constexpr auto _2 = detail::bezier_broadcast<T>(2);
+    return {P1 - C * _2 + P2, (C - P1) * _2, P1};
 }
 
 // B(t)=(-P_{1}+3C_{1}-3C_{2}+P_{2})t^{3}+(3P_{1}-6_{1}+3C_{2})t^{2}+(-3P_{1}+3C_{1})t+P_{1}
 template<typename T>
 constexpr std::array<T, 4> bezierToPolynomial(T P1, T C1, T C2, T P2) noexcept
 {
-    return {-P1 + C1 * 3 - C2 * 3 + P2, P1 * 3 - C1 * 6 + C2 * 3, P1 * -3 + C1 * 3, P1};
+    constexpr auto _3 = detail::bezier_broadcast<T>(3);
+    constexpr auto _6 = detail::bezier_broadcast<T>(6);
+    constexpr auto min_3 = detail::bezier_broadcast<T>(-3);
+    return {-P1 + C1 * _3 - C2 * _3 + P2, P1 * _3 - C1 * _6 + C2 * _3, P1 * min_3 + C1 * _3, P1};
 }
 
 constexpr point2 bezierPointAt(point2 P1, point2 P2, float t) noexcept
 {
+    hilet t_ = f32x4::broadcast(t);
     hilet[a, b] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(P2));
-    return point2{a * t + b};
+    return point2{a * t_ + b};
 }
 
 constexpr point2 bezierPointAt(point2 P1, point2 C, point2 P2, float t) noexcept
 {
+    hilet t_ = f32x4::broadcast(t);
     hilet[a, b, c] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C), static_cast<f32x4>(P2));
-    return point2{a * t * t + b * t + c};
+    return point2{a * t_ * t_ + b * t_ + c};
 }
 
 constexpr point2 bezierPointAt(point2 P1, point2 C1, point2 C2, point2 P2, float t) noexcept
 {
+    hilet t_ = f32x4::broadcast(t);
+    hilet tt_ = t_ * t_;
+    hilet ttt_ = tt_ * t_;
+
     hilet[a, b, c, d] =
         bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C1), static_cast<f32x4>(C2), static_cast<f32x4>(P2));
-    return point2{a * t * t * t + b * t * t + c * t + d};
+    return point2{a * ttt_ + b * tt_ + c * t_ + d};
 }
 
 constexpr vector2 bezierTangentAt(point2 P1, point2 P2, float t) noexcept
@@ -63,21 +90,28 @@ constexpr vector2 bezierTangentAt(point2 P1, point2 P2, float t) noexcept
 
 constexpr vector2 bezierTangentAt(point2 P1, point2 C, point2 P2, float t) noexcept
 {
+    constexpr auto _2 = f32x4::broadcast(2);
+    hilet t_ = f32x4::broadcast(t);
     hilet P1_ = static_cast<f32x4>(P1);
     hilet C_ = static_cast<f32x4>(C);
     hilet P2_ = static_cast<f32x4>(P2);
 
-    return vector2{2 * t * (P2_ - 2 * C_ + P1_) + 2 * (C_ - P1_)};
+    return vector2{_2 * t_ * (P2_ - _2 * C_ + P1_) + _2 * (C_ - P1_)};
 }
 
 constexpr vector2 bezierTangentAt(point2 P1, point2 C1, point2 C2, point2 P2, float t) noexcept
 {
+    constexpr auto _2 = f32x4::broadcast(2);
+    constexpr auto _3 = f32x4::broadcast(3);
+    constexpr auto _6 = f32x4::broadcast(6);
+    hilet t_ = f32x4::broadcast(t);
+    hilet tt_ = t_ * t_;
     hilet P1_ = static_cast<f32x4>(P1);
     hilet C1_ = static_cast<f32x4>(C1);
     hilet C2_ = static_cast<f32x4>(C2);
     hilet P2_ = static_cast<f32x4>(P2);
 
-    return vector2{3 * t * t * (P2_ - 3 * C2_ + 3 * C1_ - P1_) + 6 * t * (C2_ - 2 * C1_ + P1_) + 3 * (C1_ - P1_)};
+    return vector2{_3 * tt_ * (P2_ - _3 * C2_ + _3 * C1_ - P1_) + _6 * t_ * (C2_ - _2 * C1_ + P1_) + _3 * (C1_ - P1_)};
 }
 
 hi_inline lean_vector<float> bezierFindT(float P1, float P2, float x) noexcept
@@ -119,13 +153,14 @@ hi_inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, p
  */
 hi_inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 C, point2 P2, point2 P) noexcept
 {
+    constexpr auto _2 = f32x4::broadcast(2);
     hilet P1_ = static_cast<f32x4>(P1);
     hilet P2_ = static_cast<f32x4>(P2);
     hilet C_ = static_cast<f32x4>(C);
 
     hilet p = P - P1;
     hilet p1 = C - P1;
-    hilet p2 = vector2{P2_ - (2 * C_) + P1_};
+    hilet p2 = vector2{P2_ - (_2 * C_) + P1_};
 
     hilet a = dot(p2, p2);
     hilet b = 3 * dot(p1, p2);

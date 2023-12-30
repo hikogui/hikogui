@@ -31,35 +31,6 @@ CmpHelperNE(const char *lhs_expression, const char *rhs_expression, ::hi::simd<T
     return ::testing::internal::CmpHelperEQFailure(lhs_expression, rhs_expression, lhs, rhs);
 }
 
-// The helper function for {ASSERT|EXPECT}_EQ.
-template<typename T, std::size_t N>
-::testing::AssertionResult CmpHelperEQ(
-    const char *lhs_expression,
-    const char *rhs_expression,
-    ::hi::native_simd<T, N> const& lhs,
-    ::hi::native_simd<T, N> const& rhs)
-{
-    if (equal(lhs, rhs)) {
-        return ::testing::AssertionSuccess();
-    }
-
-    return ::testing::internal::CmpHelperEQFailure(lhs_expression, rhs_expression, lhs, rhs);
-}
-
-template<typename T, std::size_t N>
-::testing::AssertionResult CmpHelperNE(
-    const char *lhs_expression,
-    const char *rhs_expression,
-    ::hi::native_simd<T, N> const& lhs,
-    ::hi::native_simd<T, N> const& rhs)
-{
-    if (not equal(lhs, rhs)) {
-        return ::testing::AssertionSuccess();
-    }
-
-    return ::testing::internal::CmpHelperEQFailure(lhs_expression, rhs_expression, lhs, rhs);
-}
-
 } // namespace simd_tests
 
 #define HI_ASSERT_SIMD_EQ(val1, val2) ASSERT_PRED_FORMAT2(simd_tests::CmpHelperEQ, val1, val2)
@@ -116,8 +87,7 @@ TEST(simd, Length)
 {
     hilet tmp = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
 
-    ASSERT_EQ(squared_hypot<0b0111>(tmp), 29.0f);
-    ASSERT_NEAR(hypot<0b0111>(tmp), 5.3851f, 0.001f);
+    ASSERT_NEAR(hypot<0b0111>(tmp).x(), 5.3851f, 0.001f);
 }
 
 TEST(simd, DotProduct)
@@ -125,15 +95,7 @@ TEST(simd, DotProduct)
     hilet a = f32x4(1.0f, 3.0f, -5.0f, 0.0f);
     hilet b = f32x4(4.0f, -2.0f, -1.0f, 0.0f);
 
-    ASSERT_EQ(dot<0b0111>(a, b), 3.0f);
-}
-
-TEST(simd, CrossProduct)
-{
-    hilet a = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
-    hilet b = f32x4(5.0f, 6.0f, 7.0f, 0.0f);
-
-    HI_ASSERT_SIMD_EQ(cross_3D(a, b), f32x4(-3.0f, 6.0f, -3.0f));
+    ASSERT_EQ(dot<0b0111>(a, b).x(), 3.0f);
 }
 
 TEST(simd, Getters)
@@ -185,52 +147,6 @@ TEST(simd, Setters)
     HI_ASSERT_SIMD_EQ(tmp, f32x4(22.0f, 23.0f, 24.0f, 25.0f));
 }
 
-TEST(simd, Inserts_f32x4)
-{
-    constexpr auto tmp1 = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
-    constexpr auto tmp2 = f32x4{42.0f, 43.0f, 44.0f, 45.0f};
-
-    static_assert(equal(insert<0, 0>(tmp1, tmp2), f32x4(42.0f, 3.0f, 4.0f, 5.0f)));
-    static_assert(equal(insert<0, 1>(tmp1, tmp2), f32x4(2.0f, 42.0f, 4.0f, 5.0f)));
-    static_assert(equal(insert<0, 2>(tmp1, tmp2), f32x4(2.0f, 3.0f, 42.0f, 5.0f)));
-    static_assert(equal(insert<0, 3>(tmp1, tmp2), f32x4(2.0f, 3.0f, 4.0f, 42.0f)));
-
-    static_assert(equal(insert<1, 0>(tmp1, tmp2), f32x4(43.0f, 3.0f, 4.0f, 5.0f)));
-    static_assert(equal(insert<1, 1>(tmp1, tmp2), f32x4(2.0f, 43.0f, 4.0f, 5.0f)));
-    static_assert(equal(insert<1, 2>(tmp1, tmp2), f32x4(2.0f, 3.0f, 43.0f, 5.0f)));
-    static_assert(equal(insert<1, 3>(tmp1, tmp2), f32x4(2.0f, 3.0f, 4.0f, 43.0f)));
-
-    static_assert(equal(insert<2, 0>(tmp1, tmp2), f32x4(44.0f, 3.0f, 4.0f, 5.0f)));
-    static_assert(equal(insert<2, 1>(tmp1, tmp2), f32x4(2.0f, 44.0f, 4.0f, 5.0f)));
-    static_assert(equal(insert<2, 2>(tmp1, tmp2), f32x4(2.0f, 3.0f, 44.0f, 5.0f)));
-    static_assert(equal(insert<2, 3>(tmp1, tmp2), f32x4(2.0f, 3.0f, 4.0f, 44.0f)));
-
-    static_assert(equal(insert<3, 0>(tmp1, tmp2), f32x4(45.0f, 3.0f, 4.0f, 5.0f)));
-    static_assert(equal(insert<3, 1>(tmp1, tmp2), f32x4(2.0f, 45.0f, 4.0f, 5.0f)));
-    static_assert(equal(insert<3, 2>(tmp1, tmp2), f32x4(2.0f, 3.0f, 45.0f, 5.0f)));
-    static_assert(equal(insert<3, 3>(tmp1, tmp2), f32x4(2.0f, 3.0f, 4.0f, 45.0f)));
-}
-
-TEST(simd, Inserts_u64x2)
-{
-    constexpr auto tmp1 = u64x2{2, 3};
-    constexpr auto tmp2 = u64x2{42, 43};
-
-    static_assert(equal(insert<0, 0>(tmp1, tmp2), u64x2(42, 3)));
-    static_assert(equal(insert<0, 1>(tmp1, tmp2), u64x2(2, 42)));
-    static_assert(equal(insert<1, 0>(tmp1, tmp2), u64x2(43, 3)));
-    static_assert(equal(insert<1, 1>(tmp1, tmp2), u64x2(2, 43)));
-
-    auto r00 = insert<0, 0>(tmp1, tmp2);
-    HI_ASSERT_SIMD_EQ(r00, u64x2(42, 3));
-    auto r01 = insert<0, 1>(tmp1, tmp2);
-    HI_ASSERT_SIMD_EQ(r01, u64x2(2, 42));
-    auto r10 = insert<1, 0>(tmp1, tmp2);
-    HI_ASSERT_SIMD_EQ(r10, u64x2(43, 3));
-    auto r11 = insert<1, 1>(tmp1, tmp2);
-    HI_ASSERT_SIMD_EQ(r11, u64x2(2, 43));
-}
-
 TEST(simd, Swizzle2)
 {
     hilet tmp = f32x2{2.0f, 3.0f};
@@ -254,143 +170,6 @@ TEST(simd, Swizzle2)
     HI_ASSERT_SIMD_EQ(tmp._1y(), f32x2(1.0f, 3.0f));
     HI_ASSERT_SIMD_EQ(tmp._10(), f32x2(1.0f, 0.0f));
     HI_ASSERT_SIMD_EQ(tmp._11(), f32x2(1.0f, 1.0f));
-}
-
-TEST(simd, Swizzle3)
-{
-    using f32x3 = simd<float, 3>;
-
-    hilet tmp = f32x3{2.0f, 3.0f, 4.0f};
-
-    HI_ASSERT_SIMD_EQ(tmp.xxx(), f32x3(2.0f, 2.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xxy(), f32x3(2.0f, 2.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xxz(), f32x3(2.0f, 2.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xx0(), f32x3(2.0f, 2.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xx1(), f32x3(2.0f, 2.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xyx(), f32x3(2.0f, 3.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xyy(), f32x3(2.0f, 3.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xyz(), f32x3(2.0f, 3.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xy0(), f32x3(2.0f, 3.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xy1(), f32x3(2.0f, 3.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xzx(), f32x3(2.0f, 4.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xzy(), f32x3(2.0f, 4.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xzz(), f32x3(2.0f, 4.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xz0(), f32x3(2.0f, 4.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.xz1(), f32x3(2.0f, 4.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x0x(), f32x3(2.0f, 0.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x0y(), f32x3(2.0f, 0.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x0z(), f32x3(2.0f, 0.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x00(), f32x3(2.0f, 0.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x01(), f32x3(2.0f, 0.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x1x(), f32x3(2.0f, 1.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x1y(), f32x3(2.0f, 1.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x1z(), f32x3(2.0f, 1.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x10(), f32x3(2.0f, 1.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.x11(), f32x3(2.0f, 1.0f, 1.0f));
-
-    HI_ASSERT_SIMD_EQ(tmp.yxx(), f32x3(3.0f, 2.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yxy(), f32x3(3.0f, 2.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yxz(), f32x3(3.0f, 2.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yx0(), f32x3(3.0f, 2.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yx1(), f32x3(3.0f, 2.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yyx(), f32x3(3.0f, 3.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yyy(), f32x3(3.0f, 3.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yyz(), f32x3(3.0f, 3.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yy0(), f32x3(3.0f, 3.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yy1(), f32x3(3.0f, 3.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yzx(), f32x3(3.0f, 4.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yzy(), f32x3(3.0f, 4.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yzz(), f32x3(3.0f, 4.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yz0(), f32x3(3.0f, 4.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.yz1(), f32x3(3.0f, 4.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y0x(), f32x3(3.0f, 0.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y0y(), f32x3(3.0f, 0.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y0z(), f32x3(3.0f, 0.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y00(), f32x3(3.0f, 0.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y01(), f32x3(3.0f, 0.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y1x(), f32x3(3.0f, 1.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y1y(), f32x3(3.0f, 1.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y1z(), f32x3(3.0f, 1.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y10(), f32x3(3.0f, 1.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.y11(), f32x3(3.0f, 1.0f, 1.0f));
-
-    HI_ASSERT_SIMD_EQ(tmp.zxx(), f32x3(4.0f, 2.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zxy(), f32x3(4.0f, 2.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zxz(), f32x3(4.0f, 2.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zx0(), f32x3(4.0f, 2.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zx1(), f32x3(4.0f, 2.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zyx(), f32x3(4.0f, 3.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zyy(), f32x3(4.0f, 3.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zyz(), f32x3(4.0f, 3.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zy0(), f32x3(4.0f, 3.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zy1(), f32x3(4.0f, 3.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zzx(), f32x3(4.0f, 4.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zzy(), f32x3(4.0f, 4.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zzz(), f32x3(4.0f, 4.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zz0(), f32x3(4.0f, 4.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.zz1(), f32x3(4.0f, 4.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z0x(), f32x3(4.0f, 0.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z0y(), f32x3(4.0f, 0.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z0z(), f32x3(4.0f, 0.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z00(), f32x3(4.0f, 0.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z01(), f32x3(4.0f, 0.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z1x(), f32x3(4.0f, 1.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z1y(), f32x3(4.0f, 1.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z1z(), f32x3(4.0f, 1.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z10(), f32x3(4.0f, 1.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp.z11(), f32x3(4.0f, 1.0f, 1.0f));
-
-    HI_ASSERT_SIMD_EQ(tmp._0xx(), f32x3(0.0f, 2.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0xy(), f32x3(0.0f, 2.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0xz(), f32x3(0.0f, 2.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0x0(), f32x3(0.0f, 2.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0x1(), f32x3(0.0f, 2.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0yx(), f32x3(0.0f, 3.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0yy(), f32x3(0.0f, 3.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0yz(), f32x3(0.0f, 3.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0y0(), f32x3(0.0f, 3.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0y1(), f32x3(0.0f, 3.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0zx(), f32x3(0.0f, 4.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0zy(), f32x3(0.0f, 4.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0zz(), f32x3(0.0f, 4.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0z0(), f32x3(0.0f, 4.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._0z1(), f32x3(0.0f, 4.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp._00x(), f32x3(0.0f, 0.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._00y(), f32x3(0.0f, 0.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._00z(), f32x3(0.0f, 0.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._000(), f32x3(0.0f, 0.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._001(), f32x3(0.0f, 0.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp._01x(), f32x3(0.0f, 1.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._01y(), f32x3(0.0f, 1.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._01z(), f32x3(0.0f, 1.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._010(), f32x3(0.0f, 1.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._011(), f32x3(0.0f, 1.0f, 1.0f));
-
-    HI_ASSERT_SIMD_EQ(tmp._1xx(), f32x3(1.0f, 2.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1xy(), f32x3(1.0f, 2.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1xz(), f32x3(1.0f, 2.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1x0(), f32x3(1.0f, 2.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1x1(), f32x3(1.0f, 2.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1yx(), f32x3(1.0f, 3.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1yy(), f32x3(1.0f, 3.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1yz(), f32x3(1.0f, 3.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1y0(), f32x3(1.0f, 3.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1y1(), f32x3(1.0f, 3.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1zx(), f32x3(1.0f, 4.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1zy(), f32x3(1.0f, 4.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1zz(), f32x3(1.0f, 4.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1z0(), f32x3(1.0f, 4.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._1z1(), f32x3(1.0f, 4.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp._10x(), f32x3(1.0f, 0.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._10y(), f32x3(1.0f, 0.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._10z(), f32x3(1.0f, 0.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._100(), f32x3(1.0f, 0.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._101(), f32x3(1.0f, 0.0f, 1.0f));
-    HI_ASSERT_SIMD_EQ(tmp._11x(), f32x3(1.0f, 1.0f, 2.0f));
-    HI_ASSERT_SIMD_EQ(tmp._11y(), f32x3(1.0f, 1.0f, 3.0f));
-    HI_ASSERT_SIMD_EQ(tmp._11z(), f32x3(1.0f, 1.0f, 4.0f));
-    HI_ASSERT_SIMD_EQ(tmp._110(), f32x3(1.0f, 1.0f, 0.0f));
-    HI_ASSERT_SIMD_EQ(tmp._111(), f32x3(1.0f, 1.0f, 1.0f));
 }
 
 TEST(simd, Swizzle4)

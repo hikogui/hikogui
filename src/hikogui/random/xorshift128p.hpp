@@ -78,7 +78,7 @@ public:
 
         // scalar: auto x_ = x;
         // scalar: t.y() = tmp.x();
-        t = insert<0, 1>(t, tmp);
+        t.y() = tmp.x();
 
         // scalar: y ^= x_ ^ (x_ >> 26);
         s ^= t ^ (t >> 26);
@@ -94,19 +94,19 @@ public:
     template<>
     [[nodiscard]] u32x4 next() noexcept
     {
-        return u32x4::cast_from(next<u64x2>());
+        return std::bit_cast<u32x4>(next<u64x2>());
     }
 
     template<>
     [[nodiscard]] i32x4 next() noexcept
     {
-        return i32x4::cast_from(next<u64x2>());
+        return std::bit_cast<i32x4>(next<u64x2>());
     }
 
     template<>
     [[nodiscard]] i16x8 next() noexcept
     {
-        return i16x8::cast_from(next<u64x2>());
+        return std::bit_cast<i16x8>(next<u64x2>());
     }
 
 private:

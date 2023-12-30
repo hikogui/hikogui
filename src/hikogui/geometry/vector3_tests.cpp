@@ -90,5 +90,6 @@ TEST(vector3, dot)
 
 TEST(vector3, cross)
 {
+    STATIC_ASSERT_TRUE(cross(vector3(2.0f, 3.0f, 4.0f), vector3(5.0f, 6.0f, 7.0f)) == vector3(-3.0f, 6.0f, -3.0f));
     STATIC_ASSERT_TRUE(cross(vector3(3.0, -3.0, 1.0), vector3(4.0, 9.0, 2.0)) == vector3(-15.0, -2.0, 39.0));
 }

@@ -334,19 +334,11 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/seed_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/seed_win32_impl.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/random/xorshift128p.ixx
-    #${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/float16_sse4_1.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/SIMD.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_f16x8_sse2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_f32x4_sse.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_f64x4_avx.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_i16x8_sse2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_i32x4_sse2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_i64x4_avx2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_i8x16_sse2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_simd_conversions_x86.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_simd_utility.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/native_u32x4_sse2.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/SIMD/simd_intf.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_generic.ixx
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f32x4_x86.ixx>
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_intf.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/SIMD.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/security/security_win32_impl.ixx>

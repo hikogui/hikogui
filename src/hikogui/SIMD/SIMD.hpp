@@ -4,16 +4,9 @@
 
 #pragma once
 
+#include "array_generic.hpp" // export
+#include "array_intrinsic_f32x4_x86.hpp" // export
+#include "array_intrinsic.hpp" // export
 #include "simd_intf.hpp" // export
-#include "native_f16x8_sse2.hpp" // export
-#include "native_f32x4_sse.hpp" // export
-#include "native_f64x4_avx.hpp" // export
-#include "native_i16x8_sse2.hpp" // export
-#include "native_i32x4_sse2.hpp" // export
-#include "native_i64x4_avx2.hpp" // export
-#include "native_i8x16_sse2.hpp" // export
-#include "native_simd_conversions_x86.hpp" // export
-#include "native_simd_utility.hpp" // export
-#include "native_u32x4_sse2.hpp" // export
 
 hi_export_module(hikogui.SIMD);

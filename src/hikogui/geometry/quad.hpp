@@ -155,7 +155,7 @@ public:
 
         hilet[x, y, z, ones] = transpose(t, l, b, r);
         hilet square_lengths = x * x + y * y + z * z;
-        hilet inv_lengths = rcp_sqrt(square_lengths);
+        hilet inv_lengths = rsqrt(square_lengths);
         hilet norm_t = t * inv_lengths.xxxx();
         hilet norm_l = l * inv_lengths.yyyy();
         hilet norm_b = b * inv_lengths.zzzz();

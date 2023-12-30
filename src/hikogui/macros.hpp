@@ -328,7 +328,6 @@
  * Equivilant to C++23 [[assume(expression)]] attribute.
  */
 #if HI_COMPILER == HI_CC_CLANG
->>>>>>> Stashed changes
 #define hi_assume(...) __builtin_assume(not not (__VA_ARGS__))
 #elif HI_COMPILER == HI_CC_MSVC
 #define hi_assume(...) __assume(__VA_ARGS__)
@@ -357,7 +356,7 @@
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_force_inline __attribute__((always_inline))
 #elif HI_COMPILER == HI_CC_MSVC
-#define hi_force_inline __attribute__((always_inline))
+#define hi_force_inline __forceinline
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_force_inline __attribute__((always_inline))
 #else

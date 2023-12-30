@@ -99,43 +99,6 @@ constexpr void fill(pixmap_span<sfloat_rgba16> image, f32x4 color) noexcept
     }
 }
 
-hi_inline void composit(pixmap_span<sfloat_rgba16> under, pixmap_span<sfloat_rgba16 const> over) noexcept
-{
-    hi_assert(over.height() >= under.height());
-    hi_assert(over.width() >= under.width());
-
-    for (auto y = 0_uz; y != under.height(); ++y) {
-        hilet over_line = over[y];
-        hilet under_line = under[y];
-        for (auto x = 0_uz; x != under.width(); ++x) {
-            hilet &overPixel = over_line[x];
-            auto &underPixel = under_line[x];
-
-            underPixel = composit(static_cast<f16x4>(underPixel), static_cast<f16x4>(overPixel));
-        }
-    }
-}
-
-hi_inline void composit(pixmap_span<sfloat_rgba16> under, color over, pixmap_span<uint8_t const> mask) noexcept
-{
-    hi_assert(mask.height() >= under.height());
-    hi_assert(mask.width() >= under.width());
-
-    auto mask_pixel = color{1.0f, 1.0f, 1.0f, 1.0f};
-
-    for (auto y = 0_uz; y != under.height(); ++y) {
-        hilet mask_line = mask[y];
-        hilet under_line = under[y];
-        for (auto x = 0_uz; x != under.width(); ++x) {
-            hilet mask_value = mask_line[x] / 255.0f;
-            mask_pixel.a() = mask_value;
-
-            auto &pixel = under_line[x];
-            pixel = composit(static_cast<color>(pixel), over * mask_pixel);
-        }
-    }
-}
-
 } // namespace hi::inline v1
 
 template<>
