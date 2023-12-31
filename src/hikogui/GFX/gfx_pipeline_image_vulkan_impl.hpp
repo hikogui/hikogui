@@ -632,7 +632,7 @@ hi_inline void gfx_pipeline_image::device_shared::place_vertices(
     hi_assert(image.state == paged_image::state_type::uploaded);
 
     constexpr auto page_size2 =
-        f32x4{i32x4{narrow_cast<int32_t>(paged_image::page_size), narrow_cast<int32_t>(paged_image::page_size)}};
+        f32x4{narrow_cast<float>(paged_image::page_size), narrow_cast<float>(paged_image::page_size), 0.0f, 0.0f};
 
     hilet image_size = image.size();
     hilet size_in_float_pages = f32x4{image.size_in_float_pages()};
@@ -664,7 +664,7 @@ hi_inline void gfx_pipeline_image::device_shared::place_vertices(
             // The new quad, limited to the right-top corner of the original quad.
             hilet atlas_position = get_atlas_position(*it);
 
-            hilet xy = f32x4{i32x4{narrow_cast<int32_t>(column_nr), narrow_cast<int32_t>(row_nr)} * paged_image::page_size};
+            hilet xy = f32x4{narrow_cast<float>(column_nr), narrow_cast<float>(row_nr * paged_image::page_size), 0.0f, 0.0f};
             hilet uv_rectangle = rectangle{atlas_position, extent2{page_size2}};
 
             vertices.emplace_back(new_p0, clipping_rectangle, get<0>(uv_rectangle));

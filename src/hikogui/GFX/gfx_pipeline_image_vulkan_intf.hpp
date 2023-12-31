@@ -127,7 +127,7 @@ public:
         [[nodiscard]] constexpr extent2 size_in_float_pages() const noexcept
         {
             constexpr auto page_size_ = f32x4{narrow_cast<float>(page_size), narrow_cast<float>(page_size), 1.0f, 1.0f};
-            auto size = f32x4{narrow_cast<float>(width), narrow_cast<float>(height)};
+            auto size = f32x4{narrow_cast<float>(width), narrow_cast<float>(height), 0.0f, 0.0f};
             return extent2{size / page_size_};
         }
 

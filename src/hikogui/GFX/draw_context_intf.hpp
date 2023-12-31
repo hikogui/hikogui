@@ -657,8 +657,8 @@ private:
     {
         hilet circle_ = f32x4{circle};
         hilet origin = point3{circle_.xyz1() - circle_.ww00()};
-        hilet right = vector3{circle_.w000() * 2.0f};
-        hilet up = vector3{circle_._0w00() * 2.0f};
+        hilet right = vector3{circle_.w000() * f32x4::broadcast(2.0f)};
+        hilet up = vector3{circle_._0w00() * f32x4::broadcast(2.0f)};
         return rectangle{origin, right, up};
     }
 
@@ -667,10 +667,10 @@ private:
         auto r = f32x4::broadcast(width * 0.5f);
 
         if (c1 == line_end_cap::flat) {
-            r = set_zero<0b0101>(r);
+            r = blend<0b0101>(r, f32x4{});
         }
         if (c2 == line_end_cap::flat) {
-            r = set_zero<0b1010>(r);
+            r = blend<0b1010>(r, f32x4{});
         }
 
         return corner_radii{r};
