@@ -143,7 +143,8 @@ struct array_intrinsic<float, 4> {
             return S(_mm_addsub_ps(_mm_setzero_ps(), L(a)));
 #endif
         } else {
-            return S(_mm_blend_ps(L(a), _mm_sub_ps(_mm_setzero_ps(), L(a)), Mask));
+            auto const tmp = _mm_sub_ps(_mm_setzero_ps(), L(a));
+            return blend<Mask>(a, S(tmp));
         }
     }
 
@@ -390,14 +391,14 @@ struct array_intrinsic<float, 4> {
 #if defined(HI_HAS_SSE4_1)
         return S(_mm_blend_ps(L(a), L(b), Mask));
 #else
-        auto const lo = _mm_packlo_ps(L(a), L(b));
-        auto const hi = _mm_packhi_ps(L(a), L(b));
+        auto const lo = _mm_unpacklo_ps(L(a), L(b));
+        auto const hi = _mm_unpackhi_ps(L(a), L(b));
         // clang-format off
-        constexpr indices =
-            (Mask & 0b0001 ? 0b00'00'00'00 : 0b00'00'00'01) |
-            (Mask & 0b0010 ? 0b00'00'10'00 : 0b00'00'11'00) |
-            (Mask & 0b0100 ? 0b00'00'00'00 : 0b00'01'00'00) |
-            (Mask & 0b1000 ? 0b10'00'00'00 : 0b11'00'00'00);
+        constexpr auto indices =
+            (Mask & 0b0001 ? 0b00'00'00'00U : 0b00'00'00'01U) |
+            (Mask & 0b0010 ? 0b00'00'10'00U : 0b00'00'11'00U) |
+            (Mask & 0b0100 ? 0b00'00'00'00U : 0b00'01'00'00U) |
+            (Mask & 0b1000 ? 0b10'00'00'00U : 0b11'00'00'00U);
         // clang-format on
         return S(_mm_shuffle_ps(lo, hi, indices));
 #endif
