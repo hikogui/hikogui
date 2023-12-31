@@ -13,6 +13,10 @@
 
 hi_export_module(hikogui.SIMD.array_generic);
 
+hi_warning_push();
+// False positive: warning C4702: unreachable code.
+hi_warning_ignore_msvc(4702);
+
 hi_export namespace hi {
 inline namespace v1 {
 
@@ -1003,3 +1007,5 @@ static_assert(array_generic<float, 4>::neg(std::array{1.0f, 2.0f, -2.0f, 0.0f}) 
 
 } // namespace v1
 }
+
+hi_warning_pop();

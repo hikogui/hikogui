@@ -365,12 +365,12 @@ struct array_intrinsic<float, 4> {
     }
 
     template<int... Indices>
-    [[nodiscard]] constexpr static std::size_t _make_indices_imm() noexcept
+    [[nodiscard]] constexpr static unsigned int _make_indices_imm() noexcept
     {
         static_assert(sizeof...(Indices) == 4);
 
         constexpr auto indices = std::array{Indices...};
-        auto r = std::size_t{0};
+        auto r = 0U;
         for (size_t i = 0; i != 4; ++i) {
             auto const index = indices[i] < 0 ? i : indices[i];
             r |= index << (i * 2);
