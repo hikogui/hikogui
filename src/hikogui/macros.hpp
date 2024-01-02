@@ -353,6 +353,7 @@
  * more impact on optimiation by reducing code complexity by removing
  * code that is not important.
  */
+#if defined(NDEBUG)
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_force_inline __attribute__((always_inline))
 #elif HI_COMPILER == HI_CC_MSVC
@@ -361,6 +362,9 @@
 #define hi_force_inline __attribute__((always_inline))
 #else
 #define hi_force_inline __attribute__((always_inline))
+#endif
+#else
+#define hi_force_inline
 #endif
 
 #if HI_COMPILER == HI_CC_CLANG

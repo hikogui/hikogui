@@ -97,7 +97,7 @@
         "CMAKE_C_COMPILER": "clang"
       },
       "environment": {
-        "CXXFLAGS": "-march=x86-64"
+        "CXXFLAGS": "-march=x86-64-v3"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -120,7 +120,8 @@
       "name": "targets",
       "hidden": true,
       "targets": [
-        "hikogui_tests",
+        "hikogui_gtests",
+        "hikogui_ctests",
         "checkbox_example",
         "radio_button_example",
         "selection_example",

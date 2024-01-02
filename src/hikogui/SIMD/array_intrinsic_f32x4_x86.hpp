@@ -395,10 +395,10 @@ struct array_intrinsic<float, 4> {
         auto const hi = _mm_unpackhi_ps(L(a), L(b));
         // clang-format off
         constexpr auto indices =
-            (Mask & 0b0001 ? 0b00'00'00'00U : 0b00'00'00'01U) |
-            (Mask & 0b0010 ? 0b00'00'10'00U : 0b00'00'11'00U) |
-            (Mask & 0b0100 ? 0b00'00'00'00U : 0b00'01'00'00U) |
-            (Mask & 0b1000 ? 0b10'00'00'00U : 0b11'00'00'00U);
+            (Mask & 0b0001 ? 0b00'00'00'01U : 0b00'00'00'00U) |
+            (Mask & 0b0010 ? 0b00'00'11'00U : 0b00'00'10'00U) |
+            (Mask & 0b0100 ? 0b00'01'00'00U : 0b00'00'00'00U) |
+            (Mask & 0b1000 ? 0b11'00'00'00U : 0b10'00'00'00U);
         // clang-format on
         return S(_mm_shuffle_ps(lo, hi, indices));
 #endif

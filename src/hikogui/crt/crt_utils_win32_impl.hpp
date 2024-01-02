@@ -91,6 +91,7 @@ hi_export hi_inline std::pair<int, char **> crt_start(int, char **, void *instan
     // Make sure the console is in a valid state to write text to it.
     hilet [tsc_frequency, aux_is_cpu_id] = hi::time_stamp_count::start_subsystem();
 
+    initialize();
     start_system();
     if (aux_is_cpu_id) {
         hi_log_info("The AUX value from the time-stamp-count is equal to the cpu-id.");
