@@ -14,6 +14,11 @@
 
 using namespace hi;
 
+TEST(point2, failure)
+{
+    ASSERT_EQ(12, 23);
+}
+
 TEST(point2, compare)
 {
     STATIC_ASSERT_FALSE(point2(1.0, 2.0) == point2(3.0, 4.0));

@@ -86,10 +86,10 @@ if(BUILD_TESTING)
     set_target_properties(gtest      PROPERTIES FOLDER extern)
     set_target_properties(gtest_main PROPERTIES FOLDER extern)
 
-    FetchContent_Declare(Catch2 GIT_REPOSITORY https://github.com/catchorg/Catch2.git GIT_TAG v3.5.1)
-    FetchContent_MakeAvailable(Catch2)
-    list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
-    include(Catch)
+    add_definitions(-DENABLE_DOCTEST_IN_LIBRARY)
+    FetchContent_Declare(DocTest GIT_REPOSITORY "https://github.com/doctest/doctest" GIT_TAG v2.4.11)
+    FetchContent_MakeAvailable(DocTest)
+    include_directories(${DOCTEST_INCLUDE_DIR})
 endif()
 
 #

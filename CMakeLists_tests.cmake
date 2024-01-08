@@ -2,7 +2,8 @@
 add_executable(hikogui_gtests)
 target_link_libraries(hikogui_gtests PRIVATE gtest_main hikogui)
 target_include_directories(hikogui_gtests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-set_target_properties(hikogui_gtests PROPERTIES DEBUG_POSTFIX "-debug")
+set_target_properties(hikogui_gtests PROPERTIES DEBUG_POSTFIX "-deb")
+set_target_properties(hikogui_gtests PROPERTIES RELEASE_POSTFIX "-rel")
 set_target_properties(hikogui_gtests PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
 
 # vscode will run each discoverred test as a separate executable invocation
@@ -11,12 +12,13 @@ set_target_properties(hikogui_gtests PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
 #gtest_discover_tests(hikogui_gtests)
 add_test(NAME hikogui_gtests COMMAND hikogui_gtests)
 
-add_executable(hikogui_ctests)
-target_link_libraries(hikogui_ctests PRIVATE Catch2::Catch2WithMain hikogui)
-target_include_directories(hikogui_ctests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-set_target_properties(hikogui_ctests PROPERTIES DEBUG_POSTFIX "-debug")
-set_target_properties(hikogui_ctests PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
-add_test(NAME hikogui_ctests COMMAND hikogui_ctests)
+add_executable(hikogui_dtests)
+target_link_libraries(hikogui_dtests PRIVATE doctest hikogui)
+target_include_directories(hikogui_dtests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+set_target_properties(hikogui_dtests PROPERTIES DEBUG_POSTFIX "-deb")
+set_target_properties(hikogui_dtests PROPERTIES RELEASE_POSTFIX "-rel")
+set_target_properties(hikogui_dtests PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
+add_test(NAME hikogui_dtests COMMAND hikogui_dtests)
 
 
 if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
@@ -34,12 +36,12 @@ if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     target_compile_definitions(hikogui_gtests PRIVATE "_DISABLE_STRING_ANNOTATION")
     target_compile_options(hikogui_gtests PRIVATE -fsanitize=address)
 
-    add_custom_command(TARGET hikogui_ctests PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_ctests>)
+    add_custom_command(TARGET hikogui_dtests PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_dtests>)
 
-    target_compile_definitions(hikogui_ctests PRIVATE "_DISABLE_VECTOR_ANNOTATION")
-    target_compile_definitions(hikogui_ctests PRIVATE "_DISABLE_STRING_ANNOTATION")
-    target_compile_options(hikogui_ctests PRIVATE -fsanitize=address)
+    target_compile_definitions(hikogui_dtests PRIVATE "_DISABLE_VECTOR_ANNOTATION")
+    target_compile_definitions(hikogui_dtests PRIVATE "_DISABLE_STRING_ANNOTATION")
+    target_compile_options(hikogui_dtests PRIVATE -fsanitize=address)
 
 elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -56,11 +58,11 @@ elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
         target_compile_options(hikogui_gtests PRIVATE -fsanitize=address)
         target_link_options(hikogui_gtests PRIVATE -fsanitize=address)
 
-        add_custom_command(TARGET hikogui_ctests PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_ctests>)
+        add_custom_command(TARGET hikogui_dtests PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_dtests>)
 
-        target_compile_options(hikogui_ctests PRIVATE -fsanitize=address)
-        target_link_options(hikogui_ctests PRIVATE -fsanitize=address)
+        target_compile_options(hikogui_dtests PRIVATE -fsanitize=address)
+        target_link_options(hikogui_dtests PRIVATE -fsanitize=address)
 
     endif()
 endif()
@@ -155,10 +157,11 @@ target_sources(hikogui_gtests PRIVATE
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_widget_tests.cpp
 )
 
-target_sources(hikogui_ctests PRIVATE
+target_sources(hikogui_dtests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/hikogui_dtests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_tests.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_tests.cpp
 )
 
 show_build_target_properties(hikogui_gtests)
-show_build_target_properties(hikogui_ctests)
+show_build_target_properties(hikogui_dtests)

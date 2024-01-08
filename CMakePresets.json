@@ -60,7 +60,7 @@
         "CMAKE_C_COMPILER": "cl"
       },
       "environment": {
-        "CXXFLAGS": "/arch:AVX2"
+        "CXXFLAGS": "/arch:AVX"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -121,7 +121,7 @@
       "hidden": true,
       "targets": [
         "hikogui_gtests",
-        "hikogui_ctests",
+        "hikogui_dtests",
         "checkbox_example",
         "radio_button_example",
         "selection_example",
