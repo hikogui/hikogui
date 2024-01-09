@@ -135,210 +135,293 @@ fixed_string() -> fixed_string<0>;
 template<std::size_t O>
 fixed_string(char const (&str)[O]) -> fixed_string<O - 1>;
 
-template<typename LHS>
-struct left_operand {
-    constexpr left_operand(LHS const& lhs) : _lhs(lhs) {}
+template<typename Arg>
+[[nodiscard]] std::string operand_to_string(Arg const& arg) noexcept
+{
+    std::stringbuf buf;
 
-    LHS const& _lhs;
+    if constexpr (requires { std::format("{}", arg); }) {
+        return std::format("{}", arg);
+
+    } else if constexpr (requires { buf << arg; }) {
+        buf << arg;
+        return std::move(buf).str();
+
+    } else if constexpr (requires { to_string(arg); }) {
+        return to_string(arg);
+
+    } else if constexpr (requires { arg.string(); }) {
+        return arg.string();
+
+    } else if constexpr (requires { arg.str(); }) {
+        return arg.str();
+
+    } else {
+        std::array<std::byte, sizeof(Arg)> bytes;
+        std::memcpy(bytes.data(), std::addressof(arg), sizeof(Arg));
+        return std::format("<{}>", bytes);
+    }
+}
+
+/** Left operand of a comparison, or a boolean.
+ */
+template<typename T>
+struct operand {
+    constexpr left_operand(T const& v) noexcept : v(v) {}
+
+    T const& v;
 };
 
 enum class comparator { eq, ne, lt, gt, le, ge };
 
 template<comparator Comparator, typename LHS, typename RHS>
-struct compare_expression {
-    using common_type = std::common_type_t<LHS, RHS>;
-    constexpr comparator comparator = Comparator;
+struct compare {
+    using lhs_type = LHS;
+    using rhs_type = RHS;
+    constexpr static comparator comparator = Comparator;
 
-    constexpr check_expression(LHS const& lhs, RHS const& rhs) : _lhs(lhs), _rhs(rhs) {}
+    constexpr compare(LHS const& lhs, RHS const& rhs) noexcept : lhs(lhs), rhs(rhs) {}
 
-    LHS const& _lhs;
-    RHS const& _rhs;
+    LHS const& lhs;
+    RHS const& rhs;
+
+    [[nodiscard]] constexpr std::string left() noexcept
+    {
+        return operand_to_string(lhs);
+    }
+
+    [[nodiscard]] constexpr std::string right() noexcept
+    {
+        return operand_to_string(rhs);
+    }
+
+    [[nodiscard]] constexpr bool compare_eq() noexcept
+    {
+        if constexpr (requires { std::equal_to<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs); }) {
+            return std::equal_to<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs);
+        } else constexpr (requires { lhs == rhs -> std::convertible_to<bool>; }) {
+            return lhs == rhs;
+        } else constexpr (requires { std::ranges::equal(lhs, rhs); }) {
+            return std::ranges::equal(lhs, rhs);
+        }
+    }
+
+    [[nodiscard]] constexpr bool compare_ne() noexcept
+    {
+        if constexpr (requires { std::not_equal_to<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs); }) {
+            return std::not_equal_to<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs);
+        } else constexpr (requires { lhs != rhs -> std::convertible_to<bool>; }) {
+            return lhs != rhs;
+        } else {
+            return not compare_eq();
+        }
+    }
+
+    [[nodiscard]] constexpr bool compare_lt() noexcept
+    {
+        if constexpr (requires { std::less<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs); }) {
+            return std::less<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs);
+        } else {
+            return lhs < rhs;
+        }
+    }
+
+    [[nodiscard]] constexpr bool compare_gt() noexcept
+    {
+        if constexpr (requires { std::greater<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs); }) {
+            return std::greater<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs);
+        } else {
+            return lhs > rhs;
+        }
+    }
+
+    [[nodiscard]] constexpr bool compare_le() noexcept
+    {
+        if constexpr (requires { std::less_equal<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs); }) {
+            return std::less_equal<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs);
+        } else {
+            return lhs <= rhs;
+        }
+    }
+
+    [[nodiscard]] constexpr bool compare_ge() noexcept
+    {
+        if constexpr (requires { std::greater_equal<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs); }) {
+            return std::greater_equal<std::common_type_t<lhs_type, rhs_type>>{}(lhs, rhs);
+        } else {
+            return lhs >= rhs;
+        }
+    }
+
+    [[nodiscard]] constexpr bool compare() noexcept
+    {
+        if constexpr (comparator == comparator::eq) {
+            return compare_eq();
+        } else if constexpr (comparator == comparator::ne) {
+            return compare_ne();
+        } else if constexpr (comparator == comparator::lt) {
+            return compare_lt();
+        } else if constexpr (comparator == comparator::gt) {
+            return compare_gt();
+        } else if constexpr (comparator == comparator::le) {
+            return compare_le();
+        } else if constexpr (comparator == comparator::ge) {
+            return compare_ge();
+        } else {
+            std::println(stderr, "Unknown comparator {}", std::to_underlying(comparator));
+            std::terminate();
+        }
+    }
 };
 
+/** expression-tag used on the left side of the spaceship operator.
+ *
+ * This tag is used to cause the operator<=> to bind to any other type.
+ */
 class expression_tag {};
 
+/** The spaceship operator is used to split a comparison in an expression.
+ *
+ * The spaceship operator has a slightly higher precedence then the
+ * comparison operators: ==, !=, <, >, <=, =>.
+ *
+ * The spaceship operator also is not often used in unit-test expression,
+ * which means that this is the perfect operator to wrap to one of the operands.
+ *
+ * By wrapping the operand we can now overload the normal comparison operators.
+ * So that the unit-test framework can do a custom comparison.
+ *
+ * @param lhs The left-hand-side operand.
+ * @return The wrapped left-hand-side operand.
+ */
 template<typename LHS>
-[[nodiscard]] constexpr left_operand<LHS> operator<=>(expression_tag, LHS const& lhs)
+[[nodiscard]] constexpr operand<LHS> operator<=>(expression_tag, LHS const& lhs) noexcept
 {
     using value_type = std::remove_reference_t<LHS>;
     return {lhs};
 }
 
 template<typename LHS, typename RHS>
-[[nodiscard]] constexpr compare_expression<comparator::eq, LHS, RHS> operator==(left_operand<LHS> const& lhs, RHS const& rhs)
+[[nodiscard]] constexpr compare<comparator::eq, LHS, RHS> operator==(operand<LHS> const& lhs, RHS const& rhs) noexcept
 {
-    return {lhs._lhs, rhs};
+    return {lhs.v, rhs};
 }
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr compare<comparator::ne, LHS, RHS> operator!=(operand<LHS> const& lhs, RHS const& rhs) noexcept
+{
+    return {lhs.v, rhs};
+}
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr compare<comparator::lt, LHS, RHS> operator<(operand<LHS> const& lhs, RHS const& rhs) noexcept
+{
+    return {lhs.v, rhs};
+}
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr compare<comparator::gt, LHS, RHS> operator>(operand<LHS> const& lhs, RHS const& rhs) noexcept
+{
+    return {lhs.v, rhs};
+}
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr compare<comparator::le, LHS, RHS> operator<=(operand<LHS> const& lhs, RHS const& rhs) noexcept
+{
+    return {lhs.v, rhs};
+}
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr compare<comparator::ge, LHS, RHS> operator>=(operand<LHS> const& lhs, RHS const& rhs) noexcept
+{
+    return {lhs.v, rhs};
+}
+
 
 class result {
 public:
     using clock_type = std::chrono::high_resolution_clock;
     using time_point_type = std::chrono::time_point<clock_type>;
 
-    void start_global(size_t num_suites, size_t num_total_tests) noexcept
-    {
-        _num_suites = num_suites;
-        _num_total_tests = num_total_tests;
+    /** Start the global testing.
+     *
+     * @side Store arguments.
+     * @side Start timer. 
+     * @side Print to std::out
+     * @param num_suites The number of suites that will be run.
+     * @param num_total_test The total number of tests that will be run.
+     */
+    void start_global(size_t num_suites, size_t num_total_tests) noexcept;
 
-        std::println(
-            stdout,
-            "[==========] Running {} {} from {} test {}.",
-            _num_total_tests,
-            _num_total_tests == 1 ? "test" : "tests",
-            _num_suites,
-            _num_suites = 1 ? "suite" : "suites");
-        std::println(stdout, "[----------] Global test environment set-up.");
-        std::fflush(stdout);
-        _global_ts = clock_type::now();
-    }
+    /** Finish the global testing.
+     *
+     * @side Callculate duration. 
+     * @side Print to std::out
+     * @return true if all test where succesful.
+     */
+    bool finish_global() noexcept;
 
-    void finish_global() noexcept
-    {
-        using namespace std::literal;
+    /** Start a suite of tests.
+     *
+     * @side Store arguments.
+     * @side Start timer. 
+     * @side Print to std::out
+     * @param file The source file where the test is located (__FILE__).
+     * @param line The line number where the test is located (__LINE__).
+     * @param suite_name The name of the suite.
+     * @param num_test The number of tests in this suite that will be run.
+     */
+    void start_suite(char const *file, int line, char const *suite_name, size_t num_tests) noexcept;
 
-        auto const duration = clock_type::now() - global_ts;
+    /** Finish the suite of tests.
+     *
+     * @side Callculate duration. 
+     * @side Print to std::out
+     * @return true if all test of a suite where succesful.
+     */
+    bool finish_suite() noexcept;
 
-        std::println(stdout, "[----------] Global test environment tear-down.");
-        std::println(
-            stdout,
-            "[==========] {} {} from {} test {} ran. ({} ms total)",
-            _num_total_tests,
-            _num_total_tests == 1 ? "test" : "tests",
-            _num_suites,
-            _num_suites = 1 ? "suite" : "suites",
-            duration / 1 ms);
+    /** Start a test.
+     *
+     * @side Store arguments.
+     * @side Start timer. 
+     * @side Print to std::out
+     * @param file The source file where the test is located (__FILE__).
+     * @param line The line number where the test is located (__LINE__).
+     * @param test_name The name of the test.
+     */
+    void start_test(char const *file, int line, char const *test_name) noexcept;
 
-        auto const num_total_tests_passed = _num_total_tests - _failed_tests_summary.size();
-        if (num_total_tests_passed != 0) {
-            std::println(stdout, "[  PASSED  ] {} {}.", num_total_tests_passed, num_total_tests_passed == 1 ? "test" : "tests");
-        }
+    /** Finish the test.
+     *
+     * @side Callculate duration. 
+     * @side Print to std::out
+     * @return true if all checks of the test where succesful.
+     */
+    bool finish_test() noexcept;
 
-        if (not _failed_tests_summary.empty()) {
-            std::println(
-                stdout,
-                "[  FAILED  ] {} {}, listed below:",
-                _failed_tests_summary.size(),
-                _failed_tests_summary.size() ? "test" : "tests");
-
-            for (auto const& failed_test : _failed_tests_summary) {
-                std::println(stdout, "[  FAILED  ] {}", failed_test);
-            }
-        }
-
-        std::fflush(stdout);
-    }
-
-    void start_suite(char const *file, int line, char const *suite_name, size_t num_tests) noexcept
-    {
-        _suite_file = file;
-        _suite_line = line;
-        _suite_name = suite_name;
-        _suite_num_tests = num_tests;
-
-        std::println(
-            stdout, "[----------] {} {} from {}", _suite_num_tests, _suite_num_tests == 1 ? "test" : "tests", _suite_name);
-        std::fflush(stdout);
-        _suite_tp = clock_type::now();
-    }
-
-    bool finish_suite() noexcept
-    {
-        using namespace std::literal;
-
-        auto const duration = clock_type::now() - _suite_tp;
-
-        std::println(
-            stdout,
-            "[----------] {} {} from {} ({} ms total)",
-            _suite_num_tests,
-            _suite_num_tests == 1 ? "test" : "tests",
-            _suite_name,
-            duration / 1ms);
-        std::fflush(stdout);
-    }
-
-    void start_test(char const *file, int line, char const *test_name) noexcept
-    {
-        _test_file = file;
-        _test_line = line;
-        _test_name = test_name;
-        _test_failed = false;
-
-        std::println(stdout, "[ RUN      ] {}.{}", _suite_name, _test_name);
-        std::fflush(stdout);
-        _test_tp = clock_type::now();
-    }
-
-    bool finish_test() noexcept
-    {
-        using namespace std::literal;
-
-        auto const duration = clock_type::now() - _test_tp;
-
-        if (_test_failed) {
-            _failed_tests_summary.push_back(std::format("{}.{}", _suite_name, _test_name));
-            std::println(stdout, "[  FAILED  ] {}.{} ({} ms)", _suite_name, _test_name, duration / 1ms);
-            std::fflush(stdout);
-
-        } else {
-            std::println(stdout, "[       OK ] {}.{} ({} ms)", _suite_name, _test_name, duration / 1ms);
-            std::fflush(stdout);
-        }
-    }
-
+    /** Start a check.
+     *
+     * @side Start timer.
+     * @param file The source file where the check is located (__FILE__).
+     * @param line The line number where the check is located (__LINE__).
+     * @param expression_str The expression being checked as a string.
+     * @param default_failure_message The message to show if the check does not complete (used for checking throwing).
+     */
     void start_check(
         char const *file,
         int line,
         char const *expression_str,
-        std::optional<std::string> default_failure_message = std::string{"check did not run."}) noexcept
-    {
-        _check_file = file;
-        _check_line = line;
-        _check_expression_str = expression_str;
-        _check_failure = default_failure_message;
-    }
+        std::optional<std::string> default_failure_message = std::string{"check did not run."}) noexcept;
 
-    bool finish_check() noexcept
-    {
-        auto const check_finish_tp = clock_type::now();
-        auto const check_duration = check_finish_tp = _check_start_tp;
+    /** Finish a check.
+     *
+     * @side Callculate duration. 
+     * @side Print to std::out
+     * @return true if the check was succesful.
+     */
+    bool finish_check() noexcept;
 
-        if (_check_failure) {
-            std::println(stdout, "{}({}): error: {}", _check_file, _check_line, *_check_failure);
-            _test_failed = true;
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    template<typename Arg>
-    [[nodiscard]] std::string make_string(Arg const& arg) noexcept
-    {
-        std::stringbuf buf;
-
-        if constexpr (requires { std::format("{}", arg); }) {
-            return std::format("{}", arg);
-
-        } else if constexpr (requires { buf << arg; }) {
-            buf << arg;
-            return std::move(buf).str();
-
-        } else if constexpr (requires { to_string(arg); }) {
-            return to_string(arg);
-
-        } else if constexpr (requires { arg.string(); }) {
-            return arg.string();
-
-        } else if constexpr (requires { arg.str(); }) {
-            return arg.str();
-
-        } else {
-            std::array<std::byte, sizeof(Arg)> bytes;
-            std::memcpy(bytes.data(), std::addressof(arg), sizeof(Arg));
-            return std::format("<{}>", bytes);
-        }
-    }
 
     template<comparator Comparator, typename LHS, typename RHS>
     void check(compare_expression<Comparator, LHS, RHS> const& expression) noexcept
@@ -411,15 +494,121 @@ private:
     time_point_type _suite_start_tp = {};
 };
 
-class suite_base {
+class suite_base;
+
+struct suite_entry {
+    std::string_view file;
+    int line;
+    std::string_view name;
+    std::function<std::unique_ptr<suite_base>()> make_suite;
+};
+
+inline std::vector<suite_entry> suites;
+
+template<typename Suite>
+[[nodiscard]] inline bool register_suite(std::string_view file, int line, std::string_view name) noexcept
+{
+    auto const it = std::lower_bound(suites.cbegin(), suites.cend(), name, [](auto const &item, auto const &name) {
+            return item.name < name;
+    });
+
+    if (it != suites.end() and it->name == name) {
+        std::println(stderr, "Suite '{}' already exists.", SuiteName);
+        std::terminate();
+    }
+
+    suites.insert(it, suite_entry{file, line, name, []() -> std::unique_ptr<suite_base> { return std::make_unique<Suite>(); });
+}
+
+[[nodiscard]] std::vector<suite_entry> filter_suites(std::vector<std::string> filters) noexcept;
+
+/** Interface for a suite.
+ */
+class suite_intf {
 public:
-    constexpr suite_base() noexcept = default;
-    ~suite_base() = default;
+    struct test_type {
+        std::string_view file;
+        int line;
+        std::string_view name;
+    };
+
+    constexpr suite_intf() noexcept = default;
+    ~suite_intf() = default;
+
+    /** Get a list of tests.
+     *
+     * This is used by the IDE to show a list of test and the file and line numbers.
+     *
+     * @note The returned list is alphabetically sorted by the name.
+     * @return A list of tests for this suite.
+     */
+    [[nodiscard]] virtual std::vector<test_type> list_of_tests() const noexcept = 0;
+
+    /** Run the tests matching the filter.
+     */
+    [[nodiscard]] virtual void run_tests(result &r, filter const &filter) = 0;
 };
 
 template<typename Suite, fixed_string SuiteName = "">
-class suite : public suite_base {
+class suite : public suite_intf {
+public:
+    constexpr static fixed_string suite_name = SuiteName;
     using suite_type = Suite;
+
+    [[nodiscard]] std::vector<test_type> list_of_tests() const noexcept override
+    {
+        auto r = std::vector<test_type>{};
+        r.reserve(_hikotest_tests.size());
+
+        for (auto const &test: _hikotest_tests) {
+            r.emplace_back(test.file, test.line, test.name);
+        }
+
+        return r;
+    }
+
+    void run_test(result &r, std::string_view name) override
+    {
+        auto const it = std::lower_bound(_hikotest_tests.cbegin(), _hikotest_tests.cend(), name, [](auto const &item, auto const &name) {
+            return item.name < name;
+        });
+
+        if (it == _hikotest_tests.end() or it->name != name) {
+            std::println(stderr, "Could not find test '{}' in suite '{}'", name, suite_name);
+            std::terminate();
+        }
+
+        r.start_test(it->file, it->line, it->name);
+        it->test(r);
+        r.finish_test();
+    }
+
+    bool register_test(std::string_view file, int line, std::string_view name, test_ptr test) noexcept
+    {
+        auto const it = std::lower_bound(_hikotest_tests.cbegin(), _hikotest_tests.cend(), name, [](auto const &item, auto const &name) {
+            return item.name < name;
+        });
+
+        if (it != _hikotest_tests.end() and it->name == name) {
+            std::println(stderr, "Test '{}' in suite '{}' already exists.", name, suite_name);
+            std::terminate();
+        }
+
+        _hikotest_test.insert(it, _hikotest_test_type{file, line, name, test});
+    }
+
+private:
+    using test_ptr = void (suite_type::*)(result &);
+
+    struct _hikotest_test_type {
+        std::string_view file;
+        int line;
+        std::string_view *name;
+        test_ptr test; 
+    };
+
+    inline static bool _hikotest_suite_dummy = register_suite<suite_type, SuiteName>();
+    inline static std::vector<_hikotest_test_type> _hikotest_tests = {};
 };
 
 } // namespace test
