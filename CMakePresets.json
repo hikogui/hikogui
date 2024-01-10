@@ -121,7 +121,7 @@
       "hidden": true,
       "targets": [
         "hikogui_gtests",
-        "hikogui_dtests",
+        "hikogui_htests",
         "checkbox_example",
         "radio_button_example",
         "selection_example",
