@@ -18,6 +18,25 @@
 
 namespace test {
 
+#define TEST_FORCE_SYMBOL(symbol) _Pragma("comment(linker, \"/include:\"" #symbol ")")
+
+#if defined(_MSC_VER)
+#define TEST_SUITE(id) \
+    struct id; \
+    inline auto _hikotest_suite_info_##id = register_suite<id>(); \
+    TEST_FORCE_SYMBOL(hikotest_info_##id); \
+    struct id : ::test::suite<id>
+
+#elif defined(__GNUC__) or defined(__clang_major__)
+#define TEST_SUITE(id) \
+    struct id; \
+    [[gnu::externally_visible]] inline auto _hikotest_test_info_##id = register_suite<id>(); \
+    struct id : ::test::suite<id>
+
+#else
+#error "TEST_SUITE() not implemented."
+#endif
+
 /** Delcare a test case
  *
  * @param id The method-name of the test case.
@@ -28,7 +47,8 @@ namespace test {
     { \
         return id(_hikotest_trace); \
     } \
-    inline static bool hikotest_##id##_dummy = register_test(__FILE__, __LINE__, #id, &suite_type::_hikotest_wrap_##id); \
+    inline static bool _hikotest_wrap_registered_##id = \
+        register_test(__FILE__, __LINE__, #id, &_hikotest_suite_type::_hikotest_wrap_##id); \
     void id(::test::trace& _hikotest_trace)
 
 /** Check an expression
@@ -62,6 +82,10 @@ namespace test {
             return; \
         } \
     } while (false)
+
+using clock_type = std::chrono::high_resolution_clock;
+using duration_type = std::chrono::duration<double>;
+using time_point_type = std::chrono::time_point<clock_type>;
 
 template<std::size_t N>
 struct fixed_string {
@@ -119,7 +143,7 @@ template<typename Arg>
         std::memcpy(bytes.data(), std::addressof(arg), sizeof(Arg));
 
         auto r = std::string{};
-        for (auto const byte: bytes) {
+        for (auto const byte : bytes) {
             if (r.empty()) {
                 r += std::format("<{:02x}", std::to_underlying(byte));
             } else {
@@ -257,14 +281,17 @@ operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexc
         return std::nullopt;
     } else {
         return std::format(
-            "Expected equality within {} of these values:\n  {}\n  {}", lhs.e.v, operand_to_string(lhs.v), operand_to_string(rhs));
+            "Expected equality within {} of these values:\n  {}\n  {}",
+            lhs.e.v,
+            operand_to_string(lhs.v),
+            operand_to_string(rhs));
     }
 }
 
 template<typename LHS, typename RHS>
 [[nodiscard]] constexpr std::optional<std::string>
 operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexcept
-    requires (not diff_ordered<LHS, RHS, double>) and range_diff_ordered<LHS, RHS, double>
+    requires(not diff_ordered<LHS, RHS, double>) and range_diff_ordered<LHS, RHS, double>
 {
     auto lit = lhs.v.begin();
     auto rit = rhs.begin();
@@ -276,9 +303,12 @@ operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexc
         auto const diff = *lit - *rit;
         if (diff < -lhs.e or diff > +lhs.e) {
             return std::format(
-            "Expected equality within {} of these values:\n  {}\n  {}", +lhs.e, operand_to_string(lhs.v), operand_to_string(rhs));
+                "Expected equality within {} of these values:\n  {}\n  {}",
+                +lhs.e,
+                operand_to_string(lhs.v),
+                operand_to_string(rhs));
         }
-        
+
         ++lit;
         ++rit;
     }
@@ -291,283 +321,234 @@ operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexc
     return std::nullopt;
 }
 
-class trace {
-public:
-    using clock_type = std::chrono::high_resolution_clock;
-    using duration_type = std::chrono::duration<double>;
-    using time_point_type = std::chrono::time_point<clock_type>;
-
-    [[nodiscard]] size_t num_total_failures() const noexcept;
-    [[nodiscard]] size_t num_total_passed() const noexcept;
-
-    /** Start the global testing.
-     *
-     * @post Store arguments.
-     * @post Start timer.
-     * @post Print to std::out
-     * @param num_suites The number of suites that will be run.
-     * @param num_total_test The total number of tests that will be run.
-     */
-    void start_global(size_t num_suites, size_t num_total_tests) noexcept;
-
-    /** Finish the global testing.
-     *
-     * @post Callculate duration.
-     * @post Print to std::out
-     */
-    void finish_global() noexcept;
-
-    /** Start a suite of tests.
-     *
-     * @post Store arguments.
-     * @post Start timer.
-     * @post Print to std::out
-     * @param file The source file where the test is located (__FILE__).
-     * @param line The line number where the test is located (__LINE__).
-     * @param suite_name The name of the suite.
-     * @param num_test The number of tests in this suite that will be run.
-     */
-    void start_suite(std::string_view suite_name, size_t num_tests) noexcept;
-
-    /** Finish the suite of tests.
-     *
-     * @post Callculate duration.
-     * @post Print to std::out
-     */
-    void finish_suite() noexcept;
-
-    /** Start a test.
-     *
-     * @post Store arguments.
-     * @post Start timer.
-     * @post Print to std::out
-     * @param file The source file where the test is located (__FILE__).
-     * @param line The line number where the test is located (__LINE__).
-     * @param test_name The name of the test.
-     */
-    void start_test(std::string_view file, int line, std::string_view test_name) noexcept;
-
-    /** Finish the test.
-     *
-     * @post Callculate duration.
-     * @post Print to std::out
-     */
-    void finish_test() noexcept;
-
-    /** Start a check.
-     *
-     * @post Start timer.
-     * @param file The source file where the check is located (__FILE__).
-     * @param line The line number where the check is located (__LINE__).
-     * @param default_failure_message The message to show if the check does not complete (used for checking throwing).
-     */
-    void start_check(
-        std::string_view file,
-        int line,
-        std::optional<std::string> default_failure_message = std::string{"check did not run."}) noexcept;
-
-    /** Finish a check.
-     *
-     * @post Callculate duration.
-     * @post Print to std::out
-     * @return true if the check was succesful.
-     */
-    bool finish_check() noexcept;
-
-    /** Finish a check.
-     *
-     * @post Callculate duration.
-     * @post Print to std::out
-     * @param failure_message An optional string for the error message to display, or std::nullopt if there was no error.
-     * @return true if the check was succesful.
-     */
-    bool finish_check(std::optional<std::string> failure_message) noexcept;
-
-private:
-    struct test_result_type {
-        std::string_view name;
-        std::string_view file;
-        int line;
-        duration_type time = {};
-        time_point_type timestamp = {};
-        std::optional<std::string> failure = std::nullopt;
-
-        void output_xml(FILE *out, std::string_view suite_name) noexcept
-        {
-            using namespace std::literals;
-            
-            std::print(
-                out,
-                "    <testcase name=\"{}\" file=\"{}\" line=\"{}\" status=\"run\" result=\"completed\" time=\"{}\" timestamp=\"{:%Y-%m-%dT%H:%M:%S.000}\" classname=\"{}\"",
-                name,
-                file,
-                line,
-                time / 1s,
-                timestamp);
-
-            if (failure) {
-
-            }
-        }
-    };
-
-    struct suite_result_type {
-        std::string_view name;
-        size_t num_tests = 0;
-        size_t num_failures = 0;
-        duration_type time = {};
-        time_point_type timestamp = {};
-        std::vector<test_result_type> test_results = {};
-
-        void output_xml(FILE *out) noexcept
-        {
-            using namespace std::literals;
-
-            std::println(
-                out,
-                "  <testsuite name=\"{}\" tests=\"{}\" failures=\"{}\" disabled=\"0\" skipped=\"0\" errors=\"0\" time=\"{:.3}\" timestamp=\"{%Y-%m=%dT%H:%M:%S.000}\">",
-                name,
-                num_tests,
-                num_failures,
-                time / 1s,
-                timestamp);
-
-            for (auto const &test_result : test_results) {
-                test_result.output_xml(out, name);
-            }
-
-            std::println(out, "  </testsuite>");
-        }
-    };
-
-    std::string_view _check_file = {};
-    int _check_line = 0;
-    std::optional<std::string> _check_failure_message = {};
-
-    std::string_view _test_file = {};
-    int _test_line = 0;
-    std::string_view _test_name = {};
-    time_point_type _test_tp = {};
-    bool _test_failed = false;
-
-    std::string_view _suite_name = {};
-    time_point_type _suite_tp = {};
-    size_t _suite_num_tests = 0;
-
-    size_t _num_suites = 0;
-    size_t _num_total_tests = 0;
-    time_point_type _global_tp = {};
-
-    std::vector<std::string> _failed_tests_summary = {};
-    std::vector<suite_result_type> _suite_results = {};
-};
-
 class filter {
 public:
     [[nodiscard]] bool match_suite(std::string_view suite) const noexcept;
     [[nodiscard]] bool match_test(std::string_view suite, std::string_view test) const noexcept;
 };
 
-struct test_entry {
+struct test_result {
     std::string_view file;
     int line;
-    std::string_view name;
+    std::string suite_name;
+    std::string test_name;
+    std::function<void(test_result&)> _run_test;
+    std::string failure = {};
+    time_point_type time_point = {};
+    duration_type duration = {};
+
+    void start() noexcept
+    {
+        std::println(stdout, "[ RUN      ] {}.{}", suite_name, test_name);
+        std::fflush(stdout);
+        failure = {};
+        time_point = clock_type::now();
+    }
+
+    void finish() noexcept
+    {
+        duration = clock_type::now() - time_point;
+        if (failure.empty()) {
+            std::println(stdout, "[       OK ] {}.{} ({} ms)", suite_name, test_name, duration / 1ms);
+        } else {
+            std::println(stdout, "[  FAILED  ] {}.{} ({} ms)", suite_name, test_name, duration / 1ms);
+        }
+        std::fflush(stdout);
+    }
+
+    void run_test() noexcept
+    {
+        start();
+        _run_test(*this);
+        finish();
+    }
+
+    void generate_junit_xml(FILE *out) noexcept
+    {
+        using namespace std::literals;
+
+        std::print(out, "    <testcase name=\"{}\" file=\"{}\" line=\"{}\" classname=\"{}\"", test_name, file, line, suite_name);
+
+        if (timestamp != {}) {
+            std::print(
+                out,
+                "status=\"run\" result=\"completed\" time=\"{}\" timestamp=\"{:%Y-%m-%dT%H:%M:%S.000}\"",
+                time / 1s,
+                timestamp);
+
+            if (not failure.empty()) {
+                std::print(out, "      <failure message=\"{}\" type=\"\">", html_attribute_encode(failure));
+                std::println(out, "![CDATA[{}]]</failure>", html_cdata_encode(failure));
+                std::println(out, "    </testcase>");
+            } else {
+                std::println(out, " />");
+            }
+        } else {
+            std::println(out, " />");
+        }
+    }
 };
 
-struct suite_entry {
-    std::string_view name;
-    std::function<size_t(filter const&)> num_tests;
-    std::function<std::vector<test_entry>(filter const&)> list_tests;
-    std::function<void(trace&, filter const&)> run_tests;
-};
+struct suite_result {
+    std::string suite_name;
+    std::vector<test_result> tests;
+    time_point_type time_point = {};
+    duration_type duration = {};
 
-inline std::vector<suite_entry> suites;
-
-template<typename Suite>
-[[nodiscard]] inline bool register_suite(std::string_view name) noexcept
-{
-    auto num_tests = [](filter const& filter) -> size_t {
-        return Suite::num_tests(filter);
+    struct collect_stats_result {
+        size_t num_tests = 0;
+        size_t num_failures = 0;
+        size_t num_disabled = 0;
+        size_t num_skipped = 0;
+        size_t num_errors = 0;
+        std::vector<std::string> failed_tests;
     };
 
-    auto list_tests = [](filter const& filter) -> std::vector<test_entry> {
-        auto r = std::vector<test_entry>{}; 
-        for (auto const &test : Suite::list_tests(filter)) {
-            r.emplace_back(test.file, test.line, test.name);
+    [[nodiscard]] stats_result collect_stats(filter const& filter) noexcept
+    {
+        collect_stats_result r = {};
+        for (auto& test : tests) {
+            if (filter.match_test(test.suite_name, test.test_name)) {
+                ++r.num_tests;
+                if (test.time_point != {}) {
+                    if (not test.failure.empty()) {
+                        ++r.num_failures;
+                        r.failed_tests.push_back(std::format("{}.{}", test.suite_name, test.test_name));
+                    }
+                }
+            }
         }
         return r;
-    };
+    }
 
-    auto run_tests = [](trace &r, filter const& filter) -> void {
-        return Suite::run_tests(r, filter);
-    };
+    void start(size_t num_tests) noexcept
+    {
+        std::println(stdout, "[----------] {} {} from {}", num_tests, num_tests == 1 ? "test" : "tests", suite_name);
+        std::fflush(stdout);
+        time_point = clock_type::now();
+    }
 
-    suites.emplace_back(name, std::move(num_tests), std::move(list_tests), std::move(run_tests));
-    return true;
+    void finish(size_t num_tests) noexcept
+    {
+        duration = clock_type::now() - time_point;
+
+        std::println(
+            stdout,
+            "[----------] {} {} from {} ({} ms total)",
+            num_tests,
+            num_tests == 1 ? "test" : "tests",
+            suite_name,
+            duration / 1ms);
+        std::fflush(stdout);
+    }
+
+    void run_tests(filter const &filter)
+    {
+        auto const stats = collect_stats(filter);
+        start(stats.num_tests);
+        for (auto &test: tests) {
+            if (filter.match_test(test.suite_name, test.test_name)) {
+                test.run_test();
+            }
+        }
+        finish(stats.num_tests);
+    }
+
+    void generate_junit_xml(filter const& filter, FILE *out) noexcept
+    {
+        using namespace std::literals;
+
+        auto const stats = collect_stats(filter);
+
+        std::print(out, "  <testsuite name=\"{}\" tests=\"{}\"", suite_name, stats.num_tests);
+
+        if (time_point != {}) {
+            std::print(
+                out,
+                "failures=\"{}\" disabled=\"{}\" skipped=\"{}\" errors=\"{}\" time=\"{:.3}\" "
+                "timestamp=\"{%Y-%m=%dT%H:%M:%S.000}\">",
+                suite_name,
+                stats.num_tests,
+                stats.num_failures,
+                stats.num_disabled,
+                stats.num_skipped,
+                stats.num_errors,
+                duration / 1s,
+                time_point);
+        } else {
+            std::println(out, ">");
+        }
+
+        for (auto& test : tests) {
+            if (filter.match_test(test.suite_name, test.test_name)) {
+                test.generate_junit_xml(out);
+            }
+        }
+
+        if (generate_junit_xml) {
+            std::println(out, "  </testsuite>");
+        }
+    }
+};
+
+inline std::vector<suite_result> suites;
+inline size_t last_registered_suite = 0;
+
+template<typename Suite>
+[[nodiscard]] inline suite_result& register_suite() noexcept
+{
+    auto const name = class_name<Suite>();
+
+    // Skip binary search if possible.
+    if (last_registered_suite < suites.size() and suites[last_registered_suite].suite_name == name) {
+        return suites[last_registered_suite];
+    }
+
+    auto const it = std::lower_bound(suites.begin(), suites.end(), name, [](auto const& item, auto const& name) {
+        return item.suite_name < name;
+    });
+
+    last_registered_suite = std::distance(suites.begin(), it);
+
+    if (it != suites.end() and it->suite_name == name) {
+        return *it;
+    }
+
+    return *suites.insert(it, suite_result{name});
 }
 
 template<typename Suite>
-class suite {
-public:
-    using suite_type = Suite;
-    inline static std::string_view suite_file = {};
-    inline static int suite_line = std::numeric_limits<int>::max();
+[[nodiscard]] inline test_result&
+register_test(void (Suite::*test)(test_result&), std::string_view file, int line, std::string name) noexcept
+{
+    auto& suite = register_suite<Suite>();
+    auto& tests = suite.tests;
 
-    using test_ptr = void (suite_type::*)(trace&);
-    struct test_type {
-        std::string_view file;
-        int line;
-        std::string_view name;
-        test_ptr test;
-    };
+    auto const it = std::lower_bound(tests.begin(), tests.end(), name, [](auto const& item, auto const& name) {
+        return item.test_name < name;
+    });
 
-    [[nodiscard]] static std::string_view suite_name() noexcept
-    {
-        return typeid(Suite).name();
+    if (it != suites.end() and it->test_name == name) {
+        std::println(
+            stderr,
+            "{}({}): error: Test {}.{} is already registered at {}({}).",
+            file,
+            line,
+            it->suite_name,
+            it->test_name,
+            it->file,
+            it->line);
+        std::terminate();
     }
 
-    [[nodiscard]] static size_t num_tests(filter const& filter) noexcept
-    {
-        return std::ranges::count_if(_hikotest_tests, [&filter](auto const &test) {
-            return filter.match_test(suite_name(), test.name);
-        });
-    }
+    return *tests.insert(it, test_result{file, line, suite.suite_name, name, [](test_result& r) -> void {
+        (Suite{}.*test)(r);
+    }};
+}
 
-    [[nodiscard]] static std::vector<test_type> list_tests(filter const& filter) noexcept
-    {
-        auto r = std::ranges::to<std::vector>(std::views::filter(_hikotest_tests, [&filter](auto const& test) {
-            return filter.match_test(suite_name(), test.name);
-        }));
-
-        std::ranges::sort(r, [](auto const& a, auto const& b) {
-            return a.name < b.name;
-        });
-
-        return r;
-    }
-
-    static void run_tests(trace& r, filter const& filter)
-    {
-        auto const tests_to_run = list_tests(filter);
-
-        r.start_suite(suite_name(), tests_to_run.size());
-        for (auto const& test : tests_to_run) {
-            r.start_test(test.file, test.line, test.name);
-            (suite_type{}.*test.test)(r);
-            r.finish_test();
-        }
-        r.finish_suite();
-    }
-
-    static bool register_test(std::string_view file, int line, std::string_view name, test_ptr test) noexcept
-    {
-        _hikotest_tests.emplace_back(file, line, name, test);
-        return true;
-    }
-
-private:
-    inline static bool _hikotest_registered = register_suite<suite_type>(suite_name());
-    inline static std::vector<test_type> _hikotest_tests = {};
+template<typename Suite>
+struct suite {
+    using _hikotest_suite_type = Suite;
 };
 
 } // namespace test
