@@ -20,6 +20,10 @@ namespace test {
 
 #define TEST_FORCE_SYMBOL(symbol) _Pragma("comment(linker, \"/include:\"" #symbol ")")
 
+/** Declare a test suite
+ *
+ * @param id The method-name of the test case.
+ */
 #if defined(_MSC_VER)
 #define TEST_SUITE(id) \
     struct id; \
@@ -40,7 +44,6 @@ namespace test {
 /** Delcare a test case
  *
  * @param id The method-name of the test case.
- * @param ... The optional name of the test case as a string-literal.
  */
 #define TEST_CASE(id) \
     void _hikotest_wrap_##id(::test::trace& _hikotest_trace) \
@@ -87,35 +90,34 @@ using clock_type = std::chrono::high_resolution_clock;
 using duration_type = std::chrono::duration<double>;
 using time_point_type = std::chrono::time_point<clock_type>;
 
-template<std::size_t N>
-struct fixed_string {
-    constexpr fixed_string() noexcept = default;
+#if defined(_MSC_VER)
+template<typename T>
+[[nodiscard]] constexpr std::string_view class_name() noexcept
+{
+    auto tmp = std::string_view{__FUNCSIG__};
 
-    template<std::size_t O>
-    constexpr fixed_string(char const (&str)[O]) noexcept : _str()
-    {
-        for (auto i = 0; i != O - 1; ++i) {
-            _str[i] = str[i];
-        }
+    auto typename_end = tmp.rfind('>');
+    auto typename_begin = tmp.rfind('<', typename_end) + 1;
+    tmp = tmp.substr(typename_begin, typename_end - typename_begin);
+    
+    if (tmp.starts_with("struct ")) {
+        tmp = tmp.substr(7);
+    } else if (tmp.starts_with("class ")) {
+        tmp = tmp.substr(6);
     }
 
-    constexpr operator std::string_view() const noexcept
-    {
-        return std::string_view{_str.begin(), _str.end()};
-    }
+    return tmp;
+}
 
-    constexpr operator std::string() const noexcept
-    {
-        return std::string{_str.begin(), _str.end()};
-    }
+#elif defined(__GNUC__) or defined(__clang_major__)
+template<typename T>
+[[nodiscard]] constexpr std::string_view class_name() noexcept
+{
+}
 
-    std::array<char, N> _str;
-};
-
-fixed_string() -> fixed_string<0>;
-
-template<std::size_t O>
-fixed_string(char const (&str)[O]) -> fixed_string<O - 1>;
+#else
+#error "class_name<T>() not implemented."
+#endif
 
 template<typename Arg>
 [[nodiscard]] std::string operand_to_string(Arg const& arg) noexcept
