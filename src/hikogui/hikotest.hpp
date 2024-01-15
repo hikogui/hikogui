@@ -92,31 +92,53 @@ using time_point_type = std::chrono::time_point<clock_type>;
 
 #if defined(_MSC_VER)
 template<typename T>
-[[nodiscard]] constexpr std::string_view class_name() noexcept
+[[nodiscard]] constexpr std::string type_name() noexcept
 {
-    auto tmp = std::string_view{__FUNCSIG__};
+    // class std::basic_string_view<char,struct std::char_traits<char> > __cdecl class_name<struct foo<struct bar>>(void) noexcept 
+    auto signature = std::string_view{__FUNCSIG__};
+    auto first = signature.find(" type_name<") + 12;
+    auto last = signature.rfind(">(void)");
+    signature = signature.substr(first, last - first);
 
-    auto typename_end = tmp.rfind('>');
-    auto typename_begin = tmp.rfind('<', typename_end) + 1;
-    tmp = tmp.substr(typename_begin, typename_end - typename_begin);
-    
-    if (tmp.starts_with("struct ")) {
-        tmp = tmp.substr(7);
-    } else if (tmp.starts_with("class ")) {
-        tmp = tmp.substr(6);
+    // Remove leading `struct` or `class` keyword.
+    // This is quick and possibly will allow small-string-optimization.
+    if (signature.starts_with("struct ")) {
+        signature = signature.substr(7);
+    } else if (signature.starts_with("class ")) {
+        signature = signature.substr(6);
     }
 
-    return tmp;
-}
+    auto type = std::string{signature};
 
-#elif defined(__GNUC__) or defined(__clang_major__)
+    // Remove `struct` and `class` keywords and remove spaces.
+    for (auto i = type.find_first_of("<, "); i != type.npos; i = type.find_first_of("<, ", i)) {
+        if (type[i] == ' ') {
+            type.erase(i, 1);
+        } else {
+            ++i;
+        }
+
+        if (type.substr(i).starts_with("struct ")) {
+            type.erase(i, 7);
+        } else if (type.substr(i + 1).starts_with("class ")) {
+            type.erase(i, 6);
+        }
+    }
+
+    return type;
+}
+#elif defined(__GNUC__)
 template<typename T>
-[[nodiscard]] constexpr std::string_view class_name() noexcept
+[[nodiscard]] constexpr std::string type_name() noexcept
 {
+    // constexpr std::string_view class_name() [with T = foo<bar>; std::string_view = std::basic_string_view<char>]
+    auto signature = std::string_view{__PRETTY_FUNCTION__};
+    auto first = signature.find(" class_name() [with T = ") + 24;
+    auto last = signature.find("; ", first);
+    return std::string{signature.substr(first, last - first)};
 }
-
 #else
-#error "class_name<T>() not implemented."
+#error "type_name() not implemented."
 #endif
 
 template<typename Arg>

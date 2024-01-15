@@ -5,7 +5,7 @@
 #include "color_space.hpp"
 #include "../hikotest.hpp"
 
-class color : public ::test::suite<color>
+TEST_SUITE(color)
 {
     TEST_CASE(color_primaries_to_RGBtoXYZ)
     {
