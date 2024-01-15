@@ -10,39 +10,6 @@
 
 namespace test {
 
-/** Get the number of suites and total number of tests.
- *
- * @return num_suites, total_num_tests
- */
-[[nodiscard]] static std::pair<size_t, size_t> num_suites(filter const& filter) noexcept
-{
-    size_t num_suites = 0;
-    size_t num_total_tests = 0;
-
-    for (auto const& suite : suites) {
-        if (filter.match_suite(suite.name)) {
-            ++num_suites;
-            num_total_tests += suite.num_tests(filter);
-        }
-    }
-    return {num_suites, num_total_tests};
-}
-
-[[nodiscard]] static std::vector<suite_entry> list_suites(filter const& filter) noexcept
-{
-    auto r = std::ranges::to<std::vector>(std::views::filter(suites, [&](auto const& suite) {
-        return filter.match_suite(suite.name);
-    }));
-
-    std::ranges::sort(r, [](auto const& a, auto const& b) {
-        return a.name < b.name;
-    });
-
-    return r;
-}
-
-
-
 [[nodiscard]] bool filter::match_test(std::string_view suite_name, std::string_view test_name) const noexcept
 {
     return true;
@@ -58,42 +25,7 @@ namespace test {
     return std::unexpected{"Not implemented"};
 }
 
-
-
-
-void trace::finish_suite() noexcept
-{
-    using namespace std::literals;
-
-    auto const duration = clock_type::now() - _suite_tp;
-
 }
-
-void trace::start_check(std::string_view file, int line, std::optional<std::string> default_failure_message) noexcept
-{
-    _check_file = file;
-    _check_line = line;
-    _check_failure_message = default_failure_message;
-}
-
-bool trace::finish_check() noexcept
-{
-    if (_check_failure_message) {
-        std::println(stdout, "{}({}): error: {}", _check_file, _check_line, *_check_failure_message);
-        _test_failed = true;
-        return false;
-    } else {
-        return true;
-    }
-}
-
-bool trace::finish_check(std::optional<std::string> failure_message) noexcept
-{
-    _check_failure_message = failure_message;
-    return finish_check();
-}
-
-} // namespace test
 
 static bool option_list_tests = false;
 static ::test::filter option_filter = {};
@@ -160,7 +92,7 @@ struct collect_stats_result {
 {
     auto r = collect_stats_result{};
 
-    for (auto &suite : suites) {
+    for (auto &suite : ::test::suites) {
         if (filter.match_suite(suite.suite_name)) {
             auto const stats = suite.collect_stats(filter);
 
@@ -174,7 +106,7 @@ struct collect_stats_result {
     return r;
 }
 
-[[nodiscard]] static ::test::time_point_type run_tests_start(::test::filter const &filter) noexcept
+[[nodiscard]] static ::test::hr_time_point_type run_tests_start(::test::filter const &filter) noexcept
 {
     auto const stats = collect_stats(filter);
 
@@ -188,14 +120,14 @@ struct collect_stats_result {
     std::println(stdout, "[----------] Global test environment set-up.");
     std::fflush(stdout);
 
-    return ::test::clock_type::now();
+    return ::test::hr_clock_type::now();
 }
 
-[[nodiscard]] static void run_tests_finish(::test::filter const &filter, ::test::time_point_type time_point) noexcept
+[[nodiscard]] static bool run_tests_finish(::test::filter const &filter, ::test::hr_time_point_type time_point) noexcept
 {
     using namespace std::literals;
 
-    auto const duration = ::test::clock_type::now() - time_point;
+    auto const duration = ::test::hr_clock_type::now() - time_point;
 
     auto const stats = collect_stats(filter);
 
@@ -225,9 +157,11 @@ struct collect_stats_result {
             std::println(stdout, "[  FAILED  ] {}", failed_test);
         }
     }
+
+    return stats.num_failures == 0;
 }
 
-static void run_tests(::test::filter const &filter)
+static bool run_tests(::test::filter const &filter)
 {
     auto const time_point = run_tests_start(filter);
 
@@ -237,7 +171,7 @@ static void run_tests(::test::filter const &filter)
         }
     }
 
-    run_tests_finish(filter, time_point);    
+    return run_tests_finish(filter, time_point);    
 }
 
 static void generate_junit_xml(::test::filter const &filter, FILE *out)
@@ -256,7 +190,7 @@ static void generate_junit_xml(::test::filter const &filter, FILE *out)
     std::println(out, "</testsuites>");
 }
 
-static int list_tests(::test::filter const& filter) noexcept
+static void list_tests(::test::filter const& filter) noexcept
 {
     for (auto const& suite : ::test::suites) {
         if (filter.match_suite(suite.suite_name)) {
@@ -268,7 +202,6 @@ static int list_tests(::test::filter const& filter) noexcept
             }
         }
     }
-    return 0;
 }
 
 int main(int argc, char *argv[])
@@ -276,11 +209,11 @@ int main(int argc, char *argv[])
     std::println(stdout, "Running main() from {}", __FILE__);
     parse_arguments(argc, argv);
 
-    auto r = 0;
+    auto success = true;
     if (option_list_tests) {
-        r = list_tests(option_filter);
+        list_tests(option_filter);
     } else {
-        r = run_tests(option_filter);
+        success = run_tests(option_filter);
     }
 
     FILE *xml_output = nullptr;
@@ -300,5 +233,5 @@ int main(int argc, char *argv[])
 
     }
 
-    return r;
+    return success ? 0 : 1;
 }

@@ -14,11 +14,12 @@
 #include <algorithm>
 #include <cassert>
 #include <limits>
-#include <typeinfo>
+#include <print>
 
 namespace test {
 
-#define TEST_FORCE_SYMBOL(symbol) _Pragma("comment(linker, \"/include:\"" #symbol ")")
+#define TEST_DO_PRAGMA(x) _Pragma(#x)
+#define TEST_FORCE_SYMBOL(symbol) TEST_DO_PRAGMA(comment(linker, "/inline:" #symbol "\""))
 
 /** Declare a test suite
  *
@@ -27,14 +28,14 @@ namespace test {
 #if defined(_MSC_VER)
 #define TEST_SUITE(id) \
     struct id; \
-    inline auto _hikotest_suite_info_##id = register_suite<id>(); \
+    inline auto _hikotest_suite_info_##id = std::addressof(::test::register_suite<id>()); \
     TEST_FORCE_SYMBOL(hikotest_info_##id); \
     struct id : ::test::suite<id>
 
 #elif defined(__GNUC__) or defined(__clang_major__)
 #define TEST_SUITE(id) \
     struct id; \
-    [[gnu::externally_visible]] inline auto _hikotest_test_info_##id = register_suite<id>(); \
+    [[gnu::externally_visible]] inline auto _hikotest_test_info_##id = std::addressof(::test::register_suite<id>()); \
     struct id : ::test::suite<id>
 
 #else
@@ -46,13 +47,13 @@ namespace test {
  * @param id The method-name of the test case.
  */
 #define TEST_CASE(id) \
-    void _hikotest_wrap_##id(::test::trace& _hikotest_trace) \
+    void _hikotest_wrap_##id(::test::test_result& _hikotest_result) \
     { \
-        return id(_hikotest_trace); \
+        return id(_hikotest_result); \
     } \
-    inline static bool _hikotest_wrap_registered_##id = \
-        register_test(__FILE__, __LINE__, #id, &_hikotest_suite_type::_hikotest_wrap_##id); \
-    void id(::test::trace& _hikotest_trace)
+    inline static auto _hikotest_wrap_registered_##id = \
+        std::addressof(register_test(&_hikotest_suite_type::_hikotest_wrap_##id, __FILE__, __LINE__, #id)); \
+    void id(::test::test_result& _hikotest_result)
 
 /** Check an expression
  *
@@ -62,8 +63,8 @@ namespace test {
  */
 #define REQUIRE(expression, ...) \
     do { \
-        _hikotest_trace.start_check(__FILE__, __LINE__); \
-        if (not _hikotest_trace.finish_check(::test::error{__VA_ARGS__} <=> expression)) { \
+        _hikotest_result.start_check(__FILE__, __LINE__); \
+        if (not _hikotest_result.finish_check(::test::error{__VA_ARGS__} <=> expression)) { \
             return; \
         } \
     } while (false)
@@ -74,30 +75,34 @@ namespace test {
  * @param exception The exception to be thrown.
  */
 #define REQUIRE_THROWS(expression, exception) \
-    _hikofui_trace.start_check(__FILE__, __LINE__, "Check did not throw " #exception "."); \
+    _hikotest_result.start_check(__FILE__, __LINE__, "Check did not throw " #exception "."); \
     do { \
         try { \
             (void)expression; \
         } catch (exception const&) { \
-            _hikofui_trace.finish_check(std::nullopt); \
+            _hikotest_result.finish_check(std::nullopt); \
         } \
-        if (not _hikofui_trace.finish_check()) { \
+        if (not _hikotest_result.finish_check()) { \
             return; \
         } \
     } while (false)
 
-using clock_type = std::chrono::high_resolution_clock;
-using duration_type = std::chrono::duration<double>;
-using time_point_type = std::chrono::time_point<clock_type>;
+using hr_clock_type = std::chrono::high_resolution_clock;
+using hr_duration_type = std::chrono::duration<double>;
+using hr_time_point_type = std::chrono::time_point<hr_clock_type>;
+using utc_clock_type = std::chrono::utc_clock;
+using utc_time_point_type = utc_clock_type::time_point;
+
+
 
 #if defined(_MSC_VER)
 template<typename T>
 [[nodiscard]] constexpr std::string type_name() noexcept
 {
-    // class std::basic_string_view<char,struct std::char_traits<char> > __cdecl class_name<struct foo<struct bar>>(void) noexcept 
+    // class std::basic_string_view<char,struct std::char_traits<char> > __cdecl class_name<struct foo<struct bar>>(void) noexcept
     auto signature = std::string_view{__FUNCSIG__};
-    auto first = signature.find(" type_name<") + 12;
-    auto last = signature.rfind(">(void)");
+    auto const first = signature.find(" type_name<") + 12;
+    auto const last = signature.rfind(">(void)");
     signature = signature.substr(first, last - first);
 
     // Remove leading `struct` or `class` keyword.
@@ -132,14 +137,50 @@ template<typename T>
 [[nodiscard]] constexpr std::string type_name() noexcept
 {
     // constexpr std::string_view class_name() [with T = foo<bar>; std::string_view = std::basic_string_view<char>]
-    auto signature = std::string_view{__PRETTY_FUNCTION__};
-    auto first = signature.find(" class_name() [with T = ") + 24;
-    auto last = signature.find("; ", first);
+    auto const signature = std::string_view{__PRETTY_FUNCTION__};
+    auto const first = signature.find(" class_name() [with T = ") + 24;
+    auto const last = signature.find("; ", first);
     return std::string{signature.substr(first, last - first)};
 }
 #else
 #error "type_name() not implemented."
 #endif
+
+template<char QuoteChar = '\0'>
+[[nodiscard]] constexpr std::string xml_escape(std::string str) noexcept
+{
+    for (auto it = str.begin(); it != str.end(); ++it) {
+        auto const c = *it;
+
+        if (c == '"' and QuoteChar == '"') {
+            it = str.erase(it);
+            it = str.insert_range(it, std::string_view{"&quot;"});
+            it += 5;
+
+        } else if (c == '\'' and QuoteChar == '\'') {
+            it = str.erase(it);
+            it = str.insert_range(it, std::string_view{"&apos;"});
+            it += 5;
+
+        } else if (c == '<') {
+            it = str.erase(it);
+            it = str.insert_range(it, std::string_view{"&lt;"});
+            it += 3;
+
+        } else if (c == '>') {
+            it = str.erase(it);
+            it = str.insert_range(it, std::string_view{"&qt;"});
+            it += 3;
+
+        } else if (c == '&') {
+            it = str.erase(it);
+            it = str.insert_range(it, std::string_view{"&amp;"});
+            it += 4;
+        }
+    }
+
+    return str;
+}
 
 template<typename Arg>
 [[nodiscard]] std::string operand_to_string(Arg const& arg) noexcept
@@ -358,20 +399,24 @@ struct test_result {
     std::string test_name;
     std::function<void(test_result&)> _run_test;
     std::string failure = {};
-    time_point_type time_point = {};
-    duration_type duration = {};
+    utc_time_point_type time_stamp = {};
+    hr_time_point_type time_point = {};
+    hr_duration_type duration = {};
 
     void start() noexcept
     {
         std::println(stdout, "[ RUN      ] {}.{}", suite_name, test_name);
         std::fflush(stdout);
         failure = {};
-        time_point = clock_type::now();
+        time_stamp = utc_clock_type::now();
+        time_point = hr_clock_type::now();
     }
 
     void finish() noexcept
     {
-        duration = clock_type::now() - time_point;
+        using namespace std::literals;
+
+        duration = hr_clock_type::now() - time_point;
         if (failure.empty()) {
             std::println(stdout, "[       OK ] {}.{} ({} ms)", suite_name, test_name, duration / 1ms);
         } else {
@@ -393,16 +438,16 @@ struct test_result {
 
         std::print(out, "    <testcase name=\"{}\" file=\"{}\" line=\"{}\" classname=\"{}\"", test_name, file, line, suite_name);
 
-        if (timestamp != {}) {
+        if (time_point != hr_time_point_type{}) {
             std::print(
                 out,
-                "status=\"run\" result=\"completed\" time=\"{}\" timestamp=\"{:%Y-%m-%dT%H:%M:%S.000}\"",
-                time / 1s,
-                timestamp);
+                "status=\"run\" result=\"completed\" time=\"{}\" timestamp=\"{:%Y-%m-%dT%H:%M:%S}.000\"",
+                duration / 1s,
+                time_stamp);
 
             if (not failure.empty()) {
-                std::print(out, "      <failure message=\"{}\" type=\"\">", html_attribute_encode(failure));
-                std::println(out, "![CDATA[{}]]</failure>", html_cdata_encode(failure));
+                std::print(out, "      <failure message=\"{}\" type=\"\">", xml_escape<'"'>(failure));
+                std::println(out, "<![CDATA[{}]]></failure>", xml_escape(failure));
                 std::println(out, "    </testcase>");
             } else {
                 std::println(out, " />");
@@ -416,8 +461,9 @@ struct test_result {
 struct suite_result {
     std::string suite_name;
     std::vector<test_result> tests;
-    time_point_type time_point = {};
-    duration_type duration = {};
+    utc_time_point_type time_stamp = {};
+    hr_time_point_type time_point = {};
+    hr_duration_type duration = {};
 
     struct collect_stats_result {
         size_t num_tests = 0;
@@ -428,13 +474,13 @@ struct suite_result {
         std::vector<std::string> failed_tests;
     };
 
-    [[nodiscard]] stats_result collect_stats(filter const& filter) noexcept
+    [[nodiscard]] collect_stats_result collect_stats(filter const& filter) noexcept
     {
         collect_stats_result r = {};
         for (auto& test : tests) {
             if (filter.match_test(test.suite_name, test.test_name)) {
                 ++r.num_tests;
-                if (test.time_point != {}) {
+                if (test.time_point != hr_time_point_type{}) {
                     if (not test.failure.empty()) {
                         ++r.num_failures;
                         r.failed_tests.push_back(std::format("{}.{}", test.suite_name, test.test_name));
@@ -449,12 +495,15 @@ struct suite_result {
     {
         std::println(stdout, "[----------] {} {} from {}", num_tests, num_tests == 1 ? "test" : "tests", suite_name);
         std::fflush(stdout);
-        time_point = clock_type::now();
+        time_stamp = utc_clock_type::now();
+        time_point = hr_clock_type::now();
     }
 
     void finish(size_t num_tests) noexcept
     {
-        duration = clock_type::now() - time_point;
+        using namespace std::literals;
+
+        duration = hr_clock_type::now() - time_point;
 
         std::println(
             stdout,
@@ -466,11 +515,11 @@ struct suite_result {
         std::fflush(stdout);
     }
 
-    void run_tests(filter const &filter)
+    void run_tests(filter const& filter)
     {
         auto const stats = collect_stats(filter);
         start(stats.num_tests);
-        for (auto &test: tests) {
+        for (auto& test : tests) {
             if (filter.match_test(test.suite_name, test.test_name)) {
                 test.run_test();
             }
@@ -486,19 +535,17 @@ struct suite_result {
 
         std::print(out, "  <testsuite name=\"{}\" tests=\"{}\"", suite_name, stats.num_tests);
 
-        if (time_point != {}) {
+        if (time_point != hr_time_point_type{}) {
             std::print(
                 out,
                 "failures=\"{}\" disabled=\"{}\" skipped=\"{}\" errors=\"{}\" time=\"{:.3}\" "
-                "timestamp=\"{%Y-%m=%dT%H:%M:%S.000}\">",
-                suite_name,
-                stats.num_tests,
+                "timestamp=\"{:%Y-%m-%dT%H:%M:%S}.000\">",
                 stats.num_failures,
                 stats.num_disabled,
                 stats.num_skipped,
                 stats.num_errors,
                 duration / 1s,
-                time_point);
+                time_stamp);
         } else {
             std::println(out, ">");
         }
@@ -509,9 +556,7 @@ struct suite_result {
             }
         }
 
-        if (generate_junit_xml) {
-            std::println(out, "  </testsuite>");
-        }
+        std::println(out, "  </testsuite>");
     }
 };
 
@@ -566,8 +611,8 @@ register_test(void (Suite::*test)(test_result&), std::string_view file, int line
     }
 
     return *tests.insert(it, test_result{file, line, suite.suite_name, name, [](test_result& r) -> void {
-        (Suite{}.*test)(r);
-    }};
+                                             (Suite{}.*test)(r);
+                                         }});
 }
 
 template<typename Suite>
