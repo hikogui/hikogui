@@ -18,29 +18,14 @@
 
 namespace test {
 
-#define TEST_DO_PRAGMA(x) _Pragma(#x)
-#define TEST_FORCE_SYMBOL(symbol) TEST_DO_PRAGMA(comment(linker, "/inline:" #symbol "\""))
-
 /** Declare a test suite
  *
  * @param id The method-name of the test case.
  */
-#if defined(_MSC_VER)
 #define TEST_SUITE(id) \
     struct id; \
     inline auto _hikotest_suite_info_##id = std::addressof(::test::register_suite<id>()); \
-    TEST_FORCE_SYMBOL(hikotest_info_##id); \
     struct id : ::test::suite<id>
-
-#elif defined(__GNUC__) or defined(__clang_major__)
-#define TEST_SUITE(id) \
-    struct id; \
-    [[gnu::externally_visible]] inline auto _hikotest_test_info_##id = std::addressof(::test::register_suite<id>()); \
-    struct id : ::test::suite<id>
-
-#else
-#error "TEST_SUITE() not implemented."
-#endif
 
 /** Delcare a test case
  *
@@ -63,8 +48,7 @@ namespace test {
  */
 #define REQUIRE(expression, ...) \
     do { \
-        _hikotest_result.start_check(__FILE__, __LINE__); \
-        if (not _hikotest_result.finish_check(::test::error{__VA_ARGS__} <=> expression)) { \
+        if (not _hikotest_result.check(__FILE__, __LINE__, ::test::error{__VA_ARGS__} <=> expression)) { \
             return; \
         } \
     } while (false)
@@ -75,14 +59,15 @@ namespace test {
  * @param exception The exception to be thrown.
  */
 #define REQUIRE_THROWS(expression, exception) \
-    _hikotest_result.start_check(__FILE__, __LINE__, "Check did not throw " #exception "."); \
     do { \
+        bool _hikotest_throws = false; \
         try { \
             (void)expression; \
         } catch (exception const&) { \
-            _hikotest_result.finish_check(std::nullopt); \
+            _hikotest_throws = true; \
         } \
-        if (not _hikotest_result.finish_check()) { \
+        if (not _hikotest_throws) \
+            _hikotest_result.check(__FILE__, __LINE__, #expression " did not throw " #exception "."); \
             return; \
         } \
     } while (false)
@@ -94,26 +79,15 @@ using utc_clock_type = std::chrono::utc_clock;
 using utc_time_point_type = utc_clock_type::time_point;
 
 
-
-#if defined(_MSC_VER)
-template<typename T>
-[[nodiscard]] constexpr std::string type_name() noexcept
+[[nodiscard]] constexpr std::string type_name_strip(std::string type)
 {
-    // class std::basic_string_view<char,struct std::char_traits<char> > __cdecl class_name<struct foo<struct bar>>(void) noexcept
-    auto signature = std::string_view{__FUNCSIG__};
-    auto const first = signature.find(" type_name<") + 12;
-    auto const last = signature.rfind(">(void)");
-    signature = signature.substr(first, last - first);
-
     // Remove leading `struct` or `class` keyword.
     // This is quick and possibly will allow small-string-optimization.
-    if (signature.starts_with("struct ")) {
-        signature = signature.substr(7);
-    } else if (signature.starts_with("class ")) {
-        signature = signature.substr(6);
+    if (type.starts_with("struct ")) {
+        type = type.substr(7);
+    } else if (type.starts_with("class ")) {
+        type = type.substr(6);
     }
-
-    auto type = std::string{signature};
 
     // Remove `struct` and `class` keywords and remove spaces.
     for (auto i = type.find_first_of("<, "); i != type.npos; i = type.find_first_of("<, ", i)) {
@@ -132,19 +106,51 @@ template<typename T>
 
     return type;
 }
-#elif defined(__GNUC__)
+
+
 template<typename T>
 [[nodiscard]] constexpr std::string type_name() noexcept
 {
-    // constexpr std::string_view class_name() [with T = foo<bar>; std::string_view = std::basic_string_view<char>]
-    auto const signature = std::string_view{__PRETTY_FUNCTION__};
-    auto const first = signature.find(" class_name() [with T = ") + 24;
-    auto const last = signature.find("; ", first);
-    return std::string{signature.substr(first, last - first)};
-}
+#if defined(_MSC_VER)
+    auto signature = std::string_view{__FUNCSIG__};
+#elif defined(__GNUC__)
+    auto signature = std::string_view{__PRETTY_FUNCTION__};
 #else
-#error "type_name() not implemented."
+#error "type_name() not implemented"
 #endif
+
+    // constexpr std::string_view class_name() [with T = foo<bar>; std::string_view = std::basic_string_view<char>]
+    if (auto first = signature.find("::type_name() [with T = "); first != signature.npos) {
+        first += 24;
+        auto const last = signature.find("; ", first);
+        if (last == signature.npos) {
+            std::println(stderr, "{}({}): error: Could not parse type_name from '{}'", __FILE__, __LINE__, signature);
+            std::terminate();
+        }
+        return type_name_strip(std::string{signature.substr(first, last - first)});
+    }
+
+    // __cdecltest::type_name(void)[T=foo<bar>]
+    if (auto first = signature.find("::type_name(void) [T = "); first != signature.npos) {
+        first += 23;
+        auto const last = signature.find("]", first);
+        if (last == signature.npos) {
+            std::println(stderr, "{}({}): error: Could not parse type_name from '{}'", __FILE__, __LINE__, signature);
+            std::terminate();
+        }
+        return type_name_strip(std::string{signature.substr(first, last - first)});
+    }
+
+    // class std::basic_string_view<char,struct std::char_traits<char> > __cdecl class_name<struct foo<struct bar>>(void) noexcept
+    if (auto first = signature.find(" type_name<"); first != signature.npos) {
+        first += 12;
+        auto const last = signature.rfind(">(void)");
+        return type_name_strip(std::string{signature.substr(first, last - first)});
+    }
+
+    std::println(stderr, "{}({}): error: Could not parse type_name from '{}'", __FILE__, __LINE__, signature);
+    std::terminate();
+}
 
 template<char QuoteChar = '\0'>
 [[nodiscard]] constexpr std::string xml_escape(std::string str) noexcept
@@ -288,7 +294,7 @@ template<error_class ErrorClass, typename LHS>
 }
 
 template<typename LHS, typename RHS>
-[[nodiscard]] constexpr std::optional<std::string>
+[[nodiscard]] constexpr std::string
 operator==(operand<error_class::exact, LHS> const& lhs, RHS const& rhs) noexcept
 {
     if constexpr (requires {
@@ -297,21 +303,21 @@ operator==(operand<error_class::exact, LHS> const& lhs, RHS const& rhs) noexcept
                       } -> std::convertible_to<bool>;
                   }) {
         if (lhs == rhs) {
-            return std::nullopt;
+            return {};
         } else {
             return std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs));
         }
 
     } else if constexpr (requires { std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs); }) {
         if (std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs)) {
-            return std::nullopt;
+            return {};
         } else {
             return std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs));
         }
 
     } else if constexpr (requires { std::ranges::equal(lhs, rhs); }) {
         if (std::ranges::equal(lhs, rhs)) {
-            return std::nullopt;
+            return {};
         } else {
             return std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs));
         }
@@ -337,13 +343,13 @@ concept range_diff_ordered = std::ranges::range<LHS> and std::ranges::range<RHS>
     diff_ordered<std::ranges::range_value_t<LHS>, std::ranges::range_value_t<RHS>, Error>;
 
 template<typename LHS, typename RHS>
-[[nodiscard]] constexpr std::optional<std::string>
+[[nodiscard]] constexpr std::string
 operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexcept
     requires diff_ordered<LHS, RHS, double>
 {
     auto const diff = lhs.v - rhs;
     if (diff >= -lhs.e and diff <= lhs.e) {
-        return std::nullopt;
+        return {};
     } else {
         return std::format(
             "Expected equality within {} of these values:\n  {}\n  {}",
@@ -354,7 +360,7 @@ operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexc
 }
 
 template<typename LHS, typename RHS>
-[[nodiscard]] constexpr std::optional<std::string>
+[[nodiscard]] constexpr std::string
 operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexcept
     requires(not diff_ordered<LHS, RHS, double>) and range_diff_ordered<LHS, RHS, double>
 {
@@ -383,7 +389,7 @@ operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexc
             "Expected both range-values to the same size:\n  {}\n  {}", operand_to_string(lhs.v), operand_to_string(rhs));
     }
 
-    return std::nullopt;
+    return {};
 }
 
 class filter {
@@ -430,6 +436,17 @@ struct test_result {
         start();
         _run_test(*this);
         finish();
+    }
+
+    bool check(char const *check_file, int check_line, std::string check_failure = std::string{}) noexcept
+    {
+        if (check_failure.empty()) {
+            return true;
+        }
+
+        std::println(stdout, "{}({}): error: {}", check_file, check_line, check_failure);
+        failure = std::move(check_failure);
+        return false;
     }
 
     void generate_junit_xml(FILE *out) noexcept
@@ -566,7 +583,7 @@ inline size_t last_registered_suite = 0;
 template<typename Suite>
 [[nodiscard]] inline suite_result& register_suite() noexcept
 {
-    auto const name = class_name<Suite>();
+    auto const name = type_name<Suite>();
 
     // Skip binary search if possible.
     if (last_registered_suite < suites.size() and suites[last_registered_suite].suite_name == name) {
@@ -597,7 +614,7 @@ register_test(void (Suite::*test)(test_result&), std::string_view file, int line
         return item.test_name < name;
     });
 
-    if (it != suites.end() and it->test_name == name) {
+    if (it != tests.end() and it->test_name == name) {
         std::println(
             stderr,
             "{}({}): error: Test {}.{} is already registered at {}({}).",
@@ -610,7 +627,7 @@ register_test(void (Suite::*test)(test_result&), std::string_view file, int line
         std::terminate();
     }
 
-    return *tests.insert(it, test_result{file, line, suite.suite_name, name, [](test_result& r) -> void {
+    return *tests.insert(it, test_result{file, line, suite.suite_name, name, [&test](test_result& r) -> void {
                                              (Suite{}.*test)(r);
                                          }});
 }

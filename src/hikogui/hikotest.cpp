@@ -60,6 +60,15 @@ static void parse_arguments(int argc, char *argv[]) noexcept
         if (arg == "--help") {
             print_help(0);
 
+        } else if (arg.starts_with("--gtest_color=")) {
+            continue;
+
+        } else if (arg == "--gtest_also_run_disabled_tests") {
+            continue;
+
+        } else if (arg == "--gtest_break_on_failure") {
+            continue;
+
         } else if (arg == "--gtest_list_tests") {
             option_list_tests = true;
 
@@ -75,7 +84,12 @@ static void parse_arguments(int argc, char *argv[]) noexcept
             option_xml_output_path = std::filesystem::path{arg.substr(19)};
 
         } else {
-            std::println(stderr, "Unknown command line argument {}.\n", arg);
+            std::println(stderr, "Unknown command line argument {}.", arg);
+            std::println(stderr, "These are the command line argument given:");
+            for (auto j = 1; j != argc; ++j) {
+                std::println(stderr, "  {}", argv[j]);
+            }
+            std::println(stderr, "");
             print_help(2);
         }
     }
