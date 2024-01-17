@@ -68,16 +68,16 @@ namespace test {
         } \
         if (not _hikotest_throws) \
             _hikotest_result.check(__FILE__, __LINE__, #expression " did not throw " #exception "."); \
-            return; \
-        } \
-    } while (false)
+        return; \
+    } \
+    } \
+    while (false)
 
 using hr_clock_type = std::chrono::high_resolution_clock;
 using hr_duration_type = std::chrono::duration<double>;
 using hr_time_point_type = std::chrono::time_point<hr_clock_type>;
 using utc_clock_type = std::chrono::utc_clock;
 using utc_time_point_type = utc_clock_type::time_point;
-
 
 [[nodiscard]] constexpr std::string type_name_strip(std::string type)
 {
@@ -106,7 +106,6 @@ using utc_time_point_type = utc_clock_type::time_point;
 
     return type;
 }
-
 
 template<typename T>
 [[nodiscard]] constexpr std::string type_name() noexcept
@@ -294,8 +293,7 @@ template<error_class ErrorClass, typename LHS>
 }
 
 template<typename LHS, typename RHS>
-[[nodiscard]] constexpr std::string
-operator==(operand<error_class::exact, LHS> const& lhs, RHS const& rhs) noexcept
+[[nodiscard]] constexpr std::string operator==(operand<error_class::exact, LHS> const& lhs, RHS const& rhs) noexcept
 {
     if constexpr (requires {
                       {
@@ -343,8 +341,7 @@ concept range_diff_ordered = std::ranges::range<LHS> and std::ranges::range<RHS>
     diff_ordered<std::ranges::range_value_t<LHS>, std::ranges::range_value_t<RHS>, Error>;
 
 template<typename LHS, typename RHS>
-[[nodiscard]] constexpr std::string
-operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexcept
+[[nodiscard]] constexpr std::string operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexcept
     requires diff_ordered<LHS, RHS, double>
 {
     auto const diff = lhs.v - rhs;
@@ -360,8 +357,7 @@ operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexc
 }
 
 template<typename LHS, typename RHS>
-[[nodiscard]] constexpr std::string
-operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexcept
+[[nodiscard]] constexpr std::string operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexcept
     requires(not diff_ordered<LHS, RHS, double>) and range_diff_ordered<LHS, RHS, double>
 {
     auto lit = lhs.v.begin();
@@ -394,8 +390,29 @@ operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexc
 
 class filter {
 public:
+    constexpr filter() noexcept : inclusions{test_filter_type{}}, exclusions() {}
+    constexpr filter(filter const&) noexcept = default;
+    constexpr filter(filter&&) noexcept = default;
+    constexpr filter& operator=(filter const&) noexcept = default;
+    constexpr filter& operator=(filter&&) noexcept = default;
+
+    /** Create a filter from the string representation
+     * 
+     * @param str A string in the following format [ inclusion ]['-' exclusion]
+     * @throws std::runtime_error On parse error.
+     */
+    filter(std::string_view str);
     [[nodiscard]] bool match_suite(std::string_view suite) const noexcept;
     [[nodiscard]] bool match_test(std::string_view suite, std::string_view test) const noexcept;
+
+private:
+    struct test_filter_type {
+        std::string suite_name;
+        std::string test_name;
+    };
+
+    std::vector<test_filter_type> inclusions;
+    std::vector<test_filter_type> exclusions;
 };
 
 struct test_result {
@@ -438,7 +455,7 @@ struct test_result {
         finish();
     }
 
-    bool check(char const *check_file, int check_line, std::string check_failure = std::string{}) noexcept
+    bool check(char const* check_file, int check_line, std::string check_failure = std::string{}) noexcept
     {
         if (check_failure.empty()) {
             return true;
@@ -449,7 +466,7 @@ struct test_result {
         return false;
     }
 
-    void generate_junit_xml(FILE *out) noexcept
+    void generate_junit_xml(FILE* out) noexcept
     {
         using namespace std::literals;
 
@@ -544,7 +561,7 @@ struct suite_result {
         finish(stats.num_tests);
     }
 
-    void generate_junit_xml(filter const& filter, FILE *out) noexcept
+    void generate_junit_xml(filter const& filter, FILE* out) noexcept
     {
         using namespace std::literals;
 

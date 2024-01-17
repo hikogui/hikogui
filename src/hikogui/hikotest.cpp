@@ -3,29 +3,148 @@
 #include "hikotest.hpp"
 #include <utility>
 #include <print>
-#include <cassert>
 #include <optional>
 #include <filesystem>
 #include <expected>
+#include <algorithm>
 
 namespace test {
 
+filter::filter(std::string_view str)
+{
+    enum class state_type { include_start, include_suite, include_test, exclude_suite, exclude_test };
+
+    auto suite_name = std::string{};
+    auto test_name = std::string{};
+    auto state = state_type::include_start;
+
+    auto commit = [&](state_type const next_state) {
+        if (suite_name == "*") {
+            suite_name.clear();
+        }
+        if (test_name == "*") {
+            test_name.clear();
+        }
+
+        if (suite_name.contains("*")) {
+            throw std::runtime_error("The suite-name in a filter may be '*' but can not contain '*'.");
+        }
+        if (test_name.contains("*")) {
+            throw std::runtime_error("The test-name in a filter may be '*' but can not contain '*'.");
+        }
+
+        if (state == state_type::include_start or state == state_type::include_suite or state == state_type::include_test) {
+            this->inclusions.emplace_back(suite_name, test_name);
+        } else if (state == state_type::exclude_suite or state == state_type::exclude_test) {
+            this->exclusions.emplace_back(suite_name, test_name);
+        } else {
+            std::terminate();
+        }
+
+        suite_name.clear();
+        test_name.clear();
+        state = next_state;
+    };
+
+    for (auto const c : str) {
+        switch (state) {
+        case state_type::include_start:
+            if (c == '-') {
+                state = state_type::exclude_suite;
+            } else if (c == '.') {
+                state = state_type::include_test;
+            } else if (c == ':') {
+                commit(state_type::include_start);
+            } else {
+                suite_name += c;
+                state = state_type::include_suite;
+            }
+            break;
+        case state_type::include_suite:
+            if (c == '.') {
+                state = state_type::include_test;
+            } else if (c == ':') {
+                commit(state_type::include_start);
+            } else {
+                suite_name += c;
+            }
+            break;
+        case state_type::include_test:
+            if (c == '.') {
+                throw std::runtime_error("dot '.' in test-name is not valid in filter.");
+            } else if (c == ':') {
+                commit(state_type::include_start);
+            } else {
+                test_name += c;
+            }
+            break;
+
+        case state_type::exclude_suite:
+            if (c == '.') {
+                state = state_type::exclude_test;
+            } else if (c == ':') {
+                commit(state_type::exclude_suite);
+            } else {
+                suite_name += c;
+            }
+            break;
+
+        case state_type::exclude_test:
+            if (c == '.') {
+                throw std::runtime_error("dot '.' in test-name is not valid in filter.");
+            } else if (c == ':') {
+                commit(state_type::exclude_suite);
+            } else {
+                test_name += c;
+            }
+            break;
+        default:
+            std::terminate();
+        }
+    }
+
+    if (inclusions.empty()) {
+        inclusions.emplace_back();
+    }
+}
+
 [[nodiscard]] bool filter::match_test(std::string_view suite_name, std::string_view test_name) const noexcept
 {
+    if (std::none_of(inclusions.begin(), inclusions.end(), [&](auto const& item) {
+            return (item.suite_name.empty() or item.suite_name == suite_name) and
+                (item.test_name.empty() or item.test_name == test_name);
+        })) {
+        return false;
+    }
+
+    if (std::any_of(exclusions.begin(), exclusions.end(), [&](auto const& item) {
+            return (item.suite_name.empty() or item.suite_name == suite_name) and
+                (item.test_name.empty() or item.test_name == test_name);
+        })) {
+        return false;
+    }
+
     return true;
 }
 
 [[nodiscard]] bool filter::match_suite(std::string_view suite_name) const noexcept
 {
+    if (std::none_of(inclusions.begin(), inclusions.end(), [&](auto const& item) {
+            return item.suite_name.empty() or item.suite_name == suite_name;
+        })) {
+        return false;
+    }
+
+    if (std::any_of(exclusions.begin(), exclusions.end(), [&](auto const& item) {
+            return item.suite_name == suite_name and item.test_name.empty();
+        })) {
+        return false;
+    }
+
     return true;
 }
 
-[[nodiscard]] static std::expected<filter, std::string> parse_filter(std::string_view str) noexcept
-{
-    return std::unexpected{"Not implemented"};
-}
-
-}
+} // namespace test
 
 static bool option_list_tests = false;
 static ::test::filter option_filter = {};
@@ -48,7 +167,7 @@ static std::optional<std::filesystem::path> option_xml_output_path = std::nullop
     std::exit(exit_code);
 }
 
-static void parse_arguments(int argc, char *argv[]) noexcept
+static void parse_arguments(int argc, char* argv[]) noexcept
 {
     if (argc == 0) {
         std::println(stderr, "Empty argument list, expect at least the executable name in argv[0].");
@@ -73,11 +192,11 @@ static void parse_arguments(int argc, char *argv[]) noexcept
             option_list_tests = true;
 
         } else if (arg.starts_with("--gtest_filter=")) {
-            if (auto const filter = ::test::parse_filter(arg.substr(15))) {
-                option_filter = *filter;
+            try {
+                option_filter = ::test::filter(arg.substr(15));
 
-            } else {
-                std::println(stderr, "error: {}.\n", filter.error());
+            } catch(std::runtime_error const &e) {
+                std::println(stderr, "error: {}.\n", e.what());
                 print_help(2);
             }
         } else if (arg.starts_with("--gtest_output=xml:")) {
@@ -102,11 +221,11 @@ struct collect_stats_result {
     std::vector<std::string> failed_tests;
 };
 
-[[nodiscard]] static collect_stats_result collect_stats(::test::filter const &filter) noexcept
+[[nodiscard]] static collect_stats_result collect_stats(::test::filter const& filter) noexcept
 {
     auto r = collect_stats_result{};
 
-    for (auto &suite : ::test::suites) {
+    for (auto& suite : ::test::suites) {
         if (filter.match_suite(suite.suite_name)) {
             auto const stats = suite.collect_stats(filter);
 
@@ -120,7 +239,7 @@ struct collect_stats_result {
     return r;
 }
 
-[[nodiscard]] static ::test::hr_time_point_type run_tests_start(::test::filter const &filter) noexcept
+[[nodiscard]] static ::test::hr_time_point_type run_tests_start(::test::filter const& filter) noexcept
 {
     auto const stats = collect_stats(filter);
 
@@ -137,7 +256,7 @@ struct collect_stats_result {
     return ::test::hr_clock_type::now();
 }
 
-[[nodiscard]] static bool run_tests_finish(::test::filter const &filter, ::test::hr_time_point_type time_point) noexcept
+[[nodiscard]] static bool run_tests_finish(::test::filter const& filter, ::test::hr_time_point_type time_point) noexcept
 {
     using namespace std::literals;
 
@@ -161,11 +280,7 @@ struct collect_stats_result {
     }
 
     if (stats.num_failures != 0) {
-        std::println(
-            stdout,
-            "[  FAILED  ] {} {}, listed below:",
-            stats.num_failures,
-            stats.num_failures == 1 ? "test" : "tests");
+        std::println(stdout, "[  FAILED  ] {} {}, listed below:", stats.num_failures, stats.num_failures == 1 ? "test" : "tests");
 
         for (auto const& failed_test : stats.failed_tests) {
             std::println(stdout, "[  FAILED  ] {}", failed_test);
@@ -175,27 +290,27 @@ struct collect_stats_result {
     return stats.num_failures == 0;
 }
 
-static bool run_tests(::test::filter const &filter)
+static bool run_tests(::test::filter const& filter)
 {
     auto const time_point = run_tests_start(filter);
 
-    for (auto &suite: ::test::suites) {
+    for (auto& suite : ::test::suites) {
         if (filter.match_suite(suite.suite_name)) {
             suite.run_tests(filter);
         }
     }
 
-    return run_tests_finish(filter, time_point);    
+    return run_tests_finish(filter, time_point);
 }
 
-static void generate_junit_xml(::test::filter const &filter, FILE *out)
+static void generate_junit_xml(::test::filter const& filter, FILE* out)
 {
     auto const stats = collect_stats(filter);
 
     std::println(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
     std::println(out, "<testsuites test=\"{}\" name=\"AllTests\">", stats.num_tests);
 
-    for (auto &suite: ::test::suites) {
+    for (auto& suite : ::test::suites) {
         if (filter.match_suite(suite.suite_name)) {
             suite.generate_junit_xml(filter, out);
         }
@@ -209,7 +324,7 @@ static void list_tests(::test::filter const& filter) noexcept
     for (auto const& suite : ::test::suites) {
         if (filter.match_suite(suite.suite_name)) {
             std::println(stdout, "{}.", suite.suite_name);
-            for (auto const &test : suite.tests) {
+            for (auto const& test : suite.tests) {
                 if (filter.match_test(test.suite_name, test.test_name)) {
                     std::println(stdout, "  {}", test.test_name);
                 }
@@ -218,7 +333,7 @@ static void list_tests(::test::filter const& filter) noexcept
     }
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     std::println(stdout, "Running main() from {}", __FILE__);
     parse_arguments(argc, argv);
@@ -230,7 +345,7 @@ int main(int argc, char *argv[])
         success = run_tests(option_filter);
     }
 
-    FILE *xml_output = nullptr;
+    FILE* xml_output = nullptr;
     if (option_xml_output_path) {
         xml_output = fopen(option_xml_output_path->string().c_str(), "w");
         if (xml_output == nullptr) {
@@ -244,7 +359,6 @@ int main(int argc, char *argv[])
             std::println(stdout, "Could not close xml-file {}", option_xml_output_path->string());
             print_help(1);
         }
-
     }
 
     return success ? 0 : 1;
