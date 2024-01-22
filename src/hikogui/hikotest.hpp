@@ -85,36 +85,10 @@ using hr_time_point_type = std::chrono::time_point<hr_clock_type>;
 using utc_clock_type = std::chrono::utc_clock;
 using utc_time_point_type = utc_clock_type::time_point;
 
-[[nodiscard]] constexpr std::string type_name_strip(std::string type)
-{
-    // Remove leading `struct` or `class` keyword.
-    // This is quick and possibly will allow small-string-optimization.
-    if (type.starts_with("struct ")) {
-        type = type.substr(7);
-    } else if (type.starts_with("class ")) {
-        type = type.substr(6);
-    }
-
-    // Remove `struct` and `class` keywords and remove spaces.
-    for (auto i = type.find_first_of("<, "); i != type.npos; i = type.find_first_of("<, ", i)) {
-        if (type[i] == ' ') {
-            type.erase(i, 1);
-        } else {
-            ++i;
-        }
-
-        if (type.substr(i).starts_with("struct ")) {
-            type.erase(i, 7);
-        } else if (type.substr(i + 1).starts_with("class ")) {
-            type.erase(i, 6);
-        }
-    }
-
-    return type;
-}
+[[nodiscard]] std::string type_name_strip(std::string type);
 
 template<typename T>
-[[nodiscard]] constexpr std::string type_name() noexcept
+[[nodiscard]] std::string type_name() noexcept
 {
 #if defined(_MSC_VER)
     auto signature = std::string_view{__FUNCSIG__};
@@ -155,42 +129,6 @@ template<typename T>
 
     std::println(stderr, "{}({}): error: Could not parse type_name from '{}'", __FILE__, __LINE__, signature);
     std::terminate();
-}
-
-template<char QuoteChar = '\0'>
-[[nodiscard]] constexpr std::string xml_escape(std::string str) noexcept
-{
-    for (auto it = str.begin(); it != str.end(); ++it) {
-        auto const c = *it;
-
-        if (c == '"' and QuoteChar == '"') {
-            it = str.erase(it);
-            it = str.insert_range(it, std::string_view{"&quot;"});
-            it += 5;
-
-        } else if (c == '\'' and QuoteChar == '\'') {
-            it = str.erase(it);
-            it = str.insert_range(it, std::string_view{"&apos;"});
-            it += 5;
-
-        } else if (c == '<') {
-            it = str.erase(it);
-            it = str.insert_range(it, std::string_view{"&lt;"});
-            it += 3;
-
-        } else if (c == '>') {
-            it = str.erase(it);
-            it = str.insert_range(it, std::string_view{"&qt;"});
-            it += 3;
-
-        } else if (c == '&') {
-            it = str.erase(it);
-            it = str.insert_range(it, std::string_view{"&amp;"});
-            it += 4;
-        }
-    }
-
-    return str;
 }
 
 template<typename Arg>
@@ -430,7 +368,7 @@ struct test_case {
     std::function<std::expected<void, std::string>()> _run_test;
 
     struct result_type {
-        test_case* parent;
+        test_case const* parent;
         utc_time_point_type time_stamp;
         hr_time_point_type time_point;
         hr_duration_type duration = {};
@@ -441,91 +379,17 @@ struct test_case {
         result_type(result_type&&) noexcept = default;
         result_type& operator=(result_type const&) noexcept = default;
         result_type& operator=(result_type&&) noexcept = default;
-
-        result_type(test_case* parent) noexcept :
-            parent(parent), time_stamp(utc_clock_type::now()), time_point(hr_clock_type::now())
-        {
-        }
-
-        [[nodiscard]] std::string suite_name() const noexcept
-        {
-            return parent->suite_name;
-        }
-
-        [[nodiscard]] std::string test_name() const noexcept
-        {
-            return parent->test_name;
-        }
-
-        [[nodiscard]] std::string_view file() const noexcept
-        {
-            return parent->file;
-        }
-
-        [[nodiscard]] int line() const noexcept
-        {
-            return parent->line;
-        }
-
-        [[nodiscard]] bool success() const noexcept
-        {
-            return completed and error_message.empty();
-        }
-
-        [[nodiscard]] bool failure() const noexcept
-        {
-            return completed and not error_message.empty();
-        }
-
-        [[nodiscard]] bool skipped() const noexcept
-        {
-            return not completed;
-        }
-
-        void set_success() noexcept
-        {
-            duration = hr_clock_type::now() - time_point;
-            completed = true;
-        }
-
-        void set_failure(std::string message) noexcept
-        {
-            duration = hr_clock_type::now() - time_point;
-            error_message = message;
-            completed = true;
-        }
-
-        void junit_xml(FILE* out) const noexcept
-        {
-            using namespace std::literals;
-
-            std::print(
-                out,
-                "    <testcase name=\"{}\" file=\"{}\" line=\"{}\" classname=\"{}\" ",
-                test_name(),
-                file(),
-                line(),
-                suite_name());
-
-            if (completed) {
-                std::print(
-                    out,
-                    "status=\"run\" result=\"completed\" time=\"{:.3f}\" timestamp=\"{:%Y-%m-%dT%H:%M:%S}\"",
-                    duration / 1s,
-                    time_stamp);
-
-                if (not error_message.empty()) {
-                    std::print(out, "      <failure message=\"{}\" type=\"\">", xml_escape<'"'>(error_message));
-                    std::println(out, "<![CDATA[{}]]></failure>", xml_escape(error_message));
-                    std::println(out, "    </testcase>");
-
-                } else {
-                    std::println(out, "/>");
-                }
-            } else {
-                std::println(out, "/>");
-            }
-        }
+        result_type(test_case const* parent) noexcept;
+        [[nodiscard]] std::string suite_name() const noexcept;
+        [[nodiscard]] std::string test_name() const noexcept;
+        [[nodiscard]] std::string_view file() const noexcept;
+        [[nodiscard]] int line() const noexcept;
+        [[nodiscard]] bool success() const noexcept;
+        [[nodiscard]] bool failure() const noexcept;
+        [[nodiscard]] bool skipped() const noexcept;
+        void set_success() noexcept;
+        void set_failure(std::string message) noexcept;
+        void junit_xml(FILE* out) const noexcept;
     };
 
     test_case(test_case const&) = default;
@@ -550,31 +414,8 @@ struct test_case {
     {
     }
 
-    [[nodiscard]] result_type run_test() noexcept
-    {
-        using namespace std::literals;
-
-        std::println(stdout, "[ RUN      ] {}.{}", suite_name, test_name);
-        std::fflush(stdout);
-
-        auto r = result_type{this};
-
-        if (auto result = _run_test()) {
-            r.set_success();
-            std::println(stdout, "[       OK ] {}.{} ({:.0f} ms)", suite_name, test_name, r.duration / 1ms);
-        } else {
-            r.set_failure(result.error());
-            std::println(stdout, "[  FAILED  ] {}.{} ({:.0f} ms)", suite_name, test_name, r.duration / 1ms);
-        }
-
-        std::fflush(stdout);
-        return r;
-    }
-
-    [[nodiscard]] result_type layout() noexcept
-    {
-        return result_type{this};
-    }
+    [[nodiscard]] result_type run_test() const;
+    [[nodiscard]] result_type layout() const noexcept;
 };
 
 struct test_suite {
@@ -584,7 +425,9 @@ struct test_suite {
     test_suite(std::string suite_name) noexcept : suite_name(std::move(suite_name)) {}
 
     struct result_type {
-        test_suite* parent;
+        using const_iterator = std::vector<test_case::result_type>::const_iterator;
+
+        test_suite const* parent;
         utc_time_point_type time_stamp = {};
         hr_time_point_type time_point = {};
         hr_duration_type duration = {};
@@ -595,145 +438,29 @@ struct test_suite {
         result_type(result_type&&) noexcept = default;
         result_type& operator=(result_type const&) noexcept = default;
         result_type& operator=(result_type&&) noexcept = default;
-
-        result_type(test_suite* parent) noexcept :
-            parent(parent), time_stamp(utc_clock_type::now()), time_point(hr_clock_type::now())
-        {
-        }
-
-        [[nodiscard]] std::string suite_name() const noexcept
-        {
-            return parent->suite_name;
-        }
-
-        [[nodiscard]] size_t num_tests() const noexcept
-        {
-            return test_results.size();
-        }
-
-        [[nodiscard]] size_t num_failures() const noexcept
-        {
-            return std::count_if(test_results.begin(), test_results.end(), [](auto const& item) {
-                return item.failure();
-            });
-        }
-
-        [[nodiscard]] size_t num_success() const noexcept
-        {
-            return std::count_if(test_results.begin(), test_results.end(), [](auto const& item) {
-                return item.success();
-            });
-        }
-
-        [[nodiscard]] size_t num_skipped() const noexcept
-        {
-            return 0;
-        }
-
-        [[nodiscard]] size_t num_disabled() const noexcept
-        {
-            return 0;
-        }
-
-        [[nodiscard]] size_t num_errors() const noexcept
-        {
-            return 0;
-        }
-
-        [[nodiscard]] auto begin() const noexcept
-        {
-            return test_results.begin();
-        }
-
-        [[nodiscard]] auto end() const noexcept
-        {
-            return test_results.end();
-        }
-
-        void push_back(test_case::result_type test_result) noexcept
-        {
-            test_results.push_back(std::move(test_result));
-        }
-
-        void finish() noexcept
-        {
-            duration = hr_clock_type::now() - time_point;
-            completed = true;
-        }
-
-        void junit_xml(FILE* out) const noexcept
-        {
-            using namespace std::literals;
-
-            std::print(out, "  <testsuite name=\"{}\" tests=\"{}\" ", suite_name(), num_tests());
-
-            if (completed) {
-                std::println(
-                    out,
-                    "failures=\"{}\" disabled=\"{}\" skipped=\"{}\" errors=\"{}\" time=\"{:.3f}\" "
-                    "timestamp=\"{:%Y-%m-%dT%H:%M:%S}\">",
-                    num_failures(),
-                    num_disabled(),
-                    num_skipped(),
-                    num_errors(),
-                    duration / 1s,
-                    time_stamp);
-            } else {
-                std::println(out, ">");
-            }
-
-            for (auto& test_result : test_results) {
-                test_result.junit_xml(out);
-            }
-
-            std::println(out, "  </testsuite>");
-        }
+        result_type(test_suite const* parent) noexcept;
+        [[nodiscard]] std::string suite_name() const noexcept;
+        [[nodiscard]] size_t num_tests() const noexcept;
+        [[nodiscard]] size_t num_failures() const noexcept;
+        [[nodiscard]] size_t num_success() const noexcept;
+        [[nodiscard]] size_t num_skipped() const noexcept;
+        [[nodiscard]] size_t num_disabled() const noexcept;
+        [[nodiscard]] size_t num_errors() const noexcept;
+        [[nodiscard]] const_iterator begin() const noexcept;
+        [[nodiscard]] const_iterator end() const noexcept;
+        void push_back(test_case::result_type test_result) noexcept;
+        void finish() noexcept;
+        void junit_xml(FILE* out) const noexcept;
     };
 
-    [[nodiscard]] result_type layout(filter const& filter) noexcept
-    {
-        auto r = result_type{this};
-        for (auto& test : tests) {
-            if (filter.match_test(test.suite_name, test.test_name)) {
-                r.push_back(test.layout());
-            }
-        }
-        return r;
-    }
-
-    [[nodiscard]] result_type run_tests(filter const& filter)
-    {
-        using namespace std::literals;
-
-        auto const stats = layout(filter);
-        auto const num_tests = stats.num_tests();
-
-        std::println(stdout, "[----------] {} {} from {}", num_tests, num_tests == 1 ? "test" : "tests", suite_name);
-        std::fflush(stdout);
-
-        auto r = result_type{this};
-        for (auto& test : tests) {
-            if (filter.match_test(test.suite_name, test.test_name)) {
-                r.push_back(test.run_test());
-            }
-        }
-        r.finish();
-
-        std::println(
-            stdout,
-            "[----------] {} {} from {} ({:.0f} ms total)",
-            num_tests,
-            num_tests == 1 ? "test" : "tests",
-            suite_name,
-            r.duration / 1ms);
-        std::println(stdout, "");
-        std::fflush(stdout);
-        return r;
-    }
+    [[nodiscard]] result_type layout(filter const& filter) const noexcept;
+    [[nodiscard]] result_type run_tests(filter const& filter) const;
 };
 
 struct all_tests {
     struct result_type {
+        using const_iterator = std::vector<test_suite::result_type>::const_iterator;
+
         all_tests* parent;
         utc_time_point_type time_stamp = {};
         hr_time_point_type time_point = {};
@@ -741,120 +468,20 @@ struct all_tests {
         std::vector<test_suite::result_type> suite_results;
         bool completed = false;
 
-        result_type(all_tests* parent) noexcept :
-            parent(parent), time_stamp(utc_clock_type::now()), time_point(hr_clock_type::now())
-        {
-        }
-
-        void finish() noexcept
-        {
-            duration = hr_clock_type::now() - time_point;
-            completed = true;
-        }
-
-        [[nodiscard]] size_t num_suites() const noexcept
-        {
-            return suite_results.size();
-        }
-
-        [[nodiscard]] size_t num_tests() const noexcept
-        {
-            return std::accumulate(suite_results.begin(), suite_results.end(), size_t{0}, [](auto const &acc, auto const& item) {
-                return acc + item.num_tests();
-            });
-        }
-
-        [[nodiscard]] size_t num_failures() const noexcept
-        {
-            return std::accumulate(suite_results.begin(), suite_results.end(), size_t{0}, [](auto const &acc, auto const& item) {
-                return acc + item.num_failures();
-            });
-        }
-
-        [[nodiscard]] size_t num_success() const noexcept
-        {
-            return std::accumulate(suite_results.begin(), suite_results.end(), size_t{0}, [](auto const &acc, auto const& item) {
-                return acc + item.num_success();
-            });
-        }
-
-        [[nodiscard]] size_t num_disabled() const noexcept
-        {
-            return std::accumulate(suite_results.begin(), suite_results.end(), size_t{0}, [](auto const &acc, auto const& item) {
-                return acc + item.num_disabled();
-            });
-        }
-
-        [[nodiscard]] size_t num_skipped() const noexcept
-        {
-            return std::accumulate(suite_results.begin(), suite_results.end(), size_t{0}, [](auto const &acc, auto const& item) {
-                return acc + item.num_skipped();
-            });
-        }
-
-        [[nodiscard]] size_t num_errors() const noexcept
-        {
-            return std::accumulate(suite_results.begin(), suite_results.end(), size_t{0}, [](auto const &acc, auto const& item) {
-                return acc + item.num_errors();
-            });
-        }
-
-        [[nodiscard]] std::vector<std::string> fqnames_of_failed_tests() const noexcept
-        {
-            auto r = std::vector<std::string>{};
-            for (auto const &suite_result: suite_results) {
-                for (auto const &test_result: suite_result) {
-                    if (test_result.failure()) {
-                        r.push_back(std::format("{}.{}", test_result.suite_name(), test_result.test_name()));
-                    }
-                }
-            }
-            return r;
-        }
-
-        [[nodiscard]] auto begin() const noexcept
-        {
-            return suite_results.begin();
-        }
-
-        [[nodiscard]] auto end() const noexcept
-        {
-            return suite_results.end();
-        }
-
-        void push_back(test_suite::result_type suite_result) noexcept
-        {
-            suite_results.push_back(suite_result);
-        }
-
-        void junit_xml(FILE* out) const noexcept
-        {
-            using namespace std::literals;
-
-            std::println(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            std::println(out, "<testsuites tests=\"{}\" name=\"AllTests\" ", num_tests());
-
-            if (completed) {
-                std::println(
-                    out,
-                    "failures=\"{}\" disabled=\"{}\" skipped=\"{}\" errors=\"{}\" time=\"{:.3f}\" "
-                    "timestamp=\"{:%Y-%m-%dT%H:%M:%S}\">",
-                    num_failures(),
-                    num_disabled(),
-                    num_skipped(),
-                    num_errors(),
-                    duration / 1s,
-                    time_stamp);
-            } else {
-                std::println(out, ">");
-
-                for (auto const& suite_result : suite_results) {
-                    suite_result.junit_xml(out);
-                }
-
-                std::println(out, "</testsuites>");
-            }
-        }
+        result_type(all_tests* parent) noexcept;
+        void finish() noexcept;
+        [[nodiscard]] size_t num_suites() const noexcept;
+        [[nodiscard]] size_t num_tests() const noexcept;
+        [[nodiscard]] size_t num_failures() const noexcept;
+        [[nodiscard]] size_t num_success() const noexcept;
+        [[nodiscard]] size_t num_disabled() const noexcept;
+        [[nodiscard]] size_t num_skipped() const noexcept;
+        [[nodiscard]] size_t num_errors() const noexcept;
+        [[nodiscard]] std::vector<std::string> fqnames_of_failed_tests() const noexcept;
+        [[nodiscard]] const_iterator begin() const noexcept;
+        [[nodiscard]] const_iterator end() const noexcept;
+        void push_back(test_suite::result_type suite_result) noexcept;
+        void junit_xml(FILE* out) const noexcept;
     };
 
     std::vector<test_suite> suites;
@@ -917,83 +544,9 @@ struct all_tests {
         // clang-format on
     }
 
-    [[nodiscard]] result_type layout(::test::filter const& filter) noexcept
-    {
-        auto r = result_type{this};
-
-        for (auto& suite : suites) {
-            if (filter.match_suite(suite.suite_name)) {
-                r.push_back(suite.layout(filter));
-            }
-        }
-
-        return r;
-    }
-
-    [[nodiscard]] result_type list_tests(::test::filter const& filter) noexcept
-    {
-        auto const r = layout(filter);
-        for (auto const& suite_result : r) {
-            std::println(stdout, "{}.", suite_result.suite_name());
-            for (auto const& test_result : suite_result) {
-                std::println(stdout, "  {}", test_result.test_name());
-            }
-        }
-        return r;
-    }
-
-    [[nodiscard]] result_type run_tests(::test::filter const& filter)
-    {
-        using namespace std::literals;
-
-        auto const stats = layout(filter);
-        auto const num_tests = stats.num_tests();
-        auto const num_suites = stats.num_suites();
-
-        std::println(
-            stdout,
-            "[==========] Running {} {} from {} test {}.",
-            num_tests,
-            num_tests == 1 ? "test" : "tests",
-            num_suites,
-            num_suites == 1 ? "suite" : "suites");
-        std::println(stdout, "[----------] Global test environment set-up.");
-        std::fflush(stdout);
-
-        auto r = result_type{this};
-        for (auto& suite : suites) {
-            if (filter.match_suite(suite.suite_name)) {
-                r.push_back(suite.run_tests(filter));
-            }
-        }
-        r.finish();
-
-        std::println(stdout, "[----------] Global test environment tear-down");
-        std::println(
-            stdout,
-            "[==========] {} {} from {} test {} ran. ({} ms total)",
-            num_tests,
-            num_tests == 1 ? "test" : "tests",
-            num_suites,
-            num_suites == 1 ? "suite" : "suites",
-            r.duration / 1ms);
-
-        auto const num_success = r.num_success();
-        if (num_success != 0) {
-            std::println(stdout, "[  PASSED  ] {} {}.", num_success, num_success == 1 ? "test" : "tests");
-        }
-
-        auto const num_failures = r.num_failures();
-        if (num_failures != 0) {
-            std::println(stdout, "[  FAILED  ] {} {}, listed below:", num_failures, num_failures == 1 ? "test" : "tests");
-
-            for (auto const& failed_test : r.fqnames_of_failed_tests()) {
-                std::println(stdout, "[  FAILED  ] {}", failed_test);
-            }
-        }
-
-        return r;
-    }
+    [[nodiscard]] result_type layout(::test::filter const& filter) noexcept;
+    [[nodiscard]] result_type list_tests(::test::filter const& filter) noexcept;
+    [[nodiscard]] result_type run_tests(::test::filter const& filter);
 };
 
 inline auto all = all_tests{};
@@ -1011,15 +564,8 @@ register_test(std::expected<void, std::string> (Suite::*test)(), std::string_vie
     return all.template register_test<Suite>(test, file, line, std::move(name));
 }
 
-inline all_tests::result_type list_tests(filter const& filter) noexcept
-{
-    return all.list_tests(filter);
-}
-
-[[nodiscard]] inline all_tests::result_type run_tests(filter const& filter)
-{
-    return all.run_tests(filter);
-}
+inline all_tests::result_type list_tests(filter const& filter) noexcept;
+[[nodiscard]] inline all_tests::result_type run_tests(filter const& filter);
 
 template<typename Suite>
 struct suite {
