@@ -630,7 +630,6 @@ static_assert(equal(f32x2{2.0f, 3.0f}._11(), f32x2{1.0f, 1.0f}));
 } // namespace v1
 }
 
-namespace std {
 
 template<class T, size_t N>
 struct std::tuple_size<::hi::simd<T, N>> : std::integral_constant<size_t, N> {};
@@ -648,4 +647,21 @@ struct std::equal_to<::hi::simd<T, N>> {
     }
 };
 
-} // namespace std
+hi_export template<typename T, size_t N>
+struct std::formatter<::hi::simd<T, N>, char> : std::formatter<std::string, char> {
+    auto format(::hi::simd<T, N> const& t, auto& fc) const
+    {
+        auto str = std::string{"("};
+
+        for (auto i = 0; i != N; ++i) {
+            if (i != 0) {
+                str += ", ";
+            }
+            str += std::format("{}", t[i]);
+        }
+        str += ')';
+
+        return std::formatter<std::string, char>::format(str, fc);
+    }
+};
+

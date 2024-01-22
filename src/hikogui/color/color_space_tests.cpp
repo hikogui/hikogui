@@ -15,5 +15,6 @@ TEST_SUITE(color)
         REQUIRE(get<1>(BT709_to_XYZ) == hi::f32x4(0.3576f, 0.7152f, 0.119f, 0.0f), 0.01f);
         REQUIRE(get<2>(BT709_to_XYZ) == hi::f32x4(0.1805f, 0.0722f, 0.950f, 0.0f), 0.01f);
         REQUIRE(get<3>(BT709_to_XYZ) == hi::f32x4(0.0f, 0.0f, 0.0f, 1.0f), 0.01f);
+        return {};
     }
 };
