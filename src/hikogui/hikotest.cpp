@@ -102,10 +102,7 @@ filter::filter(std::string_view str)
             std::terminate();
         }
     }
-
-    if (inclusions.empty()) {
-        inclusions.emplace_back();
-    }
+    commit(state_type::include_start);
 }
 
 [[nodiscard]] bool filter::match_test(std::string_view suite_name, std::string_view test_name) const noexcept

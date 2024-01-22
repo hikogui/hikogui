@@ -54,7 +54,7 @@ namespace test {
  */
 #define REQUIRE(expression, ...) \
     do { \
-        if (auto _hikotest_result = ::test::error{__VA_ARGS__} <=> expression; not _hikotest_result) { \
+        if (auto _hikotest_result = (expression <=> ::test::error{__VA_ARGS__}); not _hikotest_result) { \
             std::println(stdout, "{}({}): error: {}", __FILE__, __LINE__, _hikotest_result.error()); \
             return _hikotest_result; \
         } \
@@ -292,51 +292,47 @@ struct operand {
  * @param lhs The left-hand-side operand.
  * @return The wrapped left-hand-side operand.
  */
-template<error_class ErrorClass, typename LHS>
-[[nodiscard]] constexpr operand<ErrorClass, LHS> operator<=>(error<ErrorClass> e, LHS const& lhs) noexcept
+template<typename RHS, error_class ErrorClass>
+[[nodiscard]] constexpr operand<ErrorClass, RHS> operator<=>(RHS const& rhs, error<ErrorClass> e) noexcept
 {
-    return {e, lhs};
+    return {e, rhs};
 }
 
 template<typename LHS, typename RHS>
 [[nodiscard]] constexpr std::expected<void, std::string>
-operator==(operand<error_class::exact, LHS> const& lhs, RHS const& rhs) noexcept
+operator==(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
 {
-    if constexpr (requires {
-                      {
-                          lhs == rhs
-                      } -> std::convertible_to<bool>;
-                  }) {
-        if (lhs == rhs) {
+    // clang-format off
+    if constexpr (requires { { lhs == rhs.v } -> std::convertible_to<bool>; }) {
+        if (lhs == rhs.v) {
             return {};
         } else {
             return std::unexpected{
-                std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs))};
+                std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
         }
 
-    } else if constexpr (requires { std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs); }) {
-        if (std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs)) {
+    } else if constexpr (requires { std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v); }) {
+        if (std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v)) {
             return {};
         } else {
             return std::unexpected{
-                std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs))};
+                std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
         }
 
-    } else if constexpr (requires { std::ranges::equal(lhs, rhs); }) {
-        if (std::ranges::equal(lhs, rhs)) {
+    } else if constexpr (requires { std::ranges::equal(lhs, rhs.v); }) {
+        if (std::ranges::equal(lhs, rhs.v)) {
             return {};
         } else {
             return std::unexpected{
-                std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs))};
+                std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
         }
 
     } else {
-        []<bool Flag = false>()
-        {
+        []<bool Flag = false>() {
             static_assert(Flag, "hikotest: Unable to equality-compare two values.");
-        }
-        ();
+        }();
     }
+    // clang-format on
 }
 
 template<typename LHS, typename RHS, typename Error>
@@ -352,39 +348,39 @@ concept range_diff_ordered = std::ranges::range<LHS> and std::ranges::range<RHS>
 
 template<typename LHS, typename RHS>
 [[nodiscard]] constexpr std::expected<void, std::string>
-operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexcept requires diff_ordered<LHS, RHS, double>
+operator==(LHS const& lhs, operand<error_class::absolute, RHS> const& rhs) noexcept requires diff_ordered<LHS, RHS, double>
 {
-    auto const diff = lhs.v - rhs;
-    if (diff >= -lhs.e and diff <= lhs.e) {
+    auto const diff = lhs - rhs.v;
+    if (diff >= -rhs.e and diff <= +rhs.e) {
         return {};
     } else {
         return std::unexpected{std::format(
             "Expected equality within {} of these values:\n  {}\n  {}",
-            lhs.e.v,
-            operand_to_string(lhs.v),
-            operand_to_string(rhs))};
+            +rhs.e,
+            operand_to_string(lhs),
+            operand_to_string(rhs.v))};
     }
 }
 
 template<typename LHS, typename RHS>
 [[nodiscard]] constexpr std::expected<void, std::string>
-operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexcept
+operator==(LHS const& lhs, operand<error_class::absolute, RHS> const& rhs) noexcept
     requires(not diff_ordered<LHS, RHS, double>) and range_diff_ordered<LHS, RHS, double>
 {
-    auto lit = lhs.v.begin();
-    auto rit = rhs.begin();
+    auto lit = lhs.begin();
+    auto rit = rhs.v.begin();
 
-    auto const lend = lhs.v.end();
-    auto const rend = rhs.end();
+    auto const lend = lhs.end();
+    auto const rend = rhs.v.end();
 
     while (lit != lend and rit != rend) {
         auto const diff = *lit - *rit;
-        if (diff < -lhs.e or diff > +lhs.e) {
+        if (diff < -rhs.e or diff > +rhs.e) {
             return std::unexpected{std::format(
                 "Expected equality within {} of these values:\n  {}\n  {}",
-                +lhs.e,
-                operand_to_string(lhs.v),
-                operand_to_string(rhs))};
+                +rhs.e,
+                operand_to_string(lhs),
+                operand_to_string(rhs.v))};
         }
 
         ++lit;
@@ -393,7 +389,7 @@ operator==(operand<error_class::absolute, LHS> const& lhs, RHS const& rhs) noexc
 
     if (lit != lend or rit != rend) {
         return std::unexpected{std::format(
-            "Expected both range-values to the same size:\n  {}\n  {}", operand_to_string(lhs.v), operand_to_string(rhs))};
+            "Expected both range-values to the same size:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
     }
 
     return {};
