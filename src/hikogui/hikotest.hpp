@@ -565,10 +565,10 @@ struct test_case {
 
         if (auto result = _run_test()) {
             r.set_success();
-            std::println(stdout, "[       OK ] {}.{} ({:.3f} ms)", suite_name, test_name, r.duration / 1ms);
+            std::println(stdout, "[       OK ] {}.{} ({:.0f} ms)", suite_name, test_name, r.duration / 1ms);
         } else {
             r.set_failure(result.error());
-            std::println(stdout, "[  FAILED  ] {}.{} ({:.3f} ms)", suite_name, test_name, r.duration / 1ms);
+            std::println(stdout, "[  FAILED  ] {}.{} ({:.0f} ms)", suite_name, test_name, r.duration / 1ms);
         }
 
         std::fflush(stdout);
@@ -725,7 +725,7 @@ struct test_suite {
 
         std::println(
             stdout,
-            "[----------] {} {} from {} ({:.3f} ms total)",
+            "[----------] {} {} from {} ({:.0f} ms total)",
             num_tests,
             num_tests == 1 ? "test" : "tests",
             suite_name,
