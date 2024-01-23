@@ -13,7 +13,7 @@ set_target_properties(hikogui_gtests PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
 add_test(NAME hikogui_gtests COMMAND hikogui_gtests)
 
 add_executable(hikogui_htests)
-target_link_libraries(hikogui_htests PRIVATE doctest hikogui)
+target_link_libraries(hikogui_htests PRIVATE hikotest hikogui)
 target_include_directories(hikogui_htests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 set_target_properties(hikogui_htests PROPERTIES DEBUG_POSTFIX "-deb")
 set_target_properties(hikogui_htests PROPERTIES RELEASE_POSTFIX "-rel")
@@ -157,7 +157,6 @@ target_sources(hikogui_gtests PRIVATE
 )
 
 target_sources(hikogui_htests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/hikotest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_tests.cpp
 )

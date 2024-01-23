@@ -121,9 +121,9 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: Debug\hikogui_gtests-deb "--gtest_output=xml:${{github.workspace}}\result_gtests_deb_${{env.MATRIX_ID}}.xml"
 
-      - name: ✔ ❌✔️ Catch2-Test Debug
+      - name: ✔ ❌✔️ Hiko-Test Debug
         working-directory: ${{env.BUILD_DIR}}
-        run: Debug\hikogui_ctests-deb "--reporter" "JUnit::out=${{github.workspace}}\result_ctests_deb_${{env.MATRIX_ID}}.xml" "--reporter" "console"
+        run: Debug\hikogui_htests-deb "--gtest_output=xml:${{github.workspace}}\result_htests_deb_${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install Debug
         working-directory: ${{env.BUILD_DIR}}
@@ -137,9 +137,9 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: RelWithDebInfo\hikogui_gtests-rdi "--gtest_output=xml:${{github.workspace}}\result_gtests_rdi_${{env.MATRIX_ID}}.xml"
 
-      - name: ✔ ❌✔️ Catch2-Test RelWithDebInfo
+      - name: ✔ ❌✔️ Hiko-Test RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
-        run: RelWithDebInfo\hikogui_ctests-rdi "--reporter" "JUnit::out=${{github.workspace}}\result_ctests_rdi_${{env.MATRIX_ID}}.xml" "--reporter" "console"
+        run: RelWithDebInfo\hikogui_htests-rdi "--gtest_output=xml:${{github.workspace}}\result_htests_rdi_${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
@@ -153,9 +153,9 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: Release\hikogui_gtests-rel "--gtest_output=xml:${{github.workspace}}\result_gtests_rel${{env.MATRIX_ID}}.xml"
 
-      - name: ✔ ❌✔️ Catch2-Test Release
+      - name: ✔ ❌✔️ Hiko-Test Release
         working-directory: ${{env.BUILD_DIR}}
-        run: Release\hikogui_ctests-rel "--reporter" "JUnit::out=${{github.workspace}}\result_ctests_rel_${{env.MATRIX_ID}}.xml" "--reporter" "console"
+        run: Release\hikogui_htests-rel "--gtest_output=xml:${{github.workspace}}\result_htests_rel${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install Release
         working-directory: ${{env.BUILD_DIR}}

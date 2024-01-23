@@ -86,10 +86,17 @@ if(BUILD_TESTING)
     set_target_properties(gtest      PROPERTIES FOLDER extern)
     set_target_properties(gtest_main PROPERTIES FOLDER extern)
 
-    add_definitions(-DENABLE_DOCTEST_IN_LIBRARY)
-    FetchContent_Declare(DocTest GIT_REPOSITORY "https://github.com/doctest/doctest" GIT_TAG v2.4.11)
-    FetchContent_MakeAvailable(DocTest)
-    include_directories(${DOCTEST_INCLUDE_DIR})
+    #
+    # HikoTest
+    #
+    add_library(hikotest)
+    target_sources(hikotest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/hikotest.cpp)
+    target_sources(hikotest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/hikotest.hpp)
+    target_compile_features(hikotest PUBLIC cxx_std_23)
+    if (WIN32)
+        # std::fopen_s() does not exist, this needs to be set if we use std::fopen().
+        target_compile_definitions(hikotest PUBLIC "_CRT_SECURE_NO_WARNINGS")
+    endif()
 endif()
 
 #

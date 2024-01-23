@@ -45,7 +45,7 @@ TEST_CASE(arithmatic)
     return {};
 }
 
-TEST_CASE(hypot)
+TEST_CASE(hypot_)
 {
     auto const tmp = hi::f32x4(2.0f, 3.0f, 4.0f, 0.0f);
 

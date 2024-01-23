@@ -26,9 +26,9 @@ namespace test {
  * @param id The method-name of the test case.
  */
 #define TEST_SUITE(id) \
-    struct id; \
-    inline auto _hikotest_suite_info_##id = std::addressof(::test::register_suite<id>()); \
-    struct id : ::test::suite<id>
+    struct id##_test_suite; \
+    inline auto _hikotest_registered_##id##_test_suite = std::addressof(::test::register_suite<id##_test_suite>()); \
+    struct id##_test_suite : ::test::suite<id##_test_suite>
 
 /** Delcare a test case
  *
@@ -38,13 +38,13 @@ namespace test {
  * @param id The method-name of the test case.
  */
 #define TEST_CASE(id) \
-    std::expected<void, std::string> _hikotest_wrap_##id() \
+    std::expected<void, std::string> _hikotest_wrap_##id##_test_case() \
     { \
-        return id(); \
+        return id##_test_case(); \
     } \
-    inline static auto _hikotest_wrap_registered_##id = \
-        std::addressof(::test::register_test(&_hikotest_suite_type::_hikotest_wrap_##id, __FILE__, __LINE__, #id)); \
-    std::expected<void, std::string> id()
+    inline static auto _hikotest_registered_##id##_test_case = \
+        std::addressof(::test::register_test(&_hikotest_suite_type::_hikotest_wrap_##id##_test_case, __FILE__, __LINE__, #id)); \
+    std::expected<void, std::string> id##_test_case()
 
 /** Check an expression
  *
@@ -98,7 +98,7 @@ template<typename T>
 #error "type_name() not implemented"
 #endif
 
-    // constexpr std::string_view class_name() [with T = foo<bar>; std::string_view = std::basic_string_view<char>]
+    // constexpr std::string class_name() [with T = foo<bar>; std::string_view = std::basic_string_view<char>]
     if (auto first = signature.find("::type_name() [with T = "); first != signature.npos) {
         first += 24;
         auto const last = signature.find("; ", first);
@@ -120,8 +120,8 @@ template<typename T>
         return type_name_strip(std::string{signature.substr(first, last - first)});
     }
 
-    // class std::basic_string_view<char,struct std::char_traits<char> > __cdecl class_name<struct foo<struct bar>>(void) noexcept
-    if (auto first = signature.find(" type_name<"); first != signature.npos) {
+    // class std::basic_string<char,struct std::char_traits<char> > __cdecl test::type_name<struct foo<struct bar>>(void) noexcept
+    if (auto first = signature.find("::type_name<"); first != signature.npos) {
         first += 12;
         auto const last = signature.rfind(">(void)");
         return type_name_strip(std::string{signature.substr(first, last - first)});
@@ -490,7 +490,12 @@ struct all_tests {
     template<typename Suite>
     [[nodiscard]] inline test_suite& register_suite() noexcept
     {
-        auto const name = type_name<Suite>();
+        auto name = type_name<Suite>();
+        if (not name.ends_with("_test_suite")) {
+            std::println("{}({}): error: Expected suite of have suffix _test_suite, got '{}'.", __FILE__, __LINE__, name);
+            std::terminate();
+        }
+        name = name.substr(0, name.size() - 11);
 
         // Skip binary search if possible.
         if (last_registered_suite < suites.size() and suites[last_registered_suite].suite_name == name) {
