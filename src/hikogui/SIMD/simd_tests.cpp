@@ -4,7 +4,7 @@
 
 #include "simd_intf.hpp"
 #include "../macros.hpp"
-#include "../hikotest.hpp"
+#include <hikotest/hikotest.hpp>
 
 TEST_SUITE(simd)
 {
@@ -45,7 +45,7 @@ TEST_CASE(arithmatic)
     return {};
 }
 
-TEST_CASE(hypot_)
+TEST_CASE(hypot)
 {
     auto const tmp = hi::f32x4(2.0f, 3.0f, 4.0f, 0.0f);
 

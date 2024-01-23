@@ -90,8 +90,8 @@ if(BUILD_TESTING)
     # HikoTest
     #
     add_library(hikotest)
-    target_sources(hikotest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/hikotest.cpp)
-    target_sources(hikotest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/hikotest.hpp)
+    target_sources(hikotest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/hikotest/hikotest.cpp)
+    target_sources(hikotest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/hikotest/hikotest.hpp)
     target_compile_features(hikotest PUBLIC cxx_std_23)
     if (WIN32)
         # std::fopen_s() does not exist, this needs to be set if we use std::fopen().

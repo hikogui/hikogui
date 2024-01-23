@@ -95,16 +95,6 @@ target_sources(hikogui_gtests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_char_map_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_weight_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/matrix3_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point2_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point3_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/scale2_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/scale3_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/transform_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/translate2_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/translate3_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector2_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector3_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/graphic_path/bezier_curve_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/graphic_path/graphic_path_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_state_tests.cpp
@@ -159,6 +149,16 @@ target_sources(hikogui_gtests PRIVATE
 target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/matrix3_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point2_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point3_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/scale2_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/scale3_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/transform_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/translate2_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/translate3_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector2_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector3_tests.cpp
 )
 
 show_build_target_properties(hikogui_gtests)

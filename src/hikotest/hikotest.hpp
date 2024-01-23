@@ -212,7 +212,26 @@ template<error_class ErrorClass, typename T>
 struct operand {
     using value_type = T;
 
-    error<ErrorClass> e;
+    operator std::expected<void, std::string>() const noexcept requires std::same_as<T, bool>
+    {
+        if (*this) {
+            return {};
+        } else {
+            return std::unexpected{error()};
+        }
+    }
+
+    explicit operator bool() const noexcept requires std::same_as<T, bool>
+    {
+        return static_cast<bool>(v);
+    }
+
+    [[nodiscard]] std::string error() const noexcept requires std::same_as<T, bool>
+    {
+        return std::string{"expression was false."};
+    }
+
+    ::test::error<ErrorClass> e;
     value_type const& v;
 };
 

@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "color_space.hpp"
-#include "../hikotest.hpp"
+#include <hikotest/hikotest.hpp>
 
 TEST_SUITE(color)
 {

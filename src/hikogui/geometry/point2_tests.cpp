@@ -3,53 +3,49 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "point2.hpp"
-#include "../utility/utility.hpp"
-#include "../test.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
-
-
+#include <hikotest/hikotest.hpp>
 
 using namespace hi;
 
-TEST(point2, failure)
+TEST_SUITE(point2)
 {
-    ASSERT_EQ(12, 23);
+
+TEST_CASE(compare)
+{
+    REQUIRE(not (point2(1.0, 2.0) == point2(3.0, 4.0)));
+    REQUIRE(not (point2(1.0, 2.0) == point2(1.0, 4.0)));
+    REQUIRE(not (point2(1.0, 2.0) == point2(3.0, 2.0)));
+    REQUIRE((point2(1.0, 2.0) == point2(1.0, 2.0)));
+
+    REQUIRE((point2(1.0, 2.0) != point2(3.0, 4.0)));
+    REQUIRE((point2(1.0, 2.0) != point2(1.0, 4.0)));
+    REQUIRE((point2(1.0, 2.0) != point2(3.0, 2.0)));
+    REQUIRE(not (point2(1.0, 2.0) != point2(1.0, 2.0)));
+    return {};
 }
 
-TEST(point2, compare)
+TEST_CASE(adding)
 {
-    STATIC_ASSERT_FALSE(point2(1.0, 2.0) == point2(3.0, 4.0));
-    STATIC_ASSERT_FALSE(point2(1.0, 2.0) == point2(1.0, 4.0));
-    STATIC_ASSERT_FALSE(point2(1.0, 2.0) == point2(3.0, 2.0));
-    STATIC_ASSERT_TRUE(point2(1.0, 2.0) == point2(1.0, 2.0));
-
-    STATIC_ASSERT_TRUE(point2(1.0, 2.0) != point2(3.0, 4.0));
-    STATIC_ASSERT_TRUE(point2(1.0, 2.0) != point2(1.0, 4.0));
-    STATIC_ASSERT_TRUE(point2(1.0, 2.0) != point2(3.0, 2.0));
-    STATIC_ASSERT_FALSE(point2(1.0, 2.0) != point2(1.0, 2.0));
-}
-
-TEST(point2, adding)
-{
-    STATIC_ASSERT_TRUE(point2(1.0, 2.0) + vector2(3.0, 4.0) == point2(4.0, 6.0));
+    REQUIRE(point2(1.0, 2.0) + vector2(3.0, 4.0) == point2(4.0, 6.0));
 
     static_assert(std::is_same_v<decltype(point2(1.0, 2.0) + vector2(3.0, 4.0)), point2>);
 
-    STATIC_ASSERT_TRUE(vector2(1.0, 2.0) + point2(3.0, 4.0) == point2(4.0, 6.0));
+    REQUIRE(vector2(1.0, 2.0) + point2(3.0, 4.0) == point2(4.0, 6.0));
 
     static_assert(std::is_same_v<decltype(vector2(1.0, 2.0) + point2(3.0, 4.0)), point2>);
+    return {};
 }
 
-TEST(point2, subtracting)
+TEST_CASE(subtracting)
 {
-    STATIC_ASSERT_TRUE(point2(1.0, 2.0) - point2(3.0, 4.0) == vector2(-2.0, -2.0));
+    REQUIRE(point2(1.0, 2.0) - point2(3.0, 4.0) == vector2(-2.0, -2.0));
 
     static_assert(std::is_same_v<decltype(point2(1.0, 2.0) - point2(3.0, 4.0)), vector2>);
 
-    STATIC_ASSERT_TRUE(point2(1.0, 2.0) - vector2(3.0, 4.0) == point2(-2.0, -2.0));
+    REQUIRE(point2(1.0, 2.0) - vector2(3.0, 4.0) == point2(-2.0, -2.0));
 
     static_assert(std::is_same_v<decltype(point2(1.0, 2.0) - vector2(3.0, 4.0)), point2>);
+    return {};
 }
+
+};
