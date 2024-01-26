@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         CMAKE_CXX_COMPILER: ["cl", "clang"]
-        ARCHITECTURE: ["x86-64", "x86-64-v3"]
+        ARCHITECTURE: ["none", "x86-64", "x86-64-v2", "x86-64-v3"]
 
     name: x64-windows ${{matrix.CMAKE_CXX_COMPILER}} ${{matrix.ARCHITECTURE}}
 
@@ -119,7 +119,11 @@ jobs:
     
       - name: ✔ ❌✔️ Google-Test Debug
         working-directory: ${{env.BUILD_DIR}}
-        run: Debug\hikogui_tests-debug "--gtest_output=xml:${{github.workspace}}\test_results_${{env.MATRIX_ID}}_debug.xml"
+        run: Debug\hikogui_gtests-deb "--gtest_output=xml:${{github.workspace}}\result_gtests_deb_${{env.MATRIX_ID}}.xml"
+
+      - name: ✔ ❌✔️ Hiko-Test Debug
+        working-directory: ${{env.BUILD_DIR}}
+        run: Debug\hikogui_htests-deb "--gtest_output=xml:${{github.workspace}}\result_htests_deb_${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install Debug
         working-directory: ${{env.BUILD_DIR}}
@@ -131,7 +135,11 @@ jobs:
     
       - name: ✔ ❌✔️ Google-Test RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
-        run: RelWithDebInfo\hikogui_tests-rdi "--gtest_output=xml:${{github.workspace}}\test_results_${{env.MATRIX_ID}}_rdi.xml"
+        run: RelWithDebInfo\hikogui_gtests-rdi "--gtest_output=xml:${{github.workspace}}\result_gtests_rdi_${{env.MATRIX_ID}}.xml"
+
+      - name: ✔ ❌✔️ Hiko-Test RelWithDebInfo
+        working-directory: ${{env.BUILD_DIR}}
+        run: RelWithDebInfo\hikogui_htests-rdi "--gtest_output=xml:${{github.workspace}}\result_htests_rdi_${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
@@ -143,7 +151,11 @@ jobs:
     
       - name: ✔ ❌✔️ Google-Test Release
         working-directory: ${{env.BUILD_DIR}}
-        run: Release\hikogui_tests "--gtest_output=xml:${{github.workspace}}\test_results_${{env.MATRIX_ID}}.xml"
+        run: Release\hikogui_gtests-rel "--gtest_output=xml:${{github.workspace}}\result_gtests_rel${{env.MATRIX_ID}}.xml"
+
+      - name: ✔ ❌✔️ Hiko-Test Release
+        working-directory: ${{env.BUILD_DIR}}
+        run: Release\hikogui_htests-rel "--gtest_output=xml:${{github.workspace}}\result_htests_rel${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install Release
         working-directory: ${{env.BUILD_DIR}}
@@ -157,7 +169,7 @@ jobs:
         if: always()
         with:
           name: test-results-${{env.MATRIX_ID}}
-          path: test_results_*.xml
+          path: result_*.xml
 
       - name: 📑 Generate CodeCoverage Report (Debug)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'cl-x86-64'
@@ -223,5 +235,5 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action/composite@v2 # https://github.com/EnricoMi/publish-unit-test-result-action
         if: always()
         with:
-          junit_files: artifacts/**/test_results*.xml
+          junit_files: artifacts/**/result_*.xml
 

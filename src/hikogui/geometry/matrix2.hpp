@@ -210,13 +210,13 @@ public:
 
         auto twos = f32x4{-2.0f, 2.0f, 2.0f, 0.0f};
         auto one = f32x4{1.0f, 0.0f, 0.0f, 0.0f};
-        _col0 = one + addsub<0b0011>(z_mul.zwxy(), y_mul.yxwz()) * twos;
+        _col0 = one + addsub_mask<0b0011>(z_mul.zwxy(), y_mul.yxwz()) * twos;
         one = one.yxzw();
         twos = twos.yxzw();
-        _col1 = one + addsub<0b0110>(x_mul.yxwz(), z_mul.wzyx()) * twos;
+        _col1 = one + addsub_mask<0b0110>(x_mul.yxwz(), z_mul.wzyx()) * twos;
         one = one.xzyw();
         twos = twos.xzyw();
-        _col2 = one + addsub<0b0101>(y_mul.wzyx(), x_mul.zwxy()) * twos;
+        _col2 = one + addsub_mask<0b0101>(y_mul.wzyx(), x_mul.zwxy()) * twos;
         _col3 = one.xywz();
     }
 
@@ -417,8 +417,8 @@ public:
         hilet c5432 = s4c4s5c5.wy00() + s2c2s3c3._00wy();
         hilet c10__ = s0c0s1c1.wy00();
 
-        hilet det_prod_half0 = neg<0b0010>(s0123 * c5432);
-        hilet det_prod_half1 = neg<0b0001>(s45__ * c10__);
+        hilet det_prod_half0 = neg_mask<0b0010>(s0123 * c5432);
+        hilet det_prod_half1 = neg_mask<0b0001>(s45__ * c10__);
 
         hilet det_sum0 = hadd(det_prod_half0, det_prod_half1);
         hilet det_sum1 = hadd(det_sum0, det_sum0);
@@ -437,9 +437,9 @@ public:
         // m.i10 := (i10 * -c5 + i12 *  c2 + i13 * -c1) * invdet;
         // m.i20 := (i10 *  c4 + i11 * -c2 + i13 *  c0) * invdet;
         // m.i30 := (i10 * -c3 + i11 *  c1 + i12 * -c0) * invdet;
-        auto tmp_c5543 = neg<0b1010>(c5432.xxyz());
-        auto tmp_c4221 = neg<0b0101>(c5432.yww0() + c10__._000x());
-        auto tmp_c3100 = neg<0b1010>(c5432.z000() + c10__._0xyy());
+        auto tmp_c5543 = neg_mask<0b1010>(c5432.xxyz());
+        auto tmp_c4221 = neg_mask<0b0101>(c5432.yww0() + c10__._000x());
+        auto tmp_c3100 = neg_mask<0b1010>(c5432.z000() + c10__._0xyy());
         hilet inv_col0 = ((t._col1.yxxx() * tmp_c5543) + (t._col1.zzyy() * tmp_c4221) + (t._col1.wwwz() * tmp_c3100)) * invdet;
 
         // m.i01 := (i01 * -c5 + i02 *  c4 + i03 * -c3) * invdet;
@@ -455,9 +455,9 @@ public:
         // m.i12 := (i30 * -s5 + i32 *  s2 + i33 * -s1) * invdet;
         // m.i22 := (i30 *  s4 + i31 * -s2 + i33 *  s0) * invdet;
         // m.i32 := (i30 * -s3 + i31 *  s1 + i32 * -s0) * invdet;
-        auto tmp_s5543 = neg<0b1010>(s45__.yyx0() + s0123._000w());
-        auto tmp_s4221 = neg<0b0101>(s45__.x000() + s0123._0zzy());
-        auto tmp_s3100 = neg<0b1010>(s0123.wyxx());
+        auto tmp_s5543 = neg_mask<0b1010>(s45__.yyx0() + s0123._000w());
+        auto tmp_s4221 = neg_mask<0b0101>(s45__.x000() + s0123._0zzy());
+        auto tmp_s3100 = neg_mask<0b1010>(s0123.wyxx());
         hilet inv_col2 = ((t._col3.yxxx() * tmp_s5543) + (t._col3.zzyy() * tmp_s4221) + (t._col3.wwwz() * tmp_s3100)) * invdet;
 
         // m.i03 := (i21 * -s5 + i22 *  s4 + i23 * -s3) * invdet;

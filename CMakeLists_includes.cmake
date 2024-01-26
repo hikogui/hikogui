@@ -328,19 +328,11 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/seed_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/seed_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/xorshift128p.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float16_sse4_1.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/SIMD.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f16x8_sse2.hpp>
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f32x4_sse.hpp>
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_f64x4_avx.hpp>
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i16x8_sse2.hpp>
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i32x4_sse2.hpp>
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i64x4_avx2.hpp>
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_i8x16_sse2.hpp>
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_conversions_x86.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_simd_utility.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/native_u32x4_sse2.hpp>
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_generic.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f32x4_x86.hpp>
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_intf.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/SIMD.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32_impl.hpp>

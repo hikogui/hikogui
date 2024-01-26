@@ -4,39 +4,28 @@
 
 #include "matrix3.hpp"
 #include "transform.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
+#include <hikotest/hikotest.hpp>
 
 using namespace hi;
 
-#define ASSERT_NEAR_VEC(lhs, rhs, abs_err) ASSERT_TRUE(hypot<0b1111>(lhs - rhs) < abs_err)
+TEST_SUITE(matrix3_suite) {
 
-TEST(matrix3, invert)
+TEST_CASE(invert_test)
 {
+    // clang-format off
     auto test_XYZ_to_sRGB = matrix3{
-        3.24096994f,
-        -1.53738318f,
-        -0.49861076f,
-        0.0f,
-        -0.96924364f,
-        1.87596750f,
-        0.04155506f,
-        0.0f,
-        0.05563008f,
-        -0.20397696f,
-        1.05697151f,
-        0.0f,
-        0.0f,
-        0.0f,
-        0.0f,
-        1.0f};
+         3.24096994f, -1.53738318f, -0.49861076f, 0.0f,
+        -0.96924364f,  1.87596750f,  0.04155506f, 0.0f,
+         0.05563008f, -0.20397696f,  1.05697151f, 0.0f,
+         0.0f,         0.0f,         0.0f,        1.0f};
+    // clang-format on
 
     auto result_sRGB_to_XYZ = ~test_XYZ_to_sRGB;
 
-    ASSERT_NEAR_VEC(get<0>(result_sRGB_to_XYZ), f32x4(0.41239080f, 0.21263901f, 0.01933082f), 0.001);
-    ASSERT_NEAR_VEC(get<1>(result_sRGB_to_XYZ), f32x4(0.35758434f, 0.71516868f, 0.11919478f), 0.001);
-    ASSERT_NEAR_VEC(get<2>(result_sRGB_to_XYZ), f32x4(0.18048079f, 0.07219232f, 0.95053215f), 0.001);
-    ASSERT_NEAR_VEC(get<3>(result_sRGB_to_XYZ), f32x4(0.0f, 0.0f, 0.0f, 1.0f), 0.001);
+    REQUIRE(get<0>(result_sRGB_to_XYZ) == f32x4(0.41239080f, 0.21263901f, 0.01933082f, 0.0f), 0.001f);
+    REQUIRE(get<1>(result_sRGB_to_XYZ) == f32x4(0.35758434f, 0.71516868f, 0.11919478f, 0.0f), 0.001f);
+    REQUIRE(get<2>(result_sRGB_to_XYZ) == f32x4(0.18048079f, 0.07219232f, 0.95053215f, 0.0f), 0.001f);
+    REQUIRE(get<3>(result_sRGB_to_XYZ) == f32x4(0.0f, 0.0f, 0.0f, 1.0f), 0.001f);
 }
+
+};

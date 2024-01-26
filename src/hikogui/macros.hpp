@@ -263,14 +263,131 @@
 #endif
 // clang-format on
 
+
+/** Assert Break.
+ *
+ * This will cause a trap on the processor in case of an assert.
+ * 
+ * With the following goal:
+ *  - Optionally launch a just-in-time debugger.
+ *  - With debugger: Allow the debugger to continue beyond the trap.
+ *  - Without debugger: Terminate the application with an error.
+ */
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_assert_break() __builtin_trap()
+#elif HI_COMPILER == HI_CC_MSVC
+#define hi_assert_break() __int2c()
+#elif HI_COMPILER == HI_CC_GCC
+#define hi_assert_break() __builtin_trap()
+#else
+#define hi_assert_break() std::terminate()
+#endif
+
+/** Debug Break.
+ *
+ * This will cause a trap on the processor for a break point in the debugger.
+ *
+ * With the following goal:
+ *  - Optionally launch a just-in-time debugger.
+ *  - With debugger: Allow the debugger to continue beyond the trap.
+ *  - Without debugger: Continue beyond the trap.
+ */
+#if HI_COMPILER == HI_CC_CLANG
 #define hi_debug_break() __builtin_debugtrap()
+#elif HI_COMPILER == HI_CC_MSVC
+#define hi_debug_break() __debugbreak()
+#elif HI_COMPILER == HI_CC_GCC
+#define hi_debug_break() __builtin_trap()
+#else
+#define hi_debug_break() std::terminate()
+#endif
+
+/** Override architecture and instruction-sets for a function.
+ *
+ * The gcc and clang compiler require that a function is decorated with
+ * the architecture and instruction-sets for the intrinsics used in this
+ * function.
+ *
+ * This attributes is ignored on MSVC, which can use intrinsics outside
+ * of the architecture passed on the command line.
+ *
+ * @param ... A string with comma separated architecture and instruction sets to use.
+ */
+#if HI_COMPILER == HI_CC_CLANG
 #define hi_target(...) [[gnu::target(__VA_ARGS__)]]
+#elif HI_COMPILER == HI_CC_MSVC
+#define hi_target(...)
+#elif HI_COMPILER == HI_CC_GCC
+#define hi_target(...) [[gnu::target(__VA_ARGS__)]]
+#else
+#define hi_target(...)
+#endif
+
+/** Assume an expression to be true.
+ *
+ * Equivilant to C++23 [[assume(expression)]] attribute.
+ */
+#if HI_COMPILER == HI_CC_CLANG
 #define hi_assume(...) __builtin_assume(not not (__VA_ARGS__))
+#elif HI_COMPILER == HI_CC_MSVC
+#define hi_assume(...) __assume(__VA_ARGS__)
+#elif HI_COMPILER == HI_CC_GCC
+#define hi_assume(...) \
+    do { \
+        if (not (__VA_ARGS__)) \
+            std::unreachable(); \
+    } while (false)
+#else
+#define hi_assume(...) static_assert(sizeof(__VA_ARGS__) == 1)
+#endif
+
+/** Force inline (optimization)
+ *
+ * Force the instructions of a function to be inlined at the
+ * call site. This is an optimization tool.
+ *
+ * Neither `hi_force_inline` and `hi_no_inline` imply the C++ keyword `inline`.
+ *
+ * Although `hi_force_inline` seems like an easy way to force a certain type
+ * of optimization, I recommend `hi_no_inline` instead which often has a lot
+ * more impact on optimiation by reducing code complexity by removing
+ * code that is not important.
+ */
+#if defined(NDEBUG)
+#if HI_COMPILER == HI_CC_CLANG
 #define hi_force_inline __attribute__((always_inline))
+#elif HI_COMPILER == HI_CC_MSVC
+#define hi_force_inline __forceinline
+#elif HI_COMPILER == HI_CC_GCC
+#define hi_force_inline __attribute__((always_inline))
+#else
+#define hi_force_inline __attribute__((always_inline))
+#endif
+#else
+#define hi_force_inline
+#endif
+
+#if HI_COMPILER == HI_CC_CLANG
 #define hi_no_inline __attribute__((noinline))
+#elif HI_COMPILER == HI_CC_MSVC
+#define hi_no_inline __declspec(noinline)
+#elif HI_COMPILER == HI_CC_GCC
+#define hi_no_inline __attribute__((noinline))
+#else
+#define hi_no_inline
+#endif
+
+#if HI_COMPILER == HI_CC_CLANG
 #define hi_restrict __restrict__
+#elif HI_COMPILER == HI_CC_MSVC
+#define hi_restrict __restrict
+#elif HI_COMPILER == HI_CC_GCC
+#define hi_restrict __restrict__
+#else
+#define hi_restrict
+#endif
+
+#if HI_COMPILER == HI_CC_CLANG
 #define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(push)")
@@ -278,14 +395,6 @@
 #define hi_warning_ignore_clang(...) _Pragma(hi_stringify(clang diagnostic ignored __VA_ARGS__))
 
 #elif HI_COMPILER == HI_CC_MSVC
-// __int2c is a STATUS_ASSERTION_FAILURE
-#define hi_assert_break() __int2c()
-#define hi_debug_break() __debugbreak()
-#define hi_target(...)
-#define hi_assume(...) __assume(__VA_ARGS__)
-#define hi_force_inline __forceinline
-#define hi_no_inline __declspec(noinline)
-#define hi_restrict __restrict
 #define hi_no_sanitize_address __declspec(no_sanitize_address)
 #define hi_warning_push() _Pragma("warning( push )")
 #define hi_warning_pop() _Pragma("warning( pop )")
@@ -294,17 +403,6 @@
 #define hi_warning_ignore_clang(...)
 
 #elif HI_COMPILER == HI_CC_GCC
-#define hi_assert_break() __builtin_trap()
-#define hi_debug_break() __builtin_trap()
-#define hi_target(...) [[gnu::target(__VA_ARGS__)]]
-#define hi_assume(...) \
-    do { \
-        if (!(__VA_ARGS__)) \
-            std::unreachable(); \
-    } while (false)
-#define hi_force_inline __attribute__((always_inline))
-#define hi_no_inline __attribute__((noinline))
-#define hi_restrict __restrict__
 #define hi_no_sanitize_address
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(pop)")
@@ -313,13 +411,6 @@
 #define msvc_pragma(...)
 
 #else
-#define hi_assert_break() std::terminate()
-#define hi_debug_break() std::terminate()
-#define hi_target(...)
-#define hi_assume(...) static_assert(sizeof(__VA_ARGS__) == 1)
-#define hi_force_inline
-#define hi_no_inline
-#define hi_restrict
 #define hi_no_sanitize_address
 #define hi_warning_push()
 #define hi_warning_pop()

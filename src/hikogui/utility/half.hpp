@@ -22,13 +22,12 @@ hi_warning_push();
 // static_cast here is used to extract bits and cause sign-extension.
 hi_warning_ignore_msvc(26472);
 
-hi_export namespace hi::inline v1 {
+hi_export namespace hi { inline namespace v1 {
 
-hi_export struct half {
+struct half {
     uint16_t v = 0;
 
     constexpr half() noexcept = default;
-    ~half() = default;
     constexpr half(half const&) noexcept = default;
     constexpr half(half&&) noexcept = default;
     constexpr half& operator=(half const&) noexcept = default;
@@ -123,28 +122,30 @@ static_assert(std::is_trivially_destructible_v<half>);
 static_assert(requires(half a) { std::bit_cast<uint16_t>(a); });
 static_assert(requires(uint16_t a) { std::bit_cast<half>(a); });
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
-hi_export template<>
-struct std::hash<hi::half> {
-    std::size_t operator()(hi::half const& rhs) noexcept
+hi_export namespace std {
+
+template<>
+struct hash<::hi::half> {
+    size_t operator()(::hi::half const& rhs) noexcept
     {
         return rhs.hash();
     }
 };
 
 // XXX #617 MSVC bug does not handle partial specialization in modules.
-hi_export template<>
-struct std::formatter<hi::half, char> : std::formatter<float, char> {
-    constexpr auto format(hi::half const& t, auto& fc) const
+template<>
+struct formatter<::hi::half, char> : formatter<float, char> {
+    constexpr auto format(::hi::half const& t, auto& fc) const
     {
-        return std::formatter<float, char>::format(static_cast<float>(t), fc);
+        return formatter<float, char>::format(static_cast<float>(t), fc);
     }
 };
 
-hi_export template<>
-struct std::numeric_limits<hi::half> {
-    using value_type = hi::half;
+template<>
+struct numeric_limits<::hi::half> {
+    using value_type = ::hi::half;
 
     constexpr static bool is_specialized = true;
     constexpr static bool is_signed = true;
@@ -153,7 +154,7 @@ struct std::numeric_limits<hi::half> {
     constexpr static bool has_infinity = true;
     constexpr static bool has_quiet_NaN = true;
     constexpr static bool has_signaling_NaN = false;
-    constexpr static float_round_style round_style = std::round_to_nearest;
+    constexpr static float_round_style round_style = round_to_nearest;
     constexpr static bool is_iec559 = true;
     constexpr static bool is_bounded = true;
     constexpr static bool is_modulo = false;
@@ -169,48 +170,50 @@ struct std::numeric_limits<hi::half> {
 
     constexpr static value_type min() noexcept
     {
-        return hi::half(hi::intrinsic, 0x0400);
+        return ::hi::half(::hi::intrinsic, 0x0400);
     }
 
     constexpr static value_type lowest() noexcept
     {
-        return hi::half(hi::intrinsic, 0xfbff);
+        return ::hi::half(::hi::intrinsic, 0xfbff);
     }
 
     constexpr static value_type max() noexcept
     {
-        return hi::half(hi::intrinsic, 0x7bff);
+        return ::hi::half(::hi::intrinsic, 0x7bff);
     }
 
     constexpr static value_type epsilon() noexcept
     {
-        return hi::half(hi::intrinsic, 0xfbff);
+        return ::hi::half(::hi::intrinsic, 0xfbff);
     }
 
     constexpr static value_type round_error() noexcept
     {
-        return hi::half(hi::intrinsic, 0x3800); // 0.5
+        return ::hi::half(::hi::intrinsic, 0x3800); // 0.5
     }
 
     constexpr static value_type infinity() noexcept
     {
-        return hi::half(hi::intrinsic, 0x7c00);
+        return ::hi::half(::hi::intrinsic, 0x7c00);
     }
 
     constexpr static value_type quiet_NaN() noexcept
     {
-        return hi::half(hi::intrinsic, 0x7c01);
+        return ::hi::half(::hi::intrinsic, 0x7c01);
     }
 
     constexpr static value_type signaling_NaN() noexcept
     {
-        return hi::half(hi::intrinsic, 0x7e01);
+        return ::hi::half(::hi::intrinsic, 0x7e01);
     }
 
     constexpr static value_type denorm_min() noexcept
     {
-        return hi::half(hi::intrinsic, 0x0001);
+        return ::hi::half(::hi::intrinsic, 0x0001);
     }
 };
+
+}
 
 hi_warning_pop();

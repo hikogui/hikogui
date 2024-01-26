@@ -4,34 +4,32 @@
 
 #include "translate2.hpp"
 #include "transform.hpp"
-#include "../utility/utility.hpp"
-#include "../test.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
-
-
+#include <hikotest/hikotest.hpp>
 
 using namespace hi;
 
-TEST(translate2, translate_vector)
+TEST_SUITE(translate2_suite)
+{
+
+TEST_CASE(translate_vector_test)
 {
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * vector2(1.0, 2.0)), vector2>);
 
-    STATIC_ASSERT_TRUE(translate2(4.0, 6.0) * vector2(1.0, 2.0) == vector2(1.0, 2.0));
+    REQUIRE(translate2(4.0, 6.0) * vector2(1.0, 2.0) == vector2(1.0, 2.0));
 }
 
-TEST(translate2, translate_point)
+TEST_CASE(translate_point_test)
 {
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * point2(1.0, 2.0)), point2>);
 
-    STATIC_ASSERT_TRUE(translate2(4.0, 6.0) * point2(1.0, 2.0) == point2(5.0, 8.0));
+    REQUIRE(translate2(4.0, 6.0) * point2(1.0, 2.0) == point2(5.0, 8.0));
 }
 
-TEST(translate2, translate_translate)
+TEST_CASE(translate_translate_test)
 {
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * translate2(1.0, 2.0)), translate2>);
 
-    STATIC_ASSERT_TRUE(translate2(4.0, 6.0) * translate2(1.0, 2.0) == translate2(5.0, 8.0));
+    REQUIRE(translate2(4.0, 6.0) * translate2(1.0, 2.0) == translate2(5.0, 8.0));
 }
+
+};

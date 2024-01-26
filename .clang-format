@@ -69,10 +69,11 @@ ObjCBinPackProtocolList: Auto
 ObjCBlockIndentWidth: 4
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: false
-PointerAlignment: Right
+PointerAlignment: Left
 ReferenceAlignment: Left
 ReflowComments: true
-#RequiresClausePosition: WithPreceding
+RequiresClausePosition: WithPreceding
+RequiresExpressionIndentation: OuterScope
 SortIncludes: false
 SortUsingDeclarations: false
 SpaceAfterCStyleCast: false

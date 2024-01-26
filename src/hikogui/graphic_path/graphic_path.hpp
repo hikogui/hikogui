@@ -661,42 +661,6 @@ hi_export struct graphic_path {
     }
 };
 
-/** Composit color onto the destination image where the mask is solid.
- *
- * \param dst destination image.
- * \param color color to composit.
- * \param mask mask where the color will be composited on the destination.
- */
-hi_export hi_inline void composit(pixmap_span<sfloat_rgba16> dst, hi::color color, graphic_path const& mask) noexcept
-{
-    hi_assert(not mask.hasLayers());
-    hi_assert(not mask.isContourOpen());
-
-    auto mask_image = pixmap<uint8_t>(dst.width(), dst.height());
-    fill(mask_image);
-
-    hilet curves = mask.getBeziers();
-    fill(mask_image, curves);
-
-    composit(dst, color, mask_image);
-}
-
-/** Composit color onto the destination image where the mask is solid.
- *
- * \param dst destination image.
- * \param mask mask where the color will be composited on the destination.
- */
-hi_export hi_inline void composit(pixmap_span<sfloat_rgba16> dst, graphic_path const& mask) noexcept
-{
-    hi_assert(mask.hasLayers() and not mask.isLayerOpen());
-
-    for (int layerNr = 0; layerNr < mask.numberOfLayers(); layerNr++) {
-        hilet[layer, fill_color] = mask.getLayer(layerNr);
-
-        composit(dst, fill_color, layer);
-    }
-}
-
 /** Fill a signed distance field image from the given path.
  * @param dst An signed-distance-field which show distance toward the closest curve
  * @param path A path.

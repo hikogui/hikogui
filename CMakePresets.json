@@ -57,10 +57,8 @@
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
 	      "CMAKE_CXX_COMPILER": "cl",
-        "CMAKE_C_COMPILER": "cl"
-      },
-      "environment": {
-        "CXXFLAGS": "/arch:AVX2"
+        "CMAKE_C_COMPILER": "cl",
+        "HI_ARCHITECTURE": "none"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -120,7 +118,8 @@
       "name": "targets",
       "hidden": true,
       "targets": [
-        "hikogui_tests",
+        "hikogui_gtests",
+        "hikogui_htests",
         "checkbox_example",
         "radio_button_example",
         "selection_example",

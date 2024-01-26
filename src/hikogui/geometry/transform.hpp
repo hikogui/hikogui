@@ -151,7 +151,7 @@ concept transformer = transformer2<T> or transformer3<T>;
 [[nodiscard]] hi_inline float operator*(matrix2 const& lhs, float const& rhs) noexcept
 {
     // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
-    hilet abs_scale = hypot<0b0011>(get<0>(lhs) * f32x4::broadcast(rhs));
+    hilet abs_scale = hypot<0b0011>(get<0>(lhs) * f32x4::broadcast(rhs)).x();
 
     // We want to keep the sign of the original scaler, even if the matrix has rotation.
     return std::copysign(abs_scale, rhs);
@@ -165,7 +165,7 @@ concept transformer = transformer2<T> or transformer3<T>;
 [[nodiscard]] hi_inline float operator*(matrix3 const &lhs, float const& rhs) noexcept
 {
     // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
-    hilet abs_scale = hypot<0b0111>(get<0>(lhs) * f32x4::broadcast(rhs));
+    hilet abs_scale = hypot<0b0111>(get<0>(lhs) * f32x4::broadcast(rhs)).x();
 
     // We want to keep the sign of the original scaler, even if the matrix has rotation.
     return std::copysign(abs_scale, rhs);

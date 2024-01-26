@@ -173,7 +173,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector3 operator*(vector3 const& lhs, float const& rhs) noexcept
     {
-        return vector3{lhs._v * rhs};
+        return vector3{lhs._v * array_type::broadcast(rhs)};
     }
 
     /** Scale the vector by a scaler.
@@ -202,7 +202,7 @@ public:
      */
     [[nodiscard]] constexpr friend float squared_hypot(vector3 const& rhs) noexcept
     {
-        return squared_hypot<0b0111>(rhs._v);
+        return dot<0b0111>(rhs._v, rhs._v).x();
     }
 
     /** Get the length of the vector.
@@ -211,7 +211,7 @@ public:
      */
     [[nodiscard]] friend float hypot(vector3 const& rhs) noexcept
     {
-        return hypot<0b0111>(rhs._v);
+        return hypot<0b0111>(rhs._v).x();
     }
 
     /** Get the length of the vector.
@@ -220,7 +220,7 @@ public:
      */
     [[nodiscard]] constexpr friend float rcp_hypot(vector3 const& rhs) noexcept
     {
-        return rcp_hypot<0b0111>(rhs._v);
+        return rhypot<0b0111>(rhs._v).x();
     }
 
     /** Normalize a vector to a unit vector.
@@ -239,7 +239,7 @@ public:
      */
     [[nodiscard]] constexpr friend float dot(vector3 const& lhs, vector3 const& rhs) noexcept
     {
-        return dot<0b0111>(lhs._v, rhs._v);
+        return dot<0b0111>(lhs._v, rhs._v).x();
     }
 
     /** Get the normal on a 3D vector.
@@ -262,7 +262,14 @@ public:
      */
     [[nodiscard]] constexpr friend vector3 cross(vector3 const& lhs, vector3 const& rhs) noexcept
     {
-        return vector3{cross_3D(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
+        hilet a_left = lhs._v.yzxw();
+        hilet b_left = rhs._v.zxyw();
+        hilet left = a_left * b_left;
+
+        hilet a_right = lhs._v.zxyw();
+        hilet b_right = rhs._v.yzxw();
+        hilet right = a_right * b_right;
+        return vector3{left - right};
     }
 
     /** Mix the two vectors and get the lowest value of each element.

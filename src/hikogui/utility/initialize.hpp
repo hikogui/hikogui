@@ -48,8 +48,10 @@ inline std::atomic<uintptr_t> initialize_state = 0;
 
 /** Initialize base functionality of HikoGUI.
  *
- * This will be called from `cpu_features_init()` which is started very early
- * before main().
+ * This function is called as early in the life of an application as possible.
+ * This function is called implicitly by:
+ *  - Every function from hikogui.metadata.application_metadata.
+ *  - When using the hikogui.crt.
  */
 hi_inline void initialize() noexcept
 {
