@@ -8,10 +8,10 @@
 
 using namespace hi;
 
-TEST_SUITE(vector2)
+TEST_SUITE(vector2_suite)
 {
 
-TEST_CASE(compare)
+TEST_CASE(compare_test)
 {
     REQUIRE(not (vector2(1.0, 2.0) == vector2(3.0, 4.0)));
     REQUIRE(not (vector2(1.0, 2.0) == vector2(1.0, 4.0)));
@@ -22,73 +22,63 @@ TEST_CASE(compare)
     REQUIRE((vector2(1.0, 2.0) != vector2(1.0, 4.0)));
     REQUIRE((vector2(1.0, 2.0) != vector2(3.0, 2.0)));
     REQUIRE(not (vector2(1.0, 2.0) != vector2(1.0, 2.0)));
-    return {};
 }
 
-TEST_CASE(adding)
+TEST_CASE(adding_test)
 {
     REQUIRE(vector2(1.0, 2.0) + vector2(3.0, 4.0) == vector2(4.0, 6.0));
 
     static_assert(std::is_same_v<decltype(vector2(1.0, 2.0) + vector2(3.0, 4.0)), vector2>);
-    return {};
 }
 
-TEST_CASE(subtracting)
+TEST_CASE(subtracting_test)
 {
     REQUIRE(vector2(1.0, 2.0) - vector2(3.0, 4.0) == vector2(-2.0, -2.0));
 
     static_assert(std::is_same_v<decltype(vector2(1.0, 2.0) - vector2(3.0, 4.0)), vector2>);
-    return {};
 }
 
-TEST_CASE(scaling)
+TEST_CASE(scaling_test)
 {
     REQUIRE(vector2(1.0, 2.0) * 42.0 == vector2(42.0, 84.0));
 
     static_assert(std::is_same_v<decltype(vector2(1.0, 2.0) * 42.0), vector2>);
-    return {};
 }
 
-TEST_CASE(invert)
+TEST_CASE(invert_test)
 {
     REQUIRE(-vector2(1.0, 2.0) == vector2(-1.0, -2.0));
 
     static_assert(std::is_same_v<decltype(-vector2(1.0, 2.0)), vector2>);
-    return {};
 }
 
-TEST_CASE(hypot)
+TEST_CASE(hypot_test)
 {
     REQUIRE(hypot(vector2(1.0, 2.0)) == 2.236067, 0.00001);
-    return {};
 }
 
-TEST_CASE(rcp_hypot)
+TEST_CASE(rcp_hypot_test)
 {
     REQUIRE(rcp_hypot(vector2(1.0, 2.0)) == 0.447213, 0.0001);
-    return {};
 }
 
-TEST_CASE(rcp_normalize)
+TEST_CASE(rcp_normalize_test)
 {
     REQUIRE(hypot(normalize(vector2(1.0, 2.0))) == 1.0, 0.001);
 
     static_assert(std::is_same_v<decltype(normalize(vector2(1.0, 2.0))), vector2>);
-    return {};
 }
 
-TEST_CASE(dot)
+TEST_CASE(dot_test)
 {
     REQUIRE(dot(vector2(1.0, 2.0), vector2(3.0, 4.0)) == 11.0);
-    return {};
 }
 
-TEST_CASE(cross)
+TEST_CASE(cross_test)
 {
     REQUIRE(cross(vector2(4.0, 9.0)) == vector2(-9.0, 4.0));
     REQUIRE(cross(vector2(4.0, 9.0), vector2(4.0, 9.0)) == 0.0);
     REQUIRE(cross(vector2(4.0, 9.0), vector2(-9.0, 4.0)) == 97.0);
-    return {};
 }
 
 };

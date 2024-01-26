@@ -57,10 +57,8 @@
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
 	      "CMAKE_CXX_COMPILER": "cl",
-        "CMAKE_C_COMPILER": "cl"
-      },
-      "environment": {
-        "CXXFLAGS": "/arch:AVX"
+        "CMAKE_C_COMPILER": "cl",
+        "HI_ARCHITECTURE": "none"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {

@@ -301,7 +301,7 @@ void test_case::result_type::junit_xml(FILE* out) const noexcept
     } catch (require_error const &e) {
         r.set_failure(e.what());
     } catch (std::exception const &e) {
-        r.set_failure(std::format("{}({}): error: Unexpected exception thrown: {}.", file, line, e.what());
+        r.set_failure(std::format("{}({}): error: Unexpected exception thrown: {}.", file, line, e.what()));
     } catch (...) {
         r.set_failure(std::format("{}({}): error: Unexpected unknown-exception thrown.", file, line));
     }
@@ -317,7 +317,11 @@ void test_case::result_type::junit_xml(FILE* out) const noexcept
 
     auto r = break_on_failure ? run_test_break() : run_test_catch();
 
-    auto result_str = r ? "[       OK ]" : "[  FAILED  ]";
+    if (not r.success()) {
+        std::println(stdout, "{}", r.error_message);
+    }
+
+    auto result_str = r.success() ? "[       OK ]" : "[  FAILED  ]";
     std::println(stdout, "{} {}.{} ({:.0f} ms)", result_str, suite_name, test_name, r.duration / 1ms);
     std::fflush(stdout);
 

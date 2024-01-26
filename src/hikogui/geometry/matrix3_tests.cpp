@@ -8,9 +8,9 @@
 
 using namespace hi;
 
-TEST_SUITE(matrix3) {
+TEST_SUITE(matrix3_suite) {
 
-TEST_CASE(invert)
+TEST_CASE(invert_test)
 {
     // clang-format off
     auto test_XYZ_to_sRGB = matrix3{
@@ -26,7 +26,6 @@ TEST_CASE(invert)
     REQUIRE(get<1>(result_sRGB_to_XYZ) == f32x4(0.35758434f, 0.71516868f, 0.11919478f, 0.0f), 0.001f);
     REQUIRE(get<2>(result_sRGB_to_XYZ) == f32x4(0.18048079f, 0.07219232f, 0.95053215f, 0.0f), 0.001f);
     REQUIRE(get<3>(result_sRGB_to_XYZ) == f32x4(0.0f, 0.0f, 0.0f, 1.0f), 0.001f);
-    return {};
 }
 
 };

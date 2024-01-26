@@ -5,7 +5,9 @@
 #pragma once
 
 #include "array_generic.hpp" // export
+#ifndef HI_GENERIC
 #include "array_intrinsic_f32x4_x86.hpp" // export
+#endif
 #include "array_intrinsic.hpp" // export
 #include "simd_intf.hpp" // export
 

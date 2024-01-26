@@ -8,31 +8,28 @@
 
 using namespace hi;
 
-TEST_SUITE(translate2)
+TEST_SUITE(translate2_suite)
 {
 
-TEST_CASE(translate_vector)
+TEST_CASE(translate_vector_test)
 {
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * vector2(1.0, 2.0)), vector2>);
 
     REQUIRE(translate2(4.0, 6.0) * vector2(1.0, 2.0) == vector2(1.0, 2.0));
-    return {};
 }
 
-TEST_CASE(translate_point)
+TEST_CASE(translate_point_test)
 {
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * point2(1.0, 2.0)), point2>);
 
     REQUIRE(translate2(4.0, 6.0) * point2(1.0, 2.0) == point2(5.0, 8.0));
-    return {};
 }
 
-TEST_CASE(translate_translate)
+TEST_CASE(translate_translate_test)
 {
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * translate2(1.0, 2.0)), translate2>);
 
     REQUIRE(translate2(4.0, 6.0) * translate2(1.0, 2.0) == translate2(5.0, 8.0));
-    return {};
 }
 
 };

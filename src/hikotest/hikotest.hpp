@@ -18,6 +18,7 @@
 #include <print>
 #include <expected>
 #include <optional>
+#include <stdexcept>
 
 namespace test {
 
@@ -73,11 +74,9 @@ namespace test {
             _hikotest_throws = true; \
         } \
         if (not _hikotest_throws) { \
-            std::println(stdout, "{}({}): error: {}", __FILE__, __LINE__, #expression " did not throw " #exception "."); \
-            return std::unexpected{#expression " did not throw " #exception "."}; \
+            ::test::require(std::unexpected{"{}({}): error: {}", __FILE__, __LINE__, #expression " did not throw " #exception "."}); \
         } \
     } while (false)
-
 
 #if defined(_MSC_VER)
 #define TEST_FORCE_INLINE __forceinline
@@ -88,9 +87,9 @@ namespace test {
 #endif
 
 #if defined(_MSC_VER)
-#define TEST_BREAKPOINT __debug_break()
+#define TEST_BREAKPOINT() __debugbreak()
 #elif defined(__GNUC__)
-#define TEST_BREAKPOINT __builtin_debugtrap()
+#define TEST_BREAKPOINT() __builtin_debugtrap()
 #else
 #error "BREAKPOINT not implemented"
 #endif
@@ -403,24 +402,20 @@ private:
     std::vector<test_filter_type> exclusions;
 };
 
-
-class require_error : public std::logic_error
-{
-    require_error(char const *file, int line, std::string_view error_message) noexcept :
-        std::logic_error(std::format("{}({}): error: {}", file, line, error_message)) {}
+class require_error : public std::logic_error {
+    using std::logic_error::logic_error;
 };
 
-
-TEST_FORCE_INLINE void require(char const *file, int line, std::expected<void, std::string> result)
+TEST_FORCE_INLINE void require(char const* file, int line, std::expected<void, std::string> result)
 {
     if (result) {
         return;
 
-    } else if (catch_errors) {
-        throw require_error(std::format("{}({}): {}", file, line, result.error));
+    } else if (not break_on_failure) {
+        throw require_error(std::format("{}({}): error: {}", file, line, result.error()));
 
     } else {
-        TEST_BREAKPOINT;
+        TEST_BREAKPOINT();
         std::terminate();
     }
 }
@@ -430,7 +425,7 @@ struct test_case {
     int line;
     std::string suite_name;
     std::string test_name;
-    std::function<void>()> _run_test;
+    std::function<void()> _run_test;
 
     struct result_type {
         test_case const* parent;
@@ -468,17 +463,15 @@ struct test_case {
         int line,
         std::string suite_name,
         std::string test_name,
-        std::expected<void, std::string> (Suite::*test)()) noexcept :
-        file(file),
-        line(line),
-        suite_name(std::move(suite_name)),
-        test_name(std::move(test_name)),
-        _run_test([test]() -> auto {
+        void (Suite::*test)()) noexcept :
+        file(file), line(line), suite_name(std::move(suite_name)), test_name(std::move(test_name)), _run_test([test]() {
             return (Suite{}.*test)();
         })
     {
     }
 
+    [[nodiscard]] result_type run_test_break() const;
+    [[nodiscard]] result_type run_test_catch() const;
     [[nodiscard]] result_type run_test() const;
     [[nodiscard]] result_type layout() const noexcept;
 };
@@ -593,7 +586,7 @@ struct all_tests {
 
     template<typename Suite>
     [[nodiscard]] inline test_case&
-    register_test(std::expected<void, std::string> (Suite::*test)(), std::string_view file, int line, std::string name) noexcept
+    register_test(void (Suite::*test)(), std::string_view file, int line, std::string name) noexcept
     {
         if (name.ends_with("_test_case")) {
             name = name.substr(0, name.size() - 10);
@@ -623,14 +616,7 @@ struct all_tests {
             std::terminate();
         }
 
-        // clang-format off
-        return *tests.emplace(it,
-            file,
-            line,
-            suite.suite_name,
-            name,
-            test);
-        // clang-format on
+        return *tests.emplace(it, file, line, suite.suite_name, name, test);
     }
 
     [[nodiscard]] result_type layout(::test::filter const& filter) noexcept;
@@ -647,8 +633,7 @@ template<typename Suite>
 }
 
 template<typename Suite>
-[[nodiscard]] inline test_case&
-register_test(std::expected<void, std::string> (Suite::*test)(), std::string_view file, int line, std::string name) noexcept
+[[nodiscard]] inline test_case& register_test(void (Suite::*test)(), std::string_view file, int line, std::string name) noexcept
 {
     return all.template register_test<Suite>(test, file, line, std::move(name));
 }

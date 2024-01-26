@@ -7,10 +7,10 @@
 
 using namespace hi;
 
-TEST_SUITE(transform)
+TEST_SUITE(transform_suite)
 {
 
-TEST_CASE(translate_scale_point)
+TEST_CASE(translate_scale_point_test)
 {
     static_assert(std::is_same_v<decltype(translate2(-3, -4) * (scale2(4.0, 6.0) * point2(1.0, 2.0))), point2>);
     static_assert(std::is_same_v<decltype(translate2(-3, -4) * (scale2(4.0, 6.0) * point3(1.0, 2.0, 3.0))), point3>);
@@ -49,7 +49,6 @@ TEST_CASE(translate_scale_point)
     REQUIRE((translate3(-3, -4, -5) * scale2(4.0, 6.0)) * point3(1.0, 2.0, 3.0) == point3(1.0, 8.0, -2.0));
     REQUIRE((translate3(-3, -4, -5) * scale3(4.0, 6.0, 8.0)) * point2(1.0, 2.0) == point3(1.0, 8.0, -5));
     REQUIRE((translate3(-3, -4, -5) * scale3(4.0, 6.0, 8.0)) * point3(1.0, 2.0, 3.0) == point3(1, 8.0, 19.0));
-    return {};
 }
 
 };

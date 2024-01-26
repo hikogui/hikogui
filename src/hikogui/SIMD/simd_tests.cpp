@@ -6,10 +6,10 @@
 #include "../macros.hpp"
 #include <hikotest/hikotest.hpp>
 
-TEST_SUITE(simd)
+TEST_SUITE(simd_suite)
 {
 
-TEST_CASE(arithmatic)
+TEST_CASE(arithmatic_test)
 {
     auto const tmp1 = hi::f32x4{9.0f, 6.0f, 4.0f, 14.0f};
     auto const tmp2 = hi::f32x4{3.0f, -2.0f, 8.0f, 7.0f};
@@ -42,27 +42,24 @@ TEST_CASE(arithmatic)
         tmp /= tmp2;
         REQUIRE(tmp == hi::f32x4(3.0f, -3.0f, 0.5f, 2.0f));
     }
-    return {};
 }
 
-TEST_CASE(hypot)
+TEST_CASE(hypot_test)
 {
     auto const tmp = hi::f32x4(2.0f, 3.0f, 4.0f, 0.0f);
 
     REQUIRE(hypot<0b0111>(tmp).x() == 5.3851f, 0.001f);
-    return {};
 }
 
-TEST_CASE(dot_product)
+TEST_CASE(dot_product_test)
 {
     auto const a = hi::f32x4(1.0f, 3.0f, -5.0f, 0.0f);
     auto const b = hi::f32x4(4.0f, -2.0f, -1.0f, 0.0f);
 
     REQUIRE(dot<0b0111>(a, b).x() == 3.0f);
-    return {};
 }
 
-TEST_CASE(getters)
+TEST_CASE(getters_test)
 {
     auto const tmp = hi::f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
@@ -78,17 +75,15 @@ TEST_CASE(getters)
     REQUIRE(tmp[1] == 3.0f);
     REQUIRE(tmp[2] == 4.0f);
     REQUIRE(tmp[3] == 5.0f);
-    return {};
 }
 
-TEST_CASE(normalize)
+TEST_CASE(normalize_test)
 {
     auto tmp = hi::f32x4{2.0f, 3.0f, 4.0f, 0.0f};
     REQUIRE(normalize<0b0111>(tmp) == hi::f32x4(0.37139f, 0.55708f, 0.74278f, 0.0f), 0.001f);
-    return {};
 }
 
-TEST_CASE(setters)
+TEST_CASE(setters_test)
 {
     auto tmp = hi::f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
@@ -108,10 +103,9 @@ TEST_CASE(setters)
     REQUIRE(tmp == hi::f32x4(22.0f, 23.0f, 24.0f, 15.0f));
     tmp.a() = 25.0f;
     REQUIRE(tmp == hi::f32x4(22.0f, 23.0f, 24.0f, 25.0f));
-    return {};
 }
 
-TEST_CASE(swizzle2)
+TEST_CASE(swizzle2_test)
 {
     auto const tmp = hi::f32x2{2.0f, 3.0f};
 
@@ -134,10 +128,9 @@ TEST_CASE(swizzle2)
     REQUIRE(tmp._1y() == hi::f32x2(1.0f, 3.0f));
     REQUIRE(tmp._10() == hi::f32x2(1.0f, 0.0f));
     REQUIRE(tmp._11() == hi::f32x2(1.0f, 1.0f));
-    return {};
 }
 
-TEST_CASE(swizzle4)
+TEST_CASE(swizzle4_test)
 {
     auto const tmp = hi::f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
@@ -1659,7 +1652,6 @@ TEST_CASE(swizzle4)
     REQUIRE(tmp.wwwy() == hi::f32x4(5.0f, 5.0f, 5.0f, 3.0f));
     REQUIRE(tmp.wwwz() == hi::f32x4(5.0f, 5.0f, 5.0f, 4.0f));
     REQUIRE(tmp.wwww() == hi::f32x4(5.0f, 5.0f, 5.0f, 5.0f));
-    return {};
 }
 
 };

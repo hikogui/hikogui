@@ -9,10 +9,10 @@
 
 using namespace hi;
 
-TEST_SUITE(translate3)
+TEST_SUITE(translate3_suite)
 {
 
-TEST_CASE(translate_vector)
+TEST_CASE(translate_vector_test)
 {
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * vector3(1.0, 2.0, 3.0)), vector3>);
     static_assert(std::is_same_v<decltype(translate3(4.0, 6.0, 8.0) * vector2(1.0, 2.0)), vector2>);
@@ -21,10 +21,9 @@ TEST_CASE(translate_vector)
     REQUIRE(translate2(4.0, 6.0) * vector3(1.0, 2.0, 3.0) == vector3(1.0, 2.0, 3.0));
     REQUIRE(translate3(4.0, 6.0, 8.0) * vector2(1.0, 2.0) == vector2(1.0, 2.0));
     REQUIRE(translate3(4.0, 6.0, 8.0) * vector3(1.0, 2.0, 3.0) == vector3(1.0, 2.0, 3.0));
-    return {};
 }
 
-TEST_CASE(translate_point)
+TEST_CASE(translate_point_test)
 {
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * point3(1.0, 2.0, 3.0)), point3>);
     static_assert(std::is_same_v<decltype(translate3(4.0, 6.0, 8.0) * point2(1.0, 2.0)), point3>);
@@ -33,10 +32,9 @@ TEST_CASE(translate_point)
     REQUIRE(translate2(4.0, 6.0) * point3(1.0, 2.0, 3.0) == point3(5.0, 8.0, 3.0));
     REQUIRE(translate3(4.0, 6.0, 8.0) * point2(1.0, 2.0) == point3(5.0, 8.0, 8.0));
     REQUIRE(translate3(4.0, 6.0, 8.0) * point3(1.0, 2.0, 3.0) == point3(5.0, 8.0, 11.0));
-    return {};
 }
 
-TEST_CASE(translate_translate)
+TEST_CASE(translate_translate_test)
 {
     static_assert(std::is_same_v<decltype(translate2(4.0, 6.0) * translate3(1.0, 2.0, 3.0)), translate3>);
     static_assert(std::is_same_v<decltype(translate3(4.0, 6.0, 8.0) * translate2(1.0, 2.0)), translate3>);
@@ -45,7 +43,6 @@ TEST_CASE(translate_translate)
     REQUIRE(translate2(4.0, 6.0) * translate3(1.0, 2.0, 3.0) == translate3(5.0, 8.0, 3.0));
     REQUIRE(translate3(4.0, 6.0, 8.0) * translate2(1.0, 2.0) == translate3(5.0, 8.0, 8.0));
     REQUIRE(translate3(4.0, 6.0, 8.0) * translate3(1.0, 2.0, 3.0) == translate3(5.0, 8.0, 11.0));
-    return {};
 }
 
 };

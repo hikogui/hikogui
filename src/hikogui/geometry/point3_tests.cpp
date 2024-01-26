@@ -8,10 +8,10 @@
 
 using namespace hi;
 
-TEST_SUITE(point3)
+TEST_SUITE(point3_suite)
 {
 
-TEST_CASE(compare)
+TEST_CASE(compare_test)
 {
     REQUIRE(not (point3(1.0, 2.0, 3.0) == point3(3.0, 4.0, 5.0)));
     REQUIRE(not (point3(1.0, 2.0, 3.0) == point3(1.0, 4.0, 5.0)));
@@ -23,10 +23,9 @@ TEST_CASE(compare)
     REQUIRE(not (point2(1.0, 2.0) == point3(3.0, 2.0, 5.0)));
     REQUIRE(not (point2(1.0, 2.0) == point3(1.0, 2.0, 3.0)));
     REQUIRE((point2(1.0, 2.0) == point3(1.0, 2.0, 0.0)));
-    return {};
 }
 
-TEST_CASE(adding)
+TEST_CASE(adding_test)
 {
     REQUIRE(point3(1.0, 2.0, 3.0) + vector3(3.0, 4.0, 5.0) == point3(4.0, 6.0, 8.0));
     REQUIRE(point2(1.0, 2.0) + vector3(3.0, 4.0, 5.0) == point3(4.0, 6.0, 5.0));
@@ -43,10 +42,9 @@ TEST_CASE(adding)
     static_assert(std::is_same_v<decltype(vector3(1.0, 2.0, 3.0) + point2(3.0, 4.0)), point3>);
     static_assert(std::is_same_v<decltype(vector2(1.0, 2.0) + point3(3.0, 4.0, 5.0)), point3>);
     static_assert(std::is_same_v<decltype(vector3(1.0, 2.0, 3.0) + point3(3.0, 4.0, 5.0)), point3>);
-    return {};
 }
 
-TEST_CASE(subtracting)
+TEST_CASE(subtracting_test)
 {
     REQUIRE(point3(1.0, 2.0, 3.0) - point3(3.0, 4.0, 5.0) == vector3(-2.0, -2.0, -2.0));
     REQUIRE(point2(1.0, 2.0) - point3(3.0, 4.0, 5.0) == vector3(-2.0, -2.0, -5.0));
@@ -63,7 +61,6 @@ TEST_CASE(subtracting)
     static_assert(std::is_same_v<decltype(point3(1.0, 2.0, 3.0) - vector2(3.0, 4.0)), point3>);
     static_assert(std::is_same_v<decltype(point2(1.0, 2.0) - vector3(3.0, 4.0, 5.0)), point3>);
     static_assert(std::is_same_v<decltype(point3(1.0, 2.0, 3.0) - vector3(3.0, 4.0, 5.0)), point3>);
-    return {};
 }
 
 };
