@@ -284,6 +284,30 @@ void test_case::result_type::junit_xml(FILE* out) const noexcept
     }
 }
 
+[[nodiscard]] test_case::result_type test_case::run_test_break() const
+{
+    auto r = result_type{this};
+    _run_test();
+    r.set_success();
+    return r;
+}
+
+[[nodiscard]] test_case::result_type test_case::run_test_catch() const
+{
+    auto r = result_type{this};
+    try {
+        _run_test();
+        r.set_success();
+    } catch (require_error const &e) {
+        r.set_failure(e.what());
+    } catch (std::exception const &e) {
+        r.set_failure(std::format("{}({}): error: Unexpected exception thrown: {}.", file, line, e.what());
+    } catch (...) {
+        r.set_failure(std::format("{}({}): error: Unexpected unknown-exception thrown.", file, line));
+    }
+    return r;
+}
+
 [[nodiscard]] test_case::result_type test_case::run_test() const
 {
     using namespace std::literals;
@@ -291,17 +315,12 @@ void test_case::result_type::junit_xml(FILE* out) const noexcept
     std::println(stdout, "[ RUN      ] {}.{}", suite_name, test_name);
     std::fflush(stdout);
 
-    auto r = result_type{this};
+    auto r = break_on_failure ? run_test_break() : run_test_catch();
 
-    if (auto result = _run_test()) {
-        r.set_success();
-        std::println(stdout, "[       OK ] {}.{} ({:.0f} ms)", suite_name, test_name, r.duration / 1ms);
-    } else {
-        r.set_failure(result.error());
-        std::println(stdout, "[  FAILED  ] {}.{} ({:.0f} ms)", suite_name, test_name, r.duration / 1ms);
-    }
-
+    auto result_str = r ? "[       OK ]" : "[  FAILED  ]";
+    std::println(stdout, "{} {}.{} ({:.0f} ms)", result_str, suite_name, test_name, r.duration / 1ms);
     std::fflush(stdout);
+
     return r;
 }
 
@@ -689,6 +708,7 @@ static void parse_arguments(int argc, char* argv[]) noexcept
             continue;
 
         } else if (arg == "--gtest_break_on_failure") {
+            ::test::break_on_failure = true;
             continue;
 
         } else if (arg == "--gtest_list_tests") {

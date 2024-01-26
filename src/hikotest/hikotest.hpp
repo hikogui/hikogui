@@ -23,28 +23,33 @@ namespace test {
 
 /** Declare a test suite
  *
- * @param id The method-name of the test case.
+ * @note It is recommended to use the suffix `_test_suite` on the id,
+ *       to reduce collisions with symbols being tested.
+ *       The suffixed `_test_suite`, `_suite`, `_test`, `_tests` will
+ *       be stripped from the name.
+ * @param id The struct-name of the test suite.
  */
 #define TEST_SUITE(id) \
-    struct id##_test_suite; \
-    inline auto _hikotest_registered_##id##_test_suite = std::addressof(::test::register_suite<id##_test_suite>()); \
-    struct id##_test_suite : ::test::suite<id##_test_suite>
+    struct id; \
+    inline auto _hikotest_registered_##id = std::addressof(::test::register_suite<id>()); \
+    struct id : ::test::suite<id>
 
 /** Delcare a test case
  *
- * The test function that is declared returns a `std::expected<void, std::string>`.
- * On success the test function should: `return {};`.
- *
+ * @note It is recommended to use the suffix `_test_case` on the id,
+ *       to reduce collisions with symbols being tested.
+ *       The suffixed `_test_case`, `_case`, `_test` will
+ *       be stripped from the name.
  * @param id The method-name of the test case.
  */
 #define TEST_CASE(id) \
-    std::expected<void, std::string> _hikotest_wrap_##id##_test_case() \
+    void _hikotest_wrap_##id() \
     { \
-        return id##_test_case(); \
+        return id(); \
     } \
-    inline static auto _hikotest_registered_##id##_test_case = \
-        std::addressof(::test::register_test(&_hikotest_suite_type::_hikotest_wrap_##id##_test_case, __FILE__, __LINE__, #id)); \
-    std::expected<void, std::string> id##_test_case()
+    inline static auto _hikotest_registered_##id = \
+        std::addressof(::test::register_test(&_hikotest_suite_type::_hikotest_wrap_##id, __FILE__, __LINE__, #id)); \
+    void id()
 
 /** Check an expression
  *
@@ -52,13 +57,7 @@ namespace test {
  * @param ... The optional error value. If it is a double value than it is the
  *            absolute error value. You may also pass in a `::test::error`.
  */
-#define REQUIRE(expression, ...) \
-    do { \
-        if (auto _hikotest_result = (expression <=> ::test::error{__VA_ARGS__}); not _hikotest_result) { \
-            std::println(stdout, "{}({}): error: {}", __FILE__, __LINE__, _hikotest_result.error()); \
-            return _hikotest_result; \
-        } \
-    } while (false)
+#define REQUIRE(expression, ...) ::test::require(__FILE__, __LINE__, expression <=> ::test::error{__VA_ARGS__})
 
 /** Check if a expression throws an exception
  *
@@ -79,11 +78,36 @@ namespace test {
         } \
     } while (false)
 
+
+#if defined(_MSC_VER)
+#define TEST_FORCE_INLINE __forceinline
+#elif defined(__GNUC__)
+#define TEST_FORCE_INLINE __attribute__((always_inline))
+#else
+#error "TEST_FORCE_INLINE not implemented"
+#endif
+
+#if defined(_MSC_VER)
+#define TEST_BREAKPOINT __debug_break()
+#elif defined(__GNUC__)
+#define TEST_BREAKPOINT __builtin_debugtrap()
+#else
+#error "BREAKPOINT not implemented"
+#endif
+
 using hr_clock_type = std::chrono::high_resolution_clock;
 using hr_duration_type = std::chrono::duration<double>;
 using hr_time_point_type = std::chrono::time_point<hr_clock_type>;
 using utc_clock_type = std::chrono::utc_clock;
 using utc_time_point_type = utc_clock_type::time_point;
+
+/** Break the unit-test on failure.
+ *
+ * When:
+ *  - true: On failure a break point is set, and the tests are terminated..
+ *  - false: Errors are catched and the tests continue.
+ */
+inline bool break_on_failure = false;
 
 [[nodiscard]] std::string type_name_strip(std::string type);
 
@@ -379,12 +403,34 @@ private:
     std::vector<test_filter_type> exclusions;
 };
 
+
+class require_error : public std::logic_error
+{
+    require_error(char const *file, int line, std::string_view error_message) noexcept :
+        std::logic_error(std::format("{}({}): error: {}", file, line, error_message)) {}
+};
+
+
+TEST_FORCE_INLINE void require(char const *file, int line, std::expected<void, std::string> result)
+{
+    if (result) {
+        return;
+
+    } else if (catch_errors) {
+        throw require_error(std::format("{}({}): {}", file, line, result.error));
+
+    } else {
+        TEST_BREAKPOINT;
+        std::terminate();
+    }
+}
+
 struct test_case {
     std::string_view file;
     int line;
     std::string suite_name;
     std::string test_name;
-    std::function<std::expected<void, std::string>()> _run_test;
+    std::function<void>()> _run_test;
 
     struct result_type {
         test_case const* parent;
@@ -510,11 +556,22 @@ struct all_tests {
     [[nodiscard]] inline test_suite& register_suite() noexcept
     {
         auto name = type_name<Suite>();
-        if (not name.ends_with("_test_suite")) {
-            std::println("{}({}): error: Expected suite of have suffix _test_suite, got '{}'.", __FILE__, __LINE__, name);
-            std::terminate();
+
+        // Remove common suffixes.
+        if (name.ends_with("_test_suite")) {
+            name = name.substr(0, name.size() - 11);
+        } else if (name.ends_with("_suite")) {
+            name = name.substr(0, name.size() - 6);
+        } else if (name.ends_with("_tests")) {
+            name = name.substr(0, name.size() - 6);
+        } else if (name.ends_with("_test")) {
+            name = name.substr(0, name.size() - 5);
         }
-        name = name.substr(0, name.size() - 11);
+
+        // Remove namespaces.
+        if (auto i = name.rfind(':'); i != name.npos) {
+            name = name.substr(i + 1);
+        }
 
         // Skip binary search if possible.
         if (last_registered_suite < suites.size() and suites[last_registered_suite].suite_name == name) {
@@ -538,6 +595,14 @@ struct all_tests {
     [[nodiscard]] inline test_case&
     register_test(std::expected<void, std::string> (Suite::*test)(), std::string_view file, int line, std::string name) noexcept
     {
+        if (name.ends_with("_test_case")) {
+            name = name.substr(0, name.size() - 10);
+        } else if (name.ends_with("_case")) {
+            name = name.substr(0, name.size() - 5);
+        } else if (name.ends_with("_test")) {
+            name = name.substr(0, name.size() - 5);
+        }
+
         auto& suite = register_suite<Suite>();
         auto& tests = suite.tests;
 
