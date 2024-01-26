@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         CMAKE_CXX_COMPILER: ["cl", "clang"]
-        ARCHITECTURE: ["none", "x86-64", "x86-64-v2", "x86-64-v3", "x86-64-v4"]
+        ARCHITECTURE: ["none", "x86-64", "x86-64-v2", "x86-64-v3"]
 
     name: x64-windows ${{matrix.CMAKE_CXX_COMPILER}} ${{matrix.ARCHITECTURE}}
 
