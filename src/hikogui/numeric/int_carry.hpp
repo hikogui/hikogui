@@ -12,7 +12,7 @@
 #include <span>
 #include <tuple>
 #include <concepts>
-
+#include <compare>
 
 
 #if HI_COMPILER == HI_CC_MSVC
@@ -271,38 +271,37 @@ hi_force_inline constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
         hilet lhs = static_cast<unsigned __int128>(lhs_hi) << 64 | static_cast<unsigned __int128>(lhs_lo);
         return static_cast<uint64_t>(lhs / rhs);
 #else
-#error "Not implemented"
+        hi_axiom(rhs != 0, "divide by zero.");
 
-        //auto quotient_hi = T{0};
-        //for (auto mask = T{1}; mask != 0; mask <<= 1) {
-        //    remainder <<= 1;
-        //    remainder |= (lhs_hi & mask) != 0;
-        //    if (remainder >= rhs) {
-        //        remainder -= rhs;
-        //        quotient_hi |= mask;
-        //    }
-        //    hi_axiom(remainder >> (sizeof(T) * CHAR_BIT - 1) == 0);
-        //}
-//
-        //auto remainder = T{0};
-        //auto quotient_lo = T{0};
-        //for (auto mask = T{1}; mask != 0; mask <<= 1) {
-        //    remainder <<= 1;
-        //    remainder |= (lhs_lo & mask) != 0;
-        //    if (remainder >= rhs) {
-        //        remainder -= rhs;
-        //        quotient_lo |= mask;
-        //    }
-        //    hi_axiom(remainder >> (sizeof(T) * CHAR_BIT - 1) == 0);
-        //}
-//
-//
-        //hi_axiom(quotient_hi == 0);
-        //return static_cast<uint64_t>(quotient);
+        auto R = uint64_t{0};
+        auto Q_hi = uint64_t{0};
+        for (auto mask = 0x8000'0000'0000'0000ULL; mask != 0; mask >>= 1) {
+            R <<= 1;
+            R |= (lhs_hi & mask) != 0 ? 1 : 0; 
 
+            hi_axiom(R < rhs, "result overflow");
+            if (R >= rhs) {
+                R -= rhs;
+                Q_hi |= mask;
+            }     
+        }
+
+        auto Q_lo = uint64_t{0};
+        for (auto mask = 0x8000'0000'0000'0000ULL; mask != 0; mask >>= 1) {
+            R <<= 1;
+            R |= (lhs_lo & mask) != 0 ? 1 : 0; 
+
+            if (R >= rhs) {
+                R -= rhs;
+                Q_lo |= mask;
+            }     
+        }
+
+        return Q_lo;
 #endif
     }
 }
+
 
 /** Bit scan reverse.
  *

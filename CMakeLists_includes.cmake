@@ -402,6 +402,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/compare.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/concepts.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/console_win32.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/cpu_id_generic.hpp>
     $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/cpu_id_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_utils.hpp

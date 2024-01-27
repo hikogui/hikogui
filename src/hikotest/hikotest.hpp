@@ -74,7 +74,7 @@ namespace test {
             _hikotest_throws = true; \
         } \
         if (not _hikotest_throws) { \
-            ::test::require(std::unexpected{"{}({}): error: {}", __FILE__, __LINE__, #expression " did not throw " #exception "."}); \
+            ::test::require(__FILE__, __LINE__, std::unexpected{std::string{#expression " did not throw " #exception "."}}); \
         } \
     } while (false)
 
@@ -276,6 +276,9 @@ struct operand {
 
     ::test::error<ErrorClass> e;
     value_type const& v;
+
+    operand(error<ErrorClass> error, value_type const &value) noexcept : e(error), v(value) {}
+
 };
 
 /** Result of the boolean expression.
@@ -285,8 +288,12 @@ struct operand {
  *  - rhs: An `error<error_class::exact>` value.
  */
 template<>
-struct operand<error_class::exact, void> operand {
-    using value_type = void;
+struct operand<error_class::exact, bool> {
+    using value_type = bool;
+
+    value_type const& v;
+
+    operand(error<error_class::exact>, value_type const &value) noexcept : v(value) {}
 
     /** Convert the boolean result as an std::expected.
      *
@@ -294,7 +301,7 @@ struct operand<error_class::exact, void> operand {
      */
     operator std::expected<void, std::string>() const noexcept
     {
-        if (*this) {
+        if (v) {
             return {};
         } else {
             return std::unexpected{std::string{"expression was false"}};

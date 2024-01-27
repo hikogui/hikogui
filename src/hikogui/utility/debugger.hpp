@@ -3,7 +3,11 @@
 
 #include "debugger_utils.hpp" // export
 #include "debugger_intf.hpp" // export
+#if defined(HI_GENERIC)
+#include "debugger_generic_impl.hpp" // export
+#else
 #include "debugger_win32_impl.hpp" // export
+#endif
 
 /** Support for debugging.
  * 

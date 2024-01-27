@@ -2,21 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include <version>
+#pragma once
 
-#ifndef HI_ASSERT_HPP
-#define HI_ASSERT_HPP
+#include <version>
+#include <exception>
 
 #define HI_OS_WINDOWS 'W'
 #define HI_OS_ANDROID 'A'
 #define HI_OS_LINUX 'L'
 #define HI_OS_MACOS 'M'
 #define HI_OS_IOS 'I'
-#define HI_OS_OTHER '-'
 
-#if defined(HI_GENERIC)
-#define HI_OPERATING_SYSTEM HI_OS_OTHER
-#elif defined(_WIN32)
+// W don't use HI_GENERIC for the operating system, because too many things
+// like mmap-file-io, vulkan, window, main-loop depend on this.
+#if defined(_WIN32)
 #define HI_OPERATING_SYSTEM HI_OS_WINDOWS
 #elif defined(__ANDROID__)
 #define HI_OPERATING_SYSTEM HI_OS_ANDROID
@@ -30,7 +29,7 @@
 #define HI_OPERATING_SYSTEM HI_OS_MACOS
 #endif
 #else
-#define HI_OPERATING_SYSTEM HI_OS_OTHER
+#error "Unknown operating system"
 #endif
 
 #define HI_CC_MSVC 'm'
@@ -247,13 +246,11 @@
 #define HI_HAS_RDSEED 1
 #endif
 
-#else
+#else // HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC
 #error "Unknown compiler for x86"
 #endif
 
-#else
-#error "Unknown CPU architecture."
-#endif
+#endif // defined(HI_HAS_X86)
 
 // clang-format off
 #if defined(HI_HAS_SSE2) && defined(HI_HAS_SSE) && defined(HI_HAS_SCE) && \
@@ -281,11 +278,15 @@
 #endif
 // clang-format on
 
+inline void weak_terminate() noexcept
+{
+    std::terminate();
+}
 
 /** Assert Break.
  *
  * This will cause a trap on the processor in case of an assert.
- * 
+ *
  * With the following goal:
  *  - Optionally launch a just-in-time debugger.
  *  - With debugger: Allow the debugger to continue beyond the trap.
@@ -298,7 +299,7 @@
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_assert_break() __builtin_trap()
 #else
-#define hi_assert_break() std::terminate()
+#define hi_assert_break() weak_terminate()
 #endif
 
 /** Debug Break.
@@ -317,7 +318,7 @@
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_debug_break() __builtin_trap()
 #else
-#define hi_debug_break() std::terminate()
+#define hi_debug_break() []{std::terminate();}()
 #endif
 
 /** Override architecture and instruction-sets for a function.
@@ -346,13 +347,13 @@
  * Equivilant to C++23 [[assume(expression)]] attribute.
  */
 #if HI_COMPILER == HI_CC_CLANG
-#define hi_assume(...) __builtin_assume(not not (__VA_ARGS__))
+#define hi_assume(...) __builtin_assume(not not(__VA_ARGS__))
 #elif HI_COMPILER == HI_CC_MSVC
 #define hi_assume(...) __assume(__VA_ARGS__)
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_assume(...) \
     do { \
-        if (not (__VA_ARGS__)) { \
+        if (not(__VA_ARGS__)) { \
             std::unreachable(); \
         } \
     } while (false)
@@ -386,6 +387,8 @@
 #define hi_force_inline
 #endif
 
+/** Function decorator to make sure that the function will not be inlined.
+*/
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_no_inline __attribute__((noinline))
 #elif HI_COMPILER == HI_CC_MSVC
@@ -396,6 +399,8 @@
 #define hi_no_inline
 #endif
 
+/** Pointer decorator to tell the optimizer that the pointer does not alias.
+ */
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_restrict __restrict__
 #elif HI_COMPILER == HI_CC_MSVC
@@ -406,37 +411,47 @@
 #define hi_restrict
 #endif
 
+/** Function decorator to turn of address sanitizer inside the function.
+ */
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_no_sanitize_address
+#elif HI_COMPILER == HI_CC_MSVC
+#define hi_no_sanitize_address __declspec(no_sanitize_address)
+#elif HI_COMPILER == HI_CC_GCC
+#define hi_no_sanitize_address
+#else
+#define hi_no_sanitize_address
+#endif
+
+// Even when HI_GENERIC is set, we want the warning for the specific compilers
+// to be properly suppressed.
+#if defined(__clang__)
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(push)")
 #define hi_warning_ignore_msvc(...)
 #define hi_warning_ignore_clang(...) _Pragma(hi_stringify(clang diagnostic ignored __VA_ARGS__))
-
-#elif HI_COMPILER == HI_CC_MSVC
-#define hi_no_sanitize_address __declspec(no_sanitize_address)
+#define hi_warning_ignore_gcc(...)
+#elif defined(_MSC_BUILD)
 #define hi_warning_push() _Pragma("warning( push )")
 #define hi_warning_pop() _Pragma("warning( pop )")
 #define hi_msvc_pragma(...) _Pragma(__VA_ARGS__)
 #define hi_warning_ignore_msvc(...) _Pragma(hi_stringify(warning(disable : __VA_ARGS__)))
 #define hi_warning_ignore_clang(...)
-
-#elif HI_COMPILER == HI_CC_GCC
-#define hi_no_sanitize_address
+#define hi_warning_ignore_gcc(...)
+#elif defined(__GNUC__)
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(pop)")
-#define hi_msvc_pragma(...)
+#define hi_warning_ignore_msvc(...)
 #define hi_warning_ignore_clang(...)
-#define msvc_pragma(...)
-
+#define hi_warning_ignore_gcc(...) _Pragma(hi_stringify(clang diagnostic ignored __VA_ARGS__))
 #else
-#define hi_no_sanitize_address
 #define hi_warning_push()
 #define hi_warning_pop()
-#define hi_msvc_pragma(...)
+#define hi_warning_ignore_msvc(...)
 #define hi_warning_ignore_clang(...)
-#define msvc_pragma(...)
+#define hi_warning_ignore_gcc(...)
 #endif
+
 
 /** After module translation "hi_export_module(x)" is replaced with "export module x".
  */
@@ -567,7 +582,7 @@
  *
  * If no debugger is present than the application will be aborted with `std::terminate()`.
  * If the debugger is attached, it is allowed to continue.
- * 
+ *
  * It is possible for c-style `assert()` to display the error message of an
  * earlier `hi_assert_abort()` (together with the error message from `assert()`),
  * if the earlier `hi_assert_abort()` was continued by a debugger.
@@ -869,4 +884,3 @@
         } \
     } while (false)
 
-#endif
