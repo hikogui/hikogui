@@ -8,16 +8,27 @@
 #define HI_ASSERT_HPP
 
 #define HI_OS_WINDOWS 'W'
-#define HI_OS_MACOS 'A'
-#define HI_OS_MOBILE 'M'
-#define HI_OS_OTHER 'O'
+#define HI_OS_ANDROID 'A'
+#define HI_OS_LINUX 'L'
+#define HI_OS_MACOS 'M'
+#define HI_OS_IOS 'I'
+#define HI_OS_OTHER '-'
 
-#if defined(_WIN32)
+#if defined(HI_GENERIC)
+#define HI_OPERATING_SYSTEM HI_OS_OTHER
+#elif defined(_WIN32)
 #define HI_OPERATING_SYSTEM HI_OS_WINDOWS
-#elif defined(TARGET_OS_MAC) and not defined(TARGET_OS_IPHONE)
+#elif defined(__ANDROID__)
+#define HI_OPERATING_SYSTEM HI_OS_ANDROID
+#elif defined(__linux__)
+#define HI_OPERATING_SYSTEM HI_OS_LINUX
+#elif defined(__APPLE__) and defined(__MACH__)
+#include <TargetConditionals.h>
+#if TARGET_IPHONE_SIMULATOR or TARGET_OS_IPHONE or TARGET_OS_MACCATALYST
+#define HI_OPERATING_SYSTEM HI_OS_IOS
+#else
 #define HI_OPERATING_SYSTEM HI_OS_MACOS
-#elif defined(TARGET_OS_IPHONE) or defined(__ANDROID__)
-#define HI_OPERATING_SYSTEM HI_OS_MOBILE
+#endif
 #else
 #define HI_OPERATING_SYSTEM HI_OS_OTHER
 #endif
@@ -25,39 +36,46 @@
 #define HI_CC_MSVC 'm'
 #define HI_CC_GCC 'g'
 #define HI_CC_CLANG 'c'
+#define HI_CC_OTHER '-'
 
-#if defined(__clang__)
+#if defined(HI_GENERIC)
+#define HI_COMPILER HI_CC_OTHER
+#elif defined(__clang__)
 #define HI_COMPILER HI_CC_CLANG
 #elif defined(_MSC_BUILD)
 #define HI_COMPILER HI_CC_MSVC
 #elif defined(__GNUC__)
 #define HI_COMPILER HI_CC_GCC
 #else
-#error "Could not detect the compiler."
+#define HI_COMPILER HI_CC_OTHER
 #endif
 
 #define HI_STL_MS 'm'
 #define HI_STL_GNU 'g'
 #define HI_STL_LLVM 'l'
-#define HI_STL_UNKNOWN '-'
+#define HI_STL_OTHER '-'
 
-#if defined(__GLIBCXX__)
+#if defined(HI_GENERIC)
+#define HI_STD_LIBRARY HI_STL_OTHER
+#elif defined(__GLIBCXX__)
 #define HI_STD_LIBRARY HI_STL_GNU
 #elif defined(_LIBCPP_VERSION)
 #define HI_STD_LIBRARY HI_STL_LLVM
 #elif defined(_CPPLIB_VER)
 #define HI_STD_LIBRARY HI_STL_MS
 #else
-#define HI_STD_LIBRARY HI_STL_UNKNOWN
+#define HI_STD_LIBRARY HI_STL_OTHER
 #endif
 
 #define HI_CPU_X86 'i'
 #define HI_CPU_X86_64 'I'
 #define HI_CPU_ARM 'a'
 #define HI_CPU_ARM64 'A'
-#define HI_CPU_UNKNOWN '-'
+#define HI_CPU_OTHER '-'
 
-#if defined(__amd64__) or defined(__amd64) or defined(__x86_64__) or defined(__x86_64) or defined(_M_AMD64) or defined(_M_X64)
+#if defined(HI_GENERIC)
+#define HI_PROCESSOR HI_CPU_OTHER
+#elif defined(__amd64__) or defined(__amd64) or defined(__x86_64__) or defined(__x86_64) or defined(_M_AMD64) or defined(_M_X64)
 #define HI_PROCESSOR HI_CPU_X86_64
 #elif defined(__aarch64__) or defined(_M_ARM64)
 #define HI_PROCESSOR HI_CPU_ARM64
@@ -66,7 +84,7 @@
 #elif defined(__arm__) or defined(__arm) or defined(_ARM) or defined(_M_ARM)
 #define HI_PROCESSOR HI_CPU_ARM
 #else
-#define HI_PROCESSOR HI_CPU_UNKNOWN
+#define HI_PROCESSOR HI_CPU_OTHER
 #endif
 
 // All the HI_HAS_* macros tell us if the compiler will generate code with these instructions.
@@ -334,8 +352,9 @@
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_assume(...) \
     do { \
-        if (not (__VA_ARGS__)) \
+        if (not (__VA_ARGS__)) { \
             std::unreachable(); \
+        } \
     } while (false)
 #else
 #define hi_assume(...) static_assert(sizeof(__VA_ARGS__) == 1)
