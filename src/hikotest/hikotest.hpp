@@ -368,6 +368,43 @@ operator==(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
     // clang-format on
 }
 
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr std::expected<void, std::string>
+operator!=(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
+{
+    // clang-format off
+    if constexpr (requires { { lhs != rhs.v } -> std::convertible_to<bool>; }) {
+        if (lhs != rhs.v) {
+            return {};
+        } else {
+            return std::unexpected{
+                std::format("Expected inequality between these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+        }
+
+    } else if constexpr (requires { std::not_equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v); }) {
+        if (std::not_equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v)) {
+            return {};
+        } else {
+            return std::unexpected{
+                std::format("Expected inequality between these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+        }
+
+    } else if constexpr (requires { not std::ranges::equal(lhs, rhs.v); }) {
+        if (not std::ranges::equal(lhs, rhs.v)) {
+            return {};
+        } else {
+            return std::unexpected{
+                std::format("Expected inequality between these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+        }
+
+    } else {
+        []<bool Flag = false>() {
+            static_assert(Flag, "hikotest: Unable to inequality-compare two values.");
+        }();
+    }
+    // clang-format on
+}
+
 template<typename LHS, typename RHS, typename Error>
 concept diff_ordered = requires(LHS lhs, RHS rhs) {
     {

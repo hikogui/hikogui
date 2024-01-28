@@ -38,7 +38,7 @@ namespace detail {
     // compilers, tools and analysers do not handle large std::array constructors.
 
     // clang-format off
-    constexpr static data_type data[] = {
+    constexpr data_type data[] = {
         {"aa", "aa-Latn-ET"},
         {"aai", "aai-Latn-ZZ"},
         {"aak", "aak-Latn-ZZ"},
@@ -1927,7 +1927,7 @@ namespace detail {
         {"zza", "zza-Latn-TR"}};
     // clang-format on
 
-    constexpr static auto data_size = sizeof(data) / sizeof(data[0]);
+    constexpr auto data_size = sizeof(data) / sizeof(data[0]);
 
     auto r = std::array<data_type, data_size>{};
     for (auto i = 0_uz; i != data_size; ++i) {

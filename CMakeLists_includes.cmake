@@ -406,7 +406,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/cpu_id_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_intf.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_utils.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_generic_impl.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/defer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_intf.hpp
