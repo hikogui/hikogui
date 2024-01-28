@@ -52,18 +52,25 @@
     },
     {
       "name": "msvc-x64-windows",
-      "displayName": "MSVC",
+      "displayName": "MSVC (native)",
       "inherits": "x64-windows",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
 	      "CMAKE_CXX_COMPILER": "cl",
-        "CMAKE_C_COMPILER": "cl",
-        "HI_ARCHITECTURE": "none"
+        "CMAKE_C_COMPILER": "cl"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "intelliSenseMode": "windows-msvc-x64"
         }
+      }
+    },
+    {
+      "name": "msvc-x64-windows-generic",
+      "displayName": "MSVC (generic)",
+      "inherits": "msvc-x64-windows",
+      "cacheVariables": {
+        "HI_ARCHITECTURE": "none"
       }
     },
     {
@@ -87,7 +94,7 @@
     },
     {
       "name": "clang-x64-windows",
-      "displayName": "clang",
+      "displayName": "clang (native)",
       "inherits": "x64-windows",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
@@ -101,6 +108,14 @@
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "intelliSenseMode": "windows-clang-x64"
         }
+      }
+    },
+    {
+      "name": "clang-x64-windows-generic",
+      "displayName": "clang (generic)",
+      "inherits": "clang-x64-windows",
+      "cacheVariables": {
+        "HI_ARCHITECTURE": "none"
       }
     },
     {
@@ -162,6 +177,27 @@
       "configuration": "RelWithDebInfo"
     },
     {
+      "name": "msvc-x64-windows-generic-deb",
+      "displayName": "Debug",
+      "inherits": "targets",
+      "configurePreset": "msvc-x64-windows-generic",
+      "configuration": "Debug"
+    },
+    {
+      "name": "msvc-x64-windows-generic-rel",
+      "displayName": "Release",
+      "inherits": "targets",
+      "configurePreset": "msvc-x64-windows-generic",
+      "configuration": "Release"
+    },
+    {
+      "name": "msvc-x64-windows-generic-rdi",
+      "displayName": "RelWithDebInfo",
+      "inherits": "targets",
+      "configurePreset": "msvc-x64-windows-generic",
+      "configuration": "RelWithDebInfo"
+    },
+    {
       "name": "clang-x64-windows-dbg",
       "displayName": "Debug",
       "inherits": "targets",
@@ -180,6 +216,27 @@
       "displayName": "RelWithDebInfo",
       "inherits": "targets",
       "configurePreset": "clang-x64-windows",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "clang-x64-windows-generic-dbg",
+      "displayName": "Debug",
+      "inherits": "targets",
+      "configurePreset": "clang-x64-windows-generic",
+      "configuration": "Debug"
+    },
+    {
+      "name": "clang-x64-windows-generic-rel",
+      "displayName": "Release",
+      "inherits": "targets",
+      "configurePreset": "clang-x64-windows-generic",
+      "configuration": "Release"
+    },
+    {
+      "name": "clang-x64-windows-generic-rdi",
+      "displayName": "RelWithDebInfo",
+      "inherits": "targets",
+      "configurePreset": "clang-x64-windows-generic",
       "configuration": "RelWithDebInfo"
     }
   ]

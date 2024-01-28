@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <string>
 #include <string_view>
+#include <typeinfo>
 
 hi_export_module(hikogui.utility.reflection);
 
@@ -159,7 +160,11 @@ template<typename T>
     return type_name_short_hand(r);
 }
 #else
-#error "type_name() not implemented for this compiler."
+template<typename T>
+[[nodiscard]] constexpr std::string type_name() noexcept
+{
+    return typeid(T).name();
+}
 #endif
 
 } // namespace detail

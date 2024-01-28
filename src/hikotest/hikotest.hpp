@@ -74,10 +74,15 @@ namespace test {
             _hikotest_throws = true; \
         } \
         if (not _hikotest_throws) { \
-            ::test::require(std::unexpected{"{}({}): error: {}", __FILE__, __LINE__, #expression " did not throw " #exception "."}); \
+            ::test::require(__FILE__, __LINE__, std::unexpected{std::string{#expression " did not throw " #exception "."}}); \
         } \
     } while (false)
 
+/** Force inline a function.
+ *
+ * Some compilers will inline even in debug mode, this will allow a breakpoint
+ * to appear at the call site of an forced-inlined function.
+ */
 #if defined(_MSC_VER)
 #define TEST_FORCE_INLINE __forceinline
 #elif defined(__GNUC__)
@@ -86,6 +91,10 @@ namespace test {
 #error "TEST_FORCE_INLINE not implemented"
 #endif
 
+/** A breakpoint.
+ *
+ * The debugger will break at the position of this instruction.
+ */
 #if defined(_MSC_VER)
 #define TEST_BREAKPOINT() __debugbreak()
 #elif defined(__GNUC__)
@@ -108,8 +117,20 @@ using utc_time_point_type = utc_clock_type::time_point;
  */
 inline bool break_on_failure = false;
 
+/** Strip a type-name.
+ *
+ * This removes the following from a type-name:
+ *  - spaces
+ *  - `struct`
+ *  - `class`
+ */
 [[nodiscard]] std::string type_name_strip(std::string type);
 
+/** Get the type-name of a type.
+ *
+ * @tparam T The type to query.
+ * @return The name of the type @a T.
+ */
 template<typename T>
 [[nodiscard]] std::string type_name() noexcept
 {
@@ -154,6 +175,11 @@ template<typename T>
     std::terminate();
 }
 
+/** Make a string representation of a value.
+ *
+ * @param arg The value to convert to a represenation.
+ * @return The string representation.
+ */
 template<typename Arg>
 [[nodiscard]] std::string operand_to_string(Arg const& arg) noexcept
 {
@@ -191,80 +217,107 @@ template<typename Arg>
     }
 }
 
-template<typename LHS, typename RHS>
-struct compare {
-    using lhs_type = LHS;
-    using rhs_type = RHS;
+/** The class of comparison error.
+ */
+enum class error_class {
+    /** The operands can be compared exactly.
+     */
+    exact,
 
-    constexpr compare(bool trace, std::string lhs, std::string rhs) noexcept :
-        trace(trace), lhs(std::move(lhs)), rhs(std::move(rhs))
-    {
-    }
+    /** The operands can be compared with an absolute error epsilon.
+     */
+    absolute,
 
-    bool trace;
-    std::string lhs;
-    std::string rhs;
+    /** The operands can be compared with an relative error epsilon.
+     */
+    relative
 };
 
-enum class error_class { exact, absolute, relative };
-
-/** expression-tag used on the left side of the spaceship operator.
+/** The comparison error.
  *
- * This tag is used to cause the operator<=> to bind to any other type.
+ * The comparison error will apear on the right side of the
+ * spaceship operator.
+ *
+ * This error will bind to the right hand side operand of a comparison.
  */
 template<error_class ErrorClass = error_class::exact>
 struct error {
     double v = 0.0;
 
+    /** Get the error value as a positive number.
+     */
     [[nodiscard]] constexpr double operator+() const noexcept
     {
         return v;
     }
 
+    /** Get the error value as a negative  number.
+     */
     [[nodiscard]] constexpr double operator-() const noexcept
     {
         return -v;
     }
 };
 
+/** By default an error with a value is an absolute-error.
+ */
 error(double) -> error<error_class::absolute>;
 
-/** Left operand of a comparison, or a boolean.
+/** Operand of a comparison, bound to an error-value.
+ *
+ * An `operand` is the result of the spaceship-operator between:
+ *  - lhs: The rhs of a comparison operator.
+ *    (the operand becomes the rhs of the comparison operator).
+ *  - rhs: Any `error<>` value.
  */
 template<error_class ErrorClass, typename T>
 struct operand {
     using value_type = T;
 
-    operator std::expected<void, std::string>() const noexcept requires std::same_as<T, bool>
-    {
-        if (*this) {
-            return {};
-        } else {
-            return std::unexpected{error()};
-        }
-    }
-
-    explicit operator bool() const noexcept requires std::same_as<T, bool>
-    {
-        return static_cast<bool>(v);
-    }
-
-    [[nodiscard]] std::string error() const noexcept requires std::same_as<T, bool>
-    {
-        return std::string{"expression was false."};
-    }
-
     ::test::error<ErrorClass> e;
     value_type const& v;
+
+    operand(error<ErrorClass> error, value_type const &value) noexcept : e(error), v(value) {}
+
 };
 
-/** The spaceship operator is used to split a comparison in an expression.
+/** Result of the boolean expression.
+ *
+ * The `operand` is the result of a spaceship-operator between:
+ *  - lhs: A boolean expression.
+ *  - rhs: An `error<error_class::exact>` value.
+ */
+template<>
+struct operand<error_class::exact, bool> {
+    using value_type = bool;
+
+    value_type const& v;
+
+    operand(error<error_class::exact>, value_type const &value) noexcept : v(value) {}
+
+    /** Convert the boolean result as an std::expected.
+     *
+     * This allows an expression to be directly used as an argument to `check()`.
+     */
+    operator std::expected<void, std::string>() const noexcept
+    {
+        if (v) {
+            return {};
+        } else {
+            return std::unexpected{std::string{"expression was false"}};
+        }
+    }
+};
+
+
+/** The spaceship operator is used to split a comparison-expression.
  *
  * The spaceship operator has a slightly higher precedence then the
  * comparison operators: ==, !=, <, >, <=, =>.
  *
  * The spaceship operator also is not often used in unit-test expression,
- * which means that this is the perfect operator to wrap to one of the operands.
+ * which means that this is the perfect operator to wrap to the rhs
+ * comparison expression.
  *
  * By wrapping the operand we can now overload the normal comparison operators.
  * So that the unit-test framework can do a custom comparison.
@@ -310,6 +363,43 @@ operator==(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
     } else {
         []<bool Flag = false>() {
             static_assert(Flag, "hikotest: Unable to equality-compare two values.");
+        }();
+    }
+    // clang-format on
+}
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr std::expected<void, std::string>
+operator!=(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
+{
+    // clang-format off
+    if constexpr (requires { { lhs != rhs.v } -> std::convertible_to<bool>; }) {
+        if (lhs != rhs.v) {
+            return {};
+        } else {
+            return std::unexpected{
+                std::format("Expected inequality between these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+        }
+
+    } else if constexpr (requires { std::not_equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v); }) {
+        if (std::not_equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v)) {
+            return {};
+        } else {
+            return std::unexpected{
+                std::format("Expected inequality between these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+        }
+
+    } else if constexpr (requires { not std::ranges::equal(lhs, rhs.v); }) {
+        if (not std::ranges::equal(lhs, rhs.v)) {
+            return {};
+        } else {
+            return std::unexpected{
+                std::format("Expected inequality between these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+        }
+
+    } else {
+        []<bool Flag = false>() {
+            static_assert(Flag, "hikotest: Unable to inequality-compare two values.");
         }();
     }
     // clang-format on

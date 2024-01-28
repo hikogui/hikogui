@@ -573,13 +573,13 @@ void all_tests::result_type::junit_xml(FILE* out) const noexcept
             time_stamp);
     } else {
         std::println(out, ">");
-
-        for (auto const& suite_result : suite_results) {
-            suite_result.junit_xml(out);
-        }
-
-        std::println(out, "</testsuites>");
     }
+
+    for (auto const& suite_result : suite_results) {
+        suite_result.junit_xml(out);
+    }
+
+    std::println(out, "</testsuites>");
 }
 
 [[nodiscard]] all_tests::result_type all_tests::layout(::test::filter const& filter) noexcept
@@ -636,7 +636,7 @@ void all_tests::result_type::junit_xml(FILE* out) const noexcept
     std::println(stdout, "[----------] Global test environment tear-down");
     std::println(
         stdout,
-        "[==========] {} {} from {} test {} ran. ({} ms total)",
+        "[==========] {} {} from {} test {} ran. ({:.3f} ms total)",
         num_tests,
         num_tests == 1 ? "test" : "tests",
         num_suites,
