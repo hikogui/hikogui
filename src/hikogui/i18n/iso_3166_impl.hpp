@@ -33,7 +33,7 @@ struct iso_3166_info {
     // compilers, tools and analysers do not handle large std::array constructors.
 
     // clang-format off
-    constexpr iso_3166_info data[] = {
+    constexpr static iso_3166_info data[] = {
         {"AF", "AFG", 4},
         {"AL", "ALB", 8},
         {"AQ", "ATA", 10},
@@ -325,7 +325,7 @@ constexpr auto iso_3166_infos = iso_3166_infos_init();
 
 [[nodiscard]] consteval auto iso_3166_number_by_code2_init() noexcept
 {
-    constexpr auto size = std::tuple_size_v<decltype(iso_3166_infos)>;
+    constexpr static auto size = std::tuple_size_v<decltype(iso_3166_infos)>;
     using type = std::pair<fixed_string<2>, uint16_t>;
 
     auto r = std::array<type, size>{};
@@ -342,7 +342,7 @@ constexpr auto iso_3166_infos = iso_3166_infos_init();
 
 [[nodiscard]] consteval auto iso_3166_number_by_code3_init() noexcept
 {
-    constexpr auto size = std::tuple_size_v<decltype(iso_3166_infos)>;
+    constexpr static auto size = std::tuple_size_v<decltype(iso_3166_infos)>;
     using type = std::pair<fixed_string<3>, uint16_t>;
 
     auto r = std::array<type, size>{};

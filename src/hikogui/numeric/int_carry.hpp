@@ -257,7 +257,7 @@ hi_force_inline constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
         return _udiv128(lhs_hi, lhs_lo, rhs, &remainder);
 
 #elif HI_COMPILER == HI_CC_CLANG && HI_STD_LIBRARY == HI_STL_MS
-        // clang-cl does not have udiv128 nor can it do __int128 division.
+        // clang build against the MS-STL does not have udiv128 nor can it do __int128 division.
         // Implement binary division.
         asm("divq %[d]"
             : "+d" (lhs_hi), "+a" (lhs_lo)

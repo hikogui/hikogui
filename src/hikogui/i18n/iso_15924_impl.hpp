@@ -291,7 +291,7 @@ constexpr auto iso_15924_infos = iso_15924_infos_init();
 
 [[nodiscard]] consteval auto iso_15924_number_by_code4_init() noexcept
 {
-    constexpr size_t array_size = std::tuple_size_v<decltype(iso_15924_infos)>;
+    constexpr static size_t array_size = std::tuple_size_v<decltype(iso_15924_infos)>;
     using record_type = std::pair<fixed_string<4>, uint16_t>;
 
     auto r = std::array<record_type, array_size>{};

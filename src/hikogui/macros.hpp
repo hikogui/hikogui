@@ -318,7 +318,7 @@ inline void weak_terminate() noexcept
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_debug_break() __builtin_trap()
 #else
-#define hi_debug_break() []{std::terminate();}()
+#define hi_debug_break() weak_terminate()
 #endif
 
 /** Override architecture and instruction-sets for a function.
@@ -344,12 +344,12 @@ inline void weak_terminate() noexcept
 
 /** Assume an expression to be true.
  *
- * Equivilant to C++23 [[assume(expression)]] attribute.
+ * Equivelent to C++23 [[assume(expression)]] attribute.
  */
 #if HI_COMPILER == HI_CC_CLANG
 #define hi_assume(...) __builtin_assume(not not(__VA_ARGS__))
 #elif HI_COMPILER == HI_CC_MSVC
-#define hi_assume(...) __assume(__VA_ARGS__)
+#define hi_assume(...) __assume(not not(__VA_ARGS__))
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_assume(...) \
     do { \
@@ -358,7 +358,7 @@ inline void weak_terminate() noexcept
         } \
     } while (false)
 #else
-#define hi_assume(...) static_assert(sizeof(__VA_ARGS__) == 1)
+#define hi_assume(...) static_assert(std::convertible_to<decltype(not not(__VA_ARGS__)), bool>)
 #endif
 
 /** Force inline (optimization)
@@ -381,7 +381,7 @@ inline void weak_terminate() noexcept
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_force_inline __attribute__((always_inline))
 #else
-#define hi_force_inline __attribute__((always_inline))
+#define hi_force_inline
 #endif
 #else
 #define hi_force_inline

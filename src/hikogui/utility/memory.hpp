@@ -386,12 +386,12 @@ constexpr void unaligned_store(T src, B *dst) noexcept
 }
 
 template<numeric T>
-hi_inline void unaligned_store(T src, void *dst) noexcept
+void unaligned_store(T src, void *dst) noexcept
 {
     return unaligned_store(src, reinterpret_cast<std::byte *>(dst));
 }
 
-template<numeric T>
+template<std::integral T>
 hi_force_inline constexpr void store_or(T src, uint8_t *dst) noexcept
 {
     hi_axiom_not_null(dst);
