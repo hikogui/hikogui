@@ -184,7 +184,7 @@ public:
      */
     [[nodiscard]] constexpr friend extent2 operator*(extent2 const& lhs, float const& rhs) noexcept
     {
-        return extent2{lhs._v * rhs};
+        return extent2{lhs._v * array_type::broadcast(rhs)};
     }
 
     [[nodiscard]] constexpr friend extent2 operator+(extent2 const& lhs, vector2 const& rhs) noexcept
@@ -219,7 +219,7 @@ public:
      */
     [[nodiscard]] constexpr friend extent2 operator*(float const& lhs, extent2 const& rhs) noexcept
     {
-        return extent2{lhs * rhs._v};
+        return extent2{array_type::broadcast(lhs) * rhs._v};
     }
 
     /** Compare if two extents are equal.
@@ -264,7 +264,7 @@ public:
      */
     [[nodiscard]] hi_force_inline constexpr friend float squared_hypot(extent2 const& rhs) noexcept
     {
-        return squared_hypot<0b0011>(rhs._v);
+        return dot<0b0011>(rhs._v, rhs._v).x();
     }
 
     /** Get the length of the extent.
@@ -273,7 +273,7 @@ public:
      */
     [[nodiscard]] friend float hypot(extent2 const& rhs) noexcept
     {
-        return hypot<0b0011>(rhs._v);
+        return hypot<0b0011>(rhs._v).x();
     }
 
     /** Get the length of the extent.
@@ -282,7 +282,7 @@ public:
      */
     [[nodiscard]] constexpr friend float rcp_hypot(extent2 const& rhs) noexcept
     {
-        return rcp_hypot<0b0011>(rhs._v);
+        return rhypot<0b0011>(rhs._v).x();
     }
 
     /** Normalize a extent to a unit extent.

@@ -1,1215 +1,544 @@
-// Copyright Take Vos 2020-2022.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "native_f32x4_sse.hpp"
-#include "native_f64x4_avx.hpp"
-#include "native_i32x4_sse2.hpp"
-#include "native_i64x4_avx2.hpp"
-#include "native_u32x4_sse2.hpp"
-#include "native_simd_conversions_x86.hpp"
-
+#include "array_generic.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
-#include <cstdint>
-#include <ostream>
-#include <string>
-#include <array>
-#include <type_traits>
-#include <concepts>
-#include <bit>
-#include <climits>
+#include <cstddef>
 #include <utility>
-#include <compare>
+#include <tuple>
+#include <concepts>
 
-hi_export_module(hikogui.SIMD : intf);
+hi_export_module(hikogui.SIMD.simd_intf);
 
-hi_warning_push();
-// C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
-hi_warning_ignore_msvc(4702);
-// C26467: Converting from floating point to unsigned integral types results in non-portable code if...
-// We are trying to get SIMD intrinsics to work the same as scalar functions. 
-hi_warning_ignore_msvc(26467);
-// C26472: Don't use static_cast for arithmetic conversions.
-// We are trying to get SIMD intrinsics to work the same as scalar functions.
-hi_warning_ignore_msvc(26472)
+hi_export namespace hi {
+inline namespace v1 {
 
-#define HI_X_runtime_evaluate_if_valid(...) \
-    do { \
-        if (not std::is_constant_evaluated()) { \
-            if constexpr (requires { __VA_ARGS__; }) { \
-                return __VA_ARGS__; \
-            } \
-        } \
-    } while (false)
-
-#define HI_X_accessor(index, name) \
-    [[nodiscard]] constexpr T name() const noexcept \
-        requires(N > index) \
-    { \
-        HI_X_runtime_evaluate_if_valid(get<index>(reg())); \
-        return std::get<index>(v); \
-    } \
-\
-    [[nodiscard]] constexpr T& name() noexcept \
-        requires(N > index) \
-    { \
-        return std::get<index>(v); \
-    }
-
-#define HI_X_binary_math_op(op) \
-    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
-        requires(requires(value_type a, value_type b) { a op b; }) \
-    { \
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
-\
-        auto r = simd{}; \
-        for (std::size_t i = 0; i != N; ++i) { \
-            r[i] = lhs[i] op rhs[i]; \
-        } \
-        return r; \
-    }
-
-#define HI_X_unary_bit_op(op) \
-    [[nodiscard]] friend constexpr simd operator op(simd rhs) noexcept \
-    { \
-        HI_X_runtime_evaluate_if_valid(simd{op rhs.reg()}); \
-\
-        auto r = simd{}; \
-        for (std::size_t i = 0; i != N; ++i) { \
-            hilet rhs_vi = std::bit_cast<unsigned_type>(rhs[i]); \
-            hilet r_vi = static_cast<unsigned_type>(op rhs_vi); \
-            r[i] = std::bit_cast<value_type>(r_vi); \
-        } \
-        return r; \
-    }
-
-#define HI_X_binary_bit_op(op) \
-    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
-    { \
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
-\
-        auto r = simd{}; \
-        for (std::size_t i = 0; i != N; ++i) { \
-            hilet lhs_vi = std::bit_cast<unsigned_type>(lhs[i]); \
-            hilet rhs_vi = std::bit_cast<unsigned_type>(rhs[i]); \
-            hilet r_vi = static_cast<unsigned_type>(lhs_vi op rhs_vi); \
-            r[i] = std::bit_cast<value_type>(r_vi); \
-        } \
-        return r; \
-    }
-
-#define HI_X_binary_shift_op(op) \
-    [[nodiscard]] friend constexpr simd operator op(simd const& lhs, unsigned int rhs) noexcept \
-    { \
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs}); \
-\
-        auto r = simd{}; \
-        for (std::size_t i = 0; i != N; ++i) { \
-            r.v[i] = lhs.v[i] op rhs; \
-        } \
-        return r; \
-    }
-
-#define HI_X_binary_cmp_op(op) \
-    [[nodiscard]] friend constexpr simd operator op(simd lhs, simd rhs) noexcept \
-        requires(requires(value_type a, value_type b) { a op b; }) \
-    { \
-        HI_X_runtime_evaluate_if_valid(simd{lhs.reg() op rhs.reg()}); \
-\
-        auto r = simd{}; \
-        for (std::size_t i = 0; i != N; ++i) { \
-            r[i] = lhs[i] op rhs[i] ? ones_value : zero_value; \
-        } \
-        return r; \
-    }
-
-#define HI_X_binary_op_broadcast(op) \
-    [[nodiscard]] friend constexpr auto operator op(value_type lhs, simd rhs) noexcept \
-        requires(requires(value_type a, value_type b) { a op b; }) \
-    { \
-        return broadcast(lhs) op rhs; \
-    } \
-\
-    [[nodiscard]] friend constexpr auto operator op(simd lhs, value_type rhs) noexcept \
-        requires(requires(value_type a, value_type b) { a op b; }) \
-    { \
-        return lhs op broadcast(rhs); \
-    }
-
-#define HI_X_inplace_op(long_op, short_op) \
-    template<typename Rhs> \
-    constexpr simd& operator long_op(Rhs rhs) noexcept \
-        requires(requires { *this short_op rhs; }) \
-    { \
-        return *this = *this short_op rhs; \
-    }
-
-hi_export namespace hi::inline v1 {
-
-template<typename T>
-concept simd_value_type = arithmetic<T> or std::same_as<T, half>;
-
-template<simd_value_type T, std::size_t N>
-struct simd {
+template<typename T, std::size_t N>
+struct simd : std::array<T, N> {
+    using array_type = std::array<T, N>;
     using value_type = T;
-    constexpr static size_t size = N;
+    using generic_type = array_generic<T, N>;
 
-    using unsigned_type = make_uintxx_t<sizeof(value_type) * CHAR_BIT>;
+    constexpr simd() noexcept = default;
+    constexpr simd(simd const&) noexcept = default;
+    constexpr simd(simd&&) noexcept = default;
+    constexpr simd& operator=(simd const&) noexcept = default;
+    constexpr simd& operator=(simd&&) noexcept = default;
 
-    constexpr static bool has_native_type = requires { typename native_simd<value_type, size>::value_type; };
-    using native_type = native_simd<value_type, size>;
-
-    using array_type = std::array<value_type, size>;
-    using size_type = typename array_type::size_type;
-    using difference_type = typename array_type::difference_type;
-    using reference = typename array_type::reference;
-    using const_reference = typename array_type::const_reference;
-    using pointer = typename array_type::pointer;
-    using const_pointer = typename array_type::const_pointer;
-    using iterator = typename array_type::iterator;
-    using const_iterator = typename array_type::const_iterator;
-
-    constexpr static value_type zero_value = value_type{};
-    constexpr static value_type ones_value = std::bit_cast<value_type>(std::numeric_limits<unsigned_type>::max());
-
-    array_type v;
-
-    constexpr simd() noexcept
+    template<std::same_as<value_type>... Args>
+    constexpr simd(Args... args) noexcept
+        requires(sizeof...(Args) == N)
+        : array_type(generic_type::set(args...))
     {
-        if (not std::is_constant_evaluated()) {
-            if constexpr (requires { *this = simd{native_type{}}; }) {
-                *this = simd{native_type{}};
-            }
-        }
-        v = array_type{};
     }
 
-    constexpr simd(simd const& rhs) noexcept = default;
-    constexpr simd(simd&& rhs) noexcept = default;
-    constexpr simd& operator=(simd const& rhs) noexcept = default;
-    constexpr simd& operator=(simd&& rhs) noexcept = default;
+    constexpr explicit simd(value_type a) noexcept : array_type(generic_type::set(a)) {}
 
-    template<simd_value_type U>
-    [[nodiscard]] constexpr explicit simd(simd<U, N> const& other) noexcept
+    template<typename O>
+    constexpr simd(std::array<O, N> a) noexcept : array_type(generic_type::convert(a))
     {
-        if (not std::is_constant_evaluated()) {
-            if constexpr (requires { *this = simd{native_type{other.reg()}}; }) {
-                *this = simd{native_type{other.reg()}};
-                return;
-            }
-        }
-
-        for (std::size_t i = 0; i != N; ++i) {
-            if constexpr (std::is_integral_v<T> and std::is_floating_point_v<U>) {
-                // SSE conversion round floats before converting to integer.
-                v[i] = static_cast<value_type>(std::round(other[i]));
-            } else {
-                v[i] = static_cast<value_type>(other[i]);
-            }
-        }
     }
 
-    template<simd_value_type U>
-    [[nodiscard]] constexpr explicit simd(simd<U, size / 2> const& a, simd<U, size / 2> const& b) noexcept
+    [[nodiscard]] constexpr static simd make_undefined() noexcept
     {
-        if (not std::is_constant_evaluated()) {
-            if constexpr (requires { simd{native_type{a.reg(), b.reg()}}; }) {
-                *this = simd{native_type{a.reg(), b.reg()}};
-                return;
-            }
-        }
-
-        for (std::size_t i = 0; i != size; ++i) {
-            hilet tmp = i < (size / 2) ? a[i] : b[i];
-            if constexpr (std::is_integral_v<T> and std::is_floating_point_v<U>) {
-                // SSE conversion round floats before converting to integer.
-                v[i] = static_cast<value_type>(std::round(tmp));
-            } else {
-                v[i] = static_cast<value_type>(tmp);
-            }
-        }
+        return simd{generic_type::undefined()};
     }
 
-    template<std::convertible_to<value_type>... Args>
-    [[nodiscard]] constexpr explicit simd(value_type first, Args... args) noexcept
+    [[nodiscard]] constexpr static simd make_zero() noexcept
     {
-        if (not std::is_constant_evaluated()) {
-            if constexpr (requires { simd{native_type{first, static_cast<value_type>(args)...}}; }) {
-                *this = simd{native_type{first, static_cast<value_type>(args)...}};
-                return;
-            }
-        }
-
-        v = array_type{first, static_cast<value_type>(args)...};
+        return simd{generic_type::set_zero()};
     }
 
-    [[nodiscard]] constexpr static simd broadcast(T rhs) noexcept
+    [[nodiscard]] constexpr static simd make_one() noexcept
     {
-        HI_X_runtime_evaluate_if_valid(simd{native_type::broadcast(rhs)});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r[i] = rhs;
-        }
-        return r;
+        return simd{generic_type::set_one()};
     }
 
-    [[nodiscard]] constexpr static simd epsilon() noexcept
+    [[nodiscard]] constexpr static simd make_all_ones() noexcept
     {
-        if constexpr (std::is_floating_point_v<T>) {
-            return broadcast(std::numeric_limits<T>::epsilon());
+        return simd{generic_type::set_all_ones()};
+    }
+
+    [[nodiscard]] constexpr static simd broadcast(value_type a) noexcept
+    {
+        return simd{generic_type::broadcast(a)};
+    }
+
+    [[nodiscard]] constexpr static simd broadcast(array_type a) noexcept
+    {
+        return simd{generic_type::broadcast(a)};
+    }
+
+    [[nodiscard]] constexpr static simd make_mask(std::size_t mask) noexcept
+    {
+        return simd{generic_type::set_mask(mask)};
+    }
+
+    [[nodiscard]] constexpr std::size_t mask() noexcept
+    {
+        return generic_type::get_mask(*this);
+    }
+
+    [[nodiscard]] constexpr value_type x() const noexcept
+    {
+        return generic_type::template get<0>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type y() const noexcept
+    {
+        return generic_type::template get<1>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type z() const noexcept
+    {
+        return generic_type::template get<2>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type w() const noexcept
+    {
+        return generic_type::template get<3>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& x() noexcept
+    {
+        return std::get<0>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& y() noexcept
+    {
+        return std::get<1>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& z() noexcept
+    {
+        return std::get<2>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& w() noexcept
+    {
+        return std::get<3>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type r() const noexcept
+    {
+        return generic_type::template get<0>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type g() const noexcept
+    {
+        return generic_type::template get<1>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type b() const noexcept
+    {
+        return generic_type::template get<2>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type a() const noexcept
+    {
+        return generic_type::template get<3>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& r() noexcept
+    {
+        return std::get<0>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& g() noexcept
+    {
+        return std::get<1>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& b() noexcept
+    {
+        return std::get<2>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& a() noexcept
+    {
+        return std::get<3>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type width() const noexcept
+    {
+        return generic_type::template get<0>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type height() const noexcept
+    {
+        return generic_type::template get<1>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type depth() const noexcept
+    {
+        return generic_type::template get<2>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& width() noexcept
+    {
+        return std::get<0>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& height() noexcept
+    {
+        return std::get<1>(*this);
+    }
+
+    [[nodiscard]] constexpr value_type& depth() noexcept
+    {
+        return std::get<2>(*this);
+    }
+
+    [[nodiscard]] constexpr friend simd operator-(array_type a) noexcept
+    {
+        return simd{generic_type::neg(a)};
+    }
+
+    template<std::size_t Mask>
+    [[nodiscard]] constexpr friend simd neg_mask(array_type a) noexcept
+    {
+        return simd{generic_type::template neg_mask<Mask>(a)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator~(array_type a) noexcept
+    {
+        return simd{generic_type::inv(a)};
+    }
+
+    [[nodiscard]] constexpr friend simd rcp(array_type a) noexcept
+    {
+        return simd{generic_type::rcp(a)};
+    }
+
+    [[nodiscard]] constexpr friend simd sqrt(array_type a) noexcept
+    {
+        return simd{generic_type::sqrt(a)};
+    }
+
+    [[nodiscard]] constexpr friend simd rsqrt(array_type a) noexcept
+    {
+        return simd{generic_type::rsqrt(a)};
+    }
+
+    [[nodiscard]] constexpr friend simd abs(array_type a) noexcept
+    {
+        return simd{generic_type::abs(a)};
+    }
+
+    [[nodiscard]] constexpr friend simd round(array_type a) noexcept
+    {
+        return simd{generic_type::round(a)};
+    }
+
+    [[nodiscard]] constexpr friend simd floor(array_type a) noexcept
+    {
+        return simd{generic_type::floor(a)};
+    }
+
+    [[nodiscard]] constexpr friend simd ceil(array_type a) noexcept
+    {
+        return simd{generic_type::ceil(a)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator+(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::add(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator-(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::sub(a, b)};
+    }
+
+    template<std::size_t Mask>
+    [[nodiscard]] constexpr friend simd addsub_mask(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::template addsub_mask<Mask>(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator*(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::mul(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator/(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::div(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator%(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::mod(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator==(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::eq(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator!=(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::ne(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator<(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::lt(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator>(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::gt(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator<=(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::le(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator>=(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::ge(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend bool test(array_type a, array_type b) noexcept
+    {
+        return generic_type::test(a, b);
+    }
+
+    [[nodiscard]] constexpr friend bool equal(array_type a, array_type b) noexcept
+    {
+        return generic_type::all_equal(a, b);
+    }
+
+    [[nodiscard]] constexpr friend simd max(simd a, simd b) noexcept
+    {
+        return simd{generic_type::max(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd min(simd a, simd b) noexcept
+    {
+        return simd{generic_type::min(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd clamp(simd v, simd lo, simd hi) noexcept
+    {
+        return simd{generic_type::clamp(v, lo, hi)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator|(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::_or(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator&(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::_and(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator^(array_type a, array_type b) noexcept
+    {
+        return simd{generic_type::_xor(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd sll(array_type a, unsigned int b) noexcept
+    {
+        return simd{generic_type::sll(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd sra(array_type a, unsigned int b) noexcept
+    {
+        return simd{generic_type::sra(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd srl(array_type a, unsigned int b) noexcept
+    {
+        return simd{generic_type::srl(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator<<(array_type a, unsigned int b) noexcept
+    {
+        return simd{generic_type::sll(a, b)};
+    }
+
+    [[nodiscard]] constexpr friend simd operator>>(array_type a, unsigned int b) noexcept
+    {
+        if constexpr (std::signed_integral<value_type>) {
+            return simd{generic_type::sra(a, b)};
         } else {
-            return broadcast(T{0});
+            return simd{generic_type::srl(a, b)};
         }
     }
 
-    [[nodiscard]] simd(std::array<T, N> const& rhs) noexcept : v(rhs) {}
-
-    simd& operator=(std::array<T, N> const& rhs) noexcept
+    [[nodiscard]] constexpr friend simd andnot(array_type a, array_type b) noexcept
     {
-        v = rhs;
-        return *this;
+        return simd{generic_type::andnot(a, b)};
     }
 
-    [[nodiscard]] operator std::array<T, N>() const noexcept
+    [[nodiscard]] constexpr friend simd hadd(array_type a, array_type b) noexcept
     {
-        return v;
+        return simd{generic_type::hadd(a, b)};
     }
 
-    [[nodiscard]] explicit simd(native_type rhs) noexcept
-        requires(requires { typename native_type::value_type; })
-        : v(static_cast<array_type>(rhs))
+    [[nodiscard]] constexpr friend simd hsub(array_type a, array_type b) noexcept
     {
+        return simd{generic_type::hsub(a, b)};
     }
 
-    [[nodiscard]] auto reg() const noexcept
-        requires(requires { typename native_type::value_type; })
+    template<int... Indices>
+    [[nodiscard]] constexpr friend simd shuffle(array_type a) noexcept
     {
-        return native_type{v};
+        return simd{generic_type::template shuffle<Indices...>(a)};
     }
 
-    template<simd_value_type O, size_t M>
-    [[nodiscard]] constexpr static simd cast_from(simd<O, M> const& rhs) noexcept
-        requires(sizeof(simd<O, M>) == sizeof(simd))
-    {
-        HI_X_runtime_evaluate_if_valid(simd{native_type::cast_from(rhs.reg())});
-
-        return std::bit_cast<simd>(rhs);
-    }
-
-    /** Load a numeric array from memory.
-     * @param ptr A Pointer to an array of values in memory.
-     * @return A numeric array.
-     */
-    template<std::size_t S>
-    [[nodiscard]] constexpr static simd load(std::byte const *ptr) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{native_type{ptr}});
-
-        auto r = simd{};
-        std::memcpy(&r, ptr, S);
-        return r;
-    }
-
-    /** Load a numeric array from memory.
-     * @param ptr A Pointer to an array of values in memory.
-     * @return A numeric array.
-     */
-    [[nodiscard]] constexpr static simd load(std::byte const *ptr) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{native_type{ptr}});
-
-        auto r = simd{};
-        std::memcpy(&r, ptr, sizeof(r));
-        return r;
-    }
-
-    /** Load a numeric array from memory.
-     * @param ptr A Pointer to an array of values in memory.
-     * @return A numeric array.
-     */
-    [[nodiscard]] constexpr static simd load(T const *ptr) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{native_type{ptr}});
-
-        auto r = simd{};
-        std::memcpy(&r, ptr, sizeof(r));
-        return r;
-    }
-
-    template<std::size_t S>
-    constexpr void store(std::byte *ptr) const noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(reg().store(ptr));
-        std::memcpy(ptr, this, S);
-    }
-
-    /** Store a numeric array into memory.
-     * @param[out] ptr A pointer to where the numeric array should be stored into memory.
-     */
-    constexpr void store(std::byte *ptr) const noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(reg().store(ptr));
-        store<sizeof(*this)>(ptr);
-    }
-
-    [[nodiscard]] constexpr size_t mask() const noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(reg().mask());
-
-        auto r = 0_uz;
-        for (auto i = N; i != 0; --i) {
-            r <<= 1;
-            r |= std::bit_cast<unsigned_type>(v[i - 1]) >> (sizeof(unsigned_type) * CHAR_BIT - 1);
-        }
-        return r;
-    }
-
-    [[nodiscard]] constexpr T const& operator[](std::size_t i) const noexcept
-    {
-        static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
-        hi_axiom(i < N);
-        return v[i];
-    }
-
-    [[nodiscard]] constexpr T& operator[](std::size_t i) noexcept
-    {
-        static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
-        hi_axiom(i < N);
-        return v[i];
-    }
-
-    [[nodiscard]] constexpr reference front() noexcept
-    {
-        return v.front();
-    }
-
-    [[nodiscard]] constexpr const_reference front() const noexcept
-    {
-        return v.front();
-    }
-
-    [[nodiscard]] constexpr reference back() noexcept
-    {
-        return v.back();
-    }
-
-    [[nodiscard]] constexpr const_reference back() const noexcept
-    {
-        return v.back();
-    }
-
-    [[nodiscard]] constexpr pointer data() noexcept
-    {
-        return v.data();
-    }
-
-    [[nodiscard]] constexpr const_pointer data() const noexcept
-    {
-        return v.data();
-    }
-
-    [[nodiscard]] constexpr iterator begin() noexcept
-    {
-        return v.begin();
-    }
-
-    [[nodiscard]] constexpr const_iterator begin() const noexcept
-    {
-        return v.begin();
-    }
-
-    [[nodiscard]] constexpr const_iterator cbegin() const noexcept
-    {
-        return v.cbegin();
-    }
-
-    [[nodiscard]] constexpr iterator end() noexcept
-    {
-        return v.end();
-    }
-
-    [[nodiscard]] constexpr const_iterator end() const noexcept
-    {
-        return v.end();
-    }
-
-    [[nodiscard]] constexpr const_iterator cend() const noexcept
-    {
-        return v.cend();
-    }
-
-    [[nodiscard]] constexpr bool empty() const noexcept
-    {
-        return v.empty();
-    }
-
-    HI_X_accessor(0, x);
-    HI_X_accessor(1, y);
-    HI_X_accessor(2, z);
-    HI_X_accessor(3, w);
-    HI_X_accessor(0, r);
-    HI_X_accessor(1, g);
-    HI_X_accessor(2, b);
-    HI_X_accessor(3, a);
-    HI_X_accessor(0, width);
-    HI_X_accessor(1, height);
-    HI_X_accessor(2, depth);
-
-    HI_X_binary_math_op(+);
-    HI_X_binary_math_op(-);
-    HI_X_binary_math_op(*);
-    HI_X_binary_math_op(/);
-    HI_X_binary_math_op(%);
-
-    HI_X_binary_cmp_op(==);
-    HI_X_binary_cmp_op(!=);
-    HI_X_binary_cmp_op(<);
-    HI_X_binary_cmp_op(>);
-    HI_X_binary_cmp_op(<=);
-    HI_X_binary_cmp_op(>=);
-
-    HI_X_unary_bit_op(~);
-    HI_X_binary_bit_op(^);
-    HI_X_binary_bit_op(&);
-    HI_X_binary_bit_op(|);
-    HI_X_binary_shift_op(<<);
-    HI_X_binary_shift_op(>>);
-
-    [[nodiscard]] friend constexpr bool equal(simd lhs, simd rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(equal(lhs.reg(), rhs.reg()));
-
-        for (auto i = 0_uz; i != N; ++i) {
-            if (lhs.v[i] != rhs.v[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    HI_X_binary_op_broadcast(==);
-    HI_X_binary_op_broadcast(!=);
-    HI_X_binary_op_broadcast(<);
-    HI_X_binary_op_broadcast(>);
-    HI_X_binary_op_broadcast(<=);
-    HI_X_binary_op_broadcast(>=);
-    HI_X_binary_op_broadcast(+);
-    HI_X_binary_op_broadcast(-);
-    HI_X_binary_op_broadcast(*);
-    HI_X_binary_op_broadcast(/);
-    HI_X_binary_op_broadcast(%);
-    HI_X_binary_op_broadcast(&);
-    HI_X_binary_op_broadcast(|);
-    HI_X_binary_op_broadcast(^);
-
-    HI_X_inplace_op(+=, +);
-    HI_X_inplace_op(-=, -);
-    HI_X_inplace_op(*=, *);
-    HI_X_inplace_op(/=, /);
-    HI_X_inplace_op(%=, %);
-    HI_X_inplace_op(|=, |);
-    HI_X_inplace_op(&=, &);
-    HI_X_inplace_op(^=, ^);
-    HI_X_inplace_op(<<=, <<);
-    HI_X_inplace_op(>>=, >>);
-
-    /** Get a element from the numeric array.
-     *
-     * @tparam I Index into the array
-     */
-    template<std::size_t I>
-    [[nodiscard]] friend constexpr T& get(simd& rhs) noexcept
-    {
-        static_assert(I < N, "Index out of bounds");
-        return std::get<I>(rhs.v);
-    }
-
-    /** Get a element from the numeric array.
-     *
-     * @tparam I Index into the array
-     */
-    template<std::size_t I>
-    [[nodiscard]] friend constexpr T get(simd const& rhs) noexcept
-    {
-        static_assert(I < N, "Index out of bounds");
-        HI_X_runtime_evaluate_if_valid(get<I>(rhs.reg()));
-        return std::get<I>(rhs.v);
-    }
-
-    /** Insert a value in the array.
-     *
-     * @tparam I The index into the array.
-     * @param lhs The vector to insert the value into.
-     * @param rhs The value to insert.
-     * @return The vector with the inserted value.
-     */
-    template<std::size_t I>
-    [[nodiscard]] constexpr friend simd insert(simd const& lhs, value_type rhs) noexcept
-    {
-        static_assert(I < size);
-        HI_X_runtime_evaluate_if_valid(simd{insert<I>(lhs.reg(), rhs)});
-
-        auto r = lhs;
-        std::get<I>(r.v) = rhs;
-        return r;
-    }
-
-    /** Set individual elements to zero.
-     *
-     * @tparam Mask bit mask where '1' means to zero, '0' to keep original.
-     */
-    template<std::size_t Mask = ~std::size_t{0}>
-    [[nodiscard]] friend constexpr simd set_zero(simd rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{set_zero<Mask>(rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            if (to_bool((Mask >> i) & 1)) {
-                r.v[i] = T{0};
-            } else {
-                r.v[i] = rhs.v[i];
-            }
-        }
-        return r;
-    }
-
-    /** Blend two numeric arrays.
-     *
-     * @tparam Mask One bit for each element selects; 0: lhs, 1: rhs.
-     * @param lhs The left hand side
-     * @param rhs The right hand side
-     * @return The blended array.
-     */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr simd blend(simd const& lhs, simd const& rhs) noexcept
+    [[nodiscard]] constexpr friend simd blend(array_type a, array_type b) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(simd{blend<Mask>(lhs.reg(), rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r[i] = to_bool((Mask >> i) & 1) ? rhs[i] : lhs[i];
-        }
-        return r;
+        return simd{generic_type::template blend<Mask>(a, b)};
     }
 
-    /** Blend the values using a dynamic mask.
-     */
-    [[nodiscard]] friend constexpr simd blend(simd const& a, simd const& b, simd const& mask)
+    template<int... Indices>
+    [[nodiscard]] constexpr friend simd swizzle(array_type a) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(simd{blend(a.reg(), b.reg(), mask.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r[i] = mask[i] != T{0} ? b[i] : a[i];
-        }
-        return r;
+        return simd{generic_type::template swizzle<Indices...>(a)};
     }
 
-    /** Negate individual elements.
-     *
-     * @tparam Mask bit mask where '1' means to negate, '0' to keep original.
-     */
+    [[nodiscard]] constexpr friend simd sum(array_type a) noexcept
+    {
+        return simd{generic_type::sum(a)};
+    }
+
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr simd neg(simd rhs) noexcept
+    [[nodiscard]] constexpr friend simd dot(array_type a, array_type b) noexcept
     {
-        return blend<Mask>(rhs, -rhs);
+        return simd{generic_type::template dot<Mask>(a, b)};
     }
 
-    [[nodiscard]] friend constexpr simd operator-(simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{-rhs.reg()});
-        return T{0} - rhs;
-    }
-
-    [[nodiscard]] friend constexpr simd abs(simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{abs(rhs.reg())});
-        return max(rhs, -rhs);
-    }
-
-    [[nodiscard]] friend constexpr simd rcp(simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{rcp(rhs.reg())});
-        return T{1} / rhs;
-    }
-
-    [[nodiscard]] friend constexpr simd sqrt(simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{sqrt(rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r[i] = std::sqrt(rhs.v[i]);
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd rcp_sqrt(simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{rcp_sqrt(rhs.reg())});
-        return rcp(sqrt(rhs));
-    }
-
-    [[nodiscard]] friend constexpr simd floor(simd const& rhs) noexcept
-        requires(std::is_floating_point_v<value_type>)
-    {
-        HI_X_runtime_evaluate_if_valid(simd{floor(rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r[i] = std::floor(rhs.v[i]);
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd ceil(simd const& rhs) noexcept
-        requires(std::is_floating_point_v<value_type>)
-    {
-        HI_X_runtime_evaluate_if_valid(simd{ceil(rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r[i] = std::ceil(rhs.v[i]);
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd round(simd const& rhs) noexcept
-        requires(std::is_floating_point_v<value_type>)
-    {
-        HI_X_runtime_evaluate_if_valid(simd{round(rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r[i] = std::round(rhs.v[i]);
-        }
-        return r;
-    }
-
-    /** Take a dot product.
-     *
-     * @tparam Mask A mask for which elements participate in the dot product.
-     * @param lhs The left hand side.
-     * @param rhs The right hand side.
-     * @return Result of the dot product.
-     */
     template<std::size_t Mask>
-    [[nodiscard]] hi_force_inline friend constexpr T dot(simd const& lhs, simd const& rhs) noexcept
+    [[nodiscard]] constexpr friend simd hypot(array_type a) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(get<0>(dot<Mask>(lhs.reg(), rhs.reg())));
-
-        auto r = T{};
-        for (std::size_t i = 0; i != N; ++i) {
-            if (to_bool(Mask & (1_uz << i))) {
-                r += lhs.v[i] * rhs.v[i];
-            }
-        }
-        return r;
+        return simd{generic_type::template hypot<Mask>(a)};
     }
 
-    /** Take the length of the vector
-     *
-     * @tparam Mask A mask for which elements participate in the hypot calculation.
-     * @param rhs The right hand side.
-     * @return Result of the hypot calculation.
-     */
     template<std::size_t Mask>
-    [[nodiscard]] friend T hypot(simd const& rhs) noexcept
-        requires(std::is_floating_point_v<value_type>)
+    [[nodiscard]] constexpr friend simd rhypot(array_type a) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(get<0>(sqrt(dot<Mask>(rhs.reg(), rhs.reg()))));
-        return std::sqrt(dot<Mask>(rhs, rhs));
+        return simd{generic_type::template rhypot<Mask>(a)};
     }
 
-    /** Take the squared length of the vector.
-     *
-     * @tparam Mask A mask for which elements participate in the hypot calculation.
-     * @param rhs The right hand side.
-     * @return Result of the hypot-squared calculation.
-     */
     template<std::size_t Mask>
-    [[nodiscard]] hi_force_inline friend constexpr T squared_hypot(simd const& rhs) noexcept
+    [[nodiscard]] constexpr friend simd normalize(array_type a) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(get<0>(dot<Mask>(rhs.reg(), rhs.reg())));
-        return dot<Mask>(rhs, rhs);
+        return simd{generic_type::template normalize<Mask>(a)};
     }
 
-    /** Take a reciprocal of the length.
-     * @tparam Mask A mask for which elements participate in the hypot calculation.
-     * @param rhs The right hand side.
-     * @return Result of the hypot-squared calculation.
-     */
-    template<std::size_t Mask>
-    [[nodiscard]] friend constexpr T rcp_hypot(simd const& rhs) noexcept
+    template<std::derived_from<array_type>... Columns>
+    [[nodiscard]] constexpr friend std::array<simd, N> transpose(Columns... columns) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(get<0>(rcp_sqrt(dot<Mask>(rhs.reg(), rhs.reg()))));
-        return 1.0f / hypot<Mask>(rhs);
-    }
-
-    /** Normalize a vector.
-     * All elements that do not participate in the normalization will be set to zero.
-     *
-     * @tparam Mask A mask for which elements participate in the normalization calculation.
-     * @param rhs The right hand side.
-     * @return The normalized vector.
-     */
-    template<std::size_t Mask>
-    [[nodiscard]] friend constexpr simd normalize(simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{rhs * rcp_sqrt(dot<Mask>(rhs.reg(), rhs.reg()))});
-
-        hilet rcp_hypot_ = rcp_hypot<Mask>(rhs);
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            if (to_bool(Mask & (1_uz << i))) {
-                r.v[i] = rhs.v[i] * rcp_hypot_;
-            }
-        }
-        return r;
-    }
-
-    /** Rotate left.
-     *
-     * @note It is undefined behavior if: rhs <= 0 or rhs >= sizeof(value_type) * CHAR_BIT.
-     */
-    [[nodiscard]] friend constexpr simd rotl(simd const& lhs, unsigned int rhs) noexcept
-    {
-        hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
-
-        hilet remainder = narrow_cast<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
-
-        return (lhs << rhs) | (lhs >> remainder);
-    }
-
-    /** Rotate right.
-     *
-     * @note It is undefined behavior if: rhs <= 0 or rhs >= sizeof(value_type) * CHAR_BIT.
-     */
-    [[nodiscard]] friend constexpr simd rotr(simd const& lhs, unsigned int rhs) noexcept
-    {
-        hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
-
-        hilet remainder = narrow_cast<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
-
-        return (lhs >> rhs) | (lhs << remainder);
-    }
-
-    [[nodiscard]] friend constexpr simd min(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{min(lhs.reg(), rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = std::min(lhs.v[i], rhs.v[i]);
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd max(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{max(lhs.reg(), rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r.v[i] = std::max(lhs.v[i], rhs.v[i]);
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd clamp(simd const& lhs, simd const& low, simd const& high) noexcept
-    {
-        return min(max(lhs, low), high);
-    }
-
-    [[nodiscard]] friend constexpr simd hadd(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{horizontal_add(lhs.reg(), rhs.reg())});
-
-        hi_axiom(N % 2 == 0);
-
-        auto r = simd{};
-
-        std::size_t src_i = 0;
-        std::size_t dst_i = 0;
-        while (src_i != N) {
-            auto tmp = lhs[src_i++];
-            tmp += lhs[src_i++];
-            r.v[dst_i++] = tmp;
-        }
-
-        src_i = 0;
-        while (src_i != N) {
-            auto tmp = rhs[src_i++];
-            tmp += rhs[src_i++];
-            r.v[dst_i++] = tmp;
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr simd hsub(simd const& lhs, simd const& rhs) noexcept
-    {
-        HI_X_runtime_evaluate_if_valid(simd{horizontal_sub(lhs.reg(), rhs.reg())});
-
-        hi_axiom(N % 2 == 0);
-
-        auto r = simd{};
-
-        std::size_t src_i = 0;
-        std::size_t dst_i = 0;
-        while (src_i != N) {
-            auto tmp = lhs[src_i++];
-            tmp -= lhs[src_i++];
-            r.v[dst_i++] = tmp;
-        }
-
-        src_i = 0;
-        while (src_i != N) {
-            auto tmp = rhs[src_i++];
-            tmp -= rhs[src_i++];
-            r.v[dst_i++] = tmp;
-        }
-        return r;
-    }
-
-    /** Add or subtract individual elements.
-     *
-     * @tparam Mask bit mask where '1' means to add, '0' means to subtract.
-     */
-    template<std::size_t Mask>
-    [[nodiscard]] friend constexpr simd addsub(simd const& lhs, simd const& rhs) noexcept
-    {
-        constexpr std::size_t not_mask = (1 << N) - 1;
-        return lhs + neg<Mask ^ not_mask>(rhs);
-    }
-
-    /** Calculate the 2D normal on a 2D vector.
-     */
-    [[nodiscard]] friend constexpr simd cross_2D(simd const& rhs) noexcept
-        requires(N >= 2)
-    {
-        return simd{-rhs.y(), rhs.x()};
-    }
-
-    /** Calculate the 2D unit-normal on a 2D vector.
-     */
-    [[nodiscard]] friend constexpr simd normal_2D(simd const& rhs) noexcept
-        requires(N >= 2)
-    {
-        return normalize<0b0011>(cross_2D(rhs));
-    }
-
-    /** Calculate the cross-product between two 2D vectors.
-     * a.x * b.y - a.y * b.x
-     */
-    [[nodiscard]] friend constexpr float cross_2D(simd const& lhs, simd const& rhs) noexcept
-        requires(N >= 2)
-    {
-        hilet tmp1 = rhs.yxwz();
-        hilet tmp2 = lhs * tmp1;
-        hilet tmp3 = hsub(tmp2, tmp2);
-        return get<0>(tmp3);
-    }
-
-    // x=a.y*b.z - a.z*b.y
-    // y=a.z*b.x - a.x*b.z
-    // z=a.x*b.y - a.y*b.x
-    // w=a.w*b.w - a.w*b.w
-    [[nodiscard]] constexpr friend simd cross_3D(simd const& lhs, simd const& rhs) noexcept
-        requires(N == 4)
-    {
-        hilet a_left = lhs.yzxw();
-        hilet b_left = rhs.zxyw();
-        hilet left = a_left * b_left;
-
-        hilet a_right = lhs.zxyw();
-        hilet b_right = rhs.yzxw();
-        hilet right = a_right * b_right;
-        return left - right;
-    }
-
-    [[nodiscard]] constexpr static simd byte_srl_shuffle_indices(unsigned int rhs)
-        requires(std::is_same_v<value_type, int8_t> and size == 16)
-    {
-        static_assert(std::endian::native == std::endian::little);
-
-        auto r = simd{};
-        for (auto i = 0; i != 16; ++i) {
-            if ((i + rhs) < 16) {
-                r[i] = narrow_cast<int8_t>(i + rhs);
-            } else {
-                // Indices set to -1 result in a zero after a byte shuffle.
-                r[i] = -1;
-            }
-        }
-        return r;
-    }
-
-    [[nodiscard]] constexpr static simd byte_sll_shuffle_indices(unsigned int rhs)
-        requires(std::is_same_v<value_type, int8_t> and size == 16)
-    {
-        static_assert(std::endian::native == std::endian::little);
-
-        auto r = simd{};
-        for (auto i = 0; i != 16; ++i) {
-            if ((i - rhs) >= 0) {
-                r[i] = narrow_cast<int8_t>(i - rhs);
-            } else {
-                // Indices set to -1 result in a zero after a byte shuffle.
-                r[i] = -1;
-            }
-        }
-        return r;
-    }
-
-    /** Shuffle a 16x byte array, using the indices from the right-hand-side.
-     */
-    [[nodiscard]] friend constexpr simd permute(simd const& lhs, simd const& rhs) noexcept
-        requires(std::is_integral_v<value_type>)
-    {
-        HI_X_runtime_evaluate_if_valid(simd{permute(lhs.reg(), rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            if (rhs[i] >= 0) {
-                r[i] = lhs[rhs[i] & 0xf];
-            } else {
-                r[i] = 0;
-            }
-        }
-
-        return r;
-    }
-
-    /** Find a point at the midpoint between two points.
-     */
-    [[nodiscard]] friend constexpr simd midpoint(simd const& p1, simd const& p2) noexcept
-    {
-        return (p1 + p2) * 0.5f;
-    }
-
-    /** Find the point on the other side and at the same distance of an anchor-point.
-     */
-    [[nodiscard]] friend constexpr simd reflect_point(simd const& p, simd const anchor) noexcept
-    {
-        return anchor - (p - anchor);
-    }
-
-    hi_warning_push();
-    // C26494 Variable '...' is uninitialized. Always initialize an object (type.5).
-    // Internal to _MM_TRANSPOSE4_PS
-    hi_warning_ignore_msvc(26494);
-    template<typename... Columns>
-    [[nodiscard]] friend constexpr std::array<simd, size> transpose(Columns const&...columns) noexcept
-    {
-        static_assert(sizeof...(Columns) == size, "Can only transpose square matrices");
-
-        if (not std::is_constant_evaluated()) {
-            if constexpr (requires { transpose(columns.reg()...); }) {
-                hilet tmp = transpose(columns.reg()...);
-                auto r = std::array<simd, size>{};
-                for (auto i = 0_uz; i != size; ++i) {
-                    r[i] = simd{tmp[i]};
-                }
-                return r;
-            }
-        }
-
+        auto const tmp = generic_type::template transpose<Columns...>(columns...);
         auto r = std::array<simd, N>{};
-        auto f = [&r, &columns... ]<std::size_t... Ints>(std::index_sequence<Ints...>)
-        {
-            auto tf = [&r](auto i, auto v) {
-                for (std::size_t j = 0; j != N; ++j) {
-                    r[j][i] = v[j];
-                }
-                return 0;
-            };
-            static_cast<void>((tf(Ints, columns) + ...));
-        };
-        f(std::make_index_sequence<sizeof...(columns)>{});
-        return r;
-    }
-    hi_warning_pop();
-
-    [[nodiscard]] constexpr friend simd composit(simd const& under, simd const& over) noexcept
-        requires(N == 4 && std::is_floating_point_v<T>)
-    {
-        if (get<3>(over) <= value_type{0}) {
-            // fully transparent.
-            return under;
-        }
-        if (get<3>(over) >= value_type{1}) {
-            // fully opaque;
-            return over;
-        }
-
-        hilet over_alpha = over.wwww();
-        hilet under_alpha = under.wwww();
-
-        hilet over_color = over.xyz1();
-        hilet under_color = under.xyz1();
-
-        hilet output_color = over_color * over_alpha + under_color * under_alpha * (T{1} - over_alpha);
-
-        return output_color / output_color.www1();
-    }
-
-    [[nodiscard]] constexpr friend simd composit(simd const& under, simd const& over) noexcept
-        requires(std::is_same_v<value_type, half> and size == 4)
-    {
-        return simd{composit(static_cast<simd<float, 4>>(under), static_cast<simd<float, 4>>(over))};
-    }
-
-    [[nodiscard]] friend std::string to_string(simd const& rhs) noexcept
-    {
-        auto r = std::string{};
-
-        r += '(';
         for (std::size_t i = 0; i != N; ++i) {
-            if (i != 0) {
-                r += "; ";
-            }
-            r += std::format("{}", rhs[i]);
+            r[i] = tmp[i];
         }
-        r += ')';
         return r;
     }
 
-    friend std::ostream& operator<<(std::ostream& lhs, simd const& rhs)
+    constexpr simd& operator+=(array_type a) noexcept
     {
-        return lhs << to_string(rhs);
+        return *this = *this + a;
     }
 
-    /** Insert an element from rhs into the result.
-     * This function copies the lhs, then inserts one element from rhs into the result.
-     * It also can clear any of the elements to zero.
-     */
-    template<std::size_t FromElement, std::size_t ToElement>
-    [[nodiscard]] constexpr friend simd insert(simd const& lhs, simd const& rhs)
+    constexpr simd& operator-=(array_type a) noexcept
     {
-        HI_X_runtime_evaluate_if_valid(simd{insert<FromElement, ToElement>(lhs.reg(), rhs.reg())});
-
-        auto r = simd{};
-        for (std::size_t i = 0; i != N; ++i) {
-            r[i] = (i == ToElement) ? rhs[FromElement] : lhs[i];
-        }
-
-        return r;
+        return *this = *this - a;
     }
 
-    /** swizzle around the elements of the numeric array.
-     *
-     * @tparam Order a list of elements encoded as characters, 'a' - 'z' for indices to elements.
-     *         '0' for a literal zero and '1' for a literal one.
-     * @return A new array with the elements ordered based on the @a Order.
-     *         The elements at the end of the array are set to zero.
-     */
-    template<fixed_string Order>
-    [[nodiscard]] constexpr simd swizzle() const
+    constexpr simd& operator*=(array_type a) noexcept
     {
-        static_assert(Order.size() <= N);
-
-        HI_X_runtime_evaluate_if_valid(simd{reg().template swizzle<Order>()});
-
-        auto r = simd{};
-        swizzle_detail<0, Order>(r);
-        return r;
+        return *this = *this * a;
     }
 
-#define SWIZZLE(name, str) \
-    [[nodiscard]] constexpr simd name() const noexcept \
-        requires(sizeof(str) - 1 <= N) \
+    constexpr simd& operator/=(array_type a) noexcept
+    {
+        return *this = *this / a;
+    }
+
+    constexpr simd& operator%=(array_type a) noexcept
+    {
+        return *this = *this % a;
+    }
+
+    constexpr simd& operator|=(array_type a) noexcept
+    {
+        return *this = *this | a;
+    }
+
+    constexpr simd& operator&=(array_type a) noexcept
+    {
+        return *this = *this & a;
+    }
+
+    constexpr simd& operator^=(array_type a) noexcept
+    {
+        return *this = *this ^ a;
+    }
+
+#define X_SWIZZLE_2D(NAME, X, Y) \
+    [[nodiscard]] constexpr simd NAME() const noexcept \
+        requires(N == 2) \
     { \
-        return swizzle<str>(); \
+        return swizzle<X, Y>(*this); \
     }
 
-#define SWIZZLE_4D(name, str) \
-    SWIZZLE(name##0, str "0") \
-    SWIZZLE(name##1, str "1") \
-    SWIZZLE(name##x, str "a") \
-    SWIZZLE(name##y, str "b") \
-    SWIZZLE(name##z, str "c") \
-    SWIZZLE(name##w, str "d")
+#define X_SWIZZLE_2D_Y(NAME, X) \
+    X_SWIZZLE_2D(NAME##1, X, -2) \
+    X_SWIZZLE_2D(NAME##0, X, -1) \
+    X_SWIZZLE_2D(NAME##x, X, 0) \
+    X_SWIZZLE_2D(NAME##y, X, 1)
 
-#define SWIZZLE_3D(name, str) \
-    SWIZZLE_4D(name##0, str "0") \
-    SWIZZLE_4D(name##1, str "1") \
-    SWIZZLE_4D(name##x, str "a") \
-    SWIZZLE_4D(name##y, str "b") \
-    SWIZZLE_4D(name##z, str "c") \
-    SWIZZLE_4D(name##w, str "d") \
-    SWIZZLE(name##0, str "0") \
-    SWIZZLE(name##1, str "1") \
-    SWIZZLE(name##x, str "a") \
-    SWIZZLE(name##y, str "b") \
-    SWIZZLE(name##z, str "c") \
-    SWIZZLE(name##w, str "d")
+    X_SWIZZLE_2D_Y(_1, -2)
+    X_SWIZZLE_2D_Y(_0, -1)
+    X_SWIZZLE_2D_Y(x, 0)
+    X_SWIZZLE_2D_Y(y, 1)
 
-#define SWIZZLE_2D(name, str) \
-    SWIZZLE_3D(name##0, str "0") \
-    SWIZZLE_3D(name##1, str "1") \
-    SWIZZLE_3D(name##x, str "a") \
-    SWIZZLE_3D(name##y, str "b") \
-    SWIZZLE_3D(name##z, str "c") \
-    SWIZZLE_3D(name##w, str "d") \
-    SWIZZLE(name##0, str "0") \
-    SWIZZLE(name##1, str "1") \
-    SWIZZLE(name##x, str "a") \
-    SWIZZLE(name##y, str "b") \
-    SWIZZLE(name##z, str "c") \
-    SWIZZLE(name##w, str "d")
-
-    SWIZZLE_2D(_0, "0")
-    SWIZZLE_2D(_1, "1")
-    SWIZZLE_2D(x, "a")
-    SWIZZLE_2D(y, "b")
-    SWIZZLE_2D(z, "c")
-    SWIZZLE_2D(w, "d")
-
-#undef SWIZZLE
-#undef SWIZZLE_2D
-#undef SWIZZLE_3D
-#undef SWIZZLE_4D
-
-    template<size_t I, fixed_string Order>
-    constexpr void swizzle_detail(simd& r) const noexcept
-    {
-        static_assert(I < size);
-
-        // Get the source element, or '0'.
-        constexpr char c = I < Order.size() ? get<I>(Order) : '0';
-
-        if constexpr (c == '1') {
-            r = insert<I>(r, value_type{1});
-
-        } else if constexpr (c == '0') {
-            r = insert<I>(r, value_type{0});
-
-        } else if constexpr (c >= 'a' and c <= 'v') {
-            constexpr size_t src_index = c - 'a';
-            static_assert(src_index < size);
-
-            r = insert<I>(r, get<src_index>(*this));
-
-        } else if constexpr (c >= 'w' and c <= 'z') {
-            constexpr size_t src_index = c == 'x' ? 0 : c == 'y' ? 1 : c == 'z' ? 2 : 3;
-            static_assert(src_index < size);
-
-            r = insert<I>(r, get<src_index>(*this));
-
-        } else {
-            hi_static_no_default();
-        }
-
-        if constexpr (I + 1 < size) {
-            swizzle_detail<I + 1, Order>(r);
-        }
+#define X_SWIZZLE_4D(NAME, X, Y, Z, W) \
+    [[nodiscard]] constexpr simd NAME() const noexcept \
+        requires(N == 4) \
+    { \
+        return swizzle<X, Y, Z, W>(*this); \
     }
+
+#define X_SWIZZLE_4D_W(NAME, X, Y, Z) \
+    X_SWIZZLE_4D(NAME##1, X, Y, Z, -2) \
+    X_SWIZZLE_4D(NAME##0, X, Y, Z, -1) \
+    X_SWIZZLE_4D(NAME##x, X, Y, Z, 0) \
+    X_SWIZZLE_4D(NAME##y, X, Y, Z, 1) \
+    X_SWIZZLE_4D(NAME##z, X, Y, Z, 2) \
+    X_SWIZZLE_4D(NAME##w, X, Y, Z, 3)
+
+#define X_SWIZZLE_4D_Z(NAME, X, Y) \
+    X_SWIZZLE_4D_W(NAME##1, X, Y, -2) \
+    X_SWIZZLE_4D_W(NAME##0, X, Y, -1) \
+    X_SWIZZLE_4D_W(NAME##x, X, Y, 0) \
+    X_SWIZZLE_4D_W(NAME##y, X, Y, 1) \
+    X_SWIZZLE_4D_W(NAME##z, X, Y, 2) \
+    X_SWIZZLE_4D_W(NAME##w, X, Y, 3)
+
+#define X_SWIZZLE_4D_Y(NAME, X) \
+    X_SWIZZLE_4D_Z(NAME##1, X, -2) \
+    X_SWIZZLE_4D_Z(NAME##0, X, -1) \
+    X_SWIZZLE_4D_Z(NAME##x, X, 0) \
+    X_SWIZZLE_4D_Z(NAME##y, X, 1) \
+    X_SWIZZLE_4D_Z(NAME##z, X, 2) \
+    X_SWIZZLE_4D_Z(NAME##w, X, 3)
+
+    X_SWIZZLE_4D_Y(_1, -2)
+    X_SWIZZLE_4D_Y(_0, -1)
+    X_SWIZZLE_4D_Y(x, 0)
+    X_SWIZZLE_4D_Y(y, 1)
+    X_SWIZZLE_4D_Y(z, 2)
+    X_SWIZZLE_4D_Y(w, 3)
 };
 
 using i8x1 = simd<int8_t, 1>;
@@ -1277,13 +606,36 @@ using f64x2 = simd<double, 2>;
 using f64x4 = simd<double, 4>;
 using f64x8 = simd<double, 8>;
 
-} // namespace hi::inline v1
+static_assert(equal(f32x2{2.0f, 3.0f}.xx(), f32x2{2.0f, 2.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}.xy(), f32x2{2.0f, 3.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}.x0(), f32x2{2.0f, 0.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}.x1(), f32x2{2.0f, 1.0f}));
 
-template<class T, std::size_t N>
-struct std::tuple_size<hi::simd<T, N>> : std::integral_constant<std::size_t, N> {};
+static_assert(equal(f32x2{2.0f, 3.0f}.yx(), f32x2{3.0f, 2.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}.yy(), f32x2{3.0f, 3.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}.y0(), f32x2{3.0f, 0.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}.y1(), f32x2{3.0f, 1.0f}));
 
-template<std::size_t I, class T, std::size_t N>
-struct std::tuple_element<I, hi::simd<T, N>> {
+static_assert(equal(f32x2{2.0f, 3.0f}._0x(), f32x2{0.0f, 2.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}._0y(), f32x2{0.0f, 3.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}._00(), f32x2{0.0f, 0.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}._01(), f32x2{0.0f, 1.0f}));
+
+static_assert(equal(f32x2{2.0f, 3.0f}._1x(), f32x2{1.0f, 2.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}._1y(), f32x2{1.0f, 3.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}._10(), f32x2{1.0f, 0.0f}));
+static_assert(equal(f32x2{2.0f, 3.0f}._11(), f32x2{1.0f, 1.0f}));
+
+
+} // namespace v1
+}
+
+
+template<class T, size_t N>
+struct std::tuple_size<::hi::simd<T, N>> : std::integral_constant<size_t, N> {};
+
+template<size_t I, class T, size_t N>
+struct std::tuple_element<I, ::hi::simd<T, N>> {
     using type = T;
 };
 
@@ -1295,28 +647,21 @@ struct std::equal_to<::hi::simd<T, N>> {
     }
 };
 
-// Add equality operator to Google-test internal namespace so that ASSERT_EQ() work.
-template<typename T, size_t N>
-hi_inline bool operator==(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
-{
-    return std::equal_to{}(lhs, rhs);
-}
+hi_export template<typename T, size_t N>
+struct std::formatter<::hi::simd<T, N>, char> : std::formatter<std::string, char> {
+    auto format(::hi::simd<T, N> const& t, auto& fc) const
+    {
+        auto str = std::string{"("};
 
-// Add equality operator to Google-test internal namespace so that ASSERT_NE() work.
-template<typename T, size_t N>
-hi_inline bool operator!=(::hi::simd<T, N> lhs, ::hi::simd<T, N> rhs) noexcept
-{
-    return not std::equal_to<::hi::simd<T, N>>{}(lhs, rhs);
-}
+        for (auto i = 0; i != N; ++i) {
+            if (i != 0) {
+                str += ", ";
+            }
+            str += std::format("{}", t[i]);
+        }
+        str += ')';
 
-#undef HI_X_accessor
-#undef HI_X_binary_cmp_op
-#undef HI_X_binary_math_op
-#undef HI_X_unary_bit_op
-#undef HI_X_binary_bit_op
-#undef HI_X_binary_shift_op
-#undef HI_X_binary_op_broadcast
-#undef HI_X_inplace_op
-#undef HI_X_runtime_evaluate_if_valid
+        return std::formatter<std::string, char>::format(str, fc);
+    }
+};
 
-hi_warning_pop();

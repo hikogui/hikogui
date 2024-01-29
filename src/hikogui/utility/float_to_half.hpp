@@ -3,11 +3,17 @@
 
 #pragma once
 
-#include "cpu_id_x86.hpp"
 #include "../macros.hpp"
+#if defined(HI_HAS_X86)
+#include "cpu_id_x86.hpp"
+#else
+#include "cpu_id_generic.hpp"
+#endif
+#include "misc.hpp"
 #include <cstdint>
 #include <bit>
 #include <type_traits>
+#include <array>
 
 #ifdef HI_HAS_X86
 #include <immintrin.h>

@@ -25,6 +25,8 @@ inline namespace v1 {
  */
 class corner_radii {
 public:
+    using array_type = f32x4;
+    
     constexpr corner_radii(corner_radii const &) noexcept = default;
     constexpr corner_radii(corner_radii &&) noexcept = default;
     constexpr corner_radii &operator=(corner_radii const &) noexcept = default;
@@ -88,12 +90,12 @@ public:
 
     [[nodiscard]] constexpr friend corner_radii operator+(corner_radii const &lhs, float rhs) noexcept
     {
-        return corner_radii{f32x4{lhs} + rhs};
+        return corner_radii{f32x4{lhs} + array_type::broadcast(rhs)};
     }
 
     [[nodiscard]] constexpr friend corner_radii operator-(corner_radii const &lhs, float rhs) noexcept
     {
-        return corner_radii{f32x4{lhs} - rhs};
+        return corner_radii{f32x4{lhs} - array_type::broadcast(rhs)};
     }
 
 

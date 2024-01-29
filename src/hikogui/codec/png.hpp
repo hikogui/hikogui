@@ -509,7 +509,7 @@ private:
             hilet alpha = static_cast<float>(value.w()) * alpha_mul;
 
             // pre-multiply the alpha for use in texture-maps.
-            line[x] = linear_sRGB_color * alpha;
+            line[x] = linear_sRGB_color * f32x4::broadcast(alpha);
         }
     }
 

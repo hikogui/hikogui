@@ -51,7 +51,7 @@ public:
         uint32_t tmp;
         _count = __rdtscp(&tmp);
 #else
-#error "Not Implemented"
+        _count = std::chrono::steady_clock::now().time_since_epoch().count();
 #endif
     }
 
@@ -60,9 +60,10 @@ public:
     explicit time_stamp_count(time_stamp_count::inplace_with_cpu_id) noexcept : _thread_id(0)
     {
 #if HI_PROCESSOR == HI_CPU_X86_64
-            _count = __rdtscp(&_aux);
+        _count = __rdtscp(&_aux);
 #else
-#error "Not Implemented"
+        _count = std::chrono::steady_clock::now().time_since_epoch().count();
+        _aux = 0;
 #endif
     }
 
@@ -76,7 +77,9 @@ public:
         _count = __rdtscp(&_aux);
         _thread_id = __readgsdword(NT_TIB_CurrentThreadID);
 #else
-#error "Not Implemented"
+        _count = std::chrono::steady_clock::now().time_since_epoch().count();
+        _thread_id = 0;
+        _aux = 0;
 #endif
     }
 

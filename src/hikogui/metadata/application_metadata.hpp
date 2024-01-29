@@ -23,6 +23,8 @@ hi_inline std::optional<semantic_version> _application_version = std::nullopt;
 
 hi_export [[nodiscard]] hi_inline std::string const& get_application_name()
 {
+    initialize();
+
     if (_application_name) {
         return *_application_name;
     } else {
@@ -32,6 +34,8 @@ hi_export [[nodiscard]] hi_inline std::string const& get_application_name()
 
 hi_export [[nodiscard]] hi_inline std::string const& get_application_slug()
 {
+    initialize();
+
     if (_application_slug) {
         return *_application_slug;
     } else {
@@ -41,6 +45,8 @@ hi_export [[nodiscard]] hi_inline std::string const& get_application_slug()
 
 hi_export [[nodiscard]] hi_inline std::string const& get_application_vendor()
 {
+    initialize();
+
     if (_application_vendor) {
         return *_application_vendor;
     } else {
@@ -50,6 +56,8 @@ hi_export [[nodiscard]] hi_inline std::string const& get_application_vendor()
 
 hi_export [[nodiscard]] hi_inline semantic_version const& get_application_version()
 {
+    initialize();
+
     if (_application_version) {
         return *_application_version;
     } else {
@@ -59,6 +67,8 @@ hi_export [[nodiscard]] hi_inline semantic_version const& get_application_versio
 
 hi_export hi_inline void set_application_name(std::string_view name, std::string_view slug)
 {
+    initialize();
+
     if (name.empty()) {
         throw std::invalid_argument("application name must not be empty.");
     }
@@ -78,11 +88,15 @@ hi_export hi_inline void set_application_name(std::string_view name, std::string
 
 hi_export hi_inline void set_application_name(std::string_view name)
 {
+    initialize();
+
     return set_application_name(name, make_slug(name));
 }
 
 hi_export hi_inline void set_application_vendor(std::string_view name)
 {
+    initialize();
+
     if (name.empty()) {
         throw std::invalid_argument("vendor name must not be empty.");
     }
@@ -95,11 +109,15 @@ hi_export hi_inline void set_application_vendor(std::string_view name)
 
 hi_export hi_inline void set_application_version(semantic_version version) noexcept
 {
+    initialize();
+
     _application_version = version;
 }
 
 hi_export hi_inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
 {
+    initialize();
+
     return set_application_version(semantic_version{major, minor, patch});
 }
 

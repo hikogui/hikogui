@@ -193,20 +193,6 @@ public:
         return color{lhs._v * rhs._v};
     }
 
-    [[nodiscard]] constexpr friend color composit(color const& lhs, color const& rhs) noexcept
-    {
-        return color{composit(lhs._v, rhs._v)};
-    }
-
-    [[nodiscard]] constexpr friend color desaturate(color const& rhs) noexcept
-    {
-        hilet rhs_ = f32x4{rhs};
-
-        hilet Y = 0.2126f * rhs_.r() + 0.7152f * rhs_.g() + 0.0722f * rhs_.b();
-
-        return color{Y, Y, Y, rhs_.a()};
-    }
-
     /** Transform a color by a color matrix.
      *
      * The alpha value is not included in the transformation and copied from the input.

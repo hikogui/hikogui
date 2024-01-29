@@ -34,7 +34,7 @@ public:
         hilet C = std::cos(half_angle);
         hilet S = std::sin(half_angle);
 
-        _v = static_cast<f32x4>(axis) * S;
+        _v = static_cast<f32x4>(axis) * array_type::broadcast(S);
         _v.w() = C;
     }
 

@@ -409,7 +409,7 @@ public:
      */
     [[nodiscard]] friend constexpr aarectangle operator+(aarectangle const& lhs, value_type rhs) noexcept
     {
-        return aarectangle{lhs.v + neg<0b0011>(array_type::broadcast(rhs))};
+        return aarectangle{lhs.v + neg_mask<0b0011>(array_type::broadcast(rhs))};
     }
 
     friend constexpr aarectangle &operator+=(aarectangle &lhs, value_type rhs) noexcept
@@ -493,7 +493,7 @@ public:
         // Only (x,y) of subsequent calculations are valid, (z,w) have garbage values.
         hilet closest_point = max(min(rhs_, lhs_.zwzw()), lhs_);
         hilet v_closest_point = closest_point - rhs_;
-        return hypot<0b0011>(v_closest_point);
+        return hypot<0b0011>(v_closest_point).x();
     }
 
 private:

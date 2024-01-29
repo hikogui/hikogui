@@ -165,7 +165,20 @@ hi_export struct bezier_curve {
          */
         [[nodiscard]] hi_force_inline constexpr float orthogonality() const noexcept
         {
+            if (sq_distance == 0.0f) {
+                // If the line PN is zero length it means the point is on the curve
+                // The orthogonality of a point on a line does not mean anything.
+                return 0.0f;
+            }
+
             hilet tangent = curve->tangentAt(t);
+            if (tangent == vector2{}) {
+                // The tangent can be a zero vector if the points or control points
+                // of the curve lie to top of each other. This may happen
+                // when the curve is not accurately represented or a bug. 
+                return 0.0f;
+            }
+
             return cross(normalize(tangent), normalize(PN));
         };
 
@@ -183,8 +196,16 @@ hi_export struct bezier_curve {
         [[nodiscard]] hi_force_inline constexpr bool operator<(sdf_distance_result const& rhs) const noexcept
         {
             if (abs(sq_distance - rhs.sq_distance) < 0.01f) {
+                // The point is very close to both curves, meaning they
+                // are close the end/corner of both curve-segments.
+                // Here we create a line through the corner where both curves
+                // meet and determine on what side of the line our point lies.
+                // We can do this by calculating the orthogonality with the
+                // tangent of the curve at the corner.
                 return abs(orthogonality()) > abs(rhs.orthogonality());
+
             } else {
+                // The simple case, just get the nearest curve.
                 return sq_distance < rhs.sq_distance;
             }
         }
