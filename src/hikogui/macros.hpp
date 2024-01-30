@@ -984,5 +984,3 @@ inline void weak_terminate() noexcept
         }\
     }
 
-#endif
-

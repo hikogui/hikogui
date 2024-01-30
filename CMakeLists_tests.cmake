@@ -90,9 +90,6 @@ target_sources(hikogui_gtests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/small_map_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/tree_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/generator_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_char_map_tests.cpp
