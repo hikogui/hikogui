@@ -29,6 +29,60 @@ public:
         _stop_requested.store(true, std::memory_order::relaxed);
     }
 
+    /** Set the range of progress.
+     *
+     * @param first The start of the range.
+     * @param last The end of the range.
+     * @param name The name of the first item to work on.
+     */
+    void set_range(double first, double last, std::string name = std::string{})
+    {
+        auto const lock = std::scoped_lock(_mutex);
+        _first = first;
+        _last = last;
+        _name = std::move(name);
+    }
+
+    void set_range(double last, std::string name = std::string{})
+    {
+        return set_total(0.0, last, std::move(name));
+    }
+
+    /** Set the current position within the range.
+     *
+     * @pre `set_range()` should be called first.
+     * @pre value must be between first and last.
+     * @param value The value of progress.
+     * @param name The name of the next item to work on.
+     */
+    void set(double value, std::string name = std::string{})
+    {
+        auto const lock = std::scoped_lock(_mutex);
+        _value = value;
+        _name = std::move(name);
+    }
+
+    struct info_type {
+        double first;
+        double last;
+        double value;
+        std::string name;
+        double ratio;
+        double sub_ratio;
+        double total_duration;
+        double done_duration;
+        double todo_duration;
+    };
+
+    [[nodiscard]] info_type info() const noexcept
+    {
+        auto r = info_type{};
+        
+
+        return r;
+    }
+
+
     std::optional<float> progress() const noexcept
     {
         auto const r = _progress.load(std::memory_order::relaxed);
@@ -44,9 +98,36 @@ public:
         _progress.store(rhs, std::memory_order::relaxed);
     }
 
+    std::chrono::duration current_duration() const noexcept
+    {
+        return std::chrono::utc_clock::now() - _start;
+    }
+
+    std::optional<std::chrono::duration> predicted_total_duration() const noexcept
+    {
+        if (_progress <= 0.0f) {
+            return std::nullopt;
+        } else {
+            return current_duration() / _progress;
+        }
+    }
+
+    std::optional<std::chrono::duration> predicted_duration_left() const noexcept
+    {
+        if (auto total_duration = predicted_total_duration()) {
+            return total_duration * (1.0f - _progress);
+        } else {
+            return std::nullopt;
+        }
+    }
+
+
 private:
-    std::atomic<bool> _stop_requested = false;
-    std::atomic<float> _progress = -1.0f;
+    mutable std::mutex _mutex;
+    bool _stop_requested = false;
+    float _progress = 0.0f;
+
+    utc_nanoseconds _start = {};
 };
 
 }
