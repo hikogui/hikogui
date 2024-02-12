@@ -44,14 +44,6 @@ public:
     {
     }
 
-    /** Call the callback function.
-     *
-     * @note A callback is not re-enterable from the same thread.
-     * @note It is undefined behavior to destroy a callback while it is in-flight.
-     * @param args The arguments forwarded to callback-function.
-     * @return The result of the callback-function.
-     * @throws The exception thrown from the callback-function.
-     */
     ResultType operator()(ArgTypes... args) override
     {
 #ifndef NDEBUG
@@ -133,19 +125,26 @@ private:
 /** A callback function.
  *
  * This callback object holds a function object that can be called.
- * It works mostly as `std::move_only_function<R(Args...)>`.
+ * It works mostly as `std::function<R(Args...)>`.
  *
- * When a object subscribes a callback function it will take a
- * `weak_callback<R(Args...)>` of this callback object.
- *
- * This callback type is specifically designed to more safely handle capturing
- * a `this` pointer into a lambda.
- *
- * The idea is that a `subscribe()` function will return a callback object
- * that will be stored inside the object for which the `this` pointer is
- * captured. This means that if this object is destroyed, the callback is
- * destroyed as well, and the caller will notice this through the
- * `weak_callback`.
+ * The ownership model of a callback is designed around a std::shared_ptr
+ * and std::weak_ptr.
+ * 
+ * In many cases the subscribe() function of an object will store a
+ * `weak_callback` and return a `callback` object. This caller of subscribe()
+ * will become the owner of the `callback`. When the `callback` is destroyed
+ * `weak_callback` can no longer be called and be automatically cleaned up.
+ * 
+ * This way subscribing a lambda-callback that captures the this pointer can
+ * be safely handled, by having the `this` object store the callback. When
+ * `this` gets destroyed, the `callback` is destroyed and the subscription is
+ * automatically cleaned up.
+ * 
+ * However it may still be dangerous when the `callback` is called from multiple
+ * threads.
+ * 
+ * The callback may also not re-enter from the same thread, nor is it allowed
+ * to destroy the callback from within the callback.
  *
  * @tparam R The result of the function.
  * @tparam Args The arguments of the function.
@@ -192,10 +191,12 @@ public:
 
     /** Call the callback function.
      *
-     * @param args The arguments to forward to the function.
-     * @return The result value of the function
-     * @throws std::bad_function_call if *this does not store a callable function target.
-     * @throws Any exception thrown from the callback function.
+     * @note A callback is not re-enterable from the same thread.
+     * @note It is undefined behavior to destroy a callback while it is in-flight.
+     * @param args The arguments forwarded to callback-function.
+     * @return The result of the callback-function.
+     * @throws std::base_function_call if the callback does not store a function object.
+     * @throws The exception thrown from the callback-function.
      */
     template<typename... Args>
     decltype(auto) operator()(Args... args)
