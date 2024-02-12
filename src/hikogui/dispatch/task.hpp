@@ -5,6 +5,7 @@
 #pragma once
 
 #include "notifier.hpp"
+#include "awaitable.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/unfair_mutex.hpp" // XXX #616
 #include "../concurrency/thread.hpp" // XXX #616
@@ -78,6 +79,12 @@ public:
         std::suspend_never initial_suspend() noexcept
         {
             return {};
+        }
+
+        template<convertible_to_awaitable T>
+        auto await_transform(T rhs)
+        {
+            return awaitable_cast<T>{}(rhs);
         }
     };
 
@@ -221,6 +228,12 @@ public:
         {
             return {};
         }
+
+        template<convertible_to_awaitable T>
+        decltype(auto) await_transform(T rhs)
+        {
+            return awaitable_cast<T>{}(rhs);
+        }
     };
 
     using handle_type = std::coroutine_handle<promise_type>;
@@ -308,5 +321,30 @@ private:
 
 template<typename T = void>
 using scoped_task = task<T, true>;
+
+/** type-trait to determine if the given type @a T is a task.
+*/
+template<typename T>
+struct is_task : std::false_type {};
+
+template<typename ResultType, bool DestroyFrame>
+struct is_task<hi::task<ResultType, DestroyFrame>> : std::true_type {};
+
+/** type-trait to determine if the given type @a T is a task.
+*/
+template<typename T>
+constexpr bool is_task_v = is_task<T>::value;
+
+/** type-trait to determining if the given invocable @a Func is a task.
+*/
+template<typename Func, typename... ArgTypes>
+struct invocable_is_task {
+    constexpr static bool value = is_task_v<std::invoke_result_t<Func, ArgTypes...>>;
+};
+
+/** type-trait to determining if the given invocable @a Func is a task.
+*/
+template<typename Func, typename... ArgTypes>
+constexpr bool invocable_is_task_v = invocable_is_task<Func, ArgTypes...>::value;
 
 } // namespace hi::inline v1

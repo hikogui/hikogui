@@ -12,7 +12,6 @@
 hi_export_module(hikogui.dispatch.awaitable);
 
 hi_export namespace hi::inline v1 {
-
 /** Check if type can be directly co_await on.
  *
  * The type needs to have the following member functions:
@@ -32,34 +31,37 @@ struct awaitable_cast;
 
 template<awaitable T>
 struct awaitable_cast<T> {
-    T operator()(T const &rhs) const noexcept
+    template<typename RHS>
+    decltype(auto) operator()(RHS&& rhs) const noexcept
     {
-        return rhs;
+        return std::forward<RHS>(rhs);
     }
 };
 
 template<typename T>
-    requires requires(T const &rhs) { rhs.operator co_await(); }
+requires requires(T const& rhs) { rhs.operator co_await(); }
 struct awaitable_cast<T> {
-    auto operator()(T const &rhs) const noexcept
+    template<typename RHS>
+    decltype(auto) operator()(RHS&& rhs) const noexcept
     {
-        return rhs.operator co_await();
+        return std::forward<RHS>(rhs).operator co_await();
     }
 };
 
 template<typename T>
-    requires requires(T const &rhs) { operator co_await(rhs); }
+requires requires(T const& rhs) { operator co_await(rhs); }
 struct awaitable_cast<T> {
-    auto operator()(T const &rhs) const noexcept
+    template<typename RHS>
+    decltype(auto) operator()(RHS&& rhs) const noexcept
     {
-        return operator co_await(rhs);
+        return operator co_await(std::forward<RHS>(rhs));
     }
 };
 
 /** Check if type can be casted with `awaitable_cast` to an awaitable.
  */
 template<typename T>
-concept convertible_to_awaitable = requires(T const &rhs) { awaitable_cast<T>{}(rhs); };
+concept convertible_to_awaitable = requires(T rhs) { awaitable_cast<T>{}(rhs); };
 
 /** Get the result type of an awaitable.
  *

@@ -135,7 +135,7 @@ public:
     template<typename Func, typename... Args>
     default_async_delegate(Func&& func, Args&&...args) noexcept
     {
-        auto tmp_arguments = Traits::argument_types{std::forward<Args>(args)...};
+        auto tmp_arguments = Traits::make_tuple(std::forward<Args>(args)...);
 
         auto tmp_function = [&] {
             if constexpr (Traits::is_task) {
@@ -158,7 +158,7 @@ public:
     /// @privatesection
     [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
     {
-        return _task.running() ? widget_value::on : widget_value::off
+        return _task.running() ? widget_value::on : widget_value::off;
     }
 
     [[nodiscard]] bool can_stop() const noexcept override
@@ -192,6 +192,7 @@ public:
 private:
     std::function<task<value_type>(std::stop_token)> _function;
     task<value_type> _task;
+    typename decltype(_task)::callback_type _task_cbt;
     std::stop_source _stop_source;
 };
 
