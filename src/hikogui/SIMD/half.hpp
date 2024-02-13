@@ -24,6 +24,8 @@ hi_warning_ignore_msvc(26472);
 
 hi_export namespace hi { inline namespace v1 {
 
+
+
 struct half {
     uint16_t v = 0;
 
