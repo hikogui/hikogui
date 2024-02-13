@@ -81,10 +81,10 @@ public:
             return {};
         }
 
-        template<convertible_to_awaitable T>
-        auto await_transform(T rhs)
+        template<convertible_to_awaitable RHS>
+        decltype(auto) await_transform(RHS&& rhs)
         {
-            return awaitable_cast<T>{}(rhs);
+            return awaitable_cast<std::remove_cvref_t<RHS>>{}(std::forward<RHS>(rhs));
         }
     };
 
@@ -229,10 +229,10 @@ public:
             return {};
         }
 
-        template<convertible_to_awaitable T>
-        decltype(auto) await_transform(T rhs)
+        template<convertible_to_awaitable RHS>
+        decltype(auto) await_transform(RHS&& rhs)
         {
-            return awaitable_cast<T>{}(rhs);
+            return awaitable_cast<std::remove_cvref_t<RHS>>{}(std::forward<RHS>(rhs));
         }
     };
 

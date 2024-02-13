@@ -12,6 +12,7 @@
 hi_export_module(hikogui.dispatch.awaitable);
 
 hi_export namespace hi::inline v1 {
+
 /** Check if type can be directly co_await on.
  *
  * The type needs to have the following member functions:
@@ -27,6 +28,16 @@ concept awaitable = requires(T a, std::coroutine_handle<> b) {
 };
 
 template<typename T>
+concept awaitable_with_co_await_member = requires(T a) {
+    { a.operator co_await() } -> awaitable;
+};
+
+template<typename T>
+concept awaitable_with_co_await_free_function = requires(T a) {
+    { operator co_await(a) } -> awaitable;
+};
+
+template<typename T>
 struct awaitable_cast;
 
 template<awaitable T>
@@ -38,8 +49,7 @@ struct awaitable_cast<T> {
     }
 };
 
-template<typename T>
-requires requires(T const& rhs) { rhs.operator co_await(); }
+template<awaitable_with_co_await_member T>
 struct awaitable_cast<T> {
     template<typename RHS>
     decltype(auto) operator()(RHS&& rhs) const noexcept
@@ -48,8 +58,7 @@ struct awaitable_cast<T> {
     }
 };
 
-template<typename T>
-requires requires(T const& rhs) { operator co_await(rhs); }
+template<awaitable_with_co_await_free_function T>
 struct awaitable_cast<T> {
     template<typename RHS>
     decltype(auto) operator()(RHS&& rhs) const noexcept

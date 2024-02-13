@@ -120,10 +120,10 @@ public:
     /** Create a notifier.
      */
     constexpr notifier() noexcept = default;
-    constexpr notifier(notifier&&) noexcept = default;
-    constexpr notifier(notifier const&) noexcept = default;
-    constexpr notifier& operator=(notifier&&) noexcept = default;
-    constexpr notifier& operator=(notifier const&) noexcept = default;
+    constexpr notifier(notifier&&) noexcept = delete;
+    constexpr notifier(notifier const&) noexcept = delete;
+    constexpr notifier& operator=(notifier&&) noexcept = delete;
+    constexpr notifier& operator=(notifier const&) noexcept = delete;
 
     /** Create an awaiter that can await on this notifier.
      */
