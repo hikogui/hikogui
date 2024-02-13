@@ -110,10 +110,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/vector_span.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/void_span.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/wfree_fifo.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/awaitable.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/generator.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/coroutine.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/coroutine/task.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_intf.hpp
