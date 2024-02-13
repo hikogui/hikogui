@@ -80,16 +80,16 @@ template<typename Func, typename... Args>
 template<typename Func, typename... Args>
 [[nodiscard]] auto cancelable_async_task(Func func, std::stop_token stop_token, ::hi::progress_token progress_token, Args... args)
 {
-    if constexpr (std::is_invocable<Func, std::stop_token, ::hi::progress_token, Args...>) {
+    if constexpr (std::is_invocable_v<Func, std::stop_token, ::hi::progress_token, Args...>) {
         return async_task(std::move(func), std::move(stop_token), std::move(progress_token), std::move(args)...);
 
-    } else if constexpr (std::is_invocable<Func, ::hi::progress_token, Args...>) {
+    } else if constexpr (std::is_invocable_v<Func, ::hi::progress_token, Args...>) {
         return async_task(std::move(func), std::move(progress_token), std::move(args)...);
 
-    } else if constexpr (std::is_invocable<Func, std::stop_token, Args...>) {
+    } else if constexpr (std::is_invocable_v<Func, std::stop_token, Args...>) {
         return async_task(std::move(func), std::move(stop_token), std::move(args)...);
 
-    } else if constexpr (std::is_invocable<Func, Args...>) {
+    } else if constexpr (std::is_invocable_v<Func, Args...>) {
         return async_task(std::move(func), std::move(args)...);
 
     } else {

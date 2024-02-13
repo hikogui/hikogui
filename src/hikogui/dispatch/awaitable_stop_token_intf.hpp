@@ -61,9 +61,10 @@ private:
 
 template<>
 struct awaitable_cast<std::stop_token> {
-    awaitable_stop_token operator()(std::stop_token const& rhs) noexcept
+    template<typename RHS>
+    decltype(auto) operator()(RHS&& rhs) noexcept
     {
-        return awaitable_stop_token{rhs};
+        return awaitable_stop_token{std::forward<RHS>(rhs)};
     }
 };
 

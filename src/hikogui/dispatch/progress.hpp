@@ -53,6 +53,22 @@ public:
         _notifier();
     }
 
+    [[nodiscard]] constexpr float value() const noexcept
+    {
+        return _value;
+    }
+
+    [[nodiscard]] float operator*() const noexcept
+    {
+        return _value;
+    }
+
+    template<typename Callback>
+    [[nodiscard]] notifier<>::callback_type subscribe(Callback&& callback, callback_flags flags = callback_flags::synchronous)
+    {
+        return _notifier.subscribe(std::forward<Callback>(callback), flags);
+    }
+
 private:
     notifier<> _notifier = {};
     float _value = 0.0f;

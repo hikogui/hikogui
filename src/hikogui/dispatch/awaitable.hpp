@@ -70,7 +70,7 @@ struct awaitable_cast<T> {
 /** Check if type can be casted with `awaitable_cast` to an awaitable.
  */
 template<typename T>
-concept convertible_to_awaitable = requires(T rhs) { awaitable_cast<T>{}(rhs); };
+concept convertible_to_awaitable = requires(T rhs) { awaitable_cast<std::remove_cvref_t<T>>{}(rhs); };
 
 /** Get the result type of an awaitable.
  *

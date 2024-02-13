@@ -172,7 +172,7 @@ private:
 template<convertible_to_awaitable... Args>
 auto when_any(Args const&...args)
 {
-    return detail::when_any(awaitable_cast<Args>{}(args)...);
+    return detail::when_any(awaitable_cast<std::remove_cvref_t<Args>>{}(args)...);
 }
 
 } // namespace hi::inline v1
