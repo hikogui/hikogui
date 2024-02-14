@@ -172,7 +172,7 @@ public:
         _progress_sink.reset();
     }
 
-    [[nodiscard]] void run()
+    void run()
     {
         reset();
         _task = _pimpl->run(_stop_source.get_token(), _progress_sink.get_token());
