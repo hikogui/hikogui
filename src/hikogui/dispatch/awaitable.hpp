@@ -19,7 +19,7 @@ hi_export namespace hi::inline v1 {
  *  `await_ready()`, `await_suspend()` and `await_resume()`.
  */
 template<typename T>
-concept awaitable = requires(T a, std::coroutine_handle<> b) {
+concept awaitable = requires(std::remove_reference_t<T>& a, std::coroutine_handle<> b) {
     // clang-format off
     { a.await_ready() } -> std::convertible_to<bool>;
     a.await_suspend(b);
@@ -28,12 +28,12 @@ concept awaitable = requires(T a, std::coroutine_handle<> b) {
 };
 
 template<typename T>
-concept awaitable_with_co_await_member = requires(T a) {
+concept awaitable_with_co_await_member = requires(std::remove_reference_t<T>& a) {
     { a.operator co_await() } -> awaitable;
 };
 
 template<typename T>
-concept awaitable_with_co_await_free_function = requires(T a) {
+concept awaitable_with_co_await_free_function = requires(std::remove_reference_t<T>& a) {
     { operator co_await(a) } -> awaitable;
 };
 
@@ -70,7 +70,7 @@ struct awaitable_cast<T> {
 /** Check if type can be casted with `awaitable_cast` to an awaitable.
  */
 template<typename T>
-concept convertible_to_awaitable = requires(T rhs) { awaitable_cast<std::remove_cvref_t<T>>{}(rhs); };
+concept convertible_to_awaitable = requires(std::remove_reference_t<T>& rhs) { awaitable_cast<std::remove_cvref_t<T>>{}(rhs); };
 
 /** Get the result type of an awaitable.
  *
