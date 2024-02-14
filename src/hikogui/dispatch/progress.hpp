@@ -40,6 +40,8 @@ private:
 
 class progress_sink {
 public:
+    using callback_type = notifier<>::callback_type;
+    
     constexpr progress_sink() noexcept = default;
 
     [[nodiscard]] progress_token get_token() const noexcept

@@ -66,6 +66,27 @@ template<typename Func, typename... Args>
     }
 }
 
+enum class invocable_features_type {
+    none = 0,
+    stop = 1,
+    progress = 2,
+    stop_and_progress = 3
+};
+
+template<typename Func, typename... Args>
+struct invocable_features {
+    // clang-format off
+    constexpr static invocable_features_type value =
+        std::is_invocable_v<Func, std::stop_token, ::hi::progress_token, Args...> ? invocable_features_type::stop_and_progress :
+        std::is_invocable_v<Func, ::hi::progress_token, Args...> ? invocable_features_type::progress :
+        std::is_invocable_v<Func, std::stop_token, Args...> ? invocable_features_type::stop :
+        invocable_features_type::none;
+    // clang-format on
+};
+
+template<typename Func, typename... Args>
+constexpr auto invocable_features_v = invocable_features<Func, Args...>::value;
+
 /** Run a function asynchronously as a co-routine task.
  *
  * If the function @a func accepts the `std::stop_token` and/or
@@ -76,20 +97,23 @@ template<typename Func, typename... Args>
  * @param stop_token The stop token to optionally pass to the @a func.
  * @param progress_token The progress token to optionally pass to the @a func.
  * @param args... The arguments forwarded to @a func.
+ * @return A hi::task object for the running @a func.
  */
 template<typename Func, typename... Args>
 [[nodiscard]] auto cancelable_async_task(Func func, std::stop_token stop_token, ::hi::progress_token progress_token, Args... args)
 {
-    if constexpr (std::is_invocable_v<Func, std::stop_token, ::hi::progress_token, Args...>) {
+    constexpr auto features = invocable_features_v<Func, Args...>;
+
+    if constexpr (features == invocable_features_type::stop_and_progress) {
         return async_task(std::move(func), std::move(stop_token), std::move(progress_token), std::move(args)...);
 
-    } else if constexpr (std::is_invocable_v<Func, ::hi::progress_token, Args...>) {
+    } else if constexpr (features == invocable_features_type::progress) {
         return async_task(std::move(func), std::move(progress_token), std::move(args)...);
 
-    } else if constexpr (std::is_invocable_v<Func, std::stop_token, Args...>) {
+    } else if constexpr (features == invocable_features_type::stop) {
         return async_task(std::move(func), std::move(stop_token), std::move(args)...);
 
-    } else if constexpr (std::is_invocable_v<Func, Args...>) {
+    } else if constexpr (features == invocable_features_type::none) {
         return async_task(std::move(func), std::move(args)...);
 
     } else {
