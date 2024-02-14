@@ -39,7 +39,7 @@ public:
 
     [[nodiscard]] constexpr invocable_features_type features() const noexcept override
     {
-        return invocable_features_v<FuncType, ArgTypes>;
+        return invocable_features_v<FuncType, ArgTypes...>;
     }
 
     task<result_type> run(std::stop_token stop_token, hi::progress_token progress_token)
