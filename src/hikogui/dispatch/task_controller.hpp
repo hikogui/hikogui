@@ -189,7 +189,7 @@ public:
         return _progress_sink.value();
     }
 
-    [[nodiscard]] result_type value() const requires not std::same_as<result_type, void>
+    [[nodiscard]] result_type value() const requires (not std::same_as<result_type, void>)
     {
         return _task.value();
     }
