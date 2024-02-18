@@ -66,7 +66,7 @@ template<typename Func, typename... Args>
     }
 }
 
-enum class invocable_features_type {
+enum class cancel_features_type {
     none = 0,
     stop = 1,
     progress = 2,
@@ -74,18 +74,48 @@ enum class invocable_features_type {
 };
 
 template<typename Func, typename... Args>
-struct invocable_features {
+struct cancel_features {
     // clang-format off
-    constexpr static invocable_features_type value =
-        std::is_invocable_v<Func, std::stop_token, ::hi::progress_token, Args...> ? invocable_features_type::stop_and_progress :
-        std::is_invocable_v<Func, ::hi::progress_token, Args...> ? invocable_features_type::progress :
-        std::is_invocable_v<Func, std::stop_token, Args...> ? invocable_features_type::stop :
-        invocable_features_type::none;
+    constexpr static cancel_features_type value =
+        std::is_invocable_v<Func, std::stop_token, ::hi::progress_token, Args...> ? cancel_features_type::stop_and_progress :
+        std::is_invocable_v<Func, ::hi::progress_token, Args...> ? cancel_features_type::progress :
+        std::is_invocable_v<Func, std::stop_token, Args...> ? cancel_features_type::stop :
+        cancel_features_type::none;
     // clang-format on
 };
 
 template<typename Func, typename... Args>
-constexpr auto invocable_features_v = invocable_features<Func, Args...>::value;
+constexpr auto cancel_features_v = cancel_features<Func, Args...>::value;
+
+template<typename Func, typename... Args>
+struct cancelable_task_result;
+
+template<typename Func, typename... Args>
+    requires (cancel_features_v<Func, Args...> == cancel_features_type::stop_and_progress)
+struct cancelable_task_result<Func, Args...> {
+    using type = std::invoke_result_t<Func, std::stop_token, progress_token, Args...>;
+};
+
+template<typename Func, typename... Args>
+    requires (cancel_features_v<Func, Args...> == cancel_features_type::progress)
+struct cancelable_task_result<Func, Args...> {
+    using type = std::invoke_result_t<Func, progress_token, Args...>;
+};
+
+template<typename Func, typename... Args>
+    requires (cancel_features_v<Func, Args...> == cancel_features_type::stop)
+struct cancelable_task_result<Func, Args...> {
+    using type = std::invoke_result_t<Func, std::stop_token, Args...>;
+};
+
+template<typename Func, typename... Args>
+    requires (cancel_features_v<Func, Args...> == cancel_features_type::none)
+struct cancelable_task_result<Func, Args...> {
+    using type = std::invoke_result_t<Func, Args...>;
+};
+
+template<typename Func, typename... Args>
+using cancelable_task_result_t = cancelable_task_result<Func, Args...>::type;
 
 /** Run a function asynchronously as a co-routine task.
  *
@@ -102,18 +132,18 @@ constexpr auto invocable_features_v = invocable_features<Func, Args...>::value;
 template<typename Func, typename... Args>
 [[nodiscard]] auto cancelable_async_task(Func func, std::stop_token stop_token, ::hi::progress_token progress_token, Args... args)
 {
-    constexpr auto features = invocable_features_v<Func, Args...>;
+    constexpr auto features = cancel_features_v<Func, Args...>;
 
-    if constexpr (features == invocable_features_type::stop_and_progress) {
+    if constexpr (features == cancel_features_type::stop_and_progress) {
         return async_task(std::move(func), std::move(stop_token), std::move(progress_token), std::move(args)...);
 
-    } else if constexpr (features == invocable_features_type::progress) {
+    } else if constexpr (features == cancel_features_type::progress) {
         return async_task(std::move(func), std::move(progress_token), std::move(args)...);
 
-    } else if constexpr (features == invocable_features_type::stop) {
+    } else if constexpr (features == cancel_features_type::stop) {
         return async_task(std::move(func), std::move(stop_token), std::move(args)...);
 
-    } else if constexpr (features == invocable_features_type::none) {
+    } else if constexpr (features == cancel_features_type::none) {
         return async_task(std::move(func), std::move(args)...);
 
     } else {

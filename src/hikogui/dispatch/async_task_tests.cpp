@@ -31,7 +31,7 @@ TEST_SUITE(async_task_suite)
         REQUIRE(t.value() == 43);
     }
 
-    TEST_CASE(cancelable_function_test)
+    TEST_CASE(function2_test)
     {
         auto x = 0;
         auto stop_source = std::stop_source{};
@@ -58,7 +58,7 @@ TEST_SUITE(async_task_suite)
         return *x + 1;
     }
 
-    TEST_CASE(cancelable_function_stop_token_test)
+    TEST_CASE(cancelable_function_test)
     {
         using namespace std::literals;
 
@@ -112,7 +112,7 @@ TEST_SUITE(async_task_suite)
         return 42;
     }
 
-    TEST_CASE(cancelable_function_progress_test)
+    TEST_CASE(progress_function_test)
     {
         using namespace std::literals;
 
@@ -175,7 +175,7 @@ TEST_SUITE(async_task_suite)
         REQUIRE(t.value() == 43);
     }
 
-    TEST_CASE(cancelable_task_test)
+    TEST_CASE(task2_test)
     {
         auto x = 0;
         auto stop_source = std::stop_source{};
@@ -198,7 +198,7 @@ TEST_SUITE(async_task_suite)
         co_return *x + 1;
     }
 
-    TEST_CASE(cancelable_task_stop_token_test)
+    TEST_CASE(cancelable_task_test)
     {
         using namespace std::literals;
 
@@ -252,7 +252,7 @@ TEST_SUITE(async_task_suite)
         co_return 42;
     }
 
-    TEST_CASE(cancelable_task_progress_test)
+    TEST_CASE(progress_task_test)
     {
         using namespace std::literals;
 

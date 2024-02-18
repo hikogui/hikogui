@@ -22,31 +22,31 @@ public:
 
     virtual ~task_controller_base() = default;
 
-    [[nodiscard]] constexpr virtual invocable_features_type features() const noexcept = 0;
+    [[nodiscard]] constexpr virtual cancel_features_type features() const noexcept = 0;
 
     virtual task<result_type> run(std::stop_token stop_token, hi::progress_token progress_token) = 0;
 };
 
-template<typename FuncType, typename... ArgTypes>
-class task_controller_impl : public task_controller_base<std::invoke_result_t<FuncType, ArgTypes...>> {
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+class task_controller_impl : public task_controller_base<ResultType> {
 public:
-    using result_type = std::invoke_result_t<FuncType, ArgTypes...>;
+    using result_type = ResultType;
 
     template<typename Func, typename... Args>
-    task_controller_impl(Func&& func, Args&&... args) : _func(std::forward<Func>(func)), _args(std::forward<Args>(args))
+    task_controller_impl(Func&& func, Args&&... args) : _func(std::forward<Func>(func)), _args(std::forward<Args>(args)...)
     {
     }
 
-    [[nodiscard]] constexpr invocable_features_type features() const noexcept override
+    [[nodiscard]] constexpr cancel_features_type features() const noexcept override
     {
-        return invocable_features_v<FuncType, ArgTypes...>;
+        return cancel_features_v<FuncType, ArgTypes...>;
     }
 
     task<result_type> run(std::stop_token stop_token, hi::progress_token progress_token)
     {
         return std::apply(
             cancelable_async_task<FuncType, ArgTypes...>,
-            std::tuple_cat(std::tuple{std::move(stop_token), std::move(progress_token)}, _args));
+            std::tuple_cat(std::tuple{_func, std::move(stop_token), std::move(progress_token)}, _args));
     }
 
 private:
@@ -85,7 +85,7 @@ public:
     template<typename Func, typename... Args>
     task_controller(Func&& func, Args&&... args) :
         task_controller(),
-        _pimpl(std::make_shared<detail::task_controller_impl<std::decay_t<Func>, std::decay_t<Args>...>>(
+        _pimpl(std::make_shared<detail::task_controller_impl<result_type, std::decay_t<Func>, std::decay_t<Args>...>>(
             std::forward<Func>(func),
             std::forward<Args>(args)...))
     {
@@ -95,7 +95,7 @@ public:
     void set_function(Func&& func, Args&&... args)
     {
         reset();
-        _pimpl = std::make_shared<detail::task_controller_impl<std::decay_t<Func>, std::decay_t<Args>...>>(
+        _pimpl = std::make_shared<detail::task_controller_impl<result_type, std::decay_t<Func>, std::decay_t<Args>...>>(
             std::forward<Func>(func), std::forward<Args>(args)...);
     }
 
@@ -111,12 +111,12 @@ public:
         _pimpl = nullptr;
     }
 
-    [[nodiscard]] invocable_features_type features() const noexcept
+    [[nodiscard]] cancel_features_type features() const noexcept
     {
         if (_pimpl) {
             return _pimpl->features();
         } else {
-            return invocable_features_type::none;
+            return cancel_features_type::none;
         }
     }
 
@@ -178,7 +178,7 @@ public:
         _task = _pimpl->run(_stop_source.get_token(), _progress_sink.get_token());
     }
 
-    void request_stop() noexcept
+    bool request_stop() noexcept
     {
         return _stop_source.request_stop();
     }

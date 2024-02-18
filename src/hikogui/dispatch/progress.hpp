@@ -49,6 +49,11 @@ public:
         return progress_token{const_cast<progress_sink*>(this)};
     }
 
+    void reset()
+    {
+        set_value(0.0f);
+    }
+
     void set_value(float value)
     {
         _value = value;
