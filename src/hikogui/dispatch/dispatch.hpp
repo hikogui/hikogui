@@ -37,9 +37,18 @@
  * handled quickly.
  *
  * The timer-loop is less latency sensitive and can be used for slower
- * maintenace tasks, such as high-resolution clock synchronization and logging
+ * maintenace tasks, such as: high-resolution clock synchronization and logging
  * of telemetry.
  *
+ * To "pump" the events you can use either `hi::loop::resume_once()` which
+ * will handle events for one iteration; or `hi::loop::resume()` which
+ * will handle events until exit is requested, or until there are no more
+ * event handlers registered.
+ *
+ * Currently you will need to use `hi::loop::resume()` to handle the GUI
+ * system. One windows a complex setup of threads and priorities is needed
+ * to properly handle redraws, windows-events and networking on the same
+ * thread which is setup by `hi::loop:resume()`.
  * 
  */
 hi_export_module(hikogui.dispatch);
