@@ -66,12 +66,7 @@ template<typename Func, typename... Args>
     }
 }
 
-enum class cancel_features_type {
-    none = 0,
-    stop = 1,
-    progress = 2,
-    stop_and_progress = 3
-};
+enum class cancel_features_type { none = 0, stop = 1, progress = 2, stop_and_progress = 3 };
 
 template<typename Func, typename... Args>
 struct cancel_features {
@@ -87,35 +82,78 @@ struct cancel_features {
 template<typename Func, typename... Args>
 constexpr auto cancel_features_v = cancel_features<Func, Args...>::value;
 
-template<typename Func, typename... Args>
-struct cancelable_task_result;
-
-template<typename Func, typename... Args>
-    requires (cancel_features_v<Func, Args...> == cancel_features_type::stop_and_progress)
-struct cancelable_task_result<Func, Args...> {
-    using type = std::invoke_result_t<Func, std::stop_token, progress_token, Args...>;
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+concept compatible_cancelable_async_function_none = requires(FuncType f, ArgTypes... args) {
+    {
+        f(args...)
+    } -> std::same_as<ResultType>;
 };
 
-template<typename Func, typename... Args>
-    requires (cancel_features_v<Func, Args...> == cancel_features_type::progress)
-struct cancelable_task_result<Func, Args...> {
-    using type = std::invoke_result_t<Func, progress_token, Args...>;
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+concept compatible_cancelable_async_function_stop = requires(FuncType f, std::stop_token st, ArgTypes... args) {
+    {
+        f(st, args...)
+    } -> std::same_as<ResultType>;
 };
 
-template<typename Func, typename... Args>
-    requires (cancel_features_v<Func, Args...> == cancel_features_type::stop)
-struct cancelable_task_result<Func, Args...> {
-    using type = std::invoke_result_t<Func, std::stop_token, Args...>;
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+concept compatible_cancelable_async_function_progress = requires(FuncType f, progress_token pt, ArgTypes... args) {
+    {
+        f(pt, args...)
+    } -> std::same_as<ResultType>;
 };
 
-template<typename Func, typename... Args>
-    requires (cancel_features_v<Func, Args...> == cancel_features_type::none)
-struct cancelable_task_result<Func, Args...> {
-    using type = std::invoke_result_t<Func, Args...>;
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+concept compatible_cancelable_async_function_stop_and_progress =
+    requires(FuncType f, std::stop_token st, progress_token pt, ArgTypes... args) {
+        {
+            f(st, pt, args...)
+        } -> std::same_as<ResultType>;
+    };
+
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+concept compatible_cancelable_async_task_none = requires(FuncType f, ArgTypes... args) {
+    {
+        f(args...)
+    } -> std::same_as<task<ResultType>>;
 };
 
-template<typename Func, typename... Args>
-using cancelable_task_result_t = cancelable_task_result<Func, Args...>::type;
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+concept compatible_cancelable_async_task_stop = requires(FuncType f, std::stop_token st, ArgTypes... args) {
+    {
+        f(st, args...)
+    } -> std::same_as<task<ResultType>>;
+};
+
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+concept compatible_cancelable_async_task_progress = requires(FuncType f, progress_token pt, ArgTypes... args) {
+    {
+        f(pt, args...)
+    } -> std::same_as<task<ResultType>>;
+};
+
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+concept compatible_cancelable_async_task_stop_and_progress =
+    requires(FuncType f, std::stop_token st, progress_token pt, ArgTypes... args) {
+        {
+            f(st, pt, args...)
+        } -> std::same_as<task<ResultType>>;
+    };
+
+/** A concept for a callable that may be use in cancelable_async_task().
+ */
+// clang-format off
+template<typename ResultType, typename FuncType, typename... ArgTypes>
+concept compatible_cancelable_async_callable =
+    compatible_cancelable_async_function_none<ResultType, FuncType, ArgTypes...> or
+    compatible_cancelable_async_function_stop<ResultType, FuncType, ArgTypes...> or
+    compatible_cancelable_async_function_progress<ResultType, FuncType, ArgTypes...> or
+    compatible_cancelable_async_function_stop_and_progress<ResultType, FuncType, ArgTypes...> or
+    compatible_cancelable_async_task_none<ResultType, FuncType, ArgTypes...> or
+    compatible_cancelable_async_task_stop<ResultType, FuncType, ArgTypes...> or
+    compatible_cancelable_async_task_progress<ResultType, FuncType, ArgTypes...> or
+    compatible_cancelable_async_task_stop_and_progress<ResultType, FuncType, ArgTypes...>;
+// clang-format on
 
 /** Run a function asynchronously as a co-routine task.
  *

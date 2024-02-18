@@ -83,7 +83,8 @@ public:
     }
 
     template<typename Func, typename... Args>
-    task_controller(Func&& func, Args&&... args) :
+    task_controller(Func&& func, Args&&... args) requires compatible_cancelable_async_callable<ResultType, Func, Args...>
+        :
         task_controller(),
         _pimpl(std::make_shared<detail::task_controller_impl<result_type, std::decay_t<Func>, std::decay_t<Args>...>>(
             std::forward<Func>(func),
@@ -92,7 +93,7 @@ public:
     }
 
     template<typename Func, typename... Args>
-    void set_function(Func&& func, Args&&... args)
+    void set_function(Func&& func, Args&&... args) requires compatible_cancelable_async_callable<ResultType, Func, Args...>
     {
         reset();
         _pimpl = std::make_shared<detail::task_controller_impl<result_type, std::decay_t<Func>, std::decay_t<Args>...>>(
@@ -128,7 +129,7 @@ public:
     }
 
     /** Check if the function was started.
-    */
+     */
     [[nodiscard]] bool started() const noexcept
     {
         if (not runnable()) {
@@ -138,7 +139,7 @@ public:
     }
 
     /** Check if the function is currently running.
-    */
+     */
     [[nodiscard]] bool running() const noexcept
     {
         if (not runnable()) {
@@ -148,7 +149,7 @@ public:
     }
 
     /** Check if the function has completed.
-    */
+     */
     [[nodiscard]] bool done() const noexcept
     {
         if (not runnable()) {
@@ -158,9 +159,9 @@ public:
     }
 
     /** Reset the state of the function to not-started.
-     * 
+     *
      * @throws hi::task_running_error when the function is currently running.
-    */
+     */
     void reset()
     {
         if (running()) {
