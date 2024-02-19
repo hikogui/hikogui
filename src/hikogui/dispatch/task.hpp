@@ -22,10 +22,7 @@ hi_export namespace hi::inline v1 {
 
 /** A task.
  *
- * Like the `hi::task` instance this implements a asynchronous co-routine task.
- *
- * If the `task` object is destroyed, the potentially non-completed co-routine will be destroyed as well.
- * A `task` is a move-only object.
+ * This implements a asynchronous co-routine task.
  *
  * @tparam T The type returned by co_return.
  * @tparam DestroyFrame Destroy the coroutine frame when `task` goes out of scope.

@@ -60,9 +60,15 @@ class task_running_error : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
+/** A task controller.
+ *
+ * @tparam ResultType The type of the result of a hi::task or function.
+ */
 template<typename ResultType>
 class task_controller {
 public:
+    /** The result type returned by a hi::task or function.
+     */
     using result_type = ResultType;
 
     task_controller(task_controller const&) = delete;
@@ -75,6 +81,8 @@ public:
         unset_function();
     }
 
+    /** Create a new task_controller.
+     */
     task_controller() noexcept
     {
         _progress_cb = _progress_sink.subscribe([this] {
@@ -82,6 +90,11 @@ public:
         });
     }
 
+    /** Create a new task_controller with a assigned coroutine or function and its arguments.
+     *
+     * @param func The coroutine or function to execute when run() is called.
+     * @param args The arguments passed to the function when run() is called.
+     */
     template<typename Func, typename... Args>
     task_controller(Func&& func, Args&&... args) requires compatible_cancelable_async_callable<ResultType, Func, Args...>
         :
@@ -92,6 +105,12 @@ public:
     {
     }
 
+    /** Set the coroutine or function and its arguments.
+     *
+     * @param func The coroutine or function to execute when run() is called.
+     * @param args The arguments passed to the function when run() is called.
+     * @throws hi::task_running_error when the task is currently running.
+     */
     template<typename Func, typename... Args>
     void set_function(Func&& func, Args&&... args) requires compatible_cancelable_async_callable<ResultType, Func, Args...>
     {
@@ -112,6 +131,10 @@ public:
         _pimpl = nullptr;
     }
 
+    /** The features of the coroutine or function that was assigned.
+     *
+     * @return none, stop, progress or stop_and_progress.
+     */
     [[nodiscard]] cancel_features_type features() const noexcept
     {
         if (_pimpl) {
@@ -173,27 +196,46 @@ public:
         _progress_sink.reset();
     }
 
+    /** Run the assigned coroutine or function with the previous given arguments.
+     */
     void run()
     {
         reset();
         _task = _pimpl->run(_stop_source.get_token(), _progress_sink.get_token());
     }
 
+    /** Request stop.
+     *
+     * @pre The assigned coroutine or function must accept a std::stop_token. 
+     * @post The coroutine or function is requested to stop.
+     */
     bool request_stop() noexcept
     {
         return _stop_source.request_stop();
     }
 
+    /** Get progress of a function.
+     *
+     * @pre The assigned coroutine or function must accept a hi::progress_token.
+     * @return The current progress as reported by the coroutine or function through the hi::progress_token.
+     */
     [[nodiscard]] float_t progress() const noexcept
     {
         return _progress_sink.value();
     }
 
+    /** Get the return value from the coroutine or function.
+     *
+     * @pre done() must return true.
+     * @return The value returned by `return` or `co_return`.
+     */
     [[nodiscard]] result_type value() const requires (not std::same_as<result_type, void>)
     {
         return _task.value();
     }
 
+    /** Register a callback to be called when a coroutine or function reports progress.
+     */
     template<typename Callback>
     hi::notifier<>::callback_type subscribe(Callback&& callback, callback_flags flags = callback_flags::synchronous)
     {

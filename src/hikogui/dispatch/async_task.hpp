@@ -66,8 +66,31 @@ template<typename Func, typename... Args>
     }
 }
 
-enum class cancel_features_type { none = 0, stop = 1, progress = 2, stop_and_progress = 3 };
+/** Features of an invocable.
+ */
+enum class cancel_features_type {
+    /** This invocable does not have extra arguments.
+     */
+    none = 0,
 
+    /** The extra argument is a std::stop_token.
+     */
+    stop = 1,
+
+    /** The extra argument is a hi::progress_token.
+     */
+    progress = 2,
+
+    /** The extra arguments are a std::stop_token, followed by a hi::progress_token.
+     */
+    stop_and_progress = 3
+};
+
+/** Type trait to retrieve the cancel feautes of a invokable.
+ *
+ * @tparam Func The invocable to check.
+ * @tparam Args The arguments to the invocable.
+ */
 template<typename Func, typename... Args>
 struct cancel_features {
     // clang-format off
@@ -79,6 +102,8 @@ struct cancel_features {
     // clang-format on
 };
 
+/** The value of the hi::cancel_features<> type trait.
+ */
 template<typename Func, typename... Args>
 constexpr auto cancel_features_v = cancel_features<Func, Args...>::value;
 
