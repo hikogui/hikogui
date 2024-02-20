@@ -21,7 +21,7 @@ hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept async_widget_attribute =
-    forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
+    label_widget_attribute<Context> or forward_of<Context, keyboard_focus_group>;
 
 /** A GUI widget that permits the user to make a binary choice.
  * @ingroup widgets

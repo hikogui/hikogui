@@ -165,7 +165,8 @@ hi::task<> main_window(my_preferences& preferences)
     auto& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
 
     top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
-    hilet& hello_world_button = top->content().emplace_bottom<momentary_button_widget>(txt("Hello world AV"));
+    hilet& hello_world_button = top->content().emplace_bottom<async_widget>([] { hi_log_info("hello world"); }, txt("Hello world AV"));
+
     hilet& vma_dump_button = top->content().emplace_bottom<momentary_button_widget>(txt("vma\ncalculate stats"));
     hilet& abort_button = top->content().emplace_bottom<momentary_button_widget>(txt("abort"));
     hilet& break_button = top->content().emplace_bottom<momentary_button_widget>(txt("break"));
@@ -176,7 +177,6 @@ hi::task<> main_window(my_preferences& preferences)
         hilet result = co_await when_any(
             preferences_button,
             vma_dump_button,
-            hello_world_button,
             abort_button,
             break_button,
             preferences.toggle_value,
@@ -190,19 +190,16 @@ hi::task<> main_window(my_preferences& preferences)
             gfx_system::global().log_memory_usage();
             break;
         case 2:
-            hi_log_info("Hello World");
-            break;
-        case 3:
             //target = 1 / (result.index() - 3);
             hi_assert_abort("my abort");
             break;
-        case 4:
+        case 3:
             hi_debug_break();
             break;
-        case 5:
-            hi_log_info("Toggle value {}", std::get<5>(result));
+        case 4:
+            hi_log_info("Toggle value {}", std::get<4>(result));
             break;
-        case 6:
+        case 5:
             co_return;
         default:
             hi_no_default();

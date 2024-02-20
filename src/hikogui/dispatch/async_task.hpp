@@ -22,7 +22,7 @@ inline namespace v1 {
  * @param args... The arguments forwarded to @a func.
  */
 template<typename Func, typename... Args>
-[[nodiscard]] std::invoke_result_t<Func, Args...> async_task(Func func, Args... args) requires(invocable_is_task_v<Func, Args...>)
+[[nodiscard]] std::invoke_result_t<Func, Args...> async_task(Func func, Args... args) requires(is_invocable_task_v<Func, Args...>)
 {
     return func(args...);
 }
@@ -35,7 +35,7 @@ template<typename Func, typename... Args>
  */
 template<typename Func, typename... Args>
 [[nodiscard]] task<std::invoke_result_t<Func, Args...>> async_task(Func func, Args... args)
-    requires(not invocable_is_task_v<Func, Args...>)
+    requires(not is_invocable_task_v<Func, Args...>)
 {
     using namespace std::literals;
 
@@ -106,6 +106,7 @@ struct cancel_features {
  */
 template<typename Func, typename... Args>
 constexpr auto cancel_features_v = cancel_features<Func, Args...>::value;
+
 
 template<typename ResultType, typename FuncType, typename... ArgTypes>
 concept compatible_cancelable_async_function_none = requires(FuncType f, ArgTypes... args) {

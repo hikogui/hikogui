@@ -70,6 +70,7 @@ public:
     /** The result type returned by a hi::task or function.
      */
     using result_type = ResultType;
+    using callback_type = notifier<>::callback_type;
 
     task_controller(task_controller const&) = delete;
     task_controller(task_controller&&) = delete;

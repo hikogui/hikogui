@@ -332,16 +332,35 @@ struct is_task<hi::task<ResultType, DestroyFrame>> : std::true_type {};
 template<typename T>
 constexpr bool is_task_v = is_task<T>::value;
 
+template<typename T>
+struct task_value_type;
+
+template<typename ResultType, bool DestroyFrame>
+struct task_value_type<hi::task<ResultType, DestroyFrame>> {
+    using type = ResultType;
+};
+
+template<typename T>
+using task_value_type_t = task_value_type<T>::type;
+
 /** type-trait to determining if the given invocable @a Func is a task.
 */
 template<typename Func, typename... ArgTypes>
-struct invocable_is_task {
+struct is_invocable_task {
     constexpr static bool value = is_task_v<std::invoke_result_t<Func, ArgTypes...>>;
 };
 
 /** type-trait to determining if the given invocable @a Func is a task.
 */
 template<typename Func, typename... ArgTypes>
-constexpr bool invocable_is_task_v = invocable_is_task<Func, ArgTypes...>::value;
+constexpr bool is_invocable_task_v = is_invocable_task<Func, ArgTypes...>::value;
+
+template<typename Func, typename... ArgTypes>
+struct invoke_task_result {
+    using type = task_value_type_t<std::invoke_result_t<Func, ArgTypes...>>;
+};
+
+template<typename Func, typename... ArgTypes>
+using invoke_task_result_t = invoke_task_result<Func, ArgTypes...>::type;
 
 } // namespace hi::inline v1
