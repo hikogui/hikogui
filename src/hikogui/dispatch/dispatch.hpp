@@ -49,6 +49,29 @@
  * system. One windows a complex setup of threads and priorities is needed
  * to properly handle redraws, windows-events and networking on the same
  * thread which is setup by `hi::loop:resume()`.
+ *
+ * Coroutines and Awaitables
+ * -------------------------
+ * HikoGUI implements a asynchronous task called hi::task. There are two forms;
+ * the default is unscoped where the task will continue even if the hi::task
+ * object is destroyed. The second is a scoped task, with the
+ * alias hi::scoped_task, which will destroy a running task when
+ * the hi::task object is destroyed.
+ *
+ * A hi::task can await on objects that match the concept
+ * hi::convertible_to_awaitable. This handles:
+ *  - An object that is awaitable, i.e. with the full set of await_*() member functions.
+ *  - An object that has a `operator co_await()` operator member function.
+ *  - An object that has a `operator co_await()` operator free function.
+ *  - An object for which hi::awaitable_cast<> is specialized. This includes
+ *    by default:
+ *    + std::chrono::duration (including the std::chrono::literals).
+ *    + std::chrono::time_stamp.
+ *    + std::stop_token
+ *
+ * Async task
+ * ----------
+ * 
  * 
  */
 hi_export_module(hikogui.dispatch);
