@@ -98,12 +98,10 @@ public:
      */
     template<typename Func, typename... Args>
     task_controller(Func&& func, Args&&... args) requires compatible_cancelable_async_callable<ResultType, Func, Args...>
-        :
-        task_controller(),
-        _pimpl(std::make_shared<detail::task_controller_impl<result_type, std::decay_t<Func>, std::decay_t<Args>...>>(
-            std::forward<Func>(func),
-            std::forward<Args>(args)...))
+        : task_controller()
     {
+        _pimpl = std::make_shared<detail::task_controller_impl<result_type, std::decay_t<Func>, std::decay_t<Args>...>>(
+            std::forward<Func>(func), std::forward<Args>(args)...);
     }
 
     /** Set the coroutine or function and its arguments.
@@ -207,7 +205,7 @@ public:
 
     /** Request stop.
      *
-     * @pre The assigned coroutine or function must accept a std::stop_token. 
+     * @pre The assigned coroutine or function must accept a std::stop_token.
      * @post The coroutine or function is requested to stop.
      */
     bool request_stop() noexcept
@@ -230,7 +228,7 @@ public:
      * @pre done() must return true.
      * @return The value returned by `return` or `co_return`.
      */
-    [[nodiscard]] result_type value() const requires (not std::same_as<result_type, void>)
+    [[nodiscard]] result_type value() const requires(not std::same_as<result_type, void>)
     {
         return _task.value();
     }

@@ -86,9 +86,9 @@ public:
      * @param args... The arguments passed to the function
      */
     template<typename Func, typename... Args>
-    default_async_delegate(Func&& func, Args&&... args) noexcept
+    default_async_delegate(Func&& func, Args&&... args) noexcept :
+        _task_controller(std::forward<Func>(func), std::forward<Args>(args)...)
     {
-        _task_controller = task_controller<result_type>{std::forward<Func>(func), std::forward<Args>(args)...};
         _task_controller_cbt = _task_controller.subscribe([this] {
             this->_notifier();
         });

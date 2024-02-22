@@ -50,6 +50,7 @@ public:
 
     struct attributes_type {
         observer<alignment> alignment = alignment::top_left();
+        observer<hi::label> label = hi::txt{"<label>"};
         keyboard_focus_group focus_group = keyboard_focus_group::normal;
 
         attributes_type(attributes_type const &) noexcept = default;
@@ -72,6 +73,9 @@ public:
         {
             if constexpr (forward_of<First, observer<hi::alignment>>) {
                 alignment = std::forward<First>(first);
+
+            } else if constexpr (forward_of<First, observer<hi::label>>) {
+                label = std::forward<First>(first);
 
             } else if constexpr (forward_of<First, keyboard_focus_group>) {
                 focus_group = std::forward<First>(first);
