@@ -71,7 +71,16 @@
  *
  * Async task
  * ----------
- * 
+ * The `hi::async_task()` function will call a given function and run it
+ * using `std::async()` and control it using a co-routine which loops
+ * until the function as completed. If the function passed to `hi::async_task()`
+ * is a `hi::task` co-routine, then that function is called directly.
+ *
+ * `hi::cancelable_async_task()` is simular to `hi::async_task()` but it will
+ * take a `std::stop_token` and `hi::progress_token` to cancel and track progress
+ * of the given function. The given function's `std::stop_token` and
+ * `hi::progress_token` arguments are optional, and `hi::cancelable_async_task()`
+ * will 
  * 
  */
 hi_export_module(hikogui.dispatch);
