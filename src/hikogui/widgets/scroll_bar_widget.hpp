@@ -35,7 +35,7 @@ hi_export namespace hi { inline namespace v1 {
  * @tparam Axis which axis (horizontal or vertical) this scroll bar is used for.
  */
 template<axis Axis>
-class scroll_bar_widget final : public widget {
+class scroll_bar_widget : public widget {
 public:
     using super = widget;
 

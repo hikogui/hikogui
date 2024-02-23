@@ -5,121 +5,67 @@
 #pragma once
 
 #include "../utility/utility.hpp"
+#include "thread.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <atomic>
 #include <functional>
 #include <cstddef>
+#include <mutex>
+#include <algorithm>
 
 hi_export_module(hikogui.concurrency.callback);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 namespace detail {
 
-template<typename R, typename... Args>
-struct callback_base {
-    virtual R operator()(Args... args) = 0;
+template<typename ResultType, typename... ArgTypes>
+class callback_base {
+public:
+    virtual ~callback_base() = default;
 
-    /** Check if the callback-function is expired.
-     */
-    [[nodiscard]] bool expired() const noexcept
-    {
-        return (count.load(std::memory_order::relaxed) & 1) == 0;
-    }
-
-    /** Check if the callback-function is locked.
-     */
-    [[nodiscard]] bool locked() const noexcept
-    {
-        return count.load(std::memory_order::relaxed) >= 2;
-    }
-
-    /** Lock before calling the callback-function.
-     *
-     * This will delay the destruction of the callback object and in turn
-     * delay the destruction of the object that stores the callback function.
-     *
-     * @retval true The callback-function may be called
-     * @retval false The callback-function has been destroyed.
-     */
-    [[nodiscard]] bool lock() const noexcept
-    {
-        auto expected = count.load(std::memory_order::relaxed);
-        do {
-            hi_axiom(expected < std::numeric_limits<std::atomic_unsigned_lock_free::value_type>::max() - 2);
-
-            if ((expected & 1) == 0) {
-                // The callback object is being/was destructed.
-                return false;
-            }
-        } while (not count.compare_exchange_strong(expected, expected + 2, std::memory_order::relaxed));
-
-        return true;
-    }
-
-    /** Unlock after calling the callback-function
-     */
-    void unlock() const noexcept
-    {
-        if (count.fetch_sub(2, std::memory_order::relaxed) == 2) {
-            // Last inflight callback has finished,
-            // and callback object is being destroyed.
-            // Notify a callback object that is delaying destruction.
-            count.notify_one();
-        }
-    }
-
-    /** Destruct the callback objects without delaying.
-     */
-    void unsafe_destruct() const noexcept
-    {
-        hilet prev_count = count.fetch_sub(1, std::memory_order::relaxed);
-        hi_axiom((prev_count & 1) == 1);
-    }
-
-    /** Delay the destruction of the callback object, when calls are in flight.
-     */
-    void delay_destruct() const noexcept
-    {
-        if (auto expected = count.fetch_sub(1, std::memory_order::relaxed); expected != 0) {
-            // There are callbacks in-flight, wait for any callbacks to finish.
-            do {
-                count.wait(expected, std::memory_order::relaxed);
-                expected = count.load(std::memory_order::relaxed);
-
-                hi_axiom((expected & 1) == 0);
-            } while (expected != 0);
-        }
-    }
-
-    /** Reference count for callbacks.
-     *
-     * Bit meaning:
-     *  - [0] A `callback`-object exists.
-     *  - [:1] Number of outstanding calls.
-     */
-    mutable std::atomic_unsigned_lock_free count = 1;
+    virtual ResultType operator()(ArgTypes... args) = 0;
 };
 
-template<typename Function, typename R, typename... Args>
-struct callback_impl : callback_base<R, Args...> {
+template<typename FunctionType, typename ResultType, typename... ArgTypes>
+class callback_impl : public callback_base<ResultType, ArgTypes...> {
+public:
+    ~callback_impl()
+    {
+#ifndef NDEBUG
+        auto const _ = std::scoped_lock(_mutex);
+        hi_assert(_thread_ids.empty());
+#endif
+    }
+
     template<typename Func>
-    callback_impl(Func&& func) : callback_base<R, Args...>(), func(std::forward<Func>(func))
+    callback_impl(Func&& func) : callback_base<ResultType, ArgTypes...>(), _func(std::forward<Func>(func))
     {
     }
 
-    /** Call the callback function.
-     *
-     * @param args The arguments forwarded to callback-function.
-     * @return The result of the callback-function.
-     * @throws The exception thrown from the callback-function.
-     */
-    R operator()(Args... args) override
+    ResultType operator()(ArgTypes... args) override
     {
-        return func(std::forward<Args>(args)...);
+#ifndef NDEBUG
+        auto const _ = std::scoped_lock(_mutex);
+        auto const thread_id = current_thread_id();
+        hi_assert(not std::ranges::contains(_thread_ids, thread_id));
+        _thread_ids.push_back(thread_id);
+        auto const d = defer([&] {
+            std::erase(_thread_ids, thread_id);
+        });
+#endif
+
+        return _func(args...);
     }
 
-    Function func;
+private:
+    FunctionType _func;
+
+#ifndef NDEBUG
+    mutable std::vector<thread_id> _thread_ids;
+    mutable std::mutex _mutex;
+#endif
 };
 
 } // namespace detail
@@ -130,14 +76,14 @@ class weak_callback;
 template<typename T = void()>
 class callback;
 
-template<typename R, typename... Args>
-class callback<R(Args...)>;
+template<typename ResultType, typename... ArgTypes>
+class callback<ResultType(ArgTypes...)>;
 
-template<typename R, typename... Args>
-class weak_callback<R(Args...)> {
+template<typename ResultType, typename... ArgTypes>
+class weak_callback<ResultType(ArgTypes...)> {
 public:
-    using result_type = R;
-    using base_impl_type = detail::callback_base<R, Args...>;
+    using result_type = ResultType;
+    using callback_type = callback<ResultType(ArgTypes...)>;
 
     constexpr weak_callback() noexcept = default;
     weak_callback(weak_callback const& other) noexcept = default;
@@ -145,8 +91,17 @@ public:
     weak_callback& operator=(weak_callback const& other) noexcept = default;
     weak_callback& operator=(weak_callback&& other) noexcept = default;
 
-    weak_callback(std::shared_ptr<base_impl_type> other) noexcept : _impl(std::move(other)) {}
-    weak_callback(callback<R(Args...)> const& other) noexcept;
+    weak_callback(callback_type const& other) noexcept;
+
+    void reset() noexcept
+    {
+        return _impl.reset();
+    }
+
+    [[nodiscard]] long use_count() const noexcept
+    {
+        return _impl.use_count();
+    }
 
     /** Check if the callback object is expired.
      *
@@ -156,128 +111,61 @@ public:
      */
     [[nodiscard]] bool expired() const noexcept
     {
-        if (_impl) {
-            return _impl->expired();
-        } else {
-            return true;
-        }
+        return _impl.expired();
     }
 
-    /** Make the weak_callback expired, so that it can no longer be called.
-     */
-    void reset() noexcept
-    {
-        _impl.reset();
-    }
-
-    /** Lock before calling the callback-function.
-     *
-     * This will delay the destruction of the callback object and in turn
-     * delay the destruction of the object that stores the callback function.
-     *
-     * @retval true The callback-function may be called
-     * @retval false The callback-function has been destroyed.
-     */
-    [[nodiscard]] bool lock() const noexcept
-    {
-        if (_impl) {
-            return _impl->lock();
-        } else {
-            return false;
-        }
-    }
-
-    /** Unlock after calling the callback-function
-     */
-    void unlock() const noexcept
-    {
-        hi_axiom_not_null(_impl);
-        return _impl->unlock();
-    }
-
-    /** Call the callback function.
-     *
-     * This may delay the destruction of the callback object and the object
-     * that stores the callback object.
-     *
-     * @pre This object must first be locked.
-     * @param args The arguments to forward to the function.
-     * @return The result value of the function
-     * @throws std::bad_function_call if *this does not store a callable function target.
-     * @throws Any exception thrown from the callback function.
-     */
-    result_type operator()(Args... args) const
-    {
-        if (not _impl) {
-            throw std::bad_function_call();
-        }
-
-        hi_axiom(_impl->locked(), "A weak_callback must be locked before calling the function operator.");
-        return (*_impl)(std::forward<Args>(args)...);
-    }
+    [[nodiscard]] callback_type lock() const noexcept;
 
 private:
-    std::shared_ptr<base_impl_type> _impl;
+    using base_impl_type = detail::callback_base<ResultType, ArgTypes...>;
+
+    std::weak_ptr<base_impl_type> _impl;
 };
 
 /** A callback function.
  *
  * This callback object holds a function object that can be called.
- * It works mostly as `std::move_only_function<R(Args...)>`.
+ * It works mostly as `std::function<R(Args...)>`.
  *
- * When a object subscribes a callback function it will take a
- * `weak_callback<R(Args...)>` of this callback object.
- *
- * This callback type is specifically designed to more safely handle capturing
- * a `this` pointer into a lambda.
- *
- * The idea is that a `subscribe()` function will return a callback object
- * that will be stored inside the object for which the `this` pointer is
- * captured. This means that if this object is destroyed, the callback is
- * destroyed as well, and the caller will notice this through the
- * `weak_callback`.
+ * The ownership model of a callback is designed around a std::shared_ptr
+ * and std::weak_ptr.
+ * 
+ * In many cases the subscribe() function of an object will store a
+ * `weak_callback` and return a `callback` object. This caller of subscribe()
+ * will become the owner of the `callback`. When the `callback` is destroyed
+ * `weak_callback` can no longer be called and be automatically cleaned up.
+ * 
+ * This way subscribing a lambda-callback that captures the this pointer can
+ * be safely handled, by having the `this` object store the callback. When
+ * `this` gets destroyed, the `callback` is destroyed and the subscription is
+ * automatically cleaned up.
+ * 
+ * However it may still be dangerous when the `callback` is called from multiple
+ * threads.
+ * 
+ * The callback may also not re-enter from the same thread, nor is it allowed
+ * to destroy the callback from within the callback.
  *
  * @tparam R The result of the function.
  * @tparam Args The arguments of the function.
  */
-template<typename R, typename... Args>
-class callback<R(Args...)> {
+template<typename ResultType, typename... ArgTypes>
+class callback<ResultType(ArgTypes...)> {
 public:
-    using result_type = R;
-    using weak_type = weak_callback<R(Args...)>;
-
-    using base_impl_type = detail::callback_base<R, Args...>;
-    template<typename Func>
-    using impl_type = detail::callback_impl<Func, R, Args...>;
+    using result_type = ResultType;
+    using weak_callback_type = weak_callback<ResultType(ArgTypes...)>;
 
     constexpr callback() = default;
-    callback(callback const&) = delete;
-    callback& operator=(callback const&) = delete;
-
-    /** Destroy the callback.
-     * 
-     * This may be delayed if there are calls to the callback function inflight
-     * on another thread.
-     */
-    ~callback()
-    {
-        unsubscribe();
-    }
-
-    callback(callback&& other) noexcept : _impl(std::exchange(other._impl, nullptr)) {}
-
-    callback& operator=(callback&& other) noexcept
-    {
-        unsubscribe();
-        _impl = std::exchange(other._impl, nullptr);
-        return *this;
-    }
+    callback(callback const&) = default;
+    callback& operator=(callback const&) = default;
+    callback(callback&&) = default;
+    callback& operator=(callback&&) = default;
 
     callback(std::nullptr_t) noexcept : _impl(nullptr) {}
 
     callback& operator=(std::nullptr_t) noexcept
     {
-        unsubscribe();
+        _impl = nullptr;
         return *this;
     }
 
@@ -286,41 +174,14 @@ public:
     {
     }
 
-    /** Unsafe unsubscribe the callback.
-     * 
-     * This function can be called from within the current inflight call,
-     * to be able to destroy the owner of the callback and the callback itself
-     * from within the executing callback.
-     * 
-     * The unsubscribe is lazy, although the callback can no longer be called,
-     * the actual deallocation of the callback may happen at a later timer.
-     * 
-     * @return A shared_ptr of the actual function implementation. You should
-     *         capture this so that the frame of the lambda remains available
-     *         until it terminates.
-     */
-    [[nodiscard]] std::shared_ptr<base_impl_type> unsafe_unsubscribe() noexcept
+    void reset() noexcept
     {
-        if (_impl) {
-            _impl->unsafe_destruct();
-        }
-        return std::exchange(_impl, nullptr);
+        return _impl.reset();
     }
 
-    /** Unsubscribe the callback.
-     * 
-     * Unsubscribe will block until there are no more inflight calls to this
-     * callback.
-     * 
-     * The unsubscribe is lazy, although the callback can no longer be called,
-     * the actual deallocation of the callback may happen at a later timer.
-     */
-    void unsubscribe() noexcept
+    [[nodiscard]] long use_count() const noexcept
     {
-        if (_impl) {
-            _impl->delay_destruct();
-        }
-        _impl = nullptr;
+        return _impl.use_count();
     }
 
     [[nodiscard]] operator bool() const noexcept
@@ -330,12 +191,15 @@ public:
 
     /** Call the callback function.
      *
-     * @param args The arguments to forward to the function.
-     * @return The result value of the function
-     * @throws std::bad_function_call if *this does not store a callable function target.
-     * @throws Any exception thrown from the callback function.
+     * @note A callback is not re-enterable from the same thread.
+     * @note It is undefined behavior to destroy a callback while it is in-flight.
+     * @param args The arguments forwarded to callback-function.
+     * @return The result of the callback-function.
+     * @throws std::base_function_call if the callback does not store a function object.
+     * @throws The exception thrown from the callback-function.
      */
-    R operator()(Args... args) const
+    template<typename... Args>
+    decltype(auto) operator()(Args... args)
     {
         if (not _impl) {
             throw std::bad_function_call();
@@ -347,16 +211,29 @@ public:
     }
 
 private:
+    using base_impl_type = detail::callback_base<ResultType, ArgTypes...>;
+
+    template<typename FunctionType>
+    using impl_type = detail::callback_impl<FunctionType, ResultType, ArgTypes...>;
+
     std::shared_ptr<base_impl_type> _impl = {};
 
-    callback(std::shared_ptr<base_impl_type>&& other) : _impl(std::move(other)) {}
+    callback(std::shared_ptr<base_impl_type> other) noexcept : _impl(std::move(other)) {}
 
-    friend weak_callback<R(Args...)>;
+    friend weak_callback<ResultType(ArgTypes...)>;
 };
 
-template<typename R, typename... Args>
-hi_inline weak_callback<R(Args...)>::weak_callback(callback<R(Args...)> const& other) noexcept : weak_callback(other._impl)
+template<typename ResultType, typename... ArgTypes>
+hi_inline weak_callback<ResultType(ArgTypes...)>::weak_callback(callback<ResultType(ArgTypes...)> const& other) noexcept :
+    _impl(other._impl)
 {
 }
 
-}} // namespace hi::v1
+template<typename ResultType, typename... ArgTypes>
+[[nodiscard]] hi_inline callback<ResultType(ArgTypes...)> weak_callback<ResultType(ArgTypes...)>::lock() const noexcept
+{
+    return {_impl.lock()};
+}
+
+} // namespace v1
+} // namespace hi::v1

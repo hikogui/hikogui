@@ -16,7 +16,6 @@
 #include "../l10n/l10n.hpp"
 #include "../container/container.hpp"
 #include "../observer/observer.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
@@ -28,7 +27,8 @@
 
 hi_export_module(hikogui.widgets.text_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
 concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_style>>;
@@ -59,7 +59,7 @@ concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, obs
  *
  * @ingroup widgets
  */
-class text_widget final : public widget {
+class text_widget : public widget {
 public:
     using super = widget;
     using delegate_type = text_delegate;
@@ -85,7 +85,8 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate to use to control the widget's data.
      */
-    text_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
+    text_widget(not_null<widget_intf const*> parent, std::shared_ptr<delegate_type> delegate) noexcept :
+        super(parent), delegate(std::move(delegate))
     {
         set_mode(widget_mode::select);
 
@@ -138,7 +139,10 @@ public:
         this->delegate->init(*this);
     }
 
-    text_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate, text_widget_attribute auto&&...attributes) noexcept :
+    text_widget(
+        not_null<widget_intf const*> parent,
+        std::shared_ptr<delegate_type> delegate,
+        text_widget_attribute auto&&... attributes) noexcept :
         text_widget(parent, std::move(delegate))
     {
         set_attributes(hi_forward(attributes)...);
@@ -151,10 +155,9 @@ public:
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
     text_widget(
-        not_null<widget_intf const *> parent,
+        not_null<widget_intf const*> parent,
         incompatible_with<std::shared_ptr<delegate_type>> auto&& text,
-        text_widget_attribute auto&&...attributes) noexcept
-        requires requires { make_default_text_delegate(hi_forward(text)); }
+        text_widget_attribute auto&&... attributes) noexcept requires requires { make_default_text_delegate(hi_forward(text)); }
         : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...)
     {
     }
@@ -801,7 +804,7 @@ private:
     float _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
 
     bool _overwrite_mode = false;
-    
+
     /** The text has a dead character.
      *
      * This variable has the following states:
@@ -820,7 +823,7 @@ private:
     callback<void(cursor_state_type)> _cursor_state_cbt;
 
     void set_attributes() noexcept {}
-    void set_attributes(text_widget_attribute auto&& first, text_widget_attribute auto&&...rest) noexcept
+    void set_attributes(text_widget_attribute auto&& first, text_widget_attribute auto&&... rest) noexcept
     {
         if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
@@ -864,7 +867,7 @@ private:
      *
      * @param states The individual states to reset.
      */
-    void reset_state(char const *states) noexcept
+    void reset_state(char const* states) noexcept
     {
         hi_assert_not_null(states);
 
@@ -961,7 +964,6 @@ private:
         }
         _selection.resize(size);
     }
-
 
     /** This function replaces the current selection with replacement text.
      */
@@ -1079,4 +1081,5 @@ private:
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

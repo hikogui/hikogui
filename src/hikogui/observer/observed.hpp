@@ -5,7 +5,6 @@
 #pragma once
 
 #include "group_ptr.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <vector>

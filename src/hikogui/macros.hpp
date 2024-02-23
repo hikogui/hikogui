@@ -884,3 +884,103 @@ inline void weak_terminate() noexcept
         } \
     } while (false)
 
+/** Create a function which tests the valid arguments for a callable.
+ * 
+ * The created function can be called with one or more arguments.
+ * The return value is the maximum number of consecutive valid arguments for the
+ * callable; or zero if none of the arguments where valid.
+ * 
+ * @param ATTRIBUTES The attributes of the function to create.
+ * @param NAME The name of the function to create.
+ * @param CHECK_CALLABLE The function to test for number of arguments.
+ */
+#define hi_num_valid_arguments(ATTRIBUTES, NAME, CHECK_CALLABLE) \
+    template<size_t I, typename First, typename... Rest> \
+    ATTRIBUTES size_t _ ## NAME() \
+    { \
+        if constexpr (I > 1) { \
+            return _ ## NAME<I - 1, Rest..., First>(); \
+        } else if constexpr (I == 1) { \
+            return _ ## NAME<0, Rest...>(); \
+        } else if constexpr (requires (First &&f, Rest &&...r) { CHECK_CALLABLE(std::forward<First>(f), std::forward<Rest>(r)...); }) { \
+            return sizeof...(Rest) + 1; \
+        } else if constexpr (sizeof...(Rest)) { \
+            return _ ## NAME<sizeof...(Rest) + 1, First, Rest...>(); \
+        } else { \
+            return 0; \
+        } \
+    } \
+    template<typename... Args> \
+    ATTRIBUTES size_t NAME() \
+    { \
+        if constexpr (sizeof...(Args) != 0) { \
+            return _ ## NAME<0, Args...>(); \
+        } else { \
+            return 0; \
+        } \
+    }
+
+/** Create a function which calls a callable with the left N arguments.
+ * 
+ * The created function can be called with zero or more arguments.
+ * The first template paramater `N` is the number of arguments to pass
+ * when calling the callable.
+ * 
+ * @param ATTRIBUTES The attributes of the function to create.
+ * @param NAME The name of the function to create.
+ * @param CALLABLE The function to test for number of arguments.
+*/
+// To use the right arguments, we first need to rotate them before we can
+// remove the ones we don't need. Since we can only remove arguments on the left
+// side.
+#define hi_call_left_arguments(ATTRIBUTES, NAME, CALLABLE) \
+    template<size_t N, size_t R, typename First, typename... Rest>\
+    ATTRIBUTES auto _ ## NAME(First &&first, Rest &&...rest)\
+    {\
+        if constexpr (R != 0) { \
+            return _ ## NAME<N, R - 1, Rest..., First>(std::forward<Rest>(rest)..., std::forward<First>(first)); \
+        } else if constexpr (N != sizeof...(Rest) + 1) {\
+            return _ ## NAME<N, 0, Rest...>(std::forward<Rest>(rest)...);\
+        } else { \
+            return CALLABLE(std::forward<First>(first), std::forward<Rest>(rest)...);\
+        }\
+    }\
+    template<size_t N, typename... Args>\
+    ATTRIBUTES auto NAME(Args &&...args)\
+    {\
+        static_assert(N <= sizeof...(Args)); \
+        if constexpr (N == sizeof...(Args)) { \
+            return CALLABLE(std::forward<Args>(args)...); \
+        } else {\
+            return _ ## NAME<N, N, Args...>(std::forward<Args>(args)...); \
+        }\
+    }
+
+/** Create a function which calls a callable with the right N arguments.
+ * 
+ * The created function can be called with zero or more arguments.
+ * The first template paramater `Skip` is the number of arguments to skip
+ * before calling the callable.
+ * 
+ * @param ATTRIBUTES The attributes of the function to create.
+ * @param NAME The name of the function to create.
+ * @param CALLABLE The function to test for number of arguments.
+*/
+#define hi_call_right_arguments(ATTRIBUTES, NAME, CALLABLE) \
+    template<size_t Skip>\
+    ATTRIBUTES auto NAME()\
+    {\
+        static_assert(Skip == 0); \
+        return CALLABLE();\
+    }\
+    template<size_t Skip, typename First, typename... Rest>\
+    ATTRIBUTES auto NAME(First &&first, Rest &&...rest)\
+    {\
+        static_assert(Skip <= (sizeof...(Rest) + 1)); \
+        if constexpr (Skip != 0) {\
+            return NAME<Skip - 1, Rest...>(std::forward<Rest>(rest)...);\
+        } else {\
+            return CALLABLE(std::forward<First>(first), std::forward<Rest>(rest)...);\
+        }\
+    }
+

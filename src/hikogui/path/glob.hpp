@@ -7,7 +7,6 @@
 #include "path_location.hpp"
 #include "../char_maps/char_maps.hpp"
 #include "../utility/utility.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <string>

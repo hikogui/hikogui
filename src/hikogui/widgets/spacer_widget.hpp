@@ -19,7 +19,7 @@ hi_export namespace hi { inline namespace v1 {
  * @ingroup widgets
  *
  */
-class spacer_widget final : public widget {
+class spacer_widget : public widget {
 public:
     using super = widget;
 

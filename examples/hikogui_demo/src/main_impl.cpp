@@ -95,9 +95,9 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     //auto& checkbox2 = grid.emplace<checkbox_widget>("B2", preferences.radio_value, 2);
 
     grid.emplace<label_widget>("A3", txt("These are radio buttons:"), alignment::top_right());
-    grid.emplace<radio_button_with_label_widget>("B3", preferences.radio_value, 0, txt("Radio 1"));
-    grid.emplace<radio_button_with_label_widget>("B4", preferences.radio_value, 1, txt("Radio 2 (on)"), txt("Radio 2 (off)"));
-    grid.emplace<radio_button_with_label_widget>("B5", preferences.radio_value, 2, txt("Radio 3"));
+    grid.emplace<radio_with_label_widget>("B3", preferences.radio_value, 0, txt("Radio 1"));
+    grid.emplace<radio_with_label_widget>("B4", preferences.radio_value, 1, txt("Radio 2 (on)"), txt("Radio 2 (off)"));
+    grid.emplace<radio_with_label_widget>("B5", preferences.radio_value, 2, txt("Radio 3"));
 
     auto option_list = std::vector{
         std::pair{0, label{txt("first")}},
@@ -127,7 +127,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     co_await std::suspend_always{};
 }
 
-hi::task<> preferences_window(my_preferences& preferences)
+hi::task<> preferences_window(std::stop_token stop_token, my_preferences& preferences)
 {
     using namespace hi;
 
@@ -149,7 +149,7 @@ hi::task<> preferences_window(my_preferences& preferences)
 
     auto window = gui_window{std::move(top)};
 
-    co_await window.closing;
+    co_await when_any(window.closing, stop_token);
 }
 
 inline size_t target = 0;
@@ -162,10 +162,11 @@ hi::task<> main_window(my_preferences& preferences)
     auto top = std::make_unique<window_widget>(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, txt("Preferences")};
-    hilet& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
+    auto& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
 
     top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
-    hilet& hello_world_button = top->content().emplace_bottom<momentary_button_widget>(txt("Hello world AV"));
+    hilet& hello_world_button = top->content().emplace_bottom<async_widget>([] { hi_log_info("hello world"); }, txt("Hello world AV"));
+
     hilet& vma_dump_button = top->content().emplace_bottom<momentary_button_widget>(txt("vma\ncalculate stats"));
     hilet& abort_button = top->content().emplace_bottom<momentary_button_widget>(txt("abort"));
     hilet& break_button = top->content().emplace_bottom<momentary_button_widget>(txt("break"));
@@ -176,7 +177,6 @@ hi::task<> main_window(my_preferences& preferences)
         hilet result = co_await when_any(
             preferences_button,
             vma_dump_button,
-            hello_world_button,
             abort_button,
             break_button,
             preferences.toggle_value,
@@ -184,25 +184,22 @@ hi::task<> main_window(my_preferences& preferences)
 
         switch (result.index()) {
         case 0:
-            preferences_window(preferences);
+            preferences_button.wait_for(preferences_window(preferences_button.get_stop_token(), preferences));
             break;
         case 1:
             gfx_system::global().log_memory_usage();
             break;
         case 2:
-            hi_log_info("Hello World");
-            break;
-        case 3:
             //target = 1 / (result.index() - 3);
             hi_assert_abort("my abort");
             break;
-        case 4:
+        case 3:
             hi_debug_break();
             break;
-        case 5:
-            hi_log_info("Toggle value {}", std::get<5>(result));
+        case 4:
+            hi_log_info("Toggle value {}", std::get<4>(result));
             break;
-        case 6:
+        case 5:
             co_return;
         default:
             hi_no_default();

@@ -8,7 +8,6 @@
 #include "../font/font.hpp"
 #include "../utility/utility.hpp"
 #include "../l10n/l10n.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <coroutine>

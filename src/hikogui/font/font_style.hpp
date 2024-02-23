@@ -8,7 +8,6 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../coroutine/coroutine.hpp"
 #include <string_view>
 #include <coroutine>
 

@@ -26,7 +26,7 @@ hi_export namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class window_controls_macos_widget final : public widget {
+class window_controls_macos_widget : public widget {
 public:
     using super = widget;
 

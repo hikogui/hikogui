@@ -117,6 +117,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/vector_span.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/void_span.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/wfree_fifo.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/container/wfree_unordered_map.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/awaitable.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/generator.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/coroutine/coroutine.ixx
@@ -125,13 +126,17 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/crt/crt_utils_win32_impl.ixx>
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/async_task.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_stop_token_intf.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_stop_token_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_intf.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/awaitable_timer_impl.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/dispatch.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/function_timer.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/loop_win32_intf.ixx>
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/notifier.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/scoped_task.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/task.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event_intf.ixx
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/dispatch/socket_event_win32_impl.ixx>
@@ -429,6 +434,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/half_to_float.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/float_to_half.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/forward_value.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/generator.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/hash.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/initialize.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/math.ixx
@@ -446,6 +452,8 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/units.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/utility/value_traits.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/abstract_button_widget.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/async_delegate.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/async_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/audio_device_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/button_delegate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/checkbox_widget.ixx
@@ -456,7 +464,8 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/widgets.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/momentary_button_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/overlay_widget.ixx
-    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/radio_button_widget.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/radio_delegate.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/radio_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/scroll_aperture_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/scroll_bar_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/scroll_widget.ixx
@@ -470,6 +479,7 @@ target_sources(hikogui PUBLIC FILE_SET CXX_MODULES BASE_DIRS "${CMAKE_CURRENT_SO
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_field_delegate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_field_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/text_widget.ixx
+    ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toggle_delegate.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toggle_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_button_widget.ixx
     ${CMAKE_CURRENT_SOURCE_DIR}/mod/hikogui/widgets/toolbar_tab_button_widget.ixx

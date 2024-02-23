@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file widgets/toggle_widget.hpp Defines toggle_widget.
+/** @file widgets/radio_widget.hpp Defines radio_widget.
  * @ingroup widgets
  */
 
@@ -10,59 +10,42 @@
 
 #include "widget.hpp"
 #include "with_label_widget.hpp"
-#include "toggle_delegate.hpp"
+#include "menu_button_widget.hpp"
+#include "radio_delegate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
 
-hi_export_module(hikogui.widgets.toggle_widget);
+hi_export_module(hikogui.widgets.radio_widget);
 
 hi_export namespace hi {
 inline namespace v1 {
 
 template<typename Context>
-concept toggle_widget_attribute = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
+concept radio_widget_attribute = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
 
 /** A GUI widget that permits the user to make a binary choice.
  *
- * A toggle is very similar to a `toggle_widget`. The
- * semantic difference between a toggle and a toggle is:
- *  - A toggle is immediately active, turning on and off a feature or service at
- *    the moment you toggle it.
- *  - A toggle determines what happens when another action takes place. Or
- *    only becomes active after pressing the "Apply" or "Save" button on a form.
- *    Or becomes part of a record together with other information to be stored
- *    together in a database of some sort.
- *
- * A toggle is a button with three different states with different visual
+ * A radio is a button with three different states with different visual
  * representation:
- *  - **on**: The switch is thrown to the right and is highlighted, and the
- *    `toggle_widget::on_label` is shown.
- *  - **off**: The switch is thrown to the left and is not highlighted, and the
- *    `toggle_widget::off_label` is shown.
- *  - **other**: The switch is thrown to the left and is not highlighted, and
- *    the `toggle_widget::other_label` is shown.
+ *  - **on**: A pip is shown inside the circle.
+ *  - **off**: An empty circle is shown.
  *
- * @image html toggle_widget.gif
+ * @image html radio_widget.gif
  *
- * Each time a user activates the toggle-button it toggles between the 'on' and
- * 'off' states. If the toggle is in the 'other' state an activation will switch
- * it to the 'off' state.
+ * Each time a user activates the radio-button it toggles between the 'on' and 'off' states.
+ * If the radio is in the 'other' state an activation will switch it to
+ * the 'off' state.
  *
- * A toggle cannot itself switch state to 'other', this state may be caused by
- * external factors.
+ * In the following example we create a radio widget on the window
+ * which observes `value`. When the value is 1 the radio is 'on',
+ * when the value is 2 the radio is 'off'.
  *
- * In the following example we create a toggle widget on the window which
- * observes `value`. When the value is 1 the toggle is 'on', when the value is 2
- * the toggle is 'off'.
- *
- * @snippet widgets/toggle_example_impl.cpp Create a toggle
- *
- * @ingroup widgets
+ * @snippet widgets/radio_example_impl.cpp Create a radio
  */
-class toggle_widget : public widget {
+class radio_widget : public widget {
 public:
     using super = widget;
-    using delegate_type = toggle_delegate;
+    using delegate_type = radio_delegate;
 
     struct attributes_type {
         observer<alignment> alignment = alignment::top_left();
@@ -73,7 +56,7 @@ public:
         attributes_type& operator=(attributes_type const&) noexcept = default;
         attributes_type& operator=(attributes_type&&) noexcept = default;
 
-        template<toggle_widget_attribute... Attributes>
+        template<radio_widget_attribute... Attributes>
         explicit attributes_type(Attributes&&...attributes) noexcept
         {
             set_attributes(std::forward<Attributes>(attributes)...);
@@ -81,7 +64,7 @@ public:
 
         void set_attributes() noexcept {}
 
-        template<toggle_widget_attribute First, toggle_widget_attribute... Rest>
+        template<radio_widget_attribute First, radio_widget_attribute... Rest>
         void set_attributes(First&& first, Rest&&...rest) noexcept
         {
             if constexpr (forward_of<First, observer<hi::alignment>>) {
@@ -104,22 +87,22 @@ public:
      */
     not_null<std::shared_ptr<delegate_type>> delegate;
 
-    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_toggle_delegate);
-    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad_not_null<default_toggle_delegate>);
+    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_radio_delegate);
+    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad_not_null<default_radio_delegate>);
     hi_call_right_arguments(static, make_attributes, attributes_type);
 
-    ~toggle_widget()
+    ~radio_widget()
     {
         this->delegate->deinit(*this);
     }
 
-    /** Construct a toggle widget.
+    /** Construct a radio widget.
      *
-     * @param parent The parent widget that owns this toggle widget.
-     * @param delegate The delegate to use to manage the state of the toggle button.
+     * @param parent The parent widget that owns this radio widget.
+     * @param delegate The delegate to use to manage the state of the radio button.
      */
-    toggle_widget(
-        not_null<widget_intf const *> parent,
+    radio_widget(
+        not_null<widget *> parent,
         attributes_type attributes,
         not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
@@ -131,17 +114,17 @@ public:
         _delegate_cbt();
     }
 
-    /** Construct a toggle widget with a default button delegate.
+    /** Construct a radio widget with a default button delegate.
      *
      * @param parent The parent widget that owns this toggle widget.
-     * @param args The arguments to the `default_toggle_delegate`
+     * @param args The arguments to the `default_radio_delegate`
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    toggle_widget(not_null<widget_intf const *> parent, Args&&...args)
+    radio_widget(not_null<widget_intf const *> parent, Args&&...args)
         requires(num_default_delegate_arguments<Args...>() != 0)
         :
-        toggle_widget(
+        radio_widget(
             parent,
             make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
             make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
@@ -151,7 +134,7 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _button_size = {theme().size() * 2.0f, theme().size()};
+        _button_size = {theme().size(), theme().size()};
         return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin()};
     }
 
@@ -160,13 +143,9 @@ public:
         if (compare_store(_layout, context)) {
             _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*attributes.alignment));
 
-            hilet button_square =
-                aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
+            _button_circle = circle{_button_rectangle};
 
-            _pip_circle = align(button_square, circle{theme().size() * 0.5f - 3.0f}, alignment::middle_center());
-
-            hilet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_circle.diameter();
-            _pip_move_range = _button_rectangle.width() - _pip_circle.diameter() - pip_to_button_margin_x2;
+            _pip_circle = align(_button_rectangle, circle{theme().size() * 0.5f - 3.0f}, alignment::middle_center());
         }
         super::set_layout(context);
     }
@@ -174,14 +153,15 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
-            context.draw_box(
-                layout(),
-                _button_rectangle,
-                background_color(),
-                focus_color(),
-                theme().border_width(),
-                border_side::inside,
-                corner_radii{_button_rectangle.height() * 0.5f});
+            if (attributes.focus_group != keyboard_focus_group::menu) {
+                context.draw_circle(
+                    layout(),
+                    _button_circle * 1.02f,
+                    background_color(),
+                    focus_color(),
+                    theme().border_width(),
+                    border_side::inside);
+            }
 
             switch (_animated_value.update(value() == widget_value::on ? 1.0f : 0.0f, context.display_time_point)) {
             case animator_state::idle:
@@ -196,10 +176,11 @@ public:
                 hi_no_default();
             }
 
-            hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
-
-            hilet foreground_color_ = value() == widget_value::on ? accent_color() : foreground_color();
-            context.draw_circle(layout(), positioned_pip_circle * 1.02f, foreground_color_);
+            // draw pip
+            auto float_value = _animated_value.current_value();
+            if (float_value > 0.0) {
+                context.draw_circle(layout(), _pip_circle * 1.02f * float_value, accent_color());
+            }
         }
     }
 
@@ -227,7 +208,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+        return mode() >= widget_mode::partial and to_bool(group & attributes.focus_group);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -238,8 +219,7 @@ public:
         case gui_event_type::gui_activate:
             if (mode() >= widget_mode::partial) {
                 delegate->activate(*this);
-                ++global_counter<"toggle_widget:handle_event:relayout">;
-                process_event({gui_event_type::window_relayout});
+                request_redraw();
                 return true;
             }
             break;
@@ -257,9 +237,10 @@ public:
 
                 // with_label_widget or other widgets may have accepted the hitbox
                 // for this widget. Which means the widget_id in the mouse-event
-                // may match up with the toggle.
+                // may match up with the radio.
                 if (event.mouse().hitbox.widget_id == id) {
-                    handle_event(gui_event_type::gui_activate);
+                    // By staying we can give focus to the parent widget.
+                    handle_event(gui_event_type::gui_activate_stay);
                 }
                 request_redraw();
                 return true;
@@ -278,31 +259,17 @@ private:
 
     extent2 _button_size;
     aarectangle _button_rectangle;
+
+    circle _button_circle;
+
     animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
-    float _pip_move_range;
 
     callback<void()> _delegate_cbt;
-
-    template<size_t I>
-    void set_attributes() noexcept
-    {
-    }
-
-    template<size_t I>
-    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
-    {
-        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-            set_attributes<I>(hi_forward(rest)...);
-
-        } else {
-            hi_static_no_default();
-        }
-    }
 };
 
-using toggle_with_label_widget = with_label_widget<toggle_widget>;
+using radio_with_label_widget = with_label_widget<radio_widget>;
+using radio_menu_button_widget = menu_button_widget<radio_widget>;
 
 } // namespace v1
 } // namespace hi::v1
