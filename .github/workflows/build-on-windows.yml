@@ -207,7 +207,7 @@ jobs:
     #
     #  # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
     #  - name: 📦 🚀 Upload Artifact
-    #    uses: actions/upload-artifact@v3 # https://github.com/actions/upload-artifact
+    #    uses: actions/upload-artifact@v4 # https://github.com/actions/upload-artifact
     #    with:
     #      name: ${{env.ARTIFACT_NAME}}
     #      path: build/${{env.ARTIFACT_NAME}}.zip
