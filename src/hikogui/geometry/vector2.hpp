@@ -140,7 +140,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector2 operator*(vector2 const& lhs, float const& rhs) noexcept
     {
-        return vector2{lhs._v * rhs};
+        return vector2{lhs._v * array_type::broadcast(rhs)};
     }
 
     /** Scale the vector by a scaler.
@@ -169,7 +169,7 @@ public:
      */
     [[nodiscard]] constexpr friend float squared_hypot(vector2 const& rhs) noexcept
     {
-        return squared_hypot<0b0011>(rhs._v);
+        return dot<0b0011>(rhs._v, rhs._v).x();
     }
 
     /** Get the length of the vector.
@@ -178,7 +178,7 @@ public:
      */
     [[nodiscard]] friend float hypot(vector2 const& rhs) noexcept
     {
-        return hypot<0b0011>(rhs._v);
+        return hypot<0b0011>(rhs._v).x();
     }
 
     /** Get the length of the vector.
@@ -187,7 +187,7 @@ public:
      */
     [[nodiscard]] constexpr friend float rcp_hypot(vector2 const& rhs) noexcept
     {
-        return rcp_hypot<0b0011>(rhs._v);
+        return rhypot<0b0011>(rhs._v).x();
     }
 
     /** Normalize a vector to a unit vector.
@@ -206,7 +206,7 @@ public:
      */
     [[nodiscard]] constexpr friend float dot(vector2 const& lhs, vector2 const& rhs) noexcept
     {
-        return dot<0b0011>(lhs._v, rhs._v);
+        return dot<0b0011>(lhs._v, rhs._v).x();
     }
 
     /** Get the determinate between two vectors.
@@ -225,7 +225,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector2 cross(vector2 const& rhs) noexcept
     {
-        return vector2{cross_2D(static_cast<f32x4>(rhs))};
+        return vector2{-rhs._v.y(), rhs._v.x()};
     }
 
     /** Get the cross product between two 2D vectors.
@@ -238,7 +238,10 @@ public:
      */
     [[nodiscard]] constexpr friend float cross(vector2 const& lhs, vector2 const& rhs) noexcept
     {
-        return cross_2D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs));
+        hilet tmp1 = rhs._v.yxwz();
+        hilet tmp2 = lhs._v * tmp1;
+        hilet tmp3 = hsub(tmp2, tmp2);
+        return tmp3.x();
     }
 
     /** Get the normal on a 2D vector.

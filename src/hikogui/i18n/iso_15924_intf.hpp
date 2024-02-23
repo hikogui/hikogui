@@ -20,7 +20,7 @@ hi_export namespace hi { inline namespace v1 {
 /** ISO-15924 script code.
  * A 4 letter title case script code:
  */
-hi_export class iso_15924 {
+class iso_15924 {
 public:
     constexpr iso_15924() noexcept : _v(0) {}
     constexpr iso_15924(iso_15924 const&) noexcept = default;

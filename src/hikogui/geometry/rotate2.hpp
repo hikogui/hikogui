@@ -31,8 +31,7 @@ public:
         hilet C = std::cos(half_angle);
         hilet S = std::sin(half_angle);
 
-        _v = f32x4{0.0f, 0.0f, 1.0f, 0.0f} * S;
-        _v.w() = C;
+        _v = f32x4{0.0f, 0.0f, S, C};
     }
 
     [[nodiscard]] constexpr explicit operator array_type() const noexcept

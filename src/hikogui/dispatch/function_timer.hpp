@@ -178,9 +178,8 @@ private:
         hi_assert(not _functions.empty());
 
         auto &callback = _functions.back().callback;
-        if (callback.lock()) {
-            callback();
-            callback.unlock();
+        if (auto cb = callback.lock()) {
+            cb();
         }
         remove_or_reinsert(current_time);
     }

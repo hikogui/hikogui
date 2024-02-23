@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../macros.hpp"
+
 #include "architecture.hpp" // export
 #include "assert.hpp" // export
 #include "bits.hpp" // export
@@ -12,7 +14,11 @@
 #include "compare.hpp" // export
 #include "concepts.hpp" // export
 #include "console_win32.hpp" // export
+#if defined(HI_HAS_X86)
 #include "cpu_id_x86.hpp" // export
+#else
+#include "cpu_id_generic.hpp" // export
+#endif
 #include "debugger.hpp" // export
 #include "defer.hpp" // export
 #include "dialog.hpp" // export
@@ -20,10 +26,11 @@
 #include "enum_metadata.hpp" // export
 #include "exception.hpp" // export
 #include "fixed_string.hpp" // export
-#include "half.hpp" // export
-#include "half_to_float.hpp" // export
 #include "float_to_half.hpp" // export
 #include "forward_value.hpp" // export
+#include "generator.hpp" // export
+#include "half_to_float.hpp" // export
+#include "half.hpp" // export
 #include "hash.hpp" // export
 #include "initialize.hpp" // export
 #include "math.hpp" // export

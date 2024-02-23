@@ -85,6 +85,18 @@ if(BUILD_TESTING)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     set_target_properties(gtest      PROPERTIES FOLDER extern)
     set_target_properties(gtest_main PROPERTIES FOLDER extern)
+
+    #
+    # HikoTest
+    #
+    add_library(hikotest)
+    target_sources(hikotest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/hikotest/hikotest.cpp)
+    target_sources(hikotest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/hikotest/hikotest.hpp)
+    target_compile_features(hikotest PUBLIC cxx_std_23)
+    if (WIN32)
+        # std::fopen_s() does not exist, this needs to be set if we use std::fopen().
+        target_compile_definitions(hikotest PUBLIC "_CRT_SECURE_NO_WARNINGS")
+    endif()
 endif()
 
 #
@@ -110,29 +122,43 @@ endif()
 #-------------------------------------------------------------------
 if(NOT HI_ARCHITECTURE STREQUAL "")
     if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-        if(HI_ARCHITECTURE STREQUAL "x86-64")
+        if(HI_ARCHITECTURE STREQUAL "none")
+            set(ARCHITECTURE_ID "none")
+            add_compile_definitions(HI_GENERIC)
+        elseif(HI_ARCHITECTURE STREQUAL "x86-64")
+            set(ARCHITECTURE_ID "x86")
             add_compile_options("-arch:AVX")
         elseif(HI_ARCHITECTURE STREQUAL "x86-64-v2")
+            set(ARCHITECTURE_ID "x86")
             add_compile_options("-arch:AVX")
         elseif(HI_ARCHITECTURE STREQUAL "x86-64-v3")
+            set(ARCHITECTURE_ID "x86")
             add_compile_options("-arch:AVX2")
         elseif(HI_ARCHITECTURE STREQUAL "x86-64-v4")
+            set(ARCHITECTURE_ID "x86")
             add_compile_options("-arch:AVX512")
         else()
             message(FATAL_ERROR "Unknown HI_ARCHITECTURE=${HI_ARCHITECTURE} for MSVC frontend.")
         endif()
 
     elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-        if(HI_ARCHITECTURE STREQUAL "x86-64")
-        add_compile_options("-march=x86-64")
+        if(HI_ARCHITECTURE STREQUAL "none")
+            set(ARCHITECTURE_ID "none")
+            add_compile_definitions(HI_GENERIC)
+        elseif(HI_ARCHITECTURE STREQUAL "x86-64")
+            set(ARCHITECTURE_ID "x86")
+            add_compile_options("-march=x86-64")
         elseif(HI_ARCHITECTURE STREQUAL "x86-64-v2")
-        add_compile_options("-march=x86-64-v2")
+            set(ARCHITECTURE_ID "x86")
+            add_compile_options("-march=x86-64-v2")
         elseif(HI_ARCHITECTURE STREQUAL "x86-64-v3")
-        add_compile_options("-march=x86-64-v3")
+            set(ARCHITECTURE_ID "x86")
+            add_compile_options("-march=x86-64-v3")
         elseif(HI_ARCHITECTURE STREQUAL "x86-64-v4")
-        add_compile_options("-march=x86-64-v4")
+            set(ARCHITECTURE_ID "x86")
+            add_compile_options("-march=x86-64-v4")
         else()
-        message(FATAL_ERROR "Unknown HI_ARCHITECTURE=${HI_ARCHITECTURE} for MSVC frontend.")
+            message(FATAL_ERROR "Unknown HI_ARCHITECTURE=${HI_ARCHITECTURE} for MSVC frontend.")
         endif()
 
     else()
@@ -183,26 +209,26 @@ target_include_directories(hikogui ${HI_SCOPE} ${Vulkan_INCLUDE_DIRS})
 
 # HikoGUI only uses Vulkan-1.2; we can limit VMA to that version as well.
 # This solves a common issue with: "Cant find entrypoint for vkGetDeviceBufferMemoryRequirements procedure"
-target_compile_definitions(hikogui ${HI_SCOPE} -DVMA_VULKAN_VERSION=1002000)
+target_compile_definitions(hikogui ${HI_SCOPE} "VMA_VULKAN_VERSION=1002000")
 if (WIN32)
     # Add vulkan win32 surface support.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DVK_USE_PLATFORM_WIN32_KHR)
+    target_compile_definitions(hikogui ${HI_SCOPE} "VK_USE_PLATFORM_WIN32_KHR")
 
     # vulkan.h will include the windows headers, so we must define all sorts of stuff on the command line.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DUNICODE)
-    target_compile_definitions(hikogui ${HI_SCOPE} -D_UNICODE)
-    target_compile_definitions(hikogui ${HI_SCOPE} -D_CRT_SECURE_NO_WARNINGS)
-    target_compile_definitions(hikogui ${HI_SCOPE} -DNOMINMAX)
-    target_compile_definitions(hikogui ${HI_SCOPE} -DWIN32_LEAN_AND_MEAN)
-    target_compile_definitions(hikogui ${HI_SCOPE} -DWIN32_NO_STATUS)
+    target_compile_definitions(hikogui ${HI_SCOPE} "UNICODE")
+    target_compile_definitions(hikogui ${HI_SCOPE} "_UNICODE")
+    target_compile_definitions(hikogui ${HI_SCOPE} "_CRT_SECURE_NO_WARNINGS")
+    target_compile_definitions(hikogui ${HI_SCOPE} "NOMINMAX")
+    target_compile_definitions(hikogui ${HI_SCOPE} "WIN32_LEAN_AND_MEAN")
+    target_compile_definitions(hikogui ${HI_SCOPE} "WIN32_NO_STATUS")
 
     # Minimum Windows 10.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DWINVER=0x0a00)
-    target_compile_definitions(hikogui ${HI_SCOPE} -D_WIN32_WINNT=0x0a00)
+    target_compile_definitions(hikogui ${HI_SCOPE} "WINVER=0x0a00")
+    target_compile_definitions(hikogui ${HI_SCOPE} "_WIN32_WINNT=0x0a00")
 
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
-    target_compile_definitions(hikogui ${HI_SCOPE} -DVK_USE_PLATFORM_METAL_EXT)
+    target_compile_definitions(hikogui ${HI_SCOPE} "VK_USE_PLATFORM_METAL_EXT")
 endif()
 
 if(HI_ENABLE_MODULES)

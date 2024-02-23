@@ -679,6 +679,23 @@ template<typename T>
     return static_cast<bool>(std::forward<T>(rhs));
 }
 
+/** Create a mask from a boolean value.
+ * 
+ * @param v The boolean value to represent as a mask
+ * @return A value which bit representations are all '1' when @a v == `true`, or
+ *         all '0' when @a v == `false`.
+*/
+template<typename T>
+[[nodiscard]] constexpr T to_mask(bool v) noexcept
+{
+    using large_bool = make_intxx_t<sizeof(T) * CHAR_BIT>;
+
+    auto r = static_cast<large_bool>(v);
+    r <<= sizeof(T) * CHAR_BIT - 1;
+    r >>= sizeof(T) * CHAR_BIT - 1;
+    return std::bit_cast<T>(r);
+}
+
 template<typename T>
 [[nodiscard]] hi_inline T to_ptr(std::intptr_t value) noexcept
     requires std::is_pointer_v<T>

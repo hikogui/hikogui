@@ -189,12 +189,18 @@ public:
 
     [[nodiscard]] friend constexpr point3 midpoint(point3 const& lhs, point3 const& rhs) noexcept
     {
-        return point3{midpoint(lhs._v, rhs._v)};
+        return point3{(lhs._v + rhs._v) * array_type::broadcast(0.5f)};
     }
 
+    /** Reflect a point.
+     * 
+     * @param lhs The point to be reflected
+     * @param rhs The anchor point.
+     * @return The reflected point.
+    */
     [[nodiscard]] friend constexpr point3 reflect(point3 const& lhs, point3 const& rhs) noexcept
     {
-        return point3{reflect_point(lhs._v, rhs._v)};
+        return point3{rhs._v - (lhs._v - rhs._v)};
     }
 
     /** Mix the two points and get the lowest value of each element.

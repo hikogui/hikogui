@@ -8,7 +8,6 @@
 #include "iso_3166.hpp"
 #include "iso_639.hpp"
 #include "../utility/utility.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../algorithm/algorithm.hpp"
 #include "../macros.hpp"
 #include <vector>

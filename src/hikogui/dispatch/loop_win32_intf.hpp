@@ -643,9 +643,8 @@ struct socket_type {
         hilet display_time = _vsync_time.load(std::memory_order::relaxed) + std::chrono::milliseconds(30);
 
         for (auto& render_function : _render_functions) {
-            if (render_function.lock()) {
-                render_function(display_time);
-                render_function.unlock();
+            if (auto rf = render_function.lock()) {
+                rf(display_time);
             }
         }
 

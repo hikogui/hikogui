@@ -13,7 +13,6 @@
 #include "label_widget.hpp"
 #include "scroll_widget.hpp"
 #include "../l10n/l10n.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
@@ -64,7 +63,7 @@ concept text_field_widget_attribute = text_widget_attribute<Context>;
  *
  * @ingroup widgets
  */
-class text_field_widget final : public widget {
+class text_field_widget : public widget {
 public:
     using delegate_type = text_field_delegate;
     using super = widget;

@@ -149,7 +149,7 @@ enum class dialog_button_mask : uint64_t {
  * @param button_mask The set of buttons to show in the dialog.
  * @return The button that was pressed by the user.
  */
-hi_export std::expected<dialog_button, std::error_code> dialog(std::string_view title, std::string_view text, dialog_button_mask button_mask = dialog_button_mask::ok) noexcept;
+std::expected<dialog_button, std::error_code> dialog(std::string_view title, std::string_view text, dialog_button_mask button_mask = dialog_button_mask::ok) noexcept;
 
 } // namespace v1
 } // namespace hi::inline v1

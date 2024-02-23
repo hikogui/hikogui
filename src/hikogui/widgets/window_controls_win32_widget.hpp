@@ -26,7 +26,7 @@ hi_export namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class window_controls_win32_widget final : public widget {
+class window_controls_win32_widget : public widget {
 public:
     using super = widget;
 

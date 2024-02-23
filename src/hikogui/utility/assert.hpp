@@ -22,27 +22,15 @@ hi_warning_ignore_msvc(26472);
 
 hi_export namespace hi { inline namespace v1 {
 
-/** Check if an unsigned index is less than the bound.
+/** Check if an index is less than the bound.
  *
- * @param index The unsigned index to check.
+ * @param index The index to check.
  * @param upper The upper bound.
  * @return true If index is less than the upper bound.
  */
-hi_export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto index, std::unsigned_integral auto upper) noexcept
+hi_export [[nodiscard]] constexpr bool bound_check(std::integral auto index, std::integral auto upper) noexcept
 {
-    using value_type = common_integer_t<decltype(index), decltype(upper)>;
-
-    hilet index_ = static_cast<value_type>(index);
-    hilet upper_ = static_cast<value_type>(upper);
-    return index_ < upper_;
-}
-
-hi_export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto index, std::signed_integral auto upper) noexcept
-{
-    if (upper <= 0) {
-        return false;
-    }
-    return bound_check(index, static_cast<std::make_unsigned_t<decltype(upper)>>(upper));
+    return std::cmp_less(index, upper);
 }
 
 /** Check if an index is between the lower (inclusive) and upper (exclusive).
@@ -55,21 +43,36 @@ hi_export [[nodiscard]] constexpr bool bound_check(std::unsigned_integral auto i
  */
 hi_export [[nodiscard]] constexpr bool bound_check(std::integral auto index, std::integral auto lower, std::integral auto upper) noexcept
 {
-    using value_type = common_integer_t<decltype(index), decltype(lower), decltype(upper)>;
-
-    auto index_ = static_cast<value_type>(index);
-    auto lower_ = static_cast<value_type>(lower);
-    auto upper_ = static_cast<value_type>(upper);
-
 #ifndef NDEBUG
-    if (not(lower_ < upper_)) {
+    if (std::cmp_greater(lower, upper)) {
         hi_assert_abort("bound_check() lower is greater than upper.");
     }
 #else
-    hi_assume(lower_ < upper_);
+    hi_assume(std::cmp_less_equal(lower, upper));
 #endif
 
-    return index_ >= lower_ and index_ < upper_;
+    return std::cmp_greater_equal(index, lower) and std::cmp_less(index, upper);
+}
+
+/** Check if an floating point value is between the lower (inclusive) and upper (inclusive).
+ *
+ * @note It is undefined behavior when @a upper is lower than @a lower.
+ * @param index The index to check.
+ * @param lower The lower bound.
+ * @param upper The upper bound.
+ * @return true If index is greater or equal to lower bound and index is less than upper bound.
+ */
+hi_export [[nodiscard]] constexpr bool bound_check(std::floating_point auto index, std::floating_point auto lower, std::floating_point auto upper) noexcept
+{
+#ifndef NDEBUG
+    if (lower > upper) {
+        hi_assert_abort("bound_check() lower is greater than upper.");
+    }
+#else
+    hi_assume(lower <= upper);
+#endif
+
+    return index >= lower and index <= upper;
 }
 
 template<typename Context>

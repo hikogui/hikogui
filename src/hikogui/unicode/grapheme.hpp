@@ -9,7 +9,6 @@
 #include "../telemetry/telemetry.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../char_maps/char_maps.hpp"
-#include "../coroutine/generator.hpp" // XXX #616
 #include "unicode_normalization.hpp"
 #include "ucd_general_categories.hpp"
 #include "ucd_canonical_combining_classes.hpp"

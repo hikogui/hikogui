@@ -24,7 +24,6 @@ TEST(datum, IntOperations)
 
     ASSERT_EQ(holds_alternative<long long>(v), true);
     ASSERT_EQ(holds_alternative<double>(v), false);
-    ASSERT_EQ(holds_alternative<decimal>(v), false);
     ASSERT_EQ(holds_alternative<std::string>(v), false);
 
     ASSERT_EQ(v == 42, true);
@@ -61,12 +60,6 @@ TEST(datum, IntOperations)
     ASSERT_THROW((void)(datum(42) << 64), std::domain_error);
     ASSERT_THROW((void)(datum(42) >> 64), std::domain_error);
     ASSERT_THROW((void)(datum(-42) >> 64), std::domain_error);
-}
-
-TEST(datum, DecimalOperations)
-{
-    hilet v = decimal(-25);
-    ASSERT_EQ(static_cast<decimal>(datum{v}), v);
 }
 
 TEST(datum, NegativeIntOperations)

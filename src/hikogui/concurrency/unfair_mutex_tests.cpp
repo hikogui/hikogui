@@ -5,326 +5,326 @@
 #include "unfair_mutex.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 #include <iostream>
 #include <string>
 #include <thread>
 
-using namespace std;
-using namespace hi;
-
-#define ASSERT_NULL(x) ASSERT_EQ(x, nullptr);
-#define ASSERT_NOT_NULL(x) ASSERT_NE(x, nullptr);
-TEST(dead_lock_detector, good)
+TEST_SUITE(dead_lock_detector_suite)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+
+TEST_CASE(good_test)
+{
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b;
 
-    ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-    ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-    ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-    ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
+    REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+    REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+    REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+    REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
 }
 
-TEST(dead_lock_detector, relock1)
+TEST_CASE(relock1_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b;
 
-    ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-    ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-    ASSERT_NOT_NULL(unfair_mutex_deadlock_lock(&a));
+    REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+    REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+    REQUIRE(hi::unfair_mutex_deadlock_lock(&a) != nullptr);
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
 }
 
-TEST(dead_lock_detector, relock2)
+TEST_CASE(relock2_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b;
 
-    ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-    ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-    ASSERT_NOT_NULL(unfair_mutex_deadlock_lock(&b));
+    REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+    REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+    REQUIRE(hi::unfair_mutex_deadlock_lock(&b) != nullptr);
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
 }
 
-TEST(dead_lock_detector, unlock1)
+TEST_CASE(unlock1_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b;
 
-    ASSERT_FALSE(unfair_mutex_deadlock_unlock(&a));
+    REQUIRE(not hi::unfair_mutex_deadlock_unlock(&a));
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
 }
 
-TEST(dead_lock_detector, unlock2)
+TEST_CASE(unlock2_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b;
 
-    ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-    ASSERT_FALSE(unfair_mutex_deadlock_unlock(&a));
+    REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+    REQUIRE(not hi::unfair_mutex_deadlock_unlock(&a));
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
 }
 
-TEST(dead_lock_detector, unlock_different_thread)
+TEST_CASE(unlock_different_thread_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a;
 
     auto at = std::thread([&a]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
     });
     at.join();
 
     auto bt = std::thread([&a]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_FALSE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(not hi::unfair_mutex_deadlock_unlock(&a));
     });
     bt.join();
 
-    unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&a);
 }
 
-TEST(dead_lock_detector, dead_lock1)
+TEST_CASE(dead_lock1_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b, c;
 
     auto at = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NOT_NULL(unfair_mutex_deadlock_lock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) != nullptr);
     });
     bt.join();
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
-    unfair_mutex_deadlock_remove_object(&c);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&c);
 }
 
-TEST(dead_lock_detector, dead_lock2)
+TEST_CASE(dead_lock2_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b, c;
 
     auto at = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_NOT_NULL(unfair_mutex_deadlock_lock(&b));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) != nullptr);
     });
     bt.join();
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
-    unfair_mutex_deadlock_remove_object(&c);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&c);
 }
 
-TEST(dead_lock_detector, dead_lock3)
+TEST_CASE(dead_lock3_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b, c;
 
     auto at = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_NOT_NULL(unfair_mutex_deadlock_lock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) != nullptr);
     });
     bt.join();
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
-    unfair_mutex_deadlock_remove_object(&c);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&c);
 }
 
-TEST(dead_lock_detector, good_lock1)
+TEST_CASE(good_lock1_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b, c;
 
     auto at = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     bt.join();
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
-    unfair_mutex_deadlock_remove_object(&c);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&c);
 }
 
-TEST(dead_lock_detector, good_lock2)
+TEST_CASE(good_lock2_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b, c;
 
     auto at = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     bt.join();
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
-    unfair_mutex_deadlock_remove_object(&c);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&c);
 }
 
-TEST(dead_lock_detector, good_lock3)
+TEST_CASE(good_lock3_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b, c;
 
     auto at = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
     });
     bt.join();
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
-    unfair_mutex_deadlock_remove_object(&c);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&c);
 }
 
-TEST(dead_lock_detector, good_lock4)
+TEST_CASE(good_lock4_test)
 {
-    unfair_mutex_deadlock_clear_stack();
-    unfair_mutex_deadlock_clear_graph();
+    hi::unfair_mutex_deadlock_clear_stack();
+    hi::unfair_mutex_deadlock_clear_graph();
 
     int a, b, c;
 
     auto at = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
-        unfair_mutex_deadlock_clear_stack();
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&a));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&b));
-        ASSERT_NULL(unfair_mutex_deadlock_lock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&c));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&b));
-        ASSERT_TRUE(unfair_mutex_deadlock_unlock(&a));
+        hi::unfair_mutex_deadlock_clear_stack();
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&a) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&b) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_lock(&c) == nullptr);
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&c));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&b));
+        REQUIRE(hi::unfair_mutex_deadlock_unlock(&a));
     });
     bt.join();
 
-    unfair_mutex_deadlock_remove_object(&a);
-    unfair_mutex_deadlock_remove_object(&b);
-    unfair_mutex_deadlock_remove_object(&c);
+    hi::unfair_mutex_deadlock_remove_object(&a);
+    hi::unfair_mutex_deadlock_remove_object(&b);
+    hi::unfair_mutex_deadlock_remove_object(&c);
 }
+
+};

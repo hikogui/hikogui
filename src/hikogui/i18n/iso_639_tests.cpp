@@ -3,51 +3,40 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "iso_639.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
+#include <hikotest/hikotest.hpp>
 
-TEST(iso_639, parse)
+TEST_SUITE(iso_639_suite)
 {
-    ASSERT_EQ(hi::iso_639("nl").code(), "nl");
-    ASSERT_EQ(hi::iso_639("NL").code(), "nl");
-    ASSERT_EQ(hi::iso_639("Nl").code(), "nl");
-    ASSERT_EQ(hi::iso_639("nL").code(), "nl");
 
-    ASSERT_EQ(hi::iso_639("foo").code(), "foo");
+TEST_CASE(parse_test)
+{
+    REQUIRE(hi::iso_639("nl").code() == "nl");
+    REQUIRE(hi::iso_639("NL").code() == "nl");
+    REQUIRE(hi::iso_639("Nl").code() == "nl");
+    REQUIRE(hi::iso_639("nL").code() == "nl");
 
-    ASSERT_THROW(hi::iso_639("n"), hi::parse_error);
-    ASSERT_THROW(hi::iso_639("food"), hi::parse_error);
+    REQUIRE(hi::iso_639("foo").code() == "foo");
 
-    static_assert(hi::iso_639("nl").code() == "nl");
-    static_assert(hi::iso_639("NL").code() == "nl");
-    static_assert(hi::iso_639("Nl").code() == "nl");
-    static_assert(hi::iso_639("nL").code() == "nl");
-    static_assert(hi::iso_639("foo").code() == "foo");
+    REQUIRE_THROWS(hi::iso_639("n"), hi::parse_error);
+    REQUIRE_THROWS(hi::iso_639("food"), hi::parse_error);
 }
 
-TEST(iso_639, size)
+TEST_CASE(size_test)
 {
-    ASSERT_EQ(hi::iso_639().size(), 0);
-    ASSERT_EQ(hi::iso_639().empty(), true);
-    ASSERT_EQ(hi::iso_639("nl").size(), 2);
-    ASSERT_EQ(hi::iso_639("nl").empty(), false);
-    ASSERT_EQ(hi::iso_639("foo").size(), 3);
-    ASSERT_EQ(hi::iso_639("foo").empty(), false);
-
-    static_assert(hi::iso_639().size() == 0);
-    static_assert(hi::iso_639().empty() == true);
-    static_assert(hi::iso_639("nl").size() == 2);
-    static_assert(hi::iso_639("nl").empty() == false);
-    static_assert(hi::iso_639("foo").size() == 3);
-    static_assert(hi::iso_639("foo").empty() == false);
+    REQUIRE(hi::iso_639().size() == 0);
+    REQUIRE(hi::iso_639().empty());
+    REQUIRE(hi::iso_639("nl").size() == 2);
+    REQUIRE(not hi::iso_639("nl").empty());
+    REQUIRE(hi::iso_639("foo").size() == 3);
+    REQUIRE(not hi::iso_639("foo").empty());
 }
 
-TEST(iso_639, hash)
+TEST_CASE(hash_test)
 {
-    ASSERT_EQ(std::hash<hi::iso_639>{}(hi::iso_639()), std::hash<hi::iso_639>{}(hi::iso_639()));
-    ASSERT_NE(std::hash<hi::iso_639>{}(hi::iso_639()), std::hash<hi::iso_639>{}(hi::iso_639("nl")));
-    ASSERT_EQ(std::hash<hi::iso_639>{}(hi::iso_639("nl")), std::hash<hi::iso_639>{}(hi::iso_639("nl")));
-    ASSERT_NE(std::hash<hi::iso_639>{}(hi::iso_639("nl")), std::hash<hi::iso_639>{}(hi::iso_639("be")));
+    REQUIRE(std::hash<hi::iso_639>{}(hi::iso_639()) == std::hash<hi::iso_639>{}(hi::iso_639()));
+    REQUIRE(std::hash<hi::iso_639>{}(hi::iso_639()) != std::hash<hi::iso_639>{}(hi::iso_639("nl")));
+    REQUIRE(std::hash<hi::iso_639>{}(hi::iso_639("nl")) == std::hash<hi::iso_639>{}(hi::iso_639("nl")));
+    REQUIRE(std::hash<hi::iso_639>{}(hi::iso_639("nl")) != std::hash<hi::iso_639>{}(hi::iso_639("be")));
 }
+
+};

@@ -15,7 +15,6 @@
 #include "../settings/settings.hpp"
 #include "../numeric/numeric.hpp"
 #include "../GUI/GUI.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <vector>

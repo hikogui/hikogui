@@ -363,9 +363,9 @@ int hi_main(int argc, char *argv[])
     widget->content().emplace<hi::selection_widget>("B4:D4", gradient, gradient_list);
 
     widget->content().emplace<hi::label_widget>("A5", hi::txt("Border side:"));
-    widget->content().emplace<hi::radio_button_with_label_widget>("B5", border_side, hi::border_side::on, hi::txt("on"));
-    widget->content().emplace<hi::radio_button_with_label_widget>("C5", border_side, hi::border_side::inside, hi::txt("inside"));
-    widget->content().emplace<hi::radio_button_with_label_widget>("D5", border_side, hi::border_side::outside, hi::txt("outside"));
+    widget->content().emplace<hi::radio_with_label_widget>("B5", border_side, hi::border_side::on, hi::txt("on"));
+    widget->content().emplace<hi::radio_with_label_widget>("C5", border_side, hi::border_side::inside, hi::txt("inside"));
+    widget->content().emplace<hi::radio_with_label_widget>("D5", border_side, hi::border_side::outside, hi::txt("outside"));
 
     widget->content().emplace<hi::label_widget>("A6", hi::txt("Border width:"));
     widget->content().emplace<hi::selection_widget>("B6:D6", border_width, border_width_list);

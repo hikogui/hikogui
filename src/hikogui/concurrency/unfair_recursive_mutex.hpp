@@ -180,7 +180,7 @@ public:
         // FIRST | OWNER
 
         // Unlock must be called on the thread that locked the mutex
-        hi_axiom(recurse_lock_count());
+        hi_axiom(recurse_lock_count() != 0);
 
         if (--count == 0) {
             // FIRST
