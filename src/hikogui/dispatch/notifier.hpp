@@ -71,7 +71,7 @@ public:
 
         constexpr awaiter_type(notifier& notifier) noexcept : _notifier(&notifier) {}
 
-        [[nodiscard]] constexpr bool await_ready() noexcept
+        [[nodiscard]] constexpr bool await_ready() const noexcept
         {
             return false;
         }
@@ -87,14 +87,6 @@ public:
                     // Copy the arguments received from the notifier into the awaitable object
                     // So that it can be read using `await_resume()`.
                     _args = {std::forward<Args>(args)...};
-
-                    // Take ownership of the awaiter's callback and
-                    // unsubscribe, so that the awaiter can be destroyed when
-                    // its co-routine is resumed.
-                    //
-                    // We can unsubscribe unsafely here as this is the only
-                    // one call inflight due to callback_flags::once.
-                    auto my_frame = std::exchange(this->_cbt, nullptr).unsafe_unsubscribe();
 
                     // Resume the co-routine.
                     handle.resume();
@@ -128,10 +120,10 @@ public:
     /** Create a notifier.
      */
     constexpr notifier() noexcept = default;
-    constexpr notifier(notifier&&) noexcept = default;
-    constexpr notifier(notifier const&) noexcept = default;
-    constexpr notifier& operator=(notifier&&) noexcept = default;
-    constexpr notifier& operator=(notifier const&) noexcept = default;
+    constexpr notifier(notifier&&) noexcept = delete;
+    constexpr notifier(notifier const&) noexcept = delete;
+    constexpr notifier& operator=(notifier&&) noexcept = delete;
+    constexpr notifier& operator=(notifier const&) noexcept = delete;
 
     /** Create an awaiter that can await on this notifier.
      */
@@ -179,20 +171,18 @@ public:
 
         for (auto& [callback, flags] : _callbacks) {
             if (is_synchronous(flags)) {
-                if (callback.lock()) {
-                    callback(std::forward<Args>(args)...);
-                    callback.unlock();
+                if (auto cb = callback.lock()) {
+                    cb(std::forward<Args>(args)...);
                 }
 
             } else if (is_local(flags)) {
                 loop_local_post_function([=] {
                     // The callback object here is captured by-copy, so that
                     // the loop can check if it was expired.
-                    if (callback.lock()) {
+                    if (auto cb = callback.lock()) {
                         // The captured arguments are now plain copies so we do
                         // not forward them in the call.
-                        callback(args...);
-                        callback.unlock();
+                        cb(args...);
                     }
                 });
 
@@ -200,11 +190,10 @@ public:
                 loop_main_post_function([=] {
                     // The callback object here is captured by-copy, so that
                     // the loop can check if it was expired.
-                    if (callback.lock()) {
+                    if (auto cb = callback.lock()) {
                         // The captured arguments are now plain copies so we do
                         // not forward them in the call.
-                        callback(args...);
-                        callback.unlock();
+                        cb(args...);
                     }
                 });
 
@@ -212,11 +201,10 @@ public:
                 loop_timer_post_function([=] {
                     // The callback object here is captured by-copy, so that
                     // the loop can check if it was expired.
-                    if (callback.lock()) {
+                    if (auto cb = callback.lock()) {
                         // The captured arguments are now plain copies so we do
                         // not forward them in the call.
-                        callback(args...);
-                        callback.unlock();
+                        cb(args...);
                     }
                 });
 

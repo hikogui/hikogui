@@ -11,7 +11,6 @@
 #include "widget.hpp"
 #include "icon_widget.hpp"
 #include "../l10n/l10n.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
@@ -28,7 +27,7 @@ hi_export namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class system_menu_widget final : public widget {
+class system_menu_widget : public widget {
 public:
     using super = widget;
 

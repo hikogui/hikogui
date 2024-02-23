@@ -18,7 +18,7 @@ hi_export namespace hi { inline namespace v1 {
 /** A momentary button widget.
  * @ingroup widgets
  */
-class momentary_button_widget final : public abstract_button_widget {
+class momentary_button_widget : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "../coroutine/coroutine.hpp"
 #include "../utility/utility.hpp"
 #include "../metadata/metadata.hpp"
 #include "../macros.hpp"

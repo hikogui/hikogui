@@ -12,7 +12,6 @@
 #include "../font/font.hpp"
 #include "../geometry/geometry.hpp"
 #include "../unicode/unicode.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <tuple>
@@ -1215,10 +1214,10 @@ private:
             if (c.script == iso_15924::uncoded() or c.script == iso_15924::common()) {
                 hilet bracket_type = ucd_get_bidi_paired_bracket_type(c.grapheme.starter());
                 // clang-format off
-            c.script =
-                bracket_type == unicode_bidi_paired_bracket_type::o ? previous_script :
-                bracket_type == unicode_bidi_paired_bracket_type::c ? c.script == iso_15924::common() :
-                word_script;
+                c.script =
+                    bracket_type == unicode_bidi_paired_bracket_type::o ? previous_script :
+                    bracket_type == unicode_bidi_paired_bracket_type::c ? iso_15924::common() :
+                    word_script;
                 // clang-format on
 
             } else if (c.script != iso_15924::inherited()) {

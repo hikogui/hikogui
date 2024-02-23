@@ -10,7 +10,6 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../coroutine/generator.hpp" // XXX #616
 #include "../i18n/i18n.hpp"
 #include "../macros.hpp"
 #include <concepts>

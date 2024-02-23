@@ -14,7 +14,6 @@
 #include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
 #include "../l10n/l10n.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
@@ -44,7 +43,7 @@ concept label_widget_attribute =
  * Here is an example on how to create a label:
  * @snippet widgets/checkbox_example_impl.cpp Create a label
  */
-class label_widget final : public widget {
+class label_widget : public widget {
 public:
     using super = widget;
 

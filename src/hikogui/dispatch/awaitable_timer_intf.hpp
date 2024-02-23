@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../coroutine/coroutine.hpp"
+#include "awaitable.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../time/time.hpp"
 #include "../macros.hpp"
